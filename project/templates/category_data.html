@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block breadcrumb %}{{ block.super }}
+    <span class="navbar-text">&raquo;</span><a class="nav-link" href="{% url 'reports:data_empty' %}">Data</a>
+{% endblock breadcrumb %}
+
+
+{% block head %}
+    <script src="{% static 'js/ajax.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/bikes.css' %}">
+    {{ filter_form.media }}
+{% endblock head %}

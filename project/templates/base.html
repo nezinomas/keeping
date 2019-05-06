@@ -1,0 +1,69 @@
+<!DOCTYPE html>{% load static %}
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    {% load bootstrap4 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript jquery='full' %}
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/"
+      crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/app_global.css' %}">
+    {% block head %}{% endblock head %}
+
+    <title>Bike statistic</title>
+  </head>
+
+  <body>
+    {% block body %}
+    <!-- top navidation bar -->
+    <div class="container-fluid">
+    <nav class="navbar navbar-expand navbar-light bg-light">
+        <nav class="nav">
+            {% block breadcrumb %}
+              <a class="nav-link" href="#">Home</a>
+            {% endblock breadcrumb %}
+          </nav>
+        <div class="collapse navbar-collapse" id="mainMenu">
+          {% if user.is_authenticated %}
+          <ul class="navbar-nav ml-auto">
+            <li class="list-group-item list-group-item-action dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="userMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                {{ user.username }}
+              </a>
+              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userMenu">
+                <a class="dropdown-item" href="#">My account</a>
+                <a class="dropdown-item" href="#">Change password</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{% url 'accounts:logout' %}">Log out</a>
+              </div>
+            </li>
+          </ul>
+          {% else %}
+          <form class="form-inline ml-auto">
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary btn-sm">Log in</a>
+          </form>
+          {% endif %}
+        </div>
+      </nav>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row mx-0">
+        <!-- side bar -->
+        <div class="fixed-column">
+          <h6 class="side-bar">Data</h6>
+          <div class="list-group list-group-flush">
+            <a class="list-group-item list-group-item-action" href="#">View</a></li>
+            <a class="list-group-item list-group-item-action" href="#">Update</a></li>
+          </div>
+
+        </div>
+        <!-- content -->
+        <div class="fluid-column">
+          {% block content %}{% endblock content %}
+        </div>
+      </div>
+    </div>
+    {% endblock body %}
+  </body>
+</html>

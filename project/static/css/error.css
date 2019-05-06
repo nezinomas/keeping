@@ -1,0 +1,63 @@
+@font-face {
+    font-family: 'BebasNeueRegular';
+    src: url('../font/BebasNeue-webfont.eot');
+    src: url('../font/BebasNeue-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../font/BebasNeue-webfont.woff') format('woff'),
+         url('../font/BebasNeue-webfont.ttf') format('truetype'),
+         url('../font/BebasNeue-webfont.svg#BebasNeueRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+.spacer{
+    clear:both;
+}
+
+body{
+    font-family:BebasNeueRegular, arial;color:#000;
+}
+
+#content{
+    width:980px;
+    margin:auto;
+    padding-top:41px;
+    }
+
+strong{
+    font-weight:bold;
+}
+
+#error-page{
+    width:495px;
+    margin:auto;
+    margin-top:20px;
+}
+
+#error-page #back_button{
+    display:block;
+    text-align:right;
+    font-family:georgia, times new roman;
+    font-style:italic;
+    color:#bababa;
+    text-decoration:underline;
+}
+
+#error-message{
+    margin-top:80px;
+    font-size:130px;
+    padding-bottom:225px;
+    width:100%;
+}
+
+.error-404 {
+    background:url(../images/404.jpg) bottom center no-repeat;
+}
+
+.error-403 {
+    background:url(../images/403.jpg) bottom center no-repeat;
+}
+
+.error-500 {
+    background:url(../images/500.jpg) bottom center no-repeat;
+}

@@ -1,0 +1,17 @@
+<!DOCTYPE html>{% load static %}
+<html lang="en-US">
+<head>
+<title>Not Found</title>
+
+<meta charset="UTF-8" />
+
+<link rel="stylesheet" href="{% static 'css/error.css' %}">
+
+</head>
+<body>
+    <section id="error-page" class="error-500">
+        <a id="back_button" href="{% url 'reports:index' %}">Back to homepage</a>
+        <div id="error-message">ERROR #500</div>
+    </section>
+</body>
+</html>

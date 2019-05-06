@@ -1,0 +1,153 @@
+.list-group-item {
+  padding: .25rem 0 .25rem .5rem;
+  font-size: .8rem;
+  border: 0;
+}
+
+h6.side-bar {
+  margin: 1rem 0 .25rem .25rem;
+
+}
+
+h6.side-bar:first-child { 
+  margin-top: .5rem;
+}
+
+.navbar {
+  padding: .25rem .5rem;
+}
+
+.nav-link {
+  padding: 0 .25rem;
+  margin: .25rem 0;
+  font-size: .9rem;
+}
+
+.nav>a:first-child {
+  margin-left: -.25rem;
+}
+
+.navbar-text {
+  font-size: .9rem;
+  padding: .25rem .25rem 0 .25rem;
+}
+
+.nav>.nav-link.active {
+  font-weight: bold;
+}
+
+.container-fluid>.content {
+  padding: 0 1rem;
+}
+
+.invalid-feedback {
+  display: block;
+}
+
+table td {
+  font-size: .8rem!important;
+  vertical-align: middle!important;
+  padding-top: .15rem!important;
+  padding-bottom: .15rem!important;
+  padding-left: .50rem!important;
+  padding-right: .50rem!important;
+}
+
+table thead th {
+  font-size: .85rem!important;
+  vertical-align: middle!important;
+  padding-top: .35rem!important;
+  padding-bottom: .35rem!important;
+  padding-left: .50rem!important;
+  padding-right: .50rem!important;
+}
+
+table tfoot td {
+  padding-top: .35rem!important;
+  padding-bottom: .35rem!important;
+}
+
+.table-striped>tbody>tr:nth-child(odd) {
+   background-color: #fdefd5;
+ }
+
+.table-hover tbody tr:hover {
+    background: lightgray;
+}
+
+.table-hover tbody tr:hover td.table-danger {
+    background: #eab0b7;
+}
+
+.table-hover tbody tr:hover td.table-success {
+    background: #b7debb;
+}
+
+.form-group {
+  margin: 0!important;
+  padding: 0!important;
+}
+
+.inner {
+  margin: 0!important;
+  padding: 0!important;
+  table-layout:fixed!important;
+}
+
+.inner td {
+  padding-top: .25rem!important;
+  padding-bottom: .25rem!important;
+  vertical-align: top!important;
+  padding-left: 4px!important;
+  padding-right: 4px!important;
+}
+
+.inner td.v-middle {
+  vertical-align: middle!important;
+}
+
+.inner td.last {
+  padding-right: .5rem!important;
+}
+
+.inner td input {
+  padding-left: .25rem!important;
+  padding-right: .25rem!important;
+}
+
+.inner td.text-left input {
+  text-align: left;
+}
+
+.inner td.text-center input {
+  text-align: center;
+}
+
+.btn-sm {
+    font-size: .8rem!important;
+    line-height: 1.5!important;
+}
+
+.km {
+  border-left: orangered dotted 1px!important;
+}
+
+.b-left {
+  border-left: orangered dotted 1px!important;
+}
+
+.form-control-sm {
+  font-size: .8rem!important;
+}
+
+.date-align {
+  width: 2.7rem;
+  float: right;
+  display:block;
+}
+
+ .row-spacer {
+   height: 1rem;
+   background-color: lightyellow;
+ }
+
