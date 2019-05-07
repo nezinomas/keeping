@@ -128,26 +128,6 @@ table tfoot td {
     line-height: 1.5!important;
 }
 
-.km {
-  border-left: orangered dotted 1px!important;
-}
-
-.b-left {
-  border-left: orangered dotted 1px!important;
-}
-
 .form-control-sm {
   font-size: .8rem!important;
 }
-
-.date-align {
-  width: 2.7rem;
-  float: right;
-  display:block;
-}
-
- .row-spacer {
-   height: 1rem;
-   background-color: lightyellow;
- }
-
