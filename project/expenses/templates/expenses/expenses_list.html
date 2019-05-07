@@ -1,8 +1,11 @@
-{% extends parent_template|default:'category_data.html' %}
+{% extends 'category_expenses.html' %}
 
 
 {% block breadcrumb %}{{ block.super }}
-    <span class="navbar-text">&raquo;</span><a class="nav-link disabled" href="">Expenses</a>
+<span class="navbar-text">&raquo;</span><a class="nav-link disabled" href="">Sąrašas</a>
 {% endblock breadcrumb %}
 
+{% block content %}
+content
+{% endblock content %}
 
