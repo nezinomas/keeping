@@ -41,5 +41,8 @@ class Expense(models.Model):
         on_delete=models.CASCADE
     )
 
+    def __str__(self):
+        return str(self.date)
+
     class Meta:
-        ordering = ['date']
+        ordering = ['-date']
