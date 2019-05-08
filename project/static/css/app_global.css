@@ -1,51 +1,30 @@
-.list-group-item {
-  padding: .25rem 0 .25rem .5rem;
-  font-size: .8rem;
-  border: 0;
-}
-
-h6.side-bar {
-  margin: 1rem 0 .25rem .25rem;
-
-}
-
-h6.side-bar:first-child { 
-  margin-top: .5rem;
+body {
+  font-size: .85rem!important;
 }
 
 .navbar {
   padding: .25rem .5rem;
 }
 
+.nav-item {
+  padding: 0;
+  margin: 0;
+}
+
+.dropdown-menu a.dropdown-item {
+  padding-left: .25rem;
+}
+
 .nav-link {
-  padding: 0 .25rem;
-  margin: .25rem 0;
-  font-size: .9rem;
-}
-
-.nav>a:first-child {
-  margin-left: -.25rem;
-}
-
-.navbar-text {
-  font-size: .9rem;
-  padding: .25rem .25rem 0 .25rem;
-}
-
-.nav>.nav-link.active {
-  font-weight: bold;
+  padding: .25rem 1rem;
+  margin: .25rem;
 }
 
 .container-fluid>.content {
   padding: 0 1rem;
 }
 
-.invalid-feedback {
-  display: block;
-}
-
 table td {
-  font-size: .8rem!important;
   vertical-align: middle!important;
   padding-top: .15rem!important;
   padding-bottom: .15rem!important;
@@ -54,7 +33,6 @@ table td {
 }
 
 table thead th {
-  font-size: .85rem!important;
   vertical-align: middle!important;
   padding-top: .35rem!important;
   padding-bottom: .35rem!important;
@@ -124,10 +102,5 @@ table tfoot td {
 }
 
 .btn-sm {
-    font-size: .8rem!important;
     line-height: 1.5!important;
-}
-
-.form-control-sm {
-  font-size: .8rem!important;
 }

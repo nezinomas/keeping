@@ -17,49 +17,25 @@
     {% block body %}
     <!-- top navidation bar -->
     <div class="container-fluid">
-    <nav class="navbar navbar-expand navbar-light bg-light">
-        <nav class="nav">
-            {% block breadcrumb %}
-              <a class="nav-link" href="#">Home</a>
-            {% endblock breadcrumb %}
-          </nav>
-        <div class="collapse navbar-collapse" id="mainMenu">
-          {% if user.is_authenticated %}
-          <ul class="navbar-nav ml-auto">
-            <li class="list-group-item list-group-item-action dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="userMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                {{ user.username }}
-              </a>
-              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userMenu">
-                <a class="dropdown-item" href="#">My account</a>
-                <a class="dropdown-item" href="#">Change password</a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="{% url 'auths:logout' %}">Log out</a>
-              </div>
-            </li>
-          </ul>
-          {% else %}
-          <form class="form-inline ml-auto">
-            <a href="{% url 'auths:login' %}" class="btn btn-outline-secondary btn-sm">Log in</a>
-          </form>
-          {% endif %}
-        </div>
+      <nav class="navbar navbar-expand navbar-light bg-light">
+        <ul class="nav nav-pills">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">2019</a>
+            <div class="dropdown-menu">
+              <a class="dropdown-item" href="#">2018</a>
+              <a class="dropdown-item" href="#">2017</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="#">Separated link</a>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if '/expenses/' in request.path %}active{% endif %}" href="{% url 'expenses:expenses_list' %}">Expenses</a>
+          </li>
+        </ul>
       </nav>
-    </div>
 
-    <div class="container-fluid">
-      <div class="row mx-0">
-        <!-- side bar -->
-        <div class="fixed-column">
-          <h6 class="side-bar">Data</h6>
-          <div class="list-group list-group-flush">
-            <a class="list-group-item list-group-item-action" href="#">View</a></li>
-            <a class="list-group-item list-group-item-action" href="#">Update</a></li>
-          </div>
-
-        </div>
-        <!-- content -->
-        <div class="fluid-column">
+      <div class="row mx-0 my-2">
+        <div class="col">
           {% block content %}{% endblock content %}
         </div>
       </div>
