@@ -102,6 +102,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'bootstrap_datepicker_plus',
+    'widget_tweaks',
     'crispy_forms',
     'bootstrap4',
     'project.auths',
