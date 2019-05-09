@@ -1,0 +1,22 @@
+<table class="table table-striped table-hover">
+    <thead class="thead-light">
+        <th style="background-color:aliceblue;">Date</th>
+        <th style="background-color:bisque;">Category</th>
+        <th>Sub Category</th>
+        <th class="text-right" style="background-color:bisque;">Quantity</th>
+        <th class="text-right">Price</th>
+        <th class="text-right" style="background-color:bisque;">Account</th>
+    </thead>
+    <tbody>
+        {% for item in objects %}
+        <tr>
+            <td style="background-color:aliceblue;">{{ item.date }}</td>
+            <td style="background-color:bisque;">{{ item.category }}</td>
+            <td>{{ item.sub_category }}</td>
+            <td class="text-right" style="background-color:bisque;">{{ item.quantity }}</td>
+            <td class="text-right">{{ item.price }}</td>
+            <td class="text-right" style="background-color:bisque;">{{ item.account }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
