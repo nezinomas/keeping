@@ -47,7 +47,7 @@ table tfoot td {
 
 .table-striped>tbody>tr:nth-child(odd) {
    background-color: #fdefd5;
- }
+}
 
 .table-hover tbody tr:hover {
     background: lightgray;
