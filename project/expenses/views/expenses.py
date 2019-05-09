@@ -1,8 +1,12 @@
 from django.shortcuts import render
+from ..models import Expense
 
 
 def lists(request):
-    return render(request, 'expenses/expenses_list.html')
+    qs = Expense.objects.all()
+    context = {'objects': qs}
+
+    return render(request, 'expenses/expenses_list.html', context=context)
 
 
 def new(request):
