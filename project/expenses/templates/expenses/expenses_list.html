@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-
+{% load buttons %}
 
 {% block content %}
-
+{% url 'expenses:expenses_new' as url_new %}
 <div class="col-8 pl-0">{% include 'expenses/includes/partial_expenses_list.html' %}</div>
-
+<div class="col-4 px-0">{% button_create url=url_new label='New record' tbl='0' width='100%' %}</div>
 {% endblock content %}
 
