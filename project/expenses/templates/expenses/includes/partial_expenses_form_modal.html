@@ -1,0 +1,69 @@
+{% load crispy_forms_tags %}{% load buttons %}
+
+<form method="post" novalidate id="idForm" action="{{ url }}">
+    {% csrf_token %}
+    {{ form.media }}
+    <div class="modal-header">
+        <h5 class="modal-title">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div class="row mb-2">
+            <div class="col-sm-4 pt-1" style="background-color:lightgrey">Data:</div>
+            <div class="col-8">{{ form.date|as_crispy_field }}</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-4 pt-1" style="background-color:lightgrey">Išlaidų rūšis:</div>
+            <div class="col-8">{{ form.category|as_crispy_field }}</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-4 pt-1" style="background-color:lightgrey">Išlaidų pavadinimas:</div>
+            <div class="col-8">{{ form.sub_category|as_crispy_field }}</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-4 pt-1" style="background-color:lightgrey">Kaina:</div>
+            <div class="col-8">{{ form.price|as_crispy_field }}</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-4 pt-1" style="background-color:lightgrey">Kiekis:</div>
+            <div class="col-8">{{ form.quantity|as_crispy_field }}</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-4 pt-1" style="background-color:lightgrey">Visa kaina:</div>
+            <div class="col-8"><input type="number" name="total-sum" class="form-control-sm textinput textInput form-control" id="total-sum" value=0 readonly></div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
+
+        <button type="button" class="btn btn-primary" id="submit">Submit</button>
+    </div>
+</form>
+<script>
+    var input = document.getElementById("id_price");
+    input.addEventListener("keyup", function (event) {
+        event.preventDefault();
+        if (event.keyCode === 13) {
+            var total_sum = eval(document.getElementById("total-sum").value);
+            var input_value = eval(this.value.replace(',', '.').replace(/[^\d\-\.\+\/\*]/g, ''));
+            if (!input_value || input_value === Infinity ) {
+                input_value = 0;
+            }
+
+            var res = total_sum + input_value;
+            if(!res || res <= 0) {
+                res = 0;
+            }
+
+            document.getElementById("total-sum").value = res.toFixed(2);
+            this.value = ''
+        }
+    });
+</script>
