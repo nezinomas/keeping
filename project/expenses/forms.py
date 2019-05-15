@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from bootstrap_datepicker_plus import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
@@ -18,6 +20,10 @@ class ExpenseForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # now date
+        self.fields['date'].initial = datetime.now()
+
+        # sub catgories
         self.fields['sub_category'].queryset = Expense.objects.none()
 
         if 'category' in self.data:
