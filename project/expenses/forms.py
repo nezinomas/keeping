@@ -23,6 +23,9 @@ class ExpenseForm(forms.ModelForm):
         # now date
         self.fields['date'].initial = datetime.now()
 
+        # default account
+        self.fields['account'].initial = 1
+
         # sub catgories
         self.fields['sub_category'].queryset = Expense.objects.none()
 
