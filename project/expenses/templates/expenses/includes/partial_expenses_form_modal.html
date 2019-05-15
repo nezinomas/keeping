@@ -1,6 +1,6 @@
 {% load crispy_forms_tags %}{% load buttons %}
 
-<form method="post" novalidate id="idForm" action="{{ url }}">
+<form method="post" novalidate id="idForm" class="js-create-form" action="{{ url }}">
     {% csrf_token %}
     {{ form.media }}
     <div class="modal-header">
@@ -26,6 +26,11 @@
         </div>
 
         <div class="row mb-2">
+            <div class="col-sm-4 pt-1" style="background-color:lightgrey">Sąskaita:</div>
+            <div class="col-8">{{ form.account|as_crispy_field }}</div>
+        </div>
+
+        <div class="row mb-2">
             <div class="col-sm-4 pt-1" style="background-color:lightgrey">Kaina:</div>
             <div class="col-8">{{ form.price|as_crispy_field }}</div>
         </div>
@@ -36,13 +41,17 @@
         </div>
 
         <div class="row mb-2">
+            <div class="col-sm-4 pt-1" style="background-color:lightgrey">Pastaba:</div>
+            <div class="col-8">{{ form.remark|as_crispy_field }}</div>
+        </div>
+
+        <div class="row mb-2">
             <div class="col-sm-4 pt-1" style="background-color:lightgrey">Visa kaina:</div>
             <div class="col-8"><input type="number" name="total-sum" class="form-control-sm textinput textInput form-control" id="total-sum" value=0 readonly></div>
         </div>
     </div>
-    <div class="modal-footer">
-        <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
 
+    <div class="modal-footer">
         <button type="button" class="btn btn-primary" id="submit">Submit</button>
     </div>
 </form>
