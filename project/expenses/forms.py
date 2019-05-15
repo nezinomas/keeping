@@ -18,6 +18,8 @@ class ExpenseForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.fields['sub_category'].queryset = Expense.objects.none()
+
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
