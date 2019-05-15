@@ -12,7 +12,7 @@ class ExpenseForm(forms.ModelForm):
         fields = '__all__'
         widgets = {
             'date': DatePickerInput(format='%Y-%m-%d'),
-            'checked': forms.HiddenInput(),
+            'price': forms.TextInput()
         }
 
     def __init__(self, *args, **kwargs):
