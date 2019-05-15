@@ -4,7 +4,7 @@ from django.template.loader import render_to_string
 
 from ..forms import ExpenseForm
 from ..helpers import helper_view_expenses as H_expenses
-from ..models import Expense
+from ..models import Expense, ExpenseSubName
 
 
 def lists(request):
@@ -28,3 +28,13 @@ def update(request, pk):
 
 def delete(request, pk):
     pass
+
+
+def load_sub_categories(request):
+    pk = request.GET.get('category')
+    objects = ExpenseSubName.objects.filter(parent_id=pk).order_by('title')
+    return render(
+        request,
+        'expenses/sub_category_drowdown.html',
+        {'objects': objects}
+    )
