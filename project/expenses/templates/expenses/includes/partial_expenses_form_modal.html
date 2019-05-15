@@ -1,6 +1,6 @@
 {% load crispy_forms_tags %}{% load buttons %}
 
-<form method="post" novalidate id="idForm" class="js-create-form" action="{{ url }}">
+<form method="post" novalidate id="idForm" class="js-create-form" action="{{ url }}" data-sub-category-url="{% url 'expenses:load_sub_categories' %}">
     {% csrf_token %}
     {{ form.media }}
     <div class="modal-header">
@@ -74,5 +74,21 @@
             document.getElementById("total-sum").value = res.toFixed(2);
             this.value = ''
         }
+    });
+
+    $("#id_category").change(function () {
+        var url = $("#idForm").attr("data-sub-category-url");
+        var categoryId = $(this).val();
+
+        $.ajax({
+            url: url,
+            data: {
+                'category': categoryId
+            },
+            success: function (data) {
+                $("#id_sub_category").html(data);
+            }
+        });
+
     });
 </script>

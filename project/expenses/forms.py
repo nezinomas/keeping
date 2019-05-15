@@ -18,6 +18,24 @@ class ExpenseForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.fields['sub_category'].queryset = Expense.objects.none()
+
+        if 'category' in self.data:
+            try:
+                category_id = int(self.data.get('category'))
+                self.fields['sub_category'].queryset = (
+                    ExpenseSubName.objects.
+                    filter(parent_id=category_id).
+                    order_by('title')
+                )
+            except (ValueError, TypeError):
+                pass
+        elif self.instance.pk:
+            self.fields['sub_category'].queryset = (
+                self.instance.category.sub_category_set.
+                order_by('title')
+            )
+
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
