@@ -38,6 +38,10 @@ class Expense(models.Model):
         ExpenseSubName,
         on_delete=models.CASCADE
     )
+    remark = models.TextField(
+        max_length=1000,
+        blank=True
+    )
     account = models.ForeignKey(
         Account,
         on_delete=models.CASCADE
