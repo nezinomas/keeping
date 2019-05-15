@@ -24,6 +24,8 @@ class Expense(models.Model):
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
+        null=True,
+        blank=True
     )
     quantity = models.IntegerField(
         default=1,
