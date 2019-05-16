@@ -24,7 +24,7 @@ class ExpenseSubName(TitleAbstract):
 
     class Meta:
         unique_together = ('title', 'parent')
-        ordering = ['title']
+        ordering = ['parent', 'title']
 
 
 class Expense(models.Model):
@@ -61,4 +61,4 @@ class Expense(models.Model):
         return str(self.date)
 
     class Meta:
-        ordering = ['-date']
+        ordering = ['-date', 'category', 'sub_category', 'price']
