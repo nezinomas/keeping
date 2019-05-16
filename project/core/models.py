@@ -9,7 +9,6 @@ class TitleAbstract(models.Model):
     title = models.CharField(
         max_length=254,
         blank=False,
-        verbose_name='Pavadinimas',
         unique=True,
     )
     slug = models.SlugField(
