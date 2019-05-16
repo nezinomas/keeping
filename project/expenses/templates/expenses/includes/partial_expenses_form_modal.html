@@ -4,7 +4,7 @@
         padding: .25rem 0 0 0;
     }
 </style>
-<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-sub-category-url="{% url 'expenses:load_sub_categories' %}" autocomplete="off" tabindex="-1">
+<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-sub-category-url="{% url 'expenses:load_sub_categories' %}" data-action="{{ action }}" autocomplete="off" tabindex="-1">
     {% csrf_token %}
     {{ form.media }}
     <div class="modal-header">
@@ -61,7 +61,7 @@
     </div>
 
     <div class="modal-footer">
-        <button type="button" class="btn btn-sm btn-primary" id="submit">Insert</button>
+        <button type="button" class="btn btn-sm btn-primary" id="submit">{{ action|title }}</button>
         <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
     </div>
 </form>

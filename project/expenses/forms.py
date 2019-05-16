@@ -41,7 +41,7 @@ class ExpenseForm(forms.ModelForm):
                 pass
         elif self.instance.pk:
             self.fields['sub_category'].queryset = (
-                self.instance.category.sub_category_set.
+                self.instance.category.expensesubname_set.
                 order_by('title')
             )
 
