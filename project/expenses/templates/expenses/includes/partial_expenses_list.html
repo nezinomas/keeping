@@ -16,9 +16,22 @@
             <td>{{ item.category }}</td>
             <td>{{ item.sub_category }}</td>
             <td class="text-right">{{ item.quantity }}</td>
-            <td class="text-right">{{ item.price }}</td>
+            <td class="text-right" {% if item.remark %}data-toggle="tooltip" data-html="true" data-placement="right" title="{{ item.remark|linebreaks}}" style="border-right: 5px solid lightgreen;"{% endif %}>{{ item.price }}</td>
             <td class="text-right" {% if item.exception %} style="border-right: 5px solid red;"{% endif %}>{{ item.account }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+<script crossorigin="anonymous" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+
+<style>
+    .tooltip.show p {
+        text-align: left;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
