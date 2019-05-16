@@ -1,6 +1,6 @@
 {% load crispy_forms_tags %}{% load buttons %}
 
-<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-sub-category-url="{% url 'expenses:load_sub_categories' %}" autocomplete="off">
+<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-sub-category-url="{% url 'expenses:load_sub_categories' %}" autocomplete="off" tabindex="-1">
     {% csrf_token %}
     {{ form.media }}
     <div class="modal-header">
@@ -57,6 +57,12 @@
     </div>
 </form>
 <script>
+    $(document).keydown(function (event) {
+        if (event.keyCode == 27) {
+            $('#modal-form').modal("hide");
+        }
+    });
+
     var input = document.getElementById("total-sum");
     input.addEventListener("keyup", function (event) {
         event.preventDefault();
