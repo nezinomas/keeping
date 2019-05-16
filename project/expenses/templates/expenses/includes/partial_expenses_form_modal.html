@@ -1,0 +1,95 @@
+{% load crispy_forms_tags %}{% load buttons %}
+
+<form method="post" novalidate id="idForm" class="js-create-form" action="{{ url }}" data-sub-category-url="{% url 'expenses:load_sub_categories' %}" autocomplete="off">
+    {% csrf_token %}
+    {{ form.media }}
+    <div class="modal-header">
+        <h5 class="modal-title">Išlaidos</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div class="row mb-2">
+            <div class="col-sm-4 pt-1">Data:</div>
+            <div class="col-8">{{ form.date|as_crispy_field }}</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-4 pt-1">Išlaidų rūšis:</div>
+            <div class="col-8">{{ form.category|as_crispy_field }}</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-4 pt-1">Išlaidų pavadinimas:</div>
+            <div class="col-8">{{ form.sub_category|as_crispy_field }}</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-4 pt-1">Sąskaita:</div>
+            <div class="col-8">{{ form.account|as_crispy_field }}</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-4 pt-1">Kaina:</div>
+            <div class="col-8"><input type="text" name="total-sum" class="form-control-sm textinput textInput form-control" id="total-sum"></div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-4 pt-1">Kiekis:</div>
+            <div class="col-8">{{ form.quantity|as_crispy_field }}</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-4 pt-1">Pastaba:</div>
+            <div class="col-8">{{ form.remark|as_crispy_field }}</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-4 pt-1">Visa kaina:</div>
+            <div class="col-8">{{ form.price|as_crispy_field }}</div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="submit">Insert</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    </div>
+</form>
+<script>
+    var input = document.getElementById("total-sum");
+    input.addEventListener("keyup", function (event) {
+        event.preventDefault();
+        if (event.keyCode === 13) {
+            var total_sum = eval(document.getElementById("id_price").value);
+            var input_value = eval(this.value.replace(',', '.').replace(/[^\d\-\.\+\/\*]/g, ''));
+            if (!input_value || input_value === Infinity ) {
+                input_value = 0;
+            }
+
+            var res = total_sum + input_value;
+            if(!res || res <= 0) {
+                res = 0;
+            }
+
+            document.getElementById("id_price").value = res.toFixed(2);
+            this.value = ''
+        }
+    });
+
+    $("#id_category").change(function () {
+        var url = $("#idForm").attr("data-sub-category-url");
+        var categoryId = $(this).val();
+
+        $.ajax({
+            url: url,
+            data: {
+                'category': categoryId
+            },
+            success: function (data) {
+                $("#id_sub_category").html(data);
+            }
+        });
+
+    });
+</script>

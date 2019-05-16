@@ -1,16 +1,25 @@
-from django.shortcuts import render
-from ..models import Expense
+from django.http import JsonResponse
+from django.shortcuts import render, reverse
+from django.template.loader import render_to_string
+
+from ..forms import ExpenseForm
+from ..helpers import helper_view_expenses as H_expenses
+from ..models import Expense, ExpenseSubName
 
 
 def lists(request):
     qs = Expense.objects.all()
-    context = {'objects': qs}
+    form = ExpenseForm()
+    context = {'objects': qs, 'form': form}
 
     return render(request, 'expenses/expenses_list.html', context=context)
 
 
 def new(request):
-    pass
+    form = ExpenseForm(request.POST or None)
+    context = {'url': reverse('expenses:expenses_new')}
+
+    return H_expenses.save_data(request, context, form)
 
 
 def update(request, pk):
@@ -19,3 +28,13 @@ def update(request, pk):
 
 def delete(request, pk):
     pass
+
+
+def load_sub_categories(request):
+    pk = request.GET.get('category')
+    objects = ExpenseSubName.objects.filter(parent_id=pk).order_by('title')
+    return render(
+        request,
+        'expenses/sub_category_drowdown.html',
+        {'objects': objects}
+    )

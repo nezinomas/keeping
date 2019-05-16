@@ -25,6 +25,11 @@ e = [
         expenses.delete,
         name='expenses_delete'
     ),
+    path(
+        'ajax/load_sub_category/',
+        expenses.load_sub_categories,
+        name='load_sub_categories'
+    )
 ]
 
 e_name = [
