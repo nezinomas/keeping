@@ -31,7 +31,7 @@ $(function () {
 
                     var price = document.getElementById("id_price");
                     if (price.value) {
-                        price.value = 0.00;
+                        price.value = '0.00';
                     }
                 }
                 else {
