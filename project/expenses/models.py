@@ -12,7 +12,7 @@ class ExpenseType(TitleAbstract):
         ordering = ['title']
 
 
-class ExpenseSubName(TitleAbstract):
+class ExpenseName(TitleAbstract):
     title = models.CharField(
         max_length=254,
         blank=False,
@@ -42,7 +42,7 @@ class Expense(models.Model):
         on_delete=models.CASCADE
     )
     sub_category = models.ForeignKey(
-        ExpenseSubName,
+        ExpenseName,
         on_delete=models.CASCADE
     )
     remark = models.TextField(

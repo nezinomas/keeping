@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
-from .models import Expense, ExpenseType, ExpenseSubName
+from .models import Expense, ExpenseType, ExpenseName
 
 
 class ExpenseForm(forms.ModelForm):
@@ -33,7 +33,7 @@ class ExpenseForm(forms.ModelForm):
             try:
                 category_id = int(self.data.get('category'))
                 self.fields['sub_category'].queryset = (
-                    ExpenseSubName.objects.
+                    ExpenseName.objects.
                     filter(parent_id=category_id).
                     order_by('title')
                 )
@@ -41,7 +41,7 @@ class ExpenseForm(forms.ModelForm):
                 pass
         elif self.instance.pk:
             self.fields['sub_category'].queryset = (
-                self.instance.category.expensesubname_set.
+                self.instance.category.expensename_set.
                 order_by('title')
             )
 
@@ -49,9 +49,9 @@ class ExpenseForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
-class ExpenseSubNameForm(forms.ModelForm):
+class ExpenseNameForm(forms.ModelForm):
     class Meta:
-        model = ExpenseSubName
+        model = ExpenseName
         fields = '__all__'
 
     fields_order = ['parent', 'title']

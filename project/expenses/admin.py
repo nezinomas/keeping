@@ -17,10 +17,10 @@ class ExpenseTypeAdmin(admin.ModelAdmin):
     pass
 
 
-class ExpenseSubNameAdmin(admin.ModelAdmin):
+class ExpenseNameAdmin(admin.ModelAdmin):
     list_display = ('parent', 'title')
 
 
 admin.site.register(models.Expense, ExpenseAdmin)
 admin.site.register(models.ExpenseType, ExpenseTypeAdmin)
-admin.site.register(models.ExpenseSubName, ExpenseSubNameAdmin)
+admin.site.register(models.ExpenseName, ExpenseNameAdmin)
