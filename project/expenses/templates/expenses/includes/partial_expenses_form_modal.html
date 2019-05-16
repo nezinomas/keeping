@@ -1,6 +1,6 @@
 {% load crispy_forms_tags %}{% load buttons %}
 
-<form method="post" novalidate id="idForm" class="js-create-form" action="{{ url }}" data-sub-category-url="{% url 'expenses:load_sub_categories' %}">
+<form method="post" novalidate id="idForm" class="js-create-form" action="{{ url }}" data-sub-category-url="{% url 'expenses:load_sub_categories' %}" autocomplete="off">
     {% csrf_token %}
     {{ form.media }}
     <div class="modal-header">
