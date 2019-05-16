@@ -44,6 +44,10 @@ class Expense(models.Model):
         max_length=1000,
         blank=True
     )
+    exception = models.BooleanField(
+        default=False
+    )
+
     account = models.ForeignKey(
         Account,
         on_delete=models.CASCADE

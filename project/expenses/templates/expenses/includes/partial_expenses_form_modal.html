@@ -1,5 +1,9 @@
 {% load crispy_forms_tags %}{% load buttons %}
-
+<style>
+    .form-check {
+        padding: .25rem 0 0 0;
+    }
+</style>
 <form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-sub-category-url="{% url 'expenses:load_sub_categories' %}" autocomplete="off" tabindex="-1">
     {% csrf_token %}
     {{ form.media }}
@@ -48,6 +52,11 @@
         <div class="row mb-2">
             <div class="col-sm-4 pt-1">Visa kaina:</div>
             <div class="col-8">{{ form.price|as_crispy_field }}</div>
+        </div>
+
+        <div class="row mb-2 mt-4">
+            <div class="col-sm-4 pt-1">Nenaudoti planuose:</div>
+            <div class="col-8">{{ form.exception|as_crispy_field }}</div>
         </div>
     </div>
 
