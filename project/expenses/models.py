@@ -13,12 +13,17 @@ class ExpenseName(TitleAbstract):
 
 
 class ExpenseSubName(TitleAbstract):
+    title = models.CharField(
+        max_length=254,
+        blank=False,
+    )
     parent = models.ForeignKey(
         ExpenseName,
         on_delete=models.CASCADE
     )
 
     class Meta:
+        unique_together = ('title', 'parent')
         ordering = ['title']
 
 
