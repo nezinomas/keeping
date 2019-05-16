@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from django.shortcuts import render, reverse
+from django.shortcuts import render, reverse, get_object_or_404
 from django.template.loader import render_to_string
 
 from ..forms import ExpenseForm
@@ -17,13 +17,22 @@ def lists(request):
 
 def new(request):
     form = ExpenseForm(request.POST or None)
-    context = {'url': reverse('expenses:expenses_new')}
+    context = {'url': reverse('expenses:expenses_new'), 'action': 'insert'}
 
     return H_expenses.save_data(request, context, form)
 
 
 def update(request, pk):
-    pass
+    object = get_object_or_404(Expense, pk=pk)
+    form = ExpenseForm(request.POST or None, instance=object)
+    url = reverse(
+        'expenses:expenses_update',
+        kwargs={
+            'pk': pk
+        }
+    )
+    context = {'url': url, 'action': 'update'}
+    return H_expenses.save_data(request, context, form)
 
 
 def delete(request, pk):
