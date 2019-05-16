@@ -7,19 +7,24 @@ from ..accounts.models import Account
 from ..core.models import TitleAbstract
 
 
-class ExpenseName(TitleAbstract):
+class ExpenseType(TitleAbstract):
     class Meta:
         ordering = ['title']
 
 
-class ExpenseSubName(TitleAbstract):
+class ExpenseName(TitleAbstract):
+    title = models.CharField(
+        max_length=254,
+        blank=False,
+    )
     parent = models.ForeignKey(
-        ExpenseName,
+        ExpenseType,
         on_delete=models.CASCADE
     )
 
     class Meta:
-        ordering = ['title']
+        unique_together = ('title', 'parent')
+        ordering = ['parent', 'title']
 
 
 class Expense(models.Model):
@@ -33,11 +38,11 @@ class Expense(models.Model):
         default=1,
     )
     category = models.ForeignKey(
-        ExpenseName,
+        ExpenseType,
         on_delete=models.CASCADE
     )
     sub_category = models.ForeignKey(
-        ExpenseSubName,
+        ExpenseName,
         on_delete=models.CASCADE
     )
     remark = models.TextField(
@@ -47,7 +52,6 @@ class Expense(models.Model):
     exception = models.BooleanField(
         default=False
     )
-
     account = models.ForeignKey(
         Account,
         on_delete=models.CASCADE
@@ -57,4 +61,4 @@ class Expense(models.Model):
         return str(self.date)
 
     class Meta:
-        ordering = ['-date']
+        ordering = ['-date', 'category', 'sub_category', 'price']

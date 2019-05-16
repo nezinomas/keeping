@@ -8,19 +8,19 @@ en_formats.DATE_FORMAT = "Y-m-d"
 
 
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('date', 'category', 'sub_category', 'quantity', 'account')
+    list_display = ('date', 'category', 'sub_category', 'quantity', 'price', 'account')
     search_fields = ['category__title', 'sub_category__title', 'date']
     # list_per_page = 25
 
 
-class ExpenseNameAdmin(admin.ModelAdmin):
+class ExpenseTypeAdmin(admin.ModelAdmin):
     pass
 
 
-class ExpenseSubNameAdmin(admin.ModelAdmin):
-    fields = ('parent', 'title')
+class ExpenseNameAdmin(admin.ModelAdmin):
+    list_display = ('parent', 'title')
 
 
 admin.site.register(models.Expense, ExpenseAdmin)
+admin.site.register(models.ExpenseType, ExpenseTypeAdmin)
 admin.site.register(models.ExpenseName, ExpenseNameAdmin)
-admin.site.register(models.ExpenseSubName, ExpenseSubNameAdmin)
