@@ -1,5 +1,5 @@
 body {
-  font-size: .85rem!important;
+  font-size: .8rem!important;
 }
 
 .navbar {
@@ -26,8 +26,8 @@ body {
 
 table td {
   vertical-align: middle!important;
-  padding-top: .15rem!important;
-  padding-bottom: .15rem!important;
+  padding-top: .2rem!important;
+  padding-bottom: .2rem!important;
   padding-left: .50rem!important;
   padding-right: .50rem!important;
 }
