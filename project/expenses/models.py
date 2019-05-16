@@ -7,7 +7,7 @@ from ..accounts.models import Account
 from ..core.models import TitleAbstract
 
 
-class ExpenseName(TitleAbstract):
+class ExpenseType(TitleAbstract):
     class Meta:
         ordering = ['title']
 
@@ -18,7 +18,7 @@ class ExpenseSubName(TitleAbstract):
         blank=False,
     )
     parent = models.ForeignKey(
-        ExpenseName,
+        ExpenseType,
         on_delete=models.CASCADE
     )
 
@@ -38,7 +38,7 @@ class Expense(models.Model):
         default=1,
     )
     category = models.ForeignKey(
-        ExpenseName,
+        ExpenseType,
         on_delete=models.CASCADE
     )
     sub_category = models.ForeignKey(

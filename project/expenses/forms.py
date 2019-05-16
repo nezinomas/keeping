@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
-from .models import Expense, ExpenseName, ExpenseSubName
+from .models import Expense, ExpenseType, ExpenseSubName
 
 
 class ExpenseForm(forms.ModelForm):

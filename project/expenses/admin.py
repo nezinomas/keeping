@@ -13,7 +13,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     # list_per_page = 25
 
 
-class ExpenseNameAdmin(admin.ModelAdmin):
+class ExpenseTypeAdmin(admin.ModelAdmin):
     pass
 
 
@@ -22,5 +22,5 @@ class ExpenseSubNameAdmin(admin.ModelAdmin):
 
 
 admin.site.register(models.Expense, ExpenseAdmin)
-admin.site.register(models.ExpenseName, ExpenseNameAdmin)
+admin.site.register(models.ExpenseType, ExpenseTypeAdmin)
 admin.site.register(models.ExpenseSubName, ExpenseSubNameAdmin)
