@@ -14,19 +14,19 @@ class ExpenseForm(forms.ModelForm):
         fields = '__all__'
         widgets = {
             'date': DatePickerInput(format='%Y-%m-%d'),
-            'price': forms.TextInput()
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # now date
+        # form inputs settings
+        self.fields['price'].widget.attrs['readonly'] = True
+        self.fields['remark'].widget.attrs['rows'] = 3
+
+        # inital values
         self.fields['date'].initial = datetime.now()
-
-        # default account
         self.fields['account'].initial = 1
-
-        # sub catgories
+        self.fields['price'].initial = 0.00
         self.fields['sub_category'].queryset = Expense.objects.none()
 
         if 'category' in self.data:
