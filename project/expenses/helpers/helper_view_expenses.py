@@ -22,10 +22,10 @@ def save_data(request, context, form):
 
     if request.method == 'POST':
         if form.is_valid():
-
-            f = form.save(commit=False)
-            f.price = form.data['total-sum']
-            f.save()
+            form.save()
+            # f = form.save(commit=False)
+            # f.price = form.data['total-sum']
+            # f.save()
 
             form_valid(data)
         else:
