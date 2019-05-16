@@ -1,6 +1,10 @@
 {% load crispy_forms_tags %}{% load buttons %}
-
-<form method="post" novalidate id="idForm" class="js-create-form" action="{{ url }}" data-sub-category-url="{% url 'expenses:load_sub_categories' %}" autocomplete="off">
+<style>
+    .form-check {
+        padding: .25rem 0 0 0;
+    }
+</style>
+<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-sub-category-url="{% url 'expenses:load_sub_categories' %}" autocomplete="off" tabindex="-1">
     {% csrf_token %}
     {{ form.media }}
     <div class="modal-header">
@@ -49,14 +53,25 @@
             <div class="col-sm-4 pt-1">Visa kaina:</div>
             <div class="col-8">{{ form.price|as_crispy_field }}</div>
         </div>
+
+        <div class="row mb-2 mt-4">
+            <div class="col-sm-4 pt-1">Nenaudoti planuose:</div>
+            <div class="col-8">{{ form.exception|as_crispy_field }}</div>
+        </div>
     </div>
 
     <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="submit">Insert</button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-sm btn-primary" id="submit">Insert</button>
+        <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
     </div>
 </form>
 <script>
+    $(document).keydown(function (event) {
+        if (event.keyCode == 27) {
+            $('#modal-form').modal("hide");
+        }
+    });
+
     var input = document.getElementById("total-sum");
     input.addEventListener("keyup", function (event) {
         event.preventDefault();
@@ -78,7 +93,7 @@
     });
 
     $("#id_category").change(function () {
-        var url = $("#idForm").attr("data-sub-category-url");
+        var url = $("#js-form").attr("data-sub-category-url");
         var categoryId = $(this).val();
 
         $.ajax({

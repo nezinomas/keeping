@@ -20,13 +20,13 @@ class ExpenseForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # form inputs settings
-        self.fields['price'].widget.attrs['readonly'] = True
+        self.fields['price'].widget.attrs = {'readonly': True, 'step': '0.01'}
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # inital values
         self.fields['date'].initial = datetime.now()
         self.fields['account'].initial = 1
-        self.fields['price'].initial = 0.00
+        self.fields['price'].initial = '0.00'
         self.fields['sub_category'].queryset = Expense.objects.none()
 
         if 'category' in self.data:
