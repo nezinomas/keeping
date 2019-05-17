@@ -11,8 +11,15 @@
 {% block content %}
 
 {% url 'expenses:expenses_new' as url_new %}
-<div class="col-8 pl-0" id="ajax-content">{% include 'expenses/includes/partial_expenses_list.html' %}</div>
-<div class="col-4 px-0">{% button_create url=url_new label='New record' width='100%' %}
+<div class="col-8 pl-0" id="ajax-content">
+    <div class="row my-2">
+        <div class="col text-right">
+            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_new }}">Add Expense</button>
+        </div>
+    </div>
+    {% include 'expenses/includes/partial_expenses_list.html' %}
+</div>
+<div class="col-4 px-0">
     <div class="modal fade" id="modal-form">
         <div class="modal-dialog modal-md">
             <div class="modal-content"></div>
