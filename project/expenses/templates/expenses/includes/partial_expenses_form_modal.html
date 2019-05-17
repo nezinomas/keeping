@@ -26,7 +26,7 @@
 
         <div class="row mb-2">
             <div class="col-sm-4 pt-1">Išlaidų pavadinimas:</div>
-            <div class="col-8">{{ form.sub_category|as_crispy_field }}</div>
+            <div class="col-8">{{ form.expense_name|as_crispy_field }}</div>
         </div>
 
         <div class="row mb-2">
@@ -102,7 +102,7 @@
                 'category': categoryId
             },
             success: function (data) {
-                $("#id_sub_category").html(data);
+                $("#id_expense_name").html(data);
             }
         });
 

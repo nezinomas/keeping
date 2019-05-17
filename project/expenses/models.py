@@ -41,7 +41,7 @@ class Expense(models.Model):
         ExpenseType,
         on_delete=models.CASCADE
     )
-    sub_category = models.ForeignKey(
+    expense_name = models.ForeignKey(
         ExpenseName,
         on_delete=models.CASCADE
     )
@@ -61,4 +61,4 @@ class Expense(models.Model):
         return str(self.date)
 
     class Meta:
-        ordering = ['-date', 'category', 'sub_category', 'price']
+        ordering = ['-date', 'category', 'expense_name', 'price']

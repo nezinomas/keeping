@@ -14,7 +14,7 @@
         <tr data-url="{{ url_update }}">
             <td>{{ item.date }}</td>
             <td>{{ item.category }}</td>
-            <td>{{ item.sub_category }}</td>
+            <td>{{ item.expense_name }}</td>
             <td class="text-right">{{ item.quantity }}</td>
             <td class="text-right" {% if item.remark %}data-toggle="tooltip" data-html="true" data-placement="right" title="{{ item.remark|linebreaks}}" style="border-right: 5px solid lightgreen;"{% endif %}>{{ item.price }}</td>
             <td class="text-right" {% if item.exception %} style="border-right: 5px solid red;"{% endif %}>{{ item.account }}</td>

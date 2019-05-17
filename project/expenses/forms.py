@@ -27,12 +27,12 @@ class ExpenseForm(forms.ModelForm):
         self.fields['date'].initial = datetime.now()
         self.fields['account'].initial = 1
         self.fields['price'].initial = '0.00'
-        self.fields['sub_category'].queryset = Expense.objects.none()
+        self.fields['expense_name'].queryset = Expense.objects.none()
 
         if 'category' in self.data:
             try:
                 category_id = int(self.data.get('category'))
-                self.fields['sub_category'].queryset = (
+                self.fields['expense_name'].queryset = (
                     ExpenseName.objects.
                     filter(parent_id=category_id).
                     order_by('title')
@@ -40,7 +40,7 @@ class ExpenseForm(forms.ModelForm):
             except (ValueError, TypeError):
                 pass
         elif self.instance.pk:
-            self.fields['sub_category'].queryset = (
+            self.fields['expense_name'].queryset = (
                 self.instance.category.expensename_set.
                 order_by('title')
             )

@@ -8,7 +8,7 @@ from ..models import Expense, ExpenseName
 
 
 def lists(request):
-    qs = Expense.objects.prefetch_related('category', 'sub_category', 'account').all()
+    qs = Expense.objects.prefetch_related('category', 'expense_name', 'account').all()
     form = ExpenseForm()
     context = {'objects': qs, 'form': form}
 
@@ -44,6 +44,6 @@ def load_sub_categories(request):
     objects = ExpenseName.objects.filter(parent_id=pk).order_by('title')
     return render(
         request,
-        'expenses/sub_category_drowdown.html',
+        'expenses/expense_name_drowdown.html',
         {'objects': objects}
     )
