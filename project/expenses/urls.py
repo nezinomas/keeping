@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import expenses, expenses_name, expenses_sub_name
+from .views import expenses, expenses_type, expenses_name
 
 app_name = 'expenses'
 
@@ -32,6 +32,29 @@ e = [
     )
 ]
 
+e_type = [
+    path(
+        'expenses/type/',
+        expenses_type.lists,
+        name='expenses_type_list'
+    ),
+    path(
+        'expenses/type/new/',
+        expenses_type.new,
+        name='expenses_type_new'
+    ),
+    path(
+        'expenses/type/<int:pk>/update/',
+        expenses_type.update,
+        name='expenses_type_update'
+    ),
+    path(
+        'expenses/type/<int:pk>/delete/',
+        expenses_type.delete,
+        name='expenses_type_delete'
+    ),
+]
+
 e_name = [
     path(
         'expenses/name/',
@@ -55,30 +78,7 @@ e_name = [
     ),
 ]
 
-e_sub_name = [
-    path(
-        'expenses/subname/',
-        expenses_sub_name.lists,
-        name='expenses_sub_name_list'
-    ),
-    path(
-        'expenses/subname/new/',
-        expenses_sub_name.new,
-        name='expenses_sub_name_new'
-    ),
-    path(
-        'expenses/subname/<int:pk>/update/',
-        expenses_sub_name.update,
-        name='expenses_sub_name_update'
-    ),
-    path(
-        'expenses/subname/<int:pk>/delete/',
-        expenses_sub_name.delete,
-        name='expenses_sub_name_delete'
-    ),
-]
-
 urlpatterns = []
 urlpatterns += e
+urlpatterns += e_type
 urlpatterns += e_name
-urlpatterns += e_sub_name
