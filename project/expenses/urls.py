@@ -27,8 +27,8 @@ e = [
     ),
     path(
         'ajax/load_expense_name/',
-        expenses.load_sub_categories,
-        name='load_sub_categories'
+        expenses.load_expense_name,
+        name='load_expense_name'
     )
 ]
 

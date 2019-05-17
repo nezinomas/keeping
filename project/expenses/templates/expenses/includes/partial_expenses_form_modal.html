@@ -4,7 +4,7 @@
         padding: .25rem 0 0 0;
     }
 </style>
-<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-sub-expense_type-url="{% url 'expenses:load_sub_categories' %}" data-action="{{ action }}" autocomplete="off" tabindex="-1">
+<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-sub-expense_type-url="{% url 'expenses:load_expense_name' %}" data-action="{{ action }}" autocomplete="off" tabindex="-1">
     {% csrf_token %}
     {{ form.media }}
     <div class="modal-header">
