@@ -4,13 +4,14 @@ from django.template.loader import render_to_string
 
 from ..forms import ExpenseForm
 from ..helpers import helper_view_expenses as H_expenses
-from ..models import Expense, ExpenseName
+from ..models import Expense, ExpenseName, ExpenseType
 
 
 def lists(request):
     qs = Expense.objects.all().prefetch_related('expense_type', 'expense_name', 'account')
+    qse = ExpenseType.objects.all().prefetch_related('expensename_set')
     form = ExpenseForm()
-    context = {'objects': qs, 'form': form}
+    context = {'objects': qs, 'categories': qse, 'form': form}
 
     return render(request, 'expenses/expenses_list.html', context=context)
 

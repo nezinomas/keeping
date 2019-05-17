@@ -20,11 +20,18 @@
     <div id="ajax-content">{% include 'expenses/includes/partial_expenses_list.html' %}</div>
 </div>
 <div class="col-4 px-0">
+
+    {% for c in categories %}
+        <div><b>{{ c.title }}</b></div>
+        {% for sub in c.expensename_set.all %}
+            <div>{{ sub.title }}</div>
+        {% endfor %}
+    {% endfor %}
+
+</div>
 <div class="modal fade" id="modal-form">
     <div class="modal-dialog modal-md">
         <div class="modal-content"></div>
     </div>
 </div>
-</div>
-
 {% endblock content %}
