@@ -44,6 +44,6 @@ def load_sub_categories(request):
     objects = ExpenseName.objects.filter(parent_id=pk).order_by('title')
     return render(
         request,
-        'expenses/expense_name_drowdown.html',
+        'expenses/expense_type_dropdown.html',
         {'objects': objects}
     )
