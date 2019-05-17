@@ -4,7 +4,7 @@
         padding: .25rem 0 0 0;
     }
 </style>
-<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-sub-category-url="{% url 'expenses:load_sub_categories' %}" data-action="{{ action }}" autocomplete="off" tabindex="-1">
+<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-sub-expense_type-url="{% url 'expenses:load_sub_categories' %}" data-action="{{ action }}" autocomplete="off" tabindex="-1">
     {% csrf_token %}
     {{ form.media }}
     <div class="modal-header">
@@ -21,7 +21,7 @@
 
         <div class="row mb-2">
             <div class="col-sm-4 pt-1">Išlaidų rūšis:</div>
-            <div class="col-8">{{ form.category|as_crispy_field }}</div>
+            <div class="col-8">{{ form.expense_type|as_crispy_field }}</div>
         </div>
 
         <div class="row mb-2">
@@ -92,14 +92,14 @@
         }
     });
 
-    $("#id_category").change(function () {
-        var url = $("#js-form").attr("data-sub-category-url");
-        var categoryId = $(this).val();
+    $("#id_expense_type").change(function () {
+        var url = $("#js-form").attr("data-sub-expense_type-url");
+        var expense_typeId = $(this).val();
 
         $.ajax({
             url: url,
             data: {
-                'category': categoryId
+                'expense_type': expense_typeId
             },
             success: function (data) {
                 $("#id_expense_name").html(data);

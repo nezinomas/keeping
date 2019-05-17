@@ -8,7 +8,7 @@ from ..models import Expense, ExpenseName
 
 
 def lists(request):
-    qs = Expense.objects.prefetch_related('category', 'expense_name', 'account').all()
+    qs = Expense.objects.prefetch_related('expense_type', 'expense_name', 'account').all()
     form = ExpenseForm()
     context = {'objects': qs, 'form': form}
 
@@ -40,7 +40,7 @@ def delete(request, pk):
 
 
 def load_sub_categories(request):
-    pk = request.GET.get('category')
+    pk = request.GET.get('expense_type')
     objects = ExpenseName.objects.filter(parent_id=pk).order_by('title')
     return render(
         request,

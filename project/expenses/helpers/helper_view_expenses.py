@@ -7,7 +7,7 @@ from ..models import Expense
 def form_valid(data):
     objects = (
         Expense.objects.
-        prefetch_related('category', 'expense_name', 'account').
+        prefetch_related('expense_type', 'expense_name', 'account').
         all()
     )
     data.update({

@@ -37,7 +37,7 @@ class Expense(models.Model):
     quantity = models.IntegerField(
         default=1,
     )
-    category = models.ForeignKey(
+    expense_type = models.ForeignKey(
         ExpenseType,
         on_delete=models.CASCADE
     )
@@ -61,4 +61,4 @@ class Expense(models.Model):
         return str(self.date)
 
     class Meta:
-        ordering = ['-date', 'category', 'expense_name', 'price']
+        ordering = ['-date', 'expense_type', 'expense_name', 'price']
