@@ -16,7 +16,7 @@ e = [
         name='expenses_new'
     ),
     path(
-        'expenses/<int:pk>/update/',
+        'expenses/update/<int:pk>/',
         expenses.update,
         name='expenses_update'
     ),
@@ -39,7 +39,7 @@ e_type = [
         name='expenses_type_new'
     ),
     path(
-        'expenses/type/<int:pk>/update/',
+        'expenses/type/update/<int:pk>/',
         expenses_type.update,
         name='expenses_type_update'
     ),
@@ -57,7 +57,7 @@ e_name = [
         name='expenses_name_new'
     ),
     path(
-        'expenses/name/<int:pk>/update/',
+        'expenses/name/update/<int:pk>/',
         expenses_name.update,
         name='expenses_name_update'
     ),
