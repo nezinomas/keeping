@@ -21,11 +21,6 @@ e = [
         name='expenses_update'
     ),
     path(
-        'expenses/<int:pk>/delete/',
-        expenses.delete,
-        name='expenses_delete'
-    ),
-    path(
         'ajax/load_expense_name/',
         expenses.load_expense_name,
         name='load_expense_name'
@@ -48,11 +43,6 @@ e_type = [
         expenses_type.update,
         name='expenses_type_update'
     ),
-    path(
-        'expenses/type/<int:pk>/delete/',
-        expenses_type.delete,
-        name='expenses_type_delete'
-    ),
 ]
 
 e_name = [
@@ -70,11 +60,6 @@ e_name = [
         'expenses/name/<int:pk>/update/',
         expenses_name.update,
         name='expenses_name_update'
-    ),
-    path(
-        'expenses/name/<int:pk>/delete/',
-        expenses_name.delete,
-        name='expenses_name_delete'
     ),
 ]
 

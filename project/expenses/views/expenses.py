@@ -35,10 +35,6 @@ def update(request, pk):
     return H_expenses.save_data(request, context, form)
 
 
-def delete(request, pk):
-    pass
-
-
 def load_expense_name(request):
     pk = request.GET.get('expense_type')
     objects = ExpenseName.objects.filter(parent_id=pk).order_by('title')
