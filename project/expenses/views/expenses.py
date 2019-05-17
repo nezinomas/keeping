@@ -8,7 +8,7 @@ from ..models import Expense, ExpenseName
 
 
 def lists(request):
-    qs = Expense.objects.all()
+    qs = Expense.objects.prefetch_related('category', 'sub_category', 'account').all()
     form = ExpenseForm()
     context = {'objects': qs, 'form': form}
 
