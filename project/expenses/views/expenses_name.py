@@ -11,7 +11,3 @@ def new(request):
 
 def update(request, pk):
     pass
-
-
-def delete(request, pk):
-    pass

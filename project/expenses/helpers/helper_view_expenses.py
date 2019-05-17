@@ -5,7 +5,10 @@ from ..models import Expense
 
 
 def form_valid(data):
-    objects = Expense.objects.all()
+    objects = (
+        Expense.objects.all().
+        prefetch_related('expense_type', 'expense_name', 'account')
+    )
     data.update({
         'form_is_valid': True,
         'html_list': render_to_string(

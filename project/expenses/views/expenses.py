@@ -8,7 +8,7 @@ from ..models import Expense, ExpenseName
 
 
 def lists(request):
-    qs = Expense.objects.all()
+    qs = Expense.objects.all().prefetch_related('expense_type', 'expense_name', 'account')
     form = ExpenseForm()
     context = {'objects': qs, 'form': form}
 
@@ -35,15 +35,11 @@ def update(request, pk):
     return H_expenses.save_data(request, context, form)
 
 
-def delete(request, pk):
-    pass
-
-
-def load_sub_categories(request):
-    pk = request.GET.get('category')
+def load_expense_name(request):
+    pk = request.GET.get('expense_type')
     objects = ExpenseName.objects.filter(parent_id=pk).order_by('title')
     return render(
         request,
-        'expenses/sub_category_drowdown.html',
+        'expenses/expense_type_dropdown.html',
         {'objects': objects}
     )

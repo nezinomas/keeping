@@ -102,5 +102,5 @@ table tfoot td {
 }
 
 .btn-sm {
-    line-height: 1.5!important;
+    font-size: .8rem;
 }
