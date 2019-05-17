@@ -1,6 +1,6 @@
 $(function () {
 
-    var loadForm = function(url) {
+    var loadForm = function(url, ajax_update_container = 'ajax-content') {
         if (url == undefined) {
             return;
         }
@@ -16,6 +16,7 @@ $(function () {
                 $("#modal-form .modal-content").html(data.html_form);
 
                 var form = $('.js-form');
+                form.attr('data-update-container', ajax_update_container)
                 var action = form.attr("data-action");
                 if (action == 'update') {
                     var price = document.getElementById("id_price");
@@ -32,6 +33,7 @@ $(function () {
     var saveForm = function() {
         var form = $('.js-form');
         var action = form.attr("data-action");
+        var ajax_update_container = form.attr('data-update-container')
         $.ajax({
             url: form.attr("action"),
             data: form.serialize(),
@@ -39,7 +41,7 @@ $(function () {
             dataType: 'json',
             success: function (data) {
                 if (data.form_is_valid) {
-                    $("#ajax-content").html(data.html_list);
+                    $(`#${ajax_update_container}`).html(data.html_list);
 
                     var price = document.getElementById("id_price");
                     if (price.value) {
@@ -59,11 +61,11 @@ $(function () {
 
     var loadFormClc = function() {
         var btn = $(this);
-        loadForm(btn.attr("data-url"));
+        loadForm(btn.attr("data-url"), btn.data("update-container"));
     };
 
     var loadFormDblClc = function () {
-        loadForm($(this).data('url'))
+        loadForm($(this).data('url'), $(this).data('update-container'))
     };
 
 
