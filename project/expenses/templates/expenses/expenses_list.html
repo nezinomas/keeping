@@ -26,26 +26,9 @@
             <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="#">Add Expense Name</button>
         </div>
     </div>
-    <div id="ajax-content-categories">
-    {% for c in categories %}
-    <div class="list-group mb-2">
-        <a href="#" class="list-group-item list-group-item-action list-group-item-primary">{{ c.title }}</a>
-        {% for sub in c.expensename_set.all %}
-        <a href="#" class="list-group-item list-group-item-action">{{ sub.title }}</a>{% endfor %}
-    </div>
-    {% endfor %}
-    </div>
+    <div id="ajax-content-categories">{% include 'expenses/includes/partial_expenses_type_list.html' %}</div>
 </div>
 
-<style>
-    .list-group-item {
-        padding: .25rem 0 .25rem 1.25rem;
-        margin: 0;
-    }
-    .list-group-item.list-group-item-primary {
-        padding-left: 0.25rem;
-    }
-</style>
 <div class="modal fade" id="modal-form">
     <div class="modal-dialog modal-md">
         <div class="modal-content"></div>
