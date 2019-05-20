@@ -43,9 +43,9 @@ $(function () {
                 if (data.form_is_valid) {
                     $(`#${ajax_update_container}`).html(data.html_list);
 
-                    var price = document.getElementById("id_price");
-                    if (price.value) {
-                        price.value = '0.00';
+                    var price = document.getElementById("id_price").value;
+                    if (price) {
+                        price = '0.00';
                     }
                     if (action == 'update') {
                         $("#modal-form").modal("hide");
