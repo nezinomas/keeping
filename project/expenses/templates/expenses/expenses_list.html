@@ -11,6 +11,8 @@
 {% block content %}
 
 {% url 'expenses:expenses_new' as url_expense_new %}
+{% url 'expenses:expenses_type_new' as url_expenses_type_new %}
+{% url 'expenses:expenses_name_new' as url_expenses_name_new %}
 <div class="col-8 pl-0">
     <div class="row my-2">
         <div class="col text-right">
@@ -22,8 +24,8 @@
 <div class="col-4 px-0">
     <div class="row my-2">
         <div class="col text-right">
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="#">Add Expense Type</button>
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="#">Add Expense Name</button>
+            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_type_new }}">Add Expense Type</button>
+            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_name_new }}">Add Expense Name</button>
         </div>
     </div>
     <div id="ajax-content-categories">{% include 'expenses/includes/partial_expenses_type_list.html' %}</div>
