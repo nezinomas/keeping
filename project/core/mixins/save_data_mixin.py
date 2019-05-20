@@ -8,6 +8,7 @@ class SaveDataMixin(object):
         self.__request = request
         self.__context = context
         self.__form = form
+        self.__items_template_var_name = 'objects'
 
         self.__context.update({'form': form})
 
@@ -35,12 +36,20 @@ class SaveDataMixin(object):
     def items(self, value):
         self.__items = value
 
+    @property
+    def items_template_var_name(self):
+        return self.__items_template_var_name
+
+    @items_template_var_name.setter
+    def items_template_var_name(self, value):
+        self.__items_template_var_name = value
+
     def __update_data(self):
         self.__data.update({
             'form_is_valid': True,
             'html_list': render_to_string(
                 self.__items_template,
-                {'objects': self.__items}
+                {self.__items_template_var_name: self.__items}
             )
         })
 
