@@ -31,4 +31,8 @@
             $('#modal-form').modal("hide");
         }
     });
+
+    $(document).on('submit','.js-form', function(e){
+        e.preventDefault();
+    });
 </script>
