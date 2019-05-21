@@ -29,11 +29,6 @@ e = [
 
 e_type = [
     path(
-        'expenses/type/',
-        expenses_type.lists,
-        name='expenses_type_list'
-    ),
-    path(
         'expenses/type/new/',
         expenses_type.new,
         name='expenses_type_new'

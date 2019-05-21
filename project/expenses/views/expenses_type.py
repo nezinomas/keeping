@@ -19,10 +19,6 @@ def _json_response(obj):
     return obj.GenJsonResponse()
 
 
-def lists(request):
-    pass
-
-
 def new(request):
     form = ExpenseTypeForm(request.POST or None)
     context = {'url': reverse('expenses:expenses_type_new'), 'action': 'insert'}
