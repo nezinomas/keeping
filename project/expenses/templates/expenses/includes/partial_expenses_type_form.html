@@ -4,7 +4,7 @@
         padding: .25rem 0 0 0;
     }
 </style>
-<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="-">
+<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="ajax-content">
     {% csrf_token %}
     {{ form.media }}
     <div class="modal-header">
