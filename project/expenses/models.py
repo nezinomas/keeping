@@ -17,6 +17,10 @@ class ExpenseName(TitleAbstract):
         max_length=254,
         blank=False,
     )
+    valid_for = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+    )
     parent = models.ForeignKey(
         ExpenseType,
         on_delete=models.CASCADE
