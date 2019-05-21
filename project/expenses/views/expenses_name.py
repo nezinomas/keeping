@@ -2,11 +2,11 @@ from django.shortcuts import render, reverse, get_object_or_404
 
 from ...core.mixins.save_data_mixin import SaveDataMixin
 from ..forms import ExpenseNameForm
-from ..models import ExpenseName
+from ..models import ExpenseName, ExpenseType
 
 
 def _items():
-    qs = ExpenseName.objects.all()
+    qs = ExpenseType.objects.all().prefetch_related('expensename_set')
     return qs
 
 
