@@ -10,14 +10,20 @@
         </button>
     </div>
     <div class="modal-body">
-        <div class="row mb-2">
-            <div class="col-sm-4 pt-1">Išlaidų rūšis:</div>
-            <div class="col-8">{{ form.parent|as_crispy_field }}</div>
+        {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
         </div>
+        {% endfor %}
+        {% endif %}
+
+        {% for field in form %}
         <div class="row mb-2">
-            <div class="col-sm-4 pt-1">Išlaidų pavadinimas:</div>
-            <div class="col-8">{{ form.title|as_crispy_field }}</div>
+            <div class="col-sm-4 pt-1">{{ field.label_tag }}</div>
+            <div class="col-8">{{ field|as_crispy_field }}</div>
         </div>
+        {% endfor %}
     </div>
 
     <div class="modal-footer">
