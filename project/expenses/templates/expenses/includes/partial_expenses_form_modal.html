@@ -1,7 +1,9 @@
-{% load crispy_forms_tags %}{% load buttons %}
+{% load form %}
 
-<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-sub-expense_type-url="{% url 'expenses:load_expense_name' %}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="ajax-container">
-{% include 'expenses/includes/generic_form.html' %}
+<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}"
+    data-sub-expense_type-url="{% url 'expenses:load_expense_name' %}" data-action="{{ action }}" autocomplete="off"
+    tabindex="-1" data-update-container="{{ update_container }}">
+{% generic_form title='Išlaidos' %}
 </form>
 
 <style>
