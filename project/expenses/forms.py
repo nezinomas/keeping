@@ -64,7 +64,7 @@ class ExpenseTypeForm(forms.ModelForm):
 class ExpenseNameForm(forms.ModelForm):
     class Meta:
         model = ExpenseName
-        fields = '__all__'
+        fields = ['parent', 'title']
 
     fields_order = ['parent', 'title']
 
