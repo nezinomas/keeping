@@ -33,7 +33,7 @@ def update(request, pk):
     object = get_object_or_404(ExpenseName, pk=pk)
     form = ExpenseNameForm(request.POST or None, instance=object)
     url = reverse(
-        'expenses:expenses_type_update',
+        'expenses:expenses_name_update',
         kwargs={
             'pk': pk
         }
