@@ -3,14 +3,28 @@ from django.shortcuts import render, reverse, get_object_or_404
 from django.template.loader import render_to_string
 
 from ..forms import ExpenseForm
-from ..helpers import helper_view_expenses as H_expenses
-from ..models import Expense, ExpenseName
+from ...core.mixins.save_data_mixin import SaveDataMixin
+from ..models import Expense, ExpenseName, ExpenseType
+
+
+def _items():
+    qs = Expense.objects.all().prefetch_related('expense_type', 'expense_name', 'account')
+    return qs
+
+
+def _json_response(obj):
+    obj.form_template = 'expenses/includes/partial_expenses_form_modal.html'
+    obj.items_template = 'expenses/includes/partial_expenses_list.html'
+    obj.items = _items()
+
+    return obj.GenJsonResponse()
 
 
 def lists(request):
-    qs = Expense.objects.all().prefetch_related('expense_type', 'expense_name', 'account')
+    qs = _items()
+    qse = ExpenseType.objects.all().prefetch_related('expensename_set')
     form = ExpenseForm()
-    context = {'objects': qs, 'form': form}
+    context = {'objects': qs, 'categories': qse, 'form': form}
 
     return render(request, 'expenses/expenses_list.html', context=context)
 
@@ -19,7 +33,9 @@ def new(request):
     form = ExpenseForm(request.POST or None)
     context = {'url': reverse('expenses:expenses_new'), 'action': 'insert'}
 
-    return H_expenses.save_data(request, context, form)
+    obj = SaveDataMixin(request, context, form)
+
+    return _json_response(obj)
 
 
 def update(request, pk):
@@ -32,7 +48,10 @@ def update(request, pk):
         }
     )
     context = {'url': url, 'action': 'update'}
-    return H_expenses.save_data(request, context, form)
+
+    obj = SaveDataMixin(request, context, form)
+
+    return _json_response(obj)
 
 
 def load_expense_name(request):
