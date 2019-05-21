@@ -1,9 +1,10 @@
+from django.db.models import Q
 from django.http import JsonResponse
-from django.shortcuts import render, reverse, get_object_or_404
+from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
 
-from ..forms import ExpenseForm
 from ...core.mixins.save_data_mixin import SaveDataMixin
+from ..forms import ExpenseForm
 from ..models import Expense, ExpenseName, ExpenseType
 
 
@@ -23,14 +24,15 @@ def _json_response(obj):
 def lists(request):
     qs = _items()
     qse = ExpenseType.objects.all().prefetch_related('expensename_set')
-    form = ExpenseForm()
+
+    form = ExpenseForm(request=request)
     context = {'objects': qs, 'categories': qse, 'form': form}
 
     return render(request, 'expenses/expenses_list.html', context=context)
 
 
 def new(request):
-    form = ExpenseForm(request.POST or None)
+    form = ExpenseForm(data=(request.POST or None), request=request)
     context = {'url': reverse('expenses:expenses_new'), 'action': 'insert'}
 
     obj = SaveDataMixin(request, context, form)
@@ -40,7 +42,7 @@ def new(request):
 
 def update(request, pk):
     object = get_object_or_404(Expense, pk=pk)
-    form = ExpenseForm(request.POST or None, instance=object)
+    form = ExpenseForm(data=(request.POST or None), instance=object, request=request)
     url = reverse(
         'expenses:expenses_update',
         kwargs={
@@ -56,7 +58,14 @@ def update(request, pk):
 
 def load_expense_name(request):
     pk = request.GET.get('expense_type')
-    objects = ExpenseName.objects.filter(parent_id=pk).order_by('title')
+    objects = (
+        ExpenseName.objects.
+        filter(parent_id=pk).
+        filter(
+            Q(valid_for__isnull=True) |
+            Q(valid_for=request.session['year'])
+        ).order_by('title')
+    )
     return render(
         request,
         'expenses/expense_type_dropdown.html',
