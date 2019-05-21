@@ -67,3 +67,9 @@ class ExpenseNameForm(forms.ModelForm):
         fields = '__all__'
 
     fields_order = ['parent', 'title']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
