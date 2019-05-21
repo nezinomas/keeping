@@ -21,7 +21,7 @@ $(function () {
                 if (action == 'update') {
                     var price = document.getElementById("id_price");
                     var total_sum = document.getElementById("total-sum");
-                    if (price.value) {
+                    if (price != null) {
                         total_sum.value = price.value
                         price.value = '0.00';
                     }
@@ -44,7 +44,7 @@ $(function () {
                     $(`#${ajax_update_container}`).html(data.html_list);
 
                     var price = document.getElementById("id_price");
-                    if (price.value) {
+                    if (price) {
                         price.value = '0.00';
                     }
                     if (action == 'update') {
@@ -65,12 +65,14 @@ $(function () {
     };
 
     var loadFormDblClc = function () {
-        loadForm($(this).data('url'), $(this).data('update-container'))
+        var btn = $(this);
+        loadForm(btn.data('url'), btn.data('update-container'))
     };
 
 
     /* Binding */
     $('#ajax-content').on('dblclick', 'tr', loadFormDblClc);
+    $('#ajax-content-categories').on('dblclick', 'a', loadFormDblClc);
 
     $(".js-create").click(loadFormClc);
 

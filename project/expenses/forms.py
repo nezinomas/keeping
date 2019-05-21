@@ -49,6 +49,18 @@ class ExpenseForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
+class ExpenseTypeForm(forms.ModelForm):
+    class Meta:
+        model = ExpenseType
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
+
+
 class ExpenseNameForm(forms.ModelForm):
     class Meta:
         model = ExpenseName
