@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from bootstrap_datepicker_plus import DatePickerInput
+from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 
@@ -83,10 +83,13 @@ class ExpenseTypeForm(forms.ModelForm):
 class ExpenseNameForm(forms.ModelForm):
     class Meta:
         model = ExpenseName
-        fields = ['parent', 'title']
-        verbose_name = 'd'
+        fields = ['parent', 'title', 'valid_for']
 
-    field_order = ['parent', 'title']
+        widgets = {
+            'valid_for': YearPickerInput(format='%Y'),
+        }
+
+    field_order = ['parent', 'title', 'valid_for']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -96,3 +99,4 @@ class ExpenseNameForm(forms.ModelForm):
 
         self.fields['parent'].label = 'Išlaidų rūšis'
         self.fields['title'].label = 'Išlaidų pavadinimas'
+        self.fields['valid_for'].label = 'Galioja tik'
