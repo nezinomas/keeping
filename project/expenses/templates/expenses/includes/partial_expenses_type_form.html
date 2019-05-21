@@ -1,29 +1,5 @@
-{% load crispy_forms_tags %}
-<style>
-    .form-check {
-        padding: .25rem 0 0 0;
-    }
-</style>
 <form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="ajax-content">
-    {% csrf_token %}
-    {{ form.media }}
-    <div class="modal-header">
-        <h5 class="modal-title">Išlaidų rūšis</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    <div class="modal-body">
-        <div class="row mb-2">
-            <div class="col-sm-4 pt-1">Pavadinimas:</div>
-            <div class="col-8">{{ form.title|as_crispy_field }}</div>
-        </div>
-    </div>
-
-    <div class="modal-footer">
-        <button type="button" class="btn btn-sm btn-primary" id="submit">{{ action|title }}</button>
-        <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
-    </div>
+{% include 'expenses/includes/generic_form.html' %}
 </form>
 <script>
     $(document).keydown(function (event) {
