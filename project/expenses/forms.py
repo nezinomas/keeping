@@ -9,7 +9,7 @@ from .models import Expense, ExpenseType, ExpenseName
 
 
 class ExpenseForm(forms.ModelForm):
-    total_sum = forms.CharField()
+    total_sum = forms.CharField(required=False)
 
     class Meta:
         model = Expense
