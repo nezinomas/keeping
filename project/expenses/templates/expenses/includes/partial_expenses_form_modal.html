@@ -1,78 +1,28 @@
 {% load crispy_forms_tags %}{% load buttons %}
+
+<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-sub-expense_type-url="{% url 'expenses:load_expense_name' %}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="ajax-container">
+{% include 'expenses/includes/generic_form.html' %}
+</form>
+
 <style>
     .form-check {
-        padding: .25rem 0 0 0;
+        padding: .35rem 0 0 0;
+    }
+    .exception {
+        margin-top: 2rem;
     }
 </style>
-<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-sub-expense_type-url="{% url 'expenses:load_expense_name' %}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="-">
-    {% csrf_token %}
-    {{ form.media }}
-    <div class="modal-header">
-        <h5 class="modal-title">Išlaidos</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    <div class="modal-body">
-        <div class="row mb-2">
-            <div class="col-sm-4 pt-1">Data:</div>
-            <div class="col-8">{{ form.date|as_crispy_field }}</div>
-        </div>
 
-        <div class="row mb-2">
-            <div class="col-sm-4 pt-1">Išlaidų rūšis:</div>
-            <div class="col-8">{{ form.expense_type|as_crispy_field }}</div>
-        </div>
-
-        <div class="row mb-2">
-            <div class="col-sm-4 pt-1">Išlaidų pavadinimas:</div>
-            <div class="col-8">{{ form.expense_name|as_crispy_field }}</div>
-        </div>
-
-        <div class="row mb-2">
-            <div class="col-sm-4 pt-1">Sąskaita:</div>
-            <div class="col-8">{{ form.account|as_crispy_field }}</div>
-        </div>
-
-        <div class="row mb-2">
-            <div class="col-sm-4 pt-1">Kaina:</div>
-            <div class="col-8"><input type="text" name="total-sum" class="form-control-sm textinput textInput form-control" id="total-sum"></div>
-        </div>
-
-        <div class="row mb-2">
-            <div class="col-sm-4 pt-1">Kiekis:</div>
-            <div class="col-8">{{ form.quantity|as_crispy_field }}</div>
-        </div>
-
-        <div class="row mb-2">
-            <div class="col-sm-4 pt-1">Pastaba:</div>
-            <div class="col-8">{{ form.remark|as_crispy_field }}</div>
-        </div>
-
-        <div class="row mb-2">
-            <div class="col-sm-4 pt-1">Visa kaina:</div>
-            <div class="col-8">{{ form.price|as_crispy_field }}</div>
-        </div>
-
-        <div class="row mb-2 mt-4">
-            <div class="col-sm-4 pt-1">Nenaudoti planuose:</div>
-            <div class="col-8">{{ form.exception|as_crispy_field }}</div>
-        </div>
-    </div>
-
-    <div class="modal-footer">
-        <button type="button" class="btn btn-sm btn-primary" id="submit">{{ action|title }}</button>
-        <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
-    </div>
-</form>
 <script>
+    $('#div_id_exception').parents().eq(2).addClass("exception");
+
     $(document).keydown(function (event) {
         if (event.keyCode == 27) {
             $('#modal-form').modal("hide");
         }
     });
 
-    var input = document.getElementById("total-sum");
+    var input = document.getElementById("id_total_sum");
     input.addEventListener("keyup", function (event) {
         event.preventDefault();
         if (event.keyCode === 13) {

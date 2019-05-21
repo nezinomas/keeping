@@ -1,6 +1,6 @@
 $(function () {
 
-    var loadForm = function(url, ajax_update_container = 'ajax-content') {
+    var loadForm = function(url) {
         if (url == undefined) {
             return;
         }
@@ -16,11 +16,11 @@ $(function () {
                 $("#modal-form .modal-content").html(data.html_form);
 
                 var form = $('.js-form');
-                form.attr('data-update-container', ajax_update_container)
                 var action = form.attr("data-action");
+
                 if (action == 'update') {
                     var price = document.getElementById("id_price");
-                    var total_sum = document.getElementById("total-sum");
+                    var total_sum = document.getElementById("id_total_sum");
                     if (price != null) {
                         total_sum.value = price.value
                         price.value = '0.00';
@@ -47,6 +47,7 @@ $(function () {
                     if (price) {
                         price.value = '0.00';
                     }
+
                     if (action == 'update') {
                         $("#modal-form").modal("hide");
                     }
@@ -61,12 +62,12 @@ $(function () {
 
     var loadFormClc = function() {
         var btn = $(this);
-        loadForm(btn.attr("data-url"), btn.data("update-container"));
+        loadForm(btn.attr("data-url"));
     };
 
     var loadFormDblClc = function () {
         var btn = $(this);
-        loadForm(btn.data('url'), btn.data('update-container'))
+        loadForm(btn.data('url'))
     };
 
 

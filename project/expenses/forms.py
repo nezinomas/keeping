@@ -9,15 +9,32 @@ from .models import Expense, ExpenseType, ExpenseName
 
 
 class ExpenseForm(forms.ModelForm):
+    total_sum = forms.CharField()
+
     class Meta:
         model = Expense
-        fields = '__all__'
+        fields = ('date', 'price', 'quantity', 'expense_type',
+                  'expense_name', 'remark', 'exception', 'account')
         widgets = {
             'date': DatePickerInput(format='%Y-%m-%d'),
         }
 
+    field_order = ['date', 'expense_type', 'expense_name', 'account',
+                   'total_sum', 'quantity', 'remark', 'price', 'exception']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # field translation
+        self.fields['date'].label = 'Data'
+        self.fields['price'].label = 'Visa kaina'
+        self.fields['quantity'].label = 'Kiekis'
+        self.fields['expense_type'].label = 'Išlaidų rūšis'
+        self.fields['expense_name'].label = 'Išlaidų pavadinimas'
+        self.fields['remark'].label = 'Pastaba'
+        self.fields['exception'].label = 'Nenaudoti planuose'
+        self.fields['account'].label = 'Sąskaita'
+        self.fields['total_sum'].label = 'Kaina'
 
         # form inputs settings
         self.fields['price'].widget.attrs = {'readonly': True, 'step': '0.01'}
@@ -60,10 +77,22 @@ class ExpenseTypeForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+        self.fields['title'].label = 'Pavadinimas'
+
 
 class ExpenseNameForm(forms.ModelForm):
     class Meta:
         model = ExpenseName
-        fields = '__all__'
+        fields = ['parent', 'title']
+        verbose_name = 'd'
 
-    fields_order = ['parent', 'title']
+    field_order = ['parent', 'title']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
+
+        self.fields['parent'].label = 'Išlaidų rūšis'
+        self.fields['title'].label = 'Išlaidų pavadinimas'

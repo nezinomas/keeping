@@ -101,6 +101,6 @@ table tfoot td {
   text-align: center;
 }
 
-.btn-sm {
+.btn-sm, .form-control-sm {
     font-size: .8rem;
 }
