@@ -104,3 +104,7 @@ table tfoot td {
 .btn-sm, .form-control-sm {
     font-size: .8rem;
 }
+
+.btn-sm {
+  padding: .15rem .5rem;
+}
