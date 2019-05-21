@@ -1,5 +1,6 @@
+{% load form %}
 <form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="ajax-content">
-{% include 'expenses/includes/generic_form.html' %}
+{% generic_form title='Išlaidų rūšis' %}
 </form>
 <script>
     $(document).keydown(function (event) {
