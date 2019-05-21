@@ -12,7 +12,8 @@ class TitleAbstract(models.Model):
         unique=True,
     )
     slug = models.SlugField(
-        editable=False
+        editable=False,
+        max_length=254,
     )
 
     def save(self, *args, **kwargs):
