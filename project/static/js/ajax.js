@@ -20,7 +20,7 @@ $(function () {
 
                 if (action == 'update') {
                     var price = document.getElementById("id_price");
-                    var total_sum = document.getElementById("total-sum");
+                    var total_sum = document.getElementById("id_total_sum");
                     if (price != null) {
                         total_sum.value = price.value
                         price.value = '0.00';
