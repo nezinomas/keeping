@@ -3,9 +3,10 @@ from datetime import datetime
 from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.db.models import Q
 
 from ..core.helpers.helper_forms import set_field_properties
-from .models import Expense, ExpenseType, ExpenseName
+from .models import Expense, ExpenseName, ExpenseType
 
 
 class ExpenseForm(forms.ModelForm):
@@ -22,7 +23,7 @@ class ExpenseForm(forms.ModelForm):
     field_order = ['date', 'expense_type', 'expense_name', 'account',
                    'total_sum', 'quantity', 'remark', 'price', 'exception']
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, request, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # field translation
@@ -52,14 +53,20 @@ class ExpenseForm(forms.ModelForm):
                 self.fields['expense_name'].queryset = (
                     ExpenseName.objects.
                     filter(parent_id=expense_type_id).
-                    order_by('title')
+                    filter(
+                        Q(valid_for__isnull=True) |
+                        Q(valid_for=request.session['year'])
+                    ).order_by('title')
                 )
             except (ValueError, TypeError):
                 pass
         elif self.instance.pk:
             self.fields['expense_name'].queryset = (
                 self.instance.expense_type.expensename_set.
-                order_by('title')
+                filter(
+                    Q(valid_for__isnull=True) |
+                    Q(valid_for=request.session['year'])
+                ).order_by('title')
             )
 
         self.helper = FormHelper()
