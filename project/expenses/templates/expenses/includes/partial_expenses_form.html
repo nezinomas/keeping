@@ -1,0 +1,62 @@
+{% load form %}
+
+<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}"
+    data-sub-expense_type-url="{% url 'expenses:load_expense_name' %}" data-action="{{ action }}" autocomplete="off"
+    tabindex="-1" data-update-container="{{ update_container }}">
+{% generic_form title='Išlaidos' %}
+</form>
+
+<style>
+    .form-check {
+        padding: .35rem 0 0 0;
+    }
+    .exception {
+        margin-top: 2rem;
+    }
+</style>
+
+<script>
+    $('#div_id_exception').parents().eq(2).addClass("exception");
+
+    $(document).keydown(function (event) {
+        if (event.keyCode == 27) {
+            $('#modal-form').modal("hide");
+        }
+    });
+
+    var input = document.getElementById("id_total_sum");
+    input.addEventListener("keyup", function (event) {
+        event.preventDefault();
+        if (event.keyCode === 13) {
+            var total_sum = eval(document.getElementById("id_price").value);
+            var input_value = eval(this.value.replace(',', '.').replace(/[^\d\-\.\+\/\*]/g, ''));
+            if (!input_value || input_value === Infinity ) {
+                input_value = 0;
+            }
+
+            var res = total_sum + input_value;
+            if(!res || res <= 0) {
+                res = 0;
+            }
+
+            document.getElementById("id_price").value = res.toFixed(2);
+            this.value = ''
+        }
+    });
+
+    $("#id_expense_type").change(function () {
+        var url = $("#js-form").attr("data-sub-expense_type-url");
+        var expense_typeId = $(this).val();
+
+        $.ajax({
+            url: url,
+            data: {
+                'expense_type': expense_typeId
+            },
+            success: function (data) {
+                $("#id_expense_name").html(data);
+            }
+        });
+
+    });
+</script>

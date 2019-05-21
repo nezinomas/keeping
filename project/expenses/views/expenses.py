@@ -13,7 +13,7 @@ def _items():
 
 
 def _json_response(obj):
-    obj.form_template = 'expenses/includes/partial_expenses_form_modal.html'
+    obj.form_template = 'expenses/includes/partial_expenses_form.html'
     obj.items_template = 'expenses/includes/partial_expenses_list.html'
     obj.items = _items()
 
