@@ -56,7 +56,7 @@ class ExpenseForm(forms.ModelForm):
                     filter(
                         Q(valid_for__isnull=True) |
                         Q(valid_for=request.session['year'])
-                    ).order_by('title')
+                    )
                 )
             except (ValueError, TypeError):
                 pass
@@ -66,7 +66,7 @@ class ExpenseForm(forms.ModelForm):
                 filter(
                     Q(valid_for__isnull=True) |
                     Q(valid_for=request.session['year'])
-                ).order_by('title')
+                )
             )
 
         self.helper = FormHelper()
