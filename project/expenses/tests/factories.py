@@ -8,8 +8,7 @@ class ExpenseTypeFactory(factory.DjangoModelFactory):
         model = ExpenseType
         django_get_or_create = ('title',)
 
-    title = 'Main'
-    slug = 'main'
+    title = 'Expense Type'
 
 
 class ExpenseNameFactory(factory.DjangoModelFactory):
@@ -17,4 +16,5 @@ class ExpenseNameFactory(factory.DjangoModelFactory):
         model = ExpenseName
         django_get_or_create = ('title', 'parent',)
 
+    title = 'Expense Name'
     parent = factory.SubFactory(ExpenseTypeFactory)
