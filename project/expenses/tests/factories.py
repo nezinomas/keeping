@@ -1,6 +1,10 @@
+from datetime import date as dt
+from decimal import Decimal
+
 import factory
 
-from ..models import Expense, ExpenseType, ExpenseName
+from ...accounts.tests.factories import AccountFactory
+from ..models import Expense, ExpenseName, ExpenseType
 
 
 class ExpenseTypeFactory(factory.DjangoModelFactory):
@@ -18,3 +22,17 @@ class ExpenseNameFactory(factory.DjangoModelFactory):
 
     title = 'Expense Name'
     parent = factory.SubFactory(ExpenseTypeFactory)
+
+
+class ExpenseFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Expense
+
+    date = dt(1999, 1, 1)
+    price = Decimal(1.12)
+    quantity = 13
+    expense_type = factory.SubFactory(ExpenseTypeFactory)
+    expense_name = factory.SubFactory(ExpenseNameFactory)
+    remark = 'Remark'
+    exception = True
+    account = factory.SubFactory(AccountFactory)
