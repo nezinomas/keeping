@@ -8,21 +8,25 @@ from ..forms import ExpenseForm
 from ..models import Expense, ExpenseName, ExpenseType
 
 
-def _items():
-    qs = Expense.objects.all().prefetch_related('expense_type', 'expense_name', 'account')
+def _items(request):
+    qs = (
+        Expense.objects.
+        filter(date__year=request.session['year']).
+        prefetch_related('expense_type', 'expense_name', 'account')
+    )
     return qs
 
 
-def _json_response(obj):
+def _json_response(request, obj):
     obj.form_template = 'expenses/includes/partial_expenses_form.html'
     obj.items_template = 'expenses/includes/partial_expenses_list.html'
-    obj.items = _items()
+    obj.items = _items(request)
 
     return obj.GenJsonResponse()
 
 
 def lists(request):
-    qs = _items()
+    qs = _items(request)
     qse = ExpenseType.objects.all().prefetch_related('expensename_set')
 
     form = ExpenseForm(request=request)
@@ -37,7 +41,7 @@ def new(request):
 
     obj = SaveDataMixin(request, context, form)
 
-    return _json_response(obj)
+    return _json_response(request, obj)
 
 
 def update(request, pk):
@@ -53,7 +57,7 @@ def update(request, pk):
 
     obj = SaveDataMixin(request, context, form)
 
-    return _json_response(obj)
+    return _json_response(request, obj)
 
 
 def load_expense_name(request):
