@@ -1,3 +1,4 @@
+from django.db.models import F
 from decimal import Decimal
 
 from django.core.validators import MinValueValidator
@@ -28,7 +29,7 @@ class ExpenseName(TitleAbstract):
 
     class Meta:
         unique_together = ('title', 'parent')
-        ordering = ['parent', 'title']
+        ordering = [F('valid_for').desc(nulls_first=True), 'title']
 
 
 class Expense(models.Model):
@@ -65,4 +66,4 @@ class Expense(models.Model):
         return str(self.date)
 
     class Meta:
-        ordering = ['-date', 'expense_type', 'expense_name', 'price']
+        ordering = ['-date', 'expense_type', F('expense_name').asc(), 'price']

@@ -68,7 +68,7 @@ def load_expense_name(request):
         filter(
             Q(valid_for__isnull=True) |
             Q(valid_for=request.session['year'])
-        ).order_by('title')
+        )
     )
     return render(
         request,
