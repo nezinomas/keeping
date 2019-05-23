@@ -42,10 +42,16 @@ $(function () {
             success: function (data) {
                 if (data.form_is_valid) {
                     $(`#${ajax_update_container}`).html(data.html_list);
+                    $("#modal-form .modal-content").html(data.html_form);
 
                     var price = document.getElementById("id_price");
                     if (price) {
                         price.value = '0.00';
+                    }
+
+                    var title = document.getElementById("id_title");
+                    if (title) {
+                        title.value = ''
                     }
 
                     if (action == 'update') {
@@ -73,7 +79,7 @@ $(function () {
 
     /* Binding */
     $('#ajax-content').on('dblclick', 'tr', loadFormDblClc);
-    $('#ajax-content-categories').on('dblclick', 'a', loadFormDblClc);
+    $('#ajax-content-categories').on('dblclick', 'div', loadFormDblClc);
 
     $(".js-create").click(loadFormClc);
 

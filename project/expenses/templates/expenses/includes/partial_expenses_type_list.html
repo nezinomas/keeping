@@ -1,10 +1,10 @@
 {% for item in categories %}
 {% url 'expenses:expenses_type_update' item.id as url_type_update %}
 <div class="list-group mb-2">
-    <a href="#" class="list-group-item list-group-item-action list-group-item-primary" data-url="{{ url_type_update }}">{{ item.title }}</a>
+    <div class="list-group-item list-group-item-action list-group-item-primary" data-url="{{ url_type_update }}">{{ item.title }}</div>
     {% for sub in item.expensename_set.all %}
     {% url 'expenses:expenses_name_update' sub.id as url_name_update %}
-    <a href="#" class="list-group-item list-group-item-action" data-url="{{ url_name_update }}">{{ sub.title }} {% if sub.valid_for %}<span class="badge badge-secondary">{{ sub.valid_for }}</span>{% endif %}</a>
+    <div class="list-group-item list-group-item-action" data-url="{{ url_name_update }}">{{ sub.title }} {% if sub.valid_for %}<span class="badge badge-secondary">{{ sub.valid_for }}</span>{% endif %}</div>
     {% endfor %}
 </div>
 {% endfor %}
