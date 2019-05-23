@@ -108,3 +108,12 @@ table tfoot td {
 .btn-sm {
   padding: .15rem .5rem;
 }
+
+.list-group-item {
+    padding: .25rem 0 .25rem 1.25rem;
+    margin: 0;
+}
+
+.list-group-item.list-group-item-primary {
+    padding-left: 0.25rem;
+}

@@ -1,0 +1,16 @@
+{% load form %}
+<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}"
+    autocomplete="off" tabindex="-1" data-update-container="ajax-content-categories">
+    {% generic_form title=form_title %}
+</form>
+<script>
+    $(document).keydown(function (event) {
+        if (event.keyCode == 27) {
+            $('#modal-form').modal("hide");
+        }
+    });
+
+    $(document).on('submit', '.js-form', function (e) {
+        e.preventDefault();
+    });
+</script>
