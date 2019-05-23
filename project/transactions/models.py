@@ -23,3 +23,12 @@ class Transaction(models.Model):
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))]
     )
+
+    class Meta:
+        ordering = ['-date', 'amount', 'from_account']
+
+    def __str__(self):
+        return (
+            '{} {}->{} {}'.
+            format(self.date, self.from_account, self.to_account, self.amount)
+        )
