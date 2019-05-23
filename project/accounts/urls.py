@@ -7,6 +7,11 @@ app_name = 'accounts'
 
 urlpatterns = [
     path(
+        'accounts/lists/',
+        views.lists,
+        name='accounts_lists'
+    ),
+    path(
         'accounts/new/',
         views.new,
         name='accounts_new'
