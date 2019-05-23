@@ -42,6 +42,7 @@ $(function () {
             success: function (data) {
                 if (data.form_is_valid) {
                     $(`#${ajax_update_container}`).html(data.html_list);
+                    $("#modal-form .modal-content").html(data.html_form);
 
                     var price = document.getElementById("id_price");
                     if (price) {
