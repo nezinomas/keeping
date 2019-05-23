@@ -71,6 +71,6 @@ def load_expense_name(request):
     )
     return render(
         request,
-        'expenses/expense_type_dropdown.html',
+        'core/dropdown.html',
         {'objects': objects}
     )
