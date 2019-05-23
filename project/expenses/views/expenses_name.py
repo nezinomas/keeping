@@ -4,8 +4,6 @@ from ...core.mixins.save_data_mixin import SaveDataMixin
 from ..forms import ExpenseNameForm
 from ..models import ExpenseName, ExpenseType
 
-TITLE = 'Išlaidų pavadinimas'
-
 
 def _items():
     qs = ExpenseType.objects.all().prefetch_related('expensename_set')
@@ -13,7 +11,7 @@ def _items():
 
 
 def _json_response(obj):
-    obj.form_template = 'core/generic_form.html'
+    obj.form_template = 'expenses/includes/partial_expenses_name_form.html'
     obj.items_template = 'expenses/includes/partial_expenses_type_list.html'
     obj.items_template_var_name = 'categories'
     obj.items = _items()
@@ -26,7 +24,6 @@ def new(request):
     context = {
         'url': reverse('expenses:expenses_name_new'),
         'action': 'insert',
-        'form_title': TITLE
     }
 
     obj = SaveDataMixin(request, context, form)
@@ -43,7 +40,7 @@ def update(request, pk):
             'pk': pk
         }
     )
-    context = {'url': url, 'action': 'update', 'form_title': TITLE}
+    context = {'url': url, 'action': 'update'}
 
     obj = SaveDataMixin(request, context, form)
 
