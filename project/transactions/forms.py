@@ -17,7 +17,7 @@ class TransactionForm(forms.ModelForm):
 
     field_order = ['date', 'from_account', 'to_account', 'amount']
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, request, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.helper = FormHelper()
