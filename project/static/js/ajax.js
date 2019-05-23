@@ -78,7 +78,7 @@ $(function () {
 
     /* Binding */
     $('#ajax-content').on('dblclick', 'tr', loadFormDblClc);
-    $('#ajax-content-categories').on('dblclick', 'a', loadFormDblClc);
+    $('#ajax-content-categories').on('dblclick', 'div', loadFormDblClc);
 
     $(".js-create").click(loadFormClc);
 
