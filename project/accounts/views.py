@@ -6,15 +6,13 @@ from ..core.mixins.save_data_mixin import SaveDataMixin
 from .forms import AccountForm
 from .models import Account
 
-TITLE = 'Sąskaitos'
-
 
 def _items():
     return Account.objects.all()
 
 
 def _json_response(obj):
-    obj.form_template = 'core/generic_form.html'
+    obj.form_template = 'accounts/includes/partial_accounts_form.html'
     obj.items_template = 'accounts/includes/partial_accounts_list.html'
     obj.items = _items()
 
@@ -25,8 +23,7 @@ def new(request):
     form = AccountForm(request.POST or None)
     context = {
         'url': reverse('accounts:accounts_new'),
-        'action': 'insert',
-        'form_title': TITLE
+        'action': 'insert'
     }
 
     obj = SaveDataMixin(request, context, form)
@@ -43,7 +40,7 @@ def update(request, pk):
             'pk': pk
         }
     )
-    context = {'url': url, 'action': 'update', 'form_title': TITLE}
+    context = {'url': url, 'action': 'update'}
 
     obj = SaveDataMixin(request, context, form)
 
