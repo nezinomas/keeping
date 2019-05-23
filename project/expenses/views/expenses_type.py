@@ -21,7 +21,10 @@ def _json_response(obj):
 
 def new(request):
     form = ExpenseTypeForm(request.POST or None)
-    context = {'url': reverse('expenses:expenses_type_new'), 'action': 'insert'}
+    context = {
+        'url': reverse('expenses:expenses_type_new'),
+        'action': 'insert',
+    }
 
     obj = SaveDataMixin(request, context, form)
 

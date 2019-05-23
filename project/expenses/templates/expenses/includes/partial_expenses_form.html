@@ -1,10 +1,5 @@
 {% load form %}
-
-<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}"
-    data-sub-expense_type-url="{% url 'expenses:load_expense_name' %}" data-action="{{ action }}" autocomplete="off"
-    tabindex="-1" data-update-container="ajax-content">
-{% generic_form title='Išlaidos' %}
-</form>
+{% generic_form title='Išlaidos' update_container='ajax-content' %}
 
 <style>
     .form-check {
