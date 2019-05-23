@@ -29,7 +29,7 @@ def lists(request):
     qs = _items(request)
     qse = ExpenseType.objects.all().prefetch_related('expensename_set')
 
-    form = ExpenseForm(request=request)
+    form = ExpenseForm(data={}, request=request)
     context = {'objects': qs, 'categories': qse, 'form': form}
 
     return render(request, 'expenses/expenses_list.html', context=context)
