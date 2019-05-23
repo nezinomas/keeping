@@ -6,8 +6,8 @@ from ..core.mixins.save_data_mixin import SaveDataMixin
 from .models import Account
 
 
-def lists(request):
-    pass
+def _items():
+    return Account.objects.all()
 
 
 def new(request):
