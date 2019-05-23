@@ -48,6 +48,11 @@ $(function () {
                         price.value = '0.00';
                     }
 
+                    var title = document.getElementById("id_title");
+                    if (title) {
+                        title.value = ''
+                    }
+
                     if (action == 'update') {
                         $("#modal-form").modal("hide");
                     }
