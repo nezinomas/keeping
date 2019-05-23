@@ -35,6 +35,10 @@
           <li class="nav-item">
             <a class="nav-link {% if '/expenses/' in request.path %}active{% endif %}" href="{% url 'expenses:expenses_list' %}">Išlaidos</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link {% if '/accounts/' in request.path %}active{% endif %}"
+              href="">Sąskaitos</a>
+          </li>
         </ul>
       </nav>
 
