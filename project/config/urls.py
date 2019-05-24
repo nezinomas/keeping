@@ -12,7 +12,7 @@ urlpatterns = [
     path('', include('project.core.urls')),
     # path('', include('project.drinks.urls')),
     path('', include('project.expenses.urls')),
-    # path('', include('project.incomes.urls')),
+    path('', include('project.incomes.urls')),
     # path('', include('project.savings.urls')),
     # path('', include('project.plans.urls')),
     path('', include('project.transactions.urls')),
