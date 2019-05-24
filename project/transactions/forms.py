@@ -35,6 +35,7 @@ class TransactionForm(forms.ModelForm):
         self.fields['to_account'].label = 'Į sąskaitą'
         self.fields['amount'].label = 'Suma'
 
+        # chained dropdown
         id = ChainedDropDown(self, 'from_account').parent_field_id
         if id:
             self.fields['to_account'].queryset = (
