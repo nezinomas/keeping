@@ -6,9 +6,9 @@ app_name = 'incomes'
 
 urlpatterns = [
     path(
-        'incomes/lists/',
+        'incomes/',
         views.lists,
-        name='incomes_lists'
+        name='incomes_list'
     ),
     path(
         'incomes/new/',
