@@ -55,3 +55,13 @@ def update(request, pk):
     obj = SaveDataMixin(request, context, form)
 
     return _json_response(obj)
+
+
+def load_to_account(request):
+    id = request.GET.get('id')
+    objects = Account.objects.exclude(pk=id)
+    return render(
+        request,
+        'core/dropdown.html',
+        {'objects': objects}
+    )

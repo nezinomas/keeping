@@ -21,4 +21,9 @@ urlpatterns = [
         views.update,
         name='accounts_update'
     ),
+    path(
+        'ajax/load_to_account/',
+        views.load_to_account,
+        name='load_to_account'
+    )
 ]

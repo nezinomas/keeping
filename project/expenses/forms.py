@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 from django.db.models import Q
 
-from ..core.helpers.helper_forms import set_field_properties
+from ..core.helpers.helper_forms import set_field_properties, ChainedDropDown
 from .models import Expense, ExpenseName, ExpenseType
 
 
@@ -47,22 +47,12 @@ class ExpenseForm(forms.ModelForm):
         self.fields['price'].initial = '0.00'
         self.fields['expense_name'].queryset = Expense.objects.none()
 
-        if 'expense_type' in self.data:
-            try:
-                expense_type_id = int(self.data.get('expense_type'))
-                self.fields['expense_name'].queryset = (
-                    ExpenseName.objects.
-                    filter(parent_id=expense_type_id).
-                    filter(
-                        Q(valid_for__isnull=True) |
-                        Q(valid_for=request.session['year'])
-                    )
-                )
-            except (ValueError, TypeError):
-                pass
-        elif self.instance.pk:
+        # chained dropdown
+        id = ChainedDropDown(self, 'expense_type').parent_field_id
+        if id:
             self.fields['expense_name'].queryset = (
-                self.instance.expense_type.expensename_set.
+                ExpenseName.objects.
+                filter(parent_id=id).
                 filter(
                     Q(valid_for__isnull=True) |
                     Q(valid_for=request.session['year'])
@@ -72,6 +62,27 @@ class ExpenseForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+
+class ChainedDropDown(object):
+    def __init__(self, obj, main):
+        self._obj = obj
+        self._id = None
+        self._get_main_dropdown_id(main)
+
+    @property
+    def id(self):
+        if self._id:
+            self._id = int(self._id)
+        return self._id
+
+    def _get_main_dropdown_id(self, main):
+        if main in self._obj.data:
+            try:
+                self._id = self._obj.data.get(main)
+            except (ValueError, TypeError):
+                pass
+        elif self._obj.instance.pk:
+            self._id = vars(self._obj.instance)['{}_id'.format(main)]
 
 class ExpenseTypeForm(forms.ModelForm):
     class Meta:
