@@ -63,27 +63,6 @@ class ExpenseForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
-class ChainedDropDown(object):
-    def __init__(self, obj, main):
-        self._obj = obj
-        self._id = None
-        self._get_main_dropdown_id(main)
-
-    @property
-    def id(self):
-        if self._id:
-            self._id = int(self._id)
-        return self._id
-
-    def _get_main_dropdown_id(self, main):
-        if main in self._obj.data:
-            try:
-                self._id = self._obj.data.get(main)
-            except (ValueError, TypeError):
-                pass
-        elif self._obj.instance.pk:
-            self._id = vars(self._obj.instance)['{}_id'.format(main)]
-
 class ExpenseTypeForm(forms.ModelForm):
     class Meta:
         model = ExpenseType

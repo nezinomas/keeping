@@ -6,9 +6,9 @@ app_name = 'transactions'
 
 urlpatterns = [
     path(
-        'transactions/lists/',
+        'transactions/',
         views.lists,
-        name='transactions_lists'
+        name='transactions_list'
     ),
     path(
         'transactions/new/',
