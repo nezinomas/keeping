@@ -48,11 +48,11 @@ class ExpenseForm(forms.ModelForm):
         self.fields['expense_name'].queryset = Expense.objects.none()
 
         # chained dropdown
-        i = ChainedDropDown(self, 'expense_type').id
-        if i:
+        id = ChainedDropDown(self, 'expense_type').parent_field_id
+        if id:
             self.fields['expense_name'].queryset = (
                 ExpenseName.objects.
-                filter(parent_id=i).
+                filter(parent_id=id).
                 filter(
                     Q(valid_for__isnull=True) |
                     Q(valid_for=request.session['year'])
