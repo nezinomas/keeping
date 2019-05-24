@@ -11,7 +11,7 @@ from .models import Income
 class IncomeForm(forms.ModelForm):
     class Meta:
         model = Income
-        fields = ['date', 'account', 'amount', 'remark']
+        fields = ['date', 'amount', 'remark', 'account']
 
         widgets = {
             'date': DatePickerInput(format='%Y-%m-%d'),
@@ -19,7 +19,7 @@ class IncomeForm(forms.ModelForm):
 
     field_order = ['date', 'account', 'amount', 'remark']
 
-    def __init__(self, request, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # form inputs settings
