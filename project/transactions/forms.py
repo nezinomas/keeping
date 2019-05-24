@@ -4,7 +4,7 @@ from bootstrap_datepicker_plus import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 
-from ..core.helpers.helper_forms import set_field_properties
+from ..core.helpers.helper_forms import set_field_properties, ChainedDropDown
 from .models import Transaction
 from ..accounts.models import Account
 
@@ -35,17 +35,8 @@ class TransactionForm(forms.ModelForm):
         self.fields['to_account'].label = 'Į sąskaitą'
         self.fields['amount'].label = 'Suma'
 
-        # chained dropdown
-        if 'from_account' in self.data:
-            try:
-                from_id = int(self.data.get('from_account'))
-                self.fields['to_account'].queryset = (
-                    Account.objects.exclude(pk=from_id)
-                )
-            except (ValueError, TypeError):
-                pass
-        elif self.instance.pk:
-            id = self.instance.from_account_id
+        id = ChainedDropDown(self, 'from_account').parent_field_id
+        if id:
             self.fields['to_account'].queryset = (
                 Account.objects.exclude(pk=id)
             )
