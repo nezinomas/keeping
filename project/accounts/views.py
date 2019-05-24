@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404, reverse
+from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
 
 from ..core.mixins.save_data_mixin import SaveDataMixin
