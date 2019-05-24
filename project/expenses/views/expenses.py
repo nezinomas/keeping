@@ -1,5 +1,4 @@
 from django.db.models import Q
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
 
@@ -29,7 +28,7 @@ def lists(request):
     qs = _items(request)
     qse = ExpenseType.objects.all().prefetch_related('expensename_set')
 
-    form = ExpenseForm(request=request)
+    form = ExpenseForm(data={}, request=request)
     context = {'objects': qs, 'categories': qse, 'form': form}
 
     return render(request, 'expenses/expenses_list.html', context=context)
@@ -72,6 +71,6 @@ def load_expense_name(request):
     )
     return render(
         request,
-        'expenses/expense_type_dropdown.html',
+        'core/dropdown.html',
         {'objects': objects}
     )

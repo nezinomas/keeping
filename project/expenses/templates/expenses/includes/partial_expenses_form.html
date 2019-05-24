@@ -1,5 +1,6 @@
 {% load form %}
-{% generic_form title='Išlaidos' update_container='ajax-content' %}
+{% url 'expenses:load_expense_name' as chained_url %}
+{% generic_form title='Išlaidos' update_container='ajax-content' chained_dropdown=chained_url %}
 
 <style>
     .form-check {
@@ -40,7 +41,7 @@
     });
 
     $("#id_expense_type").change(function () {
-        var url = $("#js-form").attr("data-sub-expense_type-url");
+        var url = $("#js-form").attr("data-chained-dropdown");
         var expense_typeId = $(this).val();
 
         $.ajax({
