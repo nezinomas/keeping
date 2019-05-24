@@ -27,18 +27,18 @@ def _json_response(request, obj):
 def lists(request):
     qs = _items(request)
 
-    form = IncomeForm(data={}, request=request)
+    form = IncomeForm()
     context = {
         'objects': qs,
         'categories': accounts_list(request),
         'form': form
     }
 
-    return render(request, 'transactions/transactions_list.html', context=context)
+    return render(request, 'incomes/incomes_list.html', context=context)
 
 
 def new(request):
-    form = IncomeForm(data={request.POST or None}, request=request)
+    form = IncomeForm(request.POST or None)
     context = {
         'url': reverse('incomes:incomes_new'),
         'action': 'insert'
@@ -46,12 +46,12 @@ def new(request):
 
     obj = SaveDataMixin(request, context, form)
 
-    return _json_response(obj)
+    return _json_response(request, obj)
 
 
 def update(request, pk):
     object = get_object_or_404(Income, pk=pk)
-    form = IncomeForm(data={request.POST or None}, instance=object, request=request)
+    form = IncomeForm(request.POST or None, instance=object)
     url = reverse(
         'incomes:incomes_update',
         kwargs={
@@ -62,4 +62,4 @@ def update(request, pk):
 
     obj = SaveDataMixin(request, context, form)
 
-    return _json_response(obj)
+    return _json_response(request, obj)
