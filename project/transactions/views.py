@@ -27,7 +27,7 @@ def _json_response(request, obj):
 def lists(request):
     qs = _items(request)
 
-    form = TransactionForm(request=request)
+    form = TransactionForm()
     context = {
         'objects': qs,
         'categories': accounts_list(request),
@@ -38,7 +38,7 @@ def lists(request):
 
 
 def new(request):
-    form = TransactionForm(data=(request.POST or None), request=request)
+    form = TransactionForm(request.POST or None)
     context = {'url': reverse('transactions:transactions_new'), 'action': 'insert'}
 
     obj = SaveDataMixin(request, context, form)
@@ -48,11 +48,7 @@ def new(request):
 
 def update(request, pk):
     object = get_object_or_404(Transaction, pk=pk)
-    form = TransactionForm(
-        data=(request.POST or None),
-        instance=object,
-        request=request
-    )
+    form = TransactionForm(request.POST or None, instance=object)
     url = reverse(
         'transactions:transactions_update',
         kwargs={

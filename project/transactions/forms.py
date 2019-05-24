@@ -20,7 +20,7 @@ class TransactionForm(forms.ModelForm):
 
     field_order = ['date', 'from_account', 'to_account', 'amount']
 
-    def __init__(self, request, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # form inputs settings
