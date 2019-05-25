@@ -20,4 +20,19 @@ urlpatterns = [
         views.update,
         name='incomes_update'
     ),
+    path(
+        'incomes/type/',
+        views.type_lists,
+        name='incomes_type_list'
+    ),
+    path(
+        'incomes/type/new/',
+        views.type_new,
+        name='incomes_type_new'
+    ),
+    path(
+        'incomes/type/update/<int:pk>/',
+        views.type_update,
+        name='incomes_type_update'
+    ),
 ]
