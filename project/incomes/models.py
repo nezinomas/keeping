@@ -4,6 +4,12 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
+from ..core.models import TitleAbstract
+
+
+class IncomeName(TitleAbstract):
+    class Meta:
+        ordering = ['title']
 
 
 class Income(models.Model):
@@ -19,6 +25,10 @@ class Income(models.Model):
     )
     account = models.ForeignKey(
         Account,
+        on_delete=models.CASCADE
+    )
+    income_name = models.ForeignKey(
+        IncomeName,
         on_delete=models.CASCADE
     )
 
