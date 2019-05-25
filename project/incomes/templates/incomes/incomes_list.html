@@ -11,7 +11,7 @@
 {% block content %}
 
 {% url 'incomes:incomes_new' as url_incomes %}
-{% url 'accounts:accounts_new' as url_accounts %}
+{% url 'incomes:incomes_type_new' as url_incomes_type_new %}
 <div class="col-8 pl-0">
     <div class="row my-2">
         <div class="col text-right">
@@ -23,7 +23,7 @@
 <div class="col-4 px-0">
     <div class="row my-2">
         <div class="col text-right">
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="fas fa-plus"></i> Sąskaitą</button>
+            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_type_new }}"><i class="fas fa-plus"></i> Pajamų rūšį</button>
         </div>
     </div>
     <div id="ajax-content-categories">{{ categories }}</div>

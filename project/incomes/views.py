@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, render, reverse
+from django.template.loader import render_to_string
 
-from ..accounts.views import lists as accounts_list
 from ..core.mixins.save_data_mixin import SaveDataMixin
 from .forms import IncomeForm, IncomeTypeForm
 from .models import Income, IncomeType
@@ -30,7 +30,7 @@ def lists(request):
     form = IncomeForm()
     context = {
         'objects': qs,
-        'categories': accounts_list(request),
+        'categories': type_lists(request),
         'form': form
     }
 
@@ -65,13 +65,54 @@ def update(request, pk):
     return _json_response(request, obj)
 
 
+# IncomeType helper functions and views
+
+def _type_items():
+    return IncomeType.objects.all()
+
+
+def _type_json_response(obj):
+    obj.form_template = 'incomes/includes/partial_incomes_type_form.html'
+    obj.items_template = 'incomes/includes/partial_incomes_type_list.html'
+
+    obj.items_template_var_name = 'categories'
+    obj.items = _type_items()
+
+    return obj.GenJsonResponse()
+
+
 def type_lists(request):
-    pass
+    qs = _type_items()
+    return render_to_string(
+        'incomes/includes/partial_incomes_type_list.html',
+        {'categories': qs},
+        request,
+    )
 
 
 def type_new(request):
-    pass
+    form = IncomeTypeForm(request.POST or None)
+    context = {
+        'url': reverse('incomes:incomes_type_new'),
+        'action': 'insert'
+    }
+
+    obj = SaveDataMixin(request, context, form)
+
+    return _type_json_response(obj)
 
 
 def type_update(request, pk):
-    pass
+    object = get_object_or_404(IncomeType, pk=pk)
+    form = IncomeTypeForm(request.POST or None, instance=object)
+    url = reverse(
+        'incomes:incomes_type_update',
+        kwargs={
+            'pk': pk
+        }
+    )
+    context = {'url': url, 'action': 'update'}
+
+    obj = SaveDataMixin(request, context, form)
+
+    return _type_json_response(obj)
