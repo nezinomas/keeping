@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404, render, reverse
 
 from ..accounts.views import lists as accounts_list
 from ..core.mixins.save_data_mixin import SaveDataMixin
-from .forms import IncomeForm
+from .forms import IncomeForm, IncomeNameForm
 from .models import Income
 
 
