@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
-from .models import Income, IncomeName
+from .models import Income, IncomeType
 
 
 class IncomeForm(forms.ModelForm):
@@ -40,9 +40,9 @@ class IncomeForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
-class IncomeNameForm(forms.ModelForm):
+class IncomeTypeForm(forms.ModelForm):
     class Meta:
-        model = IncomeName
+        model = IncomeType
         fields = ['title']
 
     def __init__(self, *args, **kwargs):

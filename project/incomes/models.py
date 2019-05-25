@@ -7,7 +7,7 @@ from ..accounts.models import Account
 from ..core.models import TitleAbstract
 
 
-class IncomeName(TitleAbstract):
+class IncomeType(TitleAbstract):
     class Meta:
         ordering = ['title']
 
@@ -28,7 +28,7 @@ class Income(models.Model):
         on_delete=models.CASCADE
     )
     income_type = models.ForeignKey(
-        IncomeName,
+        IncomeType,
         on_delete=models.CASCADE
     )
 
