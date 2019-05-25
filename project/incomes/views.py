@@ -63,3 +63,15 @@ def update(request, pk):
     obj = SaveDataMixin(request, context, form)
 
     return _json_response(request, obj)
+
+
+def type_lists(request):
+    pass
+
+
+def type_new(request):
+    pass
+
+
+def type_update(request, pk):
+    pass
