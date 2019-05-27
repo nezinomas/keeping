@@ -10,7 +10,7 @@ urlpatterns = [
     path('', include('project.bookkeeping.urls')),
     path('', include('project.books.urls')),
     path('', include('project.core.urls')),
-    # path('', include('project.drinks.urls')),
+    path('', include('project.drinks.urls')),
     path('', include('project.expenses.urls')),
     path('', include('project.incomes.urls')),
     path('', include('project.savings.urls')),

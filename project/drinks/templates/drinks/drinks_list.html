@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load buttons %}
+
+
+{% block head %}
+    {{ form.media }}
+    <script src="https://code.jquery.com/ui/1.11.3/jquery-ui.min.js"></script>
+{% endblock head %}
+
+
+{% block content %}
+
+{% url 'drinks:drinks_new' as url_drinks %}
+<div class="col-8 pl-0">
+    <div class="row my-2">
+        <div class="col text-right">
+            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_drinks }}"><i class="fas fa-plus"></i> Įrašą</button>
+        </div>
+    </div>
+    <div id="ajax-content">{% include 'drinks/includes/partial_drinks_list.html' %}</div>
+</div>
+<div class="col-4 px-0">
+    <div class="row my-2">
+        <div class="col text-right"></div>
+    </div>
+    <div id="ajax-content-categories"></div>
+</div>
+
+<div class="modal fade" id="modal-form">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content"></div>
+    </div>
+</div>
+{% endblock content %}
