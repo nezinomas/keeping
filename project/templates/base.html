@@ -46,6 +46,10 @@
             <a class="nav-link {% if '/savings/' in request.path %}active{% endif %}"
               href="{% url 'savings:savings_list' %}">Taupymas</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link {% if '/books/' in request.path %}active{% endif %}"
+              href="{% url 'books:books_list' %}">Knygos</a>
+          </li>
         </ul>
       </nav>
 
