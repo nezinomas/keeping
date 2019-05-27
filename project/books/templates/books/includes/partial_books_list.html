@@ -13,7 +13,7 @@
         <tr data-url="{{ url_update }}">
             <td>{{ forloop.revcounter }}</td>
             <td>{{ item.author }}</td>
-            <td>{{ item.title }}</td>
+            <td>„{{ item.title }}”</td>
             <td class="text-center">{{ item.started }}</td>
             <td class="text-center">{{ item.ended|default_if_none:'-' }}</td>
         </tr>
