@@ -50,6 +50,10 @@
             <a class="nav-link {% if '/books/' in request.path %}active{% endif %}"
               href="{% url 'books:books_list' %}">Knygos</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link {% if '/drinks/' in request.path %}active{% endif %}"
+              href="{% url 'drinks:drinks_list' %}">Gėrimai</a>
+          </li>
         </ul>
       </nav>
 
