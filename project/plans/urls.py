@@ -29,17 +29,17 @@ urlpatterns = [
     path(
         'plans/income/',
         views.income_lists,
-        name='plans_income_list'
+        name='plans_incomes_list'
     ),
     path(
         'plans/income/new/',
         views.income_new,
-        name='plans_income_new'
+        name='plans_incomes_new'
     ),
     path(
         'plans/income/update/<int:pk>/',
         views.income_update,
-        name='plans_income_update'
+        name='plans_incomes_update'
     ),
     #
     # saving plan
