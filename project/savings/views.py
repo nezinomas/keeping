@@ -40,11 +40,31 @@ def lists(request):
 
 
 def new(request):
-    pass
+    form = SavingForm(request.POST or None)
+    context = {
+        'url': reverse('savings:savings_new'),
+        'action': 'insert'
+    }
+
+    obj = SaveDataMixin(request, context, form)
+
+    return _json_response(request, obj)
 
 
 def update(request, pk):
-    pass
+    object = get_object_or_404(Saving, pk=pk)
+    form = SavingForm(request.POST or None, instance=object)
+    url = reverse(
+        'savings:savings_update',
+        kwargs={
+            'pk': pk
+        }
+    )
+    context = {'url': url, 'action': 'update'}
+
+    obj = SaveDataMixin(request, context, form)
+
+    return _json_response(request, obj)
 
 
 # Saving Type views
@@ -72,8 +92,28 @@ def type_lists(request):
 
 
 def type_new(request):
-    pass
+    form = SavingTypeForm(request.POST or None)
+    context = {
+        'url': reverse('savings:savings_type_new'),
+        'action': 'insert'
+    }
+
+    obj = SaveDataMixin(request, context, form)
+
+    return _type_json_response(obj)
 
 
 def type_update(request, pk):
-    pass
+    object = get_object_or_404(SavingType, pk=pk)
+    form = SavingTypeForm(request.POST or None, instance=object)
+    url = reverse(
+        'savings:savings_type_update',
+        kwargs={
+            'pk': pk
+        }
+    )
+    context = {'url': url, 'action': 'update'}
+
+    obj = SaveDataMixin(request, context, form)
+
+    return _type_json_response(obj)
