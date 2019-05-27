@@ -47,6 +47,7 @@ class SavingForm(forms.ModelForm):
         self.fields['date'].label = 'Data'
         self.fields['account'].label = 'Sąskaita'
         self.fields['amount'].label = 'Suma'
+        self.fields['fee'].label = 'Mokesčiai'
         self.fields['remark'].label = 'Pastaba'
         self.fields['saving_type'].label = 'Fondas'
 
