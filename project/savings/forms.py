@@ -38,6 +38,7 @@ class SavingForm(forms.ModelForm):
 
         # form inputs settings
         self.fields['amount'].widget.attrs = {'step': '0.01'}
+        self.fields['fee'].widget.attrs = {'step': '0.01'}
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # inital values
