@@ -12,6 +12,15 @@ class IncomeType(TitleAbstract):
         ordering = ['title']
 
 
+class IncomeManager(models.Manager):
+    def items(self, year):
+        qs = (
+            self.get_queryset().
+            filter(date__year=year).
+            prefetch_related('account')
+        )
+
+
 class Income(models.Model):
     date = models.DateField()
     amount = models.DecimalField(
@@ -31,6 +40,8 @@ class Income(models.Model):
         IncomeType,
         on_delete=models.CASCADE
     )
+
+    objects = IncomeManager()
 
     class Meta:
         ordering = ['-date', 'amount']
