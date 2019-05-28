@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
@@ -24,6 +25,7 @@ def _json_response(request, obj):
     return obj.GenJsonResponse()
 
 
+@login_required()
 def lists(request):
     qs = _items(request)
     qse = ExpenseType.objects.all().prefetch_related('expensename_set')
@@ -34,6 +36,7 @@ def lists(request):
     return render(request, 'expenses/expenses_list.html', context=context)
 
 
+@login_required()
 def new(request):
     form = ExpenseForm(data=(request.POST or None), request=request)
     context = {'url': reverse('expenses:expenses_new'), 'action': 'insert'}
@@ -43,6 +46,7 @@ def new(request):
     return _json_response(request, obj)
 
 
+@login_required()
 def update(request, pk):
     object = get_object_or_404(Expense, pk=pk)
     form = ExpenseForm(data=(request.POST or None), instance=object, request=request)
