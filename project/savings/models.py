@@ -12,6 +12,16 @@ class SavingType(TitleAbstract):
         ordering = ['title']
 
 
+class SavingManager(models.Manager):
+    def items(self, year):
+        qs = (
+            self.get_queryset().
+            filter(date__year=year).
+            prefetch_related('account', 'saving_type')
+        )
+        return qs
+
+
 class Saving(models.Model):
     date = models.DateField()
     amount = models.DecimalField(
@@ -37,6 +47,8 @@ class Saving(models.Model):
         Account,
         on_delete=models.CASCADE
     )
+
+    objects = SavingManager()
 
     class Meta:
         ordering = ['-date', 'saving_type']
