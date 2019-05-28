@@ -5,25 +5,17 @@ from .forms import DrinkForm
 from .models import Drink
 
 
-def _items(request):
-    qs = (
-        Drink.objects.
-        filter(date__year=request.user.profile.year)
-    )
-    return qs
-
-
 def _json_response(request, obj):
     obj.form_template = 'drinks/includes/partial_drinks_form.html'
     obj.items_template = 'drinks/includes/partial_drinks_list.html'
 
-    obj.items = _items(request)
+    obj.items = Drink.objects.items(request.user.profile.year)
 
     return obj.GenJsonResponse()
 
 
 def lists(request):
-    qs = _items(request)
+    qs = Drink.objects.items(request.user.profile.year)
 
     form = DrinkForm()
     context = {
