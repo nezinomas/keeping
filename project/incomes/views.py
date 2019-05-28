@@ -9,7 +9,7 @@ from .models import Income, IncomeType
 def _items(request):
     qs = (
         Income.objects.
-        filter(date__year=request.session['year']).
+        filter(date__year=request.request.user.profile.year).
         prefetch_related('account')
     )
     return qs

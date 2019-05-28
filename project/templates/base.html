@@ -21,11 +21,11 @@
       <nav class="navbar navbar-expand navbar-light bg-light">
         <ul class="nav nav-pills">
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ request.session.year }}</a>
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ request.user.profile.year }}</a>
             <div class="dropdown-menu">
               {% with request.resolver_match.view_name as m_url %}
               <a class="dropdown-item" href="{% url 'core:set_year' 2019 m_url  %}">2019</a>
-              <a class="dropdown-item" href="#">2018</a>
+              <a class="dropdown-item" href="{% url 'core:set_year' 2018 m_url  %}">2018</a>
               <a class="dropdown-item" href="#">2017</a>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="#">Separated link</a>

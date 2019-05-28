@@ -55,7 +55,7 @@ class ExpenseForm(forms.ModelForm):
                 filter(parent_id=id).
                 filter(
                     Q(valid_for__isnull=True) |
-                    Q(valid_for=request.session['year'])
+                    Q(valid_for=request.user.profile.year)
                 )
             )
 

@@ -7,7 +7,15 @@ from django.http import HttpResponseRedirect
 
 class CustomLogin(auth_views.LoginView):
     def form_valid(self, form):
-        login(self.request, form.get_user())
-        self.request.session['year'] = datetime.now().year
+        user = form.get_user()
+        login(self.request, user)
+
+        if not user.profile.year:
+            user.profile.year = datetime.now().year
+
+        if not user.profile.month:
+            user.profile.month = datetime.now().month
+
+        user.save()
 
         return HttpResponseRedirect(self.get_success_url())

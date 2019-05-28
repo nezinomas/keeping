@@ -10,7 +10,7 @@ from .models import Transaction
 def _items(request):
     qs = (
         Transaction.objects.
-        filter(date__year=request.session['year']).
+        filter(date__year=request.user.profile.year).
         prefetch_related('from_account', 'to_account')
     )
     return qs
