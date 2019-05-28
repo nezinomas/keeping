@@ -6,22 +6,18 @@ from .forms import AccountForm
 from .models import Account
 
 
-def _items():
-    return Account.objects.all()
-
-
 def _json_response(obj):
     obj.form_template = 'accounts/includes/partial_accounts_form.html'
     obj.items_template = 'accounts/includes/partial_accounts_list.html'
 
-    obj.items = _items()
+    obj.items = Account.objects.all()
     obj.items_template_var_name = 'categories'
 
     return obj.GenJsonResponse()
 
 
 def lists(request):
-    qs = _items()
+    qs = Account.objects.all()
     return render_to_string(
         'accounts/includes/partial_accounts_list.html',
         {'categories': qs},
