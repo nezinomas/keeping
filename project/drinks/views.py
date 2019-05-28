@@ -8,7 +8,7 @@ from .models import Drink
 def _items(request):
     qs = (
         Drink.objects.
-        filter(date__year=request.session['year'])
+        filter(date__year=request.user.profile.year)
     )
     return qs
 

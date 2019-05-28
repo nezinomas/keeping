@@ -11,7 +11,7 @@ from ..models import Expense, ExpenseName, ExpenseType
 def _items(request):
     qs = (
         Expense.objects.
-        filter(date__year=request.session['year']).
+        filter(date__year=request.user.profile.year).
         prefetch_related('expense_type', 'expense_name', 'account')
     )
     return qs
@@ -64,13 +64,14 @@ def update(request, pk):
 
 
 def load_expense_name(request):
+    print
     pk = request.GET.get('expense_type')
     objects = (
         ExpenseName.objects.
         filter(parent_id=pk).
         filter(
             Q(valid_for__isnull=True) |
-            Q(valid_for=request.session['year'])
+            Q(valid_for=request.user.profile.year)
         )
     )
     return render(

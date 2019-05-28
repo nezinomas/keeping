@@ -11,7 +11,7 @@ from .forms import SavingForm, SavingTypeForm
 def _items(request):
     qs = (
         Saving.objects.
-        filter(date__year=request.session['year']).
+        filter(date__year=request.user.profile.year).
         prefetch_related('account', 'saving_type')
     )
     return qs
