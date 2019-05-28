@@ -7,7 +7,12 @@ from ..incomes.models import IncomeType
 from ..savings.models import SavingType
 
 
-class ExpenseTypePlan(MonthAbstract):
+class YearManager(models.Manager):
+    def items(self, year):
+        return self.get_queryset().filter(year=year)
+
+
+class ExpensePlan(MonthAbstract):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(2000), MaxValueValidator(2050)]
     )
@@ -15,6 +20,8 @@ class ExpenseTypePlan(MonthAbstract):
         ExpenseType,
         on_delete=models.CASCADE
     )
+
+    objects = YearManager()
 
     class Meta:
         ordering = ['expense_type']
@@ -30,6 +37,8 @@ class SavingPlan(MonthAbstract):
         on_delete=models.CASCADE
     )
 
+    objects = YearManager()
+
     class Meta:
         ordering = ['saving_type']
         unique_together = ('year', 'saving_type')
@@ -44,6 +53,8 @@ class IncomePlan(MonthAbstract):
         on_delete=models.CASCADE
     )
 
+    objects = YearManager()
+
     class Meta:
         ordering = ['income_type']
         unique_together = ('year', 'income_type')
@@ -54,3 +65,5 @@ class DayPlan(MonthAbstract):
         validators=[MinValueValidator(2000), MaxValueValidator(2050)],
         unique=True
     )
+
+    objects = YearManager()
