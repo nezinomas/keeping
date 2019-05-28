@@ -19,7 +19,7 @@ def _json_response(request, obj):
 @login_required()
 def lists(request):
     qs = Expense.objects.year_items(request.user.profile.year)
-    qse = ExpenseType.objects.all().prefetch_related('expensename_set')
+    qse = ExpenseType.objects.items()
 
     form = ExpenseForm(data={}, request=request)
     context = {'objects': qs, 'categories': qse, 'form': form}

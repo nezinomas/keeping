@@ -8,9 +8,16 @@ from ..accounts.models import Account
 from ..core.models import TitleAbstract
 
 
+class ExpenseTypeManager(models.Manager):
+    def items(self):
+        return self.get_queryset().prefetch_related('expensename_set')
+
+
 class ExpenseType(TitleAbstract):
     class Meta:
         ordering = ['title']
+
+    objects = ExpenseTypeManager()
 
 
 class ExpenseName(TitleAbstract):
