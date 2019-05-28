@@ -5,16 +5,11 @@ from ..forms import ExpenseNameForm, ExpenseTypeForm
 from ..models import ExpenseName, ExpenseType
 
 
-def _items():
-    qs = ExpenseType.objects.all().prefetch_related('expensename_set')
-    return qs
-
-
 def _json_response(obj):
     obj.form_template = 'expenses/includes/partial_expenses_type_form.html'
     obj.items_template = 'expenses/includes/partial_expenses_type_list.html'
     obj.items_template_var_name = 'categories'
-    obj.items = _items()
+    obj.items = ExpenseType.objects.items()
 
     return obj.GenJsonResponse()
 

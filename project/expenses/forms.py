@@ -3,7 +3,6 @@ from datetime import datetime
 from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
-from django.db.models import Q
 
 from ..core.helpers.helper_forms import set_field_properties, ChainedDropDown
 from .models import Expense, ExpenseName, ExpenseType
@@ -51,12 +50,7 @@ class ExpenseForm(forms.ModelForm):
         id = ChainedDropDown(self, 'expense_type').parent_field_id
         if id:
             self.fields['expense_name'].queryset = (
-                ExpenseName.objects.
-                filter(parent_id=id).
-                filter(
-                    Q(valid_for__isnull=True) |
-                    Q(valid_for=request.user.profile.year)
-                )
+                ExpenseName.objects.items(id, request.user.profile.year)
             )
 
         self.helper = FormHelper()
