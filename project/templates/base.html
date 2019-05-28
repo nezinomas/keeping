@@ -54,6 +54,10 @@
             <a class="nav-link {% if '/drinks/' in request.path %}active{% endif %}"
               href="{% url 'drinks:drinks_list' %}">Gėrimai</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link {% if '/plans/' in request.path %}active{% endif %}"
+              href="{% url 'plans:plans_index' %}">Planavimas</a>
+          </li>
         </ul>
       </nav>
 

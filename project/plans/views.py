@@ -1,6 +1,10 @@
 from django.shortcuts import render
 
 
+def plans_index(request):
+    pass
+
+
 def expenses_lists(request):
     pass
 

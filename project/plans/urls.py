@@ -5,6 +5,11 @@ from . import views
 app_name = 'plans'
 
 urlpatterns = [
+    path(
+        'plans/',
+        views.plans_index,
+        name='plans_index'
+    ),
     #
     # expenses plan
     #
