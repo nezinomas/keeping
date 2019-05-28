@@ -2,6 +2,11 @@ from django.db import models
 from django.core.validators import MinLengthValidator
 
 
+class BookManager(models.Manager):
+    def items(self, year):
+        return self.get_queryset().filter(started__year=year)
+
+
 class Book(models.Model):
     started = models.DateField()
     ended = models.DateField(
@@ -16,6 +21,8 @@ class Book(models.Model):
         max_length=254,
         validators=[MinLengthValidator(3)]
     )
+
+    objects = BookManager()
 
     class Meta:
         ordering = ['-started', 'author']
