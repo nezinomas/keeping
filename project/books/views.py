@@ -7,25 +7,17 @@ from .models import Book
 from .forms import BookForm
 
 
-def _items(request):
-    qs = (
-        Book.objects.
-        filter(started__year=request.user.profile.year)
-    )
-    return qs
-
-
 def _json_response(request, obj):
     obj.form_template = 'books/includes/partial_books_form.html'
     obj.items_template = 'books/includes/partial_books_list.html'
 
-    obj.items = _items(request)
+    obj.items = Book.objects.items(request.user.profile.year)
 
     return obj.GenJsonResponse()
 
 
 def lists(request):
-    qs = _items(request)
+    qs = Book.objects.items(request.user.profile.year)
 
     form = BookForm()
     context = {

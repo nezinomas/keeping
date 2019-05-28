@@ -7,25 +7,16 @@ from .forms import TransactionForm
 from .models import Transaction
 
 
-def _items(request):
-    qs = (
-        Transaction.objects.
-        filter(date__year=request.user.profile.year).
-        prefetch_related('from_account', 'to_account')
-    )
-    return qs
-
-
 def _json_response(request, obj):
     obj.form_template = 'transactions/includes/partial_transactions_form.html'
     obj.items_template = 'transactions/includes/partial_transactions_list.html'
-    obj.items = _items(request)
+    obj.items = Transaction.objects.items(request.user.profile.year)
 
     return obj.GenJsonResponse()
 
 
 def lists(request):
-    qs = _items(request)
+    qs = Transaction.objects.items(request.user.profile.year)
 
     form = TransactionForm()
     context = {

@@ -6,26 +6,17 @@ from .forms import IncomeForm, IncomeTypeForm
 from .models import Income, IncomeType
 
 
-def _items(request):
-    qs = (
-        Income.objects.
-        filter(date__year=request.request.user.profile.year).
-        prefetch_related('account')
-    )
-    return qs
-
-
 def _json_response(request, obj):
     obj.form_template = 'incomes/includes/partial_incomes_form.html'
     obj.items_template = 'incomes/includes/partial_incomes_list.html'
 
-    obj.items = _items(request)
+    obj.items = Income.objects.items(request.user.profile.year)
 
     return obj.GenJsonResponse()
 
 
 def lists(request):
-    qs = _items(request)
+    qs = Income.objects.items(request.user.profile.year)
 
     form = IncomeForm()
     context = {
@@ -67,22 +58,18 @@ def update(request, pk):
 
 # IncomeType helper functions and views
 
-def _type_items():
-    return IncomeType.objects.all()
-
-
 def _type_json_response(obj):
     obj.form_template = 'incomes/includes/partial_incomes_type_form.html'
     obj.items_template = 'incomes/includes/partial_incomes_type_list.html'
 
     obj.items_template_var_name = 'categories'
-    obj.items = _type_items()
+    obj.items = IncomeType.objects.all()
 
     return obj.GenJsonResponse()
 
 
 def type_lists(request):
-    qs = _type_items()
+    qs = IncomeType.objects.all()
     return render_to_string(
         'incomes/includes/partial_incomes_type_list.html',
         {'categories': qs},

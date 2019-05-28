@@ -1,5 +1,4 @@
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
 from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
 
@@ -8,27 +7,18 @@ from ..forms import ExpenseForm
 from ..models import Expense, ExpenseName, ExpenseType
 
 
-def _items(request):
-    qs = (
-        Expense.objects.
-        filter(date__year=request.user.profile.year).
-        prefetch_related('expense_type', 'expense_name', 'account')
-    )
-    return qs
-
-
 def _json_response(request, obj):
     obj.form_template = 'expenses/includes/partial_expenses_form.html'
     obj.items_template = 'expenses/includes/partial_expenses_list.html'
-    obj.items = _items(request)
+    obj.items = Expense.objects.year_items(request.user.profile.year)
 
     return obj.GenJsonResponse()
 
 
 @login_required()
 def lists(request):
-    qs = _items(request)
-    qse = ExpenseType.objects.all().prefetch_related('expensename_set')
+    qs = Expense.objects.year_items(request.user.profile.year)
+    qse = ExpenseType.objects.items()
 
     form = ExpenseForm(data={}, request=request)
     context = {'objects': qs, 'categories': qse, 'form': form}
@@ -64,16 +54,9 @@ def update(request, pk):
 
 
 def load_expense_name(request):
-    print
     pk = request.GET.get('expense_type')
-    objects = (
-        ExpenseName.objects.
-        filter(parent_id=pk).
-        filter(
-            Q(valid_for__isnull=True) |
-            Q(valid_for=request.user.profile.year)
-        )
-    )
+    objects = ExpenseName.objects.items(pk, request.user.profile.year)
+
     return render(
         request,
         'core/dropdown.html',

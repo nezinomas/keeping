@@ -8,26 +8,17 @@ from .forms import SavingForm, SavingTypeForm
 
 
 # Saving views
-def _items(request):
-    qs = (
-        Saving.objects.
-        filter(date__year=request.user.profile.year).
-        prefetch_related('account', 'saving_type')
-    )
-    return qs
-
-
 def _json_response(request, obj):
     obj.form_template = 'savings/includes/partial_savings_form.html'
     obj.items_template = 'savings/includes/partial_savings_list.html'
 
-    obj.items = _items(request)
+    obj.items = Saving.objects.items(request.user.profile.year)
 
     return obj.GenJsonResponse()
 
 
 def lists(request):
-    qs = _items(request)
+    qs = Saving.objects.items(request.user.profile.year)
 
     form = SavingForm()
     context = {
@@ -68,22 +59,18 @@ def update(request, pk):
 
 
 # Saving Type views
-def _type_items():
-    return SavingType.objects.all()
-
-
 def _type_json_response(obj):
     obj.form_template = 'savings/includes/partial_savings_type_form.html'
     obj.items_template = 'savings/includes/partial_savings_type_list.html'
 
     obj.items_template_var_name = 'categories'
-    obj.items = _type_items()
+    obj.items = SavingType.objects.all()
 
     return obj.GenJsonResponse()
 
 
 def type_lists(request):
-    qs = _type_items()
+    qs = SavingType.objects.all()
     return render_to_string(
         'savings/includes/partial_savings_type_list.html',
         {'categories': qs},

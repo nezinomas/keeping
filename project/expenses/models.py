@@ -1,4 +1,4 @@
-from django.db.models import F
+from django.db.models import F, Q
 from decimal import Decimal
 
 from django.core.validators import MinValueValidator
@@ -8,9 +8,29 @@ from ..accounts.models import Account
 from ..core.models import TitleAbstract
 
 
+class ExpenseTypeManager(models.Manager):
+    def items(self):
+        return self.get_queryset().prefetch_related('expensename_set')
+
+
 class ExpenseType(TitleAbstract):
     class Meta:
         ordering = ['title']
+
+    objects = ExpenseTypeManager()
+
+
+class ExpenseNameManager(models.Manager):
+    def items(self, parent_id, year):
+        qs = (
+            self.get_queryset().
+            filter(parent_id=parent_id).
+            filter(
+                Q(valid_for__isnull=True) |
+                Q(valid_for=year)
+            )
+        )
+        return qs
 
 
 class ExpenseName(TitleAbstract):
@@ -27,9 +47,21 @@ class ExpenseName(TitleAbstract):
         on_delete=models.CASCADE
     )
 
+    objects = ExpenseNameManager()
+
     class Meta:
         unique_together = ('title', 'parent')
         ordering = [F('valid_for').desc(nulls_first=True), 'title']
+
+
+class ExpenseManager(models.Manager):
+    def year_items(self, year):
+        qs = (
+            self.get_queryset().
+            filter(date__year=year).
+            prefetch_related('expense_type', 'expense_name', 'account')
+        )
+        return qs
 
 
 class Expense(models.Model):
@@ -61,6 +93,9 @@ class Expense(models.Model):
         Account,
         on_delete=models.CASCADE
     )
+
+    #Managers
+    objects = ExpenseManager()
 
     def __str__(self):
         return str(self.date)
