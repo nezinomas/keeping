@@ -32,6 +32,16 @@ class ExpenseName(TitleAbstract):
         ordering = [F('valid_for').desc(nulls_first=True), 'title']
 
 
+class ExpenseManager(models.Manager):
+    def year_items(self, year):
+        qs = (
+            self.get_queryset().
+            filter(date__year=year).
+            prefetch_related('expense_type', 'expense_name', 'account')
+        )
+        return qs
+
+
 class Expense(models.Model):
     date = models.DateField()
     price = models.DecimalField(
@@ -61,6 +71,9 @@ class Expense(models.Model):
         Account,
         on_delete=models.CASCADE
     )
+
+    #Managers
+    objects = ExpenseManager()
 
     def __str__(self):
         return str(self.date)

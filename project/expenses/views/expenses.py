@@ -8,26 +8,17 @@ from ..forms import ExpenseForm
 from ..models import Expense, ExpenseName, ExpenseType
 
 
-def _items(request):
-    qs = (
-        Expense.objects.
-        filter(date__year=request.user.profile.year).
-        prefetch_related('expense_type', 'expense_name', 'account')
-    )
-    return qs
-
-
 def _json_response(request, obj):
     obj.form_template = 'expenses/includes/partial_expenses_form.html'
     obj.items_template = 'expenses/includes/partial_expenses_list.html'
-    obj.items = _items(request)
+    obj.items = Expense.objects.year_items(request.user.profile.year)
 
     return obj.GenJsonResponse()
 
 
 @login_required()
 def lists(request):
-    qs = _items(request)
+    qs = Expense.objects.year_items(request.user.profile.year)
     qse = ExpenseType.objects.all().prefetch_related('expensename_set')
 
     form = ExpenseForm(data={}, request=request)
