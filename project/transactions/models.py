@@ -6,6 +6,16 @@ from django.db import models
 from ..accounts.models import Account
 
 
+class TransactionManager(models.Manager):
+    def items(self, year):
+        qs = (
+            self.get_queryset().
+            filter(date__year=year).
+            prefetch_related('from_account', 'to_account')
+        )
+        return qs
+
+
 class Transaction(models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
@@ -23,6 +33,8 @@ class Transaction(models.Model):
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))]
     )
+
+    objects = TransactionManager()
 
     class Meta:
         ordering = ['-date', 'amount', 'from_account']
