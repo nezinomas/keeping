@@ -10,7 +10,7 @@ from .forms import BookForm
 def _items(request):
     qs = (
         Book.objects.
-        filter(started__year=request.session['year'])
+        filter(started__year=request.user.profile.year)
     )
     return qs
 
