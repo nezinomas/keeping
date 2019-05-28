@@ -1,4 +1,4 @@
-from django.db.models import F
+from django.db.models import F, Q
 from decimal import Decimal
 
 from django.core.validators import MinValueValidator
@@ -20,6 +20,19 @@ class ExpenseType(TitleAbstract):
     objects = ExpenseTypeManager()
 
 
+class ExpenseNameManager(models.Manager):
+    def items(self, parent_id, year):
+        qs = (
+            self.get_queryset().
+            filter(parent_id=parent_id).
+            filter(
+                Q(valid_for__isnull=True) |
+                Q(valid_for=year)
+            )
+        )
+        return qs
+
+
 class ExpenseName(TitleAbstract):
     title = models.CharField(
         max_length=254,
@@ -33,6 +46,8 @@ class ExpenseName(TitleAbstract):
         ExpenseType,
         on_delete=models.CASCADE
     )
+
+    objects = ExpenseNameManager()
 
     class Meta:
         unique_together = ('title', 'parent')

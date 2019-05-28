@@ -1,5 +1,4 @@
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
 from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
 
@@ -55,16 +54,9 @@ def update(request, pk):
 
 
 def load_expense_name(request):
-    print
     pk = request.GET.get('expense_type')
-    objects = (
-        ExpenseName.objects.
-        filter(parent_id=pk).
-        filter(
-            Q(valid_for__isnull=True) |
-            Q(valid_for=request.user.profile.year)
-        )
-    )
+    objects = ExpenseName.objects.items(pk, request.user.profile.year)
+
     return render(
         request,
         'core/dropdown.html',
