@@ -10,25 +10,42 @@
 
 {% block content %}
 
-{% url 'plans:plans_expenses_new' as url_expenses_new %}
 <div class="col-8 pl-0">
+    <!-- expenses plans -->
     <div class="row my-2">
         <div class="col-10"><h6>Išlaidų planas</h6></div>
         <div class="col-2 text-right">
+            {% url 'plans:plans_expenses_new' as url_expenses_new %}
             <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Įrašą</button>
         </div>
     </div>
-    <div id="expenses_list" class="dblclick">{{ expenses_list }}</div>
-</div>
-<div class="col-4 px-0">
     <div class="row my-2">
-        <div class="col text-right">
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_type_new }}"><i class="fas fa-plus"></i> Fondą</button>
+        <div id="expenses_list" class="col dblclick">{{ expenses_list }}</div>
+    </div>
+
+    <!-- incomes plans -->
+    <div class="row my-2">
+        <div class="col-10">
+            <h6>Pajamų planas</h6>
+        </div>
+        <div class="col-2 text-right">
+            {% url 'plans:plans_incomes_new' as url_incomes_new %}
+            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_new }}"><i class="fas fa-plus"></i> Įrašą</button>
         </div>
     </div>
-    <div id="ajax-content-categories"></div>
+    <div class="row my-2">
+        <div id="incomes_list" class="col dblclick">{{ incomes_list }}</div>
+    </div>
 </div>
 
+<!-- left side -->
+<div class="col-4 px-0">
+    <div class="row my-2">
+        <div class="col text-right"></div>
+    </div>
+</div>
+
+<!-- modal form -->
 <div class="modal fade" id="modal-form">
     <div class="modal-dialog modal-md">
         <div class="modal-content"></div>
