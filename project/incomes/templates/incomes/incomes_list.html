@@ -18,7 +18,7 @@
             <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes }}"><i class="fas fa-plus"></i> Pajamas</button>
         </div>
     </div>
-    <div id="ajax-content">{% include 'incomes/includes/partial_incomes_list.html' %}</div>
+    <div id="ajax-content" class="dblclick">{% include 'incomes/includes/partial_incomes_list.html' %}</div>
 </div>
 <div class="col-4 px-0">
     <div class="row my-2">
@@ -26,7 +26,7 @@
             <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_type_new }}"><i class="fas fa-plus"></i> Pajamų rūšį</button>
         </div>
     </div>
-    <div id="ajax-content-categories">{{ categories }}</div>
+    <div id="ajax-content-categories" class="dblclick">{{ categories }}</div>
 </div>
 
 <div class="modal fade" id="modal-form">
