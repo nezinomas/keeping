@@ -1,12 +1,36 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render, reverse
+from django.template.loader import render_to_string
+
+from ..core.mixins.save_data_mixin import SaveDataMixin
+from .models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
 
 
 def plans_index(request):
-    pass
+    context = {
+        'expenses_list': expenses_lists(request)
+    }
+    return render(request, 'plans/plans_list.html', context)
+
+
+# Expense Plan views
+
+def _expense_json_response(request, obj):
+    obj.form_template = 'plans/includes/partial_expenses_form.html'
+    obj.items_template = 'plans/includes/partial_expenses_list.html'
+
+    obj.items_template_var_name = 'expenses_list'
+    obj.items = ExpensePlan.objects.items(request.user.profile.year)
+
+    return obj.GenJsonResponse()
 
 
 def expenses_lists(request):
-    pass
+    qs = ExpensePlan.objects.items(request.user.profile.year)
+    return render_to_string(
+        'plans/includes/partial_expenses_list.html',
+        {'expenses_list': qs},
+        request,
+    )
 
 
 def expenses_new(request):
