@@ -8,8 +8,16 @@ from ..savings.models import SavingType
 
 
 class YearManager(models.Manager):
+    def __init__(self, prefetch, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._prefetch = prefetch
+
     def items(self, year):
-        return self.get_queryset().filter(year=year)
+        qs = self.get_queryset().filter(year=year)
+        if self._prefetch:
+            qs = qs.prefetch_related(self._prefetch)
+
+        return qs
 
 
 class ExpensePlan(MonthAbstract):
@@ -21,7 +29,7 @@ class ExpensePlan(MonthAbstract):
         on_delete=models.CASCADE
     )
 
-    objects = YearManager()
+    objects = YearManager('expense_type')
 
     class Meta:
         ordering = ['expense_type']
@@ -37,7 +45,7 @@ class SavingPlan(MonthAbstract):
         on_delete=models.CASCADE
     )
 
-    objects = YearManager()
+    objects = YearManager('saving_type')
 
     class Meta:
         ordering = ['saving_type']
@@ -53,7 +61,7 @@ class IncomePlan(MonthAbstract):
         on_delete=models.CASCADE
     )
 
-    objects = YearManager()
+    objects = YearManager('income_type')
 
     class Meta:
         ordering = ['income_type']
@@ -66,4 +74,4 @@ class DayPlan(MonthAbstract):
         unique=True
     )
 
-    objects = YearManager()
+    objects = YearManager(None)
