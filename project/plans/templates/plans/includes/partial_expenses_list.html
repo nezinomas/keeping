@@ -16,27 +16,27 @@
         <th class="text-right">Gruodis</th>
     </thead>
     <tbody>
-        {% for item in objects %}
-        {% url 'savings:savings_update' item.id as url_update %}
+        {% for item in expenses_list %}
+        {% url 'plans:plans_expenses_update' item.id as url_update %}
         <tr data-url="{{ url_update }}">
             <td>{{ item.expense_type }}</td>
-            <td class="text-right">{{ item.january }}</td>
-            <td class="text-right">{{ item.february }}</td>
-            <td class="text-right">{{ item.march }}</td>
-            <td class="text-right">{{ item.april }}</td>
-            <td class="text-right">{{ item.may }}</td>
-            <td class="text-right">{{ item.june }}</td>
-            <td class="text-right">{{ item.july }}</td>
-            <td class="text-right">{{ item.august }}</td>
-            <td class="text-right">{{ item.september }}</td>
-            <td class="text-right">{{ item.october }}</td>
-            <td class="text-right">{{ item.november }}</td>
-            <td class="text-right">{{ item.december }}</td>
+            <td class="text-right">{{ item.january|default_if_none:'-' }}</td>
+            <td class="text-right">{{ item.february|default_if_none:'-' }}</td>
+            <td class="text-right">{{ item.march|default_if_none:'-' }}</td>
+            <td class="text-right">{{ item.april|default_if_none:'-' }}</td>
+            <td class="text-right">{{ item.may|default_if_none:'-' }}</td>
+            <td class="text-right">{{ item.june|default_if_none:'-' }}</td>
+            <td class="text-right">{{ item.july|default_if_none:'-' }}</td>
+            <td class="text-right">{{ item.august|default_if_none:'-' }}</td>
+            <td class="text-right">{{ item.september|default_if_none:'-' }}</td>
+            <td class="text-right">{{ item.october|default_if_none:'-' }}</td>
+            <td class="text-right">{{ item.november|default_if_none:'-' }}</td>
+            <td class="text-right">{{ item.december|default_if_none:'-' }}</td>
 
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="13" class="py-2"><b>{{ request.session.year }}</b> metais įrašų nėra.</td>
+            <td colspan="13" class="py-2"><b>{{ request.user.profile.year }}</b> metais įrašų nėra.</td>
         </tr>
         {% endfor %}
     </tbody>
