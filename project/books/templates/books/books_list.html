@@ -17,13 +17,13 @@
             <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books }}"><i class="fas fa-plus"></i> Knygą</button>
         </div>
     </div>
-    <div id="ajax-content">{% include 'books/includes/partial_books_list.html' %}</div>
+    <div id="ajax-content" class="dblclick">{% include 'books/includes/partial_books_list.html' %}</div>
 </div>
 <div class="col-4 px-0">
     <div class="row my-2">
         <div class="col text-right"></div>
     </div>
-    <div id="ajax-content-categories"></div>
+    <div id="ajax-content-categories"  class="dblclick"></div>
 </div>
 
 <div class="modal fade" id="modal-form">

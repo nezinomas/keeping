@@ -18,7 +18,7 @@
             <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_transactions }}"><i class="fas fa-plus"></i> Pervedimą</button>
         </div>
     </div>
-    <div id="ajax-content">{% include 'transactions/includes/partial_transactions_list.html' %}</div>
+    <div id="ajax-content" class="dblclick">{% include 'transactions/includes/partial_transactions_list.html' %}</div>
 </div>
 <div class="col-4 px-0">
     <div class="row my-2">
@@ -26,7 +26,7 @@
             <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="fas fa-plus"></i> Sąskaitą</button>
         </div>
     </div>
-    <div id="ajax-content-categories">{{ categories }}</div>
+    <div id="ajax-content-categories" class="dblclick">{{ categories }}</div>
 </div>
 
 <div class="modal fade" id="modal-form">
