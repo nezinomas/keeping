@@ -5,7 +5,7 @@
         <th class="text-right">Kiekis</th>
     </thead>
     <tbody>
-        {% for item in objects %}
+        {% for item in items %}
         {% url 'drinks:drinks_update' item.id as url_update %}
         <tr data-url="{{ url_update }}">
             <td>{{ item.date }}</td>
