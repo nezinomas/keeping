@@ -2,52 +2,39 @@ from django.shortcuts import get_object_or_404, reverse, render
 from django.template.loader import render_to_string
 
 from ..accounts.views import lists as accounts_list
-from ..core.mixins.save_data_mixin import SaveDataMixin
+from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
 from .forms import TransactionForm
 from .models import Transaction
 
 
-def _json_response(request, obj):
-    obj.form_template = 'transactions/includes/partial_transactions_form.html'
-    obj.items_template = 'transactions/includes/partial_transactions_list.html'
-    obj.items = Transaction.objects.items(request.user.profile.year)
+def settings():
+    obj = CrudMixinSettings()
 
-    return obj.GenJsonResponse()
+    obj.model = Transaction
+
+    obj.form = TransactionForm
+    obj.form_template = 'transactions/includes/partial_transactions_form.html'
+
+    obj.items_template = 'transactions/includes/partial_transactions_list.html'
+    obj.items_template_main = 'transactions/transactions_list.html'
+
+    obj.url_new = 'transactions:transactions_new'
+    obj.url_update = 'transactions:transactions_update'
+
+    return obj
 
 
 def lists(request):
-    qs = Transaction.objects.items(request.user.profile.year)
-
-    form = TransactionForm()
-    context = {
-        'objects': qs,
-        'categories': accounts_list(request),
-        'form': form
-    }
-
-    return render(request, 'transactions/transactions_list.html', context=context)
+    context = {'categories': accounts_list(request)}
+    return CrudMixin(request, settings()).lists_as_html(context)
 
 
 def new(request):
-    form = TransactionForm(request.POST or None)
-    context = {'url': reverse('transactions:transactions_new'), 'action': 'insert'}
-
-    obj = SaveDataMixin(request, context, form)
-
-    return _json_response(request, obj)
+    return CrudMixin(request, settings()).new()
 
 
 def update(request, pk):
-    object = get_object_or_404(Transaction, pk=pk)
-    form = TransactionForm(request.POST or None, instance=object)
-    url = reverse(
-        'transactions:transactions_update',
-        kwargs={
-            'pk': pk
-        }
-    )
-    context = {'url': url, 'action': 'update'}
+    _settings = settings()
+    _settings.item_id = pk
 
-    obj = SaveDataMixin(request, context, form)
-
-    return _json_response(request, obj)
+    return CrudMixin(request, _settings).update()
