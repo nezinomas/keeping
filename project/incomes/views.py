@@ -1,105 +1,72 @@
 from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
 
-from ..core.mixins.save_data_mixin import SaveDataMixin
+from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
 from .forms import IncomeForm, IncomeTypeForm
 from .models import Income, IncomeType
 
 
-def _json_response(request, obj):
+def settings():
+    obj = CrudMixinSettings()
+
+    obj.model = Income
+
+    obj.form = IncomeForm
     obj.form_template = 'incomes/includes/partial_incomes_form.html'
+
     obj.items_template = 'incomes/includes/partial_incomes_list.html'
+    obj.items_template_main = 'incomes/incomes_list.html'
 
-    obj.items = Income.objects.items(request.user.profile.year)
+    obj.url_new = 'incomes:incomes_new'
+    obj.url_update = 'incomes:incomes_update'
 
-    return obj.GenJsonResponse()
+    return obj
 
 
 def lists(request):
-    qs = Income.objects.items(request.user.profile.year)
-
-    form = IncomeForm()
-    context = {
-        'objects': qs,
-        'categories': type_lists(request),
-        'form': form
-    }
-
-    return render(request, 'incomes/incomes_list.html', context=context)
+    context = {'categories': type_lists(request)}
+    return CrudMixin(request, settings()).lists_as_html(context)
 
 
 def new(request):
-    form = IncomeForm(request.POST or None)
-    context = {
-        'url': reverse('incomes:incomes_new'),
-        'action': 'insert'
-    }
-
-    obj = SaveDataMixin(request, context, form)
-
-    return _json_response(request, obj)
+    return CrudMixin(request, settings()).new()
 
 
 def update(request, pk):
-    object = get_object_or_404(Income, pk=pk)
-    form = IncomeForm(request.POST or None, instance=object)
-    url = reverse(
-        'incomes:incomes_update',
-        kwargs={
-            'pk': pk
-        }
-    )
-    context = {'url': url, 'action': 'update'}
+    _settings = settings()
+    _settings.item_id = pk
 
-    obj = SaveDataMixin(request, context, form)
-
-    return _json_response(request, obj)
+    return CrudMixin(request, _settings).update()
 
 
 # IncomeType helper functions and views
+def type_settings():
+    obj = CrudMixinSettings()
 
-def _type_json_response(obj):
+    obj.model = IncomeType
+
+    obj.form = IncomeTypeForm
     obj.form_template = 'incomes/includes/partial_incomes_type_form.html'
+
     obj.items_template = 'incomes/includes/partial_incomes_type_list.html'
-
     obj.items_template_var_name = 'categories'
-    obj.items = IncomeType.objects.all()
 
-    return obj.GenJsonResponse()
+    obj.url_new = 'incomes:incomes_type_new'
+    obj.url_update = 'incomes:incomes_type_update'
+
+    return obj
 
 
 def type_lists(request):
-    qs = IncomeType.objects.all()
-    return render_to_string(
-        'incomes/includes/partial_incomes_type_list.html',
-        {'categories': qs},
-        request,
-    )
+    return CrudMixin(request, type_settings()).lists_as_str()
 
 
 def type_new(request):
-    form = IncomeTypeForm(request.POST or None)
-    context = {
-        'url': reverse('incomes:incomes_type_new'),
-        'action': 'insert'
-    }
-
-    obj = SaveDataMixin(request, context, form)
-
-    return _type_json_response(obj)
+    return CrudMixin(request, type_settings()).new()
 
 
 def type_update(request, pk):
-    object = get_object_or_404(IncomeType, pk=pk)
-    form = IncomeTypeForm(request.POST or None, instance=object)
-    url = reverse(
-        'incomes:incomes_type_update',
-        kwargs={
-            'pk': pk
-        }
-    )
-    context = {'url': url, 'action': 'update'}
+    _settings = type_settings()
+    _settings.item_id = pk
 
-    obj = SaveDataMixin(request, context, form)
-
-    return _type_json_response(obj)
+    return CrudMixin(request, _settings).update()

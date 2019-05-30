@@ -8,7 +8,7 @@
         <th class="text-right">Suma</th>
     </thead>
     <tbody>
-        {% for item in objects %}
+        {% for item in items %}
         {% url 'incomes:incomes_update' item.id as url_update %}
         <tr data-url="{{ url_update }}">
             <td>{{ item.date }}</td>
