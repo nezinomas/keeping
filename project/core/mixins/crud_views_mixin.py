@@ -114,7 +114,7 @@ class CrudMixin(object):
                     **{'year': self._request.user.profile.year}
                 )
             )
-        except:
+        except Exception as ex:
             self._items = self._settings.model.objects.all()
 
     def _update_data(self):
