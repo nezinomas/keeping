@@ -97,8 +97,12 @@ class CrudMixin(object):
         self._request = request
         self._settings = settings
 
+        self._year = self._request.user.profile.year
         self._items = None
         self._data = {}
+
+        self._kwargs = kwargs
+        self._kwargs.update({'year': self._year})
 
         if not self._settings.model or not self._settings.form:
             raise AttributeError(
@@ -109,11 +113,7 @@ class CrudMixin(object):
 
     def _get_items(self):
         try:
-            self._items = (
-                self._settings.model.objects.items(
-                    **{'year': self._request.user.profile.year}
-                )
-            )
+            self._items = self._settings.model.objects.items(**self._kwargs)
         except Exception as ex:
             self._items = self._settings.model.objects.all()
 
@@ -152,7 +152,7 @@ class CrudMixin(object):
         )
 
     def lists_as_html(self, context={}):
-        form = self._settings.form()
+        form = self._settings.form(data=(), extra={'year': self._year})
         context.update({
             self._settings.items_template_var_name: self._items,
             'form': form
@@ -165,7 +165,11 @@ class CrudMixin(object):
         )
 
     def new(self):
-        form = self._settings.form(self._request.POST or None)
+        form = self._settings.form(
+            data=(self._request.POST or None),
+            extra={'year': self._year}
+        )
+
         context = {
             'url': reverse(self._settings.url_new),
             'action': 'insert',
@@ -175,12 +179,22 @@ class CrudMixin(object):
         return self._json_response(context, form)
 
     def update(self):
-        object = get_object_or_404(self._settings.model, pk=self._settings.item_id)
-        form = self._settings.form(self._request.POST or None, instance=object)
+        object = get_object_or_404(
+            self._settings.model,
+            pk=self._settings.item_id
+        )
+
+        form = self._settings.form(
+            data=(self._request.POST or None),
+            instance=object,
+            extra={'year': self._year}
+        )
+
         url = reverse(
             self._settings.url_update,
             kwargs={'pk': self._settings.item_id}
         )
+
         context = {'url': url, 'action': 'update', 'form': form}
 
         return self._json_response(context, form)
