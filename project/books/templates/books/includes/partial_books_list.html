@@ -8,7 +8,7 @@
         <th class="text-center">Baigta skaityti</th>
     </thead>
     <tbody>
-        {% for item in objects %}
+        {% for item in items %}
         {% url 'books:books_update' item.id as url_update %}
         <tr data-url="{{ url_update }}">
             <td>{{ forloop.revcounter }}</td>
