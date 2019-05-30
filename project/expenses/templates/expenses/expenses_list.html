@@ -28,7 +28,7 @@
             <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_name_new }}"><i class="fas fa-plus"></i> Išlaidų pavadinimą</button>
         </div>
     </div>
-    <div id="ajax-content-categories" class="dblclick">{% include 'expenses/includes/partial_expenses_type_list.html' %}</div>
+    <div id="ajax-content-categories" class="dblclick">{{ categories }}</div>
 </div>
 
 <div class="modal fade" id="modal-form">
