@@ -18,8 +18,8 @@ def settings():
     obj.items_template = 'accounts/includes/partial_accounts_list.html'
     obj.items_template_var_name = 'categories'
 
-    obj.url_new = 'plans:plans_expenses_new'
-    obj.url_update = 'plans:plans_expenses_update'
+    obj.url_new = 'accounts:accounts_new'
+    obj.url_update = 'accounts:accounts_update'
 
     return obj
 
