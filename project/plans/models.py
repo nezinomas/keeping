@@ -12,8 +12,13 @@ class YearManager(models.Manager):
         super().__init__(*args, **kwargs)
         self._prefetch = prefetch
 
-    def items(self, year):
-        qs = self.get_queryset().filter(year=year)
+    def items(self, *args, **kwargs):
+        qs = self.get_queryset()
+
+        if 'year' in kwargs:
+            year = kwargs['year']
+            qs = qs.filter(year=year)
+
         if self._prefetch:
             qs = qs.prefetch_related(self._prefetch)
 
