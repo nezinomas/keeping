@@ -13,12 +13,17 @@ class IncomeType(TitleAbstract):
 
 
 class IncomeManager(models.Manager):
-    def items(self, year):
+    def items(self, *args, **kwargs):
         qs = (
             self.get_queryset().
-            filter(date__year=year).
             prefetch_related('account')
         )
+
+        if 'year' in kwargs:
+            year = kwargs['year']
+            qs = qs.filter(date__year=year)
+
+        return qs
 
 
 class Income(models.Model):

@@ -7,12 +7,16 @@ from ..accounts.models import Account
 
 
 class TransactionManager(models.Manager):
-    def items(self, year):
+    def items(self, *args, **kwargs):
         qs = (
             self.get_queryset().
-            filter(date__year=year).
             prefetch_related('from_account', 'to_account')
         )
+
+        if 'year' in kwargs:
+            year = kwargs['year']
+            qs = qs.filter(date__year=year)
+
         return qs
 
 
