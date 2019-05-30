@@ -151,12 +151,12 @@ class CrudMixin(object):
             self._request,
         )
 
-    def lists_as_html(self):
+    def lists_as_html(self, context={}):
         form = self._settings.form()
-        context = {
+        context.update({
             self._settings.items_template_var_name: self._items,
             'form': form
-        }
+        })
 
         return render(
             self._request,
