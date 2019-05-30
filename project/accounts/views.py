@@ -1,56 +1,42 @@
 from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
 
-from ..core.mixins.save_data_mixin import SaveDataMixin
+# from ..core.mixins.save_data_mixin import SaveDataMixin
+from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
 from .forms import AccountForm
 from .models import Account
 
 
-def _json_response(obj):
-    obj.form_template = 'accounts/includes/partial_accounts_form.html'
-    obj.items_template = 'accounts/includes/partial_accounts_list.html'
+def settings():
+    obj = CrudMixinSettings()
 
-    obj.items = Account.objects.all()
+    obj.model = Account
+
+    obj.form = AccountForm
+    obj.form_template = 'accounts/includes/partial_accounts_form.html'
+
+    obj.items_template = 'accounts/includes/partial_accounts_list.html'
     obj.items_template_var_name = 'categories'
 
-    return obj.GenJsonResponse()
+    obj.url_new = 'plans:plans_expenses_new'
+    obj.url_update = 'plans:plans_expenses_update'
+
+    return obj
 
 
 def lists(request):
-    qs = Account.objects.all()
-    return render_to_string(
-        'accounts/includes/partial_accounts_list.html',
-        {'categories': qs},
-        request,
-    )
+    return CrudMixin(request, settings()).lists_as_str()
 
 
 def new(request):
-    form = AccountForm(request.POST or None)
-    context = {
-        'url': reverse('accounts:accounts_new'),
-        'action': 'insert'
-    }
-
-    obj = SaveDataMixin(request, context, form)
-
-    return _json_response(obj)
+    return CrudMixin(request, settings()).new()
 
 
 def update(request, pk):
-    object = get_object_or_404(Account, pk=pk)
-    form = AccountForm(request.POST or None, instance=object)
-    url = reverse(
-        'accounts:accounts_update',
-        kwargs={
-            'pk': pk
-        }
-    )
-    context = {'url': url, 'action': 'update'}
+    _settings = settings()
+    _settings.item_id = pk
 
-    obj = SaveDataMixin(request, context, form)
-
-    return _json_response(obj)
+    return CrudMixin(request, _settings).update()
 
 
 def load_to_account(request):
