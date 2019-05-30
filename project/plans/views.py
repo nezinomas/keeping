@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
 
-from ..core.mixins.save_data_mixin import SaveDataMixin
+from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
 from .forms import ExpensePlanForm, IncomePlanForm
 from .models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
 
@@ -10,7 +10,7 @@ def plans_index(request):
     form = ExpensePlanForm()
     context = {
         'expenses_list': expenses_lists(request),
-        'incomes_list': income_lists(request),
+        'incomes_list': incomes_lists(request),
         'form': form
     }
     return render(request, 'plans/plans_list.html', context)
@@ -19,103 +19,69 @@ def plans_index(request):
 #
 # Expense Plan views
 #
-def _expense_json_response(request, obj):
+def expenses_settings():
+    obj = CrudMixinSettings()
+
+    obj.model = ExpensePlan
+
+    obj.form = ExpensePlanForm
     obj.form_template = 'plans/includes/partial_expenses_form.html'
+
     obj.items_template = 'plans/includes/partial_expenses_list.html'
 
-    obj.items_template_var_name = 'expenses_list'
-    obj.items = ExpensePlan.objects.items(request.user.profile.year)
+    obj.url_new = 'plans:plans_expenses_new'
+    obj.url_update = 'plans:plans_expenses_update'
 
-    return obj.GenJsonResponse()
+    return obj
 
 
 def expenses_lists(request):
-    qs = ExpensePlan.objects.items(request.user.profile.year)
-
-    return render_to_string(
-        'plans/includes/partial_expenses_list.html',
-        {'expenses_list': qs},
-        request,
-    )
+    return CrudMixin(request, expenses_settings()).lists_as_str()
 
 
 def expenses_new(request):
-    form = ExpensePlanForm(request.POST or None)
-    context = {
-        'url': reverse('plans:plans_expenses_new'),
-        'action': 'insert'
-    }
-
-    obj = SaveDataMixin(request, context, form)
-
-    return _expense_json_response(request, obj)
+    return CrudMixin(request, expenses_settings()).new()
 
 
 def expenses_update(request, pk):
-    object = get_object_or_404(ExpensePlan, pk=pk)
-    form = ExpensePlanForm(request.POST or None, instance=object)
-    url = reverse(
-        'plans:plans_expenses_update',
-        kwargs={
-            'pk': pk
-        }
-    )
-    context = {'url': url, 'action': 'update'}
+    settings = expenses_settings()
+    settings.item_id = pk
 
-    obj = SaveDataMixin(request, context, form)
-
-    return _expense_json_response(request, obj)
+    return CrudMixin(request, settings).update()
 
 
 #
 # Income Plan views
 #
-def _incomes_json_response(request, obj):
+def incomes_settings():
+    obj = CrudMixinSettings()
+
+    obj.model = IncomePlan
+
+    obj.form = IncomePlanForm
     obj.form_template = 'plans/includes/partial_incomes_form.html'
+
     obj.items_template = 'plans/includes/partial_incomes_list.html'
 
-    obj.items_template_var_name = 'incomes_list'
-    obj.items = IncomePlan.objects.items(request.user.profile.year)
+    obj.url_new = 'plans:plans_incomes_new'
+    obj.url_update = 'plans:plans_incomes_update'
 
-    return obj.GenJsonResponse()
-
-
-def income_lists(request):
-    qs = IncomePlan.objects.items(request.user.profile.year)
-
-    return render_to_string(
-        'plans/includes/partial_incomes_list.html',
-        {'incomes_list': qs},
-        request,
-    )
+    return obj
 
 
-def income_new(request):
-    form = IncomePlanForm(request.POST or None)
-    context = {
-        'url': reverse('plans:plans_incomes_new'),
-        'action': 'insert'
-    }
-
-    obj = SaveDataMixin(request, context, form)
-
-    return _incomes_json_response(request, obj)
+def incomes_lists(request):
+    return CrudMixin(request, incomes_settings()).lists_as_str()
 
 
-def income_update(request, pk):
-    object = get_object_or_404(IncomePlan, pk=pk)
-    form = IncomePlanForm(request.POST or None, instance=object)
-    url = reverse(
-        'plans:plans_incomes_update',
-        kwargs={
-            'pk': pk
-        }
-    )
-    context = {'url': url, 'action': 'update'}
+def incomes_new(request):
+    return CrudMixin(request, incomes_settings()).new()
 
-    obj = SaveDataMixin(request, context, form)
 
-    return _incomes_json_response(request, obj)
+def incomes_update(request, pk):
+    settings = incomes_settings()
+    settings.item_id = pk
+
+    return CrudMixin(request, settings).update()
 
 
 def savings_lists(request):
