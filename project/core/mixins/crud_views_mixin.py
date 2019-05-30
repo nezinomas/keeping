@@ -13,6 +13,7 @@ class CrudMixinSettings(object):
         self._item_id = None
 
         self._items_template = 'items_template.html'
+        self._items_template_main = 'items_main_template.html'
         self._items_template_var_name = 'items'
 
         self._url_new = None
@@ -57,6 +58,14 @@ class CrudMixinSettings(object):
     @items_template.setter
     def items_template(self, value):
         self._items_template = value
+
+    @property
+    def items_template_main(self):
+        return self._items_template_main
+
+    @items_template_main.setter
+    def items_template_main(self, value):
+        self._items_template_main = value
 
     @property
     def items_template_var_name(self):
@@ -140,6 +149,19 @@ class CrudMixin(object):
             self._settings.items_template,
             {self._settings.items_template_var_name: self._items},
             self._request,
+        )
+
+    def lists_as_html(self):
+        form = self._settings.form()
+        context = {
+            self._settings.items_template_var_name: self._items,
+            'form': form
+        }
+
+        return render(
+            self._request,
+            self._settings.items_template_main,
+            context=context
         )
 
     def new(self):
