@@ -99,11 +99,14 @@ class CrudMixin(object):
         self._get_items()
 
     def _get_items(self):
-        self._items = (
-            self._settings.model.objects.items(
-                **{'year': self._request.user.profile.year}
+        try:
+            self._items = (
+                self._settings.model.objects.items(
+                    **{'year': self._request.user.profile.year}
+                )
             )
-        )
+        except:
+            self._items = self._settings.model.objects.all()
 
     def _update_data(self):
         self._data.update({
