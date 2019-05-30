@@ -9,7 +9,7 @@
         <th class="text-right">Mokesčiai</th>
     </thead>
     <tbody>
-        {% for item in objects %}
+        {% for item in items %}
         {% url 'savings:savings_update' item.id as url_update %}
         <tr data-url="{{ url_update }}">
             <td>{{ item.date }}</td>
