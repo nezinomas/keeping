@@ -32,18 +32,18 @@ urlpatterns = [
     # income plans
     #
     path(
-        'plans/income/',
-        views.income_lists,
+        'plans/incomes/',
+        views.incomes_lists,
         name='plans_incomes_list'
     ),
     path(
-        'plans/income/new/',
-        views.income_new,
+        'plans/incomes/new/',
+        views.incomes_new,
         name='plans_incomes_new'
     ),
     path(
-        'plans/income/update/<int:pk>/',
-        views.income_update,
+        'plans/incomes/update/<int:pk>/',
+        views.incomes_update,
         name='plans_incomes_update'
     ),
     #
