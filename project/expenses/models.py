@@ -94,7 +94,7 @@ class Expense(models.Model):
         on_delete=models.CASCADE
     )
 
-    #Managers
+    # Managers
     objects = ExpenseManager()
 
     def __str__(self):
