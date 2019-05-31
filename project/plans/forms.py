@@ -6,7 +6,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
-from .models import ExpensePlan, IncomePlan, SavingPlan
+from .models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
 
 months = [x.lower() for x in calendar.month_name[1:]]
 
@@ -96,6 +96,30 @@ class SavingPlanForm(forms.ModelForm):
 
         # field translation
         self.fields['saving_type'].label = 'Taupymo rūšis'
+        common_field_transalion(self)
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
+
+
+class DayPlanForm(forms.ModelForm):
+    class Meta:
+        model = DayPlan
+        fields = ['year'] + months
+
+        widgets = {
+            'year': YearPickerInput(format='%Y'),
+        }
+
+    field_order = ['year'] + months
+
+    def __init__(self, extra={}, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # inital values
+        self.fields['year'].initial = datetime.now()
+
+        # field translation
         common_field_transalion(self)
 
         self.helper = FormHelper()
