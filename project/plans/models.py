@@ -7,7 +7,25 @@ from ..incomes.models import IncomeType
 from ..savings.models import SavingType
 
 
-class ExpenseTypePlan(MonthAbstract):
+class YearManager(models.Manager):
+    def __init__(self, prefetch, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._prefetch = prefetch
+
+    def items(self, *args, **kwargs):
+        qs = self.get_queryset()
+
+        if 'year' in kwargs:
+            year = kwargs['year']
+            qs = qs.filter(year=year)
+
+        if self._prefetch:
+            qs = qs.prefetch_related(self._prefetch)
+
+        return qs
+
+
+class ExpensePlan(MonthAbstract):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(2000), MaxValueValidator(2050)]
     )
@@ -15,6 +33,8 @@ class ExpenseTypePlan(MonthAbstract):
         ExpenseType,
         on_delete=models.CASCADE
     )
+
+    objects = YearManager('expense_type')
 
     class Meta:
         ordering = ['expense_type']
@@ -30,6 +50,8 @@ class SavingPlan(MonthAbstract):
         on_delete=models.CASCADE
     )
 
+    objects = YearManager('saving_type')
+
     class Meta:
         ordering = ['saving_type']
         unique_together = ('year', 'saving_type')
@@ -44,6 +66,8 @@ class IncomePlan(MonthAbstract):
         on_delete=models.CASCADE
     )
 
+    objects = YearManager('income_type')
+
     class Meta:
         ordering = ['income_type']
         unique_together = ('year', 'income_type')
@@ -54,3 +78,5 @@ class DayPlan(MonthAbstract):
         validators=[MinValueValidator(2000), MaxValueValidator(2050)],
         unique=True
     )
+
+    objects = YearManager(None)

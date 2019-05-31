@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load buttons %}
+
+
+{% block head %}
+    {{ form.media }}
+    <script src="https://code.jquery.com/ui/1.11.3/jquery-ui.min.js"></script>
+{% endblock head %}
+
+
+{% block content %}
+
+<div class="col-8 pl-0">
+    <!-- expenses plans -->
+    <div class="row my-2">
+        <div class="col-10"><h6>Išlaidų planas</h6></div>
+        <div class="col-2 text-right">
+            {% url 'plans:plans_expenses_new' as url_expenses_new %}
+            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Įrašą</button>
+        </div>
+    </div>
+    <div class="row my-2">
+        <div id="expenses_list" class="col dblclick">{{ expenses_list }}</div>
+    </div>
+
+    <!-- incomes plans -->
+    <div class="row my-2">
+        <div class="col-10">
+            <h6>Pajamų planas</h6>
+        </div>
+        <div class="col-2 text-right">
+            {% url 'plans:plans_incomes_new' as url_incomes_new %}
+            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_new }}"><i class="fas fa-plus"></i> Įrašą</button>
+        </div>
+    </div>
+    <div class="row my-2">
+        <div id="incomes_list" class="col dblclick">{{ incomes_list }}</div>
+    </div>
+
+    <!-- savings plans -->
+    <div class="row my-2">
+        <div class="col-10">
+            <h6>Taupymo planas</h6>
+        </div>
+        <div class="col-2 text-right">
+            {% url 'plans:plans_savings_new' as url_savings_new %}
+            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_new }}"><i class="fas fa-plus"></i> Įrašą</button>
+        </div>
+    </div>
+    <div class="row my-2">
+        <div id="savings_list" class="col dblclick">{{ savings_list }}</div>
+    </div>
+
+    <!-- day plans -->
+    <div class="row my-2">
+        <div class="col-10">
+            <h6>Suma dienai</h6>
+        </div>
+        <div class="col-2 text-right">
+            {% url 'plans:plans_day_new' as url_day_new %}
+            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_day_new }}"><i class="fas fa-plus"></i> Įrašą</button>
+        </div>
+    </div>
+    <div class="row my-2">
+        <div id="day_list" class="col dblclick">{{ day_list }}</div>
+    </div>
+</div>
+
+<!-- left side -->
+<div class="col-4 px-0">
+    <div class="row my-2">
+        <div class="col text-right"></div>
+    </div>
+</div>
+
+<!-- modal form -->
+<div class="modal fade" id="modal-form">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content"></div>
+    </div>
+</div>
+{% endblock content %}
