@@ -2,16 +2,17 @@ from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
 
 from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
-from .forms import ExpensePlanForm, IncomePlanForm
+from .forms import ExpensePlanForm, IncomePlanForm, SavingPlanForm
 from .models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
 
 
 def plans_index(request):
     form = ExpensePlanForm()
     context = {
+        'form': form,
         'expenses_list': expenses_lists(request),
         'incomes_list': incomes_lists(request),
-        'form': form
+        'savings_list': savings_lists(request),
     }
     return render(request, 'plans/plans_list.html', context)
 
@@ -84,16 +85,38 @@ def incomes_update(request, pk):
     return CrudMixin(request, settings).update()
 
 
+#
+# Saving Plan views
+#
+def savings_settings():
+    obj = CrudMixinSettings()
+
+    obj.model = SavingPlan
+
+    obj.form = SavingPlanForm
+    obj.form_template = 'plans/includes/partial_savings_form.html'
+
+    obj.items_template = 'plans/includes/partial_savings_list.html'
+
+    obj.url_new = 'plans:plans_savings_new'
+    obj.url_update = 'plans:plans_savings_update'
+
+    return obj
+
+
 def savings_lists(request):
-    pass
+    return CrudMixin(request, savings_settings()).lists_as_str()
 
 
 def savings_new(request):
-    pass
+    return CrudMixin(request, savings_settings()).new()
 
 
 def savings_update(request, pk):
-    pass
+    settings = incomes_settings()
+    settings.item_id = pk
+
+    return CrudMixin(request, settings).update()
 
 
 def day_lists(request):

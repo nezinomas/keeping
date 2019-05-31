@@ -36,6 +36,20 @@
     <div class="row my-2">
         <div id="incomes_list" class="col dblclick">{{ incomes_list }}</div>
     </div>
+
+    <!-- savings plans -->
+    <div class="row my-2">
+        <div class="col-10">
+            <h6>Taupymo planas</h6>
+        </div>
+        <div class="col-2 text-right">
+            {% url 'plans:plans_savings_new' as url_savings_new %}
+            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_new }}"><i class="fas fa-plus"></i> Įrašą</button>
+        </div>
+    </div>
+    <div class="row my-2">
+        <div id="savings_list" class="col dblclick">{{ savings_list }}</div>
+    </div>
 </div>
 
 <!-- left side -->
