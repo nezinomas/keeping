@@ -70,6 +70,7 @@ class ExpenseTypeForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
         self.fields['title'].label = 'Pavadinimas'
+        self.fields['necessary'].label = 'Būtina'
 
 
 class ExpenseNameForm(forms.ModelForm):
