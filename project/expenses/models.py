@@ -14,6 +14,10 @@ class ExpenseTypeManager(models.Manager):
 
 
 class ExpenseType(TitleAbstract):
+    necessary = models.BooleanField(
+        default=False
+    )
+
     class Meta:
         ordering = ['title']
 
