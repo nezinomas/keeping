@@ -5,17 +5,11 @@ import pytest
 
 from ...accounts.tests.factories import AccountFactory
 from .. import forms
-from .factories import ExpenseNameFactory, ExpenseTypeFactory
+from ..factories import ExpenseNameFactory, ExpenseTypeFactory
 from .helper_session import add_session, add_session_to_request
 
 pytestmark = pytest.mark.django_db
 
-
-@pytest.fixture()
-def _request(rf):
-    request = rf.get('/expenses/new/')
-    add_session_to_request(request, **{'year': 1999})
-    return request
 
 
 @pytest.fixture()
@@ -35,15 +29,10 @@ def _account():
 
 
 def test_expense_form_init(client):
-    forms.ExpenseForm(request=client.request)
+    forms.ExpenseForm(data={}, extra={'year': 1})
 
 
-@pytest.mark.xfail(raises=TypeError)
-def test_expense_form_init_without_request(client):
-    forms.ExpenseForm()
-
-
-def test_exepense_form_valid_data(_request, _expense_type, _expense_name, _account):
+def test_exepense_form_valid_data(_expense_type, _expense_name, _account):
     form = forms.ExpenseForm(
         data={
             'date': '1970-01-01',
@@ -55,7 +44,7 @@ def test_exepense_form_valid_data(_request, _expense_type, _expense_name, _accou
             'remark': None,
             'exception': None
         },
-        request=_request
+        extra={'year': 1970}
     )
 
     assert form.is_valid()
@@ -70,8 +59,8 @@ def test_exepense_form_valid_data(_request, _expense_type, _expense_name, _accou
     assert e.quantity == 1
 
 
-def test_expenses_form_blank_data(_request):
-    form = forms.ExpenseForm(data={}, request=_request)
+def test_expenses_form_blank_data():
+    form = forms.ExpenseForm(data={}, extra={'year': 1})
 
     assert not form.is_valid()
 

@@ -13,12 +13,16 @@ class SavingType(TitleAbstract):
 
 
 class SavingManager(models.Manager):
-    def items(self, year):
+    def items(self, *args, **kwargs):
         qs = (
             self.get_queryset().
-            filter(date__year=year).
             prefetch_related('account', 'saving_type')
         )
+
+        if 'year' in kwargs:
+            year = kwargs['year']
+            qs = qs.filter(date__year=year)
+
         return qs
 
 

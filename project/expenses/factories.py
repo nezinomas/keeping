@@ -3,8 +3,8 @@ from decimal import Decimal
 
 import factory
 
-from ...accounts.tests.factories import AccountFactory
-from ..models import Expense, ExpenseName, ExpenseType
+from ..accounts.tests.factories import AccountFactory
+from .models import Expense, ExpenseName, ExpenseType
 
 
 class ExpenseTypeFactory(factory.DjangoModelFactory):

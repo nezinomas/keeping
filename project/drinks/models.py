@@ -3,8 +3,14 @@ from django.db import models
 
 
 class DrinkManager(models.Manager):
-    def items(self, year):
-        return self.get_queryset().filter(date__year=year)
+    def items(self, *args, **kwargs):
+        qs = self.get_queryset()
+
+        if 'year' in kwargs:
+            year = kwargs['year']
+            qs = qs.filter(date__year=year)
+
+        return qs
 
 
 class Drink(models.Model):

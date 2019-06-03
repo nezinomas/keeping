@@ -1,42 +1,36 @@
-from django.shortcuts import reverse, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, reverse
 
-from ...core.mixins.save_data_mixin import SaveDataMixin
+from ...core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
 from ..forms import ExpenseNameForm
-from ..models import ExpenseName, ExpenseType
+from ..models import ExpenseName
 
 
-def _json_response(obj):
+def settings():
+    obj = CrudMixinSettings()
+
+    obj.model = ExpenseName
+
+    obj.form = ExpenseNameForm
     obj.form_template = 'expenses/includes/partial_expenses_name_form.html'
-    obj.items_template = 'expenses/includes/partial_expenses_type_list.html'
+
+    obj.items_template = 'expenses/includes/partial_expenses_name_list.html'
     obj.items_template_var_name = 'categories'
-    obj.items = ExpenseType.objects.items()
 
-    return obj.GenJsonResponse()
+    obj.url_new = 'expenses:expenses_name_new'
+    obj.url_update = 'expenses:expenses_name_update'
+
+    return obj
 
 
+@login_required()
 def new(request):
-    form = ExpenseNameForm(request.POST or None)
-    context = {
-        'url': reverse('expenses:expenses_name_new'),
-        'action': 'insert',
-    }
-
-    obj = SaveDataMixin(request, context, form)
-
-    return _json_response(obj)
+    return CrudMixin(request, settings()).new()
 
 
+@login_required()
 def update(request, pk):
-    object = get_object_or_404(ExpenseName, pk=pk)
-    form = ExpenseNameForm(request.POST or None, instance=object)
-    url = reverse(
-        'expenses:expenses_name_update',
-        kwargs={
-            'pk': pk
-        }
-    )
-    context = {'url': url, 'action': 'update'}
+    _settings = settings()
+    _settings.item_id = pk
 
-    obj = SaveDataMixin(request, context, form)
-
-    return _json_response(obj)
+    return CrudMixin(request, _settings).update()

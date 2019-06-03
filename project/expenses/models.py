@@ -9,11 +9,15 @@ from ..core.models import TitleAbstract
 
 
 class ExpenseTypeManager(models.Manager):
-    def items(self):
+    def items(self, *args, **kwargs):
         return self.get_queryset().prefetch_related('expensename_set')
 
 
 class ExpenseType(TitleAbstract):
+    necessary = models.BooleanField(
+        default=False
+    )
+
     class Meta:
         ordering = ['title']
 
@@ -21,15 +25,18 @@ class ExpenseType(TitleAbstract):
 
 
 class ExpenseNameManager(models.Manager):
-    def items(self, parent_id, year):
-        qs = (
-            self.get_queryset().
-            filter(parent_id=parent_id).
-            filter(
+    def items(self, *args, **kwargs):
+        qs = self.get_queryset()
+
+        if 'parent_id' in kwargs:
+            qs = qs.filter(parent_id=kwargs['parent_id'])
+
+        if 'year' in kwargs:
+            qs = qs.filter(
                 Q(valid_for__isnull=True) |
-                Q(valid_for=year)
+                Q(valid_for=kwargs['year'])
             )
-        )
+
         return qs
 
 
@@ -55,12 +62,15 @@ class ExpenseName(TitleAbstract):
 
 
 class ExpenseManager(models.Manager):
-    def year_items(self, year):
+    def items(self, *args, **kwargs):
         qs = (
             self.get_queryset().
-            filter(date__year=year).
             prefetch_related('expense_type', 'expense_name', 'account')
         )
+
+        if 'year' in kwargs:
+            qs = qs.filter(date__year=kwargs['year'])
+
         return qs
 
 

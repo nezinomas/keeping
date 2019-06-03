@@ -8,7 +8,7 @@
         <th class="text-right">Suma</th>
     </thead>
     <tbody>
-        {% for item in objects %}
+        {% for item in items %}
         {% url 'incomes:incomes_update' item.id as url_update %}
         <tr data-url="{{ url_update }}">
             <td>{{ item.date }}</td>
@@ -19,7 +19,7 @@
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="5" class="py-2"><b>{{ request.session.year }}</b> metais pajamų nėra.</td>
+            <td colspan="5" class="py-2"><b>{{ request.user.profile.year }}</b> metais irašų nėra.</td>
         </tr>
         {% endfor %}
     </tbody>

@@ -3,8 +3,14 @@ from django.core.validators import MinLengthValidator
 
 
 class BookManager(models.Manager):
-    def items(self, year):
-        return self.get_queryset().filter(started__year=year)
+    def items(self, *args, **kwargs):
+        qs = self.get_queryset()
+
+        if 'year' in kwargs:
+            year = kwargs['year']
+            qs = qs.filter(started__year=year)
+
+        return qs
 
 
 class Book(models.Model):

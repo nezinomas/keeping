@@ -22,7 +22,7 @@ class ExpenseForm(forms.ModelForm):
     field_order = ['date', 'expense_type', 'expense_name', 'account',
                    'total_sum', 'quantity', 'remark', 'price', 'exception']
 
-    def __init__(self, request, *args, **kwargs):
+    def __init__(self, extra={}, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # field translation
@@ -49,8 +49,9 @@ class ExpenseForm(forms.ModelForm):
         # chained dropdown
         id = ChainedDropDown(self, 'expense_type').parent_field_id
         if id:
+            year = extra.get('year', datetime.now().year)
             self.fields['expense_name'].queryset = (
-                ExpenseName.objects.items(id, request.user.profile.year)
+                ExpenseName.objects.items(**{'parent_id': id, 'year': year})
             )
 
         self.helper = FormHelper()
@@ -62,13 +63,14 @@ class ExpenseTypeForm(forms.ModelForm):
         model = ExpenseType
         fields = '__all__'
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, extra={}, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
         self.fields['title'].label = 'Pavadinimas'
+        self.fields['necessary'].label = 'Būtina'
 
 
 class ExpenseNameForm(forms.ModelForm):
@@ -82,7 +84,7 @@ class ExpenseNameForm(forms.ModelForm):
 
     field_order = ['parent', 'title', 'valid_for']
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, extra={}, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.helper = FormHelper()

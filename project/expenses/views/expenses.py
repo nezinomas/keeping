@@ -2,60 +2,52 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
 
-from ...core.mixins.save_data_mixin import SaveDataMixin
+from ...core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
 from ..forms import ExpenseForm
-from ..models import Expense, ExpenseName, ExpenseType
+from ..models import Expense, ExpenseName
+from ..views.expenses_type import lists as type_lists
 
 
-def _json_response(request, obj):
+def settings():
+    obj = CrudMixinSettings()
+
+    obj.model = Expense
+
+    obj.form = ExpenseForm
     obj.form_template = 'expenses/includes/partial_expenses_form.html'
-    obj.items_template = 'expenses/includes/partial_expenses_list.html'
-    obj.items = Expense.objects.year_items(request.user.profile.year)
 
-    return obj.GenJsonResponse()
+    obj.items_template = 'expenses/includes/partial_expenses_list.html'
+    obj.items_template_main = 'expenses/expenses_list.html'
+
+    obj.url_new = 'expenses:expenses_new'
+    obj.url_update = 'expenses:expenses_update'
+
+    return obj
 
 
 @login_required()
 def lists(request):
-    qs = Expense.objects.year_items(request.user.profile.year)
-    qse = ExpenseType.objects.items()
-
-    form = ExpenseForm(data={}, request=request)
-    context = {'objects': qs, 'categories': qse, 'form': form}
-
-    return render(request, 'expenses/expenses_list.html', context=context)
+    context = {'categories': type_lists(request)}
+    return CrudMixin(request, settings()).lists_as_html(context)
 
 
 @login_required()
 def new(request):
-    form = ExpenseForm(data=(request.POST or None), request=request)
-    context = {'url': reverse('expenses:expenses_new'), 'action': 'insert'}
-
-    obj = SaveDataMixin(request, context, form)
-
-    return _json_response(request, obj)
+    return CrudMixin(request, settings()).new()
 
 
 @login_required()
 def update(request, pk):
-    object = get_object_or_404(Expense, pk=pk)
-    form = ExpenseForm(data=(request.POST or None), instance=object, request=request)
-    url = reverse(
-        'expenses:expenses_update',
-        kwargs={
-            'pk': pk
-        }
-    )
-    context = {'url': url, 'action': 'update'}
+    _settings = settings()
+    _settings.item_id = pk
 
-    obj = SaveDataMixin(request, context, form)
-
-    return _json_response(request, obj)
+    return CrudMixin(request, _settings).update()
 
 
 def load_expense_name(request):
     pk = request.GET.get('expense_type')
-    objects = ExpenseName.objects.items(pk, request.user.profile.year)
+    objects = ExpenseName.objects.items(
+        **{'parent_id': pk, 'year': request.user.profile.year})
 
     return render(
         request,

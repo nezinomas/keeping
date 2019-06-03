@@ -10,7 +10,7 @@ class AccountForm(forms.ModelForm):
         model = Account
         fields = ['title']
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, extra={}, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.helper = FormHelper()

@@ -1,56 +1,39 @@
 from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
 
-from ..core.mixins.save_data_mixin import SaveDataMixin
+from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
 
 from .models import Book
 from .forms import BookForm
 
 
-def _json_response(request, obj):
+def settings():
+    obj = CrudMixinSettings()
+
+    obj.model = Book
+
+    obj.form = BookForm
     obj.form_template = 'books/includes/partial_books_form.html'
+
     obj.items_template = 'books/includes/partial_books_list.html'
+    obj.items_template_main = 'books/books_list.html'
 
-    obj.items = Book.objects.items(request.user.profile.year)
+    obj.url_new = 'books:books_new'
+    obj.url_update = 'books:books_update'
 
-    return obj.GenJsonResponse()
+    return obj
 
 
 def lists(request):
-    qs = Book.objects.items(request.user.profile.year)
-
-    form = BookForm()
-    context = {
-        'objects': qs,
-        'form': form
-    }
-
-    return render(request, 'books/books_list.html', context=context)
+    return CrudMixin(request, settings()).lists_as_html()
 
 
 def new(request):
-    form = BookForm(request.POST or None)
-    context = {
-        'url': reverse('books:books_new'),
-        'action': 'insert'
-    }
-
-    obj = SaveDataMixin(request, context, form)
-
-    return _json_response(request, obj)
+    return CrudMixin(request, settings()).new()
 
 
 def update(request, pk):
-    object = get_object_or_404(Book, pk=pk)
-    form = BookForm(request.POST or None, instance=object)
-    url = reverse(
-        'books:books_update',
-        kwargs={
-            'pk': pk
-        }
-    )
-    context = {'url': url, 'action': 'update'}
+    _settings = settings()
+    _settings.item_id = pk
 
-    obj = SaveDataMixin(request, context, form)
-
-    return _json_response(request, obj)
+    return CrudMixin(request, _settings).update()
