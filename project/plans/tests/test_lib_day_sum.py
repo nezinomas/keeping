@@ -32,8 +32,11 @@ def expenses():
     return pd.DataFrame(data).set_index('expense_type')
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 def mock_get_incomes(monkeypatch, request):
+    if 'noautofixt' in request.keywords:
+        return
+
     monkeypatch.setattr(
         DaySum,
         '_get_incomes',
@@ -41,8 +44,11 @@ def mock_get_incomes(monkeypatch, request):
     )
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 def mock_get_expenses(monkeypatch, request):
+    if 'noautofixt' in request.keywords:
+        return
+
     monkeypatch.setattr(
         DaySum,
         '_get_expenses',
@@ -50,8 +56,11 @@ def mock_get_expenses(monkeypatch, request):
     )
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 def mock_get_expenses_necessary(monkeypatch, request):
+    if 'noautofixt' in request.keywords:
+        return
+
     monkeypatch.setattr(
         DaySum,
         '_get_expenses_necessary',
@@ -59,41 +68,25 @@ def mock_get_expenses_necessary(monkeypatch, request):
     )
 
 
-def test_expenses_necessary_sum(
-    mock_get_incomes,
-    mock_get_expenses,
-    mock_get_expenses_necessary
-):
+def test_expenses_necessary_sum():
     actual = DaySum(1970).expenses_necessary_sum
 
     assert 60.06 == actual['january']
 
 
-def test_incomes_sum(
-    mock_get_incomes,
-    mock_get_expenses,
-    mock_get_expenses_necessary
-):
+def test_incomes_sum():
     actual = DaySum(1970).incomes
 
     assert 300.03 == _round(actual['january'])
 
 
-def test_expenses_free(
-    mock_get_incomes,
-    mock_get_expenses,
-    mock_get_expenses_necessary
-):
+def test_expenses_free():
     actual = DaySum(1970).expenses_free
 
     assert 239.97 == _round(actual['january'])
 
 
-def test_day_sum1(
-    mock_get_incomes,
-    mock_get_expenses,
-    mock_get_expenses_necessary
-):
+def test_day_sum1():
     actual = DaySum(1970).day_sum
 
     assert 7.74 == _round(actual['january'])
@@ -101,11 +94,7 @@ def test_day_sum1(
 
 
 # keliemeji metai
-def test_day_sum2(
-    mock_get_incomes,
-    mock_get_expenses,
-    mock_get_expenses_necessary
-):
+def test_day_sum2():
     actual = DaySum(2020).day_sum
 
     assert 7.74 == _round(actual['january'])
