@@ -1,4 +1,4 @@
-from calendar import monthrange
+import calendar
 from decimal import Decimal
 from time import strptime
 
@@ -26,7 +26,7 @@ class DaySum(object):
 
     @property
     def expenses_necessary(self):
-        return self._expenses_necessary.to_dict()
+        return self._expenses_necessary
 
     @property
     def expenses_necessary_sum(self):
@@ -72,13 +72,19 @@ class DaySum(object):
     def _calc_day_sum(self):
         df = self._incomes.sub(self._expenses_necessary_sum, axis='rows').to_dict()
 
-        for k, v in df.items():
-            df[k] = v / self._month(k)
+        for column_name, column_value in df.items():
+            month = self._month(column_name)
+
+            if column_value and month:
+                df[column_name] = column_value / month
 
         return df
 
     def _month(self, word):
+        if word not in [x.lower() for x in calendar.month_name[1:]]:
+            return None
+
         new = word[0].upper() + word[1:3].lower()
         num = strptime(new, '%b').tm_mon
 
-        return monthrange(self._year, num)[1]
+        return calendar.monthrange(self._year, num)[1]
