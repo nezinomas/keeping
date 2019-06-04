@@ -3,6 +3,7 @@ from django.template.loader import render_to_string
 
 from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
 from .forms import DayPlanForm, ExpensePlanForm, IncomePlanForm, SavingPlanForm
+from .lib.day_sum import DaySum
 from .models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
 
 
