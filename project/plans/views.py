@@ -6,18 +6,6 @@ from .forms import DayPlanForm, ExpensePlanForm, IncomePlanForm, SavingPlanForm
 from .models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
 
 
-def plans_index(request):
-    form = ExpensePlanForm()
-    context = {
-        'form': form,
-        'expenses_list': expenses_lists(request),
-        'incomes_list': incomes_lists(request),
-        'savings_list': savings_lists(request),
-        'day_list': day_lists(request),
-    }
-    return render(request, 'plans/plans_list.html', context)
-
-
 #
 # Expense Plan views
 #
@@ -30,11 +18,22 @@ def expenses_settings():
     obj.form_template = 'plans/includes/partial_expenses_form.html'
 
     obj.items_template = 'plans/includes/partial_expenses_list.html'
+    obj.items_template_main = 'plans/plans_list.html'
 
     obj.url_new = 'plans:plans_expenses_new'
     obj.url_update = 'plans:plans_expenses_update'
 
     return obj
+
+
+def plans_index(request):
+    context = {
+        'expenses_list': expenses_lists(request),
+        'incomes_list': incomes_lists(request),
+        'savings_list': savings_lists(request),
+        'day_list': day_lists(request),
+    }
+    return CrudMixin(request, expenses_settings()).lists_as_html(context)
 
 
 def expenses_lists(request):
