@@ -1,4 +1,5 @@
 import calendar
+from collections import namedtuple
 from decimal import Decimal
 from time import strptime
 
@@ -42,11 +43,17 @@ class DaySum(object):
 
     @property
     def plans_stats(self):
-        arr = [
+        dicts = [
             dict({'type': 'Būtinos išlaidos'}, **self.expenses_necessary_sum),
             dict({'type': 'Lieka kasdienybei', **self.expenses_free}),
-            dict({'type': 'Suma dienai'}, **self.day_sum)
+            dict({'type': 'Suma dienai'}, **self.day_sum),
         ]
+
+        # list of dictionaries convert to list of objects
+        arr = []
+        for item in dicts:
+            arr.append(namedtuple("Items", item.keys())(*item.values()))
+
         return arr
 
     def _get_incomes(self):
