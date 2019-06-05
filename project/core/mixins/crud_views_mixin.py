@@ -142,6 +142,9 @@ class CrudMixin(object):
             )
         })
 
+        if 'extra' in context:
+            self._data.update({'extra': context['extra']})
+
         return JsonResponse(self._data)
 
     def lists_as_str(self):
@@ -164,7 +167,7 @@ class CrudMixin(object):
             context=context
         )
 
-    def new(self):
+    def new(self, context={}):
         form = self._settings.form(
             data=(self._request.POST or None),
             extra={'year': self._year}
@@ -178,7 +181,7 @@ class CrudMixin(object):
 
         return self._json_response(context, form)
 
-    def update(self):
+    def update(self, context={}):
         object = get_object_or_404(
             self._settings.model,
             pk=self._settings.item_id
@@ -195,6 +198,6 @@ class CrudMixin(object):
             kwargs={'pk': self._settings.item_id}
         )
 
-        context = {'url': url, 'action': 'update', 'form': form}
+        context.update({'url': url, 'action': 'update', 'form': form})
 
         return self._json_response(context, form)

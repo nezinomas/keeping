@@ -64,6 +64,17 @@
     <div class="row my-2">
         <div id="day_list" class="col dblclick">{{ day_list }}</div>
     </div>
+
+    <!-- stats plans -->
+    <div class="row my-2">
+        <div class="col-10">
+            <h6>Skaičiavimai</h6>
+        </div>
+        <div class="col-2 text-right"></div>
+    </div>
+    <div class="row my-2">
+        <div id="plans_stats" class="col dblclick">{{ plans_stats }}</div>
+    </div>
 </div>
 
 <!-- left side -->
@@ -79,4 +90,21 @@
         <div class="modal-content"></div>
     </div>
 </div>
+
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'plans:reload_plans_stats' %}`;
+        var update_id = $("#js-form").attr("data-chained-dropdown");
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1'
+            },
+            success: function (data) {
+                $(`#${update_id}`).html(data);
+            }
+        });
+    });
+</script>
 {% endblock content %}

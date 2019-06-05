@@ -3,19 +3,20 @@ from django.template.loader import render_to_string
 
 from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
 from .forms import DayPlanForm, ExpensePlanForm, IncomePlanForm, SavingPlanForm
+from .lib.day_sum import DaySum
 from .models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
 
 
-def plans_index(request):
-    form = ExpensePlanForm()
-    context = {
-        'form': form,
-        'expenses_list': expenses_lists(request),
-        'incomes_list': incomes_lists(request),
-        'savings_list': savings_lists(request),
-        'day_list': day_lists(request),
-    }
-    return render(request, 'plans/plans_list.html', context)
+def plans_stats(request):
+    ajax_trigger = request.GET.get('ajax_trigger')
+    arr = DaySum(request.user.profile.year).plans_stats
+    t_name = 'plans/includes/partial_plans_stats.html'
+    c = {'items': arr}
+
+    if ajax_trigger:
+        return render(template_name=t_name, context=c, request=request)
+    else:
+        return render_to_string(template_name=t_name, context=c, request=request)
 
 
 #
@@ -30,11 +31,23 @@ def expenses_settings():
     obj.form_template = 'plans/includes/partial_expenses_form.html'
 
     obj.items_template = 'plans/includes/partial_expenses_list.html'
+    obj.items_template_main = 'plans/plans_list.html'
 
     obj.url_new = 'plans:plans_expenses_new'
     obj.url_update = 'plans:plans_expenses_update'
 
     return obj
+
+
+def plans_index(request):
+    context = {
+        'expenses_list': expenses_lists(request),
+        'incomes_list': incomes_lists(request),
+        'savings_list': savings_lists(request),
+        'day_list': day_lists(request),
+        'plans_stats': plans_stats(request)
+    }
+    return CrudMixin(request, expenses_settings()).lists_as_html(context)
 
 
 def expenses_lists(request):
@@ -114,7 +127,7 @@ def savings_new(request):
 
 
 def savings_update(request, pk):
-    settings = incomes_settings()
+    settings = savings_settings()
     settings.item_id = pk
 
     return CrudMixin(request, settings).update()
@@ -148,7 +161,7 @@ def day_new(request):
 
 
 def day_update(request, pk):
-    settings = incomes_settings()
+    settings = day_settings()
     settings.item_id = pk
 
     return CrudMixin(request, settings).update()
