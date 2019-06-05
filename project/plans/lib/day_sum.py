@@ -56,11 +56,7 @@ class DaySum(object):
         ]
 
         # list of dictionaries convert to list of objects
-        arr = []
-        for item in dicts:
-            arr.append(namedtuple("Items", item.keys())(*item.values()))
-
-        return arr
+        return [namedtuple("Items", item.keys())(*item.values()) for item in dicts]
 
     def _get_incomes(self):
         qs = IncomePlan.objects.items(**{'year': self._year})
