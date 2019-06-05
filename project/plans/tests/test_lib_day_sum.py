@@ -324,3 +324,27 @@ def test_db_expenses_free_both(_incomes, _savings, _expenses_necessary, _expense
 
     assert 14.42 == _round(actual['january'])
     assert 125.42 == _round(actual['february'])
+
+
+@pytest.mark.django_db
+@pytest.mark.no_auto_fixture
+def test_db_only_necessary_expense_exists_free(_expense_type):
+    actual = DaySum(1970).expenses_free
+
+    assert 0 == _round(actual['january'])
+
+
+@pytest.mark.django_db
+@pytest.mark.no_auto_fixture
+def test_db_only_necessary_expense_exists_necessary(_expense_type):
+    actual = DaySum(1970).expenses_necessary_sum
+
+    assert 0 == _round(actual['january'])
+
+
+@pytest.mark.django_db
+@pytest.mark.no_auto_fixture
+def test_db_only_necessary_expense_exists_day_sum(_expense_type):
+    actual = DaySum(1970).day_sum
+
+    assert 0 == _round(actual['january'])

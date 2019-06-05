@@ -16,6 +16,7 @@ class DaySum(object):
         self._incomes = self._get_incomes().sum()
         self._savings = self._get_savings().sum()
         self._expenses = self._get_expenses()
+
         self._expenses_necessary = self._get_expenses_necessary()
 
         self._expenses_necessary_sum = self._calc_expenses_necessary_sum()
@@ -64,6 +65,7 @@ class DaySum(object):
     def _get_incomes(self):
         qs = IncomePlan.objects.items(**{'year': self._year})
         df = read_frame(qs)
+
         df = df.reset_index(drop=True).set_index('income_type')
 
         return df
@@ -71,6 +73,7 @@ class DaySum(object):
     def _get_savings(self):
         qs = SavingPlan.objects.items(**{'year': self._year})
         df = read_frame(qs)
+
         df = df.reset_index(drop=True).set_index('saving_type')
 
         return df
@@ -78,6 +81,10 @@ class DaySum(object):
     def _get_expenses(self):
         qs = ExpensePlan.objects.items(**{'year': self._year})
         df = read_frame(qs)
+
+        if df.empty:
+            df.loc[len(df)] = 0
+
         df = df.reset_index(drop=True).set_index('expense_type')
 
         return df
@@ -88,7 +95,10 @@ class DaySum(object):
         return list(qs)
 
     def _calc_expenses_necessary_sum(self):
-        df = self._expenses.loc[self._expenses_necessary, :]
+        try:
+            df = self._expenses.loc[self._expenses_necessary, :]
+        except:
+            df = self._expenses
 
         return df.sum()
 
