@@ -148,6 +148,34 @@ def test_day_sum2():
     assert 8.27 == _round(actual['february'])
 
 
+def test_plans_stats_list():
+    actual = DaySum(1970).plans_stats
+
+    assert 3 == len(actual)
+
+
+def test_plans_stats_expenses_necessary():
+    actual = DaySum(1970).plans_stats
+
+    assert 'Būtinos išlaidos' == actual[0]['type']
+    assert 60.06 == actual[0]['january']
+    assert 60.06 == actual[0]['february']
+
+
+def test_plans_stats_expenses_free():
+    actual = DaySum(1970).plans_stats
+    assert 'Lieka kasdienybei' == actual[1]['type']
+    assert 239.97 == _round(actual[1]['january'])
+    assert 239.97 == _round(actual[1]['february'])
+
+
+def test_plans_stats_day_sum():
+    actual = DaySum(1970).plans_stats
+    assert 'Suma dienai' == actual[2]['type']
+    assert 7.74 == _round(actual[2]['january'])
+    assert 8.57 == _round(actual[2]['february'])
+
+
 #
 # Integration tests with data from database
 #

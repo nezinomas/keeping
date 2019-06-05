@@ -40,6 +40,15 @@ class DaySum(object):
     def day_sum(self):
         return self._day_sum
 
+    @property
+    def plans_stats(self):
+        arr = [
+            dict({'type': 'Būtinos išlaidos'}, **self.expenses_necessary_sum),
+            dict({'type': 'Lieka kasdienybei', **self.expenses_free}),
+            dict({'type': 'Suma dienai'}, **self.day_sum)
+        ]
+        return arr
+
     def _get_incomes(self):
         qs = IncomePlan.objects.items(**{'year': self._year})
         df = read_frame(qs)
