@@ -45,12 +45,12 @@ table tfoot td {
   padding-bottom: .35rem!important;
 }
 
-.table-striped>tbody>tr:nth-child(odd) {
-   background-color: #fdefd5;
-}
+/* .table-striped>tbody>tr:nth-child(odd) {
+   background-color: #f9f6cf;
+} */
 
 .table-hover tbody tr:hover {
-    background: lightgray;
+    background: #f9f6cf;
 }
 
 .table-hover tbody tr:hover td.table-danger {
