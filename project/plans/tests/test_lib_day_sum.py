@@ -3,8 +3,9 @@ from decimal import Decimal
 import pandas as pd
 import pytest
 
+from ..factories import (ExpensePlanFactory, ExpenseTypeFactory,
+                         IncomePlanFactory, SavingPlanFactory)
 from ..lib.day_sum import DaySum
-from ..factories import ExpensePlanFactory, IncomePlanFactory, ExpenseTypeFactory
 
 
 def _round(number):
@@ -16,6 +17,15 @@ def incomes():
         'income_type': ['a', 'b'],
         'january': [100.01, 200.02],
         'february': [100.01, 200.02],
+    }
+    return pd.DataFrame(data).set_index('income_type')
+
+
+def savings():
+    data = {
+        'income_type': ['a', 'b'],
+        'january': [32.33, 32.33],
+        'february': [32.33, 32.33],
     }
     return pd.DataFrame(data).set_index('income_type')
 
@@ -42,6 +52,18 @@ def mock_get_incomes(monkeypatch, request):
         DaySum,
         '_get_incomes',
         lambda x: incomes()
+    )
+
+
+@pytest.fixture(autouse=True)
+def mock_get_savings(monkeypatch, request):
+    if 'no_auto_fixture' in request.keywords:
+        return
+
+    monkeypatch.setattr(
+        DaySum,
+        '_get_savings',
+        lambda x: savings()
     )
 
 
@@ -84,7 +106,19 @@ def _incomes(django_db_setup, django_db_blocker):
 
 @pytest.mark.django_db
 @pytest.fixture(scope='session')
-def _expenses(django_db_setup, django_db_blocker, _incomes):
+def _savings(django_db_setup, django_db_blocker):
+    with django_db_blocker.unblock():
+        s1 = SavingPlanFactory()
+        s2 = SavingPlanFactory()
+    yield
+    with django_db_blocker.unblock():
+        s1.delete()
+        s2.delete()
+
+
+@pytest.mark.django_db
+@pytest.fixture(scope='session')
+def _expenses(django_db_setup, django_db_blocker, _incomes, _savings):
     with django_db_blocker.unblock():
         e1 = ExpensePlanFactory(january=10.01, february=10.01)
         e2 = ExpensePlanFactory(january=20.02, february=20.02)
@@ -96,7 +130,7 @@ def _expenses(django_db_setup, django_db_blocker, _incomes):
 
 @pytest.mark.django_db
 @pytest.fixture(scope='session')
-def _expenses_necessary(django_db_setup, django_db_blocker, _incomes):
+def _expenses_necessary(django_db_setup, django_db_blocker, _incomes, _savings):
     with django_db_blocker.unblock():
         e1 = ExpensePlanFactory(
             january=11.01, february=11.01,
@@ -127,25 +161,31 @@ def test_incomes_sum():
     assert 300.03 == _round(actual['january'])
 
 
+def test_savings_sum():
+    actual = DaySum(1970).savings
+
+    assert 64.66 == _round(actual['january'])
+
+
 def test_expenses_free():
     actual = DaySum(1970).expenses_free
 
-    assert 239.97 == _round(actual['january'])
+    assert 175.31 == _round(actual['january'])
 
 
 def test_day_sum1():
     actual = DaySum(1970).day_sum
 
-    assert 7.74 == _round(actual['january'])
-    assert 8.57 == _round(actual['february'])
+    assert 5.66 == _round(actual['january'])
+    assert 6.26 == _round(actual['february'])
 
 
 # keliemeji metai
 def test_day_sum2():
     actual = DaySum(2020).day_sum
 
-    assert 7.74 == _round(actual['january'])
-    assert 8.27 == _round(actual['february'])
+    assert 5.66 == _round(actual['january'])
+    assert 6.05 == _round(actual['february'])
 
 
 def test_plans_stats_list():
@@ -165,15 +205,15 @@ def test_plans_stats_expenses_necessary():
 def test_plans_stats_expenses_free():
     actual = DaySum(1970).plans_stats
     assert 'Lieka kasdienybei' == actual[1].type
-    assert 239.97 == _round(actual[1].january)
-    assert 239.97 == _round(actual[1].february)
+    assert 175.31 == _round(actual[1].january)
+    assert 175.31 == _round(actual[1].february)
 
 
 def test_plans_stats_day_sum():
     actual = DaySum(1970).plans_stats
     assert 'Suma dienai' == actual[2].type
-    assert 7.74 == _round(actual[2].january)
-    assert 8.57 == _round(actual[2].february)
+    assert 5.66 == _round(actual[2].january)
+    assert 6.26 == _round(actual[2].february)
 
 
 #
@@ -191,8 +231,26 @@ def test_db_incomes_year_exist(_expenses):
 
 @pytest.mark.django_db
 @pytest.mark.no_auto_fixture
+def test_db_savings_year_exist(_expenses):
+    actual = DaySum(1970).savings
+
+    assert 64.66 == actual['january']
+    assert 64.66 == actual['february']
+
+
+@pytest.mark.django_db
+@pytest.mark.no_auto_fixture
 def test_db_incomes_year_not_exist(_expenses):
     actual = DaySum(1).incomes
+
+    assert 0.00 == actual['january']
+    assert 0.00 == actual['february']
+
+
+@pytest.mark.django_db
+@pytest.mark.no_auto_fixture
+def test_db_savings_year_not_exist(_expenses):
+    actual = DaySum(1).savings
 
     assert 0.00 == actual['january']
     assert 0.00 == actual['february']
@@ -219,8 +277,8 @@ def test_db_expenses_necessary_sum_no_necessary(_expenses):
 def test_db_expenses_free_no_necessary(_expenses):
     actual = DaySum(1970).expenses_free
 
-    assert 111.11 == actual['january']
-    assert 222.11 == actual['february']
+    assert 46.45 == _round(actual['january'])
+    assert 157.45 == _round(actual['february'])
 
 
 @pytest.mark.django_db
@@ -245,8 +303,8 @@ def test_db_expenses_necessary_sum(_expenses_necessary):
 def test_db_expenses_free(_expenses_necessary):
     actual = DaySum(1970).expenses_free
 
-    assert 79.08 == actual['january']
-    assert 190.08 == actual['february']
+    assert 14.42 == _round(actual['january'])
+    assert 125.42 == _round(actual['february'])
 
 
 @pytest.mark.django_db
@@ -271,5 +329,5 @@ def test_db_expenses_necessary_sum_both(_expenses_necessary, _expenses):
 def test_db_expenses_free_both(_expenses_necessary, _expenses):
     actual = DaySum(1970).expenses_free
 
-    assert 79.08 == actual['january']
-    assert 190.08 == actual['february']
+    assert 14.42 == _round(actual['january'])
+    assert 125.42 == _round(actual['february'])

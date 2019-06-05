@@ -6,7 +6,7 @@ from time import strptime
 import pandas as pd
 from django_pandas.io import read_frame
 
-from ..models import ExpensePlan, ExpenseType, IncomePlan
+from ..models import ExpensePlan, ExpenseType, IncomePlan, SavingPlan
 
 
 class DaySum(object):
@@ -14,6 +14,7 @@ class DaySum(object):
         self._year = year
 
         self._incomes = self._get_incomes().sum()
+        self._savings = self._get_savings().sum()
         self._expenses = self._get_expenses()
         self._expenses_necessary = self._get_expenses_necessary()
 
@@ -24,6 +25,10 @@ class DaySum(object):
     @property
     def incomes(self):
         return self._incomes.to_dict()
+
+    @property
+    def savings(self):
+        return self._savings.to_dict()
 
     @property
     def expenses_necessary(self):
@@ -63,6 +68,13 @@ class DaySum(object):
 
         return df
 
+    def _get_savings(self):
+        qs = SavingPlan.objects.items(**{'year': self._year})
+        df = read_frame(qs)
+        df = df.reset_index(drop=True).set_index('saving_type')
+
+        return df
+
     def _get_expenses(self):
         qs = ExpensePlan.objects.items(**{'year': self._year})
         df = read_frame(qs)
@@ -82,11 +94,12 @@ class DaySum(object):
 
     def _calc_expenses_free(self):
         df = self._incomes.sub(self._expenses_necessary_sum, axis='rows')
+        df = df.sub(self._savings, axis='rows')
 
         return df
 
     def _calc_day_sum(self):
-        df = self._incomes.sub(self._expenses_necessary_sum, axis='rows').to_dict()
+        df = self.expenses_free
 
         for column_name, column_value in df.items():
             month = self._month(column_name)
