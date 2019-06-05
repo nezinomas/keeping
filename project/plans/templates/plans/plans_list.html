@@ -11,6 +11,21 @@
 {% block content %}
 
 <div class="col-8 pl-0">
+    <!-- incomes plans -->
+    <div class="row my-2">
+        <div class="col-10">
+            <h6>Pajamų planas</h6>
+        </div>
+        <div class="col-2 text-right">
+            {% url 'plans:plans_incomes_new' as url_incomes_new %}
+            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_new }}"><i
+                    class="fas fa-plus"></i> Įrašą</button>
+        </div>
+    </div>
+    <div class="row my-2">
+        <div id="incomes_list" class="col dblclick">{{ incomes_list }}</div>
+    </div>
+
     <!-- expenses plans -->
     <div class="row my-2">
         <div class="col-10"><h6>Išlaidų planas</h6></div>
@@ -21,20 +36,6 @@
     </div>
     <div class="row my-2">
         <div id="expenses_list" class="col dblclick">{{ expenses_list }}</div>
-    </div>
-
-    <!-- incomes plans -->
-    <div class="row my-2">
-        <div class="col-10">
-            <h6>Pajamų planas</h6>
-        </div>
-        <div class="col-2 text-right">
-            {% url 'plans:plans_incomes_new' as url_incomes_new %}
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_new }}"><i class="fas fa-plus"></i> Įrašą</button>
-        </div>
-    </div>
-    <div class="row my-2">
-        <div id="incomes_list" class="col dblclick">{{ incomes_list }}</div>
     </div>
 
     <!-- savings plans -->
