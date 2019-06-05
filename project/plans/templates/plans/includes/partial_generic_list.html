@@ -20,18 +20,18 @@
         {% if url_update %}{% url url_update item.id as url %}{% endif %}
         <tr data-url="{{ url }}">
             <td>{{ item|get_obj_attr:type }}{% if item.expense_type.necessary %} <i class="far fa-star"></i>{% endif %}</td>
-            <td class="text-right">{{ item.january|decimalformat }}</td>
-            <td class="text-right">{{ item.february|decimalformat }}</td>
-            <td class="text-right">{{ item.march|decimalformat }}</td>
-            <td class="text-right">{{ item.april|decimalformat }}</td>
-            <td class="text-right">{{ item.may|decimalformat }}</td>
-            <td class="text-right">{{ item.june|decimalformat }}</td>
-            <td class="text-right">{{ item.july|decimalformat }}</td>
-            <td class="text-right">{{ item.august|decimalformat }}</td>
-            <td class="text-right">{{ item.september|decimalformat }}</td>
-            <td class="text-right">{{ item.october|decimalformat }}</td>
-            <td class="text-right">{{ item.november|decimalformat }}</td>
-            <td class="text-right">{{ item.december|decimalformat }}</td>
+            <td class="text-right" width="7%">{{ item.january|decimalformat }}</td>
+            <td class="text-right" width="7%">{{ item.february|decimalformat }}</td>
+            <td class="text-right" width="7%">{{ item.march|decimalformat }}</td>
+            <td class="text-right" width="7%">{{ item.april|decimalformat }}</td>
+            <td class="text-right" width="7%">{{ item.may|decimalformat }}</td>
+            <td class="text-right" width="7%">{{ item.june|decimalformat }}</td>
+            <td class="text-right" width="7%">{{ item.july|decimalformat }}</td>
+            <td class="text-right" width="7%">{{ item.august|decimalformat }}</td>
+            <td class="text-right" width="7%">{{ item.september|decimalformat }}</td>
+            <td class="text-right" width="7%">{{ item.october|decimalformat }}</td>
+            <td class="text-right" width="7%">{{ item.november|decimalformat }}</td>
+            <td class="text-right" width="7%">{{ item.december|decimalformat }}</td>
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
