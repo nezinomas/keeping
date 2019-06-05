@@ -6,7 +6,7 @@
     $("#id_from_account").change(function () {
         var url = $("#js-form").attr("data-chained-dropdown");
         var id = $(this).val();
-        console.log('koks: ', url, ' id:', id)
+
         $.ajax({
             url: url,
             data: {
