@@ -7,6 +7,18 @@ from .lib.day_sum import DaySum
 from .models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
 
 
+def plans_stats(request):
+    ajax_trigger = request.GET.get('ajax_trigger')
+    arr = DaySum(request.user.profile.year).plans_stats
+    t_name = 'plans/includes/partial_plans_stats.html'
+    c = {'items': arr}
+
+    if ajax_trigger:
+        return render(template_name=t_name, context=c, request=request)
+    else:
+        return render_to_string(template_name=t_name, context=c, request=request)
+
+
 #
 # Expense Plan views
 #
@@ -33,6 +45,7 @@ def plans_index(request):
         'incomes_list': incomes_lists(request),
         'savings_list': savings_lists(request),
         'day_list': day_lists(request),
+        'plans_stats': plans_stats(request)
     }
     return CrudMixin(request, expenses_settings()).lists_as_html(context)
 
