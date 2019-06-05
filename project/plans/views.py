@@ -114,7 +114,7 @@ def savings_new(request):
 
 
 def savings_update(request, pk):
-    settings = incomes_settings()
+    settings = savings_settings()
     settings.item_id = pk
 
     return CrudMixin(request, settings).update()
@@ -148,7 +148,7 @@ def day_new(request):
 
 
 def day_update(request, pk):
-    settings = incomes_settings()
+    settings = day_settings()
     settings.item_id = pk
 
     return CrudMixin(request, settings).update()
