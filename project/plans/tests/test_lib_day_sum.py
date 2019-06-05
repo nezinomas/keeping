@@ -95,55 +95,48 @@ def mock_get_expenses_necessary(monkeypatch, request):
 # database fixtures
 #
 @pytest.mark.django_db
-@pytest.fixture(scope='session')
-def _incomes(django_db_setup, django_db_blocker):
-    with django_db_blocker.unblock():
-        i = IncomePlanFactory()
-    yield
-    with django_db_blocker.unblock():
-        i.delete()
+@pytest.fixture()
+def _incomes():
+    IncomePlanFactory()
 
 
 @pytest.mark.django_db
-@pytest.fixture(scope='session')
-def _savings(django_db_setup, django_db_blocker):
-    with django_db_blocker.unblock():
-        s1 = SavingPlanFactory()
-        s2 = SavingPlanFactory()
-    yield
-    with django_db_blocker.unblock():
-        s1.delete()
-        s2.delete()
+@pytest.fixture()
+def _expense_type():
+    ExpenseTypeFactory.reset_sequence()
+
+    ExpenseTypeFactory(necessary=True)
 
 
 @pytest.mark.django_db
-@pytest.fixture(scope='session')
-def _expenses(django_db_setup, django_db_blocker, _incomes, _savings):
-    with django_db_blocker.unblock():
-        e1 = ExpensePlanFactory(january=10.01, february=10.01)
-        e2 = ExpensePlanFactory(january=20.02, february=20.02)
-    yield
-    with django_db_blocker.unblock():
-        e1.delete()
-        e2.delete()
+@pytest.fixture()
+def _savings():
+    SavingPlanFactory()
+    SavingPlanFactory()
 
 
 @pytest.mark.django_db
-@pytest.fixture(scope='session')
-def _expenses_necessary(django_db_setup, django_db_blocker, _incomes, _savings):
-    with django_db_blocker.unblock():
-        e1 = ExpensePlanFactory(
-            january=11.01, february=11.01,
-            expense_type=ExpenseTypeFactory(necessary=True)
-        )
-        e2 = ExpensePlanFactory(
-            january=21.02, february=21.02,
-            expense_type=ExpenseTypeFactory(necessary=True)
-        )
-    yield
-    with django_db_blocker.unblock():
-        e1.delete()
-        e2.delete()
+@pytest.fixture()
+def _expenses():
+    ExpenseTypeFactory.reset_sequence()
+
+    ExpensePlanFactory(january=10.01, february=10.01)
+    ExpensePlanFactory(january=20.02, february=20.02)
+
+
+@pytest.mark.django_db
+@pytest.fixture()
+def _expenses_necessary():
+    ExpenseTypeFactory.reset_sequence()
+
+    ExpensePlanFactory(
+        january=11.01, february=11.01,
+        expense_type=ExpenseTypeFactory(necessary=True)
+    )
+    ExpensePlanFactory(
+        january=21.02, february=21.02,
+        expense_type=ExpenseTypeFactory(necessary=True)
+    )
 
 
 #
@@ -222,7 +215,7 @@ def test_plans_stats_day_sum():
 
 @pytest.mark.django_db
 @pytest.mark.no_auto_fixture
-def test_db_incomes_year_exist(_expenses):
+def test_db_incomes_year_exist(_incomes):
     actual = DaySum(1970).incomes
 
     assert 111.11 == actual['january']
@@ -231,7 +224,7 @@ def test_db_incomes_year_exist(_expenses):
 
 @pytest.mark.django_db
 @pytest.mark.no_auto_fixture
-def test_db_savings_year_exist(_expenses):
+def test_db_savings_year_exist(_savings):
     actual = DaySum(1970).savings
 
     assert 64.66 == actual['january']
@@ -240,7 +233,7 @@ def test_db_savings_year_exist(_expenses):
 
 @pytest.mark.django_db
 @pytest.mark.no_auto_fixture
-def test_db_incomes_year_not_exist(_expenses):
+def test_db_incomes_year_not_exist(_incomes):
     actual = DaySum(1).incomes
 
     assert 0.00 == actual['january']
@@ -249,7 +242,7 @@ def test_db_incomes_year_not_exist(_expenses):
 
 @pytest.mark.django_db
 @pytest.mark.no_auto_fixture
-def test_db_savings_year_not_exist(_expenses):
+def test_db_savings_year_not_exist(_savings):
     actual = DaySum(1).savings
 
     assert 0.00 == actual['january']
@@ -274,7 +267,7 @@ def test_db_expenses_necessary_sum_no_necessary(_expenses):
 
 @pytest.mark.django_db
 @pytest.mark.no_auto_fixture
-def test_db_expenses_free_no_necessary(_expenses):
+def test_db_expenses_free_no_necessary(_incomes, _savings, _expenses):
     actual = DaySum(1970).expenses_free
 
     assert 46.45 == _round(actual['january'])
@@ -291,7 +284,7 @@ def test_db_expenses_necessary(_expenses_necessary):
 
 @pytest.mark.django_db
 @pytest.mark.no_auto_fixture
-def test_db_expenses_necessary_sum(_expenses_necessary):
+def test_db_expenses_necessary_sum(_incomes, _savings, _expenses_necessary):
     actual = DaySum(1970).expenses_necessary_sum
 
     assert 32.03 == actual['january']
@@ -300,7 +293,7 @@ def test_db_expenses_necessary_sum(_expenses_necessary):
 
 @pytest.mark.django_db
 @pytest.mark.no_auto_fixture
-def test_db_expenses_free(_expenses_necessary):
+def test_db_expenses_free(_incomes, _savings, _expenses_necessary):
     actual = DaySum(1970).expenses_free
 
     assert 14.42 == _round(actual['january'])
@@ -326,7 +319,7 @@ def test_db_expenses_necessary_sum_both(_expenses_necessary, _expenses):
 
 @pytest.mark.django_db
 @pytest.mark.no_auto_fixture
-def test_db_expenses_free_both(_expenses_necessary, _expenses):
+def test_db_expenses_free_both(_incomes, _savings, _expenses_necessary, _expenses):
     actual = DaySum(1970).expenses_free
 
     assert 14.42 == _round(actual['january'])
