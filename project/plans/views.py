@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, render, reverse
+from django.shortcuts import render
 from django.template.loader import render_to_string
 
 from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
