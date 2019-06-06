@@ -82,4 +82,9 @@ urlpatterns = [
         views.day_update,
         name='plans_day_update'
     ),
+    path(
+        'plans/reload_plans_stats/',
+        views.plans_stats,
+        name='reload_plans_stats'
+    )
 ]

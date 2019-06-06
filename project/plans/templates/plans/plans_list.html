@@ -11,6 +11,21 @@
 {% block content %}
 
 <div class="col-8 pl-0">
+    <!-- incomes plans -->
+    <div class="row my-2">
+        <div class="col-10">
+            <h6>Pajamų planas</h6>
+        </div>
+        <div class="col-2 text-right">
+            {% url 'plans:plans_incomes_new' as url_incomes_new %}
+            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_new }}"><i
+                    class="fas fa-plus"></i> Įrašą</button>
+        </div>
+    </div>
+    <div class="row my-2">
+        <div id="incomes_list" class="col dblclick">{{ incomes_list }}</div>
+    </div>
+
     <!-- expenses plans -->
     <div class="row my-2">
         <div class="col-10"><h6>Išlaidų planas</h6></div>
@@ -21,20 +36,6 @@
     </div>
     <div class="row my-2">
         <div id="expenses_list" class="col dblclick">{{ expenses_list }}</div>
-    </div>
-
-    <!-- incomes plans -->
-    <div class="row my-2">
-        <div class="col-10">
-            <h6>Pajamų planas</h6>
-        </div>
-        <div class="col-2 text-right">
-            {% url 'plans:plans_incomes_new' as url_incomes_new %}
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_new }}"><i class="fas fa-plus"></i> Įrašą</button>
-        </div>
-    </div>
-    <div class="row my-2">
-        <div id="incomes_list" class="col dblclick">{{ incomes_list }}</div>
     </div>
 
     <!-- savings plans -->
@@ -64,6 +65,15 @@
     <div class="row my-2">
         <div id="day_list" class="col dblclick">{{ day_list }}</div>
     </div>
+
+    <!-- stats plans -->
+    <div class="row my-2">
+        <div class="col-10"><h6>Skaičiavimai</h6></div>
+        <div class="col-2 text-right"></div>
+    </div>
+    <div class="row my-2">
+        <div id="plans_stats" class="col dblclick">{{ plans_stats }}</div>
+    </div>
 </div>
 
 <!-- left side -->
@@ -79,4 +89,21 @@
         <div class="modal-content"></div>
     </div>
 </div>
+
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'plans:reload_plans_stats' %}`;
+        var update_id = $("#js-form").attr("data-chained-dropdown");
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1'
+            },
+            success: function (data) {
+                $(`#${update_id}`).html(data);
+            }
+        });
+    });
+</script>
 {% endblock content %}
