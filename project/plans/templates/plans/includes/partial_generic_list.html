@@ -19,7 +19,8 @@
         {% for item in items %}
         {% if url_update %}{% url url_update item.id as url %}{% else %}{% define '' as url %}{% endif %}
         <tr data-url="{{ url }}">
-            <td>{{ item|get_obj_attr:type }}{% if item.expense_type.necessary %} <i class="far fa-star star"></i>{% endif %}{% if item.saving_type %} <i class="far fa-star star"></i>{% endif %}</td>
+            {% with item|get_obj_attr:type as name %}
+            <td>{{ name }}{% if item.expense_type.necessary or item.saving_type or 'Būtin' in name %} <i class="far fa-star star"></i>{% endif %}</td>{% endwith %}
             <td class="text-right" width="7%">{{ item.january|decimalformat }}</td>
             <td class="text-right" width="7%">{{ item.february|decimalformat }}</td>
             <td class="text-right" width="7%">{{ item.march|decimalformat }}</td>
