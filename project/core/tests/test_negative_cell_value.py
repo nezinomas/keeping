@@ -36,3 +36,9 @@ def test_value_negative_int():
     actual = negativecell(-12)
 
     assert actual == 'table-danger'
+
+
+def test_value_str():
+    actual = negativecell('xxx')
+
+    assert not actual
