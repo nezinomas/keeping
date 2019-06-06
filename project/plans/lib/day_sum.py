@@ -96,11 +96,13 @@ class DaySum(object):
         except:
             df = self._expenses
 
-        return df.sum()
+        df = df.sum()
+        df = df.add(self._savings, fill_value=0)
+
+        return df
 
     def _calc_expenses_free(self):
         df = self._incomes.sub(self._expenses_necessary_sum, axis='rows')
-        df = df.sub(self._savings, axis='rows')
 
         return df
 

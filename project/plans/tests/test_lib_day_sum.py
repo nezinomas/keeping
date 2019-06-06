@@ -145,7 +145,7 @@ def _expenses_necessary():
 def test_expenses_necessary_sum():
     actual = DaySum(1970).expenses_necessary_sum
 
-    assert 60.06 == actual['january']
+    assert 124.72 == actual['january']
 
 
 def test_incomes_sum():
@@ -191,8 +191,8 @@ def test_plans_stats_expenses_necessary():
     actual = DaySum(1970).plans_stats
 
     assert 'Būtinos išlaidos' == actual[0].type
-    assert 60.06 == actual[0].january
-    assert 60.06 == actual[0].february
+    assert 124.72 == actual[0].january
+    assert 124.72 == actual[0].february
 
 
 def test_plans_stats_expenses_free():
@@ -287,8 +287,8 @@ def test_db_expenses_necessary(_expenses_necessary):
 def test_db_expenses_necessary_sum(_incomes, _savings, _expenses_necessary):
     actual = DaySum(1970).expenses_necessary_sum
 
-    assert 32.03 == actual['january']
-    assert 32.03 == actual['february']
+    assert 96.69 == actual['january']
+    assert 96.69 == actual['february']
 
 
 @pytest.mark.django_db
