@@ -15,8 +15,8 @@ def _round(number):
 def incomes():
     data = {
         'income_type': ['a', 'b'],
-        'january': [100.01, 200.02],
-        'february': [100.01, 200.02],
+        'january': [400.01, 500.02],
+        'february': [400.01, 500.02],
     }
     return pd.DataFrame(data).set_index('income_type')
 
@@ -151,7 +151,7 @@ def test_expenses_necessary_sum():
 def test_incomes_sum():
     actual = DaySum(1970).incomes
 
-    assert 300.03 == _round(actual['january'])
+    assert 900.03 == _round(actual['january'])
 
 
 def test_savings_sum():
@@ -163,22 +163,22 @@ def test_savings_sum():
 def test_expenses_free():
     actual = DaySum(1970).expenses_free
 
-    assert 175.31 == _round(actual['january'])
+    assert 775.31 == _round(actual['january'])
 
 
 def test_day_sum1():
     actual = DaySum(1970).day_sum
 
-    assert 5.66 == _round(actual['january'])
-    assert 6.26 == _round(actual['february'])
+    assert 25.01 == _round(actual['january'])
+    assert 27.69 == _round(actual['february'])
 
 
 # keliemeji metai
 def test_day_sum2():
     actual = DaySum(2020).day_sum
 
-    assert 5.66 == _round(actual['january'])
-    assert 6.05 == _round(actual['february'])
+    assert 25.01 == _round(actual['january'])
+    assert 26.73 == _round(actual['february'])
 
 
 def test_plans_stats_list():
@@ -198,15 +198,15 @@ def test_plans_stats_expenses_necessary():
 def test_plans_stats_expenses_free():
     actual = DaySum(1970).plans_stats
     assert 'Lieka kasdienybei' == actual[1].type
-    assert 175.31 == _round(actual[1].january)
-    assert 175.31 == _round(actual[1].february)
+    assert 775.31 == _round(actual[1].january)
+    assert 775.31 == _round(actual[1].february)
 
 
 def test_plans_stats_day_sum():
     actual = DaySum(1970).plans_stats
     assert 'Suma dienai' == actual[2].type
-    assert 5.66 == _round(actual[2].january)
-    assert 6.26 == _round(actual[2].february)
+    assert 25.01 == _round(actual[2].january)
+    assert 27.69 == _round(actual[2].february)
 
 
 #
