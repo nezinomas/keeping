@@ -67,6 +67,22 @@ def test_necessary_expense_2(_template):
     assert expect in _remove_line_end(actual)
 
 
+def test_necessary_expense_3(_template):
+    items = [
+        type(
+            'O',
+            (object,),
+            dict(january=11, saving_type=dict(title='xxx'))
+        )
+    ]
+    context = Context({'items': items})
+
+    actual = _template.render(context)
+    expect = '<td>type <i class="far fa-star star"></i></td>'
+
+    assert expect in _remove_line_end(actual)
+
+
 def test_no_object_1(_template):
     items = []
     context = Context({'items': items})
