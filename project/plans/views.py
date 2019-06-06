@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
 
@@ -7,6 +8,7 @@ from .lib.day_sum import DaySum
 from .models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
 
 
+@login_required()
 def plans_stats(request):
     ajax_trigger = request.GET.get('ajax_trigger')
     arr = DaySum(request.user.profile.year).plans_stats
@@ -39,6 +41,7 @@ def expenses_settings():
     return obj
 
 
+@login_required()
 def plans_index(request):
     context = {
         'expenses_list': expenses_lists(request),
@@ -50,14 +53,17 @@ def plans_index(request):
     return CrudMixin(request, expenses_settings()).lists_as_html(context)
 
 
+@login_required()
 def expenses_lists(request):
     return CrudMixin(request, expenses_settings()).lists_as_str()
 
 
+@login_required()
 def expenses_new(request):
     return CrudMixin(request, expenses_settings()).new()
 
 
+@login_required()
 def expenses_update(request, pk):
     settings = expenses_settings()
     settings.item_id = pk
@@ -84,14 +90,17 @@ def incomes_settings():
     return obj
 
 
+@login_required()
 def incomes_lists(request):
     return CrudMixin(request, incomes_settings()).lists_as_str()
 
 
+@login_required()
 def incomes_new(request):
     return CrudMixin(request, incomes_settings()).new()
 
 
+@login_required()
 def incomes_update(request, pk):
     settings = incomes_settings()
     settings.item_id = pk
@@ -118,14 +127,17 @@ def savings_settings():
     return obj
 
 
+@login_required()
 def savings_lists(request):
     return CrudMixin(request, savings_settings()).lists_as_str()
 
 
+@login_required()
 def savings_new(request):
     return CrudMixin(request, savings_settings()).new()
 
 
+@login_required()
 def savings_update(request, pk):
     settings = savings_settings()
     settings.item_id = pk
@@ -152,14 +164,17 @@ def day_settings():
     return obj
 
 
+@login_required()
 def day_lists(request):
     return CrudMixin(request, day_settings()).lists_as_str()
 
 
+@login_required()
 def day_new(request):
     return CrudMixin(request, day_settings()).new()
 
 
+@login_required()
 def day_update(request, pk):
     settings = day_settings()
     settings.item_id = pk
