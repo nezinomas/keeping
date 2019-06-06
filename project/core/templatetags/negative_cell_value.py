@@ -5,14 +5,14 @@ register = template.Library()
 
 @register.filter
 def negativecell(value):
-    _value = ''
+    return_value = ''
 
     try:
         _value = float(value)
     except:
         return _value
 
-    if value < 0:
-        _value = 'table-danger'
+    if _value < 0:
+        return_value = 'table-danger'
 
-    return _value
+    return return_value
