@@ -8,4 +8,4 @@ class AccountFactory(factory.DjangoModelFactory):
         model = Account
         django_get_or_create = ('title',)
 
-    title = 'Account'
+    title = 'Account1'
