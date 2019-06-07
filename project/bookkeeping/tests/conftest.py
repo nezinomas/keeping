@@ -20,11 +20,11 @@ def _accounts():
 @pytest.fixture()
 def _incomes():
     IncomeFactory(
-        amount=Decimal(1000),
+        amount=1000,
         account=AccountFactory(title='Account1')
     )
     IncomeFactory(
-        amount=Decimal(2000),
+        amount=2000,
         account=AccountFactory(title='Account2')
     )
 
@@ -32,13 +32,13 @@ def _incomes():
 @pytest.fixture()
 def _incomes_past():
     IncomeFactory(
-        amount=Decimal(5000),
+        amount=5000,
         date=dt(1970, 1, 1),
         account=AccountFactory(title='Account1')
     )
     IncomeFactory(
         date=dt(1970, 11, 1),
-        amount=Decimal(2000),
+        amount=2000,
         account=AccountFactory(title='Account2')
     )
 
@@ -46,8 +46,8 @@ def _incomes_past():
 @pytest.fixture()
 def _savings():
     SavingFactory(
-        amount=Decimal(500),
-        fee=Decimal(15.50),
+        amount=500,
+        fee=15.50,
         account=AccountFactory(title='Account1')
     )
 
@@ -56,14 +56,14 @@ def _savings():
 def _savings_past():
     SavingFactory(
         date=dt(1970, 1, 1),
-        amount=Decimal(1000),
-        fee=Decimal(150.50),
+        amount=1000,
+        fee=150.50,
         account=AccountFactory(title='Account1')
     )
     SavingFactory(
         date=dt(1970, 1, 1),
-        amount=Decimal(100),
-        fee=Decimal(15.50),
+        amount=100,
+        fee=15.50,
         account=AccountFactory(title='Account2')
     )
 
@@ -71,17 +71,17 @@ def _savings_past():
 @pytest.fixture()
 def _transactions():
     TransactionFactory(
-        amount=Decimal(200),
+        amount=200,
         to_account=AccountFactory(title='Account2'),
         from_account=AccountFactory(title='Account1')
     )
     TransactionFactory(
-        amount=Decimal(200),
+        amount=200,
         to_account=AccountFactory(title='Account2'),
         from_account=AccountFactory(title='Account1')
     )
     TransactionFactory(
-        amount=Decimal(300),
+        amount=300,
         to_account=AccountFactory(title='Account1'),
         from_account=AccountFactory(title='Account2')
     )
@@ -91,32 +91,32 @@ def _transactions():
 def _transactions_past():
     TransactionFactory(
         date=dt(1970, 1, 1),
-        amount=Decimal(100),
+        amount=100,
         to_account=AccountFactory(title='Account2'),
         from_account=AccountFactory(title='Account1')
     )
     TransactionFactory(
         date=dt(1970, 1, 1),
-        amount=Decimal(100),
+        amount=100,
         to_account=AccountFactory(title='Account2'),
         from_account=AccountFactory(title='Account1')
     )
     TransactionFactory(
-            date=dt(1970, 11, 1),
-            amount=Decimal(500),
-            to_account=AccountFactory(title='Account1'),
-            from_account=AccountFactory(title='Account2')
+        date=dt(1970, 11, 1),
+        amount=500,
+        to_account=AccountFactory(title='Account1'),
+        from_account=AccountFactory(title='Account2')
     )
 
 
 @pytest.fixture()
 def _expenses():
     ExpenseFactory(
-        price=Decimal(30.15),
+        price=30.15,
         account=AccountFactory(title='Account1')
     )
     ExpenseFactory(
-        price=Decimal(15.15),
+        price=15.15,
         account=AccountFactory(title='Account2')
     )
 
@@ -125,11 +125,11 @@ def _expenses():
 def _expenses_past():
     ExpenseFactory(
         date=dt(1970, 1, 1),
-        price=Decimal(30.15),
+        price=30.15,
         account=AccountFactory(title='Account1')
     )
     ExpenseFactory(
         date=dt(1970, 1, 1),
-        price=Decimal(15.15),
+        price=15.15,
         account=AccountFactory(title='Account2')
     )
