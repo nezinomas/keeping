@@ -13,5 +13,5 @@ class TransactionFactory(factory.DjangoModelFactory):
 
     date = dt(1999, 1, 1)
     amount = Decimal(200)
-    to_account = factory.SubFactory(AccountFactory)
-    from_account = factory.SubFactory(AccountFactory, title='Account2')
+    to_account = factory.SubFactory(AccountFactory, title='Account2')
+    from_account = factory.SubFactory(AccountFactory)
