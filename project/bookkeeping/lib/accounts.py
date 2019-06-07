@@ -6,11 +6,11 @@ class Accounts(object):
         self._accounts = self._get_accounts()
 
     @property
-    def account_list(self):
+    def accounts_list(self):
         return self._accounts
 
     @property
-    def account_dictionary(self):
+    def accounts_dictionary(self):
         items = {}
         for account in self._accounts:
             items[account] = 0

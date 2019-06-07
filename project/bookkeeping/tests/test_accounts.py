@@ -7,7 +7,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_accounts_list(_accounts):
-    actual = Accounts().account_list
+    actual = Accounts().accounts_list
 
     expect = ['Account1', 'Account2']
 
@@ -15,7 +15,7 @@ def test_accounts_list(_accounts):
 
 
 def test_accounts_dictionary(_accounts):
-    actual = Accounts().account_dictionary
+    actual = Accounts().accounts_dictionary
 
     expect = {'Account1': 0, 'Account2': 0}
 
