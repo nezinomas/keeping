@@ -12,7 +12,7 @@ class SavingTypeFactory(factory.DjangoModelFactory):
         model = SavingType
         django_get_or_create = ('title',)
 
-    title = 'Saving Type'
+    title = 'Savings'
 
 
 class SavingFactory(factory.DjangoModelFactory):
