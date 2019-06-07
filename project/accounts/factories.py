@@ -1,6 +1,6 @@
 import factory
 
-from ..models import Account
+from .models import Account
 
 
 class AccountFactory(factory.DjangoModelFactory):
