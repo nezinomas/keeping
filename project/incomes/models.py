@@ -25,6 +25,18 @@ class IncomeManager(models.Manager):
 
         return qs
 
+    def past_items(self, *args, **kwargs):
+        qs = (
+            self.get_queryset().
+            prefetch_related('account')
+        )
+
+        if 'year' in kwargs:
+            year = kwargs['year']
+            qs = qs.filter(date__year__lte=year)
+
+        return qs
+
 
 class Income(models.Model):
     date = models.DateField()

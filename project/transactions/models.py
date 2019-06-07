@@ -19,6 +19,18 @@ class TransactionManager(models.Manager):
 
         return qs
 
+    def past_items(self, *args, **kwargs):
+        qs = (
+            self.get_queryset().
+            prefetch_related('from_account', 'to_account')
+        )
+
+        if 'year' in kwargs:
+            year = kwargs['year']
+            qs = qs.filter(date__year__lte=year)
+
+        return qs
+
 
 class Transaction(models.Model):
     date = models.DateField()
