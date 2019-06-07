@@ -3,13 +3,10 @@ from decimal import Decimal
 import pandas as pd
 import pytest
 
+from ...core.tests.utils import _round
 from ..factories import (ExpensePlanFactory, ExpenseTypeFactory,
                          IncomePlanFactory, SavingPlanFactory)
 from ..lib.day_sum import DaySum
-
-
-def _round(number):
-    return round(number, 2)
 
 
 def incomes():
