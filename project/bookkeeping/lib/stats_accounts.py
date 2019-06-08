@@ -20,7 +20,6 @@ class StatsAccounts(object):
         self._savings = data.get('saving')
         self._transactions = data.get('transaction')
 
-        # self._accounts = self._accounts_dict(data.get('account'))
         self._accounts = data.get('account')
 
         self._past_accounts_balance = self._accounts.copy().set_index('title')
@@ -51,7 +50,6 @@ class StatsAccounts(object):
         self._calc_(self._filter_df(self._savings, 'lt'), '-', 'amount')
         self._calc_(self._filter_df(self._expenses, 'lt'), '-', 'price')
         self._calc_transactions(self._filter_df(self._transactions, 'lt'))
-
 
     def _calc_(self, df, action, sum_col='amount'):
         df = self._group_and_sum(df, ['account'], sum_col)
