@@ -1,11 +1,7 @@
+from datetime import date
+
 import pandas as pd
 from django_pandas.io import read_frame
-
-from ...expenses.models import Expense
-from ...incomes.models import Income
-from ...savings.models import Saving, SavingType
-from ...transactions.models import Transaction
-from ..lib.accounts import Accounts
 
 
 def _print(*args):
@@ -16,10 +12,14 @@ def _print(*args):
 
 
 class StatsAccounts(object):
-    def __init__(self, year):
+    def __init__(self, year, data, *args, **kwargs):
         self._year = year
 
-        self._accounts = Accounts().accounts_dictionary
+        self._incomes = data.get('income')
+        self._expenses = data.get('expense')
+        self._savings = data.get('saving')
+        self._transactions = data.get('transaction')
+        self._accounts = self._accounts_dict(data.get('account'))
 
         self._past_balance()
 
@@ -27,25 +27,32 @@ class StatsAccounts(object):
     def past_accounts_balance(self):
         return self._past_accounts_balance
 
+    def _filter_df(self, df, action):
+        start = pd.to_datetime(date(self._year, 1, 1))
+        if action == 'lt':
+            df = df[df['date'] < start]
+
+        if action == 'gte':
+            df = df[df['date'] >= start]
+
+        return df
+
+    def _accounts_dict(self, df):
+        _df = df.to_dict(orient='list')
+        return {title: 0 for title in _df['title']}
+
     def _past_balance(self):
         accounts = {**self._accounts}
 
-        qs = Income.objects.past_items(**{'year': self._year})
-        self._calc_(accounts, qs, '+')
-
-        qs = Saving.objects.past_items(**{'year': self._year})
-        self._calc_(accounts, qs, '-')
-
-        qs = Expense.objects.past_items(**{'year': self._year})
-        self._calc_(accounts, qs, '-', 'price')
-
-        qs = Transaction.objects.past_items(**{'year': self._year})
-        self._calc_transactions(accounts, qs)
+        self._calc_(accounts, self._filter_df(self._incomes, 'lt'), '+')
+        self._calc_(accounts, self._filter_df(self._savings, 'lt'), '-')
+        self._calc_(accounts, self._filter_df(self._expenses, 'lt'), '-', 'price')
+        self._calc_transactions(accounts, self._filter_df(self._transactions, 'lt'))
 
         self._past_accounts_balance = accounts
 
-    def _calc_(self, accounts, qs, action, amount_col_name='amount'):
-        df = self._read_frame(qs, ['account'], amount_col_name)
+    def _calc_(self, accounts, df, action, amount_col_name='amount'):
+        df = self._group_and_sum(df, ['account'], amount_col_name)
         df = df[['account', amount_col_name]].set_index('account')
 
         df_index = df.index.tolist()
@@ -56,9 +63,9 @@ class StatsAccounts(object):
             if action == '-':
                 accounts[index] -= df.loc[index, amount_col_name]
 
-    def _calc_transactions(self, accounts, qs):
-        df = self._read_frame(
-            qs,
+    def _calc_transactions(self, accounts, df):
+        df = self._group_and_sum(
+            df,
             ['from_account', 'to_account'],
             'amount'
         )
@@ -67,8 +74,9 @@ class StatsAccounts(object):
             accounts[row['from_account']] -= row['amount']
             accounts[row['to_account']] += row['amount']
 
-    def _read_frame(self, qs, index, col_to_sum):
-        df = read_frame(qs)
-        df = df.groupby(index)[col_to_sum].sum().reset_index()
-
-        return df
+    def _group_and_sum(self, df, index, col_to_sum):
+        return (
+            df.groupby(index)[col_to_sum]
+            .sum()
+            .reset_index()
+        )
