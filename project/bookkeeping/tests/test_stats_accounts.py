@@ -11,8 +11,8 @@ def test_past_accounts_balance_empty_current_year(_data):
     actual = StatsAccounts(1999, _data).past_accounts_balance
 
     expect = {
-        'Account1': _round(4019.68),
-        'Account2': _round(1119.68)
+        'Account1': {'past': 4019.68},
+        'Account2': {'past': 1119.68},
     }
 
     assert expect == actual
