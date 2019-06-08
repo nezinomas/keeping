@@ -1,21 +1,12 @@
 import pytest
 
-from ...accounts.factories import AccountFactory
-from ..lib.accounts import Accounts
+from ..lib.get_accounts import GetData as Accounts
 
 pytestmark = pytest.mark.django_db
 
 
-def test_accounts_list(_accounts):
-    actual = Accounts().accounts_list
-
-    expect = ['Account1', 'Account2']
-
-    assert expect == actual
-
-
-def test_accounts_dictionary(_accounts):
-    actual = Accounts().accounts_dictionary
+def test_accounts(_accounts):
+    actual = Accounts().accounts
 
     expect = {'Account1': 0, 'Account2': 0}
 
