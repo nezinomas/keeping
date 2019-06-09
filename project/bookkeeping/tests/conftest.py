@@ -1,9 +1,10 @@
 from datetime import date as dt
 from decimal import Decimal
 
+import pandas as pd
 import pytest
 
-from ...expenses.factories import ExpenseFactory, AccountFactory
+from ...expenses.factories import AccountFactory, ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from ...savings.factories import SavingFactory
 from ...transactions.factories import TransactionFactory
@@ -17,20 +18,29 @@ def _accounts():
     AccountFactory(title='Account2')
 
 
+def _accounts_data():
+    df = pd.DataFrame(
+        [
+            ['Account1'],
+            ['Account2'],
+        ],
+        columns=['title']
+    )
+    return df
+
+
 @pytest.fixture()
 def _incomes():
     IncomeFactory(
         amount=1000,
+        date=dt(1999, 1, 1),
         account=AccountFactory(title='Account1')
     )
     IncomeFactory(
         amount=2000,
+        date=dt(1999, 1, 31),
         account=AccountFactory(title='Account2')
     )
-
-
-@pytest.fixture()
-def _incomes_past():
     IncomeFactory(
         amount=5000,
         date=dt(1970, 1, 1),
@@ -43,6 +53,20 @@ def _incomes_past():
     )
 
 
+def _incomes_data():
+    df = pd.DataFrame(
+        [
+            [pd.to_datetime('1970-01-01'), 5000.00, 'Account1'],
+            [pd.to_datetime('1970-11-01'), 2000.00, 'Account2'],
+            [pd.to_datetime('1999-01-01'), 3000.00, 'Account1'],
+            [pd.to_datetime('1999-01-02'), 2000.00, 'Account2'],
+            [pd.to_datetime('1999-01-31'), 2000.00, 'Account2'],
+        ],
+        columns=['date', 'amount', 'account']
+    )
+    return df
+
+
 @pytest.fixture()
 def _savings():
     SavingFactory(
@@ -50,10 +74,6 @@ def _savings():
         fee=15.50,
         account=AccountFactory(title='Account1')
     )
-
-
-@pytest.fixture()
-def _savings_past():
     SavingFactory(
         date=dt(1970, 1, 1),
         amount=1000,
@@ -66,6 +86,19 @@ def _savings_past():
         fee=15.50,
         account=AccountFactory(title='Account2')
     )
+
+
+def _savings_data():
+    df = pd.DataFrame(
+        [
+            [pd.to_datetime('1970-01-01'), 1000.00, 150.50, 'Account1'],
+            [pd.to_datetime('1970-01-31'), 100.00, 15.50, 'Account2'],
+            [pd.to_datetime('1999-01-01'), 500.00, 15.50, 'Account1'],
+            [pd.to_datetime('1999-01-31'), 300.00, 15.50, 'Account2'],
+        ],
+        columns=['date', 'amount', 'fee', 'account']
+    )
+    return df
 
 
 @pytest.fixture()
@@ -85,10 +118,6 @@ def _transactions():
         to_account=AccountFactory(title='Account1'),
         from_account=AccountFactory(title='Account2')
     )
-
-
-@pytest.fixture()
-def _transactions_past():
     TransactionFactory(
         date=dt(1970, 1, 1),
         amount=100,
@@ -109,6 +138,20 @@ def _transactions_past():
     )
 
 
+def _transactions_data():
+    df = pd.DataFrame(
+        [
+            [pd.to_datetime('1999-01-01'), 200.00, 'Account2', 'Account1'],
+            [pd.to_datetime('1999-01-01'), 200.00, 'Account2', 'Account1'],
+            [pd.to_datetime('1999-01-01'), 300.00, 'Account1', 'Account2'],
+            [pd.to_datetime('1970-01-01'), 100.00, 'Account2', 'Account1'],
+            [pd.to_datetime('1970-01-01'), 500.00, 'Account1', 'Account2'],
+        ],
+        columns=['date', 'amount', 'to_account', 'from_account']
+    )
+    return df
+
+
 @pytest.fixture()
 def _expenses():
     ExpenseFactory(
@@ -119,10 +162,6 @@ def _expenses():
         price=15.15,
         account=AccountFactory(title='Account2')
     )
-
-
-@pytest.fixture()
-def _expenses_past():
     ExpenseFactory(
         date=dt(1970, 1, 1),
         price=30.15,
@@ -133,3 +172,32 @@ def _expenses_past():
         price=15.15,
         account=AccountFactory(title='Account2')
     )
+
+
+def _expenses_data():
+    df = pd.DataFrame(
+        [
+            [pd.to_datetime('1999-01-01'), 30.15, 'Account1'],
+            [pd.to_datetime('1999-01-31'), 30.15, 'Account2'],
+            [pd.to_datetime('1999-12-01'), 150.98, 'Account1'],
+            [pd.to_datetime('1999-12-31'), 150.98, 'Account2'],
+            [pd.to_datetime('1970-01-01'), 130.15, 'Account1'],
+            [pd.to_datetime('1970-01-31'), 130.15, 'Account2'],
+            [pd.to_datetime('1970-12-01'), 250.17, 'Account1'],
+            [pd.to_datetime('1970-12-31'), 250.17, 'Account2'],
+        ],
+        columns=['date', 'price', 'account']
+    )
+    return df
+
+
+@pytest.fixture
+def _data():
+    items = {
+        'income': _incomes_data(),
+        'expense': _expenses_data(),
+        'transaction': _transactions_data(),
+        'saving': _savings_data(),
+        'account': _accounts_data()
+    }
+    return items
