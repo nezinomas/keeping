@@ -59,7 +59,7 @@ def _incomes_data():
             [pd.to_datetime('1970-01-01'), 5000.00, 'Account1'],
             [pd.to_datetime('1970-11-01'), 2000.00, 'Account2'],
             [pd.to_datetime('1999-01-01'), 3000.00, 'Account1'],
-            [pd.to_datetime('1999-01-01'), 2000.00, 'Account2'],
+            [pd.to_datetime('1999-01-02'), 2000.00, 'Account2'],
             [pd.to_datetime('1999-01-31'), 2000.00, 'Account2'],
         ],
         columns=['date', 'amount', 'account']
