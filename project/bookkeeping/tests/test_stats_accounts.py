@@ -8,7 +8,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_past_accounts_balance_empty_current_year(_data):
-    actual = StatsAccounts(1999, _data).past_accounts_balance
+    actual = StatsAccounts(1999, _data).balance
 
     # expect = {
     #     'Account1': {
@@ -32,4 +32,5 @@ def test_past_accounts_balance_empty_current_year(_data):
             'past': 1119.68,
         },
     }
+    # assert 0
     assert expect == actual
