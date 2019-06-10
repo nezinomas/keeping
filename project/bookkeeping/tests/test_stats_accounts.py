@@ -7,7 +7,7 @@ from ...core.tests.utils import _round
 pytestmark = pytest.mark.django_db
 
 
-def test_past_accounts_balance_empty_current_year(_data):
+def test_balance(_data):
     actual = StatsAccounts(1999, _data).balance
 
     expect = {
