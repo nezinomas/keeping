@@ -116,9 +116,9 @@ class StatsAccounts(object):
         self._balance = self._data.accounts.copy()
 
         self._balance.loc[:, 'past'] = 0.00
-        # self._balance.loc[:, 'incomes'] = 0.00
-        # self._balance.loc[:, 'expenses'] = 0.00
-        # self._balance.loc[:, 'balance'] = 0.00
+        self._balance.loc[:, 'incomes'] = 0.00
+        self._balance.loc[:, 'expenses'] = 0.00
+        self._balance.loc[:, 'balance'] = 0.00
 
     def _calc_balance(self):
         self._calc_balance_past()
@@ -133,7 +133,24 @@ class StatsAccounts(object):
         self._calc_(self._data.trans_to_past, '+', 'past')
 
     def _calc_balance_now(self):
-        pass
+        # incomes
+        self._calc_(self._data.incomes, '+', 'incomes')
+        self._calc_(self._data.trans_to, '+', 'incomes')
+
+        # expenses
+        self._calc_(self._data.expenses, '-', 'expenses')
+        self._calc_(self._data.savings, '-', 'expenses')
+        self._calc_(self._data.trans_from, '-', 'expenses')
+
+        # abs expenses
+        self._balance.expenses = self._balance.expenses.abs()
+
+        # balance
+        self._balance.balance = (
+            self._balance.past
+            + self._balance.incomes
+            - self._balance.expenses
+        )
 
     def _calc_(self, df, action, target_col):
         df = self._group_and_sum(df)
