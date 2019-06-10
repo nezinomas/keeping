@@ -25,29 +25,29 @@ class SavingTypeForm(forms.ModelForm):
 class SavingForm(forms.ModelForm):
     class Meta:
         model = Saving
-        fields = ['date', 'amount', 'fee', 'remark', 'saving_type', 'account']
+        fields = ['date', 'price', 'fee', 'remark', 'saving_type', 'account']
 
         widgets = {
             'date': DatePickerInput(format='%Y-%m-%d'),
         }
 
-    field_order = ['date', 'saving_type', 'account', 'amount', 'fee', 'remark']
+    field_order = ['date', 'saving_type', 'account', 'price', 'fee', 'remark']
 
     def __init__(self, extra={}, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # form inputs settings
-        self.fields['amount'].widget.attrs = {'step': '0.01'}
+        self.fields['price'].widget.attrs = {'step': '0.01'}
         self.fields['fee'].widget.attrs = {'step': '0.01'}
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # inital values
         self.fields['date'].initial = datetime.now()
-        self.fields['amount'].initial = '0.01'
+        self.fields['price'].initial = '0.01'
 
         self.fields['date'].label = 'Data'
         self.fields['account'].label = 'Iš sąskaitos'
-        self.fields['amount'].label = 'Suma'
+        self.fields['price'].label = 'Suma'
         self.fields['fee'].label = 'Mokesčiai'
         self.fields['remark'].label = 'Pastaba'
         self.fields['saving_type'].label = 'Fondas'

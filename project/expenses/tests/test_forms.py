@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from ...accounts.tests.factories import AccountFactory
+from ...accounts.factories import AccountFactory
 from .. import forms
 from ..factories import ExpenseNameFactory, ExpenseTypeFactory
 from .helper_session import add_session, add_session_to_request

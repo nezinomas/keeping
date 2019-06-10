@@ -25,10 +25,22 @@ class IncomeManager(models.Manager):
 
         return qs
 
+    def past_items(self, *args, **kwargs):
+        qs = (
+            self.get_queryset().
+            prefetch_related('account')
+        )
+
+        if 'year' in kwargs:
+            year = kwargs['year']
+            qs = qs.filter(date__year__lte=year)
+
+        return qs
+
 
 class Income(models.Model):
     date = models.DateField()
-    amount = models.DecimalField(
+    price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))]
@@ -49,7 +61,7 @@ class Income(models.Model):
     objects = IncomeManager()
 
     class Meta:
-        ordering = ['-date', 'amount']
+        ordering = ['-date', 'price']
 
     def __str__(self):
         return str(self.date)

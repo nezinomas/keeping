@@ -25,10 +25,22 @@ class SavingManager(models.Manager):
 
         return qs
 
+    def past_items(self, *args, **kwargs):
+        qs = (
+            self.get_queryset().
+            prefetch_related('account', 'saving_type')
+        )
+
+        if 'year' in kwargs:
+            year = kwargs['year']
+            qs = qs.filter(date__year__lte=year)
+
+        return qs
+
 
 class Saving(models.Model):
     date = models.DateField()
-    amount = models.DecimalField(
+    price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))]

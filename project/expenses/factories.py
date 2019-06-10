@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import factory
 
-from ..accounts.tests.factories import AccountFactory
+from ..accounts.factories import AccountFactory
 from .models import Expense, ExpenseName, ExpenseType
 
 

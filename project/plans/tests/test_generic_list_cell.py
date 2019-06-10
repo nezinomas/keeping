@@ -1,11 +1,8 @@
 import pytest
 from django.template import Context, Template
 
+from ...core.tests.utils import _remove_line_end
 from ..templatetags.partial_generic_list_cell import td
-
-
-def _remove_line_end(rendered):
-    return str(rendered).replace('\n', '')
 
 
 @pytest.fixture()

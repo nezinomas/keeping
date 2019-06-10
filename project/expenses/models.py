@@ -73,6 +73,17 @@ class ExpenseManager(models.Manager):
 
         return qs
 
+    def past_items(self, *args, **kwargs):
+        qs = (
+            self.get_queryset().
+            prefetch_related('expense_type', 'expense_name', 'account')
+        )
+
+        if 'year' in kwargs:
+            qs = qs.filter(date__year__lte=kwargs['year'])
+
+        return qs
+
 
 class Expense(models.Model):
     date = models.DateField()
