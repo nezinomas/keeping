@@ -32,23 +32,23 @@ def _accounts_data():
 @pytest.fixture()
 def _incomes():
     IncomeFactory(
-        amount=1000,
+        price=1000,
         date=dt(1999, 1, 1),
         account=AccountFactory(title='Account1')
     )
     IncomeFactory(
-        amount=2000,
+        price=2000,
         date=dt(1999, 1, 31),
         account=AccountFactory(title='Account2')
     )
     IncomeFactory(
-        amount=5000,
+        price=5000,
         date=dt(1970, 1, 1),
         account=AccountFactory(title='Account1')
     )
     IncomeFactory(
         date=dt(1970, 11, 1),
-        amount=2000,
+        price=2000,
         account=AccountFactory(title='Account2')
     )
 
@@ -62,7 +62,7 @@ def _incomes_data():
             [pd.to_datetime('1999-01-02'), 2000.00, 'Account2'],
             [pd.to_datetime('1999-01-31'), 2000.00, 'Account2'],
         ],
-        columns=['date', 'amount', 'account']
+        columns=['date', 'price', 'account']
     )
     return df
 
@@ -70,19 +70,19 @@ def _incomes_data():
 @pytest.fixture()
 def _savings():
     SavingFactory(
-        amount=500,
+        price=500,
         fee=15.50,
         account=AccountFactory(title='Account1')
     )
     SavingFactory(
         date=dt(1970, 1, 1),
-        amount=1000,
+        price=1000,
         fee=150.50,
         account=AccountFactory(title='Account1')
     )
     SavingFactory(
         date=dt(1970, 1, 1),
-        amount=100,
+        price=100,
         fee=15.50,
         account=AccountFactory(title='Account2')
     )
@@ -96,7 +96,7 @@ def _savings_data():
             [pd.to_datetime('1999-01-01'), 500.00, 15.50, 'Account1'],
             [pd.to_datetime('1999-01-31'), 300.00, 15.50, 'Account2'],
         ],
-        columns=['date', 'amount', 'fee', 'account']
+        columns=['date', 'price', 'fee', 'account']
     )
     return df
 
@@ -104,35 +104,35 @@ def _savings_data():
 @pytest.fixture()
 def _transactions():
     TransactionFactory(
-        amount=200,
+        price=200,
         to_account=AccountFactory(title='Account2'),
         from_account=AccountFactory(title='Account1')
     )
     TransactionFactory(
-        amount=200,
+        price=200,
         to_account=AccountFactory(title='Account2'),
         from_account=AccountFactory(title='Account1')
     )
     TransactionFactory(
-        amount=300,
+        price=300,
         to_account=AccountFactory(title='Account1'),
         from_account=AccountFactory(title='Account2')
     )
     TransactionFactory(
         date=dt(1970, 1, 1),
-        amount=100,
+        price=100,
         to_account=AccountFactory(title='Account2'),
         from_account=AccountFactory(title='Account1')
     )
     TransactionFactory(
         date=dt(1970, 1, 1),
-        amount=100,
+        price=100,
         to_account=AccountFactory(title='Account2'),
         from_account=AccountFactory(title='Account1')
     )
     TransactionFactory(
         date=dt(1970, 11, 1),
-        amount=500,
+        price=500,
         to_account=AccountFactory(title='Account1'),
         from_account=AccountFactory(title='Account2')
     )
@@ -147,7 +147,7 @@ def _transactions_data():
             [pd.to_datetime('1970-01-01'), 100.00, 'Account2', 'Account1'],
             [pd.to_datetime('1970-01-01'), 500.00, 'Account1', 'Account2'],
         ],
-        columns=['date', 'amount', 'to_account', 'from_account']
+        columns=['date', 'price', 'to_account', 'from_account']
     )
     return df
 

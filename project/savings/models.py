@@ -40,7 +40,7 @@ class SavingManager(models.Manager):
 
 class Saving(models.Model):
     date = models.DateField()
-    amount = models.DecimalField(
+    price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))]

@@ -20,7 +20,7 @@ class IncomeFactory(factory.DjangoModelFactory):
         model = Income
 
     date = dt(1999, 1, 1)
-    amount = Decimal(1000.62)
+    price = Decimal(1000.62)
     remark = 'remark'
     account = factory.SubFactory(AccountFactory)
     income_type = factory.SubFactory(IncomeTypeFactory)

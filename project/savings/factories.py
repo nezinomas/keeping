@@ -20,7 +20,7 @@ class SavingFactory(factory.DjangoModelFactory):
         model = Saving
 
     date = dt(1999, 1, 1)
-    amount = Decimal(150)
+    price = Decimal(150)
     fee = Decimal(5.55)
     remark = 'remark'
     saving_type = factory.SubFactory(SavingTypeFactory)

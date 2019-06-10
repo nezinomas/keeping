@@ -11,28 +11,28 @@ from .models import Income, IncomeType
 class IncomeForm(forms.ModelForm):
     class Meta:
         model = Income
-        fields = ['date', 'amount', 'remark', 'account', 'income_type']
+        fields = ['date', 'price', 'remark', 'account', 'income_type']
 
         widgets = {
             'date': DatePickerInput(format='%Y-%m-%d'),
         }
 
-    field_order = ['date', 'income_type', 'account', 'amount', 'remark']
+    field_order = ['date', 'income_type', 'account', 'price', 'remark']
 
     def __init__(self, extra={}, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # form inputs settings
-        self.fields['amount'].widget.attrs = {'step': '0.01'}
+        self.fields['price'].widget.attrs = {'step': '0.01'}
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # inital values
         self.fields['date'].initial = datetime.now()
-        self.fields['amount'].initial = '0.01'
+        self.fields['price'].initial = '0.01'
 
         self.fields['date'].label = 'Data'
         self.fields['account'].label = 'Sąskaita'
-        self.fields['amount'].label = 'Suma'
+        self.fields['price'].label = 'Suma'
         self.fields['remark'].label = 'Pastaba'
         self.fields['income_type'].label = 'Pajamų rūšis'
 

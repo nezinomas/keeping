@@ -44,7 +44,7 @@ class Transaction(models.Model):
         on_delete=models.PROTECT,
         related_name='to_accounts'
     )
-    amount = models.DecimalField(
+    price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))]
@@ -53,10 +53,10 @@ class Transaction(models.Model):
     objects = TransactionManager()
 
     class Meta:
-        ordering = ['-date', 'amount', 'from_account']
+        ordering = ['-date', 'price', 'from_account']
 
     def __str__(self):
         return (
             '{} {}->{} {}'.
-            format(self.date, self.from_account, self.to_account, self.amount)
+            format(self.date, self.from_account, self.to_account, self.price)
         )

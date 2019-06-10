@@ -40,7 +40,7 @@ class IncomeManager(models.Manager):
 
 class Income(models.Model):
     date = models.DateField()
-    amount = models.DecimalField(
+    price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))]
@@ -61,7 +61,7 @@ class Income(models.Model):
     objects = IncomeManager()
 
     class Meta:
-        ordering = ['-date', 'amount']
+        ordering = ['-date', 'price']
 
     def __str__(self):
         return str(self.date)

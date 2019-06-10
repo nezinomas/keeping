@@ -51,14 +51,14 @@ class StatsAccounts(object):
         return {title: 0 for title in _df['title']}
 
     def _past_balance(self):
-        self._calc_(self._filter_df(self._incomes, 'lt'), '+', 'amount', 'past')
-        self._calc_(self._filter_df(self._savings, 'lt'), '-', 'amount', 'past')
+        self._calc_(self._filter_df(self._incomes, 'lt'), '+', 'price', 'past')
+        self._calc_(self._filter_df(self._savings, 'lt'), '-', 'price', 'past')
         self._calc_(self._filter_df(self._expenses, 'lt'), '-', 'price', 'past')
         self._calc_transactions(self._filter_df(self._transactions, 'lt'))
 
     def _now_balance(self):
-        self._calc_(self._filter_df(self._incomes, 'qte'), '+', 'amount')
-        self._calc_(self._filter_df(self._savings, 'qte'), '-', 'amount')
+        self._calc_(self._filter_df(self._incomes, 'qte'), '+', 'price')
+        self._calc_(self._filter_df(self._savings, 'qte'), '-', 'price')
         self._calc_(self._filter_df(self._expenses, 'qte'), '-', 'price')
         self._calc_transactions(self._filter_df(self._transactions, 'qte'))
 
@@ -78,12 +78,12 @@ class StatsAccounts(object):
         df = self._group_and_sum(
             df,
             ['from_account', 'to_account'],
-            'amount'
+            'price'
         )
 
         for index, row in df.iterrows():
-            self._past_accounts_balance.loc[row['from_account'], 'past'] -= row['amount']
-            self._past_accounts_balance.loc[row['to_account'], 'past'] += row['amount']
+            self._past_accounts_balance.loc[row['from_account'], 'past'] -= row['price']
+            self._past_accounts_balance.loc[row['to_account'], 'past'] += row['price']
 
     def _group_and_sum(self, df, index, col_to_sum):
         return (
