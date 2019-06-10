@@ -105,6 +105,10 @@ class StatsAccounts(object):
     def balance(self):
         return self._balance.to_dict('index')
 
+    @property
+    def past_amount(self):
+        return self._balance.past.sum()
+
     def _prepare_balance(self):
         self._balance = self._data.accounts.copy()
 
