@@ -4,13 +4,6 @@ import pandas as pd
 from django_pandas.io import read_frame
 
 
-def _print(*args):
-    for a in args:
-        print('\n\n>>>\n')
-        print(a)
-        print('\n<<<\n')
-
-
 class FilterDf(object):
     def __init__(self, year, data):
         self._year = year
