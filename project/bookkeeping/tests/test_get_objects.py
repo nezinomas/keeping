@@ -7,7 +7,7 @@ from ...incomes.models import Income
 pytestmark = pytest.mark.django_db
 
 
-def test_objects():
+def test_objects(_incomes):
     actual = T([Income]).data
 
     assert 'income' in actual

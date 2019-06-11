@@ -1,34 +1,35 @@
 from datetime import date
+from decimal import Decimal
 
 import pandas as pd
 from django_pandas.io import read_frame
+from ...core.tests.utils import _print
 
 
 class FilterDf(object):
     def __init__(self, year, data):
         self._year = year
 
-        _incomes = data.get('income')
-        _expenses = data.get('expense')
-        _savings = data.get('saving')
-        _trans = data.get('transaction')
+        self._accounts = data.get('account')
 
+        _incomes = data.get('income')
         self._incomes = self._filter_df(_incomes, 'gte')
         self._incomes_past = self._filter_df(_incomes, 'lt')
 
+        _expenses = data.get('expense')
         self._expenses = self._filter_df(_expenses, 'gte')
         self._expenses_past = self._filter_df(_expenses, 'lt')
 
+        _savings = data.get('saving')
         self._savings = self._filter_df(_savings, 'gte')
         self._savings_past = self._filter_df(_savings, 'lt')
 
+        _trans = data.get('transaction')
         self._trans_from = self._filter_trans(_trans, 'from_account', 'gte')
         self._trans_from_past = self._filter_trans(_trans, 'from_account', 'lt')
 
         self._trans_to = self._filter_trans(_trans, 'to_account', 'gte')
         self._trans_to_past = self._filter_trans(_trans, 'to_account', 'lt')
-
-        self._accounts = data.get('account').set_index('title')
 
     @property
     def accounts(self):
@@ -98,19 +99,26 @@ class StatsAccounts(object):
         self._year = year
         self._data = FilterDf(year, data)
 
+        self._balance = pd.DataFrame()
+        self._balance_past = None
+
+        if self._data.accounts.empty:
+            return
+
         self._prepare_balance()
         self._calc_balance()
 
     @property
     def balance(self):
-        return self._balance.to_dict('index')
+        return self._balance.to_dict('index') if not self._balance.empty else self._balance
 
     @property
     def past_amount(self):
-        return self._balance.past.sum()
+        return self._balance.past.sum() if not self._balance.empty else None
 
     def _prepare_balance(self):
         self._balance = self._data.accounts.copy()
+        self._balance.set_index('title', inplace=True)
 
         self._balance.loc[:, 'past'] = 0.00
         self._balance.loc[:, 'incomes'] = 0.00

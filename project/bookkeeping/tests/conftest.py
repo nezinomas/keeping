@@ -32,7 +32,7 @@ def _accounts_data():
 @pytest.fixture()
 def _incomes():
     IncomeFactory(
-        price=1000,
+        price=1000.12,
         date=dt(1999, 1, 1),
         account=AccountFactory(title='Account1')
     )
