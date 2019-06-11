@@ -1,5 +1,5 @@
 import pytest
-from ..templatetags.negative_cell_value import negativecell
+from ..templatetags.cell_negative_value import negativecell
 
 
 def test_value_positive_str():
