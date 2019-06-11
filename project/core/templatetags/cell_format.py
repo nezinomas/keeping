@@ -4,7 +4,7 @@ register = template.Library()
 
 
 @register.filter
-def negativecell(value):
+def negative(value):
     _value = ''
 
     try:

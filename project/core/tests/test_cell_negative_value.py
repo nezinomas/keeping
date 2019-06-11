@@ -1,44 +1,44 @@
 import pytest
-from ..templatetags.cell_format import negativecell
+from ..templatetags.cell_format import negative
 
 
 def test_value_positive_str():
-    actual = negativecell('12.2')
+    actual = negative('12.2')
 
     assert not actual
 
 
 def test_value_positive_float():
-    actual = negativecell(12.2)
+    actual = negative(12.2)
 
     assert not actual
 
 
 def test_value_positive_int():
-    actual = negativecell(12)
+    actual = negative(12)
 
     assert not actual
 
 
 def test_value_negative_str():
-    actual = negativecell('-12.2')
+    actual = negative('-12.2')
 
     assert actual == 'table-danger'
 
 
 def test_value_negative_float():
-    actual = negativecell(-12.2)
+    actual = negative(-12.2)
 
     assert actual == 'table-danger'
 
 
 def test_value_negative_int():
-    actual = negativecell(-12)
+    actual = negative(-12)
 
     assert actual == 'table-danger'
 
 
 def test_value_str():
-    actual = negativecell('xxx')
+    actual = negative('xxx')
 
     assert not actual
