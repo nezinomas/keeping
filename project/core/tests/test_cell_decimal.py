@@ -14,6 +14,33 @@ def _template():
     return template_to_render
 
 
+@pytest.fixture()
+def _template_negative():
+    template_to_render = Template(
+        '{% load cell_decimal %}'
+        '{% td value negative=True %}'
+    )
+    return template_to_render
+
+
+@pytest.fixture()
+def _template_positive():
+    template_to_render = Template(
+        '{% load cell_decimal %}'
+        '{% td value positive=True %}'
+    )
+    return template_to_render
+
+
+@pytest.fixture()
+def _template_positive_and_negative():
+    template_to_render = Template(
+        '{% load cell_decimal %}'
+        '{% td value positive=True negative=True %}'
+    )
+    return template_to_render
+
+
 def test_cell_positive(_template):
     context = Context({'value': '25'})
 
@@ -23,11 +50,36 @@ def test_cell_positive(_template):
     assert _remove_line_end(actual) == expect
 
 
-def test_cell_negative(_template):
+def test_cell_negative(_template_negative):
     context = Context({'value': '-0.5'})
 
-    actual = _template.render(context)
+    actual = _template_negative.render(context)
     expect = '<td class="text-right table-danger" width="7%">-0.50</td>'
+
+    assert _remove_line_end(actual) == expect
+
+
+def test_cell_positive_and_negative_neg(_template_positive_and_negative):
+    context = Context({'value': '-0.5'})
+
+    actual = _template_positive_and_negative.render(context)
+    expect = '<td class="text-right table-danger" width="7%">-0.50</td>'
+
+    assert _remove_line_end(actual) == expect
+
+
+def test_cell_positive_and_negative_pos(_template_positive_and_negative):
+    context = Context({'value': '0.5'})
+
+    actual = _template_positive_and_negative.render(context)
+    expect = '<td class="text-right table-success" width="7%">0.50</td>'
+
+
+def test_cell_postive(_template_positive):
+    context = Context({'value': '0.5'})
+
+    actual = _template_positive.render(context)
+    expect = '<td class="text-right table-success" width="7%">0.50</td>'
 
     assert _remove_line_end(actual) == expect
 
