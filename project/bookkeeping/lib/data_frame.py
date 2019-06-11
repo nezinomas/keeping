@@ -1,6 +1,7 @@
 import pandas as pd
 from django.db.models.query import QuerySet
 from django_pandas.io import read_frame
+from decimal import Decimal
 
 
 class DataFrame(object):
@@ -9,7 +10,8 @@ class DataFrame(object):
 
         if query_set is not None:
             if isinstance(query_set, QuerySet):
-                self._df = read_frame(query_set).reset_index(drop=True)
+                self._df = read_frame(
+                    query_set, coerce_float=True).reset_index(drop=True)
 
             if isinstance(query_set, pd.DataFrame):
                 self.df = query_set
