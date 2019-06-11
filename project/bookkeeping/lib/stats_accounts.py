@@ -110,7 +110,10 @@ class StatsAccounts(object):
 
     @property
     def balance(self):
-        return self._balance.to_dict('index') if not self._balance.empty else self._balance
+        return (
+            self._balance.to_dict('index') if not self._balance.empty
+            else self._balance
+        )
 
     @property
     def past_amount(self):
@@ -165,11 +168,13 @@ class StatsAccounts(object):
         df_index = df.index.tolist()
 
         for account_title in df_index:
+            price = df.at[account_title, 'price']
+
             if action == '+':
-                self._balance.loc[account_title, target_col] += df.loc[account_title, 'price']
+                self._balance.at[account_title, target_col] += price
 
             if action == '-':
-                self._balance.loc[account_title, target_col] -= df.loc[account_title, 'price']
+                self._balance.at[account_title, target_col] -= price
 
     def _group_and_sum(self, df):
         return (
