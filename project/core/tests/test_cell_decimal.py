@@ -2,13 +2,13 @@ import pytest
 from django.template import Context, Template
 
 from ...core.tests.utils import _remove_line_end
-from ..templatetags.partial_generic_list_cell import td
+from ..templatetags.cell_decimal import td
 
 
 @pytest.fixture()
 def _template():
     template_to_render = Template(
-        '{% load partial_generic_list_cell %}'
+        '{% load cell_decimal %}'
         '{% td value %}'
     )
     return template_to_render
