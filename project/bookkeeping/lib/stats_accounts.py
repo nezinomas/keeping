@@ -13,6 +13,7 @@ class FilterDf(object):
         self._accounts = data.get('account')
 
         _incomes = data.get('income')
+
         self._incomes = self._filter_df(_incomes, 'gte')
         self._incomes_past = self._filter_df(_incomes, 'lt')
 
@@ -76,12 +77,11 @@ class FilterDf(object):
         return self._trans_to_past
 
     def _filter_df(self, df, action):
-        start = pd.to_datetime(date(self._year, 1, 1))
         if action == 'lt':
-            df = df[df['date'] < start]
+            df = df[df['date'].dt.year < self._year]
 
         if action == 'gte':
-            df = df[df['date'] >= start]
+            df = df[df['date'].dt.year == self._year]
 
         return df
 
@@ -118,6 +118,7 @@ class StatsAccounts(object):
 
     def _prepare_balance(self):
         self._balance = self._data.accounts.copy()
+
         self._balance.set_index('title', inplace=True)
 
         self._balance.loc[:, 'past'] = 0.00

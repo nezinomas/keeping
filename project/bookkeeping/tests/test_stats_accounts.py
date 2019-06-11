@@ -30,3 +30,32 @@ def test_total_past_amount(_data):
     expect = 5139.36
 
     assert expect == actual
+
+
+def test_balance_past(_data):
+    actual = StatsAccounts(1970, _data).balance
+
+    expect = {
+        'Account1': {
+            'past': 0.0,
+            'incomes': 5500.0,
+            'expenses': 1480.32,
+            'balance': 4019.68,
+        },
+        'Account2': {
+            'past': 0.0,
+            'incomes': 2100.0,
+            'expenses': 980.32,
+            'balance': 1119.68,
+        },
+    }
+
+    assert expect['Account1'] == pytest.approx(actual['Account1'])
+    assert expect['Account2'] == pytest.approx(actual['Account2'])
+
+
+def test_total_past_amount_past(_data):
+    actual = StatsAccounts(1970, _data).past_amount
+    expect = 0
+
+    assert expect == actual
