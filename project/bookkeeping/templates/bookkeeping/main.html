@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}{% load cell_decimal %}
 
 {% block head %}
 {{ form.media }}
@@ -8,27 +8,27 @@
 
 {% block content %}
 
-<div class="col-8 pl-0">
+<div class="col-3 pl-0">
  <table>
      <thead>
          <tr>
              <th>Sąskaita</th>
-             <th>01.01</th>
-             <th>Pajamos</th>
-             <th>Išlaidos</th>
-             <th>Likutis</th>
+             <th class="text-right">01.01</th>
+             <th class="text-right">Pajamos</th>
+             <th class="text-right">Išlaidos</th>
+             <th class="text-right">Likutis</th>
         </tr>
      </thead>
      <tbody>
-         {% for account, stats in tbl.items %}
-             <tr>
-                 <td>{{ account }}</td>
-                 <td>{{ stats.past }}</td>
-                 <td>{{ stats.incomes }}</td>
-                 <td>{{ stats.expenses }}</td>
-                 <td>{{ stats.balance }}</td>
-             </tr>
-         {% endfor %}
+        {% for account, stats in tbl.items %}
+            <tr>
+                <td>{{ account }}</td>
+                {% td stats.past width='10%' %}
+                {% td stats.incomes width='10%' %}
+                {% td stats.expenses width='10%' %}
+                {% td stats.balance width='10%' %}
+            </tr>
+        {% endfor %}
      </tbody>
  </table>
 </div>
