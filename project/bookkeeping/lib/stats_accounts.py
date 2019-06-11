@@ -81,10 +81,10 @@ class FilterDf(object):
 
     def _filter_df(self, df, action):
         if action == 'lt':
-            df = df[df['date'].dt.year < self._year]
+            df = df[df['date'].dt.year.lt(self._year)]
 
         if action == 'eq':
-            df = df[df['date'].dt.year == self._year]
+            df = df[df['date'].dt.year.eq(self._year)]
 
         return df
 
@@ -171,13 +171,14 @@ class StatsAccounts(object):
         df_index = df.index.tolist()
 
         for account_title in df_index:
-            price = df.at[account_title, 'price']
+            _price = df.at[account_title, 'price']
+            _target = (account_title, target_col)
 
             if action == '+':
-                self._balance.at[account_title, target_col] += price
+                self._balance.at[_target] += _price
 
             if action == '-':
-                self._balance.at[account_title, target_col] -= price
+                self._balance.at[_target] -= _price
 
     def _group_and_sum(self, df):
         return (
