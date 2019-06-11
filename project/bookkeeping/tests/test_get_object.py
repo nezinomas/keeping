@@ -22,7 +22,7 @@ def test_incomes_len(_incomes):
 def test_incomes_price_values(_incomes):
     actual = T(Income).df
 
-    assert 1000 == actual.loc[actual.date == '1999-01-01', 'price'].values
+    assert 1000.12 == actual.loc[actual.date == '1999-01-01', 'price'].values
     assert 2000 == actual.loc[actual.date == '1999-01-31', 'price'].values
     assert 5000 == actual.loc[actual.date == '1970-01-01', 'price'].values
     assert 2000 == actual.loc[actual.date == '1970-11-01', 'price'].values
