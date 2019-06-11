@@ -32,23 +32,28 @@ def _accounts_data():
 @pytest.fixture()
 def _incomes():
     IncomeFactory(
-        price=1000.12,
-        date=dt(1999, 1, 1),
-        account=AccountFactory(title='Account1')
-    )
-    IncomeFactory(
-        price=2000,
-        date=dt(1999, 1, 31),
-        account=AccountFactory(title='Account2')
-    )
-    IncomeFactory(
         price=5000,
         date=dt(1970, 1, 1),
         account=AccountFactory(title='Account1')
     )
     IncomeFactory(
-        date=dt(1970, 11, 1),
         price=2000,
+        date=dt(1970, 11, 1),
+        account=AccountFactory(title='Account2')
+    )
+    IncomeFactory(
+        price=3000,
+        date=dt(1999, 1, 1),
+        account=AccountFactory(title='Account1')
+    )
+    IncomeFactory(
+        price=2000,
+        date=dt(1999, 1, 2),
+        account=AccountFactory(title='Account2')
+    )
+    IncomeFactory(
+        price=2000,
+        date=dt(1999, 1, 31),
         account=AccountFactory(title='Account2')
     )
 
@@ -56,11 +61,11 @@ def _incomes():
 def _incomes_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime('1970-01-01'), 5000.00, 'Account1'],
-            [pd.to_datetime('1970-11-01'), 2000.00, 'Account2'],
-            [pd.to_datetime('1999-01-01'), 3000.00, 'Account1'],
-            [pd.to_datetime('1999-01-02'), 2000.00, 'Account2'],
-            [pd.to_datetime('1999-01-31'), 2000.00, 'Account2'],
+            [pd.to_datetime(dt(1970, 1, 1)), 5000.00, 'Account1'],
+            [pd.to_datetime(dt(1970, 11, 1)), 2000.00, 'Account2'],
+            [pd.to_datetime(dt(1999, 1, 1)), 3000.00, 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 2)), 2000.00, 'Account2'],
+            [pd.to_datetime(dt(1999, 1, 31)), 2000.00, 'Account2'],
         ],
         columns=['date', 'price', 'account']
     )
@@ -69,11 +74,6 @@ def _incomes_data():
 
 @pytest.fixture()
 def _savings():
-    SavingFactory(
-        price=500,
-        fee=15.50,
-        account=AccountFactory(title='Account1')
-    )
     SavingFactory(
         date=dt(1970, 1, 1),
         price=1000,
@@ -86,15 +86,25 @@ def _savings():
         fee=15.50,
         account=AccountFactory(title='Account2')
     )
+    SavingFactory(
+        price=500,
+        fee=15.50,
+        account=AccountFactory(title='Account1')
+    )
+    SavingFactory(
+        price=300,
+        fee=15.50,
+        account=AccountFactory(title='Account2')
+    )
 
 
 def _savings_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime('1970-01-01'), 1000.00, 150.50, 'Account1'],
-            [pd.to_datetime('1970-01-31'), 100.00, 15.50, 'Account2'],
-            [pd.to_datetime('1999-01-01'), 500.00, 15.50, 'Account1'],
-            [pd.to_datetime('1999-01-31'), 300.00, 15.50, 'Account2'],
+            [pd.to_datetime(dt(1970, 1, 1)), 1000.00, 150.50, 'Account1'],
+            [pd.to_datetime(dt(1970, 1, 31)), 100.00, 15.50, 'Account2'],
+            [pd.to_datetime(dt(1999, 1, 1)), 500.00, 15.50, 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 31)), 300.00, 15.50, 'Account2'],
         ],
         columns=['date', 'price', 'fee', 'account']
     )
@@ -104,16 +114,19 @@ def _savings_data():
 @pytest.fixture()
 def _transactions():
     TransactionFactory(
+        date=dt(1999, 1, 1),
         price=200,
         to_account=AccountFactory(title='Account2'),
         from_account=AccountFactory(title='Account1')
     )
     TransactionFactory(
+        date=dt(1999, 1, 1),
         price=200,
         to_account=AccountFactory(title='Account2'),
         from_account=AccountFactory(title='Account1')
     )
     TransactionFactory(
+        date=dt(1999, 1, 1),
         price=300,
         to_account=AccountFactory(title='Account1'),
         from_account=AccountFactory(title='Account2')
@@ -126,12 +139,6 @@ def _transactions():
     )
     TransactionFactory(
         date=dt(1970, 1, 1),
-        price=100,
-        to_account=AccountFactory(title='Account2'),
-        from_account=AccountFactory(title='Account1')
-    )
-    TransactionFactory(
-        date=dt(1970, 11, 1),
         price=500,
         to_account=AccountFactory(title='Account1'),
         from_account=AccountFactory(title='Account2')
@@ -141,11 +148,11 @@ def _transactions():
 def _transactions_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime('1999-01-01'), 200.00, 'Account2', 'Account1'],
-            [pd.to_datetime('1999-01-01'), 200.00, 'Account2', 'Account1'],
-            [pd.to_datetime('1999-01-01'), 300.00, 'Account1', 'Account2'],
-            [pd.to_datetime('1970-01-01'), 100.00, 'Account2', 'Account1'],
-            [pd.to_datetime('1970-01-01'), 500.00, 'Account1', 'Account2'],
+            [pd.to_datetime(dt(1999, 1, 1)), 200.00, 'Account2', 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 200.00, 'Account2', 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 300.00, 'Account1', 'Account2'],
+            [pd.to_datetime(dt(1970, 1, 1)), 100.00, 'Account2', 'Account1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 500.00, 'Account1', 'Account2'],
         ],
         columns=['date', 'price', 'to_account', 'from_account']
     )
@@ -155,21 +162,43 @@ def _transactions_data():
 @pytest.fixture()
 def _expenses():
     ExpenseFactory(
+        date=dt(1999, 1, 1),
         price=30.15,
         account=AccountFactory(title='Account1')
     )
     ExpenseFactory(
-        price=15.15,
+        date=dt(1999, 1, 31),
+        price=30.15,
+        account=AccountFactory(title='Account2')
+    )
+    ExpenseFactory(
+        date=dt(1999, 12, 1),
+        price=150.98,
+        account=AccountFactory(title='Account1')
+    )
+    ExpenseFactory(
+        date=dt(1999, 12, 31),
+        price=150.98,
         account=AccountFactory(title='Account2')
     )
     ExpenseFactory(
         date=dt(1970, 1, 1),
-        price=30.15,
+        price=130.15,
         account=AccountFactory(title='Account1')
     )
     ExpenseFactory(
-        date=dt(1970, 1, 1),
-        price=15.15,
+        date=dt(1970, 1, 31),
+        price=130.15,
+        account=AccountFactory(title='Account2')
+    )
+    ExpenseFactory(
+        date=dt(1970, 12, 1),
+        price=250.17,
+        account=AccountFactory(title='Account1')
+    )
+    ExpenseFactory(
+        date=dt(1970, 12, 31),
+        price=250.17,
         account=AccountFactory(title='Account2')
     )
 
@@ -177,14 +206,14 @@ def _expenses():
 def _expenses_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime('1999-01-01'), 30.15, 'Account1'],
-            [pd.to_datetime('1999-01-31'), 30.15, 'Account2'],
-            [pd.to_datetime('1999-12-01'), 150.98, 'Account1'],
-            [pd.to_datetime('1999-12-31'), 150.98, 'Account2'],
-            [pd.to_datetime('1970-01-01'), 130.15, 'Account1'],
-            [pd.to_datetime('1970-01-31'), 130.15, 'Account2'],
-            [pd.to_datetime('1970-12-01'), 250.17, 'Account1'],
-            [pd.to_datetime('1970-12-31'), 250.17, 'Account2'],
+            [pd.to_datetime(dt(1999, 1, 1)), 30.15, 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 31)), 30.15, 'Account2'],
+            [pd.to_datetime(dt(1999, 12, 1)), 150.98, 'Account1'],
+            [pd.to_datetime(dt(1999, 12, 31)), 150.98, 'Account2'],
+            [pd.to_datetime(dt(1970, 1, 1)), 130.15, 'Account1'],
+            [pd.to_datetime(dt(1970, 1, 31)), 130.15, 'Account2'],
+            [pd.to_datetime(dt(1970, 12, 1)), 250.17, 'Account1'],
+            [pd.to_datetime(dt(1970, 12, 31)), 250.17, 'Account2'],
         ],
         columns=['date', 'price', 'account']
     )
