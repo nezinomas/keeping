@@ -13,24 +13,27 @@ class FilterDf(object):
         self._accounts = data.get('account')
 
         _incomes = data.get('income')
-
-        self._incomes = self._filter_df(_incomes, 'eq')
-        self._incomes_past = self._filter_df(_incomes, 'lt')
+        if not _incomes.empty:
+            self._incomes = self._filter_df(_incomes, 'eq')
+            self._incomes_past = self._filter_df(_incomes, 'lt')
 
         _expenses = data.get('expense')
-        self._expenses = self._filter_df(_expenses, 'eq')
-        self._expenses_past = self._filter_df(_expenses, 'lt')
+        if not _expenses.empty:
+            self._expenses = self._filter_df(_expenses, 'eq')
+            self._expenses_past = self._filter_df(_expenses, 'lt')
 
         _savings = data.get('saving')
-        self._savings = self._filter_df(_savings, 'eq')
-        self._savings_past = self._filter_df(_savings, 'lt')
+        if not _savings.empty:
+            self._savings = self._filter_df(_savings, 'eq')
+            self._savings_past = self._filter_df(_savings, 'lt')
 
         _trans = data.get('transaction')
-        self._trans_from = self._filter_trans(_trans, 'from_account', 'eq')
-        self._trans_from_past = self._filter_trans(_trans, 'from_account', 'lt')
+        if not _trans.empty:
+            self._trans_from = self._filter_trans(_trans, 'from_account', 'eq')
+            self._trans_from_past = self._filter_trans(_trans, 'from_account', 'lt')
 
-        self._trans_to = self._filter_trans(_trans, 'to_account', 'eq')
-        self._trans_to_past = self._filter_trans(_trans, 'to_account', 'lt')
+            self._trans_to = self._filter_trans(_trans, 'to_account', 'eq')
+            self._trans_to_past = self._filter_trans(_trans, 'to_account', 'lt')
 
     @property
     def accounts(self):
