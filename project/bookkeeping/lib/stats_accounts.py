@@ -14,22 +14,22 @@ class FilterDf(object):
 
         _incomes = data.get('income')
 
-        self._incomes = self._filter_df(_incomes, 'gte')
+        self._incomes = self._filter_df(_incomes, 'eq')
         self._incomes_past = self._filter_df(_incomes, 'lt')
 
         _expenses = data.get('expense')
-        self._expenses = self._filter_df(_expenses, 'gte')
+        self._expenses = self._filter_df(_expenses, 'eq')
         self._expenses_past = self._filter_df(_expenses, 'lt')
 
         _savings = data.get('saving')
-        self._savings = self._filter_df(_savings, 'gte')
+        self._savings = self._filter_df(_savings, 'eq')
         self._savings_past = self._filter_df(_savings, 'lt')
 
         _trans = data.get('transaction')
-        self._trans_from = self._filter_trans(_trans, 'from_account', 'gte')
+        self._trans_from = self._filter_trans(_trans, 'from_account', 'eq')
         self._trans_from_past = self._filter_trans(_trans, 'from_account', 'lt')
 
-        self._trans_to = self._filter_trans(_trans, 'to_account', 'gte')
+        self._trans_to = self._filter_trans(_trans, 'to_account', 'eq')
         self._trans_to_past = self._filter_trans(_trans, 'to_account', 'lt')
 
     @property
@@ -80,7 +80,7 @@ class FilterDf(object):
         if action == 'lt':
             df = df[df['date'].dt.year < self._year]
 
-        if action == 'gte':
+        if action == 'eq':
             df = df[df['date'].dt.year == self._year]
 
         return df
