@@ -15,6 +15,9 @@ class StatsAccounts(object):
         self._balance = pd.DataFrame()
         self._balance_past = None
 
+        if not isinstance(self._data.accounts, pd.DataFrame):
+            return
+
         if self._data.accounts.empty:
             return
 
