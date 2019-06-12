@@ -47,24 +47,25 @@ class StatsAccounts(object):
         self._calc_balance_now()
 
     def _calc_balance_past(self):
-        blnc = CalcBalance('account', self._balance)
-        blnc.calc(self._data.incomes_past, '+', 'past')
-        blnc.calc(self._data.savings_past, '-', 'past')
-        blnc.calc(self._data.expenses_past, '-', 'past')
+        cb = CalcBalance('account', self._balance)
 
-        blnc.calc(self._data.trans_from_past, '-', 'past')
-        blnc.calc(self._data.trans_to_past, '+', 'past')
+        cb.calc(self._data.incomes_past, '+', 'past')
+        cb.calc(self._data.savings_past, '-', 'past')
+        cb.calc(self._data.expenses_past, '-', 'past')
+
+        cb.calc(self._data.trans_from_past, '-', 'past')
+        cb.calc(self._data.trans_to_past, '+', 'past')
 
     def _calc_balance_now(self):
-        blnc = CalcBalance('account', self._balance)
+        cb = CalcBalance('account', self._balance)
         # incomes
-        blnc.calc(self._data.incomes, '+', 'incomes')
-        blnc.calc(self._data.trans_to, '+', 'incomes')
+        cb.calc(self._data.incomes, '+', 'incomes')
+        cb.calc(self._data.trans_to, '+', 'incomes')
 
         # expenses
-        blnc.calc(self._data.expenses, '-', 'expenses')
-        blnc.calc(self._data.savings, '-', 'expenses')
-        blnc.calc(self._data.trans_from, '-', 'expenses')
+        cb.calc(self._data.expenses, '-', 'expenses')
+        cb.calc(self._data.savings, '-', 'expenses')
+        cb.calc(self._data.trans_from, '-', 'expenses')
 
         # abs expenses
         self._balance.expenses = self._balance.expenses.abs()
