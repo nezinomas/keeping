@@ -2,8 +2,8 @@ from datetime import date
 from decimal import Decimal
 
 import pandas as pd
-from django_pandas.io import read_frame
-from ...core.tests.utils import _print
+from .filter_frame import FilterDf
+from .stats_utils import CalcBalance
 
 
 class FilterDf(object):
@@ -131,22 +131,24 @@ class StatsAccounts(object):
         self._calc_balance_now()
 
     def _calc_balance_past(self):
-        self._calc_(self._data._incomes_past, '+', 'past')
-        self._calc_(self._data.savings_past, '-', 'past')
-        self._calc_(self._data.expenses_past, '-', 'past')
+        blnc = CalcBalance('account', self._balance)
+        blnc.calc(self._data.incomes_past, '+', 'past')
+        blnc.calc(self._data.savings_past, '-', 'past')
+        blnc.calc(self._data.expenses_past, '-', 'past')
 
-        self._calc_(self._data.trans_from_past, '-', 'past')
-        self._calc_(self._data.trans_to_past, '+', 'past')
+        blnc.calc(self._data.trans_from_past, '-', 'past')
+        blnc.calc(self._data.trans_to_past, '+', 'past')
 
     def _calc_balance_now(self):
+        blnc = CalcBalance('account', self._balance)
         # incomes
-        self._calc_(self._data.incomes, '+', 'incomes')
-        self._calc_(self._data.trans_to, '+', 'incomes')
+        blnc.calc(self._data.incomes, '+', 'incomes')
+        blnc.calc(self._data.trans_to, '+', 'incomes')
 
         # expenses
-        self._calc_(self._data.expenses, '-', 'expenses')
-        self._calc_(self._data.savings, '-', 'expenses')
-        self._calc_(self._data.trans_from, '-', 'expenses')
+        blnc.calc(self._data.expenses, '-', 'expenses')
+        blnc.calc(self._data.savings, '-', 'expenses')
+        blnc.calc(self._data.trans_from, '-', 'expenses')
 
         # abs expenses
         self._balance.expenses = self._balance.expenses.abs()
@@ -156,24 +158,4 @@ class StatsAccounts(object):
             self._balance.past
             + self._balance.incomes
             - self._balance.expenses
-        )
-
-    def _calc_(self, df, action, target_col):
-        df = self._group_and_sum(df)
-        df = df[['account', 'price']].set_index('account')
-
-        df_index = df.index.tolist()
-
-        for account_title in df_index:
-            if action == '+':
-                self._balance.loc[account_title, target_col] += df.loc[account_title, 'price']
-
-            if action == '-':
-                self._balance.loc[account_title, target_col] -= df.loc[account_title, 'price']
-
-    def _group_and_sum(self, df):
-        return (
-            df.groupby(['account'])['price']
-            .sum()
-            .reset_index()
         )
