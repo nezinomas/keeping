@@ -6,15 +6,15 @@ class CalcBalance(object):
         self._balance = balance
         self._groupby_col = groupby_col
 
-    def calc(self, df, action, target_col):
-        df = self._group_and_sum(df)
-        df = df[[self._groupby_col, 'price']].set_index(self._groupby_col)
+    def calc(self, df, action, action_col, summed_col='price'):
+        df = self._group_and_sum(df, summed_col)
+        df = df[[self._groupby_col, summed_col]].set_index(self._groupby_col)
 
         df_index = df.index.tolist()
 
-        for account_title in df_index:
-            _price = df.at[account_title, 'price']
-            _target = (account_title, target_col)
+        for index in df_index:
+            _price = df.at[index, summed_col]
+            _target = (index, action_col)
 
             if action == '+':
                 self._balance.at[_target] += _price
@@ -22,9 +22,9 @@ class CalcBalance(object):
             if action == '-':
                 self._balance.at[_target] -= _price
 
-    def _group_and_sum(self, df):
+    def _group_and_sum(self, df, summed_col):
         return (
-            df.groupby([self._groupby_col])['price']
+            df.groupby([self._groupby_col])[summed_col]
             .sum()
             .reset_index()
         )

@@ -6,7 +6,7 @@ import pytest
 
 from ...expenses.factories import AccountFactory, ExpenseFactory
 from ...incomes.factories import IncomeFactory
-from ...savings.factories import SavingFactory
+from ...savings.factories import SavingFactory, SavingTypeFactory
 from ...transactions.factories import TransactionFactory
 
 pytestmark = pytest.mark.django_db
@@ -23,6 +23,23 @@ def _accounts_data():
         [
             ['Account1'],
             ['Account2'],
+        ],
+        columns=['title']
+    )
+    return df
+
+
+@pytest.fixture()
+def _savings_type():
+    SavingTypeFactory(title='Saving1')
+    SavingTypeFactory(title='Saving2')
+
+
+def _savings_type_data():
+    df = pd.DataFrame(
+        [
+            ['Saving1'],
+            ['Saving2'],
         ],
         columns=['title']
     )
@@ -78,35 +95,30 @@ def _savings():
         date=dt(1970, 1, 1),
         price=1000,
         fee=150.50,
-        account=AccountFactory(title='Account1')
+        account=AccountFactory(title='Account1'),
+        saving_type=SavingTypeFactory(title='Saving1')
     )
+
     SavingFactory(
-        date=dt(1970, 1, 1),
-        price=100,
-        fee=15.50,
-        account=AccountFactory(title='Account2')
-    )
-    SavingFactory(
+        date=dt(1999, 1, 1),
         price=500,
         fee=15.50,
-        account=AccountFactory(title='Account1')
-    )
-    SavingFactory(
-        price=300,
-        fee=15.50,
-        account=AccountFactory(title='Account2')
+        account=AccountFactory(title='Account1'),
+        saving_type=SavingTypeFactory(title='Saving1')
     )
 
 
 def _savings_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime(dt(1970, 1, 1)), 1000.00, 150.50, 'Account1'],
-            [pd.to_datetime(dt(1970, 1, 31)), 100.00, 15.50, 'Account2'],
-            [pd.to_datetime(dt(1999, 1, 1)), 500.00, 15.50, 'Account1'],
-            [pd.to_datetime(dt(1999, 1, 31)), 300.00, 15.50, 'Account2'],
+            [pd.to_datetime(dt(1970, 1, 1)), 500.0, 75.17, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1970, 1, 31)), 500.0, 70.51, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1970, 1, 31)), 100.0, 15.5, 'Account2', 'Saving2'],
+            [pd.to_datetime(dt(1999, 1, 1)), 250.0, 15.25, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1999, 1, 31)), 250.0, 15.25, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1999, 12, 31)), 300.0, 15.5, 'Account2', 'Saving2'],
         ],
-        columns=['date', 'price', 'fee', 'account']
+        columns=['date', 'price', 'fee', 'account', 'saving_type']
     )
     return df
 
@@ -227,6 +239,16 @@ def _data():
         'expense': _expenses_data(),
         'transaction': _transactions_data(),
         'saving': _savings_data(),
-        'account': _accounts_data()
+        'account': _accounts_data(),
+        'saving_type': _savings_type_data(),
+    }
+    return items
+
+
+@pytest.fixture
+def _data_savings():
+    items = {
+        'saving': _savings_data(),
+        'savingtype': _savings_type_data(),
     }
     return items
