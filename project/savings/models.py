@@ -7,7 +7,16 @@ from ..accounts.models import Account
 from ..core.models import TitleAbstract
 
 
+class SavingTypeManager(models.Manager):
+    def items(self, *args, **kwargs):
+        qs = self.get_queryset()
+
+        return qs
+
+
 class SavingType(TitleAbstract):
+    objects = SavingTypeManager()
+
     class Meta:
         ordering = ['title']
 
