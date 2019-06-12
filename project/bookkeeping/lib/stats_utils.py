@@ -8,6 +8,10 @@ class CalcBalance(object):
 
     def calc(self, df, action, action_col, summed_col='price'):
         df = self._group_and_sum(df, summed_col)
+
+        if not isinstance(df, pd.DataFrame):
+            return
+
         df = df[[self._groupby_col, summed_col]].set_index(self._groupby_col)
 
         df_index = df.index.tolist()
@@ -16,6 +20,9 @@ class CalcBalance(object):
             _price = df.at[index, summed_col]
             _target = (index, action_col)
 
+            if index not in self._balance.index:
+                continue
+
             if action == '+':
                 self._balance.at[_target] += _price
 
@@ -23,8 +30,14 @@ class CalcBalance(object):
                 self._balance.at[_target] -= _price
 
     def _group_and_sum(self, df, summed_col):
-        return (
-            df.groupby([self._groupby_col])[summed_col]
-            .sum()
-            .reset_index()
-        )
+        _summed = None
+        try:
+            _summed = (
+                df.groupby([self._groupby_col])[summed_col]
+                .sum()
+                .reset_index()
+            )
+        except:
+            pass
+
+        return _summed
