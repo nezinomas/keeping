@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pandas as pd
+
 from .filter_frame import FilterDf
 from .stats_utils import CalcBalance
 
