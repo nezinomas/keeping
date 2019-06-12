@@ -15,7 +15,7 @@ def test_savings_year_now(_data_savings):
         'Saving2': {
             'past_amount': 100.0,
             'past_fee': 15.5,
-            'incomes': 300,
+            'incomes': 300.0,
             'fees': 15.5,
             'invested': 284.5,
         },
