@@ -6,8 +6,8 @@ import pandas as pd
 @pytest.fixture
 def _balance():
     df = pd.DataFrame({
-            'title': ['AAA', 'BBB'],
-            'action_col': [0.0, 0.0],
+        'title': ['AAA', 'BBB'],
+        'action_col': [0.0, 0.0],
     })
     df.set_index('title', inplace=True)
     return df
@@ -16,7 +16,8 @@ def _balance():
 @pytest.fixture
 def _df():
     df = pd.DataFrame({
-        'name': ['AAA', 'AAA', 'x'], 'summed_col': [1.2, 5.3, 9],
+        'name': ['AAA', 'AAA', 'x'],
+        'summed_col': [1.2, 5.3, 9],
     })
     return df
 
