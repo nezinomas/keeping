@@ -98,34 +98,25 @@ def _savings():
         account=AccountFactory(title='Account1'),
         saving_type=SavingTypeFactory(title='Saving1')
     )
+
     SavingFactory(
-        date=dt(1970, 1, 1),
-        price=100,
-        fee=15.50,
-        account=AccountFactory(title='Account2'),
-        saving_type=SavingTypeFactory(title='Saving2')
-    )
-    SavingFactory(
+        date=dt(1999, 1, 1),
         price=500,
         fee=15.50,
         account=AccountFactory(title='Account1'),
         saving_type=SavingTypeFactory(title='Saving1')
-    )
-    SavingFactory(
-        price=300,
-        fee=15.50,
-        account=AccountFactory(title='Account2'),
-        saving_type=SavingTypeFactory(title='Saving2')
     )
 
 
 def _savings_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime(dt(1970, 1, 1)), 1000.0, 150.5, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 500.0, 75.17, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1970, 1, 31)), 500.0, 70.51, 'Account1', 'Saving1'],
             [pd.to_datetime(dt(1970, 1, 31)), 100.0, 15.5, 'Account2', 'Saving2'],
-            [pd.to_datetime(dt(1999, 1, 1)), 500.0, 15.5, 'Account1', 'Saving1'],
-            [pd.to_datetime(dt(1999, 1, 31)), 300.0, 15.5, 'Account2', 'Saving2'],
+            [pd.to_datetime(dt(1999, 1, 1)), 250.0, 15.25, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1999, 1, 31)), 250.0, 15.25, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1999, 12, 31)), 300.0, 15.5, 'Account2', 'Saving2'],
         ],
         columns=['date', 'price', 'fee', 'account', 'saving_type']
     )
@@ -258,6 +249,6 @@ def _data():
 def _data_savings():
     items = {
         'saving': _savings_data(),
-        'saving_type': _savings_type_data(),
+        'savingtype': _savings_type_data(),
     }
     return items
