@@ -3,6 +3,9 @@ import pandas as pd
 
 class FilterDf(object):
     def __init__(self, year, data):
+        if not isinstance(data, dict):
+            raise Exception('Wrong data format: data not dictionary.')
+
         self._year = year
         self._data = data
 
@@ -56,6 +59,9 @@ class FilterDf(object):
 
     def _filter_df(self, model_name, action):
         df = self._data.get(model_name)
+
+        if not isinstance(df, pd.DataFrame):
+            return
 
         if action == 'lt':
             df = df[df['date'].dt.year.lt(self._year)]
