@@ -4,79 +4,59 @@ import pandas as pd
 class FilterDf(object):
     def __init__(self, year, data):
         self._year = year
-
-        self._accounts = data.get('account')
-
-        _incomes = data.get('income')
-        if not _incomes.empty:
-            self._incomes = self._filter_df(_incomes, 'eq')
-            self._incomes_past = self._filter_df(_incomes, 'lt')
-
-        _expenses = data.get('expense')
-        if not _expenses.empty:
-            self._expenses = self._filter_df(_expenses, 'eq')
-            self._expenses_past = self._filter_df(_expenses, 'lt')
-
-        _savings = data.get('saving')
-        if not _savings.empty:
-            self._savings = self._filter_df(_savings, 'eq')
-            self._savings_past = self._filter_df(_savings, 'lt')
-
-        _trans = data.get('transaction')
-        if not _trans.empty:
-            self._trans_from = self._filter_trans(_trans, 'from_account', 'eq')
-            self._trans_from_past = self._filter_trans(
-                _trans, 'from_account', 'lt')
-
-            self._trans_to = self._filter_trans(_trans, 'to_account', 'eq')
-            self._trans_to_past = self._filter_trans(
-                _trans, 'to_account', 'lt')
+        self._data = data
 
     @property
     def accounts(self):
-        return self._accounts
+        return self._data.get('account')
+
+    @property
+    def saving_types(self):
+        return self._data.get('savingtype')
 
     @property
     def incomes(self):
-        return self._incomes
+        return self._filter_df('income', 'eq')
 
     @property
     def incomes_past(self):
-        return self._incomes_past
+        return self._filter_df('income', 'lt')
 
     @property
     def expenses(self):
-        return self._expenses
+        return self._filter_df('expense', 'eq')
 
     @property
     def expenses_past(self):
-        return self._expenses_past
+        return self._filter_df('expense', 'lt')
 
     @property
     def savings(self):
-        return self._savings
+        return self._filter_df('saving', 'eq')
 
     @property
     def savings_past(self):
-        return self._savings_past
+        return self._filter_df('saving', 'lt')
 
     @property
     def trans_from(self):
-        return self._trans_from
+        return self._filter_trans('transaction', 'from_account', 'eq')
 
     @property
     def trans_from_past(self):
-        return self._trans_from_past
+        return self._filter_trans('transaction', 'from_account', 'lt')
 
     @property
     def trans_to(self):
-        return self._trans_to
+        return self._filter_trans('transaction', 'to_account', 'eq')
 
     @property
     def trans_to_past(self):
-        return self._trans_to_past
+        return self._filter_trans('transaction', 'to_account', 'lt')
 
-    def _filter_df(self, df, action):
+    def _filter_df(self, model_name, action):
+        df = self._data.get(model_name)
+
         if action == 'lt':
             df = df[df['date'].dt.year.lt(self._year)]
 
@@ -85,8 +65,8 @@ class FilterDf(object):
 
         return df
 
-    def _filter_trans(self, df, column, action):
-        _df = self._filter_df(df, action)
+    def _filter_trans(self, model_name, column, action):
+        _df = self._filter_df(model_name, action)
 
         _df = _df.loc[:, [column, 'price']]
         _df.rename({column: 'account'}, axis=1, inplace=True)
