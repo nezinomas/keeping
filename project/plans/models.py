@@ -20,7 +20,7 @@ class YearManager(models.Manager):
             qs = qs.filter(year=year)
 
         if self._prefetch:
-            qs = qs.prefetch_related(self._prefetch)
+            qs = qs.select_related(self._prefetch)
 
         return qs
 

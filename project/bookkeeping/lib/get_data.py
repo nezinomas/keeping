@@ -11,7 +11,7 @@ class GetObject(object):
         return self._data
 
     def _get_data(self):
-        qs = self._model.objects.all()
+        qs = self._model.objects.items()
         f = DataFrame(qs).prepare()
 
         return f.df

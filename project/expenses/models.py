@@ -65,22 +65,12 @@ class ExpenseManager(models.Manager):
     def items(self, *args, **kwargs):
         qs = (
             self.get_queryset().
-            prefetch_related('expense_type', 'expense_name', 'account')
+            # prefetch_related('expense_type', 'expense_name', 'account')
+            select_related('expense_type', 'expense_name', 'account')
         )
 
         if 'year' in kwargs:
             qs = qs.filter(date__year=kwargs['year'])
-
-        return qs
-
-    def past_items(self, *args, **kwargs):
-        qs = (
-            self.get_queryset().
-            prefetch_related('expense_type', 'expense_name', 'account')
-        )
-
-        if 'year' in kwargs:
-            qs = qs.filter(date__year__lte=kwargs['year'])
 
         return qs
 
