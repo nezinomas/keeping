@@ -1,7 +1,7 @@
 import pytest
 
-from ..lib.stats_accounts import StatsAccounts
 from ...core.tests.utils import _round
+from ..lib.stats_accounts import StatsAccounts
 
 
 def test_balance(_data):
@@ -59,3 +59,9 @@ def test_total_past_amount_past(_data):
     expect = 0
 
     assert expect == actual
+
+
+def test_balance_no_data():
+    actual = StatsAccounts(1, {}).balance
+
+    assert actual.empty

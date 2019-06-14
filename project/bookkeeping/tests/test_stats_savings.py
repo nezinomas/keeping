@@ -48,3 +48,9 @@ def test_savings_year_past(_data_savings):
 
     assert expect['Saving1'] == pytest.approx(actual['Saving1'])
     assert expect['Saving2'] == pytest.approx(actual['Saving2'])
+
+
+def test_savings_empty():
+    actual = StatsSavings(1, {}).balance
+
+    assert actual.empty

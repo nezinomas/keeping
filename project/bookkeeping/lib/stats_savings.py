@@ -7,14 +7,10 @@ from .stats_utils import CalcBalance
 class StatsSavings(object):
     def __init__(self, year, data):
         self._year = year
-        self._data = FilterDf(year, data)
-
         self._balance = pd.DataFrame()
 
-        if not isinstance(self._data.saving_types, pd.DataFrame):
-            return
-
-        if self._data.saving_types.empty:
+        self._data = FilterDf(year, data)
+        if not isinstance(self._data.savings, pd.DataFrame) or self._data.savings.empty:
             return
 
         self._prepare_balance()
@@ -28,8 +24,16 @@ class StatsSavings(object):
         )
 
     def _prepare_balance(self):
-        self._balance = self._data.saving_types.copy()
-        self._balance.set_index('title', inplace=True)
+        try:
+            self._balance = (
+                pd.DataFrame(
+                    self._data.savings.saving_type.unique(),
+                    columns=['title'],
+                ).
+                set_index(['title'])
+            )
+        except:
+            pass
 
         self._balance.loc[:, 'past_amount'] = 0.00
         self._balance.loc[:, 'past_fee'] = 0.00

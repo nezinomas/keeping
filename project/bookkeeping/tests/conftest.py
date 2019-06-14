@@ -239,7 +239,6 @@ def _data():
         'expense': _expenses_data(),
         'transaction': _transactions_data(),
         'saving': _savings_data(),
-        'account': _accounts_data(),
         'saving_type': _savings_type_data(),
     }
     return items
@@ -249,6 +248,5 @@ def _data():
 def _data_savings():
     items = {
         'saving': _savings_data(),
-        'savingtype': _savings_type_data(),
     }
     return items

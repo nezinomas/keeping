@@ -10,15 +10,11 @@ from .stats_utils import CalcBalance
 class StatsAccounts(object):
     def __init__(self, year, data, *args, **kwargs):
         self._year = year
-        self._data = FilterDf(year, data)
-
         self._balance = pd.DataFrame()
         self._balance_past = None
 
-        if not isinstance(self._data.accounts, pd.DataFrame):
-            return
-
-        if self._data.accounts.empty:
+        self._data = FilterDf(year, data)
+        if not isinstance(self._data.expenses, pd.DataFrame) or self._data.expenses.empty:
             return
 
         self._prepare_balance()
@@ -36,10 +32,18 @@ class StatsAccounts(object):
         return self._balance.past.sum() if not self._balance.empty else None
 
     def _prepare_balance(self):
-        self._balance = self._data.accounts.copy()
+        try:
+            self._balance = (
+                pd.DataFrame(
+                    self._data.expenses.account.unique(),
+                    columns=['title'],
+                ).
+                set_index(['title'])
+            )
+        except:
+            pass
 
-        self._balance.set_index('title', inplace=True)
-
+        # if not self._balance.empty:
         self._balance.loc[:, 'past'] = 0.00
         self._balance.loc[:, 'incomes'] = 0.00
         self._balance.loc[:, 'expenses'] = 0.00
