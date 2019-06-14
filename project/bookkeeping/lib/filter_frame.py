@@ -10,14 +10,6 @@ class FilterDf(object):
         self._data = data
 
     @property
-    def accounts(self):
-        return self._data.get('account')
-
-    @property
-    def saving_types(self):
-        return self._data.get('savingtype')
-
-    @property
     def incomes(self):
         return self._filter_df('income', 'eq')
 
