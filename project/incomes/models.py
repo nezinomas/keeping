@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
+from django_pandas.managers import DataFrameManager
 
 from ..accounts.models import Account
 from ..core.models import TitleAbstract
@@ -12,19 +13,15 @@ class IncomeType(TitleAbstract):
         ordering = ['title']
 
 
-class IncomeManager(models.Manager):
-    def items(self, *args, **kwargs):
-        qs = (
-            self.get_queryset().
-            select_related('account')
-            # prefetch_related('account')
-        )
+class IncomeQuerySet(models.QuerySet):
+    def _related(self):
+        return self.select_related('account')
 
-        if 'year' in kwargs:
-            year = kwargs['year']
-            qs = qs.filter(date__year=year)
+    def year(self, year):
+        return self._related().filter(date__year=year)
 
-        return qs
+    def items(self):
+        return self._related()
 
 
 class Income(models.Model):
@@ -47,10 +44,12 @@ class Income(models.Model):
         on_delete=models.CASCADE
     )
 
-    objects = IncomeManager()
-
     class Meta:
         ordering = ['-date', 'price']
 
     def __str__(self):
         return str(self.date)
+
+    # managers
+    objects = IncomeQuerySet.as_manager()
+    pd = DataFrameManager()
