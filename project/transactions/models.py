@@ -2,23 +2,20 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
+from django_pandas.managers import DataFrameManager
 
 from ..accounts.models import Account
 
 
-class TransactionManager(models.Manager):
-    def items(self, *args, **kwargs):
-        qs = (
-            self.get_queryset().
-            # prefetch_related('from_account', 'to_account')
-            select_related('from_account', 'to_account')
-        )
+class TransactionQuerySet(models.QuerySet):
+    def _related(self):
+        return self.select_related('from_account', 'to_account')
 
-        if 'year' in kwargs:
-            year = kwargs['year']
-            qs = qs.filter(date__year=year)
+    def year(self, year):
+        return self._related().filter(date__year=year)
 
-        return qs
+    def items(self):
+        return self._related()
 
 
 class Transaction(models.Model):
@@ -39,8 +36,6 @@ class Transaction(models.Model):
         validators=[MinValueValidator(Decimal('0.01'))]
     )
 
-    objects = TransactionManager()
-
     class Meta:
         ordering = ['-date', 'price', 'from_account']
 
@@ -49,3 +44,6 @@ class Transaction(models.Model):
             '{} {}->{} {}'.
             format(self.date, self.from_account, self.to_account, self.price)
         )
+
+    objects = TransactionQuerySet.as_manager()
+    pd = DataFrameManager()
