@@ -25,6 +25,7 @@ class ExpenseType(TitleAbstract):
     class Meta:
         ordering = ['title']
 
+    # Managers
     objects = ExpenseTypeQuerySet.as_manager()
 
 
@@ -59,11 +60,12 @@ class ExpenseName(TitleAbstract):
         on_delete=models.CASCADE
     )
 
-    objects = ExpenseNameQuerySet.as_manager()
-
     class Meta:
         unique_together = ('title', 'parent')
         ordering = [F('valid_for').desc(nulls_first=True), 'title']
+
+    # Managers
+    objects = ExpenseNameQuerySet.as_manager()
 
 
 class ExpenseQuerySet(models.QuerySet):
@@ -108,12 +110,12 @@ class Expense(models.Model):
         related_name='expense_accounts'
     )
 
-    # Managers
-    objects = ExpenseQuerySet.as_manager()
-    pd = DataFrameManager()
+    class Meta:
+        ordering = ['-date', 'expense_type', F('expense_name').asc(), 'price']
 
     def __str__(self):
         return str(self.date)
 
-    class Meta:
-        ordering = ['-date', 'expense_type', F('expense_name').asc(), 'price']
+    # Managers
+    objects = ExpenseQuerySet.as_manager()
+    pd = DataFrameManager()
