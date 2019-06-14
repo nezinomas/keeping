@@ -1,16 +1,20 @@
-from django.db.models import F, Q
 from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import F, Q
+from django_pandas.managers import DataFrameManager
 
 from ..accounts.models import Account
 from ..core.models import TitleAbstract
 
 
-class ExpenseTypeManager(models.Manager):
-    def items(self, *args, **kwargs):
-        return self.get_queryset().prefetch_related('expensename_set')
+class ExpenseTypeQuerySet(models.QuerySet):
+    def _related(self):
+        return self.prefetch_related('expensename_set')
+
+    def items(self):
+        return self._related()
 
 
 class ExpenseType(TitleAbstract):
@@ -21,23 +25,24 @@ class ExpenseType(TitleAbstract):
     class Meta:
         ordering = ['title']
 
-    objects = ExpenseTypeManager()
+    objects = ExpenseTypeQuerySet.as_manager()
 
 
-class ExpenseNameManager(models.Manager):
-    def items(self, *args, **kwargs):
-        qs = self.get_queryset()
+class ExpenseNameQuerySet(models.QuerySet):
+    def _related(self):
+        return self.select_related('parent')
 
-        if 'parent_id' in kwargs:
-            qs = qs.filter(parent_id=kwargs['parent_id'])
+    def year(self, year):
+        return self._related().filter(
+            Q(valid_for__isnull=True) |
+            Q(valid_for=year)
+        )
 
-        if 'year' in kwargs:
-            qs = qs.filter(
-                Q(valid_for__isnull=True) |
-                Q(valid_for=kwargs['year'])
-            )
+    def parent(self, parent_id):
+        return self._related().filter(parent_id=parent_id)
 
-        return qs
+    def items(self):
+        return self._related()
 
 
 class ExpenseName(TitleAbstract):
@@ -54,25 +59,22 @@ class ExpenseName(TitleAbstract):
         on_delete=models.CASCADE
     )
 
-    objects = ExpenseNameManager()
+    objects = ExpenseNameQuerySet.as_manager()
 
     class Meta:
         unique_together = ('title', 'parent')
         ordering = [F('valid_for').desc(nulls_first=True), 'title']
 
 
-class ExpenseManager(models.Manager):
-    def items(self, *args, **kwargs):
-        qs = (
-            self.get_queryset().
-            # prefetch_related('expense_type', 'expense_name', 'account')
-            select_related('expense_type', 'expense_name', 'account')
-        )
+class ExpenseQuerySet(models.QuerySet):
+    def _related(self):
+        return self.select_related('expense_type', 'expense_name', 'account')
 
-        if 'year' in kwargs:
-            qs = qs.filter(date__year=kwargs['year'])
+    def year(self, year):
+        return self._related().filter(date__year=year)
 
-        return qs
+    def items(self):
+        return self._related()
 
 
 class Expense(models.Model):
@@ -102,11 +104,13 @@ class Expense(models.Model):
     )
     account = models.ForeignKey(
         Account,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='expense_accounts'
     )
 
     # Managers
-    objects = ExpenseManager()
+    objects = ExpenseQuerySet.as_manager()
+    pd = DataFrameManager()
 
     def __str__(self):
         return str(self.date)
