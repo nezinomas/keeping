@@ -51,7 +51,7 @@ class ExpenseForm(forms.ModelForm):
         if id:
             year = extra.get('year', datetime.now().year)
             self.fields['expense_name'].queryset = (
-                ExpenseName.objects.items(**{'parent_id': id, 'year': year})
+                ExpenseName.objects.parent(id).year(year)
             )
 
         self.helper = FormHelper()

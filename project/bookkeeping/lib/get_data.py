@@ -11,7 +11,11 @@ class GetObject(object):
         return self._data
 
     def _get_data(self):
-        qs = self._model.objects.items()
+        try:
+            qs = self._model.pd.to_dataframe(coerce_float=True)
+        except Exception as e:
+            qs = self._model.objects.all()
+
         f = DataFrame(qs).prepare()
 
         return f.df

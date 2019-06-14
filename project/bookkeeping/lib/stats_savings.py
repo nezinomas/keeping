@@ -11,6 +11,9 @@ class StatsSavings(object):
 
         self._balance = pd.DataFrame()
 
+        if not isinstance(self._data.saving_types, pd.DataFrame):
+            return
+
         if self._data.saving_types.empty:
             return
 
