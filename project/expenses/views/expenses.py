@@ -46,8 +46,7 @@ def update(request, pk):
 
 def load_expense_name(request):
     pk = request.GET.get('expense_type')
-    objects = ExpenseName.objects.items(
-        **{'parent_id': pk, 'year': request.user.profile.year})
+    objects = ExpenseName.objects.parent(pk).year(request.user.profile.year)
 
     return render(
         request,
