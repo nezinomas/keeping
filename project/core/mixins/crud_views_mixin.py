@@ -101,9 +101,6 @@ class CrudMixin(object):
         self._items = None
         self._data = {}
 
-        self._kwargs = kwargs
-        self._kwargs.update({'year': self._year})
-
         if not self._settings.model or not self._settings.form:
             raise AttributeError(
                 'Oh no! No model_name or form_name in CrudMixinSettings!'
@@ -113,9 +110,15 @@ class CrudMixin(object):
 
     def _get_items(self):
         try:
-            self._items = self._settings.model.objects.items(**self._kwargs)
-        except Exception as ex:
-            self._items = self._settings.model.objects.all()
+            self._items = self._settings.model.objects.year(self._year)
+        except Exception as e1:
+            print('crud e1 ------------------------------------------>',
+                  self._settings.model, e1)
+            try:
+                self._items = self._settings.model.objects.items()
+            except Exception as e2:
+                print('crud e2 ------------------------------------------>', self._settings.model, e1)
+                self._items = self._settings.model.objects.all()
 
     def _update_data(self):
         self._data.update({
