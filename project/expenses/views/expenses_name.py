@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, reverse
 
 from ...core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
 from ..forms import ExpenseNameForm
-from ..models import ExpenseName
+from ..models import ExpenseName, ExpenseType
 
 
 def settings():
@@ -14,7 +14,7 @@ def settings():
     obj.form = ExpenseNameForm
     obj.form_template = 'expenses/includes/partial_expenses_name_form.html'
 
-    obj.items_template = 'expenses/includes/partial_expenses_name_list.html'
+    obj.items_template = 'expenses/includes/partial_expenses_type_list.html'
     obj.items_template_var_name = 'categories'
 
     obj.url_new = 'expenses:expenses_name_new'
@@ -25,12 +25,16 @@ def settings():
 
 @login_required()
 def new(request):
-    return CrudMixin(request, settings()).new()
+    _settings = settings()
+    _settings.model = ExpenseType
+
+    return CrudMixin(request, _settings).new()
 
 
 @login_required()
 def update(request, pk):
     _settings = settings()
     _settings.item_id = pk
+    _settings.items = ExpenseType.objects.all()
 
     return CrudMixin(request, _settings).update()

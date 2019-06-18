@@ -12,6 +12,7 @@ class CrudMixinSettings(object):
 
         self._item_id = None
 
+        self._items = None
         self._items_template = 'items_template.html'
         self._items_template_main = 'items_main_template.html'
         self._items_template_var_name = 'items'
@@ -50,6 +51,14 @@ class CrudMixinSettings(object):
     @item_id.setter
     def item_id(self, value):
         self._item_id = value
+
+    @property
+    def items(self):
+        return self._items
+
+    @items.setter
+    def items(self, value):
+        self._items = value
 
     @property
     def items_template(self):
@@ -98,7 +107,7 @@ class CrudMixin(object):
         self._settings = settings
 
         self._year = self._request.user.profile.year
-        self._items = None
+        self._items = settings.items
         self._data = {}
 
         if not self._settings.model or not self._settings.form:
@@ -106,7 +115,8 @@ class CrudMixin(object):
                 'Oh no! No model_name or form_name in CrudMixinSettings!'
             )
 
-        self._get_items()
+        if not self._items:
+            self._get_items()
 
     def _get_items(self):
         try:
