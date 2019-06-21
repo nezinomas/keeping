@@ -47,3 +47,65 @@ class Transaction(models.Model):
 
     objects = TransactionQuerySet.as_manager()
     pd = DataFrameManager()
+
+
+class SavingClose(model.Model):
+    date = models.DateField()
+    from_account = models.ForeignKey(
+        SavingType,
+        on_delete=models.PROTECT,
+        related_name='from_savings'
+    )
+    to_account = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name='to_accounts'
+    )
+    price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))]
+    )
+
+    class Meta:
+        ordering = ['-date', 'price', 'from_account']
+
+    def __str__(self):
+        return (
+            '{} {}->{} {}'.
+            format(self.date, self.from_account, self.to_account, self.price)
+        )
+
+    objects = TransactionQuerySet.as_manager()
+    pd = DataFrameManager()
+
+
+class SavingChange(model.Model):
+    date = models.DateField()
+    from_account = models.ForeignKey(
+        SavingType,
+        on_delete=models.PROTECT,
+        related_name='from_savings'
+    )
+    to_account = models.ForeignKey(
+        SavingType,
+        on_delete=models.PROTECT,
+        related_name='to_savings'
+    )
+    price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))]
+    )
+
+    class Meta:
+        ordering = ['-date', 'price', 'from_account']
+
+    def __str__(self):
+        return (
+            '{} {}->{} {}'.
+            format(self.date, self.from_account, self.to_account, self.price)
+        )
+
+    objects = TransactionQuerySet.as_manager()
+    pd = DataFrameManager()
