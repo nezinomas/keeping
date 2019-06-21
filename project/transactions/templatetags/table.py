@@ -7,10 +7,14 @@ register = template.Library()
     'transactions/includes/table.html',
     takes_context=True
 )
-def table(context, url_update):
-    year = context['request'].user.profile.year
+def table(context, url_name):
+    try:
+        year = context['request'].user.profile.year
+    except:
+        year = None
+
     return {
-        'url_update': url_update,
+        'url_name': url_name,
         'items': context['items'],
         'year': year,
     }

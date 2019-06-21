@@ -1,4 +1,4 @@
-{% extends 'base.html' %}{% load table %}
+{% extends 'base.html' %}
 
 {% block head %}
     {{ form.media }}
@@ -16,8 +16,7 @@
             <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_transactions }}"><i class="fas fa-plus"></i> Pervedimą</button>
         </div>
     </div>
-    {% url 'transactions:transactions_update' item.id as url_update %}
-    <div id="ajax-content" class="dblclick">{% table url_update %}</div>
+    <div id="transactions_list" class="col dblclick">{{ transactions }}</div>
 </div>
 <div class="col-4 px-0">
     <div class="row my-2">

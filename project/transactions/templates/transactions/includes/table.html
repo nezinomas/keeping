@@ -7,7 +7,8 @@
     </thead>
     <tbody>
         {% for item in items %}
-        <tr data-url="{{ url_update }}">
+        {% url url_name item.id as url %}
+        <tr data-url="{{ url }}">
             <td>{{ item.date }}</td>
             <td>{{ item.from_account }}</td>
             <td>{{ item.to_account }}</td>
