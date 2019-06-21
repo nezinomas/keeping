@@ -5,6 +5,7 @@ from django.db import models
 from django_pandas.managers import DataFrameManager
 
 from ..accounts.models import Account
+from ..savings.models import SavingType
 
 
 class TransactionQuerySet(models.QuerySet):
