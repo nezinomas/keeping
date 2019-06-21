@@ -55,12 +55,12 @@ class SavingClose(models.Model):
     from_account = models.ForeignKey(
         SavingType,
         on_delete=models.PROTECT,
-        related_name='from_savings'
+        related_name='close_from_savings'
     )
     to_account = models.ForeignKey(
         Account,
         on_delete=models.PROTECT,
-        related_name='to_accounts'
+        related_name='close_to_accounts'
     )
     price = models.DecimalField(
         max_digits=8,
@@ -86,12 +86,12 @@ class SavingChange(models.Model):
     from_account = models.ForeignKey(
         SavingType,
         on_delete=models.PROTECT,
-        related_name='from_savings'
+        related_name='change_from_savings'
     )
     to_account = models.ForeignKey(
         SavingType,
         on_delete=models.PROTECT,
-        related_name='to_savings'
+        related_name='change_to_savings'
     )
     price = models.DecimalField(
         max_digits=8,
