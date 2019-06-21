@@ -50,7 +50,7 @@ class Transaction(models.Model):
     pd = DataFrameManager()
 
 
-class SavingClose(model.Model):
+class SavingClose(models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         SavingType,
@@ -81,7 +81,7 @@ class SavingClose(model.Model):
     pd = DataFrameManager()
 
 
-class SavingChange(model.Model):
+class SavingChange(models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         SavingType,
