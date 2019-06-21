@@ -1,6 +1,6 @@
 {% load form %}
 {% url 'accounts:load_to_account' as url_chained %}
-{% generic_form title='Pinigų pervedimas' update_container='ajax-content' chained_dropdown=url_chained %}
+{% generic_form title='Pinigų pervedimas' update_container='transactions_list' chained_dropdown=url_chained %}
 
 <script>
     $("#id_from_account").change(function () {
