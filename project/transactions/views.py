@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, reverse, render
 from django.template.loader import render_to_string
 
@@ -24,15 +25,18 @@ def settings():
     return obj
 
 
+@login_required()
 def lists(request):
     context = {'categories': accounts_list(request)}
     return CrudMixin(request, settings()).lists_as_html(context)
 
 
+@login_required()
 def new(request):
     return CrudMixin(request, settings()).new()
 
 
+@login_required()
 def update(request, pk):
     _settings = settings()
     _settings.item_id = pk
