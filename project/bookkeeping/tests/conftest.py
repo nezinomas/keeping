@@ -235,6 +235,7 @@ def _expenses_data():
 @pytest.fixture
 def _data():
     items = {
+        'account': _accounts_data(),
         'income': _incomes_data(),
         'expense': _expenses_data(),
         'transaction': _transactions_data(),
@@ -248,5 +249,6 @@ def _data():
 def _data_savings():
     items = {
         'saving': _savings_data(),
+        'savingtype': _savings_type_data(),
     }
     return items

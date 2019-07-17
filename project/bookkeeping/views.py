@@ -8,12 +8,19 @@ from ..savings.models import Saving, SavingType
 from ..transactions.models import Transaction
 from .lib.get_data import GetObjects
 from .lib.stats_accounts import StatsAccounts
+from .lib.stats_savings import StatsSavings
 
 
 @login_required()
 def index(request):
-    objects = GetObjects([Account, Income, Expense, Saving, Transaction])
-    stats = StatsAccounts(request.user.profile.year, objects.data)
-    context = {'tbl': stats.balance}
+    objects = GetObjects([Account, Income, Expense, Saving, SavingType, Transaction])
+
+    accounts = StatsAccounts(request.user.profile.year, objects.data)
+    savings = StatsSavings(request.user.profile.year, objects.data)
+
+    context = {
+        'accounts': accounts.balance,
+        'savings': savings.balance
+    }
 
     return render(request, 'bookkeeping/main.html', context=context)
