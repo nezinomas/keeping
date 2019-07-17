@@ -249,5 +249,6 @@ def _data():
 def _data_savings():
     items = {
         'saving': _savings_data(),
+        'savingtype': _savings_type_data(),
     }
     return items
