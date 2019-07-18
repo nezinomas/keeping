@@ -70,9 +70,11 @@ class SavingCloseForm(forms.ModelForm):
         self.fields['fee'].initial = '0.00'
 
         self.fields['date'].label = 'Data'
-        self.fields['from_account'].label = 'Iš taupymo sąskaitos'
+        self.fields['from_account'].label = 'Iš sąskaitos'
         self.fields['to_account'].label = 'Į sąskaitą'
-        self.fields['price'].label = 'Galutinė suma, atskaičius mokesčius'
+        self.fields['price'].label = 'Suma'
+        self.fields['price'].help_text = 'Suma kuri lieka atskaičius mokesčius'
+        self.fields['fee'].label = 'Mokesčiai'
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
