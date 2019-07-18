@@ -37,6 +37,7 @@ class Transaction(models.Model):
         validators=[MinValueValidator(Decimal('0.01'))]
     )
 
+
     class Meta:
         ordering = ['-date', 'price', 'from_account']
 
@@ -61,6 +62,12 @@ class SavingClose(models.Model):
         Account,
         on_delete=models.PROTECT,
         related_name='close_to_accounts'
+    )
+    fee = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
     )
     price = models.DecimalField(
         max_digits=8,
@@ -92,6 +99,12 @@ class SavingChange(models.Model):
         SavingType,
         on_delete=models.PROTECT,
         related_name='change_to_savings'
+    )
+    fee = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
     )
     price = models.DecimalField(
         max_digits=8,
