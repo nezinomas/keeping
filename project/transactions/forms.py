@@ -23,17 +23,17 @@ class TransactionForm(forms.ModelForm):
     def __init__(self, extra={}, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # form inputs settings
-        self.fields['price'].widget.attrs = {'step': '0.01'}
 
-        # inital values
-        self.fields['date'].initial = datetime.now()
         self.fields['price'].initial = '0.01'
-
-        self.fields['date'].label = 'Data'
-        self.fields['from_account'].label = 'Iš sąskaitos'
-        self.fields['to_account'].label = 'Į sąskaitą'
+        self.fields['price'].widget.attrs = {'step': '0.01'}
         self.fields['price'].label = 'Suma'
+
+        self.fields['date'].initial = datetime.now()
+        self.fields['date'].label = 'Data'
+
+        self.fields['from_account'].label = 'Iš sąskaitos'
+
+        self.fields['to_account'].label = 'Į sąskaitą'
 
         # chained dropdown
         id = ChainedDropDown(self, 'from_account').parent_field_id
@@ -60,21 +60,22 @@ class SavingCloseForm(forms.ModelForm):
     def __init__(self, extra={}, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # form inputs settings
-        self.fields['price'].widget.attrs = {'step': '0.01'}
-        self.fields['fee'].widget.attrs = {'step': '0.01'}
 
-        # inital values
-        self.fields['date'].initial = datetime.now()
         self.fields['price'].initial = '0.01'
-        self.fields['fee'].initial = '0.00'
-
-        self.fields['date'].label = 'Data'
-        self.fields['from_account'].label = 'Iš sąskaitos'
-        self.fields['to_account'].label = 'Į sąskaitą'
+        self.fields['price'].widget.attrs = {'step': '0.01'}
         self.fields['price'].label = 'Suma'
         self.fields['price'].help_text = 'Suma kuri lieka atskaičius mokesčius'
+
+        self.fields['fee'].initial = '0.00'
+        self.fields['fee'].widget.attrs = {'step': '0.01'}
         self.fields['fee'].label = 'Mokesčiai'
+
+        self.fields['date'].initial = datetime.now()
+        self.fields['date'].label = 'Data'
+
+        self.fields['from_account'].label = 'Iš sąskaitos'
+
+        self.fields['to_account'].label = 'Į sąskaitą'
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
