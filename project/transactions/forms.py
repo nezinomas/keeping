@@ -23,7 +23,6 @@ class TransactionForm(forms.ModelForm):
     def __init__(self, extra={}, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-
         self.fields['price'].initial = '0.01'
         self.fields['price'].widget.attrs = {'step': '0.01'}
         self.fields['price'].label = 'Suma'
@@ -59,7 +58,6 @@ class SavingCloseForm(forms.ModelForm):
 
     def __init__(self, extra={}, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
 
         self.fields['price'].initial = '0.01'
         self.fields['price'].widget.attrs = {'step': '0.01'}
