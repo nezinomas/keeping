@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties, ChainedDropDown
-from .models import Transaction
+from .models import Transaction, SavingClose
 from ..accounts.models import Account
 
 
@@ -41,6 +41,38 @@ class TransactionForm(forms.ModelForm):
             self.fields['to_account'].queryset = (
                 Account.objects.exclude(pk=id)
             )
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
+
+
+class SavingCloseForm(forms.ModelForm):
+    class Meta:
+        model = SavingClose
+        fields = ['date', 'from_account', 'to_account', 'price', 'fee']
+
+        widgets = {
+            'date': DatePickerInput(format='%Y-%m-%d'),
+        }
+
+    field_order = ['date', 'from_account', 'to_account', 'fee', 'price']
+
+    def __init__(self, extra={}, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # form inputs settings
+        self.fields['price'].widget.attrs = {'step': '0.01'}
+        self.fields['fee'].widget.attrs = {'step': '0.01'}
+
+        # inital values
+        self.fields['date'].initial = datetime.now()
+        self.fields['price'].initial = '0.01'
+        self.fields['fee'].initial = '0.00'
+
+        self.fields['date'].label = 'Data'
+        self.fields['from_account'].label = 'Iš taupymo sąskaitos'
+        self.fields['to_account'].label = 'Į sąskaitą'
+        self.fields['price'].label = 'Galutinė suma, atskaičius mokesčius'
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

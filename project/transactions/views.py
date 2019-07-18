@@ -4,7 +4,7 @@ from django.template.loader import render_to_string
 
 from ..accounts.views import lists as accounts_list
 from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
-from .forms import TransactionForm
+from .forms import TransactionForm, SavingCloseForm
 from .models import Transaction, SavingChange, SavingClose
 
 
@@ -30,6 +30,7 @@ def index(request):
     context = {
         'categories': accounts_list(request),
         'transactions': lists(request),
+        'savings_close': savings_close_lists(request),
     }
     return CrudMixin(request, settings()).lists_as_html(context)
 
@@ -60,14 +61,13 @@ def close_settings():
 
     obj.model = SavingClose
 
-    # obj.form = TransactionForm
-    # obj.form_template = 'transactions/includes/partial_transactions_form.html'
+    obj.form = SavingCloseForm
+    obj.form_template = 'transactions/includes/partial_savings_close_form.html'
 
-    # obj.items_template = 'transactions/includes/partial_transactions_list.html'
-    # obj.items_template_main = 'transactions/transactions_list.html'
+    obj.items_template = 'transactions/includes/partial_savings_close.html'
 
-    # obj.url_new = 'transactions:transactions_new'
-    # obj.url_update = 'transactions:transactions_update'
+    obj.url_new = 'transactions:savings_close_new'
+    obj.url_update = 'transactions:savings_close_update'
 
     return obj
 
