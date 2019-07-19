@@ -20,7 +20,9 @@ def index(request):
 
     context = {
         'accounts': accounts.balance,
-        'savings': savings.balance
+        'savings': savings.balance,
+        'past_amount': accounts.past_amount,
+        'current_amount': accounts.current_amount,
     }
 
     return render(request, 'bookkeeping/main.html', context=context)

@@ -31,6 +31,15 @@
                     </tr>
                     {% endfor %}
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td>Total:</td>
+                        {% td past_amount %}
+                        <td></td>
+                        <td></td>
+                        {% td current_amount %}
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
@@ -70,4 +79,11 @@
         <div class="modal-content"></div>
     </div>
 </div>
+
+<style>
+    tfoot > tr {
+        border-top: double #0359b0;
+    }
+</style>
 {% endblock content %}
+
