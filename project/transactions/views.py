@@ -4,8 +4,8 @@ from django.template.loader import render_to_string
 
 from ..accounts.views import lists as accounts_list
 from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
-from .forms import TransactionForm, SavingCloseForm
-from .models import Transaction, SavingChange, SavingClose
+from .forms import TransactionForm, SavingCloseForm, SavingChangeForm
+from .models import Transaction, SavingChange, SavingClose, SavingType
 
 
 def settings():
@@ -31,6 +31,7 @@ def index(request):
         'categories': accounts_list(request),
         'transactions': lists(request),
         'savings_close': savings_close_lists(request),
+        'savings_change': savings_change_lists(request),
     }
     return CrudMixin(request, settings()).lists_as_html(context)
 
@@ -98,14 +99,13 @@ def change_settings():
 
     obj.model = SavingChange
 
-    # obj.form = TransactionForm
-    # obj.form_template = 'transactions/includes/partial_transactions_form.html'
+    obj.form = SavingChangeForm
+    obj.form_template = 'transactions/includes/partial_savings_change_form.html'
 
-    # obj.items_template = 'transactions/includes/partial_transactions_list.html'
-    # obj.items_template_main = 'transactions/transactions_list.html'
+    obj.items_template = 'transactions/includes/partial_savings_change.html'
 
-    # obj.url_new = 'transactions:transactions_new'
-    # obj.url_update = 'transactions:transactions_update'
+    obj.url_new = 'transactions:savings_change_new'
+    obj.url_update = 'transactions:savings_change_update'
 
     return obj
 
