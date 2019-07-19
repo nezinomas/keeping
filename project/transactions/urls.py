@@ -37,12 +37,12 @@ urlpatterns = [
     ),
     path(
         'savings_change/new/',
-        views.savings_close_new,
+        views.savings_change_new,
         name='savings_change_new'
     ),
     path(
         'savings_change/update/<int:pk>/',
-        views.savings_close_update,
+        views.savings_change_update,
         name='savings_change_update'
     ),
 ]
