@@ -36,6 +36,10 @@ class StatsAccounts(object):
     def past_amount(self):
         return self._balance.past.sum() if not self._balance.empty else None
 
+    @property
+    def current_amount(self):
+        return self._balance.balance.sum() if not self._balance.empty else None
+
     def _prepare_balance(self):
         try:
             self._balance.set_index(['title'], inplace=True)
