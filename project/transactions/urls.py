@@ -45,4 +45,9 @@ urlpatterns = [
         views.savings_change_update,
         name='savings_change_update'
     ),
+    path(
+        'ajax/load_saving_type/',
+        views.load_saving_type,
+        name='load_saving_type'
+    ),
 ]

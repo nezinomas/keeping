@@ -126,3 +126,13 @@ def savings_change_update(request, pk):
     _settings.item_id = pk
 
     return CrudMixin(request, _settings).update()
+
+
+def load_saving_type(request):
+    id = request.GET.get('id')
+    objects = SavingType.objects.exclude(pk=id)
+    return render(
+        request,
+        'core/dropdown.html',
+        {'objects': objects}
+    )
