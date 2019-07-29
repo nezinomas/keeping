@@ -4,5 +4,9 @@ from ..core.models import TitleAbstract
 
 
 class Account(TitleAbstract):
+    order = models.PositiveIntegerField(
+        default=0
+    )
+
     class Meta:
-        ordering = ['title']
+        ordering = ['order', 'title']
