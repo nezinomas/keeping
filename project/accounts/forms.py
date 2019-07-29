@@ -8,7 +8,7 @@ from .models import Account
 class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
-        fields = ['title']
+        fields = ['title', 'order']
 
     def __init__(self, extra={}, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -17,3 +17,4 @@ class AccountForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
         self.fields['title'].label = 'Sąskaitos pavadinimas'
+        self.fields['order'].label = 'Rūšiavimas'
