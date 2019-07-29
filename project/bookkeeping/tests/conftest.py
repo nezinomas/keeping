@@ -29,12 +29,6 @@ def _accounts_data():
     return df
 
 
-@pytest.fixture()
-def _savings_type():
-    SavingTypeFactory(title='Saving1')
-    SavingTypeFactory(title='Saving2')
-
-
 def _savings_type_data():
     df = pd.DataFrame(
         [
@@ -52,21 +46,6 @@ def _incomes():
         price=5000,
         date=dt(1970, 1, 1),
         account=AccountFactory(title='Account1')
-    )
-    IncomeFactory(
-        price=2000,
-        date=dt(1970, 11, 1),
-        account=AccountFactory(title='Account2')
-    )
-    IncomeFactory(
-        price=3000,
-        date=dt(1999, 1, 1),
-        account=AccountFactory(title='Account1')
-    )
-    IncomeFactory(
-        price=2000,
-        date=dt(1999, 1, 2),
-        account=AccountFactory(title='Account2')
     )
     IncomeFactory(
         price=2000,
@@ -89,25 +68,6 @@ def _incomes_data():
     return df
 
 
-@pytest.fixture()
-def _savings():
-    SavingFactory(
-        date=dt(1970, 1, 1),
-        price=1000,
-        fee=150.50,
-        account=AccountFactory(title='Account1'),
-        saving_type=SavingTypeFactory(title='Saving1')
-    )
-
-    SavingFactory(
-        date=dt(1999, 1, 1),
-        price=500,
-        fee=15.50,
-        account=AccountFactory(title='Account1'),
-        saving_type=SavingTypeFactory(title='Saving1')
-    )
-
-
 def _savings_data():
     df = pd.DataFrame(
         [
@@ -123,40 +83,6 @@ def _savings_data():
     return df
 
 
-@pytest.fixture()
-def _transactions():
-    TransactionFactory(
-        date=dt(1999, 1, 1),
-        price=200,
-        to_account=AccountFactory(title='Account2'),
-        from_account=AccountFactory(title='Account1')
-    )
-    TransactionFactory(
-        date=dt(1999, 1, 1),
-        price=200,
-        to_account=AccountFactory(title='Account2'),
-        from_account=AccountFactory(title='Account1')
-    )
-    TransactionFactory(
-        date=dt(1999, 1, 1),
-        price=300,
-        to_account=AccountFactory(title='Account1'),
-        from_account=AccountFactory(title='Account2')
-    )
-    TransactionFactory(
-        date=dt(1970, 1, 1),
-        price=100,
-        to_account=AccountFactory(title='Account2'),
-        from_account=AccountFactory(title='Account1')
-    )
-    TransactionFactory(
-        date=dt(1970, 1, 1),
-        price=500,
-        to_account=AccountFactory(title='Account1'),
-        from_account=AccountFactory(title='Account2')
-    )
-
-
 def _transactions_data():
     df = pd.DataFrame(
         [
@@ -169,50 +95,6 @@ def _transactions_data():
         columns=['date', 'price', 'to_account', 'from_account']
     )
     return df
-
-
-@pytest.fixture()
-def _expenses():
-    ExpenseFactory(
-        date=dt(1999, 1, 1),
-        price=30.15,
-        account=AccountFactory(title='Account1')
-    )
-    ExpenseFactory(
-        date=dt(1999, 1, 31),
-        price=30.15,
-        account=AccountFactory(title='Account2')
-    )
-    ExpenseFactory(
-        date=dt(1999, 12, 1),
-        price=150.98,
-        account=AccountFactory(title='Account1')
-    )
-    ExpenseFactory(
-        date=dt(1999, 12, 31),
-        price=150.98,
-        account=AccountFactory(title='Account2')
-    )
-    ExpenseFactory(
-        date=dt(1970, 1, 1),
-        price=130.15,
-        account=AccountFactory(title='Account1')
-    )
-    ExpenseFactory(
-        date=dt(1970, 1, 31),
-        price=130.15,
-        account=AccountFactory(title='Account2')
-    )
-    ExpenseFactory(
-        date=dt(1970, 12, 1),
-        price=250.17,
-        account=AccountFactory(title='Account1')
-    )
-    ExpenseFactory(
-        date=dt(1970, 12, 31),
-        price=250.17,
-        account=AccountFactory(title='Account2')
-    )
 
 
 def _expenses_data():
@@ -235,6 +117,7 @@ def _expenses_data():
 @pytest.fixture
 def _data():
     items = {
+        'account': _accounts_data(),
         'income': _incomes_data(),
         'expense': _expenses_data(),
         'transaction': _transactions_data(),
@@ -248,5 +131,6 @@ def _data():
 def _data_savings():
     items = {
         'saving': _savings_data(),
+        'savingtype': _savings_type_data(),
     }
     return items

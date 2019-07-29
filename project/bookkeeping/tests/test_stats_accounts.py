@@ -32,6 +32,13 @@ def test_total_past_amount(_data):
     assert expect == actual
 
 
+def test_total_now_mount(_data):
+    actual = StatsAccounts(1999, _data).current_amount
+    expect = 10977.10
+
+    assert expect == actual
+
+
 def test_balance_past(_data):
     actual = StatsAccounts(1970, _data).balance
 

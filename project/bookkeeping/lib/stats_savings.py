@@ -9,6 +9,11 @@ class StatsSavings(object):
         self._year = year
         self._balance = pd.DataFrame()
 
+        try:
+            self._balance = data['savingtype']
+        except Exception as ex:
+            return
+
         self._data = FilterDf(year, data)
         if not isinstance(self._data.savings, pd.DataFrame) or self._data.savings.empty:
             return
@@ -25,13 +30,7 @@ class StatsSavings(object):
 
     def _prepare_balance(self):
         try:
-            self._balance = (
-                pd.DataFrame(
-                    self._data.savings.saving_type.unique(),
-                    columns=['title'],
-                ).
-                set_index(['title'])
-            )
+            self._balance.set_index(['title'], inplace=True)
         except:
             pass
 

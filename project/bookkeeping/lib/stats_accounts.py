@@ -13,6 +13,11 @@ class StatsAccounts(object):
         self._balance = pd.DataFrame()
         self._balance_past = None
 
+        try:
+            self._balance = data['account']
+        except Exception as ex:
+            return
+
         self._data = FilterDf(year, data)
         if not isinstance(self._data.expenses, pd.DataFrame) or self._data.expenses.empty:
             return
@@ -31,15 +36,13 @@ class StatsAccounts(object):
     def past_amount(self):
         return self._balance.past.sum() if not self._balance.empty else None
 
+    @property
+    def current_amount(self):
+        return self._balance.balance.sum() if not self._balance.empty else None
+
     def _prepare_balance(self):
         try:
-            self._balance = (
-                pd.DataFrame(
-                    self._data.expenses.account.unique(),
-                    columns=['title'],
-                ).
-                set_index(['title'])
-            )
+            self._balance.set_index(['title'], inplace=True)
         except:
             pass
 
