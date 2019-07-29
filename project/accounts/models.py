@@ -5,7 +5,7 @@ from ..core.models import TitleAbstract
 
 class Account(TitleAbstract):
     order = models.PositiveIntegerField(
-        default=0
+        default=10
     )
 
     class Meta:
