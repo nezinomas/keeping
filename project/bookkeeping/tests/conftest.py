@@ -101,14 +101,12 @@ def _transactions_data():
 def _expenses_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime(dt(1999, 1, 1)), 30.15, 'Account1'],
-            [pd.to_datetime(dt(1999, 1, 31)), 30.15, 'Account2'],
-            [pd.to_datetime(dt(1999, 12, 1)), 150.98, 'Account1'],
-            [pd.to_datetime(dt(1999, 12, 31)), 150.98, 'Account2'],
-            [pd.to_datetime(dt(1970, 1, 1)), 130.15, 'Account1'],
-            [pd.to_datetime(dt(1970, 1, 31)), 130.15, 'Account2'],
-            [pd.to_datetime(dt(1970, 12, 1)), 250.17, 'Account1'],
-            [pd.to_datetime(dt(1970, 12, 31)), 250.17, 'Account2'],
+            [pd.to_datetime(dt(1999, 1, 1)), 0.25, 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 0.25, 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 1.25, 'Account2'],
+            [pd.to_datetime(dt(1970, 1, 1)), 1.25, 'Account1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 1.25, 'Account1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 2.25, 'Account2'],
         ],
         columns=['date', 'price', 'account']
     )
