@@ -57,11 +57,12 @@ def _incomes():
 def _incomes_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime(dt(1970, 1, 1)), 5000.00, 'Account1'],
-            [pd.to_datetime(dt(1970, 11, 1)), 2000.00, 'Account2'],
-            [pd.to_datetime(dt(1999, 1, 1)), 3000.00, 'Account1'],
-            [pd.to_datetime(dt(1999, 1, 2)), 2000.00, 'Account2'],
-            [pd.to_datetime(dt(1999, 1, 31)), 2000.00, 'Account2'],
+            [pd.to_datetime(dt(1970, 1, 1)), 5.25, 'Account1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 2.25, 'Account2'],
+            [pd.to_datetime(dt(1970, 1, 31)), 2.25, 'Account2'],
+            [pd.to_datetime(dt(1999, 1, 1)), 3.25, 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 2.25, 'Account2'],
+            [pd.to_datetime(dt(1999, 1, 31)), 1.25, 'Account2'],
         ],
         columns=['date', 'price', 'account']
     )

@@ -30,16 +30,16 @@ def test_balance_only_incomes(_data_incomes):
 
     expect = {
         'Account1': {
-            'past': 5000.0,
-            'incomes': 3000.0,
+            'past': 5.25,
+            'incomes': 3.25,
             'expenses': 0.0,
-            'balance': 8000.0,
+            'balance': 8.5,
         },
         'Account2': {
-            'past': 2000.0,
-            'incomes': 4000.00,
+            'past': 4.50,
+            'incomes': 3.5,
             'expenses': 0.0,
-            'balance': 6000.0,
+            'balance': 8.0,
         },
     }
 
