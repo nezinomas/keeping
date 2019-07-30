@@ -41,7 +41,7 @@ def _savings_type_data():
 
 
 @pytest.fixture()
-def _incomes():
+def _incomes_from_db():
     IncomeFactory(
         price=5000,
         date=dt(1970, 1, 1),
