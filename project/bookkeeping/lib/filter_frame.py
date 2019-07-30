@@ -66,6 +66,9 @@ class FilterDf(object):
     def _filter_trans(self, model_name, column, action):
         _df = self._filter_df(model_name, action)
 
+        if not isinstance(_df, pd.DataFrame):
+            return
+
         _df = _df.loc[:, [column, 'price']]
         _df.rename({column: 'account'}, axis=1, inplace=True)
 

@@ -25,6 +25,27 @@ def test_balance(_data):
     assert expect == actual
 
 
+def test_balance_only_incomes(_data_incomes):
+    actual = StatsAccounts(1999, _data_incomes).balance
+
+    expect = {
+        'Account1': {
+            'past': 5000.0,
+            'incomes': 3000.0,
+            'expenses': 0.0,
+            'balance': 8000.0,
+        },
+        'Account2': {
+            'past': 2000.0,
+            'incomes': 4000.00,
+            'expenses': 0.0,
+            'balance': 6000.0,
+        },
+    }
+
+    assert expect == actual
+
+
 def test_total_past_amount(_data):
     actual = StatsAccounts(1999, _data).past_amount
     expect = 5139.36

@@ -122,7 +122,16 @@ def _data():
         'expense': _expenses_data(),
         'transaction': _transactions_data(),
         'saving': _savings_data(),
-        'saving_type': _savings_type_data(),
+        # 'savingtype': _savings_type_data(),
+    }
+    return items
+
+
+@pytest.fixture
+def _data_incomes():
+    items = {
+        'account': _accounts_data(),
+        'income': _incomes_data(),
     }
     return items
 

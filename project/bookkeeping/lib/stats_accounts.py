@@ -13,14 +13,12 @@ class StatsAccounts(object):
         self._balance = pd.DataFrame()
         self._balance_past = None
 
-        try:
-            self._balance = data['account']
-        except Exception as ex:
+        # if there are no accounts
+        if data.get('account') is None or data['account'].empty:
             return
 
+        self._balance = data['account']
         self._data = FilterDf(year, data)
-        if not isinstance(self._data.expenses, pd.DataFrame) or self._data.expenses.empty:
-            return
 
         self._prepare_balance()
         self._calc_balance()
