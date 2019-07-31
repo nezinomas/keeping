@@ -79,6 +79,29 @@ def test_savings_change_only(_savings_change):
     assert expect == actual
 
 
+def test_savings_cloce_only(_data_savings_close):
+    actual = StatsSavings(1999, _data_savings_close).balance
+
+    expect = {
+        'Saving1': {
+            'past_amount': -0.25,
+            'past_fee': 0.00,
+            'incomes': -0.50,
+            'fees': 0.00,
+            'invested': -0.50,
+        },
+        'Saving2': {
+            'past_amount': 0.00,
+            'past_fee': 0.00,
+            'incomes': 0.00,
+            'fees': 0.00,
+            'invested': 0.00,
+        },
+    }
+
+    assert expect == actual
+
+
 def test_savings_empty():
     actual = StatsSavings(1, {}).balance
 

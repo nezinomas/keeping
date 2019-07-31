@@ -202,6 +202,15 @@ def _savings_change():
 
 
 @pytest.fixture
+def _data_savings_close():
+    items = {
+        'savingtype': _savings_type_data(),
+        'savingclose': _savings_close_data(),
+    }
+    return items
+
+
+@pytest.fixture
 def _data_savings():
     items = {
         'savingtype': _savings_type_data(),
