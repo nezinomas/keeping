@@ -3,25 +3,32 @@ import pytest
 from ..lib.stats_savings import StatsSavings
 
 
-def test_savings_year_now(_data_savings):
-    actual = StatsSavings(1999, _data_savings).balance
+def round_(_list):
+    for key, arr in _list.items():
+        for _k, _v in _list[key].items():
+            _list[key][_k] = round(_v, 2)
 
+
+def test_savings_year_now(_data_savings):
     expect = {
         'Saving1': {
-            'past_amount': 1000.0,
-            'past_fee': 145.68,
-            'incomes': 500.0,
-            'fees': 30.5,
-            'invested': 469.5,
+            'past_amount': -1.25,
+            'past_fee': 0.40,
+            'incomes': 0.75,
+            'fees': 0.95,
+            'invested': -0.20,
         },
         'Saving2': {
-            'past_amount': 100.0,
-            'past_fee': 15.5,
-            'incomes': 300.0,
-            'fees': 15.5,
-            'invested': 284.5,
+            'past_amount': 2.50,
+            'past_fee': 0.15,
+            'incomes': 6.00,
+            'fees': 0.45,
+            'invested': 5.55,
         },
     }
+
+    actual = StatsSavings(1999, _data_savings).balance
+    round_(actual)
 
     assert expect == actual
 
@@ -31,23 +38,22 @@ def test_savings_year_past(_data_savings):
 
     expect = {
         'Saving1': {
-            'past_amount': .0,
+            'past_amount': 0.00,
             'past_fee': 0.0,
-            'incomes': 1000.0,
-            'fees': 145.68,
-            'invested': 854.32,
+            'incomes': -1.25,
+            'fees': 0.40,
+            'invested': -1.65,
         },
         'Saving2': {
-            'past_amount': 0.0,
-            'past_fee': 0.0,
-            'incomes': 100.0,
-            'fees': 15.5,
-            'invested': 84.5,
+            'past_amount': 0.00,
+            'past_fee': 0.00,
+            'incomes': 2.50,
+            'fees': 0.15,
+            'invested': 2.35,
         },
     }
 
-    assert expect['Saving1'] == pytest.approx(actual['Saving1'])
-    assert expect['Saving2'] == pytest.approx(actual['Saving2'])
+    assert expect == actual
 
 
 def test_savings_change_only(_savings_change):
