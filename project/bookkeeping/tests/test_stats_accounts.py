@@ -9,16 +9,16 @@ def test_balance(_data):
 
     expect = {
         'Account1': {
-            'past': 4019.68,
-            'incomes': 3300.00,
-            'expenses': 1081.13,
-            'balance': 6238.55,
+            'past': 5.75,
+            'incomes': 6.75,
+            'expenses': 8.5,
+            'balance': 4.0,
         },
         'Account2': {
-            'past': 1119.68,
-            'incomes': 4400.00,
-            'expenses': 781.13,
-            'balance': 4738.55,
+            'past': -2.0,
+            'incomes': 8.0,
+            'expenses': 6.75,
+            'balance': -0.75,
         },
     }
 

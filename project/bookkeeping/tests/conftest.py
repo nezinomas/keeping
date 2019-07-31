@@ -131,7 +131,7 @@ def _data():
         'expense': _expenses_data(),
         'transaction': _transactions_data(),
         'saving': _savings_data(),
-        # 'savingtype': _savings_type_data(),
+        'savingclose': _savings_close_data(),
     }
     return items
 
