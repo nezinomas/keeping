@@ -72,12 +72,11 @@ def _incomes_data():
 def _savings_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime(dt(1970, 1, 1)), 500.0, 75.17, 'Account1', 'Saving1'],
-            [pd.to_datetime(dt(1970, 1, 31)), 500.0, 70.51, 'Account1', 'Saving1'],
-            [pd.to_datetime(dt(1970, 1, 31)), 100.0, 15.5, 'Account2', 'Saving2'],
-            [pd.to_datetime(dt(1999, 1, 1)), 250.0, 15.25, 'Account1', 'Saving1'],
-            [pd.to_datetime(dt(1999, 1, 31)), 250.0, 15.25, 'Account1', 'Saving1'],
-            [pd.to_datetime(dt(1999, 12, 31)), 300.0, 15.5, 'Account2', 'Saving2'],
+            [pd.to_datetime(dt(1970, 1, 1)), 1.25, 0.25, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 0.25, 0.00, 'Account2', 'Saving2'],
+            [pd.to_datetime(dt(1999, 1, 1)), 1.25, 0.25, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 2.25, 0.25, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 2.25, 0.25, 'Account2', 'Saving2'],
         ],
         columns=['date', 'price', 'fee', 'account', 'saving_type']
     )
@@ -131,6 +130,24 @@ def _data_incomes():
     items = {
         'account': _accounts_data(),
         'income': _incomes_data(),
+    }
+    return items
+
+
+@pytest.fixture
+def _data_expenses():
+    items = {
+        'account': _accounts_data(),
+        'expense': _expenses_data(),
+    }
+    return items
+
+
+@pytest.fixture
+def _savings():
+    items = {
+        'account': _accounts_data(),
+        'saving': _savings_data(),
     }
     return items
 
