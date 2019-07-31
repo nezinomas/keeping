@@ -97,6 +97,17 @@ def _transactions_data():
     return df
 
 
+def _savings_close_data():
+    df = pd.DataFrame(
+        [
+            [pd.to_datetime(dt(1999, 1, 1)), 0.25, 0.05, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 0.25, 0.05, 'Account1', 'Saving1'],
+        ],
+        columns=['date', 'price', 'fee', 'to_account', 'from_account']
+    )
+    return df
+
+
 def _expenses_data():
     df = pd.DataFrame(
         [

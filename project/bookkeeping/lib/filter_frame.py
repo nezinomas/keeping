@@ -49,6 +49,22 @@ class FilterDf(object):
     def trans_to_past(self):
         return self._filter_trans('transaction', 'to_account', 'lt')
 
+    @property
+    def savings_close_from_past(self):
+        return self._filter_trans('savingclose', 'from_account', 'lt')
+
+    @property
+    def savings_close_to_past(self):
+        return self._filter_trans('savingclose', 'to_account', 'lt')
+
+    @property
+    def savings_close_from(self):
+        return self._filter_trans('savingclose', 'from_account', 'eq')
+
+    @property
+    def savings_close_to(self):
+        return self._filter_trans('savingclose', 'to_account', 'eq')
+
     def _filter_df(self, model_name, action):
         df = self._data.get(model_name)
 

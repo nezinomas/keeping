@@ -64,6 +64,8 @@ class StatsAccounts(object):
         cb.calc(self._data.trans_from_past, '-', 'past')
         cb.calc(self._data.trans_to_past, '+', 'past')
 
+        cb.calc(self._data.savings_close_to_past, '+', 'past')
+
     def _calc_balance_now(self):
         cb = CalcBalance('account', self._balance)
         # incomes
@@ -74,6 +76,8 @@ class StatsAccounts(object):
         cb.calc(self._data.expenses, '-', 'expenses')
         cb.calc(self._data.savings, '-', 'expenses')
         cb.calc(self._data.trans_from, '-', 'expenses')
+
+        cb.calc(self._data.savings_close_to, '+', 'incomes')
 
         # abs expenses
         self._balance.expenses = self._balance.expenses.abs()
