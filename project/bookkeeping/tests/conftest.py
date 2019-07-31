@@ -173,6 +173,15 @@ def _savings():
 
 
 @pytest.fixture
+def _savings_close():
+    items = {
+        'account': _accounts_data(),
+        'savingclose': _savings_close_data(),
+    }
+    return items
+
+
+@pytest.fixture
 def _data_savings():
     items = {
         'saving': _savings_data(),
