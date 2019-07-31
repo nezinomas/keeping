@@ -37,7 +37,6 @@ class Transaction(models.Model):
         validators=[MinValueValidator(Decimal('0.01'))]
     )
 
-
     class Meta:
         ordering = ['-date', 'price', 'from_account']
 

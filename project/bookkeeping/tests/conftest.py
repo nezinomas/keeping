@@ -41,7 +41,7 @@ def _savings_type_data():
 
 
 @pytest.fixture()
-def _incomes():
+def _incomes_from_db():
     IncomeFactory(
         price=5000,
         date=dt(1970, 1, 1),
@@ -57,11 +57,12 @@ def _incomes():
 def _incomes_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime(dt(1970, 1, 1)), 5000.00, 'Account1'],
-            [pd.to_datetime(dt(1970, 11, 1)), 2000.00, 'Account2'],
-            [pd.to_datetime(dt(1999, 1, 1)), 3000.00, 'Account1'],
-            [pd.to_datetime(dt(1999, 1, 2)), 2000.00, 'Account2'],
-            [pd.to_datetime(dt(1999, 1, 31)), 2000.00, 'Account2'],
+            [pd.to_datetime(dt(1970, 1, 1)), 5.25, 'Account1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 2.25, 'Account2'],
+            [pd.to_datetime(dt(1970, 1, 31)), 2.25, 'Account2'],
+            [pd.to_datetime(dt(1999, 1, 1)), 3.25, 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 2.25, 'Account2'],
+            [pd.to_datetime(dt(1999, 1, 31)), 1.25, 'Account2'],
         ],
         columns=['date', 'price', 'account']
     )
@@ -71,12 +72,11 @@ def _incomes_data():
 def _savings_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime(dt(1970, 1, 1)), 500.0, 75.17, 'Account1', 'Saving1'],
-            [pd.to_datetime(dt(1970, 1, 31)), 500.0, 70.51, 'Account1', 'Saving1'],
-            [pd.to_datetime(dt(1970, 1, 31)), 100.0, 15.5, 'Account2', 'Saving2'],
-            [pd.to_datetime(dt(1999, 1, 1)), 250.0, 15.25, 'Account1', 'Saving1'],
-            [pd.to_datetime(dt(1999, 1, 31)), 250.0, 15.25, 'Account1', 'Saving1'],
-            [pd.to_datetime(dt(1999, 12, 31)), 300.0, 15.5, 'Account2', 'Saving2'],
+            [pd.to_datetime(dt(1970, 1, 1)), 1.25, 0.25, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 0.25, 0.00, 'Account2', 'Saving2'],
+            [pd.to_datetime(dt(1999, 1, 1)), 1.25, 0.25, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 2.25, 0.25, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 2.25, 0.25, 'Account2', 'Saving2'],
         ],
         columns=['date', 'price', 'fee', 'account', 'saving_type']
     )
@@ -86,13 +86,35 @@ def _savings_data():
 def _transactions_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime(dt(1999, 1, 1)), 200.00, 'Account2', 'Account1'],
-            [pd.to_datetime(dt(1999, 1, 1)), 200.00, 'Account2', 'Account1'],
-            [pd.to_datetime(dt(1999, 1, 1)), 300.00, 'Account1', 'Account2'],
-            [pd.to_datetime(dt(1970, 1, 1)), 100.00, 'Account2', 'Account1'],
-            [pd.to_datetime(dt(1970, 1, 1)), 500.00, 'Account1', 'Account2'],
+            [pd.to_datetime(dt(1999, 1, 1)), 2.25, 'Account2', 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 2.25, 'Account2', 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 3.25, 'Account1', 'Account2'],
+            [pd.to_datetime(dt(1970, 1, 1)), 1.25, 'Account2', 'Account1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 5.25, 'Account1', 'Account2'],
         ],
         columns=['date', 'price', 'to_account', 'from_account']
+    )
+    return df
+
+
+def _savings_close_data():
+    df = pd.DataFrame(
+        [
+            [pd.to_datetime(dt(1999, 1, 1)), 0.25, 0.05, 'Account1', 'Saving1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 0.25, 0.05, 'Account1', 'Saving1'],
+        ],
+        columns=['date', 'price', 'fee', 'to_account', 'from_account']
+    )
+    return df
+
+
+def _savings_change_data():
+    df = pd.DataFrame(
+        [
+            [pd.to_datetime(dt(1999, 1, 1)), 1.25, 0.05, 'Saving2', 'Saving1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 2.25, 0.15, 'Saving2', 'Saving1'],
+        ],
+        columns=['date', 'price', 'fee', 'to_account', 'from_account']
     )
     return df
 
@@ -100,14 +122,12 @@ def _transactions_data():
 def _expenses_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime(dt(1999, 1, 1)), 30.15, 'Account1'],
-            [pd.to_datetime(dt(1999, 1, 31)), 30.15, 'Account2'],
-            [pd.to_datetime(dt(1999, 12, 1)), 150.98, 'Account1'],
-            [pd.to_datetime(dt(1999, 12, 31)), 150.98, 'Account2'],
-            [pd.to_datetime(dt(1970, 1, 1)), 130.15, 'Account1'],
-            [pd.to_datetime(dt(1970, 1, 31)), 130.15, 'Account2'],
-            [pd.to_datetime(dt(1970, 12, 1)), 250.17, 'Account1'],
-            [pd.to_datetime(dt(1970, 12, 31)), 250.17, 'Account2'],
+            [pd.to_datetime(dt(1999, 1, 1)), 0.25, 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 0.25, 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 1.25, 'Account2'],
+            [pd.to_datetime(dt(1970, 1, 1)), 1.25, 'Account1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 1.25, 'Account1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 2.25, 'Account2'],
         ],
         columns=['date', 'price', 'account']
     )
@@ -122,7 +142,70 @@ def _data():
         'expense': _expenses_data(),
         'transaction': _transactions_data(),
         'saving': _savings_data(),
-        'saving_type': _savings_type_data(),
+        'savingclose': _savings_close_data(),
+    }
+    return items
+
+
+@pytest.fixture
+def _incomes():
+    items = {
+        'account': _accounts_data(),
+        'income': _incomes_data(),
+    }
+    return items
+
+
+@pytest.fixture
+def _expenses():
+    items = {
+        'account': _accounts_data(),
+        'expense': _expenses_data(),
+    }
+    return items
+
+
+@pytest.fixture
+def _transactions():
+    items = {
+        'account': _accounts_data(),
+        'transaction': _transactions_data(),
+    }
+    return items
+
+
+@pytest.fixture
+def _savings():
+    items = {
+        'account': _accounts_data(),
+        'saving': _savings_data(),
+    }
+    return items
+
+
+@pytest.fixture
+def _savings_close():
+    items = {
+        'account': _accounts_data(),
+        'savingclose': _savings_close_data(),
+    }
+    return items
+
+
+@pytest.fixture
+def _savings_change():
+    items = {
+        'savingtype': _savings_type_data(),
+        'savingchange': _savings_change_data(),
+    }
+    return items
+
+
+@pytest.fixture
+def _data_savings_close():
+    items = {
+        'savingtype': _savings_type_data(),
+        'savingclose': _savings_close_data(),
     }
     return items
 
@@ -130,7 +213,9 @@ def _data():
 @pytest.fixture
 def _data_savings():
     items = {
-        'saving': _savings_data(),
         'savingtype': _savings_type_data(),
+        'saving': _savings_data(),
+        'savingchange': _savings_change_data(),
+        'savingclose': _savings_close_data(),
     }
     return items
