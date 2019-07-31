@@ -15,8 +15,8 @@ class StatsSavings(object):
             return
 
         self._data = FilterDf(year, data)
-        if not isinstance(self._data.savings, pd.DataFrame) or self._data.savings.empty:
-            return
+        # if not isinstance(self._data.savings, pd.DataFrame) or self._data.savings.empty:
+        #     return
 
         self._prepare_balance()
         self._calc_balance()
@@ -43,10 +43,30 @@ class StatsSavings(object):
     def _calc_balance(self):
         cb = CalcBalance('saving_type', self._balance)
 
+        cb.calc(self._data.savings, '+', 'incomes')
+        cb.calc(self._data.savings, '+', 'fees', 'fee')
+
         cb.calc(self._data.savings_past, '+', 'past_amount')
         cb.calc(self._data.savings_past, '+', 'past_fee', 'fee')
 
-        cb.calc(self._data.savings, '+', 'incomes')
-        cb.calc(self._data.savings, '+', 'fees', 'fee')
+        cb.calc(self._data.savings_change_to_past, '+', 'past_amount')
+        cb.calc(self._data.savings_change_to_past, '+', 'past_fee', 'fee')
+
+        cb.calc(self._data.savings_change_from_past, '-', 'past_amount')
+        cb.calc(self._data.savings_change_from_past, '+', 'past_fee', 'fee')
+
+        cb.calc(self._data.savings_change_to, '+', 'incomes')
+        cb.calc(self._data.savings_change_to, '+', 'fees', 'fee')
+
+        cb.calc(self._data.savings_change_from, '-', 'incomes')
+        cb.calc(self._data.savings_change_from, '+', 'fees', 'fee')
+
+        cb.calc(self._data.savings_close_from, '-', 'incomes')
+
+        cb.calc(self._data.savings_close_from_past, '-', 'past_amount')
+
+
+        self._balance.incomes = self._balance.incomes + self._balance.past_amount
+        self._balance.fees = self._balance.fees + self._balance.past_fee
 
         self._balance.invested = self._balance.incomes - self._balance.fees
