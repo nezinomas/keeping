@@ -35,19 +35,77 @@ class FilterDf(object):
 
     @property
     def trans_from(self):
-        return self._filter_trans('transaction', 'from_account', 'eq')
+        _df = self._filter_df('transaction', 'eq')
+        _df = self._copy_column(_df, 'from_account', 'account')
+        return _df
 
     @property
     def trans_from_past(self):
-        return self._filter_trans('transaction', 'from_account', 'lt')
+        _df = self._filter_df('transaction', 'lt')
+        _df = self._copy_column(_df, 'from_account', 'account')
+        return _df
 
     @property
     def trans_to(self):
-        return self._filter_trans('transaction', 'to_account', 'eq')
+        _df = self._filter_df('transaction', 'eq')
+        _df = self._copy_column(_df, 'to_account', 'account')
+        return _df
 
     @property
     def trans_to_past(self):
-        return self._filter_trans('transaction', 'to_account', 'lt')
+        _df = self._filter_df('transaction', 'lt')
+        _df = self._copy_column(_df, 'to_account', 'account')
+        return _df
+
+    @property
+    def savings_close_from_past(self):
+        _df = self._filter_df('savingclose', 'lt')
+        _df = self._copy_column(_df, 'from_account', 'account')
+        _df = self._copy_column(_df, 'from_account', 'saving_type')
+        return _df
+
+    @property
+    def savings_close_to_past(self):
+        _df = self._filter_df('savingclose', 'lt')
+        _df = self._copy_column(_df, 'to_account', 'account')
+        return _df
+
+    @property
+    def savings_close_from(self):
+        _df = self._filter_df('savingclose', 'eq')
+        _df = self._copy_column(_df, 'from_account', 'account')
+        _df = self._copy_column(_df, 'from_account', 'saving_type')
+        return _df
+
+    @property
+    def savings_close_to(self):
+        _df = self._filter_df('savingclose', 'eq')
+        _df = self._copy_column(_df, 'to_account', 'account')
+        return _df
+
+    @property
+    def savings_change_from_past(self):
+        _df = self._filter_df('savingchange', 'lt')
+        _df = self._copy_column(_df, 'from_account', 'saving_type')
+        return _df
+
+    @property
+    def savings_change_to_past(self):
+        _df = self._filter_df('savingchange', 'lt')
+        _df = self._copy_column(_df, 'to_account', 'saving_type')
+        return _df
+
+    @property
+    def savings_change_from(self):
+        _df = self._filter_df('savingchange', 'eq')
+        _df = self._copy_column(_df, 'from_account', 'saving_type')
+        return _df
+
+    @property
+    def savings_change_to(self):
+        _df = self._filter_df('savingchange', 'eq')
+        _df = self._copy_column(_df, 'to_account', 'saving_type')
+        return _df
 
     def _filter_df(self, model_name, action):
         df = self._data.get(model_name)
@@ -63,10 +121,10 @@ class FilterDf(object):
 
         return df
 
-    def _filter_trans(self, model_name, column, action):
-        _df = self._filter_df(model_name, action)
+    def _copy_column(self, df, old_name, new_name):
+        if not isinstance(df, pd.DataFrame):
+            return df
 
-        _df = _df.loc[:, [column, 'price']]
-        _df.rename({column: 'account'}, axis=1, inplace=True)
+        df[new_name] = df[old_name]
 
-        return _df
+        return df

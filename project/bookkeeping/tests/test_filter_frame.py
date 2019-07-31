@@ -16,4 +16,4 @@ def test_empty_data_property_exists():
 def test_data(_data_savings):
     actual = T(1970, _data_savings).savings
 
-    assert 100.0 == actual.price[2]
+    assert 1.25 == actual.price[0]

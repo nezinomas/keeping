@@ -13,14 +13,12 @@ class StatsAccounts(object):
         self._balance = pd.DataFrame()
         self._balance_past = None
 
-        try:
-            self._balance = data['account']
-        except Exception as ex:
+        # if there are no accounts
+        if data.get('account') is None or data['account'].empty:
             return
 
+        self._balance = data['account']
         self._data = FilterDf(year, data)
-        if not isinstance(self._data.expenses, pd.DataFrame) or self._data.expenses.empty:
-            return
 
         self._prepare_balance()
         self._calc_balance()
@@ -66,6 +64,8 @@ class StatsAccounts(object):
         cb.calc(self._data.trans_from_past, '-', 'past')
         cb.calc(self._data.trans_to_past, '+', 'past')
 
+        cb.calc(self._data.savings_close_to_past, '+', 'past')
+
     def _calc_balance_now(self):
         cb = CalcBalance('account', self._balance)
         # incomes
@@ -76,6 +76,8 @@ class StatsAccounts(object):
         cb.calc(self._data.expenses, '-', 'expenses')
         cb.calc(self._data.savings, '-', 'expenses')
         cb.calc(self._data.trans_from, '-', 'expenses')
+
+        cb.calc(self._data.savings_close_to, '+', 'incomes')
 
         # abs expenses
         self._balance.expenses = self._balance.expenses.abs()
