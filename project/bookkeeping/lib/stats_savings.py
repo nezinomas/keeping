@@ -9,14 +9,12 @@ class StatsSavings(object):
         self._year = year
         self._balance = pd.DataFrame()
 
-        try:
-            self._balance = data['savingtype']
-        except Exception as ex:
+        # if there are no saving_types
+        if data.get('savingtype') is None or data['savingtype'].empty:
             return
 
+        self._balance = data['savingtype']
         self._data = FilterDf(year, data)
-        # if not isinstance(self._data.savings, pd.DataFrame) or self._data.savings.empty:
-        #     return
 
         self._prepare_balance()
         self._calc_balance()
