@@ -132,14 +132,14 @@ def test_balance_only_savings_close(_savings_close):
 
 def test_total_past_amount(_data):
     actual = StatsAccounts(1999, _data).past_amount
-    expect = 5139.36
+    expect = 3.75
 
     assert expect == actual
 
 
 def test_total_now_mount(_data):
     actual = StatsAccounts(1999, _data).current_amount
-    expect = 10977.10
+    expect = 3.25
 
     assert expect == actual
 
@@ -150,20 +150,19 @@ def test_balance_past(_data):
     expect = {
         'Account1': {
             'past': 0.0,
-            'incomes': 5500.0,
-            'expenses': 1480.32,
-            'balance': 4019.68,
+            'incomes': 10.75,
+            'expenses': 5.0,
+            'balance': 5.75,
         },
         'Account2': {
             'past': 0.0,
-            'incomes': 2100.0,
-            'expenses': 980.32,
-            'balance': 1119.68,
+            'incomes': 5.75,
+            'expenses': 7.75,
+            'balance': -2.0,
         },
     }
 
-    assert expect['Account1'] == pytest.approx(actual['Account1'])
-    assert expect['Account2'] == pytest.approx(actual['Account2'])
+    assert expect == actual
 
 
 def test_total_past_amount_past(_data):
