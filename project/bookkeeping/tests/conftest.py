@@ -86,11 +86,11 @@ def _savings_data():
 def _transactions_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime(dt(1999, 1, 1)), 200.00, 'Account2', 'Account1'],
-            [pd.to_datetime(dt(1999, 1, 1)), 200.00, 'Account2', 'Account1'],
-            [pd.to_datetime(dt(1999, 1, 1)), 300.00, 'Account1', 'Account2'],
-            [pd.to_datetime(dt(1970, 1, 1)), 100.00, 'Account2', 'Account1'],
-            [pd.to_datetime(dt(1970, 1, 1)), 500.00, 'Account1', 'Account2'],
+            [pd.to_datetime(dt(1999, 1, 1)), 2.25, 'Account2', 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 2.25, 'Account2', 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 3.25, 'Account1', 'Account2'],
+            [pd.to_datetime(dt(1970, 1, 1)), 1.25, 'Account2', 'Account1'],
+            [pd.to_datetime(dt(1970, 1, 1)), 5.25, 'Account1', 'Account2'],
         ],
         columns=['date', 'price', 'to_account', 'from_account']
     )
@@ -150,6 +150,15 @@ def _expenses():
     items = {
         'account': _accounts_data(),
         'expense': _expenses_data(),
+    }
+    return items
+
+
+@pytest.fixture
+def _transactions():
+    items = {
+        'account': _accounts_data(),
+        'transaction': _transactions_data(),
     }
     return items
 
