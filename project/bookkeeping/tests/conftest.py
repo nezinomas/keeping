@@ -126,7 +126,7 @@ def _data():
 
 
 @pytest.fixture
-def _data_incomes():
+def _incomes():
     items = {
         'account': _accounts_data(),
         'income': _incomes_data(),
