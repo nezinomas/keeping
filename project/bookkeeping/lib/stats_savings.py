@@ -60,7 +60,6 @@ class StatsSavings(object):
 
         cb.calc(self._data.savings_close_from_past, '-', 'past_amount')
 
-
         self._balance.incomes = self._balance.incomes + self._balance.past_amount
         self._balance.fees = self._balance.fees + self._balance.past_fee
 
