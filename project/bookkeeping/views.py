@@ -7,7 +7,7 @@ from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..savings.models import Saving, SavingType
-from ..transactions.models import Transaction
+from ..transactions.models import Transaction, SavingChange, SavingClose
 from .lib.get_data import GetObjects
 from .lib.stats_accounts import StatsAccounts
 from .lib.stats_savings import StatsSavings
@@ -15,7 +15,10 @@ from .lib.stats_savings import StatsSavings
 
 @login_required()
 def index(request):
-    objects = GetObjects([Account, Income, Expense, Saving, SavingType, Transaction])
+    objects = GetObjects([
+        Account, Income, Expense, Transaction,
+        SavingType, Saving, SavingChange, SavingClose
+    ])
 
     accounts = StatsAccounts(request.user.profile.year, objects.data)
     savings = StatsSavings(request.user.profile.year, objects.data)
