@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
+from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
+
 from ..accounts.models import Account
 from ..expenses.models import Expense
 from ..incomes.models import Income
@@ -26,3 +28,8 @@ def index(request):
     }
 
     return render(request, 'bookkeeping/main.html', context=context)
+
+
+@login_required()
+def saving_worth_new(request):
+    pass
