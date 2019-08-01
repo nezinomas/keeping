@@ -45,32 +45,7 @@
     </div>
 
     <div class="row">
-        <div class="col">
-            <table class="table table-striped table-hover">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Fondas</th>
-                        <th class="text-right">01.01<br>pevesta</th>
-                        <th class="text-right">01.01<br>mokesčiai</th>
-                        <th class="text-right">Pervesta</th>
-                        <th class="text-right">Mokesčiai</th>
-                        <th class="text-right">Pirkimo suma</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for account, stats in savings.items %}
-                    <tr>
-                        <td>{{ account }}</td>
-                        {% td stats.past_amount width='110rem' %}
-                        {% td stats.past_fee width='110rem' %}
-                        {% td stats.incomes width='110rem' %}
-                        {% td stats.fees width='110rem' %}
-                        {% td stats.invested width='110rem' %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        <div class="col">{{ savings }}</div>
     </div>
 </div>
 

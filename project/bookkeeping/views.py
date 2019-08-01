@@ -1,7 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from django.template.loader import render_to_string
 
 from ..accounts.models import Account
+from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..savings.models import Saving, SavingType
@@ -23,7 +25,10 @@ def index(request):
 
     context = {
         'accounts': accounts.balance,
-        'savings': savings.balance,
+        'savings': render_to_string(
+            'bookkeeping/includes/partial_savings.html',
+            {'savings': savings.balance}
+        ),
         'past_amount': accounts.past_amount,
         'current_amount': accounts.current_amount,
     }
