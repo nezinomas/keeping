@@ -84,7 +84,7 @@ class StatsSavings(object):
         except:
             return
 
-        _idx = _df.index.tolist()
+        _idx = self._balance.index.tolist()
 
         for i in _idx:
             self._balance.at[i, 'market_value'] = _df.at[i, 'price']
