@@ -30,6 +30,10 @@ class FilterDf(object):
         return self._filter_df('saving', 'eq')
 
     @property
+    def savings_worth(self):
+        return self._filter_latest('savingworth')
+
+    @property
     def savings_past(self):
         return self._filter_df('saving', 'lt')
 
@@ -120,6 +124,17 @@ class FilterDf(object):
             df = df[df['date'].dt.year.eq(self._year)]
 
         return df
+
+    def _filter_latest(self, model_name):
+        df = self._data.get(model_name)
+
+        if not isinstance(df, pd.DataFrame):
+            return
+
+        # get id of rows with latest records
+        idx = df.groupby(by='saving_type')['date'].idxmax()
+
+        return df.loc[idx]
 
     def _copy_column(self, df, old_name, new_name):
         if not isinstance(df, pd.DataFrame):
