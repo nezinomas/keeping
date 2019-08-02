@@ -219,3 +219,12 @@ def _data_savings():
         'savingclose': _savings_close_data(),
     }
     return items
+
+
+@pytest.fixture
+def _data_savings_only():
+    items = {
+        'savingtype': _savings_type_data(),
+        'saving': _savings_data(),
+    }
+    return items

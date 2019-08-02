@@ -41,6 +41,29 @@ def test_savings_year_now(_data_savings):
     assert_(expect, actual)
 
 
+def test_savings_only(_data_savings_only):
+    expect = {
+        'Saving1': {
+            'past_amount': 1.25,
+            'past_fee': 0.25,
+            'incomes': 4.75,
+            'fees': 0.75,
+            'invested': 4.0,
+        },
+        'Saving2': {
+            'past_amount': 0.25,
+            'past_fee': 0.0,
+            'incomes': 2.50,
+            'fees': 0.25,
+            'invested': 2.25,
+        },
+    }
+
+    actual = StatsSavings(1999, _data_savings_only).balance
+
+    assert_(expect, actual)
+
+
 def test_savings_year_past(_data_savings):
     actual = StatsSavings(1970, _data_savings).balance
 
