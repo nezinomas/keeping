@@ -41,10 +41,10 @@ class StatsSavings(object):
         self._balance.loc[:, 'fees'] = 0.00
         self._balance.loc[:, 'invested'] = 0.00
         self._balance.loc[:, 'market_value'] = 0.00
-        self._balance.loc[:, 'profit_from_incomes_proc'] = 0.00
-        self._balance.loc[:, 'profit_from_incomes_sum'] = 0.00
-        self._balance.loc[:, 'profit_from_invested_proc'] = 0.00
-        self._balance.loc[:, 'profit_from_invested_sum'] = 0.00
+        self._balance.loc[:, 'profit_incomes_proc'] = 0.00
+        self._balance.loc[:, 'profit_incomes_sum'] = 0.00
+        self._balance.loc[:, 'profit_invested_proc'] = 0.00
+        self._balance.loc[:, 'profit_invested_sum'] = 0.00
 
     def _calc_balance(self):
         cb = CalcBalance('saving_type', self._balance)
@@ -89,12 +89,12 @@ class StatsSavings(object):
         for i in _idx:
             self._balance.at[i, 'market_value'] = _df.at[i, 'price']
 
-        self._balance.profit_from_incomes_proc = (
+        self._balance.profit_incomes_proc = (
             self._balance.market_value*100/self._balance.incomes)-100
-        self._balance.profit_from_invested_proc = (
+        self._balance.profit_invested_proc = (
             self._balance.market_value*100/self._balance.invested)-100
 
-        self._balance.profit_from_incomes_sum = (
+        self._balance.profit_incomes_sum = (
             self._balance.market_value - self._balance.incomes)
-        self._balance.profit_from_invested_sum = (
+        self._balance.profit_invested_sum = (
             self._balance.market_value - self._balance.invested)
