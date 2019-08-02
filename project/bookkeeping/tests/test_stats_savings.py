@@ -137,3 +137,30 @@ def test_savings_empty():
     actual = StatsSavings(1, {}).balance
 
     assert actual.empty
+
+
+def test_savings_worth(_savings_worth):
+    actual = StatsSavings(1999, _savings_worth).balance
+
+    expect = {
+        'Saving1': {
+            'incomes': 4.75,
+            'invested': 4.0,
+            'market_value': 0.15,
+            'profit_from_incomes_proc': -96.84,
+            'profit_from_incomes_sum': -4.6,
+            'profit_from_invested_proc': -96.25,
+            'profit_from_invested_sum': -3.85,
+        },
+        'Saving2': {
+            'incomes': 2.50,
+            'invested': 2.25,
+            'market_value': 6.15,
+            'profit_from_incomes_proc': 146.0,
+            'profit_from_incomes_sum': 3.65,
+            'profit_from_invested_proc': 173.33,
+            'profit_from_invested_sum': 3.9,
+        },
+    }
+
+    assert_(expect, actual)
