@@ -29,8 +29,6 @@ def test_savings_year_now(_saving_data):
 
 
 def test_savings_only(_saving_data):
-    H.filter_fixture(_saving_data, ['savingtype', 'saving'])
-
     expect = {
         'Saving1': {
             'past_amount': 1.25,
@@ -47,6 +45,7 @@ def test_savings_only(_saving_data):
             'invested': 2.25,
         },
     }
+    H.filter_fixture(_saving_data, ['savingtype', 'saving'])
 
     actual = StatsSavings(1999, _saving_data).balance
 
@@ -54,8 +53,6 @@ def test_savings_only(_saving_data):
 
 
 def test_savings_year_past(_saving_data):
-    actual = StatsSavings(1970, _saving_data).balance
-
     expect = {
         'Saving1': {
             'past_amount': 0.00,
@@ -73,14 +70,12 @@ def test_savings_year_past(_saving_data):
         },
     }
 
+    actual = StatsSavings(1970, _saving_data).balance
+
     H.assert_(expect, actual)
 
 
 def test_savings_change_only(_saving_data):
-    H.filter_fixture(_saving_data, ['savingtype', 'savingchange'])
-
-    actual = StatsSavings(1999, _saving_data).balance
-
     expect = {
         'Saving1': {
             'past_amount': -2.25,
@@ -97,15 +92,14 @@ def test_savings_change_only(_saving_data):
             'invested': 3.30,
         },
     }
+    H.filter_fixture(_saving_data, ['savingtype', 'savingchange'])
+
+    actual = StatsSavings(1999, _saving_data).balance
 
     H.assert_(expect, actual)
 
 
 def test_savings_cloce_only(_saving_data):
-    H.filter_fixture(_saving_data, ['savingtype', 'savingclose'])
-
-    actual = StatsSavings(1999, _saving_data).balance
-
     expect = {
         'Saving1': {
             'past_amount': -0.25,
@@ -122,6 +116,9 @@ def test_savings_cloce_only(_saving_data):
             'invested': 0.0,
         },
     }
+    H.filter_fixture(_saving_data, ['savingtype', 'savingclose'])
+
+    actual = StatsSavings(1999, _saving_data).balance
 
     H.assert_(expect, actual)
 
@@ -133,10 +130,6 @@ def test_savings_empty():
 
 
 def test_savings_worth(_saving_data):
-    H.filter_fixture(_saving_data, ['savingtype', 'saving', 'savingworth'])
-
-    actual = StatsSavings(1999, _saving_data).balance
-
     expect = {
         'Saving1': {
             'incomes': 4.75,
@@ -157,22 +150,15 @@ def test_savings_worth(_saving_data):
             'profit_invested_sum': 3.9,
         },
     }
+    H.filter_fixture(_saving_data, ['savingtype', 'saving', 'savingworth'])
+
+    actual = StatsSavings(1999, _saving_data).balance
 
     H.assert_(expect, actual)
 
 
 def test_savings_worth_missing_market_place(_saving_data):
-    H.filter_fixture(_saving_data, ['savingtype', 'saving', 'savingworth'])
-
-    # in savingworth df get id of rows except Saving1
-    _filter = (_saving_data['savingworth'].saving_type != 'Saving1')
-    _idx = _saving_data['savingworth'][_filter].index
-
-    # drop all rows except Saving1
-    _saving_data['savingworth'].drop(_idx, inplace=True)
-
-    actual = StatsSavings(1999, _saving_data).balance
-
+    # arrange
     expect = {
         'Saving1': {
             'incomes': 4.75,
@@ -193,5 +179,17 @@ def test_savings_worth_missing_market_place(_saving_data):
             'profit_invested_sum': 0.0,
         },
     }
+    H.filter_fixture(_saving_data, ['savingtype', 'saving', 'savingworth'])
 
+    # in savingworth df get id of rows except Saving1
+    _filter = (_saving_data['savingworth'].saving_type != 'Saving1')
+    _idx = _saving_data['savingworth'][_filter].index
+
+    # drop all rows except Saving1
+    _saving_data['savingworth'].drop(_idx, inplace=True)
+
+    # act
+    actual = StatsSavings(1999, _saving_data).balance
+
+    # assert
     H.assert_(expect, actual)
