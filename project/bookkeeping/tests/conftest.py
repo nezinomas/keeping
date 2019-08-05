@@ -173,6 +173,7 @@ def _saving_data():
     }
     return items
 
+
 @pytest.fixture
 def _data():
     items = {
@@ -209,71 +210,5 @@ def _transactions():
     items = {
         'account': _accounts_data(),
         'transaction': _transactions_data(),
-    }
-    return items
-
-
-@pytest.fixture
-def _savings():
-    items = {
-        'account': _accounts_data(),
-        'saving': _savings_data(),
-    }
-    return items
-
-
-@pytest.fixture
-def _savings_close():
-    items = {
-        'account': _accounts_data(),
-        'savingclose': _savings_close_data(),
-    }
-    return items
-
-
-@pytest.fixture
-def _savings_change():
-    items = {
-        'savingtype': _savings_type_data(),
-        'savingchange': _savings_change_data(),
-    }
-    return items
-
-
-@pytest.fixture
-def _data_savings_close():
-    items = {
-        'savingtype': _savings_type_data(),
-        'savingclose': _savings_close_data(),
-    }
-    return items
-
-
-@pytest.fixture
-def _data_savings():
-    items = {
-        'savingtype': _savings_type_data(),
-        'saving': _savings_data(),
-        'savingchange': _savings_change_data(),
-        'savingclose': _savings_close_data(),
-    }
-    return items
-
-
-@pytest.fixture
-def _data_savings_only():
-    items = {
-        'savingtype': _savings_type_data(),
-        'saving': _savings_data(),
-    }
-    return items
-
-
-@pytest.fixture
-def _savings_worth():
-    items = {
-        'savingtype': _savings_type_data(),
-        'saving': _savings_data(),
-        'savingworth': _savings_worth_data(),
     }
     return items
