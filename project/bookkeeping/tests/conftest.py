@@ -150,6 +150,30 @@ def _expenses_data():
 
 
 @pytest.fixture
+def _account_data():
+    items = {
+        'account': _accounts_data(),
+        'income': _incomes_data(),
+        'expense': _expenses_data(),
+        'transaction': _transactions_data(),
+        'saving': _savings_data(),
+        'savingclose': _savings_close_data(),
+    }
+    return items
+
+
+@pytest.fixture
+def _saving_data():
+    items = {
+        'savingtype': _savings_type_data(),
+        'saving': _savings_data(),
+        'savingchange': _savings_change_data(),
+        'savingclose': _savings_close_data(),
+        'savingworth': _savings_worth_data(),
+    }
+    return items
+
+@pytest.fixture
 def _data():
     items = {
         'account': _accounts_data(),
