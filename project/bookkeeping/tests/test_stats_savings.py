@@ -167,11 +167,14 @@ def test_savings_worth(_savings_worth):
 
 
 def test_savings_worth_missing_market_place(_savings_worth):
-    items = _savings_worth
-    id = items['savingworth'][items['savingworth'].saving_type != 'Saving1'].index
-    items['savingworth'].drop(id, inplace=True)
+    # in savingworth df get id of rows except Saving1
+    _filter = (_savings_worth['savingworth'].saving_type != 'Saving1')
+    _idx = _savings_worth['savingworth'][_filter].index
 
-    actual = StatsSavings(1999, items).balance
+    # drop all rows except Saving1
+    _savings_worth['savingworth'].drop(_idx, inplace=True)
+
+    actual = StatsSavings(1999, _savings_worth).balance
 
     expect = {
         'Saving1': {
