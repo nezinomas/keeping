@@ -1,4 +1,5 @@
 import pytest
+
 from ..lib.filter_frame import FilterDf as T
 
 
@@ -13,7 +14,7 @@ def test_empty_data_property_exists():
     assert not actual
 
 
-def test_data(_data_savings):
-    actual = T(1970, _data_savings).savings
+def test_data(_saving_data):
+    actual = T(1970, _saving_data).savings
 
     assert 1.25 == actual.price[0]
