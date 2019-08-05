@@ -1,5 +1,5 @@
 import pytest
-
+import pandas as pd
 from ..lib.stats_savings import StatsSavings
 
 
@@ -160,6 +160,37 @@ def test_savings_worth(_savings_worth):
             'profit_incomes_sum': 3.65,
             'profit_invested_proc': 173.33,
             'profit_invested_sum': 3.9,
+        },
+    }
+
+    assert_(expect, actual)
+
+
+def test_savings_worth_missing_market_place(_savings_worth):
+    items = _savings_worth
+    id = items['savingworth'][items['savingworth'].saving_type != 'Saving1'].index
+    items['savingworth'].drop(id, inplace=True)
+
+    actual = StatsSavings(1999, items).balance
+
+    expect = {
+        'Saving1': {
+            'incomes': 4.75,
+            'invested': 4.0,
+            'market_value': 0.15,
+            'profit_incomes_proc': -96.84,
+            'profit_incomes_sum': -4.6,
+            'profit_invested_proc': -96.25,
+            'profit_invested_sum': -3.85,
+        },
+        'Saving2': {
+            'incomes': 2.50,
+            'invested': 2.25,
+            'market_value': 0.0,
+            'profit_incomes_proc': 0.0,
+            'profit_incomes_sum': 0.0,
+            'profit_invested_proc': 0.0,
+            'profit_invested_sum': 0.0,
         },
     }
 

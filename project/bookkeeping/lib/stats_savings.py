@@ -79,22 +79,56 @@ class StatsSavings(object):
     def _calc_worth(self):
         _df = self._data.savings_worth
 
-        try:
-            _df.set_index('saving_type', inplace=True)
-        except:
+        if not isinstance(_df, pd.DataFrame):
             return
 
-        _idx = self._balance.index.tolist()
+        if _df.empty:
+            return
 
+        _df.set_index('saving_type', inplace=True)
+
+        _idx = _df.index.tolist()
+
+        # copy market values from savings_worth to _balance
         for i in _idx:
             self._balance.at[i, 'market_value'] = _df.at[i, 'price']
 
-        self._balance.profit_incomes_proc = (
-            self._balance.market_value*100/self._balance.incomes)-100
-        self._balance.profit_invested_proc = (
-            self._balance.market_value*100/self._balance.invested)-100
+        # calculate percent of profit/loss
+        self._balance['profit_incomes_proc'] = (
+            self._balance[['market_value', 'incomes']]
+            .apply(self._calc_percent, axis=1)
+        )
 
-        self._balance.profit_incomes_sum = (
-            self._balance.market_value - self._balance.incomes)
-        self._balance.profit_invested_sum = (
-            self._balance.market_value - self._balance.invested)
+        self._balance['profit_invested_proc'] = (
+            self._balance[['market_value', 'invested']]
+            .apply(self._calc_percent, axis=1)
+        )
+
+        # calculate sum of profit/loss
+        self._balance['profit_incomes_sum'] = (
+            self._balance[['market_value', 'incomes']]
+            .apply(self._calc_sum, axis=1)
+        )
+
+        self._balance['profit_invested_sum'] = (
+            self._balance[['market_value', 'invested']]
+            .apply(self._calc_sum, axis=1)
+        )
+
+    def _calc_percent(self, args):
+        market = args[0]
+        invested = args[1]
+
+        if market != 0.0:
+            return (market*100/invested)-100
+        else:
+            return 0.0
+
+    def _calc_sum(self, args):
+        market = args[0]
+        invested = args[1]
+
+        if market != 0.0:
+            return market - invested
+        else:
+            return 0.0
