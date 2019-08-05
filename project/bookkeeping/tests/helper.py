@@ -11,3 +11,10 @@ def assert_(expected, actual):
             msg = f'{saving_type}->{_k}. Expected={expected_val} Actual={actual_val}'
 
             assert expected_val == actual_val, msg
+
+
+def filter_fixture(data, leave_keys):
+    rm_keys = set(data.keys()) - set(leave_keys)
+
+    for key in rm_keys:
+        data.pop(key)
