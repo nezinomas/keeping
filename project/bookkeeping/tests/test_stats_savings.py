@@ -1,21 +1,8 @@
-import pytest
 import pandas as pd
+import pytest
+
 from ..lib.stats_savings import StatsSavings
-
-
-def assert_(expected, actual):
-    for saving_type, arr in expected.items():
-        for _k, expected_val in expected[saving_type].items():
-            actual_val = actual[saving_type][_k]
-
-            try:
-                actual_val = round(float(actual_val), 2)
-            except:
-                pass
-
-            msg = f'{saving_type}->{_k}. Expected={expected_val} Actual={actual_val}'
-
-            assert expected_val == actual_val, msg
+from . import helper as H
 
 
 def test_savings_year_now(_data_savings):
@@ -38,7 +25,7 @@ def test_savings_year_now(_data_savings):
 
     actual = StatsSavings(1999, _data_savings).balance
 
-    assert_(expect, actual)
+    H.assert_(expect, actual)
 
 
 def test_savings_only(_data_savings_only):
@@ -61,7 +48,7 @@ def test_savings_only(_data_savings_only):
 
     actual = StatsSavings(1999, _data_savings_only).balance
 
-    assert_(expect, actual)
+    H.assert_(expect, actual)
 
 
 def test_savings_year_past(_data_savings):
@@ -84,7 +71,7 @@ def test_savings_year_past(_data_savings):
         },
     }
 
-    assert_(expect, actual)
+    H.assert_(expect, actual)
 
 
 def test_savings_change_only(_savings_change):
@@ -107,7 +94,7 @@ def test_savings_change_only(_savings_change):
         },
     }
 
-    assert_(expect, actual)
+    H.assert_(expect, actual)
 
 
 def test_savings_cloce_only(_data_savings_close):
@@ -130,7 +117,7 @@ def test_savings_cloce_only(_data_savings_close):
         },
     }
 
-    assert_(expect, actual)
+    H.assert_(expect, actual)
 
 
 def test_savings_empty():
@@ -163,7 +150,7 @@ def test_savings_worth(_savings_worth):
         },
     }
 
-    assert_(expect, actual)
+    H.assert_(expect, actual)
 
 
 def test_savings_worth_missing_market_place(_savings_worth):
@@ -197,4 +184,4 @@ def test_savings_worth_missing_market_place(_savings_worth):
         },
     }
 
-    assert_(expect, actual)
+    H.assert_(expect, actual)
