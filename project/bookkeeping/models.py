@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
+from django_pandas.managers import DataFrameManager
 
 from ..accounts.models import Account
 from ..savings.models import SavingType
@@ -38,3 +39,4 @@ class SavingWorth(models.Model):
 
     # Managers
     objects = SavingWorthQuerySet.as_manager()
+    pd = DataFrameManager()
