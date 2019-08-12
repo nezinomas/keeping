@@ -19,7 +19,7 @@ def update_context(self, context, action):
             context['url'] = reverse(f'{plural}:{plural}_new')
 
 
-class GetQuerysetMixin():
+class GetQueryset():
     context_object_name = 'items'
 
     def get_queryset(self):
@@ -42,11 +42,11 @@ class GetFormKwargs():
         return kwargs
 
 
-class ListMixin(GetQuerysetMixin, GetFormKwargs, ListView):
+class ListMixin(GetQueryset, GetFormKwargs, ListView):
     pass
 
 
-class CreateMixin(GetQuerysetMixin, GetFormKwargs, CreateView):
+class CreateMixin(GetQueryset, GetFormKwargs, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         update_context(self, context, 'create')
@@ -54,7 +54,7 @@ class CreateMixin(GetQuerysetMixin, GetFormKwargs, CreateView):
         return context
 
 
-class UpdateMixin(GetQuerysetMixin, GetFormKwargs, UpdateView):
+class UpdateMixin(GetQueryset, GetFormKwargs, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         update_context(self, context, 'update')
