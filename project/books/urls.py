@@ -7,17 +7,17 @@ app_name = 'books'
 urlpatterns = [
     path(
         'books/',
-        views.lists,
+        views.Lists.as_view(),
         name='books_list'
     ),
     path(
         'books/new/',
-        views.new,
+        views.New.as_view(),
         name='books_new'
     ),
     path(
         'books/update/<int:pk>/',
-        views.update,
+        views.Update.as_view(),
         name='books_update'
     ),
 ]
