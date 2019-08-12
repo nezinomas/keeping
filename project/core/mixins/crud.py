@@ -2,12 +2,17 @@ from django.shortcuts import reverse
 from django.views.generic import CreateView, ListView, UpdateView
 
 
-def update_context(model, context, action):
-        plural = model._meta.verbose_name_plural
+def update_context(self, context, action):
+        plural = self.model._meta.verbose_name_plural
 
         if action is 'update':
             context['action'] = 'update'
-            context['url'] = reverse(f'{plural}:{plural}_update')
+            context['url'] = (
+                reverse(
+                    f'{plural}:{plural}_update',
+                    kwargs={'pk': self.object.pk}
+                )
+            )
 
         if action is 'create':
             context['action'] = 'insert'
@@ -36,7 +41,7 @@ class ListMixin(GetQuerysetMixin, ListView):
 class CreateMixin(GetQuerysetMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        update_context(self.model, context, 'create')
+        update_context(self, context, 'create')
 
         return context
 
@@ -44,6 +49,6 @@ class CreateMixin(GetQuerysetMixin, CreateView):
 class UpdateMixin(GetQuerysetMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        update_context(self.model, context, 'update')
+        update_context(self, context, 'update')
 
         return context
