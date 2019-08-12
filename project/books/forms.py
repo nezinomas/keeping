@@ -20,7 +20,7 @@ class BookForm(forms.ModelForm):
 
     field_order = ['started', 'ended', 'author', 'title']
 
-    def __init__(self, extra={}, *args, **kwargs):
+    def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # inital values
