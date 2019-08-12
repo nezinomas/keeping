@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import reverse
 from django.views.generic import CreateView, ListView, UpdateView
 
@@ -42,11 +43,11 @@ class GetFormKwargs():
         return kwargs
 
 
-class ListMixin(GetQueryset, GetFormKwargs, ListView):
+class ListMixin(GetQueryset, GetFormKwargs, LoginRequiredMixin, ListView):
     pass
 
 
-class CreateMixin(GetQueryset, GetFormKwargs, CreateView):
+class CreateMixin(GetQueryset, GetFormKwargs, LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         update_context(self, context, 'create')
@@ -54,7 +55,7 @@ class CreateMixin(GetQueryset, GetFormKwargs, CreateView):
         return context
 
 
-class UpdateMixin(GetQueryset, GetFormKwargs, UpdateView):
+class UpdateMixin(GetQueryset, GetFormKwargs, LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         update_context(self, context, 'update')
