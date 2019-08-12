@@ -34,11 +34,19 @@ class GetQuerysetMixin():
         return qs
 
 
-class ListMixin(GetQuerysetMixin, ListView):
+class GetFormKwargs():
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['year'] = self.request.user.profile.year
+
+        return kwargs
+
+
+class ListMixin(GetQuerysetMixin, GetFormKwargs, ListView):
     pass
 
 
-class CreateMixin(GetQuerysetMixin, CreateView):
+class CreateMixin(GetQuerysetMixin, GetFormKwargs, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         update_context(self, context, 'create')
@@ -46,7 +54,7 @@ class CreateMixin(GetQuerysetMixin, CreateView):
         return context
 
 
-class UpdateMixin(GetQuerysetMixin, UpdateView):
+class UpdateMixin(GetQuerysetMixin, GetFormKwargs, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         update_context(self, context, 'update')
