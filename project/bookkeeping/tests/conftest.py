@@ -1,4 +1,5 @@
 from datetime import date as dt
+from datetime import datetime as dtt
 from decimal import Decimal
 
 import pandas as pd
@@ -83,6 +84,20 @@ def _savings_data():
     return df
 
 
+def _savings_worth_data():
+    df = pd.DataFrame(
+        [
+            [pd.to_datetime(dtt(1970, 1, 1)), 1.25, 'Saving1'],
+            [pd.to_datetime(dtt(1999, 1, 1)), 1.0, 'Saving1'],
+            [pd.to_datetime(dtt(1999, 1, 1)), 1.0, 'Saving2'],
+            [pd.to_datetime(dtt(1999, 1, 31, 1, 1, 1)), 0.15, 'Saving1'],
+            [pd.to_datetime(dtt(1999, 1, 31, 1, 1, 2)), 6.15, 'Saving2'],
+        ],
+        columns=['date', 'price', 'saving_type']
+    )
+    return df
+
+
 def _transactions_data():
     df = pd.DataFrame(
         [
@@ -135,7 +150,7 @@ def _expenses_data():
 
 
 @pytest.fixture
-def _data():
+def _account_data():
     items = {
         'account': _accounts_data(),
         'income': _incomes_data(),
@@ -148,74 +163,12 @@ def _data():
 
 
 @pytest.fixture
-def _incomes():
-    items = {
-        'account': _accounts_data(),
-        'income': _incomes_data(),
-    }
-    return items
-
-
-@pytest.fixture
-def _expenses():
-    items = {
-        'account': _accounts_data(),
-        'expense': _expenses_data(),
-    }
-    return items
-
-
-@pytest.fixture
-def _transactions():
-    items = {
-        'account': _accounts_data(),
-        'transaction': _transactions_data(),
-    }
-    return items
-
-
-@pytest.fixture
-def _savings():
-    items = {
-        'account': _accounts_data(),
-        'saving': _savings_data(),
-    }
-    return items
-
-
-@pytest.fixture
-def _savings_close():
-    items = {
-        'account': _accounts_data(),
-        'savingclose': _savings_close_data(),
-    }
-    return items
-
-
-@pytest.fixture
-def _savings_change():
-    items = {
-        'savingtype': _savings_type_data(),
-        'savingchange': _savings_change_data(),
-    }
-    return items
-
-
-@pytest.fixture
-def _data_savings_close():
-    items = {
-        'savingtype': _savings_type_data(),
-        'savingclose': _savings_close_data(),
-    }
-    return items
-
-
-@pytest.fixture
-def _data_savings():
+def _saving_data():
     items = {
         'savingtype': _savings_type_data(),
         'saving': _savings_data(),
         'savingchange': _savings_change_data(),
         'savingclose': _savings_close_data(),
+        'savingworth': _savings_worth_data(),
     }
     return items

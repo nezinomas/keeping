@@ -34,3 +34,8 @@ def index(request):
     }
 
     return render(request, 'bookkeeping/main.html', context=context)
+
+
+@login_required()
+def saving_worth_new(request):
+    pass

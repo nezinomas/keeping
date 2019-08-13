@@ -2,15 +2,15 @@ from django.db import models
 from django.core.validators import MinLengthValidator
 
 
-class BookManager(models.Manager):
-    def items(self, *args, **kwargs):
-        qs = self.get_queryset()
+class BooksQuerySet(models.QuerySet):
+    def qs(self):
+        return self.get_queryset()
 
-        if 'year' in kwargs:
-            year = kwargs['year']
-            qs = qs.filter(started__year=year)
+    def year(self, year):
+        return self.filter(started__year=year)
 
-        return qs
+    def items(self):
+        return self.all()
 
 
 class Book(models.Model):
@@ -28,7 +28,8 @@ class Book(models.Model):
         validators=[MinLengthValidator(3)]
     )
 
-    objects = BookManager()
+    # objects = BookManager()
+    objects = BooksQuerySet.as_manager()
 
     class Meta:
         ordering = ['-started', 'author']

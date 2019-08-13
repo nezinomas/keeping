@@ -147,12 +147,17 @@ class CrudMixin(object):
             else:
                 self._data['form_is_valid'] = False
 
+        files_url = []
+        for js in form.media._js:  # for all the scripts used by the form
+            files_url.append(form.media.absolute_path(js))  # we retrieve their url
+
         self._data.update({
             'html_form': render_to_string(
                 self._settings.form_template,
                 context,
                 self._request
-            )
+            ),
+            'js': files_url,
         })
 
         if 'extra' in context:
