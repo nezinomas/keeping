@@ -39,10 +39,7 @@ class StatsAccounts(object):
         return self._balance.balance.sum() if not self._balance.empty else None
 
     def _prepare_balance(self):
-        try:
-            self._balance.set_index(['title'], inplace=True)
-        except:
-            pass
+        self._balance.set_index(['title'], inplace=True)
 
         # if not self._balance.empty:
         self._balance.loc[:, 'past'] = 0.00

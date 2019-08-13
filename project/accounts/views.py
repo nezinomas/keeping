@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
 
-# from ..core.mixins.save_data_mixin import SaveDataMixin
 from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
 from .forms import AccountForm
 from .models import Account
