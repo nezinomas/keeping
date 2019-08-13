@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import reverse
+from django.template.loader import render_to_string
 from django.views.generic import CreateView, ListView, UpdateView
 
 
@@ -44,7 +45,20 @@ class GetFormKwargs():
 
 
 class ListMixin(GetQueryset, GetFormKwargs, LoginRequiredMixin, ListView):
-    pass
+    def dispatch(self, request, *args, **kwargs):
+        if 'as_string' in kwargs:
+            return self._render_to_string(request)
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def _render_to_string(self, request):
+        return (
+            render_to_string(
+                self.template_name,
+                {self.context_object_name: self.get_queryset()},
+                request
+            )
+        )
 
 
 class CreateMixin(GetQueryset, GetFormKwargs, LoginRequiredMixin, CreateView):
