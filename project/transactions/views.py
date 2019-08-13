@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, reverse, render
 from django.template.loader import render_to_string
 
-from ..accounts.views import lists as accounts_list
+from ..accounts.views import Lists as accounts_list
 from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
 from .forms import TransactionForm, SavingCloseForm, SavingChangeForm
 from .models import Transaction, SavingChange, SavingClose, SavingType
@@ -28,7 +28,7 @@ def settings():
 @login_required()
 def index(request):
     context = {
-        'categories': accounts_list(request),
+        'categories': accounts_list.as_view()(request, as_string=True),
         'transactions': lists(request),
         'savings_close': savings_close_lists(request),
         'savings_change': savings_change_lists(request),

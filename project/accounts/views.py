@@ -1,41 +1,30 @@
 from django.shortcuts import get_object_or_404, render, reverse
 from django.template.loader import render_to_string
 
-from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
+from ..core.mixins.ajax import AjaxCreateUpdateMixin
+from ..core.mixins.crud import CreateMixin, ListMixin, UpdateMixin
 from .forms import AccountForm
 from .models import Account
 
 
-def settings():
-    obj = CrudMixinSettings()
-
-    obj.model = Account
-
-    obj.form = AccountForm
-    obj.form_template = 'accounts/includes/partial_accounts_form.html'
-
-    obj.items_template = 'accounts/includes/partial_accounts_list.html'
-    obj.items_template_var_name = 'categories'
-
-    obj.url_new = 'accounts:accounts_new'
-    obj.url_update = 'accounts:accounts_update'
-
-    return obj
+class AccountMixin():
+    model = Account
+    form_class = AccountForm
+    template_name = 'accounts/includes/partial_accounts_form.html'
 
 
-def lists(request):
-    return CrudMixin(request, settings()).lists_as_str()
+class Lists(ListMixin):
+    model = Account
+    template_name = 'accounts/includes/partial_accounts_list.html'
+    context_object_name = 'categories'
 
 
-def new(request):
-    return CrudMixin(request, settings()).new()
+class New(AccountMixin, AjaxCreateUpdateMixin, CreateMixin):
+    pass
 
 
-def update(request, pk):
-    _settings = settings()
-    _settings.item_id = pk
-
-    return CrudMixin(request, _settings).update()
+class Update(AccountMixin, AjaxCreateUpdateMixin, UpdateMixin):
+    pass
 
 
 def load_to_account(request):

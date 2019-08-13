@@ -8,17 +8,17 @@ app_name = 'accounts'
 urlpatterns = [
     path(
         'accounts/',
-        views.lists,
+        views.Lists.as_view(),
         name='accounts_list'
     ),
     path(
         'accounts/new/',
-        views.new,
+        views.New.as_view(),
         name='accounts_new'
     ),
     path(
         'accounts/update/<int:pk>/',
-        views.update,
+        views.Update.as_view(),
         name='accounts_update'
     ),
     path(
