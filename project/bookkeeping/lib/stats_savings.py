@@ -30,10 +30,7 @@ class StatsSavings(object):
         )
 
     def _prepare_balance(self):
-        try:
-            self._balance.set_index(['title'], inplace=True)
-        except:
-            pass
+        self._balance.set_index(['title'], inplace=True)
 
         self._balance.loc[:, 'past_amount'] = 0.00
         self._balance.loc[:, 'past_fee'] = 0.00

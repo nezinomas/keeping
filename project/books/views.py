@@ -1,39 +1,23 @@
-from django.shortcuts import get_object_or_404, render, reverse
-from django.template.loader import render_to_string
-
-from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
-
-from .models import Book
+from ..core.mixins.ajax import AjaxCreateUpdateMixin
+from ..core.mixins.crud import CreateMixin, ListMixin, UpdateMixin
 from .forms import BookForm
+from .models import Book
 
 
-def settings():
-    obj = CrudMixinSettings()
-
-    obj.model = Book
-
-    obj.form = BookForm
-    obj.form_template = 'books/includes/partial_books_form.html'
-
-    obj.items_template = 'books/includes/partial_books_list.html'
-    obj.items_template_main = 'books/books_list.html'
-
-    obj.url_new = 'books:books_new'
-    obj.url_update = 'books:books_update'
-
-    return obj
+class BookMixin():
+    model = Book
+    form_class = BookForm
+    template_name = 'books/includes/partial_books_form.html'
 
 
-def lists(request):
-    return CrudMixin(request, settings()).lists_as_html()
+class Lists(ListMixin):
+    model = Book
+    template_name = 'books/books_list.html'
 
 
-def new(request):
-    return CrudMixin(request, settings()).new()
+class New(BookMixin, AjaxCreateUpdateMixin, CreateMixin):
+    pass
 
 
-def update(request, pk):
-    _settings = settings()
-    _settings.item_id = pk
-
-    return CrudMixin(request, _settings).update()
+class Update(BookMixin, AjaxCreateUpdateMixin, UpdateMixin):
+    pass
