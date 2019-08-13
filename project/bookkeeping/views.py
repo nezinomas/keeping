@@ -3,11 +3,12 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 
 from ..accounts.models import Account
-from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
+from ..core.mixins.ajax import AjaxCreateUpdateMixin
+from ..core.mixins.crud import CreateMixin, ListMixin, UpdateMixin
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..savings.models import Saving, SavingType
-from ..transactions.models import Transaction, SavingChange, SavingClose
+from ..transactions.models import SavingChange, SavingClose, Transaction
 from .lib.get_data import GetObjects
 from .lib.stats_accounts import StatsAccounts
 from .lib.stats_savings import StatsSavings
