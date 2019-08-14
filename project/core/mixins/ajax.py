@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 
-from .crud import GetQueryset
+from .get import GetQueryset
 
 
 class AjaxCreateUpdateMixin():
