@@ -1,138 +1,80 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, reverse, render
-from django.template.loader import render_to_string
+from django.shortcuts import render
 
 from ..accounts.views import Lists as accounts_list
-from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
-from .forms import TransactionForm, SavingCloseForm, SavingChangeForm
-from .models import Transaction, SavingChange, SavingClose, SavingType
+from ..core.mixins.crud import CreateAjaxMixin, ListMixin, UpdateAjaxMixin
 
-
-def settings():
-    obj = CrudMixinSettings()
-
-    obj.model = Transaction
-
-    obj.form = TransactionForm
-    obj.form_template = 'transactions/includes/partial_transactions_form.html'
-
-    obj.items_template = 'transactions/includes/partial_transactions_list.html'
-    obj.items_template_main = 'transactions/transactions_list.html'
-
-    obj.url_new = 'transactions:transactions_new'
-    obj.url_update = 'transactions:transactions_update'
-
-    return obj
+from . import forms, models
 
 
 @login_required()
 def index(request):
     context = {
         'categories': accounts_list.as_view()(request, as_string=True),
-        'transactions': lists(request),
-        'savings_close': savings_close_lists(request),
-        'savings_change': savings_change_lists(request),
+        'transactions': Lists.as_view()(request, as_string=True),
+        'savings_close': SavingsCloseLists.as_view()(request, as_string=True),
+        'savings_change': SavingsChangeLists.as_view()(request, as_string=True),
     }
-    return CrudMixin(request, settings()).lists_as_html(context)
+    return render(request, 'transactions/transactions_list.html', context)
 
 
-@login_required()
-def lists(request):
-    return CrudMixin(request, settings()).lists_as_str()
-
-
-@login_required()
-def new(request):
-    return CrudMixin(request, settings()).new()
-
-
-@login_required()
-def update(request, pk):
-    _settings = settings()
-    _settings.item_id = pk
-
-    return CrudMixin(request, _settings).update()
-
-
-#
-# Savings Transactions from Savings to regular Account
-#
-def close_settings():
-    obj = CrudMixinSettings()
-
-    obj.model = SavingClose
-
-    obj.form = SavingCloseForm
-    obj.form_template = 'transactions/includes/partial_savings_close_form.html'
-
-    obj.items_template = 'transactions/includes/partial_savings_close.html'
-
-    obj.url_new = 'transactions:savings_close_new'
-    obj.url_update = 'transactions:savings_close_update'
-
-    return obj
-
-
-@login_required()
-def savings_close_lists(request):
-    return CrudMixin(request, close_settings()).lists_as_str()
-
-
-@login_required()
-def savings_close_new(request):
-    return CrudMixin(request, close_settings()).new()
-
-
-@login_required()
-def savings_close_update(request, pk):
-    _settings = close_settings()
-    _settings.item_id = pk
-
-    return CrudMixin(request, _settings).update()
-
-
-#
-# Savings Transactions betwenn Savings accounts
-#
-def change_settings():
-    obj = CrudMixinSettings()
-
-    obj.model = SavingChange
-
-    obj.form = SavingChangeForm
-    obj.form_template = 'transactions/includes/partial_savings_change_form.html'
-
-    obj.items_template = 'transactions/includes/partial_savings_change.html'
-
-    obj.url_new = 'transactions:savings_change_new'
-    obj.url_update = 'transactions:savings_change_update'
-
-    return obj
-
-
-@login_required()
-def savings_change_lists(request):
-    return CrudMixin(request, change_settings()).lists_as_str()
-
-
-@login_required()
-def savings_change_new(request):
-    return CrudMixin(request, change_settings()).new()
-
-
-@login_required()
-def savings_change_update(request, pk):
-    _settings = change_settings()
-    _settings.item_id = pk
-
-    return CrudMixin(request, _settings).update()
-
-
+# SavingType dropdown
 def load_saving_type(request):
     id = request.GET.get('id')
-    objects = SavingType.objects.exclude(pk=id)
+    objects = models.SavingType.objects.exclude(pk=id)
     return render(
         request,
         'core/dropdown.html',
         {'objects': objects}
     )
+
+
+#
+# Transactions between Accounts
+#
+class Lists(ListMixin):
+    model = models.Transaction
+
+
+class New(CreateAjaxMixin):
+    model = models.Transaction
+    form_class = forms.TransactionForm
+
+
+class Update(UpdateAjaxMixin):
+    model = models.Transaction
+    form_class = forms.TransactionForm
+
+
+#
+# Savings Transactions from Savings to regular Accounts
+#
+class SavingsCloseLists(ListMixin):
+    model = models.SavingClose
+
+
+class SavingsCloseNew(CreateAjaxMixin):
+    model = models.SavingClose
+    form_class = forms.SavingCloseForm
+
+
+class SavingsCloseUpdate(UpdateAjaxMixin):
+    model = models.SavingClose
+    form_class = forms.SavingCloseForm
+
+
+#
+# Savings Transactions between Savings accounts
+#
+class SavingsChangeLists(ListMixin):
+    model = models.SavingChange
+
+
+class SavingsChangeNew(CreateAjaxMixin):
+    model = models.SavingChange
+    form_class = forms.SavingChangeForm
+
+
+class SavingsChangeUpdate(UpdateAjaxMixin):
+    model = models.SavingChange
+    form_class = forms.SavingChangeForm
