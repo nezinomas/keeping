@@ -4,7 +4,7 @@ from django.views.generic import CreateView, ListView, UpdateView
 
 from ..mixins.ajax import AjaxCreateUpdateMixin
 from .get import GetFormKwargs, GetQueryset
-from .helpers import update_context
+from .helpers import update_context, format_url_name
 
 
 class ListMixin(GetQueryset, GetFormKwargs, LoginRequiredMixin, ListView):
@@ -14,10 +14,20 @@ class ListMixin(GetQueryset, GetFormKwargs, LoginRequiredMixin, ListView):
 
         return super().dispatch(request, *args, **kwargs)
 
+    def get_template_names(self):
+        if self.template_name is None:
+            plural = format_url_name(self.model._meta.verbose_name)
+            app_name = self.request.resolver_match.app_name
+            return [f'{app_name}/includes/partial_{plural}_list.html']
+        else:
+            return [self.template_name]
+
     def _render_to_string(self, request):
+        template_name = self.get_template_names()
+
         return (
             render_to_string(
-                self.template_name,
+                template_name,
                 {self.context_object_name: self.get_queryset()},
                 request
             )
