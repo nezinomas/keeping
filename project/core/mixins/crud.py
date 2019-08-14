@@ -3,6 +3,7 @@ from django.shortcuts import reverse
 from django.template.loader import render_to_string
 from django.views.generic import CreateView, ListView, UpdateView
 
+from .get import GetFormKwargs, GetQueryset
 
 def update_context(self, context, action):
         plural = self.model._meta.verbose_name_plural
@@ -21,7 +22,6 @@ def update_context(self, context, action):
             context['url'] = reverse(f'{plural}:{plural}_new')
 
 
-class GetQueryset():
     context_object_name = 'items'
 
     def get_queryset(self):
@@ -36,7 +36,6 @@ class GetQueryset():
         return qs
 
 
-class GetFormKwargs():
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['year'] = self.request.user.profile.year
