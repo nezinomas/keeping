@@ -9,16 +9,6 @@ class AjaxCreateUpdateMixin():
     ajax_form = None
     ajax_list = None
 
-    def _set_template_name(self, request):
-        app_name = self.request.resolver_match.app_name
-        plural = format_url_name(self.model._meta.verbose_name)
-
-        if not self.ajax_form:
-            self.ajax_form = f'{app_name}/includes/partial_{plural}_form.html'
-
-        if not self.ajax_list:
-            self.ajax_list = f'{app_name}/includes/partial_{plural}_list.html'
-
     def get(self, request, *args, **kwargs):
         if 'pk' not in self.kwargs:
             self.object = None
@@ -85,3 +75,13 @@ class AjaxCreateUpdateMixin():
             js_url.append(form.media.absolute_path(js))
 
         data['js'] = js_url
+
+    def _set_template_name(self, request):
+        app_name = self.request.resolver_match.app_name
+        plural = format_url_name(self.model._meta.verbose_name)
+
+        if not self.ajax_form:
+            self.ajax_form = f'{app_name}/includes/partial_{plural}_form.html'
+
+        if not self.ajax_list:
+            self.ajax_list = f'{app_name}/includes/partial_{plural}_list.html'
