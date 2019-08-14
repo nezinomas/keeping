@@ -26,6 +26,10 @@ class AjaxCreateUpdateMixin():
         else:
             return super().get(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        self._set_template_name(request)
+        return super().post(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context[self.context_object_name] = super(GetQueryset, self).get_queryset()
