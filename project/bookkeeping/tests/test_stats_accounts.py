@@ -2,11 +2,10 @@ import pytest
 
 from ...core.tests.utils import _round
 from ..lib.stats_accounts import StatsAccounts
+from . import helper as H
 
 
-def test_balance(_data):
-    actual = StatsAccounts(1999, _data).balance
-
+def test_balance(_account_data):
     expect = {
         'Account1': {
             'past': 5.75,
@@ -22,12 +21,12 @@ def test_balance(_data):
         },
     }
 
+    actual = StatsAccounts(1999, _account_data).balance
+
     assert expect == actual
 
 
-def test_balance_only_incomes(_incomes):
-    actual = StatsAccounts(1999, _incomes).balance
-
+def test_balance_only_incomes(_account_data):
     expect = {
         'Account1': {
             'past': 5.25,
@@ -42,13 +41,14 @@ def test_balance_only_incomes(_incomes):
             'balance': 8.0,
         },
     }
+    H.filter_fixture(_account_data, ['account', 'income',])
+
+    actual = StatsAccounts(1999, _account_data).balance
 
     assert expect == actual
 
 
-def test_balance_only_expenses(_expenses):
-    actual = StatsAccounts(1999, _expenses).balance
-
+def test_balance_only_expenses(_account_data):
     expect = {
         'Account1': {
             'past': -2.50,
@@ -63,13 +63,14 @@ def test_balance_only_expenses(_expenses):
             'balance': -3.5,
         },
     }
+    H.filter_fixture(_account_data, ['account', 'expense'])
+
+    actual = StatsAccounts(1999, _account_data).balance
 
     assert expect == actual
 
 
-def test_balance_only_transactions(_transactions):
-    actual = StatsAccounts(1999, _transactions).balance
-
+def test_balance_only_transactions(_account_data):
     expect = {
         'Account1': {
             'past': 4.0,
@@ -84,13 +85,14 @@ def test_balance_only_transactions(_transactions):
             'balance': -2.75,
         },
     }
+    H.filter_fixture(_account_data, ['account', 'transaction'])
+
+    actual = StatsAccounts(1999, _account_data).balance
 
     assert expect == actual
 
 
-def test_balance_only_savings(_savings):
-    actual = StatsAccounts(1999, _savings).balance
-
+def test_balance_only_savings(_account_data):
     expect = {
         'Account1': {
             'past': -1.25,
@@ -105,13 +107,14 @@ def test_balance_only_savings(_savings):
             'balance': -2.50,
         },
     }
+    H.filter_fixture(_account_data, ['account', 'saving'])
+
+    actual = StatsAccounts(1999, _account_data).balance
 
     assert expect == actual
 
 
-def test_balance_only_savings_close(_savings_close):
-    actual = StatsAccounts(1999, _savings_close).balance
-
+def test_balance_only_savings_close(_account_data):
     expect = {
         'Account1': {
             'past': 0.25,
@@ -126,27 +129,30 @@ def test_balance_only_savings_close(_savings_close):
             'balance': 0.0,
         },
     }
+    H.filter_fixture(_account_data, ['account', 'savingclose'])
+
+    actual = StatsAccounts(1999, _account_data).balance
 
     assert expect == actual
 
 
-def test_total_past_amount(_data):
-    actual = StatsAccounts(1999, _data).past_amount
+def test_total_past_amount(_account_data):
     expect = 3.75
 
+    actual = StatsAccounts(1999, _account_data).past_amount
+
     assert expect == actual
 
 
-def test_total_now_mount(_data):
-    actual = StatsAccounts(1999, _data).current_amount
+def test_total_now_mount(_account_data):
     expect = 3.25
 
+    actual = StatsAccounts(1999, _account_data).current_amount
+
     assert expect == actual
 
 
-def test_balance_past(_data):
-    actual = StatsAccounts(1970, _data).balance
-
+def test_balance_past(_account_data):
     expect = {
         'Account1': {
             'past': 0.0,
@@ -162,12 +168,15 @@ def test_balance_past(_data):
         },
     }
 
+    actual = StatsAccounts(1970, _account_data).balance
+
     assert expect == actual
 
 
-def test_total_past_amount_past(_data):
-    actual = StatsAccounts(1970, _data).past_amount
+def test_total_past_amount_past(_account_data):
     expect = 0
+
+    actual = StatsAccounts(1970, _account_data).past_amount
 
     assert expect == actual
 

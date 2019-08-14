@@ -1,24 +1,11 @@
+import pandas as pd
 import pytest
 
 from ..lib.stats_savings import StatsSavings
+from . import helper as H
 
 
-def assert_(expected, actual):
-    for saving_type, arr in expected.items():
-        for _k, expected_val in expected[saving_type].items():
-            actual_val = actual[saving_type][_k]
-
-            try:
-                actual_val = round(float(actual_val), 2)
-            except:
-                pass
-
-            msg = f'{saving_type}->{_k}. Expected={expected_val} Actual={actual_val}'
-
-            assert expected_val == actual_val, msg
-
-
-def test_savings_year_now(_data_savings):
+def test_savings_year_now(_saving_data):
     expect = {
         'Saving1': {
             'past_amount': -1.25,
@@ -36,12 +23,12 @@ def test_savings_year_now(_data_savings):
         },
     }
 
-    actual = StatsSavings(1999, _data_savings).balance
+    actual = StatsSavings(1999, _saving_data).balance
 
-    assert_(expect, actual)
+    H.assert_(expect, actual)
 
 
-def test_savings_only(_data_savings_only):
+def test_savings_only(_saving_data):
     expect = {
         'Saving1': {
             'past_amount': 1.25,
@@ -58,15 +45,14 @@ def test_savings_only(_data_savings_only):
             'invested': 2.25,
         },
     }
+    H.filter_fixture(_saving_data, ['savingtype', 'saving'])
 
-    actual = StatsSavings(1999, _data_savings_only).balance
+    actual = StatsSavings(1999, _saving_data).balance
 
-    assert_(expect, actual)
+    H.assert_(expect, actual)
 
 
-def test_savings_year_past(_data_savings):
-    actual = StatsSavings(1970, _data_savings).balance
-
+def test_savings_year_past(_saving_data):
     expect = {
         'Saving1': {
             'past_amount': 0.00,
@@ -84,12 +70,12 @@ def test_savings_year_past(_data_savings):
         },
     }
 
-    assert_(expect, actual)
+    actual = StatsSavings(1970, _saving_data).balance
+
+    H.assert_(expect, actual)
 
 
-def test_savings_change_only(_savings_change):
-    actual = StatsSavings(1999, _savings_change).balance
-
+def test_savings_change_only(_saving_data):
     expect = {
         'Saving1': {
             'past_amount': -2.25,
@@ -106,13 +92,14 @@ def test_savings_change_only(_savings_change):
             'invested': 3.30,
         },
     }
+    H.filter_fixture(_saving_data, ['savingtype', 'savingchange'])
 
-    assert_(expect, actual)
+    actual = StatsSavings(1999, _saving_data).balance
+
+    H.assert_(expect, actual)
 
 
-def test_savings_cloce_only(_data_savings_close):
-    actual = StatsSavings(1999, _data_savings_close).balance
-
+def test_savings_cloce_only(_saving_data):
     expect = {
         'Saving1': {
             'past_amount': -0.25,
@@ -129,8 +116,11 @@ def test_savings_cloce_only(_data_savings_close):
             'invested': 0.0,
         },
     }
+    H.filter_fixture(_saving_data, ['savingtype', 'savingclose'])
 
-    assert_(expect, actual)
+    actual = StatsSavings(1999, _saving_data).balance
+
+    H.assert_(expect, actual)
 
 
 def test_savings_empty():
@@ -139,9 +129,7 @@ def test_savings_empty():
     assert actual.empty
 
 
-def test_savings_worth(_savings_worth):
-    actual = StatsSavings(1999, _savings_worth).balance
-
+def test_savings_worth(_saving_data):
     expect = {
         'Saving1': {
             'incomes': 4.75,
@@ -162,5 +150,46 @@ def test_savings_worth(_savings_worth):
             'profit_invested_sum': 3.9,
         },
     }
+    H.filter_fixture(_saving_data, ['savingtype', 'saving', 'savingworth'])
 
-    assert_(expect, actual)
+    actual = StatsSavings(1999, _saving_data).balance
+
+    H.assert_(expect, actual)
+
+
+def test_savings_worth_missing_market_place(_saving_data):
+    # arrange
+    expect = {
+        'Saving1': {
+            'incomes': 4.75,
+            'invested': 4.0,
+            'market_value': 0.15,
+            'profit_incomes_proc': -96.84,
+            'profit_incomes_sum': -4.6,
+            'profit_invested_proc': -96.25,
+            'profit_invested_sum': -3.85,
+        },
+        'Saving2': {
+            'incomes': 2.50,
+            'invested': 2.25,
+            'market_value': 0.0,
+            'profit_incomes_proc': 0.0,
+            'profit_incomes_sum': 0.0,
+            'profit_invested_proc': 0.0,
+            'profit_invested_sum': 0.0,
+        },
+    }
+    H.filter_fixture(_saving_data, ['savingtype', 'saving', 'savingworth'])
+
+    # in savingworth df get id of rows except Saving1
+    _filter = (_saving_data['savingworth'].saving_type != 'Saving1')
+    _idx = _saving_data['savingworth'][_filter].index
+
+    # drop all rows except Saving1
+    _saving_data['savingworth'].drop(_idx, inplace=True)
+
+    # act
+    actual = StatsSavings(1999, _saving_data).balance
+
+    # assert
+    H.assert_(expect, actual)
