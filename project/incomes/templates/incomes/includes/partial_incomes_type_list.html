@@ -1,6 +1,6 @@
 <div class="list-group mb-2">
     <div class="list-group-item list-group-item-action list-group-item-primary">Pajamų rūšys</div>
-    {% for item in categories %}
+    {% for item in items %}
     {% url 'incomes:incomes_type_update' item.id as url_update %}
     <div class="list-group-item list-group-item-action" data-url="{{ url_update }}">{{ item.title }}</div>
     {% endfor %}

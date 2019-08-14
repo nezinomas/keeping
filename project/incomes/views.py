@@ -1,72 +1,48 @@
-from django.shortcuts import get_object_or_404, render, reverse
-from django.template.loader import render_to_string
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
-from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
-from .forms import IncomeForm, IncomeTypeForm
-from .models import Income, IncomeType
-
-
-def settings():
-    obj = CrudMixinSettings()
-
-    obj.model = Income
-
-    obj.form = IncomeForm
-    obj.form_template = 'incomes/includes/partial_incomes_form.html'
-
-    obj.items_template = 'incomes/includes/partial_incomes_list.html'
-    obj.items_template_main = 'incomes/incomes_list.html'
-
-    obj.url_new = 'incomes:incomes_new'
-    obj.url_update = 'incomes:incomes_update'
-
-    return obj
+from ..core.mixins.crud import CreateAjaxMixin, ListMixin, UpdateAjaxMixin
+from . import forms, models
 
 
-def lists(request):
-    context = {'categories': type_lists(request)}
-    return CrudMixin(request, settings()).lists_as_html(context)
+@login_required()
+def index(request):
+    context = {
+        'incomes': Lists.as_view()(request, as_string=True),
+        'categories': TypeLists.as_view()(request, as_string=True),
+    }
+    return render(request, 'incomes/incomes_list.html', context)
 
 
-def new(request):
-    return CrudMixin(request, settings()).new()
+#
+# Income views
+#
+class Lists(ListMixin):
+    model = models.Income
 
 
-def update(request, pk):
-    _settings = settings()
-    _settings.item_id = pk
-
-    return CrudMixin(request, _settings).update()
+class New(CreateAjaxMixin):
+    model = models.Income
+    form_class = forms.IncomeForm
 
 
-# IncomeType helper functions and views
-def type_settings():
-    obj = CrudMixinSettings()
-
-    obj.model = IncomeType
-
-    obj.form = IncomeTypeForm
-    obj.form_template = 'incomes/includes/partial_incomes_type_form.html'
-
-    obj.items_template = 'incomes/includes/partial_incomes_type_list.html'
-    obj.items_template_var_name = 'categories'
-
-    obj.url_new = 'incomes:incomes_type_new'
-    obj.url_update = 'incomes:incomes_type_update'
-
-    return obj
+class Update(UpdateAjaxMixin):
+    model = models.Income
+    form_class = forms.IncomeForm
 
 
-def type_lists(request):
-    return CrudMixin(request, type_settings()).lists_as_str()
+#
+# IncomeType views
+#
+class TypeLists(ListMixin):
+    model = models.IncomeType
 
 
-def type_new(request):
-    return CrudMixin(request, type_settings()).new()
+class TypeNew(CreateAjaxMixin):
+    model = models.IncomeType
+    form_class = forms.IncomeTypeForm
 
 
-def type_update(request, pk):
-    _settings = type_settings()
-    _settings.item_id = pk
-
-    return CrudMixin(request, _settings).update()
+class TypeUpdate(UpdateAjaxMixin):
+    model = models.IncomeType
+    form_class = forms.IncomeTypeForm

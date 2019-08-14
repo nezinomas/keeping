@@ -7,32 +7,37 @@ app_name = 'incomes'
 urlpatterns = [
     path(
         'incomes/',
-        views.lists,
+        views.index,
+        name='incomes_index'
+    ),
+    path(
+        'incomes/lists/',
+        views.Lists.as_view(),
         name='incomes_list'
     ),
     path(
         'incomes/new/',
-        views.new,
+        views.New.as_view(),
         name='incomes_new'
     ),
     path(
         'incomes/update/<int:pk>/',
-        views.update,
+        views.Update.as_view(),
         name='incomes_update'
     ),
     path(
         'incomes/type/',
-        views.type_lists,
+        views.TypeLists.as_view(),
         name='incomes_type_list'
     ),
     path(
         'incomes/type/new/',
-        views.type_new,
+        views.TypeNew.as_view(),
         name='incomes_type_new'
     ),
     path(
         'incomes/type/update/<int:pk>/',
-        views.type_update,
+        views.TypeUpdate.as_view(),
         name='incomes_type_update'
     ),
 ]
