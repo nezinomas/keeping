@@ -6,17 +6,17 @@ app_name = 'drinks'
 urlpatterns = [
     path(
         'drinks/',
-        views.lists,
+        views.Lists.as_view(),
         name='drinks_list'
     ),
     path(
         'drinks/new/',
-        views.new,
+        views.New.as_view(),
         name='drinks_new'
     ),
     path(
         'drinks/update/<int:pk>/',
-        views.update,
+        views.Update.as_view(),
         name='drinks_update'
     ),
 ]
