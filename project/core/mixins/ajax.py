@@ -2,21 +2,22 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 
 from .get import GetQueryset
+from .helpers import format_url_name
 
 
 class AjaxCreateUpdateMixin():
     ajax_form = None
     ajax_list = None
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        plural = self.model._meta.verbose_name_plural
+    def _set_template_name(self, request):
+        app_name = self.request.resolver_match.app_name
+        plural = format_url_name(self.model._meta.verbose_name)
 
         if not self.ajax_form:
-            self.ajax_form = f'{plural}/includes/partial_{plural}_form.html'
+            self.ajax_form = f'{app_name}/includes/partial_{plural}_form.html'
 
         if not self.ajax_list:
-            self.ajax_list = f'{plural}/includes/partial_{plural}_list.html'
+            self.ajax_list = f'{app_name}/includes/partial_{plural}_list.html'
 
     def get(self, request, *args, **kwargs):
         if 'pk' not in self.kwargs:
@@ -26,6 +27,8 @@ class AjaxCreateUpdateMixin():
 
         data = dict()
         context = self.get_context_data()
+
+        self._set_template_name(request)
 
         if request.is_ajax():
             self._render_form(data, context)
