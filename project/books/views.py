@@ -1,23 +1,17 @@
-from ..core.mixins.ajax import AjaxCreateUpdateMixin
-from ..core.mixins.crud import CreateMixin, ListMixin, UpdateMixin
-from .forms import BookForm
-from .models import Book
-
-
-class BookMixin():
-    model = Book
-    form_class = BookForm
-    template_name = 'books/includes/partial_books_form.html'
+from ..core.mixins.crud import CreateAjaxMixin, ListMixin, UpdateAjaxMixin
+from . import models, forms
 
 
 class Lists(ListMixin):
-    model = Book
+    model = models.Book
     template_name = 'books/books_list.html'
 
 
-class New(BookMixin, AjaxCreateUpdateMixin, CreateMixin):
-    pass
+class New(CreateAjaxMixin):
+    model = models.Book
+    form_class = forms.BookForm
 
 
-class Update(BookMixin, AjaxCreateUpdateMixin, UpdateMixin):
-    pass
+class Update(UpdateAjaxMixin):
+    model = models.Book
+    form_class = forms.BookForm

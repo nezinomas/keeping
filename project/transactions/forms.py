@@ -20,7 +20,7 @@ class TransactionForm(forms.ModelForm):
 
     field_order = ['date', 'from_account', 'to_account', 'price']
 
-    def __init__(self, extra={}, *args, **kwargs):
+    def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields['price'].initial = '0.01'
@@ -56,7 +56,7 @@ class SavingCloseForm(forms.ModelForm):
 
     field_order = ['date', 'from_account', 'to_account', 'price', 'fee']
 
-    def __init__(self, extra={}, *args, **kwargs):
+    def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields['price'].initial = '0.01'
@@ -90,7 +90,7 @@ class SavingChangeForm(forms.ModelForm):
 
     field_order = ['date', 'from_account', 'to_account', 'price', 'fee']
 
-    def __init__(self, extra={}, *args, **kwargs):
+    def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields['price'].initial = '0.01'

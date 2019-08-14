@@ -12,37 +12,37 @@ urlpatterns = [
     ),
     path(
         'transactions/lists/',
-        views.lists,
+        views.Lists.as_view(),
         name='transactions_list'
     ),
     path(
         'transactions/new/',
-        views.new,
+        views.New.as_view(),
         name='transactions_new'
     ),
     path(
         'transactions/update/<int:pk>/',
-        views.update,
+        views.Update.as_view(),
         name='transactions_update'
     ),
     path(
         'savings_close/new/',
-        views.savings_close_new,
+        views.SavingsCloseNew.as_view(),
         name='savings_close_new'
     ),
     path(
         'savings_close/update/<int:pk>/',
-        views.savings_close_update,
+        views.SavingsCloseUpdate.as_view(),
         name='savings_close_update'
     ),
     path(
         'savings_change/new/',
-        views.savings_change_new,
+        views.SavingsChangeNew.as_view(),
         name='savings_change_new'
     ),
     path(
         'savings_change/update/<int:pk>/',
-        views.savings_change_update,
+        views.SavingsChangeUpdate.as_view(),
         name='savings_change_update'
     ),
     path(
