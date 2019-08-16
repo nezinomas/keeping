@@ -7,17 +7,22 @@ app_name = 'expenses'
 e = [
     path(
         'expenses/',
-        expenses.lists,
+        expenses.Index.as_view(),
+        name='expenses_index'
+    ),
+    path(
+        'expenses/lists/',
+        expenses.Lists.as_view(),
         name='expenses_list'
     ),
     path(
         'expenses/new/',
-        expenses.new,
+        expenses.New.as_view(),
         name='expenses_new'
     ),
     path(
         'expenses/update/<int:pk>/',
-        expenses.update,
+        expenses.Update.as_view(),
         name='expenses_update'
     ),
     path(
@@ -30,12 +35,12 @@ e = [
 e_type = [
     path(
         'expenses/type/new/',
-        expenses_type.new,
+        expenses_type.New.as_view(),
         name='expenses_type_new'
     ),
     path(
         'expenses/type/update/<int:pk>/',
-        expenses_type.update,
+        expenses_type.Update.as_view(),
         name='expenses_type_update'
     ),
 ]
@@ -43,12 +48,12 @@ e_type = [
 e_name = [
     path(
         'expenses/name/new/',
-        expenses_name.new,
+        expenses_name.New.as_view(),
         name='expenses_name_new'
     ),
     path(
         'expenses/name/update/<int:pk>/',
-        expenses_name.update,
+        expenses_name.Update.as_view(),
         name='expenses_name_update'
     ),
 ]

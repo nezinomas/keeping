@@ -1,4 +1,4 @@
-{% for item in categories %}
+{% for item in items %}
 {% url 'expenses:expenses_type_update' item.id as url_type_update %}
 <div class="list-group mb-2">
     <div class="list-group-item list-group-item-action list-group-item-primary" data-url="{{ url_type_update }}">

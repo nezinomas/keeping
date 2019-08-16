@@ -1,52 +1,39 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, render, reverse
-from django.template.loader import render_to_string
+from django.shortcuts import render
 
-from ...core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
-from ..forms import ExpenseForm
-from ..models import Expense, ExpenseName
-from ..views.expenses_type import lists as type_lists
+from ...core.mixins.crud import (CreateAjaxMixin, IndexMixin, ListMixin,
+                                 UpdateAjaxMixin)
+from .. import forms, models
+from ..views.expenses_type import Lists as TypeLists
 
 
-def settings():
-    obj = CrudMixinSettings()
+class Index(IndexMixin):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categories'] = TypeLists.as_view()(
+            self.request, as_string=True)
+        context['expenses'] = Lists.as_view()(
+            self.request, as_string=True)
 
-    obj.model = Expense
-
-    obj.form = ExpenseForm
-    obj.form_template = 'expenses/includes/expenses_form.html'
-
-    obj.items_template = 'expenses/includes/expenses_list.html'
-    obj.items_template_main = 'expenses/expenses_list.html'
-
-    obj.url_new = 'expenses:expenses_new'
-    obj.url_update = 'expenses:expenses_update'
-
-    return obj
+        return context
 
 
-@login_required()
-def lists(request):
-    context = {'categories': type_lists(request)}
-    return CrudMixin(request, settings()).lists_as_html(context)
+class Lists(ListMixin):
+    model = models.Expense
 
 
-@login_required()
-def new(request):
-    return CrudMixin(request, settings()).new()
+class New(CreateAjaxMixin):
+    model = models.Expense
+    form_class = forms.ExpenseForm
 
 
-@login_required()
-def update(request, pk):
-    _settings = settings()
-    _settings.item_id = pk
-
-    return CrudMixin(request, _settings).update()
+class Update(UpdateAjaxMixin):
+    model = models.Expense
+    form_class = forms.ExpenseForm
 
 
 def load_expense_name(request):
     pk = request.GET.get('expense_type')
-    objects = ExpenseName.objects.parent(pk).year(request.user.profile.year)
+    objects = models.ExpenseName.objects.parent(pk).year(request.user.profile.year)
 
     return render(
         request,
