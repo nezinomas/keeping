@@ -6,7 +6,7 @@ app_name = 'savings'
 urlpatterns = [
     path(
         'savings/',
-        views.index,
+        views.Index.as_view(),
         name='savings_index'
     ),
     path(
