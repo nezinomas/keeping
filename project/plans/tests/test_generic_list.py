@@ -1,7 +1,7 @@
 import pytest
 from django.template import Context, Template
 
-from ..templatetags.partial_generic_list import generic_list
+from ..templatetags.generic_list import generic_list
 
 
 def _remove_line_end(rendered):
@@ -11,7 +11,7 @@ def _remove_line_end(rendered):
 @pytest.fixture()
 def _template():
     template_to_render = Template(
-        '{% load partial_generic_list %}'
+        '{% load generic_list %}'
         '{% generic_list items "url_update" 2019 "type" %}'
     )
     return template_to_render

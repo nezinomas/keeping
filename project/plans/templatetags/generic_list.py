@@ -3,7 +3,7 @@ from django import template
 register = template.Library()
 
 
-@register.inclusion_tag('plans/includes/partial_generic_list.html')
+@register.inclusion_tag('plans/includes/generic_list.html')
 def generic_list(items, url_update, year, type=None):
     return {
         'items': items,
