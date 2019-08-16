@@ -11,7 +11,7 @@ class IndexMixin(LoginRequiredMixin, TemplateView):
     def get_template_names(self):
         if self.template_name is None:
             app_name = self.request.resolver_match.app_name
-            return [f'{app_name}/{app_name}.html']
+            return [f'{app_name}/index.html']
         else:
             return [self.template_name]
 

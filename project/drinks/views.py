@@ -4,7 +4,7 @@ from . import forms, models
 
 class Lists(ListMixin):
     model = models.Drink
-    template_name = 'drinks/drinks_list.html'
+    template_name = 'drinks/index.html'
 
 
 class New(CreateAjaxMixin):
