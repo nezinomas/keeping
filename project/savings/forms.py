@@ -13,7 +13,7 @@ class SavingTypeForm(forms.ModelForm):
         model = SavingType
         fields = ['title']
 
-    def __init__(self, extra={}, *args, **kwargs):
+    def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields['title'].label = 'Fondas'
@@ -33,7 +33,7 @@ class SavingForm(forms.ModelForm):
 
     field_order = ['date', 'saving_type', 'account', 'price', 'fee', 'remark']
 
-    def __init__(self, extra={}, *args, **kwargs):
+    def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # form inputs settings

@@ -1,74 +1,48 @@
-from django.shortcuts import get_object_or_404, render, reverse
-from django.template.loader import render_to_string
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
-from ..core.mixins.crud_views_mixin import CrudMixin, CrudMixinSettings
-
-from .models import Saving, SavingType
-from .forms import SavingForm, SavingTypeForm
+from ..core.mixins.crud import CreateAjaxMixin, ListMixin, UpdateAjaxMixin
+from . import forms, models
 
 
+@login_required()
+def index(request):
+    context = {
+        'savings': Lists.as_view()(request, as_string=True),
+        'categories': TypeLists.as_view()(request, as_string=True),
+    }
+    return render(request, 'savings/savings_list.html', context)
+
+
+#
 # Saving views
-def settings():
-    obj = CrudMixinSettings()
-
-    obj.model = Saving
-
-    obj.form = SavingForm
-    obj.form_template = 'savings/includes/partial_savings_form.html'
-
-    obj.items_template = 'savings/includes/partial_savings_list.html'
-    obj.items_template_main = 'savings/savings_list.html'
-
-    obj.url_new = 'savings:savings_new'
-    obj.url_update = 'savings:savings_update'
-
-    return obj
+#
+class Lists(ListMixin):
+    model = models.Saving
 
 
-def lists(request):
-    context = {'categories': type_lists(request)}
-    return CrudMixin(request, settings()).lists_as_html(context)
+class New(CreateAjaxMixin):
+    model = models.Saving
+    form_class = forms.SavingForm
 
 
-def new(request):
-    return CrudMixin(request, settings()).new()
+class Update(UpdateAjaxMixin):
+    model = models.Saving
+    form_class = forms.SavingForm
 
 
-def update(request, pk):
-    _settings = settings()
-    _settings.item_id = pk
-
-    return CrudMixin(request, _settings).update()
-
-
-# Saving Type views
-def type_settings():
-    obj = CrudMixinSettings()
-
-    obj.model = SavingType
-
-    obj.form = SavingTypeForm
-    obj.form_template = 'savings/includes/partial_savings_type_form.html'
-
-    obj.items_template = 'savings/includes/partial_savings_type_list.html'
-    obj.items_template_var_name = 'categories'
-
-    obj.url_new = 'savings:savings_type_new'
-    obj.url_update = 'savings:savings_type_update'
-
-    return obj
+#
+# SavingType views
+#
+class TypeLists(ListMixin):
+    model = models.SavingType
 
 
-def type_lists(request):
-    return CrudMixin(request, type_settings()).lists_as_str()
+class TypeNew(CreateAjaxMixin):
+    model = models.SavingType
+    form_class = forms.SavingTypeForm
 
 
-def type_new(request):
-    return CrudMixin(request, type_settings()).new()
-
-
-def type_update(request, pk):
-    _settings = type_settings()
-    _settings.item_id = pk
-
-    return CrudMixin(request, _settings).update()
+class TypeUpdate(UpdateAjaxMixin):
+    model = models.SavingType
+    form_class = forms.SavingTypeForm

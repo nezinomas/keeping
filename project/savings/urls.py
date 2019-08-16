@@ -6,32 +6,37 @@ app_name = 'savings'
 urlpatterns = [
     path(
         'savings/',
-        views.lists,
+        views.index,
+        name='savings_index'
+    ),
+    path(
+        'savings/lists/',
+        views.Lists.as_view(),
         name='savings_list'
     ),
     path(
         'savings/new/',
-        views.new,
+        views.New.as_view(),
         name='savings_new'
     ),
     path(
         'savings/update/<int:pk>/',
-        views.update,
+        views.Update.as_view(),
         name='savings_update'
     ),
     path(
         'savings/type/',
-        views.type_lists,
+        views.TypeLists.as_view(),
         name='savings_type_list'
     ),
     path(
         'savings/type/new/',
-        views.type_new,
+        views.TypeNew.as_view(),
         name='savings_type_new'
     ),
     path(
         'savings/type/update/<int:pk>/',
-        views.type_update,
+        views.TypeUpdate.as_view(),
         name='savings_type_update'
     ),
 ]
