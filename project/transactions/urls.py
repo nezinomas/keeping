@@ -7,7 +7,7 @@ app_name = 'transactions'
 urlpatterns = [
     path(
         'transactions/',
-        views.index,
+        views.Index.as_view(),
         name='transactions_index'
     ),
     path(

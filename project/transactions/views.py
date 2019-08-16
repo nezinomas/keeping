@@ -1,21 +1,23 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-
 from ..accounts.views import Lists as accounts_list
-from ..core.mixins.crud import CreateAjaxMixin, ListMixin, UpdateAjaxMixin
-
+from ..core.mixins.crud import (CreateAjaxMixin, IndexMixin, ListMixin,
+                                UpdateAjaxMixin)
 from . import forms, models
 
 
-@login_required()
-def index(request):
-    context = {
-        'categories': accounts_list.as_view()(request, as_string=True),
-        'transactions': Lists.as_view()(request, as_string=True),
-        'savings_close': SavingsCloseLists.as_view()(request, as_string=True),
-        'savings_change': SavingsChangeLists.as_view()(request, as_string=True),
-    }
-    return render(request, 'transactions/transactions_list.html', context)
+class Index(IndexMixin):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['categories'] = accounts_list.as_view()(
+            self.request, as_string=True)
+        context['transactions'] = Lists.as_view()(
+            self.request, as_string=True)
+        context['savings_close'] = SavingsCloseLists.as_view()(
+            self.request, as_string=True)
+        context['savings_change'] = SavingsChangeLists.as_view()(
+            self.request, as_string=True)
+
+        return context
 
 
 # SavingType dropdown
