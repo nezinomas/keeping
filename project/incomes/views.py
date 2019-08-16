@@ -1,12 +1,16 @@
-from ..core.mixins.crud import CreateAjaxMixin, ListMixin, UpdateAjaxMixin, IndexMixin
+from ..core.mixins.crud import (CreateAjaxMixin, IndexMixin, ListMixin,
+                                UpdateAjaxMixin)
 from . import forms, models
 
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['incomes'] = Lists.as_view()(self.request, as_string=True)
-        context['categories'] = TypeLists.as_view()(self.request, as_string=True)
+
+        context['incomes'] = Lists.as_view()(
+            self.request, as_string=True)
+        context['categories'] = TypeLists.as_view()(
+            self.request, as_string=True)
 
         return context
 
