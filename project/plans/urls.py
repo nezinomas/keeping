@@ -7,7 +7,7 @@ app_name = 'plans'
 urlpatterns = [
     path(
         'plans/',
-        views.plans_index,
+        views.Index.as_view(),
         name='plans_index'
     ),
     #
@@ -16,17 +16,17 @@ urlpatterns = [
     path(
         'plans/expenses/',
         views.ExpensesLists.as_view(),
-        name='expenses_plans_list'
+        name='expenses_plan_list'
     ),
     path(
         'plans/expenses/new/',
         views.ExpensesNew.as_view(),
-        name='expenses_plans_new'
+        name='expenses_plan_new'
     ),
     path(
         'plans/expenses/update/<int:pk>/',
         views.ExpensesUpdate.as_view(),
-        name='expenses_plans_update'
+        name='expenses_plan_update'
     ),
     #
     # income plans
