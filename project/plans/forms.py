@@ -38,7 +38,7 @@ class ExpensePlanForm(forms.ModelForm):
 
     field_order = ['year', 'expense_type'] + months
 
-    def __init__(self, extra={}, *args, **kwargs):
+    def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # inital values
@@ -63,7 +63,7 @@ class IncomePlanForm(forms.ModelForm):
 
     field_order = ['year', 'income_type'] + months
 
-    def __init__(self, extra={}, *args, **kwargs):
+    def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # inital values
@@ -88,7 +88,7 @@ class SavingPlanForm(forms.ModelForm):
 
     field_order = ['year', 'saving_type'] + months
 
-    def __init__(self, extra={}, *args, **kwargs):
+    def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # inital values
@@ -113,7 +113,7 @@ class DayPlanForm(forms.ModelForm):
 
     field_order = ['year'] + months
 
-    def __init__(self, extra={}, *args, **kwargs):
+    def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # inital values
