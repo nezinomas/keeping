@@ -1,10 +1,19 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template.loader import render_to_string
-from django.views.generic import CreateView, ListView, UpdateView
+from django.views.generic import CreateView, ListView, UpdateView, TemplateView
 
 from ..mixins.ajax import AjaxCreateUpdateMixin
 from .get import GetFormKwargs, GetQueryset
 from .helpers import update_context, format_url_name
+
+
+class IndexMixin(LoginRequiredMixin, TemplateView):
+    def get_template_names(self):
+        if self.template_name is None:
+            app_name = self.request.resolver_match.app_name
+            return [f'{app_name}.html']
+        else:
+            return [self.template_name]
 
 
 class ListMixin(GetQueryset, GetFormKwargs, LoginRequiredMixin, ListView):
