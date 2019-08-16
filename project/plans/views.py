@@ -11,7 +11,7 @@ from .lib.day_sum import DaySum
 def plans_stats(request):
     ajax_trigger = request.GET.get('ajax_trigger')
     arr = DaySum(request.user.profile.year).plans_stats
-    t_name = 'plans/includes/partial_plans_stats.html'
+    t_name = 'plans/includes/plans_stats.html'
     c = {'items': arr}
 
     if ajax_trigger:

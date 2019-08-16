@@ -27,7 +27,7 @@ def index(request):
     context = {
         'accounts': accounts.balance,
         'savings': render_to_string(
-            'bookkeeping/includes/partial_savings.html',
+            'bookkeeping/includes/savings.html',
             {'savings': savings.balance}
         ),
         'past_amount': accounts.past_amount,

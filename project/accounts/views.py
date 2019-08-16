@@ -6,7 +6,7 @@ from . import forms, models
 
 class Lists(ListMixin):
     model = models.Account
-    template_name = 'accounts/includes/partial_accounts_list.html'
+    template_name = 'accounts/includes/accounts_list.html'
     context_object_name = 'categories'
 
 

@@ -12,9 +12,9 @@ def settings():
     obj.model = ExpenseName
 
     obj.form = ExpenseNameForm
-    obj.form_template = 'expenses/includes/partial_expenses_name_form.html'
+    obj.form_template = 'expenses/includes/expenses_name_form.html'
 
-    obj.items_template = 'expenses/includes/partial_expenses_type_list.html'
+    obj.items_template = 'expenses/includes/expenses_type_list.html'
     obj.items_template_var_name = 'categories'
 
     obj.url_new = 'expenses:expenses_name_new'
