@@ -29,7 +29,7 @@ def _account():
 
 
 def test_expense_form_init(client):
-    forms.ExpenseForm(data={}, extra={'year': 1})
+    forms.ExpenseForm(data={}, year=1)
 
 
 def test_exepense_form_valid_data(_expense_type, _expense_name, _account):
@@ -44,7 +44,7 @@ def test_exepense_form_valid_data(_expense_type, _expense_name, _account):
             'remark': None,
             'exception': None
         },
-        extra={'year': 1970}
+        year=1970
     )
 
     assert form.is_valid()
@@ -60,7 +60,7 @@ def test_exepense_form_valid_data(_expense_type, _expense_name, _account):
 
 
 def test_expenses_form_blank_data():
-    form = forms.ExpenseForm(data={}, extra={'year': 1})
+    form = forms.ExpenseForm(data={}, year=1)
 
     assert not form.is_valid()
 
