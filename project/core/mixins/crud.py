@@ -1,10 +1,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template.loader import render_to_string
-from django.views.generic import CreateView, ListView, UpdateView, TemplateView
+from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
-from ..mixins.ajax import AjaxCreateUpdateMixin
+from .ajax import AjaxCreateUpdateMixin
 from .get import GetFormKwargs, GetQueryset
-from .helpers import update_context, format_url_name
+from .helpers import format_url_name, update_context
 
 
 class IndexMixin(LoginRequiredMixin, TemplateView):
