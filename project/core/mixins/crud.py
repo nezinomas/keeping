@@ -11,7 +11,7 @@ class IndexMixin(LoginRequiredMixin, TemplateView):
     def get_template_names(self):
         if self.template_name is None:
             app_name = self.request.resolver_match.app_name
-            return [f'{app_name}.html']
+            return [f'{app_name}/{app_name}.html']
         else:
             return [self.template_name]
 
@@ -27,7 +27,7 @@ class ListMixin(GetQueryset, GetFormKwargs, LoginRequiredMixin, ListView):
         if self.template_name is None:
             plural = format_url_name(self.model._meta.verbose_name)
             app_name = self.request.resolver_match.app_name
-            return [f'{app_name}/includes/partial_{plural}_list.html']
+            return [f'{app_name}/includes/{plural}_list.html']
         else:
             return [self.template_name]
 

@@ -85,7 +85,7 @@ class AjaxCreateUpdateMixin():
         plural = format_url_name(self.model._meta.verbose_name)
 
         if not self.ajax_form:
-            self.ajax_form = f'{app_name}/includes/partial_{plural}_form.html'
+            self.ajax_form = f'{app_name}/includes/{plural}_form.html'
 
         if not self.ajax_list:
-            self.ajax_list = f'{app_name}/includes/partial_{plural}_list.html'
+            self.ajax_list = f'{app_name}/includes/{plural}_list.html'
