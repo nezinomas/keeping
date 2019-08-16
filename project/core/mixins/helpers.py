@@ -28,4 +28,4 @@ def update_context(self, context, action):
 
         if action is 'create':
             context['action'] = 'insert'
-            context['url'] = reverse(f'{plural}:{plural}_new')
+            context['url'] = reverse(f'{app_name}:{plural}_new')
