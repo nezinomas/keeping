@@ -1,13 +1,11 @@
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
-from ..core.mixins.crud import CreateAjaxMixin, ListMixin, UpdateAjaxMixin
+from ..core.mixins.crud import CreateAjaxMixin, ListMixin, UpdateAjaxMixin, IndexMixin
 from . import forms, models
 from .lib.day_sum import DaySum
 
 
-@login_required()
 def plans_stats(request):
     ajax_trigger = request.GET.get('ajax_trigger')
     arr = DaySum(request.user.profile.year).plans_stats
@@ -20,16 +18,16 @@ def plans_stats(request):
         return render_to_string(template_name=t_name, context=c, request=request)
 
 
-@login_required()
-def plans_index(request):
-    context = {
-        'expenses_list': ExpensesLists.as_view()(request, as_string=True),
-        'incomes_list': IncomesLists.as_view()(request, as_string=True),
-        'savings_list': SavingsLists.as_view()(request, as_string=True),
-        'day_list': DayLists.as_view()(request, as_string=True),
-        'plans_stats': plans_stats(request)
-    }
-    return render(request, 'plans/plans_list.html', context)
+class Index(IndexMixin):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['expenses_list'] = ExpensesLists.as_view()(self.request, as_string=True)
+        context['incomes_list'] = IncomesLists.as_view()(self.request, as_string=True)
+        context['savings_list'] = SavingsLists.as_view()(self.request, as_string=True)
+        context['day_list'] = DayLists.as_view()(self.request, as_string=True)
+        context['plans_stats'] = plans_stats(self.request)
+
+        return context
 
 
 #
