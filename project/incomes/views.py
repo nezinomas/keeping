@@ -1,17 +1,14 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-
-from ..core.mixins.crud import CreateAjaxMixin, ListMixin, UpdateAjaxMixin
+from ..core.mixins.crud import CreateAjaxMixin, ListMixin, UpdateAjaxMixin, IndexMixin
 from . import forms, models
 
 
-@login_required()
-def index(request):
-    context = {
-        'incomes': Lists.as_view()(request, as_string=True),
-        'categories': TypeLists.as_view()(request, as_string=True),
-    }
-    return render(request, 'incomes/incomes_list.html', context)
+class Index(IndexMixin):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['incomes'] = Lists.as_view()(self.request, as_string=True)
+        context['categories'] = TypeLists.as_view()(self.request, as_string=True)
+
+        return context
 
 
 #

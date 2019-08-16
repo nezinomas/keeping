@@ -7,7 +7,7 @@ app_name = 'incomes'
 urlpatterns = [
     path(
         'incomes/',
-        views.index,
+        views.Index.as_view(),
         name='incomes_index'
     ),
     path(
