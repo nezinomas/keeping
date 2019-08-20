@@ -6,7 +6,6 @@ from .helpers import format_url_name
 
 
 class AjaxCreateUpdateMixin():
-    ajax_form = None
     ajax_list = None
 
     def get_template_names(self):
@@ -26,7 +25,6 @@ class AjaxCreateUpdateMixin():
         self._set_template_name(request)
 
         data = dict()
-
         context = self.get_context_data()
 
         if request.is_ajax():
@@ -53,7 +51,8 @@ class AjaxCreateUpdateMixin():
             form.save()
             data['form_is_valid'] = True
             data['html_list'] = (
-                render_to_string(self.ajax_list, context, self.request)
+                render_to_string(
+                    self.ajax_list, context, self.request)
             )
         else:
             data['form_is_valid'] = False
@@ -78,7 +77,7 @@ class AjaxCreateUpdateMixin():
 
     def _render_form(self, data, context):
         data['html_form'] = (
-            render_to_string(self.ajax_form, context, request=self.request)
+            render_to_string(self.get_template_names(), context, request=self.request)
         )
 
         form = self.get_form()
@@ -92,9 +91,6 @@ class AjaxCreateUpdateMixin():
     def _set_template_name(self, request):
         app_name = self.request.resolver_match.app_name
         plural = format_url_name(self.model._meta.verbose_name)
-
-        if not self.ajax_form:
-            self.ajax_form = f'{app_name}/includes/{plural}_form.html'
 
         if not self.ajax_list:
             self.ajax_list = f'{app_name}/includes/{plural}_list.html'
