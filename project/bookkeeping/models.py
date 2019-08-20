@@ -35,7 +35,7 @@ class SavingWorth(models.Model):
     )
 
     def __str__(self):
-        return f'{self.created} - {self.saving_type}'
+        return f'{self.date} - {self.saving_type}'
 
     # Managers
     objects = SavingWorthQuerySet.as_manager()
