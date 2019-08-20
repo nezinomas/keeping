@@ -24,11 +24,11 @@ class AjaxCreateUpdateMixin():
 
         self._set_template_name(request)
 
-        data = dict()
-        context = self.get_context_data()
-
         if request.is_ajax():
+            data = dict()
+            context = self.get_context_data()
             self._render_form(data, context)
+
             return JsonResponse(data)
         else:
             return super().get(request, *args, **kwargs)
