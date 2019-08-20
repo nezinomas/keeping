@@ -9,16 +9,25 @@ class AjaxCreateUpdateMixin():
     ajax_form = None
     ajax_list = None
 
+    def get_template_names(self):
+        if self.template_name is None:
+            plural = format_url_name(self.model._meta.verbose_name)
+            app_name = self.request.resolver_match.app_name
+            return [f'{app_name}/includes/{plural}_form.html']
+        else:
+            return [self.template_name]
+
     def get(self, request, *args, **kwargs):
         if 'pk' not in self.kwargs:
             self.object = None
         else:
             self.object = self.get_object()
 
-        data = dict()
-        context = self.get_context_data()
-
         self._set_template_name(request)
+
+        data = dict()
+
+        context = self.get_context_data()
 
         if request.is_ajax():
             self._render_form(data, context)
