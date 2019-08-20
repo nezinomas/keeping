@@ -28,9 +28,11 @@ $(function () {
                 }
             },
             complete: function (data) {
-                var l = data.responseJSON.js.length
-                for (var i = 0; i < l; i++) {
-                    $.getScript(data.responseJSON.js[i]);
+                var json = data.responseJSON
+                if (json) {
+                    for (var i = 0; i < json.js.length; i++) {
+                        $.getScript(data.responseJSON.js[i]);
+                    }
                 }
             }
         });
