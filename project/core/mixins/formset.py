@@ -7,8 +7,14 @@ class FormsetMixin():
         _objects = model.objects.all()
         _list = []
 
+        # get self.model ForeignKey field name
+        foreign_key = [f.name for f in self.model._meta.get_fields() if (f.many_to_one)]
+
+        if not foreign_key:
+            return _list
+
         for _object in _objects:
-            _list.append({'price': None, 'saving_type': _object})
+            _list.append({'price': None, foreign_key[0]: _object})
 
         return _list
 
