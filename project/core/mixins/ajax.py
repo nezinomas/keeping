@@ -7,6 +7,7 @@ from .helpers import format_url_name
 
 class AjaxCreateUpdateMixin():
     ajax_list = None
+    object = None
 
     def get_template_names(self):
         if self.template_name is None:
@@ -17,9 +18,7 @@ class AjaxCreateUpdateMixin():
             return [self.template_name]
 
     def get(self, request, *args, **kwargs):
-        if 'pk' not in self.kwargs:
-            self.object = None
-        else:
+        if 'pk' in self.kwargs:
             self.object = self.get_object()
 
         if request.is_ajax():
