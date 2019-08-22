@@ -48,7 +48,7 @@ class AjaxCreateUpdateMixin():
             data['form_is_valid'] = True
             data['html_list'] = (
                 render_to_string(
-                    self._set_template_name(), context, self.request)
+                    self._get_list_template_name(), context, self.request)
             )
         else:
             data['form_is_valid'] = False
@@ -84,7 +84,7 @@ class AjaxCreateUpdateMixin():
 
         data['js'] = js_url
 
-    def _set_template_name(self):
+    def _get_list_template_name(self):
         app_name = self.request.resolver_match.app_name
         plural = format_url_name(self.model._meta.verbose_name)
 
