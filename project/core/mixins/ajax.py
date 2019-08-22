@@ -6,7 +6,8 @@ from .helpers import format_url_name
 
 
 class AjaxCreateUpdateMixin():
-    ajax_list = None
+    list_template_name = None
+    object = None
 
     def get_template_names(self):
         if self.template_name is None:
@@ -17,12 +18,8 @@ class AjaxCreateUpdateMixin():
             return [self.template_name]
 
     def get(self, request, *args, **kwargs):
-        if 'pk' not in self.kwargs:
-            self.object = None
-        else:
+        if 'pk' in self.kwargs:
             self.object = self.get_object()
-
-        self._set_template_name(request)
 
         if request.is_ajax():
             data = dict()
@@ -34,7 +31,6 @@ class AjaxCreateUpdateMixin():
             return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        self._set_template_name(request)
         return super().post(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -52,7 +48,7 @@ class AjaxCreateUpdateMixin():
             data['form_is_valid'] = True
             data['html_list'] = (
                 render_to_string(
-                    self.ajax_list, context, self.request)
+                    self._get_list_template_name(), context, self.request)
             )
         else:
             data['form_is_valid'] = False
@@ -88,9 +84,11 @@ class AjaxCreateUpdateMixin():
 
         data['js'] = js_url
 
-    def _set_template_name(self, request):
+    def _get_list_template_name(self):
         app_name = self.request.resolver_match.app_name
         plural = format_url_name(self.model._meta.verbose_name)
 
-        if not self.ajax_list:
-            self.ajax_list = f'{app_name}/includes/{plural}_list.html'
+        if not self.list_template_name:
+            return f'{app_name}/includes/{plural}_list.html'
+        else:
+            return self.list_template_name
