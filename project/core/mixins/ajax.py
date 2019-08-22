@@ -6,7 +6,7 @@ from .helpers import format_url_name
 
 
 class AjaxCreateUpdateMixin():
-    ajax_list = None
+    list_template_name = None
     object = None
 
     def get_template_names(self):
@@ -88,7 +88,7 @@ class AjaxCreateUpdateMixin():
         app_name = self.request.resolver_match.app_name
         plural = format_url_name(self.model._meta.verbose_name)
 
-        if not self.ajax_list:
+        if not self.list_template_name:
             return f'{app_name}/includes/{plural}_list.html'
         else:
-            return self.ajax_list
+            return self.list_template_name
