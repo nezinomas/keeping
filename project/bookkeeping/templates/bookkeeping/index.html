@@ -43,9 +43,20 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col">{{ savings }}</div>
+    <!-- expenses plans -->
+    <div class="row my-2">
+        <div class="col-10">
+            <h6>Fondų vertė</h6>
+        </div>
+        <div class="col-2 text-right">
+            {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
+            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Įrašą</button>
+        </div>
     </div>
+    <div class="row my-2">
+        <div id="saving_worth" class="col dblclick">{{ savings }}</div>
+    </div>
+
 </div>
 
 <div class="modal fade" id="modal-form">

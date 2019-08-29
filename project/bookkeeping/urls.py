@@ -6,5 +6,9 @@ app_name = 'bookkeeping'
 
 urlpatterns = [
     path('', views.Index.as_view(), name='index'),
-    path('bookkeeping/saving_worth/new/', views.saving_worth_new, name='saving_worth_new')
+    path(
+        'bookkeeping/savings_worth/new/',
+        views.SavingsWorthNew.as_view(),
+        name='savings_worth_new'
+    ),
 ]
