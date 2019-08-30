@@ -1,7 +1,7 @@
 import pandas as pd
 
 from ...core.tests.utils import _print
-
+from . import helpers
 from .filter_frame import FilterDf
 from .stats_utils import CalcBalance
 
@@ -93,39 +93,21 @@ class StatsSavings(object):
         # calculate percent of profit/loss
         self._balance['profit_incomes_proc'] = (
             self._balance[['market_value', 'incomes']]
-            .apply(self._calc_percent, axis=1)
+            .apply(helpers.calc_percent, axis=1)
         )
 
         self._balance['profit_invested_proc'] = (
             self._balance[['market_value', 'invested']]
-            .apply(self._calc_percent, axis=1)
+            .apply(helpers.calc_percent, axis=1)
         )
 
         # calculate sum of profit/loss
         self._balance['profit_incomes_sum'] = (
             self._balance[['market_value', 'incomes']]
-            .apply(self._calc_sum, axis=1)
+            .apply(helpers.calc_sum, axis=1)
         )
 
         self._balance['profit_invested_sum'] = (
             self._balance[['market_value', 'invested']]
-            .apply(self._calc_sum, axis=1)
+            .apply(helpers.calc_sum, axis=1)
         )
-
-    def _calc_percent(self, args):
-        market = args[0]
-        invested = args[1]
-
-        if market and invested:
-            return (market*100/invested)-100
-        else:
-            return 0.0
-
-    def _calc_sum(self, args):
-        market = args[0]
-        invested = args[1]
-
-        if market != 0.0:
-            return market - invested
-        else:
-            return 0.0
