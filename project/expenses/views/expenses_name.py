@@ -1,4 +1,4 @@
-from ...core.mixins.crud import CreateAjaxMixin, UpdateAjaxMixin
+from ...core.mixins.views import CreateAjaxMixin, UpdateAjaxMixin
 from .. import forms, models
 
 

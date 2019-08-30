@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from ...core.mixins.crud import (CreateAjaxMixin, IndexMixin, ListMixin,
+from ...core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from .. import forms, models
 from ..views.expenses_type import Lists as TypeLists

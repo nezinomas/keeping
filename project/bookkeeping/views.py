@@ -1,7 +1,7 @@
 from django.template.loader import render_to_string
 
 from ..accounts.models import Account
-from ..core.mixins.crud import CreateAjaxMixin, IndexMixin
+from ..core.mixins.views import CreateAjaxMixin, IndexMixin
 from ..core.mixins.formset import FormsetMixin
 from ..expenses.models import Expense
 from ..incomes.models import Income

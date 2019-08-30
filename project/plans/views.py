@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
-from ..core.mixins.crud import CreateAjaxMixin, ListMixin, UpdateAjaxMixin, IndexMixin
+from ..core.mixins.views import CreateAjaxMixin, ListMixin, UpdateAjaxMixin, IndexMixin
 from . import forms, models
 from .lib.day_sum import DaySum
 

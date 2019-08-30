@@ -1,5 +1,5 @@
 from ..accounts.views import Lists as accounts_list
-from ..core.mixins.crud import (CreateAjaxMixin, IndexMixin, ListMixin,
+from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                 UpdateAjaxMixin)
 from . import forms, models
 
