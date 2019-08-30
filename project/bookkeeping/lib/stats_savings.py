@@ -116,7 +116,7 @@ class StatsSavings(object):
         market = args[0]
         invested = args[1]
 
-        if market != 0.0:
+        if market and invested:
             return (market*100/invested)-100
         else:
             return 0.0
