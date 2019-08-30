@@ -33,7 +33,11 @@ class Index(IndexMixin):
 
         accounts, savings = _get_stats(self.request)
 
-        context['accounts'] = accounts.balance
+        context['accounts'] = render_to_string(
+            'bookkeeping/includes/accounts_worth_list.html',
+            {'accounts': accounts.balance},
+            self.request
+        )
         context['savings'] = render_to_string(
             'bookkeeping/includes/savings_worth_list.html',
             {'savings': savings.balance},
