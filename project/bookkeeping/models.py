@@ -2,27 +2,37 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import F, Max
 from django_pandas.managers import DataFrameManager
 
 from ..accounts.models import Account
 from ..savings.models import SavingType
 
 
+class QuerySetMixin():
+    def related(self):
+        pass
+
+    def year(self, year):
+        return self.related().filter(date__year=year)
+
+    def items(self):
+        return self.related()
+
+
 #
 # Savings Worth
 #
-class SavingWorthQuerySet(models.QuerySet):
-    def _related(self):
+class SavingWorthQuerySet(QuerySetMixin, models.QuerySet):
+    def related(self):
         return self.select_related('saving_type')
 
-    def year(self, year):
-        return self._related().filter(date__year=year)
-
-    def items(self):
-        return self._related()
-
-    def last_item(self):
-        return self._related().last()
+    def last_items(self):
+        return self.related().annotate(
+            max_date=Max('saving_type__savingworth__date')
+        ).filter(
+            date=F('max_date')
+        )
 
 
 class SavingWorth(models.Model):
@@ -37,6 +47,9 @@ class SavingWorth(models.Model):
         on_delete=models.CASCADE
     )
 
+    class Meta:
+        get_latest_by = ['date']
+
     def __str__(self):
         return f'{self.date} - {self.saving_type}'
 
@@ -48,18 +61,16 @@ class SavingWorth(models.Model):
 #
 # Accounts Worth
 #
-class AccountWorthQuerySet(models.QuerySet):
-    def _related(self):
+class AccountWorthQuerySet(QuerySetMixin, models.QuerySet):
+    def related(self):
         return self.select_related('account')
 
-    def year(self, year):
-        return self._related().filter(date__year=year)
-
-    def items(self):
-        return self._related()
-
-    def last_item(self):
-        return self._related().last()
+    def last_items(self):
+        return self.related().annotate(
+            max_date=Max('account__accountworth__date')
+        ).filter(
+            date=F('max_date')
+        )
 
 
 class AccountWorth(models.Model):
@@ -73,6 +84,9 @@ class AccountWorth(models.Model):
         Account,
         on_delete=models.CASCADE
     )
+
+    class Meta:
+        get_latest_by = ['date']
 
     def __str__(self):
         return f'{self.date} - {self.account}'
