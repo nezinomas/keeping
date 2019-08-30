@@ -3,7 +3,7 @@ from django.template.loader import render_to_string
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
 from .ajax import AjaxCreateUpdateMixin
-from .get import GetFormKwargs, GetQueryset
+from .get import GetFormKwargsMixin, GetQuerysetMixin
 from .helpers import format_url_name, update_context
 
 
@@ -18,7 +18,7 @@ class IndexMixin(LoginRequiredMixin, TemplateView):
 
 class ListMixin(
         LoginRequiredMixin,
-        GetQueryset, GetFormKwargs,
+        GetQuerysetMixin, GetFormKwargsMixin,
         ListView):
 
     def dispatch(self, request, *args, **kwargs):
@@ -49,7 +49,7 @@ class ListMixin(
 
 class CreateAjaxMixin(
         LoginRequiredMixin,
-        AjaxCreateUpdateMixin, GetQueryset, GetFormKwargs,
+        AjaxCreateUpdateMixin, GetQuerysetMixin, GetFormKwargsMixin,
         CreateView):
 
     def get_context_data(self, **kwargs):
@@ -61,7 +61,7 @@ class CreateAjaxMixin(
 
 class UpdateAjaxMixin(
         LoginRequiredMixin,
-        AjaxCreateUpdateMixin, GetQueryset, GetFormKwargs,
+        AjaxCreateUpdateMixin, GetQuerysetMixin, GetFormKwargsMixin,
         UpdateView):
 
     def get_context_data(self, **kwargs):

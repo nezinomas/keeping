@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 
-from .get import GetQueryset
+from .get import GetQuerysetMixin
 from .helpers import format_url_name
 
 
@@ -32,7 +32,7 @@ class AjaxCreateUpdateMixin():
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context[self.context_object_name] = super(GetQueryset, self).get_queryset()
+        context[self.context_object_name] = super(GetQuerysetMixin, self).get_queryset()
 
         return context
 

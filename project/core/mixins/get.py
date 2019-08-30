@@ -1,4 +1,4 @@
-class GetQueryset():
+class GetQuerysetMixin():
     context_object_name = 'items'
 
     def get_queryset(self):
@@ -13,7 +13,7 @@ class GetQueryset():
         return qs
 
 
-class GetFormKwargs():
+class GetFormKwargsMixin():
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['year'] = self.request.user.profile.year
