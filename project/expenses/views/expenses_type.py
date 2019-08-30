@@ -14,4 +14,3 @@ class New(CreateAjaxMixin):
 class Update(UpdateAjaxMixin):
     model = models.ExpenseType
     form_class = forms.ExpenseTypeForm
-

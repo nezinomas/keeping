@@ -1,5 +1,5 @@
 from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
-                                UpdateAjaxMixin)
+                                 UpdateAjaxMixin)
 from . import forms, models
 
 

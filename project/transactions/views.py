@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 from ..accounts.views import Lists as accounts_list
 from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
-                                UpdateAjaxMixin)
+                                 UpdateAjaxMixin)
 from . import forms, models
 
 
