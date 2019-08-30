@@ -50,7 +50,7 @@ class Index(IndexMixin):
 
 
 class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
-    type_model = models.SavingType
+    type_model = SavingType
     model = models.SavingWorth
     form_class = forms.SavingWorthForm
 
@@ -59,5 +59,19 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
 
         _, savings = _get_stats(self.request)
         context['savings'] = savings.balance
+
+        return context
+
+
+class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
+    type_model = Account
+    model = models.AccountWorth
+    form_class = forms.AccountWorthForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        accounts, _ = _get_stats(self.request)
+        context['accounts'] = accounts.balance
 
         return context
