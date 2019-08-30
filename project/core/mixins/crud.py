@@ -16,7 +16,11 @@ class IndexMixin(LoginRequiredMixin, TemplateView):
             return [self.template_name]
 
 
-class ListMixin(GetQueryset, GetFormKwargs, LoginRequiredMixin, ListView):
+class ListMixin(
+        LoginRequiredMixin,
+        GetQueryset, GetFormKwargs,
+        ListView):
+
     def dispatch(self, request, *args, **kwargs):
         if 'as_string' in kwargs:
             return self._render_to_string(request)
@@ -43,7 +47,11 @@ class ListMixin(GetQueryset, GetFormKwargs, LoginRequiredMixin, ListView):
         )
 
 
-class CreateMixin(GetQueryset, GetFormKwargs, LoginRequiredMixin, CreateView):
+class CreateAjaxMixin(
+        LoginRequiredMixin,
+        AjaxCreateUpdateMixin, GetQueryset, GetFormKwargs,
+        CreateView):
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         update_context(self, context, 'create')
@@ -51,17 +59,13 @@ class CreateMixin(GetQueryset, GetFormKwargs, LoginRequiredMixin, CreateView):
         return context
 
 
-class CreateAjaxMixin(AjaxCreateUpdateMixin, CreateMixin):
-    pass
+class UpdateAjaxMixin(
+        LoginRequiredMixin,
+        AjaxCreateUpdateMixin, GetQueryset, GetFormKwargs,
+        UpdateView):
 
-
-class UpdateMixin(GetQueryset, GetFormKwargs, LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         update_context(self, context, 'update')
 
         return context
-
-
-class UpdateAjaxMixin(AjaxCreateUpdateMixin, UpdateMixin):
-    pass
