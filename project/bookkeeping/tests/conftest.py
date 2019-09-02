@@ -70,6 +70,18 @@ def _incomes_data():
     return df
 
 
+def _accounts_worth_data():
+    df = pd.DataFrame(
+        [
+            [pd.to_datetime(dt(1970, 1, 1)), 5.25, 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 3.25, 'Account1'],
+            [pd.to_datetime(dt(1999, 1, 1)), 8.0, 'Account2'],
+        ],
+        columns=['date', 'price', 'account']
+    )
+    return df
+
+
 def _savings_data():
     df = pd.DataFrame(
         [
@@ -158,6 +170,7 @@ def _account_data():
         'transaction': _transactions_data(),
         'saving': _savings_data(),
         'savingclose': _savings_close_data(),
+        'accountworth': _accounts_worth_data(),
     }
     return items
 

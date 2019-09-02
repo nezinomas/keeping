@@ -31,7 +31,11 @@ class FilterDf(object):
 
     @property
     def savings_worth(self):
-        return self._filter_latest('savingworth')
+        return self._filter_latest('savingworth', 'saving_type')
+
+    @property
+    def accounts_worth(self):
+        return self._filter_latest('accountworth', 'account')
 
     @property
     def savings_past(self):
@@ -125,14 +129,14 @@ class FilterDf(object):
 
         return df
 
-    def _filter_latest(self, model_name):
+    def _filter_latest(self, model_name, groupby):
         df = self._data.get(model_name)
 
         if not isinstance(df, pd.DataFrame):
             return
 
         # get id of rows with latest records
-        idx = df.groupby(by='saving_type')['date'].idxmax()
+        idx = df.groupby(by=groupby)['date'].idxmax()
 
         return df.loc[idx]
 

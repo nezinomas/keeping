@@ -185,3 +185,25 @@ def test_balance_no_data():
     actual = StatsAccounts(1, {}).balance
 
     assert actual.empty
+
+
+def test_accounts_worth(_account_data):
+    expect = {
+        'Account1': {
+            'incomes': 3.25,
+            'balance': 8.5,
+            'have': 3.25,
+            'delta': -5.25,
+        },
+        'Account2': {
+            'incomes': 3.5,
+            'balance': 8.0,
+            'have': 8.0,
+            'delta': 0.0
+        },
+    }
+    H.filter_fixture(_account_data, ['account', 'income', 'accountworth', ])
+
+    actual = StatsAccounts(1999, _account_data).balance
+
+    H.assert_(expect, actual)
