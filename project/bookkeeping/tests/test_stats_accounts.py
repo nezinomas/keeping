@@ -41,7 +41,7 @@ def test_balance_only_incomes(_account_data):
             'balance': 8.0,
         },
     }
-    H.filter_fixture(_account_data, ['account', 'income',])
+    H.filter_fixture(_account_data, ['account', 'income', ])
 
     actual = StatsAccounts(1999, _account_data).balance
 
