@@ -23,7 +23,7 @@ def test_balance(_account_data):
 
     actual = StatsAccounts(1999, _account_data).balance
 
-    assert expect == actual
+    H.assert_(expect, actual)
 
 
 def test_balance_only_incomes(_account_data):
@@ -45,7 +45,7 @@ def test_balance_only_incomes(_account_data):
 
     actual = StatsAccounts(1999, _account_data).balance
 
-    assert expect == actual
+    H.assert_(expect, actual)
 
 
 def test_balance_only_expenses(_account_data):
@@ -67,7 +67,7 @@ def test_balance_only_expenses(_account_data):
 
     actual = StatsAccounts(1999, _account_data).balance
 
-    assert expect == actual
+    H.assert_(expect, actual)
 
 
 def test_balance_only_transactions(_account_data):
@@ -89,7 +89,7 @@ def test_balance_only_transactions(_account_data):
 
     actual = StatsAccounts(1999, _account_data).balance
 
-    assert expect == actual
+    H.assert_(expect, actual)
 
 
 def test_balance_only_savings(_account_data):
@@ -111,7 +111,7 @@ def test_balance_only_savings(_account_data):
 
     actual = StatsAccounts(1999, _account_data).balance
 
-    assert expect == actual
+    H.assert_(expect, actual)
 
 
 def test_balance_only_savings_close(_account_data):
@@ -133,7 +133,7 @@ def test_balance_only_savings_close(_account_data):
 
     actual = StatsAccounts(1999, _account_data).balance
 
-    assert expect == actual
+    H.assert_(expect, actual)
 
 
 def test_total_past_amount(_account_data):
@@ -170,7 +170,7 @@ def test_balance_past(_account_data):
 
     actual = StatsAccounts(1970, _account_data).balance
 
-    assert expect == actual
+    H.assert_(expect, actual)
 
 
 def test_total_past_amount_past(_account_data):
