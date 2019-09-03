@@ -36,7 +36,11 @@ class Index(IndexMixin):
 
         context['accounts'] = render_to_string(
             'bookkeeping/includes/accounts_worth_list.html',
-            {'accounts': accounts.balance},
+            {
+                'accounts': accounts.balance,
+                'past_amount': accounts.past_amount,
+                'current_amount': accounts.current_amount,
+            },
             self.request
         )
         context['savings'] = render_to_string(
@@ -44,8 +48,6 @@ class Index(IndexMixin):
             {'savings': savings.balance},
             self.request
         )
-        context['past_amount'] = accounts.past_amount
-        context['current_amount'] = accounts.current_amount
 
         return context
 
@@ -73,6 +75,9 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
         context = super().get_context_data(**kwargs)
 
         accounts, _ = _get_stats(self.request)
+
         context['accounts'] = accounts.balance
+        context['past_amount'] = accounts.past_amount
+        context['current_amount'] = accounts.current_amount
 
         return context
