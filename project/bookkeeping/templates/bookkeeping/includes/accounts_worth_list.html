@@ -8,6 +8,10 @@
             <th class="text-right">Pajamos</th>
             <th class="text-right">Išlaidos</th>
             <th class="text-right">Likutis</th>
+            <th class="b"></th>
+            <th class="text-right">Turiu</th>
+            <th class="text-right">Delta</th>
+
         </tr>
     </thead>
     <tbody>
@@ -18,6 +22,9 @@
             {% td stats.incomes width='110rem' %}
             {% td stats.expenses width='110rem' %}
             {% td stats.balance width='110rem' %}
+            <td width="80rem" class="b"></td>
+            {% td stats.have width='110rem' %}
+            {% td stats.delta width='110rem' negative=True positive=True  %}
         </tr>
         {% endfor %}
     </tbody>
@@ -28,6 +35,15 @@
             <td></td>
             <td></td>
             {% td current_amount %}
+            <td class="b"></td>
+            <td></td>
+            <td></td>
         </tr>
     </tfoot>
 </table>
+
+<style>
+    .b {
+        border-right: 5px solid red!important;
+    }
+</style>
