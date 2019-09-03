@@ -56,11 +56,21 @@ def test_account_worth_latest(_account_worth):
     assert 2.0 == actual[0].price
 
 
+def test_account_worth_queries(django_assert_num_queries, _account_worth):
+    with django_assert_num_queries(1) as captured:
+        list(models.AccountWorth.objects.items())
+
+
 def test_saving_worth_latest(_saving_worth):
     actual = models.SavingWorth.objects.items()
 
     assert 1 == len(actual)
     assert 2.0 == actual[0].price
+
+
+def test_saving_worth_queries(django_assert_num_queries, _saving_worth):
+    with django_assert_num_queries(1) as captured:
+        list(models.SavingWorth.objects.items())
 
 
 def test_saving_worth_str():
