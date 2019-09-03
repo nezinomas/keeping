@@ -73,7 +73,6 @@ def _incomes_data():
 def _accounts_worth_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime(dt(1970, 1, 1)), 5.25, 'Account1'],
             [pd.to_datetime(dt(1999, 1, 1)), 3.25, 'Account1'],
             [pd.to_datetime(dt(1999, 1, 1)), 8.0, 'Account2'],
         ],
@@ -99,9 +98,6 @@ def _savings_data():
 def _savings_worth_data():
     df = pd.DataFrame(
         [
-            [pd.to_datetime(dtt(1970, 1, 1)), 1.25, 'Saving1'],
-            [pd.to_datetime(dtt(1999, 1, 1)), 1.0, 'Saving1'],
-            [pd.to_datetime(dtt(1999, 1, 1)), 1.0, 'Saving2'],
             [pd.to_datetime(dtt(1999, 1, 31, 1, 1, 1)), 0.15, 'Saving1'],
             [pd.to_datetime(dtt(1999, 1, 31, 1, 1, 2)), 6.15, 'Saving2'],
         ],
