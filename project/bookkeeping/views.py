@@ -18,7 +18,8 @@ from .lib.stats_savings import StatsSavings
 def _get_stats(request):
     objects = GetObjects([
         Account, Income, Expense, Transaction,
-        SavingType, Saving, SavingChange, SavingClose, models.SavingWorth
+        SavingType, Saving, SavingChange, SavingClose,
+        models.SavingWorth, models.AccountWorth
     ])
 
     accounts = StatsAccounts(request.user.profile.year, objects.data)
