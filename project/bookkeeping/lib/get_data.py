@@ -29,7 +29,7 @@ class GetObject(object):
                 continue
 
             if (f.many_to_one):
-                values_list.append(f.name+'__title')
+                values_list.append(f'{f.name}__title')
             else:
                 values_list.append(f.name)
 
