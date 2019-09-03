@@ -54,7 +54,7 @@ def test_income_list_for_value_list():
     actual, _ = T(Income)._get_fields()
 
     expect = ['id', 'date', 'price', 'remark',
-              'account__title', 'income_type__title']``
+              'account__title', 'income_type__title']
 
     assert expect == actual
 
