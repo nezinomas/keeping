@@ -106,5 +106,6 @@ class StatsAccounts(object):
         for i in _idx:
             self._balance.at[i, 'have'] = _df.at[i, 'price']
 
-        self._balance['delta'] = self._balance['have'] - \
-            self._balance['balance']
+        self._balance['delta'] = (
+            self._balance['have'] - self._balance['balance']
+        )
