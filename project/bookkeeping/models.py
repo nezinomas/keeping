@@ -8,18 +8,10 @@ from ..accounts.models import Account
 from ..savings.models import SavingType
 
 
-class QuerySetMixin():
-    def related(self):
-        pass
-
-    def year(self, year):
-        return self.related().filter(date__year=year)
-
-
 #
 # Savings Worth
 #
-class SavingWorthQuerySet(QuerySetMixin, models.QuerySet):
+class SavingWorthQuerySet(models.QuerySet):
     def related(self):
         return self.select_related('saving_type')
 
@@ -47,7 +39,7 @@ class SavingWorth(models.Model):
         get_latest_by = ['date']
 
     def __str__(self):
-        return f'{self.date} - {self.saving_type}'
+        return f'{self.date:%Y-%m-%d %H:%M} - {self.saving_type}'
 
     # Managers
     objects = SavingWorthQuerySet.as_manager()
@@ -56,7 +48,7 @@ class SavingWorth(models.Model):
 #
 # Accounts Worth
 #
-class AccountWorthQuerySet(QuerySetMixin, models.QuerySet):
+class AccountWorthQuerySet(models.QuerySet):
     def related(self):
         return self.select_related('account')
 
@@ -84,7 +76,7 @@ class AccountWorth(models.Model):
         get_latest_by = ['date']
 
     def __str__(self):
-        return f'{self.date} - {self.account}'
+        return f'{self.date:%Y-%m-%d %H:%M} - {self.account}'
 
     # Managers
     objects = AccountWorthQuerySet.as_manager()
