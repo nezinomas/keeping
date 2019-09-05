@@ -37,7 +37,8 @@ class Income(models.Model):
     )
     account = models.ForeignKey(
         Account,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='incomes'
     )
     income_type = models.ForeignKey(
         IncomeType,

@@ -24,12 +24,12 @@ class Transaction(models.Model):
     from_account = models.ForeignKey(
         Account,
         on_delete=models.PROTECT,
-        related_name='from_accounts'
+        related_name='transactions_from'
     )
     to_account = models.ForeignKey(
         Account,
         on_delete=models.PROTECT,
-        related_name='to_accounts'
+        related_name='transactions_to'
     )
     price = models.DecimalField(
         max_digits=8,

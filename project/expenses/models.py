@@ -107,7 +107,7 @@ class Expense(models.Model):
     account = models.ForeignKey(
         Account,
         on_delete=models.CASCADE,
-        related_name='expense_accounts'
+        related_name='expenses'
     )
 
     class Meta:
