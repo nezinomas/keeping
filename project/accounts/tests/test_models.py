@@ -229,3 +229,18 @@ def test_balance_past(incomes, expenses, savings, transactions, savings_close):
     actual = list(Account.objects.balance_year(1970))
 
     assert_(expect, actual)
+
+
+# Still dont know how to implement in one query
+#
+# def test_accounts_worth(accounts_worth):
+#     expect = [{
+#         'account': 'Account1',
+#         'have': 3.25,
+#     }, {
+#         'account': 'Account2',
+#         'have': 8.0,
+#     }]
+#     actual = list(Account.objects.balance_year(1970))
+
+#     assert_(expect, actual)

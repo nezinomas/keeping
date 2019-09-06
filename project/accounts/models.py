@@ -91,6 +91,15 @@ class AccountQuerySet(models.QuerySet):
     def savings_close_to(self, year):
         return self._annotate(year, 'savings_close_to', 's_close_to')
 
+    # def accounts_worth(self):
+    #     return (
+    #         self
+    #         .latest()
+    #         .annotate(max_date=Max('accounts_worth__date'))
+    #         .filter(accounts_worth__date=F('max_date'))
+    #         .annotate(have=F('accounts_worth__price'))
+    #     )
+
     def balance_year(self, year):
         return (
             self
@@ -101,7 +110,6 @@ class AccountQuerySet(models.QuerySet):
             .transactions_from(year)
             .transactions_to(year)
             .savings_close_to(year)
-            .account_worth()
             .annotate(
                 past=(
                     0
