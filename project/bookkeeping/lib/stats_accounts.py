@@ -78,7 +78,6 @@ class StatsAccounts(object):
         cb.calc(self._data.savings, '-', 'expenses')
         cb.calc(self._data.trans_from, '-', 'expenses')
 
-
         # abs expenses
         self._balance.expenses = self._balance.expenses.abs()
 
