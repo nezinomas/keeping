@@ -16,10 +16,13 @@ class SavingWorthQuerySet(models.QuerySet):
         return self.select_related('saving_type')
 
     def items(self):
-        return self.related().annotate(
-            max_date=Max('saving_type__savings_worth__date')
-        ).filter(
-            date=F('max_date')
+        return (
+            self
+            .related()
+            .annotate(max_date=Max('saving_type__savings_worth__date'))
+            .filter(date=F('max_date'))
+            .annotate(saving=F('saving_type__title'))
+            .values('saving', 'price')
         )
 
 
@@ -54,10 +57,15 @@ class AccountWorthQuerySet(models.QuerySet):
         return self.select_related('account')
 
     def items(self):
-        return self.related().annotate(
-            max_date=Max('account__accounts_worth__date')
-        ).filter(
-            date=F('max_date')
+        return (
+            self.related()
+            .annotate(max_date=Max('account__accounts_worth__date'))
+            .filter(date=F('max_date'))
+            .values('id')
+            # extra groupby with unique model field, because
+            # keyword 'account' conflicts with model account field
+            .annotate(account=F('account__title'))
+            .values('account', 'price')
         )
 
 

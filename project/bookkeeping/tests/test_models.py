@@ -53,7 +53,17 @@ def test_account_worth_latest(_account_worth):
     actual = models.AccountWorth.objects.items()
 
     assert 1 == len(actual)
-    assert 2.0 == actual[0].price
+    assert 2.0 == actual[0]['price']
+
+
+def test_account_worth_latest_values(_account_worth):
+    actual = list(models.AccountWorth.objects.items())
+
+    expect = [
+        {'account': 'A', 'price': 2.0}
+    ]
+
+    assert expect == actual
 
 
 def test_account_worth_queries(django_assert_num_queries, _account_worth):
@@ -65,7 +75,17 @@ def test_saving_worth_latest(_saving_worth):
     actual = models.SavingWorth.objects.items()
 
     assert 1 == len(actual)
-    assert 2.0 == actual[0].price
+    assert 2.0 == actual[0]['price']
+
+
+def test_saving_worth_latest_values(_saving_worth):
+    actual = list(models.SavingWorth.objects.items())
+
+    expect = [
+        {'saving': 'Savings', 'price': 2.0}
+    ]
+
+    assert expect == actual
 
 
 def test_saving_worth_queries(django_assert_num_queries, _saving_worth):
