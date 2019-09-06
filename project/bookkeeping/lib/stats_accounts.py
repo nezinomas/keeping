@@ -71,13 +71,13 @@ class StatsAccounts(object):
         # incomes
         cb.calc(self._data.incomes, '+', 'incomes')
         cb.calc(self._data.trans_to, '+', 'incomes')
+        cb.calc(self._data.savings_close_to, '+', 'incomes')
 
         # expenses
         cb.calc(self._data.expenses, '-', 'expenses')
         cb.calc(self._data.savings, '-', 'expenses')
         cb.calc(self._data.trans_from, '-', 'expenses')
 
-        cb.calc(self._data.savings_close_to, '+', 'incomes')
 
         # abs expenses
         self._balance.expenses = self._balance.expenses.abs()
