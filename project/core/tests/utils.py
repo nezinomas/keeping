@@ -21,6 +21,7 @@ def equal_list_of_dictionaries(expect, actual):
                     f'Actual:\n{actual}\n'
                 )
 
+
 def _round(number):
     return round(number, 2)
 
