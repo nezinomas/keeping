@@ -2,26 +2,10 @@ from decimal import Decimal
 
 import pytest
 
+from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ..models import Account
 
 pytestmark = pytest.mark.django_db
-
-
-def assert_(expect, actual):
-    for key, arr in enumerate(expect):
-        for expect_key, expect_val in arr.items():
-            if expect_key not in actual[key]:
-                raise Exception(
-                    f'No \'{expect_key}\' key in {actual[key]}. List item: {key}')
-
-            if expect_val != actual[key][expect_key]:
-                raise Exception(
-                    f'Not Equal.'
-                    f'Expected: {expect_key}={expect_val} '
-                    f'Actual: {expect_key}={actual[key][expect_key]}\n\n'
-                    f'Expected:\n{expect}\n\n'
-                    f'Actual:\n{actual}\n'
-                )
 
 
 def test_balance_only_incomes_query(incomes):
