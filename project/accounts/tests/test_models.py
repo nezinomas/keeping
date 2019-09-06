@@ -1,0 +1,247 @@
+from decimal import Decimal
+
+import pytest
+
+from ..models import Account
+
+pytestmark = pytest.mark.django_db
+
+
+def assert_(expect, actual):
+    for key, arr in enumerate(expect):
+        for expect_key, expect_val in arr.items():
+            if expect_key not in actual[key]:
+                raise Exception(
+                    f'No \'{expect_key}\' key in {actual[key]}. List item: {key}')
+
+            if expect_val != actual[key][expect_key]:
+                raise Exception(
+                    f'Not Equal.'
+                    f'Expected: {expect_key}={expect_val} '
+                    f'Actual: {expect_key}={actual[key][expect_key]}\n\n'
+                    f'Expected:\n{expect}\n\n'
+                    f'Actual:\n{actual}\n'
+                )
+
+
+def test_balance_only_incomes_query(incomes):
+    expect = [{
+        'title': 'Account1',
+        'i_past': 5.25,
+        'i_now': 3.25,
+
+    }, {
+        'title': 'Account2',
+        'i_past': 4.5,
+        'i_now': 3.5,
+    }]
+
+    actual = list(Account.objects.incomes(1999).values())
+
+    assert_(expect, actual)
+
+
+def test_incomes_only(incomes):
+    expect = [{
+        'account': 'Account1',
+        'past': Decimal(5.25),
+        'incomes': Decimal(3.25),
+        'expenses': Decimal(0.0),
+        'balance': Decimal(8.5),
+    }, {
+        'account': 'Account2',
+        'past': Decimal(4.50),
+        'incomes': Decimal(3.5),
+        'expenses': Decimal(0.0),
+        'balance': Decimal(8.0),
+    }]
+
+    actual = list(Account.objects.balance_year(1999))
+
+    assert_(expect, actual)
+
+
+def test_balance_only_expenses_query(expenses):
+    expect = [{
+        'title': 'Account1',
+        'e_past': 2.5,
+        'e_now': 0.5,
+
+    }, {
+        'title': 'Account2',
+        'e_past': 2.25,
+        'e_now': 1.25,
+    }]
+
+    actual = list(Account.objects.expenses(1999).values())
+
+    assert_(expect, actual)
+
+
+def test_balance_only_expenses(expenses):
+    expect = [{
+        'account': 'Account1',
+        'past': -2.50,
+        'incomes': 0.0,
+        'expenses': 0.50,
+        'balance': -3.00,
+    }, {
+        'account': 'Account2',
+        'past': -2.25,
+        'incomes': 0.0,
+        'expenses': 1.25,
+        'balance': -3.5,
+    }]
+
+    actual = list(Account.objects.balance_year(1999))
+
+    assert_(expect, actual)
+
+
+def test_balance_only_transactions_balance_year(transactions):
+    expect = [{
+        'account': 'Account1',
+        'past': 4.0,
+        'incomes': 3.25,
+        'expenses': 4.5,
+        'balance': 2.75,
+    }, {
+        'account': 'Account2',
+        'past': -4.0,
+        'incomes': 4.5,
+        'expenses': 3.25,
+        'balance': -2.75,
+    }]
+
+    actual = list(Account.objects.balance_year(1999))
+
+    assert_(expect, actual)
+
+
+def test_balance_only_transactions_from_query(transactions):
+    expect = [{
+        'title': 'Account1',
+        'tr_from_past': 1.25,
+        'tr_from_now': 4.5,
+    }, {
+        'title': 'Account2',
+        'tr_from_past': 5.25,
+        'tr_from_now': 3.25,
+    }]
+
+    actual = list(Account.objects.all().transactions_from(1999).values())
+
+    assert_(expect, actual)
+
+
+def test_balance_only_transactions_to_query(transactions):
+    expect = [{
+        'title': 'Account1',
+        'tr_to_past': 5.25,
+        'tr_to_now': 3.25,
+    }, {
+        'title': 'Account2',
+        'tr_to_past': 1.25,
+        'tr_to_now': 4.5,
+    }]
+
+    actual = list(Account.objects.all().transactions_to(1999).values())
+
+    assert_(expect, actual)
+
+
+def test_balance_only_savings_query(savings):
+    expect = [{
+        'title': 'Account1',
+        's_past': 1.25,
+        's_now': 3.5,
+
+    }, {
+        'title': 'Account2',
+        's_past': 0.25,
+        's_now': 2.25,
+    }]
+
+    actual = list(Account.objects.savings(1999).values())
+
+    assert_(expect, actual)
+
+
+def test_balance_only_savings_balance_year(savings):
+    expect = [{
+        'account': 'Account1',
+        'past': -1.25,
+        'incomes': 0.0,
+        'expenses': 3.50,
+        'balance': -4.75,
+    }, {
+        'account': 'Account2',
+        'past': -0.25,
+        'incomes': 0.0,
+        'expenses': 2.25,
+        'balance': -2.50,
+    }]
+
+    actual = list(Account.objects.all().balance_year(1999))
+
+    assert_(expect, actual)
+
+
+def test_balance_only_savings_close_balance_year(savings_close):
+    expect = [{
+        'account': 'Account1',
+        'past': 0.25,
+        'incomes': 0.25,
+        'expenses': 0.0,
+        'balance': 0.5,
+    }, {
+        'account': 'Account2',
+        'past': 0.0,
+        'incomes': 0.0,
+        'expenses': 0.0,
+        'balance': 0.0,
+    }]
+
+    actual = list(Account.objects.balance_year(1999))
+
+    assert_(expect, actual)
+
+
+def test_balance(incomes, expenses, savings, transactions, savings_close):
+    expect = [{
+        'account': 'Account1',
+        'past': 5.75,
+        'incomes': 6.75,
+        'expenses': 8.5,
+        'balance': 4.0,
+    }, {
+        'account': 'Account2',
+        'past': -2.0,
+        'incomes': 8.0,
+        'expenses': 6.75,
+        'balance': -0.75,
+    }]
+
+    actual = list(Account.objects.balance_year(1999))
+
+    assert_(expect, actual)
+
+
+def test_balance_past(incomes, expenses, savings, transactions, savings_close):
+    expect = [{
+        'account': 'Account1',
+        'past': 0.0,
+        'incomes': 10.75,
+        'expenses': 5.0,
+        'balance': 5.75,
+    }, {
+        'account': 'Account2',
+        'past': 0.0,
+        'incomes': 5.75,
+        'expenses': 7.75,
+        'balance': -2.0,
+    }]
+
+    actual = list(Account.objects.balance_year(1970))
+
+    assert_(expect, actual)
