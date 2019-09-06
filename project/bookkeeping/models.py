@@ -17,7 +17,7 @@ class SavingWorthQuerySet(models.QuerySet):
 
     def items(self):
         return self.related().annotate(
-            max_date=Max('saving_type__savingworth__date')
+            max_date=Max('saving_type__savings_worth__date')
         ).filter(
             date=F('max_date')
         )
@@ -33,7 +33,7 @@ class SavingWorth(models.Model):
     saving_type = models.ForeignKey(
         SavingType,
         on_delete=models.CASCADE,
-        related_name = 'savings_worth'
+        related_name='savings_worth'
     )
 
     class Meta:
@@ -55,7 +55,7 @@ class AccountWorthQuerySet(models.QuerySet):
 
     def items(self):
         return self.related().annotate(
-            max_date=Max('account__accountworth__date')
+            max_date=Max('account__accounts_worth__date')
         ).filter(
             date=F('max_date')
         )
@@ -71,7 +71,7 @@ class AccountWorth(models.Model):
     account = models.ForeignKey(
         Account,
         on_delete=models.CASCADE,
-        related_name = 'accounts_worth'
+        related_name='accounts_worth'
     )
 
     class Meta:
