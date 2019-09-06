@@ -32,7 +32,8 @@ class SavingWorth(models.Model):
     )
     saving_type = models.ForeignKey(
         SavingType,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name = 'savings_worth'
     )
 
     class Meta:
@@ -69,7 +70,8 @@ class AccountWorth(models.Model):
     )
     account = models.ForeignKey(
         Account,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name = 'accounts_worth'
     )
 
     class Meta:
