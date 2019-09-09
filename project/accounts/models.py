@@ -6,8 +6,8 @@ from django.db.models.functions import TruncMonth
 from ..core.models import TitleAbstract
 
 
-class AccountQuerySet(models.QuerySet):
-    def _sum_price(self, year, related_name, keyword_lookup):
+class QuerySetBalanceMixin():
+    def sum_price(self, year, related_name, keyword_lookup):
         '''
         year: year
 
@@ -25,7 +25,7 @@ class AccountQuerySet(models.QuerySet):
             default=0
         ))
 
-    def _sum_current_year(self, year, related_name):
+    def sum_current_year(self, year, related_name):
         '''
         year: year
 
@@ -33,9 +33,9 @@ class AccountQuerySet(models.QuerySet):
         '''
         lookup = f'{related_name}__date__year'
 
-        return self._sum_price(year, related_name, lookup)
+        return self.sum_price(year, related_name, lookup)
 
-    def _sum_past_years(self, year, related_name):
+    def sum_past_years(self, year, related_name):
         '''
         year: year
 
@@ -43,9 +43,9 @@ class AccountQuerySet(models.QuerySet):
         '''
         lookup = f'{related_name}__date__year__lt'
 
-        return self._sum_price(year, related_name, lookup)
+        return self.sum_price(year, related_name, lookup)
 
-    def _fix_multiplied_err(self, keyword_prefix, keyword_time):
+    def fix_multiplied_err(self, keyword_prefix, keyword_time):
         '''
         Functin for fixing chained .annotate multiplication error
 
@@ -67,7 +67,7 @@ class AccountQuerySet(models.QuerySet):
             )
         )
 
-    def _annotate(self, year, related_name, keyword_prefix):
+    def annotate_(self, year, related_name, keyword_prefix):
         '''
         year: year
 
@@ -91,42 +91,44 @@ class AccountQuerySet(models.QuerySet):
                 count_distinct: Count(related_name, distinct=True)
             })
             .annotate(**{
-                multiplied_now: self._sum_current_year(year, related_name)
+                multiplied_now: self.sum_current_year(year, related_name)
             })
             .annotate(** {
-                multiplied_past: self._sum_past_years(year, related_name)
+                multiplied_past: self.sum_past_years(year, related_name)
             })
             .annotate(**{
-                now: self._fix_multiplied_err(keyword_prefix, 'now')
+                now: self.fix_multiplied_err(keyword_prefix, 'now')
             })
             .annotate(**{
                 now: Case(When(~Q(**{now: None}), then=now), default=0)
             })
             .annotate(**{
-                past: self._fix_multiplied_err(keyword_prefix, 'past')
+                past: self.fix_multiplied_err(keyword_prefix, 'past')
             })
             .annotate(**{
                 past: Case(When(~Q(**{past: None}), then=past), default=0)
             })
         )
 
+
+class AccountQuerySet(QuerySetBalanceMixin, models.QuerySet):
     def incomes(self, year):
-        return self._annotate(year, 'incomes', 'i')
+        return self.annotate_(year, 'incomes', 'i')
 
     def expenses(self, year):
-        return self._annotate(year, 'expenses', 'e')
+        return self.annotate_(year, 'expenses', 'e')
 
     def savings(self, year):
-        return self._annotate(year, 'savings', 's')
+        return self.annotate_(year, 'savings', 's')
 
     def transactions_from(self, year):
-        return self._annotate(year, 'transactions_from', 'tr_from')
+        return self.annotate_(year, 'transactions_from', 'tr_from')
 
     def transactions_to(self, year):
-        return self._annotate(year, 'transactions_to', 'tr_to')
+        return self.annotate_(year, 'transactions_to', 'tr_to')
 
     def savings_close_to(self, year):
-        return self._annotate(year, 'savings_close_to', 's_close_to')
+        return self.annotate_(year, 'savings_close_to', 's_close_to')
 
     # def accounts_worth(self):
     #     return (
