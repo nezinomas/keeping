@@ -18,7 +18,7 @@ def test_index_context_for_accounts(client, login, incomes):
         'expenses': 0.0,
         'balance': 8.5,
         'have': 0.0,
-        'delta': 0.0
+        'delta': -8.5
     }, {
         'account': 'Account2',
         'past': 4.50,
@@ -26,7 +26,7 @@ def test_index_context_for_accounts(client, login, incomes):
         'expenses': 0.0,
         'balance': 8.0,
         'have': 0.0,
-        'delta': 0.0
+        'delta': -8.0
     }]
 
     assert_(expect, response.context['accounts'])
