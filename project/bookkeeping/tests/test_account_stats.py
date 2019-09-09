@@ -31,14 +31,16 @@ def _accounts_worth():
     ])
 
 
-@pytest.mark.xfail(raises=Exception)
 def test_empty_accounts_stats():
     actual = T([], None).balance
 
+    assert actual is None
 
-@pytest.mark.xfail(raises=Exception)
+
 def test_none_accounts_stats():
     actual = T(None, None).balance
+
+    assert actual is None
 
 
 def test_account_stats(_accounts, _accounts_worth):
