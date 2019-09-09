@@ -7,7 +7,7 @@ from ..core.models import TitleAbstract
 
 
 class QuerySetBalanceMixin():
-    def sum_price(self, year, related_name, keyword_lookup):
+    def _sum_price(self, year, related_name, keyword_lookup):
         '''
         year: year
 
@@ -25,7 +25,7 @@ class QuerySetBalanceMixin():
             default=0
         ))
 
-    def sum_current_year(self, year, related_name):
+    def _sum_current_year(self, year, related_name):
         '''
         year: year
 
@@ -33,9 +33,9 @@ class QuerySetBalanceMixin():
         '''
         lookup = f'{related_name}__date__year'
 
-        return self.sum_price(year, related_name, lookup)
+        return self._sum_price(year, related_name, lookup)
 
-    def sum_past_years(self, year, related_name):
+    def _sum_past_years(self, year, related_name):
         '''
         year: year
 
@@ -43,9 +43,9 @@ class QuerySetBalanceMixin():
         '''
         lookup = f'{related_name}__date__year__lt'
 
-        return self.sum_price(year, related_name, lookup)
+        return self._sum_price(year, related_name, lookup)
 
-    def fix_multiplied_err(self, keyword_prefix, keyword_time):
+    def _fix_multiplied_err(self, keyword_prefix, keyword_time):
         '''
         Functin for fixing chained .annotate multiplication error
 
@@ -91,19 +91,19 @@ class QuerySetBalanceMixin():
                 count_distinct: Count(related_name, distinct=True)
             })
             .annotate(**{
-                multiplied_now: self.sum_current_year(year, related_name)
+                multiplied_now: self._sum_current_year(year, related_name)
             })
             .annotate(** {
-                multiplied_past: self.sum_past_years(year, related_name)
+                multiplied_past: self._sum_past_years(year, related_name)
             })
             .annotate(**{
-                now: self.fix_multiplied_err(keyword_prefix, 'now')
+                now: self._fix_multiplied_err(keyword_prefix, 'now')
             })
             .annotate(**{
                 now: Case(When(~Q(**{now: None}), then=now), default=0)
             })
             .annotate(**{
-                past: self.fix_multiplied_err(keyword_prefix, 'past')
+                past: self._fix_multiplied_err(keyword_prefix, 'past')
             })
             .annotate(**{
                 past: Case(When(~Q(**{past: None}), then=past), default=0)
