@@ -49,7 +49,7 @@ class AccountQuerySet(models.QuerySet):
         '''
         Functin for fixing chained .annotate multiplication error
 
-        keyword_prefix: shortcut for related_name - incomes == i
+        keyword_prefix: shortcut for related_name ie incomes == i
 
         keyword_time: values past (year < current) or now (year == current year)
 
