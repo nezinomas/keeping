@@ -9,6 +9,7 @@ def equal_list_of_dictionaries(expect, actual):
 
             try:
                 actual_val = float(actual_val)
+                actual_val = _round(actual_val)
             except:
                 pass
 
