@@ -15,16 +15,16 @@
         </tr>
     </thead>
     <tbody>
-        {% for account, stats in accounts.items %}
+        {% for item in accounts %}
         <tr>
-            <td>{{ account }}</td>
-            {% td stats.past width='110rem' %}
-            {% td stats.incomes width='110rem' %}
-            {% td stats.expenses width='110rem' %}
-            {% td stats.balance width='110rem' %}
+            <td>{{ item.account }}</td>
+            {% td item.past width='110rem' %}
+            {% td item.incomes width='110rem' %}
+            {% td item.expenses width='110rem' %}
+            {% td item.balance width='110rem' %}
             <td width="80rem" class="b"></td>
-            {% td stats.have width='110rem' %}
-            {% td stats.delta width='110rem' negative=True positive=True  %}
+            {% td item.have width='110rem' %}
+            {% td item.delta width='110rem' negative=True positive=True  %}
         </tr>
         {% endfor %}
     </tbody>

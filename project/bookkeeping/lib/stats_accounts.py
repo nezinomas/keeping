@@ -26,9 +26,13 @@ class StatsAccounts(object):
 
     @property
     def balance(self):
+        balance = self._balance.copy()
+        balance.reset_index(inplace=True)
+        balance.rename(columns={'title': 'account'}, inplace=True)
+
         return (
-            self._balance.to_dict('index') if not self._balance.empty
-            else self._balance
+            balance.to_dict('records') if not balance.empty
+            else balance
         )
 
     @property

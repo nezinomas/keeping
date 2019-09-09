@@ -21,18 +21,18 @@
         </tr>
     </thead>
     <tbody>
-        {% for account, stats in savings.items %}
+        {% for item in savings %}
         <tr>
-            <td>{{ account }}</td>
-            {% td stats.past_amount width='110rem' %}
-            {% td stats.past_fee width='110rem' %}
-            {% td stats.incomes width='110rem' %}
-            {% td stats.fees width='110rem' %}
-            {% td stats.invested width='110rem' %}
-            {% td stats.market_value width='110rem' %}
-            {% td stats.profit_incomes_proc width='110rem' %}
-            {% td stats.profit_invested_sum text='€' negative=True positive=True width='110rem' %}
-            {% td stats.profit_invested_proc text='%' negative=True positive=True width='110rem' %}
+            <td>{{ item.saving }}</td>
+            {% td item.past_amount width='110rem' %}
+            {% td item.past_fee width='110rem' %}
+            {% td item.incomes width='110rem' %}
+            {% td item.fees width='110rem' %}
+            {% td item.invested width='110rem' %}
+            {% td item.market_value width='110rem' %}
+            {% td item.profit_incomes_proc width='110rem' %}
+            {% td item.profit_invested_sum text='€' negative=True positive=True width='110rem' %}
+            {% td item.profit_invested_proc text='%' negative=True positive=True width='110rem' %}
         </tr>
         {% endfor %}
     </tbody>
