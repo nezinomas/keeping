@@ -17,8 +17,8 @@ def test_account_worth_latest_values(accounts_worth):
     actual = list(models.AccountWorth.objects.items())
 
     expect = [
-        {'account': 'Account1', 'price': 3.25},
-        {'account': 'Account2', 'price': 8.0},
+        {'account': 'Account1', 'have': 3.25},
+        {'account': 'Account2', 'have': 8.0},
     ]
 
     assert_(expect, actual)
@@ -33,8 +33,8 @@ def test_saving_worth_latest_values(savings_worth):
     actual = list(models.SavingWorth.objects.items())
 
     expect = [
-        {'saving': 'Saving1', 'price': 0.15},
-        {'saving': 'Saving2', 'price': 6.15},
+        {'saving': 'Saving1', 'have': 0.15},
+        {'saving': 'Saving2', 'have': 6.15},
     ]
 
     assert_(expect, actual)

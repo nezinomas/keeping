@@ -22,7 +22,7 @@ class SavingWorthQuerySet(models.QuerySet):
             .annotate(max_date=Max('saving_type__savings_worth__date'))
             .filter(date=F('max_date'))
             .annotate(saving=F('saving_type__title'))
-            .values('saving', 'price')
+            .values('saving', have=F('price'))
         )
 
 
@@ -65,7 +65,7 @@ class AccountWorthQuerySet(models.QuerySet):
             # extra groupby with unique model field, because
             # keyword 'account' conflicts with model account field
             .annotate(account=F('account__title'))
-            .values('account', 'price')
+            .values('account', have=F('price'))
         )
 
 
