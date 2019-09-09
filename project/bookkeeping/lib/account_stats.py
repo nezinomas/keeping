@@ -6,7 +6,7 @@ class AccountStats():
         self._balance = pd.DataFrame()
 
         if not account_stats or account_stats is None:
-            raise Exception('No Account in db.')
+            return
 
         self._prepare_balance(account_stats, account_worth)
         self._calc_balance()
@@ -40,6 +40,10 @@ class AccountStats():
             df = df.join(_worth)
         else:
             df.loc[:, 'have'] = 0.0
+
+        # convert to float
+        for col in df.columns:
+            df[col] = pd.to_numeric(df[col])
 
         self._balance = df
 
