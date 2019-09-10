@@ -1,21 +1,27 @@
 from django.template.loader import render_to_string
 
 from ..accounts.models import Account
-from ..core.mixins.views import CreateAjaxMixin, IndexMixin
 from ..core.mixins.formset import FormsetMixin
-from ..expenses.models import Expense
-from ..incomes.models import Income
-from ..savings.models import Saving, SavingType
-from ..transactions.models import SavingChange, SavingClose, Transaction
-
-from . import forms, models
-
-from .lib.get_data import GetObjects
-from .lib.stats_accounts import StatsAccounts
-from .lib.stats_savings import StatsSavings
-
+from ..core.mixins.views import CreateAjaxMixin, IndexMixin
+from ..savings.models import SavingType
+from . import forms
 from .lib.account_stats import AccountStats
 from .lib.saving_stats import SavingStats
+from .models import AccountWorth, SavingWorth
+
+
+def _account_stats(request):
+    _stats = Account.objects.balance_year(request.user.profile.year)
+    _worth = AccountWorth.objects.items()
+
+    return AccountStats(_stats, _worth)
+
+
+def _saving_stats(request):
+    _stats = SavingType.objects.balance_year(request.user.profile.year)
+    _worth = SavingWorth.objects.items()
+
+    return SavingStats(_stats, _worth)
 
 
 class Index(IndexMixin):
@@ -23,29 +29,25 @@ class Index(IndexMixin):
         context = super().get_context_data(**kwargs)
 
         # Account and AccountWorth stats
-        _account_stats = Account.objects.balance_year(self.request.user.profile.year)
-        _account_worth = models.AccountWorth.objects.items()
-        _account = AccountStats(list(_account_stats), list(_account_worth))
+        account = _account_stats(self.request)
 
         context['accounts'] = render_to_string(
             'bookkeeping/includes/accounts_worth_list.html',
             {
-                'accounts': _account.balance,
-                'totals': _account.totals
+                'accounts': account.balance,
+                'totals': account.totals
             },
             self.request
         )
 
         # Saving and SawingWorth stats
-        _saving_stats = SavingType.objects.balance_year(self.request.user.profile.year)
-        _saving_worth = models.SavingWorth.objects.items()
-        _saving = SavingStats(_saving_stats, _saving_worth)
+        saving = _saving_stats(self.request)
 
         context['savings'] = render_to_string(
             'bookkeeping/includes/savings_worth_list.html',
             {
-                'savings': _saving.balance,
-                'totals': _saving.totals
+                'savings': saving.balance,
+                'totals': saving.totals
             },
             self.request
         )
@@ -55,36 +57,31 @@ class Index(IndexMixin):
 
 class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = SavingType
-    model = models.SavingWorth
+    model = SavingWorth
     form_class = forms.SavingWorthForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        _saving_stats = SavingType.objects.balance_year(
-            self.request.user.profile.year)
-        _saving_worth = models.SavingWorth.objects.items()
-        _saving = SavingStats(_saving_stats, _saving_worth)
+        saving = _saving_stats(self.request)
 
-        context['savings'] = _savings.balance
-        context['totals'] = _savings.totals
+        context['savings'] = saving.balance
+        context['totals'] = saving.totals
 
         return context
 
 
 class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = Account
-    model = models.AccountWorth
+    model = AccountWorth
     form_class = forms.AccountWorthForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        _account_stats = Account.objects.balance_year(self.request.user.profile.year)
-        _account_worth = models.AccountWorth.objects.items()
-        _account = AccountStats(_account_stats, _account_worth)
+        account = _account_stats(self.request)
 
-        context['accounts'] = _account.balance
-        context['totals'] = _account.totals
+        context['accounts'] = account.balance
+        context['totals'] = account.totals
 
         return context
