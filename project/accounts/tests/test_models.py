@@ -27,13 +27,13 @@ def test_balance_only_incomes_query(incomes):
 
 def test_incomes_only(incomes):
     expect = [{
-        'account': 'Account1',
+        'title': 'Account1',
         'past': Decimal(5.25),
         'incomes': Decimal(3.25),
         'expenses': Decimal(0.0),
         'balance': Decimal(8.5),
     }, {
-        'account': 'Account2',
+        'title': 'Account2',
         'past': Decimal(4.50),
         'incomes': Decimal(3.5),
         'expenses': Decimal(0.0),
@@ -64,13 +64,13 @@ def test_balance_only_expenses_query(expenses):
 
 def test_balance_only_expenses(expenses):
     expect = [{
-        'account': 'Account1',
+        'title': 'Account1',
         'past': -2.50,
         'incomes': 0.0,
         'expenses': 0.50,
         'balance': -3.00,
     }, {
-        'account': 'Account2',
+        'title': 'Account2',
         'past': -2.25,
         'incomes': 0.0,
         'expenses': 1.25,
@@ -84,13 +84,13 @@ def test_balance_only_expenses(expenses):
 
 def test_balance_only_transactions_balance_year(transactions):
     expect = [{
-        'account': 'Account1',
+        'title': 'Account1',
         'past': 4.0,
         'incomes': 3.25,
         'expenses': 4.5,
         'balance': 2.75,
     }, {
-        'account': 'Account2',
+        'title': 'Account2',
         'past': -4.0,
         'incomes': 4.5,
         'expenses': 3.25,
@@ -153,13 +153,13 @@ def test_balance_only_savings_query(savings):
 
 def test_balance_only_savings_balance_year(savings):
     expect = [{
-        'account': 'Account1',
+        'title': 'Account1',
         'past': -1.25,
         'incomes': 0.0,
         'expenses': 3.50,
         'balance': -4.75,
     }, {
-        'account': 'Account2',
+        'title': 'Account2',
         'past': -0.25,
         'incomes': 0.0,
         'expenses': 2.25,
@@ -173,13 +173,13 @@ def test_balance_only_savings_balance_year(savings):
 
 def test_balance_only_savings_close_balance_year(savings_close):
     expect = [{
-        'account': 'Account1',
+        'title': 'Account1',
         'past': 0.25,
         'incomes': 0.25,
         'expenses': 0.0,
         'balance': 0.5,
     }, {
-        'account': 'Account2',
+        'title': 'Account2',
         'past': 0.0,
         'incomes': 0.0,
         'expenses': 0.0,
@@ -193,13 +193,13 @@ def test_balance_only_savings_close_balance_year(savings_close):
 
 def test_balance(incomes, expenses, savings, transactions, savings_close):
     expect = [{
-        'account': 'Account1',
+        'title': 'Account1',
         'past': 5.75,
         'incomes': 6.75,
         'expenses': 8.5,
         'balance': 4.0,
     }, {
-        'account': 'Account2',
+        'title': 'Account2',
         'past': -2.0,
         'incomes': 8.0,
         'expenses': 6.75,
@@ -213,13 +213,13 @@ def test_balance(incomes, expenses, savings, transactions, savings_close):
 
 def test_balance_past(incomes, expenses, savings, transactions, savings_close):
     expect = [{
-        'account': 'Account1',
+        'title': 'Account1',
         'past': 0.0,
         'incomes': 10.75,
         'expenses': 5.0,
         'balance': 5.75,
     }, {
-        'account': 'Account2',
+        'title': 'Account2',
         'past': 0.0,
         'incomes': 5.75,
         'expenses': 7.75,
@@ -235,10 +235,10 @@ def test_balance_past(incomes, expenses, savings, transactions, savings_close):
 #
 # def test_accounts_worth(accounts_worth):
 #     expect = [{
-#         'account': 'Account1',
+#         'title': 'Account1',
 #         'have': 3.25,
 #     }, {
-#         'account': 'Account2',
+#         'title': 'Account2',
 #         'have': 8.0,
 #     }]
 #     actual = list(Account.objects.balance_year(1970))

@@ -8,14 +8,14 @@ from . import helper as H
 
 def test_savings_year_now(_saving_data):
     expect = [{
-        'saving': 'Saving1',
+        'title': 'Saving1',
         'past_amount': -1.25,
         'past_fee': 0.40,
         'incomes': 0.75,
         'fees': 0.95,
         'invested': -0.20,
     }, {
-        'saving': 'Saving2',
+        'title': 'Saving2',
         'past_amount': 2.50,
         'past_fee': 0.15,
         'incomes': 6.00,
@@ -30,14 +30,14 @@ def test_savings_year_now(_saving_data):
 
 def test_savings_only(_saving_data):
     expect = [{
-        'saving': 'Saving1',
+        'title': 'Saving1',
         'past_amount': 1.25,
         'past_fee': 0.25,
         'incomes': 4.75,
         'fees': 0.75,
         'invested': 4.0,
     }, {
-        'saving': 'Saving2',
+        'title': 'Saving2',
         'past_amount': 0.25,
         'past_fee': 0.0,
         'incomes': 2.50,
@@ -54,14 +54,14 @@ def test_savings_only(_saving_data):
 
 def test_savings_year_past(_saving_data):
     expect = [{
-        'saving': 'Saving1',
+        'title': 'Saving1',
         'past_amount': 0.00,
         'past_fee': 0.0,
         'incomes': -1.25,
         'fees': 0.40,
         'invested': -1.65,
     }, {
-        'saving': 'Saving2',
+        'title': 'Saving2',
         'past_amount': 0.00,
         'past_fee': 0.00,
         'incomes': 2.50,
@@ -76,14 +76,14 @@ def test_savings_year_past(_saving_data):
 
 def test_savings_change_only(_saving_data):
     expect = [{
-        'saving': 'Saving1',
+        'title': 'Saving1',
         'past_amount': -2.25,
         'past_fee': 0.15,
         'incomes': -3.50,
         'fees': 0.20,
         'invested': -3.70,
     }, {
-        'saving': 'Saving2',
+        'title': 'Saving2',
         'past_amount': 2.25,
         'past_fee': 0.15,
         'incomes': 3.50,
@@ -99,14 +99,14 @@ def test_savings_change_only(_saving_data):
 
 def test_savings_cloce_only(_saving_data):
     expect = [{
-        'saving': 'Saving1',
+        'title': 'Saving1',
         'past_amount': -0.25,
         'past_fee': 0.0,
         'incomes': -0.5,
         'fees': 0.0,
         'invested': -0.5,
     }, {
-        'saving': 'Saving2',
+        'title': 'Saving2',
         'past_amount': 0.0,
         'past_fee': 0.0,
         'incomes': 0.0,
@@ -128,7 +128,7 @@ def test_savings_empty():
 
 def test_savings_worth(_saving_data):
     expect = [{
-        'saving': 'Saving1',
+        'title': 'Saving1',
         'incomes': 4.75,
         'invested': 4.0,
         'market_value': 0.15,
@@ -137,7 +137,7 @@ def test_savings_worth(_saving_data):
         'profit_invested_proc': -96.25,
         'profit_invested_sum': -3.85,
     }, {
-        'saving': 'Saving2',
+        'title': 'Saving2',
         'incomes': 2.50,
         'invested': 2.25,
         'market_value': 6.15,
@@ -156,7 +156,7 @@ def test_savings_worth(_saving_data):
 def test_savings_worth_missing_market_place(_saving_data):
     # arrange
     expect = [{
-        'saving': 'Saving1',
+        'title': 'Saving1',
         'incomes': 4.75,
         'invested': 4.0,
         'market_value': 0.15,
@@ -165,7 +165,7 @@ def test_savings_worth_missing_market_place(_saving_data):
         'profit_invested_proc': -96.25,
         'profit_invested_sum': -3.85,
     }, {
-        'saving': 'Saving2',
+        'title': 'Saving2',
         'incomes': 2.50,
         'invested': 2.25,
         'market_value': 0.0,

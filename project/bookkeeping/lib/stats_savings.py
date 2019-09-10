@@ -26,7 +26,7 @@ class StatsSavings(object):
     def balance(self):
         balance = self._balance.copy()
         balance.reset_index(inplace=True)
-        balance.rename(columns={'title': 'saving'}, inplace=True)
+        # balance.rename(columns={'title': 'saving'}, inplace=True)
 
         return (
             balance.to_dict('records') if not balance.empty else balance

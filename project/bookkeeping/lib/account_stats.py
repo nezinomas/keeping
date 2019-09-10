@@ -33,10 +33,10 @@ class AccountStats():
         return val
 
     def _prepare_balance(self, account_stats, account_worth):
-        df = pd.DataFrame(account_stats).set_index('account')
+        df = pd.DataFrame(account_stats).set_index('title')
 
         if account_worth:
-            _worth = pd.DataFrame(account_worth).set_index('account')
+            _worth = pd.DataFrame(account_worth).set_index('title')
             df = df.join(_worth)
         else:
             df.loc[:, 'have'] = 0.0

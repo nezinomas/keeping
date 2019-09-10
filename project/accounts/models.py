@@ -80,7 +80,9 @@ class AccountQuerySet(QuerySetBalanceMixin, models.QuerySet):
     def balance_year(self, year):
         return (
             self
-            .annotate(a=Count('title', distinct=True)).values(account=F('title'))
+            .annotate(a=Count('title', distinct=True))
+            .values('id')
+            .values(title=F('title'))
             .incomes(year)
             .expenses(year)
             .savings(year)
@@ -122,7 +124,7 @@ class AccountQuerySet(QuerySetBalanceMixin, models.QuerySet):
                     - F('expenses')
                 )
             )
-            .values('account', 'past', 'incomes', 'expenses', 'balance')
+            .values('title', 'past', 'incomes', 'expenses', 'balance')
             .order_by('title')
         )
 

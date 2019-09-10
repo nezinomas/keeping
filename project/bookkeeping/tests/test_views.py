@@ -7,26 +7,30 @@ from .. import views
 pytestmark = pytest.mark.django_db
 
 
-def test_index_context_for_accounts(client, login, incomes):
+def test_index_context_for_accounts(
+    client, login,
+    incomes, expenses, savings, transactions,
+    savings_close, accounts_worth
+):
     url = reverse('bookkeeping:index')
     response = client.get(url)
 
     expect = [{
-        'account': 'Account1',
-        'past': 5.25,
-        'incomes': 3.25,
-        'expenses': 0.0,
-        'balance': 8.5,
-        'have': 0.0,
-        'delta': -8.5
+        'title': 'Account1',
+        'past': 5.75,
+        'incomes': 6.75,
+        'expenses': 8.5,
+        'balance': 4.0,
+        'have': 3.25,
+        'delta': -0.75
     }, {
-        'account': 'Account2',
-        'past': 4.50,
-        'incomes': 3.5,
-        'expenses': 0.0,
-        'balance': 8.0,
-        'have': 0.0,
-        'delta': -8.0
+        'title': 'Account2',
+        'past': -2.0,
+        'incomes': 8.0,
+        'expenses': 6.75,
+        'balance': -0.75,
+        'have': 8.0,
+        'delta': 8.75
     }]
 
     assert_(expect, response.context['accounts'])
@@ -37,7 +41,7 @@ def test_index_context_for_savings(client, login, savings):
     response = client.get(url)
 
     expect = [{
-        'saving': 'Saving1',
+        'title': 'Saving1',
         'past_amount': 1.25,
         'past_fee': 0.25,
         'incomes': 4.75,
@@ -49,7 +53,7 @@ def test_index_context_for_savings(client, login, savings):
         'profit_invested_proc': 0.0,
         'profit_invested_sum': 0.0,
     }, {
-        'saving': 'Saving2',
+        'title': 'Saving2',
         'past_amount': 0.25,
         'past_fee': 0.0,
         'incomes': 2.50,
