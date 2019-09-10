@@ -1,3 +1,26 @@
+def equal_list_of_dictionaries(expect, actual):
+    for key, arr in enumerate(expect):
+        for expect_key, expect_val in arr.items():
+            if expect_key not in actual[key]:
+                raise Exception(
+                    f'No \'{expect_key}\' key in {actual[key]}. List item: {key}')
+
+            actual_val = actual[key][expect_key]
+
+            try:
+                actual_val = float(actual_val)
+                actual_val = _round(actual_val)
+            except:
+                pass
+
+            if expect_val != actual_val:
+                raise Exception(
+                    f'Not Equal.'
+                    f'Expected: {expect_key}={expect_val} '
+                    f'Actual: {expect_key}={actual[key][expect_key]}\n\n'
+                    f'Expected:\n{expect}\n\n'
+                    f'Actual:\n{actual}\n'
+                )
 
 
 def _round(number):

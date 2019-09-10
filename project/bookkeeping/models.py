@@ -16,10 +16,12 @@ class SavingWorthQuerySet(models.QuerySet):
         return self.select_related('saving_type')
 
     def items(self):
-        return self.related().annotate(
-            max_date=Max('saving_type__savingworth__date')
-        ).filter(
-            date=F('max_date')
+        return (
+            self
+            .related()
+            .annotate(max_date=Max('saving_type__savings_worth__date'))
+            .filter(date=F('max_date'))
+            .values(title=F('saving_type__title'), have=F('price'))
         )
 
 
@@ -32,7 +34,8 @@ class SavingWorth(models.Model):
     )
     saving_type = models.ForeignKey(
         SavingType,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='savings_worth'
     )
 
     class Meta:
@@ -53,10 +56,14 @@ class AccountWorthQuerySet(models.QuerySet):
         return self.select_related('account')
 
     def items(self):
-        return self.related().annotate(
-            max_date=Max('account__accountworth__date')
-        ).filter(
-            date=F('max_date')
+        return (
+            self.related()
+            .annotate(max_date=Max('account__accounts_worth__date'))
+            .filter(date=F('max_date'))
+            .values('id')
+            # extra groupby with unique model field, because
+            # keyword 'account' conflicts with model account field
+            .values(title=F('account__title'), have=F('price'))
         )
 
 
@@ -69,7 +76,8 @@ class AccountWorth(models.Model):
     )
     account = models.ForeignKey(
         Account,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='accounts_worth'
     )
 
     class Meta:

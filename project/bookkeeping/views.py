@@ -1,51 +1,54 @@
 from django.template.loader import render_to_string
 
 from ..accounts.models import Account
-from ..core.mixins.views import CreateAjaxMixin, IndexMixin
 from ..core.mixins.formset import FormsetMixin
-from ..expenses.models import Expense
-from ..incomes.models import Income
-from ..savings.models import Saving, SavingType
-from ..transactions.models import SavingChange, SavingClose, Transaction
-
-from . import forms, models
-
-from .lib.get_data import GetObjects
-from .lib.stats_accounts import StatsAccounts
-from .lib.stats_savings import StatsSavings
+from ..core.mixins.views import CreateAjaxMixin, IndexMixin
+from ..savings.models import SavingType
+from . import forms
+from .lib.account_stats import AccountStats
+from .lib.saving_stats import SavingStats
+from .models import AccountWorth, SavingWorth
 
 
-def _get_stats(request):
-    objects = GetObjects([
-        Account, Income, Expense, Transaction,
-        SavingType, Saving, SavingChange, SavingClose,
-        models.SavingWorth, models.AccountWorth
-    ])
+def _account_stats(request):
+    _stats = Account.objects.balance_year(request.user.profile.year)
+    _worth = AccountWorth.objects.items()
 
-    accounts = StatsAccounts(request.user.profile.year, objects.data)
-    savings = StatsSavings(request.user.profile.year, objects.data)
+    return AccountStats(_stats, _worth)
 
-    return accounts, savings
+
+def _saving_stats(request):
+    _stats = SavingType.objects.balance_year(request.user.profile.year)
+    _worth = SavingWorth.objects.items()
+
+    return SavingStats(_stats, _worth)
 
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        accounts, savings = _get_stats(self.request)
+        # Account and AccountWorth stats
+        account = _account_stats(self.request)
 
         context['accounts'] = render_to_string(
             'bookkeeping/includes/accounts_worth_list.html',
             {
-                'accounts': accounts.balance,
-                'past_amount': accounts.past_amount,
-                'current_amount': accounts.current_amount,
+                'accounts': account.balance,
+                'totals': account.totals
             },
             self.request
         )
+
+        # Saving and SawingWorth stats
+        saving = _saving_stats(self.request)
+
         context['savings'] = render_to_string(
             'bookkeeping/includes/savings_worth_list.html',
-            {'savings': savings.balance},
+            {
+                'savings': saving.balance,
+                'totals': saving.totals
+            },
             self.request
         )
 
@@ -54,30 +57,31 @@ class Index(IndexMixin):
 
 class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = SavingType
-    model = models.SavingWorth
+    model = SavingWorth
     form_class = forms.SavingWorthForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        _, savings = _get_stats(self.request)
-        context['savings'] = savings.balance
+        saving = _saving_stats(self.request)
+
+        context['savings'] = saving.balance
+        context['totals'] = saving.totals
 
         return context
 
 
 class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = Account
-    model = models.AccountWorth
+    model = AccountWorth
     form_class = forms.AccountWorthForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        accounts, _ = _get_stats(self.request)
+        account = _account_stats(self.request)
 
-        context['accounts'] = accounts.balance
-        context['past_amount'] = accounts.past_amount
-        context['current_amount'] = accounts.current_amount
+        context['accounts'] = account.balance
+        context['totals'] = account.totals
 
         return context
