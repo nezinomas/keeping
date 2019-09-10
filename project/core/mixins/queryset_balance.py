@@ -3,7 +3,7 @@ from django.db.models import (Case, Count, DecimalField, ExpressionWrapper, F,
 
 
 class QuerySetBalanceMixin():
-    def sum_price(self, year, related_name, keyword_lookup):
+    def _sum(self, year, related_name, keyword_lookup, sum_column):
         '''
         year: year
 
@@ -13,33 +13,15 @@ class QuerySetBalanceMixin():
             lookup for current records related_name__date_year
             or
             past records related_name__date_year__lt
+
+        sum_column: witch column to sum, default price
         '''
         return Sum(Case(
             When(
                 **{keyword_lookup: year},
-                then=f'{related_name}__price'),
+                then=f'{related_name}__{sum_column}'),
             default=0
         ))
-
-    def sum_current_year(self, year, related_name):
-        '''
-        year: year
-
-        related_name: ForeignKey related_name for account model
-        '''
-        lookup = f'{related_name}__date__year'
-
-        return self.sum_price(year, related_name, lookup)
-
-    def sum_past_years(self, year, related_name):
-        '''
-        year: year
-
-        related_name: ForeignKey related_name for account model
-        '''
-        lookup = f'{related_name}__date__year__lt'
-
-        return self.sum_price(year, related_name, lookup)
 
     def fix_multiplied_err(self, keyword_prefix, keyword_time):
         '''
@@ -63,13 +45,15 @@ class QuerySetBalanceMixin():
             )
         )
 
-    def annotate_(self, year, related_name, keyword_prefix):
+    def annotate_(self, year, related_name, keyword_prefix, sum_column='price'):
         '''
         year: year
 
         related_name: ForeignKey related_name for account model
 
         keyword_prefix: shortcut for related_name - incomes == i
+
+        sum_column: witch column to sum, default price
         '''
         count = f'{keyword_prefix}_count'
         count_distinct = f'{keyword_prefix}_count_distinct'
@@ -87,10 +71,20 @@ class QuerySetBalanceMixin():
                 count_distinct: Count(related_name, distinct=True)
             })
             .annotate(**{
-                multiplied_now: self.sum_current_year(year, related_name)
+                multiplied_now: self._sum(
+                    year,
+                    related_name,
+                    f'{related_name}__date__year',
+                    sum_column
+                )
             })
             .annotate(** {
-                multiplied_past: self.sum_past_years(year, related_name)
+                multiplied_past: self._sum(
+                    year,
+                    related_name,
+                    f'{related_name}__date__year__lt',
+                    sum_column
+                )
             })
             .annotate(**{
                 now: self.fix_multiplied_err(keyword_prefix, 'now')
