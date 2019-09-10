@@ -1,5 +1,5 @@
 from django.db.models import (Case, Count, DecimalField, ExpressionWrapper, F,
-                              Sum, When)
+                              Q, Sum, When)
 
 
 class QuerySetBalanceMixin():
@@ -61,4 +61,47 @@ class QuerySetBalanceMixin():
                 / F(f'{keyword_prefix}_count'),
                 output_field=DecimalField()
             )
+        )
+
+    def annotate_(self, year, related_name, keyword_prefix):
+        '''
+        year: year
+
+        related_name: ForeignKey related_name for account model
+
+        keyword_prefix: shortcut for related_name - incomes == i
+        '''
+        count = f'{keyword_prefix}_count'
+        count_distinct = f'{keyword_prefix}_count_distinct'
+        multiplied_now = f'{keyword_prefix}_multiplied_now'
+        multiplied_past = f'{keyword_prefix}_multiplied_past'
+        now = f'{keyword_prefix}_now'
+        past = f'{keyword_prefix}_past'
+
+        return (
+            self
+            .annotate(**{
+                count: Count(related_name)
+            })
+            .annotate(**{
+                count_distinct: Count(related_name, distinct=True)
+            })
+            .annotate(**{
+                multiplied_now: self.sum_current_year(year, related_name)
+            })
+            .annotate(** {
+                multiplied_past: self.sum_past_years(year, related_name)
+            })
+            .annotate(**{
+                now: self.fix_multiplied_err(keyword_prefix, 'now')
+            })
+            .annotate(**{
+                now: Case(When(~Q(**{now: None}), then=now), default=0)
+            })
+            .annotate(**{
+                past: self.fix_multiplied_err(keyword_prefix, 'past')
+            })
+            .annotate(**{
+                past: Case(When(~Q(**{past: None}), then=past), default=0)
+            })
         )
