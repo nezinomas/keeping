@@ -15,19 +15,7 @@ from .lib.stats_accounts import StatsAccounts
 from .lib.stats_savings import StatsSavings
 
 from .lib.account_stats import AccountStats
-
-
-def _get_stats(request):
-    objects = GetObjects([
-        Account, Income, Expense, Transaction,
-        SavingType, Saving, SavingChange, SavingClose,
-        models.SavingWorth, models.AccountWorth
-    ])
-
-    # accounts = StatsAccounts(request.user.profile.year, objects.data)
-    savings = StatsSavings(request.user.profile.year, objects.data)
-
-    return savings
+from .lib.saving_stats import SavingStats
 
 
 class Index(IndexMixin):
@@ -49,11 +37,16 @@ class Index(IndexMixin):
         )
 
         # Saving and SawingWorth stats
-        savings = _get_stats(self.request)
+        _saving_stats = SavingType.objects.balance_year(self.request.user.profile.year)
+        _saving_worth = models.SavingWorth.objects.items()
+        _saving = SavingStats(_saving_stats, _saving_worth)
 
         context['savings'] = render_to_string(
             'bookkeeping/includes/savings_worth_list.html',
-            {'savings': savings.balance},
+            {
+                'savings': _saving.balance,
+                'totals': _saving.totals
+            },
             self.request
         )
 
@@ -68,8 +61,13 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        savings = _get_stats(self.request)
-        context['savings'] = savings.balance
+        _saving_stats = SavingType.objects.balance_year(
+            self.request.user.profile.year)
+        _saving_worth = models.SavingWorth.objects.items()
+        _saving = SavingStats(_saving_stats, _saving_worth)
+
+        context['savings'] = _savings.balance
+        context['totals'] = _savings.totals
 
         return context
 
