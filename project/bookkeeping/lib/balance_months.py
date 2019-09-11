@@ -72,9 +72,6 @@ class BalanceMonths():
 
         df = incomes.join(expenses).reset_index()
 
-        # convert date from Timestamp to datetime.date
-        df['date'] = df['date'].dt.date
-
         # calculate balance
         df.loc[:, 'balance'] = df.incomes - df.expenses
 
@@ -85,5 +82,8 @@ class BalanceMonths():
         # for february:december
         for i in range(1, 12):
             df.at[i, 'residual'] = df.at[i, 'balance'] + df.at[i - 1, 'residual']
+
+        # convert date from Timestamp to datetime.date
+        df['date'] = df['date'].dt.date
 
         self._balance = df
