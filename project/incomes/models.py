@@ -59,4 +59,3 @@ class Income(models.Model):
 
     # managers
     objects = IncomeQuerySet.as_manager()
-    pd = DataFrameManager()

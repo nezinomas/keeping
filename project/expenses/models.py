@@ -122,4 +122,3 @@ class Expense(models.Model):
 
     # Managers
     objects = ExpenseQuerySet.as_manager()
-    pd = DataFrameManager()
