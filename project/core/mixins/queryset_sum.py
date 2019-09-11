@@ -12,6 +12,6 @@ class SumMixin():
             .annotate(**{summed_col_name: Sum('price')})
             .annotate(month=Cast(ExtractMonth('_month'), IntegerField()))
             .filter(_month__year=year)
-            .values('month', 'incomes')
+            .values('month', summed_col_name)
             .order_by('_month')
         )
