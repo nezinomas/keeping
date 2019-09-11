@@ -4,6 +4,10 @@ import pandas as pd
 class BalanceMonths():
     def __init__(self, incomes, expenses, past_balance=0.0):
         self._past_balance = float(past_balance)
+        self._balance = pd.DataFrame()
+
+        if not incomes and not expenses:
+            return
 
         self._calc(incomes, expenses)
 
