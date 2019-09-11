@@ -6,6 +6,7 @@ from django.db.models import F, Q
 from django_pandas.managers import DataFrameManager
 
 from ..accounts.models import Account
+from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
 
 
@@ -68,7 +69,7 @@ class ExpenseName(TitleAbstract):
     objects = ExpenseNameQuerySet.as_manager()
 
 
-class ExpenseQuerySet(models.QuerySet):
+class ExpenseQuerySet(SumMixin, models.QuerySet):
     def _related(self):
         return self.select_related('expense_type', 'expense_name', 'account')
 
@@ -77,6 +78,9 @@ class ExpenseQuerySet(models.QuerySet):
 
     def items(self):
         return self._related()
+
+    def sum_by_month(self, year, summed_col_name):
+        return super().sum_by_month(year, summed_col_name)
 
 
 class Expense(models.Model):
