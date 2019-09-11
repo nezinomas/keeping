@@ -1,6 +1,8 @@
-import pytest
+from datetime import date
 from decimal import Decimal
-from ...core.tests.utils import equal_list_of_dictionaries as assert_
+
+import pytest
+
 from ..models import Income as T
 
 pytestmark = pytest.mark.django_db
@@ -8,8 +10,8 @@ pytestmark = pytest.mark.django_db
 
 def test_sums_months(incomes):
     expect = [
-        {'month': 1, 'incomes': Decimal(5.5)},
-        {'month': 2, 'incomes': Decimal(1.25)},
+        {'date': date(1999, 1, 1), 'incomes': Decimal(5.5)},
+        {'date': date(1999, 2, 1), 'incomes': Decimal(1.25)},
     ]
 
     actual = list(T.objects.sum_by_month(1999, 'incomes'))
@@ -19,11 +21,11 @@ def test_sums_months(incomes):
 
 def test_sums_months_ordering(incomes):
     expect = [
-        {'month': 1, 'incomes': Decimal(5.5)},
-        {'month': 2, 'incomes': Decimal(1.25)},
+        {'date': date(1999, 1, 1), 'incomes': Decimal(5.5)},
+        {'date': date(1999, 2, 1), 'incomes': Decimal(1.25)},
     ]
 
     actual = list(T.objects.sum_by_month(1999, 'incomes'))
 
-    assert expect[0]['month'] == 1
-    assert expect[1]['month'] == 2
+    assert expect[0]['date'] == date(1999, 1, 1)
+    assert expect[1]['date'] == date(1999, 2, 1)

@@ -1,3 +1,4 @@
+from datetime import date
 from decimal import Decimal
 
 import pytest
@@ -9,7 +10,7 @@ pytestmark = pytest.mark.django_db
 
 def test_sums_months(expenses):
     expect = [
-        {'month': 1, 'ex': Decimal(1.75)},
+        {'date': date(1999, 1, 1), 'ex': Decimal(1.75)},
     ]
 
     actual = list(T.objects.sum_by_month(1999, 'ex'))
