@@ -1,17 +1,18 @@
-from django.db.models import Count, IntegerField, Sum
-from django.db.models.functions import Cast, ExtractMonth, TruncMonth
+from django.db.models import Count, Sum
+from django.db.models.functions import TruncMonth
 
 
 class SumMixin():
     def sum_by_month(self, year, summed_col_name):
         return (
             self
-            .annotate(_month=TruncMonth('date'))
-            .values('_month')
+            .annotate(tmp=Count('id'))
+            .values('tmp')
+            .annotate(date=TruncMonth('date'))
+            .values('date')
             .annotate(c=Count('id'))
             .annotate(**{summed_col_name: Sum('price')})
-            .annotate(month=Cast(ExtractMonth('_month'), IntegerField()))
-            .filter(_month__year=year)
-            .values('month', summed_col_name)
-            .order_by('_month')
+            .filter(date__year=year)
+            .values('date', summed_col_name)
+            .order_by('date')
         )
