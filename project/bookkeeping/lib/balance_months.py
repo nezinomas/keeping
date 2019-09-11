@@ -38,6 +38,8 @@ class BalanceMonths():
         avg = self._balance.copy()
 
         if not avg.empty:
+            # replace 0.0 to None
+            # average will be calculated only for months with non zero values
             avg.replace(0.0, pd.NaT, inplace=True)
             avg = avg.mean(skipna=True)
 
