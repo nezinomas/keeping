@@ -3,7 +3,6 @@ from decimal import Decimal
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import F, Q
-from django_pandas.managers import DataFrameManager
 
 from ..accounts.models import Account
 from ..core.mixins.queryset_sum import SumMixin

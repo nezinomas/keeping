@@ -2,9 +2,6 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import Case, Count, IntegerField, Sum, When
-from django.db.models.functions import Cast, ExtractMonth, TruncMonth
-from django_pandas.managers import DataFrameManager
 
 from ..accounts.models import Account
 from ..core.mixins.queryset_sum import SumMixin
