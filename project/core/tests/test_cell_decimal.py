@@ -45,7 +45,7 @@ def test_cell_positive(_template):
     context = Context({'value': '25'})
 
     actual = _template.render(context)
-    expect = '<td class="text-right " width="7%">25.00</td>'
+    expect = '<td class="" >25,00</td>'
 
     assert _remove_line_end(actual) == expect
 
@@ -54,7 +54,7 @@ def test_cell_negative(_template_negative):
     context = Context({'value': '-0.5'})
 
     actual = _template_negative.render(context)
-    expect = '<td class="text-right table-danger" width="7%">-0.50</td>'
+    expect = '<td class="table-danger" >-0,50</td>'
 
     assert _remove_line_end(actual) == expect
 
@@ -63,7 +63,7 @@ def test_cell_positive_and_negative_neg(_template_positive_and_negative):
     context = Context({'value': '-0.5'})
 
     actual = _template_positive_and_negative.render(context)
-    expect = '<td class="text-right table-danger" width="7%">-0.50</td>'
+    expect = '<td class="table-danger" >-0,50</td>'
 
     assert _remove_line_end(actual) == expect
 
@@ -72,14 +72,14 @@ def test_cell_positive_and_negative_pos(_template_positive_and_negative):
     context = Context({'value': '0.5'})
 
     actual = _template_positive_and_negative.render(context)
-    expect = '<td class="text-right table-success" width="7%">0.50</td>'
+    expect = '<td class="table-success" >0,50</td>'
 
 
 def test_cell_postive(_template_positive):
     context = Context({'value': '0.5'})
 
     actual = _template_positive.render(context)
-    expect = '<td class="text-right table-success" width="7%">0.50</td>'
+    expect = '<td class="table-success" >0,50</td>'
 
     assert _remove_line_end(actual) == expect
 
@@ -88,7 +88,7 @@ def test_cell_intcomma(_template):
     context = Context({'value': '1200'})
 
     actual = _template.render(context)
-    expect = '<td class="text-right " width="7%">1,200.00</td>'
+    expect = '<td class="" >1 200,00</td>'
 
     assert _remove_line_end(actual) == expect
 
@@ -97,6 +97,6 @@ def test_cell_empty(_template):
     context = Context({'value': None})
 
     actual = _template.render(context)
-    expect = '<td class="text-right " width="7%">-</td>'
+    expect = '<td class="" >-</td>'
 
     assert _remove_line_end(actual) == expect
