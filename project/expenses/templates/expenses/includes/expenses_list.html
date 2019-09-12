@@ -21,7 +21,7 @@
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="6" class="py-2"><b>{{ request.user.profile.year }}</b> metais išlaidų nėra.</td>
+            <td colspan="6" class="py-2"><b>{{ request.user.profile.year|title }}</b> metais išlaidų nėra.</td>
         </tr>
         {% endfor %}
     </tbody>
