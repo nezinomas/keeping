@@ -35,10 +35,9 @@ class AccountStats():
     @property
     def balance_start(self):
         val = None
-        totals = self.totals
 
-        if totals:
-            val = totals['past']
+        if self.totals:
+            val = self.totals['past']
 
         return val
 
