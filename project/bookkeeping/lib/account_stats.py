@@ -13,7 +13,7 @@ class AccountStats():
 
     @property
     def balance(self):
-        val = None
+        val = []
         balance = self._balance.copy()
 
         if not balance.empty:
@@ -24,11 +24,20 @@ class AccountStats():
 
     @property
     def totals(self):
-        val = None
+        val = []
         balance = self._balance.copy()
 
         if not balance.empty:
             val = balance.sum().to_dict()
+
+        return val
+
+    @property
+    def balance_start(self):
+        val = 0.0
+
+        if self.totals:
+            val = self.totals['past']
 
         return val
 

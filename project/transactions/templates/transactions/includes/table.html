@@ -10,7 +10,7 @@
         {% for item in items %}
         {% url url_name item.id as url %}
         <tr data-url="{{ url }}">
-            <td>{{ item.date }}</td>
+            <td>{{ item.date|date:"Y-m-d" }}</td>
             <td>{{ item.from_account }}</td>
             <td>{{ item.to_account }}</td>
             <td class="text-right">{{ item.price }}</td>
@@ -18,7 +18,7 @@
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="{% if fees %}5{% else %}4{% endif %}" class="py-2"><b>{{ year }}</b> metais įrašų nėra.</td>
+            <td colspan="{% if fees %}5{% else %}4{% endif %}" class="py-2"><b>{{ year|title }}</b> metais įrašų nėra.</td>
         </tr>
         {% endfor %}
     </tbody>

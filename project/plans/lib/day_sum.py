@@ -59,7 +59,7 @@ class DaySum(object):
         return [namedtuple("Items", item.keys())(*item.values()) for item in dicts]
 
     def _get_incomes(self):
-        qs = IncomePlan.objects.items(**{'year': self._year})
+        qs = IncomePlan.objects.year(self._year)
         df = read_frame(qs)
 
         df = df.reset_index(drop=True).set_index('income_type')
@@ -67,7 +67,7 @@ class DaySum(object):
         return df
 
     def _get_savings(self):
-        qs = SavingPlan.objects.items(**{'year': self._year})
+        qs = SavingPlan.objects.year(self._year)
         df = read_frame(qs)
 
         df = df.reset_index(drop=True).set_index('saving_type')
@@ -75,7 +75,7 @@ class DaySum(object):
         return df
 
     def _get_expenses(self):
-        qs = ExpensePlan.objects.items(**{'year': self._year})
+        qs = ExpensePlan.objects.year(self._year)
         df = read_frame(qs)
 
         if df.empty:

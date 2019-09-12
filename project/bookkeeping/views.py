@@ -4,9 +4,12 @@ from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin
 
 from ..accounts.models import Account
+from ..expenses.models import Expense
+from ..incomes.models import Income
 from ..savings.models import SavingType
 
 from .lib.account_stats import AccountStats
+from .lib.balance_months import BalanceMonths
 from .lib.saving_stats import SavingStats
 
 from .forms import AccountWorthForm, SavingWorthForm
@@ -54,6 +57,18 @@ class Index(IndexMixin):
             },
             self.request
         )
+
+        year = self.request.user.profile.year
+
+        incomes = Income.objects.sum_by_month(year, 'incomes')
+        expenses = Expense.objects.sum_by_month(year, 'expenses')
+        o = BalanceMonths(incomes, expenses, account.balance_start)
+
+        context['balance'] = o.balance
+        context['balance_totals'] = o.totals
+        context['balance_avg'] = o.average
+        context['amount_start'] = o.amount_start
+        context['amount_end'] = o.amount_end
 
         return context
 

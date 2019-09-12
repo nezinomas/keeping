@@ -64,11 +64,11 @@ def test_expenses_form_blank_data():
     assert not form.is_valid()
 
     errors = {
-        'date': ['This field is required.'],
-        'price': ['This field is required.'],
-        'quantity': ['This field is required.'],
-        'expense_type': ['This field is required.'],
-        'expense_name': ['This field is required.'],
-        'account': ['This field is required.'],
+        'date': ['Šis laukas yra privalomas.'],
+        'price': ['Šis laukas yra privalomas.'],
+        'quantity': ['Šis laukas yra privalomas.'],
+        'expense_type': ['Šis laukas yra privalomas.'],
+        'expense_name': ['Šis laukas yra privalomas.'],
+        'account': ['Šis laukas yra privalomas.'],
     }
     assert form.errors == errors

@@ -57,7 +57,7 @@ def incomes():
     )
     IncomeFactory(
         price=1.25,
-        date=date(1999, 1, 31),
+        date=date(1999, 2, 1),
         account=AccountFactory(title='Account2')
     )
 

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import pytest
 
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
@@ -9,16 +11,16 @@ def _accounts():
     return (
         [{
             'title': 'Account1',
-            'past': 10.0,
-            'incomes': 20.0,
-            'expenses': 25.0,
-            'balance': 5.75,
+            'past': Decimal(10.0),
+            'incomes': Decimal(20.0),
+            'expenses': Decimal(25.0),
+            'balance': Decimal(5.75),
         }, {
             'title': 'Account2',
-            'past': 5.0,
-            'incomes': 5.0,
-            'expenses': 5.0,
-            'balance': 2.0,
+            'past': Decimal(5.0),
+            'incomes': Decimal(5.0),
+            'expenses': Decimal(5.0),
+            'balance': Decimal(2.0),
         }]
     )
 
@@ -26,21 +28,21 @@ def _accounts():
 @pytest.fixture()
 def _accounts_worth():
     return ([
-        {'title': 'Account1', 'have': 5.75},
-        {'title': 'Account2', 'have': 1.0},
+        {'title': 'Account1', 'have': Decimal(5.75)},
+        {'title': 'Account2', 'have': Decimal(1.0)},
     ])
 
 
 def test_empty_accounts_stats():
     actual = T([], None).balance
 
-    assert actual is None
+    assert actual == []
 
 
 def test_none_accounts_stats():
     actual = T(None, None).balance
 
-    assert actual is None
+    assert actual == []
 
 
 def test_account_stats(_accounts, _accounts_worth):
@@ -99,7 +101,7 @@ def test_account_stats_worth_None(_accounts):
 
 def test_account_totals(_accounts, _accounts_worth):
     expect = {
-        'past': 15.0,
+        'past': Decimal(15.0),
         'incomes': 25.0,
         'expenses': 30.0,
         'balance': 7.75,
@@ -108,5 +110,21 @@ def test_account_totals(_accounts, _accounts_worth):
     }
 
     actual = T(_accounts, _accounts_worth).totals
+
+    assert expect == actual
+
+
+def test_account_past_property(_accounts):
+    expect = 15.0
+
+    actual = T(_accounts, None).balance_start
+
+    assert expect == actual
+
+
+def test_account_past_property_no_accounts():
+    expect = 0.0
+
+    actual = T(None, None).balance_start
 
     assert expect == actual

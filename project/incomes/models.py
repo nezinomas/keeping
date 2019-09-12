@@ -4,6 +4,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
+from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
 
 
@@ -12,7 +13,7 @@ class IncomeType(TitleAbstract):
         ordering = ['title']
 
 
-class IncomeQuerySet(models.QuerySet):
+class IncomeQuerySet(SumMixin, models.QuerySet):
     def _related(self):
         return self.select_related('account')
 
@@ -21,6 +22,9 @@ class IncomeQuerySet(models.QuerySet):
 
     def items(self):
         return self._related()
+
+    def sum_by_month(self, year, summed_col_name):
+        return super().sum_by_month(year, summed_col_name)
 
 
 class Income(models.Model):

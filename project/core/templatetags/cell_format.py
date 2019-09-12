@@ -27,7 +27,24 @@ def positive(value):
     except:
         return _value
 
-    if value > 0:
+    if value >= 0:
         _value = 'table-success'
+
+    return _value
+
+
+@register.filter
+def positive_negative(value):
+    _value = ''
+
+    try:
+        value = float(value)
+    except:
+        return _value
+
+    if value >= 0:
+        _value = 'table-success'
+    else:
+        _value = 'table-danger'
 
     return _value

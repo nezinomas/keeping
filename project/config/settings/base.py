@@ -2,12 +2,12 @@ import os
 from ..secrets import get_secret
 
 # ================   PATH CONFIGURATION
-# ..\project_project\project\confi
+# ..\root_catalog\project_catalog\config
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# ..\project_project\project
-project_ROOT = os.path.dirname(BASE_DIR)
-# ..\project_project
-PROJECT_ROOT = os.path.dirname(project_ROOT)
+# ..\root_catalog\project_catalog
+SITE_ROOT = os.path.dirname(BASE_DIR)
+# ..\project_catalog
+PROJECT_ROOT = os.path.dirname(SITE_ROOT)
 
 
 # ================   SITE CONFIGURATION
@@ -24,9 +24,9 @@ MEDIA_URL = "/media/"
 # ================   STATIC FILE CONFIGURATION
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(project_ROOT, 'static'),
+    os.path.join(SITE_ROOT, 'static'),
 ]
-# STATIC_ROOT = os.path.join(project_ROOT, 'static')
+# STATIC_ROOT = os.path.join(SITE_ROOT, 'static')
 
 
 # ================   DEBUG CONFIGURATION
@@ -38,7 +38,7 @@ TEMPLATE_DEBUG = DEBUG
 SECRET_KEY = get_secret("SECRET_KEY")
 
 
-# ================   project CONFIGURATION
+# ================   SITE CONFIGURATION
 ALLOWED_HOSTS = ['*']
 
 
@@ -54,18 +54,23 @@ DATABASES = {
 
 
 # ================   GENERAL CONFIGURATION
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'lt'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
+USE_THOUSAND_SEPARATOR = True
+
+FORMAT_MODULE_PATH = [
+    'project.config.formats',
+]
 
 # ================   TEMPLATE CONFIGURATION
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(project_ROOT, 'templates')],
+        'DIRS': [os.path.join(SITE_ROOT, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -73,7 +78,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                # 'project.products.context.show_categories',
             ],
         },
     },

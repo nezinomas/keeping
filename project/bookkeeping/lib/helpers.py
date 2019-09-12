@@ -3,7 +3,7 @@ def calc_percent(args):
     invested = args[1]
 
     if market and invested:
-        return (market*100/invested)-100
+        return ((market * 100) / invested) - 100
     else:
         return 0.0
 

@@ -12,7 +12,7 @@
         {% for item in items %}
         {% url 'savings:savings_update' item.id as url_update %}
         <tr data-url="{{ url_update }}">
-            <td>{{ item.date }}</td>
+            <td>{{ item.date|date:"Y-m-d" }}</td>
             <td>{{ item.saving_type }}</td>
             <td>{{ item.account }}</td>
             <td>{{ item.remark }}</td>
@@ -21,7 +21,7 @@
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="6" class="py-2"><b>{{ request.user.profile.year }}</b> metais įrašų nėra.</td>
+            <td colspan="6" class="py-2"><b>{{ request.user.profile.year|title }}</b> metais įrašų nėra.</td>
         </tr>
         {% endfor %}
     </tbody>
