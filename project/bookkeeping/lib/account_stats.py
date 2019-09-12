@@ -32,6 +32,16 @@ class AccountStats():
 
         return val
 
+    @property
+    def balance_start(self):
+        val = None
+        totals = self.totals
+
+        if totals:
+            val = totals['past']
+
+        return val
+
     def _prepare_balance(self, account_stats, account_worth):
         df = pd.DataFrame(account_stats).set_index('title')
 

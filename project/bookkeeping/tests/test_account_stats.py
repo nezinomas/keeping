@@ -110,3 +110,19 @@ def test_account_totals(_accounts, _accounts_worth):
     actual = T(_accounts, _accounts_worth).totals
 
     assert expect == actual
+
+
+def test_account_past_property(_accounts):
+    expect = 15.0
+
+    actual = T(_accounts, None).balance_start
+
+    assert expect == actual
+
+
+def test_account_past_property_no_accounts():
+    expect = None
+
+    actual = T(None, None).balance_start
+
+    assert expect == actual
