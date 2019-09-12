@@ -2,11 +2,11 @@ import os
 from ..secrets import get_secret
 
 # ================   PATH CONFIGURATION
-# ..\project_project\project\confi
+# ..\root_catalog\project_catalog\config
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# ..\project_project\project
+# ..\root_catalog\project_catalog
 SITE_ROOT = os.path.dirname(BASE_DIR)
-# ..\project_project
+# ..\procect_catalog
 PROJECT_ROOT = os.path.dirname(SITE_ROOT)
 
 
