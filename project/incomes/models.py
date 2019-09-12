@@ -2,7 +2,6 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
-from django_pandas.managers import DataFrameManager
 
 from ..accounts.models import Account
 from ..core.models import TitleAbstract
@@ -53,4 +52,3 @@ class Income(models.Model):
 
     # managers
     objects = IncomeQuerySet.as_manager()
-    pd = DataFrameManager()
