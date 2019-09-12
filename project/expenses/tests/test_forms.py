@@ -11,7 +11,6 @@ from .helper_session import add_session, add_session_to_request
 pytestmark = pytest.mark.django_db
 
 
-
 @pytest.fixture()
 def _expense_type():
     ExpenseTypeFactory.reset_sequence()
