@@ -86,3 +86,39 @@ def test_balance_months_average(_incomes, _expenses, _residual):
     actual = T(_incomes, _expenses, _residual).average
 
     assert expect == pytest.approx(actual, rel=1e-2)
+
+
+def test_amount_start():
+    actual = T(None, None, 10).amount_start
+
+    assert 10 == actual
+
+
+def test_amount_start_none():
+    actual = T(None, None, None).amount_start
+
+    assert 0.0 == actual
+
+
+def test_amount_end(_incomes, _expenses, _residual):
+    actual = T(_incomes, _expenses, _residual).amount_end
+
+    assert 6.0 == actual
+
+
+def test_amount_end_none():
+    actual = T(None, None, None).amount_end
+
+    assert 0.0 == actual
+
+
+def test_balance_amount(_incomes, _expenses, _residual):
+    actual = T(_incomes, _expenses, _residual).balance_amount
+
+    assert 5.0 == actual
+
+
+def test_balance_none():
+    actual = T([], [], None).balance_amount
+
+    assert 0.0 == actual

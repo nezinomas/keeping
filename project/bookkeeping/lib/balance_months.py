@@ -3,7 +3,12 @@ import pandas as pd
 
 class BalanceMonths():
     def __init__(self, incomes, expenses, past_balance=0.0):
-        self._past_balance = float(past_balance)
+        try:
+            past_balance = float(past_balance)
+        except:
+            past_balance = 0.0
+
+        self._past_balance = past_balance
         self._balance = pd.DataFrame()
 
         if not incomes and not expenses:
@@ -18,6 +23,28 @@ class BalanceMonths():
 
         if not balance.empty:
             val = balance.to_dict('records')
+
+        return val
+
+    @property
+    def amount_start(self):
+        return self._past_balance
+
+    @property
+    def amount_end(self):
+        val = 0.0
+
+        if self.totals:
+            val = self._past_balance + self.totals['balance']
+
+        return val
+
+    @property
+    def balance_amount(self):
+        val = 0.0
+
+        if self.totals:
+            val = self.totals['balance']
 
         return val
 
