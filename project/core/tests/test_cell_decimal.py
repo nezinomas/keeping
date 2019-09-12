@@ -97,6 +97,6 @@ def test_cell_empty(_template):
     context = Context({'value': None})
 
     actual = _template.render(context)
-    expect = '<td class="" >-</td>'
+    expect = '<td class="" ></td>'
 
     assert _remove_line_end(actual) == expect

@@ -1,3 +1,3 @@
-{% load decimal_format %}{% load cell_format %}
+{% load cell_format %}
 
-{% with value as val %}<td class="{% if negative %}{{ val|negative }}{% endif %}{% if positive %}{{ val|positive }}{% endif %}" {% if width %}width="{{ width }}"{% endif %}>{{ val|decimalformat }}{% if text %}{{ text }}{% endif %}</td>{% endwith %}
+{% with value as val %}<td class="{% if negative %}{{ val|negative }}{% endif %}{% if positive %}{{ val|positive }}{% endif %}" {% if width %}width="{{ width }}"{% endif %}>{{ val|floatformat:2 }}{% if text %}{{ text }}{% endif %}</td>{% endwith %}
