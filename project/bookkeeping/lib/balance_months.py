@@ -2,13 +2,13 @@ import pandas as pd
 
 
 class BalanceMonths():
-    def __init__(self, incomes, expenses, past_balance=0.0):
+    def __init__(self, incomes, expenses, amount_start=0.0):
         try:
-            past_balance = float(past_balance)
+            amount_start = float(amount_start)
         except:
-            past_balance = 0.0
+            amount_start = 0.0
 
-        self._past_balance = past_balance
+        self._amount_start = amount_start
         self._balance = pd.DataFrame()
 
         if not incomes and not expenses:
@@ -28,14 +28,14 @@ class BalanceMonths():
 
     @property
     def amount_start(self):
-        return self._past_balance
+        return self._amount_start
 
     @property
     def amount_end(self):
         val = 0.0
 
         if self.totals:
-            val = self._past_balance + self.totals['balance']
+            val = self._amount_start + self.totals['balance']
 
         return val
 
@@ -110,7 +110,7 @@ class BalanceMonths():
 
         #  calculate residual amount of money
         # for january
-        df.at[0, 'residual'] = self._past_balance + df.at[0, 'balance']
+        df.at[0, 'residual'] = self._amount_start + df.at[0, 'balance']
 
         # for february:december
         for i in range(1, 12):
