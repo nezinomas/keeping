@@ -34,13 +34,13 @@ def _accounts_worth():
 def test_empty_accounts_stats():
     actual = T([], None).balance
 
-    assert actual is None
+    assert actual == []
 
 
 def test_none_accounts_stats():
     actual = T(None, None).balance
 
-    assert actual is None
+    assert actual == []
 
 
 def test_account_stats(_accounts, _accounts_worth):
@@ -121,7 +121,7 @@ def test_account_past_property(_accounts):
 
 
 def test_account_past_property_no_accounts():
-    expect = None
+    expect = 0.0
 
     actual = T(None, None).balance_start
 
