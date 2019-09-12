@@ -14,8 +14,8 @@
             <td>{{ forloop.revcounter }}</td>
             <td>{{ item.author }}</td>
             <td>„{{ item.title }}”</td>
-            <td class="text-center">{{ item.started }}</td>
-            <td class="text-center">{{ item.ended|default_if_none:'-' }}</td>
+            <td class="text-center">{{ item.started|date:"Y-m-d" }}</td>
+            <td class="text-center">{{ item.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
         </tr>
         {% empty %}
         <tr class="table-warning text-center">

@@ -12,7 +12,7 @@
         {% for item in items %}
         {% url 'savings:savings_update' item.id as url_update %}
         <tr data-url="{{ url_update }}">
-            <td>{{ item.date }}</td>
+            <td>{{ item.date|date:"Y-m-d" }}</td>
             <td>{{ item.saving_type }}</td>
             <td>{{ item.account }}</td>
             <td>{{ item.remark }}</td>

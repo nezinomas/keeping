@@ -11,7 +11,7 @@
         {% for item in items %}
         {% url 'incomes:incomes_update' item.id as url_update %}
         <tr data-url="{{ url_update }}">
-            <td>{{ item.date }}</td>
+            <td>{{ item.date|date:"Y-m-d" }}</td>
             <td>{{ item.income_type }}</td>
             <td>{{ item.account }}</td>
             <td>{{ item.remark }}</td>

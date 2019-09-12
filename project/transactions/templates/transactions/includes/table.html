@@ -10,7 +10,7 @@
         {% for item in items %}
         {% url url_name item.id as url %}
         <tr data-url="{{ url }}">
-            <td>{{ item.date }}</td>
+            <td>{{ item.date|date:"Y-m-d" }}</td>
             <td>{{ item.from_account }}</td>
             <td>{{ item.to_account }}</td>
             <td class="text-right">{{ item.price }}</td>
