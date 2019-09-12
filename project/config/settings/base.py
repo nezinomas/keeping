@@ -6,7 +6,7 @@ from ..secrets import get_secret
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # ..\root_catalog\project_catalog
 SITE_ROOT = os.path.dirname(BASE_DIR)
-# ..\procect_catalog
+# ..\project_catalog
 PROJECT_ROOT = os.path.dirname(SITE_ROOT)
 
 
