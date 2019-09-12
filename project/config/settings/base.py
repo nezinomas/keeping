@@ -5,9 +5,9 @@ from ..secrets import get_secret
 # ..\project_project\project\confi
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # ..\project_project\project
-project_ROOT = os.path.dirname(BASE_DIR)
+SITE_ROOT = os.path.dirname(BASE_DIR)
 # ..\project_project
-PROJECT_ROOT = os.path.dirname(project_ROOT)
+PROJECT_ROOT = os.path.dirname(SITE_ROOT)
 
 
 # ================   SITE CONFIGURATION
@@ -24,9 +24,9 @@ MEDIA_URL = "/media/"
 # ================   STATIC FILE CONFIGURATION
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(project_ROOT, 'static'),
+    os.path.join(SITE_ROOT, 'static'),
 ]
-# STATIC_ROOT = os.path.join(project_ROOT, 'static')
+# STATIC_ROOT = os.path.join(SITE_ROOT, 'static')
 
 
 # ================   DEBUG CONFIGURATION
@@ -38,7 +38,7 @@ TEMPLATE_DEBUG = DEBUG
 SECRET_KEY = get_secret("SECRET_KEY")
 
 
-# ================   project CONFIGURATION
+# ================   SITE CONFIGURATION
 ALLOWED_HOSTS = ['*']
 
 
