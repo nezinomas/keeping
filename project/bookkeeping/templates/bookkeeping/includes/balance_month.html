@@ -16,10 +16,10 @@
         {% for item in balance  %}
         <tr>
             <td class="text-left">{{ item.date|date:"F"|title }}</td>
-            <td>{{ item.incomes|floatformat:2 }}</td>
-            <td>{{ item.expenses|floatformat:2 }}</td>
+            {% td item.incomes %}
+            {% td item.expenses %}
             {% td item.balance negative=True positive=True  %}
-            <td>{{ item.residual|floatformat:2 }}</td>
+            {% td item.residual %}
         </tr>
         {% endfor %}
     </tbody>
