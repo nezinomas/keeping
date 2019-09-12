@@ -54,12 +54,17 @@ DATABASES = {
 
 
 # ================   GENERAL CONFIGURATION
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'lt'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
+USE_THOUSAND_SEPARATOR = True
+
+FORMAT_MODULE_PATH = [
+    'project.config.formats',
+]
 
 # ================   TEMPLATE CONFIGURATION
 TEMPLATES = [
