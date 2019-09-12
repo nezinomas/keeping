@@ -2,15 +2,12 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 
-class DrinkManager(models.Manager):
-    def items(self, *args, **kwargs):
-        qs = self.get_queryset()
+class DrinkQuerySet(models.QuerySet):
+    def year(self, year):
+        return self.filter(date__year=year)
 
-        if 'year' in kwargs:
-            year = kwargs['year']
-            qs = qs.filter(date__year=year)
-
-        return qs
+    def items(self):
+        return self.all()
 
 
 class Drink(models.Model):
@@ -19,4 +16,4 @@ class Drink(models.Model):
         validators=[MinValueValidator(1)]
     )
 
-    objects = DrinkManager()
+    objects = DrinkQuerySet.as_manager()
