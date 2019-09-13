@@ -103,7 +103,10 @@ class BalanceMonths():
         incomes = self._convert_to_df(incomes)
         expenses = self._convert_to_df(expenses)
 
-        df = incomes.join(expenses).reset_index()
+        df = incomes.join(
+            expenses,
+            how='left', lsuffix='_left', rsuffix='_right',
+        ).reset_index()
 
         # calculate balance
         df.loc[:, 'balance'] = df.incomes - df.expenses
