@@ -18,26 +18,26 @@
         {% for item in accounts %}
         <tr>
             <td>{{ item.title }}</td>
-            {% td item.past width='110rem' %}
-            {% td item.incomes width='110rem' %}
-            {% td item.expenses width='110rem' %}
-            {% td item.balance width='110rem' %}
+            {% cell item.past width='110rem' %}
+            {% cell item.incomes width='110rem' %}
+            {% cell item.expenses width='110rem' %}
+            {% cell item.balance width='110rem' %}
             <td width="80rem" class="b"></td>
-            {% td item.have width='110rem' %}
-            {% td item.delta width='110rem' highlight_value=True  %}
+            {% cell item.have width='110rem' %}
+            {% cell item.delta width='110rem' highlight_value=True  %}
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
             <td>Total:</td>
-            {% td totals.past %}
-            {% td totals.incomes %}
-            {% td totals.expenses %}
-            {% td totals.balance %}
+            {% cell totals.past %}
+            {% cell totals.incomes %}
+            {% cell totals.expenses %}
+            {% cell totals.balance %}
             <td class="b"></td>
-            {% td totals.have %}
-            {% td totals.delta %}
+            {% cell totals.have %}
+            {% cell totals.delta %}
         </tr>
     </tfoot>
 </table>

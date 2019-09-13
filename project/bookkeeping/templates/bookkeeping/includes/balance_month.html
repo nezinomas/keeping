@@ -16,10 +16,10 @@
         {% for item in balance  %}
         <tr>
             <td class="text-left">{{ item.date|date:"F"|title }}</td>
-            {% td item.incomes %}
-            {% td item.expenses %}
-            {% td item.balance highlight_value=True  %}
-            {% td item.residual %}
+            {% cell item.incomes %}
+            {% cell item.expenses %}
+            {% cell item.balance highlight_value=True  %}
+            {% cell item.residual %}
         </tr>
         {% endfor %}
     </tbody>

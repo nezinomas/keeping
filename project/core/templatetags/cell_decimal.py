@@ -4,7 +4,7 @@ register = template.Library()
 
 
 @register.inclusion_tag('core/includes/cell_decimal.html')
-def td(
+def cell(
     value, highlight_value=False,
     text_after=None, text_before=None,
     width=None, tag='td'
