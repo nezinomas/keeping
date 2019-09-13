@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from ..lib.balance_months import BalanceMonths as T
+from ..lib.months_balance import MonthsBalance as T
 
 
 @pytest.fixture()
@@ -68,20 +68,20 @@ def _expect():
     ]
 
 
-def test_balance_months(_incomes, _expenses, _residual, _expect):
+def test_months_balance(_incomes, _expenses, _residual, _expect):
     actual = T(_incomes, _expenses, _residual).balance
 
     assert _expect == actual
 
 
-def test_balance_months_totals(_incomes, _expenses, _residual):
+def test_months_balance_totals(_incomes, _expenses, _residual):
     expect = {'incomes': 6.75, 'expenses': 1.75, 'balance': 5.0, 'residual': 70.75}
     actual = T(_incomes, _expenses, _residual).totals
 
     assert expect == actual
 
 
-def test_balance_months_average(_incomes, _expenses, _residual):
+def test_months_balance_average(_incomes, _expenses, _residual):
     expect = {'incomes': 3.38, 'expenses': 1.75, 'balance': 2.5, 'residual': 5.90}
     actual = T(_incomes, _expenses, _residual).average
 

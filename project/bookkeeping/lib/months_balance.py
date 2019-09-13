@@ -3,7 +3,7 @@ import pandas as pd
 from ..mixins.calc_balance import CalcBalanceMixin
 
 
-class BalanceMonths(CalcBalanceMixin):
+class MonthsBalance(CalcBalanceMixin):
     def __init__(self, incomes, expenses, amount_start=0.0):
         try:
             amount_start = float(amount_start)

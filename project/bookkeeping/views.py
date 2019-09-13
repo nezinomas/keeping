@@ -9,7 +9,7 @@ from ..incomes.models import Income
 from ..savings.models import SavingType
 
 from .lib.account_stats import AccountStats
-from .lib.balance_months import BalanceMonths
+from .lib.months_balance import MonthsBalance
 from .lib.saving_stats import SavingStats
 
 from .forms import AccountWorthForm, SavingWorthForm
@@ -62,7 +62,7 @@ class Index(IndexMixin):
 
         incomes = Income.objects.income_sum(year, 'incomes')
         expenses = Expense.objects.expense_sum(year, 'expenses')
-        o = BalanceMonths(incomes, expenses, account.balance_start)
+        o = MonthsBalance(incomes, expenses, account.balance_start)
 
         context['balance'] = o.balance
         context['balance_totals'] = o.totals
