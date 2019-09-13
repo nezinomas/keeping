@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class CalcBalanceMixin():
     def convert_to_df(self, list_):
         year = list_[0]['date'].year

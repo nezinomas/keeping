@@ -3,7 +3,7 @@ from django.db.models.functions import TruncMonth
 
 
 class SumMixin():
-    def sum_by_month(self, year, summed_name='sum', groupby='id'):
+    def sum_by_month(self, year, summed_name, groupby='id'):
         return (
             self
             .annotate(cnt=Count(groupby))
