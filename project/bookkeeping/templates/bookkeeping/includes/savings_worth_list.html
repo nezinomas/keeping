@@ -1,4 +1,4 @@
-{% load cell_decimal %}
+{% load table_cell %}
 
 <table class="table table-striped table-hover">
     <thead class="thead-light">
@@ -24,15 +24,15 @@
         {% for item in savings %}
         <tr>
             <td>{{ item.title }}</td>
-            {% td item.past_amount width='110rem' %}
-            {% td item.past_fee width='110rem' %}
-            {% td item.incomes width='110rem' %}
-            {% td item.fees width='110rem' %}
-            {% td item.invested width='110rem' %}
-            {% td item.market_value width='110rem' %}
-            {% td item.profit_incomes_proc width='110rem' %}
-            {% td item.profit_invested_sum text='€' negative=True positive=True width='110rem' %}
-            {% td item.profit_invested_proc text='%' negative=True positive=True width='110rem' %}
+            {% cell item.past_amount width='110rem' %}
+            {% cell item.past_fee width='110rem' %}
+            {% cell item.incomes width='110rem' %}
+            {% cell item.fees width='110rem' %}
+            {% cell item.invested width='110rem' %}
+            {% cell item.market_value width='110rem' %}
+            {% cell item.profit_incomes_proc width='110rem' %}
+            {% cell item.profit_invested_sum text_after='€' highlight_value=True width='110rem' %}
+            {% cell item.profit_invested_proc text_after='%' highlight_value=True width='110rem' %}
         </tr>
         {% endfor %}
     </tbody>
