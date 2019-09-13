@@ -3,7 +3,6 @@ from decimal import Decimal
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Count, F
-from django_pandas.managers import DataFrameManager
 
 from ..accounts.models import Account
 from ..core.mixins.queryset_balance import QuerySetBalanceMixin
@@ -134,4 +133,3 @@ class Saving(models.Model):
 
     # Managers
     objects = SavingQuerySet.as_manager()
-    pd = DataFrameManager()

@@ -2,7 +2,6 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
-from django_pandas.managers import DataFrameManager
 
 from ..accounts.models import Account
 from ..savings.models import SavingType
@@ -47,7 +46,6 @@ class Transaction(models.Model):
         )
 
     objects = TransactionQuerySet.as_manager()
-    pd = DataFrameManager()
 
 
 class SavingClose(models.Model):
@@ -84,7 +82,6 @@ class SavingClose(models.Model):
         )
 
     objects = TransactionQuerySet.as_manager()
-    pd = DataFrameManager()
 
 
 class SavingChange(models.Model):
@@ -121,4 +118,3 @@ class SavingChange(models.Model):
         )
 
     objects = TransactionQuerySet.as_manager()
-    pd = DataFrameManager()
