@@ -28,7 +28,7 @@ def _round(number):
 
 
 def _remove_line_end(rendered):
-    return str(rendered).replace('\n', '')
+    return str(rendered).replace('\n', '').replace('\t', '')
 
 
 def _print(*args):
