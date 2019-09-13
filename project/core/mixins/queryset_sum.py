@@ -13,6 +13,5 @@ class SumMixin():
             .annotate(c=Count('id'))
             .annotate(**{summed_name: Sum('price')})
             .filter(date__year=year)
-            # .values('date', summed_name)
             .order_by('date')
         )

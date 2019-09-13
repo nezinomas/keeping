@@ -75,7 +75,7 @@ def expenses():
         account=AccountFactory(title='Account1')
     )
     ExpenseFactory(
-        date=date(1999, 1, 1),
+        date=date(1999, 12, 1),
         price=1.25,
         account=AccountFactory(title='Account2')
     )
