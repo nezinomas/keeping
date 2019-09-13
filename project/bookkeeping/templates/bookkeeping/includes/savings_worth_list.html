@@ -31,8 +31,8 @@
             {% td item.invested width='110rem' %}
             {% td item.market_value width='110rem' %}
             {% td item.profit_incomes_proc width='110rem' %}
-            {% td item.profit_invested_sum text='€' negative=True positive=True width='110rem' %}
-            {% td item.profit_invested_proc text='%' negative=True positive=True width='110rem' %}
+            {% td item.profit_invested_sum text_after='€' highlight_value=True width='110rem' %}
+            {% td item.profit_invested_proc text_after='%' highlight_value=True width='110rem' %}
         </tr>
         {% endfor %}
     </tbody>

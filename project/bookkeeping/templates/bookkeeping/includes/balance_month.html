@@ -18,7 +18,7 @@
             <td class="text-left">{{ item.date|date:"F"|title }}</td>
             {% td item.incomes %}
             {% td item.expenses %}
-            {% td item.balance negative=True positive=True  %}
+            {% td item.balance highlight_value=True  %}
             {% td item.residual %}
         </tr>
         {% endfor %}
