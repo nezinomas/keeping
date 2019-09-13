@@ -3,11 +3,11 @@ from django.db.models.functions import TruncMonth
 
 
 class SumMixin():
-    def sum_by_month(self, year, summed_col_name):
+    def sum_by_month(self, year, summed_col_name, groupby='id'):
         return (
             self
-            .annotate(tmp=Count('id'))
-            .values('tmp')
+            .annotate(tmp=Count(groupby))
+            .values(groupby)
             .annotate(date=TruncMonth('date'))
             .values('date')
             .annotate(c=Count('id'))
