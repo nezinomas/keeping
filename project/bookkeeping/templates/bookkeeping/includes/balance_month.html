@@ -1,4 +1,4 @@
-{% load table_cell %}{% load cell_format %}
+{% load table_cell %}
 <table class="table table-striped table-hover">
     <thead class="thead-light">
         <tr>
@@ -27,17 +27,17 @@
     <tfoot>
         <tr>
             <th class="text-left">Avg</th>
-            <th>{{ balance_avg.incomes|floatformat:2 }}</th>
-            <th>{{ balance_avg.expenses|floatformat:2 }}</th>
+            {% cell balance_avg.incomes tag='th' %}
+            {% cell balance_avg.expenses tag='th' %}
             <th></th>
             <th><b>Metų gale</b></th>
         </tr>
         <tr>
             <th class="text-left">Viso:</th>
-            <th>{{ balance_totals.incomes|floatformat:2 }}</th>
-            <th>{{ balance_totals.expenses|floatformat:2 }}</th>
-            <th class="{{ balance_totals.balance|positive_negative }}">{{ balance_totals.balance|floatformat:2 }}</th>
-            <th>{{ amount_end|floatformat:2 }}</th>
+            {% cell balance_totals.incomes tag='th' %}
+            {% cell balance_totals.expenses tag='th' %}
+            {% cell balance_totals.balance tag='th' highlight_value=True %}
+            {% cell amount_end tag='th' highlight_value=True %}
         </tr>
     </tfoot>
 </table>
