@@ -23,7 +23,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self._related()
 
-    def sum_by_month(self, year, summed_col_name):
+    def income_sum(self, year, summed_col_name):
         return super().sum_by_month(year, summed_col_name)
 
 

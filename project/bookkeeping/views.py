@@ -60,8 +60,8 @@ class Index(IndexMixin):
 
         year = self.request.user.profile.year
 
-        incomes = Income.objects.sum_by_month(year, 'incomes')
-        expenses = Expense.objects.sum_by_month(year, 'expenses')
+        incomes = Income.objects.income_sum(year, 'incomes')
+        expenses = Expense.objects.expense_sum(year, 'expenses')
         o = BalanceMonths(incomes, expenses, account.balance_start)
 
         context['balance'] = o.balance

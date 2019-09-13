@@ -13,6 +13,6 @@ def test_sums_months(expenses):
         {'date': date(1999, 1, 1), 'ex': Decimal(1.75)},
     ]
 
-    actual = list(T.objects.sum_by_month(1999, 'ex'))
+    actual = list(T.objects.expense_sum(1999, 'ex'))
 
     assert expect == actual
