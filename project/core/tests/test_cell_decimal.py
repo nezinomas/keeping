@@ -2,13 +2,13 @@ import pytest
 from django.template import Context, Template
 
 from ...core.tests.utils import _remove_line_end
-from ..templatetags.cell_decimal import cell
+from ..templatetags.table_cell import cell
 
 
 @pytest.fixture()
 def _template():
     template_to_render = Template(
-        '{% load cell_decimal %}'
+        '{% load table_cell %}'
         '{% cell value %}'
     )
     return template_to_render
@@ -17,7 +17,7 @@ def _template():
 @pytest.fixture()
 def _template_positive_and_negative():
     template_to_render = Template(
-        '{% load cell_decimal %}'
+        '{% load table_cell %}'
         '{% cell value highlight_value=True %}'
     )
     return template_to_render
