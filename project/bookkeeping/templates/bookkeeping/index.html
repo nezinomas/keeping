@@ -6,151 +6,57 @@
 
 
 {% block content %}
-<div class="row my-2 mx-1 py-1 w-100" style="background-color: aliceblue">
-    <div class="col-sm-3 w-100">
+
+<div class="row mt-2" style="background-color: aliceblue">
+    <div class="col-lg-4 pr-1">
         {% include 'bookkeeping/includes/balance_month.html' %}
     </div>
 
-    <div class="col-sm-9 w-100">
+    <div class="col-lg-8 pl-1">
         {% include 'bookkeeping/includes/months_expense_type.html' %}
     </div>
 </div>
-<div class="row my-2 mx-1" style="background-color:chartreuse">
-    <div class="col-5">
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean vel neque massa. Cras molestie lectus ut turpis faucibus
-mattis. Vivamus non eros ex. Donec quis nisi vel enim viverra aliquet non sit amet odio. Etiam euismod accumsan leo,
-eget gravida tellus viverra pulvinar. Fusce scelerisque neque quis cursus suscipit. Duis varius eros velit, eu facilisis
-eros sodales nec. Nam eget orci libero. Cras semper tempor justo. Mauris rutrum iaculis erat, eget vulputate magna
-sollicitudin ac.
 
-Donec enim ipsum, aliquam ut accumsan ut, ultricies et leo. Praesent finibus sapien nec mauris cursus mattis vel a elit.
-Sed velit sem, cursus et tempor sed, tristique non leo. Proin vitae ante facilisis tellus euismod gravida et vitae odio.
-Vivamus molestie neque varius ipsum aliquam faucibus. Quisque pharetra diam quis metus pellentesque, et imperdiet nunc
-hendrerit. Mauris consequat ullamcorper ornare.
+<div class="row mt-2" style="background-color:chartreuse">
+    <div class="col-5">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi imperdiet ligula eu facilisis viverra. Sed quis mi erat. Ut viverra ligula imperdiet, euismod dui in, congue urna. Sed aliquet tortor ac libero maximus, lobortis sollicitudin dolor auctor. Donec mollis non urna et pellentesque. Pellentesque ultricies lacus a eros sodales laoreet. Donec in nulla mattis, consectetur est eget, lacinia tortor. Praesent massa urna, volutpat sed libero vitae, dignissim dignissim ante. Vestibulum at felis gravida, vulputate est vel, porta ex. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nullam volutpat varius cursus. Donec vel facilisis turpis. Sed vitae diam condimentum, luctus libero et, consequat sapien. Aliquam erat volutpat. Phasellus metus elit, eleifend sit amet mattis ac, efficitur non quam.</div>
 
-Quisque tortor neque, tincidunt ut dui et, iaculis volutpat lorem. Curabitur vitae mi consequat, hendrerit dolor quis,
-vestibulum odio. Mauris scelerisque blandit augue, nec porttitor dolor mollis in. Interdum et malesuada fames ac ante
-ipsum primis in faucibus. Fusce eu laoreet arcu. Aenean vel orci non odio ultricies laoreet. Phasellus sollicitudin
-tincidunt risus nec vehicula. Aliquam in ex ac tellus finibus congue euismod quis enim. Maecenas porta felis eget
-maximus pellentesque. Mauris sem sapien, posuere ac consectetur eu, auctor sed augue. Mauris lorem erat, mattis eu nibh
-at, blandit commodo lacus.
+    <div class="col-7">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi imperdiet ligula eu facilisis viverra. Sed quis mi erat. Ut viverra ligula imperdiet, euismod dui in, congue urna. Sed aliquet tortor ac libero maximus, lobortis sollicitudin dolor auctor. Donec mollis non urna et pellentesque. Pellentesque ultricies lacus a eros sodales laoreet. Donec in nulla mattis, consectetur est eget, lacinia tortor. Praesent massa urna, volutpat sed libero vitae, dignissim dignissim ante. Vestibulum at felis gravida, vulputate est vel, porta ex. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nullam volutpat varius cursus. Donec vel facilisis turpis. Sed vitae diam condimentum, luctus libero et, consequat sapien. Aliquam erat volutpat. Phasellus metus elit, eleifend sit amet mattis ac, efficitur non quam.</div>
+</div>
 
-Sed tristique magna consectetur est tincidunt blandit euismod vitae dolor. Donec sem elit, egestas ut porta et, pretium
-in nunc. Nam vitae odio eget dui consequat auctor. Donec ornare hendrerit sem at ullamcorper. Sed condimentum turpis id
-fermentum sagittis. Praesent mattis, lacus non condimentum finibus, felis lacus condimentum ligula, in bibendum metus
-nisl id nunc. Suspendisse tempus maximus sapien vitae tempus. Vivamus sollicitudin lectus vestibulum faucibus efficitur.
-Cras eros magna, tincidunt vel molestie at, congue quis nisl. Vivamus mollis a ligula sit amet pretium. Cras egestas
-augue ac leo gravida cursus. Sed a tempus leo. In consectetur justo vitae arcu efficitur, vitae placerat mauris
-efficitur. Vivamus turpis enim, posuere sit amet nunc et, volutpat condimentum elit. Aenean nec viverra nisl, a tempor
-metus. Integer nisi purus, cursus eget felis vel, suscipit ornare mi.
+<div class="row mt-2">
+    <div class="col-lg-8">
+        <!-- accounts stats -->
+        <div class="row">
+            <div class="col-lg-10">
+                <h6>Sąskaitos</h6>
+            </div>
+            <div class="col-lg-2 text-right">
+                {% url 'bookkeeping:accounts_worth_new' as url_accounts %}
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i
+                        class="fas fa-plus"></i> Įrašą</button>
+            </div>
+        </div>
+        <div class="row">
+            <div id="accounts_worth" class="col dblclick">{{ accounts }}</div>
+        </div>
 
-Morbi pharetra sapien id lorem mattis, non tempus mauris commodo. Aliquam in varius libero. Aenean eleifend maximus
-ipsum, non imperdiet libero tincidunt ac. Vivamus iaculis augue nibh, dictum semper erat finibus eget. Sed at dui ut
-libero cursus tristique. Morbi non eros diam. Morbi sed massa lectus. Pellentesque sit amet nulla sit amet nisi
-malesuada sagittis. Nunc sed leo vitae diam efficitur imperdiet non sit amet augue.
-    </div>
-
-    <div class="col-7">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean vel neque massa. Cras molestie lectus ut turpis faucibus
-        mattis. Vivamus non eros ex. Donec quis nisi vel enim viverra aliquet non sit amet odio. Etiam euismod accumsan leo,
-        eget gravida tellus viverra pulvinar. Fusce scelerisque neque quis cursus suscipit. Duis varius eros velit, eu facilisis
-        eros sodales nec. Nam eget orci libero. Cras semper tempor justo. Mauris rutrum iaculis erat, eget vulputate magna
-        sollicitudin ac.
-        
-        Donec enim ipsum, aliquam ut accumsan ut, ultricies et leo. Praesent finibus sapien nec mauris cursus mattis vel a elit.
-        Sed velit sem, cursus et tempor sed, tristique non leo. Proin vitae ante facilisis tellus euismod gravida et vitae odio.
-        Vivamus molestie neque varius ipsum aliquam faucibus. Quisque pharetra diam quis metus pellentesque, et imperdiet nunc
-        hendrerit. Mauris consequat ullamcorper ornare.
-        
-        Quisque tortor neque, tincidunt ut dui et, iaculis volutpat lorem. Curabitur vitae mi consequat, hendrerit dolor quis,
-        vestibulum odio. Mauris scelerisque blandit augue, nec porttitor dolor mollis in. Interdum et malesuada fames ac ante
-        ipsum primis in faucibus. Fusce eu laoreet arcu. Aenean vel orci non odio ultricies laoreet. Phasellus sollicitudin
-        tincidunt risus nec vehicula. Aliquam in ex ac tellus finibus congue euismod quis enim. Maecenas porta felis eget
-        maximus pellentesque. Mauris sem sapien, posuere ac consectetur eu, auctor sed augue. Mauris lorem erat, mattis eu nibh
-        at, blandit commodo lacus.
-        
-        Sed tristique magna consectetur est tincidunt blandit euismod vitae dolor. Donec sem elit, egestas ut porta et, pretium
-        in nunc. Nam vitae odio eget dui consequat auctor. Donec ornare hendrerit sem at ullamcorper. Sed condimentum turpis id
-        fermentum sagittis. Praesent mattis, lacus non condimentum finibus, felis lacus condimentum ligula, in bibendum metus
-        nisl id nunc. Suspendisse tempus maximus sapien vitae tempus. Vivamus sollicitudin lectus vestibulum faucibus efficitur.
-        Cras eros magna, tincidunt vel molestie at, congue quis nisl. Vivamus mollis a ligula sit amet pretium. Cras egestas
-        augue ac leo gravida cursus. Sed a tempus leo. In consectetur justo vitae arcu efficitur, vitae placerat mauris
-        efficitur. Vivamus turpis enim, posuere sit amet nunc et, volutpat condimentum elit. Aenean nec viverra nisl, a tempor
-        metus. Integer nisi purus, cursus eget felis vel, suscipit ornare mi.
-        
-        Morbi pharetra sapien id lorem mattis, non tempus mauris commodo. Aliquam in varius libero. Aenean eleifend maximus
-        ipsum, non imperdiet libero tincidunt ac. Vivamus iaculis augue nibh, dictum semper erat finibus eget. Sed at dui ut
-        libero cursus tristique. Morbi non eros diam. Morbi sed massa lectus. Pellentesque sit amet nulla sit amet nisi
-        malesuada sagittis. Nunc sed leo vitae diam efficitur imperdiet non sit amet augue.
+        <!-- savings -->
+        <div class="row">
+            <div class="col-lg-10">
+                <h6>Fondų vertė</h6>
+            </div>
+            <div class="col-lg-2 text-right">
+                {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Įrašą</button>
+            </div>
+        </div>
+        <div class="row">
+            <div id="saving_worth" class="col dblclick">{{ savings }}</div>
+        </div>
     </div>
 </div>
 
 
-
-<div class="col-8 pl-0">
-    <!-- accounts stats -->
-    <div class="row my-2">
-        <div class="col-10">
-            <h6>Sąskaitos</h6>
-        </div>
-        <div class="col-2 text-right">
-            {% url 'bookkeeping:accounts_worth_new' as url_accounts %}
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i
-                    class="fas fa-plus"></i> Įrašą</button>
-        </div>
-    </div>
-    <div class="row my-2">
-        <div id="accounts_worth" class="col dblclick">{{ accounts }}</div>
-    </div>
-
-    <!-- savings -->
-    <div class="row my-2">
-        <div class="col-10">
-            <h6>Fondų vertė</h6>
-        </div>
-        <div class="col-2 text-right">
-            {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Įrašą</button>
-        </div>
-    </div>
-    <div class="row my-2">
-        <div id="saving_worth" class="col dblclick">{{ savings }}</div>
-    </div>
-</div>
-
-<div class="col-4 px-0">
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean vel neque massa. Cras molestie lectus ut turpis faucibus
-mattis. Vivamus non eros ex. Donec quis nisi vel enim viverra aliquet non sit amet odio. Etiam euismod accumsan leo,
-eget gravida tellus viverra pulvinar. Fusce scelerisque neque quis cursus suscipit. Duis varius eros velit, eu facilisis
-eros sodales nec. Nam eget orci libero. Cras semper tempor justo. Mauris rutrum iaculis erat, eget vulputate magna
-sollicitudin ac.
-
-Donec enim ipsum, aliquam ut accumsan ut, ultricies et leo. Praesent finibus sapien nec mauris cursus mattis vel a elit.
-Sed velit sem, cursus et tempor sed, tristique non leo. Proin vitae ante facilisis tellus euismod gravida et vitae odio.
-Vivamus molestie neque varius ipsum aliquam faucibus. Quisque pharetra diam quis metus pellentesque, et imperdiet nunc
-hendrerit. Mauris consequat ullamcorper ornare.
-
-Quisque tortor neque, tincidunt ut dui et, iaculis volutpat lorem. Curabitur vitae mi consequat, hendrerit dolor quis,
-vestibulum odio. Mauris scelerisque blandit augue, nec porttitor dolor mollis in. Interdum et malesuada fames ac ante
-ipsum primis in faucibus. Fusce eu laoreet arcu. Aenean vel orci non odio ultricies laoreet. Phasellus sollicitudin
-tincidunt risus nec vehicula. Aliquam in ex ac tellus finibus congue euismod quis enim. Maecenas porta felis eget
-maximus pellentesque. Mauris sem sapien, posuere ac consectetur eu, auctor sed augue. Mauris lorem erat, mattis eu nibh
-at, blandit commodo lacus.
-
-Sed tristique magna consectetur est tincidunt blandit euismod vitae dolor. Donec sem elit, egestas ut porta et, pretium
-in nunc. Nam vitae odio eget dui consequat auctor. Donec ornare hendrerit sem at ullamcorper. Sed condimentum turpis id
-fermentum sagittis. Praesent mattis, lacus non condimentum finibus, felis lacus condimentum ligula, in bibendum metus
-nisl id nunc. Suspendisse tempus maximus sapien vitae tempus. Vivamus sollicitudin lectus vestibulum faucibus efficitur.
-Cras eros magna, tincidunt vel molestie at, congue quis nisl. Vivamus mollis a ligula sit amet pretium. Cras egestas
-augue ac leo gravida cursus. Sed a tempus leo. In consectetur justo vitae arcu efficitur, vitae placerat mauris
-efficitur. Vivamus turpis enim, posuere sit amet nunc et, volutpat condimentum elit. Aenean nec viverra nisl, a tempor
-metus. Integer nisi purus, cursus eget felis vel, suscipit ornare mi.
-
-Morbi pharetra sapien id lorem mattis, non tempus mauris commodo. Aliquam in varius libero. Aenean eleifend maximus
-ipsum, non imperdiet libero tincidunt ac. Vivamus iaculis augue nibh, dictum semper erat finibus eget. Sed at dui ut
-libero cursus tristique. Morbi non eros diam. Morbi sed massa lectus. Pellentesque sit amet nulla sit amet nisi
-malesuada sagittis. Nunc sed leo vitae diam efficitur imperdiet non sit amet augue.
-</div>
 
 <div class="modal fade" id="modal-form">
     <div class="modal-dialog modal-md">

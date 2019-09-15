@@ -12,22 +12,28 @@
 {% url 'expenses:expenses_new' as url_expense_new %}
 {% url 'expenses:expenses_type_new' as url_expenses_type_new %}
 {% url 'expenses:expenses_name_new' as url_expenses_name_new %}
-<div class="col-8 pl-0">
-    <div class="row my-2">
-        <div class="col text-right">
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expense_new }}"><i class="fas fa-plus"></i> Išlaidas</button>
+<div class="row mt-2">
+    <div class="col-lg-8">
+        <div class="row my-2">
+            <div class="col text-right">
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expense_new }}"><i class="fas fa-plus"></i> Išlaidas</button>
+            </div>
+        </div>
+        <div id="ajax-content" class="dblclick">{{ expenses }}</div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="row my-2">
+            <div class="col-lg-12 text-right">
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_type_new }}"><i class="fas fa-plus"></i> Išlaidų rūšį</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_name_new }}"><i class="fas fa-plus"></i> Išlaidų pavadinimą</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div id="ajax-content-categories" class="col-lg-12 pl-0 dblclick">{{ categories }}</div>
         </div>
     </div>
-    <div id="ajax-content" class="dblclick">{{ expenses }}</div>
-</div>
-<div class="col-4 px-0">
-    <div class="row my-2">
-        <div class="col text-right">
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_type_new }}"><i class="fas fa-plus"></i> Išlaidų rūšį</button>
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_name_new }}"><i class="fas fa-plus"></i> Išlaidų pavadinimą</button>
-        </div>
-    </div>
-    <div id="ajax-content-categories" class="dblclick">{{ categories }}</div>
 </div>
 
 <div class="modal fade" id="modal-form">

@@ -11,21 +11,27 @@
 
 {% url 'savings:savings_new' as url_savings %}
 {% url 'savings:savings_type_new' as url_savings_type_new %}
-<div class="col-8 pl-0">
-    <div class="row my-2">
-        <div class="col text-right">
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings }}"><i class="fas fa-plus"></i> Įrašą</button>
+<div class="row mt-2">
+    <div class="col-lg-8">
+        <div class="row mt-2">
+            <div class="col-lg-12 text-right">
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings }}"><i class="fas fa-plus"></i> Įrašą</button>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div id="ajax-content" class="col-lg-12 dblclick">{{ savings }}</div>
         </div>
     </div>
-    <div id="ajax-content" class="dblclick">{{ savings }}</div>
-</div>
-<div class="col-4 px-0">
-    <div class="row my-2">
-        <div class="col text-right">
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_type_new }}"><i class="fas fa-plus"></i> Fondą</button>
+    <div class="col-lg-4">
+        <div class="row mt-2">
+            <div class="col text-right">
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_type_new }}"><i class="fas fa-plus"></i> Fondą</button>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div id="ajax-content-categories" class="col-lg-12 pl-0 dblclick">{{ categories }}</div>
         </div>
     </div>
-    <div id="ajax-content-categories" class="dblclick">{{ categories }}</div>
 </div>
 
 <div class="modal fade" id="modal-form">
