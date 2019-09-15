@@ -1,45 +1,27 @@
-{% load table_cell %}
-<table class="table table-striped table-hover table-sm">
-    <thead class="thead-light">
-        <tr>
-            <th colspan="5" class="top">Metų balansas</th>
-        </tr>
-        <tr>
-            <th width="80rem" class="text-left">{{ request.user.profile.year|title }}</th>
-            <th>Pajamos</th>
-            <th>Išlaidos</th>
-            <th>Balansas</th>
-            <th>Likutis</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in balance  %}
-        <tr>
-            <td class="text-left">{{ item.date|date:"F"|title }}</td>
-            {% cell item.incomes %}
-            {% cell item.expenses %}
-            {% cell item.balance highlight_value=True  %}
-            {% cell item.residual %}
-        </tr>
-        {% endfor %}
-    </tbody>
+{% load table_cell %}{% load template_filters %}
 
-    <tfoot>
-        <tr>
-            <th class="text-left">Avg</th>
-            {% cell balance_avg.incomes tag='th' %}
-            {% cell balance_avg.expenses tag='th' %}
-            <th></th>
-            <th><b>Metų gale</b></th>
-        </tr>
-        <tr>
-            <th class="text-left">Viso:</th>
-            {% cell balance_totals.incomes tag='th' %}
-            {% cell balance_totals.expenses tag='th' %}
-            {% cell balance_totals.balance tag='th' highlight_value=True %}
-            {% cell amount_end tag='th' highlight_value=True %}
-        </tr>
-    </tfoot>
+<table class="table table-striped table-hover table-sm">
+        <thead class="thead-light">
+            <tr>
+                <th colspan="5" class="top">Metų balansas</th>
+            </tr>
+            <tr>
+                <th width="80rem" class="text-left">{{ request.user.profile.year|title }}</th>
+                {% for cat in expense_types %}<th>{{ cat }}</th>{% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in expenses  %}
+            <tr>
+                <td class="text-left">{{ item|get_item:'date'|date:"F"|title }}</td>
+                {% for cat in expense_types %}
+                {% cell item|get_item:cat %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
 </table>
 
 <style>
