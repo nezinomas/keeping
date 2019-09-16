@@ -1,12 +1,12 @@
 import pytest
 
-from ..templatetags.template_filters import cellformat as T
+from ..templatetags.template_filters import cellformat, get_item
 
 
 def test_cellformat_int():
     expect = '1,00'
 
-    actual = T(1)
+    actual = cellformat(1)
 
     assert expect == actual
 
@@ -14,7 +14,7 @@ def test_cellformat_int():
 def test_cellformat_float():
     expect = '1,00'
 
-    actual = T(1.0)
+    actual = cellformat(1.0)
 
     assert expect == actual
 
@@ -22,7 +22,7 @@ def test_cellformat_float():
 def test_cellformat_str_dot():
     expect = '1,00'
 
-    actual = T('1.0')
+    actual = cellformat('1.0')
 
     assert expect == actual
 
@@ -30,15 +30,15 @@ def test_cellformat_str_dot():
 def test_cellformat_str():
     expect = 'xx'
 
-    actual = T('xx')
+    actual = cellformat('xx')
 
     assert expect == actual
 
 
 def test_cellformat_none():
-    expect = None
+    expect = '-'
 
-    actual = T(None)
+    actual = cellformat(None)
 
     assert expect == actual
 
@@ -46,7 +46,7 @@ def test_cellformat_none():
 def test_cellformat_long_float():
     expect = '1,01'
 
-    actual = T(1.0111)
+    actual = cellformat(1.0111)
 
     assert expect == actual
 
@@ -54,7 +54,7 @@ def test_cellformat_long_float():
 def test_cellformat_float_zero():
     expect = '-'
 
-    actual = T(0.0)
+    actual = cellformat(0.0)
 
     assert expect == actual
 
@@ -62,7 +62,7 @@ def test_cellformat_float_zero():
 def test_cellformat_int_zero():
     expect = '-'
 
-    actual = T(0)
+    actual = cellformat(0)
 
     assert expect == actual
 
@@ -70,6 +70,30 @@ def test_cellformat_int_zero():
 def test_cellformat_str_zero():
     expect = '-'
 
-    actual = T('0')
+    actual = cellformat('0')
+
+    assert expect == actual
+
+
+def test_get_item():
+    expect = 'val'
+
+    actual = get_item({'x': 'val'}, 'x')
+
+    assert expect == actual
+
+
+def test_get_item_wrong_key():
+    expect = 0.0
+
+    actual = get_item({'x': 'val'}, 'y')
+
+    assert expect == actual
+
+
+def test_get_item_dictionary_none():
+    expect = None
+
+    actual = get_item(None, 'y')
 
     assert expect == actual
