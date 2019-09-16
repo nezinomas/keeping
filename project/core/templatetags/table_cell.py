@@ -7,7 +7,7 @@ register = template.Library()
 def cell(
     value, highlight_value=False,
     text_after=None, text_before=None,
-    width=None, tag='td'
+    width=None, tag='td', css_class=None
 ):
     return {
         'value': value,
@@ -16,4 +16,5 @@ def cell(
         'text_after': text_after,
         'width': width,
         'tag': tag,
+        'css_class': css_class,
     }

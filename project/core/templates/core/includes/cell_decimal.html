@@ -1,7 +1,7 @@
 {% load cell_format %}{% load template_filters %}
 
 {% with value|cellformat as val %}
-<{{ tag }} class="{% if highlight_value %}{{ val|positive_negative }}{% endif %}"{% if width %} width="{{ width }}"{% endif %}{% if val == '-' %} style="color: #b7b7b6;"{% endif %}>
+<{{ tag }} class="{% if highlight_value %}{{ val|positive_negative }}{% endif %}{% if css_class %} {{ css_class }}{% endif %}"{% if width %} width="{{ width }}"{% endif %}{% if val == '-' %} style="color: #b7b7b6;"{% endif %}>
 {% if text_before %}{{ text_before }}{% endif %}
 {{ val }}
 {% if text_after %}{{ text_after }}{% endif %}

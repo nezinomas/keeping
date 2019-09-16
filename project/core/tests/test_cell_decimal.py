@@ -73,3 +73,59 @@ def test_cell_string_zero(_template):
     expect = '<td class="" style="color: #b7b7b6;">-</td>'
 
     assert _remove_line_end(actual) == expect
+
+
+def test_cell_tag_th():
+    tmpl = Template(
+        '{% load table_cell %}'
+        '{% cell value tag="th" %}'
+    )
+    context = Context({'value': 1})
+
+    expect = '<th class="">1,00</th>'
+
+    actual = tmpl.render(context)
+
+    assert _remove_line_end(actual) == expect
+
+
+def test_cell_tag_td():
+    tmpl = Template(
+        '{% load table_cell %}'
+        '{% cell value %}'
+    )
+    context = Context({'value': 1})
+
+    expect = '<td class="">1,00</td>'
+
+    actual = tmpl.render(context)
+
+    assert _remove_line_end(actual) == expect
+
+
+def test_cell_css_class_one():
+    tmpl = Template(
+        '{% load table_cell %}'
+        '{% cell value css_class="X" %}'
+    )
+    context = Context({'value': 1})
+
+    expect = '<td class=" X">1,00</td>'
+
+    actual = tmpl.render(context)
+
+    assert _remove_line_end(actual) == expect
+
+
+def test_cell_css_class_many():
+    tmpl = Template(
+        '{% load table_cell %}'
+        '{% cell value css_class="X Y Z" %}'
+    )
+    context = Context({'value': 1})
+
+    expect = '<td class=" X Y Z">1,00</td>'
+
+    actual = tmpl.render(context)
+
+    assert _remove_line_end(actual) == expect
