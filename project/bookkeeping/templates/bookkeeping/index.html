@@ -65,12 +65,49 @@
 </div>
 
 <style>
+    table {
+        border-collapse: collapse;
+    }
+    table td, table th {
+        border-left: 1px solid #b7b7b6!important;
+        border-right: 1px solid #b7b7b6!important;
+    }
+
+    tr td:first-child, tr th:first-child {
+        border-left: 0!important;
+    }
+
+    tr td:last-child, tr th:last-child {
+        border-right: 0!important;
+    }
+
+    td, th {
+        text-align: right!important;
+    }
+
     tfoot > tr {
         border-top: double #0359b0;
     }
 
-    .b {
-        border-right: 5px solid red!important;
+    tfoot > tr > th {
+        font-weight: normal;
+    }
+
+    thead > tr > th {
+        padding-top: .5rem!important;
+        padding-bottom: .5rem!important;
+    }
+
+    .top {
+        background-color: lightblue !important;
+        text-align: left !important;
+    }
+
+    .br {
+        border-right: 3px solid #0359b0!important;
+    }
+    .bl {
+        border-left: 3px solid #0359b0!important;
     }
 </style>
 {% endblock content %}

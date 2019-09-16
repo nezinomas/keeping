@@ -24,30 +24,13 @@ body {
   padding: 0 1rem;
 }
 
-table td {
+table td, table th {
   vertical-align: middle!important;
   padding-top: .2rem!important;
   padding-bottom: .2rem!important;
   padding-left: .50rem!important;
   padding-right: .50rem!important;
 }
-
-table thead th {
-  vertical-align: middle!important;
-  padding-top: .35rem!important;
-  padding-bottom: .35rem!important;
-  padding-left: .50rem!important;
-  padding-right: .50rem!important;
-}
-
-table tfoot td {
-  padding-top: .35rem!important;
-  padding-bottom: .35rem!important;
-}
-
-/* .table-striped>tbody>tr:nth-child(odd) {
-   background-color: #f9f6cf;
-} */
 
 .table-hover tbody tr:hover {
     background: #f9f6cf;
@@ -59,46 +42,6 @@ table tfoot td {
 
 .table-hover tbody tr:hover td.table-success {
     background: #b7debb;
-}
-
-.form-group {
-  margin: 0!important;
-  padding: 0!important;
-}
-
-.inner {
-  margin: 0!important;
-  padding: 0!important;
-  table-layout:fixed!important;
-}
-
-.inner td {
-  padding-top: .25rem!important;
-  padding-bottom: .25rem!important;
-  vertical-align: top!important;
-  padding-left: 4px!important;
-  padding-right: 4px!important;
-}
-
-.inner td.v-middle {
-  vertical-align: middle!important;
-}
-
-.inner td.last {
-  padding-right: .5rem!important;
-}
-
-.inner td input {
-  padding-left: .25rem!important;
-  padding-right: .25rem!important;
-}
-
-.inner td.text-left input {
-  text-align: left;
-}
-
-.inner td.text-center input {
-  text-align: center;
 }
 
 .btn-sm, .form-control-sm {
