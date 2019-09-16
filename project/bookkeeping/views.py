@@ -79,6 +79,8 @@ class Index(IndexMixin):
             ExpenseType.objects.all()
             .values_list('title', flat=True)
         )
+        context['expenses_totals'] = oe.totals
+        context['expenses_average'] = oe.average
 
         return context
 
