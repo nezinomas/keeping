@@ -8,11 +8,11 @@
 {% block content %}
 
 <div class="row mt-2" style="background-color: aliceblue">
-    <div class="col-lg-4 pr-1">
+    <div class="col-lg-4 pr-3">
         {% include 'bookkeeping/includes/balance_month.html' %}
     </div>
 
-    <div class="col-lg-8 pl-1">
+    <div class="col-lg-8 pl-3">
         {% include 'bookkeeping/includes/months_expense_type.html' %}
     </div>
 </div>
@@ -67,6 +67,10 @@
 <style>
     tfoot > tr {
         border-top: double #0359b0;
+    }
+
+    .b {
+        border-right: 5px solid red!important;
     }
 </style>
 {% endblock content %}
