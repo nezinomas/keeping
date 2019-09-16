@@ -52,7 +52,7 @@ def test_cell_empty(_template):
     context = Context({'value': None})
 
     actual = _template.render(context)
-    expect = '<td class="" style="color: #b7b7b6;">-</td>'
+    expect = '<td class=" dash">-</td>'
 
     assert _remove_line_end(actual) == expect
 
@@ -61,7 +61,7 @@ def test_cell_float_zero(_template):
     context = Context({'value': 0.0})
 
     actual = _template.render(context)
-    expect = '<td class="" style="color: #b7b7b6;">-</td>'
+    expect = '<td class=" dash">-</td>'
 
     assert _remove_line_end(actual) == expect
 
@@ -70,7 +70,7 @@ def test_cell_string_zero(_template):
     context = Context({'value': '0'})
 
     actual = _template.render(context)
-    expect = '<td class="" style="color: #b7b7b6;">-</td>'
+    expect = '<td class=" dash">-</td>'
 
     assert _remove_line_end(actual) == expect
 
