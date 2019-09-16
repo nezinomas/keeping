@@ -23,7 +23,6 @@
         </tr>
         {% endfor %}
     </tbody>
-
     <tfoot>
         <tr>
             <th class="text-left">Avg</th>
@@ -33,7 +32,7 @@
             <th><b>Metų gale</b></th>
         </tr>
         <tr>
-            <th class="text-left">Viso:</th>
+            <th class="text-left">Viso</th>
             {% cell balance_totals.incomes tag='th' %}
             {% cell balance_totals.expenses tag='th' %}
             {% cell balance_totals.balance tag='th' highlight_value=True %}
