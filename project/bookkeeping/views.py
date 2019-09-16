@@ -86,8 +86,8 @@ class Index(IndexMixin):
         del arr['total']
         l = [{'name': k, 'y': v} for k, v in arr.items()]
 
-        context['chart_pie'] = render_to_string(
-            'bookkeeping/includes/chart_pie.html',
+        context['chart_expenses'] = render_to_string(
+            'bookkeeping/includes/chart_expenses.html',
             {
                 'year': year,
                 'pie': l
