@@ -82,6 +82,19 @@ class Index(IndexMixin):
         context['expenses_totals'] = oe.totals
         context['expenses_average'] = oe.average
 
+        arr = oe.totals
+        del arr['total']
+        l = [{'name': k, 'y': v} for k, v in arr.items()]
+
+        context['chart_pie'] = render_to_string(
+            'bookkeeping/includes/chart_pie.html',
+            {
+                'year': year,
+                'pie': l
+            },
+            self.request
+        )
+
         return context
 
 
