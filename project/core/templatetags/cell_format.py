@@ -38,7 +38,7 @@ def positive_negative(value):
     _value = ''
 
     try:
-        value = float(value)
+        value = float(value.replace('.', '').replace(',', '.'))
     except:
         return _value
 
