@@ -22,6 +22,14 @@ class MonthsExpenseType(CalcBalanceMixin):
 
         return val
 
+    @property
+    def totals(self):
+        return super().totals(self._balance)
+
+    @property
+    def average(self):
+        return super().average(self._balance)
+
     def _calc(self, expenses):
         year = expenses[0]['date'].year
 
@@ -43,5 +51,7 @@ class MonthsExpenseType(CalcBalanceMixin):
                 df[col] = df[col].dt.date
             else:
                 df[col] = pd.to_numeric(df[col])
+
+        df.loc[:, 'total'] = df.sum(axis=1)
 
         self._balance = df
