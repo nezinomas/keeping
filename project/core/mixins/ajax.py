@@ -73,13 +73,19 @@ class AjaxCreateUpdateMixin():
             render_to_string(self.get_template_names(), context, request=self.request)
         )
 
-        form = self.get_form()
-        js_url = []
+        #  comment code which extracts js files from form.media._js
+        #  and append to data['js'] dictionary
+        #  then ajax.js loads these files with jquery function $.getScript()
+        #  ToDo: delete after some time
+        #  code commented on 2019.09.17
 
-        for js in form.media._js:  # for all the scripts used by the form
-            js_url.append(form.media.absolute_path(js))
+        # form = self.get_form()
+        # js_url = []
 
-        data['js'] = js_url
+        # for js in form.media._js:  # for all the scripts used by the form
+        #     js_url.append(form.media.absolute_path(js))
+
+        # data['js'] = js_url
 
     def _get_list_template_name(self):
         app_name = self.request.resolver_match.app_name
