@@ -26,7 +26,7 @@
               {% with request.resolver_match.view_name as m_url %}
               <a class="dropdown-item" href="{% url 'core:set_year' 2019 m_url  %}">2019</a>
               <a class="dropdown-item" href="{% url 'core:set_year' 2018 m_url  %}">2018</a>
-              <a class="dropdown-item" href="#">2017</a>
+              <a class="dropdown-item" href="{% url 'core:set_year' 2017 m_url  %}">2017</a>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="#">Separated link</a>
               {% endwith %}
