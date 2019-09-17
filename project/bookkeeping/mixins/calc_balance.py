@@ -2,9 +2,7 @@ import pandas as pd
 
 
 class CalcBalanceMixin():
-    def convert_to_df(self, list_):
-        year = list_[0]['date'].year
-
+    def convert_to_df(self, year, list_):
         df = pd.DataFrame(list_)
 
         # convert to float and datetime.date

@@ -1,10 +1,12 @@
+from datetime import date
+
 import pandas as pd
 
 from ..mixins.calc_balance import CalcBalanceMixin
 
 
 class MonthsBalance(CalcBalanceMixin):
-    def __init__(self, incomes, expenses, amount_start=0.0):
+    def __init__(self, year, incomes, expenses, amount_start=0.0):
         try:
             amount_start = float(amount_start)
         except:
@@ -12,9 +14,16 @@ class MonthsBalance(CalcBalanceMixin):
 
         self._amount_start = amount_start
         self._balance = pd.DataFrame()
+        self._year = year
 
         if not incomes and not expenses:
             return
+
+        if not incomes:
+            incomes = [{'date': date(year, 1, 1), 'incomes': 0}]
+
+        if not expenses:
+            expenses = [{'date': date(year, 1, 1), 'expenses': 0}]
 
         self._calc(incomes, expenses)
 
@@ -58,9 +67,21 @@ class MonthsBalance(CalcBalanceMixin):
     def average(self):
         return super().average(self._balance)
 
+    @property
+    def income_data(self):
+        return self._balance.incomes.tolist()
+
+    @property
+    def expense_data(self):
+        return self._balance.expenses.tolist()
+
+    @property
+    def save_data(self):
+        return self._balance.residual.tolist()
+
     def _calc(self, incomes, expenses):
-        incomes = super().convert_to_df(incomes)
-        expenses = super().convert_to_df(expenses)
+        incomes = super().convert_to_df(self._year, incomes)
+        expenses = super().convert_to_df(self._year, expenses)
 
         df = incomes.join(
             expenses,

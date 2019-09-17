@@ -69,56 +69,80 @@ def _expect():
 
 
 def test_months_balance(_incomes, _expenses, _residual, _expect):
-    actual = T(_incomes, _expenses, _residual).balance
+    actual = T(1999, _incomes, _expenses, _residual).balance
 
     assert _expect == actual
 
 
 def test_months_balance_totals(_incomes, _expenses, _residual):
     expect = {'incomes': 6.75, 'expenses': 1.75, 'balance': 5.0, 'residual': 70.75}
-    actual = T(_incomes, _expenses, _residual).totals
+    actual = T(1999, _incomes, _expenses, _residual).totals
 
     assert expect == actual
 
 
 def test_months_balance_average(_incomes, _expenses, _residual):
     expect = {'incomes': 3.38, 'expenses': 1.75, 'balance': 2.5, 'residual': 5.90}
-    actual = T(_incomes, _expenses, _residual).average
+    actual = T(1999, _incomes, _expenses, _residual).average
 
     assert expect == pytest.approx(actual, rel=1e-2)
 
 
 def test_amount_start():
-    actual = T(None, None, 10).amount_start
+    actual = T(1999, None, None, 10).amount_start
 
     assert 10 == actual
 
 
 def test_amount_start_none():
-    actual = T(None, None, None).amount_start
+    actual = T(1999, None, None, None).amount_start
 
     assert 0.0 == actual
 
 
 def test_amount_end(_incomes, _expenses, _residual):
-    actual = T(_incomes, _expenses, _residual).amount_end
+    actual = T(1999, _incomes, _expenses, _residual).amount_end
 
     assert 6.0 == actual
 
 
 def test_amount_end_none():
-    actual = T(None, None, None).amount_end
+    actual = T(1999, None, None, None).amount_end
 
     assert 0.0 == actual
 
 
 def test_balance_amount(_incomes, _expenses, _residual):
-    actual = T(_incomes, _expenses, _residual).balance_amount
+    actual = T(1999, _incomes, _expenses, _residual).balance_amount
 
     assert 5.0 == actual
 
 
 def test_balance_none():
-    actual = T([], [], None).balance_amount
+    actual = T(1999, [], [], None).balance_amount
 
     assert 0.0 == actual
+
+
+def test_balance_income_data(_incomes):
+    expect = [5.5, 1.25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    actual = T(1999, _incomes, [], None).income_data
+
+    assert expect == actual
+
+
+def test_balance_expense_data(_expenses):
+    expect = [1.75, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    actual = T(1999, [], _expenses, None).expense_data
+
+    assert expect == actual
+
+
+def test_balance_save_data(_incomes, _expenses, _residual):
+    expect = [4.75, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
+
+    actual = T(1999, _incomes, _expenses, _residual).save_data
+
+    assert expect == actual
