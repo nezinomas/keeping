@@ -53,3 +53,30 @@ def test_months_expense_type_average(_ex):
     actual = T(_ex).average
 
     assert expect == actual
+
+
+def test_months_expense_chart_data(_ex):
+    expect = [
+        {'name': 'T1', 'y': 1.25},
+        {'name': 'T2', 'y': 0.6}
+    ]
+
+    actual = T(_ex).chart_data
+
+    assert expect == actual
+
+
+def test_months_expense_chart_data_none():
+    expect = []
+
+    actual = T(None).chart_data
+
+    assert expect == actual
+
+
+def test_months_expense_chart_data_empty():
+    expect = []
+
+    actual = T([]).chart_data
+
+    assert expect == actual

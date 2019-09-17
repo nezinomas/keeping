@@ -30,6 +30,17 @@ class MonthsExpenseType(CalcBalanceMixin):
     def average(self):
         return super().average(self._balance)
 
+    @property
+    def chart_data(self):
+        rtn = []
+        arr = super().totals(self._balance)
+
+        if arr:
+            del arr['total']
+            rtn = [{'name': key, 'y': value} for key, value in arr.items()]
+
+        return rtn
+
     def _calc(self, expenses):
         year = expenses[0]['date'].year
 

@@ -76,12 +76,8 @@ class Index(IndexMixin):
         context['expenses_totals'] = oe.totals
         context['expenses_average'] = oe.average
 
-        arr = oe.totals
-        del arr['total']
-        l = [{'name': k, 'y': v} for k, v in arr.items()]
-
         # charts data
-        context['pie'] = l
+        context['pie'] = oe.chart_data
         context['e'] = o.expense_data
         context['i'] = o.income_data
         context['s'] = o.save_data
