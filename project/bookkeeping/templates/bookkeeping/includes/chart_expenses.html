@@ -1,6 +1,6 @@
 <script>
-    // Radialize the colors
-    Highcharts.setOptions({
+    // Build the chart
+    Highcharts.chart('container-for-pie', {
         colors: Highcharts.map(Highcharts.getOptions().colors, function (color) {
             return {
                 radialGradient: {
@@ -13,11 +13,7 @@
                     [1, Highcharts.Color(color).brighten(-0.3).get('rgb')] // darken
                 ]
             };
-        })
-    });
-
-    // Build the chart
-    Highcharts.chart('container-for-pie', {
+        }),
         chart: {
             plotBackgroundColor: null,
             plotBorderWidth: null,
@@ -25,7 +21,7 @@
             type: 'pie',
         },
         title: {
-            text: 'Išlaidos, {{ request.user.profile.year|title }}'
+            text: ''
         },
         tooltip: {
             pointFormat: '<b>{point.percentage:.1f}%</b>'
