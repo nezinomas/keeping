@@ -32,16 +32,18 @@ class AjaxCreateUpdateMixin():
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context[self.context_object_name] = super(GetQuerysetMixin, self).get_queryset()
+        context[self.context_object_name] = super().get_queryset()
 
         return context
 
     def form_valid(self, form):
         data = dict()
-        context = self.get_context_data()
 
         if form.is_valid():
             form.save()
+
+            context = self.get_context_data()
+
             data['form_is_valid'] = True
             data['html_list'] = (
                 render_to_string(
