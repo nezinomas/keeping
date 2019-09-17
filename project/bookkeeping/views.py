@@ -55,10 +55,9 @@ class Index(IndexMixin):
             self.request
         )
 
-
         incomes = Income.objects.income_sum(year)
         expenses = Expense.objects.expense_sum(year)
-        o = MonthsBalance(incomes, expenses, account.balance_start)
+        o = MonthsBalance(year, incomes, expenses, account.balance_start)
 
         context['balance'] = o.balance
         context['balance_totals'] = o.totals
@@ -81,11 +80,11 @@ class Index(IndexMixin):
         del arr['total']
         l = [{'name': k, 'y': v} for k, v in arr.items()]
 
-        context['chart_expenses'] = render_to_string(
-            'bookkeeping/includes/chart_expenses.html',
-            {'year': year, 'pie': l },
-            self.request
-        )
+        # charts data
+        context['pie'] = l
+        context['e'] = o.expense_data
+        context['i'] = o.income_data
+        context['s'] = o.save_data
 
         return context
 

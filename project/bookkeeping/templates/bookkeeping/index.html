@@ -8,7 +8,7 @@
 
 {% block content %}
 
-<div class="row mt-2" style="background-color: aliceblue">
+<div class="row my-2 border-bottom border-primary">
     <div class="col-lg-4 pr-3">
         {% include 'bookkeeping/includes/balance_month.html' %}
     </div>
@@ -18,13 +18,16 @@
     </div>
 </div>
 
-<div class="row mt-2" style="background-color:chartreuse">
+<div class="row my-2 border-bottom border-primary">
     <div class="col-lg-5">
         <div id="container-for-pie"></div>
-        {{ chart_expenses }}
+        {% include 'bookkeeping/includes/chart_expenses.html' %}
     </div>
 
-    <div class="col-lg-7">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi imperdiet ligula eu facilisis viverra. Sed quis mi erat. Ut viverra ligula imperdiet, euismod dui in, congue urna. Sed aliquet tortor ac libero maximus, lobortis sollicitudin dolor auctor. Donec mollis non urna et pellentesque. Pellentesque ultricies lacus a eros sodales laoreet. Donec in nulla mattis, consectetur est eget, lacinia tortor. Praesent massa urna, volutpat sed libero vitae, dignissim dignissim ante. Vestibulum at felis gravida, vulputate est vel, porta ex. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nullam volutpat varius cursus. Donec vel facilisis turpis. Sed vitae diam condimentum, luctus libero et, consequat sapien. Aliquam erat volutpat. Phasellus metus elit, eleifend sit amet mattis ac, efficitur non quam.</div>
+    <div class="col-lg-7">
+        <div id="container-for-balance"></div>
+        {% include 'bookkeeping/includes/chart_balance.html' %}
+    </div>
 </div>
 
 <div class="row mt-2">
