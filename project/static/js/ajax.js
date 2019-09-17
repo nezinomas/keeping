@@ -27,14 +27,18 @@ $(function () {
                     }
                 }
             },
-            complete: function (data) {
-                var json = data.responseJSON
-                if (json) {
-                    for (var i = 0; i < json.js.length; i++) {
-                        $.getScript(data.responseJSON.js[i]);
-                    }
-                }
-            }
+            // code comment on 2019.09.17
+            // Todo delete after some time
+            // same as in project/core/mixins/ajax.py::76
+
+            // complete: function (data) {
+            //     var json = data.responseJSON
+            //     if (json) {
+            //         for (var i = 0; i < json.js.length; i++) {
+            //             $.getScript(data.responseJSON.js[i]);
+            //         }
+            //     }
+            // }
         });
     };
 
