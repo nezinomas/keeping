@@ -69,15 +69,27 @@ class MonthsBalance(CalcBalanceMixin):
 
     @property
     def income_data(self):
-        return self._balance.incomes.tolist()
+        rtn = []
+        if 'incomes' in self._balance:
+            rtn = self._balance.incomes.tolist()
+
+        return rtn
 
     @property
     def expense_data(self):
-        return self._balance.expenses.tolist()
+        rtn = []
+        if 'expenses' in self._balance:
+            rtn = self._balance.expenses.tolist()
+
+        return rtn
 
     @property
     def save_data(self):
-        return self._balance.residual.tolist()
+        rtn = []
+        if 'residual' in self._balance:
+            rtn = self._balance.residual.tolist()
+
+        return rtn
 
     def _calc(self, incomes, expenses):
         incomes = super().convert_to_df(self._year, incomes)
