@@ -35,15 +35,14 @@ class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        year = self.request.user.profile.year
+
         # Account and AccountWorth stats
         account = _account_stats(self.request)
 
         context['accounts'] = render_to_string(
             'bookkeeping/includes/accounts_worth_list.html',
-            {
-                'accounts': account.balance,
-                'totals': account.totals
-            },
+            {'accounts': account.balance, 'totals': account.totals},
             self.request
         )
 
@@ -52,14 +51,10 @@ class Index(IndexMixin):
 
         context['savings'] = render_to_string(
             'bookkeeping/includes/savings_worth_list.html',
-            {
-                'savings': saving.balance,
-                'totals': saving.totals
-            },
+            {'savings': saving.balance, 'totals': saving.totals},
             self.request
         )
 
-        year = self.request.user.profile.year
 
         incomes = Income.objects.income_sum(year)
         expenses = Expense.objects.expense_sum(year)
@@ -88,10 +83,7 @@ class Index(IndexMixin):
 
         context['chart_expenses'] = render_to_string(
             'bookkeeping/includes/chart_expenses.html',
-            {
-                'year': year,
-                'pie': l
-            },
+            {'year': year, 'pie': l },
             self.request
         )
 
