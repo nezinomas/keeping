@@ -1,11 +1,11 @@
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 
-from .get import GetQuerysetMixin
+from .get import GetQuerysetMixin, GetFormKwargsMixin
 from .helpers import format_url_name
 
 
-class AjaxCreateUpdateMixin():
+class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
     list_template_name = None
     object = None
 

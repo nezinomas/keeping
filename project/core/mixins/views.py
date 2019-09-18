@@ -18,7 +18,7 @@ class IndexMixin(LoginRequiredMixin, TemplateView):
 
 class ListMixin(
         LoginRequiredMixin,
-        GetQuerysetMixin, GetFormKwargsMixin,
+        GetQuerysetMixin,
         ListView):
 
     def dispatch(self, request, *args, **kwargs):
@@ -49,7 +49,7 @@ class ListMixin(
 
 class CreateAjaxMixin(
         LoginRequiredMixin,
-        AjaxCreateUpdateMixin, GetQuerysetMixin, GetFormKwargsMixin,
+        AjaxCreateUpdateMixin,
         CreateView):
 
     def get_context_data(self, **kwargs):
@@ -61,7 +61,7 @@ class CreateAjaxMixin(
 
 class UpdateAjaxMixin(
         LoginRequiredMixin,
-        AjaxCreateUpdateMixin, GetQuerysetMixin, GetFormKwargsMixin,
+        AjaxCreateUpdateMixin,
         UpdateView):
 
     def get_context_data(self, **kwargs):
