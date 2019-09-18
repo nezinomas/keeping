@@ -46,8 +46,9 @@ class AjaxCreateUpdateMixin():
             context['form'] = form
 
             data['form_is_valid'] = True
-            data['html_list'] = (render_to_string(
-                self._get_list_template_name(), context, self.request)
+            data['html_list'] = (
+                render_to_string(
+                    self._get_list_template_name(), context, self.request)
             )
         else:
             data['form_is_valid'] = False
@@ -74,7 +75,8 @@ class AjaxCreateUpdateMixin():
 
     def _render_form(self, data, context):
         data['html_form'] = (
-            render_to_string(self.get_template_names(), context, request=self.request)
+            render_to_string(self.get_template_names(),
+                             context, request=self.request)
         )
 
         #  comment code which extracts js files from form.media._js
