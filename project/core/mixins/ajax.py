@@ -43,11 +43,11 @@ class AjaxCreateUpdateMixin():
             form.save()
 
             context = self.get_context_data()
+            context['form'] = form
 
             data['form_is_valid'] = True
-            data['html_list'] = (
-                render_to_string(
-                    self._get_list_template_name(), context, self.request)
+            data['html_list'] = (render_to_string(
+                self._get_list_template_name(), context, self.request)
             )
         else:
             data['form_is_valid'] = False
@@ -62,6 +62,8 @@ class AjaxCreateUpdateMixin():
     def form_invalid(self, form):
         response = super().form_invalid(form)
         context = self.get_context_data()
+
+        context['form'] = form
         data = dict()
 
         if self.request.is_ajax():
