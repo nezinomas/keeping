@@ -1,0 +1,38 @@
+{% load table_cell %}{% load template_filters %}
+
+<table class="table table-striped table-hover table-sm">
+    <thead class="thead-light">
+        <tr>
+            <th colspan="{{ expense_types|length|add:1 }}" class="top">Metų balansas</th>
+            <th class="bl top"></th>
+        </tr>
+        <tr>
+            <th width="80rem" class="text-left">{{ request.user.profile.year|title }}</th>
+            {% for cat in expense_types %}<th>{{ cat }}</th>{% endfor %}
+            <th class="bl">Viso</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in expenses  %}
+        <tr>
+            <td class="text-left">{{ item.date|date:"F"|title }}</td>
+            {% for cat in expense_types %}
+            {% cell item|get_item:cat %}
+            {% endfor %}
+            {% cell item.total css_class="bl" %}
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th class="text-left">Avg</th>
+            {% for cat in expense_types %}{% cell expenses_average|get_item:cat tag='th' %}{% endfor %}
+            {% cell expenses_average.total tag='th' css_class="bl" %}
+        </tr>
+        <tr>
+            <th class="text-left">Viso</th>
+            {% for cat in expense_types %}{% cell expenses_totals|get_item:cat tag='th' %}{% endfor %}
+            {% cell expenses_totals.total tag='th' css_class="bl" %}
+        </tr>
+    </tfoot>
+</table>

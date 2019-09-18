@@ -1,8 +1,12 @@
+from datetime import date
+
 import pandas as pd
 
+from ..mixins.calc_balance import CalcBalanceMixin
 
-class BalanceMonths():
-    def __init__(self, incomes, expenses, amount_start=0.0):
+
+class MonthsBalance(CalcBalanceMixin):
+    def __init__(self, year, incomes, expenses, amount_start=0.0):
         try:
             amount_start = float(amount_start)
         except:
@@ -10,9 +14,16 @@ class BalanceMonths():
 
         self._amount_start = amount_start
         self._balance = pd.DataFrame()
+        self._year = year
 
         if not incomes and not expenses:
             return
+
+        if not incomes:
+            incomes = [{'date': date(year, 1, 1), 'incomes': 0}]
+
+        if not expenses:
+            expenses = [{'date': date(year, 1, 1), 'expenses': 0}]
 
         self._calc(incomes, expenses)
 
@@ -50,60 +61,44 @@ class BalanceMonths():
 
     @property
     def totals(self):
-        val = None
-        total = self._balance.copy()
-
-        if not total.empty:
-            total = total.sum()
-            val = total.to_dict()
-
-        return val
+        return super().totals(self._balance)
 
     @property
     def average(self):
-        val = None
-        avg = self._balance.copy()
+        return super().average(self._balance)
 
-        if not avg.empty:
-            # replace 0.0 to None
-            # average will be calculated only for months with non zero values
-            avg.replace(0.0, pd.NaT, inplace=True)
-            avg = avg.mean(skipna=True)
+    @property
+    def income_data(self):
+        rtn = []
+        if 'incomes' in self._balance:
+            rtn = self._balance.incomes.tolist()
 
-            val = avg.to_dict()
+        return rtn
 
-        return val
+    @property
+    def expense_data(self):
+        rtn = []
+        if 'expenses' in self._balance:
+            rtn = self._balance.expenses.tolist()
 
-    def _convert_to_df(self, list_):
-        year = list_[0]['date'].year
+        return rtn
 
-        df = pd.DataFrame(list_)
+    @property
+    def save_data(self):
+        rtn = []
+        if 'residual' in self._balance:
+            rtn = self._balance.residual.tolist()
 
-        # convert to float and datetime.date
-        for col in df.columns:
-            if col == 'date':
-                df[col] = pd.to_datetime(df[col])
-            else:
-                df[col] = pd.to_numeric(df[col])
-
-        df.set_index(df.date, inplace=True)
-
-        # create empty DataFrame object with index containing all months
-        date_range = pd.date_range(f'{year}', periods=12, freq='MS')
-        data = pd.DataFrame(date_range, columns=['date'])
-        data.set_index('date', inplace=True)
-
-        # concat two dataframes
-        df = pd.concat([data, df], axis=1).fillna(0.0)
-        df.drop(['date'], axis=1, inplace=True)
-
-        return df
+        return rtn
 
     def _calc(self, incomes, expenses):
-        incomes = self._convert_to_df(incomes)
-        expenses = self._convert_to_df(expenses)
+        incomes = super().convert_to_df(self._year, incomes)
+        expenses = super().convert_to_df(self._year, expenses)
 
-        df = incomes.join(expenses).reset_index()
+        df = incomes.join(
+            expenses,
+            how='left', lsuffix='_left', rsuffix='_right',
+        ).reset_index()
 
         # calculate balance
         df.loc[:, 'balance'] = df.incomes - df.expenses

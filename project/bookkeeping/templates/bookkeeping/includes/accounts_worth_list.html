@@ -8,7 +8,7 @@
             <th class="text-right">Pajamos</th>
             <th class="text-right">Išlaidos</th>
             <th class="text-right">Likutis</th>
-            <th class="b"></th>
+            <th class="br"></th>
             <th class="text-right">Turiu</th>
             <th class="text-right">Delta</th>
 
@@ -22,7 +22,7 @@
             {% cell item.incomes width='110rem' %}
             {% cell item.expenses width='110rem' %}
             {% cell item.balance width='110rem' %}
-            <td width="80rem" class="b"></td>
+            <td width="80rem" class="br"></td>
             {% cell item.have width='110rem' %}
             {% cell item.delta width='110rem' highlight_value=True  %}
         </tr>
@@ -30,20 +30,15 @@
     </tbody>
     <tfoot>
         <tr>
-            <td>Total:</td>
-            {% cell totals.past %}
-            {% cell totals.incomes %}
-            {% cell totals.expenses %}
-            {% cell totals.balance %}
-            <td class="b"></td>
-            {% cell totals.have %}
-            {% cell totals.delta %}
+            <th>Total:</th>
+            {% cell totals.past tag="th" %}
+            {% cell totals.incomes tag="th" %}
+            {% cell totals.expenses tag="th" %}
+            {% cell totals.balance tag="th" %}
+            <td class="br"></td>
+            {% cell totals.have tag="th" %}
+            {% cell totals.delta tag="th" %}
         </tr>
     </tfoot>
 </table>
 
-<style>
-    .b {
-        border-right: 5px solid red!important;
-    }
-</style>

@@ -1,53 +1,84 @@
 body {
-  font-size: .8rem!important;
+  font-size: .75rem!important;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table td, table th {
+    border-left: 1px solid #b7b7b6!important;
+    border-right: 1px solid #b7b7b6!important;
+    vertical-align: middle!important;
+    padding-top: .15rem!important;
+    padding-bottom: .15rem!important;
+    padding-left: .50rem!important;
+    padding-right: .50rem!important;
+}
+
+tr td:first-child, tr th:first-child {
+    border-left: 0!important;
+}
+
+tr td:last-child, tr th:last-child {
+    border-right: 0!important;
+}
+
+td, th {
+    text-align: right!important;
+}
+
+tfoot > tr {
+    border-top: double #0359b0;
+}
+
+tfoot > tr > th {
+    font-weight: normal;
+}
+
+thead > tr > th {
+    padding-top: .5rem!important;
+    padding-bottom: .5rem!important;
 }
 
 .navbar {
-  padding: .25rem .5rem;
+    padding: .25rem .5rem;
 }
 
 .nav-item {
-  padding: 0;
-  margin: 0;
+    padding: 0;
+    margin: 0;
 }
 
 .dropdown-menu a.dropdown-item {
-  padding-left: .25rem;
+    padding-left: .25rem;
 }
 
 .nav-link {
-  padding: .25rem 1rem;
-  margin: .25rem;
+    padding: .25rem 1rem;
+    margin: .25rem;
 }
 
 .container-fluid>.content {
-  padding: 0 1rem;
+    padding: 0 1rem;
 }
 
-table td {
-  vertical-align: middle!important;
-  padding-top: .2rem!important;
-  padding-bottom: .2rem!important;
-  padding-left: .50rem!important;
-  padding-right: .50rem!important;
+.top {
+    background-color: lightblue !important;
+    text-align: left !important;
 }
 
-table thead th {
-  vertical-align: middle!important;
-  padding-top: .35rem!important;
-  padding-bottom: .35rem!important;
-  padding-left: .50rem!important;
-  padding-right: .50rem!important;
+.br {
+    border-right: 3px solid #0359b0!important;
 }
 
-table tfoot td {
-  padding-top: .35rem!important;
-  padding-bottom: .35rem!important;
+.bl {
+    border-left: 3px solid #0359b0!important;
 }
 
-/* .table-striped>tbody>tr:nth-child(odd) {
-   background-color: #f9f6cf;
-} */
+.dash {
+    color: #b7b7b6;
+}
 
 .table-hover tbody tr:hover {
     background: #f9f6cf;
@@ -59,46 +90,6 @@ table tfoot td {
 
 .table-hover tbody tr:hover td.table-success {
     background: #b7debb;
-}
-
-.form-group {
-  margin: 0!important;
-  padding: 0!important;
-}
-
-.inner {
-  margin: 0!important;
-  padding: 0!important;
-  table-layout:fixed!important;
-}
-
-.inner td {
-  padding-top: .25rem!important;
-  padding-bottom: .25rem!important;
-  vertical-align: top!important;
-  padding-left: 4px!important;
-  padding-right: 4px!important;
-}
-
-.inner td.v-middle {
-  vertical-align: middle!important;
-}
-
-.inner td.last {
-  padding-right: .5rem!important;
-}
-
-.inner td input {
-  padding-left: .25rem!important;
-  padding-right: .25rem!important;
-}
-
-.inner td.text-left input {
-  text-align: left;
-}
-
-.inner td.text-center input {
-  text-align: center;
 }
 
 .btn-sm, .form-control-sm {

@@ -6,78 +6,74 @@
 
 {% block content %}
 
-<div class="col-8 pl-0">
-    <!-- incomes plans -->
-    <div class="row my-2">
-        <div class="col-10">
-            <h6>Pajamų planas</h6>
+<div class="row mt-2">
+    <div class="col-lg-12">
+        <!-- incomes plans -->
+        <div class="row mt-2">
+            <div class="col-lg-10">
+                <h6>Pajamų planas</h6>
+            </div>
+            <div class="col-lg-2 text-right">
+                {% url 'plans:incomes_plan_new' as url_incomes_new %}
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_new }}"><i
+                        class="fas fa-plus"></i> Įrašą</button>
+            </div>
         </div>
-        <div class="col-2 text-right">
-            {% url 'plans:incomes_plan_new' as url_incomes_new %}
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_new }}"><i
-                    class="fas fa-plus"></i> Įrašą</button>
+        <div class="row mt-2">
+            <div id="incomes_list" class="col-lg-12 dblclick">{{ incomes_list }}</div>
         </div>
-    </div>
-    <div class="row my-2">
-        <div id="incomes_list" class="col dblclick">{{ incomes_list }}</div>
-    </div>
 
-    <!-- expenses plans -->
-    <div class="row my-2">
-        <div class="col-10"><h6>Išlaidų planas</h6></div>
-        <div class="col-2 text-right">
-            {% url 'plans:expenses_plans_new' as url_expenses_new %}
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Įrašą</button>
+        <!-- expenses plans -->
+        <div class="row mt-2">
+            <div class="col-lg-10"><h6>Išlaidų planas</h6></div>
+            <div class="col-lg-2 text-right">
+                {% url 'plans:expenses_plans_new' as url_expenses_new %}
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Įrašą</button>
+            </div>
         </div>
-    </div>
-    <div class="row my-2">
-        <div id="expenses_list" class="col dblclick">{{ expenses_list }}</div>
-    </div>
+        <div class="row mt-2">
+            <div id="expenses_list" class="col-lg-12 dblclick">{{ expenses_list }}</div>
+        </div>
 
-    <!-- savings plans -->
-    <div class="row my-2">
-        <div class="col-10">
-            <h6>Taupymo planas</h6>
+        <!-- savings plans -->
+        <div class="row mt-2">
+            <div class="col-lg-10">
+                <h6>Taupymo planas</h6>
+            </div>
+            <div class="col-lg-2 text-right">
+                {% url 'plans:savings_plans_new' as url_savings_new %}
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_new }}"><i class="fas fa-plus"></i> Įrašą</button>
+            </div>
         </div>
-        <div class="col-2 text-right">
-            {% url 'plans:savings_plans_new' as url_savings_new %}
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_new }}"><i class="fas fa-plus"></i> Įrašą</button>
+        <div class="row mt-2">
+            <div id="savings_list" class="col-lg-12 dblclick">{{ savings_list }}</div>
         </div>
-    </div>
-    <div class="row my-2">
-        <div id="savings_list" class="col dblclick">{{ savings_list }}</div>
-    </div>
 
-    <!-- day plans -->
-    <div class="row my-2">
-        <div class="col-10">
-            <h6>Suma dienai</h6>
+        <!-- day plans -->
+        <div class="row mt-2">
+            <div class="col-lg-10">
+                <h6>Suma dienai</h6>
+            </div>
+            <div class="col-lg-2 text-right">
+                {% url 'plans:days_plans_new' as url_day_new %}
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_day_new }}"><i class="fas fa-plus"></i> Įrašą</button>
+            </div>
         </div>
-        <div class="col-2 text-right">
-            {% url 'plans:days_plans_new' as url_day_new %}
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_day_new }}"><i class="fas fa-plus"></i> Įrašą</button>
+        <div class="row mt-2">
+            <div id="day_list" class="col-lg-12 dblclick">{{ day_list }}</div>
         </div>
-    </div>
-    <div class="row my-2">
-        <div id="day_list" class="col dblclick">{{ day_list }}</div>
-    </div>
 
-    <!-- stats plans -->
-    <div class="row my-2">
-        <div class="col-10"><h6>Skaičiavimai</h6></div>
-        <div class="col-2 text-right"></div>
-    </div>
-    <div class="row my-2">
-        <div id="plans_stats" class="col dblclick">{{ plans_stats }}</div>
+        <!-- stats plans -->
+        <div class="row mt-2">
+            <div class="col-lg-10"><h6>Skaičiavimai</h6></div>
+            <div class="col-lg-2 text-right"></div>
+        </div>
+        <div class="row mt-2">
+            <div id="plans_stats" class="col-lg-12 dblclick">{{ plans_stats }}</div>
+        </div>
     </div>
 </div>
 
-<!-- left side -->
-<div class="col-4 px-0">
-    <div class="row my-2">
-        <div class="col text-right"></div>
-    </div>
-</div>
 
 <!-- modal form -->
 <div class="modal fade" id="modal-form">

@@ -14,7 +14,7 @@ def test_sums_months(incomes):
         {'date': date(1999, 2, 1), 'incomes': Decimal(1.25)},
     ]
 
-    actual = list(T.objects.sum_by_month(1999, 'incomes'))
+    actual = list(T.objects.income_sum(1999))
 
     assert expect == actual
 
@@ -25,7 +25,7 @@ def test_sums_months_ordering(incomes):
         {'date': date(1999, 2, 1), 'incomes': Decimal(1.25)},
     ]
 
-    actual = list(T.objects.sum_by_month(1999, 'incomes'))
+    actual = list(T.objects.income_sum(1999))
 
     assert expect[0]['date'] == date(1999, 1, 1)
     assert expect[1]['date'] == date(1999, 2, 1)

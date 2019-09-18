@@ -1,0 +1,79 @@
+<div id="container-for-balance"></div>
+<script>
+    Highcharts.setOptions({
+        lang: {
+            thousandsSep: '.',
+            decimalPoint: ',',
+            // numericSymbols: ['k', 'M', 'G', 'T', 'P', 'E']
+        }
+    });
+    Highcharts.chart('container-for-balance', {
+        title: {
+            text: ''
+        },
+        legend: {
+            layout: 'horizontal',
+            align: 'center',
+            verticalAlign: 'top',
+            floating: true,
+            borderWidth: 1,
+        },
+        xAxis: {
+            min: 0.4,
+            max: 10.8,
+            categories: [
+                'Sausis',
+                'Vasaris',
+                'Kovas',
+                'Balandis',
+                'Gegužė',
+                'Birželis',
+                'Liepa',
+                'Rugpjūtis',
+                'Rugsėjis',
+                'Spalis',
+                'Lapkritis',
+                'Gruodis'
+            ]
+        },
+        yAxis: {
+            labels: {
+                formatter: function () {
+                    if (this.value >= 100) return Highcharts.numberFormat(this.value / 1000, 1) + "k";
+                    return Highcharts.numberFormat(this.value, 0);
+                },
+            },
+            title: {
+                text: 'Suma, €'
+            }
+        },
+        tooltip: {
+            shared: true,
+            pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br/>'
+        },
+        credits: {
+            enabled: false
+        },
+        plotOptions: {
+            areaspline: {
+                fillOpacity: 0.5
+            }
+        },
+        series: [{
+            type: 'areaspline',
+            name: 'Pajamos',
+            data: {{ i }},
+            color: '#77933c'
+        }, {
+            type: 'areaspline',
+            name: 'Išlaidos',
+            data: {{ e }},
+            color: '#c0504d'
+        }, {
+            type: 'spline',
+            name: 'Taupymas',
+            data: {{ s }},
+            color: '#ffc000'
+        }]
+    });
+</script>

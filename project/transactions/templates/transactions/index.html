@@ -5,59 +5,63 @@
 
 {% block content %}
 
-<div class="col-8 pl-0">
-    <!-- transactins between accounts -->
-    <div class="row my-2">
-        <div class="col-10">
-            <h6>Sąskaita &hArr; Sąskaita</h6>
+<div class="row mt-2">
+    <div class="col-lg-8">
+        <!-- transactins between accounts -->
+        <div class="row mt-2">
+            <div class="col-lg-10">
+                <h6>Sąskaita &hArr; Sąskaita</h6>
+            </div>
+            <div class="col-lg-2 text-right">
+                {% url 'transactions:transactions_new' as url_transactions %}
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_transactions }}"><i class="fas fa-plus"></i> Įrašą</button>
+            </div>
         </div>
-        <div class="col-2 text-right">
-            {% url 'transactions:transactions_new' as url_transactions %}
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_transactions }}"><i class="fas fa-plus"></i> Įrašą</button>
+        <div class="row mt-2">
+            <div id="transactions_list" class="col-lg-12 dblclick">{{ transactions }}</div>
         </div>
-    </div>
-    <div class="row my-2">
-        <div id="transactions_list" class="col dblclick">{{ transactions }}</div>
+
+        <!-- close savings -->
+        <div class="row mt-2">
+            <div class="col-lg-10">
+                <h6>Fondas &rArr; Sąskaita</h6>
+            </div>
+            <div class="col-lg-2 text-right">
+                {% url 'transactions:savings_close_new' as url_savings_close %}
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_close }}"><i class="fas fa-plus"></i> Įrašą</button>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div id="savings_close_list" class="col-lg-12 dblclick">{{ savings_close }}</div>
+        </div>
+
+        <!-- change savings -->
+        <div class="row mt-2">
+            <div class="col-lg-10">
+                <h6>Fondas &hArr; Fondas</h6>
+            </div>
+            <div class="col-lg-2 text-right">
+                {% url 'transactions:savings_change_new' as url_savings_change %}
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_change }}"><i class="fas fa-plus"></i> Įrašą</button>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div id="savings_change_list" class="col-lg-12 dblclick">{{ savings_change }}</div>
+        </div>
     </div>
 
-    <!-- close savings -->
-    <div class="row my-2">
-        <div class="col-10">
-            <h6>Fondas &rArr; Sąskaita</h6>
+    <!-- left side -->
+    <div class="col-lg-4">
+        <div class="row mt-2">
+            <div class="col text-right">
+                {% url 'accounts:accounts_new' as url_accounts %}
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="fas fa-plus"></i> Sąskaitą</button>
+            </div>
         </div>
-        <div class="col-2 text-right">
-            {% url 'transactions:savings_close_new' as url_savings_close %}
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_close }}"><i class="fas fa-plus"></i> Įrašą</button>
-        </div>
-    </div>
-    <div class="row my-2">
-        <div id="savings_close_list" class="col dblclick">{{ savings_close }}</div>
-    </div>
-
-    <!-- change savings -->
-    <div class="row my-2">
-        <div class="col-10">
-            <h6>Fondas &hArr; Fondas</h6>
-        </div>
-        <div class="col-2 text-right">
-            {% url 'transactions:savings_change_new' as url_savings_change %}
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_change }}"><i class="fas fa-plus"></i> Įrašą</button>
+        <div class="row mt-2">
+            <div id="ajax-content-categories" class="col-lg-12 pl-0 dblclick">{{ categories }}</div>
         </div>
     </div>
-    <div class="row my-2">
-        <div id="savings_change_list" class="col dblclick">{{ savings_change }}</div>
-    </div>
-</div>
-
-<!-- left side -->
-<div class="col-4 px-0">
-    <div class="row my-2">
-        <div class="col text-right">
-            {% url 'accounts:accounts_new' as url_accounts %}
-            <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="fas fa-plus"></i> Sąskaitą</button>
-        </div>
-    </div>
-    <div id="ajax-content-categories" class="dblclick">{{ categories }}</div>
 </div>
 
 <!-- modal form -->
