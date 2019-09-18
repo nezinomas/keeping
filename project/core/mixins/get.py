@@ -1,5 +1,6 @@
 class GetQuerysetMixin():
     context_object_name = 'items'
+    object_list = 'itms'
 
     def get_queryset(self):
         try:

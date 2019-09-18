@@ -23,7 +23,7 @@ class ListMixin(
 
     def dispatch(self, request, *args, **kwargs):
         if 'as_string' in kwargs:
-            return self._render_to_string(request)
+            return self._render_to_string(request, **kwargs)
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -35,13 +35,15 @@ class ListMixin(
         else:
             return [self.template_name]
 
-    def _render_to_string(self, request):
+    def _render_to_string(self, request, **kwargs):
         template_name = self.get_template_names()
 
+        # c = super().get_context_data(**{})
         return (
             render_to_string(
                 template_name,
                 {self.context_object_name: self.get_queryset()},
+                # self.get_context_data(**{}),
                 request
             )
         )
