@@ -32,8 +32,6 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context[self.context_object_name] = super().get_queryset()
-
         return context
 
     def form_valid(self, form):

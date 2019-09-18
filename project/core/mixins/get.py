@@ -12,6 +12,12 @@ class GetQuerysetMixin():
 
         return qs
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context[self.context_object_name] = super().get_queryset()
+
+        return context
+
 
 class GetFormKwargsMixin():
     def get_form_kwargs(self):
