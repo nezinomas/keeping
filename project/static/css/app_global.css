@@ -2,11 +2,11 @@ body {
   font-size: .75rem!important;
 }
 
-table {
+table.stats {
     border-collapse: collapse;
 }
 
-table td, table th {
+table.stats td, table.stats th {
     border-left: 1px solid #b7b7b6!important;
     border-right: 1px solid #b7b7b6!important;
     vertical-align: middle!important;
@@ -16,27 +16,27 @@ table td, table th {
     padding-right: .50rem!important;
 }
 
-tr td:first-child, tr th:first-child {
+table.stats tr td:first-child, table.stats tr th:first-child {
     border-left: 0!important;
 }
 
-tr td:last-child, tr th:last-child {
+table.stats tr td:last-child, table.stats tr th:last-child {
     border-right: 0!important;
 }
 
-td, th {
+table.stats td, table.stats th {
     text-align: right!important;
 }
 
-tfoot > tr {
+table.stats > tfoot > tr {
     border-top: double #0359b0;
 }
 
-tfoot > tr > th {
+table.stats > tfoot > tr > th {
     font-weight: normal;
 }
 
-thead > tr > th {
+table.stats > thead > tr > th {
     padding-top: .5rem!important;
     padding-bottom: .5rem!important;
 }
@@ -68,11 +68,11 @@ thead > tr > th {
     text-align: left !important;
 }
 
-.br {
+.stats .br {
     border-right: 3px solid #0359b0!important;
 }
 
-.bl {
+.stats .bl {
     border-left: 3px solid #0359b0!important;
 }
 
