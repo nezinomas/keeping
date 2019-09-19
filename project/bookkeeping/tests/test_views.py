@@ -66,4 +66,4 @@ def test_index_context_for_savings(client, login, savings):
         'profit_invested_sum': 0.0,
     }]
 
-    assert_(expect, response.context['savings'])
+    assert_(expect, response.context['fund'])

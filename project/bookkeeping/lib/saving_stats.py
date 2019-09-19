@@ -46,6 +46,9 @@ class SavingStats():
 
     # remove rows dependinf from saving_type
     def _filter_df(self, df):
+        if self._type == 'all':
+            return df
+
         df = df.reset_index()
 
         _filter = df['title'].str.contains('pensij', case=False)
@@ -69,6 +72,8 @@ class SavingStats():
 
         # filter df
         df = self._filter_df(df)
+        if df.empty:
+            return self._balance
 
         # convert to float
         for col in df.columns:
@@ -86,6 +91,9 @@ class SavingStats():
         self._balance = df
 
     def _calc_balance(self):
+        if self._balance.empty:
+            return self._balance
+
         # calculate percent of profit/loss
         self._balance['profit_incomes_proc'] = (
             self._balance[['market_value', 'incomes']]

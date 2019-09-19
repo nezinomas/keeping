@@ -40,7 +40,7 @@ def _pension():
             'incomes': 1.0,
             'invested': 1.0,
         }, {
-            'title': 'Pension',
+            'title': 'Pensija3',
             'incomes': 2.0,
             'invested': 2.0,
         }]
@@ -156,7 +156,7 @@ def test_pension_only(_pension):
     actual = T(_pension, None, saving_type='pension').balance
 
     assert 1 == len(actual)
-    assert 'Pension' == actual[0]['title']
+    assert 'Pensija3' == actual[0]['title']
 
 
 def test_savings_all(_pension):
@@ -164,4 +164,4 @@ def test_savings_all(_pension):
 
     assert 2 == len(actual)
     assert 'Saving' == actual[0]['title']
-    assert 'Pension' == actual[1]['title']
+    assert 'Pensija3' == actual[1]['title']
