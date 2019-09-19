@@ -63,7 +63,7 @@ table.stats > thead > tr > th {
     padding: 0 1rem;
 }
 
-.top {
+.stats .top {
     background-color: lightblue !important;
     text-align: left !important;
 }
