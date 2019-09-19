@@ -146,3 +146,27 @@ def test_balance_save_data(_incomes, _expenses, _residual):
     actual = T(1999, _incomes, _expenses, _residual).save_data
 
     assert expect == actual
+
+
+def test_avg_incomes(_incomes, _expenses):
+    actual = T(1999, _incomes, _expenses, None).avg_incomes
+
+    assert 3.38 == pytest.approx(actual, rel=1e-2)
+
+
+def test_avg_incomes_none():
+    actual = T(1999, None, None, None).avg_incomes
+
+    assert 0.0 == actual
+
+
+def test_avg_expenses(_incomes, _expenses):
+    actual = T(1999, _incomes, _expenses, None).avg_expenses
+
+    assert 1.75 == actual
+
+
+def test_avg_expenses_none():
+    actual = T(1999, None, None, None).avg_expenses
+
+    assert 0.0 == actual

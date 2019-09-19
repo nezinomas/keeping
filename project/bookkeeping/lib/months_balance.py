@@ -60,6 +60,24 @@ class MonthsBalance(CalcBalanceMixin):
         return val
 
     @property
+    def avg_incomes(self):
+        val = 0.0
+
+        if self.average:
+            val = self.average['incomes']
+
+        return val
+
+    @property
+    def avg_expenses(self):
+        val = 0.0
+
+        if self.average:
+            val = self.average['expenses']
+
+        return val
+
+    @property
     def totals(self):
         return super().totals(self._balance)
 
