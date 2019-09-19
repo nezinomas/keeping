@@ -51,7 +51,7 @@ class MonthsBalance(CalcBalanceMixin):
         return val
 
     @property
-    def balance_amount(self):
+    def amount_balance(self):
         val = 0.0
 
         if self.totals:

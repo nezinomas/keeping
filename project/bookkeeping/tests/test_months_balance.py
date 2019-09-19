@@ -112,14 +112,14 @@ def test_amount_end_none():
     assert 0.0 == actual
 
 
-def test_balance_amount(_incomes, _expenses, _residual):
-    actual = T(1999, _incomes, _expenses, _residual).balance_amount
+def test_amount_balance(_incomes, _expenses, _residual):
+    actual = T(1999, _incomes, _expenses, _residual).amount_balance
 
     assert 5.0 == actual
 
 
 def test_balance_none():
-    actual = T(1999, [], [], None).balance_amount
+    actual = T(1999, [], [], None).amount_balance
 
     assert 0.0 == actual
 
