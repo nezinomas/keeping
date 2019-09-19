@@ -71,6 +71,9 @@ class Index(IndexMixin):
         context['amount_start'] = o.amount_start
         context['amount_end'] = o.amount_end
         context['amount_balance'] = o.amount_balance
+        context['total_market'] = fund.total_market
+        context['avg_incomes'] = o.avg_incomes
+        context['avg_expenses'] = o.avg_expenses
 
         expenses = Expense.objects.expense_type_sum(year)
         oe = MonthsExpenseType(expenses)
