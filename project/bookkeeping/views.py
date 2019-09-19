@@ -24,11 +24,14 @@ def _account_stats(request):
     return AccountStats(_stats, _worth)
 
 
-def _saving_stats(request):
-    _stats = SavingType.objects.balance_year(request.user.profile.year)
+def _saving_stats(year):
+    _stats = SavingType.objects.balance_year(year)
     _worth = SavingWorth.objects.items()
 
-    return SavingStats(_stats, _worth)
+    fund = SavingStats(_stats, _worth, 'fund')
+    pension = SavingStats(_stats, _worth, 'pension')
+
+    return fund, pension
 
 
 class Index(IndexMixin):
@@ -47,11 +50,14 @@ class Index(IndexMixin):
         )
 
         # Saving and SawingWorth stats
-        saving = _saving_stats(self.request)
+        fund, pension = _saving_stats(self.request.user.profile.year)
 
         context['savings'] = render_to_string(
             'bookkeeping/includes/savings_worth_list.html',
-            {'savings': saving.balance, 'totals': saving.totals},
+            {
+                'fund': fund.balance, 'fund_totals': fund.totals,
+                'pension': pension.balance, 'pension_totals': pension.totals,
+            },
             self.request
         )
 
@@ -93,10 +99,12 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        saving = _saving_stats(self.request)
+        fund, pension = _saving_stats(self.request.user.profile.year)
 
-        context['savings'] = saving.balance
-        context['totals'] = saving.totals
+        context['fund'] = fund.balance
+        context['fund_totals'] = fund.totals
+        context['pension'] = pension.balance
+        context['pension_totals'] = pension.totals
 
         return context
 

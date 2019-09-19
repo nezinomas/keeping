@@ -4,8 +4,9 @@ from .helpers import calc_percent, calc_sum
 
 
 class SavingStats():
-    def __init__(self, stats, worth):
+    def __init__(self, stats, worth, saving_type='all'):
         self._balance = pd.DataFrame()
+        self._type = saving_type
 
         if not stats or stats is None:
             return
@@ -43,19 +44,37 @@ class SavingStats():
 
         return total
 
+    # remove rows dependinf from saving_type
+    def _filter_df(self, df):
+        df = df.reset_index()
+
+        _filter = df['title'].str.contains('pensij', case=False)
+
+        df = df[~_filter] if self._type == 'fund' else df
+        df = df[_filter] if self._type == 'pension' else df
+
+        df.set_index('title', inplace=True)
+
+        return df
+
     def _prepare_balance(self, stats, worth):
         df = pd.DataFrame(stats).set_index('title')
 
+        # join savings and worth dataframes
         if worth:
             _worth = pd.DataFrame(worth).set_index('title')
             df = df.join(_worth)
         else:
             df.loc[:, 'have'] = 0.0
 
+        # filter df
+        df = self._filter_df(df)
+
         # convert to float
         for col in df.columns:
-            df[col] = pd.to_numeric(df[col])
+            df.loc[:, col] = pd.to_numeric(df[col])
 
+        # rename columns
         df.rename(columns={'have': 'market_value'}, inplace=True)
 
         # add columns

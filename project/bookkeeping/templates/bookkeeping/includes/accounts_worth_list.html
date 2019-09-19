@@ -3,40 +3,40 @@
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr>
-            <th>Sąskaita</th>
-            <th class="text-right">01.01</th>
-            <th class="text-right">Pajamos</th>
-            <th class="text-right">Išlaidos</th>
-            <th class="text-right">Likutis</th>
-            <th class="br"></th>
-            <th class="text-right">Turiu</th>
-            <th class="text-right">Delta</th>
+            <th colspan="7" class="top"><h6>Sąskaitos</h6></th>
+        </tr>
+        <tr>
+            <th class="text-left">Sąskaita</th>
+            <th>01.01</th>
+            <th>Pajamos</th>
+            <th>Išlaidos</th>
+            <th>Likutis</th>
+            <th class="text-right bl">Turiu</th>
+            <th>Delta</th>
 
         </tr>
     </thead>
     <tbody>
         {% for item in accounts %}
         <tr>
-            <td>{{ item.title }}</td>
+            <td class="text-left">{{ item.title }}</td>
             {% cell item.past width='110rem' %}
             {% cell item.incomes width='110rem' %}
             {% cell item.expenses width='110rem' %}
             {% cell item.balance width='110rem' %}
-            <td width="80rem" class="br"></td>
-            {% cell item.have width='110rem' %}
+            {% cell item.have width='110rem' css_class='bl' %}
             {% cell item.delta width='110rem' highlight_value=True  %}
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
-        <tr>
-            <th>Total:</th>
+        <tr  class="total">
+            <th class="text-left">Viso</th>
             {% cell totals.past tag="th" %}
             {% cell totals.incomes tag="th" %}
             {% cell totals.expenses tag="th" %}
             {% cell totals.balance tag="th" %}
-            <td class="br"></td>
-            {% cell totals.have tag="th" %}
+            {% cell totals.have tag="th" css_class='bl' %}
             {% cell totals.delta tag="th" %}
         </tr>
     </tfoot>

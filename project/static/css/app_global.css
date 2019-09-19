@@ -2,13 +2,21 @@ body {
   font-size: .75rem!important;
 }
 
+h6 {
+    margin: 0;
+}
+
 table.stats {
     border-collapse: collapse;
 }
 
+table.stats tfoot {
+    background-color: #f8f9fa;
+}
+
 table.stats td, table.stats th {
-    border-left: 1px solid #b7b7b6!important;
-    border-right: 1px solid #b7b7b6!important;
+    border: 1px solid #b4b4b3!important;
+    /* border-right: 1px solid #b7b7b6!important; */
     vertical-align: middle!important;
     padding-top: .15rem!important;
     padding-bottom: .15rem!important;
@@ -24,8 +32,12 @@ table.stats tr td:last-child, table.stats tr th:last-child {
     border-right: 0!important;
 }
 
+table.stats tfoot tr:last-child th {
+    border-bottom: 0!important;
+}
+
 table.stats td, table.stats th {
-    text-align: right!important;
+    text-align: right;
 }
 
 table.stats > tfoot > tr {
@@ -39,6 +51,10 @@ table.stats > tfoot > tr > th {
 table.stats > thead > tr > th {
     padding-top: .5rem!important;
     padding-bottom: .5rem!important;
+}
+
+tr.total th {
+    font-weight: bold!important;
 }
 
 .navbar {
@@ -65,7 +81,7 @@ table.stats > thead > tr > th {
 
 .stats .top {
     background-color: lightblue !important;
-    text-align: left !important;
+    text-align: left;
 }
 
 .stats .br {
@@ -74,6 +90,14 @@ table.stats > thead > tr > th {
 
 .stats .bl {
     border-left: 3px solid #0359b0!important;
+}
+
+.stats .br_s {
+    border-right: 2px solid #b4b4b3!important;
+}
+
+.stats .bl_s {
+    border-left: 2px solid #b4b4b3!important;
 }
 
 .dash {
