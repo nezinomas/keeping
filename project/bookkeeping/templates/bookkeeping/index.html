@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load table_cell %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
@@ -38,8 +39,25 @@
 
 <!-- accounts stats -->
 <div class="row mt-2">
-    <div id="accounts_worth" class="col-lg-8">{{ accounts }}</div>
-    <div class="col-lg-4"></div>
+    <div id="accounts_worth" class="col-md-7 mr-2">{{ accounts }}</div>
+    <div class="col-md-3 ml-2">
+        <table class="table table-striped table-hover table-sm stats">
+            <thead>
+                <tr class="top">
+                    <th>Metų pradžioje</th>
+                    <th>Metų pabaigoje</th>
+                    <th>Metų balansas</th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    {% cell amount_start tag='th' %}
+                    {% cell amount_end tag='th' %}
+                    {% cell amount_balance tag='th' highlight_value=True %}
+                </tr>
+            </tfoot>
+        </table>
+    </div>
 </div>
 
 
