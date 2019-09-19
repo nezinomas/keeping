@@ -165,3 +165,21 @@ def test_savings_all(_pension):
     assert 2 == len(actual)
     assert 'Saving' == actual[0]['title']
     assert 'Pensija3' == actual[1]['title']
+
+
+def test_savings_total_market(_savings, _savings_worth):
+    actual = T(_savings, _savings_worth).total_market
+
+    assert 6.3 == pytest.approx(actual, rel=1e-2)
+
+
+def test_savings_total_market_empty_lists():
+    actual = T([], []).total_market
+
+    assert 0 == actual
+
+
+def test_savings_total_market_none_values():
+    actual = T(None, None).total_market
+
+    assert 0 == actual

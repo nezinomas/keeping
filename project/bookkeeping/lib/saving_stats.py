@@ -44,6 +44,15 @@ class SavingStats():
 
         return total
 
+    @property
+    def total_market(self):
+        val = 0.0
+
+        if self.totals:
+            val = self.totals['market_value']
+
+        return val
+
     # remove rows dependinf from saving_type
     def _filter_df(self, df):
         if self._type == 'all':
