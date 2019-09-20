@@ -61,28 +61,12 @@ class Index(IndexMixin):
         year = self.request.user.profile.year
 
         obj_account = _account_stats(self.request)
-        context['accounts'] = _render_account_stats(self.request, obj_account)
-
-
-        # Saving and SawingWorth stats
         obj_fund, obj_pension = _saving_stats(year)
-
-        context['savings'] = _render_saving_stats(self.request, obj_fund, obj_pension)
 
         qs_income = Income.objects.income_sum(year)
         qs_expense = Expense.objects.expense_sum(year)
         obj_MonthsBalance = MonthsBalance(
             year, qs_income, qs_expense, obj_account.balance_start)
-
-        context['balance'] = obj_MonthsBalance.balance
-        context['balance_totals'] = obj_MonthsBalance.totals
-        context['balance_avg'] = obj_MonthsBalance.average
-        context['amount_start'] = obj_MonthsBalance.amount_start
-        context['amount_end'] = obj_MonthsBalance.amount_end
-        context['amount_balance'] = obj_MonthsBalance.amount_balance
-        context['total_market'] = obj_fund.total_market
-        context['avg_incomes'] = obj_MonthsBalance.avg_incomes
-        context['avg_expenses'] = obj_MonthsBalance.avg_expenses
 
         qs_ExpenseType = Expense.objects.expense_type_sum(year)
         obj_MonthExpenseType = MonthsExpenseType(year, qs_ExpenseType)
@@ -96,6 +80,17 @@ class Index(IndexMixin):
             not_use=['Darbas', 'Laisvalaikis', 'Paskolos', 'Taupymas', 'Transportas']
         )
 
+        context['accounts'] = _render_account_stats(self.request, obj_account)
+        context['savings'] = _render_saving_stats(self.request, obj_fund, obj_pension)
+        context['balance'] = obj_MonthsBalance.balance
+        context['balance_totals'] = obj_MonthsBalance.totals
+        context['balance_avg'] = obj_MonthsBalance.average
+        context['amount_start'] = obj_MonthsBalance.amount_start
+        context['amount_end'] = obj_MonthsBalance.amount_end
+        context['amount_balance'] = obj_MonthsBalance.amount_balance
+        context['total_market'] = obj_fund.total_market
+        context['avg_incomes'] = obj_MonthsBalance.avg_incomes
+        context['avg_expenses'] = obj_MonthsBalance.avg_expenses
         context['expenses'] = obj_MonthExpenseType.balance
         context['expense_types'] = (
             ExpenseType.objects.all()
@@ -105,6 +100,7 @@ class Index(IndexMixin):
         context['expenses_average'] = obj_MonthExpenseType.average
         context['no_incomes'] = no_incomes.summary
         context['save_sum'] = no_incomes.save_sum
+
         # charts data
         context['pie'] = obj_MonthExpenseType.chart_data
         context['e'] = obj_MonthsBalance.expense_data
