@@ -35,32 +35,39 @@ def _saving_stats(year):
     return fund, pension
 
 
+def _render_account_stats(request, account):
+        return render_to_string(
+            'bookkeeping/includes/accounts_worth_list.html',
+            {'accounts': account.balance, 'totals': account.totals},
+            request
+        )
+
+
+def _render_saving_stats(request, fund, pension):
+    return render_to_string(
+        'bookkeeping/includes/savings_worth_list.html',
+        {
+            'fund': fund.balance, 'fund_totals': fund.totals,
+            'pension': pension.balance, 'pension_totals': pension.totals,
+        },
+        request
+    )
+
+
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         year = self.request.user.profile.year
 
-        # Account and AccountWorth stats
         account = _account_stats(self.request)
+        context['accounts'] = _render_account_stats(self.request, account)
 
-        context['accounts'] = render_to_string(
-            'bookkeeping/includes/accounts_worth_list.html',
-            {'accounts': account.balance, 'totals': account.totals},
-            self.request
-        )
 
         # Saving and SawingWorth stats
-        fund, pension = _saving_stats(self.request.user.profile.year)
+        fund, pension = _saving_stats(year)
 
-        context['savings'] = render_to_string(
-            'bookkeeping/includes/savings_worth_list.html',
-            {
-                'fund': fund.balance, 'fund_totals': fund.totals,
-                'pension': pension.balance, 'pension_totals': pension.totals,
-            },
-            self.request
-        )
+        context['savings'] = _render_saving_stats(self.request, fund, pension)
 
         incomes = Income.objects.income_sum(year)
         expenses = Expense.objects.expense_sum(year)
