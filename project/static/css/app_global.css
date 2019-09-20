@@ -49,8 +49,8 @@ table.stats > tfoot > tr > th {
 }
 
 table.stats > thead > tr > th {
-    padding-top: .5rem!important;
-    padding-bottom: .5rem!important;
+    padding-top: .25rem!important;
+    padding-bottom: .25rem!important;
 }
 
 tr.total th {
