@@ -34,7 +34,7 @@ def test_months_expense_type(_ex):
         {'date': date(1999, 12, 1), 'T1': 0.75, 'T2': 0.35, 'total': 1.1},
     ]
 
-    actual = T(_ex).balance
+    actual = T(1999, _ex).balance
 
     assert expect == actual
 
@@ -42,7 +42,7 @@ def test_months_expense_type(_ex):
 def test_months_expense_type_totals(_ex):
     expect = {'T1': 1.25, 'T2': 0.6, 'total': 1.85}
 
-    actual = T(_ex).totals
+    actual = T(1999, _ex).totals
 
     assert expect == actual
 
@@ -50,7 +50,7 @@ def test_months_expense_type_totals(_ex):
 def test_months_expense_type_average(_ex):
     expect = {'T1': 0.625, 'T2': 0.3, 'total': 0.925}
 
-    actual = T(_ex).average
+    actual = T(1999, _ex).average
 
     assert expect == actual
 
@@ -61,7 +61,7 @@ def test_months_expense_chart_data(_ex):
         {'name': 'T2', 'y': 0.6}
     ]
 
-    actual = T(_ex).chart_data
+    actual = T(1999, _ex).chart_data
 
     assert expect == actual
 
@@ -69,7 +69,7 @@ def test_months_expense_chart_data(_ex):
 def test_months_expense_chart_data_none():
     expect = []
 
-    actual = T(None).chart_data
+    actual = T(1999, None).chart_data
 
     assert expect == actual
 
@@ -77,6 +77,6 @@ def test_months_expense_chart_data_none():
 def test_months_expense_chart_data_empty():
     expect = []
 
-    actual = T([]).chart_data
+    actual = T(1999, []).chart_data
 
     assert expect == actual

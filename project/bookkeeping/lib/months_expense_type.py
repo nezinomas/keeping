@@ -6,8 +6,9 @@ from ..mixins.calc_balance import CalcBalanceMixin
 
 
 class MonthsExpenseType(CalcBalanceMixin):
-    def __init__(self, expenses: List[Dict]):
+    def __init__(self, year, expenses: List[Dict]):
         self._balance = pd.DataFrame()
+        self._year = year
 
         if not expenses:
             return
@@ -49,10 +50,8 @@ class MonthsExpenseType(CalcBalanceMixin):
         return rtn
 
     def _calc(self, expenses: List[Dict[str, float]]) -> None:
-        year = expenses[0]['date'].year
-
         # create empty DataFrame object with index containing all months
-        date_range = pd.date_range(f'{year}', periods=12, freq='MS')
+        date_range = pd.date_range(f'{self._year}', periods=12, freq='MS')
         df = pd.DataFrame(date_range, columns=['date'])
         df.set_index('date', inplace=True)
 

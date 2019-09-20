@@ -77,7 +77,7 @@ class Index(IndexMixin):
         context['avg_expenses'] = o.avg_expenses
 
         expenses = Expense.objects.expense_type_sum(year)
-        oe = MonthsExpenseType(expenses)
+        oe = MonthsExpenseType(year, expenses)
 
         no_incomes = NoIncomes(
             money=o.amount_end,
