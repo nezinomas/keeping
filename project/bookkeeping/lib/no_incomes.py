@@ -15,26 +15,38 @@ class NoIncomes():
     def summary(self) -> List[Dict[str, float]]:
         i1 = self.money + self.fund
         i2 = i1 + self.pension
-        not_use = self._not_use_sum(self.not_use, self.avg_type_expenses)
+        save_sum = 0 if not self.save_sum else self.save_sum
 
         return [{
-            'not_use': 0,
+            'label': 'money',
             'money_fund': i1,
             'money_fund_pension': i2
         }, {
-            'not_use': 0,
+            'label': 'no_cut',
             'money_fund': self._div(i1, self.avg_expenses),
             'money_fund_pension': self._div(i2, self.avg_expenses)
         }, {
-            'not_use': not_use,
-            'money_fund': self._div(i1, (self.avg_expenses - not_use)),
-            'money_fund_pension': self._div(i2, (self.avg_expenses - not_use))
+            'label': 'cut',
+            'money_fund': self._div(i1, (self.avg_expenses - save_sum)),
+            'money_fund_pension': self._div(i2, (self.avg_expenses - save_sum))
         }]
+
+    @property
+    def save_sum(self) -> float:
+        _ret = None
+
+        if self.not_use and self.avg_expenses:
+            _ret = sum(self.avg_type_expenses.get(name, 0.0) for name in self.not_use)
+
+        if _ret == 0:
+            _ret = None
+
+        return _ret
 
     def _not_use_sum(self,
                      lst: List[str],
                      avg_type_expenses: Dict[str, float]) -> float:
-        _sum = 0.0
+        _sum = None
 
         if lst:
             _sum = sum(avg_type_expenses.get(name, 0.0) for name in lst)
