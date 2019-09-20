@@ -60,52 +60,52 @@ class Index(IndexMixin):
 
         year = self.request.user.profile.year
 
-        obj_account = _account_stats(self.request)
-        obj_fund, obj_pension = _saving_stats(year)
+        _account = _account_stats(self.request)
+        _fund, _pension = _saving_stats(year)
 
         qs_income = Income.objects.income_sum(year)
         qs_expense = Expense.objects.expense_sum(year)
-        obj_MonthsBalance = MonthsBalance(
-            year, qs_income, qs_expense, obj_account.balance_start)
+        _MonthsBalance = MonthsBalance(
+            year, qs_income, qs_expense, _account.balance_start)
 
         qs_ExpenseType = Expense.objects.expense_type_sum(year)
-        obj_MonthExpenseType = MonthsExpenseType(year, qs_ExpenseType)
+        _MonthExpenseType = MonthsExpenseType(year, qs_ExpenseType)
 
-        no_incomes = NoIncomes(
-            money=obj_MonthsBalance.amount_end,
-            fund=obj_fund.total_market,
-            pension=obj_pension.total_market,
-            avg_expenses=obj_MonthsBalance.avg_expenses,
-            avg_type_expenses=obj_MonthExpenseType.average,
+        _NoIncomes = NoIncomes(
+            money=_MonthsBalance.amount_end,
+            fund=_fund.total_market,
+            pension=_pension.total_market,
+            avg_expenses=_MonthsBalance.avg_expenses,
+            avg_type_expenses=_MonthExpenseType.average,
             not_use=['Darbas', 'Laisvalaikis', 'Paskolos', 'Taupymas', 'Transportas']
         )
 
-        context['accounts'] = _render_account_stats(self.request, obj_account)
-        context['savings'] = _render_saving_stats(self.request, obj_fund, obj_pension)
-        context['balance'] = obj_MonthsBalance.balance
-        context['balance_totals'] = obj_MonthsBalance.totals
-        context['balance_avg'] = obj_MonthsBalance.average
-        context['amount_start'] = obj_MonthsBalance.amount_start
-        context['amount_end'] = obj_MonthsBalance.amount_end
-        context['amount_balance'] = obj_MonthsBalance.amount_balance
-        context['total_market'] = obj_fund.total_market
-        context['avg_incomes'] = obj_MonthsBalance.avg_incomes
-        context['avg_expenses'] = obj_MonthsBalance.avg_expenses
-        context['expenses'] = obj_MonthExpenseType.balance
+        context['accounts'] = _render_account_stats(self.request, _account)
+        context['savings'] = _render_saving_stats(self.request, _fund, _pension)
+        context['balance'] = _MonthsBalance.balance
+        context['balance_totals'] = _MonthsBalance.totals
+        context['balance_avg'] = _MonthsBalance.average
+        context['amount_start'] = _MonthsBalance.amount_start
+        context['amount_end'] = _MonthsBalance.amount_end
+        context['amount_balance'] = _MonthsBalance.amount_balance
+        context['total_market'] = _fund.total_market
+        context['avg_incomes'] = _MonthsBalance.avg_incomes
+        context['avg_expenses'] = _MonthsBalance.avg_expenses
+        context['expenses'] = _MonthExpenseType.balance
         context['expense_types'] = (
             ExpenseType.objects.all()
             .values_list('title', flat=True)
         )
-        context['expenses_totals'] = obj_MonthExpenseType.totals
-        context['expenses_average'] = obj_MonthExpenseType.average
-        context['no_incomes'] = no_incomes.summary
-        context['save_sum'] = no_incomes.save_sum
+        context['expenses_totals'] = _MonthExpenseType.totals
+        context['expenses_average'] = _MonthExpenseType.average
+        context['no_incomes'] = _NoIncomes.summary
+        context['save_sum'] = _NoIncomes.save_sum
 
         # charts data
-        context['pie'] = obj_MonthExpenseType.chart_data
-        context['e'] = obj_MonthsBalance.expense_data
-        context['i'] = obj_MonthsBalance.income_data
-        context['s'] = obj_MonthsBalance.save_data
+        context['pie'] = _MonthExpenseType.chart_data
+        context['e'] = _MonthsBalance.expense_data
+        context['i'] = _MonthsBalance.income_data
+        context['s'] = _MonthsBalance.save_data
 
         return context
 
@@ -118,12 +118,12 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        obj_fund, obj_pension = _saving_stats(self.request.user.profile.year)
+        _fund, _pension = _saving_stats(self.request.user.profile.year)
 
-        context['fund'] = obj_fund.balance
-        context['fund_totals'] = obj_fund.totals
-        context['pension'] = obj_pension.balance
-        context['pension_totals'] = obj_pension.totals
+        context['fund'] = _fund.balance
+        context['fund_totals'] = _fund.totals
+        context['pension'] = _pension.balance
+        context['pension_totals'] = _pension.totals
 
         return context
 
@@ -136,9 +136,9 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        obj_account = _account_stats(self.request)
+        _account = _account_stats(self.request)
 
-        context['accounts'] = obj_account.balance
-        context['totals'] = obj_account.totals
+        context['accounts'] = _account.balance
+        context['totals'] = _account.totals
 
         return context
