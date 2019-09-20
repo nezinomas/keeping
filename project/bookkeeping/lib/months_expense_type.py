@@ -37,6 +37,11 @@ class MonthsExpenseType(CalcBalanceMixin):
 
         if arr:
             del arr['total']
+
+            # sort dictionary
+            arr = dict(sorted(arr.items(), key=lambda x: x[1], reverse=True))
+
+            # transfort arr for pie chart
             rtn = [{'name': key, 'y': value} for key, value in arr.items()]
 
         return rtn
