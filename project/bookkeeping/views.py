@@ -11,6 +11,7 @@ from ..savings.models import SavingType
 from .lib.account_stats import AccountStats
 from .lib.months_balance import MonthsBalance
 from .lib.saving_stats import SavingStats
+from .lib.no_incomes import NoIncomes
 from .lib.months_expense_type import MonthsExpenseType
 
 from .forms import AccountWorthForm, SavingWorthForm
@@ -78,6 +79,15 @@ class Index(IndexMixin):
         expenses = Expense.objects.expense_type_sum(year)
         oe = MonthsExpenseType(expenses)
 
+        no_incomes = NoIncomes(
+            money=o.amount_end,
+            fund=fund.total_market,
+            pension=pension.total_market,
+            avg_expenses=o.avg_expenses,
+            avg_type_expenses=oe.average,
+            not_use=['Darbas', 'Laisvalaikis', 'Paskolos', 'Taupymas', 'Transportas']
+        )
+
         context['expenses'] = oe.balance
         context['expense_types'] = (
             ExpenseType.objects.all()
@@ -85,7 +95,8 @@ class Index(IndexMixin):
         )
         context['expenses_totals'] = oe.totals
         context['expenses_average'] = oe.average
-
+        context['no_incomes'] = no_incomes.summary
+        context['save_sum'] = no_incomes.save_sum
         # charts data
         context['pie'] = oe.chart_data
         context['e'] = o.expense_data

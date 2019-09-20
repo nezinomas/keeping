@@ -36,7 +36,6 @@ class MonthsExpenseType(CalcBalanceMixin):
         arr = super().totals(self._balance)
 
         if arr:
-            # delete total cell
             del arr['total']
 
             # sort dictionary
