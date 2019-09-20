@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Dict, List
 
 import pandas as pd
 
@@ -6,7 +7,10 @@ from ..mixins.calc_balance import CalcBalanceMixin
 
 
 class MonthsBalance(CalcBalanceMixin):
-    def __init__(self, year, incomes, expenses, amount_start=0.0):
+    def __init__(self,
+                 year,
+                 incomes: List[Dict], expenses: List[Dict],
+                 amount_start: float=0.0):
         try:
             amount_start = float(amount_start)
         except:
@@ -28,7 +32,7 @@ class MonthsBalance(CalcBalanceMixin):
         self._calc(incomes, expenses)
 
     @property
-    def balance(self):
+    def balance(self) -> Dict[str, float]:
         val = None
         balance = self._balance.copy()
 
@@ -38,11 +42,11 @@ class MonthsBalance(CalcBalanceMixin):
         return val
 
     @property
-    def amount_start(self):
+    def amount_start(self) -> float:
         return self._amount_start
 
     @property
-    def amount_end(self):
+    def amount_end(self) -> float:
         val = 0.0
 
         if self.totals:
@@ -51,7 +55,7 @@ class MonthsBalance(CalcBalanceMixin):
         return val
 
     @property
-    def amount_balance(self):
+    def amount_balance(self) -> float:
         val = 0.0
 
         if self.totals:
@@ -60,7 +64,7 @@ class MonthsBalance(CalcBalanceMixin):
         return val
 
     @property
-    def avg_incomes(self):
+    def avg_incomes(self) -> float:
         val = 0.0
 
         if self.average:
@@ -69,7 +73,7 @@ class MonthsBalance(CalcBalanceMixin):
         return val
 
     @property
-    def avg_expenses(self):
+    def avg_expenses(self) -> float:
         val = 0.0
 
         if self.average:
@@ -78,15 +82,15 @@ class MonthsBalance(CalcBalanceMixin):
         return val
 
     @property
-    def totals(self):
+    def totals(self) -> Dict[str, float]:
         return super().totals(self._balance)
 
     @property
-    def average(self):
+    def average(self) -> Dict[str, float]:
         return super().average(self._balance)
 
     @property
-    def income_data(self):
+    def income_data(self) -> List[float]:
         rtn = []
         if 'incomes' in self._balance:
             rtn = self._balance.incomes.tolist()
@@ -94,7 +98,7 @@ class MonthsBalance(CalcBalanceMixin):
         return rtn
 
     @property
-    def expense_data(self):
+    def expense_data(self) -> List[float]:
         rtn = []
         if 'expenses' in self._balance:
             rtn = self._balance.expenses.tolist()
@@ -102,14 +106,14 @@ class MonthsBalance(CalcBalanceMixin):
         return rtn
 
     @property
-    def save_data(self):
+    def save_data(self) -> List[float]:
         rtn = []
         if 'residual' in self._balance:
             rtn = self._balance.residual.tolist()
 
         return rtn
 
-    def _calc(self, incomes, expenses):
+    def _calc(self, incomes: List[Dict], expenses: List[Dict]) -> None:
         incomes = super().convert_to_df(self._year, incomes)
         expenses = super().convert_to_df(self._year, expenses)
 
