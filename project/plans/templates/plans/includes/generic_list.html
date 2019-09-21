@@ -1,26 +1,28 @@
 {% load get_item %}{% load define_action %}{% load table_cell %}
-<table class="table table-striped table-hover">
+<table class="table table-striped table-hover stats">
     <thead class="thead-light">
-        <th>Pavadinimas</th>
-        <th class="text-right">Sausis</th>
-        <th class="text-right">Vasaris</th>
-        <th class="text-right">Kovas</th>
-        <th class="text-right">Balandis</th>
-        <th class="text-right">Gegužė</th>
-        <th class="text-right">Birželis</th>
-        <th class="text-right">Liepa</th>
-        <th class="text-right">Rugpjūtis</th>
-        <th class="text-right">Rugsėjis</th>
-        <th class="text-right">Spalis</th>
-        <th class="text-right">Lapkritis</th>
-        <th class="text-right">Gruodis</th>
+        <tr class="top">
+            <th>Pavadinimas</th>
+            <th class="text-right">Sausis</th>
+            <th class="text-right">Vasaris</th>
+            <th class="text-right">Kovas</th>
+            <th class="text-right">Balandis</th>
+            <th class="text-right">Gegužė</th>
+            <th class="text-right">Birželis</th>
+            <th class="text-right">Liepa</th>
+            <th class="text-right">Rugpjūtis</th>
+            <th class="text-right">Rugsėjis</th>
+            <th class="text-right">Spalis</th>
+            <th class="text-right">Lapkritis</th>
+            <th class="text-right">Gruodis</th>
+        </tr>
     </thead>
     <tbody>
         {% for item in items %}
         {% if url_update %}{% url url_update item.id as url %}{% else %}{% define '' as url %}{% endif %}
         <tr data-url="{{ url }}">
             {% with item|get_obj_attr:type as name %}
-            <td>{{ name }}{% if item.expense_type.necessary or item.saving_type or 'Būtin' in name %} <i class="far fa-star star"></i>{% endif %}</td>{% endwith %}
+            <td class="text-left">{{ name }}{% if item.expense_type.necessary or item.saving_type or 'Būtin' in name %} <i class="far fa-star star"></i>{% endif %}</td>{% endwith %}
             {% cell item.january %}
             {% cell item.february %}
             {% cell item.march %}
