@@ -11,15 +11,20 @@ ALLOWED_HOSTS = ['*']
 
 # ================   APP CONFIGURATION
 INSTALLED_APPS += [
-    'debug_toolbar'
+    'debug_toolbar',
 ]
 
 
 # ================   MIDDLEWARE CONFIGURATION
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # 'customizable_django_profiler.cProfileMiddleware',
 ] + MIDDLEWARE
 
+# PROFILER = {
+#     'activate': True,
+#     'count': '50',
+# }
 
 # ================   DEBUG_TOOLBAR_PANEL
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
@@ -37,6 +42,7 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.signals.SignalsPanel',
     'debug_toolbar.panels.logging.LoggingPanel',
     'debug_toolbar.panels.redirects.RedirectsPanel',
+    'debug_toolbar.panels.profiling.ProfilingPanel',
 ]
 
 

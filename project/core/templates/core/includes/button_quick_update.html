@@ -1,0 +1,4 @@
+<button type="{{ type }}" class="btn btn-sm btn-success my-0 js-quick-update" {% if pk %}data-pk="{{ pk }}" {% endif %}
+    {% if url %}data-url="{{ url }}" {% endif %} {% if tbl %}data-tbl="{{ tbl }}" {% endif %}>
+    <span class="far fa-save"></span>{% if label %} Delete{% endif %}
+</button>

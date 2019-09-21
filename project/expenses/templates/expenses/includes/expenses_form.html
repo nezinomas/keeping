@@ -1,0 +1,58 @@
+{% load form %}
+{% url 'expenses:load_expense_name' as chained_url %}
+{% generic_form title='Išlaidos' update_container='ajax-content' chained_dropdown=chained_url %}
+
+<style>
+    .form-check {
+        padding: .35rem 0 0 0;
+    }
+    .exception {
+        margin-top: 2rem;
+    }
+</style>
+
+<script>
+    $('#div_id_exception').parents().eq(2).addClass("exception");
+
+    $(document).keydown(function (event) {
+        if (event.keyCode == 27) {
+            $('#modal-form').modal("hide");
+        }
+    });
+
+    var input = document.getElementById("id_total_sum");
+    input.addEventListener("keyup", function (event) {
+        event.preventDefault();
+        if (event.keyCode === 13) {
+            var total_sum = eval(document.getElementById("id_price").value);
+            var input_value = eval(this.value.replace(',', '.').replace(/[^\d\-\.\+\/\*]/g, ''));
+            if (!input_value || input_value === Infinity ) {
+                input_value = 0;
+            }
+
+            var res = total_sum + input_value;
+            if(!res || res <= 0) {
+                res = 0;
+            }
+
+            document.getElementById("id_price").value = res.toFixed(2);
+            this.value = ''
+        }
+    });
+
+    $("#id_expense_type").change(function () {
+        var url = $("#js-form").attr("data-chained-dropdown");
+        var expense_typeId = $(this).val();
+
+        $.ajax({
+            url: url,
+            data: {
+                'expense_type': expense_typeId
+            },
+            success: function (data) {
+                $("#id_expense_name").html(data);
+            }
+        });
+
+    });
+</script>

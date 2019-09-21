@@ -1,17 +1,21 @@
-from django.shortcuts import render
+from ...core.mixins.views import CreateAjaxMixin, UpdateAjaxMixin
+from .. import forms, models
 
 
-def lists(request):
-    pass
+class UpdateContext():
+    list_template_name = 'expenses/includes/expenses_type_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context[self.context_object_name] = models.ExpenseType.objects.items()
+        return context
 
 
-def new(request):
-    pass
+class New(UpdateContext, CreateAjaxMixin):
+    model = models.ExpenseName
+    form_class = forms.ExpenseNameForm
 
 
-def update(request, pk):
-    pass
-
-
-def delete(request, pk):
-    pass
+class Update(UpdateContext, UpdateAjaxMixin):
+    model = models.ExpenseName
+    form_class = forms.ExpenseNameForm

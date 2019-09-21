@@ -1,3 +1,17 @@
-from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render, reverse
 
-# Create your views here.
+
+@login_required()
+def set_year(request, year, view_name):
+
+    user = request.user
+    user.profile.year = year
+    user.save()
+
+    return redirect(
+        reverse(
+            view_name,
+            kwargs={}
+        )
+    )

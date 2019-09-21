@@ -1,0 +1,21 @@
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th>Data</th>
+            <th class="text-right">Kiekis</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        {% url 'drinks:drinks_update' item.id as url_update %}
+        <tr data-url="{{ url_update }}">
+            <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
+            <td>{{ item.quantity }}</td>
+        </tr>
+        {% empty %}
+        <tr class="table-warning text-center">
+            <td colspan="6" class="py-2"><b>{{ request.user.profile.year|title }}</b> metais įrašų nėra.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

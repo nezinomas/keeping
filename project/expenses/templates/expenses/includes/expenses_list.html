@@ -1,0 +1,43 @@
+{% load humanize %}
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th>Data</th>
+            <th>Išlaidų rūšis</th>
+            <th>Išlaidų pavadinimas</th>
+            <th class="text-right">Kiekis</th>
+            <th class="text-right">Kaina</th>
+            <th class="text-right">Sąskaita</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        {% url 'expenses:expenses_update' item.id as url_update %}
+        <tr data-url="{{ url_update }}">
+            <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
+            <td class="text-left">{{ item.expense_type }}</td>
+            <td class="text-left">{{ item.expense_name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td {% if item.remark %}data-toggle="tooltip" data-html="true" data-placement="right" title="{{ item.remark|linebreaks}}" style="border-right: 5px solid lightgreen!important;"{% endif %}>{{ item.price|intcomma }}</td>
+            <td {% if item.exception %} style="border-right: 5px solid red!important;"{% endif %}>{{ item.account }}</td>
+        </tr>
+        {% empty %}
+        <tr class="table-warning text-center">
+            <td colspan="6" class="py-2"><b>{{ request.user.profile.year|title }}</b> metais išlaidų nėra.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script crossorigin="anonymous" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+
+<style>
+    .tooltip.show p {
+        text-align: left;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>

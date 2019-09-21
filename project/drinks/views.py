@@ -1,3 +1,17 @@
-from django.shortcuts import render
+from ..core.mixins.views import CreateAjaxMixin, ListMixin, UpdateAjaxMixin
+from . import forms, models
 
-# Create your views here.
+
+class Lists(ListMixin):
+    model = models.Drink
+    template_name = 'drinks/index.html'
+
+
+class New(CreateAjaxMixin):
+    model = models.Drink
+    form_class = forms.DrinkForm
+
+
+class Update(UpdateAjaxMixin):
+    model = models.Drink
+    form_class = forms.DrinkForm

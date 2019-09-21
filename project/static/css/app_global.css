@@ -1,78 +1,122 @@
-.list-group-item {
-  padding: .25rem 0 .25rem .5rem;
-  font-size: .8rem;
-  border: 0;
+body {
+  font-size: .7rem!important;
 }
 
-h6.side-bar {
-  margin: 1rem 0 .25rem .25rem;
-
+table.stats h1 {
+    font-size: .8rem;
+    padding: .15rem 0;
+    margin: 0;
 }
 
-h6.side-bar:first-child { 
-  margin-top: .5rem;
+table.stats {
+    border-collapse: collapse;
+}
+
+table.stats tfoot {
+    background-color: #f8f9fa;
+}
+
+table.stats td, table.stats th {
+    border: 1px solid #b4b4b3!important;
+    /* border-right: 1px solid #b7b7b6!important; */
+    vertical-align: middle!important;
+    padding-top: .1rem!important;
+    padding-bottom: .1rem!important;
+    padding-left: .35rem!important;
+    padding-right: .35rem!important;
+}
+
+table.stats tr td:first-child, table.stats tr th:first-child {
+    border-left: 0!important;
+}
+
+table.stats tr td:last-child, table.stats tr th:last-child {
+    border-right: 0!important;
+}
+
+table.stats tfoot tr:last-child th {
+    border-bottom: 0!important;
+}
+
+table.stats td, table.stats th {
+    text-align: right;
+}
+
+table.stats > tfoot > tr {
+    border-top: double #0359b0;
+}
+
+table.stats > tfoot > tr > th {
+    font-weight: normal;
+}
+
+table.stats > thead > tr > th {
+    padding-top: .25rem!important;
+    padding-bottom: .25rem!important;
+}
+
+tr.total th {
+    font-weight: bold!important;
 }
 
 .navbar {
-  padding: .25rem .5rem;
+    padding: .25rem .5rem;
+}
+
+.nav-item {
+    padding: 0;
+    margin: 0;
+}
+
+.dropdown-menu a.dropdown-item {
+    padding-left: .25rem;
 }
 
 .nav-link {
-  padding: 0 .25rem;
-  margin: .25rem 0;
-  font-size: .9rem;
-}
-
-.nav>a:first-child {
-  margin-left: -.25rem;
-}
-
-.navbar-text {
-  font-size: .9rem;
-  padding: .25rem .25rem 0 .25rem;
-}
-
-.nav>.nav-link.active {
-  font-weight: bold;
+    padding: .25rem 1rem;
+    margin: .25rem;
 }
 
 .container-fluid>.content {
-  padding: 0 1rem;
+    padding: 0 1rem;
 }
 
-.invalid-feedback {
-  display: block;
+.top > th {
+    background-color: lightblue !important;
+    text-align: left!important;
 }
 
-table td {
-  font-size: .8rem!important;
-  vertical-align: middle!important;
-  padding-top: .15rem!important;
-  padding-bottom: .15rem!important;
-  padding-left: .50rem!important;
-  padding-right: .50rem!important;
+.top > th.text-right {
+    text-align: right!important;
 }
 
-table thead th {
-  font-size: .85rem!important;
-  vertical-align: middle!important;
-  padding-top: .35rem!important;
-  padding-bottom: .35rem!important;
-  padding-left: .50rem!important;
-  padding-right: .50rem!important;
+.top > th.text-center {
+    text-align: center!important;
 }
 
-table tfoot td {
-  padding-top: .35rem!important;
-  padding-bottom: .35rem!important;
+
+.stats .br {
+    border-right: 3px solid #0359b0!important;
 }
 
-.table-striped>tbody>tr:nth-child(odd) {
-   background-color: #fdefd5;
- }
+.stats .bl {
+    border-left: 3px solid #0359b0!important;
+}
+
+.stats .br_s {
+    border-right: 2px solid #b4b4b3!important;
+}
+
+.stats .bl_s {
+    border-left: 2px solid #b4b4b3!important;
+}
+
+.dash {
+    color: #b7b7b6;
+}
 
 .table-hover tbody tr:hover {
-    background: lightgray;
+    background: #f9f6cf;
 }
 
 .table-hover tbody tr:hover td.table-danger {
@@ -83,71 +127,19 @@ table tfoot td {
     background: #b7debb;
 }
 
-.form-group {
-  margin: 0!important;
-  padding: 0!important;
-}
-
-.inner {
-  margin: 0!important;
-  padding: 0!important;
-  table-layout:fixed!important;
-}
-
-.inner td {
-  padding-top: .25rem!important;
-  padding-bottom: .25rem!important;
-  vertical-align: top!important;
-  padding-left: 4px!important;
-  padding-right: 4px!important;
-}
-
-.inner td.v-middle {
-  vertical-align: middle!important;
-}
-
-.inner td.last {
-  padding-right: .5rem!important;
-}
-
-.inner td input {
-  padding-left: .25rem!important;
-  padding-right: .25rem!important;
-}
-
-.inner td.text-left input {
-  text-align: left;
-}
-
-.inner td.text-center input {
-  text-align: center;
+.btn-sm, .form-control-sm {
+    font-size: .7rem;
 }
 
 .btn-sm {
-    font-size: .8rem!important;
-    line-height: 1.5!important;
+  padding: .15rem .25rem;
 }
 
-.km {
-  border-left: orangered dotted 1px!important;
+.list-group-item {
+    padding: .25rem 0 .25rem 1.25rem;
+    margin: 0;
 }
 
-.b-left {
-  border-left: orangered dotted 1px!important;
+.list-group-item.list-group-item-primary {
+    padding-left: 0.25rem;
 }
-
-.form-control-sm {
-  font-size: .8rem!important;
-}
-
-.date-align {
-  width: 2.7rem;
-  float: right;
-  display:block;
-}
-
- .row-spacer {
-   height: 1rem;
-   background-color: lightyellow;
- }
-

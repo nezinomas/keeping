@@ -1,0 +1,27 @@
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th>Nr</th>
+            <th>Autorius</th>
+            <th>Pavadinimas</th>
+            <th class="text-center">Pradėta skaityti</th>
+            <th class="text-center">Baigta skaityti</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        {% url 'books:books_update' item.id as url_update %}
+        <tr data-url="{{ url_update }}">
+            <td class="text-left">{{ forloop.revcounter }}</td>
+            <td class="text-left">{{ item.author }}</td>
+            <td class="text-left">„{{ item.title }}”</td>
+            <td class="text-center">{{ item.started|date:"Y-m-d" }}</td>
+            <td class="text-center">{{ item.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
+        </tr>
+        {% empty %}
+        <tr class="table-warning text-center">
+            <td colspan="5" class="py-2"><b>{{ request.user.profile.year|title }}</b> metais irašų nėra.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

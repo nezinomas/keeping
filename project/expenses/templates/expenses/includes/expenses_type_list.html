@@ -1,0 +1,28 @@
+{% for item in items %}
+{% url 'expenses:expenses_type_update' item.id as url_type_update %}
+<div class="list-group mb-2">
+    <div class="list-group-item list-group-item-action list-group-item-primary" data-url="{{ url_type_update }}">
+        {{ item.title }}
+        {% if item.necessary %}<span class="badge badge-primary"><i class="far fa-star"></i></span>{% endif %}
+    </div>
+    {% for sub in item.expensename_set.all %}
+    {% url 'expenses:expenses_name_update' sub.id as url_name_update %}
+    <div class="list-group-item list-group-item-action" data-url="{{ url_name_update }}">{{ sub.title }} {% if sub.valid_for %}<span class="badge badge-secondary">{{ sub.valid_for }}</span>{% endif %}</div>
+    {% endfor %}
+</div>
+{% endfor %}
+
+<style>
+    .list-group-item {
+        padding: .25rem 0 .25rem 1.25rem;
+        margin: 0;
+    }
+
+    .list-group-item.list-group-item-primary {
+        padding-left: 0.25rem;
+    }
+
+    .badge {
+        font-weight: normal;
+    }
+</style>

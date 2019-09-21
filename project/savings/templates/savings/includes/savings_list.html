@@ -1,0 +1,30 @@
+{% load humanize %}
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th>Data</th>
+            <th>Fondas</th>
+            <th>Iš sąskaitos</th>
+            <th>Pastaba</th>
+            <th class="text-right">Suma</th>
+            <th class="text-right">Mokesčiai</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        {% url 'savings:savings_update' item.id as url_update %}
+        <tr data-url="{{ url_update }}">
+            <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
+            <td class="text-left">{{ item.saving_type }}</td>
+            <td class="text-left">{{ item.account }}</td>
+            <td class="text-left">{{ item.remark }}</td>
+            <td>{{ item.price|intcomma }}</td>
+            <td>{{ item.fee|default_if_none:'-'|intcomma }}</td>
+        </tr>
+        {% empty %}
+        <tr class="table-warning text-center">
+            <td colspan="6" class="py-2"><b>{{ request.user.profile.year|title }}</b> metais įrašų nėra.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

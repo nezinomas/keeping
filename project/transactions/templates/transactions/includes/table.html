@@ -1,0 +1,27 @@
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th>Data</th>
+            <th>Iš sąskaitos</th>
+            <th>Į sąskaitą</th>
+            <th class="text-right">Suma</th>
+            {% if fees %}<th class="text-right">Mokesčiai</th>{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        {% url url_name item.id as url %}
+        <tr data-url="{{ url }}">
+            <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
+            <td class="text-left">{{ item.from_account }}</td>
+            <td class="text-left">{{ item.to_account }}</td>
+            <td>{{ item.price }}</td>
+            {% if fees %}<td>{{ item.fee }}</td>{% endif %}
+        </tr>
+        {% empty %}
+        <tr class="table-warning text-center">
+            <td colspan="{% if fees %}5{% else %}4{% endif %}" class="py-2"><b>{{ year|title }}</b> metais įrašų nėra.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

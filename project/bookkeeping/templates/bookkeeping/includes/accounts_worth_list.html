@@ -1,0 +1,44 @@
+{% load table_cell %}
+
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th colspan="7"><h1>Sąskaitos</h1></th>
+        </tr>
+        <tr>
+            <th class="text-left">Sąskaita</th>
+            <th>01.01</th>
+            <th>Pajamos</th>
+            <th>Išlaidos</th>
+            <th>Likutis</th>
+            <th class="text-right bl">Turiu</th>
+            <th>Delta</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in accounts %}
+        <tr>
+            <td class="text-left">{{ item.title }}</td>
+            {% cell item.past width='110rem' %}
+            {% cell item.incomes width='110rem' %}
+            {% cell item.expenses width='110rem' %}
+            {% cell item.balance width='110rem' %}
+            {% cell item.have width='110rem' css_class='bl' %}
+            {% cell item.delta width='110rem' highlight_value=True  %}
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr  class="total">
+            <th class="text-left">Viso</th>
+            {% cell totals.past tag="th" %}
+            {% cell totals.incomes tag="th" %}
+            {% cell totals.expenses tag="th" %}
+            {% cell totals.balance tag="th" %}
+            {% cell totals.have tag="th" css_class='bl' %}
+            {% cell totals.delta tag="th" %}
+        </tr>
+    </tfoot>
+</table>
+

@@ -1,0 +1,20 @@
+{% load form %}
+{% url 'transactions:load_saving_type' as url_chained %}
+{% generic_form title='Fondas &hArr; Fondas' update_container='savings_change_list' chained_dropdown=url_chained %}
+
+<script>
+    $("#id_from_account").change(function () {
+        var url = $("#js-form").attr("data-chained-dropdown");
+        var id = $(this).val();
+
+        $.ajax({
+            url: url,
+            data: {
+                'id': id
+            },
+            success: function (data) {
+                $("#id_to_account").html(data);
+            }
+        });
+    });
+</script>

@@ -1,4 +1,144 @@
-from django.shortcuts import render
+from django.template.loader import render_to_string
 
-def index(request):
-    return render(request, 'bookkeeping/test.html')
+from ..core.mixins.formset import FormsetMixin
+from ..core.mixins.views import CreateAjaxMixin, IndexMixin
+
+from ..accounts.models import Account
+from ..expenses.models import Expense, ExpenseType
+from ..incomes.models import Income
+from ..savings.models import SavingType
+
+from .lib.account_stats import AccountStats
+from .lib.months_balance import MonthsBalance
+from .lib.saving_stats import SavingStats
+from .lib.no_incomes import NoIncomes
+from .lib.months_expense_type import MonthsExpenseType
+
+from .forms import AccountWorthForm, SavingWorthForm
+from .models import AccountWorth, SavingWorth
+
+
+def _account_stats(request):
+    _stats = Account.objects.balance_year(request.user.profile.year)
+    _worth = AccountWorth.objects.items()
+
+    return AccountStats(_stats, _worth)
+
+
+def _saving_stats(year):
+    _stats = SavingType.objects.balance_year(year)
+    _worth = SavingWorth.objects.items()
+
+    fund = SavingStats(_stats, _worth, 'fund')
+    pension = SavingStats(_stats, _worth, 'pension')
+
+    return fund, pension
+
+
+def _render_account_stats(request, account):
+        return render_to_string(
+            'bookkeeping/includes/accounts_worth_list.html',
+            {'accounts': account.balance, 'totals': account.totals},
+            request
+        )
+
+
+def _render_saving_stats(request, fund, pension):
+    return render_to_string(
+        'bookkeeping/includes/savings_worth_list.html',
+        {
+            'fund': fund.balance, 'fund_totals': fund.totals,
+            'pension': pension.balance, 'pension_totals': pension.totals,
+        },
+        request
+    )
+
+
+class Index(IndexMixin):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        year = self.request.user.profile.year
+
+        _account = _account_stats(self.request)
+        _fund, _pension = _saving_stats(year)
+
+        qs_income = Income.objects.income_sum(year)
+        qs_expense = Expense.objects.expense_sum(year)
+        _MonthsBalance = MonthsBalance(
+            year, qs_income, qs_expense, _account.balance_start)
+
+        qs_ExpenseType = Expense.objects.expense_type_sum(year)
+        _MonthExpenseType = MonthsExpenseType(year, qs_ExpenseType)
+
+        _NoIncomes = NoIncomes(
+            money=_MonthsBalance.amount_end,
+            fund=_fund.total_market,
+            pension=_pension.total_market,
+            avg_expenses=_MonthsBalance.avg_expenses,
+            avg_type_expenses=_MonthExpenseType.average,
+            not_use=['Darbas', 'Laisvalaikis', 'Paskolos', 'Taupymas', 'Transportas']
+        )
+
+        context['accounts'] = _render_account_stats(self.request, _account)
+        context['savings'] = _render_saving_stats(self.request, _fund, _pension)
+        context['balance'] = _MonthsBalance.balance
+        context['balance_totals'] = _MonthsBalance.totals
+        context['balance_avg'] = _MonthsBalance.average
+        context['amount_start'] = _MonthsBalance.amount_start
+        context['amount_end'] = _MonthsBalance.amount_end
+        context['amount_balance'] = _MonthsBalance.amount_balance
+        context['total_market'] = _fund.total_market
+        context['avg_incomes'] = _MonthsBalance.avg_incomes
+        context['avg_expenses'] = _MonthsBalance.avg_expenses
+        context['expenses'] = _MonthExpenseType.balance
+        context['expense_types'] = (
+            ExpenseType.objects.all()
+            .values_list('title', flat=True)
+        )
+        context['expenses_totals'] = _MonthExpenseType.totals
+        context['expenses_average'] = _MonthExpenseType.average
+        context['no_incomes'] = _NoIncomes.summary
+        context['save_sum'] = _NoIncomes.save_sum
+
+        # charts data
+        context['pie'] = _MonthExpenseType.chart_data
+        context['e'] = _MonthsBalance.expense_data
+        context['i'] = _MonthsBalance.income_data
+        context['s'] = _MonthsBalance.save_data
+
+        return context
+
+
+class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
+    type_model = SavingType
+    model = SavingWorth
+    form_class = SavingWorthForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        _fund, _pension = _saving_stats(self.request.user.profile.year)
+
+        context['fund'] = _fund.balance
+        context['fund_totals'] = _fund.totals
+        context['pension'] = _pension.balance
+        context['pension_totals'] = _pension.totals
+
+        return context
+
+
+class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
+    type_model = Account
+    model = AccountWorth
+    form_class = AccountWorthForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        _account = _account_stats(self.request)
+
+        context['accounts'] = _account.balance
+        context['totals'] = _account.totals
+
+        return context

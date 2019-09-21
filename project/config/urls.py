@@ -6,16 +6,16 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('project.auths.urls')),
-    # path('', include('project.accounts.urls')),
+    path('', include('project.accounts.urls')),
     path('', include('project.bookkeeping.urls')),
-    # path('', include('project.books.urls')),
-    # path('', include('project.core.urls')),
-    # path('', include('project.drinks.urls')),
+    path('', include('project.books.urls')),
+    path('', include('project.core.urls')),
+    path('', include('project.drinks.urls')),
     path('', include('project.expenses.urls')),
-    # path('', include('project.incomes.urls')),
-    # path('', include('project.savings.urls')),
-    # path('', include('project.plans.urls')),
-    # path('', include('project.transactions.urls')),
+    path('', include('project.incomes.urls')),
+    path('', include('project.savings.urls')),
+    path('', include('project.plans.urls')),
+    path('', include('project.transactions.urls')),
 ]
 
 if settings.DEBUG:
