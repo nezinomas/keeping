@@ -1,5 +1,5 @@
 body {
-  font-size: .75rem!important;
+  font-size: .7rem!important;
 }
 
 h6 {
@@ -18,10 +18,10 @@ table.stats td, table.stats th {
     border: 1px solid #b4b4b3!important;
     /* border-right: 1px solid #b7b7b6!important; */
     vertical-align: middle!important;
-    padding-top: .15rem!important;
-    padding-bottom: .15rem!important;
-    padding-left: .50rem!important;
-    padding-right: .50rem!important;
+    padding-top: .1rem!important;
+    padding-bottom: .1rem!important;
+    padding-left: .35rem!important;
+    padding-right: .35rem!important;
 }
 
 table.stats tr td:first-child, table.stats tr th:first-child {
