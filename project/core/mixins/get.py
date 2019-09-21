@@ -9,13 +9,13 @@ class GetQuerysetMixin():
             try:
                 qs = self.model.objects.items()
             except Exception as e2:
-                qs = self.model.objects.all()
+                qs = self.model.objects.all() 
 
         return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context[self.context_object_name] = super().get_queryset()
+        context[self.context_object_name] = self.get_queryset()
 
         return context
 
