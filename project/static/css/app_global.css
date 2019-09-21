@@ -85,10 +85,19 @@ tr.total th {
     padding: 0 1rem;
 }
 
-.stats .top {
+.top > th {
     background-color: lightblue !important;
-    text-align: left;
+    text-align: left!important;
 }
+
+.top > th.text-right {
+    text-align: right!important;
+}
+
+.top > th.text-center {
+    text-align: center!important;
+}
+
 
 .stats .br {
     border-right: 3px solid #0359b0!important;

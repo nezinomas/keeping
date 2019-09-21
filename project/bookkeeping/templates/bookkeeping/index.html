@@ -44,9 +44,9 @@
         <table class="table table-striped table-hover table-sm stats">
             <thead>
                 <tr class="top">
-                    <th>Metų pradžioje</th>
-                    <th>Metų pabaigoje</th>
-                    <th>Metų balansas</th>
+                    <th class="text-right">Metų pradžioje</th>
+                    <th class="text-right">Metų pabaigoje</th>
+                    <th class="text-right">Metų balansas</th>
                 </tr>
             </thead>
             <tfoot>
@@ -62,8 +62,8 @@
             <thead>
                 <tr class="top">
                     <th data-toggle="tooltip" data-html="true" data-placement="right" title="<p>Nebūtinos išlaidos, kurių galima atsisakyti:<br />- Darbas<br />- Laisvalaikis<br />- Paskolos<br />- Taupymas<br />- Transportas" style="border-left: 5px solid red!important;" class="text-left">{{ save_sum }}</th>
-                    <th>€ + F</th>
-                    <th>€ + F + P</th>
+                    <th class="text-right">€ + F</th>
+                    <th class="text-right">€ + F + P</th>
                 </tr>
             </thead>
             <tbody>
@@ -87,7 +87,7 @@
         <!-- Average Incomes -->
         <table class="table table-striped table-hover table-sm stats">
             <thead>
-                <tr class="top"><th>Vidutinė pajamos</th></tr>
+                <tr class="top"><th class="text-right">Vidutinė pajamos</th></tr>
             </thead>
             <tfoot>
                 <tr>{% cell avg_incomes tag='th' %}</tr>
@@ -97,7 +97,7 @@
         <!-- Average Expenses -->
         <table class="table table-striped table-hover table-sm stats">
             <thead>
-                <tr class="top"><th>Vidutinė išlaidos</th></tr>
+                <tr class="top"><th class="text-right">Vidutinė išlaidos</th></tr>
             </thead>
             <tfoot>
                 <tr>{% cell avg_expenses tag='th' %}</tr>
@@ -107,7 +107,7 @@
         <!-- Money -->
         <table class="table table-striped table-hover table-sm stats">
             <thead>
-                <tr class="top"><th>Pinigai</th></tr>
+                <tr class="top"><th class="text-right">Pinigai</th></tr>
             </thead>
             <tfoot>
                 <tr>{% cell amount_start tag='th' %}</tr>
@@ -117,7 +117,7 @@
         <!-- Worth -->
         <table class="table table-striped table-hover table-sm stats">
             <thead>
-                <tr class="top"><th>Turtas</th></tr>
+                <tr class="top"><th class="text-right">Turtas</th></tr>
             </thead>
             <tfoot>
                 <tr>{% cell amount_start|add:total_market tag='th' %}</tr>
