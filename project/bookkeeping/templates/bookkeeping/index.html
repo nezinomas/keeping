@@ -32,8 +32,8 @@
     <div class="col-lg-12">
         {% url 'bookkeeping:accounts_worth_new' as url_accounts %}
         <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="fas fa-plus"></i> Įrašyti sąskaitose esančias sumas</button>
-        {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Įrašyti fondų rinkos vertes</button>
+        {% if fund %}{% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Įrašyti fondų rinkos vertes</button>{% endif %}
     </div>
 </div>
 
