@@ -23,7 +23,6 @@ MEDIA_URL = "/media/"
 
 # ================   STATIC FILE CONFIGURATION
 STATIC_URL = '/static/'
-
 STATIC_ROOT = os.path.join(SITE_ROOT, 'static')
 
 
@@ -76,6 +75,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.static',
             ],
         },
     },
@@ -101,7 +101,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    # 'django.contrib.staticfiles',
     'django.contrib.humanize',
     'bootstrap_datepicker_plus',
     'widget_tweaks',
