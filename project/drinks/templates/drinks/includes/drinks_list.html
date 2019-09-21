@@ -1,14 +1,16 @@
-<table class="table table-striped table-hover">
+<table class="table table-striped table-hover stats">
     <thead class="thead-light">
-        <th>Data</th>
-        <th class="text-right">Kiekis</th>
+        <tr class="top">
+            <th>Data</th>
+            <th class="text-right">Kiekis</th>
+        </tr>
     </thead>
     <tbody>
         {% for item in items %}
         {% url 'drinks:drinks_update' item.id as url_update %}
         <tr data-url="{{ url_update }}">
-            <td>{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-right">{{ item.quantity }}</td>
+            <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
+            <td>{{ item.quantity }}</td>
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
