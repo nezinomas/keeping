@@ -6,6 +6,12 @@ h6 {
     margin: 0;
 }
 
+table.stats h1 {
+    font-size: .8rem;
+    padding: .15rem 0;
+    margin: 0;
+}
+
 table.stats {
     border-collapse: collapse;
 }
