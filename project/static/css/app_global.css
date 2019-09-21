@@ -2,10 +2,6 @@ body {
   font-size: .7rem!important;
 }
 
-h6 {
-    margin: 0;
-}
-
 table.stats h1 {
     font-size: .8rem;
     padding: .15rem 0;
@@ -132,11 +128,11 @@ tr.total th {
 }
 
 .btn-sm, .form-control-sm {
-    font-size: .8rem;
+    font-size: .7rem;
 }
 
 .btn-sm {
-  padding: .15rem .5rem;
+  padding: .15rem .25rem;
 }
 
 .list-group-item {

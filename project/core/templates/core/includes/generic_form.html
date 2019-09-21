@@ -20,8 +20,8 @@
         {% endif %}
 
         {% for field in form %}
-        <div class="row">
-            <div class="col-sm-4 pt-1">{{ field.label_tag }}</div>
+        <div class="row align-items-center">
+            <div class="col-sm-4">{{ field.label_tag }}</div>
             <div class="col-sm-8">{{ field|as_crispy_field }}</div>
         </div>
         {% endfor %}
@@ -33,6 +33,15 @@
     </div>
 </form>
 
+<style>
+    .row .form-group {
+        margin: .2rem 0;
+        padding: 0;
+    }
+    label {
+        margin: 0;
+    }
+</style>
 <script>
     $(document).keydown(function (event) {
         if (event.keyCode == 27) {
@@ -44,3 +53,4 @@
         e.preventDefault();
     });
 </script>
+
