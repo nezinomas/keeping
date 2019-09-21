@@ -14,6 +14,12 @@ INSTALLED_APPS += [
     'debug_toolbar',
 ]
 
+# ================   STATIC FILE CONFIGURATION
+STATICFILES_DIRS = [
+    os.path.join(SITE_ROOT, 'static'),
+]
+STATIC_ROOT = None
+
 
 # ================   MIDDLEWARE CONFIGURATION
 MIDDLEWARE = [
@@ -25,6 +31,7 @@ MIDDLEWARE = [
 #     'activate': True,
 #     'count': '50',
 # }
+
 
 # ================   DEBUG_TOOLBAR_PANEL
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
