@@ -20,9 +20,9 @@
         {% endif %}
 
         {% for field in form %}
-        <div class="row mb-2">
+        <div class="row">
             <div class="col-sm-4 pt-1">{{ field.label_tag }}</div>
-            <div class="col-8">{{ field|as_crispy_field }}</div>
+            <div class="col-sm-8">{{ field|as_crispy_field }}</div>
         </div>
         {% endfor %}
     </div>
