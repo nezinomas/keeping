@@ -15,10 +15,10 @@ INSTALLED_APPS += [
 ]
 
 # ================   STATIC FILE CONFIGURATION
-STATICFILES_DIRS = [
-    os.path.join(SITE_ROOT, 'static'),
-]
-STATIC_ROOT = None
+# STATICFILES_DIRS = [
+#     os.path.join(SITE_ROOT, 'static'),
+# ]
+# STATIC_ROOT = None
 
 
 # ================   MIDDLEWARE CONFIGURATION
