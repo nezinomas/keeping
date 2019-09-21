@@ -23,10 +23,8 @@ MEDIA_URL = "/media/"
 
 # ================   STATIC FILE CONFIGURATION
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(SITE_ROOT, 'static'),
-]
-# STATIC_ROOT = os.path.join(SITE_ROOT, 'static')
+
+STATIC_ROOT = os.path.join(SITE_ROOT, 'static')
 
 
 # ================   DEBUG CONFIGURATION
