@@ -9,7 +9,7 @@ class GetQuerysetMixin():
             try:
                 qs = self.model.objects.items()
             except Exception as e2:
-                qs = self.model.objects.all() 
+                qs = self.model.objects.all()
 
         return qs
 
