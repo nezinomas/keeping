@@ -15,3 +15,17 @@ def set_year(request, year, view_name):
             kwargs={}
         )
     )
+
+
+@login_required
+def set_month(request, month):
+    user = request.user
+    user.profile.month = month
+    user.save()
+
+    return redirect(
+        reverse(
+            'bookkeeping:month',
+            kwargs={}
+        )
+    )
