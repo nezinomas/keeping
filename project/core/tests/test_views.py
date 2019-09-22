@@ -1,8 +1,6 @@
 import pytest
 from django.shortcuts import reverse
 
-from ..views import *
-
 
 def test_set_year(admin_client):
     url = reverse(
@@ -14,3 +12,15 @@ def test_set_year(admin_client):
 
     assert response.status_code == 200
     assert response.wsgi_request.user.profile.year == 1970
+
+
+def test_set_month(admin_client):
+    url = reverse(
+        'core:set_month',
+        kwargs={'month': 12}
+    )
+
+    response = admin_client.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert response.wsgi_request.user.profile.month == 12
