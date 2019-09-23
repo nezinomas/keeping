@@ -23,10 +23,14 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self._related()
 
-    def income_sum(self, year):
+    def income_sum(self, year, month=None):
         summed_name = 'incomes'
 
-        return super().sum_by_month(year, summed_name).values('date', summed_name)
+        return (
+            super()
+            .sum_by_month(year, summed_name, month=month)
+            .values('date', summed_name)
+        )
 
 
 class Income(models.Model):

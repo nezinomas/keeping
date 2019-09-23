@@ -3,15 +3,25 @@ from django.db.models.functions import TruncMonth
 
 
 class SumMixin():
-    def sum_by_month(self, year, summed_name, groupby='id'):
+    def _year(self, year):
+        return self.filter(date__year=year)
+
+    def _month(self, month):
+        if month:
+            return self.filter(date__month=month)
+        else:
+            return self
+
+    def sum_by_month(self, year, summed_name, month=None, groupby='id'):
         return (
             self
             .annotate(cnt=Count(groupby))
             .values(groupby)
+            ._year(year)
+            ._month(month)
             .annotate(date=TruncMonth('date'))
             .values('date')
             .annotate(c=Count('id'))
             .annotate(**{summed_name: Sum('price')})
-            .filter(date__year=year)
             .order_by('date')
         )

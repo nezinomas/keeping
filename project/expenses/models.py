@@ -78,19 +78,27 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self._related()
 
-    def expense_sum(self, year):
+    def expense_sum(self, year, month=None):
         summed_name = 'expenses'
 
-        return super().sum_by_month(year, summed_name).values('date', summed_name)
+        return (
+            super()
+            .sum_by_month(
+                year=year, month=month,
+                summed_name=summed_name)
+            .values('date', summed_name)
+        )
 
-    def expense_type_sum(self, year):
+    def expense_type_sum(self, year, month=None):
         summed_name = 'sum'
 
-        return super().sum_by_month(
-            year,
-            summed_name=summed_name,
-            groupby='expense_type'
-        ).values('date', summed_name, title=F('expense_type__title'))
+        return (
+            super()
+            .sum_by_month(
+                year=year, month=month,
+                summed_name=summed_name, groupby='expense_type')
+            .values('date', summed_name, title=F('expense_type__title'))
+        )
 
 
 class Expense(models.Model):
