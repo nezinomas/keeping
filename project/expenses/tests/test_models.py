@@ -50,7 +50,7 @@ def test_expense_type_sum_one_month(expenses):
     assert expect == actual
 
 
-def test_expense_type_sum(expenses_january):
+def test_expense_type_day_sum(expenses_january):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(0.5), 'title': 'Expense Type'},
         {'date': date(1999, 1, 11), 'sum': Decimal(0.5), 'title': 'Expense Type'},
