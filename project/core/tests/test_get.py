@@ -2,9 +2,9 @@ import mock
 import pytest
 from django.views.generic.list import MultipleObjectMixin
 
-from ...incomes.models import Income, IncomeQuerySet
-from ..mixins.get import GetQuerysetMixin
+from ...incomes.models import Income
 from ..factories import UserFactory
+from ..mixins.get import GetQuerysetMixin
 
 
 class Dummy(GetQuerysetMixin, MultipleObjectMixin):
