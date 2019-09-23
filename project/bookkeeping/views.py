@@ -64,11 +64,11 @@ class Index(IndexMixin):
         _fund, _pension = _saving_stats(year)
 
         qs_income = Income.objects.income_sum(year)
-        qs_expense = Expense.objects.expense_sum(year)
+        qs_expense = Expense.objects.month_expense(year)
         _MonthsBalance = MonthsBalance(
             year, qs_income, qs_expense, _account.balance_start)
 
-        qs_ExpenseType = Expense.objects.expense_type_sum(year)
+        qs_ExpenseType = Expense.objects.month_expense_type(year)
         _MonthExpenseType = MonthsExpenseType(year, qs_ExpenseType)
 
         _NoIncomes = NoIncomes(
