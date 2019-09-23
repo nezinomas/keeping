@@ -30,8 +30,6 @@ class TestFormKwargs(GetFormKwargsMixin, FormMixin):
 @mock.patch('project.incomes.models.Income')
 def test_get_execute_objects_year(mock_obj, _request):
     mock_obj.objects = mock.MagicMock()
-
-    mock_obj.objects.year = mock.MagicMock()
     mock_obj.objects.year.return_value = 1
 
     actual = TestGetQueryset(mock_obj, _request).get_queryset()
@@ -42,11 +40,7 @@ def test_get_execute_objects_year(mock_obj, _request):
 @mock.patch('project.incomes.models.Income')
 def test_get_execute_objects_items(mock_obj, _request):
     mock_obj.objects = mock.MagicMock()
-
-    mock_obj.objects.year = mock.MagicMock()
     mock_obj.objects.year.side_effect = Exception('Unknown')
-
-    mock_obj.objects.items = mock.MagicMock()
     mock_obj.objects.items.return_value = 2
 
     actual = TestGetQueryset(mock_obj, _request).get_queryset()
@@ -57,14 +51,8 @@ def test_get_execute_objects_items(mock_obj, _request):
 @mock.patch('project.incomes.models.Income')
 def test_get_exexute_objects_all(mock_obj, _request):
     mock_obj.objects = mock.MagicMock()
-
-    mock_obj.objects.year = mock.MagicMock()
     mock_obj.objects.year.side_effect = Exception('Unknown1')
-
-    mock_obj.objects.items = mock.MagicMock()
     mock_obj.objects.items.side_effect = Exception('Unknown2')
-
-    mock_obj.objects.all = mock.MagicMock()
     mock_obj.objects.all.return_value = 3
 
     actual = TestGetQueryset(mock_obj, _request).get_queryset()
@@ -75,7 +63,6 @@ def test_get_exexute_objects_all(mock_obj, _request):
 @mock.patch('project.incomes.models.Income')
 def test_get_execute_objects_month(mock_obj, _request):
     mock_obj.objects = mock.MagicMock()
-
     mock_obj.objects.month = mock.MagicMock()
     mock_obj.objects.month.return_value = 1
 
@@ -90,8 +77,6 @@ def test_get_execute_objects_month(mock_obj, _request):
 @mock.patch('project.incomes.models.Income')
 def test_get_context_data(mock_obj, _request):
     mock_obj.objects = mock.MagicMock()
-
-    mock_obj.objects.year = mock.MagicMock()
     mock_obj.objects.year.return_value = 1
 
     actual = TestGetQueryset(mock_obj, _request).get_context_data(**{})
@@ -103,8 +88,6 @@ def test_get_context_data(mock_obj, _request):
 @mock.patch('project.incomes.models.Income')
 def test_get_context_data_changed_context_object_name(mock_obj, _request):
     mock_obj.objects = mock.MagicMock()
-
-    mock_obj.objects.year = mock.MagicMock()
     mock_obj.objects.year.return_value = 1
 
     obj = TestGetQueryset(mock_obj, _request)
