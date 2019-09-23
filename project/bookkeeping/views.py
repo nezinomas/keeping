@@ -1,5 +1,3 @@
-from datetime import date
-
 from django.template.loader import render_to_string
 
 from ..core.mixins.formset import FormsetMixin
@@ -11,7 +9,9 @@ from ..incomes.models import Income
 from ..savings.models import SavingType
 
 from .lib.account_stats import AccountStats
+from .lib.helpers import create_month_list, current_day
 from .lib.months_balance import MonthsBalance
+from .lib.month_expense_type import MonthExpenseType
 from .lib.months_expense_type import MonthsExpenseType
 from .lib.no_incomes import NoIncomes
 from .lib.saving_stats import SavingStats
@@ -146,13 +146,6 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
         return context
 
 
-def _create_month_list(year):
-    months = []
-    for i in range(1, 13):
-        months.append(date(year, i, 1))
-    return months
-
-
 class Month(IndexMixin):
     template_name = 'bookkeeping/month.html'
 
@@ -160,7 +153,19 @@ class Month(IndexMixin):
         context = super().get_context_data(**kwargs)
 
         year = self.request.user.profile.year
+        month = self.request.user.profile.month
 
-        context['month_list'] = _create_month_list(year)
+        _MonthExpenseType = MonthExpenseType(
+            year,
+            month,
+            Expense.objects.day_expense_type(year, month)
+        )
+        context['month_list'] = create_month_list(year)
+        context['expenses'] = _MonthExpenseType.balance
+        context['expense_types'] = (
+            ExpenseType.objects.all()
+            .values_list('title', flat=True)
+        )
+        context['day'] = current_day(year, month)
 
         return context
