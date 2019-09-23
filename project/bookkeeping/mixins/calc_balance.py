@@ -25,6 +25,16 @@ class CalcBalanceMixin():
 
         return df
 
+    def balance(self, balance):
+        val = None
+
+        balance.reset_index(inplace=True)
+
+        if not balance.empty:
+            val = balance.to_dict('records')
+
+        return val
+
     def average(self, list_):
         val = None
         avg = list_.copy()
