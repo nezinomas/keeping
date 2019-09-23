@@ -7,6 +7,14 @@ from ..factories import UserFactory
 from ..mixins.get import GetQuerysetMixin
 
 
+@pytest.fixture()
+def _request(rf):
+    request = rf.get('/fake/')
+    request.user = UserFactory.build()
+
+    return request
+
+
 class Dummy(GetQuerysetMixin, MultipleObjectMixin):
     def __init__(self, model, request, *args, **kwargs):
         self.model = model
@@ -14,23 +22,20 @@ class Dummy(GetQuerysetMixin, MultipleObjectMixin):
 
 
 @mock.patch('project.incomes.models.Income')
-def test_get_execute_objects_year(mock_obj, rf):
+def test_get_execute_objects_year(mock_obj, _request):
     mock_obj.objects = mock.MagicMock()
 
     mock_obj.objects.year = mock.MagicMock()
     mock_obj.objects.year.return_value = 1
 
-    request = rf.get('/fake/')
-    request.user = UserFactory.build()
-
-    a = Dummy(mock_obj, request)
+    a = Dummy(mock_obj, _request)
     b = a.get_queryset()
 
     assert b == 1
 
 
 @mock.patch('project.incomes.models.Income')
-def test_get_execute_objects_items(mock_obj, rf):
+def test_get_execute_objects_items(mock_obj, _request):
     mock_obj.objects = mock.MagicMock()
 
     mock_obj.objects.year = mock.MagicMock()
@@ -39,16 +44,13 @@ def test_get_execute_objects_items(mock_obj, rf):
     mock_obj.objects.items = mock.MagicMock()
     mock_obj.objects.items.return_value = 2
 
-    request = rf.get('/fake/')
-    request.user = UserFactory.build()
-
-    a = Dummy(mock_obj, request).get_queryset()
+    a = Dummy(mock_obj, _request).get_queryset()
 
     assert a == 2
 
 
 @mock.patch('project.incomes.models.Income')
-def test_get_exexute_objects_all(mock_obj, rf):
+def test_get_exexute_objects_all(mock_obj, _request):
     mock_obj.objects = mock.MagicMock()
 
     mock_obj.objects.year = mock.MagicMock()
@@ -60,25 +62,19 @@ def test_get_exexute_objects_all(mock_obj, rf):
     mock_obj.objects.all = mock.MagicMock()
     mock_obj.objects.all.return_value = 3
 
-    request = rf.get('/fake/')
-    request.user = UserFactory.build()
-
-    a = Dummy(mock_obj, request).get_queryset()
+    a = Dummy(mock_obj, _request).get_queryset()
 
     assert a == 3
 
 
 @mock.patch('project.incomes.models.Income')
-def test_get_context_data(mock_obj, rf):
+def test_get_context_data(mock_obj, _request):
     mock_obj.objects = mock.MagicMock()
 
     mock_obj.objects.year = mock.MagicMock()
     mock_obj.objects.year.return_value = 1
 
-    request = rf.get('/fake/')
-    request.user = UserFactory.build()
-
-    a = Dummy(mock_obj, request)
+    a = Dummy(mock_obj, _request)
     b = a.get_context_data(**{})
 
     assert 'items' in b
@@ -86,16 +82,13 @@ def test_get_context_data(mock_obj, rf):
 
 
 @mock.patch('project.incomes.models.Income')
-def test_get_context_data_changed_context_object_name(mock_obj, rf):
+def test_get_context_data_changed_context_object_name(mock_obj, _request):
     mock_obj.objects = mock.MagicMock()
 
     mock_obj.objects.year = mock.MagicMock()
     mock_obj.objects.year.return_value = 1
 
-    request = rf.get('/fake/')
-    request.user = UserFactory.build()
-
-    a = Dummy(mock_obj, request)
+    a = Dummy(mock_obj, _request)
     a.context_object_name = 'X'
 
     b = a.get_context_data(**{})
