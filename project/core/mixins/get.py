@@ -4,11 +4,13 @@ class GetQuerysetMixin():
     month = False
 
     def get_queryset(self):
+        year = self.request.user.profile.year
+        month = self.request.user.profile.month
         try:
             if self.month:
-                qs = self.model.objects.month(self.request.user.profile.month)
+                qs = self.model.objects.month(year, month)
             else:
-                qs = self.model.objects.year(self.request.user.profile.year)
+                qs = self.model.objects.year(year)
         except Exception as e1:
             try:
                 qs = self.model.objects.items()
