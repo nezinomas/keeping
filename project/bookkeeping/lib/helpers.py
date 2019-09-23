@@ -24,13 +24,18 @@ def calc_sum(args):
 
 
 def create_month_list(year: int) -> List[date]:
+    year = year if year else datetime.now().year
     months = []
+
     for i in range(1, 13):
         months.append(date(year, i, 1))
     return months
 
 
 def current_day(year: int, month: int) -> int:
+    year = year if year else datetime.now().year
+    month = month if month else datetime.now().month
+
     _year = datetime.now().year
     _month = datetime.now().month
     _day = datetime.now().day

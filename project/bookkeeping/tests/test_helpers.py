@@ -14,6 +14,15 @@ def test_create_month_list():
     assert actual[11] == date(1970, 12, 1)
 
 
+@freeze_time("1999-01-11")
+def test_create_month_list_year_none():
+    actual = create_month_list(None)
+
+    assert len(actual) == 12
+    assert actual[0] == date(1999, 1, 1)
+    assert actual[11] == date(1999, 12, 1)
+
+
 @freeze_time("1970-01-11")
 def test_current_day():
     actual = current_day(1970, 1)
