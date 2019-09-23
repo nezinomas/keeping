@@ -1,10 +1,11 @@
 import mock
 import pytest
+from django.views.generic.edit import FormMixin
 from django.views.generic.list import MultipleObjectMixin
 
 from ...incomes.models import Income
 from ..factories import UserFactory
-from ..mixins.get import GetQuerysetMixin
+from ..mixins.get import GetFormKwargsMixin, GetQuerysetMixin
 
 
 @pytest.fixture()
@@ -18,6 +19,11 @@ def _request(rf):
 class TestGetQueryset(GetQuerysetMixin, MultipleObjectMixin):
     def __init__(self, model, request, *args, **kwargs):
         self.model = model
+        self.request = request
+
+
+class TestFormKwargs(GetFormKwargsMixin, FormMixin):
+    def __init__(self, request, *args, **kwargs):
         self.request = request
 
 
@@ -95,3 +101,10 @@ def test_get_context_data_changed_context_object_name(mock_obj, _request):
 
     assert 'X' in b
     assert 1 == b['X']
+
+
+def test_get_form_kwargs(_request):
+    a = TestFormKwargs(_request).get_form_kwargs()
+
+    assert 'year' in a
+    assert 1999 == a['year']
