@@ -15,7 +15,7 @@ def _request(rf):
     return request
 
 
-class Dummy(GetQuerysetMixin, MultipleObjectMixin):
+class TestGetQueryset(GetQuerysetMixin, MultipleObjectMixin):
     def __init__(self, model, request, *args, **kwargs):
         self.model = model
         self.request = request
@@ -28,7 +28,7 @@ def test_get_execute_objects_year(mock_obj, _request):
     mock_obj.objects.year = mock.MagicMock()
     mock_obj.objects.year.return_value = 1
 
-    a = Dummy(mock_obj, _request)
+    a = TestGetQueryset(mock_obj, _request)
     b = a.get_queryset()
 
     assert b == 1
@@ -44,7 +44,7 @@ def test_get_execute_objects_items(mock_obj, _request):
     mock_obj.objects.items = mock.MagicMock()
     mock_obj.objects.items.return_value = 2
 
-    a = Dummy(mock_obj, _request).get_queryset()
+    a = TestGetQueryset(mock_obj, _request).get_queryset()
 
     assert a == 2
 
@@ -62,7 +62,7 @@ def test_get_exexute_objects_all(mock_obj, _request):
     mock_obj.objects.all = mock.MagicMock()
     mock_obj.objects.all.return_value = 3
 
-    a = Dummy(mock_obj, _request).get_queryset()
+    a = TestGetQueryset(mock_obj, _request).get_queryset()
 
     assert a == 3
 
@@ -74,7 +74,7 @@ def test_get_context_data(mock_obj, _request):
     mock_obj.objects.year = mock.MagicMock()
     mock_obj.objects.year.return_value = 1
 
-    a = Dummy(mock_obj, _request)
+    a = TestGetQueryset(mock_obj, _request)
     b = a.get_context_data(**{})
 
     assert 'items' in b
@@ -88,7 +88,7 @@ def test_get_context_data_changed_context_object_name(mock_obj, _request):
     mock_obj.objects.year = mock.MagicMock()
     mock_obj.objects.year.return_value = 1
 
-    a = Dummy(mock_obj, _request)
+    a = TestGetQueryset(mock_obj, _request)
     a.context_object_name = 'X'
 
     b = a.get_context_data(**{})
