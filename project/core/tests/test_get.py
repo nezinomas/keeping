@@ -63,7 +63,6 @@ def test_get_exexute_objects_all(mock_obj, _request):
 @mock.patch('project.incomes.models.Income')
 def test_get_execute_objects_month(mock_obj, _request):
     mock_obj.objects = mock.MagicMock()
-    mock_obj.objects.month = mock.MagicMock()
     mock_obj.objects.month.return_value = 1
 
     obj = GetQueryset(mock_obj, _request)
