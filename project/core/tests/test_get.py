@@ -66,3 +66,39 @@ def test_get_exexute_objects_all(mock_obj, rf):
     a = Dummy(mock_obj, request).get_queryset()
 
     assert a == 3
+
+
+@mock.patch('project.incomes.models.Income')
+def test_get_context_data(mock_obj, rf):
+    mock_obj.objects = mock.MagicMock()
+
+    mock_obj.objects.year = mock.MagicMock()
+    mock_obj.objects.year.return_value = 1
+
+    request = rf.get('/fake/')
+    request.user = UserFactory.build()
+
+    a = Dummy(mock_obj, request)
+    b = a.get_context_data(**{})
+
+    assert 'items' in b
+    assert 1 == b['items']
+
+
+@mock.patch('project.incomes.models.Income')
+def test_get_context_data_changed_context_object_name(mock_obj, rf):
+    mock_obj.objects = mock.MagicMock()
+
+    mock_obj.objects.year = mock.MagicMock()
+    mock_obj.objects.year.return_value = 1
+
+    request = rf.get('/fake/')
+    request.user = UserFactory.build()
+
+    a = Dummy(mock_obj, request)
+    a.context_object_name = 'X'
+
+    b = a.get_context_data(**{})
+
+    assert 'X' in b
+    assert 1 == b['X']
