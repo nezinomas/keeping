@@ -1,5 +1,5 @@
 from django.db.models import Count, Sum
-from django.db.models.functions import TruncMonth
+from django.db.models.functions import TruncMonth, TruncDay
 
 
 class SumMixin():
@@ -20,6 +20,20 @@ class SumMixin():
             ._year(year)
             ._month(month)
             .annotate(date=TruncMonth('date'))
+            .values('date')
+            .annotate(c=Count('id'))
+            .annotate(**{summed_name: Sum('price')})
+            .order_by('date')
+        )
+
+    def sum_by_day(self, year, month, summed_name, groupby='id'):
+        return (
+            self
+            .annotate(cnt=Count(groupby))
+            .values(groupby)
+            ._year(year)
+            ._month(month)
+            .annotate(date=TruncDay('date'))
             .values('date')
             .annotate(c=Count('id'))
             .annotate(**{summed_name: Sum('price')})
