@@ -73,6 +73,21 @@ def test_get_exexute_objects_all(mock_obj, _request):
 
 
 @mock.patch('project.incomes.models.Income')
+def test_get_execute_objects_month(mock_obj, _request):
+    mock_obj.objects = mock.MagicMock()
+
+    mock_obj.objects.month = mock.MagicMock()
+    mock_obj.objects.month.return_value = 1
+
+    obj = TestGetQueryset(mock_obj, _request)
+    obj.month = True
+
+    actual = obj.get_queryset()
+
+    assert actual == 1
+
+
+@mock.patch('project.incomes.models.Income')
 def test_get_context_data(mock_obj, _request):
     mock_obj.objects = mock.MagicMock()
 
