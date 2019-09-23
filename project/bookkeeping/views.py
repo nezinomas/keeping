@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.template.loader import render_to_string
 
 from ..core.mixins.formset import FormsetMixin
@@ -10,9 +12,9 @@ from ..savings.models import SavingType
 
 from .lib.account_stats import AccountStats
 from .lib.months_balance import MonthsBalance
-from .lib.saving_stats import SavingStats
-from .lib.no_incomes import NoIncomes
 from .lib.months_expense_type import MonthsExpenseType
+from .lib.no_incomes import NoIncomes
+from .lib.saving_stats import SavingStats
 
 from .forms import AccountWorthForm, SavingWorthForm
 from .models import AccountWorth, SavingWorth
@@ -144,10 +146,21 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
         return context
 
 
+def _create_month_list(year):
+    months = []
+    for i in range(1, 13):
+        months.append(date(year, i, 1))
+    return months
+
+
 class Month(IndexMixin):
     template_name = 'bookkeeping/month.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        year = self.request.user.profile.year
+
+        context['month_list'] = _create_month_list(year)
 
         return context
