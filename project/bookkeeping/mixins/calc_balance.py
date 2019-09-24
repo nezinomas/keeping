@@ -27,36 +27,48 @@ class CalcBalanceMixin():
 
         return df
 
-    def balance(self, balance: pd.DataFrame) -> List[Dict]:
-        val = None
+    def balance(self, df: pd.DataFrame) -> List[Dict]:
+        val = []
 
-        balance.reset_index(inplace=True)
+        if not isinstance(df, pd.DataFrame):
+            return val
 
-        if not balance.empty:
-            val = balance.to_dict('records')
+        if df.empty:
+            return val
 
-        return val
-
-    def average(self, list_: pd.DataFrame) -> Dict[str, float]:
-        val = None
-        avg = list_.copy()
-
-        if not avg.empty:
-            # replace 0.0 to None
-            # average will be calculated only for months with non zero values
-            avg.replace(0.0, pd.NaT, inplace=True)
-            avg = avg.mean(skipna=True)
-
-            val = avg.to_dict()
+        df.reset_index(inplace=True)
+        val = df.to_dict('records')
 
         return val
 
-    def totals(self, list_: pd.DataFrame) -> Dict[str, float]:
-        val = None
-        total = list_.copy()
+    def average(self, df: pd.DataFrame) -> Dict[str, float]:
+        val = {}
 
-        if not total.empty:
-            total = total.sum()
-            val = total.to_dict()
+        if not isinstance(df, pd.DataFrame):
+            return val
+
+        if df.empty:
+            return val
+
+        # replace 0.0 to None
+        # average will be calculated only for months with non zero values
+        df.replace(0.0, pd.NaT, inplace=True)
+        df = df.mean(skipna=True)
+
+        val = df.to_dict()
+
+        return val
+
+    def totals(self, df: pd.DataFrame) -> Dict[str, float]:
+        val = {}
+
+        if not isinstance(df, pd.DataFrame):
+            return val
+
+        if df.empty:
+            return val
+
+        df = df.sum()
+        val = df.to_dict()
 
         return val
