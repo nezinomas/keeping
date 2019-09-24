@@ -72,3 +72,28 @@ class CalcBalanceMixin():
         val = df.to_dict()
 
         return val
+
+    def df_days_of_month(self, year, month):
+        df = pd.DataFrame({
+            'date': pd.date_range(
+                start=pd.Timestamp(year, month, 1),
+                end=pd.Timestamp(year, month, 1) +
+                pd.offsets.MonthEnd(0),
+                freq='D'
+            )
+        })
+        df.loc[:, 'total'] = 0.0
+        df.set_index('date', inplace=True)
+
+        return df
+
+    def df_months_of_year(self, year):
+        # create empty DataFrame object with index containing all months
+        dt_range = pd.date_range(f'{year}', periods=12, freq='MS')
+
+        df = pd.DataFrame(dt_range, columns=['date'])
+
+        df.loc[:, 'total'] = 0.0
+        df.set_index('date', inplace=True)
+
+        return df

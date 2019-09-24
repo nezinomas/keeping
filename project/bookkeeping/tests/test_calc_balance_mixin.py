@@ -53,3 +53,24 @@ def test_totals(df, expected):
     actual = T().totals(df)
 
     assert pytest.approx(actual, rel=1e-2) == expected
+
+
+def test_df_days_of_month():
+    actual = T().df_days_of_month(2020, 2)
+
+    assert 29 == len(actual)
+
+    assert 'date' == actual.index.name
+    assert 'total' in actual
+
+
+def test_df_months_of_year():
+    actual = T().df_months_of_year(2020)
+
+    assert 12 == len(actual)
+
+    assert 'date' == actual.index.name
+    assert 'total' in actual
+
+    assert pd.Timestamp(2020, 1, 1) == actual.index[0]
+    assert pd.Timestamp(2020, 12, 1) == actual.index[-1]
