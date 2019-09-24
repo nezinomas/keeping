@@ -3,10 +3,11 @@ from typing import Dict, List
 
 import pandas as pd
 
-from ..mixins.calc_balance import CalcBalanceMixin, BalanceStats
+from ..mixins.calc_balance import (BalanceStats, df_days_of_month,
+                                   df_months_of_year)
 
 
-class MonthsBalance(BalanceStats, CalcBalanceMixin):
+class MonthsBalance(BalanceStats):
     def __init__(self,
                  year: int,
                  incomes: List[Dict], expenses: List[Dict],
@@ -28,7 +29,7 @@ class MonthsBalance(BalanceStats, CalcBalanceMixin):
             amount_start = 0.0
 
         self._amount_start = amount_start
-        self._balance = super().df_months_of_year(year)
+        self._balance = df_months_of_year(year)
 
         if not incomes and not expenses:
             return

@@ -3,41 +3,41 @@ from typing import Dict, List
 import pandas as pd
 
 
-class CalcBalanceMixin():
-    def df_days_of_month(self, year, month):
-        df = None
+def df_days_of_month(year: int, month: int) -> pd.DataFrame:
+    df = None
 
-        try:
-            df = pd.DataFrame({
-                'date': pd.date_range(
-                    start=pd.Timestamp(year, month, 1),
-                    end=pd.Timestamp(year, month, 1) + pd.offsets.MonthEnd(0),
-                    freq='D'
-                )
-            })
-        except:
-            return df
-
-        df.loc[:, 'total'] = 0.0
-        df.set_index('date', inplace=True)
-
+    try:
+        df = pd.DataFrame({
+            'date': pd.date_range(
+                start=pd.Timestamp(year, month, 1),
+                end=pd.Timestamp(year, month, 1) + pd.offsets.MonthEnd(0),
+                freq='D'
+            )
+        })
+    except:
         return df
 
-    def df_months_of_year(self, year):
-        df = None
+    df.loc[:, 'total'] = 0.0
+    df.set_index('date', inplace=True)
 
-        try:
-            # create empty DataFrame object with index containing all months
-            dt_range = pd.date_range(f'{year}', periods=12, freq='MS')
+    return df
 
-            df = pd.DataFrame(dt_range, columns=['date'])
-        except:
-            return df
 
-        df.loc[:, 'total'] = 0.0
-        df.set_index('date', inplace=True)
+def df_months_of_year(year: int) -> pd.DataFrame:
+    df = None
 
+    try:
+        # create empty DataFrame object with index containing all months
+        dt_range = pd.date_range(f'{year}', periods=12, freq='MS')
+
+        df = pd.DataFrame(dt_range, columns=['date'])
+    except:
         return df
+
+    df.loc[:, 'total'] = 0.0
+    df.set_index('date', inplace=True)
+
+    return df
 
 
 class BalanceStats():

@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest
 
-from ..mixins.calc_balance import CalcBalanceMixin, BalanceStats
+from ..mixins.calc_balance import (BalanceStats, df_days_of_month,
+                                   df_months_of_year)
 
 
 def create_df():
@@ -59,7 +60,7 @@ def test_totals(df, expected):
 
 
 def test_df_days_of_month():
-    actual = CalcBalanceMixin().df_days_of_month(2020, 2)
+    actual = df_days_of_month(2020, 2)
 
     assert 29 == len(actual)
 
@@ -76,13 +77,13 @@ data_days_of_month = [
 
 @pytest.mark.parametrize('year,month,expected', data_days_of_month)
 def test_df_days_of_month_invalid(year, month, expected):
-    actual = CalcBalanceMixin().df_days_of_month(2020, 22)
+    actual = df_days_of_month(2020, 22)
 
     assert expected == actual
 
 
 def test_df_months_of_year():
-    actual = CalcBalanceMixin().df_months_of_year(2020)
+    actual = df_months_of_year(2020)
 
     assert 12 == len(actual)
 
@@ -95,6 +96,6 @@ def test_df_months_of_year():
 
 @pytest.mark.parametrize('year,expected', [('x', None), (1, None)])
 def test_df_months_of_year_invalid(year, expected):
-    actual = CalcBalanceMixin().df_months_of_year(year)
+    actual = df_months_of_year(year)
 
     assert expected == actual

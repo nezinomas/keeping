@@ -3,12 +3,13 @@ from typing import Dict, List
 
 import pandas as pd
 
-from ..mixins.calc_balance import CalcBalanceMixin, BalanceStats
+from ..mixins.calc_balance import (BalanceStats, df_days_of_month,
+                                   df_months_of_year)
 
 
-class MonthExpenseType(BalanceStats, CalcBalanceMixin):
+class MonthExpenseType(BalanceStats):
     def __init__(self, year: int, month: int, expenses: List[Dict]):
-        self._balance = super().df_days_of_month(year, month)
+        self._balance = df_days_of_month(year, month)
 
         if not expenses:
             return
