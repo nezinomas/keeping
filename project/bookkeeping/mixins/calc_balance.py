@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 import pandas as pd
 
 
@@ -25,7 +27,7 @@ class CalcBalanceMixin():
 
         return df
 
-    def balance(self, balance):
+    def balance(self, balance: pd.DataFrame) -> List[Dict]:
         val = None
 
         balance.reset_index(inplace=True)
@@ -35,7 +37,7 @@ class CalcBalanceMixin():
 
         return val
 
-    def average(self, list_):
+    def average(self, list_: pd.DataFrame) -> Dict[str, float]:
         val = None
         avg = list_.copy()
 
@@ -49,7 +51,7 @@ class CalcBalanceMixin():
 
         return val
 
-    def totals(self, list_):
+    def totals(self, list_: pd.DataFrame) -> Dict[str, float]:
         val = None
         total = list_.copy()
 
