@@ -80,8 +80,7 @@ class CalcBalanceMixin():
             df = pd.DataFrame({
                 'date': pd.date_range(
                     start=pd.Timestamp(year, month, 1),
-                    end=pd.Timestamp(year, month, 1) +
-                    pd.offsets.MonthEnd(0),
+                    end=pd.Timestamp(year, month, 1) + pd.offsets.MonthEnd(0),
                     freq='D'
                 )
             })
