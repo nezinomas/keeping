@@ -11,8 +11,8 @@ from ..savings.models import SavingType
 from .lib.account_stats import AccountStats
 from .lib.helpers import create_month_list, current_day
 from .lib.months_balance import MonthsBalance
-from .lib.month_expense_type import MonthExpenseType
-from .lib.months_expense_type import MonthsExpenseType
+from .lib.expense_type_stats import MonthExpenseType
+from .lib.expense_type_stats import MonthsExpenseType
 from .lib.no_incomes import NoIncomes
 from .lib.saving_stats import SavingStats
 
