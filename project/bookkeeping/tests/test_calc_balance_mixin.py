@@ -64,6 +64,20 @@ def test_df_days_of_month():
     assert 'total' in actual
 
 
+data_days_of_month = [
+    (2020, 22, None),
+    (2020, 'x', None),
+    ('y', 'x', None)
+]
+
+
+@pytest.mark.parametrize('year,month,expected', data_days_of_month)
+def test_df_days_of_month_invalid(year, month, expected):
+    actual = T().df_days_of_month(2020, 22)
+
+    assert expected == actual
+
+
 def test_df_months_of_year():
     actual = T().df_months_of_year(2020)
 
@@ -74,3 +88,10 @@ def test_df_months_of_year():
 
     assert pd.Timestamp(2020, 1, 1) == actual.index[0]
     assert pd.Timestamp(2020, 12, 1) == actual.index[-1]
+
+
+@pytest.mark.parametrize('year,expected', [('x', None), (1, None)])
+def test_df_months_of_year_invalid(year, expected):
+    actual = T().df_months_of_year(year)
+
+    assert expected == actual
