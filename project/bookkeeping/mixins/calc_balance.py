@@ -54,8 +54,9 @@ class BalanceStats():
         if self._balance.empty:
             return val
 
-        self._balance.reset_index(inplace=True)
-        val = self._balance.to_dict('records')
+        arr = self._balance.copy()
+        arr.reset_index(inplace=True)
+        val = arr.to_dict('records')
 
         return val
 
@@ -69,8 +70,8 @@ class BalanceStats():
         if self._balance.empty:
             return val
 
-        self._balance = self._balance.sum()
-        val = self._balance.to_dict()
+        arr = self._balance.copy()
+        val = arr.sum().to_dict()
 
         return val
 
@@ -86,9 +87,9 @@ class BalanceStats():
 
         # replace 0.0 to None
         # average will be calculated only for months with non zero values
-        self._balance.replace(0.0, pd.NaT, inplace=True)
-        self._balance = self._balance.mean(skipna=True)
+        arr = self._balance.copy()
+        arr.replace(0.0, pd.NaT, inplace=True)
 
-        val = self._balance.to_dict()
+        val = arr.mean(skipna=True).to_dict()
 
         return val
