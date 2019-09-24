@@ -7,6 +7,18 @@ from ..mixins.calc_balance import (BalanceStats, df_days_of_month,
                                    df_months_of_year)
 
 
+def calc(expenses: List[Dict], df: pd.DataFrame) -> pd.DataFrame:
+    # copy values from expenses to data_frame
+    for d in expenses:
+        df.at[d['date'], d['title']] = float(d['sum'])
+
+    df.fillna(0.0, inplace=True)
+
+    df['total'] = df.sum(axis=1)
+
+    return df
+
+
 class MonthExpenseType(BalanceStats):
     def __init__(self, year: int, month: int, expenses: List[Dict]):
         self._balance = df_days_of_month(year, month)
@@ -14,7 +26,7 @@ class MonthExpenseType(BalanceStats):
         if not expenses:
             return
 
-        self._calc(expenses)
+        self._balance = calc(expenses, self._balance)
 
     def _calc(self, expenses: List[Dict]) -> None:
         # copy values from expenses to data_frame
@@ -33,7 +45,7 @@ class MonthsExpenseType(BalanceStats):
         if not expenses:
             return
 
-        self._calc(expenses)
+        self._balance = calc(expenses, self._balance)
 
     @property
     def chart_data(self) -> List[Dict[str, float]]:
