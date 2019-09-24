@@ -19,12 +19,8 @@ class MonthExpenseType(BalanceStats):
     def _calc(self, expenses: List[Dict]) -> None:
         # copy values from expenses to data_frame
         for _dict in expenses:
-            self._balance.at[_dict['date'], _dict['title']] = _dict['sum']
+            self._balance.at[_dict['date'], _dict['title']] = float(_dict['sum'])
 
         self._balance.fillna(0.0, inplace=True)
-
-        # convert to float and datetime.date
-        for col in self._balance.columns:
-            self._balance[col] = pd.to_numeric(self._balance[col])
 
         self._balance['total'] = self._balance.sum(axis=1)
