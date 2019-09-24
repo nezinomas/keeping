@@ -19,23 +19,11 @@ INSTALLED_APPS += [
 # print SQL queries in shell_plus
 SHELL_PLUS_PRINT_SQL = True
 
-# ================   STATIC FILE CONFIGURATION
-# STATICFILES_DIRS = [
-#     os.path.join(SITE_ROOT, 'static'),
-# ]
-# STATIC_ROOT = None
-
 
 # ================   MIDDLEWARE CONFIGURATION
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    # 'customizable_django_profiler.cProfileMiddleware',
 ] + MIDDLEWARE
-
-# PROFILER = {
-#     'activate': True,
-#     'count': '50',
-# }
 
 
 # ================   DEBUG_TOOLBAR_PANEL
