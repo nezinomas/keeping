@@ -27,52 +27,6 @@ class CalcBalanceMixin():
 
         return df
 
-    def balance(self, df: pd.DataFrame) -> List[Dict]:
-        val = []
-
-        if not isinstance(df, pd.DataFrame):
-            return val
-
-        if df.empty:
-            return val
-
-        df.reset_index(inplace=True)
-        val = df.to_dict('records')
-
-        return val
-
-    def average(self, df: pd.DataFrame) -> Dict[str, float]:
-        val = {}
-
-        if not isinstance(df, pd.DataFrame):
-            return val
-
-        if df.empty:
-            return val
-
-        # replace 0.0 to None
-        # average will be calculated only for months with non zero values
-        df.replace(0.0, pd.NaT, inplace=True)
-        df = df.mean(skipna=True)
-
-        val = df.to_dict()
-
-        return val
-
-    def totals(self, df: pd.DataFrame) -> Dict[str, float]:
-        val = {}
-
-        if not isinstance(df, pd.DataFrame):
-            return val
-
-        if df.empty:
-            return val
-
-        df = df.sum()
-        val = df.to_dict()
-
-        return val
-
     def df_days_of_month(self, year, month):
         df = None
 
