@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from ..mixins.calc_balance import CalcBalanceMixin as T
+from ..mixins.calc_balance import CalcBalanceMixin, BalanceStats
 
 
 def create_df():
@@ -20,9 +20,10 @@ data_balance = [
 
 @pytest.mark.parametrize("df,expected", data_balance)
 def test_balance(df, expected):
-    actual = T().balance(df)
+    o = BalanceStats()
+    o._balance = df
 
-    assert actual == expected
+    assert o.balance == expected
 
 
 data_average = [
@@ -36,9 +37,10 @@ data_average = [
 
 @pytest.mark.parametrize('df,expected', data_average)
 def test_average(df, expected):
-    actual = T().average(df)
+    o = BalanceStats()
+    o._balance = df
 
-    assert pytest.approx(actual, rel=1e-2) == expected
+    assert pytest.approx(o.average, rel=1e-2) == expected
 
 
 data_totals = [
@@ -50,13 +52,14 @@ data_totals = [
 
 @pytest.mark.parametrize('df,expected', data_totals)
 def test_totals(df, expected):
-    actual = T().totals(df)
+    o = BalanceStats()
+    o._balance = df
 
-    assert pytest.approx(actual, rel=1e-2) == expected
+    assert pytest.approx(o.totals, rel=1e-2) == expected
 
 
 def test_df_days_of_month():
-    actual = T().df_days_of_month(2020, 2)
+    actual = CalcBalanceMixin().df_days_of_month(2020, 2)
 
     assert 29 == len(actual)
 
@@ -73,13 +76,13 @@ data_days_of_month = [
 
 @pytest.mark.parametrize('year,month,expected', data_days_of_month)
 def test_df_days_of_month_invalid(year, month, expected):
-    actual = T().df_days_of_month(2020, 22)
+    actual = CalcBalanceMixin().df_days_of_month(2020, 22)
 
     assert expected == actual
 
 
 def test_df_months_of_year():
-    actual = T().df_months_of_year(2020)
+    actual = CalcBalanceMixin().df_months_of_year(2020)
 
     assert 12 == len(actual)
 
@@ -92,6 +95,6 @@ def test_df_months_of_year():
 
 @pytest.mark.parametrize('year,expected', [('x', None), (1, None)])
 def test_df_months_of_year_invalid(year, expected):
-    actual = T().df_months_of_year(year)
+    actual = CalcBalanceMixin().df_months_of_year(year)
 
     assert expected == actual

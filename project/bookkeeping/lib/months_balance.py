@@ -3,10 +3,10 @@ from typing import Dict, List
 
 import pandas as pd
 
-from ..mixins.calc_balance import CalcBalanceMixin
+from ..mixins.calc_balance import CalcBalanceMixin, BalanceStats
 
 
-class MonthsBalance(CalcBalanceMixin):
+class MonthsBalance(BalanceStats, CalcBalanceMixin):
     def __init__(self,
                  year,
                  incomes: List[Dict], expenses: List[Dict],
@@ -32,62 +32,33 @@ class MonthsBalance(CalcBalanceMixin):
         self._calc(incomes, expenses)
 
     @property
-    def balance(self) -> Dict[str, float]:
-        val = None
-        balance = self._balance.copy()
-
-        if not balance.empty:
-            val = balance.to_dict('records')
-
-        return val
-
-    @property
     def amount_start(self) -> float:
         return self._amount_start
 
     @property
     def amount_end(self) -> float:
         val = 0.0
+        t = super().totals
 
-        if self.totals:
-            val = self._amount_start + self.totals['balance']
-
-        return val
+        return self._amount_start + t['balance'] if t else 0.0
 
     @property
     def amount_balance(self) -> float:
-        val = 0.0
+        t = super().totals
 
-        if self.totals:
-            val = self.totals['balance']
-
-        return val
+        return t['balance'] if t else 0.0
 
     @property
     def avg_incomes(self) -> float:
-        val = 0.0
+        avg = super().average
 
-        if self.average:
-            val = self.average['incomes']
-
-        return val
+        return avg['incomes'] if avg else 0.0
 
     @property
     def avg_expenses(self) -> float:
-        val = 0.0
+        avg = super().average
 
-        if self.average:
-            val = self.average['expenses']
-
-        return val
-
-    @property
-    def totals(self) -> Dict[str, float]:
-        return super().totals(self._balance)
-
-    @property
-    def average(self) -> Dict[str, float]:
-        return super().average(self._balance)
+        return avg['expenses'] if avg else 0.0
 
     @property
     def income_data(self) -> List[float]:

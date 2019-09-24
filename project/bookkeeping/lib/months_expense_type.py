@@ -2,13 +2,12 @@ from typing import Dict, List
 
 import pandas as pd
 
-from ..mixins.calc_balance import CalcBalanceMixin
+from ..mixins.calc_balance import CalcBalanceMixin, BalanceStats
 
 
-class MonthsExpenseType(CalcBalanceMixin):
+class MonthsExpenseType(BalanceStats, CalcBalanceMixin):
     def __init__(self, year, expenses: List[Dict]):
-        self._year = year
-        self._balance = self._create_df()
+        self._balance = super().df_months_of_year(year)
 
         if not expenses:
             return
@@ -16,21 +15,9 @@ class MonthsExpenseType(CalcBalanceMixin):
         self._calc(expenses)
 
     @property
-    def balance(self) -> List[Dict[str, float]]:
-        return super().balance(self._balance)
-
-    @property
-    def totals(self) -> Dict[str, float]:
-        return super().totals(self._balance)
-
-    @property
-    def average(self) -> Dict[str, float]:
-        return super().average(self._balance)
-
-    @property
     def chart_data(self) -> List[Dict[str, float]]:
         rtn = []
-        arr = super().totals(self._balance)
+        arr = super().totals
 
         if arr:
             # delete total cell
@@ -42,16 +29,6 @@ class MonthsExpenseType(CalcBalanceMixin):
             # transfort arr for pie chart
             rtn = [{'name': key, 'y': value} for key, value in arr.items()]
         return rtn
-
-    def _create_df(self) -> pd.DataFrame:
-        # create empty DataFrame object with index containing all months
-        date_range = pd.date_range(f'{self._year}', periods=12, freq='MS')
-        df = pd.DataFrame(date_range, columns=['date'])
-
-        df.loc[:, 'total'] = 0.0
-        df.set_index('date', inplace=True)
-
-        return df
 
     def _calc(self, expenses: List[Dict]) -> None:
         # copy values from expenses to data_frame
