@@ -12,7 +12,12 @@ ALLOWED_HOSTS = ['*']
 # ================   APP CONFIGURATION
 INSTALLED_APPS += [
     'debug_toolbar',
+    'django_extensions',
 ]
+
+
+# print SQL queries in shell_plus
+SHELL_PLUS_PRINT_SQL = True
 
 # ================   STATIC FILE CONFIGURATION
 # STATICFILES_DIRS = [
