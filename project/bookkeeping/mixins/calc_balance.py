@@ -56,9 +56,8 @@ class BalanceStats():
 
         arr = self._balance.copy()
         arr.reset_index(inplace=True)
-        val = arr.to_dict('records')
 
-        return val
+        return arr.to_dict('records')
 
     @property
     def totals(self) -> Dict[str, float]:
@@ -71,9 +70,8 @@ class BalanceStats():
             return val
 
         arr = self._balance.copy()
-        val = arr.sum().to_dict()
 
-        return val
+        return arr.sum().to_dict()
 
     @property
     def average(self) -> Dict[str, float]:
@@ -90,6 +88,4 @@ class BalanceStats():
         arr = self._balance.copy()
         arr.replace(0.0, pd.NaT, inplace=True)
 
-        val = arr.mean(skipna=True).to_dict()
-
-        return val
+        return arr.mean(skipna=True).to_dict()
