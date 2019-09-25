@@ -15,6 +15,13 @@ def _incomes():
 
 
 @pytest.fixture()
+def _savings():
+    return [
+        {'date': date(1999, 1, 1), 'savings': Decimal(1.0)},
+    ]
+
+
+@pytest.fixture()
 def _expenses():
     return [
         {'date': date(1999, 1, 1), 'expenses': Decimal(1.75)},
@@ -184,3 +191,28 @@ def test_avg_expenses_none():
                            expenses=None, amount_start=None).avg_expenses
 
     assert 0.0 == actual
+
+
+def test_months_balace_with_savings(_incomes, _expenses, _residual, _expect, _savings):
+    expect = {
+        'date': date(1999, 1, 1),
+        'incomes': 5.5, 'expenses': 2.75, 'balance': 2.75, 'residual': 3.75
+    }
+
+    actual = MonthsBalance(year=1999, incomes=_incomes, expenses=_expenses,
+                           savings=_savings, amount_start=_residual).balance
+
+    assert 12 == len(actual)
+    assert expect == actual[0]
+
+
+def test_months_balace_with_savings_february_without_savings(_incomes, _expenses, _residual, _expect, _savings):
+    expect = {
+        'date': date(1999, 2, 1),
+        'incomes': 1.25, 'expenses': 0.0, 'balance': 1.25, 'residual': 5.0}
+
+    actual = MonthsBalance(year=1999, incomes=_incomes, expenses=_expenses,
+                           savings=_savings, amount_start=_residual).balance
+
+    assert 12 == len(actual)
+    assert expect == actual[1]

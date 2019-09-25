@@ -8,9 +8,8 @@ from ..mixins.calc_balance import (BalanceStats, df_days_of_month,
 
 
 class MonthsBalance(BalanceStats):
-    def __init__(self,
-                 year: int,
-                 incomes: List[Dict], expenses: List[Dict],
+    def __init__(self, year: int, incomes: List[Dict],
+                 expenses: List[Dict], savings: List[Dict]=[],
                  amount_start: float=0.0):
 
         '''
@@ -19,6 +18,8 @@ class MonthsBalance(BalanceStats):
         incomes: [{'date': datetime.date(), 'incomes': Decimal()}, ... ]
 
         expenses: [{'date': datetime.date(), 'expenses': Decimal()}, ... ]
+
+        savings: [{'date': datetime.date(), 'savings': Decimal()}, ... ]
 
         amount_start: year start worth amount
         '''
@@ -34,7 +35,7 @@ class MonthsBalance(BalanceStats):
         if not incomes and not expenses:
             return
 
-        self._calc(incomes, expenses)
+        self._calc(incomes, expenses, savings)
 
     @property
     def amount_start(self) -> float:
@@ -89,7 +90,7 @@ class MonthsBalance(BalanceStats):
 
         return rtn
 
-    def _calc(self, incomes: List[Dict], expenses: List[Dict]) -> None:
+    def _calc(self, incomes: List[Dict], expenses: List[Dict], savings: List[Dict]) -> None:
         df = self._balance
 
         # append necessary columns
@@ -97,6 +98,7 @@ class MonthsBalance(BalanceStats):
         df.loc[:, 'expenses'] = 0.0
         df.loc[:, 'residual'] = 0.0
         df.loc[:, 'balance'] = 0.0
+        df.loc[:, 'savings'] = 0.0
 
         # delete not necessary column
         df.drop('total', axis=1, inplace=True)
@@ -109,7 +111,14 @@ class MonthsBalance(BalanceStats):
         for d in expenses:
             df.at[d['date'], 'expenses'] = float(d['expenses'])
 
+        if savings:
+            # copy savings values, convert Decimal to float
+            for d in savings:
+                df.at[d['date'], 'savings'] = float(d['savings'])
+
+
         # calculate balance
+        df['expenses'] = df['expenses'] + df['savings']
         df['balance'] = df.incomes - df.expenses
 
         #  calculate residual amount of money
@@ -131,4 +140,5 @@ class MonthsBalance(BalanceStats):
                 + df.loc[idx_prev, 'residual']
             )
 
+        df.drop('savings', axis=1, inplace=True)
         self._balance = df

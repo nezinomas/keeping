@@ -6,7 +6,7 @@ from ..core.mixins.views import CreateAjaxMixin, IndexMixin
 from ..accounts.models import Account
 from ..expenses.models import Expense, ExpenseType
 from ..incomes.models import Income
-from ..savings.models import SavingType
+from ..savings.models import Saving, SavingType
 
 from .lib.account_stats import AccountStats
 from .lib.helpers import create_month_list, current_day
@@ -67,8 +67,11 @@ class Index(IndexMixin):
 
         qs_income = Income.objects.income_sum(year)
         qs_expense = Expense.objects.month_expense(year)
+        qs_savings = Saving.objects.month_saving(year)
+
         _MonthsBalance = MonthsBalance(
-            year, qs_income, qs_expense, _account.balance_start)
+            year=year, incomes=qs_income, expenses=qs_expense,
+            savings=qs_savings, amount_start=_account.balance_start)
 
         qs_ExpenseType = Expense.objects.month_expense_type(year)
         _MonthExpenseType = MonthsExpenseType(year, qs_ExpenseType)
