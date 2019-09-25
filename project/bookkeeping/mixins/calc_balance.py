@@ -42,7 +42,7 @@ def df_months_of_year(year: int) -> pd.DataFrame:
 
 class BalanceStats():
     def __init__(self):
-        self._balance = None
+        self._balance = pd.DataFrame()
 
     @property
     def balance(self) -> List[Dict]:
