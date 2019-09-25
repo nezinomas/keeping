@@ -1,7 +1,10 @@
+from datetime import date
+from decimal import Decimal
+
 import pytest
 
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
-from ..models import SavingType
+from ..models import Saving, SavingType
 
 pytestmark = pytest.mark.django_db
 
@@ -113,3 +116,52 @@ def test_savings_empty():
     actual = list(SavingType.objects.balance_year(1))
 
     assert actual == []
+
+
+def test_savings_month_sum(savings):
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': Decimal(3.5), 'title': 'Saving1'},
+        {'date': date(1999, 1, 1), 'sum': Decimal(2.25), 'title': 'Saving2'},
+    ]
+
+    actual = list(Saving.objects.month_saving_type(1999))
+
+    assert expect == actual
+
+
+def test_savings_month_sum_januarty(savings):
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': Decimal(3.5), 'title': 'Saving1'},
+        {'date': date(1999, 1, 1), 'sum': Decimal(2.25), 'title': 'Saving2'},
+    ]
+
+    actual = list(Saving.objects.month_saving_type(1999, 1))
+
+    assert expect == actual
+
+
+def test_savings_month_sum_february(savings):
+    expect = []
+
+    actual = list(Saving.objects.month_saving_type(1999, 2))
+
+    assert expect == actual
+
+
+def test_savings_day_sum(savings):
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': Decimal(3.5), 'title': 'Saving1'},
+        {'date': date(1999, 1, 1), 'sum': Decimal(2.25), 'title': 'Saving2'},
+    ]
+
+    actual = list(Saving.objects.day_saving_type(1999, 1))
+
+    assert expect == actual
+
+
+def test_savings_say_sum_empty_month(savings):
+    expect = []
+
+    actual = list(Saving.objects.day_saving_type(1999, 2))
+
+    assert expect == actual

@@ -6,6 +6,7 @@ from django.db.models import Count, F
 
 from ..accounts.models import Account
 from ..core.mixins.queryset_balance import QuerySetBalanceMixin
+from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
 
 
@@ -87,7 +88,7 @@ class SavingType(TitleAbstract):
     objects = SavingTypeQuerySet.as_manager()
 
 
-class SavingQuerySet(models.QuerySet):
+class SavingQuerySet(SumMixin, models.QuerySet):
     def _related(self):
         return self.select_related('account', 'saving_type')
 
@@ -96,6 +97,28 @@ class SavingQuerySet(models.QuerySet):
 
     def items(self):
         return self._related()
+
+    def month_saving_type(self, year, month=None):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .sum_by_month(
+                year=year, month=month,
+                summed_name=summed_name, groupby='saving_type')
+            .values('date', summed_name, title=F('saving_type__title'))
+        )
+
+    def day_saving_type(self, year, month):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .sum_by_day(
+                year=year, month=month,
+                summed_name=summed_name, groupby='saving_type')
+            .values('date', summed_name, title=F('saving_type__title'))
+        )
 
 
 class Saving(models.Model):
