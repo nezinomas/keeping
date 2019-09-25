@@ -128,3 +128,11 @@ def test_account_past_property_no_accounts():
     actual = T(None, None).balance_start
 
     assert expect == actual
+
+
+def test_balance_end(_accounts):
+    expect = 7.75
+
+    actual = T(_accounts, []).balance_end
+
+    assert expect == actual

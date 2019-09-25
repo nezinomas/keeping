@@ -18,6 +18,12 @@ class AccountStats(BalanceStats):
 
         return t.get('past', 0.0)
 
+    @property
+    def balance_end(self):
+        t = super().totals
+
+        return t.get('balance', 0.0)
+
     def _prepare_balance(self, account_stats, account_worth):
         df = pd.DataFrame(account_stats).set_index('title')
 
