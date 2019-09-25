@@ -76,14 +76,16 @@ def _expect():
 
 
 def test_months_balance(_incomes, _expenses, _residual, _expect):
-    actual = MonthsBalance(year=1999, incomes=_incomes, expenses=_expenses, amount_start=_residual).balance
+    actual = MonthsBalance(year=1999, incomes=_incomes,
+                           expenses=_expenses, amount_start=_residual).balance
 
     assert _expect == actual
 
 
 def test_months_balance_totals(_incomes, _expenses, _residual):
     expect = {'incomes': 6.75, 'expenses': 1.75, 'balance': 5.0, 'residual': 70.75}
-    actual = MonthsBalance(year=1999, incomes=_incomes, expenses=_expenses, amount_start=_residual).totals
+    actual = MonthsBalance(year=1999, incomes=_incomes,
+                           expenses=_expenses, amount_start=_residual).totals
 
     assert expect == actual
 
@@ -193,7 +195,9 @@ def test_avg_expenses_none():
     assert 0.0 == actual
 
 
-def test_months_balace_with_savings(_incomes, _expenses, _residual, _expect, _savings):
+def test_months_balace_with_savings(
+        _incomes, _expenses, _residual, _expect, _savings):
+
     expect = {
         'date': date(1999, 1, 1),
         'incomes': 5.5, 'expenses': 2.75, 'balance': 2.75, 'residual': 3.75
@@ -206,7 +210,9 @@ def test_months_balace_with_savings(_incomes, _expenses, _residual, _expect, _sa
     assert expect == actual[0]
 
 
-def test_months_balace_with_savings_february_without_savings(_incomes, _expenses, _residual, _expect, _savings):
+def test_months_balace_with_savings_february_without_savings(
+        _incomes, _expenses, _residual, _expect, _savings):
+
     expect = {
         'date': date(1999, 2, 1),
         'incomes': 1.25, 'expenses': 0.0, 'balance': 1.25, 'residual': 5.0}
