@@ -119,6 +119,13 @@ class MonthsBalance(BalanceStats):
 
         return df
 
+    def _clean_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        # delete not necessary columns
+        df.drop('savings', axis=1, inplace=True)
+        df.drop('total', axis=1, inplace=True)
+
+        return df
+
     def _calc(self, df: pd.DataFrame) -> pd.DataFrame:
         # calculate balance
         df['expenses'] = df.expenses + df.savings
@@ -143,8 +150,6 @@ class MonthsBalance(BalanceStats):
                 + df.loc[idx_prev, 'residual']
             )
 
-        # delete not necessary columns
-        df.drop('savings', axis=1, inplace=True)
-        df.drop('total', axis=1, inplace=True)
+        df = self._clean_df(df)
 
         return df
