@@ -98,6 +98,17 @@ class SavingQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self._related()
 
+    def month_saving(self, year, month=None):
+        summed_name = 'savings'
+
+        return (
+            super()
+            .sum_by_month(
+                year=year, month=month,
+                summed_name=summed_name)
+            .values('date', summed_name)
+        )
+
     def month_saving_type(self, year, month=None):
         summed_name = 'sum'
 
