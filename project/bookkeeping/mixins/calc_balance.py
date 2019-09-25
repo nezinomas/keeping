@@ -4,7 +4,7 @@ import pandas as pd
 
 
 def df_days_of_month(year: int, month: int) -> pd.DataFrame:
-    df = None
+    df = pd.DataFrame()
 
     try:
         df = pd.DataFrame({
@@ -24,7 +24,7 @@ def df_days_of_month(year: int, month: int) -> pd.DataFrame:
 
 
 def df_months_of_year(year: int) -> pd.DataFrame:
-    df = None
+    df = pd.DataFrame()
 
     try:
         # create empty DataFrame object with index containing all months
