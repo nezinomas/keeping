@@ -24,18 +24,20 @@ class MonthsBalance(BalanceStats):
         amount_start: year start worth amount
         '''
 
+        super().__init__()
+
         try:
             amount_start = float(amount_start)
         except:
             amount_start = 0.0
 
         self._amount_start = amount_start
-        self._balance = df_months_of_year(year)
 
         if not incomes and not expenses:
             return
 
-        self._calc(incomes, expenses, savings)
+        self._balance = self._make_df(year, incomes, expenses, savings)
+        self._balance = self._calc(self._balance)
 
     @property
     def amount_start(self) -> float:
@@ -90,8 +92,10 @@ class MonthsBalance(BalanceStats):
 
         return rtn
 
-    def _calc(self, incomes: List[Dict], expenses: List[Dict], savings: List[Dict]) -> None:
-        df = self._balance
+    def _make_df(self, year: int, incomes: List[Dict], expenses: List[Dict],
+                 savings: List[Dict]) -> pd.DataFrame:
+
+        df = df_months_of_year(year)
 
         # append necessary columns
         df.loc[:, 'incomes'] = 0.0
@@ -99,9 +103,6 @@ class MonthsBalance(BalanceStats):
         df.loc[:, 'residual'] = 0.0
         df.loc[:, 'balance'] = 0.0
         df.loc[:, 'savings'] = 0.0
-
-        # delete not necessary column
-        df.drop('total', axis=1, inplace=True)
 
         # copy incomes values, convert Decimal to float
         for d in incomes:
@@ -116,9 +117,13 @@ class MonthsBalance(BalanceStats):
             for d in savings:
                 df.at[d['date'], 'savings'] = float(d['savings'])
 
+        return df
+
+    def _calc(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = self._balance
 
         # calculate balance
-        df['expenses'] = df['expenses'] + df['savings']
+        df['expenses'] = df.expenses + df.savings
         df['balance'] = df.incomes - df.expenses
 
         #  calculate residual amount of money
@@ -140,5 +145,8 @@ class MonthsBalance(BalanceStats):
                 + df.loc[idx_prev, 'residual']
             )
 
+        # delete not necessary columns
         df.drop('savings', axis=1, inplace=True)
-        self._balance = df
+        df.drop('total', axis=1, inplace=True)
+
+        return df
