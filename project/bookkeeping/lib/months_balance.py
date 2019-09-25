@@ -120,8 +120,6 @@ class MonthsBalance(BalanceStats):
         return df
 
     def _calc(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = self._balance
-
         # calculate balance
         df['expenses'] = df.expenses + df.savings
         df['balance'] = df.incomes - df.expenses
