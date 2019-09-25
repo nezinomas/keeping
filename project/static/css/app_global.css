@@ -143,3 +143,8 @@ tr.total th {
 .list-group-item.list-group-item-primary {
     padding-left: 0.25rem;
 }
+
+.bad {
+    background-color: #fec2c6;
+    color: #dc3545;
+}

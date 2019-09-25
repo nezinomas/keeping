@@ -35,7 +35,7 @@
             {% cell totals.past tag="th" %}
             {% cell totals.incomes tag="th" %}
             {% cell totals.expenses tag="th" %}
-            {% cell totals.balance tag="th" %}
+            {% if accounts_amount_end != months_amount_end %}{% cell totals.balance tag="th" css_class='bad' text_before='!' text_after='!' %}{% else %}{% cell totals.balance tag="th" %}{% endif %}
             {% cell totals.have tag="th" css_class='bl' %}
             {% cell totals.delta tag="th" %}
         </tr>

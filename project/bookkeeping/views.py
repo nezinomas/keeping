@@ -37,20 +37,26 @@ def _saving_stats(year):
     return fund, pension
 
 
-def _render_account_stats(request, account):
+def _render_account_stats(request, account, **kwargs):
         return render_to_string(
             'bookkeeping/includes/accounts_worth_list.html',
-            {'accounts': account.balance, 'totals': account.totals},
+            {
+                'accounts': account.balance,
+                'totals': account.totals,
+                'accounts_amount_end': account.balance_end,
+                **kwargs
+            },
             request
         )
 
 
-def _render_saving_stats(request, fund, pension):
+def _render_saving_stats(request, fund, pension, **kwargs):
     return render_to_string(
         'bookkeeping/includes/savings_worth_list.html',
         {
             'fund': fund.balance, 'fund_totals': fund.totals,
             'pension': pension.balance, 'pension_totals': pension.totals,
+            **kwargs
         },
         request
     )
@@ -85,13 +91,15 @@ class Index(IndexMixin):
             not_use=['Darbas', 'Laisvalaikis', 'Paskolos', 'Taupymas', 'Transportas']
         )
 
-        context['accounts'] = _render_account_stats(self.request, _account)
+        context['accounts'] = _render_account_stats(
+            self.request, _account, **{'months_amount_end': _MonthsBalance.amount_end})
         context['savings'] = _render_saving_stats(self.request, _fund, _pension)
         context['balance'] = _MonthsBalance.balance
         context['balance_totals'] = _MonthsBalance.totals
         context['balance_avg'] = _MonthsBalance.average
         context['amount_start'] = _MonthsBalance.amount_start
-        context['amount_end'] = _MonthsBalance.amount_end
+        context['months_amount_end'] = _MonthsBalance.amount_end
+        context['accounts_amount_end'] = _account.balance_end
         context['amount_balance'] = _MonthsBalance.amount_balance
         context['total_market'] = _fund.total_market
         context['avg_incomes'] = _MonthsBalance.avg_incomes
