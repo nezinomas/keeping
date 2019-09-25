@@ -4,6 +4,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
+from ..core.mixins.queryset_sum import SumMixin
 from ..savings.models import SavingType
 
 
@@ -16,6 +17,19 @@ class TransactionQuerySet(models.QuerySet):
 
     def items(self):
         return self._related()
+
+
+class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
+    def month_sum(self, year, month=None):
+        summed_name = 'to_account'
+
+        return (
+            super()
+            .sum_by_month(
+                year=year, month=month,
+                summed_name=summed_name)
+            .values('date', summed_name)
+        )
 
 
 class Transaction(models.Model):
@@ -81,7 +95,7 @@ class SavingClose(models.Model):
             format(self.date, self.from_account, self.to_account, self.price)
         )
 
-    objects = TransactionQuerySet.as_manager()
+    objects = SavingCloseQuerySet.as_manager()
 
 
 class SavingChange(models.Model):
