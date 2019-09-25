@@ -1,7 +1,8 @@
 import pandas as pd
+from ..mixins.calc_balance import BalanceStats
 
 
-class AccountStats():
+class AccountStats(BalanceStats):
     def __init__(self, account_stats, account_worth):
         self._balance = pd.DataFrame()
 
@@ -12,34 +13,10 @@ class AccountStats():
         self._calc_balance()
 
     @property
-    def balance(self):
-        val = []
-        balance = self._balance.copy()
-
-        if not balance.empty:
-            balance.reset_index(inplace=True)
-            val = balance.to_dict('records')
-
-        return val
-
-    @property
-    def totals(self):
-        val = []
-        balance = self._balance.copy()
-
-        if not balance.empty:
-            val = balance.sum().to_dict()
-
-        return val
-
-    @property
     def balance_start(self):
-        val = 0.0
+        t = super().totals
 
-        if self.totals:
-            val = self.totals['past']
-
-        return val
+        return t.get('past', 0.0)
 
     def _prepare_balance(self, account_stats, account_worth):
         df = pd.DataFrame(account_stats).set_index('title')
