@@ -11,30 +11,21 @@ def _ex():
     return ([
         {'date': date(1999, 1, 1), 'sum': Decimal(0.5), 'title': 'T1'},
         {'date': date(1999, 1, 1), 'sum': Decimal(0.25), 'title': 'T2'},
-        {'date': date(1999, 1, 2), 'sum': Decimal(0.75), 'title': 'T1'},
+        {'date': date(1999, 12, 1), 'sum': Decimal(0.75), 'title': 'T1'},
+        {'date': date(1999, 12, 1), 'sum': Decimal(0.35), 'title': 'T2'},
     ])
 
 
-def test_balance_lenght_empty_expenses():
+def test_month_balance_lenght_empty_expenses():
     actual = MonthExpenseType(1999, 1, []).balance
 
     assert 31 == len(actual)
 
 
-def test_balance_lenght_none_expenses():
+def test_month_balance_lenght_none_expenses():
     actual = MonthExpenseType(1999, 1, None).balance
 
     assert 31 == len(actual)
-
-
-@pytest.fixture
-def _ex():
-    return ([
-        {'date': date(1999, 1, 1), 'sum': Decimal(0.5), 'title': 'T1'},
-        {'date': date(1999, 1, 1), 'sum': Decimal(0.25), 'title': 'T2'},
-        {'date': date(1999, 12, 1), 'sum': Decimal(0.75), 'title': 'T1'},
-        {'date': date(1999, 12, 1), 'sum': Decimal(0.35), 'title': 'T2'},
-    ])
 
 
 def test_months_expense_type(_ex):
