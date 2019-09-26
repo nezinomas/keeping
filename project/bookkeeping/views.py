@@ -1,67 +1,22 @@
-from django.template.loader import render_to_string
-
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin
 
 from ..accounts.models import Account
-from ..expenses.models import Expense, ExpenseType
+from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..savings.models import Saving, SavingType
 from ..transactions.models import SavingClose
 
 from .lib import views_helpers
-from .lib.account_stats import AccountStats
 from .lib.helpers import create_month_list, current_day
 from .lib.months_balance import MonthsBalance
 from .lib.expense_type_stats import MonthExpenseType
 from .lib.expense_type_stats import MonthsExpenseType
 from .lib.no_incomes import NoIncomes
-from .lib.saving_stats import SavingStats
+
 
 from .forms import AccountWorthForm, SavingWorthForm
 from .models import AccountWorth, SavingWorth
-
-
-def _account_stats(request):
-    _stats = Account.objects.balance_year(request.user.profile.year)
-    _worth = AccountWorth.objects.items()
-
-    return AccountStats(_stats, _worth)
-
-
-def _saving_stats(year):
-    _stats = SavingType.objects.balance_year(year)
-    _worth = SavingWorth.objects.items()
-
-    fund = SavingStats(_stats, _worth, 'fund')
-    pension = SavingStats(_stats, _worth, 'pension')
-
-    return fund, pension
-
-
-def _render_account_stats(request, account, **kwargs):
-        return render_to_string(
-            'bookkeeping/includes/accounts_worth_list.html',
-            {
-                'accounts': account.balance,
-                'totals': account.totals,
-                'accounts_amount_end': account.balance_end,
-                **kwargs
-            },
-            request
-        )
-
-
-def _render_saving_stats(request, fund, pension, **kwargs):
-    return render_to_string(
-        'bookkeeping/includes/savings_worth_list.html',
-        {
-            'fund': fund.balance, 'fund_totals': fund.totals,
-            'pension': pension.balance, 'pension_totals': pension.totals,
-            **kwargs
-        },
-        request
-    )
 
 
 class Index(IndexMixin):
@@ -70,8 +25,8 @@ class Index(IndexMixin):
 
         year = self.request.user.profile.year
 
-        _account = _account_stats(self.request)
-        _fund, _pension = _saving_stats(year)
+        _account = views_helpers.account_stats(year)
+        _fund, _pension = views_helpers.saving_stats(year)
 
         qs_income = Income.objects.income_sum(year)
         qs_expense = Expense.objects.month_expense(year)
@@ -96,9 +51,10 @@ class Index(IndexMixin):
             not_use=['Darbas', 'Laisvalaikis', 'Paskolos', 'Taupymas', 'Transportas']
         )
 
-        context['accounts'] = _render_account_stats(
+        context['accounts'] = views_helpers.render_account_stats(
             self.request, _account, **{'months_amount_end': _MonthsBalance.amount_end})
-        context['savings'] = _render_saving_stats(self.request, _fund, _pension)
+        context['savings'] = views_helpers.render_saving_stats(
+            self.request, _fund, _pension)
         context['balance'] = _MonthsBalance.balance
         context['balance_totals'] = _MonthsBalance.totals
         context['balance_avg'] = _MonthsBalance.average
@@ -133,7 +89,8 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        _fund, _pension = _saving_stats(self.request.user.profile.year)
+        _fund, _pension = views_helpers.saving_stats(
+            self.request.user.profile.year)
 
         context['fund'] = _fund.balance
         context['fund_totals'] = _fund.totals
@@ -150,8 +107,9 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        year = self.request.user.profile.year
 
-        _account = _account_stats(self.request)
+        _account = views_helpers.account_stats(year)
 
         context['accounts'] = _account.balance
         context['totals'] = _account.totals
