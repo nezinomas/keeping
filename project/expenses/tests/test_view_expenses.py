@@ -16,7 +16,7 @@ def db_data():
 
 
 def _change_profile_year(client):
-    url = reverse('bookkeeping:index')
+    url = reverse('core:core_index')
     response = client.get(url)
 
     u = response.wsgi_request.user
