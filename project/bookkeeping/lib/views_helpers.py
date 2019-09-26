@@ -39,7 +39,7 @@ def saving_stats(year):
     return fund, pension
 
 
-def render_account_stats(request, account, **kwargs):
+def render_accounts(request, account, **kwargs):
         return render_to_string(
             'bookkeeping/includes/accounts_worth_list.html',
             {
@@ -52,7 +52,7 @@ def render_account_stats(request, account, **kwargs):
         )
 
 
-def render_saving_stats(request, fund, pension, **kwargs):
+def render_savings(request, fund, pension, **kwargs):
     return render_to_string(
         'bookkeeping/includes/savings_worth_list.html',
         {

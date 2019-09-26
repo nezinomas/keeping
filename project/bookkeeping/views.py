@@ -51,9 +51,9 @@ class Index(IndexMixin):
             not_use=['Darbas', 'Laisvalaikis', 'Paskolos', 'Taupymas', 'Transportas']
         )
 
-        context['accounts'] = views_helpers.render_account_stats(
+        context['accounts'] = views_helpers.render_accounts(
             self.request, _account, **{'months_amount_end': _MonthsBalance.amount_end})
-        context['savings'] = views_helpers.render_saving_stats(
+        context['savings'] = views_helpers.render_savings(
             self.request, _fund, _pension)
         context['balance'] = _MonthsBalance.balance
         context['balance_totals'] = _MonthsBalance.totals
