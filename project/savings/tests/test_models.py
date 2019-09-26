@@ -168,8 +168,9 @@ def test_savings_day_sum_empty_month(savings):
 
 
 def test_savings_months_sum(savings):
-    expect = [{'date': date(1999, 1, 1), 'savings': Decimal(5.75)}]
+    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(5.75)}]
 
     actual = list(Saving.objects.month_saving(1999))
 
     assert expect == actual
+

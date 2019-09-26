@@ -79,7 +79,7 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
         return self._related()
 
     def month_expense(self, year, month=None):
-        summed_name = 'expenses'
+        summed_name = 'sum'
 
         return (
             super()

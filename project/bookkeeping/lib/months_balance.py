@@ -109,21 +109,21 @@ class MonthsBalance(BalanceStats):
 
         # copy incomes values, convert Decimal to float
         for d in incomes:
-            df.at[d['date'], 'incomes'] = float(d['incomes'])
+            df.at[d['date'], 'incomes'] = float(d['sum'])
 
         # copy expenses values, convert Decimal to float
         for d in expenses:
-            df.at[d['date'], 'expenses'] = float(d['expenses'])
+            df.at[d['date'], 'expenses'] = float(d['sum'])
 
         if savings:
             # copy savings values, convert Decimal to float
             for d in savings:
-                df.at[d['date'], 'savings'] = float(d['savings'])
+                df.at[d['date'], 'savings'] = float(d['sum'])
 
         if savings_close:
             # copy savings values, convert Decimal to float
             for d in savings_close:
-                df.at[d['date'], 'savings_close'] = float(d['to_account'])
+                df.at[d['date'], 'savings_close'] = float(d['sum'])
 
         return df
 

@@ -21,7 +21,7 @@ class TransactionQuerySet(models.QuerySet):
 
 class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
     def month_sum(self, year, month=None):
-        summed_name = 'to_account'
+        summed_name = 'sum'
 
         return (
             super()

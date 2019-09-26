@@ -10,8 +10,8 @@ pytestmark = pytest.mark.django_db
 
 def test_sums_months(expenses):
     expect = [
-        {'date': date(1999, 1, 1), 'expenses': Decimal(0.5)},
-        {'date': date(1999, 12, 1), 'expenses': Decimal(1.25)},
+        {'date': date(1999, 1, 1), 'sum': Decimal(0.5)},
+        {'date': date(1999, 12, 1), 'sum': Decimal(1.25)},
     ]
 
     actual = [*T.objects.month_expense(1999)]
@@ -32,7 +32,7 @@ def test_month_expense_type(expenses):
 
 def test_sums_months_one_month(expenses):
     expect = [
-        {'date': date(1999, 1, 1), 'expenses': Decimal(0.5)},
+        {'date': date(1999, 1, 1), 'sum': Decimal(0.5)},
     ]
 
     actual = [*T.objects.month_expense(1999, 1)]

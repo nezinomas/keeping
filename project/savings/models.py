@@ -99,7 +99,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         return self._related()
 
     def month_saving(self, year, month=None):
-        summed_name = 'savings'
+        summed_name = 'sum'
 
         return (
             super()

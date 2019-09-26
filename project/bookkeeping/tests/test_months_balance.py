@@ -9,29 +9,29 @@ from ..lib.months_balance import MonthsBalance
 @pytest.fixture()
 def _incomes():
     return [
-        {'date': date(1999, 1, 1), 'incomes': Decimal(5.5)},
-        {'date': date(1999, 2, 1), 'incomes': Decimal(1.25)},
+        {'date': date(1999, 1, 1), 'sum': Decimal(5.5)},
+        {'date': date(1999, 2, 1), 'sum': Decimal(1.25)},
     ]
 
 
 @pytest.fixture()
 def _savings():
     return [
-        {'date': date(1999, 1, 1), 'savings': Decimal(1.0)},
+        {'date': date(1999, 1, 1), 'sum': Decimal(1.0)},
     ]
 
 
 @pytest.fixture()
 def _savings_close():
     return [
-        {'date': date(1999, 1, 1), 'to_account': Decimal(0.5)},
+        {'date': date(1999, 1, 1), 'sum': Decimal(0.5)},
     ]
 
 
 @pytest.fixture()
 def _expenses():
     return [
-        {'date': date(1999, 1, 1), 'expenses': Decimal(1.75)},
+        {'date': date(1999, 1, 1), 'sum': Decimal(1.75)},
     ]
 
 

@@ -11,30 +11,38 @@ def _ex():
     return ([
         {'date': date(1999, 1, 1), 'sum': Decimal(0.5), 'title': 'T1'},
         {'date': date(1999, 1, 1), 'sum': Decimal(0.25), 'title': 'T2'},
-        {'date': date(1999, 1, 2), 'sum': Decimal(0.75), 'title': 'T1'},
+        {'date': date(1999, 12, 1), 'sum': Decimal(0.75), 'title': 'T1'},
+        {'date': date(1999, 12, 1), 'sum': Decimal(0.35), 'title': 'T2'},
     ])
 
 
-def test_balance_lenght_empty_expenses():
+@pytest.fixture()
+def _savings():
+    return ({
+        'X': [
+            {'date': date(1999, 1, 1), 'sum': Decimal(0.5)},
+        ]
+    })
+
+
+def test_month_balance_lenght_empty_expenses():
     actual = MonthExpenseType(1999, 1, []).balance
 
     assert 31 == len(actual)
 
 
-def test_balance_lenght_none_expenses():
+def test_month_balance_lenght_none_expenses():
     actual = MonthExpenseType(1999, 1, None).balance
 
     assert 31 == len(actual)
 
 
-@pytest.fixture
-def _ex():
-    return ([
-        {'date': date(1999, 1, 1), 'sum': Decimal(0.5), 'title': 'T1'},
-        {'date': date(1999, 1, 1), 'sum': Decimal(0.25), 'title': 'T2'},
-        {'date': date(1999, 12, 1), 'sum': Decimal(0.75), 'title': 'T1'},
-        {'date': date(1999, 12, 1), 'sum': Decimal(0.35), 'title': 'T2'},
-    ])
+def test_month_balance_january(_ex):
+    expect = {'date': date(1999, 1, 1), 'T1': 0.5, 'T2': 0.25, 'total': 0.75}
+
+    actual = MonthExpenseType(year=1999, month=1, expenses=_ex[:2]).balance
+
+    assert expect == actual[0]
 
 
 def test_months_expense_type(_ex):
@@ -99,3 +107,19 @@ def test_months_expense_chart_data_empty():
     actual = MonthsExpenseType(1999, []).chart_data
 
     assert expect == actual
+
+
+def test_month_with_savings(_ex, _savings):
+    expect = {'date': date(1999, 1, 1), 'T1': 0.5, 'T2': 0.25, 'X': 0.5, 'total': 1.25}
+
+    actual = MonthExpenseType(year=1999, month=1, expenses=_ex[:2], **_savings).balance
+
+    assert expect == actual[0]
+
+
+def test_months_with_savings(_ex, _savings):
+    expect = {'date': date(1999, 1, 1), 'T1': 0.5, 'T2': 0.25, 'X': 0.5, 'total': 1.25}
+
+    actual = MonthsExpenseType(year=1999, expenses=_ex, **_savings).balance
+
+    assert expect == actual[0]
