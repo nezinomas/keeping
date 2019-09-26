@@ -40,7 +40,8 @@ class Index(IndexMixin):
             savings=qs_savings, savings_close=qs_savings_close,
             amount_start=_account.balance_start)
 
-        _MonthsExpenseType = MonthsExpenseType(year, qs_ExpenseType)
+        _MonthsExpenseType = MonthsExpenseType(
+            year, qs_ExpenseType, **{'Taupymas': qs_savings})
 
         _NoIncomes = NoIncomes(
             money=_MonthsBalance.amount_end,
@@ -129,7 +130,8 @@ class Month(IndexMixin):
         _MonthExpenseType = MonthExpenseType(
             year,
             month,
-            Expense.objects.day_expense_type(year, month)
+            Expense.objects.day_expense_type(year, month),
+            **{'Taupymas': Saving.objects.day_saving_type(year, month)}
         )
         context['month_list'] = create_month_list(year)
         context['expenses'] = _MonthExpenseType.balance
