@@ -173,3 +173,10 @@ def test_savings_months_sum(savings):
     actual = list(Saving.objects.month_saving(1999))
 
     assert expect == actual
+
+def test_savings_months_sum_with_renamed_return_column(savings):
+    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(5.75)}]
+
+    actual = list(Saving.objects.month_saving(year=1999, return_name='sum'))
+
+    assert expect == actual
