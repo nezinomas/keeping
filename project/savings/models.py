@@ -161,6 +161,10 @@ class Saving(models.Model):
 
     class Meta:
         ordering = ['-date', 'saving_type']
+        indexes = [
+            models.Index(fields=['account', 'saving_type']),
+            models.Index(fields=['saving_type']),
+        ]
 
     def __str__(self):
         return str(self.saving_type)

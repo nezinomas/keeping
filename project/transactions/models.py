@@ -52,6 +52,10 @@ class Transaction(models.Model):
 
     class Meta:
         ordering = ['-date', 'price', 'from_account']
+        indexes = [
+            models.Index(fields=['from_account']),
+            models.Index(fields=['to_account']),
+        ]
 
     def __str__(self):
         return (
@@ -88,6 +92,10 @@ class SavingClose(models.Model):
 
     class Meta:
         ordering = ['-date', 'price', 'from_account']
+        indexes = [
+            models.Index(fields=['from_account']),
+            models.Index(fields=['to_account']),
+        ]
 
     def __str__(self):
         return (
@@ -124,6 +132,10 @@ class SavingChange(models.Model):
 
     class Meta:
         ordering = ['-date', 'price', 'from_account']
+        indexes = [
+            models.Index(fields=['from_account']),
+            models.Index(fields=['to_account']),
+        ]
 
     def __str__(self):
         return (
