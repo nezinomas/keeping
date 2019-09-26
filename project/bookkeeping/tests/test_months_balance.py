@@ -22,6 +22,13 @@ def _savings():
 
 
 @pytest.fixture()
+def _savings_close():
+    return [
+        {'date': date(1999, 1, 1), 'to_account': Decimal(0.5)},
+    ]
+
+
+@pytest.fixture()
 def _expenses():
     return [
         {'date': date(1999, 1, 1), 'expenses': Decimal(1.75)},
@@ -222,3 +229,32 @@ def test_months_balace_with_savings_february_without_savings(
 
     assert 12 == len(actual)
     assert expect == actual[1]
+
+
+def test_months_balace_with_savings_close(
+        _incomes, _expenses, _residual, _expect, _savings_close):
+
+    expect = {
+        'date': date(1999, 1, 1),
+        'incomes': 6.0, 'expenses': 1.75, 'balance': 4.25, 'residual': 5.25}
+
+    actual = MonthsBalance(year=1999, incomes=_incomes, expenses=_expenses,
+                           savings_close=_savings_close, amount_start=_residual).balance
+
+    assert 12 == len(actual)
+    assert expect == actual[0]
+
+
+def test_months_balace_full(
+        _incomes, _expenses, _residual, _expect, _savings, _savings_close):
+
+    expect = {
+        'date': date(1999, 1, 1),
+        'incomes': 6.0, 'expenses': 2.75, 'balance': 3.25, 'residual': 4.25}
+
+    actual = MonthsBalance(year=1999, incomes=_incomes, expenses=_expenses,
+                           savings_close=_savings_close, savings=_savings,
+                           amount_start=_residual).balance
+
+    assert 12 == len(actual)
+    assert expect == actual[0]
