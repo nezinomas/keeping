@@ -20,10 +20,10 @@ table.stats td, table.stats th {
     border: 1px solid #b4b4b3!important;
     /* border-right: 1px solid #b7b7b6!important; */
     vertical-align: middle!important;
-    padding-top: .1rem!important;
-    padding-bottom: .1rem!important;
-    padding-left: .35rem!important;
-    padding-right: .35rem!important;
+    padding-top: .08rem!important;
+    padding-bottom: .08rem!important;
+    padding-left: .25rem!important;
+    padding-right: .25rem!important;
 }
 
 table.stats tr td:first-child, table.stats tr th:first-child {

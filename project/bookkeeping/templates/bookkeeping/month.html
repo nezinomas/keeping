@@ -8,12 +8,13 @@
 
 {% block content %}
 <div class="row my-2">
-    <div class="col-lg-6">
+    <div class="col-md-6 table-responsive">
         <table class="table table-striped table-hover stats">
             <thead class="thead-light">
                 <tr class="top">
                     <th></th>
-                    {% for cat in expense_types %}<th class="text-right">{{ cat }}</th>{% endfor %}
+                    {% for cat in expense_types %}<th class="text-right" data-toggle="tooltip" data-placement="bottom" title="{{ cat }}">{{ cat|truncatechars:8 }}</th>{% endfor %}
+                    <th class="bl text-right">Viso</th>
                 </tr>
             </thead>
             <tbody>
@@ -23,18 +24,69 @@
                     {% for cat in expense_types %}
                     {% cell row|get_item:cat %}
                     {% endfor %}
+                    {% cell row.total css_class="bl" %}
                 </tr>
                 {% endfor %}
             </tbody>
+            <tfoot>
+                <tr class="total">
+                    <th class="text-left">Viso</th>
+                    {% for cat in expense_types %}{% cell totals|get_item:cat tag='th' %}{% endfor %}
+                    {% cell totals.total tag='th' css_class="bl" %}
+                </tr>
+            </tfoot>
         </table>
     </div>
-    <div class="col-lg-6">
-        Lorem ipsum, dolor sit amet consectetur adipisicing elit. Maiores, itaque eaque quaerat ratione nulla nesciunt vero qui tenetur quos placeat ullam facere non assumenda expedita consequatur illum, quam error. Id.
+    <div class="col-md-1">
+        <table class="table table-striped table-hover stats">
+            <thead class="thead-light">
+                <tr class="top">
+                    <th>Diena</th>
+                    <th>Viso</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+                <tr><td>123.00</td><td>123.002</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        Lorem ipsum, dolor sit amet consectetur adipisicing elit. Maiores, itaque eaque quaerat ratione nulla nesciunt vero qui
+        tenetur quos placeat ullam facere non assumenda expedita consequatur illum, quam error. Id.
     </div>
 </div>
 
 <div class="row my-2">
-    <div class="col-lg-12">
+    <div class="col-lg-123.00">
         {% with request.user.profile.month as month %}
         {% for m in month_list %}
         {% with m|date:'n' as m_num %}

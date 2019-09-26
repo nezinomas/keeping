@@ -135,6 +135,7 @@ class Month(IndexMixin):
         )
         context['month_list'] = create_month_list(year)
         context['expenses'] = _MonthExpenseType.balance
+        context['totals'] = _MonthExpenseType.totals
         context['expense_types'] = views_helpers.expense_types('Taupymas')
         context['day'] = current_day(year, month)
 
