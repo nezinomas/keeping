@@ -24,7 +24,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
         return self._related()
 
     def income_sum(self, year, month=None):
-        summed_name = 'incomes'
+        summed_name = 'sum'
 
         return (
             super()
