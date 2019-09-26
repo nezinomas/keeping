@@ -29,3 +29,8 @@ def set_month(request, month):
             kwargs={}
         )
     )
+
+
+@login_required
+def index(request):
+    return render(request, 'core/index.html')
