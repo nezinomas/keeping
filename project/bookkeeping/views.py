@@ -27,19 +27,19 @@ class Index(IndexMixin):
 
         _account = views_helpers.account_stats(year)
         _fund, _pension = views_helpers.saving_stats(year)
+        _expense_types = views_helpers.expense_types('Taupymas')
 
         qs_income = Income.objects.income_sum(year)
         qs_expense = Expense.objects.month_expense(year)
         qs_savings = Saving.objects.month_saving(year)
         qs_savings_close = SavingClose.objects.month_sum(year)
-        qs_expense_types = views_helpers.expense_types('Taupymas')
+        qs_ExpenseType = Expense.objects.month_expense_type(year)
 
         _MonthsBalance = MonthsBalance(
             year=year, incomes=qs_income, expenses=qs_expense,
             savings=qs_savings, savings_close=qs_savings_close,
             amount_start=_account.balance_start)
 
-        qs_ExpenseType = Expense.objects.month_expense_type(year)
         _MonthsExpenseType = MonthsExpenseType(year, qs_ExpenseType)
 
         _NoIncomes = NoIncomes(
@@ -66,7 +66,7 @@ class Index(IndexMixin):
         context['avg_incomes'] = _MonthsBalance.avg_incomes
         context['avg_expenses'] = _MonthsBalance.avg_expenses
         context['expenses'] = _MonthsExpenseType.balance
-        context['expense_types'] = qs_expense_types
+        context['expense_types'] = _expense_types
         context['expenses_totals'] = _MonthsExpenseType.totals
         context['expenses_average'] = _MonthsExpenseType.average
         context['no_incomes'] = _NoIncomes.summary
