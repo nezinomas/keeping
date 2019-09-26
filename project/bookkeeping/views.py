@@ -40,14 +40,14 @@ class Index(IndexMixin):
             amount_start=_account.balance_start)
 
         qs_ExpenseType = Expense.objects.month_expense_type(year)
-        _MonthExpenseType = MonthsExpenseType(year, qs_ExpenseType)
+        _MonthsExpenseType = MonthsExpenseType(year, qs_ExpenseType)
 
         _NoIncomes = NoIncomes(
             money=_MonthsBalance.amount_end,
             fund=_fund.total_market,
             pension=_pension.total_market,
             avg_expenses=_MonthsBalance.avg_expenses,
-            avg_type_expenses=_MonthExpenseType.average,
+            avg_type_expenses=_MonthsExpenseType.average,
             not_use=['Darbas', 'Laisvalaikis', 'Paskolos', 'Taupymas', 'Transportas']
         )
 
@@ -65,15 +65,15 @@ class Index(IndexMixin):
         context['total_market'] = _fund.total_market
         context['avg_incomes'] = _MonthsBalance.avg_incomes
         context['avg_expenses'] = _MonthsBalance.avg_expenses
-        context['expenses'] = _MonthExpenseType.balance
+        context['expenses'] = _MonthsExpenseType.balance
         context['expense_types'] = qs_expense_types
-        context['expenses_totals'] = _MonthExpenseType.totals
-        context['expenses_average'] = _MonthExpenseType.average
+        context['expenses_totals'] = _MonthsExpenseType.totals
+        context['expenses_average'] = _MonthsExpenseType.average
         context['no_incomes'] = _NoIncomes.summary
         context['save_sum'] = _NoIncomes.save_sum
 
         # charts data
-        context['pie'] = _MonthExpenseType.chart_data
+        context['pie'] = _MonthsExpenseType.chart_data
         context['e'] = _MonthsBalance.expense_data
         context['i'] = _MonthsBalance.income_data
         context['s'] = _MonthsBalance.save_data
