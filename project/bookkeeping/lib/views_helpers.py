@@ -1,3 +1,5 @@
+from typing import List
+
 from django.template.loader import render_to_string
 
 from ...accounts.models import Account
@@ -10,7 +12,7 @@ from ..lib.saving_stats import SavingStats
 from ..models import AccountWorth, SavingWorth
 
 
-def expense_types(*args):
+def expense_types(*args: str) -> List[str]:
     qs = list(ExpenseType.objects.all().values_list('title', flat=True))
 
     [qs.append(x) for x in args]
