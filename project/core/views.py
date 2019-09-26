@@ -25,7 +25,7 @@ def set_month(request, month, view_name):
 
     return redirect(
         reverse(
-            'bookkeeping:month',
+            view_name,
             kwargs={}
         )
     )
