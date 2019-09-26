@@ -9,6 +9,7 @@ from ..incomes.models import Income
 from ..savings.models import Saving, SavingType
 from ..transactions.models import SavingClose
 
+from .lib import views_helpers
 from .lib.account_stats import AccountStats
 from .lib.helpers import create_month_list, current_day
 from .lib.months_balance import MonthsBalance
@@ -76,6 +77,7 @@ class Index(IndexMixin):
         qs_expense = Expense.objects.month_expense(year)
         qs_savings = Saving.objects.month_saving(year)
         qs_savings_close = SavingClose.objects.month_sum(year)
+        qs_expense_types = views_helpers.expense_types('Taupymas')
 
         _MonthsBalance = MonthsBalance(
             year=year, incomes=qs_income, expenses=qs_expense,
@@ -108,10 +110,7 @@ class Index(IndexMixin):
         context['avg_incomes'] = _MonthsBalance.avg_incomes
         context['avg_expenses'] = _MonthsBalance.avg_expenses
         context['expenses'] = _MonthExpenseType.balance
-        context['expense_types'] = (
-            ExpenseType.objects.all()
-            .values_list('title', flat=True)
-        )
+        context['expense_types'] = qs_expense_types
         context['expenses_totals'] = _MonthExpenseType.totals
         context['expenses_average'] = _MonthExpenseType.average
         context['no_incomes'] = _NoIncomes.summary
@@ -176,10 +175,7 @@ class Month(IndexMixin):
         )
         context['month_list'] = create_month_list(year)
         context['expenses'] = _MonthExpenseType.balance
-        context['expense_types'] = (
-            ExpenseType.objects.all()
-            .values_list('title', flat=True)
-        )
+        context['expense_types'] = views_helpers.expense_types('Taupymas')
         context['day'] = current_day(year, month)
 
         return context
