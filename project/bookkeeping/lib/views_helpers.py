@@ -19,7 +19,7 @@ def expense_types(*args: str) -> List[str]:
 
     qs.sort()
 
-    return list(qs)
+    return qs
 
 
 def account_stats(year):
