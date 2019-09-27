@@ -34,6 +34,10 @@ class MonthExpenseType(BalanceStats):
 
         self._balance = calc(expenses, self._balance, **kwargs)
 
+    @property
+    def balance_df(self):
+        return self._balance
+
 
 class MonthsExpenseType(BalanceStats):
     def __init__(self, year, expenses: List[Dict], **kwargs):

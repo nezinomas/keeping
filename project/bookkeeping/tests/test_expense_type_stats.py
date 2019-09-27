@@ -1,6 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
+import pandas as pd
 import pytest
 
 from ..lib.expense_type_stats import MonthExpenseType, MonthsExpenseType
@@ -123,3 +124,10 @@ def test_months_with_savings(_ex, _savings):
     actual = MonthsExpenseType(year=1999, expenses=_ex, **_savings).balance
 
     assert expect == actual[0]
+
+
+def test_month_return_dataframe(_ex):
+    actual = MonthExpenseType(year=1999, month=1, expenses=_ex[:2]).balance_df
+
+    assert isinstance(actual, pd.DataFrame)
+    assert 31 == len(actual)
