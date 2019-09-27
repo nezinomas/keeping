@@ -2,7 +2,7 @@ import pytest
 from django.shortcuts import reverse
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db()
 def test_set_year(login, client):
     url = reverse(
         'core:set_year',
@@ -15,7 +15,7 @@ def test_set_year(login, client):
     assert response.wsgi_request.user.profile.year == 1970
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db()
 def test_set_month(login, client):
     url = reverse(
         'core:set_month',
