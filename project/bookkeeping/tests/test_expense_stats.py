@@ -4,7 +4,7 @@ from decimal import Decimal
 import pandas as pd
 import pytest
 
-from ..lib.expense_type_stats import MonthExpenseType, MonthsExpenseType
+from ..lib.expense_stats import MonthExpenseType, MonthsExpenseType
 
 
 @pytest.fixture

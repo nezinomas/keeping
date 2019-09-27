@@ -10,8 +10,8 @@ from ..transactions.models import SavingClose
 from .lib import views_helpers
 from .lib.helpers import create_month_list, current_day
 from .lib.months_balance import MonthsBalance
-from .lib.expense_type_stats import MonthExpenseType
-from .lib.expense_type_stats import MonthsExpenseType
+from .lib.expense_stats import MonthExpenseType
+from .lib.expense_stats import MonthsExpenseType
 from .lib.no_incomes import NoIncomes
 
 
