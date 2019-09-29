@@ -97,7 +97,8 @@ def expenses_january():
     ExpenseFactory(
         date=date(1999, 1, 1),
         price=0.25,
-        account=AccountFactory(title='Account1')
+        account=AccountFactory(title='Account1'),
+        exception=True
     )
     ExpenseFactory(
         date=date(1999, 1, 1),
