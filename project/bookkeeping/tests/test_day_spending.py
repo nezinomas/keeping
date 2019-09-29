@@ -1,3 +1,6 @@
+from datetime import date
+from decimal import Decimal
+
 import pandas as pd
 import pytest
 
@@ -31,6 +34,11 @@ def day_sum():
 @pytest.fixture
 def free_expenses():
     return {'january': 20.0, 'february': 1.0}
+
+
+@pytest.fixture()
+def exceptions():
+    return [{'date': date(1999, 1, 1), 'expense_type': 'O2', 'price': Decimal(1.0)}]
 
 
 def test_avg_per_day(balance_df, necessary, day_sum, free_expenses):
