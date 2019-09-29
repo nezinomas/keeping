@@ -100,6 +100,18 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
             .values('date', summed_name, title=F('expense_type__title'))
         )
 
+    def month_exceptions(self, year, month=None):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .filter(exception=True)
+            .sum_by_day(
+                year=year, month=month,
+                summed_name=summed_name, groupby='expense_type')
+            .values('date', summed_name, title=F('expense_type__title'))
+        )
+
     def day_expense_type(self, year, month):
         summed_name = 'sum'
 

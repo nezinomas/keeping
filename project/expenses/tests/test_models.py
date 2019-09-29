@@ -3,9 +3,21 @@ from decimal import Decimal
 
 import pytest
 
+from ...accounts.factories import AccountFactory
+from ...expenses.factories import ExpenseFactory
 from ..models import Expense as T
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture()
+def expenses_more():
+    ExpenseFactory(
+        date=date(1999, 1, 1),
+        price=0.30,
+        account=AccountFactory(title='Account1'),
+        exception=True
+    )
 
 
 def test_sums_months(expenses):
@@ -59,3 +71,11 @@ def test_day_expense_type(expenses_january):
     actual = [*T.objects.day_expense_type(1999, 1)]
 
     assert expect == actual
+
+
+def test_month_exception_sum(expenses_january, expenses_more):
+    actual = [*T.objects.month_exceptions(1999, 1)]
+
+    assert date(1999, 1, 1) == actual[0]['date']
+    assert 'Expense Type' == actual[0]['title']
+    assert round(Decimal(0.55), 2) == round(actual[0]['sum'], 2)
