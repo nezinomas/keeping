@@ -38,7 +38,7 @@ def free_expenses():
 
 @pytest.fixture()
 def exceptions():
-    return [{'date': date(1999, 1, 1), 'expense_type': 'O2', 'price': Decimal(1.0)}]
+    return [{'date': date(1999, 1, 1), 'expense_type': 'O2', 'sum': Decimal(1.0)}]
 
 
 def test_avg_per_day(balance_df, necessary, day_sum, free_expenses):
@@ -114,3 +114,25 @@ def test_spending_first_day_all_none(balance_df):
     assert pd.datetime(1999, 1, 1) == actual[0]['date']
     assert -12.24 == actual[0]['day']
     assert -12.24 == actual[0]['full']
+
+
+def test_spending_with_exceptions_first_day(balance_df, necessary, day_sum,
+                                            free_expenses, exceptions):
+    actual = DaySpending(month=1, month_df=balance_df, necessary=necessary,
+                         plan_day_sum=day_sum, plan_free_sum=free_expenses,
+                         exceptions=exceptions).spending
+
+    assert pd.datetime(1999, 1, 1) == actual[0]['date']
+    assert -1.0 == actual[0]['day']
+    assert -1.0 == actual[0]['full']
+
+
+def test_spending_with_exceptions_second_day(balance_df, necessary, day_sum,
+                                             free_expenses, exceptions):
+    actual = DaySpending(month=1, month_df=balance_df, necessary=necessary,
+                         plan_day_sum=day_sum, plan_free_sum=free_expenses,
+                         exceptions=exceptions).spending
+
+    assert pd.datetime(1999, 1, 2) == actual[1]['date']
+    assert -0.8 == actual[1]['day']
+    assert -1.8 == pytest.approx(actual[1]['full'], rel=1e-2)

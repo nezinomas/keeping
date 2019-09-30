@@ -8,13 +8,15 @@ from ..mixins.calc_balance import BalanceStats
 
 class DaySpending(BalanceStats):
     def __init__(self, month: int, month_df: pd.DataFrame,
-                 necessary: List[str], plan_day_sum: Dict, plan_free_sum: Dict):
+                 necessary: List[str], plan_day_sum: Dict,
+                 plan_free_sum: Dict, exceptions: Dict = {}):
 
         self._month = month
         self._necessary = necessary if necessary else []
 
         self._plan_day_sum = self._get_value_from_dict(plan_day_sum)
         self._plan_free_sum = self._get_value_from_dict(plan_free_sum)
+        self._exceptions = exceptions
 
         self._balance = self._calc_spending(month_df)
         self._avg_per_day = self._get_avg_per_day()
@@ -75,6 +77,12 @@ class DaySpending(BalanceStats):
 
         # select only total column
         df = df[['total']]
+
+        # remove exceptions sums from totals
+        if self._exceptions:
+            for ex in self._exceptions:
+                cell = (ex['date'], 'total')
+                df.loc[cell] = df.loc[cell] - float(ex['sum'])
 
         df.loc[:, 'teoretical'] = 0.0
         df.loc[:, 'real'] = 0.0
