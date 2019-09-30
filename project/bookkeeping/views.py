@@ -139,7 +139,8 @@ class Month(IndexMixin):
         necessary = list(_DaySum.expenses_necessary)
         necessary.append('Taupymas')
 
-        day_sum = [*DayPlan.objects.year(year).values()][0]
+        day_sum = DayPlan.objects.year(year).values()
+        day_sum = day_sum[0] if day_sum else {}
 
         _DaySpending = DaySpending(
             month=month,
