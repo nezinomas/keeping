@@ -1,5 +1,5 @@
 body {
-  font-size: .7rem!important;
+  font-size: .69rem!important;
 }
 
 table.stats h1 {
@@ -60,7 +60,7 @@ tr.total th {
 }
 
 .navbar {
-    padding: .25rem .5rem;
+    padding: .1rem .5rem;
 }
 
 .nav-item {
@@ -73,12 +73,12 @@ tr.total th {
 }
 
 .nav-link {
-    padding: .25rem 1rem;
-    margin: .25rem;
+    padding: .15rem .5rem;
+    margin: .15rem;
 }
 
 .container-fluid>.content {
-    padding: 0 1rem;
+    padding: 0 .5rem;
 }
 
 .top > th {
@@ -128,7 +128,7 @@ tr.total th {
 }
 
 .btn-sm, .form-control-sm {
-    font-size: .7rem;
+    font-size: .69rem;
 }
 
 .btn-sm {
