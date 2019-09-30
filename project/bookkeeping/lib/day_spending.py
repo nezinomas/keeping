@@ -7,7 +7,7 @@ from ..mixins.calc_balance import BalanceStats
 
 
 class DaySpending(BalanceStats):
-    def __init__(self, month: int, month_df: pd.DataFrame,
+    def __init__(self, year: int, month: int, month_df: pd.DataFrame,
                  necessary: List[str], plan_day_sum: Dict,
                  plan_free_sum: Dict, exceptions: Dict = {}):
 

@@ -143,6 +143,7 @@ class Month(IndexMixin):
         day_sum = day_sum[0] if day_sum else {}
 
         _DaySpending = DaySpending(
+            year=year,
             month=month,
             month_df=_MonthExpenseType.balance_df,
             necessary=necessary,
