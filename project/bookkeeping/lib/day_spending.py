@@ -13,8 +13,8 @@ class DaySpending(BalanceStats):
         self._month = month
         self._necessary = necessary if necessary else []
 
-        self._plan_day_sum = self._get_value_form_list(plan_day_sum)
-        self._plan_free_sum = self._get_value_form_list(plan_free_sum)
+        self._plan_day_sum = self._get_value_from_dict(plan_day_sum)
+        self._plan_free_sum = self._get_value_from_dict(plan_free_sum)
 
         self._balance = self._calc_spending(month_df)
         self._avg_per_day = self._get_avg_per_day()
@@ -58,7 +58,7 @@ class DaySpending(BalanceStats):
     def _month_name(self):
         return calendar.month_name[self._month].lower()
 
-    def _get_value_form_list(self, arr: Dict) -> float:
+    def _get_value_from_dict(self, arr: Dict) -> float:
         return arr.get(self._month_name(), 0.0) if arr else 0.0
 
     def _get_avg_per_day(self) -> float:
