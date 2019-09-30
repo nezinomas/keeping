@@ -2,18 +2,18 @@ from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin
 
 from ..accounts.models import Account
-from ..expenses.models import Expense
+from ..expenses.models import Expense, ExpenseType
 from ..incomes.models import Income
 from ..savings.models import Saving, SavingType
+from ..plans.lib.day_sum import DaySum
 from ..transactions.models import SavingClose
 
 from .lib import views_helpers
+from .lib.day_spending import DaySpending
+from .lib.expense_stats import MonthExpenseType, MonthsExpenseType
 from .lib.helpers import create_month_list, current_day
 from .lib.months_balance import MonthsBalance
-from .lib.expense_stats import MonthExpenseType
-from .lib.expense_stats import MonthsExpenseType
 from .lib.no_incomes import NoIncomes
-
 
 from .forms import AccountWorthForm, SavingWorthForm
 from .models import AccountWorth, SavingWorth
@@ -133,10 +133,25 @@ class Month(IndexMixin):
             Expense.objects.day_expense_type(year, month),
             **{'Taupymas': Saving.objects.day_saving_type(year, month)}
         )
+        _DaySum = DaySum(year)
+
+        necessary = list(_DaySum.expenses_necessary)
+        necessary.append('Taupymas')
+
+        _DaySpending = DaySpending(
+            month=month,
+            month_df=_MonthExpenseType.balance_df,
+            necessary=necessary,
+            plan_day_sum=_DaySum.day_sum,
+            plan_free_sum=_DaySum.expenses_free,
+            exceptions=Expense.objects.month_exceptions(year, month)
+        )
+
         context['month_list'] = create_month_list(year)
         context['expenses'] = _MonthExpenseType.balance
         context['totals'] = _MonthExpenseType.totals
         context['expense_types'] = views_helpers.expense_types('Taupymas')
         context['day'] = current_day(year, month)
+        context['spending_table'] = _DaySpending.spending
 
         return context
