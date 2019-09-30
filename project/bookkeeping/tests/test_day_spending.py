@@ -42,29 +42,29 @@ def exceptions():
 
 
 def test_avg_per_day(balance_df, necessary, day_sum, free_expenses):
-    actual = DaySpending(1, balance_df, necessary,
-                         day_sum, free_expenses).avg_per_day
+    actual = DaySpending(month=1, month_df=balance_df, necessary=necessary,
+                         plan_day_sum=day_sum, plan_free_sum=free_expenses).avg_per_day
 
     assert 1.65 == actual
 
 
 def test_plan_per_day(balance_df, necessary, day_sum, free_expenses):
-    actual = DaySpending(1, balance_df, necessary,
-                         day_sum, free_expenses).plan_per_day
+    actual = DaySpending(month=1, month_df=balance_df, necessary=necessary,
+                         plan_day_sum=day_sum, plan_free_sum=free_expenses).plan_per_day
 
     assert 0.25 == actual
 
 
 def test_plan_free_sum(balance_df, necessary, day_sum, free_expenses):
-    actual = DaySpending(1, balance_df, necessary,
-                         day_sum, free_expenses).plan_free_sum
+    actual = DaySpending(month=1, month_df=balance_df, necessary=necessary,
+                         plan_day_sum=day_sum, plan_free_sum=free_expenses).plan_free_sum
 
     assert 20.0 == actual
 
 
 def test_spending_first_day(balance_df, necessary, day_sum, free_expenses):
-    actual = DaySpending(1, balance_df, necessary,
-                         day_sum, free_expenses).spending
+    actual = DaySpending(month=1, month_df=balance_df, necessary=necessary,
+                         plan_day_sum=day_sum, plan_free_sum=free_expenses).spending
 
     assert pd.datetime(1999, 1, 1) == actual[0]['date']
     assert -2.0 == actual[0]['day']
@@ -72,9 +72,45 @@ def test_spending_first_day(balance_df, necessary, day_sum, free_expenses):
 
 
 def test_spending_second_day(balance_df, necessary, day_sum, free_expenses):
-    actual = DaySpending(1, balance_df, necessary,
-                         day_sum, free_expenses).spending
+    actual = DaySpending(month=1, month_df=balance_df, necessary=necessary,
+                         plan_day_sum=day_sum, plan_free_sum=free_expenses).spending
 
     assert pd.datetime(1999, 1, 2) == actual[1]['date']
     assert -0.8 == actual[1]['day']
     assert -2.8 == pytest.approx(actual[1]['full'], rel=1e-2)
+
+
+def test_spending_first_day_necessary_empty(balance_df, day_sum, free_expenses):
+    actual = DaySpending(month=1, month_df=balance_df, necessary=[],
+                         plan_day_sum=day_sum, plan_free_sum=free_expenses).spending
+
+    assert pd.datetime(1999, 1, 1) == actual[0]['date']
+    assert -11.99 == actual[0]['day']
+    assert -11.99 == actual[0]['full']
+
+
+def test_spending_first_day_necessary_none(balance_df, day_sum, free_expenses):
+    actual = DaySpending(month=1, month_df=balance_df, necessary=None,
+                         plan_day_sum=day_sum, plan_free_sum=free_expenses).spending
+
+    assert pd.datetime(1999, 1, 1) == actual[0]['date']
+    assert -11.99 == actual[0]['day']
+    assert -11.99 == actual[0]['full']
+
+
+def test_spending_first_day_all_empty(balance_df):
+    actual = DaySpending(month=1, month_df=balance_df, necessary=[],
+                         plan_day_sum={}, plan_free_sum={}).spending
+
+    assert pd.datetime(1999, 1, 1) == actual[0]['date']
+    assert -12.24 == actual[0]['day']
+    assert -12.24 == actual[0]['full']
+
+
+def test_spending_first_day_all_none(balance_df):
+    actual = DaySpending(month=1, month_df=balance_df, necessary=None,
+                         plan_day_sum=None, plan_free_sum=None).spending
+
+    assert pd.datetime(1999, 1, 1) == actual[0]['date']
+    assert -12.24 == actual[0]['day']
+    assert -12.24 == actual[0]['full']

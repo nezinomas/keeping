@@ -1,5 +1,5 @@
 import calendar
-from typing import List
+from typing import List, Dict
 
 import pandas as pd
 
@@ -8,10 +8,10 @@ from ..mixins.calc_balance import BalanceStats
 
 class DaySpending(BalanceStats):
     def __init__(self, month: int, month_df: pd.DataFrame,
-                 necessary: List[str], plan_day_sum: float, plan_free_sum: List[str]):
+                 necessary: List[str], plan_day_sum: Dict, plan_free_sum: Dict):
 
         self._month = month
-        self._necessary = necessary
+        self._necessary = necessary if necessary else []
 
         self._plan_day_sum = self._get_value_form_list(plan_day_sum)
         self._plan_free_sum = self._get_value_form_list(plan_free_sum)
@@ -58,8 +58,8 @@ class DaySpending(BalanceStats):
     def _month_name(self):
         return calendar.month_name[self._month].lower()
 
-    def _get_value_form_list(self, arr: List[str]) -> float:
-        return arr.get(self._month_name(), 0.0)
+    def _get_value_form_list(self, arr: Dict) -> float:
+        return arr.get(self._month_name(), 0.0) if arr else 0.0
 
     def _get_avg_per_day(self) -> float:
         avg = super().average
