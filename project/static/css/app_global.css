@@ -1,15 +1,16 @@
 body {
-  font-size: .69rem!important;
+  font-size: .7rem!important;
 }
 
 table.stats h1 {
-    font-size: .8rem;
+    font-size: .75rem;
     padding: .15rem 0;
     margin: 0;
 }
 
 table.stats {
     border-collapse: collapse;
+    font-size: .65rem;
 }
 
 table.stats tfoot {
@@ -20,8 +21,8 @@ table.stats td, table.stats th {
     border: 1px solid #b4b4b3!important;
     /* border-right: 1px solid #b7b7b6!important; */
     vertical-align: middle!important;
-    padding-top: .08rem!important;
-    padding-bottom: .08rem!important;
+    padding-top: .09rem!important;
+    padding-bottom: .09rem!important;
     padding-left: .25rem!important;
     padding-right: .25rem!important;
 }
@@ -128,7 +129,7 @@ tr.total th {
 }
 
 .btn-sm, .form-control-sm {
-    font-size: .69rem;
+    font-size: .7rem;
 }
 
 .btn-sm {
