@@ -17,7 +17,7 @@
         <tr>
             <td>Pinigai dienai</td>
             <td>{{ plan_per_day|floatformat:2 }}</td>
-            <td>{{ fact_per_day|floatformat:2 }}</td>
+            <td class="{{ plan_per_day|compare:fact_per_day }}">{{ fact_per_day|floatformat:2 }}</td>
         </tr>
         <tr>
             <td>Mėn balansas (faktinės pajamos)</td>
