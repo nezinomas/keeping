@@ -1,0 +1,28 @@
+{% load table_cell %}{% load cell_format %}
+
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th class="text-right">Diena</th>
+            <th class="text-right">Viso</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in spending_table %}
+        {% with row.day|negative as neg %}
+        <tr {% if day|slugify == row.date|date:'j' %}class="bg-warning" {% endif %}>
+            {% cell row.day css_class=row.day|negative %}{% cell row.full css_class=row.full|negative|add:' -full' %}
+        </tr>
+        {% endwith %}{% endfor %}
+    </tbody>
+</table>
+<style>
+    .table-danger {
+        font-weight: bold;
+    }
+
+    .table-danger.-full {
+        background-color: #fe536a;
+        font-weight: bold;
+    }
+</style>
