@@ -6,6 +6,7 @@ from ..expenses.models import Expense, ExpenseType
 from ..incomes.models import Income
 from ..savings.models import Saving, SavingType
 from ..plans.lib.day_sum import DaySum
+from ..plans.models import DayPlan
 from ..transactions.models import SavingClose
 
 from .lib import views_helpers
@@ -138,11 +139,13 @@ class Month(IndexMixin):
         necessary = list(_DaySum.expenses_necessary)
         necessary.append('Taupymas')
 
+        day_sum = [*DayPlan.objects.year(year).values()][0]
+
         _DaySpending = DaySpending(
             month=month,
             month_df=_MonthExpenseType.balance_df,
             necessary=necessary,
-            plan_day_sum=_DaySum.day_sum,
+            plan_day_sum=day_sum,
             plan_free_sum=_DaySum.expenses_free,
             exceptions=Expense.objects.month_exceptions(year, month)
         )
@@ -153,5 +156,8 @@ class Month(IndexMixin):
         context['expense_types'] = views_helpers.expense_types('Taupymas')
         context['day'] = current_day(year, month)
         context['spending_table'] = _DaySpending.spending
+
+        context['plan_per_day'] = _DaySpending.plan_per_day
+        context['fact_per_day'] = _DaySpending.avg_per_day
 
         return context

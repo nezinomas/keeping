@@ -1,0 +1,33 @@
+{% load cell_format %}
+
+<table class="table table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th></th>
+            <th class="text-right">Planas</th>
+            <th class="text-right">Faktas</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Pajamos</td>
+            <td></td>
+            <td class=""></td>
+        </tr>
+        <tr>
+            <td>Pinigai dienai</td>
+            <td>{{ plan_per_day|floatformat:2 }}</td>
+            <td>{{ fact_per_day|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <td>Mėn balansas (faktinės pajamos)</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Mėn balansas (pluonauojamos pajamos)</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
