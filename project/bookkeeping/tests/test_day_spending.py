@@ -12,9 +12,12 @@ def balance_df():
     # N expense type marked as necessary
     # O1, O2 ordinary expense type
     df = pd.DataFrame([
-        {'date': pd.datetime(1999, 1, 1), 'N': 9.99, 'O1': 1.0, 'O2': 1.25},
-        {'date': pd.datetime(1999, 1, 2), 'N': 9.99, 'O1': 0.0, 'O2': 1.05},
-        {'date': pd.datetime(1999, 1, 3), 'N': 9.99, 'O1': 0.0, 'O2': 0.0},
+        {'date': pd.datetime(1999, 1, 1), 'N': 9.99,
+         'O1': 1.0, 'O2': 1.25, 'total': 12.24},
+        {'date': pd.datetime(1999, 1, 2), 'N': 9.99,
+         'O1': 0.0, 'O2': 1.05, 'total': 11.04},
+        {'date': pd.datetime(1999, 1, 3), 'N': 9.99,
+         'O1': 0.0, 'O2': 0.0, 'total': 9.99},
     ])
     df.set_index('date', inplace=True)
 

@@ -53,7 +53,9 @@ class DaySpending(BalanceStats):
         col_name_list = [*df.columns]
         col_name_leave = [*set(col_name_list).difference(set(self._necessary))]
 
-        df = df[col_name_leave]
+        df = df.loc[:, col_name_leave]
+
+        df.drop('total', axis=1, inplace=True)
 
         return df
 
@@ -73,10 +75,10 @@ class DaySpending(BalanceStats):
         df = self._filter(df)
 
         # calculate totals for filtered dataframe
-        df['total'] = df.sum(axis=1)
+        df.loc[:, 'total'] = df.sum(axis=1)
 
         # select only total column
-        df = df[['total']]
+        df = df.loc[:, ['total']]
 
         # remove exceptions sums from totals
         if self._exceptions:
