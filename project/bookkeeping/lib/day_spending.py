@@ -16,10 +16,10 @@ class DaySpending(BalanceStats):
         self._plan_day_sum = self._get_value_form_list(plan_day_sum)
         self._plan_free_sum = self._get_value_form_list(plan_free_sum)
 
-        self._balance = self._filter(month_df)
+        self._balance = self._calc_spending(month_df)
         self._avg_per_day = self._get_avg_per_day()
 
-        self._spending = self._calc_spending(self._balance)
+        self._spending = self._balance
 
     @property
     def plan_per_day(self):
@@ -52,7 +52,6 @@ class DaySpending(BalanceStats):
         col_name_leave = [*set(col_name_list).difference(set(self._necessary))]
 
         df = df[col_name_leave]
-        df['total'] = df.sum(axis=1)
 
         return df
 
@@ -68,6 +67,13 @@ class DaySpending(BalanceStats):
         return avg.get('total', 0.0)
 
     def _calc_spending(self, df: pd.DataFrame) -> pd.DataFrame:
+        # filter dateframe
+        df = self._filter(df)
+
+        # calculate totals for filtered dataframe
+        df['total'] = df.sum(axis=1)
+
+        # select only total column
         df = df[['total']]
 
         df.loc[:, 'teoretical'] = 0.0
