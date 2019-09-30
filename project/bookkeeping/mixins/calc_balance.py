@@ -4,6 +4,8 @@ from typing import Dict, List
 
 import pandas as pd
 
+from ..lib.helpers import current_day
+
 
 def df_days_of_month(year: int, month: int) -> pd.DataFrame:
     df = pd.DataFrame()
@@ -101,16 +103,9 @@ class BalanceStats():
         if self._balance.empty:
             return val
 
+        day = current_day(year, month)
+
         df = self._balance.copy()
-
-        year_now = datetime.now().year
-        month_now = datetime.now().month
-
-        if year_now == year and month_now == month:
-            day = datetime.now().day
-        else:
-            day = calendar.monthrange(year, month)[1]
-
         df = self._calc_avg(df, year, month, day)
 
         # select onvly last row for returning
