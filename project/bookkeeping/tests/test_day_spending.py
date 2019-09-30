@@ -31,12 +31,12 @@ def necessary():
 
 @pytest.fixture
 def day_sum():
-    return {'january': 0.25, 'february': 1.0}
+    return {'january': Decimal(0.25), 'february': Decimal(1.0)}
 
 
 @pytest.fixture
 def free_expenses():
-    return {'january': 20.0, 'february': 1.0}
+    return {'january': Decimal(20.0), 'february': Decimal(1.0)}
 
 
 @pytest.fixture()

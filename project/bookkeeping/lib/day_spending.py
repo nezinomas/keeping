@@ -63,7 +63,7 @@ class DaySpending(BalanceStats):
         return calendar.month_name[self._month].lower()
 
     def _get_value_from_dict(self, arr: Dict) -> float:
-        return arr.get(self._month_name(), 0.0) if arr else 0.0
+        return float(arr.get(self._month_name(), 0.0)) if arr else 0.0
 
     def _get_avg_per_day(self) -> float:
         avg = super().average
