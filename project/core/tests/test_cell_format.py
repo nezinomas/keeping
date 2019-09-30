@@ -2,7 +2,7 @@ from decimal import Decimal
 
 import pytest
 
-from ..templatetags.cell_format import (comparison, negative, positive,
+from ..templatetags.cell_format import (compare, negative, positive,
                                         positive_negative)
 
 
@@ -85,38 +85,38 @@ def test_value_str_1():
     assert not actual
 
 
-def test_comparison_bigger_str():
-    actual = comparison('1', '2')
+def test_compare_bigger_str():
+    actual = compare('1', '2')
 
     assert 'table-success' == actual
 
 
-def test_comparison_bigger_int():
-    actual = comparison(1, 2)
+def test_compare_bigger_int():
+    actual = compare(1, 2)
 
     assert 'table-success' == actual
 
 
-def test_comparison_smaller_str():
-    actual = comparison('1', '0')
+def test_compare_smaller_str():
+    actual = compare('1', '0')
 
     assert 'table-danger' == actual
 
 
-def test_comparison_smaller_int():
-    actual = comparison(1, 0)
+def test_compare_smaller_int():
+    actual = compare(1, 0)
 
     assert 'table-danger' == actual
 
 
-def test_comparison_smaller_decimal():
-    actual = comparison(1, Decimal(0.1))
+def test_compare_smaller_decimal():
+    actual = compare(1, Decimal(0.1))
 
     assert 'table-danger' == actual
 
 
-def test_comparison_none():
-    actual = comparison(None, None)
+def test_compare_none():
+    actual = compare(None, None)
 
     assert not actual
 

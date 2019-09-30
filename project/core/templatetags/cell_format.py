@@ -63,7 +63,7 @@ def positive_negative(value):
 
 
 @register.filter
-def comparison(value: str, args: str) -> str:
+def compare(value: str, args: str) -> str:
     _value = ''
 
     try:
