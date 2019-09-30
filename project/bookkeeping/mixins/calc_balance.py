@@ -89,3 +89,14 @@ class BalanceStats():
         arr.replace(0.0, pd.NaT, inplace=True)
 
         return arr.mean(skipna=True).to_dict()
+
+
+    @property
+    def average_month(self, year: int, month: int) -> Dict[str, float]:
+        val = {}
+
+        if not isinstance(self._balance, pd.DataFrame):
+            return val
+
+        if self._balance.empty:
+            return val
