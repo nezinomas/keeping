@@ -1,10 +1,9 @@
-import calendar
 from typing import List, Dict
 
 import pandas as pd
 
 from ..mixins.calc_balance import BalanceStats
-
+from .helpers import get_value_from_dict
 
 class DaySpending(BalanceStats):
     def __init__(self, year: int, month: int, month_df: pd.DataFrame,
@@ -15,8 +14,8 @@ class DaySpending(BalanceStats):
         self._month = month
         self._necessary = necessary if necessary else []
 
-        self._plan_day_sum = self._get_value_from_dict(plan_day_sum)
-        self._plan_free_sum = self._get_value_from_dict(plan_free_sum)
+        self._plan_day_sum = get_value_from_dict(plan_day_sum, month)
+        self._plan_free_sum = get_value_from_dict(plan_free_sum, month)
         self._exceptions = exceptions
 
         self._balance = self._calc_spending(month_df)
@@ -59,12 +58,6 @@ class DaySpending(BalanceStats):
         df.drop('total', axis=1, inplace=True)
 
         return df
-
-    def _month_name(self):
-        return calendar.month_name[self._month].lower()
-
-    def _get_value_from_dict(self, arr: Dict) -> float:
-        return float(arr.get(self._month_name(), 0.0)) if arr else 0.0
 
     def _get_avg_per_day(self) -> float:
         avg = super().average_month(self._year, self._month)

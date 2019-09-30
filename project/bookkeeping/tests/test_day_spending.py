@@ -3,6 +3,7 @@ from decimal import Decimal
 
 import pandas as pd
 import pytest
+from freezegun import freeze_time
 
 from ..lib.day_spending import DaySpending
 
@@ -44,6 +45,7 @@ def exceptions():
     return [{'date': date(1999, 1, 1), 'expense_type': 'O2', 'sum': Decimal(1.0)}]
 
 
+@freeze_time('1999-01-02')
 def test_avg_per_day(balance_df, necessary, day_sum, free_expenses):
     actual = DaySpending(year=1999, month=1, month_df=balance_df, necessary=necessary,
                          plan_day_sum=day_sum, plan_free_sum=free_expenses).avg_per_day

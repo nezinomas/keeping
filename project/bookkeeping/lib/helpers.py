@@ -1,6 +1,6 @@
 import calendar
 from datetime import date, datetime
-from typing import List
+from typing import Dict, List
 
 
 def calc_percent(args):
@@ -44,3 +44,11 @@ def current_day(year: int, month: int) -> int:
         return _day
     else:
         return calendar.monthrange(year, month)[1]
+
+
+def month_name(month: int) -> str:
+    return calendar.month_name[month].lower()
+
+
+def get_value_from_dict(arr: Dict, month: int) -> float:
+    return float(arr.get(month_name(month), 0.0)) if arr else 0.0
