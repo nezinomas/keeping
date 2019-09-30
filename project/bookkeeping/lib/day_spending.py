@@ -5,6 +5,7 @@ import pandas as pd
 from ..mixins.calc_balance import BalanceStats
 from .helpers import get_value_from_dict
 
+
 class DaySpending(BalanceStats):
     def __init__(self, year: int, month: int, month_df: pd.DataFrame,
                  necessary: List[str], plan_day_sum: Dict,
