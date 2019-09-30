@@ -11,6 +11,7 @@ class DaySpending(BalanceStats):
                  necessary: List[str], plan_day_sum: Dict,
                  plan_free_sum: Dict, exceptions: Dict = {}):
 
+        self._year = year
         self._month = month
         self._necessary = necessary if necessary else []
 
@@ -66,7 +67,7 @@ class DaySpending(BalanceStats):
         return float(arr.get(self._month_name(), 0.0)) if arr else 0.0
 
     def _get_avg_per_day(self) -> float:
-        avg = super().average
+        avg = super().average_month(self._year, self._month)
 
         return avg.get('total', 0.0)
 
