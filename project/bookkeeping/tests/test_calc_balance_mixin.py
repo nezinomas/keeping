@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from freezegun import freeze_time
 
 from ..mixins.calc_balance import (BalanceStats, df_days_of_month,
                                    df_months_of_year)
@@ -109,3 +110,45 @@ def test_df_months_of_year_invalid(year):
     actual = df_months_of_year(year)
 
     assert actual.empty
+
+
+@pytest.fixture()
+def df():
+    df = pd.DataFrame([
+        {'t': 1.1, 'date': pd.datetime(1999, 1, 1)},
+        {'t': 2.1, 'date': pd.datetime(1999, 1, 2)},
+        {'t': 3.1, 'date': pd.datetime(1999, 1, 3)},
+        {'t': 4.1, 'date': pd.datetime(1999, 1, 31)},
+    ])
+    df.set_index('date', inplace=True)
+
+    return df
+
+
+@freeze_time("1999-01-02")
+def test_average_month_two_days(df):
+    o = BalanceStats()
+    o._balance = df
+
+    actual = o.average_month(1999, 1)
+    assert 1.6 == round(actual['t'], 2)
+
+
+@freeze_time("1999-01-31")
+def test_average_month_last_day(df):
+    o = BalanceStats()
+    o._balance = df
+
+    actual = o.average_month(1999, 1)
+
+    assert 0.34 == round(actual['t'], 2)
+
+
+@freeze_time("1970-01-01")
+def test_average_month_other_year(df):
+    o = BalanceStats()
+    o._balance = df
+
+    actual = o.average_month(1999, 1)
+
+    assert 0.34 == round(actual['t'], 2)

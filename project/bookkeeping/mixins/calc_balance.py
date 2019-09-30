@@ -1,3 +1,5 @@
+import calendar
+from datetime import date, datetime
 from typing import Dict, List
 
 import pandas as pd
@@ -90,8 +92,6 @@ class BalanceStats():
 
         return arr.mean(skipna=True).to_dict()
 
-
-    @property
     def average_month(self, year: int, month: int) -> Dict[str, float]:
         val = {}
 
@@ -100,3 +100,34 @@ class BalanceStats():
 
         if self._balance.empty:
             return val
+
+        df = self._balance.copy()
+
+        year_now = datetime.now().year
+        month_now = datetime.now().month
+
+        if year_now == year and month_now == month:
+            day = datetime.now().day
+        else:
+            day = calendar.monthrange(year, month)[1]
+
+        df = self._calc_avg(df, year, month, day)
+
+        # select onvly last row for returning
+        row = df.loc['total', :]
+
+        return row.to_dict()
+
+    def _calc_avg(self, df: pd.DataFrame,
+                  year: int, month: int, day: int) -> pd.DataFrame:
+
+        # sort index, in case if dates not ordered
+        df.sort_index(inplace=True)
+
+        to_date = pd.datetime(year, month, day)
+
+        sum_ = df.loc[:to_date, :].sum()
+
+        df.loc['total', :] = sum_ / day
+
+        return df
