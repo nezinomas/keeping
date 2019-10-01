@@ -88,31 +88,31 @@ def test_value_str_1():
 def test_compare_bigger_str():
     actual = compare('1', '2')
 
-    assert 'table-success' == actual
+    assert 'table-danger' == actual
 
 
 def test_compare_bigger_int():
     actual = compare(1, 2)
 
-    assert 'table-success' == actual
+    assert 'table-danger' == actual
 
 
 def test_compare_smaller_str():
     actual = compare('1', '0')
 
-    assert 'table-danger' == actual
+    assert 'table-success' == actual
 
 
 def test_compare_smaller_int():
     actual = compare(1, 0)
 
-    assert 'table-danger' == actual
+    assert 'table-success' == actual
 
 
 def test_compare_smaller_decimal():
     actual = compare(1, Decimal(0.1))
 
-    assert 'table-danger' == actual
+    assert 'table-success' == actual
 
 
 def test_compare_none():

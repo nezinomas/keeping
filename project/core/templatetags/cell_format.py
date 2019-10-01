@@ -72,7 +72,7 @@ def compare(value: str, args: str) -> str:
     except Exception as ex:
         return _value
 
-    if value <= compare:
+    if value >= compare:
         _value = 'table-success'
     else:
         _value = 'table-danger'
