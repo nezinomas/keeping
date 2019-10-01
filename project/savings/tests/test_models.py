@@ -3,13 +3,33 @@ from decimal import Decimal
 
 import pytest
 
+from ...accounts.factories import AccountFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
+from ...savings.factories import SavingFactory, SavingTypeFactory
 from ..models import Saving, SavingType
 
 pytestmark = pytest.mark.django_db
 
 
-def test_savings_only(savings):
+@pytest.fixture()
+def savings_extra():
+    SavingFactory(
+        date=date(1999, 1, 1),
+        price=1.0,
+        fee=0.25,
+        account=AccountFactory(title='Account1'),
+        saving_type=SavingTypeFactory(title='Saving1')
+    )
+    SavingFactory(
+        date=date(1999, 1, 1),
+        price=1.0,
+        fee=0.25,
+        account=AccountFactory(title='Account2'),
+        saving_type=SavingTypeFactory(title='Saving1')
+    )
+
+
+def test_saving_only(savings):
     expect = [{
         'title': 'Saving1',
         'past_amount': 1.25,
@@ -31,7 +51,7 @@ def test_savings_only(savings):
     assert_(expect, actual)
 
 
-def test_savings_change_only(savings_change):
+def test_saving_change_only(savings_change):
     expect = [{
         'title': 'Saving1',
         'past_amount': -2.25,
@@ -53,7 +73,7 @@ def test_savings_change_only(savings_change):
     assert_(expect, actual)
 
 
-def test_savings_cloce_only(savings_close):
+def test_saving_cloce_only(savings_close):
     expect = [{
         'title': 'Saving1',
         'past_amount': -0.25,
@@ -68,7 +88,7 @@ def test_savings_cloce_only(savings_close):
     assert_(expect, actual)
 
 
-def test_savings_year_now(savings, savings_close, savings_change):
+def test_saving_year_now(savings, savings_close, savings_change):
     expect = [{
         'title': 'Saving1',
         'past_amount': -1.25,
@@ -90,7 +110,7 @@ def test_savings_year_now(savings, savings_close, savings_change):
     assert_(expect, actual)
 
 
-def test_savings_year_past(savings, savings_close, savings_change):
+def test_saving_year_past(savings, savings_close, savings_change):
     expect = [{
         'title': 'Saving1',
         'past_amount': 0.00,
@@ -112,13 +132,13 @@ def test_savings_year_past(savings, savings_close, savings_change):
     assert_(expect, actual)
 
 
-def test_savings_empty():
+def test_saving_empty():
     actual = list(SavingType.objects.balance_year(1))
 
     assert actual == []
 
 
-def test_savings_month_sum(savings):
+def test_saving_month_sum(savings):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(3.5), 'title': 'Saving1'},
         {'date': date(1999, 1, 1), 'sum': Decimal(2.25), 'title': 'Saving2'},
@@ -129,7 +149,7 @@ def test_savings_month_sum(savings):
     assert expect == actual
 
 
-def test_savings_month_sum_januarty(savings):
+def test_saving_month_sum_januarty(savings):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(3.5), 'title': 'Saving1'},
         {'date': date(1999, 1, 1), 'sum': Decimal(2.25), 'title': 'Saving2'},
@@ -140,7 +160,7 @@ def test_savings_month_sum_januarty(savings):
     assert expect == actual
 
 
-def test_savings_month_sum_february(savings):
+def test_saving_month_sum_february(savings):
     expect = []
 
     actual = list(Saving.objects.month_saving_type(1999, 2))
@@ -148,7 +168,7 @@ def test_savings_month_sum_february(savings):
     assert expect == actual
 
 
-def test_savings_day_sum(savings):
+def test_saving_type_day_sum(savings):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(3.5), 'title': 'Saving1'},
         {'date': date(1999, 1, 1), 'sum': Decimal(2.25), 'title': 'Saving2'},
@@ -159,7 +179,17 @@ def test_savings_day_sum(savings):
     assert expect == actual
 
 
-def test_savings_day_sum_empty_month(savings):
+def test_saving_day_sum(savings_extra):
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': Decimal(2.0)},
+    ]
+
+    actual = list(Saving.objects.day_saving(1999, 1))
+
+    assert expect == actual
+
+
+def test_saving_type_day_sum_empty_month(savings):
     expect = []
 
     actual = list(Saving.objects.day_saving_type(1999, 2))
@@ -167,10 +197,9 @@ def test_savings_day_sum_empty_month(savings):
     assert expect == actual
 
 
-def test_savings_months_sum(savings):
+def test_saving_months_sum(savings):
     expect = [{'date': date(1999, 1, 1), 'sum': Decimal(5.75)}]
 
     actual = list(Saving.objects.month_saving(1999))
 
     assert expect == actual
-
