@@ -127,8 +127,8 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             super()
             .sum_by_day(
                 year=year, month=month,
-                summed_name=summed_name, groupby='saving_type')
-            .values(summed_name, date=F('dt'), title=F('saving_type__title'))
+                summed_name=summed_name)
+            .values(summed_name, 'date', title=F('saving_type__title'))
         )
 
     def day_saving(self, year, month):
@@ -138,8 +138,8 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             super()
             .sum_by_day(
                 year=year, month=month,
-                summed_name=summed_name, groupby='date')
-            .values(summed_name, date=F('date'))
+                summed_name=summed_name)
+            .values(summed_name, 'date')
         )
 
 

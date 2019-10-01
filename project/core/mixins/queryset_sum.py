@@ -15,10 +15,10 @@ class SumMixin():
     def sum_by_month(self, year, summed_name, month=None, groupby='id'):
         return (
             self
-            .annotate(cnt=Count(groupby))
-            .values(groupby)
             ._year(year)
             ._month(month)
+            .annotate(cnt=Count(groupby))
+            .values(groupby)
             .annotate(date=TruncMonth('date'))
             .values('date')
             .annotate(c=Count('id'))
@@ -26,16 +26,14 @@ class SumMixin():
             .order_by('date')
         )
 
-    def sum_by_day(self, year, month, summed_name, groupby='id'):
+    def sum_by_day(self, year, month, summed_name):
         return (
             self
             ._year(year)
             ._month(month)
-            .annotate(cnt=Count(groupby))
-            .values(groupby)
-            .annotate(dt=TruncDay('date'))
-            .values('dt')
             .annotate(c=Count('id'))
+            .values('c')
+            .annotate(date=TruncDay('date'))
             .annotate(**{summed_name: Sum('price')})
-            .order_by('dt')
+            .order_by('date')
         )
