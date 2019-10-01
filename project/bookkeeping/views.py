@@ -9,6 +9,7 @@ from ..plans.lib.day_sum import DaySum
 from ..plans.models import DayPlan
 from ..transactions.models import SavingClose
 
+from .lib import helpers
 from .lib import views_helpers
 from .lib.day_spending import DaySpending
 from .lib.expense_stats import MonthExpenseType, MonthsExpenseType
@@ -142,6 +143,9 @@ class Month(IndexMixin):
         day_sum = DayPlan.objects.year(year).values()
         day_sum = day_sum[0] if day_sum else {}
 
+        fact_incomes = Income.objects.income_sum(year, month)
+        fact_incomes = fact_incomes[0]['sum'] if fact_incomes else 0
+
         _DaySpending = DaySpending(
             year=year,
             month=month,
@@ -161,5 +165,8 @@ class Month(IndexMixin):
 
         context['plan_per_day'] = _DaySpending.plan_per_day
         context['fact_per_day'] = _DaySpending.avg_per_day
+
+        context['plan_incomes'] = helpers.get_value_from_dict(_DaySum.incomes, month)
+        context['fact_incomes'] = fact_incomes
 
         return context

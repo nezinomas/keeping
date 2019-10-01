@@ -11,8 +11,8 @@
     <tbody>
         <tr>
             <td>Pajamos</td>
-            <td></td>
-            <td class=""></td>
+            <td>{{ plan_incomes|floatformat:2 }}</td>
+            <td class="{{ fact_incomes|compare:plan_incomes }}">{{ fact_incomes|floatformat:2 }}</td>
         </tr>
         <tr>
             <td>Pinigai dienai</td>
