@@ -109,7 +109,7 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
             .sum_by_day(
                 year=year, month=month,
                 summed_name=summed_name, groupby='expense_type')
-            .values('date', summed_name, title=F('expense_type__title'))
+            .values(summed_name, date=F('dt'), title=F('expense_type__title'))
         )
 
     def day_expense_type(self, year, month):

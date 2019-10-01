@@ -29,13 +29,13 @@ class SumMixin():
     def sum_by_day(self, year, month, summed_name, groupby='id'):
         return (
             self
-            .annotate(cnt=Count(groupby))
-            .values(groupby)
             ._year(year)
             ._month(month)
-            .annotate(date=TruncDay('date'))
-            .values('date')
+            .annotate(cnt=Count(groupby))
+            .values(groupby)
+            .annotate(dt=TruncDay('date'))
+            .values('dt')
             .annotate(c=Count('id'))
             .annotate(**{summed_name: Sum('price')})
-            .order_by('date')
+            .order_by('dt')
         )
