@@ -132,7 +132,7 @@ class Month(IndexMixin):
             year,
             month,
             Expense.objects.day_expense_type(year, month),
-            **{'Taupymas': Saving.objects.day_saving_type(year, month)}
+            **{'Taupymas': Saving.objects.day_saving(year, month)}
         )
         _DaySum = DaySum(year)
 
