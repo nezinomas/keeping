@@ -6,9 +6,8 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.lib.date import monthnames
 from .models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
-
-months = [x.lower() for x in calendar.month_name[1:]]
 
 
 def common_field_transalion(self):
@@ -30,13 +29,13 @@ def common_field_transalion(self):
 class ExpensePlanForm(forms.ModelForm):
     class Meta:
         model = ExpensePlan
-        fields = ['year', 'expense_type'] + months
+        fields = ['year', 'expense_type'] + monthnames()
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
         }
 
-    field_order = ['year', 'expense_type'] + months
+    field_order = ['year', 'expense_type'] + monthnames()
 
     def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -55,13 +54,13 @@ class ExpensePlanForm(forms.ModelForm):
 class IncomePlanForm(forms.ModelForm):
     class Meta:
         model = IncomePlan
-        fields = ['year', 'income_type'] + months
+        fields = ['year', 'income_type'] + monthnames()
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
         }
 
-    field_order = ['year', 'income_type'] + months
+    field_order = ['year', 'income_type'] + monthnames()
 
     def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -80,13 +79,13 @@ class IncomePlanForm(forms.ModelForm):
 class SavingPlanForm(forms.ModelForm):
     class Meta:
         model = SavingPlan
-        fields = ['year', 'saving_type'] + months
+        fields = ['year', 'saving_type'] + monthnames()
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
         }
 
-    field_order = ['year', 'saving_type'] + months
+    field_order = ['year', 'saving_type'] + monthnames()
 
     def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -105,13 +104,13 @@ class SavingPlanForm(forms.ModelForm):
 class DayPlanForm(forms.ModelForm):
     class Meta:
         model = DayPlan
-        fields = ['year'] + months
+        fields = ['year'] + monthnames()
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
         }
 
-    field_order = ['year'] + months
+    field_order = ['year'] + monthnames()
 
     def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)

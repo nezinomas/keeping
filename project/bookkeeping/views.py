@@ -13,7 +13,7 @@ from ..core.lib.utils import get_value_from_dict
 from .lib import views_helpers
 from .lib.day_spending import DaySpending
 from .lib.expense_stats import MonthExpenseType, MonthsExpenseType
-from ..core.lib.date import create_month_list, current_day
+from ..core.lib.date import year_month_list, current_day
 from .lib.months_balance import MonthsBalance
 from .lib.no_incomes import NoIncomes
 
@@ -154,7 +154,7 @@ class Month(IndexMixin):
             exceptions=Expense.objects.month_exceptions(year, month)
         )
 
-        context['month_list'] = create_month_list(year)
+        context['month_list'] = year_month_list(year)
         context['expenses'] = _MonthExpenseType.balance
         context['totals'] = _MonthExpenseType.totals
         context['expense_types'] = views_helpers.expense_types('Taupymas')

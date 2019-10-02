@@ -3,15 +3,6 @@ from datetime import date, datetime
 from typing import List
 
 
-def create_month_list(year: int) -> List[date]:
-    year = year if year else datetime.now().year
-    months = []
-
-    for i in range(1, 13):
-        months.append(date(year, i, 1))
-    return months
-
-
 def current_day(year: int, month: int) -> int:
     year = year if year else datetime.now().year
     month = month if month else datetime.now().month
@@ -26,14 +17,27 @@ def current_day(year: int, month: int) -> int:
         return calendar.monthrange(year, month)[1]
 
 
-def month_name(month: int) -> str:
+def year_month_list(year: int) -> List[date]:
+    '''
+    returns: list of months for selected year e.g.
+    [datetime.date(1970, 1, 1), datetime.date(1970, 2, 1), ...]
+    '''
+    year = year if year else datetime.now().year
+    months = []
+
+    for i in range(1, 13):
+        months.append(date(year, i, 1))
+    return months
+
+
+def monthname(month: int) -> str:
     return calendar.month_name[month].lower()
 
 
-def months():
+def monthnames() -> List[str]:
     return [x.lower() for x in calendar.month_name[1:]]
 
 
-def month_days(year: int, month_name: str) -> int:
-    month = datetime.strptime(month_name, "%B").month
+def monthlen(year: int, monthname: str) -> int:
+    month = datetime.strptime(monthname, "%B").month
     return calendar.monthlen(year, month)

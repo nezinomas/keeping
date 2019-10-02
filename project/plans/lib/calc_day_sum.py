@@ -9,7 +9,7 @@ from typing import Dict, List
 import pandas as pd
 from django.db.models import F
 
-from ...core.lib.date import month_days, months
+from ...core.lib.date import monthlen, monthnames
 from ..models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
 
 
@@ -24,19 +24,19 @@ class CollectData:
 
         self._incomes = (
             IncomePlan.objects.year(self._year)
-            .values(*months()))
+            .values(*monthnames()))
 
         self._expenses = (
             ExpensePlan.objects.year(self._year)
-            .values(*months(), necessary=F('expense_type__necessary')))
+            .values(*monthnames(), necessary=F('expense_type__necessary')))
 
         self._savings = (
             SavingPlan.objects.year(self._year)
-            .values(*months()))
+            .values(*monthnames()))
 
         self._days = (
             DayPlan.objects.year(self._year)
-            .values(*months()))
+            .values(*monthnames()))
 
     @property
     def incomes(self) -> List[Dict[str, Decimal]]:
@@ -120,7 +120,7 @@ class CalcDaySum():
         self._df.loc[row_name, :] = df.loc['sum', :]
 
     def _create_df(self) -> pd.DataFrame:
-        df = pd.DataFrame(columns=months(), dtype=float)
+        df = pd.DataFrame(columns=monthnames(), dtype=float)
 
         df.loc['incomes', :] = 0.0
         df.loc['savings', :] = 0.0
@@ -131,7 +131,7 @@ class CalcDaySum():
         df.loc['remains', :] = 0.0
 
         df.loc['m', :] = df.apply(
-            lambda x: month_days(self._year, x.name), axis=0)
+            lambda x: monthlen(self._year, x.name), axis=0)
 
         return df
 
