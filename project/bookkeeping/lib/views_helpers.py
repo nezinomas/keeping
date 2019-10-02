@@ -22,6 +22,16 @@ def expense_types(*args: str) -> List[str]:
     return qs
 
 
+def necessary_expense_types(*args: str) -> List[str]:
+    qs = list(ExpenseType.objects.filter(necessary=True).values_list('title', flat=True))
+
+    [qs.append(x) for x in args]
+
+    qs.sort()
+
+    return qs
+
+
 def account_stats(year):
     _stats = Account.objects.balance_year(year)
     _worth = AccountWorth.objects.items()

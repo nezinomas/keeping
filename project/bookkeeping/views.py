@@ -5,7 +5,7 @@ from ..accounts.models import Account
 from ..expenses.models import Expense, ExpenseType
 from ..incomes.models import Income
 from ..savings.models import Saving, SavingType
-from ..plans.lib.day_sum import DaySum
+from ..plans.lib.calc_day_sum import CalcDaySum
 from ..plans.models import DayPlan
 from ..transactions.models import SavingClose
 
@@ -135,13 +135,7 @@ class Month(IndexMixin):
             Expense.objects.day_expense_type(year, month),
             **{'Taupymas': Saving.objects.day_saving(year, month)}
         )
-        _DaySum = DaySum(year)
-
-        necessary = list(_DaySum.expenses_necessary)
-        necessary.append('Taupymas')
-
-        day_sum = DayPlan.objects.year(year).values()
-        day_sum = day_sum[0] if day_sum else {}
+        _CalcDaySum = CalcDaySum(year)
 
         fact_incomes = Income.objects.income_sum(year, month)
         fact_incomes = fact_incomes[0]['sum'] if fact_incomes else 0
@@ -150,9 +144,9 @@ class Month(IndexMixin):
             year=year,
             month=month,
             month_df=_MonthExpenseType.balance_df,
-            necessary=necessary,
-            plan_day_sum=day_sum,
-            plan_free_sum=_DaySum.expenses_free,
+            necessary=views_helpers.necessary_expense_types('Taupymas'),
+            plan_day_sum=_CalcDaySum.day_input,
+            plan_free_sum=_CalcDaySum.expenses_free,
             exceptions=Expense.objects.month_exceptions(year, month)
         )
 
@@ -166,7 +160,7 @@ class Month(IndexMixin):
         context['plan_per_day'] = _DaySpending.plan_per_day
         context['fact_per_day'] = _DaySpending.avg_per_day
 
-        context['plan_incomes'] = helpers.get_value_from_dict(_DaySum.incomes, month)
+        context['plan_incomes'] = helpers.get_value_from_dict(_CalcDaySum.incomes, month)
         context['fact_incomes'] = fact_incomes
 
         return context
