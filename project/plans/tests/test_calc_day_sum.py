@@ -2,7 +2,7 @@ from decimal import Decimal
 
 import pytest
 
-from ..lib.day_sum_new import CalcDaySum, CollectData
+from ..lib.calc_day_sum import CalcDaySum, CollectData
 
 
 @pytest.fixture()
