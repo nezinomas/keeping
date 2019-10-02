@@ -140,13 +140,17 @@ class Month(IndexMixin):
         fact_incomes = Income.objects.income_sum(year, month)
         fact_incomes = fact_incomes[0]['sum'] if fact_incomes else 0
 
+        plan_incomes = helpers.get_value_from_dict(_CalcDaySum.incomes, month)
+        plan_day_sum = helpers.get_value_from_dict(_CalcDaySum.day_input, month)
+        plan_free_sum = helpers.get_value_from_dict(_CalcDaySum.expenses_free, month)
+
         _DaySpending = DaySpending(
             year=year,
             month=month,
             month_df=_MonthExpenseType.balance_df,
             necessary=views_helpers.necessary_expense_types('Taupymas'),
-            plan_day_sum=_CalcDaySum.day_input,
-            plan_free_sum=_CalcDaySum.expenses_free,
+            plan_day_sum=plan_day_sum,
+            plan_free_sum=plan_free_sum,
             exceptions=Expense.objects.month_exceptions(year, month)
         )
 
@@ -157,10 +161,10 @@ class Month(IndexMixin):
         context['day'] = current_day(year, month)
         context['spending_table'] = _DaySpending.spending
 
-        context['plan_per_day'] = _DaySpending.plan_per_day
+        context['plan_per_day'] = plan_day_sum
         context['fact_per_day'] = _DaySpending.avg_per_day
 
-        context['plan_incomes'] = helpers.get_value_from_dict(_CalcDaySum.incomes, month)
+        context['plan_incomes'] = plan_incomes
         context['fact_incomes'] = fact_incomes
 
         return context

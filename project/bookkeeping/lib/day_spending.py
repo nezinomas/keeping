@@ -8,15 +8,15 @@ from .helpers import get_value_from_dict
 
 class DaySpending(BalanceStats):
     def __init__(self, year: int, month: int, month_df: pd.DataFrame,
-                 necessary: List[str], plan_day_sum: Dict,
-                 plan_free_sum: Dict, exceptions: Dict = {}):
+                 necessary: List[str], plan_day_sum: float,
+                 plan_free_sum: float, exceptions: Dict = {}):
 
         self._year = year
         self._month = month
         self._necessary = necessary if necessary else []
 
-        self._plan_day_sum = get_value_from_dict(plan_day_sum, month)
-        self._plan_free_sum = get_value_from_dict(plan_free_sum, month)
+        self._plan_day_sum = float(plan_day_sum) if plan_day_sum else 0.0
+        self._plan_free_sum = float(plan_free_sum) if plan_free_sum else 0.0
         self._exceptions = exceptions
 
         self._balance = self._calc_spending(month_df)
@@ -25,16 +25,8 @@ class DaySpending(BalanceStats):
         self._spending = self._balance
 
     @property
-    def plan_per_day(self):
-        return self._plan_day_sum
-
-    @property
     def avg_per_day(self):
         return self._avg_per_day
-
-    @property
-    def plan_free_sum(self):
-        return self._plan_free_sum
 
     @property
     def spending(self):
