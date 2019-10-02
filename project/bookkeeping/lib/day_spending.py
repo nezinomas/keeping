@@ -3,7 +3,7 @@ from typing import List, Dict
 import pandas as pd
 
 from ..mixins.calc_balance import BalanceStats
-from .helpers import get_value_from_dict
+from ...core.lib.utils import get_value_from_dict
 
 
 class DaySpending(BalanceStats):

@@ -9,11 +9,11 @@ from ..plans.lib.calc_day_sum import CalcDaySum
 from ..plans.models import DayPlan
 from ..transactions.models import SavingClose
 
-from .lib import helpers
+from ..core.lib.utils import get_value_from_dict
 from .lib import views_helpers
 from .lib.day_spending import DaySpending
 from .lib.expense_stats import MonthExpenseType, MonthsExpenseType
-from .lib.helpers import create_month_list, current_day
+from ..core.lib.date import create_month_list, current_day
 from .lib.months_balance import MonthsBalance
 from .lib.no_incomes import NoIncomes
 
@@ -140,9 +140,9 @@ class Month(IndexMixin):
         fact_incomes = Income.objects.income_sum(year, month)
         fact_incomes = fact_incomes[0]['sum'] if fact_incomes else 0
 
-        plan_incomes = helpers.get_value_from_dict(_CalcDaySum.incomes, month)
-        plan_day_sum = helpers.get_value_from_dict(_CalcDaySum.day_input, month)
-        plan_free_sum = helpers.get_value_from_dict(_CalcDaySum.expenses_free, month)
+        plan_incomes = get_value_from_dict(_CalcDaySum.incomes, month)
+        plan_day_sum = get_value_from_dict(_CalcDaySum.day_input, month)
+        plan_free_sum = get_value_from_dict(_CalcDaySum.expenses_free, month)
 
         _DaySpending = DaySpending(
             year=year,

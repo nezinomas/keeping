@@ -4,7 +4,7 @@ from typing import Dict, List
 
 import pandas as pd
 
-from ..lib.helpers import current_day
+from ...core.lib.date import current_day
 
 
 def df_days_of_month(year: int, month: int) -> pd.DataFrame:
