@@ -52,17 +52,17 @@ urlpatterns = [
     path(
         'plans/savings/',
         views.SavingsLists.as_view(),
-        name='savings_plans_list'
+        name='savings_plan_list'
     ),
     path(
         'plans/savings/new/',
         views.SavingsNew.as_view(),
-        name='savings_plans_new'
+        name='savings_plan_new'
     ),
     path(
         'plans/savings/update/<int:pk>/',
         views.SavingsUpdate.as_view(),
-        name='savings_plans_update'
+        name='savings_plan_update'
     ),
     #
     # day plan
@@ -70,21 +70,21 @@ urlpatterns = [
     path(
         'plans/day/',
         views.DayLists.as_view(),
-        name='days_plans_list'
+        name='days_plan_list'
     ),
     path(
         'plans/day/new/',
         views.DayNew.as_view(),
-        name='days_plans_new'
+        name='days_plan_new'
     ),
     path(
         'plans/day/update/<int:pk>/',
         views.DayUpdate.as_view(),
-        name='days_plans_update'
+        name='days_plan_update'
     ),
     path(
-        'plans/reload_plans_stats/',
+        'plans/reload_plan_stats/',
         views.plans_stats,
-        name='reload_plans_stats'
+        name='reload_plan_stats'
     )
 ]

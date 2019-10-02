@@ -27,7 +27,7 @@
         <div class="row mt-2">
             <div class="col-lg-10"><h6>Išlaidų planas</h6></div>
             <div class="col-lg-2 text-right">
-                {% url 'plans:expenses_plans_new' as url_expenses_new %}
+                {% url 'plans:expenses_plan_new' as url_expenses_new %}
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Įrašą</button>
             </div>
         </div>
@@ -41,7 +41,7 @@
                 <h6>Taupymo planas</h6>
             </div>
             <div class="col-lg-2 text-right">
-                {% url 'plans:savings_plans_new' as url_savings_new %}
+                {% url 'plans:savings_plan_new' as url_savings_new %}
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_new }}"><i class="fas fa-plus"></i> Įrašą</button>
             </div>
         </div>
@@ -55,7 +55,7 @@
                 <h6>Suma dienai</h6>
             </div>
             <div class="col-lg-2 text-right">
-                {% url 'plans:days_plans_new' as url_day_new %}
+                {% url 'plans:days_plan_new' as url_day_new %}
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_day_new }}"><i class="fas fa-plus"></i> Įrašą</button>
             </div>
         </div>
@@ -84,7 +84,7 @@
 
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
-        var url = `{% url 'plans:reload_plans_stats' %}`;
+        var url = `{% url 'plans:reload_plan_stats' %}`;
         var update_id = $("#js-form").attr("data-chained-dropdown");
 
         $.ajax({
