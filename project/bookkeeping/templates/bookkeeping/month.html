@@ -6,14 +6,16 @@
 
 
 {% block content %}
+
 <div class="row my-2">
     <div class="col-md-6 mr-0 pr-0 table-responsive">
-        {% include 'bookkeeping/includes/month_balance.html' %}
+            <div id='table-visibility'>{% include 'bookkeeping/includes/month_balance.html' %}</div>
+            <div style="display: none;" id='chart-visibility'>CHART Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tenetur officia voluptates quos, est ut, nostrum neque porro eum similique iste illo repellat. Repudiandae repellendus saepe sed? Illo, ab tempore! Facilis!</div>
     </div>
     <div class="col-md-6">
         <div class="row">
             <div class="col-md-3 mx-0 px-2">
-                {% include 'bookkeeping/includes/month_day_spending.html' %}
+                    {% include 'bookkeeping/includes/month_day_spending.html' %}
             </div>
             <div class="col-md-9 pl-0">
                 Lorem ipsum, dolor sit amet consectetur adipisicing elit. Maiores, itaque eaque quaerat ratione nulla nesciunt vero qui
@@ -21,6 +23,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         {% include 'bookkeeping/includes/month_spending_info.html' %}
+                        <button onclick="myFunction()">Click Me</button>
                     </div>
                 </div>
             </div>
@@ -37,5 +40,17 @@
         {% endwith %}{% endfor %}{% endwith %}
     </div>
 </div>
-
+<script>
+    function myFunction() {
+        var x = document.getElementById("table-visibility");
+        var c = document.getElementById("chart-visibility");
+        if (x.style.display === "none") {
+            x.style.display = "block";
+            c.style.display = 'none';
+        } else {
+            x.style.display = "none";
+            c.style.display = "block";
+        }
+    }
+</script>
 {% endblock content%}
