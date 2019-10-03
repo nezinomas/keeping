@@ -47,7 +47,7 @@ class PlanQuerySet(models.QuerySet):
 
 class ExpensePlan(MonthAbstract):
     year = models.PositiveIntegerField(
-        validators=[MinValueValidator(2000), MaxValueValidator(2050)]
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
     expense_type = models.ForeignKey(
         ExpenseType,
@@ -63,7 +63,7 @@ class ExpensePlan(MonthAbstract):
 
 class SavingPlan(MonthAbstract):
     year = models.PositiveIntegerField(
-        validators=[MinValueValidator(2000), MaxValueValidator(2050)]
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
     saving_type = models.ForeignKey(
         SavingType,
@@ -79,7 +79,7 @@ class SavingPlan(MonthAbstract):
 
 class IncomePlan(MonthAbstract):
     year = models.PositiveIntegerField(
-        validators=[MinValueValidator(2000), MaxValueValidator(2050)]
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
     income_type = models.ForeignKey(
         IncomeType,
@@ -95,7 +95,7 @@ class IncomePlan(MonthAbstract):
 
 class DayPlan(MonthAbstract):
     year = models.PositiveIntegerField(
-        validators=[MinValueValidator(2000), MaxValueValidator(2050)],
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)],
         unique=True
     )
 
