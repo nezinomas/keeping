@@ -42,6 +42,26 @@ def test_view_index_func(client):
 
 
 #
+#         plans_stats view
+#
+@pytest.mark.django_db()
+def test_view_plan_stats_render(client, login):
+    url = reverse('plans:reload_plan_stats')
+
+    response = client.get(url, {'ajax_trigger': True})
+
+    assert 200 == response.status_code
+
+
+@pytest.mark.django_db()
+def test_view_plan_stats_render_to_string(client, login):
+    url = reverse('plans:reload_plan_stats')
+
+    response = client.get(url, {'ajax_trigger': False})
+
+    assert 200 == response.status_code
+
+#
 #         IncomePlan create/update
 #
 @freeze_time('1999-1-1')
