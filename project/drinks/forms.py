@@ -14,7 +14,12 @@ class DrinkForm(forms.ModelForm):
         fields = ['date', 'quantity']
 
         widgets = {
-            'date': DatePickerInput(format='%Y-%m-%d'),
+            'date': DatePickerInput(
+                options={
+                    "format": "YYYY-MM-DD",
+                    "locale": "lt",
+                }
+            ),
         }
 
     field_order = ['date', 'quantity']

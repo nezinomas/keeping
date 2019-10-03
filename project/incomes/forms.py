@@ -14,7 +14,12 @@ class IncomeForm(forms.ModelForm):
         fields = ['date', 'price', 'remark', 'account', 'income_type']
 
         widgets = {
-            'date': DatePickerInput(format='%Y-%m-%d'),
+            'date': DatePickerInput(
+                options={
+                    "format": "YYYY-MM-DD",
+                    "locale": "lt",
+                }
+            ),
         }
 
     field_order = ['date', 'income_type', 'account', 'price', 'remark']

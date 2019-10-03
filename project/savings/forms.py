@@ -28,7 +28,12 @@ class SavingForm(forms.ModelForm):
         fields = ['date', 'price', 'fee', 'remark', 'saving_type', 'account']
 
         widgets = {
-            'date': DatePickerInput(format='%Y-%m-%d'),
+            'date': DatePickerInput(
+                options={
+                    "format": "YYYY-MM-DD",
+                    "locale": "lt",
+                }
+            ),
         }
 
     field_order = ['date', 'saving_type', 'account', 'price', 'fee', 'remark']
