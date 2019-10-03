@@ -1,4 +1,4 @@
-{% load crispy_forms_tags %}{% load static %}{% load l10n %}
+{% load crispy_forms_tags %}{% load static %}
 <form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}" {% if chained_dropdown %}data-chained-dropdown="{{ chained_dropdown }}"{% endif %}>
     {% csrf_token %}
     <script type="text/javascript" src="{% static 'js/moment-with-locales-2.9.0.min.js' %}"></script>
@@ -22,7 +22,7 @@
         {% for field in form %}
         <div class="row align-items-center">
             <div class="col-sm-4">{{ field.label_tag }}</div>
-            <div class="col-sm-8">{% if field.name == 'year' %}{{ field|as_crispy_field|unlocalize }}{% else %}{{ field|as_crispy_field }}{% endif %}</div>
+            <div class="col-sm-8">{{ field|as_crispy_field }}</div>
         </div>
         {% endfor %}
     </div>
@@ -51,6 +51,15 @@
 
     $(document).on('submit', '.js-form', function (e) {
         e.preventDefault();
+    });
+
+    // replace dot in year field
+    $(document).ready(function () {
+        var year = $("#id_year:text").attr('value')
+        year = year.replace(".", "");
+
+        $("#id_year").attr('value', year);
+        $("#id_year:text").val(year);
     });
 </script>
 
