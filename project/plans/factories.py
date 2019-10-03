@@ -38,3 +38,12 @@ class SavingPlanFactory(factory.DjangoModelFactory):
     february = 32.33
 
     saving_type = factory.SubFactory(SavingTypeFactory)
+
+
+class DayPlanFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = DayPlan
+
+    year = 1970
+    january = 32.33
+    february = 32.33
