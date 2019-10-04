@@ -14,7 +14,15 @@
             text: ''
         },
         xAxis: {
-            categories: ['Maistas', 'Apranga', 'Kelionės']
+            categories: ['Maistas', 'Apranga', 'Kelionės'],
+            lineColor: '#000',
+                lineWidth: 2,
+                labels: {
+                    style: {
+                        fontSize: '10px',
+                        fontFamily: 'Calibri, Verdana',
+                    }
+                }
         },
         yAxis: {
             min: 0,
@@ -26,7 +34,11 @@
             enabled: false
         },
         tooltip: {
-            shared: true
+            shared: true,
+            style: {
+                    fontSize: '12px',
+                    fontFamily: 'Calibri, Verdana',
+                }
         },
         plotOptions: {
             bar: {
@@ -46,8 +58,8 @@
             name: 'Fact',
             opacity: '0.6',
             data: [{ 'y': 140, 'color': 'green' }, { 'y': 90, 'color': 'red' }, { 'y': 40, 'color': 'red' }],
-            pointPadding: 0,
-            pointPlacement: 0,
+            pointPadding: 0.0,
+            pointPlacement: -0.0005,
             borderWidth: 0,
         }, {
             type: 'scatter',
