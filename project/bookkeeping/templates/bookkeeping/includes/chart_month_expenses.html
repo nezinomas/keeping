@@ -38,8 +38,6 @@ Highcharts.chart('container-for-month-expenses', {
     },
     series: [
         {
-            name: "Browsers",
-            colorByPoint: true,
             data: {{ chart_expenses|safe }},
             dataLabels: {
                 enabled: true,
