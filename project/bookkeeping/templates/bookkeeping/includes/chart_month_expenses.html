@@ -13,11 +13,25 @@ Highcharts.chart('container-for-month-expenses', {
         text: ''
     },
     xAxis: {
-        type: 'category'
+        type: 'category',
+        lineColor: '#000',
+        lineWidth: 2,
+        labels: {
+            style: {
+                fontSize: '10px',
+                fontFamily: 'Calibri, Verdana',
+            }
+        }
     },
     yAxis: {
         title: {
             text: ''
+        },
+        labels: {
+            style: {
+                fontSize: '10px',
+                fontFamily: 'Calibri, Verdana',
+            }
         }
     },
     legend: {
@@ -34,8 +48,12 @@ Highcharts.chart('container-for-month-expenses', {
     },
     tooltip: {
         headerFormat: '',
-        pointFormat: '{point.name}: <b>{point.y:.1f}</b><br/>'
-    },
+        pointFormat: '{point.name}: <b>{point.y:.1f}</b><br/>',
+        style: {
+            fontSize: '12px',
+            fontFamily: 'Calibri, Verdana',
+        }
+     },
     series: [
         {
             data: {{ chart_expenses|safe }},
@@ -48,7 +66,7 @@ Highcharts.chart('container-for-month-expenses', {
                 y: -1,
                 style: {
                     fontSize: '9px',
-                    fontWeight: 'normal',
+                    fontWeight: 'bold',
                     fontFamily: 'Verdana, sans-serif',
                     textOutline: false
                 }
