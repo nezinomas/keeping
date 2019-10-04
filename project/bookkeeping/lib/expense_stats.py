@@ -1,8 +1,10 @@
+from operator import itemgetter
 from datetime import datetime
 from typing import Dict, List
 
 import pandas as pd
 
+from ...core.lib.colors import CHART
 from ..mixins.calc_balance import (BalanceStats, df_days_of_month,
                                    df_months_of_year)
 
@@ -43,6 +45,25 @@ class MonthExpenseType(BalanceStats):
         t = super().totals
 
         return t.get('total', 0.0)
+
+    def chart_expenses(self, expenses_types: List[str]) -> List[Dict]:
+        totals = super().totals
+        rtn = []
+
+        # make List[Dict] from expenses_types and totals
+        for name in expenses_types:
+            value = totals.get(name, 0.0)
+            arr = {'name': name, 'y': value}
+            rtn.append(arr)
+
+        # sort List[Dict] by y
+        rtn = sorted(rtn, key=itemgetter('y'), reverse=True)
+
+        # and to List[Dict] colors
+        for key, arr in enumerate(rtn):
+            rtn[key]['color'] = CHART[key]
+
+        return rtn
 
 
 class MonthsExpenseType(BalanceStats):

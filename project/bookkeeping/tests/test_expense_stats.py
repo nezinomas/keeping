@@ -143,3 +143,41 @@ def test_month_total_no_expenses(_ex):
     actual = MonthExpenseType(year=1999, month=1, expenses=[]).total
 
     assert 0.0 == actual
+
+
+def test_month_chart_expenses(_ex):
+    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+
+    actual = obj.chart_expenses(['T1', 'T2', 'T3'])
+
+    expect = [
+        {'name': 'T2', 'y': 0.5, 'color': '#6994c7'},
+        {'name': 'T1', 'y': 0.25, 'color': '#c86967'},
+        {'name': 'T3', 'y': 0., 'color': '#a9c471'},
+    ]
+
+    assert expect == actual
+
+
+def test_month_chart_expenses_no_types(_ex):
+    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+
+    actual = obj.chart_expenses(['T5'])
+
+    expect = [
+        {'name': 'T5', 'y': 0.0, 'color': '#6994c7'},
+    ]
+
+    assert expect == actual
+
+
+def test_month_chart_expenses_no_types_no_expenses():
+    obj = MonthExpenseType(year=1999, month=1, expenses=[])
+
+    actual = obj.chart_expenses(['T5'])
+
+    expect = [
+        {'name': 'T5', 'y': 0.0, 'color': '#6994c7'},
+    ]
+
+    assert expect == actual
