@@ -1,0 +1,66 @@
+<div id="container-for-expenses-with-target"></div>
+<script>
+    $(function () {
+        Highcharts.SVGRenderer.prototype.symbols['c-rect'] = function (x, y, w, h) {
+            return ['M', x, y + h / 2, 'L', x + w, y + h / 2];
+        };
+
+    var chart = Highcharts.chart('container-for-expenses-with-target', {
+        chart: {
+            type: 'bar',
+            height: '580'
+        },
+        title: {
+            text: ''
+        },
+        xAxis: {
+            categories: ['Maistas', 'Apranga', 'Kelionės']
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: ''
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            shared: true
+        },
+        plotOptions: {
+            bar: {
+                grouping: false,
+                shadow: false,
+            }
+        },
+        series: [{
+            name: 'Plan',
+            color: 'rgba(165,170,217,0)',
+            data: [{ 'y': 150 }, 73, 20],
+            pointPadding: 0,
+            pointPlacement: 0,
+            borderColor: 'grey'
+
+        }, {
+            name: 'Fact',
+            opacity: '0.6',
+            data: [{ 'y': 140, 'color': 'green' }, { 'y': 90, 'color': 'red' }, { 'y': 40, 'color': 'red' }],
+            pointPadding: 0,
+            pointPlacement: 0,
+            borderWidth: 0,
+        }, {
+            type: 'scatter',
+            showInLegend: false,
+            enableMouseTracking: false,
+            data: [150, 73, 20],
+            marker: {
+                symbol: 'c-rect',
+                lineWidth: 3,
+                lineColor: Highcharts.getOptions().colors[1],
+                radius: 10,
+            },
+        }]
+    });
+});
+</script>
