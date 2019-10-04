@@ -110,7 +110,9 @@ class CalcDaySum():
         arr = self._data._expenses
 
         for lst in arr:
-            rtn[lst.get('title', 'unknown')] = float(lst.get(month, 0.0))
+            val = lst.get(month, 0.0)
+            val = val if val else 0.0
+            rtn[lst.get('title', 'unknown')] = float(val)
 
         return rtn
 

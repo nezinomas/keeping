@@ -164,3 +164,15 @@ def test_targets(data):
     expect = {'T1': 10.01, 'T2': 20.02, 'T3': 30.03, 'T4': 40.04}
 
     assert expect == actual
+
+
+def test_target_with_nones(data):
+    obj = CalcDaySum(2020)
+
+    obj._data._expenses = [{'january': None, 'necessary': False, 'title': 'T1'}]
+
+    actual = obj.targets(1)
+
+    expect = {'T1': 0.0}
+
+    assert expect == actual
