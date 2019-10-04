@@ -138,11 +138,13 @@ class Month(IndexMixin):
         _CalcDaySum = CalcDaySum(year)
 
         fact_incomes = Income.objects.income_sum(year, month)
-        fact_incomes = fact_incomes[0]['sum'] if fact_incomes else 0
+        fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
+        fact_expenses = _MonthExpenseType.total
 
         plan_incomes = get_value_from_dict(_CalcDaySum.incomes, month)
         plan_day_sum = get_value_from_dict(_CalcDaySum.day_input, month)
         plan_free_sum = get_value_from_dict(_CalcDaySum.expenses_free, month)
+        plan_remains = get_value_from_dict(_CalcDaySum.remains, month)
 
         _DaySpending = DaySpending(
             year=year,
@@ -162,9 +164,11 @@ class Month(IndexMixin):
         context['spending_table'] = _DaySpending.spending
 
         context['plan_per_day'] = plan_day_sum
-        context['fact_per_day'] = _DaySpending.avg_per_day
-
         context['plan_incomes'] = plan_incomes
+        context['plan_remains'] = plan_remains
+        context['fact_per_day'] = _DaySpending.avg_per_day
         context['fact_incomes'] = fact_incomes
+        context['fact_remains'] = fact_incomes - fact_expenses
+
 
         return context

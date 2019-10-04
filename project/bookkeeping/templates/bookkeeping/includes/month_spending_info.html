@@ -20,14 +20,9 @@
             <td class="{{ plan_per_day|compare:fact_per_day }}">{{ fact_per_day|floatformat:2 }}</td>
         </tr>
         <tr>
-            <td>Mėn balansas (faktinės pajamos)</td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Mėn balansas (pluonauojamos pajamos)</td>
-            <td></td>
-            <td></td>
+            <td>Mėn balansas</td>
+            <td>{{ plan_remains|floatformat:2 }}</td>
+            <td class="{{ fact_remains|compare:plan_remains }}">{{ fact_remains|floatformat:2 }}</td>
         </tr>
     </tbody>
 </table>
