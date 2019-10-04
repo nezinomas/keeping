@@ -1,15 +1,12 @@
 import calendar
 from collections import namedtuple
-from dataclasses import dataclass, field
-from datetime import datetime
 from decimal import Decimal
-from time import strptime
 from typing import Dict, List
 
 import pandas as pd
 from django.db.models import F
 
-from ...core.lib.date import monthlen, monthnames
+from ...core.lib.date import monthlen, monthname, monthnames
 from ..models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
 
 
@@ -28,7 +25,11 @@ class CollectData:
 
         self._expenses = (
             ExpensePlan.objects.year(self._year)
-            .values(*monthnames(), necessary=F('expense_type__necessary')))
+            .values(
+                *monthnames(),
+                necessary=F('expense_type__necessary'),
+                title=F('expense_type__title')
+            ))
 
         self._savings = (
             SavingPlan.objects.year(self._year)
@@ -101,6 +102,17 @@ class CalcDaySum():
 
         # list of dictionaries convert to list of objects
         return [namedtuple("Items", item.keys())(*item.values()) for item in dicts]
+
+    def targets(self, month: int) -> Dict[str, float]:
+        rtn = {}
+
+        month = monthname(month)
+        arr = self._data._expenses
+
+        for lst in arr:
+            rtn[lst.get('title', 'unknown')] = float(lst.get(month, 0.0))
+
+        return rtn
 
     def _get_data(self):
         return CollectData(self._year)

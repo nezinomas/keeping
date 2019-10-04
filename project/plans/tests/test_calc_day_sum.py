@@ -21,10 +21,14 @@ def data(monkeypatch):
     ]
 
     obj._expenses = [
-        {'january': Decimal(10.01), 'february': Decimal(10.01), 'necessary': False},
-        {'january': Decimal(20.02), 'february': Decimal(20.02), 'necessary': True},
-        {'january': Decimal(30.03), 'february': Decimal(30.03), 'necessary': False},
-        {'january': Decimal(40.04), 'february': Decimal(40.04), 'necessary': True},
+        {'january': Decimal(10.01), 'february': Decimal(10.01),
+            'necessary': False, 'title': 'T1'},
+        {'january': Decimal(20.02), 'february': Decimal(20.02),
+            'necessary': True, 'title': 'T2'},
+        {'january': Decimal(30.03), 'february': Decimal(30.03),
+            'necessary': False, 'title': 'T3'},
+        {'january': Decimal(40.04), 'february': Decimal(40.04),
+            'necessary': True, 'title': 'T4'},
     ]
 
     obj._savings = [
@@ -150,3 +154,13 @@ def test_plans_stats_remains(data):
     assert 'Likutis' == actual[3].type
     assert 0.31 == round(actual[3].january, 2)
     assert 121.32 == round(actual[3].february, 2)
+
+
+def test_targets(data):
+    obj = CalcDaySum(2020)
+
+    actual = obj.targets(1)
+
+    expect = {'T1': 10.01, 'T2': 20.02, 'T3': 30.03, 'T4': 40.04}
+
+    assert expect == actual
