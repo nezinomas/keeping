@@ -73,7 +73,7 @@ class MonthExpenseType(BalanceStats):
         # make List[Dict] from expenses_types and totals
         for name in expenses_types:
             value = totals.get(name, 0.0)
-            arr = {'name': name.upper(), 'y': value}
+            arr = {'name': name, 'y': value}
             tmp.append(arr)
 
         # sort List[Dict] by y
