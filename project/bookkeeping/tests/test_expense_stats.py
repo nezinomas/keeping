@@ -131,3 +131,15 @@ def test_month_return_dataframe(_ex):
 
     assert isinstance(actual, pd.DataFrame)
     assert 31 == len(actual)
+
+
+def test_month_total(_ex):
+    actual = MonthExpenseType(year=1999, month=1, expenses=_ex[:2]).total
+
+    assert 0.75 == actual
+
+
+def test_month_total_no_expenses(_ex):
+    actual = MonthExpenseType(year=1999, month=1, expenses=[]).total
+
+    assert 0.0 == actual
