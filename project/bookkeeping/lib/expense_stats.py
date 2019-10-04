@@ -90,7 +90,7 @@ class MonthExpenseType(BalanceStats):
 
             color = 'green'
 
-            if fact > target:
+            if fact > target and target > 0:
                 color = 'red'
 
             rtn_categories.append(category.upper())

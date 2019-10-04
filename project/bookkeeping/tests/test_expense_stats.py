@@ -210,6 +210,26 @@ def test_month_chart_target_data_target(_ex, _ex_targets):
     assert expect == actual
 
 
+def test_month_chart_target_data_target_partial(_ex):
+    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+
+    (_, actual, _) = obj.chart_targets(['T1', 'T2', 'T3'], {'T2': 0.4})
+
+    expect = [0.4, 0.0, 0.0]
+
+    assert expect == actual
+
+
+def test_month_chart_target_data_target_empty(_ex):
+    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+
+    (_, actual, _) = obj.chart_targets(['T1', 'T2', 'T3'], {})
+
+    expect = [0.0, 0.0, 0.0]
+
+    assert expect == actual
+
+
 def test_month_chart_target_data_fact(_ex, _ex_targets):
     obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
 
@@ -217,6 +237,34 @@ def test_month_chart_target_data_fact(_ex, _ex_targets):
 
     expect = [
         {'y': 0.5, 'color': 'red'},
+        {'y': 0.25, 'color': 'green'},
+        {'y': 0.0, 'color': 'green'},
+    ]
+
+    assert expect == actual
+
+
+def test_month_chart_target_data_fact_target_partial(_ex):
+    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+
+    (_, _, actual) = obj.chart_targets(['T1', 'T2', 'T3'], {'T2': 0.4})
+
+    expect = [
+        {'y': 0.5, 'color': 'red'},
+        {'y': 0.25, 'color': 'green'},
+        {'y': 0.0, 'color': 'green'},
+    ]
+
+    assert expect == actual
+
+
+def test_month_chart_target_data_fact_target_empty(_ex):
+    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+
+    (_, _, actual) = obj.chart_targets(['T1', 'T2', 'T3'], {})
+
+    expect = [
+        {'y': 0.5, 'color': 'green'},
         {'y': 0.25, 'color': 'green'},
         {'y': 0.0, 'color': 'green'},
     ]
