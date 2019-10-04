@@ -170,5 +170,4 @@ class Month(IndexMixin):
         context['fact_incomes'] = fact_incomes
         context['fact_remains'] = fact_incomes - fact_expenses
 
-
         return context
