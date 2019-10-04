@@ -148,6 +148,9 @@ class Month(IndexMixin):
 
         expenses_types = views_helpers.expense_types('Taupymas')
 
+        targets = _CalcDaySum.targets(month)
+        (categories, data_target, data_fact) = _MonthExpenseType.chart_targets(expenses_types, targets)
+
         _DaySpending = DaySpending(
             year=year,
             month=month,
@@ -173,5 +176,8 @@ class Month(IndexMixin):
         context['fact_remains'] = fact_incomes - fact_expenses
 
         context['chart_expenses'] = _MonthExpenseType.chart_expenses(expenses_types)
+        context['chart_targets_categories'] = categories
+        context['chart_targets_data_target'] = data_target
+        context['chart_targets_data_fact'] = data_fact
 
         return context

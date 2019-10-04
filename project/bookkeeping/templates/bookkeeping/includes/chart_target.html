@@ -14,12 +14,12 @@
             text: ''
         },
         xAxis: {
-            categories: ['Maistas', 'Apranga', 'Kelionės'],
+            categories: {{ chart_targets_categories|safe }},
             lineColor: '#000',
                 lineWidth: 2,
                 labels: {
                     style: {
-                        fontSize: '10px',
+                        fontSize: '12px',
                         fontFamily: 'Calibri, Verdana',
                     }
                 }
@@ -35,10 +35,12 @@
         },
         tooltip: {
             shared: true,
+            headerFormat: '',
+            pointFormat: '{series.name}: <b>{point.y:.1f}</b><br/>',
             style: {
-                    fontSize: '12px',
-                    fontFamily: 'Calibri, Verdana',
-                }
+                fontSize: '12px',
+                fontFamily: 'Calibri, Verdana',
+            }
         },
         plotOptions: {
             bar: {
@@ -47,17 +49,17 @@
             }
         },
         series: [{
-            name: 'Plan',
+            name: 'Planas',
             color: 'rgba(165,170,217,0)',
-            data: [{ 'y': 150 }, 73, 20],
+            data: {{ chart_targets_data_target| safe }},
             pointPadding: 0,
             pointPlacement: 0,
             borderColor: 'grey'
 
         }, {
-            name: 'Fact',
+            name: 'Faktas',
             opacity: '0.6',
-            data: [{ 'y': 140, 'color': 'green' }, { 'y': 90, 'color': 'red' }, { 'y': 40, 'color': 'red' }],
+            data: {{ chart_targets_data_fact|safe }},
             pointPadding: 0.0,
             pointPlacement: -0.0005,
             borderWidth: 0,
@@ -65,12 +67,12 @@
             type: 'scatter',
             showInLegend: false,
             enableMouseTracking: false,
-            data: [150, 73, 20],
+            data: {{ chart_targets_data_target|safe }},
             marker: {
                 symbol: 'c-rect',
                 lineWidth: 3,
                 lineColor: Highcharts.getOptions().colors[1],
-                radius: 10,
+                radius: 15,
             },
         }]
     });
