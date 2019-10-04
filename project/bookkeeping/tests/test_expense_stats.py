@@ -17,6 +17,13 @@ def _ex():
     ])
 
 
+@pytest.fixture
+def _ex_targets():
+    return (
+        {'T1': Decimal(0.3), 'T2': Decimal(0.4)}
+    )
+
+
 @pytest.fixture()
 def _savings():
     return ({
@@ -178,6 +185,40 @@ def test_month_chart_expenses_no_types_no_expenses():
 
     expect = [
         {'name': 'T5', 'y': 0.0, 'color': '#6994c7'},
+    ]
+
+    assert expect == actual
+
+
+def test_month_chart_target_categories(_ex, _ex_targets):
+    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+
+    (actual, _, _) = obj.chart_targets(['T1', 'T2', 'T3'], _ex_targets)
+
+    expect = ['T2', 'T1', 'T3']
+
+    assert expect == actual
+
+
+def test_month_chart_target_data_target(_ex, _ex_targets):
+    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+
+    (_, actual, _) = obj.chart_targets(['T1', 'T2', 'T3'], _ex_targets)
+
+    expect = [0.4, 0.3, 0.0]
+
+    assert expect == actual
+
+
+def test_month_chart_target_data_fact(_ex, _ex_targets):
+    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+
+    (_, _, actual) = obj.chart_targets(['T1', 'T2', 'T3'], _ex_targets)
+
+    expect = [
+        {'y': 0.5, 'color': 'red'},
+        {'y': 0.25, 'color': 'green'},
+        {'y': 0.0, 'color': 'green'},
     ]
 
     assert expect == actual

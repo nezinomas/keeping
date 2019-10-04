@@ -65,6 +65,40 @@ class MonthExpenseType(BalanceStats):
 
         return rtn
 
+    def chart_targets(self, expenses_types: List[str],
+                      targets: Dict) -> (List[str], List[float], List[Dict]):
+        totals = super().totals
+        tmp = []
+
+        # make List[Dict] from expenses_types and totals
+        for name in expenses_types:
+            value = totals.get(name, 0.0)
+            arr = {'name': name.upper(), 'y': value}
+            tmp.append(arr)
+
+        # sort List[Dict] by y
+        tmp = sorted(tmp, key=itemgetter('y'), reverse=True)
+
+        rtn_categories = []
+        rtn_data_fact = []
+        rtn_data_target = []
+
+        for arr in tmp:
+            category = arr['name']
+            target = float(targets.get(category, 0.0))
+            fact = float(arr['y'])
+
+            color = 'green'
+
+            if fact > target:
+                color = 'red'
+
+            rtn_categories.append(category.upper())
+            rtn_data_target.append(target)
+            rtn_data_fact.append({'y': fact, 'color': color})
+
+        return (rtn_categories, rtn_data_target, rtn_data_fact)
+
 
 class MonthsExpenseType(BalanceStats):
     def __init__(self, year, expenses: List[Dict], **kwargs):
