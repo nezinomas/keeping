@@ -1,0 +1,62 @@
+<div id="container-for-month-expenses"></div>
+
+<script>
+Highcharts.chart('container-for-month-expenses', {
+    chart: {
+        type: 'bar',
+        height: 485,
+    },
+    title: {
+        text: ''
+    },
+    subtitle: {
+        text: ''
+    },
+    xAxis: {
+        type: 'category'
+    },
+    yAxis: {
+        title: {
+            text: ''
+        }
+    },
+    legend: {
+        enabled: false
+    },
+    plotOptions: {
+        series: {
+            borderWidth: 0,
+            dataLabels: {
+                enabled: true,
+                format: '{point.y:.1f}'
+            }
+        }
+    },
+    tooltip: {
+        headerFormat: '',
+        pointFormat: '{point.name}: <b>{point.y:.1f}</b><br/>'
+    },
+    series: [
+        {
+            name: "Browsers",
+            colorByPoint: true,
+            data: {{ chart_expenses|safe }},
+            dataLabels: {
+                enabled: true,
+                rotation: 0,
+                color: '#000',
+                align: 'right',
+                format: '{point.y:.1f}', // one decimal
+                y: -1,
+                style: {
+                    fontSize: '9px',
+                    fontWeight: 'normal',
+                    fontFamily: 'Verdana, sans-serif',
+                    textOutline: false
+                }
+            }
+        },
+    ],
+
+});
+</script>

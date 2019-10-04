@@ -146,6 +146,8 @@ class Month(IndexMixin):
         plan_free_sum = get_value_from_dict(_CalcDaySum.expenses_free, month)
         plan_remains = get_value_from_dict(_CalcDaySum.remains, month)
 
+        expenses_types = views_helpers.expense_types('Taupymas')
+
         _DaySpending = DaySpending(
             year=year,
             month=month,
@@ -159,7 +161,7 @@ class Month(IndexMixin):
         context['month_list'] = year_month_list(year)
         context['expenses'] = _MonthExpenseType.balance
         context['totals'] = _MonthExpenseType.totals
-        context['expense_types'] = views_helpers.expense_types('Taupymas')
+        context['expense_types'] = expenses_types
         context['day'] = current_day(year, month)
         context['spending_table'] = _DaySpending.spending
 
@@ -169,5 +171,7 @@ class Month(IndexMixin):
         context['fact_per_day'] = _DaySpending.avg_per_day
         context['fact_incomes'] = fact_incomes
         context['fact_remains'] = fact_incomes - fact_expenses
+
+        context['chart_expenses'] = _MonthExpenseType.chart_expenses(expenses_types)
 
         return context
