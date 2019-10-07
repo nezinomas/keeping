@@ -97,3 +97,20 @@ class DayNew(CreateAjaxMixin):
 class DayUpdate(UpdateAjaxMixin):
     model = models.DayPlan
     form_class = forms.DayPlanForm
+
+
+#
+# Necessary Plan views
+#
+class NecessaryLists(ListMixin):
+    model = models.NecessaryPlan
+
+
+class NecessaryNew(CreateAjaxMixin):
+    model = models.NecessaryPlan
+    form_class = forms.NecessaryPlanForm
+
+
+class NecessaryUpdate(UpdateAjaxMixin):
+    model = models.NecessaryPlan
+    form_class = forms.NecessaryPlanForm

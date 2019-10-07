@@ -82,6 +82,24 @@ urlpatterns = [
         views.DayUpdate.as_view(),
         name='days_plan_update'
     ),
+    #
+    # necessary plan
+    #
+    path(
+        'plans/necessary/',
+        views.NecessaryLists.as_view(),
+        name='necessarys_plan_list'
+    ),
+    path(
+        'plans/necessary/new/',
+        views.NecessaryNew.as_view(),
+        name='necessarys_plan_new'
+    ),
+    path(
+        'plans/necessary/update/<int:pk>/',
+        views.NecessaryUpdate.as_view(),
+        name='necessarys_plan_update'
+    ),
     path(
         'plans/reload_plan_stats/',
         views.plans_stats,
