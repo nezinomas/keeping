@@ -18,8 +18,8 @@
             </div>
             <div class="col-lg-9 pl-0">
                 <div class="row">
-                    <div style="display: none;" id='table-visibility' class="col-lg-12">{% include 'bookkeeping/includes/chart_month_expenses.html' %}</div>
-                    <div id='chart-visibility' class="col-lg-12">{% include 'bookkeeping/includes/chart_target.html' %}</div>
+                    <div style="display: none;" id='expenses-visibility' class="col-lg-12">{% include 'bookkeeping/includes/chart_month_expenses.html' %}</div>
+                    <div id='target-visibility' class="col-lg-12">{% include 'bookkeeping/includes/chart_target.html' %}</div>
                 </div>
                 <div class="row mt-2">
                     <div class="col-lg-12">
@@ -43,8 +43,8 @@
 </div>
 <script>
     function myFunction() {
-        var x = document.getElementById("table-visibility");
-        var c = document.getElementById("chart-visibility");
+        var x = document.getElementById("expenses-visibility");
+        var c = document.getElementById("target-visibility");
         if (x.style.display === "none") {
             x.style.display = "block";
             c.style.display = 'none';
