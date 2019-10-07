@@ -26,6 +26,7 @@ class Index(IndexMixin):
         context['incomes_list'] = IncomesLists.as_view()(self.request, as_string=True)
         context['savings_list'] = SavingsLists.as_view()(self.request, as_string=True)
         context['day_list'] = DayLists.as_view()(self.request, as_string=True)
+        context['necessary_list'] = NecessaryLists.as_view()(self.request, as_string=True)
         context['plans_stats'] = plans_stats(self.request)
 
         return context
