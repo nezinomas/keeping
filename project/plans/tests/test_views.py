@@ -8,7 +8,8 @@ from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
 from ...savings.factories import SavingTypeFactory
 from ..factories import (
-    DayPlanFactory, ExpensePlanFactory, IncomePlanFactory, SavingPlanFactory)
+    DayPlanFactory, ExpensePlanFactory, IncomePlanFactory,
+    NecessaryPlanFactory, SavingPlanFactory)
 from ..views import Index
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -354,6 +355,80 @@ def test_view_days_update_year_not_match(client, login):
     p = DayPlanFactory()
 
     url = reverse('plans:days_plan_update', kwargs={'pk': p.pk})
+
+    response = client.get(url, {}, **X_Req)
+
+    assert 404 == response.status_code
+
+
+#
+#         NecessaryPlan create/update
+#
+@freeze_time('1999-1-1')
+def test_view_necessarys(admin_client):
+    url = reverse('plans:necessarys_plan_new')
+    response = admin_client.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert 200 == response.status_code
+    assert '<input type="text" name="year" value="1999"' in actual['html_form']
+
+
+@pytest.mark.django_db()
+def test_view_necessarys_new(client, login):
+    data = {'year': '1999', 'title': 'X', 'january': 999.99}
+
+    url = reverse('plans:necessarys_plan_new')
+
+    response = client.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert '999,99' in actual['html_list']
+
+
+@pytest.mark.django_db()
+def test_view_necessarys_new_invalid_data(client, login):
+    data = {'year': 'x', 'title': '', 'january': 999.99}
+
+    url = reverse('plans:necessarys_plan_new')
+
+    response = client.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
+
+
+@pytest.mark.django_db()
+def test_view_necessarys_update(client, login):
+    p = NecessaryPlanFactory(year=1999)
+
+    data = {'year': '1999',  'title': 'X', 'january': 999.99}
+    url = reverse('plans:necessarys_plan_update', kwargs={'pk': p.pk})
+
+    response = client.post(url, data, **X_Req)
+
+    assert 200 == response.status_code
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert '999,99' in actual['html_list']
+
+
+@pytest.mark.django_db()
+def test_view_necessarys_update_year_not_match(client, login):
+    # if year in Plan and urser.profile not match, 404 error
+    p = NecessaryPlanFactory()
+
+    url = reverse('plans:necessarys_plan_update', kwargs={'pk': p.pk})
 
     response = client.get(url, {}, **X_Req)
 

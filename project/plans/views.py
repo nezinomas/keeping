@@ -26,6 +26,7 @@ class Index(IndexMixin):
         context['incomes_list'] = IncomesLists.as_view()(self.request, as_string=True)
         context['savings_list'] = SavingsLists.as_view()(self.request, as_string=True)
         context['day_list'] = DayLists.as_view()(self.request, as_string=True)
+        context['necessary_list'] = NecessaryLists.as_view()(self.request, as_string=True)
         context['plans_stats'] = plans_stats(self.request)
 
         return context
@@ -97,3 +98,20 @@ class DayNew(CreateAjaxMixin):
 class DayUpdate(UpdateAjaxMixin):
     model = models.DayPlan
     form_class = forms.DayPlanForm
+
+
+#
+# Necessary Plan views
+#
+class NecessaryLists(ListMixin):
+    model = models.NecessaryPlan
+
+
+class NecessaryNew(CreateAjaxMixin):
+    model = models.NecessaryPlan
+    form_class = forms.NecessaryPlanForm
+
+
+class NecessaryUpdate(UpdateAjaxMixin):
+    model = models.NecessaryPlan
+    form_class = forms.NecessaryPlanForm

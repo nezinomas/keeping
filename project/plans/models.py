@@ -100,3 +100,18 @@ class DayPlan(MonthAbstract):
     )
 
     objects = YearManager(None)
+
+
+class NecessaryPlan(MonthAbstract):
+    year = models.PositiveIntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)],
+    )
+    title = models.CharField(max_length=100)
+
+    objects = YearManager(None)
+
+    def __str__(self):
+        return f'{self.year}/{self.title}'
+
+    class Meta:
+        unique_together = ('year', 'title')

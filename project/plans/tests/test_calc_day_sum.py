@@ -40,6 +40,10 @@ def data(monkeypatch):
         {'january': Decimal(25.0), 'february': Decimal(26.0)},
     ]
 
+    obj._necessary = [
+        {'january': None, 'february': Decimal(100.0)},
+    ]
+
     monkeypatch.setattr(
         CalcDaySum,
         '_get_data',
@@ -90,21 +94,21 @@ def test_expenses_free(data):
     actual = CalcDaySum(2020).expenses_free
 
     assert 775.31 == round(actual['january'], 2)
-    assert 875.32 == round(actual['february'], 2)
+    assert 775.32 == round(actual['february'], 2)
 
 
 def test_expenses_necessary(data):
     actual = CalcDaySum(2020).expenses_necessary
 
     assert 124.72 == actual['january']
-    assert 124.72 == actual['february']
+    assert 224.72 == actual['february']
 
 
 def test_day_calced(data):
     actual = CalcDaySum(2020).day_calced
 
     assert 25.01 == round(actual['january'], 2)
-    assert 30.18 == round(actual['february'], 2)
+    assert 26.74 == round(actual['february'], 2)
 
 
 def test_day_input(data):
@@ -118,7 +122,14 @@ def test_remains(data):
     actual = CalcDaySum(2020).remains
 
     assert 0.31 == round(actual['january'], 2)
-    assert 121.32 == round(actual['february'], 2)
+    assert 21.32 == round(actual['february'], 2)
+
+
+def test_additional_necessary(data):
+    actual = CalcDaySum(2020).necessary
+
+    assert 0.0 == round(actual['january'], 2)
+    assert 100.0 == round(actual['february'], 2)
 
 
 def test_plans_stats_list(data):
@@ -132,28 +143,28 @@ def test_plans_stats_expenses_necessary(data):
 
     assert 'Būtinos išlaidos' == actual[0].type
     assert 124.72 == actual[0].january
-    assert 124.72 == actual[0].february
+    assert 224.72 == actual[0].february
 
 
 def test_plans_stats_expenses_free(data):
     actual = CalcDaySum(2020).plans_stats
     assert 'Lieka kasdienybei' == actual[1].type
     assert 775.31 == round(actual[1].january, 2)
-    assert 875.32 == round(actual[1].february, 2)
+    assert 775.32 == round(actual[1].february, 2)
 
 
 def test_plans_stats_day_sum(data):
     actual = CalcDaySum(2020).plans_stats
     assert 'Suma dienai' in actual[2].type
     assert 25.01 == round(actual[2].january, 2)
-    assert 30.18 == round(actual[2].february, 2)
+    assert 26.74 == round(actual[2].february, 2)
 
 
 def test_plans_stats_remains(data):
     actual = CalcDaySum(2020).plans_stats
     assert 'Likutis' == actual[3].type
     assert 0.31 == round(actual[3].january, 2)
-    assert 121.32 == round(actual[3].february, 2)
+    assert 21.32 == round(actual[3].february, 2)
 
 
 def test_targets(data):

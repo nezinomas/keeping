@@ -3,7 +3,7 @@ import factory
 from ..expenses.factories import ExpenseTypeFactory
 from ..incomes.factories import IncomeTypeFactory
 from ..savings.factories import SavingTypeFactory
-from .models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
+from .models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 
 
 class ExpensePlanFactory(factory.DjangoModelFactory):
@@ -47,3 +47,13 @@ class DayPlanFactory(factory.DjangoModelFactory):
     year = 1970
     january = 32.33
     february = 32.33
+
+
+class NecessaryPlanFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = NecessaryPlan
+
+    year = 1970
+    title = 'other'
+    january = 15.0
+    february = 15.0

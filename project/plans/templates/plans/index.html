@@ -35,6 +35,18 @@
             <div id="expenses_list" class="col-lg-12 dblclick">{{ expenses_list }}</div>
         </div>
 
+        <!-- necessary expenses plans -->
+        <div class="row mt-2">
+            <div class="col-lg-10"><h6>Papildomų būtinų išlaidų planas</h6></div>
+            <div class="col-lg-2 text-right">
+                {% url 'plans:necessarys_plan_new' as url_necessary_new %}
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_necessary_new }}"><i class="fas fa-plus"></i> Įrašą</button>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div id="necessary_list" class="col-lg-12 dblclick">{{ necessary_list }}</div>
+        </div>
+
         <!-- savings plans -->
         <div class="row mt-2">
             <div class="col-lg-10">

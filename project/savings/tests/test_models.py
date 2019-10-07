@@ -203,3 +203,9 @@ def test_saving_months_sum(savings):
     actual = list(Saving.objects.month_saving(1999))
 
     assert expect == actual
+
+
+def test_model_saving_str():
+    actual = SavingTypeFactory.build()
+
+    assert 'Savings' == str(actual)
