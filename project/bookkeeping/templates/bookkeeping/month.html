@@ -24,7 +24,6 @@
                 <div class="row mt-2">
                     <div class="col-lg-12">
                         {% include 'bookkeeping/includes/month_spending_info.html' %}
-                        <button onclick="myFunction()">Click Me</button>
                     </div>
                 </div>
             </div>
@@ -39,6 +38,7 @@
         {% with m|date:'n' as m_num %}
         <a href="{% url 'core:set_month' m_num 'bookkeeping:month' %}" class="btn btn-sm mr-1 px-3 {% if month|slugify == m_num %}btn-primary{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</a>
         {% endwith %}{% endfor %}{% endwith %}
+        <button class="btn btn-sm btn-info ml-5" onclick="myFunction()">Rodyti kitą grafiką</button>
     </div>
 </div>
 <script>
