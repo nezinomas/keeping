@@ -49,6 +49,11 @@ class DayPlanFactory(factory.DjangoModelFactory):
     february = 32.33
 
 
-class NecessaryPlan(factory.DjangoModelFactory):
+class NecessaryPlanFactory(factory.DjangoModelFactory):
     class Meta:
         model = NecessaryPlan
+
+    year = 1970
+    title = 'other'
+    january = 15.0
+    february = 15.0
