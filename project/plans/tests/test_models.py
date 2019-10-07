@@ -4,7 +4,7 @@ from .. import factories, models
 
 
 def test_necessary_str():
-    actual = factories.NecessaryPlan.build(year=2000, title='N')
+    actual = factories.NecessaryPlanFactory.build(year=2000, title='N')
 
     assert '2000/N' == str(actual)
 
@@ -12,5 +12,5 @@ def test_necessary_str():
 @pytest.mark.django_db
 @pytest.mark.xfail(raises=Exception)
 def test_necessary_no_dublicates():
-    factories.NecessaryPlan(year=2000, title='N')
-    factories.NecessaryPlan(year=2000, title='N')
+    factories.NecessaryPlanFactory(year=2000, title='N')
+    factories.NecessaryPlanFactory(year=2000, title='N')
