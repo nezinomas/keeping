@@ -4,9 +4,8 @@ from django.urls import resolve, reverse
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from .. import views
 
-pytestmark = pytest.mark.django_db
 
-
+@pytest.mark.django_db()
 def test_index_context_for_accounts(
     client, login,
     incomes, expenses, savings, transactions,
@@ -36,6 +35,7 @@ def test_index_context_for_accounts(
     assert_(expect, response.context['accounts'])
 
 
+@pytest.mark.django_db()
 def test_index_context_for_savings(client, login, savings):
     url = reverse('bookkeeping:index')
     response = client.get(url)

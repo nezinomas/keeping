@@ -16,7 +16,12 @@ class ExpenseForm(forms.ModelForm):
         fields = ('date', 'price', 'quantity', 'expense_type',
                   'expense_name', 'remark', 'exception', 'account')
         widgets = {
-            'date': DatePickerInput(format='%Y-%m-%d'),
+            'date': DatePickerInput(
+                options={
+                    "format": "YYYY-MM-DD",
+                    "locale": "lt",
+                }
+            ),
         }
 
     field_order = ['date', 'expense_type', 'expense_name', 'account',

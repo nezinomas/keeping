@@ -34,5 +34,5 @@ class ExpenseFactory(factory.DjangoModelFactory):
     expense_type = factory.SubFactory(ExpenseTypeFactory)
     expense_name = factory.SubFactory(ExpenseNameFactory)
     remark = 'Remark'
-    exception = True
+    exception = False
     account = factory.SubFactory(AccountFactory)

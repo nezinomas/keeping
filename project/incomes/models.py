@@ -23,10 +23,14 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self._related()
 
-    def income_sum(self, year):
-        summed_name = 'incomes'
+    def income_sum(self, year, month=None):
+        summed_name = 'sum'
 
-        return super().sum_by_month(year, summed_name).values('date', summed_name)
+        return (
+            super()
+            .sum_by_month(year, summed_name, month=month)
+            .values('date', summed_name)
+        )
 
 
 class Income(models.Model):
@@ -52,6 +56,10 @@ class Income(models.Model):
 
     class Meta:
         ordering = ['-date', 'price']
+        indexes = [
+            models.Index(fields=['account', 'income_type']),
+            models.Index(fields=['income_type']),
+        ]
 
     def __str__(self):
         return str(self.date)

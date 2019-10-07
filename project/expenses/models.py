@@ -78,19 +78,50 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self._related()
 
-    def expense_sum(self, year):
-        summed_name = 'expenses'
-
-        return super().sum_by_month(year, summed_name).values('date', summed_name)
-
-    def expense_type_sum(self, year):
+    def month_expense(self, year, month=None):
         summed_name = 'sum'
 
-        return super().sum_by_month(
-            year,
-            summed_name=summed_name,
-            groupby='expense_type'
-        ).values('date', summed_name, title=F('expense_type__title'))
+        return (
+            super()
+            .sum_by_month(
+                year=year, month=month,
+                summed_name=summed_name)
+            .values('date', summed_name)
+        )
+
+    def month_expense_type(self, year, month=None):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .sum_by_month(
+                year=year, month=month,
+                summed_name=summed_name, groupby='expense_type')
+            .values('date', summed_name, title=F('expense_type__title'))
+        )
+
+    def month_exceptions(self, year, month=None):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .filter(exception=True)
+            .sum_by_day(
+                year=year, month=month,
+                summed_name=summed_name)
+            .values(summed_name, 'date', title=F('expense_type__title'))
+        )
+
+    def day_expense_type(self, year, month):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .sum_by_day(
+                year=year, month=month,
+                summed_name=summed_name)
+            .values('date', summed_name, title=F('expense_type__title'))
+        )
 
 
 class Expense(models.Model):
@@ -126,6 +157,10 @@ class Expense(models.Model):
 
     class Meta:
         ordering = ['-date', 'expense_type', F('expense_name').asc(), 'price']
+        indexes = [
+            models.Index(fields=['account', 'expense_type']),
+            models.Index(fields=['expense_type']),
+        ]
 
     def __str__(self):
         return str(self.date)

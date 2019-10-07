@@ -48,8 +48,6 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
                 render_to_string(
                     self._get_list_template_name(), context, self.request)
             )
-        else:
-            data['form_is_valid'] = False
 
         self._render_form(data, context)
 
@@ -63,7 +61,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
         context = self.get_context_data()
 
         context['form'] = form
-        data = dict()
+        data = {'form_is_valid': False}
 
         if self.request.is_ajax():
             self._render_form(data, context)

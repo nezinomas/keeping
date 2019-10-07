@@ -14,8 +14,18 @@ class BookForm(forms.ModelForm):
         fields = ['started', 'ended', 'author', 'title']
 
         widgets = {
-            'started': DatePickerInput(format='%Y-%m-%d').start_of('event days'),
-            'ended': DatePickerInput(format='%Y-%m-%d').end_of('event days'),
+            'started': DatePickerInput(
+                options={
+                    "format": "YYYY-MM-DD",
+                    "locale": "lt",
+                }
+            ).start_of('event days'),
+            'ended': DatePickerInput(
+                options={
+                    "format": "YYYY-MM-DD",
+                    "locale": "lt",
+                }
+            ).end_of('event days'),
         }
 
     field_order = ['started', 'ended', 'author', 'title']

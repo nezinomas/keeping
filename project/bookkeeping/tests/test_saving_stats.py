@@ -50,13 +50,13 @@ def _pension():
 def test_empty_savings_stats():
     actual = T([], None).balance
 
-    assert actual is None
+    assert actual == []
 
 
 def test_none_savings_stats():
     actual = T(None, None).balance
 
-    assert actual is None
+    assert actual == []
 
 
 def test_savings_worth(_savings, _savings_worth):

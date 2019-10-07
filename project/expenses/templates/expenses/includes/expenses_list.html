@@ -1,5 +1,5 @@
 {% load humanize %}
-<table class="table table-striped table-hover stats">
+<table class="table table-hover stats">
     <thead class="thead-light">
         <tr class="top">
             <th>Data</th>
@@ -13,7 +13,7 @@
     <tbody>
         {% for item in items %}
         {% url 'expenses:expenses_update' item.id as url_update %}
-        <tr data-url="{{ url_update }}">
+        <tr data-url="{{ url_update }}" class="{% if item.expense_type.pk == 11 or item.expenses_type.pk == 12 or item.expenses_type.pk == 8 %}fees{% endif %}{% if item.expense_type.pk == 2 %}drinks{% endif %}{% if item.expense_type.pk == 1 %}food{% endif %}{% if item.expense_type.pk == 3 %}leisure{% endif %}{% if item.expense_type.pk == 9 %}work{% endif %}">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ item.expense_type }}</td>
             <td class="text-left">{{ item.expense_name }}</td>
@@ -34,6 +34,21 @@
 <style>
     .tooltip.show p {
         text-align: left;
+    }
+    .drinks {
+        background-color: #d9d9d9;
+    }
+    .fees {
+        background-color: #ffdddd;
+    }
+    .food {
+        background-color: #c5d9f1;
+    }
+    .leisure {
+        background-color: #c4d79b;
+    }
+    .work {
+        background-color: #fff0c1;
     }
 </style>
 <script>

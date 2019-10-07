@@ -24,19 +24,19 @@ def _template_positive_and_negative():
 
 
 def test_cell_positive_and_negative_neg(_template_positive_and_negative):
-    context = Context({'value': '-0.5'})
+    context = Context({'value': '-0,5'})
 
     actual = _template_positive_and_negative.render(context)
-    expect = '<td class="table-danger">-0,50</td>'
+    expect = '<td class="table-danger">-0,5</td>'
 
     assert _remove_line_end(actual) == expect
 
 
 def test_cell_positive_and_negative_pos(_template_positive_and_negative):
-    context = Context({'value': '0.5'})
+    context = Context({'value': '0,5'})
 
     actual = _template_positive_and_negative.render(context)
-    expect = '<td class="table-success">0,50</td>'
+    expect = '<td class="table-success">0,5</td>'
 
 
 def test_cell_intcomma(_template):
