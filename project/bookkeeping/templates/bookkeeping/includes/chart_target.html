@@ -60,11 +60,25 @@
             data: {{ chart_targets_data_target| safe }},
             pointPadding: 0,
             pointPlacement: 0,
-            borderColor: 'grey'
+            borderColor: 'grey',
+            dataLabels: {
+                enabled: true,
+                rotation: 0,
+                color: '#000',
+                align: 'left',
+                format: '{point.y:.1f}', // one decimal
+                y: -1,
+                style: {
+                    fontSize: '9px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Verdana, sans-serif',
+                    textOutline: false
+                }
+            }
 
         }, {
             name: 'Faktas',
-            opacity: '0.6',
+            opacity: '0.7',
             data: {{ chart_targets_data_fact|safe }},
             pointPadding: 0.0,
             pointPlacement: -0.0005,
