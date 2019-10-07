@@ -7,7 +7,8 @@ import pandas as pd
 from django.db.models import F
 
 from ...core.lib.date import monthlen, monthname, monthnames
-from ..models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
+from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
+                      SavingPlan)
 
 
 class CollectData:
@@ -15,6 +16,7 @@ class CollectData:
     _expenses: List[Dict[str, Decimal]] = []
     _savings: List[Dict[str, Decimal]] = []
     _days: List[Dict[str, Decimal]] = []
+    _necessary: List[Dict[str, Decimal]] = []
 
     def __init__(self, year: int = 1970):
         self._year = year
@@ -39,6 +41,10 @@ class CollectData:
             DayPlan.objects.year(self._year)
             .values(*monthnames()))
 
+        self._necessary = (
+            NecessaryPlan.objects.year(self._year)
+            .values(*monthnames()))
+
     @property
     def incomes(self) -> List[Dict[str, Decimal]]:
         return self._incomes
@@ -54,6 +60,10 @@ class CollectData:
     @property
     def days(self) -> List[Dict[str, Decimal]]:
         return self._days
+
+    @property
+    def necessary(self) -> List[Dict[str, Decimal]]:
+        return self._necessary
 
 
 class CalcDaySum():
@@ -90,6 +100,10 @@ class CalcDaySum():
     @property
     def remains(self) -> Dict[str, float]:
         return self._df.loc['remains'].to_dict()
+
+    @property
+    def necessary(self) -> Dict[str, float]:
+        return self._df.loc['necessary'].to_dict()
 
     @property
     def plans_stats(self):
@@ -138,6 +152,7 @@ class CalcDaySum():
 
         df.loc['incomes', :] = 0.0
         df.loc['savings', :] = 0.0
+        df.loc['necessary', :] = 0.0
         df.loc['expenses_necessary', :] = 0.0
         df.loc['expenses_free', :] = 0.0
         df.loc['day_calced', :] = 0.0
@@ -155,11 +170,12 @@ class CalcDaySum():
         self._sum(self._data.incomes, 'incomes')
         self._sum(self._data.savings, 'savings')
         self._sum(self._data.days, 'day_input')
+        self._sum(self._data.necessary, 'necessary')
         self._sum(self._data.expenses, 'expenses_necessary', 1)
         self._sum(self._data.expenses, 'expenses_free', 0)
 
         self._df.loc['expenses_necessary'] = (
-            self._df.loc['expenses_necessary'] + self._df.loc['savings']
+            self._df.loc['expenses_necessary'] + self._df.loc['savings'] + self._df.loc['necessary']
         )
         self._df.loc['expenses_free'] = (
             self._df.loc['incomes'] - self._df.loc['expenses_necessary']
