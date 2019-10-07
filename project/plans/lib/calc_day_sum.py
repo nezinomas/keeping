@@ -175,7 +175,10 @@ class CalcDaySum():
         self._sum(self._data.expenses, 'expenses_free', 0)
 
         self._df.loc['expenses_necessary'] = (
-            self._df.loc['expenses_necessary'] + self._df.loc['savings'] + self._df.loc['necessary']
+            0
+            + self._df.loc['expenses_necessary']
+            + self._df.loc['savings']
+            + self._df.loc['necessary']
         )
         self._df.loc['expenses_free'] = (
             self._df.loc['incomes'] - self._df.loc['expenses_necessary']
