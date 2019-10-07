@@ -18,14 +18,19 @@ def set_year(request, year, view_name):
 
 
 @login_required
-def set_month(request, month):
+def set_month(request, month, view_name):
     user = request.user
     user.profile.month = month
     user.save()
 
     return redirect(
         reverse(
-            'bookkeeping:month',
+            view_name,
             kwargs={}
         )
     )
+
+
+@login_required
+def index(request):
+    return render(request, 'core/index.html')

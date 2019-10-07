@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load table_cell %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
@@ -8,4 +7,61 @@
 
 {% block content %}
 
+<div class="row my-2">
+    <div class="col-md-6 mr-0 pr-0 table-responsive">
+        {% include 'bookkeeping/includes/month_balance.html' %}
+    </div>
+    <div class="col-md-6">
+        <div class="row">
+            <div class="col-lg-3 mx-0 px-2">
+                    {% include 'bookkeeping/includes/month_day_spending.html' %}
+            </div>
+            <div class="col-lg-9 pl-0">
+                <div class="row">
+                    <div style="display: none;" id='expenses-visibility' class="col-lg-12">{% include 'bookkeeping/includes/chart_month_expenses.html' %}</div>
+                    <div id='target-visibility' class="col-lg-12">{% include 'bookkeeping/includes/chart_target.html' %}</div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-lg-12">
+                        {% include 'bookkeeping/includes/month_spending_info.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row my-2">
+    <div class="col-lg-10">
+        {% with request.user.profile.month as month %}
+        {% for m in month_list %}
+        {% with m|date:'n' as m_num %}
+        <a href="{% url 'core:set_month' m_num 'bookkeeping:month' %}" class="btn btn-sm mr-1 px-3 {% if month|slugify == m_num %}btn-primary{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</a>
+        {% endwith %}{% endfor %}{% endwith %}
+    </div>
+    <div class="col-lg-2 text-right">
+        {% url 'expenses:expenses_new' as url_expense_new %}
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expense_new }}"><i class="fas fa-plus"></i> Išlaidas</button>
+        <button class="btn btn-sm btn-info ml-2" onclick="myFunction()">Rodyti kitą grafiką</button>
+    </div>
+</div>
+<script>
+    function myFunction() {
+        var x = document.getElementById("expenses-visibility");
+        var c = document.getElementById("target-visibility");
+        if (x.style.display === "none") {
+            x.style.display = "block";
+            c.style.display = 'none';
+        } else {
+            x.style.display = "none";
+            c.style.display = "block";
+        }
+    }
+</script>
+
+<div class="modal fade" id="modal-form">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content"></div>
+    </div>
+</div>
 {% endblock content%}

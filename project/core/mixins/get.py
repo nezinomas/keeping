@@ -1,10 +1,16 @@
 class GetQuerysetMixin():
     context_object_name = 'items'
     object_list = 'itms'
+    month = False
 
     def get_queryset(self):
+        year = self.request.user.profile.year
+        month = self.request.user.profile.month
         try:
-            qs = self.model.objects.year(self.request.user.profile.year)
+            if self.month:
+                qs = self.model.objects.month(year, month)
+            else:
+                qs = self.model.objects.year(year)
         except Exception as e1:
             try:
                 qs = self.model.objects.items()

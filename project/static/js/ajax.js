@@ -71,8 +71,15 @@ $(function () {
                         title.value = ''
                     }
 
+                    // on update close modal
                     if (action == 'update') {
                         $("#modal-form").modal("hide");
+                    }
+
+                    // save and close
+                    var save_close = document.getElementById('save_close');
+                    if (save_close) {
+                        $('#modal-form').modal('hide')
                     }
                 }
                 else {
@@ -101,4 +108,5 @@ $(function () {
     $(".js-create").click(loadFormClc);
 
     $('#modal-form').on('click', "#submit", saveForm)
+    $('#modal-form').on('click', "#save_close", saveForm)
 });

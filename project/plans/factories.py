@@ -1,40 +1,9 @@
 import factory
 
-from .models import (
-    DayPlan, ExpensePlan, ExpenseType, IncomePlan, IncomeType, SavingPlan,
-    SavingType)
-
-
-class ExpenseTypeFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = ExpenseType
-        django_get_or_create = ('title',)
-
-    necessary = False
-
-    @factory.sequence
-    def title(n):
-        return 'expense-type-{n}'.format(n=n)
-
-
-class IncomeTypeFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = IncomeType
-        django_get_or_create = ('title',)
-
-    @factory.sequence
-    def title(n):
-        return 'income-type-{n}'.format(n=n)
-
-
-class SavingTypeFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = SavingType
-        django_get_or_create = ('title',)
-
-    @factory.sequence
-    def title(n):
-        return 'saving-type-{n}'.format(n=n)
+from ..expenses.factories import ExpenseTypeFactory
+from ..incomes.factories import IncomeTypeFactory
+from ..savings.factories import SavingTypeFactory
+from .models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 
 
 class ExpensePlanFactory(factory.DjangoModelFactory):
@@ -69,3 +38,22 @@ class SavingPlanFactory(factory.DjangoModelFactory):
     february = 32.33
 
     saving_type = factory.SubFactory(SavingTypeFactory)
+
+
+class DayPlanFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = DayPlan
+
+    year = 1970
+    january = 32.33
+    february = 32.33
+
+
+class NecessaryPlanFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = NecessaryPlan
+
+    year = 1970
+    title = 'other'
+    january = 15.0
+    february = 15.0

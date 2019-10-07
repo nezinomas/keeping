@@ -1,9 +1,10 @@
 import pandas as pd
 
+from ..mixins.calc_balance import BalanceStats
 from .helpers import calc_percent, calc_sum
 
 
-class SavingStats():
+class SavingStats(BalanceStats):
     def __init__(self, stats, worth, saving_type='all'):
         self._balance = pd.DataFrame()
         self._type = saving_type
@@ -15,43 +16,35 @@ class SavingStats():
         self._calc_balance()
 
     @property
-    def balance(self):
-        val = None
-        balance = self._balance
+    def totals(self):
+        val = {}
 
-        if not balance.empty:
-            balance.reset_index(inplace=True)
-            val = balance.to_dict('records')
+        if not isinstance(self._balance, pd.DataFrame):
+            return val
+
+        if self._balance.empty:
+            return val
+
+        arr = self._balance.copy()
+
+        arr = arr.sum()
+
+        arr['profit_incomes_proc'] = (
+            calc_percent(arr[['market_value', 'incomes']])
+        )
+        arr['profit_invested_proc'] = (
+            calc_percent(arr[['market_value', 'invested']])
+        )
+
+        val = arr.to_dict()
 
         return val
-
-    @property
-    def totals(self):
-        total = None
-        balance = self._balance.copy()
-
-        if not balance.empty:
-            total = balance.sum()
-
-            total['profit_incomes_proc'] = (
-                calc_percent(total[['market_value', 'incomes']])
-            )
-            total['profit_invested_proc'] = (
-                calc_percent(total[['market_value', 'invested']])
-            )
-
-            total = total.to_dict()
-
-        return total
 
     @property
     def total_market(self):
-        val = 0.0
+        t = self.totals
 
-        if self.totals:
-            val = self.totals['market_value']
-
-        return val
+        return t.get('market_value', 0.0)
 
     # remove rows dependinf from saving_type
     def _filter_df(self, df):
