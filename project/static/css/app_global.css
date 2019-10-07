@@ -23,8 +23,8 @@ table.stats td, table.stats th {
     vertical-align: middle!important;
     padding-top: .09rem!important;
     padding-bottom: .09rem!important;
-    padding-left: .25rem!important;
-    padding-right: .25rem!important;
+    padding-left: .20rem!important;
+    padding-right: .20rem!important;
 }
 
 table.stats tr td:first-child, table.stats tr th:first-child {
