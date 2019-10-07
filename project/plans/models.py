@@ -56,6 +56,9 @@ class ExpensePlan(MonthAbstract):
 
     objects = YearManager('expense_type')
 
+    def __str__(self):
+        return f'{self.year}/{self.expense_type.title}'
+
     class Meta:
         ordering = ['expense_type']
         unique_together = ('year', 'expense_type')
@@ -71,6 +74,9 @@ class SavingPlan(MonthAbstract):
     )
 
     objects = YearManager('saving_type')
+
+    def __str__(self):
+        return f'{self.year}/{self.saving_type.title}'
 
     class Meta:
         ordering = ['saving_type']
@@ -88,6 +94,9 @@ class IncomePlan(MonthAbstract):
 
     objects = YearManager('income_type')
 
+    def __str__(self):
+        return f'{self.year}/{self.income_type.title}'
+
     class Meta:
         ordering = ['income_type']
         unique_together = ('year', 'income_type')
@@ -100,6 +109,9 @@ class DayPlan(MonthAbstract):
     )
 
     objects = YearManager(None)
+
+    def __str__(self):
+        return f'{self.year}'
 
 
 class NecessaryPlan(MonthAbstract):
