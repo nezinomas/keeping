@@ -7,7 +7,7 @@ from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib.date import monthnames
-from .models import DayPlan, ExpensePlan, IncomePlan, SavingPlan
+from .models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 
 
 def common_field_transalion(self):
@@ -111,6 +111,30 @@ class DayPlanForm(forms.ModelForm):
         }
 
     field_order = ['year'] + monthnames()
+
+    def __init__(self, year=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # inital values
+        self.fields['year'].initial = datetime.now()
+
+        # field translation
+        common_field_transalion(self)
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
+
+
+class NecessaryPlanForm(forms.ModelForm):
+    class Meta:
+        model = NecessaryPlan
+        fields = ['year', 'title'] + monthnames()
+
+        widgets = {
+            'year': YearPickerInput(format='%Y'),
+        }
+
+    field_order = ['year', 'title'] + monthnames()
 
     def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
