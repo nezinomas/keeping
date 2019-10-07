@@ -38,6 +38,8 @@
         {% with m|date:'n' as m_num %}
         <a href="{% url 'core:set_month' m_num 'bookkeeping:month' %}" class="btn btn-sm mr-1 px-3 {% if month|slugify == m_num %}btn-primary{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</a>
         {% endwith %}{% endfor %}{% endwith %}
+        {% url 'expenses:expenses_new' as url_expense_new %}
+        <button type="button" class="btn btn-sm btn-outline-success ml-5 js-create" data-url="{{ url_expense_new }}"><i class="fas fa-plus"></i> Išlaidas</button>
         <button class="btn btn-sm btn-info ml-5" onclick="myFunction()">Rodyti kitą grafiką</button>
     </div>
 </div>
@@ -54,4 +56,10 @@
         }
     }
 </script>
+
+<div class="modal fade" id="modal-form">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content"></div>
+    </div>
+</div>
 {% endblock content%}
