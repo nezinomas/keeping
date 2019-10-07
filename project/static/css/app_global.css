@@ -149,3 +149,8 @@ tr.total th {
     background-color: #fec2c6;
     color: #dc3545;
 }
+
+/* overwrite  bootstrap  class */
+.invalid-feedback {
+    display: block!important;
+}
