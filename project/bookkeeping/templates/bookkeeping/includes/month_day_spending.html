@@ -12,7 +12,7 @@
         {% for row in spending_table %}
         {% with row.day|negative as neg %}
         <tr {% if day|slugify == row.date|date:'j' %}class="bg-warning" {% endif %}>
-            {% with row.date|date:'w' as weekend %}<td class="text-left {% if weekend == '0' or weekend == '6' %}weekend{% endif %}">{{ row.date|date:'l' }}</td>{% endwith %}
+            {% with row.date|date:'w' as weekend %}<td class="text-left {% if weekend == '0' or weekend == '6' %}_weekend{% endif %}">{{ row.date|date:'l' }}</td>{% endwith %}
             {% cell row.day css_class=row.day|negative %}{% cell row.full css_class=row.full|negative|add:' -full' %}
         </tr>
         {% endwith %}{% endfor %}
@@ -27,7 +27,7 @@
         background-color: #fe536a;
         font-weight: bold;
     }
-    .weekend {
+    ._weekend {
         background-color: lightsalmon;
     }
 </style>
