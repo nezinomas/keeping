@@ -8,7 +8,7 @@
     var chart = Highcharts.chart('container-for-expenses-with-target', {
         chart: {
             type: 'bar',
-            height: '580'
+            height: '485'
         },
         title: {
             text: ''
@@ -19,16 +19,21 @@
                 lineWidth: 2,
                 labels: {
                     style: {
-                        fontSize: '12px',
+                        fontSize: '10px',
                         fontFamily: 'Calibri, Verdana',
                     }
                 }
         },
         yAxis: {
-            min: 0,
             title: {
                 text: ''
-            }
+            },
+            labels: {
+                    style: {
+                        fontSize: '10px',
+                        fontFamily: 'Calibri, Verdana',
+                    }
+                }
         },
         legend: {
             enabled: false
@@ -46,7 +51,7 @@
             bar: {
                 grouping: false,
                 shadow: false,
-                pointWidth: 15,
+                pointWidth: 13,
             }
         },
         series: [{
@@ -71,9 +76,9 @@
             data: {{ chart_targets_data_target|safe }},
             marker: {
                 symbol: 'c-rect',
-                lineWidth: 3,
+                lineWidth: 2,
                 lineColor: Highcharts.getOptions().colors[1],
-                radius: 15,
+                radius: 11,
             },
         }]
     });
