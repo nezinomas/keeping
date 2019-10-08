@@ -1,5 +1,5 @@
 import pandas as pd
-from ..mixins.calc_balance import BalanceStats
+from ...core.mixins.calc_balance import BalanceStats
 
 
 class AccountStats(BalanceStats):

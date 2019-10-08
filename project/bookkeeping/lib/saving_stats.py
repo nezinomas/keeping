@@ -1,6 +1,6 @@
 import pandas as pd
 
-from ..mixins.calc_balance import BalanceStats
+from ...core.mixins.calc_balance import BalanceStats
 from .helpers import calc_percent, calc_sum
 
 

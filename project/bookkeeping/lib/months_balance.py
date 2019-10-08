@@ -3,7 +3,7 @@ from typing import Dict, List
 
 import pandas as pd
 
-from ..mixins.calc_balance import (BalanceStats, df_days_of_month,
+from ...core.mixins.calc_balance import (BalanceStats, df_days_of_month,
                                    df_months_of_year)
 
 
