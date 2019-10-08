@@ -1,5 +1,4 @@
 import json
-from datetime import datetime
 
 import pandas  # need to import before freezegun, why?
 import pytest
@@ -10,6 +9,69 @@ from ..factories import DrinkFactory, DrinkTargetFactory
 from ..models import Drink, DrinkTarget
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+
+
+#
+#         DrinkTarget create/update
+#
+@freeze_time('1999-01-01')
+def test_view_drinks(admin_client):
+    url = reverse('drinks:drinks_new')
+
+    response = admin_client.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert 200 == response.status_code
+    assert '<input type="text" name="date" value="1999-01-01"' in actual['html_form']
+
+
+@pytest.mark.django_db()
+def test_view_drinks_new(client, login):
+    data = {'date': '1999-01-01', 'quantity': 999}
+
+    url = reverse('drinks:drinks_new')
+
+    response = client.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert '999' in actual['html_list']
+
+
+@pytest.mark.django_db()
+def test_view_drinks_new_invalid_data(client, login):
+    data = {'date': -2, 'quantity': 'x'}
+
+    url = reverse('drinks:drinks_new')
+
+    response = client.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
+
+
+@pytest.mark.django_db()
+def test_view_drinks_update(client, login):
+    p = DrinkFactory()
+
+    data = {'date': '1999-01-01', 'quantity': 999}
+    url = reverse('drinks:drinks_update', kwargs={'pk': p.pk})
+
+    response = client.post(url, data, **X_Req)
+
+    assert 200 == response.status_code
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert '999' in actual['html_list']
 
 
 #
