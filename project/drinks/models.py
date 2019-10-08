@@ -12,8 +12,11 @@ class DrinkQuerySet(models.QuerySet):
 
 class Drink(models.Model):
     date = models.DateField()
-    quantity = models.IntegerField(
-        validators=[MinValueValidator(1)]
+    quantity = models.FloatField(
+        validators=[MinValueValidator(0.1)]
     )
 
     objects = DrinkQuerySet.as_manager()
+
+    def __str__(self):
+        return f'{self.date}: {self.quantity}'
