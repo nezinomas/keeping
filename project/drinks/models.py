@@ -1,4 +1,4 @@
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
@@ -23,3 +23,19 @@ class Drink(models.Model):
 
     class Meta:
         ordering = ['-date']
+
+
+class DrinkTarget(models.Model):
+    year = models.PositiveIntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)],
+        unique=True
+    )
+    quantity = models.PositiveIntegerField()
+
+    objects = DrinkQuerySet.as_manager()
+
+    def __str__(self):
+        return f'{self.year}: {self.quantity}'
+
+    class Meta:
+        ordering = ['-year']

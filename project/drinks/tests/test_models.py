@@ -3,8 +3,8 @@ from datetime import date
 import pytest
 from django.core.validators import ValidationError
 
-from ..factories import DrinkFactory
-from ..models import Drink
+from ..factories import DrinkFactory, DrinkTargetFactory
+from ..models import Drink, DrinkTarget
 
 
 def test_drink_str():
@@ -38,3 +38,36 @@ def test_drink_order():
 
     assert '1999-12-01: 1.0' == str(actual[0])
     assert '1999-01-01: 1.0' == str(actual[1])
+
+
+def test_drink_target_str():
+    actual = DrinkTargetFactory.build()
+
+    assert '1999: 100' == str(actual)
+
+
+def test_drink_target_year_positive():
+    actual = DrinkTargetFactory.build(year=-2000)
+
+    try:
+        actual.full_clean()
+    except ValidationError as e:
+        assert 'year' in e.message_dict
+
+
+@pytest.mark.django_db
+@pytest.mark.xfail(raises=Exception)
+def test_drink_target_year_unique():
+    DrinkTargetFactory(year=1999)
+    DrinkTargetFactory(year=1999)
+
+
+@pytest.mark.django_db
+def test_drink_target_ordering():
+    DrinkTargetFactory(year=1970)
+    DrinkTargetFactory(year=1999)
+
+    actual = list(DrinkTarget.objects.all())
+
+    assert '1999: 100' == str(actual[0])
+    assert '1970: 100' == str(actual[1])
