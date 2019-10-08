@@ -19,4 +19,14 @@ urlpatterns = [
         views.Update.as_view(),
         name='drinks_update'
     ),
+    path(
+        'drinks/target/new/',
+        views.TargetNew.as_view(),
+        name='drinks_target_new'
+    ),
+    path(
+        'drinks/target/update/<int:pk>/',
+        views.TargetUpdate.as_view(),
+        name='drinks_target_update'
+    ),
 ]

@@ -15,3 +15,13 @@ class New(CreateAjaxMixin):
 class Update(UpdateAjaxMixin):
     model = models.Drink
     form_class = forms.DrinkForm
+
+
+class TargetNew(CreateAjaxMixin):
+    model = models.DrinkTarget
+    form_class = forms.DrinkTargetForm
+
+
+class TargetUpdate(UpdateAjaxMixin):
+    model = models.DrinkTarget
+    form_class = forms.DrinkTargetForm
