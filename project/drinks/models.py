@@ -1,13 +1,26 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from ..core.mixins.queryset_sum import SumMixin
 
-class DrinkQuerySet(models.QuerySet):
+
+class DrinkQuerySet(SumMixin, models.QuerySet):
     def year(self, year):
         return self.filter(date__year=year)
 
     def items(self):
         return self.all()
+
+    def month_sum(self, year, month=None):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .sum_by_month(
+                year=year, month=month,
+                summed_name=summed_name, sum_column_name='quantity')
+            .values('date', summed_name)
+        )
 
 
 class Drink(models.Model):

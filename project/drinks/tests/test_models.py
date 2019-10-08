@@ -71,3 +71,34 @@ def test_drink_target_ordering():
 
     assert '1999: 100' == str(actual[0])
     assert '1970: 100' == str(actual[1])
+
+
+@pytest.mark.django_db
+def test_drink_months_sum():
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.5)
+    DrinkFactory(date=date(1999, 2, 1), quantity=2.0)
+    DrinkFactory(date=date(1999, 2, 1), quantity=1.0)
+
+    actual = list(Drink.objects.month_sum(1999))
+
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': 2.5},
+        {'date': date(1999, 2, 1), 'sum': 3.0},
+    ]
+
+    assert expect == actual
+
+
+@pytest.mark.django_db
+def test_drink_months_sum():
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.5)
+
+    actual = list(Drink.objects.month_sum(1999, 1))
+
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': 2.5},
+    ]
+
+    assert expect == actual
