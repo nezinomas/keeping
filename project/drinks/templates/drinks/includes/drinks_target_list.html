@@ -1,12 +1,12 @@
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
-            <th>Max per dieną</th>
+            <th class="text-right">Max per dieną</th>
         </tr>
     </thead>
     <tbody>
         {% for item in items %}
-        {% url 'drinks:drinks_update' item.id as url_update %}
+        {% url 'drinks:drinks_target_update' item.id as url_update %}
         <tr data-url="{{ url_update }}">
             <td>{{ item.quantity }}</td>
         </tr>

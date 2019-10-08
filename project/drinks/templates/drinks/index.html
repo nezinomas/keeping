@@ -9,19 +9,27 @@
 {% block content %}
 
 {% url 'drinks:drinks_new' as url_drinks %}
+{% url 'drinks:drinks_target_new' as url_drinks_target %}
 <div class="row mt-2">
     <div class="col-lg-2">
         <div class="row mt-2">
             <div class="col-lg-12 text-right">
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_drinks_target }}"><i class="fas fa-plus"></i> Metų tiklą</button>
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_drinks }}"><i class="fas fa-plus"></i> Įrašą</button>
             </div>
         </div>
         <div class="row mt-2">
-            <div id="ajax-content" class="col-lg-12 dblclick">{% include 'drinks/includes/drinks_list.html' %}</div>
+            <div id="ajax-content" class="col-lg-12 dblclick">{{ drinks_list }}</div>
         </div>
     </div>
 
-    <div class="col-lg-10"></div>
+    <div class="col-lg-10">
+        <div class="row">
+            <div class="col-lg-1">
+                <div id="drinks-target-content" class="dblclick">{{ target_list }}</div>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% include 'modal.html' %}

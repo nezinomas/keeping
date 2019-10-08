@@ -6,6 +6,11 @@ app_name = 'drinks'
 urlpatterns = [
     path(
         'drinks/',
+        views.Index.as_view(),
+        name='drinks_index'
+    ),
+    path(
+        'drinks/lists/',
         views.Lists.as_view(),
         name='drinks_list'
     ),
@@ -18,6 +23,11 @@ urlpatterns = [
         'drinks/update/<int:pk>/',
         views.Update.as_view(),
         name='drinks_update'
+    ),
+    path(
+        'drinks/target/lists/',
+        views.TargetLists.as_view(),
+        name='drinks_target_lists'
     ),
     path(
         'drinks/target/new/',
