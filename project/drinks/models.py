@@ -20,3 +20,6 @@ class Drink(models.Model):
 
     def __str__(self):
         return f'{self.date}: {self.quantity}'
+
+    class Meta:
+        ordering = ['-date']

@@ -1,8 +1,10 @@
+from datetime import date
+
 import pytest
+from django.core.validators import ValidationError
 
 from ..factories import DrinkFactory
 from ..models import Drink
-from django.core.validators import ValidationError
 
 
 def test_drink_str():
@@ -25,3 +27,14 @@ def test_drink_quantity_int():
     p.full_clean()
 
     assert '1999-01-01: 5.0' == str(p)
+
+
+@pytest.mark.django_db()
+def test_drink_order():
+    DrinkFactory(date=date(1999, 1, 1))
+    DrinkFactory(date=date(1999, 12, 1))
+
+    actual = list(Drink.objects.year(1999))
+
+    assert '1999-12-01: 1.0' == str(actual[0])
+    assert '1999-01-01: 1.0' == str(actual[1])
