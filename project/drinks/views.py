@@ -31,6 +31,7 @@ class Update(UpdateAjaxMixin):
 class TargetLists(ListMixin):
     model = models.DrinkTarget
 
+
 class TargetNew(CreateAjaxMixin):
     model = models.DrinkTarget
     form_class = forms.DrinkTargetForm
