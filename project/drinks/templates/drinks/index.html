@@ -3,7 +3,7 @@
 
 
 {% block head %}
-
+<script src="https://code.highcharts.com/highcharts.src.js"></script>
 {% endblock head %}
 
 
@@ -30,9 +30,11 @@
                 <div id="drinks-target-content" class="dblclick">{{ target_list }}</div>
             </div>
 
-            <div class="col-lg-1">
-                <img src="{% static 'images/drinks_info.jpg' %}">
+            <div class="col-lg-6">
+                <div class="mb-5">{% include 'drinks/includes/chart_consumsion_per_month.html' %}</div>
+                <div class="text-center pl-5"><img src="{% static 'images/drinks_info.jpg' %}" width="90%"></div>
             </div>
+
         </div>
     </div>
 </div>
