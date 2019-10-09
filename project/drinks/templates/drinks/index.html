@@ -17,7 +17,7 @@
             <!-- target table -->
             <div class="col-lg-12">
                 <!-- consumsion chart -->
-                <div class="mb-5">{{ chart_consumsion }}</div>
+                <div class="mb-5" id="chart_consumsion">{{ chart_consumsion }}</div>
 
                 <div id="drinks-target-content" class="dblclick">{{ target_list }}</div>
 
@@ -28,7 +28,7 @@
     </div>
 
     <div class="col-lg-5">
-        <div class="mb-5">{{ chart_quantity }}</div>
+        <div class="mb-5" id="chart_quantity">{{ chart_quantity }}</div>
         <div class="text-center pl-5"><img src="{% static 'images/drinks_info.jpg' %}" width="90%"></div>
     </div>
 
@@ -39,5 +39,24 @@
 </div>
 
 {% include 'modal.html' %}
+
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'drinks:reload_stats' %}`;
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1'
+            },
+            success: function (data) {
+                var chart_consumsion = $(data).filter('#chart_consumsion');
+                var chart_quantity = $(data).filter('#chart_quantity');
+                $('#chart_consumsion').html(chart_consumsion);
+                $('#chart_quantity').html(chart_quantity);
+            }
+        });
+    });
+</script>
 
 {% endblock content %}

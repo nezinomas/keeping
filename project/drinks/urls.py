@@ -39,4 +39,9 @@ urlpatterns = [
         views.TargetUpdate.as_view(),
         name='drinks_target_update'
     ),
+    path(
+        'drinks/reload_stats/',
+        views.reload_stats,
+        name='reload_stats'
+    )
 ]
