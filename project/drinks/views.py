@@ -39,15 +39,24 @@ class Index(IndexMixin):
             {'items': qs_target},
             self.request)
 
-        context['chart_consumsion'] = _DrinkStats.consumsion
         context['target'] = target_val
         context['avg'] = avg_val
-        context['avg_label_y_position'] = avg_label_y_position
-        context['target_label_y_position'] = target_label_y_position
 
         context['chart_quantity'] = render_to_string(
             'drinks/includes/chart_quantity_per_month.html',
-            {'data':_DrinkStats.quantity},
+            {'data': _DrinkStats.quantity},
+            self.request
+        )
+
+        context['chart_consumsion'] = render_to_string(
+            'drinks/includes/chart_consumsion_per_month.html',
+            {
+                'data': _DrinkStats.consumsion,
+                'target': target_val,
+                'avg': avg_val,
+                'avg_label_y_position': avg_label_y_position,
+                'target_label_y_position': target_label_y_position,
+            },
             self.request
         )
 
