@@ -22,6 +22,16 @@ def test_drink_str():
     assert '1999-01-01: 1' == str(actual)
 
 
+@pytest.mark.django_db
+def test_drink_year():
+    DrinkFactory()
+
+    actual = list(Drink.objects.year(1999))
+
+    assert 1 == len(actual)
+    assert date(1999, 1, 1) == actual[0].date
+
+
 def test_drink_quantity_float():
     p = DrinkFactory.build(quantity=0.5)
 
@@ -80,6 +90,16 @@ def test_drink_target_ordering():
 
     assert '1999: 100' == str(actual[0])
     assert '1970: 100' == str(actual[1])
+
+
+@pytest.mark.django_db
+def test_drink_target_year():
+    DrinkTargetFactory(year=1970)
+
+    actual = list(DrinkTarget.objects.year(1970))
+
+    assert 1 == len(actual)
+    assert 1970 == actual[0].year
 
 
 @pytest.mark.django_db

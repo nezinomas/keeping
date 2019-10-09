@@ -1,9 +1,12 @@
-from datetime import date, datetime
 import calendar
+from datetime import date, datetime
+
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models import (Count, DateField, ExpressionWrapper, F,
-                              FloatField, Sum, Case, When, IntegerField, QuerySet, Model, PositiveIntegerField)
-from django.db.models.functions import ExtractDay, TruncDate, TruncYear, ExtractMonth
+from django.db.models import (Case, Count, DateField, ExpressionWrapper, F,
+                              FloatField, IntegerField, Model,
+                              PositiveIntegerField, QuerySet, Sum, When)
+from django.db.models.functions import (ExtractDay, ExtractMonth, TruncDate,
+                                        TruncYear)
 
 from ..core.mixins.queryset_sum import SumMixin
 
@@ -75,6 +78,14 @@ class Drink(Model):
         ordering = ['-date']
 
 
+class DrinkTargetQuerySet(SumMixin, QuerySet):
+    def year(self, year):
+        return self.filter(year=year)
+
+    def items(self):
+        return self.all()
+
+
 class DrinkTarget(Model):
     year = PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
@@ -82,7 +93,7 @@ class DrinkTarget(Model):
     )
     quantity = PositiveIntegerField()
 
-    objects = DrinkQuerySet.as_manager()
+    objects = DrinkTargetQuerySet.as_manager()
 
     def __str__(self):
         return f'{self.year}: {self.quantity}'
