@@ -2,9 +2,18 @@ from datetime import date
 
 import pytest
 from django.core.validators import ValidationError
+from freezegun import freeze_time
 
 from ..factories import DrinkFactory, DrinkTargetFactory
 from ..models import Drink, DrinkTarget
+
+
+@pytest.fixture()
+def drinks():
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.5)
+    DrinkFactory(date=date(1999, 2, 1), quantity=2.0)
+    DrinkFactory(date=date(1999, 2, 1), quantity=1.0)
 
 
 def test_drink_str():
@@ -74,31 +83,60 @@ def test_drink_target_ordering():
 
 
 @pytest.mark.django_db
-def test_drink_months_sum():
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.5)
-    DrinkFactory(date=date(1999, 2, 1), quantity=2.0)
-    DrinkFactory(date=date(1999, 2, 1), quantity=1.0)
+def test_drink_months_consumsion(drinks):
+    actual = Drink.objects.month_sum(1999).values_list('per_month', flat=True)
 
-    actual = list(Drink.objects.month_sum(1999))
+    expect = [40.32, 53.57]
 
-    expect = [
-        {'date': date(1999, 1, 1), 'sum': 2.5},
-        {'date': date(1999, 2, 1), 'sum': 3.0},
-    ]
-
-    assert expect == actual
+    assert expect == pytest.approx(actual, rel=1e-2)
 
 
 @pytest.mark.django_db
-def test_drink_months_sum():
+def test_drink_months_quantity_sum(drinks):
+    actual = Drink.objects.month_sum(1999).values_list('sum', flat=True)
+
+    expect = [2.5, 3.0]
+
+    assert expect == pytest.approx(actual, rel=1e-2)
+
+
+@pytest.mark.django_db
+def test_drink_months_month_num(drinks):
+    actual = Drink.objects.month_sum(1999).values_list('month', flat=True)
+
+    expect = [1, 2]
+
+    assert expect == list(actual)
+
+
+@pytest.mark.django_db
+def test_drink_months_month_len(drinks):
+    actual = Drink.objects.month_sum(1999).values_list('monthlen', flat=True)
+
+    expect = [31, 28]
+
+    assert expect == list(actual)
+
+
+@pytest.mark.django_db
+@freeze_time('1999-11-01')
+def test_drink_days_sum_november():
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.5)
+    DrinkFactory(date=date(1999, 11, 1), quantity=1.5)
 
-    actual = list(Drink.objects.month_sum(1999, 1))
+    actual = Drink.objects.day_sum(1999)
 
-    expect = [
-        {'date': date(1999, 1, 1), 'sum': 2.5},
-    ]
+    assert 2.5 == actual['qty']
+    assert 4.1 == round(actual['per_day'], 2)
 
-    assert expect == actual
+
+@pytest.mark.django_db
+@freeze_time('1999-01-03')
+def test_drink_days_sum_january():
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
+    DrinkFactory(date=date(1999, 11, 1), quantity=1.5)
+
+    actual = Drink.objects.day_sum(1999)
+
+    assert 1.0 == actual['qty']
+    assert 166.67 == round(actual['per_day'], 2)

@@ -1,10 +1,14 @@
+from datetime import date, datetime
+import calendar
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.db.models import (Count, DateField, ExpressionWrapper, F,
+                              FloatField, Sum, Case, When, IntegerField, QuerySet, Model, PositiveIntegerField)
+from django.db.models.functions import ExtractDay, TruncDate, TruncYear, ExtractMonth
 
 from ..core.mixins.queryset_sum import SumMixin
 
 
-class DrinkQuerySet(SumMixin, models.QuerySet):
+class DrinkQuerySet(SumMixin, QuerySet):
     def year(self, year):
         return self.filter(date__year=year)
 
@@ -19,13 +23,46 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
             .sum_by_month(
                 year=year, month=month,
                 summed_name=summed_name, sum_column_name='quantity')
-            .values('date', summed_name)
+            .order_by('date')
+            .annotate(month=ExtractMonth('date'))
+            .annotate(
+                monthlen=Case(
+                    *[When(date__month=i, then=calendar.monthlen(year, i))
+                        for i in range(1, 13)],
+                    default=1,
+                    output_field=IntegerField())
+            )
+            .annotate(
+                per_month=self._per_period(F('sum'), F('monthlen')))
+        )
+
+    def day_sum(self, year):
+        start = date(year, 1, 1)
+        end = datetime.now().date()
+        day_of_year = end.timetuple().tm_yday
+
+        return (
+            self
+            .filter(date__range=(start, end))
+            .annotate(c=Count('id'))
+            .values('c')
+            .annotate(date=TruncYear('date'))
+            .annotate(
+                qty=Sum('quantity'),
+                per_day=self._per_period(F('qty'), day_of_year))
+            .values('qty', 'per_day')[0]
+        )
+
+    def _per_period(self, qty: float, end: int) -> float:
+        return ExpressionWrapper(
+            ((qty * 0.5) / end) * 1000,
+            output_field=FloatField()
         )
 
 
-class Drink(models.Model):
-    date = models.DateField()
-    quantity = models.FloatField(
+class Drink(Model):
+    date = DateField()
+    quantity = FloatField(
         validators=[MinValueValidator(0.1)]
     )
 
@@ -38,12 +75,12 @@ class Drink(models.Model):
         ordering = ['-date']
 
 
-class DrinkTarget(models.Model):
-    year = models.PositiveIntegerField(
+class DrinkTarget(Model):
+    year = PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
         unique=True
     )
-    quantity = models.PositiveIntegerField()
+    quantity = PositiveIntegerField()
 
     objects = DrinkQuerySet.as_manager()
 
