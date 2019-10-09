@@ -40,6 +40,7 @@ class Index(IndexMixin):
             self.request)
 
         context['chart_consumsion'] = _DrinkStats.consumsion
+        context['chart_quantity_data'] = _DrinkStats.quantity
         context['target'] = target_val
         context['avg'] = avg_val
         context['avg_label_y_position'] = avg_label_y_position
