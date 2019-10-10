@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
@@ -17,6 +19,7 @@ def _index(request, context):
 
     # values
     avg_val = qs_drinks_days.get('per_day', 0)
+    qty_val = qs_drinks_days.get('qty', 0)
     target_val = qs_target[0].quantity
 
     # calculate target and average label postions
@@ -46,14 +49,34 @@ def _index(request, context):
     )
 
     context['chart_consumsion'] = render_to_string(
-        'drinks/includes/chart_consumsion_per_month.html',
-        {
+        'drinks/includes/chart_consumsion_per_month.html', {
             'data': _DrinkStats.consumsion,
             'target': target_val,
             'avg': avg_val,
             'avg_label_y_position': avg_label_y_position,
             'target_label_y_position': target_label_y_position,
         },
+        request
+    )
+
+    context['tbl_consumsion'] = render_to_string(
+        'drinks/includes/tbl_consumsion.html',
+        {'qty': qty_val, 'avg': avg_val},
+        request)
+
+    qs_last = models.Drink.objects.latest()
+
+    context['tbl_last_day'] = render_to_string(
+        'drinks/includes/tbl_last_day.html', {
+            'date': qs_last.date,
+            'delta': (datetime.now().date() - qs_last.date).days
+        },
+        request
+    )
+
+    context['tbl_alcohol'] = render_to_string(
+        'drinks/includes/tbl_alcohol.html',
+        {'l': qty_val * 0.025},
         request
     )
 

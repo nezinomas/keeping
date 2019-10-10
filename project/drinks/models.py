@@ -76,6 +76,7 @@ class Drink(Model):
 
     class Meta:
         ordering = ['-date']
+        get_latest_by = ['date']
 
 
 class DrinkTargetQuerySet(SumMixin, QuerySet):

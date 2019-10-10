@@ -95,6 +95,12 @@ tr.total th {
     text-align: center!important;
 }
 
+tr.top-text, tr.top-text th {
+    text-align: left!important;
+    background-color: white!important;
+    border-top: 0px!important;
+}
+
 
 .stats .br {
     border-right: 3px solid #0359b0!important;

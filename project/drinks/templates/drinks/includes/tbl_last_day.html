@@ -1,0 +1,15 @@
+<table class="table table-hover stats">
+    <thead class="thead-light">
+        <tr class="top-text"><th colspan="2">Paskutinį sykį gerta</th></tr>
+        <tr class="top">
+            <th>Data</th>
+            <th class="text-right">Dienų skaičius</th>
+        </tr>
+    </thead>
+    <tfoot>
+        <tr>
+            <td class="text-left">{{ date|date:"Y-m-d" }}</td>
+            <td>{{ delta }}</td>
+        </tr>
+    </tfoot>
+</table>
