@@ -30,10 +30,10 @@ def _remove_line_end(rendered):
     return str(rendered).replace('\n', '').replace('\t', '')
 
 
-def change_profile_year(client):
+def change_profile_year(client, year=1):
     url = reverse('core:core_index')
     response = client.get(url)
 
     u = response.wsgi_request.user
-    u.profile.year = 1
+    u.profile.year = year
     u.save()
