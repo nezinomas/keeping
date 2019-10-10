@@ -11,9 +11,11 @@ from .lib.drinks_stats import DrinkStats
 
 def _index(request, context):
     year = request.user.profile.year
+
     qs_target = models.DrinkTarget.objects.year(year)
     qs_drinks = models.Drink.objects.month_sum(year)
     qs_drinks_days = models.Drink.objects.day_sum(year)
+    qs_last = models.Drink.objects.latest()
 
     _DrinkStats = DrinkStats(qs_drinks)
 
@@ -31,16 +33,6 @@ def _index(request, context):
 
     if target_val >= avg_val - 25 and target_val <= avg_val:
         target_label_y_position = 15
-
-    context['drinks_list'] = Lists.as_view()(
-        request, as_string=True)
-    context['target_list'] = render_to_string(
-        'drinks/includes/drinks_target_list.html',
-        {'items': qs_target},
-        request)
-
-    context['target'] = target_val
-    context['avg'] = avg_val
 
     context['chart_quantity'] = render_to_string(
         'drinks/includes/chart_quantity_per_month.html',
@@ -64,8 +56,6 @@ def _index(request, context):
         {'qty': qty_val, 'avg': avg_val},
         request)
 
-    qs_last = models.Drink.objects.latest()
-
     context['tbl_last_day'] = render_to_string(
         'drinks/includes/tbl_last_day.html', {
             'date': qs_last.date,
@@ -84,19 +74,30 @@ def _index(request, context):
 def reload_stats(request):
     ajax_trigger = request.GET.get('ajax_trigger')
     context = {}
-    t_name = 'drinks/includes/reload_stats.html'
+    name = 'drinks/includes/reload_stats.html'
 
     _index(request, context)
 
     if ajax_trigger:
-        return render(template_name=t_name, context=context, request=request)
+        return render(template_name=name, context=context, request=request)
 
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
+        year = self.request.user.profile.year
+        qs_target = models.DrinkTarget.objects.year(year)
+
         context = super().get_context_data(**kwargs)
 
         _index(self.request, context)
+
+        context['drinks_list'] = Lists.as_view()(
+            self.request, as_string=True)
+
+        context['target_list'] = render_to_string(
+            'drinks/includes/drinks_target_list.html',
+            {'items': qs_target},
+            self.request)
 
         return context
 
