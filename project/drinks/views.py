@@ -9,7 +9,7 @@ from . import forms, models
 from .lib.drinks_stats import DrinkStats
 
 
-def _index(request, context):
+def context_to_reload(request, context):
     year = request.user.profile.year
 
     qs_target = models.DrinkTarget.objects.year(year)
@@ -76,7 +76,7 @@ def reload_stats(request):
     context = {}
     name = 'drinks/includes/reload_stats.html'
 
-    _index(request, context)
+    context_to_reload(request, context)
 
     if ajax_trigger:
         return render(template_name=name, context=context, request=request)
@@ -89,7 +89,7 @@ class Index(IndexMixin):
 
         context = super().get_context_data(**kwargs)
 
-        _index(self.request, context)
+        context_to_reload(self.request, context)
 
         context['drinks_list'] = Lists.as_view()(
             self.request, as_string=True)
