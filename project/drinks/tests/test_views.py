@@ -5,6 +5,8 @@ import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
+from ...core.factories import UserFactory
+from .. import views
 from ..factories import DrinkFactory, DrinkTargetFactory
 from ..models import Drink, DrinkTarget
 
@@ -135,3 +137,41 @@ def test_view_drinks_target_update(client, login):
 
     assert actual['form_is_valid']
     assert '999' in actual['html_list']
+
+
+def test_view_index_func():
+    view = resolve('/drinks/')
+
+    assert views.Index == view.func.view_class
+
+
+def test_view_reload_stats_func():
+    view = resolve('/drinks/reload_stats/')
+
+    assert views.reload_stats == view.func
+
+
+@pytest.mark.django_db
+def test_view_reload_stats_render(rf):
+    request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = views.reload_stats(request)
+
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_view_index_200(login, client):
+    response = client.get('/drinks/')
+
+    assert response.status_code == 200
+
+    assert 'drinks_list' in response.context
+    assert 'target_list' in response.context
+    assert 'chart_quantity' in response.context
+    assert 'chart_consumsion' in response.context
+    assert 'tbl_consumsion' in response.context
+    assert 'tbl_last_day' in response.context
+    assert 'tbl_alcohol' in response.context
+    assert 'tbl_std_av' in response.context

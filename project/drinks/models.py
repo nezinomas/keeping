@@ -44,7 +44,7 @@ class DrinkQuerySet(SumMixin, QuerySet):
         end = datetime.now().date()
         day_of_year = end.timetuple().tm_yday
 
-        return (
+        qs = (
             self
             .filter(date__range=(start, end))
             .annotate(c=Count('id'))
@@ -53,8 +53,9 @@ class DrinkQuerySet(SumMixin, QuerySet):
             .annotate(
                 qty=Sum('quantity'),
                 per_day=self._per_period(F('qty'), day_of_year))
-            .values('qty', 'per_day')[0]
+            .values('qty', 'per_day')
         )
+        return qs[0] if qs else {}
 
     def _per_period(self, qty: float, end: int) -> float:
         return ExpressionWrapper(

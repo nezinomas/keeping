@@ -12,14 +12,19 @@ def context_to_reload(request, context):
     qs_target = models.DrinkTarget.objects.year(year)
     qs_drinks = models.Drink.objects.month_sum(year)
     qs_drinks_days = models.Drink.objects.day_sum(year)
-    qs_last = models.Drink.objects.latest()
+
+    try:
+        qs_last = models.Drink.objects.latest()
+        latest = qs_last.date
+    except:
+        latest = datetime.now().date()
 
     _DrinkStats = DrinkStats(qs_drinks)
 
     # values
-    avg = qs_drinks_days.get('per_day', 0)
-    qty = qs_drinks_days.get('qty', 0)
-    target = qs_target[0].quantity
+    avg = qs_drinks_days.get('per_day', 0) if qs_drinks_days else 0
+    qty = qs_drinks_days.get('qty', 0) if qs_drinks_days else 0
+    target = qs_target[0].quantity if qs_target else 0
 
     context['chart_quantity'] = render_to_string(
         'drinks/includes/chart_quantity_per_month.html',
@@ -45,8 +50,8 @@ def context_to_reload(request, context):
 
     context['tbl_last_day'] = render_to_string(
         'drinks/includes/tbl_last_day.html', {
-            'date': qs_last.date,
-            'delta': (datetime.now().date() - qs_last.date).days
+            'date': latest,
+            'delta': (datetime.now().date() - latest).days
         },
         request
     )
