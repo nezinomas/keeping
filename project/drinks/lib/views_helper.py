@@ -40,7 +40,7 @@ def context_to_reload(request, context):
 
     context['tbl_consumsion'] = render_to_string(
         'drinks/includes/tbl_consumsion.html',
-        {'qty': qty, 'avg': avg},
+        {'qty': qty, 'avg': avg, 'target': target_val},
         request)
 
     context['tbl_last_day'] = render_to_string(

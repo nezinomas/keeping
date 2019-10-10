@@ -1,3 +1,4 @@
+{% load cell_format %}
 <table class="table table-hover stats">
     <thead class="thead-light">
         <tr class="top-text">
@@ -11,7 +12,7 @@
     <tfoot>
         <tr>
             <td class="text-left">{{ qty|floatformat:1 }}</td>
-            <td>{{ avg|floatformat:1 }}</td>
+            <td class="{{ target|compare:avg }}">{{ avg|floatformat:1 }}</td>
         </tr>
     </tfoot>
 </table>
