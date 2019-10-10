@@ -121,6 +121,18 @@ def test_drink_months_quantity_sum(drinks):
 
 
 @pytest.mark.django_db
+def test_drink_months_quantity_sum_no_records_for_current_year():
+    DrinkFactory(date=date(1970, 1, 1), quantity=1.0)
+    DrinkFactory(date=date(2000, 1, 1), quantity=1.5)
+
+    actual = Drink.objects.month_sum(1999).values_list('sum', flat=True)
+
+    expect = []
+
+    assert expect == pytest.approx(actual, rel=1e-2)
+
+
+@pytest.mark.django_db
 def test_drink_months_month_num(drinks):
     actual = Drink.objects.month_sum(1999).values_list('month', flat=True)
 
@@ -160,3 +172,14 @@ def test_drink_days_sum_january():
 
     assert 1.0 == actual['qty']
     assert 166.67 == round(actual['per_day'], 2)
+
+
+@pytest.mark.django_db
+@freeze_time('1999-01-03')
+def test_drink_days_sum_no_records_for_selected_year():
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
+    DrinkFactory(date=date(1999, 11, 1), quantity=1.5)
+
+    actual = Drink.objects.day_sum(1998)
+
+    assert {} == actual

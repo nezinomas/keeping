@@ -41,8 +41,13 @@ class DrinkQuerySet(SumMixin, QuerySet):
 
     def day_sum(self, year):
         start = date(year, 1, 1)
-        end = datetime.now().date()
-        day_of_year = end.timetuple().tm_yday
+
+        if year == datetime.now().date().year:
+            end = datetime.now().date()
+            day_of_year = end.timetuple().tm_yday
+        else:
+            end = date(year, 12, 31)
+            day_of_year = 366 if calendar.isleap(year) else 365
 
         qs = (
             self
