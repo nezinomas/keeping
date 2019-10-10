@@ -62,6 +62,7 @@ def test_view_plan_stats_render_to_string(client, login):
 
     assert 200 == response.status_code
 
+
 #
 #         IncomePlan create/update
 #

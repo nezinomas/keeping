@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 from freezegun import freeze_time
 
-from ..mixins.calc_balance import (BalanceStats, df_days_of_month,
+from ...core.mixins.calc_balance import (BalanceStats, df_days_of_month,
                                    df_months_of_year)
 
 

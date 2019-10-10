@@ -1,12 +1,12 @@
-from operator import itemgetter
 from datetime import datetime
+from operator import itemgetter
 from typing import Dict, List
 
 import pandas as pd
 
 from ...core.lib.colors import CHART
-from ..mixins.calc_balance import (BalanceStats, df_days_of_month,
-                                   df_months_of_year)
+from ...core.mixins.calc_balance import (BalanceStats, df_days_of_month,
+                                         df_months_of_year)
 
 
 def calc(expenses: List[Dict], df: pd.DataFrame, **kwargs) -> pd.DataFrame:

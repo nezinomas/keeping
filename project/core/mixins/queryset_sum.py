@@ -12,7 +12,8 @@ class SumMixin():
         else:
             return self
 
-    def sum_by_month(self, year, summed_name, month=None, groupby='id'):
+    def sum_by_month(self, year, summed_name,
+                     month=None, groupby='id', sum_column_name='price'):
         return (
             self
             ._year(year)
@@ -22,7 +23,7 @@ class SumMixin():
             .annotate(date=TruncMonth('date'))
             .values('date')
             .annotate(c=Count('id'))
-            .annotate(**{summed_name: Sum('price')})
+            .annotate(**{summed_name: Sum(sum_column_name)})
             .order_by('date')
         )
 

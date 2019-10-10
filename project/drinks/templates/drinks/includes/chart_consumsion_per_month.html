@@ -1,0 +1,123 @@
+<div id="container-for-consumsion"></div>
+<script>
+    Highcharts.setOptions({
+        lang: {
+            thousandsSep: '.',
+            decimalPoint: ',',
+        }
+    });
+    Highcharts.chart('container-for-consumsion', {
+        title: {
+            text: ''
+        },
+        legend: {
+            layout: 'horizontal',
+            align: 'center',
+            verticalAlign: 'top',
+            floating: true,
+            borderWidth: 1,
+        },
+        xAxis: {
+            lineColor: '#000',
+            lineWidth: 2,
+            gridLineWidth: 1,
+            tickmarkPlacement: 'on',
+            categories: [
+                'Sausis',
+                'Vasaris',
+                'Kovas',
+                'Balandis',
+                'Gegužė',
+                'Birželis',
+                'Liepa',
+                'Rugpjūtis',
+                'Rugsėjis',
+                'Spalis',
+                'Lapkritis',
+                'Gruodis'
+            ],
+            labels: {
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+                rotation: -45,
+            }
+        },
+        yAxis: {
+            labels: {
+            },
+            title: {
+                text: ''
+            },
+            plotLines: [{
+                color: '#04a41f',
+                width: 2,
+                value: {{ target|safe }},
+                label: {
+                    text: 'Riba: {{ target|safe }}',
+                    align: 'right',
+                    x: -5,
+                    y: {{ target_label_y|safe }},
+                    style: {
+                            color: '#04a41f',
+                            fontWeight: 'bold'
+                        }
+                }
+            }, {
+                color: '#ffc000',
+                width: 2,
+                value: {{ avg|safe }},
+                label: {
+                    text: 'Avg: {{ avg|floatformat:0|safe }}',
+                    align: 'right',
+                    x: -5,
+                    y: {{ avg_label_y|safe }},
+                    style: {
+                        color: '#ffc000',
+                        fontWeight: 'bold'
+                    }
+                }
+            }],
+            labels: {
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                }
+            }
+        },
+        tooltip: {
+            shared: true,
+            pointFormat: '<b>{point.y:,.1f} ml</b><br/>'
+        },
+        credits: {
+            enabled: false
+        },
+        plotOptions: {
+            area: {
+                fillOpacity: 0.4
+            }
+        },
+        series: [{
+            type: 'area',
+            name: 'Alkoholio kiekis per dieną, ml',
+            showInLegend: false,
+            data: {{ data|safe }},
+            color: '#c0504d',
+                dataLabels: {
+                enabled: true,
+                // rotation: -90,
+                // y: 20,
+                color: '#000',
+                align: 'left',
+                format: '{point.y:.0f}',
+                style: {
+                    fontSize: '9px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Verdana, sans-serif',
+                    textOutline: false
+                }
+            }
+        }]
+    });
+</script>

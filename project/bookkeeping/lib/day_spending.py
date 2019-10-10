@@ -2,7 +2,7 @@ from typing import List, Dict
 
 import pandas as pd
 
-from ..mixins.calc_balance import BalanceStats
+from ...core.mixins.calc_balance import BalanceStats
 from ...core.lib.utils import get_value_from_dict
 
 

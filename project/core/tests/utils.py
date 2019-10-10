@@ -1,3 +1,6 @@
+from django.urls import resolve, reverse
+
+
 def equal_list_of_dictionaries(expect, actual):
     for key, arr in enumerate(expect):
         for expect_key, expect_val in arr.items():
@@ -9,7 +12,7 @@ def equal_list_of_dictionaries(expect, actual):
 
             try:
                 actual_val = float(actual_val)
-                actual_val = _round(actual_val)
+                actual_val = round(actual_val, 2)
             except:
                 pass
 
@@ -23,16 +26,14 @@ def equal_list_of_dictionaries(expect, actual):
                 )
 
 
-def _round(number):
-    return round(number, 2)
-
-
 def _remove_line_end(rendered):
     return str(rendered).replace('\n', '').replace('\t', '')
 
 
-def _print(*args):
-    for a in args:
-        print('\n\n>>>\n')
-        print(a)
-        print('\n<<<\n')
+def change_profile_year(client, year=1):
+    url = reverse('core:core_index')
+    response = client.get(url)
+
+    u = response.wsgi_request.user
+    u.profile.year = year
+    u.save()

@@ -1,27 +1,38 @@
-<div id="container-for-expenses-with-target"></div>
+<div id="container-for-quantity"></div>
 <script>
     $(function () {
-        Highcharts.SVGRenderer.prototype.symbols['c-rect'] = function (x, y, w, h) {
-            return ['M', x, y + h / 2, 'L', x + w, y + h / 2];
-        };
-
-    var chart = Highcharts.chart('container-for-expenses-with-target', {
+       Highcharts.chart('container-for-quantity', {
         chart: {
-            type: 'bar',
-            height: '485'
+            type: 'column',
         },
         title: {
             text: ''
         },
         xAxis: {
-            categories: {{ chart_targets_categories|safe }},
             lineColor: '#000',
             lineWidth: 2,
+            // gridLineWidth: 1,
+            // tickmarkPlacement: 'on',
+            categories: [
+                'Sausis',
+                'Vasaris',
+                'Kovas',
+                'Balandis',
+                'Gegužė',
+                'Birželis',
+                'Liepa',
+                'Rugpjūtis',
+                'Rugsėjis',
+                'Spalis',
+                'Lapkritis',
+                'Gruodis'
+            ],
             labels: {
                 style: {
                     fontSize: '10px',
                     fontFamily: 'Calibri, Verdana',
-                }
+                },
+                rotation: -45,
             }
         },
         yAxis: {
@@ -29,11 +40,11 @@
                 text: ''
             },
             labels: {
-                    style: {
-                        fontSize: '10px',
-                        fontFamily: 'Calibri, Verdana',
-                    }
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
                 }
+            }
         },
         legend: {
             enabled: false
@@ -55,18 +66,18 @@
             }
         },
         series: [{
-            name: 'Planas',
-            color: 'rgba(165,170,217,0)',
-            data: {{ chart_targets_data_target|safe }},
+            name: 'Kiekis',
+            color: 'rgba(166,193,110,0.8)',
+            data: {{ data|safe }},
             pointPadding: 0,
             pointPlacement: 0,
-            borderColor: 'grey',
+            // borderColor: 'grey',
             dataLabels: {
                 enabled: true,
                 rotation: 0,
                 color: '#000',
                 align: 'left',
-                format: '{point.y:.1f}', // one decimal
+                format: '{point.y:.1f}',
                 y: -1,
                 style: {
                     fontSize: '9px',
@@ -75,25 +86,6 @@
                     textOutline: false
                 }
             }
-
-        }, {
-            name: 'Faktas',
-            opacity: '0.7',
-            data: {{ chart_targets_data_fact|safe }},
-            pointPadding: 0.0,
-            pointPlacement: -0.0005,
-            borderWidth: 0,
-        }, {
-            type: 'scatter',
-            showInLegend: false,
-            enableMouseTracking: false,
-            data: {{ chart_targets_data_target|safe }},
-            marker: {
-                symbol: 'c-rect',
-                lineWidth: 2,
-                lineColor: Highcharts.getOptions().colors[1],
-                radius: 11,
-            },
         }]
     });
 });
