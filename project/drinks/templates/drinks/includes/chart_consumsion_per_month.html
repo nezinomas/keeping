@@ -58,7 +58,7 @@
                     text: 'Riba: {{ target|safe }}',
                     align: 'right',
                     x: -5,
-                    y: {{ target_label_y_position|safe }},
+                    y: {{ target_label_y|safe }},
                     style: {
                             color: '#04a41f',
                             fontWeight: 'bold'
@@ -72,7 +72,7 @@
                     text: 'Avg: {{ avg|floatformat:0|safe }}',
                     align: 'right',
                     x: -5,
-                    y: {{ avg_label_y_position|safe }},
+                    y: {{ avg_label_y|safe }},
                     style: {
                         color: '#ffc000',
                         fontWeight: 'bold'
