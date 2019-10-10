@@ -1,8 +1,9 @@
 from datetime import date, datetime
 
 import pytest
+from freezegun import freeze_time
 
-from ..lib.drinks_stats import DrinkStats
+from ..lib.drinks_stats import DrinkStats, std_av
 
 
 @pytest.fixture
@@ -82,3 +83,28 @@ def test_per_month_quantity_invalid_data():
 
     assert 0 == actual[0]
     assert 0 == actual[11]
+
+
+@freeze_time('2019-10-10')
+def test_std_av():
+    actual = std_av(273.5)
+
+    expect = [
+        {'title': 'Std AV', 'total': 683.75, 'per_day': 2.42,
+            'per_week': 16.68, 'per_month': 68.38},
+        {'title': 'Alus, 0.5L', 'total': 273.5, 'per_day': 0.97,
+            'per_week': 6.67, 'per_month': 27.35},
+        {'title': 'Vynas, 1L', 'total': 68.38, 'per_day': 0.24,
+            'per_week': 1.67, 'per_month': 6.84},
+        {'title': 'Degtinė, 1L', 'total': 17.09, 'per_day': 0.06,
+            'per_week': 0.42, 'per_month': 1.71},
+    ]
+
+    assert 4 == len(actual)
+
+    for i, row in enumerate(actual):
+        for k, v in row.items():
+            if k == 'title':
+                assert expect[i][k] == v
+            else:
+                assert expect[i][k] == round(v, 2)
