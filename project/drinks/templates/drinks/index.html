@@ -26,6 +26,10 @@
                     <div id="drinks-target-content" class="col-lg-3 pl-2 dblclick">{{ target_list }}</div>
                 </div>
 
+                <div class="row">
+                    <div id="tbl_std_av" class="col-lg-12">{{ tbl_std_av }}</div>
+                </div>
+
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_drinks_target }}"><i class="fas fa-plus"></i> Metų tikslą</button>
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_drinks }}"><i class="fas fa-plus"></i> Įrašą</button>
             </div>
@@ -33,7 +37,7 @@
     </div>
 
     <div class="col-lg-4">
-        <div class="mb-3" id="chart_quantity">{{ chart_quantity }}</div>
+        <div class="mb-5" id="chart_quantity">{{ chart_quantity }}</div>
         <div class="text-center pl-5"><img src="{% static 'images/drinks_info.jpg' %}" width="100%"></div>
     </div>
 
@@ -69,6 +73,9 @@
 
                 var tbl_alcohol = $(data).filter('#tbl_alcohol');
                 $('#tbl_alcohol').html(tbl_alcohol);
+
+                var tbl_std_av = $(data).filter('#tbl_std_av');
+                $('#tbl_std_av').html(tbl_std_av);
             }
         });
     });

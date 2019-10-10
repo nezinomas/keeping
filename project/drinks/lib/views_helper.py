@@ -3,7 +3,7 @@ from datetime import datetime
 from django.template.loader import render_to_string
 
 from .. import models
-from .drinks_stats import DrinkStats
+from .drinks_stats import DrinkStats, std_av
 
 
 def context_to_reload(request, context):
@@ -54,6 +54,12 @@ def context_to_reload(request, context):
     context['tbl_alcohol'] = render_to_string(
         'drinks/includes/tbl_alcohol.html',
         {'l': qty * 0.025},
+        request
+    )
+
+    context['tbl_std_av'] = render_to_string(
+        'drinks/includes/tbl_std_av.html',
+        {'items': std_av(qty)},
         request
     )
 
