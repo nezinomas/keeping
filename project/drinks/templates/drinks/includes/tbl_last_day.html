@@ -8,7 +8,7 @@
     </thead>
     <tfoot>
         <tr>
-            <td class="text-left">{{ date|date:"Y-m-d" }}</td>
+            <td class="text-left">{% if date %}{{ date|date:"Y-m-d" }}{% else %}Nėra duomenų{% endif %}</td>
             <td>{{ delta }}</td>
         </tr>
     </tfoot>

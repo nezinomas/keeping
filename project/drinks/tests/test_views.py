@@ -1,4 +1,5 @@
 import json
+from datetime import date, datetime
 
 import pandas  # need to import before freezegun, why?
 import pytest
@@ -6,6 +7,7 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 
 from ...core.factories import UserFactory
+from ...core.tests.utils import change_profile_year
 from .. import views
 from ..factories import DrinkFactory, DrinkTargetFactory
 from ..models import Drink, DrinkTarget
@@ -175,3 +177,56 @@ def test_view_index_200(login, client):
     assert 'tbl_last_day' in response.context
     assert 'tbl_alcohol' in response.context
     assert 'tbl_std_av' in response.context
+
+
+@pytest.mark.django_db
+def test_view_index_drinked_date(login, client):
+    DrinkFactory(date=date(1999, 1, 2))
+    DrinkFactory(date=date(1998, 1, 2))
+
+    change_profile_year(client, 1998)
+
+    response = client.get('/drinks/')
+
+    assert '1998-01-02' in response.context["tbl_last_day"]
+
+
+@pytest.mark.django_db
+def test_view_index_drinked_date_empty_db(login, client):
+    response = client.get('/drinks/')
+
+    assert 'Nėra duomenų' in response.context["tbl_last_day"]
+
+
+@pytest.mark.django_db
+def test_view_index_target_empty_db(login, client):
+    response = client.get('/drinks/')
+
+    assert 'Neįvestas tikslas' in response.context["target_list"]
+
+
+@pytest.mark.django_db
+def test_view_index_drinks_list_empty_current_year(login, client):
+    DrinkFactory(date=date(2020, 1, 2))
+
+    response = client.get('/drinks/')
+
+    assert '<b>1999</b> metais įrašų nėra.' in response.context["drinks_list"]
+
+
+@pytest.mark.django_db
+def test_view_index_tbl_consumsion_empty_current_year(login, client):
+    DrinkFactory(date=date(2020, 1, 2))
+
+    response = client.get('/drinks/')
+
+    assert 'Nėra duomenų' in response.context["tbl_consumsion"]
+
+
+@pytest.mark.django_db
+def test_view_index_tbl_std_av_empty_current_year(login, client):
+    DrinkFactory(date=date(2020, 1, 2))
+
+    response = client.get('/drinks/')
+
+    assert 'Nėra duomenų' in response.context["tbl_std_av"]

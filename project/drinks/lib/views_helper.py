@@ -13,12 +13,6 @@ def context_to_reload(request, context):
     qs_drinks = models.Drink.objects.month_sum(year)
     qs_drinks_days = models.Drink.objects.day_sum(year)
 
-    try:
-        qs_last = models.Drink.objects.latest()
-        latest = qs_last.date
-    except:
-        latest = datetime.now().date()
-
     _DrinkStats = DrinkStats(qs_drinks)
 
     # values
@@ -49,11 +43,9 @@ def context_to_reload(request, context):
         request)
 
     context['tbl_last_day'] = render_to_string(
-        'drinks/includes/tbl_last_day.html', {
-            'date': latest,
-            'delta': (datetime.now().date() - latest).days
-        },
-        request
+        'drinks/includes/tbl_last_day.html',
+        _dry_days(year),
+        request=request
     )
 
     context['tbl_alcohol'] = render_to_string(
@@ -85,3 +77,17 @@ def _target_label_position(avg, target):
         y = 15
 
     return y
+
+
+def _dry_days(year):
+    latest = None
+    delta = None
+
+    try:
+        qs = models.Drink.objects.filter(date__year=year).latest()
+        latest = qs.date
+        delta = (datetime.now().date() - latest).days
+    except:
+        pass
+
+    return {'date': latest, 'delta': delta}

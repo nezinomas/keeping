@@ -30,6 +30,9 @@ class DrinkStats():
 
 
 def std_av(qty: float) -> List[Dict]:
+    if not qty:
+        return {}
+
     now = datetime.now().date()
 
     month = now.month

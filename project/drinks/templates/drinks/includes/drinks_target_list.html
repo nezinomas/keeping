@@ -11,6 +11,8 @@
         <tr data-url="{{ url_update }}">
             <td>{{ item.quantity }}</td>
         </tr>
+        {% empty %}
+        <tr><td>Neįvestas tikslas</td></tr>
         {% endfor %}
     </tbody>
 </table>

@@ -11,8 +11,12 @@
     </thead>
     <tfoot>
         <tr>
+            {% if qty %}
             <td class="text-left">{{ qty|floatformat:1 }}</td>
             <td class="{{ target|compare:avg }}">{{ avg|floatformat:1 }}</td>
+            {% else %}
+            <td colspan="2">Nėra duomenų</td>
+            {% endif %}
         </tr>
     </tfoot>
 </table>

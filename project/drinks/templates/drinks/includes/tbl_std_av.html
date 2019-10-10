@@ -19,6 +19,8 @@
             {% cell item.per_month %}
             <td class="text-left" style="padding-left: 1rem!important;">{{ item.title }}</td>
         </tr>
+        {% empty %}
+        <tr><td colspan="5">Nėra duomenų</td></tr>
         {% endfor %}
     </tbody>
 </table>
