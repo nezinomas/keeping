@@ -1,3 +1,6 @@
+from django.urls import resolve, reverse
+
+
 def equal_list_of_dictionaries(expect, actual):
     for key, arr in enumerate(expect):
         for expect_key, expect_val in arr.items():
@@ -36,3 +39,12 @@ def _print(*args):
         print('\n\n>>>\n')
         print(a)
         print('\n<<<\n')
+
+
+def change_profile_year(client):
+    url = reverse('core:core_index')
+    response = client.get(url)
+
+    u = response.wsgi_request.user
+    u.profile.year = 1
+    u.save()

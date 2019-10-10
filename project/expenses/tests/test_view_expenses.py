@@ -1,9 +1,10 @@
 import pytest
 from django.urls import resolve, reverse
 
+from ...core.tests.utils import change_profile_year
+from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ..models import ExpenseName
 from ..views import expenses
-from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -15,15 +16,6 @@ def db_data():
     ExpenseNameFactory(title='S', valid_for=1999)
 
 
-def _change_profile_year(client):
-    url = reverse('core:core_index')
-    response = client.get(url)
-
-    u = response.wsgi_request.user
-    u.profile.year = 1
-    u.save()
-
-
 def test_load_expense_name_status_code(client, login):
     url = reverse('expenses:load_expense_name')
     response = client.get(url, {'expense_type': 1})
@@ -32,7 +24,7 @@ def test_load_expense_name_status_code(client, login):
 
 
 def test_load_expense_name_isnull_count(client, login, db_data):
-    _change_profile_year(client)
+    change_profile_year(client)
 
     url = reverse('expenses:load_expense_name')
     response = client.get(url, {'expense_type': 1})
