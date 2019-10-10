@@ -12,7 +12,7 @@
     </thead>
     <tbody>
         {% for item in items %}
-        <tr>
+        <tr {% if 'AV' in item.title %}class="table-warning bor"{% endif %}>
             {% cell item.total %}
             {% cell item.per_day %}
             {% cell item.per_week %}
@@ -22,3 +22,9 @@
         {% endfor %}
     </tbody>
 </table>
+<style>
+tr.bor {
+    border-top: double #ffc000;
+    border-bottom: double #ffc000;
+}
+</style>
