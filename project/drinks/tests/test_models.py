@@ -183,3 +183,21 @@ def test_drink_days_sum_no_records_for_selected_year():
     actual = Drink.objects.day_sum(1998)
 
     assert {} == actual
+
+
+@pytest.mark.django_db
+def test_drinks_items():
+    DrinkFactory()
+
+    actual = Drink.objects.items()
+
+    assert 1 == actual.count()
+
+
+@pytest.mark.django_db
+def test_drinks_target_items():
+    DrinkTargetFactory()
+
+    actual = DrinkTarget.objects.items()
+
+    assert 1 == actual.count()
