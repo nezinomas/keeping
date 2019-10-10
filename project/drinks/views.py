@@ -9,13 +9,14 @@ from .lib.views_helper import context_to_reload
 
 def reload_stats(request):
     ajax_trigger = request.GET.get('ajax_trigger')
-    context = {}
     name = 'drinks/includes/reload_stats.html'
 
-    context_to_reload(request, context)
+    context = {}
 
     if ajax_trigger:
-        return render(template_name=name, context=context, request=request)
+        context_to_reload(request, context)
+
+        return render(request, name, context)
 
 
 class Index(IndexMixin):
