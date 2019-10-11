@@ -7,9 +7,19 @@ from ...core.lib.utils import get_value_from_dict
 
 
 class DaySpending(BalanceStats):
+    _balance = pd.DataFrame()
+    _avg_per_day = pd.DataFrame()
+    _spending = pd.DataFrame()
+
     def __init__(self, year: int, month: int, month_df: pd.DataFrame,
                  necessary: List[str], plan_day_sum: float,
                  plan_free_sum: float, exceptions: Dict = {}):
+
+        if not isinstance(month_df, pd.DataFrame):
+            return
+
+        if month_df.empty:
+            return
 
         self._year = year
         self._month = month
