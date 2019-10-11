@@ -104,7 +104,7 @@ def test_spending_first_day_all_none(balance_df):
     assert -12.24 == actual[0]['full']
 
 
-def test_spending_balace_not_dataframe(balance_df):
+def test_spending_balance_not_dataframe(balance_df):
     actual = DaySpending(year=1999, month=1, month_df=balance_df,
                          necessary=None, plan_day_sum=None,
                          plan_free_sum=None)
@@ -113,10 +113,34 @@ def test_spending_balace_not_dataframe(balance_df):
     assert 'X' == actual.spending
 
 
-def test_spending_balace_not_dataframe(balance_df):
+def test_spending_balance_not_dataframe():
     actual = DaySpending(year=1999, month=1, month_df=None,
                          necessary=None, plan_day_sum=None,
                          plan_free_sum=None).spending
+
+    assert actual.empty
+
+
+def test_spending_balance_empty_dataframe():
+    actual = DaySpending(year=1999, month=1, month_df=pd.DataFrame(),
+                         necessary=None, plan_day_sum=None,
+                         plan_free_sum=None).spending
+
+    assert actual.empty
+
+
+def test_spending_avg_balance_not_dataframe():
+    actual = DaySpending(year=1999, month=1, month_df=None,
+                         necessary=None, plan_day_sum=None,
+                         plan_free_sum=None).avg_per_day
+
+    assert actual.empty
+
+
+def test_spending_avg_balance_empty_dataframe():
+    actual = DaySpending(year=1999, month=1, month_df=pd.DataFrame(),
+                         necessary=None, plan_day_sum=None,
+                         plan_free_sum=None).avg_per_day
 
     assert actual.empty
 
