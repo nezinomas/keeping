@@ -63,3 +63,29 @@ def test_book_title_too_long():
     assert not form.is_valid()
 
     assert 'title' in form.errors
+
+
+def test_book_author_too_short():
+    form = BookForm(data={
+        'started': '1974-01-01',
+        'ended': '1974-01-31',
+        'author': 'AA',
+        'title': 'Title',
+    })
+
+    assert not form.is_valid()
+
+    assert 'author' in form.errors
+
+
+def test_book_title_too_short():
+    form = BookForm(data={
+        'started': '1974-01-01',
+        'ended': '1974-01-31',
+        'author': 'Author',
+        'title': 'TT',
+    })
+
+    assert not form.is_valid()
+
+    assert 'title' in form.errors
