@@ -67,3 +67,41 @@ def test_index_context_for_savings(client, login, savings):
     }]
 
     assert_(expect, response.context['fund'])
+
+
+def test_view_index_func():
+    view = resolve('/')
+
+    assert views.Index == view.func.view_class
+
+
+def test_view_month_func():
+    view = resolve('/month/')
+
+    assert views.Month == view.func.view_class
+
+
+def test_view_savings_worth_func():
+    view = resolve('/bookkeeping/savings_worth/new/')
+
+    assert views.SavingsWorthNew == view.func.view_class
+
+
+def test_view_accounts_worth_func():
+    view = resolve('/bookkeeping/accounts_worth/new/')
+
+    assert views.AccountsWorthNew == view.func.view_class
+
+
+@pytest.mark.django_db
+def test_view_index_200(login, client):
+    response = client.get('/')
+
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_view_month_200(login, client):
+    response = client.get('/month/')
+
+    assert response.status_code == 200
