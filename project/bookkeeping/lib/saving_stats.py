@@ -19,9 +19,6 @@ class SavingStats(BalanceStats):
     def totals(self):
         val = {}
 
-        if not isinstance(self._balance, pd.DataFrame):
-            return val
-
         if self._balance.empty:
             return val
 

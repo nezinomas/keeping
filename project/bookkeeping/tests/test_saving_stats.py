@@ -59,6 +59,12 @@ def test_none_savings_stats():
     assert actual == []
 
 
+def test_none_savings_stats_totals():
+    actual = T([], None).totals
+
+    assert actual == {}
+
+
 def test_savings_worth(_savings, _savings_worth):
     expect = [{
         'title': 'Saving1',
