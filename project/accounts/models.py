@@ -96,3 +96,6 @@ class Account(TitleAbstract):
 
     # Managers
     objects = AccountQuerySet.as_manager()
+
+    def __str__(self):
+        return f'{self.title}'
