@@ -30,14 +30,13 @@ class DaySpending(BalanceStats):
 
     @property
     def spending(self):
+        if not isinstance(self._spending, pd.DataFrame):
+            return self._spending
+
+        if self._spending.empty:
+            return self._spending
+
         df = self._spending.copy()
-
-        if not isinstance(df, pd.DataFrame):
-            return df
-
-        if df.empty:
-            return df
-
         df.reset_index(inplace=True)
 
         return df.to_dict('records')

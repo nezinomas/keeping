@@ -97,6 +97,22 @@ def test_spending_first_day_all_none(balance_df):
     assert -12.24 == actual[0]['full']
 
 
+def test_spending_balace_not_dataframe(balance_df):
+    actual = DaySpending(year=1999, month=1, month_df=balance_df, necessary=None,
+                         plan_day_sum=None, plan_free_sum=None)
+    actual._spending = 'X'
+
+    assert 'X' == actual.spending
+
+
+def test_spending_balace_empty_dataframe(balance_df):
+    actual = DaySpending(year=1999, month=1, month_df=balance_df, necessary=None,
+                         plan_day_sum=None, plan_free_sum=None)
+    actual._spending = pd.DataFrame()
+
+    assert actual.spending.empty
+
+
 def test_spending_with_exceptions_first_day(balance_df, necessary, exceptions):
     actual = DaySpending(year=1999, month=1, month_df=balance_df, necessary=necessary,
                          plan_day_sum=Decimal(0.25), plan_free_sum=Decimal(20),
