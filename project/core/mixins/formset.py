@@ -8,9 +8,7 @@ class FormsetMixin():
         _list = []
 
         # get self.model ForeignKey field name
-        foreign_key = [
-            f.name for f in self.model._meta.get_fields() if (f.many_to_one)
-        ]
+        foreign_key = [f.name for f in self.model._meta.get_fields() if (f.many_to_one)]
 
         if not foreign_key:
             return _list
@@ -41,8 +39,7 @@ class FormsetMixin():
             initial = self._formset_initial()
             _formset = _formset(
                 queryset=self.model.objects.none(),
-                initial=initial
-            )
+                initial=initial)
 
             _formset.extra += len(initial)
 
