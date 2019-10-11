@@ -32,7 +32,9 @@ def necessary():
 
 @pytest.fixture()
 def exceptions():
-    return [{'date': date(1999, 1, 1), 'expense_type': 'O2', 'sum': Decimal(1.0)}]
+    return [
+        {'date': date(1999, 1, 1), 'expense_type': 'O2', 'sum': Decimal(1.0)}
+    ]
 
 
 @freeze_time('1999-01-02')
