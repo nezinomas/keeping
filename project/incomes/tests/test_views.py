@@ -226,3 +226,13 @@ def test_type_update(client, login):
 
     assert actual['form_is_valid']
     assert 'TTT' in actual['html_list']
+
+
+@pytest.mark.django_db
+def test_view_index_200(login, client):
+    response = client.get('/incomes/')
+
+    assert response.status_code == 200
+
+    assert 'incomes' in response.context
+    assert 'categories' in response.context
