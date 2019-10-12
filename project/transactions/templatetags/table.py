@@ -11,7 +11,7 @@ def table(context, url_name, fees=False):
     try:
         year = context['request'].user.profile.year
     except:
-        year = None
+        year = 'XXXX'
 
     return {
         'url_name': url_name,
