@@ -12,17 +12,19 @@ class ChainedDropDown(object):
         self._get_main_dropdown_id(parent_field_name)
 
     @property
-    def parent_field_id(self):
-        if self._id:
-            self._id = int(self._id)
-        return self._id
+    def parent_field_id(self) -> int:
+        id = None
+
+        try:
+            id = int(self._id)
+        except Exception:
+            pass
+
+        return id
 
     def _get_main_dropdown_id(self, parent_field_name):
         if parent_field_name in self._obj.data:
-            try:
-                self._id = self._obj.data.get(parent_field_name)
-            except (ValueError, TypeError):
-                pass
+            self._id = self._obj.data.get(parent_field_name)
+
         elif self._obj.instance.pk:
-            self._id = vars(self._obj.instance)[
-                '{m}_id'.format(m=parent_field_name)]
+            self._id = vars(self._obj.instance)[f'{parent_field_name}_id']
