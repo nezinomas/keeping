@@ -59,7 +59,7 @@ class Transaction(models.Model):
 
     def __str__(self):
         return (
-            '{} {}->{} {}'.
+            '{} {}->{}: {}'.
             format(self.date, self.from_account, self.to_account, self.price)
         )
 
@@ -99,7 +99,7 @@ class SavingClose(models.Model):
 
     def __str__(self):
         return (
-            '{} {}->{} {}'.
+            '{} {}->{}: {}'.
             format(self.date, self.from_account, self.to_account, self.price)
         )
 
@@ -139,7 +139,7 @@ class SavingChange(models.Model):
 
     def __str__(self):
         return (
-            '{} {}->{} {}'.
+            '{} {}->{}: {}'.
             format(self.date, self.from_account, self.to_account, self.price)
         )
 
