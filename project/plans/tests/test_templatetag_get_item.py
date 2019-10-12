@@ -25,6 +25,12 @@ def test_attr_not_exists(_object):
     assert actual == 'foo1'
 
 
+def test_attr_object_none():
+    actual = get_obj_attr(None, 'X')
+
+    assert actual == 'X'
+
+
 def test_dict_val_key_exists(_dict):
     actual = get_dict_val(_dict, 'key')
 
