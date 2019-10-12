@@ -51,7 +51,7 @@ def test_incomes_items():
 
 def test_incomes_items_query_count(django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        [*Income.objects.all()]
+        [*Income.objects.items()]
 
 
 def test_incomes_year_query_count(django_assert_max_num_queries):
