@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from django import template
 
 register = template.Library()
@@ -15,7 +17,7 @@ def get_obj_attr(obj, attr):
 
 
 @register.filter
-def get_dict_val(obj, key):
+def get_dict_val(obj: Dict, key: Any):
     _key = None
     try:
         _key = obj.get(key, key)
