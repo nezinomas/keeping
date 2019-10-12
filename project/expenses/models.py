@@ -47,10 +47,6 @@ class ExpenseNameQuerySet(models.QuerySet):
 
 
 class ExpenseName(TitleAbstract):
-    title = models.CharField(
-        max_length=254,
-        blank=False,
-    )
     valid_for = models.PositiveIntegerField(
         blank=True,
         null=True,
