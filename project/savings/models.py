@@ -178,7 +178,7 @@ class Saving(models.Model):
         ]
 
     def __str__(self):
-        return str(self.saving_type)
+        return f'{self.date}: {self.saving_type}'
 
     # Managers
     objects = SavingQuerySet.as_manager()
