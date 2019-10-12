@@ -43,14 +43,10 @@ class ExpenseNameQuerySet(models.QuerySet):
         return self._related().filter(parent_id=parent_id)
 
     def items(self):
-        return self._related()
+        return self._related().all()
 
 
 class ExpenseName(TitleAbstract):
-    title = models.CharField(
-        max_length=254,
-        blank=False,
-    )
     valid_for = models.PositiveIntegerField(
         blank=True,
         null=True,
@@ -76,7 +72,7 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
         return self._related().filter(date__year=year)
 
     def items(self):
-        return self._related()
+        return self._related().all()
 
     def month_expense(self, year, month=None):
         summed_name = 'sum'
@@ -163,7 +159,7 @@ class Expense(models.Model):
         ]
 
     def __str__(self):
-        return str(self.date)
+        return f'{(self.date)}/{self.expense_type}/{self.expense_name}'
 
     # Managers
     objects = ExpenseQuerySet.as_manager()
