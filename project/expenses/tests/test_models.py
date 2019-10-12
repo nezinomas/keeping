@@ -192,3 +192,12 @@ def test_expense_name_parent():
     actual = ExpenseName.objects.parent(p1.pk)
 
     assert 2 == actual.count()
+
+
+@pytest.mark.django_db
+@pytest.mark.xfail(raises=Exception)
+def test_expense_name_no_dublicates():
+    p1 = ExpenseTypeFactory(title='P1')
+
+    ExpenseName(title='N1', parent=p1).save()
+    ExpenseName(title='N1', parent=p1).save()
