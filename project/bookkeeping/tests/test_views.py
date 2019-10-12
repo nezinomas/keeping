@@ -201,10 +201,11 @@ def test_view_account_worth_formset(login, client):
 @pytest.mark.django_db()
 def test_view_account_worth_new(client, login):
     i = AccountFactory()
-    data = {'form-TOTAL_FORMS': 1,
-            'form-INITIAL_FORMS': 0,
-            'form-0-price': '999',
-            'form-0-account': i.pk
+    data = {
+        'form-TOTAL_FORMS': 1,
+        'form-INITIAL_FORMS': 0,
+        'form-0-price': '999',
+        'form-0-account': i.pk
     }
 
     url = reverse('bookkeeping:accounts_worth_new')

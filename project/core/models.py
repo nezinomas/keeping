@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils.text import slugify
 
@@ -12,6 +13,7 @@ class TitleAbstract(models.Model):
         max_length=254,
         blank=False,
         unique=True,
+        validators=[MinLengthValidator(3)]
     )
     slug = models.SlugField(
         editable=False,
