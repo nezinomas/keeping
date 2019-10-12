@@ -20,7 +20,7 @@ class YearManager(models.Manager):
 
         return qs
 
-    def items(self, year):
+    def items(self):
         qs = self.get_queryset().all()
 
         if self._prefetch:
