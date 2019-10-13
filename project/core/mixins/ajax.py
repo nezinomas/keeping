@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 
 from .get import GetFormKwargsMixin, GetQuerysetMixin
-from .helpers import format_url_name, template_name
+from .helpers import template_name
 
 
 class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
