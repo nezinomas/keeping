@@ -3,7 +3,6 @@ from types import SimpleNamespace
 import mock
 import pytest
 
-from ..factories import UserFactory
 from ..mixins.ajax import AjaxCreateUpdateMixin
 from .utils import setup_view
 
@@ -11,7 +10,6 @@ from .utils import setup_view
 @pytest.fixture()
 def _request(rf):
     request = rf.get('/fake/')
-    request.user = UserFactory.build()
     request.resolver_match = SimpleNamespace(app_name='app_name')
 
     return request

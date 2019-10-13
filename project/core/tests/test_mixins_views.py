@@ -1,7 +1,6 @@
 import mock
 import pytest
 
-from ..factories import UserFactory
 from ..mixins.views import ListMixin
 from .utils import setup_view
 
@@ -9,7 +8,6 @@ from .utils import setup_view
 @pytest.fixture()
 def _request(rf):
     request = rf.get('/fake/')
-    request.user = UserFactory.build()
 
     return request
 
