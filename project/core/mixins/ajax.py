@@ -11,9 +11,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
 
     def get_template_names(self):
         if self.template_name is None:
-            plural = format_url_name(self.model._meta.verbose_name)
-            app_name = self.request.resolver_match.app_name
-            return [f'{app_name}/includes/{plural}_form.html']
+            return [self._template_name('form')]
         else:
             return [self.template_name]
 
@@ -88,11 +86,14 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
 
         # data['js'] = js_url
 
+    def _template_name(self, name: str) -> str:
+        app_name = self.request.resolver_match.app_name
+        plural = format_url_name(self.model._meta.verbose_name)
+
+        return f'{app_name}/includes/{plural}_{name}.html'
+
     def _get_list_template_name(self):
         if not self.list_template_name:
-            app_name = self.request.resolver_match.app_name
-            plural = format_url_name(self.model._meta.verbose_name)
-
-            return f'{app_name}/includes/{plural}_list.html'
+            return self._template_name('list')
         else:
             return self.list_template_name
