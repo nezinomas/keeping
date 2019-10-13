@@ -3,7 +3,8 @@ import pytest
 from django.views.generic import View
 
 from ..factories import UserFactory
-from ..mixins.views import ListMixin, render_to_string
+from ..mixins.views import ListMixin
+from .utils import setup_view
 
 
 @pytest.fixture()
@@ -12,19 +13,6 @@ def _request(rf):
     request.user = UserFactory.build()
 
     return request
-
-
-def setup_view(view, request, *args, **kwargs):
-    """
-    Mimic ``as_view()``, but returns view instance.
-    Use this function to get view instances on which you can run unit tests,
-    by testing specific methods.
-    """
-
-    view.request = request
-    view.args = args
-    view.kwargs = kwargs
-    return view
 
 
 def test_template_names(_request):
