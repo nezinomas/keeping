@@ -21,18 +21,18 @@ def template_name(self: object, name: str) -> str:
 
 
 def update_context(self, context, action):
-        plural = format_url_name(self.model._meta.verbose_name)
-        app_name = self.request.resolver_match.app_name
+    plural = format_url_name(self.model._meta.verbose_name)
+    app_name = self.request.resolver_match.app_name
 
-        if action is 'update':
-            context['action'] = 'update'
-            context['url'] = (
-                reverse(
-                    f'{app_name}:{plural}_update',
-                    kwargs={'pk': self.object.pk}
-                )
+    if action is 'update':
+        context['action'] = 'update'
+        context['url'] = (
+            reverse(
+                f'{app_name}:{plural}_update',
+                kwargs={'pk': self.object.pk}
             )
+        )
 
-        if action is 'create':
-            context['action'] = 'insert'
-            context['url'] = reverse(f'{app_name}:{plural}_new')
+    if action is 'create':
+        context['action'] = 'insert'
+        context['url'] = reverse(f'{app_name}:{plural}_new')
