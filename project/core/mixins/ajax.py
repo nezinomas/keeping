@@ -57,7 +57,6 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
             return super().form_valid(form)
 
     def form_invalid(self, form):
-        response = super().form_invalid(form)
         context = self.get_context_data()
 
         context['form'] = form
@@ -67,7 +66,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
             self._render_form(data, context)
             return JsonResponse(data)
         else:
-            return response
+            return super().form_invalid(form)
 
     def _render_form(self, data, context):
         data['html_form'] = (
