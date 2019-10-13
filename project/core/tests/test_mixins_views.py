@@ -1,6 +1,5 @@
 import mock
 import pytest
-from django.views.generic import View
 
 from ..factories import UserFactory
 from ..mixins.views import ListMixin
