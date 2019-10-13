@@ -38,12 +38,10 @@ class ListMixin(
     def _render_to_string(self, request, **kwargs):
         template_name = self.get_template_names()
 
-        # c = super().get_context_data(**{})
         return (
             render_to_string(
                 template_name,
                 {self.context_object_name: self.get_queryset()},
-                # self.get_context_data(**{}),
                 request
             )
         )
