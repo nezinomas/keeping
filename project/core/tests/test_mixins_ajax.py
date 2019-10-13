@@ -1,10 +1,10 @@
 import json
 from types import SimpleNamespace
 
-import mock
 import pytest
 from django.views.generic import CreateView
 from django.views.generic.edit import FormMixin
+from mock import Mock, patch
 
 from ..mixins.ajax import AjaxCreateUpdateMixin
 from .utils import setup_view
@@ -27,7 +27,7 @@ def _ajax_request(rf):
 
 
 def test_template_names_set_automatically(_request):
-    mck = mock.MagicMock()
+    mck = Mock()
     mck._meta.verbose_name = 'plural'
 
     class Dummy(AjaxCreateUpdateMixin):
@@ -45,7 +45,7 @@ def test_template_names_set_automatically(_request):
 def test_template_names(_request):
     class Dummy(AjaxCreateUpdateMixin):
         template_name = 'XXX'
-        model = mock.MagicMock()
+        model = Mock()
 
     view = setup_view(Dummy(), _request)
 
@@ -56,7 +56,7 @@ def test_template_names(_request):
 
 
 def test_lists_template_names_set_automatically(_request):
-    mck = mock.MagicMock()
+    mck = Mock()
     mck._meta.verbose_name = 'plural'
 
     class Dummy(AjaxCreateUpdateMixin):
@@ -74,7 +74,7 @@ def test_lists_template_names_set_automatically(_request):
 def test_lists_template_names(_request):
     class Dummy(AjaxCreateUpdateMixin):
         list_template_name = 'XXX'
-        model = mock.MagicMock()
+        model = Mock()
 
     view = setup_view(Dummy(), _request)
 
@@ -84,18 +84,18 @@ def test_lists_template_names(_request):
     assert actual == expect
 
 
-@mock.patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
-@mock.patch('project.core.mixins.ajax.render_to_string')
+@patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
+@patch('project.core.mixins.ajax.render_to_string')
 def test_form_valid_render(mck_render, mck_context, _request):
     class Dummy(AjaxCreateUpdateMixin, FormMixin):
         list_template_name = 'XXX'
         template_name = 'YYY'
-        model = mock.MagicMock()
+        model = Mock()
 
         def success_url(self):
             return ''
 
-    mck_form = mock.MagicMock()
+    mck_form = Mock()
     mck_form.is_valid.return_value = True
 
     view = setup_view(Dummy(), _request)
@@ -108,17 +108,17 @@ def test_form_valid_render(mck_render, mck_context, _request):
     assert 302 == response.status_code
 
 
-@mock.patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
-@mock.patch('project.core.mixins.ajax.render_to_string')
+@patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
+@patch('project.core.mixins.ajax.render_to_string')
 def test_form_valid_ajax_response(mck_render, mck_context, _ajax_request):
     class Dummy(AjaxCreateUpdateMixin, FormMixin):
         list_template_name = 'XXX'
         template_name = 'YYY'
-        model = mock.MagicMock()
+        model = Mock()
 
     mck_render.side_effect = ['html_list', 'html_form']
 
-    mck_form = mock.MagicMock()
+    mck_form = Mock()
     mck_form.is_valid.return_value = True
 
     view = setup_view(Dummy(), _ajax_request)
@@ -133,14 +133,14 @@ def test_form_valid_ajax_response(mck_render, mck_context, _ajax_request):
     assert 'html_form' == actual['html_form']
 
 
-@mock.patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
+@patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
 def test_form_invalid_render(mck_context, _request):
     class Dummy(AjaxCreateUpdateMixin, CreateView):
         list_template_name = 'XXX'
         template_name = 'YYY'
-        model = mock.MagicMock()
+        model = Mock()
 
-    mck_form = mock.MagicMock()
+    mck_form = Mock()
     mck_form.is_valid.return_value = False
 
     view = setup_view(Dummy(), _request)
@@ -150,17 +150,17 @@ def test_form_invalid_render(mck_context, _request):
     assert 200 == response.status_code
 
 
-@mock.patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
-@mock.patch('project.core.mixins.ajax.render_to_string')
+@patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
+@patch('project.core.mixins.ajax.render_to_string')
 def test_form_invalid_ajax_response(mck_render, mck_context, _ajax_request):
     class Dummy(AjaxCreateUpdateMixin, FormMixin):
         list_template_name = 'XXX'
         template_name = 'YYY'
-        model = mock.MagicMock()
+        model = Mock()
 
     mck_render.side_effect = ['html_form']
 
-    mck_form = mock.MagicMock()
+    mck_form = Mock()
     mck_form.is_valid.return_value = False
 
     view = setup_view(Dummy(), _ajax_request)

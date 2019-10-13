@@ -1,6 +1,8 @@
-import mock
-import pytest
 from types import SimpleNamespace
+
+import pytest
+from mock import Mock
+
 from ..mixins.formset import FormsetMixin
 from .utils import setup_view
 
@@ -15,8 +17,8 @@ def _request(rf):
 def test_get_type_model_type_model_not_set(_request):
     class Dummy(FormsetMixin):
         type_model = None
-        model = mock.Mock(return_value='Model')()
-        form_class = mock.Mock()
+        model = Mock(return_value='Model')()
+        form_class = Mock()
 
     view = setup_view(Dummy(), _request)
 
@@ -27,9 +29,9 @@ def test_get_type_model_type_model_not_set(_request):
 
 def test_get_type_model_type_model_is_set(_request):
     class Dummy(FormsetMixin):
-        type_model = mock.MagicMock(return_value='Type')()
-        model = mock.MagicMock(return_value='Model')()
-        form_class = mock.MagicMock()
+        type_model = Mock(return_value='Type')()
+        model = Mock(return_value='Model')()
+        form_class = Mock()
 
     view = setup_view(Dummy(), _request)
 
@@ -39,7 +41,7 @@ def test_get_type_model_type_model_is_set(_request):
 
 
 def test_model_type_withou_foreignkey(_request):
-    mck = mock.MagicMock()
+    mck = Mock()
     mck._meta.get_fields.return_value = [
         SimpleNamespace(name='F', many_to_one=False)
     ]
@@ -47,7 +49,7 @@ def test_model_type_withou_foreignkey(_request):
     class Dummy(FormsetMixin):
         type_model = None
         model = mck
-        form_class = mock.Mock()
+        form_class = Mock()
 
     view = setup_view(Dummy(), _request)
 

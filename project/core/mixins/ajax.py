@@ -89,10 +89,10 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
         # data['js'] = js_url
 
     def _get_list_template_name(self):
-        app_name = self.request.resolver_match.app_name
-        plural = format_url_name(self.model._meta.verbose_name)
-
         if not self.list_template_name:
+            app_name = self.request.resolver_match.app_name
+            plural = format_url_name(self.model._meta.verbose_name)
+
             return f'{app_name}/includes/{plural}_list.html'
         else:
             return self.list_template_name
