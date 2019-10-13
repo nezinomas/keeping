@@ -4,7 +4,6 @@ from django.forms.models import modelformset_factory
 class FormsetMixin():
     def _formset_initial(self):
         model = self._get_type_model()
-        _objects = model.objects.all()
         _list = []
 
         # get self.model ForeignKey field name
@@ -13,6 +12,7 @@ class FormsetMixin():
         if not foreign_key:
             return _list
 
+        _objects = model.objects.all()
         for _object in _objects:
             _list.append({'price': None, foreign_key[0]: _object})
 
