@@ -26,8 +26,8 @@ def _ajax_request(rf):
     return request
 
 
-@mock.patch('project.incomes.models.Income')
-def test_template_names_set_automatically(mck, _request):
+def test_template_names_set_automatically(_request):
+    mck = mock.MagicMock()
     mck._meta.verbose_name = 'plural'
 
     class Dummy(AjaxCreateUpdateMixin):
@@ -55,8 +55,8 @@ def test_template_names(_request):
     assert actual[0] == expect
 
 
-@mock.patch('project.incomes.models.Income')
-def test_lists_template_names_set_automatically(mck, _request):
+def test_lists_template_names_set_automatically(_request):
+    mck = mock.MagicMock()
     mck._meta.verbose_name = 'plural'
 
     class Dummy(AjaxCreateUpdateMixin):
