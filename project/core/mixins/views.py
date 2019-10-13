@@ -4,7 +4,7 @@ from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
 from .ajax import AjaxCreateUpdateMixin
 from .get import GetFormKwargsMixin, GetQuerysetMixin
-from .helpers import format_url_name, update_context, template_name
+from .helpers import format_url_name, template_name, update_context
 
 
 class IndexMixin(LoginRequiredMixin, TemplateView):

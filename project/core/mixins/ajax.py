@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 
-from .get import GetQuerysetMixin, GetFormKwargsMixin
+from .get import GetFormKwargsMixin, GetQuerysetMixin
 from .helpers import format_url_name, template_name
 
 
