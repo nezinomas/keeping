@@ -4,7 +4,7 @@ from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
 from .ajax import AjaxCreateUpdateMixin
 from .get import GetFormKwargsMixin, GetQuerysetMixin
-from .helpers import format_url_name, update_context
+from .helpers import format_url_name, update_context, template_name
 
 
 class IndexMixin(LoginRequiredMixin, TemplateView):
@@ -29,9 +29,7 @@ class ListMixin(
 
     def get_template_names(self):
         if self.template_name is None:
-            plural = format_url_name(self.model._meta.verbose_name)
-            app_name = self.request.resolver_match.app_name
-            return [f'{app_name}/includes/{plural}_list.html']
+            return [template_name(self, 'list')]
         else:
             return [self.template_name]
 

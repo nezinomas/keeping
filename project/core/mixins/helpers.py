@@ -13,6 +13,13 @@ def format_url_name(verbose_name):
     return plural
 
 
+def template_name(self: object, name: str) -> str:
+    app_name = self.request.resolver_match.app_name
+    plural = format_url_name(self.model._meta.verbose_name)
+
+    return f'{app_name}/includes/{plural}_{name}.html'
+
+
 def update_context(self, context, action):
         plural = format_url_name(self.model._meta.verbose_name)
         app_name = self.request.resolver_match.app_name
