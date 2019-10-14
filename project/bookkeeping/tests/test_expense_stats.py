@@ -125,10 +125,26 @@ def test_month_with_savings(_ex, _savings):
     assert expect == actual[0]
 
 
+def test_month_with_only_savings(_savings):
+    expect = {'date': date(1999, 1, 1), 'X': 0.5, 'total': 0.5}
+
+    actual = MonthExpenseType(year=1999, month=1, expenses=[], **_savings).balance
+
+    assert expect == actual[0]
+
+
 def test_months_with_savings(_ex, _savings):
     expect = {'date': date(1999, 1, 1), 'T1': 0.25, 'T2': 0.5, 'X': 0.5, 'total': 1.25}
 
     actual = MonthsExpenseType(year=1999, expenses=_ex, **_savings).balance
+
+    assert expect == actual[0]
+
+
+def test_months_with_only_savings(_savings):
+    expect = {'date': date(1999, 1, 1), 'X': 0.5, 'total': 0.5}
+
+    actual = MonthsExpenseType(year=1999, expenses=[], **_savings).balance
 
     assert expect == actual[0]
 

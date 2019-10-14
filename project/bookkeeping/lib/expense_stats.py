@@ -11,8 +11,9 @@ from ...core.mixins.calc_balance import (BalanceStats, df_days_of_month,
 
 def calc(expenses: List[Dict], df: pd.DataFrame, **kwargs) -> pd.DataFrame:
     # copy values from expenses to data_frame
-    for d in expenses:
-        df.at[d['date'], d['title']] = float(d['sum'])
+    if expenses:
+        for d in expenses:
+            df.at[d['date'], d['title']] = float(d['sum'])
 
     if kwargs:
         for title, arr in kwargs.items():
@@ -30,10 +31,6 @@ def calc(expenses: List[Dict], df: pd.DataFrame, **kwargs) -> pd.DataFrame:
 class MonthExpenseType(BalanceStats):
     def __init__(self, year: int, month: int, expenses: List[Dict], **kwargs):
         self._balance = df_days_of_month(year, month)
-
-        if not expenses:
-            return
-
         self._balance = calc(expenses, self._balance, **kwargs)
 
     @property
@@ -103,10 +100,6 @@ class MonthExpenseType(BalanceStats):
 class MonthsExpenseType(BalanceStats):
     def __init__(self, year, expenses: List[Dict], **kwargs):
         self._balance = df_months_of_year(year)
-
-        if not expenses:
-            return
-
         self._balance = calc(expenses, self._balance, **kwargs)
 
     @property
