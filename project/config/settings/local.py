@@ -12,25 +12,18 @@ ALLOWED_HOSTS = ['*']
 # ================   APP CONFIGURATION
 INSTALLED_APPS += [
     'debug_toolbar',
+    'django_extensions',
 ]
 
-# ================   STATIC FILE CONFIGURATION
-# STATICFILES_DIRS = [
-#     os.path.join(SITE_ROOT, 'static'),
-# ]
-# STATIC_ROOT = None
+
+# print SQL queries in shell_plus
+SHELL_PLUS_PRINT_SQL = True
 
 
 # ================   MIDDLEWARE CONFIGURATION
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    # 'customizable_django_profiler.cProfileMiddleware',
 ] + MIDDLEWARE
-
-# PROFILER = {
-#     'activate': True,
-#     'count': '50',
-# }
 
 
 # ================   DEBUG_TOOLBAR_PANEL

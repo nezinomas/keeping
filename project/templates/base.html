@@ -44,6 +44,9 @@
             <a class="nav-link {% if '/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:index' %}">Bendra</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link {% if '/month/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:month' %}">Mėnuo</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link {% if '/expenses/' in request.path %}active{% endif %}" href="{% url 'expenses:expenses_index' %}">Išlaidos</a>
           </li>
           <li class="nav-item">
@@ -63,7 +66,7 @@
           </li>
           <li class="nav-item">
             <a class="nav-link {% if '/drinks/' in request.path %}active{% endif %}"
-              href="{% url 'drinks:drinks_list' %}">Gėrimai</a>
+              href="{% url 'drinks:drinks_index' %}">Gėrimai</a>
           </li>
           <li class="nav-item">
             <a class="nav-link {% if '/plans/' in request.path %}active{% endif %}"

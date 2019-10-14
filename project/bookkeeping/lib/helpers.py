@@ -1,3 +1,6 @@
+from typing import Dict, List
+
+
 def calc_percent(args):
     market = args[0]
     invested = args[1]

@@ -1,8 +1,8 @@
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 
-from .get import GetQuerysetMixin, GetFormKwargsMixin
-from .helpers import format_url_name
+from .get import GetFormKwargsMixin, GetQuerysetMixin
+from .helpers import template_name
 
 
 class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
@@ -11,9 +11,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
 
     def get_template_names(self):
         if self.template_name is None:
-            plural = format_url_name(self.model._meta.verbose_name)
-            app_name = self.request.resolver_match.app_name
-            return [f'{app_name}/includes/{plural}_form.html']
+            return [template_name(self, 'form')]
         else:
             return [self.template_name]
 
@@ -48,8 +46,6 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
                 render_to_string(
                     self._get_list_template_name(), context, self.request)
             )
-        else:
-            data['form_is_valid'] = False
 
         self._render_form(data, context)
 
@@ -59,17 +55,16 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
             return super().form_valid(form)
 
     def form_invalid(self, form):
-        response = super().form_invalid(form)
         context = self.get_context_data()
 
         context['form'] = form
-        data = dict()
+        data = {'form_is_valid': False}
 
         if self.request.is_ajax():
             self._render_form(data, context)
             return JsonResponse(data)
         else:
-            return response
+            return super().form_invalid(form)
 
     def _render_form(self, data, context):
         data['html_form'] = (
@@ -92,10 +87,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
         # data['js'] = js_url
 
     def _get_list_template_name(self):
-        app_name = self.request.resolver_match.app_name
-        plural = format_url_name(self.model._meta.verbose_name)
-
         if not self.list_template_name:
-            return f'{app_name}/includes/{plural}_list.html'
+            return template_name(self, 'list')
         else:
             return self.list_template_name

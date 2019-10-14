@@ -6,6 +6,7 @@ from django.db.models import Count, F
 
 from ..accounts.models import Account
 from ..core.mixins.queryset_balance import QuerySetBalanceMixin
+from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
 
 
@@ -87,7 +88,7 @@ class SavingType(TitleAbstract):
     objects = SavingTypeQuerySet.as_manager()
 
 
-class SavingQuerySet(models.QuerySet):
+class SavingQuerySet(SumMixin, models.QuerySet):
     def _related(self):
         return self.select_related('account', 'saving_type')
 
@@ -96,6 +97,50 @@ class SavingQuerySet(models.QuerySet):
 
     def items(self):
         return self._related()
+
+    def month_saving(self, year, month=None):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .sum_by_month(
+                year=year, month=month,
+                summed_name=summed_name)
+            .values('date', summed_name)
+        )
+
+    def month_saving_type(self, year, month=None):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .sum_by_month(
+                year=year, month=month,
+                summed_name=summed_name, groupby='saving_type')
+            .values('date', summed_name, title=F('saving_type__title'))
+        )
+
+    def day_saving_type(self, year, month):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .sum_by_day(
+                year=year, month=month,
+                summed_name=summed_name)
+            .values(summed_name, 'date', title=F('saving_type__title'))
+        )
+
+    def day_saving(self, year, month):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .sum_by_day(
+                year=year, month=month,
+                summed_name=summed_name)
+            .values(summed_name, 'date')
+        )
 
 
 class Saving(models.Model):
@@ -127,9 +172,13 @@ class Saving(models.Model):
 
     class Meta:
         ordering = ['-date', 'saving_type']
+        indexes = [
+            models.Index(fields=['account', 'saving_type']),
+            models.Index(fields=['saving_type']),
+        ]
 
     def __str__(self):
-        return str(self.saving_type)
+        return f'{self.date}: {self.saving_type}'
 
     # Managers
     objects = SavingQuerySet.as_manager()

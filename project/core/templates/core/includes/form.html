@@ -1,4 +1,4 @@
-{% load form_tags widget_tweaks %}
+{% load crispy_forms_tags %}
 
 {% if form.non_field_errors %}
 <div class="alert alert-danger" role="alert">
@@ -10,12 +10,9 @@
 
 {% for field in form %}
 <div class="form-group">
-    {{ field.label_tag }}
-    {% render_field field class=field|input_class %}
+    {{ field|as_crispy_field }}
     {% for error in field.errors %}
-    <div class="invalid-feedback">
-        {{ error }}
-    </div>
+
     {% endfor %}
     {% if field.help_text %}
     <small class="form-text text-muted">

@@ -20,7 +20,7 @@ class YearManager(models.Manager):
 
         return qs
 
-    def items(self, year):
+    def items(self):
         qs = self.get_queryset().all()
 
         if self._prefetch:
@@ -29,25 +29,9 @@ class YearManager(models.Manager):
         return qs
 
 
-class PlanQuerySet(models.QuerySet):
-    def __init__(self, prefetch, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._prefetch = prefetch
-
-    def year(self, year):
-        qs = self.filter(date__year=year)
-        if self._prefetch:
-            qs = qs.select_related(self._prefetch)
-
-        return qs
-
-    def items(self):
-        return self.all()
-
-
 class ExpensePlan(MonthAbstract):
     year = models.PositiveIntegerField(
-        validators=[MinValueValidator(2000), MaxValueValidator(2050)]
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
     expense_type = models.ForeignKey(
         ExpenseType,
@@ -56,6 +40,9 @@ class ExpensePlan(MonthAbstract):
 
     objects = YearManager('expense_type')
 
+    def __str__(self):
+        return f'{self.year}/{self.expense_type.title}'
+
     class Meta:
         ordering = ['expense_type']
         unique_together = ('year', 'expense_type')
@@ -63,7 +50,7 @@ class ExpensePlan(MonthAbstract):
 
 class SavingPlan(MonthAbstract):
     year = models.PositiveIntegerField(
-        validators=[MinValueValidator(2000), MaxValueValidator(2050)]
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
     saving_type = models.ForeignKey(
         SavingType,
@@ -72,6 +59,9 @@ class SavingPlan(MonthAbstract):
 
     objects = YearManager('saving_type')
 
+    def __str__(self):
+        return f'{self.year}/{self.saving_type.title}'
+
     class Meta:
         ordering = ['saving_type']
         unique_together = ('year', 'saving_type')
@@ -79,7 +69,7 @@ class SavingPlan(MonthAbstract):
 
 class IncomePlan(MonthAbstract):
     year = models.PositiveIntegerField(
-        validators=[MinValueValidator(2000), MaxValueValidator(2050)]
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
     income_type = models.ForeignKey(
         IncomeType,
@@ -88,6 +78,9 @@ class IncomePlan(MonthAbstract):
 
     objects = YearManager('income_type')
 
+    def __str__(self):
+        return f'{self.year}/{self.income_type.title}'
+
     class Meta:
         ordering = ['income_type']
         unique_together = ('year', 'income_type')
@@ -95,8 +88,26 @@ class IncomePlan(MonthAbstract):
 
 class DayPlan(MonthAbstract):
     year = models.PositiveIntegerField(
-        validators=[MinValueValidator(2000), MaxValueValidator(2050)],
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)],
         unique=True
     )
 
     objects = YearManager(None)
+
+    def __str__(self):
+        return f'{self.year}'
+
+
+class NecessaryPlan(MonthAbstract):
+    year = models.PositiveIntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)],
+    )
+    title = models.CharField(max_length=100)
+
+    objects = YearManager(None)
+
+    def __str__(self):
+        return f'{self.year}/{self.title}'
+
+    class Meta:
+        unique_together = ('year', 'title')

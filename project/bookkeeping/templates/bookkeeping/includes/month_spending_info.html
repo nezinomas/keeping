@@ -1,0 +1,28 @@
+{% load cell_format %}
+
+<table class="table table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th></th>
+            <th class="text-right">Planas</th>
+            <th class="text-right">Faktas</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Pajamos</td>
+            <td>{{ plan_incomes|floatformat:2 }}</td>
+            <td class="{{ fact_incomes|compare:plan_incomes }}">{{ fact_incomes|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <td>Pinigai dienai</td>
+            <td>{{ plan_per_day|floatformat:2 }}</td>
+            <td class="{{ plan_per_day|compare:fact_per_day }}">{{ fact_per_day|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <td>Mėn balansas</td>
+            <td>{{ plan_remains|floatformat:2 }}</td>
+            <td class="{{ fact_remains|compare:plan_remains }}">{{ fact_remains|floatformat:2 }}</td>
+        </tr>
+    </tbody>
+</table>

@@ -20,7 +20,7 @@
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="{% if fees %}5{% else %}4{% endif %}" class="py-2"><b>{{ year|title }}</b> metais įrašų nėra.</td>
+            <td colspan="{% if fees %}5{% else %}4{% endif %}" class="py-2"><b>{{ year|default_if_none:'xxxx'|safe }}</b> metais įrašų nėra.</td>
         </tr>
         {% endfor %}
     </tbody>

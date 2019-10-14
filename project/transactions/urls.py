@@ -31,6 +31,11 @@ urlpatterns = [
         name='savings_close_new'
     ),
     path(
+        'savings_close/lists/',
+        views.SavingsCloseLists.as_view(),
+        name='savings_close_list'
+    ),
+    path(
         'savings_close/update/<int:pk>/',
         views.SavingsCloseUpdate.as_view(),
         name='savings_close_update'
@@ -39,6 +44,11 @@ urlpatterns = [
         'savings_change/new/',
         views.SavingsChangeNew.as_view(),
         name='savings_change_new'
+    ),
+    path(
+        'savings_change/lists/',
+        views.SavingsChangeLists.as_view(),
+        name='savings_change_list'
     ),
     path(
         'savings_change/update/<int:pk>/',

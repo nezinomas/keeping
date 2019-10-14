@@ -15,18 +15,22 @@ class IncomeType(TitleAbstract):
 
 class IncomeQuerySet(SumMixin, models.QuerySet):
     def _related(self):
-        return self.select_related('account')
+        return self.select_related('account', 'income_type')
 
     def year(self, year):
         return self._related().filter(date__year=year)
 
     def items(self):
-        return self._related()
+        return self._related().all()
 
-    def income_sum(self, year):
-        summed_name = 'incomes'
+    def income_sum(self, year, month=None):
+        summed_name = 'sum'
 
-        return super().sum_by_month(year, summed_name).values('date', summed_name)
+        return (
+            super()
+            .sum_by_month(year, summed_name, month=month)
+            .values('date', summed_name)
+        )
 
 
 class Income(models.Model):
@@ -52,9 +56,13 @@ class Income(models.Model):
 
     class Meta:
         ordering = ['-date', 'price']
+        indexes = [
+            models.Index(fields=['account', 'income_type']),
+            models.Index(fields=['income_type']),
+        ]
 
     def __str__(self):
-        return str(self.date)
+        return f'{(self.date)}: {self.income_type}'
 
     # managers
     objects = IncomeQuerySet.as_manager()

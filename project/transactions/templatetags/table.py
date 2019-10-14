@@ -10,7 +10,7 @@ register = template.Library()
 def table(context, url_name, fees=False):
     try:
         year = context['request'].user.profile.year
-    except:
+    except Exception as ex:
         year = None
 
     return {

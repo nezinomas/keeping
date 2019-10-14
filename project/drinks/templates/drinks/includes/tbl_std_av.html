@@ -1,0 +1,32 @@
+{% load table_cell %}
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top-text"><th colspan="5">Vidutiniškai suvartojamas Std AV</th></tr>
+        <tr class="top">
+            <th class="text-right">Viso</th>
+            <th class="text-right">Per dieną</th>
+            <th class="text-right">Per savaitę</th>
+            <th class="text-right">Per mėnesį</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr {% if 'AV' in item.title %}class="table-warning bor"{% endif %}>
+            {% cell item.total %}
+            {% cell item.per_day %}
+            {% cell item.per_week %}
+            {% cell item.per_month %}
+            <td class="text-left" style="padding-left: 1rem!important;">{{ item.title }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">Nėra duomenų</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+<style>
+tr.bor {
+    border-top: double #ffc000;
+    border-bottom: double #ffc000;
+}
+</style>

@@ -3,13 +3,14 @@ body {
 }
 
 table.stats h1 {
-    font-size: .8rem;
+    font-size: .75rem;
     padding: .15rem 0;
     margin: 0;
 }
 
 table.stats {
     border-collapse: collapse;
+    font-size: .65rem;
 }
 
 table.stats tfoot {
@@ -20,10 +21,10 @@ table.stats td, table.stats th {
     border: 1px solid #b4b4b3!important;
     /* border-right: 1px solid #b7b7b6!important; */
     vertical-align: middle!important;
-    padding-top: .1rem!important;
-    padding-bottom: .1rem!important;
-    padding-left: .35rem!important;
-    padding-right: .35rem!important;
+    padding-top: .09rem!important;
+    padding-bottom: .09rem!important;
+    padding-left: .20rem!important;
+    padding-right: .20rem!important;
 }
 
 table.stats tr td:first-child, table.stats tr th:first-child {
@@ -60,7 +61,7 @@ tr.total th {
 }
 
 .navbar {
-    padding: .25rem .5rem;
+    padding: .1rem .5rem;
 }
 
 .nav-item {
@@ -73,12 +74,12 @@ tr.total th {
 }
 
 .nav-link {
-    padding: .25rem 1rem;
-    margin: .25rem;
+    padding: .15rem .5rem;
+    margin: .15rem;
 }
 
 .container-fluid>.content {
-    padding: 0 1rem;
+    padding: 0 .5rem;
 }
 
 .top > th {
@@ -92,6 +93,12 @@ tr.total th {
 
 .top > th.text-center {
     text-align: center!important;
+}
+
+tr.top-text, tr.top-text th {
+    text-align: left!important;
+    background-color: white!important;
+    border-top: 0px!important;
 }
 
 
@@ -142,4 +149,14 @@ tr.total th {
 
 .list-group-item.list-group-item-primary {
     padding-left: 0.25rem;
+}
+
+.bad {
+    background-color: #fec2c6;
+    color: #dc3545;
+}
+
+/* overwrite  bootstrap  class */
+.invalid-feedback {
+    display: block!important;
 }

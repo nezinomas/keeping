@@ -3,43 +3,43 @@ from typing import Dict, List
 
 import pandas as pd
 
-from ..mixins.calc_balance import CalcBalanceMixin
+from ...core.mixins.calc_balance import (BalanceStats, df_days_of_month,
+                                   df_months_of_year)
 
 
-class MonthsBalance(CalcBalanceMixin):
-    def __init__(self,
-                 year,
-                 incomes: List[Dict], expenses: List[Dict],
-                 amount_start: float=0.0):
+class MonthsBalance(BalanceStats):
+    def __init__(self, year: int, incomes: List[Dict],
+                 expenses: List[Dict], savings: List[Dict]=[],
+                 savings_close: List[Dict]=[], amount_start: float=0.0):
+
+        '''
+        year: int
+
+        incomes: [{'date': datetime.date(), 'incomes': Decimal()}, ... ]
+
+        expenses: [{'date': datetime.date(), 'expenses': Decimal()}, ... ]
+
+        savings: [{'date': datetime.date(), 'savings': Decimal()}, ... ]
+
+        savings_close: [{'date': datetime.date(), 'to_account': Decimal()}, ... ]
+
+        amount_start: year start worth amount
+        '''
+
+        super().__init__()
+
         try:
             amount_start = float(amount_start)
         except:
             amount_start = 0.0
 
         self._amount_start = amount_start
-        self._balance = pd.DataFrame()
-        self._year = year
 
         if not incomes and not expenses:
             return
 
-        if not incomes:
-            incomes = [{'date': date(year, 1, 1), 'incomes': 0}]
-
-        if not expenses:
-            expenses = [{'date': date(year, 1, 1), 'expenses': 0}]
-
-        self._calc(incomes, expenses)
-
-    @property
-    def balance(self) -> Dict[str, float]:
-        val = None
-        balance = self._balance.copy()
-
-        if not balance.empty:
-            val = balance.to_dict('records')
-
-        return val
+        self._balance = self._make_df(year, incomes, expenses, savings, savings_close)
+        self._balance = self._calc(self._balance)
 
     @property
     def amount_start(self) -> float:
@@ -48,46 +48,27 @@ class MonthsBalance(CalcBalanceMixin):
     @property
     def amount_end(self) -> float:
         val = 0.0
+        t = super().totals
 
-        if self.totals:
-            val = self._amount_start + self.totals['balance']
-
-        return val
+        return self._amount_start + t.get('balance', 0.0)
 
     @property
     def amount_balance(self) -> float:
-        val = 0.0
+        t = super().totals
 
-        if self.totals:
-            val = self.totals['balance']
-
-        return val
+        return t.get('balance', 0.0)
 
     @property
     def avg_incomes(self) -> float:
-        val = 0.0
+        avg = super().average
 
-        if self.average:
-            val = self.average['incomes']
-
-        return val
+        return avg.get('incomes', 0.0)
 
     @property
     def avg_expenses(self) -> float:
-        val = 0.0
+        avg = super().average
 
-        if self.average:
-            val = self.average['expenses']
-
-        return val
-
-    @property
-    def totals(self) -> Dict[str, float]:
-        return super().totals(self._balance)
-
-    @property
-    def average(self) -> Dict[str, float]:
-        return super().average(self._balance)
+        return avg.get('expenses', 0.0)
 
     @property
     def income_data(self) -> List[float]:
@@ -113,27 +94,72 @@ class MonthsBalance(CalcBalanceMixin):
 
         return rtn
 
-    def _calc(self, incomes: List[Dict], expenses: List[Dict]) -> None:
-        incomes = super().convert_to_df(self._year, incomes)
-        expenses = super().convert_to_df(self._year, expenses)
+    def _make_df(self, year: int, incomes: List[Dict], expenses: List[Dict],
+                 savings: List[Dict], savings_close: List[Dict]) -> pd.DataFrame:
 
-        df = incomes.join(
-            expenses,
-            how='left', lsuffix='_left', rsuffix='_right',
-        ).reset_index()
+        df = df_months_of_year(year)
 
+        # append necessary columns
+        df.loc[:, 'incomes'] = 0.0
+        df.loc[:, 'expenses'] = 0.0
+        df.loc[:, 'residual'] = 0.0
+        df.loc[:, 'balance'] = 0.0
+        df.loc[:, 'savings'] = 0.0
+        df.loc[:, 'savings_close'] = 0.0
+
+        # copy incomes values, convert Decimal to float
+        for d in incomes:
+            df.at[d['date'], 'incomes'] = float(d['sum'])
+
+        # copy expenses values, convert Decimal to float
+        for d in expenses:
+            df.at[d['date'], 'expenses'] = float(d['sum'])
+
+        if savings:
+            # copy savings values, convert Decimal to float
+            for d in savings:
+                df.at[d['date'], 'savings'] = float(d['sum'])
+
+        if savings_close:
+            # copy savings values, convert Decimal to float
+            for d in savings_close:
+                df.at[d['date'], 'savings_close'] = float(d['sum'])
+
+        return df
+
+    def _clean_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        # delete not necessary columns
+        df.drop('savings', axis=1, inplace=True)
+        df.drop('savings_close', axis=1, inplace=True)
+        df.drop('total', axis=1, inplace=True)
+
+        return df
+
+    def _calc(self, df: pd.DataFrame) -> pd.DataFrame:
         # calculate balance
-        df.loc[:, 'balance'] = df.incomes - df.expenses
+        df['incomes'] = df.incomes + df.savings_close
+        df['expenses'] = df.expenses + df.savings
+        df['balance'] = df.incomes - df.expenses
 
         #  calculate residual amount of money
         # for january
-        df.at[0, 'residual'] = self._amount_start + df.at[0, 'balance']
+        df.loc[df.index[0], 'residual'] = (
+            0.0
+            + self._amount_start
+            + df.loc[df.index[0], 'balance']
+        )
 
         # for february:december
         for i in range(1, 12):
-            df.at[i, 'residual'] = df.at[i, 'balance'] + df.at[i - 1, 'residual']
+            idx = df.index[i]
+            idx_prev = df.index[i - 1]
 
-        # convert date from Timestamp to datetime.date
-        df['date'] = df['date'].dt.date
+            df.loc[idx, 'residual'] = (
+                0.0
+                + df.loc[idx, 'balance']
+                + df.loc[idx_prev, 'residual']
+            )
 
-        self._balance = df
+        df = self._clean_df(df)
+
+        return df

@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from django.core.validators import MinValueValidator
+from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 from django.db.models import F, Q
 
@@ -43,13 +43,14 @@ class ExpenseNameQuerySet(models.QuerySet):
         return self._related().filter(parent_id=parent_id)
 
     def items(self):
-        return self._related()
+        return self._related().all()
 
 
 class ExpenseName(TitleAbstract):
     title = models.CharField(
         max_length=254,
         blank=False,
+        validators=[MinLengthValidator(3)]
     )
     valid_for = models.PositiveIntegerField(
         blank=True,
@@ -76,21 +77,52 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
         return self._related().filter(date__year=year)
 
     def items(self):
-        return self._related()
+        return self._related().all()
 
-    def expense_sum(self, year):
-        summed_name = 'expenses'
-
-        return super().sum_by_month(year, summed_name).values('date', summed_name)
-
-    def expense_type_sum(self, year):
+    def month_expense(self, year, month=None):
         summed_name = 'sum'
 
-        return super().sum_by_month(
-            year,
-            summed_name=summed_name,
-            groupby='expense_type'
-        ).values('date', summed_name, title=F('expense_type__title'))
+        return (
+            super()
+            .sum_by_month(
+                year=year, month=month,
+                summed_name=summed_name)
+            .values('date', summed_name)
+        )
+
+    def month_expense_type(self, year, month=None):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .sum_by_month(
+                year=year, month=month,
+                summed_name=summed_name, groupby='expense_type')
+            .values('date', summed_name, title=F('expense_type__title'))
+        )
+
+    def month_exceptions(self, year, month=None):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .filter(exception=True)
+            .sum_by_day(
+                year=year, month=month,
+                summed_name=summed_name)
+            .values(summed_name, 'date', title=F('expense_type__title'))
+        )
+
+    def day_expense_type(self, year, month):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .sum_by_day(
+                year=year, month=month,
+                summed_name=summed_name)
+            .values('date', summed_name, title=F('expense_type__title'))
+        )
 
 
 class Expense(models.Model):
@@ -126,9 +158,13 @@ class Expense(models.Model):
 
     class Meta:
         ordering = ['-date', 'expense_type', F('expense_name').asc(), 'price']
+        indexes = [
+            models.Index(fields=['account', 'expense_type']),
+            models.Index(fields=['expense_type']),
+        ]
 
     def __str__(self):
-        return str(self.date)
+        return f'{(self.date)}/{self.expense_type}/{self.expense_name}'
 
     # Managers
     objects = ExpenseQuerySet.as_manager()

@@ -3,9 +3,6 @@ from django.core.validators import MinLengthValidator
 
 
 class BooksQuerySet(models.QuerySet):
-    def qs(self):
-        return self.get_queryset()
-
     def year(self, year):
         return self.filter(started__year=year)
 

@@ -15,7 +15,12 @@ class TransactionForm(forms.ModelForm):
         fields = ['date', 'from_account', 'to_account', 'price']
 
         widgets = {
-            'date': DatePickerInput(format='%Y-%m-%d'),
+            'date': DatePickerInput(
+                options={
+                    "format": "YYYY-MM-DD",
+                    "locale": "lt",
+                }
+            ),
         }
 
     field_order = ['date', 'from_account', 'to_account', 'price']
@@ -51,7 +56,12 @@ class SavingCloseForm(forms.ModelForm):
         fields = ['date', 'from_account', 'to_account', 'price', 'fee']
 
         widgets = {
-            'date': DatePickerInput(format='%Y-%m-%d'),
+            'date': DatePickerInput(
+                options={
+                    "format": "YYYY-MM-DD",
+                    "locale": "lt",
+                }
+            ),
         }
 
     field_order = ['date', 'from_account', 'to_account', 'price', 'fee']
@@ -85,7 +95,12 @@ class SavingChangeForm(forms.ModelForm):
         fields = ['date', 'from_account', 'to_account', 'price', 'fee']
 
         widgets = {
-            'date': DatePickerInput(format='%Y-%m-%d'),
+            'date': DatePickerInput(
+                options={
+                    "format": "YYYY-MM-DD",
+                    "locale": "lt",
+                }
+            ),
         }
 
     field_order = ['date', 'from_account', 'to_account', 'price', 'fee']

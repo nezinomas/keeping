@@ -4,7 +4,8 @@ from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 
-from ..core.helpers.helper_forms import set_field_properties, ChainedDropDown
+from ..accounts.models import Account
+from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
 from .models import Expense, ExpenseName, ExpenseType
 
 
@@ -16,7 +17,12 @@ class ExpenseForm(forms.ModelForm):
         fields = ('date', 'price', 'quantity', 'expense_type',
                   'expense_name', 'remark', 'exception', 'account')
         widgets = {
-            'date': DatePickerInput(format='%Y-%m-%d'),
+            'date': DatePickerInput(
+                options={
+                    "format": "YYYY-MM-DD",
+                    "locale": "lt",
+                }
+            ),
         }
 
     field_order = ['date', 'expense_type', 'expense_name', 'account',
@@ -42,7 +48,7 @@ class ExpenseForm(forms.ModelForm):
 
         # inital values
         self.fields['date'].initial = datetime.now()
-        self.fields['account'].initial = 1
+        self.fields['account'].initial = Account.objects.first()
         self.fields['price'].initial = '0.00'
         self.fields['expense_name'].queryset = Expense.objects.none()
 
