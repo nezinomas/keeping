@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from django.core.validators import MinValueValidator
+from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 from django.db.models import F, Q
 
@@ -47,6 +47,11 @@ class ExpenseNameQuerySet(models.QuerySet):
 
 
 class ExpenseName(TitleAbstract):
+    title = models.CharField(
+        max_length=254,
+        blank=False,
+        validators=[MinLengthValidator(3)]
+    )
     valid_for = models.PositiveIntegerField(
         blank=True,
         null=True,

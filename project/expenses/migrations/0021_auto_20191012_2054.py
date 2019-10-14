@@ -11,11 +11,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='expensename',
-            name='title',
-            field=models.CharField(max_length=254, unique=True, validators=[django.core.validators.MinLengthValidator(3)]),
-        ),
+        # migrations.AlterField(
+        #     model_name='expensename',
+        #     name='title',
+        #     field=models.CharField(max_length=254, unique=True, validators=[django.core.validators.MinLengthValidator(3)]),
+        # ),
         migrations.AlterField(
             model_name='expensetype',
             name='title',
