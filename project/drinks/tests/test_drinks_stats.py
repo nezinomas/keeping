@@ -87,7 +87,7 @@ def test_per_month_quantity_invalid_data():
 
 @freeze_time('2019-10-10')
 def test_std_av():
-    actual = std_av(273.5)
+    actual = std_av(2019, 273.5)
 
     expect = [
         {'title': 'Std AV', 'total': 683.75, 'per_day': 2.42,
@@ -98,6 +98,31 @@ def test_std_av():
             'per_week': 1.67, 'per_month': 6.84},
         {'title': 'Degtinė, 1L', 'total': 17.09, 'per_day': 0.06,
             'per_week': 0.42, 'per_month': 1.71},
+    ]
+
+    assert 4 == len(actual)
+
+    for i, row in enumerate(actual):
+        for k, v in row.items():
+            if k == 'title':
+                assert expect[i][k] == v
+            else:
+                assert expect[i][k] == round(v, 2)
+
+
+@freeze_time('2019-10-10')
+def test_std_av_past_recods():
+    actual = std_av(1999, 273.5)
+
+    expect = [
+        {'title': 'Std AV', 'total': 683.75, 'per_day': 1.87,
+            'per_week': 13.15, 'per_month': 56.98},
+        {'title': 'Alus, 0.5L', 'total': 273.5, 'per_day': 0.75,
+            'per_week': 5.26, 'per_month': 22.79},
+        {'title': 'Vynas, 1L', 'total': 68.38, 'per_day': 0.19,
+            'per_week': 1.31, 'per_month': 5.70},
+        {'title': 'Degtinė, 1L', 'total': 17.09, 'per_day': 0.05,
+            'per_week': 0.33, 'per_month': 1.42},
     ]
 
     assert 4 == len(actual)

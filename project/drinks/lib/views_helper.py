@@ -56,7 +56,7 @@ def context_to_reload(request, context):
 
     context['tbl_std_av'] = render_to_string(
         'drinks/includes/tbl_std_av.html',
-        {'items': std_av(qty)},
+        {'items': std_av(year, qty)},
         request
     )
 
