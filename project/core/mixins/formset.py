@@ -3,16 +3,18 @@ from django.forms.models import modelformset_factory
 
 class FormsetMixin():
     def _formset_initial(self):
-        model = self._get_type_model()
-        _objects = model.objects.all()
         _list = []
 
         # get self.model ForeignKey field name
-        foreign_key = [f.name for f in self.model._meta.get_fields() if (f.many_to_one)]
+        foreign_key = [
+            f.name for f in self.model._meta.get_fields() if (f.many_to_one)
+        ]
 
         if not foreign_key:
             return _list
 
+        model = self._get_type_model()
+        _objects = model.objects.all()
         for _object in _objects:
             _list.append({'price': None, foreign_key[0]: _object})
 

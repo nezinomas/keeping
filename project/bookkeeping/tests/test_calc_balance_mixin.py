@@ -152,3 +152,19 @@ def test_average_month_other_year(df):
     actual = o.average_month(1999, 1)
 
     assert 0.34 == round(actual['t'], 2)
+
+
+def test_average_month_empty_dataframe():
+    o = BalanceStats()
+    o._balance = pd.DataFrame()
+
+    actual = o.average_month(1999, 1)
+    assert {} == actual
+
+
+def test_average_month_no_dataframe():
+    o = BalanceStats()
+    o._balance = None
+
+    actual = o.average_month(1999, 1)
+    assert {} == actual

@@ -209,3 +209,56 @@ def test_model_saving_str():
     actual = SavingTypeFactory.build()
 
     assert 'Savings' == str(actual)
+
+
+def test_savings_items():
+    SavingFactory()
+
+    assert 1 == len(Saving.objects.items())
+
+
+def test_savings_items_query_count(django_assert_max_num_queries):
+    with django_assert_max_num_queries(1):
+        [*Saving.objects.items()]
+
+
+def test_savings_year_query_count(django_assert_max_num_queries):
+    with django_assert_max_num_queries(1):
+        [*Saving.objects.year(1999)]
+
+
+def test_savings_month_saving_query_count(django_assert_max_num_queries):
+    with django_assert_max_num_queries(1):
+        [*Saving.objects.month_saving(1999)]
+
+
+def test_savings_month_saving_type_query_count(django_assert_max_num_queries):
+    with django_assert_max_num_queries(1):
+        [*Saving.objects.month_saving_type(1999)]
+
+
+def test_savings_day_saving_type_query_count(django_assert_max_num_queries):
+    with django_assert_max_num_queries(1):
+        [*Saving.objects.day_saving_type(1999, 1)]
+
+
+def test_savings_day_saving_query_count(django_assert_max_num_queries):
+    with django_assert_max_num_queries(1):
+        [*Saving.objects.day_saving(1999, 1)]
+
+
+def test_savings_type_balance_year_query_count(django_assert_max_num_queries):
+    with django_assert_max_num_queries(1):
+        [*SavingType.objects.balance_year(1999)]
+
+
+def test_income_str():
+    i = SavingFactory.build()
+
+    assert '1999-01-01: Savings' == str(i)
+
+
+def test_income_type_str():
+    i = SavingTypeFactory.build()
+
+    assert 'Savings' == str(i)

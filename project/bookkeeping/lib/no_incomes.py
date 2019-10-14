@@ -43,16 +43,6 @@ class NoIncomes():
 
         return _ret
 
-    def _not_use_sum(self,
-                     lst: List[str],
-                     avg_type_expenses: Dict[str, float]) -> float:
-        _sum = None
-
-        if lst:
-            _sum = sum(avg_type_expenses.get(name, 0.0) for name in lst)
-
-        return _sum
-
     def _div(self, incomes: float, expenses: float) -> float:
         _val = 0.0
 

@@ -3,6 +3,7 @@ from decimal import Decimal
 import pytest
 
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
+from ..factories import AccountFactory
 from ..models import Account
 
 pytestmark = pytest.mark.django_db
@@ -230,6 +231,11 @@ def test_balance_past(incomes, expenses, savings, transactions, savings_close):
 
     assert_(expect, actual)
 
+
+def test_account_model_str():
+    account = AccountFactory.build()
+
+    assert 'Account1' == str(account)
 
 # Still dont know how to implement in one query
 #

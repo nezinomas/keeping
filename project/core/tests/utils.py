@@ -37,3 +37,16 @@ def change_profile_year(client, year=1):
     u = response.wsgi_request.user
     u.profile.year = year
     u.save()
+
+
+def setup_view(view, request, *args, **kwargs):
+    """
+    Mimic ``as_view()``, but returns view instance.
+    Use this function to get view instances on which you can run unit tests,
+    by testing specific methods.
+    """
+
+    view.request = request
+    view.args = args
+    view.kwargs = kwargs
+    return view
