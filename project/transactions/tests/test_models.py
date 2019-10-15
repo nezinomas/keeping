@@ -110,3 +110,33 @@ def test_transaction_summary_to(transactions):
     actual = [*Transaction.objects.summary_to(1999).order_by('to_account__title')]
 
     assert expect == actual
+
+
+@pytest.mark.django_db
+def test_savings_close_summary_from(savings_close):
+    expect = [{
+        'title': 'Saving1',
+        's_close_from_past': 0.25,
+        's_close_from_now': 0.25,
+    }]
+
+    actual = [*SavingClose.objects.summary_from(1999).order_by('from_account__title')]
+
+    assert expect == actual
+
+
+@pytest.mark.django_db
+def test_savings_close_summary_to(savings_close):
+    expect = [{
+        'title': 'Account1',
+        's_close_to_past': 0.25,
+        's_close_to_now': 0.25,
+    }, {
+        'title': 'Account2',
+        's_close_to_past': 0.0,
+        's_close_to_now': 0.0,
+    }]
+
+    actual = [*SavingClose.objects.summary_to(1999).order_by('to_account__title')]
+
+    assert expect == actual

@@ -81,19 +81,6 @@ class TransactionQuerySet(models.QuerySet):
         )
 
 
-class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
-    def month_sum(self, year, month=None):
-        summed_name = 'sum'
-
-        return (
-            super()
-            .sum_by_month(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values('date', summed_name)
-        )
-
-
 class Transaction(models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
@@ -126,6 +113,79 @@ class Transaction(models.Model):
         )
 
     objects = TransactionQuerySet.as_manager()
+
+
+class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
+    def month_sum(self, year, month=None):
+        summed_name = 'sum'
+
+        return (
+            super()
+            .sum_by_month(
+                year=year, month=month,
+                summed_name=summed_name)
+            .values('date', summed_name)
+        )
+
+    def summary_from(self, year: int) -> List[Dict[str, Any]]:
+        '''
+        return:
+            {
+                'title': from_account.title,
+                's_close_from_past': Decimal(),
+                's_close_from_now': Decimal()
+            }
+        '''
+        return (
+            self
+            .annotate(cnt=Count('from_account'))
+            .values('cnt')
+            .order_by('cnt')
+            .annotate(
+                s_close_from_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='price'),
+                        default=0)),
+                s_close_from_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='price'),
+                        default=0))
+            )
+            .values(
+                's_close_from_past',
+                's_close_from_now',
+                title=models.F('from_account__title'))
+        )
+
+    def summary_to(self, year: int) -> List[Dict[str, Any]]:
+        '''
+        return:
+            {
+                'title': to_account.title,
+                's_close_to_past': Decimal(),
+                's_close_to_now': Decimal()
+            }
+        '''
+        return (
+            self
+            .annotate(cnt=Count('to_account'))
+            .values('cnt')
+            .order_by('cnt')
+            .annotate(
+                s_close_to_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='price'),
+                        default=0)),
+                s_close_to_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='price'),
+                        default=0))
+            )
+            .values(
+                's_close_to_past',
+                's_close_to_now',
+                title=models.F('to_account__title'))
+        )
 
 
 class SavingClose(models.Model):
