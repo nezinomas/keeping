@@ -121,6 +121,7 @@ def expenses_january():
         account=AccountFactory(title='Account2')
     )
 
+
 @pytest.fixture()
 def transactions():
     TransactionFactory(
