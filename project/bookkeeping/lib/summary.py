@@ -32,6 +32,8 @@ def collect_summary_data(year: int, models: List) -> pd.DataFrame:
                     if k == 'title':
                         continue
                     else:
+                        # copy values from qs to
+                        # df_account or df_saving_type
                         if idx in df_account.index:
                             df_account.at[idx, k] = v
 
