@@ -44,10 +44,12 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
 
     def summary(self, year: int) -> List[Dict[str, Any]]:
         '''
-        year:
-            filter data by year and return sums for every month
         return:
-            {'title': account.title, 'i_past': Decimal(), 'i_now': Decimal()}
+            {
+                'title': account.title,
+                'i_past': Decimal(),
+                'i_now': Decimal()
+            }
         '''
         return (
             self
