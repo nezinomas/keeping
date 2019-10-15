@@ -1,24 +1,24 @@
+from ..accounts.models import Account
+from ..core.lib.date import current_day, year_month_list
+from ..core.lib.utils import get_value_from_dict
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin
-
-from ..accounts.models import Account
 from ..expenses.models import Expense, ExpenseType
 from ..incomes.models import Income
-from ..savings.models import Saving, SavingType
 from ..plans.lib.calc_day_sum import CalcDaySum
 from ..plans.models import DayPlan
-from ..transactions.models import SavingClose
-
-from ..core.lib.utils import get_value_from_dict
+from ..savings.models import Saving, SavingType
+from ..transactions.models import SavingChange, SavingClose, Transaction
+from .forms import AccountWorthForm, SavingWorthForm
 from .lib import views_helpers
 from .lib.day_spending import DaySpending
 from .lib.expense_stats import MonthExpenseType, MonthsExpenseType
-from ..core.lib.date import year_month_list, current_day
 from .lib.months_balance import MonthsBalance
 from .lib.no_incomes import NoIncomes
-
-from .forms import AccountWorthForm, SavingWorthForm
+from .lib.summary import collect_summary_data
 from .models import AccountWorth, SavingWorth
+
+M = [Income, Saving, Expense, Transaction, SavingClose, SavingChange]
 
 
 class Index(IndexMixin):
@@ -27,7 +27,9 @@ class Index(IndexMixin):
 
         year = self.request.user.profile.year
 
-        _account = views_helpers.account_stats(year)
+        (acc, svv) = collect_summary_data(year, M)
+        _account = views_helpers.account_stats(year, acc)
+
         _fund, _pension = views_helpers.saving_stats(year)
         _expense_types = views_helpers.expense_types('Taupymas')
 
@@ -112,7 +114,8 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
         context = super().get_context_data(**kwargs)
         year = self.request.user.profile.year
 
-        _account = views_helpers.account_stats(year)
+        (acc, svv) = collect_summary_data(year, M)
+        _account = views_helpers.account_stats(year, acc)
 
         context['accounts'] = _account.balance
         context['totals'] = _account.totals
