@@ -76,3 +76,37 @@ def test_saving_close_month_sum_query_count(django_assert_max_num_queries):
 def test_saving_change_items_query_count(django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         [*SavingChange.objects.items()]
+
+
+@pytest.mark.django_db
+def test_transaction_summary_from(transactions):
+    expect = [{
+        'title': 'Account1',
+        'tr_from_past': 1.25,
+        'tr_from_now': 4.5,
+    }, {
+        'title': 'Account2',
+        'tr_from_past': 5.25,
+        'tr_from_now': 3.25,
+    }]
+
+    actual = [*Transaction.objects.summary_from(1999).order_by('from_account__title')]
+
+    assert expect == actual
+
+
+@pytest.mark.django_db
+def test_transaction_summary_to(transactions):
+    expect = [{
+        'title': 'Account1',
+        'tr_to_past': 5.25,
+        'tr_to_now': 3.25,
+    }, {
+        'title': 'Account2',
+        'tr_to_past': 1.25,
+        'tr_to_now': 4.5,
+    }]
+
+    actual = [*Transaction.objects.summary_to(1999).order_by('to_account__title')]
+
+    assert expect == actual

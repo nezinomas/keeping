@@ -9,22 +9,28 @@ def collect_summary_data(year: int, models: List) -> pd.DataFrame:
     df = _create_df_from_accounts()
 
     for model in models:
-        try:
-            qs = model.objects.summary(year)
-        except Exception as ex:
-            continue
+        # try 3 methods from model.manager:
+        # a) summary(year)
+        # b) summary_from(year)
+        # c) summary_to(year)
+        for i in ['', '_from', '_to']:
+            try:
+                method = getattr(model.objects, f'summary{i}')
+                qs = method(year)
+            except Exception as e:
+                continue
 
-        for row in qs:
-            idx = row.get('title')
+            for row in qs:
+                idx = row.get('title')
 
-            if not idx:
-                return df
-
-            for k, v in row.items():
-                if k == 'title':
+                if not idx:
                     continue
-                else:
-                    df.at[idx, k] = v
+
+                for k, v in row.items():
+                    if k == 'title':
+                        continue
+                    else:
+                        df.at[idx, k] = v
     return df
 
 

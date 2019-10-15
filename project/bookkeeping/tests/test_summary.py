@@ -6,6 +6,7 @@ from ...expenses.models import Expense
 from ...incomes.models import Income
 from ...savings.models import Saving
 from ..lib.summary import collect_summary_data
+from ...transactions.models import Transaction
 
 pytestmark = pytest.mark.django_db
 
@@ -19,7 +20,9 @@ def test_model_not_exists(incomes):
 
 def test_model_dont_have_summary_method(incomes):
     model = Mock()
-    model.objects.summary.side_effect = Exception('Unknown')
+    model.objects.summary.side_effect = Exception('no summary')
+    model.objects.summary_to.side_effect = Exception('no summary_to')
+    model.objects.summary_from.side_effect = Exception('no summary_from')
     actual = collect_summary_data(1999, [model])
 
     assert isinstance(actual, pd.DataFrame)
@@ -102,3 +105,27 @@ def test_savings(savings):
 def test_savings_qs_count(savings, django_assert_max_num_queries):
     with django_assert_max_num_queries(2):
         [*collect_summary_data(1999, [Saving])]
+
+
+def test_transactions(transactions):
+    actual = collect_summary_data(1999, [Transaction])
+
+    assert isinstance(actual, pd.DataFrame)
+
+    assert 2 == actual.shape[0]  # rows
+    assert 4 == actual.shape[1]  # columns
+
+    assert 'tr_from_past' in actual.columns
+    assert 'tr_from_now' in actual.columns
+    assert 'tr_to_past' in actual.columns
+    assert 'tr_to_now' in actual.columns
+
+    assert 1.25 == actual.at['Account1', 'tr_from_past']
+    assert 4.5 == actual.at['Account1', 'tr_from_now']
+    assert 5.25 == actual.at['Account2', 'tr_from_past']
+    assert 3.25 == actual.at['Account2', 'tr_from_now']
+
+    assert 5.25 == actual.at['Account1', 'tr_to_past']
+    assert 3.25 == actual.at['Account1', 'tr_to_now']
+    assert 1.25 == actual.at['Account2', 'tr_to_past']
+    assert 4.5 == actual.at['Account2', 'tr_to_now']

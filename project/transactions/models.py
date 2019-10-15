@@ -1,7 +1,9 @@
 from decimal import Decimal
+from typing import Any, Dict, List
 
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import Case, Count, F, Sum, When
 
 from ..accounts.models import Account
 from ..core.mixins.queryset_sum import SumMixin
@@ -17,6 +19,66 @@ class TransactionQuerySet(models.QuerySet):
 
     def items(self):
         return self._related()
+
+    def summary_from(self, year: int) -> List[Dict[str, Any]]:
+        '''
+        return:
+            {
+                'title': from_account.title,
+                'tr_from_past': Decimal(),
+                'tr_from_now': Decimal()
+            }
+        '''
+        return (
+            self
+            .annotate(cnt=Count('from_account'))
+            .values('cnt')
+            .order_by('cnt')
+            .annotate(
+                tr_from_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='price'),
+                        default=0)),
+                tr_from_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='price'),
+                        default=0))
+            )
+            .values(
+                'tr_from_past',
+                'tr_from_now',
+                title=models.F('from_account__title'))
+        )
+
+    def summary_to(self, year: int) -> List[Dict[str, Any]]:
+        '''
+        return:
+            {
+                'title': to_account.title,
+                'tr_to_past': Decimal(),
+                'tr_to_now': Decimal()
+            }
+        '''
+        return (
+            self
+            .annotate(cnt=Count('to_account'))
+            .values('cnt')
+            .order_by('cnt')
+            .annotate(
+                tr_to_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='price'),
+                        default=0)),
+                tr_to_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='price'),
+                        default=0))
+            )
+            .values(
+                'tr_to_past',
+                'tr_to_now',
+                title=models.F('to_account__title'))
+        )
 
 
 class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
