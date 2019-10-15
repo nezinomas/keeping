@@ -11,8 +11,8 @@ def collect_summary_data(year: int, models: List) -> pd.DataFrame:
     for model in models:
         try:
             qs = model.objects.summary(year)
-        except Exception:
-            return df
+        except Exception as ex:
+            continue
 
         for row in qs:
             idx = row.get('title')
