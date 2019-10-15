@@ -24,6 +24,12 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
         return self._related().all()
 
     def income_sum(self, year, month=None):
+        '''
+        year:
+            filter data by year and return sums for every month
+        month:
+            filter data by year AND month, return sum for that month
+        '''
         summed_name = 'sum'
 
         return (
