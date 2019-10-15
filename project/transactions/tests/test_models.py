@@ -3,6 +3,7 @@ from decimal import Decimal
 
 import pytest
 
+from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ..factories import (SavingChangeFactory, SavingCloseFactory,
                          TransactionFactory)
 from ..models import SavingChange, SavingClose, Transaction
@@ -90,7 +91,9 @@ def test_transaction_summary_from(transactions):
         'tr_from_now': 3.25,
     }]
 
-    actual = [*Transaction.objects.summary_from(1999).order_by('from_account__title')]
+    actual = list(
+        Transaction.objects
+        .summary_from(1999).order_by('from_account__title'))
 
     assert expect == actual
 
@@ -107,7 +110,9 @@ def test_transaction_summary_to(transactions):
         'tr_to_now': 4.5,
     }]
 
-    actual = [*Transaction.objects.summary_to(1999).order_by('to_account__title')]
+    actual = list(
+        Transaction.objects
+        .summary_to(1999).order_by('to_account__title'))
 
     assert expect == actual
 
@@ -120,7 +125,9 @@ def test_savings_close_summary_from(savings_close):
         's_close_from_now': 0.25,
     }]
 
-    actual = [*SavingClose.objects.summary_from(1999).order_by('from_account__title')]
+    actual = list(
+        SavingClose.objects
+        .summary_from(1999).order_by('from_account__title'))
 
     assert expect == actual
 
@@ -137,6 +144,40 @@ def test_savings_close_summary_to(savings_close):
         's_close_to_now': 0.0,
     }]
 
-    actual = [*SavingClose.objects.summary_to(1999).order_by('to_account__title')]
+    actual = list(
+        SavingClose.objects
+        .summary_to(1999).order_by('to_account__title'))
+
+    assert expect == actual
+
+
+@pytest.mark.django_db
+def test_savings_change_summary_from(savings_change):
+    expect = [{
+        'title': 'Saving1',
+        's_change_from_past': 2.25,
+        's_change_from_now': 1.25,
+        's_change_from_fee_past': 0.15,
+        's_change_from_fee_now': 0.05,
+    }]
+
+    actual = list(
+        SavingChange.objects
+        .summary_from(1999).order_by('from_account__title'))
+
+    assert_(expect, actual)
+
+
+@pytest.mark.django_db
+def test_savings_change_summary_to(savings_change):
+    expect = [{
+        'title': 'Saving2',
+        's_change_to_past': 2.25,
+        's_change_to_now': 1.25,
+    }]
+
+    actual = list(
+        SavingChange.objects
+        .summary_to(1999).order_by('to_account__title'))
 
     assert expect == actual

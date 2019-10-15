@@ -228,6 +228,80 @@ class SavingClose(models.Model):
     objects = SavingCloseQuerySet.as_manager()
 
 
+class SavingChangeQuerySet(TransactionQuerySet):
+    def summary_from(self, year: int) -> List[Dict[str, Any]]:
+        '''
+        return:
+            {
+                'title': from_account.title,
+                's_change_from_past': Decimal(),
+                's_change_from_now': Decimal()
+                's_change_from_fee_past': Decimal(),
+                's_change_from_fee_now': Decimal(),
+            }
+        '''
+        return (
+            self
+            .annotate(cnt=Count('from_account'))
+            .values('cnt')
+            .order_by('cnt')
+            .annotate(
+                s_change_from_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='price'),
+                        default=0)),
+                s_change_from_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='price'),
+                        default=0)),
+                s_change_from_fee_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='fee'),
+                        default=0)),
+                s_change_from_fee_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='fee'),
+                        default=0))
+            )
+            .values(
+                's_change_from_past',
+                's_change_from_now',
+                's_change_from_fee_past',
+                's_change_from_fee_now',
+                title=models.F('from_account__title'))
+        )
+
+    def summary_to(self, year: int) -> List[Dict[str, Any]]:
+        '''
+        return:
+            {
+                'title': to_account.title,
+                's_change_to_past': Decimal(),
+                's_change_to_now': Decimal()
+            }
+        '''
+        return (
+            self
+            .annotate(cnt=Count('to_account'))
+            .values('cnt')
+            .order_by('cnt')
+            .annotate(
+                s_change_to_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='price'),
+                        default=0)),
+                s_change_to_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='price'),
+                        default=0))
+            )
+            .values(
+                's_change_to_past',
+                's_change_to_now',
+                title=models.F('to_account__title'))
+        )
+
+
 class SavingChange(models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
@@ -265,4 +339,4 @@ class SavingChange(models.Model):
             format(self.date, self.from_account, self.to_account, self.price)
         )
 
-    objects = TransactionQuerySet.as_manager()
+    objects = SavingChangeQuerySet.as_manager()
