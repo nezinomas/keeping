@@ -43,6 +43,9 @@ def collect_summary_data(year: int, models: List) -> pd.DataFrame:
     df_account.fillna(0.0, inplace=True)
     df_saving_type.fillna(0.0, inplace=True)
 
+    df_account = df_account.apply(pd.to_numeric)
+    df_saving_type = df_saving_type.apply(pd.to_numeric)
+
     return (df_account, df_saving_type)
 
 
