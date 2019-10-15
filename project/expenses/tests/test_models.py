@@ -201,3 +201,20 @@ def test_expense_name_no_dublicates():
 
     ExpenseName(title='N1', parent=p1).save()
     ExpenseName(title='N1', parent=p1).save()
+
+
+def test_summary(expenses):
+    expect = [{
+        'title': 'Account1',
+        'e_past': 2.5,
+        'e_now': 0.5,
+
+    }, {
+        'title': 'Account2',
+        'e_past': 2.25,
+        'e_now': 1.25,
+    }]
+
+    actual = [*Expense.objects.summary(1999).order_by('account__title')]
+
+    assert expect == actual

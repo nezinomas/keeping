@@ -3,7 +3,6 @@ from decimal import Decimal
 
 import pytest
 
-from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ..factories import IncomeFactory, IncomeTypeFactory
 from ..models import Income, IncomeType
 
@@ -89,6 +88,6 @@ def test_summary(incomes):
         'i_now': Decimal(3.5),
     }]
 
-    actual = list(Income.objects.summary(1999))
+    actual = list(Income.objects.summary(1999).order_by('account__title'))
 
-    assert_(expect, actual)
+    assert expect == actual

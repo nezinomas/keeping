@@ -1,8 +1,9 @@
 from decimal import Decimal
+from typing import Any, Dict, List
 
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
-from django.db.models import F, Q
+from django.db.models import Case, Count, F, Q, Sum, When
 
 from ..accounts.models import Account
 from ..core.mixins.queryset_sum import SumMixin
@@ -122,6 +123,31 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
                 year=year, month=month,
                 summed_name=summed_name)
             .values('date', summed_name, title=F('expense_type__title'))
+        )
+
+    def summary(self, year: int) -> List[Dict[str, Any]]:
+        '''
+        year:
+            filter data by year and return sums for every month
+        return:
+            {'title': account.title, 'i_past': Decimal(), 'i_now': Decimal()}
+        '''
+        return (
+            self
+            .annotate(cnt=Count('expense_type'))
+            .values('cnt')
+            .order_by('cnt')
+            .annotate(
+                e_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='price'),
+                        default=0)),
+                e_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='price'),
+                        default=0))
+            )
+            .values('e_past', 'e_now', title=models.F('account__title'))
         )
 
 
