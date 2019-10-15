@@ -5,8 +5,8 @@ from mock import Mock
 from ...expenses.models import Expense
 from ...incomes.models import Income
 from ...savings.models import Saving
+from ...transactions.models import SavingChange, SavingClose, Transaction
 from ..lib.summary import collect_summary_data
-from ...transactions.models import Transaction, SavingClose
 
 pytestmark = pytest.mark.django_db
 
@@ -179,3 +179,29 @@ def test_saving_close_saving_type(savings_close):
 def test_saving_close_qs_count(savings_close, django_assert_max_num_queries):
     with django_assert_max_num_queries(4):
         [*collect_summary_data(1999, [SavingClose])]
+
+
+def test_saving_change_accounts(savings_change):
+    (actual, _) = collect_summary_data(1999, [SavingChange])
+
+    assert isinstance(actual, pd.DataFrame)
+    assert actual.empty
+
+
+def test_saving_change_saving_type(savings_change):
+    (_, actual) = collect_summary_data(1999, [SavingChange])
+
+    assert isinstance(actual, pd.DataFrame)
+
+    assert 2 == actual.shape[0]  # rows
+    assert 6 == actual.shape[1]  # columns
+
+    assert 's_change_from_past' in actual.columns
+    assert 's_change_from_now' in actual.columns
+    assert 's_change_from_fee_past' in actual.columns
+    assert 's_change_from_fee_now' in actual.columns
+
+
+def test_saving_change_qs_count(savings_change, django_assert_max_num_queries):
+    with django_assert_max_num_queries(4):
+        [*collect_summary_data(1999, [SavingChange])]
