@@ -262,3 +262,20 @@ def test_income_type_str():
     i = SavingTypeFactory.build()
 
     assert 'Savings' == str(i)
+
+
+def test_summary(savings):
+    expect = [{
+        'title': 'Account1',
+        's_past': 1.25,
+        's_now': 3.5,
+
+    }, {
+        'title': 'Account2',
+        's_past': 0.25,
+        's_now': 2.25,
+    }]
+
+    actual = [*Saving.objects.summary(1999).order_by('account__title')]
+
+    assert expect == actual

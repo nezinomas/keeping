@@ -1,8 +1,9 @@
 from decimal import Decimal
+from typing import Any, Dict, List
 
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import Count, F
+from django.db.models import Case, Count, F, Sum, When
 
 from ..accounts.models import Account
 from ..core.mixins.queryset_balance import QuerySetBalanceMixin
@@ -140,6 +141,31 @@ class SavingQuerySet(SumMixin, models.QuerySet):
                 year=year, month=month,
                 summed_name=summed_name)
             .values(summed_name, 'date')
+        )
+
+    def summary(self, year: int) -> List[Dict[str, Any]]:
+        '''
+        year:
+            filter data by year and return sums for every month
+        return:
+            {'title': account.title, 'i_past': Decimal(), 'i_now': Decimal()}
+        '''
+        return (
+            self
+            .annotate(cnt=Count('saving_type'))
+            .values('cnt')
+            .order_by('cnt')
+            .annotate(
+                s_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='price'),
+                        default=0)),
+                s_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='price'),
+                        default=0))
+            )
+            .values('s_past', 's_now', title=models.F('account__title'))
         )
 
 
