@@ -1,4 +1,5 @@
 from decimal import Decimal
+from typing import Any, Dict, List
 
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -23,12 +24,14 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self._related().all()
 
-    def income_sum(self, year, month=None):
+    def income_sum(self, year: int, month: int=None) -> List[Dict[str, Any]]:
         '''
         year:
             filter data by year and return sums for every month
         month:
             filter data by year AND month, return sum for that month
+        return:
+            {'date': datetime.date(), 'sum': Decimal()}
         '''
         summed_name = 'sum'
 
