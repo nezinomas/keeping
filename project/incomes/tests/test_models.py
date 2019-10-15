@@ -3,6 +3,7 @@ from decimal import Decimal
 
 import pytest
 
+from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ..factories import IncomeFactory, IncomeTypeFactory
 from ..models import Income, IncomeType
 
@@ -74,3 +75,20 @@ def test_income_type_str():
     i = IncomeTypeFactory.build()
 
     assert 'Income Type' == str(i)
+
+
+def test_summary(incomes):
+    expect = [{
+        'title': 'Account1',
+        'i_past': Decimal(5.25),
+        'i_now': Decimal(3.25),
+
+    }, {
+        'title': 'Account2',
+        'i_past': Decimal(4.5),
+        'i_now': Decimal(3.5),
+    }]
+
+    actual = list(Income.objects.summary(1999))
+
+    assert_(expect, actual)

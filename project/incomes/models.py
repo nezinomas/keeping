@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import Case, Count, F, Sum, When
 
 from ..accounts.models import Account
 from ..core.mixins.queryset_sum import SumMixin
@@ -39,6 +40,31 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             super()
             .sum_by_month(year, summed_name, month=month)
             .values('date', summed_name)
+        )
+
+    def income_stats(self, year: int) -> List[Dict[str, Any]]:
+        '''
+        year:
+            filter data by year and return sums for every month
+        return:
+            {'title': account.title, 'i_past': Decimal(), 'i_now': Decimal()}
+        '''
+        return (
+            self
+            .annotate(cnt=Count('income_type'))
+            .values('cnt')
+            .order_by('cnt')
+            .annotate(
+                i_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='price'),
+                        default=0)),
+                i_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='price'),
+                        default=0))
+            )
+            .values('i_past', 'i_now', title=models.F('account__title'))
         )
 
 
