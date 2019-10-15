@@ -42,7 +42,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             .values('date', summed_name)
         )
 
-    def income_stats(self, year: int) -> List[Dict[str, Any]]:
+    def summary(self, year: int) -> List[Dict[str, Any]]:
         '''
         year:
             filter data by year and return sums for every month
