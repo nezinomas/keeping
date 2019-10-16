@@ -14,6 +14,7 @@ columns = [
     'i_past', 'i_now',
     'e_past', 'e_now',
     's_past', 's_now',
+    's_fee_past', 's_fee_now',
     'tr_from_past', 'tr_from_now',
     'tr_to_past', 'tr_to_now',
     's_close_to_past', 's_close_to_now',
@@ -131,6 +132,18 @@ def test_savings(savings):
 
     assert 0.25 == actual.at['Account2', 's_past']
     assert 2.25 == actual.at['Account2', 's_now']
+
+
+def test_savings_fees(savings):
+    (actual, _) = collect_summary_data(1999, [Saving])
+
+    assert 2 == actual.shape[0]  # rows
+
+    assert 0.25 == actual.at['Account1', 's_fee_past']
+    assert 0.5 == actual.at['Account1', 's_fee_now']
+
+    assert 0.0 == actual.at['Account2', 's_fee_past']
+    assert 0.25 == actual.at['Account2', 's_fee_now']
 
 
 def test_savings_qs_count(savings, django_assert_max_num_queries):

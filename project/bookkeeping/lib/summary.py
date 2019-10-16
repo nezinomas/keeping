@@ -67,6 +67,7 @@ def _create_columns() -> pd.DataFrame:
         'i_past', 'i_now',
         'e_past', 'e_now',
         's_past', 's_now',
+        's_fee_past', 's_fee_now',
         'tr_from_past', 'tr_from_now',
         'tr_to_past', 'tr_to_now',
         's_close_to_past', 's_close_to_now',
