@@ -165,9 +165,17 @@ class SavingQuerySet(SumMixin, models.QuerySet):
                 s_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='price'),
+                        default=0)),
+                s_fee_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='fee'),
+                        default=0)),
+                s_fee_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='fee'),
                         default=0))
             )
-            .values('s_past', 's_now', title=models.F('account__title'))
+            .values('s_past', 's_now', 's_fee_past', 's_fee_now', title=models.F('account__title'))
         )
 
 

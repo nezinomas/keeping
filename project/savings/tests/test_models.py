@@ -269,11 +269,15 @@ def test_summary(savings):
         'title': 'Account1',
         's_past': 1.25,
         's_now': 3.5,
+        's_fee_past': 0.25,
+        's_fee_now': 0.5,
 
     }, {
         'title': 'Account2',
         's_past': 0.25,
         's_now': 2.25,
+        's_fee_past': 0.0,
+        's_fee_now': 0.25,
     }]
 
     actual = [*Saving.objects.summary(1999).order_by('account__title')]
