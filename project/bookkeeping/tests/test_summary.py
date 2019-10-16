@@ -22,6 +22,7 @@ columns = [
     's_change_to_past', 's_change_to_now',
     's_change_from_past', 's_change_from_now',
     's_change_from_fee_past', 's_change_from_fee_now',
+    's_change_to_fee_past', 's_change_to_fee_now',
 ]
 
 
@@ -122,7 +123,7 @@ def test_expenses_qs_count(expenses, django_assert_max_num_queries):
         [*collect_summary_data(1999, [Expense])]
 
 
-def test_savings(savings):
+def test_savings_for_accounts(savings):
     (actual, _) = collect_summary_data(1999, [Saving])
 
     assert 2 == actual.shape[0]  # rows
@@ -134,16 +135,16 @@ def test_savings(savings):
     assert 2.25 == actual.at['Account2', 's_now']
 
 
-def test_savings_fees(savings):
-    (actual, _) = collect_summary_data(1999, [Saving])
+def test_savings_for_savings_with_fees(savings):
+    (_, actual) = collect_summary_data(1999, [Saving])
 
     assert 2 == actual.shape[0]  # rows
 
-    assert 0.25 == actual.at['Account1', 's_fee_past']
-    assert 0.5 == actual.at['Account1', 's_fee_now']
+    assert 0.25 == actual.at['Saving1', 's_fee_past']
+    assert 0.5 == actual.at['Saving1', 's_fee_now']
 
-    assert 0.0 == actual.at['Account2', 's_fee_past']
-    assert 0.25 == actual.at['Account2', 's_fee_now']
+    assert 0.0 == actual.at['Saving2', 's_fee_past']
+    assert 0.25 == actual.at['Saving2', 's_fee_now']
 
 
 def test_savings_qs_count(savings, django_assert_max_num_queries):
@@ -209,11 +210,6 @@ def test_saving_change_saving_type(savings_change):
 
     assert 2 == actual.shape[0]  # rows
 
-    assert 's_change_from_past' in actual.columns
-    assert 's_change_from_now' in actual.columns
-    assert 's_change_from_fee_past' in actual.columns
-    assert 's_change_from_fee_now' in actual.columns
-
 
 def test_saving_change_qs_count(savings_change, django_assert_max_num_queries):
     with django_assert_max_num_queries(6):
@@ -223,3 +219,14 @@ def test_saving_change_qs_count(savings_change, django_assert_max_num_queries):
 def test_all_qs_count(django_assert_max_num_queries):
     with django_assert_max_num_queries(20):
         [*collect_summary_data(1999, [Income, Expense, Saving, SavingClose, SavingChange, Transaction])]
+
+
+# def test_all_qs_count1(incomes, expenses, savings, transactions, savings_close, savings_change):
+#     (a1, a2) = collect_summary_data(1999, [Income, Expense, Saving, SavingClose, SavingChange, Transaction])
+
+#     for x in a1.to_dict("records"):
+#         print(f'>\n{x}\n')
+
+#     for x in a2.to_dict("records"):
+#         print(f'<\n{x}\n')
+#     assert 0
