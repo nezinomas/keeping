@@ -171,13 +171,14 @@ def test_savings_change_summary_from(savings_change):
 @pytest.mark.django_db
 def test_savings_change_summary_to(savings_change):
     expect = [{
-        'title': 'Saving2',
-        's_change_to_past': 2.25,
-        's_change_to_now': 1.25,
+        's_change_to_past': Decimal(2.25),
+        's_change_to_now': Decimal(1.25),
+        's_change_to_fee_past': Decimal(0.15),
+        's_change_to_fee_now': Decimal(0.05),
     }]
 
     actual = list(
         SavingChange.objects
         .summary_to(1999).order_by('to_account__title'))
 
-    assert expect == actual
+    assert_(expect, actual)
