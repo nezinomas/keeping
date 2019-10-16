@@ -7,8 +7,8 @@ from ...savings.models import SavingType
 
 
 def collect_summary_data(year: int, models: List) -> pd.DataFrame:
-    df_account = _create_df_from_accounts()
-    df_saving_type = _create_df_from_saving_type()
+    df_account = _create_df(Account)
+    df_saving_type = _create_df(SavingType)
 
     for model in models:
         # try 3 methods from model.manager:
@@ -49,21 +49,31 @@ def collect_summary_data(year: int, models: List) -> pd.DataFrame:
     return (df_account, df_saving_type)
 
 
-def _create_df_from_accounts():
+def _create_df(model) -> pd.DataFrame:
     df = pd.DataFrame()
-    qs = Account.objects.all().values_list('title', flat=True)
+    qs = model.objects.all().values_list('title', flat=True)
 
-    if qs:
-        df = pd.DataFrame(qs, columns=['account']).set_index('account')
+    if len(qs) >= 1:
+        df = _create_columns()
+        df['title'] = pd.Series(qs)
+        df = df.set_index('title')
 
     return df
 
 
-def _create_df_from_saving_type():
-    df = pd.DataFrame()
-    qs = SavingType.objects.all().values_list('title', flat=True)
-
-    if qs:
-        df = pd.DataFrame(qs, columns=['saving_type']).set_index('saving_type')
+def _create_columns() -> pd.DataFrame:
+    df = pd.DataFrame(columns=[
+        'title',
+        'i_past', 'i_now',
+        'e_past', 'e_now',
+        's_past', 's_now',
+        'tr_from_past', 'tr_from_now',
+        'tr_to_past', 'tr_to_now',
+        's_close_to_past', 's_close_to_now',
+        's_close_from_past', 's_close_from_now',
+        's_change_to_past', 's_change_to_now',
+        's_change_from_past', 's_change_from_now',
+        's_change_from_fee_past', 's_change_from_fee_now',
+    ])
 
     return df
