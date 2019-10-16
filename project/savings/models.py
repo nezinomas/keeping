@@ -6,12 +6,11 @@ from django.db import models
 from django.db.models import Case, Count, F, Sum, When
 
 from ..accounts.models import Account
-from ..core.mixins.queryset_balance import QuerySetBalanceMixin
 from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
 
 
-class SavingTypeQuerySet(QuerySetBalanceMixin, models.QuerySet):
+class SavingTypeQuerySet(models.QuerySet):
     pass
 
 
