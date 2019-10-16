@@ -32,15 +32,13 @@ def necessary_expense_types(*args: str) -> List[str]:
     return qs
 
 
-def account_stats(year):
-    _stats = Account.objects.balance_year(year)
+def account_stats(year, _stats):
     _worth = AccountWorth.objects.items()
 
     return AccountStats(_stats, _worth)
 
 
-def saving_stats(year):
-    _stats = SavingType.objects.balance_year(year)
+def saving_stats(year, _stats):
     _worth = SavingWorth.objects.items()
 
     fund = SavingStats(_stats, _worth, 'fund')

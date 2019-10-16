@@ -9,7 +9,7 @@ from ..models import Income, IncomeType
 pytestmark = pytest.mark.django_db
 
 
-def test_sums_months(incomes):
+def test_sum_all_months(incomes):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(5.5)},
         {'date': date(1999, 2, 1), 'sum': Decimal(1.25)},
@@ -20,7 +20,7 @@ def test_sums_months(incomes):
     assert expect == actual
 
 
-def test_sums_months_ordering(incomes):
+def test_sum_all_months_ordering(incomes):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(5.5)},
         {'date': date(1999, 2, 1), 'sum': Decimal(1.25)},
@@ -32,7 +32,7 @@ def test_sums_months_ordering(incomes):
     assert expect[1]['date'] == date(1999, 2, 1)
 
 
-def test_sums_months_by_one_month(incomes):
+def test_sum_one_month(incomes):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(5.5)}
     ]
@@ -74,3 +74,20 @@ def test_income_type_str():
     i = IncomeTypeFactory.build()
 
     assert 'Income Type' == str(i)
+
+
+def test_summary(incomes):
+    expect = [{
+        'title': 'Account1',
+        'i_past': Decimal(5.25),
+        'i_now': Decimal(3.25),
+
+    }, {
+        'title': 'Account2',
+        'i_past': Decimal(4.5),
+        'i_now': Decimal(3.5),
+    }]
+
+    actual = list(Income.objects.summary(1999).order_by('account__title'))
+
+    assert expect == actual

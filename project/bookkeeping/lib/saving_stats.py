@@ -1,22 +1,46 @@
-import pandas as pd
+from typing import Dict, List
+
+from pandas import DataFrame as DF
+from pandas import to_numeric
 
 from ...core.mixins.calc_balance import BalanceStats
 from .helpers import calc_percent, calc_sum
 
 
 class SavingStats(BalanceStats):
-    def __init__(self, stats, worth, saving_type='all'):
-        self._balance = pd.DataFrame()
+    _columns = [
+        'past_amount',
+        'past_fee',
+        'fees',
+        'invested',
+        'incomes',
+        'market_value',
+        'profit_incomes_proc',
+        'profit_incomes_sum',
+        'profit_invested_proc',
+        'profit_invested_sum'
+    ]
+
+    def __init__(self, stats: DF, worth: DF, saving_type: str='all'):
+        self._balance = DF()
         self._type = saving_type
 
-        if not stats or stats is None:
+        if not isinstance(stats, DF):
             return
 
-        self._prepare_balance(stats, worth)
-        self._calc_balance()
+        if stats.empty:
+            return
+
+        df = self._prepare(stats)
+        df = self._calc_balance(df)
+        df = self._calc_have(df, worth)
+        df = self._calc_profit(df)
+        df = self._drop_columns(df)
+
+        self._balance = df
 
     @property
-    def totals(self):
+    def totals(self) -> Dict:
         val = {}
 
         if self._balance.empty:
@@ -38,13 +62,13 @@ class SavingStats(BalanceStats):
         return val
 
     @property
-    def total_market(self):
+    def total_market(self) -> float:
         t = self.totals
 
         return t.get('market_value', 0.0)
 
     # remove rows dependinf from saving_type
-    def _filter_df(self, df):
+    def _filter_df(self, df: DF) -> DF:
         if self._type == 'all':
             return df
 
@@ -59,58 +83,92 @@ class SavingStats(BalanceStats):
 
         return df
 
-    def _prepare_balance(self, stats, worth):
-        df = pd.DataFrame(stats).set_index('title')
+    def _prepare(self, stats: DF) -> DF:
+        for col in self._columns:
+            stats.loc[:, col] = 0.0
 
+        return stats
+
+    def _calc_balance(self, df: DF) -> DF:
+        df['past_amount'] = (
+            0.0
+            + df['s_past']
+            + df['s_change_to_past']
+            - df['s_change_from_past']
+            - df['s_close_from_past']
+        )
+
+        df['past_fee'] = (
+            0.0
+            + df['s_fee_past']
+            + df['s_change_to_fee_past']
+            + df['s_change_from_fee_past']
+        )
+
+        df['incomes'] = (
+            0.0
+            + df['s_now']
+            + df['past_amount']
+            + df['s_change_to_now']
+            - df['s_change_from_now']
+            - df['s_close_from_now']
+        )
+
+        df['fees'] = (
+            0.0
+            + df['s_fee_now']
+            + df['past_fee']
+            + df['s_change_to_fee_now']
+            + df['s_change_from_fee_now']
+        )
+
+        df['invested'] = df['incomes'] - df['fees']
+
+        return df
+
+    def _calc_have(self, df: DF, worth: DF) -> DF:
         # join savings and worth dataframes
         if worth:
-            _worth = pd.DataFrame(worth).set_index('title')
+            _worth = DF(worth).set_index('title')
+            _worth = _worth.apply(to_numeric)
             df = df.join(_worth)
         else:
             df.loc[:, 'have'] = 0.0
 
         # filter df
         df = self._filter_df(df)
+
+        # copy values from have to market_value
+        df['market_value'] = df['have']
+
+        return df
+
+    def _calc_profit(self, df: DF) -> DF:
         if df.empty:
-            return self._balance
-
-        # convert to float
-        for col in df.columns:
-            df.loc[:, col] = pd.to_numeric(df[col])
-
-        # rename columns
-        df.rename(columns={'have': 'market_value'}, inplace=True)
-
-        # add columns
-        df.loc[:, 'profit_incomes_proc'] = 0.00
-        df.loc[:, 'profit_incomes_sum'] = 0.00
-        df.loc[:, 'profit_invested_proc'] = 0.00
-        df.loc[:, 'profit_invested_sum'] = 0.00
-
-        self._balance = df
-
-    def _calc_balance(self):
-        if self._balance.empty:
-            return self._balance
+            return df
 
         # calculate percent of profit/loss
-        self._balance['profit_incomes_proc'] = (
-            self._balance[['market_value', 'incomes']]
+        df['profit_incomes_proc'] = (
+            df[['market_value', 'incomes']]
             .apply(calc_percent, axis=1)
         )
 
-        self._balance['profit_invested_proc'] = (
-            self._balance[['market_value', 'invested']]
+        df['profit_invested_proc'] = (
+            df[['market_value', 'invested']]
             .apply(calc_percent, axis=1)
         )
 
         # calculate sum of profit/loss
-        self._balance['profit_incomes_sum'] = (
-            self._balance[['market_value', 'incomes']]
+        df['profit_incomes_sum'] = (
+            df[['market_value', 'incomes']]
             .apply(calc_sum, axis=1)
         )
 
-        self._balance['profit_invested_sum'] = (
-            self._balance[['market_value', 'invested']]
+        df['profit_invested_sum'] = (
+            df[['market_value', 'invested']]
             .apply(calc_sum, axis=1)
         )
+        return df
+
+    def _drop_columns(self, df: DF) -> DF:
+        return df[self._columns]
