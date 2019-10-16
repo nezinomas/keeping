@@ -127,6 +127,7 @@ class SavingStats(BalanceStats):
         # join savings and worth dataframes
         if worth:
             _worth = pd.DataFrame(worth).set_index('title')
+            _worth = _worth.apply(pd.to_numeric)
             df = df.join(_worth)
         else:
             df.loc[:, 'have'] = 0.0
@@ -140,6 +141,9 @@ class SavingStats(BalanceStats):
         return df
 
     def _profit(self, df: pd.DataFrame) -> pd.DataFrame:
+        if df.empty:
+            return df
+
         # calculate percent of profit/loss
         df['profit_incomes_proc'] = (
             df[['market_value', 'incomes']]
