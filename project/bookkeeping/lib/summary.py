@@ -40,9 +40,11 @@ def collect_summary_data(year: int, models: List) -> pd.DataFrame:
                         if idx in df_saving_type.index:
                             df_saving_type.at[idx, k] = v
 
+    # fill NaN with 0.0
     df_account.fillna(0.0, inplace=True)
     df_saving_type.fillna(0.0, inplace=True)
 
+    # convert all columns to float
     df_account = df_account.apply(pd.to_numeric)
     df_saving_type = df_saving_type.apply(pd.to_numeric)
 
