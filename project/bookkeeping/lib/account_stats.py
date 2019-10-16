@@ -19,7 +19,7 @@ class AccountStats(BalanceStats):
         df = self._prepare(account_stats)
         df = self._calc_balance(df)
         df = self._join_worth(df, account_worth)
-        df = self._have(df)
+        df = self._calc_have(df)
         df = self._drop_columns(df)
 
         self._balance = df
@@ -84,7 +84,7 @@ class AccountStats(BalanceStats):
 
         return df
 
-    def _have(self, df: DF) -> DF:
+    def _calc_have(self, df: DF) -> DF:
         df.loc[:, 'delta'] = df['have'] - df['balance']
         return df
 
