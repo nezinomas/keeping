@@ -218,15 +218,6 @@ def test_saving_change_qs_count(savings_change, django_assert_max_num_queries):
 
 def test_all_qs_count(django_assert_max_num_queries):
     with django_assert_max_num_queries(20):
-        [*collect_summary_data(1999, [Income, Expense, Saving, SavingClose, SavingChange, Transaction])]
-
-
-# def test_all_qs_count1(incomes, expenses, savings, transactions, savings_close, savings_change):
-#     (a1, a2) = collect_summary_data(1999, [Income, Expense, Saving, SavingClose, SavingChange, Transaction])
-
-#     for x in a1.to_dict("records"):
-#         print(f'>\n{x}\n')
-
-#     for x in a2.to_dict("records"):
-#         print(f'<\n{x}\n')
-#     assert 0
+        models = [Income, Expense, Saving,
+                  SavingClose, SavingChange, Transaction]
+        [*collect_summary_data(1999, models)]
