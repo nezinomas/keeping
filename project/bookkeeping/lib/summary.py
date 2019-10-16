@@ -57,7 +57,7 @@ def _create_df(model) -> pd.DataFrame:
 
     if len(qs) >= 1:
         df = _create_columns()
-        df['title'] = pd.Series(qs)
+        df['title'] = pd.Series(qs)  # copy list of titles to df
         df = df.set_index('title')
 
     return df
