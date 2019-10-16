@@ -1,8 +1,11 @@
 import pandas as pd
+
 from ...core.mixins.calc_balance import BalanceStats
 
 
 class AccountStats(BalanceStats):
+    _columns = ['past', 'incomes', 'expenses', 'balance', 'have', 'delta']
+
     def __init__(self, account_stats, account_worth):
         self._balance = pd.DataFrame()
 
@@ -12,10 +15,13 @@ class AccountStats(BalanceStats):
         if account_stats.empty:
             return
 
-        self._calc_balance(account_stats)
-        self._join_worth(account_worth)
-        self._have()
-        self._drop_columns()
+        df = self._prepare(account_stats)
+        df = self._calc_balance(df)
+        df = self._join_worth(df, account_worth)
+        df = self._have(df)
+        df = self._drop_columns(df)
+
+        self._balance = df
 
     @property
     def balance_start(self):
@@ -29,12 +35,13 @@ class AccountStats(BalanceStats):
 
         return t.get('balance', 0.0)
 
-    def _calc_balance(self, df: pd.DataFrame) -> None:
-        df.loc[:, 'past'] = 0.0
-        df.loc[:, 'incomes'] = 0.0
-        df.loc[:, 'expenses'] = 0.0
-        df.loc[:, 'balance'] = 0.0
+    def _prepare(self, df: pd.DataFrame) -> pd.DataFrame:
+        for col in self._columns:
+            df.loc[:, col] = 0.0
 
+        return df
+
+    def _calc_balance(self, df: pd.DataFrame) -> None:
         df['past'] = (
             0
             + df['i_past']
@@ -66,23 +73,20 @@ class AccountStats(BalanceStats):
             - df['expenses']
         )
 
-        self._balance = df
+        return df
 
-    def _join_worth(self, account_worth):
+    def _join_worth(self, df: pd.DataFrame,
+                    account_worth: pd.DataFrame) -> pd.DataFrame:
         if account_worth:
             _worth = pd.DataFrame(account_worth).set_index('title')
             _worth = _worth.apply(pd.to_numeric)
-            self._balance = self._balance.join(_worth)
-        else:
-            self._balance.loc[:, 'have'] = 0.0
+            df = df.join(_worth, lsuffix='have')
 
-    def _have(self):
-        self._balance.loc[:, 'delta'] = (
-            self._balance['have'] - self._balance['balance']
-        )
+        return df
 
-    def _drop_columns(self) -> None:
-        self._balance = self._balance[
-            ['past', 'incomes', 'expenses', 'balance', 'have', 'delta']
-        ]
+    def _have(self, df: pd.DataFrame) -> pd.DataFrame:
+        df.loc[:, 'delta'] = df['have'] - df['balance']
+        return df
 
+    def _drop_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+        return df[self._columns]
