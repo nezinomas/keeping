@@ -264,22 +264,38 @@ def test_income_type_str():
     assert 'Savings' == str(i)
 
 
-def test_summary(savings):
+def test_summary_from(savings):
     expect = [{
         'title': 'Account1',
+        's_past': 1.25,
+        's_now': 3.5,
+    }, {
+        'title': 'Account2',
+        's_past': 0.25,
+        's_now': 2.25,
+    }]
+
+    actual = [*Saving.objects.summary_from(1999).order_by('account__title')]
+
+    assert expect == actual
+
+
+def test_summary_to(savings):
+    expect = [{
+        'title': 'Saving1',
         's_past': 1.25,
         's_now': 3.5,
         's_fee_past': 0.25,
         's_fee_now': 0.5,
 
     }, {
-        'title': 'Account2',
+        'title': 'Saving2',
         's_past': 0.25,
         's_now': 2.25,
         's_fee_past': 0.0,
         's_fee_now': 0.25,
     }]
 
-    actual = [*Saving.objects.summary(1999).order_by('account__title')]
+    actual = [*Saving.objects.summary_to(1999).order_by('saving_type__title')]
 
     assert expect == actual

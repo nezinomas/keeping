@@ -143,7 +143,34 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .values(summed_name, 'date')
         )
 
-    def summary(self, year: int) -> List[Dict[str, Any]]:
+    def summary_from(self, year: int) -> List[Dict[str, Any]]:
+        '''
+        return:
+            {
+                'title': account.title,
+                's_past': Decimal(),
+                's_now': Decimal()
+            }
+        '''
+        return (
+            self
+            .annotate(cnt=Count('saving_type'))
+            .values('cnt')
+            .order_by('cnt')
+            .annotate(
+                s_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='price'),
+                        default=0)),
+                s_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='price'),
+                        default=0))
+            )
+            .values('s_past', 's_now', title=models.F('account__title'))
+        )
+
+    def summary_to(self, year: int) -> List[Dict[str, Any]]:
         '''
         return:
             {
@@ -175,7 +202,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
                         When(**{'date__year': year}, then='fee'),
                         default=0))
             )
-            .values('s_past', 's_now', 's_fee_past', 's_fee_now', title=models.F('account__title'))
+            .values('s_past', 's_now', 's_fee_past', 's_fee_now', title=models.F('saving_type__title'))
         )
 
 
