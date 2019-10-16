@@ -33,8 +33,8 @@ class SavingStats(BalanceStats):
 
         df = self._prepare(stats)
         df = self._calc_balance(df)
-        df = self._have(df, worth)
-        df = self._profit(df)
+        df = self._calc_have(df, worth)
+        df = self._calc_profit(df)
         df = self._drop_columns(df)
 
         self._balance = df
@@ -126,7 +126,7 @@ class SavingStats(BalanceStats):
 
         return df
 
-    def _have(self, df: DF, worth: DF) -> DF:
+    def _calc_have(self, df: DF, worth: DF) -> DF:
         # join savings and worth dataframes
         if worth:
             _worth = DF(worth).set_index('title')
@@ -143,7 +143,7 @@ class SavingStats(BalanceStats):
 
         return df
 
-    def _profit(self, df: DF) -> DF:
+    def _calc_profit(self, df: DF) -> DF:
         if df.empty:
             return df
 
