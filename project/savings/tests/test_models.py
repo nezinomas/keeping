@@ -29,115 +29,6 @@ def savings_extra():
     )
 
 
-def test_saving_only(savings):
-    expect = [{
-        'title': 'Saving1',
-        'past_amount': 1.25,
-        'past_fee': 0.25,
-        'incomes': 4.75,
-        'fees': 0.75,
-        'invested': 4.0,
-    }, {
-        'title': 'Saving2',
-        'past_amount': 0.25,
-        'past_fee': 0.0,
-        'incomes': 2.50,
-        'fees': 0.25,
-        'invested': 2.25,
-    }]
-
-    actual = list(SavingType.objects.balance_year(1999))
-
-    assert_(expect, actual)
-
-
-def test_saving_change_only(savings_change):
-    expect = [{
-        'title': 'Saving1',
-        'past_amount': -2.25,
-        'past_fee': 0.15,
-        'incomes': -3.50,
-        'fees': 0.20,
-        'invested': -3.70,
-    }, {
-        'title': 'Saving2',
-        'past_amount': 2.25,
-        'past_fee': 0.15,
-        'incomes': 3.50,
-        'fees': 0.20,
-        'invested': 3.30,
-    }]
-
-    actual = list(SavingType.objects.balance_year(1999))
-
-    assert_(expect, actual)
-
-
-def test_saving_cloce_only(savings_close):
-    expect = [{
-        'title': 'Saving1',
-        'past_amount': -0.25,
-        'past_fee': 0.0,
-        'incomes': -0.5,
-        'fees': 0.0,
-        'invested': -0.5,
-    }]
-
-    actual = list(SavingType.objects.balance_year(1999))
-
-    assert_(expect, actual)
-
-
-def test_saving_year_now(savings, savings_close, savings_change):
-    expect = [{
-        'title': 'Saving1',
-        'past_amount': -1.25,
-        'past_fee': 0.40,
-        'incomes': 0.75,
-        'fees': 0.95,
-        'invested': -0.20,
-    }, {
-        'title': 'Saving2',
-        'past_amount': 2.50,
-        'past_fee': 0.15,
-        'incomes': 6.00,
-        'fees': 0.45,
-        'invested': 5.55,
-    }]
-
-    actual = list(SavingType.objects.balance_year(1999))
-
-    assert_(expect, actual)
-
-
-def test_saving_year_past(savings, savings_close, savings_change):
-    expect = [{
-        'title': 'Saving1',
-        'past_amount': 0.00,
-        'past_fee': 0.0,
-        'incomes': -1.25,
-        'fees': 0.40,
-        'invested': -1.65,
-    }, {
-        'title': 'Saving2',
-        'past_amount': 0.00,
-        'past_fee': 0.00,
-        'incomes': 2.50,
-        'fees': 0.15,
-        'invested': 2.35,
-    }]
-
-    actual = list(SavingType.objects.balance_year(1970))
-
-    assert_(expect, actual)
-
-
-def test_saving_empty():
-    actual = list(SavingType.objects.balance_year(1))
-
-    assert actual == []
-
-
 def test_saving_month_sum(savings):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(3.5), 'title': 'Saving1'},
@@ -247,11 +138,6 @@ def test_savings_day_saving_query_count(django_assert_max_num_queries):
         [*Saving.objects.day_saving(1999, 1)]
 
 
-def test_savings_type_balance_year_query_count(django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        [*SavingType.objects.balance_year(1999)]
-
-
 def test_income_str():
     i = SavingFactory.build()
 
@@ -262,3 +148,40 @@ def test_income_type_str():
     i = SavingTypeFactory.build()
 
     assert 'Savings' == str(i)
+
+
+def test_summary_from(savings):
+    expect = [{
+        'title': 'Account1',
+        's_past': 1.25,
+        's_now': 3.5,
+    }, {
+        'title': 'Account2',
+        's_past': 0.25,
+        's_now': 2.25,
+    }]
+
+    actual = [*Saving.objects.summary_from(1999).order_by('account__title')]
+
+    assert expect == actual
+
+
+def test_summary_to(savings):
+    expect = [{
+        'title': 'Saving1',
+        's_past': 1.25,
+        's_now': 3.5,
+        's_fee_past': 0.25,
+        's_fee_now': 0.5,
+
+    }, {
+        'title': 'Saving2',
+        's_past': 0.25,
+        's_now': 2.25,
+        's_fee_past': 0.0,
+        's_fee_now': 0.25,
+    }]
+
+    actual = [*Saving.objects.summary_to(1999).order_by('saving_type__title')]
+
+    assert expect == actual

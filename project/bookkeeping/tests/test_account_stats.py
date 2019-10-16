@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+import pandas as pd
 import pytest
 
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
@@ -8,21 +9,26 @@ from ..lib.account_stats import AccountStats as T
 
 @pytest.fixture()
 def _accounts():
-    return (
-        [{
-            'title': 'Account1',
-            'past': Decimal(10.0),
-            'incomes': Decimal(20.0),
-            'expenses': Decimal(25.0),
-            'balance': Decimal(5.75),
-        }, {
-            'title': 'Account2',
-            'past': Decimal(5.0),
-            'incomes': Decimal(5.0),
-            'expenses': Decimal(5.0),
-            'balance': Decimal(2.0),
-        }]
-    )
+    df = pd.DataFrame([{
+        'title': 'Account1',
+        'i_past': 5.25, 'i_now': 3.25,
+        'e_past': 2.5, 'e_now': 0.5,
+        's_past': 1.25, 's_now': 3.5,
+        'tr_from_past': 1.25, 'tr_from_now': 4.5,
+        'tr_to_past': 5.25, 'tr_to_now': 3.25,
+        's_close_to_past': 0.25, 's_close_to_now': 0.25,
+    }, {
+        'title': 'Account2',
+        'i_past': 4.5, 'i_now': 3.5,
+        'e_past': 2.25, 'e_now': 1.25,
+        's_past': 0.25, 's_now': 2.25,
+        'tr_from_past': 5.25, 'tr_from_now': 3.25,
+        'tr_to_past': 1.25, 'tr_to_now': 4.5,
+        's_close_to_past': 0.0, 's_close_to_now': 0.0,
+    }])
+
+    df.set_index('title', inplace=True)
+    return df
 
 
 @pytest.fixture()
@@ -48,14 +54,20 @@ def test_none_accounts_stats():
 def test_account_stats(_accounts, _accounts_worth):
     expect = [{
         'title': 'Account1',
-        'balance': 5.75,
+        'past': 5.75,
+        'incomes': 6.75,
+        'expenses': 8.5,
+        'balance': 4.0,
         'have': 5.75,
-        'delta': 0.0
+        'delta': 1.75
     }, {
         'title': 'Account2',
-        'balance': 2.0,
+        'past': -2.0,
+        'incomes': 8.0,
+        'expenses': 6.75,
+        'balance': -0.75,
         'have': 1.0,
-        'delta': -1.0
+        'delta': 1.75
     }]
 
     actual = T(_accounts, _accounts_worth).balance
@@ -66,14 +78,20 @@ def test_account_stats(_accounts, _accounts_worth):
 def test_account_stats_worth_empty(_accounts):
     expect = [{
         'title': 'Account1',
-        'balance': 5.75,
+        'past': 5.75,
+        'incomes': 6.75,
+        'expenses': 8.5,
+        'balance': 4.0,
         'have': 0.0,
-        'delta': -5.75
+        'delta': -4.0
     }, {
         'title': 'Account2',
-        'balance': 2.0,
+        'past': -2.0,
+        'incomes': 8.0,
+        'expenses': 6.75,
+        'balance': -0.75,
         'have': 0.0,
-        'delta': -2.0
+        'delta': 0.75
     }]
 
     actual = T(_accounts, []).balance
@@ -84,14 +102,20 @@ def test_account_stats_worth_empty(_accounts):
 def test_account_stats_worth_None(_accounts):
     expect = [{
         'title': 'Account1',
-        'balance': 5.75,
+        'past': 5.75,
+        'incomes': 6.75,
+        'expenses': 8.5,
+        'balance': 4.0,
         'have': 0.0,
-        'delta': -5.75
+        'delta': -4.0,
     }, {
         'title': 'Account2',
-        'balance': 2.0,
+        'past': -2.0,
+        'incomes': 8.0,
+        'expenses': 6.75,
+        'balance': -0.75,
         'have': 0.0,
-        'delta': -2.0
+        'delta': 0.75
     }]
 
     actual = T(_accounts, None).balance
@@ -101,12 +125,12 @@ def test_account_stats_worth_None(_accounts):
 
 def test_account_totals(_accounts, _accounts_worth):
     expect = {
-        'past': Decimal(15.0),
-        'incomes': 25.0,
-        'expenses': 30.0,
-        'balance': 7.75,
+        'past': 3.75,
+        'incomes': 14.75,
+        'expenses': 15.25,
+        'balance': 3.25,
         'have': 6.75,
-        'delta': -1.0
+        'delta': 3.5
     }
 
     actual = T(_accounts, _accounts_worth).totals
@@ -115,7 +139,7 @@ def test_account_totals(_accounts, _accounts_worth):
 
 
 def test_account_past_property(_accounts):
-    expect = 15.0
+    expect = 3.75
 
     actual = T(_accounts, None).balance_start
 
@@ -131,7 +155,7 @@ def test_account_past_property_no_accounts():
 
 
 def test_balance_end(_accounts):
-    expect = 7.75
+    expect = 3.25
 
     actual = T(_accounts, []).balance_end
 
