@@ -76,22 +76,13 @@ class AccountStats(BalanceStats):
         else:
             self._balance.loc[:, 'have'] = 0.0
 
-        # convert to float
-        # for col in df.columns:
-        #     df[col] = pd.to_numeric(df[col])
-
-        # self._balance = df
-
     def _have(self):
         self._balance.loc[:, 'delta'] = (
             self._balance['have'] - self._balance['balance']
         )
 
     def _drop_columns(self) -> None:
-        self._balance.drop([
-            'i_past', 'i_now',
-            'e_past', 'e_now',
-            's_past', 's_now',
-            'tr_from_past', 'tr_from_now',
-            'tr_to_past', 'tr_to_now',
-            's_close_to_past', 's_close_to_now'], axis=1, inplace=True)
+        self._balance = self._balance[
+            ['past', 'incomes', 'expenses', 'balance', 'have', 'delta']
+        ]
+
