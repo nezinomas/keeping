@@ -30,7 +30,7 @@ class Index(IndexMixin):
         (acc, svv) = collect_summary_data(year, M)
         _account = views_helpers.account_stats(year, acc)
 
-        _fund, _pension = views_helpers.saving_stats(year)
+        _fund, _pension = views_helpers.saving_stats(year, svv)
         _expense_types = views_helpers.expense_types('Taupymas')
 
         qs_income = Income.objects.income_sum(year)
@@ -93,9 +93,11 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        year = self.request.user.profile.year
 
-        _fund, _pension = views_helpers.saving_stats(
-            self.request.user.profile.year)
+        (_, svv) = collect_summary_data(year, M)
+
+        _fund, _pension = views_helpers.saving_stats(year, svv)
 
         context['fund'] = _fund.balance
         context['fund_totals'] = _fund.totals
@@ -114,7 +116,7 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
         context = super().get_context_data(**kwargs)
         year = self.request.user.profile.year
 
-        (acc, svv) = collect_summary_data(year, M)
+        (acc, _) = collect_summary_data(year, M)
         _account = views_helpers.account_stats(year, acc)
 
         context['accounts'] = _account.balance

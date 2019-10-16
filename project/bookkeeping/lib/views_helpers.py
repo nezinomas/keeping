@@ -38,8 +38,7 @@ def account_stats(year, _stats):
     return AccountStats(_stats, _worth)
 
 
-def saving_stats(year):
-    _stats = SavingType.objects.balance_year(year)
+def saving_stats(year, _stats):
     _worth = SavingWorth.objects.items()
 
     fund = SavingStats(_stats, _worth, 'fund')
