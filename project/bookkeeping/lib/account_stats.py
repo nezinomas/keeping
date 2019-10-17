@@ -77,7 +77,10 @@ class AccountStats(BalanceStats):
         return df
 
     def _join_worth(self, df: DF, account_worth: DF) -> DF:
-        if account_worth:
+        if not isinstance(account_worth, DF):
+            return df
+
+        if not account_worth.empty:
             _worth = DF(account_worth).set_index('title')
             _worth = _worth.apply(to_numeric)
             df = df.join(_worth, lsuffix='have')
