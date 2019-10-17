@@ -42,7 +42,7 @@ $(function () {
         });
     };
 
-    var saveForm = function() {
+    var saveForm = function (event) {
         var form = $('.js-form');
         var action = form.attr("data-action");
         var ajax_update_container = form.attr('data-update-container')
@@ -77,8 +77,7 @@ $(function () {
                     }
 
                     // save and close
-                    var save_close = document.getElementById('save_close');
-                    if (save_close) {
+                    if (event.data.save_close == true) {
                         $('#modal-form').modal('hide')
                     }
                 }
@@ -107,6 +106,6 @@ $(function () {
 
     $(".js-create").click(loadFormClc);
 
-    $('#modal-form').on('click', "#submit", saveForm)
-    $('#modal-form').on('click', "#save_close", saveForm)
+    $('#modal-form').on('click', "#submit", {save_close: false}, saveForm)
+    $('#modal-form').on('click', "#save_close", {save_close: true}, saveForm)
 });
