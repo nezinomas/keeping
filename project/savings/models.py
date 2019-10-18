@@ -11,10 +11,16 @@ from ..core.models import TitleAbstract
 
 
 class SavingTypeQuerySet(models.QuerySet):
-    pass
+    def items(self):
+        return self.filter(closed__isnull=True)
 
 
 class SavingType(TitleAbstract):
+    closed = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+    )
+
     class Meta:
         ordering = ['title']
 

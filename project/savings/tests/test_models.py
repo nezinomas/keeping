@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
@@ -185,3 +186,12 @@ def test_summary_to(savings):
     actual = [*Saving.objects.summary_to(1999).order_by('saving_type__title')]
 
     assert expect == actual
+
+
+def test_closed_for_forms():
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    actual = SavingType.objects.items()
+
+    assert 1 == actual.count()
