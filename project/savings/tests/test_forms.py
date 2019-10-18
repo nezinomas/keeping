@@ -23,7 +23,7 @@ def test_saving_valid_data():
         'fee': '0.25',
         'remark': 'remark',
         'account': a.pk,
-        'saving_type': t.pk
+        'saving_type': t.pk,
     })
 
     assert form.is_valid()
@@ -75,6 +75,7 @@ def test_saving_type_init():
 def test_saving_type_valid_data():
     form = SavingTypeForm(data={
         'title': 'Title',
+        'closed': '2000',
     })
 
     assert form.is_valid()
@@ -82,6 +83,7 @@ def test_saving_type_valid_data():
     data = form.save()
 
     assert data.title == 'Title'
+    assert data.closed == 2000
 
 
 @pytest.mark.django_db
@@ -118,3 +120,15 @@ def test_saving_type_title_too_short():
     assert not form.is_valid()
 
     assert 'title' in form.errors
+
+
+@pytest.mark.django_db
+def test_saving_form_without_closed_saving_types():
+    a = AccountFactory()
+    t = SavingTypeFactory(title='S1')
+    t = SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingForm()
+
+    assert 'S1' in str(form['saving_type'])
+    assert 'S2' not in str(form['saving_type'])
