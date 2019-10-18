@@ -162,7 +162,7 @@ def test_balance_end(_accounts):
     assert expect == actual
 
 
-def test_account_stats():
+def test_account_stats(_accounts, _accounts_worth):
     expect = [{
         'title': 'Account1',
         'past': 5.75,
