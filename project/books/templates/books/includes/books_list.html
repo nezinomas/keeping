@@ -4,6 +4,7 @@
             <th>Nr</th>
             <th>Autorius</th>
             <th>Pavadinimas</th>
+            <th>Pastaba</th>
             <th class="text-center">Pradėta skaityti</th>
             <th class="text-center">Baigta skaityti</th>
         </tr>
@@ -15,6 +16,7 @@
             <td class="text-left">{{ forloop.revcounter }}</td>
             <td class="text-left">{{ item.author }}</td>
             <td class="text-left">„{{ item.title }}”</td>
+            <td class="text-left">{{ item.remark }}</td>
             <td class="text-center">{{ item.started|date:"Y-m-d" }}</td>
             <td class="text-center">{{ item.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
         </tr>
