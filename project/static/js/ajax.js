@@ -54,9 +54,9 @@ $(function () {
             success: function (data) {
                 if (data.form_is_valid) {
 
-                    for (var key in data.extra) {
-                        $(`#${key}`).html(data.extra[key])
-                    }
+                    // for (var key in data.extra) {
+                    //     $(`#${key}`).html(data.extra[key])
+                    // }
 
                     $(`#${ajax_update_container}`).html(data.html_list);
                     $("#modal-form .modal-content").html(data.html_form);
