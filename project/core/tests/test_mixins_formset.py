@@ -40,7 +40,7 @@ def test_get_type_model_type_model_is_set(_request):
     assert 'Type' == actual
 
 
-def test_model_type_withou_foreignkey(_request):
+def test_model_type_without_foreignkey(_request):
     mck = Mock()
     mck._meta.get_fields.return_value = [
         SimpleNamespace(name='F', many_to_one=False)
