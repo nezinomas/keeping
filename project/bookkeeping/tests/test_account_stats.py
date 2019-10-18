@@ -160,27 +160,3 @@ def test_balance_end(_accounts):
     actual = T(_accounts, []).balance_end
 
     assert expect == actual
-
-
-def test_account_stats(_accounts, _accounts_worth):
-    expect = [{
-        'title': 'Account1',
-        'past': 5.75,
-        'incomes': 6.75,
-        'expenses': 8.5,
-        'balance': 4.0,
-        'have': 5.75,
-        'delta': 1.75
-    }, {
-        'title': 'Account2',
-        'past': -2.0,
-        'incomes': 8.0,
-        'expenses': 6.75,
-        'balance': -0.75,
-        'have': 1.0,
-        'delta': 1.75
-    }]
-
-    actual = T(_accounts, _accounts_worth).balance
-
-    assert_(expect, actual)
