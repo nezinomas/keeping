@@ -29,6 +29,6 @@ def test_account_stats_for_two_years_in_past():
     }]
 
     summary, _ = collect_summary_data(2000, [Income])
-    actual = AccountStats(summary, pd.DataFrame()).balance
+    actual = AccountStats(summary, []).balance
 
     assert_(expect, actual)

@@ -1,3 +1,5 @@
+from typing import List
+
 from pandas import DataFrame as DF
 from pandas import to_numeric
 
@@ -7,7 +9,7 @@ from ...core.mixins.calc_balance import BalanceStats
 class AccountStats(BalanceStats):
     _columns = ['past', 'incomes', 'expenses', 'balance', 'have', 'delta']
 
-    def __init__(self, account_stats: DF, account_worth: DF):
+    def __init__(self, account_stats: DF, account_worth: List):
         self._balance = DF()
 
         if not isinstance(account_stats, DF):
@@ -76,11 +78,8 @@ class AccountStats(BalanceStats):
 
         return df
 
-    def _join_worth(self, df: DF, account_worth: DF) -> DF:
-        if not isinstance(account_worth, DF):
-            return df
-
-        if not account_worth.empty:
+    def _join_worth(self, df: DF, account_worth: List) -> DF:
+        if account_worth:
             _worth = DF(account_worth).set_index('title')
             _worth = _worth.apply(to_numeric)
             df = df.join(_worth, lsuffix='have')
