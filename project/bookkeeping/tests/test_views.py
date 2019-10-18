@@ -3,11 +3,10 @@ import json
 import pytest
 from django.urls import resolve, reverse
 
+from ...accounts.factories import AccountFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...savings.factories import SavingTypeFactory
 from .. import views
-from ...accounts.factories import AccountFactory
-
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 

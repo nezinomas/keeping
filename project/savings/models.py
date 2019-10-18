@@ -11,8 +11,11 @@ from ..core.models import TitleAbstract
 
 
 class SavingTypeQuerySet(models.QuerySet):
-    def items(self):
-        return self.filter(closed__isnull=True)
+    def items(self, show_all=False):
+        if show_all:
+            return self
+        else:
+            return self.filter(closed__isnull=True)
 
 
 class SavingType(TitleAbstract):
