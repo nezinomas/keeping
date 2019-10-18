@@ -24,6 +24,10 @@ class Book(models.Model):
         max_length=254,
         validators=[MinLengthValidator(3)]
     )
+    remark = models.TextField(
+        max_length=200,
+        blank=True
+    )
 
     # objects = BookManager()
     objects = BooksQuerySet.as_manager()
