@@ -12,3 +12,4 @@ class BookFactory(factory.DjangoModelFactory):
     started = date(1999, 1, 1)
     author = 'Author'
     title = 'Book Title'
+    remark = 'Remark'
