@@ -123,10 +123,9 @@ def test_saving_type_title_too_short():
 
 
 @pytest.mark.django_db
-def test_saving_form_type_closed_in_pats():
-    a = AccountFactory()
-    t = SavingTypeFactory(title='S1')
-    t = SavingTypeFactory(title='S2', closed=2000)
+def test_saving_form_type_closed_in_past():
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
 
     form = SavingForm(data={}, year=3000)
 
@@ -136,9 +135,8 @@ def test_saving_form_type_closed_in_pats():
 
 @pytest.mark.django_db
 def test_saving_form_type_closed_in_future():
-    a = AccountFactory()
-    t = SavingTypeFactory(title='S1')
-    t = SavingTypeFactory(title='S2', closed=2000)
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
 
     form = SavingForm(data={}, year=1000)
 
@@ -148,9 +146,8 @@ def test_saving_form_type_closed_in_future():
 
 @pytest.mark.django_db
 def test_saving_form_type_closed_in_current_year():
-    a = AccountFactory()
-    t = SavingTypeFactory(title='S1')
-    t = SavingTypeFactory(title='S2', closed=2000)
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
 
     form = SavingForm(data={}, year=2000)
 
