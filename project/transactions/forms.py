@@ -69,6 +69,8 @@ class SavingCloseForm(forms.ModelForm):
     def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.fields['from_account'].queryset = SavingType.objects.items(year)
+
         self.fields['price'].initial = '0.01'
         self.fields['price'].widget.attrs = {'step': '0.01'}
         self.fields['price'].label = 'Suma'
@@ -107,6 +109,9 @@ class SavingChangeForm(forms.ModelForm):
 
     def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['from_account'].queryset = SavingType.objects.items(year)
+        self.fields['to_account'].queryset = SavingType.objects.items(year)
 
         self.fields['price'].initial = '0.01'
         self.fields['price'].widget.attrs = {'step': '0.01'}
