@@ -67,7 +67,7 @@ class SavingForm(forms.ModelForm):
         self.fields['remark'].label = 'Pastaba'
         self.fields['saving_type'].label = 'Fondas'
 
-        self.fields['saving_type'].queryset = SavingType.objects.items()
+        self.fields['saving_type'].queryset = SavingType.objects.items(year)
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

@@ -7,8 +7,8 @@ from ...savings.models import SavingType
 
 
 def collect_summary_data(year: int, models: List) -> pd.DataFrame:
-    df_account = _create_df(Account)
-    df_saving_type = _create_df(SavingType)
+    df_account = _create_df(year, Account)
+    df_saving_type = _create_df(year, SavingType)
 
     for model in models:
         # try 3 methods from model.manager:
@@ -51,9 +51,9 @@ def collect_summary_data(year: int, models: List) -> pd.DataFrame:
     return (df_account, df_saving_type)
 
 
-def _create_df(model) -> pd.DataFrame:
+def _create_df(year: int, model) -> pd.DataFrame:
     df = pd.DataFrame()
-    qs = model.objects.all().values_list('title', flat=True)
+    qs = model.objects.items(year).values_list('title', flat=True)
 
     if len(qs) >= 1:
         df = _create_columns()

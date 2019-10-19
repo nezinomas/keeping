@@ -123,12 +123,36 @@ def test_saving_type_title_too_short():
 
 
 @pytest.mark.django_db
-def test_saving_form_without_closed_saving_types():
+def test_saving_form_type_closed_in_pats():
     a = AccountFactory()
     t = SavingTypeFactory(title='S1')
     t = SavingTypeFactory(title='S2', closed=2000)
 
-    form = SavingForm()
+    form = SavingForm(data={}, year=3000)
 
     assert 'S1' in str(form['saving_type'])
     assert 'S2' not in str(form['saving_type'])
+
+
+@pytest.mark.django_db
+def test_saving_form_type_closed_in_future():
+    a = AccountFactory()
+    t = SavingTypeFactory(title='S1')
+    t = SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingForm(data={}, year=1000)
+
+    assert 'S1' in str(form['saving_type'])
+    assert 'S2' in str(form['saving_type'])
+
+
+@pytest.mark.django_db
+def test_saving_form_type_closed_in_current_year():
+    a = AccountFactory()
+    t = SavingTypeFactory(title='S1')
+    t = SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingForm(data={}, year=2000)
+
+    assert 'S1' in str(form['saving_type'])
+    assert 'S2' in str(form['saving_type'])

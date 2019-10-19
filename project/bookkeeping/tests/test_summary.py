@@ -1,9 +1,13 @@
+from datetime import date
+
 import pandas as pd
 import pytest
 from mock import Mock
 from pandas.api.types import is_numeric_dtype
+
 from ...expenses.models import Expense
 from ...incomes.models import Income
+from ...savings.factories import SavingFactory, SavingTypeFactory
 from ...savings.models import Saving
 from ...transactions.models import SavingChange, SavingClose, Transaction
 from ..lib.summary import collect_summary_data
@@ -145,6 +149,18 @@ def test_savings_for_savings_with_fees(savings):
 
     assert 0.0 == actual.at['Saving2', 's_fee_past']
     assert 0.25 == actual.at['Saving2', 's_fee_now']
+
+
+def test_saving_for_savings_with_closed():
+    s1 = SavingTypeFactory(title='S1')
+    s2 = SavingTypeFactory(title='S2', closed=1974)
+
+    SavingFactory(date=date(1999, 1, 1), saving_type=s1)
+    SavingFactory(date=date(1999, 1, 1), saving_type=s2)
+
+    (_, actual) = collect_summary_data(1999, [Saving])
+
+    assert 1 == actual.shape[0]  # rows
 
 
 def test_savings_qs_count(savings, django_assert_max_num_queries):

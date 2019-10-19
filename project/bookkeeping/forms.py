@@ -15,7 +15,7 @@ class SavingWorthForm(forms.ModelForm):
     def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['saving_type'].queryset = SavingType.objects.items()
+        self.fields['saving_type'].queryset = SavingType.objects.items(year)
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
