@@ -21,7 +21,7 @@ class SavingStats(BalanceStats):
         'profit_invested_sum'
     ]
 
-    def __init__(self, stats: DF, worth: DF, saving_type: str='all'):
+    def __init__(self, stats: DF, worth: DF, saving_type: str = 'all'):
         self._balance = DF()
         self._type = saving_type
 
