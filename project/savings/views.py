@@ -31,20 +31,15 @@ class Update(UpdateAjaxMixin):
 #
 # SavingType views
 #
-class GetItems():
-    def get_queryset(self):
-        return models.SavingType.objects.items(show_all=True)
-
-
-class TypeLists(GetItems, ListMixin):
+class TypeLists(ListMixin):
     model = models.SavingType
 
 
-class TypeNew(GetItems, CreateAjaxMixin):
+class TypeNew(CreateAjaxMixin):
     model = models.SavingType
     form_class = forms.SavingTypeForm
 
 
-class TypeUpdate(GetItems, UpdateAjaxMixin):
+class TypeUpdate(UpdateAjaxMixin):
     model = models.SavingType
     form_class = forms.SavingTypeForm
