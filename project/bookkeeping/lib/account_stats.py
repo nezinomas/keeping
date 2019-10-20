@@ -48,11 +48,11 @@ class AccountStats(BalanceStats):
         df['past'] = (
             0
             + df['i_past']
+            + df['tr_to_past']
+            + df['s_close_to_past']
             - df['e_past']
             - df['s_past']
             - df['tr_from_past']
-            + df['tr_to_past']
-            + df['s_close_to_past']
         )
 
         df['incomes'] = (
