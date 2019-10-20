@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import Case, Count, F, Sum, When
+from django.db.models import Case, Count, F, Q, Sum, When
 
 from ..accounts.models import Account
 from ..core.mixins.queryset_sum import SumMixin
@@ -11,10 +11,25 @@ from ..core.models import TitleAbstract
 
 
 class SavingTypeQuerySet(models.QuerySet):
-    pass
+    def items(self, year: int = None):
+        if not year:
+            return self
+        else:
+            return (
+                self
+                .filter(
+                    Q(closed__isnull=True) |
+                    Q(closed__gte=year)
+                )
+            )
 
 
 class SavingType(TitleAbstract):
+    closed = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+    )
+
     class Meta:
         ordering = ['title']
 
@@ -26,8 +41,20 @@ class SavingQuerySet(SumMixin, models.QuerySet):
     def _related(self):
         return self.select_related('account', 'saving_type')
 
+    def _filter_closed(self, year):
+        return (
+            self
+            .filter(
+                Q(saving_type__closed__isnull=True) |
+                Q(saving_type__closed__gte=year)
+            )
+        )
+
     def year(self, year):
-        return self._related().filter(date__year=year)
+        return (
+            self._related()
+            ._filter_closed(year)
+            .filter(date__year=year))
 
     def items(self):
         return self._related()
@@ -78,6 +105,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
 
     def summary_from(self, year: int) -> List[Dict[str, Any]]:
         '''
+        summary for accounts
         return:
             {
                 'title': account.title,
@@ -105,6 +133,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
 
     def summary_to(self, year: int) -> List[Dict[str, Any]]:
         '''
+        summary for saving_types
         return:
             {
                 'title': account.title,
@@ -114,6 +143,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         '''
         return (
             self
+            ._filter_closed(year)
             .annotate(cnt=Count('saving_type'))
             .values('cnt')
             .order_by('cnt')

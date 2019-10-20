@@ -1,4 +1,5 @@
 from django.forms.models import modelformset_factory
+from django.utils.functional import curry
 
 
 class FormsetMixin():
@@ -14,7 +15,7 @@ class FormsetMixin():
             return _list
 
         model = self._get_type_model()
-        _objects = model.objects.all()
+        _objects = model.objects.items(self.request.user.profile.year)
         for _object in _objects:
             _list.append({'price': None, foreign_key[0]: _object})
 
@@ -27,13 +28,18 @@ class FormsetMixin():
             return self.type_model
 
     def _get_formset(self, post=None):
+        form = self.get_form_class()
+        year = self.request.user.profile.year
         _formset = (
             modelformset_factory(
                 extra=0,
-                form=self.get_form_class(),
-                model=self.model,
+                form=form,
+                model=self.model
             )
         )
+        print(f'>>>>>> metai: \n{year}\n')
+        # add year argument to form throught cury
+        _formset.form = staticmethod(curry(form, year=year))
 
         if post:
             _formset = _formset(post)

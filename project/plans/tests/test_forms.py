@@ -108,6 +108,39 @@ def test_saving_blank_data():
     }
 
 
+@pytest.mark.django_db
+def test_saving_form_type_closed_in_past():
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingPlanForm(data={}, year=3000)
+
+    assert 'S1' in str(form['saving_type'])
+    assert 'S2' not in str(form['saving_type'])
+
+
+@pytest.mark.django_db
+def test_saving_form_type_closed_in_future():
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingPlanForm(data={}, year=1000)
+
+    assert 'S1' in str(form['saving_type'])
+    assert 'S2' in str(form['saving_type'])
+
+
+@pytest.mark.django_db
+def test_saving_form_type_closed_in_current_year():
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingPlanForm(data={}, year=2000)
+
+    assert 'S1' in str(form['saving_type'])
+    assert 'S2' in str(form['saving_type'])
+
+
 def test_income_init():
     IncomePlanForm()
 

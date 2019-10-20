@@ -20,6 +20,14 @@ def user():
 
 
 @pytest.fixture()
+def _fake_request(rf):
+    request = rf.get('/fake/')
+    request.user = UserFactory.build()
+
+    return request
+
+
+@pytest.fixture()
 def login(client, user):
     client.login(username='bob', password='123')
 

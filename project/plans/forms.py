@@ -7,7 +7,8 @@ from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib.date import monthnames
-from .models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
+from .models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
+                     SavingPlan, SavingType)
 
 
 def common_field_transalion(self):
@@ -89,6 +90,8 @@ class SavingPlanForm(forms.ModelForm):
 
     def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['saving_type'].queryset = SavingType.objects.items(year)
 
         # inital values
         self.fields['year'].initial = datetime.now()

@@ -3,11 +3,11 @@ import json
 import pytest
 from django.urls import resolve, reverse
 
+from ...accounts.factories import AccountFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
+from ...core.tests.utils import setup_view
 from ...savings.factories import SavingTypeFactory
 from .. import views
-from ...accounts.factories import AccountFactory
-
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
@@ -236,3 +236,48 @@ def test_view_account_worth_invalid_data(client, login):
     actual = json.loads(json_str)
 
     assert not actual['form_is_valid']
+
+
+@pytest.mark.django_db()
+def test_saving_worth_formset_saving_type_closed_in_past(_fake_request):
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=1000)
+
+    _fake_request.user.profile.year = 2000
+
+    view = setup_view(views.SavingsWorthNew(), _fake_request)
+
+    actual = str(view._get_formset())
+
+    assert 'S1' in actual
+    assert 'S2' not in actual
+
+
+@pytest.mark.django_db()
+def test_saving_worth_formset_saving_type_closed_in_current(_fake_request):
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=1000)
+
+    _fake_request.user.profile.year = 1000
+
+    view = setup_view(views.SavingsWorthNew(), _fake_request)
+
+    actual = str(view._get_formset())
+
+    assert 'S1' in actual
+    assert 'S2' in actual
+
+
+@pytest.mark.django_db()
+def test_saving_worth_formset_saving_type_closed_in_future(_fake_request):
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=1000)
+
+    _fake_request.user.profile.year = 1
+
+    view = setup_view(views.SavingsWorthNew(), _fake_request)
+
+    actual = str(view._get_formset())
+
+    assert 'S1' in actual
+    assert 'S2' in actual

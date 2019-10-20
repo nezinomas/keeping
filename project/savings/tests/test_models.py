@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
@@ -185,3 +186,69 @@ def test_summary_to(savings):
     actual = [*Saving.objects.summary_to(1999).order_by('saving_type__title')]
 
     assert expect == actual
+
+
+def test_items_closed_in_past():
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    actual = SavingType.objects.items(3000)
+
+    assert 1 == actual.count()
+
+
+def test_items_closed_in_future():
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    actual = SavingType.objects.items(1000)
+
+    assert 2 == actual.count()
+
+
+def test_items_closed_in_current_year():
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    actual = SavingType.objects.items(2000)
+
+    assert 2 == actual.count()
+
+
+@freeze_time('1999-01-01')
+def test_saving_year_with_type_closed_in_future():
+    s1 = SavingTypeFactory(title='S1')
+    s2 = SavingTypeFactory(title='S2', closed=2000)
+
+    SavingFactory(date=date(1999, 1, 1), saving_type=s1)
+    SavingFactory(date=date(1999, 1, 1), saving_type=s2)
+
+    actual = Saving.objects.year(1999)
+
+    assert 2 == actual.count()
+
+
+@freeze_time('1999-01-01')
+def test_saving_year_with_type_closed_in_current_year():
+    s1 = SavingTypeFactory(title='S1')
+    s2 = SavingTypeFactory(title='S2', closed=1999)
+
+    SavingFactory(date=date(1999, 1, 1), saving_type=s1)
+    SavingFactory(date=date(1999, 1, 1), saving_type=s2)
+
+    actual = Saving.objects.year(1999)
+
+    assert 2 == actual.count()
+
+
+@freeze_time('1999-01-01')
+def test_saving_year_with_type_closed_in_past():
+    s1 = SavingTypeFactory(title='S1')
+    s2 = SavingTypeFactory(title='S2', closed=1974)
+
+    SavingFactory(date=date(1999, 1, 1), saving_type=s1)
+    SavingFactory(date=date(1999, 1, 1), saving_type=s2)
+
+    actual = Saving.objects.year(1999)
+
+    assert 1 == actual.count()

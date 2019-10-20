@@ -8,10 +8,12 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
+from ...core.tests.utils import setup_view
 from .. import views
 from ..factories import SavingFactory, SavingTypeFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+
 
 
 def test_savings_index_func():
@@ -203,6 +205,23 @@ def test_type_save(client, login):
 
 
 @pytest.mark.django_db()
+def test_type_save_with_closed(client, login):
+    data = {
+        'title': 'TTT', 'closed': '2000'
+    }
+
+    url = reverse('savings:savings_type_new')
+
+    response = client.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert 'TTT' in actual['html_list']
+
+
+@pytest.mark.django_db()
 def test_type_save_invalid_data(client, login):
     data = {'title': ''}
 
@@ -234,6 +253,24 @@ def test_type_update(client, login):
     assert 'TTT' in actual['html_list']
 
 
+@pytest.mark.django_db()
+def test_type_update_with_closed(client, login):
+    saving = SavingTypeFactory()
+
+    data = {'title': 'TTT', 'closed': '2000'}
+    url = reverse('savings:savings_type_update', kwargs={'pk': saving.pk})
+
+    response = client.post(url, data, **X_Req)
+
+    assert 200 == response.status_code
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert 'TTT' in actual['html_list']
+
+
 @pytest.mark.django_db
 def test_view_index_200(login, client):
     response = client.get('/savings/')
@@ -242,3 +279,18 @@ def test_view_index_200(login, client):
 
     assert 'savings' in response.context
     assert 'categories' in response.context
+
+
+@pytest.mark.django_db
+def test_type_list_view_has_all(_fake_request):
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=1974)
+
+    view = setup_view(views.TypeLists(), _fake_request)
+
+    ctx = view.get_context_data()
+    actual = [str(x) for x in ctx['items']]
+
+    assert 2 == len(actual)
+    assert 'S1' in actual
+    assert 'S2' in actual

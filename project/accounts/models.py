@@ -4,7 +4,8 @@ from ..core.models import TitleAbstract
 
 
 class AccountQuerySet(models.QuerySet):
-    pass
+    def items(self, year: int = None):
+        return self
 
 
 class Account(TitleAbstract):
