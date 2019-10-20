@@ -5,40 +5,33 @@ from ..mixins.views import ListMixin
 from .utils import setup_view
 
 
-@pytest.fixture()
-def _request(rf):
-    request = rf.get('/fake/')
-
-    return request
-
-
-def test_template_names(_request):
+def test_template_names(_fake_request):
     class DummyListMixin(ListMixin):
         template_name = 'T'
 
-    v = setup_view(DummyListMixin(), _request)
+    v = setup_view(DummyListMixin(), _fake_request)
     v.get_template_names()
 
     assert v.template_name == 'T'
 
 
 @mock.patch('django.contrib.auth.mixins.LoginRequiredMixin.dispatch')
-def test_views_mixin_dispatch(mck, _request):
+def test_views_mixin_dispatch(mck, _fake_request):
     class DummyListMixin(ListMixin):
         pass
 
-    v = setup_view(DummyListMixin(), _request)
-    v.dispatch(_request)
+    v = setup_view(DummyListMixin(), _fake_request)
+    v.dispatch(_fake_request)
 
     assert mck.assert_called_once
 
 
 @mock.patch('project.core.mixins.views.ListMixin._render_to_string')
-def test_views_mixin_dispatch_render_as_string(mck, _request):
+def test_views_mixin_dispatch_render_as_string(mck, _fake_request):
     class DummyListMixin(ListMixin):
         template_name = 'T'
 
-    v = setup_view(DummyListMixin(), _request)
-    v.dispatch(_request, **{'as_string': True})
+    v = setup_view(DummyListMixin(), _fake_request)
+    v.dispatch(_fake_request, **{'as_string': True})
 
     assert mck.assert_called_once

@@ -8,20 +8,12 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
-from ...core.factories import UserFactory
 from ...core.tests.utils import setup_view
 from .. import views
 from ..factories import SavingFactory, SavingTypeFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
-
-@pytest.fixture()
-def _request(rf):
-    request = rf.get('/fake/')
-    request.user = UserFactory.build()
-
-    return request
 
 
 def test_savings_index_func():
@@ -290,11 +282,11 @@ def test_view_index_200(login, client):
 
 
 @pytest.mark.django_db
-def test_type_list_view_has_all(_request):
+def test_type_list_view_has_all(_fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1974)
 
-    view = setup_view(views.TypeLists(), _request)
+    view = setup_view(views.TypeLists(), _fake_request)
 
     ctx = view.get_context_data()
     actual = [str(x) for x in ctx['items']]
