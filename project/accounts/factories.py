@@ -19,8 +19,9 @@ class AccountBalanceFactory(factory.DjangoModelFactory):
     account = factory.SubFactory(AccountFactory)
 
     year = 1999
+    past = 1.0
     incomes = 6.75
     expenses = 6.5
-    delta = 0.25
+    balance = 1.25
     have = 0.20
-    diff = 0.05
+    delta = -1.05

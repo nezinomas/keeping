@@ -28,12 +28,7 @@ class AccountBalanceQuerySet(models.QuerySet):
 
     def items(self, year: int = None):
         if year:
-            past = year - 1
-            return (
-                self
-                ._related()
-                .filter(year__lte=year, year__gte=past)
-             )
+            return self._related().filter(year=year)
         else:
             return self._related()
 
@@ -47,11 +42,12 @@ class AccountBalance(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
+    past = models.FloatField(default=0.0)
     incomes = models.FloatField(default=0.0)
     expenses = models.FloatField(default=0.0)
-    delta = models.FloatField(default=0.0)
+    balance = models.FloatField(default=0.0)
     have = models.FloatField(default=0.0)
-    diff = models.FloatField(default=0.0)
+    delta = models.FloatField(default=0.0)
 
     # Managers
     objects = AccountBalanceQuerySet.as_manager()
