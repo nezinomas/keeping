@@ -9,16 +9,16 @@ from ...core.mixins.calc_balance import BalanceStats
 class AccountStats(BalanceStats):
     _columns = ['past', 'incomes', 'expenses', 'balance', 'have', 'delta']
 
-    def __init__(self, account_stats: DF, account_worth: List):
+    def __init__(self, data: DF, account_worth: List):
         self._balance = DF()
 
-        if not isinstance(account_stats, DF):
+        if not isinstance(data, DF):
             return
 
-        if account_stats.empty:
+        if data.empty:
             return
 
-        df = self._prepare(account_stats)
+        df = self._prepare(data)
         df = self._calc_balance(df)
         df = self._join_worth(df, account_worth)
         df = self._calc_have(df)
