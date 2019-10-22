@@ -16,11 +16,12 @@ def test_account_balance_init():
     assert str(actual.account) == 'Account1'
 
     assert actual.year == 1999
+    assert actual.past == 1.0
     assert actual.incomes == 6.75
     assert actual.expenses == 6.5
-    assert actual.delta == 0.25
+    assert actual.balance == 1.25
     assert actual.have == 0.20
-    assert actual.diff == 0.05
+    assert actual.delta == -1.05
 
 
 def test_account_balance_str():
@@ -37,14 +38,4 @@ def test_account_balance_items():
 
     actual = AccountBalance.objects.items(1999)
 
-    assert len(actual) == 2
-
-    actual = actual[1]
-
-    assert str(actual.account) == 'Account1'
-    assert actual.year == 1999
-    assert actual.incomes == 6.75
-    assert actual.expenses == 6.5
-    assert actual.delta == 0.25
-    assert actual.have == 0.20
-    assert actual.diff == 0.05
+    assert len(actual) == 1
