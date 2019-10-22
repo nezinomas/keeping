@@ -6,9 +6,9 @@ from ...accounts.models import Account
 from ...savings.models import SavingType
 
 
-def collect_summary_data(year: int, models: List) -> pd.DataFrame:
-    df_account = _create_df(year, Account)
-    df_saving_type = _create_df(year, SavingType)
+def collect_summary_data(year: int,
+                         types: List[str], models: List) -> pd.DataFrame:
+    df = _create_df(types)
 
     for model in models:
         # try 3 methods from model.manager:
@@ -33,27 +33,21 @@ def collect_summary_data(year: int, models: List) -> pd.DataFrame:
                         continue
                     else:
                         # copy values from qs to
-                        # df_account or df_saving_type
-                        if idx in df_account.index:
-                            df_account.at[idx, k] = v
-
-                        if idx in df_saving_type.index:
-                            df_saving_type.at[idx, k] = v
+                        # df or df_saving_type
+                        if idx in df.index:
+                            df.at[idx, k] = v
 
     # fill NaN with 0.0
-    df_account.fillna(0.0, inplace=True)
-    df_saving_type.fillna(0.0, inplace=True)
+    df.fillna(0.0, inplace=True)
 
     # convert all columns to float
-    df_account = df_account.apply(pd.to_numeric)
-    df_saving_type = df_saving_type.apply(pd.to_numeric)
+    df = df.apply(pd.to_numeric)
 
-    return (df_account, df_saving_type)
+    return df
 
 
-def _create_df(year: int, model) -> pd.DataFrame:
+def _create_df(qs: List[str]) -> pd.DataFrame:
     df = pd.DataFrame()
-    qs = model.objects.items(year).values_list('title', flat=True)
 
     if len(qs) >= 1:
         df = _create_columns()
