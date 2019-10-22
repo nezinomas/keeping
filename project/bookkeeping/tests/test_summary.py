@@ -15,6 +15,7 @@ from ..lib.summary import collect_summary_data
 pytestmark = pytest.mark.django_db
 
 columns = [
+    'id',
     'i_past', 'i_now',
     'e_past', 'e_now',
     's_past', 's_now',
@@ -32,12 +33,12 @@ columns = [
 
 @pytest.fixture()
 def account_types():
-    return ['Account1', 'Account2']
+    return {'Account1': 1, 'Account2': 2}
 
 
 @pytest.fixture()
 def saving_types():
-    return ['Saving1', 'Saving2']
+    return {'Saving1': 1, 'Saving2': 2}
 
 
 def test_no_accounts_model_not_exists():
@@ -47,7 +48,7 @@ def test_no_accounts_model_not_exists():
     assert actual.empty
 
 
-def test_model_not_exists(account_types, incomes):
+def test_model_not_exists(account_types):
     actual = collect_summary_data(1999, account_types, ['X'])
 
     assert len(columns) == actual.shape[1]  # columns
@@ -62,7 +63,7 @@ def test_model_dont_have_summary_method():
     model.objects.summary_to.side_effect = Exception('no summary_to')
     model.objects.summary_from.side_effect = Exception('no summary_from')
 
-    actual = collect_summary_data(1999, [], [model])
+    actual = collect_summary_data(1999, {}, [model])
 
     assert isinstance(actual, pd.DataFrame)
     assert actual.empty
@@ -74,7 +75,7 @@ def test_model_summary_without_title():
     model.objects.summary_to.side_effect = Exception('no summary_to')
     model.objects.summary_from.side_effect = Exception('no summary_from')
 
-    actual = collect_summary_data(1999, [], [model])
+    actual = collect_summary_data(1999, {}, [model])
 
     assert isinstance(actual, pd.DataFrame)
     assert actual.empty
@@ -87,9 +88,11 @@ def test_incomes_df_accounts(account_types, incomes):
 
     assert 2 == actual.shape[0]  # rows
 
+    assert 1 == actual.at['Account1', 'id']
     assert 5.25 == actual.at['Account1', 'i_past']
     assert 3.25 == actual.at['Account1', 'i_now']
 
+    assert 2 == actual.at['Account2', 'id']
     assert 4.5 == actual.at['Account2', 'i_past']
     assert 3.5 == actual.at['Account2', 'i_now']
 
@@ -109,7 +112,7 @@ def test_df_have_nan(account_types, incomes):
 
 
 def test_incomes_df_savings(incomes):
-    actual = collect_summary_data(1999, [], [Income])
+    actual = collect_summary_data(1999, {}, [Income])
 
     assert isinstance(actual, pd.DataFrame)
     assert actual.empty
@@ -125,9 +128,11 @@ def test_expenses(account_types, expenses):
 
     assert 2 == actual.shape[0]  # rows
 
+    assert 1 == actual.at['Account1', 'id']
     assert 2.5 == actual.at['Account1', 'e_past']
     assert 0.5 == actual.at['Account1', 'e_now']
 
+    assert 2 == actual.at['Account2', 'id']
     assert 2.25 == actual.at['Account2', 'e_past']
     assert 1.25 == actual.at['Account2', 'e_now']
 
@@ -142,9 +147,11 @@ def test_savings_for_accounts(account_types, savings):
 
     assert 2 == actual.shape[0]  # rows
 
+    assert 1 == actual.at['Account1', 'id']
     assert 1.25 == actual.at['Account1', 's_past']
     assert 3.5 == actual.at['Account1', 's_now']
 
+    assert 2 == actual.at['Account2', 'id']
     assert 0.25 == actual.at['Account2', 's_past']
     assert 2.25 == actual.at['Account2', 's_now']
 
@@ -154,9 +161,11 @@ def test_savings_for_savings_with_fees(saving_types, savings):
 
     assert 2 == actual.shape[0]  # rows
 
+    assert 1 == actual.at['Saving1', 'id']
     assert 0.25 == actual.at['Saving1', 's_fee_past']
     assert 0.5 == actual.at['Saving1', 's_fee_now']
 
+    assert 2 == actual.at['Saving2', 'id']
     assert 0.0 == actual.at['Saving2', 's_fee_past']
     assert 0.25 == actual.at['Saving2', 's_fee_now']
 
@@ -168,7 +177,7 @@ def test_saving_for_savings_with_closed():
     SavingFactory(date=date(1999, 1, 1), saving_type=s1)
     SavingFactory(date=date(1999, 1, 1), saving_type=s2)
 
-    actual = collect_summary_data(1999, ['S1'], [Saving])
+    actual = collect_summary_data(1999, {'S1': 1}, [Saving])
 
     assert 1 == actual.shape[0]  # rows
 
@@ -183,13 +192,15 @@ def test_transactions(account_types, transactions):
 
     assert 2 == actual.shape[0]  # rows
 
+    assert 1 == actual.at['Account1', 'id']
     assert 1.25 == actual.at['Account1', 'tr_from_past']
     assert 4.5 == actual.at['Account1', 'tr_from_now']
-    assert 5.25 == actual.at['Account2', 'tr_from_past']
-    assert 3.25 == actual.at['Account2', 'tr_from_now']
-
     assert 5.25 == actual.at['Account1', 'tr_to_past']
     assert 3.25 == actual.at['Account1', 'tr_to_now']
+
+    assert 2 == actual.at['Account2', 'id']
+    assert 5.25 == actual.at['Account2', 'tr_from_past']
+    assert 3.25 == actual.at['Account2', 'tr_from_now']
     assert 1.25 == actual.at['Account2', 'tr_to_past']
     assert 4.5 == actual.at['Account2', 'tr_to_now']
 
@@ -204,17 +215,21 @@ def test_saving_close_accounts(account_types, savings_close):
 
     assert 2 == actual.shape[0]  # rows
 
+    assert 1 == actual.at['Account1', 'id']
     assert 0.25 == actual.at['Account1', 's_close_to_past']
     assert 0.25 == actual.at['Account1', 's_close_to_now']
+
+    assert 2 == actual.at['Account2', 'id']
     assert 0.0 == actual.at['Account2', 's_close_to_past']
     assert 0.0 == actual.at['Account2', 's_close_to_now']
 
 
 def test_saving_close_saving_type(savings_close):
-    actual = collect_summary_data(1999, ['Saving1'], [SavingClose])
+    actual = collect_summary_data(1999, {'Saving1': 1}, [SavingClose])
 
     assert 1 == actual.shape[0]  # rows
 
+    assert 1 == actual.at['Saving1', 'id']
     assert 0.25 == actual.at['Saving1', 's_close_from_past']
     assert 0.25 == actual.at['Saving1', 's_close_from_now']
 
@@ -225,7 +240,7 @@ def test_saving_close_qs_count(saving_types, savings_close, django_assert_max_nu
 
 
 def test_saving_change_accounts(savings_change):
-    actual = collect_summary_data(1999, [], [SavingChange])
+    actual = collect_summary_data(1999, {}, [SavingChange])
 
     assert isinstance(actual, pd.DataFrame)
     assert actual.empty

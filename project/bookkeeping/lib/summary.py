@@ -1,11 +1,11 @@
-from typing import List
+from typing import Dict, List
 
 from pandas import DataFrame as DF
 from pandas import Series, to_numeric
 
 
 def collect_summary_data(year: int,
-                         types: List[str], models: List) -> DF:
+                         types: Dict[str, int], models: List) -> DF:
     df = _create_df(types)
 
     for model in models:
@@ -27,7 +27,7 @@ def collect_summary_data(year: int,
                     continue
 
                 for k, v in row.items():
-                    if k == 'title':
+                    if k == 'title' or k == 'id':
                         continue
                     else:
                         # copy values from qs to df
@@ -43,12 +43,13 @@ def collect_summary_data(year: int,
     return df
 
 
-def _create_df(qs: List[str]) -> DF:
+def _create_df(qs: Dict[str, int]) -> DF:
     df = DF()
 
     if len(qs) >= 1:
         df = _create_columns()
-        df['title'] = Series(qs)  # copy list of titles to df
+        df['title'] = Series([*qs.keys()])  # copy list of titles to df
+        df['id'] = Series([*qs.values()])  # copy list of id to df
         df = df.set_index('title')
 
     return df
@@ -56,6 +57,7 @@ def _create_df(qs: List[str]) -> DF:
 
 def _create_columns() -> DF:
     df = DF(columns=[
+        'id',
         'title',
         'i_past', 'i_now',
         'e_past', 'e_now',
