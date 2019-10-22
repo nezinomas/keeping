@@ -1,13 +1,14 @@
 from typing import List
 
-import pandas as pd
+from pandas import DataFrame as DF
+from pandas import Series, to_numeric
 
 from ...accounts.models import Account
 from ...savings.models import SavingType
 
 
 def collect_summary_data(year: int,
-                         types: List[str], models: List) -> pd.DataFrame:
+                         types: List[str], models: List) -> DF:
     df = _create_df(types)
 
     for model in models:
@@ -32,8 +33,7 @@ def collect_summary_data(year: int,
                     if k == 'title':
                         continue
                     else:
-                        # copy values from qs to
-                        # df or df_saving_type
+                        # copy values from qs to df
                         if idx in df.index:
                             df.at[idx, k] = v
 
@@ -41,24 +41,24 @@ def collect_summary_data(year: int,
     df.fillna(0.0, inplace=True)
 
     # convert all columns to float
-    df = df.apply(pd.to_numeric)
+    df = df.apply(to_numeric)
 
     return df
 
 
-def _create_df(qs: List[str]) -> pd.DataFrame:
-    df = pd.DataFrame()
+def _create_df(qs: List[str]) -> DF:
+    df = DF()
 
     if len(qs) >= 1:
         df = _create_columns()
-        df['title'] = pd.Series(qs)  # copy list of titles to df
+        df['title'] = Series(qs)  # copy list of titles to df
         df = df.set_index('title')
 
     return df
 
 
-def _create_columns() -> pd.DataFrame:
-    df = pd.DataFrame(columns=[
+def _create_columns() -> DF:
+    df = DF(columns=[
         'title',
         'i_past', 'i_now',
         'e_past', 'e_now',
