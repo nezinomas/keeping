@@ -97,6 +97,18 @@ def test_incomes_df_accounts(account_types, incomes):
     assert 3.5 == actual.at['Account2', 'i_now']
 
 
+def test_incomes_df_accounts_only_one_account(incomes):
+    actual = collect_summary_data(1999, {'Account1': 1}, [Income])
+
+    assert isinstance(actual, pd.DataFrame)
+
+    assert 1 == actual.shape[0]  # rows
+
+    assert 1 == actual.at['Account1', 'id']
+    assert 5.25 == actual.at['Account1', 'i_past']
+    assert 3.25 == actual.at['Account1', 'i_now']
+
+
 def test_df_dtypes(account_types, incomes):
     actual = collect_summary_data(1999, account_types, [Income])
 
