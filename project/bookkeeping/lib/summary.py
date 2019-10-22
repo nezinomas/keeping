@@ -3,9 +3,6 @@ from typing import List
 from pandas import DataFrame as DF
 from pandas import Series, to_numeric
 
-from ...accounts.models import Account
-from ...savings.models import SavingType
-
 
 def collect_summary_data(year: int,
                          types: List[str], models: List) -> DF:
