@@ -91,4 +91,4 @@ class AccountStats(BalanceStats):
         return df
 
     def _drop_columns(self, df: DF) -> DF:
-        return df[self._columns]
+        return df[[*self._columns, 'id']]
