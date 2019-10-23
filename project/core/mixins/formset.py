@@ -37,7 +37,7 @@ class FormsetMixin():
                 model=self.model
             )
         )
-        print(f'>>>>>> metai: \n{year}\n')
+
         # add year argument to form throught cury
         _formset.form = staticmethod(curry(form, year=year))
 
