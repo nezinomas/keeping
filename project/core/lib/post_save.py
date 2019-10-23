@@ -1,25 +1,18 @@
 from typing import Dict, List
 
 from crequest.middleware import CrequestMiddleware
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 
-from ..accounts.models import Account, AccountBalance
-from ..bookkeeping.lib.account_stats import AccountStats
-from ..bookkeeping.lib.summary import collect_summary_data
-from ..bookkeeping.models import AccountWorth
-from ..expenses.models import Expense
-from ..incomes.models import Income
-from ..savings.models import Saving
-from ..transactions.models import SavingChange, SavingClose, Transaction
+from ...accounts.models import Account, AccountBalance
+from ...bookkeeping.lib.account_stats import AccountStats
+from ...bookkeeping.lib.summary import collect_summary_data
+from ...bookkeeping.models import AccountWorth
 
 
-@receiver(post_save, sender=Income)
-def post_save_account_stats(sender, instance, *args, **kwargs):
+def post_save_account_stats(account_id: int):
     request = CrequestMiddleware.get_request()
     year = request.user.profile.year
 
-    stats = _account_stats(year, instance.account.id)
+    stats = _account_stats(year, account_id)
 
     for row in stats:
         # get id
@@ -40,11 +33,13 @@ def _account_worth() -> List[Dict]:
     return AccountWorth.objects.items()
 
 
-def _accounts(account_id: int) -> Dict[str, int]:
-    qs = (
-        Account.objects.items()
-        .filter(id=account_id)
-        .values('id', 'title'))
+def _accounts(account_id: int = None) -> Dict[str, int]:
+    qs = Account.objects.items()
+
+    if account_id:
+        qs = qs.filter(id=account_id)
+
+    qs = qs.values('id', 'title')
 
     return {x['title']: x['id'] for x in qs}
 
@@ -56,7 +51,7 @@ def _account_stats(year: int, account_id: int) -> List[Dict]:
     data = collect_summary_data(
         year=year,
         types=account,
-        models=[Income, Expense, Saving, SavingClose, Transaction]
+        where='accounts'
     )
 
     return AccountStats(data, account_worth).balance
