@@ -90,7 +90,7 @@ class AccountWorth(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
-        post_save_account_stats()
+        post_save_account_stats(self.account.id)
 
     # Managers
     objects = AccountWorthQuerySet.as_manager()
