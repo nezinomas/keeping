@@ -53,6 +53,12 @@ def test_none_accounts_stats():
     assert actual == []
 
 
+def test_empty_data_ef_for_accounts_stats():
+    actual = T(pd.DataFrame(), None).balance
+
+    assert actual == []
+
+
 def test_account_stats(_accounts, _accounts_worth):
     expect = [{
         'id': 1,
