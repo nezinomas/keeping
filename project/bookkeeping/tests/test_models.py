@@ -7,6 +7,7 @@ import pytz
 
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import AccountBalance
+from ...core.lib.utils import sum_all
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...savings.factories import SavingTypeFactory
 from .. import factories, models
@@ -72,4 +73,6 @@ def test_account_balance_queries(django_assert_num_queries):
     AccountBalanceFactory(account=a2)
 
     with django_assert_num_queries(1) as captured:
-        list(AccountBalance.objects.all())
+        q = AccountBalance.objects.items()
+        for i in q:
+            title = i['title']

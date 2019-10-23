@@ -28,9 +28,15 @@ class AccountBalanceQuerySet(models.QuerySet):
 
     def items(self, year: int = None):
         if year:
-            return self._related().filter(year=year)
+            qs = self._related().filter(year=year)
         else:
-            return self._related()
+            qs = self._related()
+
+        return qs.values(
+            'past', 'balance', 'incomes',
+            'expenses', 'have', 'delta',
+            title=F('account__title')
+        )
 
 
 class AccountBalance(models.Model):

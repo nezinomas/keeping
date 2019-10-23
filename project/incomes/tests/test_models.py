@@ -119,13 +119,13 @@ def test_post_save_account_balace_insert():
 
     actual = actual[0]
 
-    assert 'Account1' == actual.account.title
-    assert 0.0 == actual.past
-    assert 1.0 == actual.incomes
-    assert 0.0 == actual.expenses
-    assert 1.0 == actual.balance
-    assert 0.5 == actual.have
-    assert -0.5 == actual.delta
+    assert 'Account1' == actual['title']
+    assert 0.0 == actual['past']
+    assert 1.0 == actual['incomes']
+    assert 0.0 == actual['expenses']
+    assert 1.0 == actual['balance']
+    assert 0.5 == actual['have']
+    assert -0.5 == actual['delta']
 
 
 def test_post_save_account_balace_update():
@@ -148,13 +148,13 @@ def test_post_save_account_balace_update():
 
     actual = actual[0]
 
-    assert 'Account1' == actual.account.title
-    assert 0.0 == actual.past
-    assert 1.0 == actual.incomes
-    assert 0.0 == actual.expenses
-    assert 1.0 == actual.balance
-    assert 0.5 == actual.have
-    assert -0.5 == actual.delta
+    assert 'Account1' == actual['title']
+    assert 0.0 == actual['past']
+    assert 1.0 == actual['incomes']
+    assert 0.0 == actual['expenses']
+    assert 1.0 == actual['balance']
+    assert 0.5 == actual['have']
+    assert -0.5 == actual['delta']
 
 
 def test_post_save_account_balace_insert_count_queries(django_assert_max_num_queries):
