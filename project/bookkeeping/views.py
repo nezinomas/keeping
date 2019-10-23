@@ -1,14 +1,14 @@
-from ..accounts.models import Account
+from ..accounts.models import Account, AccountBalance
 from ..core.lib.date import current_day, year_month_list
-from ..core.lib.utils import get_value_from_dict
+from ..core.lib.utils import get_value_from_dict, sum_all, sum_col
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin
-from ..expenses.models import Expense, ExpenseType
+from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..plans.lib.calc_day_sum import CalcDaySum
 from ..plans.models import DayPlan
 from ..savings.models import Saving, SavingType
-from ..transactions.models import SavingChange, SavingClose, Transaction
+from ..transactions.models import SavingClose
 from .forms import AccountWorthForm, SavingWorthForm
 from .lib import views_helpers
 from .lib.day_spending import DaySpending
@@ -18,8 +18,6 @@ from .lib.no_incomes import NoIncomes
 from .lib.summary import collect_summary_data
 from .models import AccountWorth, SavingWorth
 
-M = [Income, Saving, Expense, Transaction, SavingClose, SavingChange]
-
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
@@ -27,8 +25,11 @@ class Index(IndexMixin):
 
         year = self.request.user.profile.year
 
-        (acc, svv) = collect_summary_data(year, M)
-        _account = views_helpers.account_stats(year, acc)
+        qss = SavingType.objects.items(year).values('id', 'title')
+        typess = {x['title']: x['id'] for x in qss}
+        svv = collect_summary_data(year, typess, 'savings')
+
+        _account = [*AccountBalance.objects.all().values()]
 
         _fund, _pension = views_helpers.saving_stats(year, svv)
         _expense_types = views_helpers.expense_types('Taupymas')
@@ -42,7 +43,7 @@ class Index(IndexMixin):
         _MonthsBalance = MonthsBalance(
             year=year, incomes=qs_income, expenses=qs_expense,
             savings=qs_savings, savings_close=qs_savings_close,
-            amount_start=_account.balance_start)
+            amount_start=sum_col(_account, 'past'))
 
         _MonthsExpenseType = MonthsExpenseType(
             year, qs_ExpenseType, **{'Taupymas': qs_savings})
@@ -65,7 +66,7 @@ class Index(IndexMixin):
         context['balance_avg'] = _MonthsBalance.average
         context['amount_start'] = _MonthsBalance.amount_start
         context['months_amount_end'] = _MonthsBalance.amount_end
-        context['accounts_amount_end'] = _account.balance_end
+        context['accounts_amount_end'] = sum_col(_account, 'balance')
         context['amount_balance'] = _MonthsBalance.amount_balance
         context['total_market'] = _fund.total_market
         context['avg_incomes'] = _MonthsBalance.avg_incomes
@@ -95,7 +96,9 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
         context = super().get_context_data(**kwargs)
         year = self.request.user.profile.year
 
-        (_, svv) = collect_summary_data(year, M)
+        qss = SavingType.objects.items(year).values('id', 'title')
+        typess = {x['title']: x['id'] for x in qss}
+        svv = collect_summary_data(year, typess, 'savings')
 
         _fund, _pension = views_helpers.saving_stats(year, svv)
 
@@ -116,11 +119,14 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
         context = super().get_context_data(**kwargs)
         year = self.request.user.profile.year
 
-        (acc, _) = collect_summary_data(year, M)
-        _account = views_helpers.account_stats(year, acc)
+        qsa = Account.objects.items().values('id', 'title')
+        typesa = {x['title']: x['id'] for x in qsa}
+        acc = collect_summary_data(year, typesa, 'accounts')
 
-        context['accounts'] = _account.balance
-        context['totals'] = _account.totals
+        _account = [*AccountBalance.objects.all()]
+
+        context['accounts'] = _account
+        context['totals'] = sum_all(_account)
 
         return context
 

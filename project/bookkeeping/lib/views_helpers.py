@@ -3,12 +3,11 @@ from typing import List
 from django.template.loader import render_to_string
 
 from ...accounts.models import Account
+from ...core.lib.utils import sum_all, sum_col
 from ...expenses.models import ExpenseType
 from ...savings.models import SavingType
-
 from ..lib.account_stats import AccountStats
 from ..lib.saving_stats import SavingStats
-
 from ..models import AccountWorth, SavingWorth
 
 
@@ -32,12 +31,6 @@ def necessary_expense_types(*args: str) -> List[str]:
     return qs
 
 
-def account_stats(year, _stats):
-    _worth = AccountWorth.objects.items()
-
-    return AccountStats(_stats, _worth)
-
-
 def saving_stats(year, _stats):
     _worth = SavingWorth.objects.items()
 
@@ -51,9 +44,9 @@ def render_accounts(request, account, **kwargs):
         return render_to_string(
             'bookkeeping/includes/accounts_worth_list.html',
             {
-                'accounts': account.balance,
-                'totals': account.totals,
-                'accounts_amount_end': account.balance_end,
+                'accounts': account,
+                'totals': sum_all(account),
+                'accounts_amount_end': sum_col(account, 'balance'),
                 **kwargs
             },
             request
