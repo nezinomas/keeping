@@ -8,6 +8,7 @@ from django.db.models import Case, Count, F, Sum, When
 from ..accounts.models import Account
 from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
+from ..core.lib.post_save import post_save_account_stats
 
 
 class IncomeType(TitleAbstract):
@@ -46,6 +47,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
         '''
         return:
             {
+                'id': account.id,
                 'title': account.title,
                 'i_past': Decimal(),
                 'i_now': Decimal()
@@ -105,6 +107,11 @@ class Income(models.Model):
 
     def __str__(self):
         return f'{(self.date)}: {self.income_type}'
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        post_save_account_stats(self.account.id)
 
     # managers
     objects = IncomeQuerySet.as_manager()
