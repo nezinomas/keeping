@@ -5,7 +5,8 @@ import mock
 import pytest
 import pytz
 
-from ...accounts.factories import AccountFactory
+from ...accounts.factories import AccountBalanceFactory, AccountFactory
+from ...accounts.models import AccountBalance
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...savings.factories import SavingTypeFactory
 from .. import factories, models
@@ -61,3 +62,14 @@ def test_account_worth_str():
         model = factories.AccountWorthFactory()
 
     assert '1999-01-01 02:03 - Account1' == str(model)
+
+
+def test_account_balance_queries(django_assert_num_queries):
+    a1 = AccountFactory(title='a1')
+    a2 = AccountFactory(title='a2')
+
+    AccountBalanceFactory(account=a1)
+    AccountBalanceFactory(account=a2)
+
+    with django_assert_num_queries(1) as captured:
+        list(AccountBalance.objects.all())
