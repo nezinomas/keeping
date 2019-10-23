@@ -2,14 +2,11 @@ from datetime import date
 
 import pandas as pd
 import pytest
-from mock import Mock
+from django.apps import apps
+from mock import Mock, patch
 from pandas.api.types import is_numeric_dtype
 
-from ...expenses.models import Expense
-from ...incomes.models import Income
 from ...savings.factories import SavingFactory, SavingTypeFactory
-from ...savings.models import Saving
-from ...transactions.models import SavingChange, SavingClose, Transaction
 from ..lib.summary import collect_summary_data
 
 pytestmark = pytest.mark.django_db
@@ -41,15 +38,19 @@ def saving_types():
     return {'Saving1': 1, 'Saving2': 2}
 
 
-def test_no_accounts_model_not_exists():
-    actual = collect_summary_data(1999, [], ['X'])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'incomes.Income'})
+def test_no_accounts_model_not_exists(mock_models):
+    actual = collect_summary_data(1999, [], 'accounts')
 
     assert isinstance(actual, pd.DataFrame)
     assert actual.empty
 
 
-def test_model_not_exists(account_types):
-    actual = collect_summary_data(1999, account_types, ['X'])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'incomes.Income'})
+def test_model_not_exists(mock_models, account_types):
+    actual = collect_summary_data(1999, account_types, 'accounts')
 
     assert len(columns) == actual.shape[1]  # columns
 
@@ -57,32 +58,43 @@ def test_model_not_exists(account_types):
         assert col in actual.columns
 
 
-def test_model_dont_have_summary_method():
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'incomes.Income'})
+@patch('django.apps.apps.get_model')
+def test_model_dont_have_summary_method(mock_get, mock_models):
     model = Mock()
     model.objects.summary.side_effect = Exception('no summary')
     model.objects.summary_to.side_effect = Exception('no summary_to')
     model.objects.summary_from.side_effect = Exception('no summary_from')
 
-    actual = collect_summary_data(1999, {}, [model])
+    mock_get.return_value = model
+
+    actual = collect_summary_data(1999, {}, 'accounts')
 
     assert isinstance(actual, pd.DataFrame)
     assert actual.empty
 
 
-def test_model_summary_without_title():
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'incomes.Income'})
+@patch('django.apps.apps.get_model')
+def test_model_summary_without_title(mock_get, mock_models):
     model = Mock()
     model.objects.summary.return_value = [{'x': 'x'}]
     model.objects.summary_to.side_effect = Exception('no summary_to')
     model.objects.summary_from.side_effect = Exception('no summary_from')
 
-    actual = collect_summary_data(1999, {}, [model])
+    mock_get.return_value = model
+    actual = collect_summary_data(1999, {}, 'accounts')
 
     assert isinstance(actual, pd.DataFrame)
     assert actual.empty
 
 
-def test_incomes_df_accounts(account_types, incomes):
-    actual = collect_summary_data(1999, account_types, [Income])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'incomes.Income'})
+def test_incomes_df_accounts(mock_models, account_types, incomes):
+    actual = collect_summary_data(1999, account_types, 'accounts')
 
     assert isinstance(actual, pd.DataFrame)
 
@@ -97,8 +109,10 @@ def test_incomes_df_accounts(account_types, incomes):
     assert 3.5 == actual.at['Account2', 'i_now']
 
 
-def test_incomes_df_accounts_only_one_account(incomes):
-    actual = collect_summary_data(1999, {'Account1': 1}, [Income])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'incomes.Income'})
+def test_incomes_df_accounts_only_one_account(mock_models, incomes):
+    actual = collect_summary_data(1999, {'Account1': 1}, 'accounts')
 
     assert isinstance(actual, pd.DataFrame)
 
@@ -109,34 +123,46 @@ def test_incomes_df_accounts_only_one_account(incomes):
     assert 3.25 == actual.at['Account1', 'i_now']
 
 
-def test_df_dtypes(account_types, incomes):
-    actual = collect_summary_data(1999, account_types, [Income])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'incomes.Income'})
+def test_df_dtypes(mock_models, account_types, incomes):
+    actual = collect_summary_data(1999, account_types, 'accounts')
 
     for col in columns:
         assert is_numeric_dtype(actual[col])
 
 
-def test_df_have_nan(account_types, incomes):
-    actual = collect_summary_data(1999, account_types, [Income])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'incomes.Income'})
+def test_df_have_nan(mock_models, account_types, incomes):
+    actual = collect_summary_data(1999, account_types, 'accounts')
 
     for col in columns:
         assert not actual[col].isnull().values.any()
 
 
-def test_incomes_df_savings(incomes):
-    actual = collect_summary_data(1999, {}, [Income])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'incomes.Income'})
+def test_incomes_df_savings(mock_models, incomes):
+    actual = collect_summary_data(1999, {}, 'accounts')
 
     assert isinstance(actual, pd.DataFrame)
     assert actual.empty
 
 
-def test_incomes_qs_count(account_types, incomes, django_assert_max_num_queries):
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'incomes.Income'})
+def test_incomes_qs_count(mock_models,
+                          account_types, incomes,
+                          django_assert_max_num_queries):
     with django_assert_max_num_queries(2):
-        [*collect_summary_data(1999, account_types, [Income])]
+        [*collect_summary_data(1999, account_types, 'accounts')]
 
 
-def test_expenses(account_types, expenses):
-    actual = collect_summary_data(1999, account_types, [Expense])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'expenses.Expense'})
+def test_expenses(mock_models, account_types, expenses):
+    actual = collect_summary_data(1999, account_types, 'accounts')
 
     assert 2 == actual.shape[0]  # rows
 
@@ -149,13 +175,19 @@ def test_expenses(account_types, expenses):
     assert 1.25 == actual.at['Account2', 'e_now']
 
 
-def test_expenses_qs_count(account_types, expenses, django_assert_max_num_queries):
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'expenses.Expense'})
+def test_expenses_qs_count(mock_models,
+                           account_types, expenses,
+                           django_assert_max_num_queries):
     with django_assert_max_num_queries(2):
-        [*collect_summary_data(1999, account_types, [Expense])]
+        [*collect_summary_data(1999, account_types, 'accounts')]
 
 
-def test_savings_for_accounts(account_types, savings):
-    actual = collect_summary_data(1999, account_types, [Saving])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'savings.Saving'})
+def test_savings_for_accounts(mock_models, account_types, savings):
+    actual = collect_summary_data(1999, account_types, 'accounts')
 
     assert 2 == actual.shape[0]  # rows
 
@@ -168,8 +200,10 @@ def test_savings_for_accounts(account_types, savings):
     assert 2.25 == actual.at['Account2', 's_now']
 
 
-def test_savings_for_savings_with_fees(saving_types, savings):
-    actual = collect_summary_data(1999, saving_types, [Saving])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'savings.Saving'})
+def test_savings_for_savings_with_fees(mock_models, saving_types, savings):
+    actual = collect_summary_data(1999, saving_types, 'savings')
 
     assert 2 == actual.shape[0]  # rows
 
@@ -182,25 +216,33 @@ def test_savings_for_savings_with_fees(saving_types, savings):
     assert 0.25 == actual.at['Saving2', 's_fee_now']
 
 
-def test_saving_for_savings_with_closed():
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'savings.Saving'})
+def test_saving_for_savings_with_closed(mock_models):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', closed=1974)
 
     SavingFactory(date=date(1999, 1, 1), saving_type=s1)
     SavingFactory(date=date(1999, 1, 1), saving_type=s2)
 
-    actual = collect_summary_data(1999, {'S1': 1}, [Saving])
+    actual = collect_summary_data(1999, {'S1': 1}, 'savings')
 
     assert 1 == actual.shape[0]  # rows
 
 
-def test_savings_qs_count(account_types, savings, django_assert_max_num_queries):
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'savings.Saving'})
+def test_savings_qs_count(mock_models,
+                          account_types, savings,
+                          django_assert_max_num_queries):
     with django_assert_max_num_queries(2):
-        [*collect_summary_data(1999, account_types, [Saving])]
+        [*collect_summary_data(1999, account_types, 'savings')]
 
 
-def test_transactions(account_types, transactions):
-    actual = collect_summary_data(1999, account_types, [Transaction])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'transactions.Transaction'})
+def test_transactions(mock_models, account_types, transactions):
+    actual = collect_summary_data(1999, account_types, 'accounts')
 
     assert 2 == actual.shape[0]  # rows
 
@@ -217,13 +259,19 @@ def test_transactions(account_types, transactions):
     assert 4.5 == actual.at['Account2', 'tr_to_now']
 
 
-def test_transactions_qs_count(account_types, transactions, django_assert_max_num_queries):
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'transactions.Transaction'})
+def test_transactions_qs_count(mock_models,
+                               account_types, transactions,
+                               django_assert_max_num_queries):
     with django_assert_max_num_queries(4):
-        [*collect_summary_data(1999, account_types, [Transaction])]
+        [*collect_summary_data(1999, account_types, 'account')]
 
 
-def test_saving_close_accounts(account_types, savings_close):
-    actual = collect_summary_data(1999, account_types, [SavingClose])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'transactions.SavingClose'})
+def test_saving_close_accounts(mock_models, account_types, savings_close):
+    actual = collect_summary_data(1999, account_types, 'accounts')
 
     assert 2 == actual.shape[0]  # rows
 
@@ -236,8 +284,10 @@ def test_saving_close_accounts(account_types, savings_close):
     assert 0.0 == actual.at['Account2', 's_close_to_now']
 
 
-def test_saving_close_saving_type(savings_close):
-    actual = collect_summary_data(1999, {'Saving1': 1}, [SavingClose])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'transactions.SavingClose'})
+def test_saving_close_saving_type(mock_models, savings_close):
+    actual = collect_summary_data(1999, {'Saving1': 1}, 'savings')
 
     assert 1 == actual.shape[0]  # rows
 
@@ -246,36 +296,48 @@ def test_saving_close_saving_type(savings_close):
     assert 0.25 == actual.at['Saving1', 's_close_from_now']
 
 
-def test_saving_close_qs_count(saving_types, savings_close, django_assert_max_num_queries):
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'transactions.SavingClose'})
+def test_saving_close_qs_count(mock_models,
+                               saving_types, savings_close,
+                               django_assert_max_num_queries):
     with django_assert_max_num_queries(4):
-        [*collect_summary_data(1999, saving_types, [SavingClose])]
+        [*collect_summary_data(1999, saving_types, 'savings')]
 
 
-def test_saving_change_accounts(savings_change):
-    actual = collect_summary_data(1999, {}, [SavingChange])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'transactions.SavingChange'})
+def test_saving_change_accounts(mock_models, savings_change):
+    actual = collect_summary_data(1999, {}, 'savings')
 
     assert isinstance(actual, pd.DataFrame)
     assert actual.empty
 
 
-def test_saving_change_saving_type(saving_types, savings_change):
-    actual = collect_summary_data(1999, saving_types, [SavingChange])
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'transactions.SavingChange'})
+def test_saving_change_saving_type(mock_models, saving_types, savings_change):
+    actual = collect_summary_data(1999, saving_types, 'savings')
 
     assert 2 == actual.shape[0]  # rows
 
 
-def test_saving_change_qs_count(saving_types, savings_change, django_assert_max_num_queries):
+@patch('project.bookkeeping.lib.summary.models',
+       return_value={'transactions.SavingChange'})
+def test_saving_change_qs_count(mock_models,
+                                saving_types, savings_change,
+                                django_assert_max_num_queries):
     with django_assert_max_num_queries(4):
-        [*collect_summary_data(1999, saving_types, [SavingChange])]
+        [*collect_summary_data(1999, saving_types, 'savings')]
 
 
-def test_all_qs_count_for_accounts(account_types, django_assert_max_num_queries):
+def test_all_qs_count_for_accounts(account_types,
+                                   django_assert_max_num_queries):
     with django_assert_max_num_queries(8):
-        models = [Income, Expense, Saving, SavingClose, Transaction]
-        [*collect_summary_data(1999, account_types, models)]
+        [*collect_summary_data(1999, account_types, 'account')]
 
 
-def test_all_qs_count_for_savings(saving_types, django_assert_max_num_queries):
+def test_all_qs_count_for_savings(saving_types,
+                                  django_assert_max_num_queries):
     with django_assert_max_num_queries(6):
-        models = [Saving, SavingClose, SavingChange]
-        [*collect_summary_data(1999, saving_types, models)]
+        [*collect_summary_data(1999, saving_types, 'savings')]

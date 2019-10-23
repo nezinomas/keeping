@@ -1,14 +1,36 @@
 from typing import Dict, List
 
+from django.apps import apps
 from pandas import DataFrame as DF
 from pandas import Series, to_numeric
 
 
+def models(where: str) -> List:
+    models = []
+    if where == 'accounts':
+        models = [
+            'incomes.Income',
+            'expenses.Expense',
+            'savings.Saving',
+            'transactions.SavingClose',
+            'transactions.Transaction']
+
+    if where == 'savings':
+        models = [
+            'savings.Saving',
+            'transactions.SavingClose',
+            'transactions.SavingChange']
+
+    return models
+
+
 def collect_summary_data(year: int,
-                         types: Dict[str, int], models: List) -> DF:
+                         types: Dict[str, int], where: str) -> DF:
     df = _create_df(types)
 
-    for model in models:
+    _models = models(where)
+    for m in _models:
+        model = apps.get_model(m)
         # try 3 methods from model.manager:
         # a) summary(year)
         # b) summary_from(year)
