@@ -27,6 +27,13 @@ def _fake_request(rf):
     return request
 
 
+@pytest.fixture(autouse=True)
+def mock_crequest(monkeypatch, _fake_request):
+    mock_func = 'crequest.middleware.CrequestMiddleware.get_request'
+
+    monkeypatch.setattr(mock_func, lambda: _fake_request)
+
+
 @pytest.fixture()
 def login(client, user):
     client.login(username='bob', password='123')

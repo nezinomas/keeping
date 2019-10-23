@@ -99,10 +99,7 @@ def test_summary(incomes):
     assert expect == actual
 
 
-@patch('project.core.signals.CrequestMiddleware.get_request')
-def test_post_save_account_balace_insert(mck, _fake_request):
-    mck.return_value = _fake_request
-
+def test_post_save_account_balace_insert():
     AccountWorthFactory()
     account = AccountFactory()
     income_type = IncomeTypeFactory()
@@ -131,10 +128,7 @@ def test_post_save_account_balace_insert(mck, _fake_request):
     assert -0.5 == actual.delta
 
 
-@patch('project.core.signals.CrequestMiddleware.get_request')
-def test_post_save_account_balace_update(mck, _fake_request):
-    mck.return_value = _fake_request
-
+def test_post_save_account_balace_update():
     AccountBalanceFactory()
     AccountWorthFactory()
     account = AccountFactory()
@@ -163,10 +157,7 @@ def test_post_save_account_balace_update(mck, _fake_request):
     assert -0.5 == actual.delta
 
 
-@patch('project.core.signals.CrequestMiddleware.get_request')
-def test_post_save_account_balace_insert_count_queries(mck, _fake_request, django_assert_max_num_queries):
-    mck.return_value = _fake_request
-
+def test_post_save_account_balace_insert_count_queries(django_assert_max_num_queries):
     AccountBalanceFactory()
     AccountWorthFactory()
     account = AccountFactory()
@@ -182,10 +173,7 @@ def test_post_save_account_balace_insert_count_queries(mck, _fake_request, djang
         income.save()
 
 
-@patch('project.core.signals.CrequestMiddleware.get_request')
-def test_post_save_account_balace_update_count_queries(mck, _fake_request, django_assert_max_num_queries):
-    mck.return_value = _fake_request
-
+def test_post_save_account_balace_update_count_queries(django_assert_max_num_queries):
     AccountBalanceFactory()
     AccountWorthFactory()
     account = AccountFactory()
