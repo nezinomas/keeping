@@ -1,11 +1,11 @@
 from typing import Dict, List
 
 from crequest.middleware import CrequestMiddleware
+from django.apps import apps
 
 from ...accounts.models import Account, AccountBalance
 from ...bookkeeping.lib.account_stats import AccountStats
 from ...bookkeeping.lib.summary import collect_summary_data
-from ...bookkeeping.models import AccountWorth
 
 
 def post_save_account_stats(account_id: int):
@@ -30,7 +30,8 @@ def post_save_account_stats(account_id: int):
 
 
 def _account_worth() -> List[Dict]:
-    return AccountWorth.objects.items()
+    model = apps.get_model('bookkeeping.AccountWorth')
+    return model.objects.items()
 
 
 def _accounts(account_id: int = None) -> Dict[str, int]:
