@@ -29,7 +29,7 @@ class Index(IndexMixin):
         typess = {x['title']: x['id'] for x in qss}
         svv = collect_summary_data(year, typess, 'savings')
 
-        _account = [*AccountBalance.objects.all().values()]
+        _account = [*AccountBalance.objects.items()]
 
         _fund, _pension = views_helpers.saving_stats(year, svv)
         _expense_types = views_helpers.expense_types('Taupymas')
@@ -123,7 +123,7 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
         typesa = {x['title']: x['id'] for x in qsa}
         acc = collect_summary_data(year, typesa, 'accounts')
 
-        _account = [*AccountBalance.objects.all()]
+        _account = AccountBalance.objects.items()
 
         context['accounts'] = _account
         context['totals'] = sum_all(_account)
