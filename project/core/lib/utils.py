@@ -13,6 +13,10 @@ def sum_col(arr: List[Dict], key: Any) -> Dict:
 
 def sum_all(arr: List[Dict]) -> Dict:
     d = {}
+
+    if not arr:
+        return d
+
     keys = arr[0].keys()
     for key in keys:
         d[key] = sum_col(arr, key)

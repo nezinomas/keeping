@@ -22,3 +22,9 @@ def test_sum_all(arr):
 
     assert 3 == actual['key1']
     assert 6.0 == actual['key2']
+
+
+def test_sum_all_empty_list():
+    actual = T.sum_all([])
+
+    assert {} == actual
