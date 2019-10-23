@@ -8,7 +8,7 @@ from ...bookkeeping.lib.account_stats import AccountStats
 from ...bookkeeping.lib.summary import collect_summary_data
 
 
-def post_save_account_stats(account_id: int):
+def post_save_account_stats(account_id: int = None):
     request = CrequestMiddleware.get_request()
     year = request.user.profile.year
 
