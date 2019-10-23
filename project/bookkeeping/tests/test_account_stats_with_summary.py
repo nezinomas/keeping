@@ -6,7 +6,6 @@ import pytest
 
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...incomes.factories import IncomeFactory
-from ...incomes.models import Income
 from ..lib.account_stats import AccountStats
 from ..lib.summary import collect_summary_data
 
@@ -28,7 +27,7 @@ def test_account_stats_for_two_years_in_past():
         'balance': 20.0,
     }]
 
-    summary, _ = collect_summary_data(2000, [Income])
+    summary = collect_summary_data(2000, {'Account1': 1}, 'accounts')
     actual = AccountStats(summary, []).balance
 
     assert_(expect, actual)
