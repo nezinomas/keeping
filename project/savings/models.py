@@ -135,6 +135,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         summary for accounts
         return:
             {
+                'id': ACCOUNT.id,
                 'title': ACCOUNT,
                 's_past': Decimal(),
                 's_now': Decimal()
@@ -145,7 +146,8 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             ._summary(year)
             .values(
                 's_past', 's_now',
-                title=models.F('account__title'))
+                title=models.F('account__title'),
+                id=models.F('saving_type__pk'))
         )
 
     def summary_to(self, year: int) -> List[Dict[str, Any]]:
@@ -153,6 +155,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         summary for saving_types
         return:
             {
+                'id': SAVING_TYPE.id,
                 'title': SAVING_TYPE,
                 's_past': Decimal(),
                 's_now': Decimal(),
@@ -166,7 +169,8 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .values(
                 's_past', 's_now',
                 's_fee_past', 's_fee_now',
-                title=models.F('saving_type__title'))
+                title=models.F('saving_type__title'),
+                id=models.F('saving_type__pk'))
         )
 
 

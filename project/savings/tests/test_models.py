@@ -153,10 +153,12 @@ def test_income_type_str():
 
 def test_summary_from(savings):
     expect = [{
+        'id': 1,
         'title': 'Account1',
         's_past': 1.25,
         's_now': 3.5,
     }, {
+        'id': 2,
         'title': 'Account2',
         's_past': 0.25,
         's_now': 2.25,
@@ -169,6 +171,7 @@ def test_summary_from(savings):
 
 def test_summary_to(savings):
     expect = [{
+        'id': 1,
         'title': 'Saving1',
         's_past': 1.25,
         's_now': 3.5,
@@ -176,6 +179,7 @@ def test_summary_to(savings):
         's_fee_now': 0.5,
 
     }, {
+        'id': 2,
         'title': 'Saving2',
         's_past': 0.25,
         's_now': 2.25,
