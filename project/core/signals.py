@@ -8,12 +8,19 @@ from django.dispatch import receiver
 from ..accounts.models import Account, AccountBalance
 from ..bookkeeping.lib.account_stats import AccountStats
 from ..bookkeeping.lib.summary import collect_summary_data
+from ..bookkeeping.models import AccountWorth, SavingWorth
+from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..savings.models import Saving
+from ..transactions.models import SavingChange, SavingClose, Transaction
 
 
 @receiver(post_save, sender=Income)
+@receiver(post_save, sender=Expense)
 @receiver(post_save, sender=Saving)
+@receiver(post_save, sender=Transaction)
+@receiver(post_save, sender=SavingClose)
+@receiver(post_save, sender=AccountWorth)
 def post_save_account_stats(instance, *args, **kwargs):
     request = CrequestMiddleware.get_request()
     year = request.user.profile.year
