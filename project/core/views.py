@@ -10,11 +10,7 @@ def set_year(request, year, view_name):
     user.save()
 
     return redirect(
-        reverse(
-            view_name,
-            kwargs={}
-        )
-    )
+        reverse(view_name, kwargs={}))
 
 
 @login_required
@@ -24,11 +20,7 @@ def set_month(request, month, view_name):
     user.save()
 
     return redirect(
-        reverse(
-            view_name,
-            kwargs={}
-        )
-    )
+        reverse(view_name, kwargs={}))
 
 
 @login_required
