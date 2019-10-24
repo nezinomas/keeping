@@ -13,7 +13,7 @@ def test_income_init():
 
 
 @pytest.mark.django_db
-def test_income_valid_data():
+def test_income_valid_data(mock_crequest):
     a = AccountFactory()
     t = IncomeTypeFactory()
 

@@ -99,7 +99,7 @@ def test_summary(incomes):
     assert expect == actual
 
 
-def test_post_save_account_balace_insert():
+def test_post_save_account_balace_insert(mock_crequest):
     AccountWorthFactory()
     account = AccountFactory()
     income_type = IncomeTypeFactory()
@@ -128,7 +128,7 @@ def test_post_save_account_balace_insert():
     assert -0.5 == actual['delta']
 
 
-def test_post_save_account_balace_update():
+def test_post_save_account_balace_update(mock_crequest):
     AccountBalanceFactory()
     AccountWorthFactory()
     account = AccountFactory()
@@ -157,7 +157,8 @@ def test_post_save_account_balace_update():
     assert -0.5 == actual['delta']
 
 
-def test_post_save_account_balace_insert_count_queries(django_assert_max_num_queries):
+def test_post_save_account_balace_insert_count_queries(mock_crequest,
+                                                       django_assert_max_num_queries):
     AccountBalanceFactory()
     AccountWorthFactory()
     account = AccountFactory()
@@ -173,7 +174,8 @@ def test_post_save_account_balace_insert_count_queries(django_assert_max_num_que
         income.save()
 
 
-def test_post_save_account_balace_update_count_queries(django_assert_max_num_queries):
+def test_post_save_account_balace_update_count_queries(mock_crequest,
+                                                       django_assert_max_num_queries):
     AccountBalanceFactory()
     AccountWorthFactory()
     account = AccountFactory()

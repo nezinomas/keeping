@@ -2,6 +2,7 @@ from datetime import date as dt
 from decimal import Decimal
 
 import factory
+from django.db.models.signals import post_save
 
 from ..accounts.factories import AccountFactory
 from .models import Income, IncomeType
@@ -15,6 +16,7 @@ class IncomeTypeFactory(factory.DjangoModelFactory):
     title = 'Income Type'
 
 
+@factory.django.mute_signals(post_save)
 class IncomeFactory(factory.DjangoModelFactory):
     class Meta:
         model = Income
