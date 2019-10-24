@@ -5,7 +5,6 @@ from django.db import models
 from django.db.models import F, Max
 
 from ..accounts.models import Account
-from ..core.lib.post_save import post_save_account_stats
 from ..savings.models import SavingType
 
 
@@ -86,11 +85,6 @@ class AccountWorth(models.Model):
 
     def __str__(self):
         return f'{self.date:%Y-%m-%d %H:%M} - {self.account}'
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        post_save_account_stats(self.account.id)
 
     # Managers
     objects = AccountWorthQuerySet.as_manager()
