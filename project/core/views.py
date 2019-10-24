@@ -34,7 +34,7 @@ def index(request):
 
 
 @login_required
-def regenerate_accounts_balance(request):
+def regenerate_balances(request):
     _years = years()
 
     for year in _years:
@@ -46,23 +46,9 @@ def regenerate_accounts_balance(request):
 
 
 @login_required
-def regenerate_accounts_balance_current_year(request, year):
+def regenerate_balances_current_year(request, year):
     _account_update_or_create(SimpleNamespace(), year)
 
-    return redirect(
-        reverse('bookkeeping:index', kwargs={})
-    )
-
-
-@login_required
-def regenerate_savings_balance(request):
-    return redirect(
-        reverse('bookkeeping:index', kwargs={})
-    )
-
-
-@login_required
-def regenerate_savings_balance_current_year(request, year):
     return redirect(
         reverse('bookkeeping:index', kwargs={})
     )
