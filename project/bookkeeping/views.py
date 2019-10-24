@@ -29,7 +29,7 @@ class Index(IndexMixin):
         typess = {x['title']: x['id'] for x in qss}
         svv = collect_summary_data(year, typess, 'savings')
 
-        _account = [*AccountBalance.objects.items()]
+        _account = [*AccountBalance.objects.items(year)]
 
         _fund, _pension = views_helpers.saving_stats(year, svv)
         _expense_types = views_helpers.expense_types('Taupymas')
