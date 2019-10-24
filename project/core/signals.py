@@ -15,6 +15,9 @@ from ..savings.models import Saving
 from ..transactions.models import SavingChange, SavingClose, Transaction
 
 
+# ----------------------------------------------------------------------------
+#                                                               AccountBalance
+# ----------------------------------------------------------------------------
 @receiver(post_save, sender=Income)
 @receiver(post_save, sender=Expense)
 @receiver(post_save, sender=Saving)
@@ -25,6 +28,10 @@ def post_save_account_stats(instance, *args, **kwargs):
     request = CrequestMiddleware.get_request()
     year = request.user.profile.year
 
+    _account_update_or_create(instance, year)
+
+
+def _account_update_or_create(instance: object, year: int) -> None:
     account_id = _account_id(instance)
 
     stats = _account_stats(year, account_id)
