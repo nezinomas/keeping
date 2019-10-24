@@ -52,17 +52,6 @@ def _account_update_or_create(instance: object, year: int) -> None:
         )
 
 
-def _id(instance: object, arr: List[str]) -> List[int]:
-    account_id = []
-
-    for name in arr:
-        id = getattr(instance, name, None)
-        if id:
-            account_id.append(id)
-
-    return account_id
-
-
 def _account_worth() -> List[Dict]:
     model = apps.get_model('bookkeeping.AccountWorth')
     return model.objects.items()
@@ -90,3 +79,17 @@ def _account_stats(year: int, account_id: int) -> List[Dict]:
     )
 
     return AccountStats(data, account_worth).balance
+
+
+# ----------------------------------------------------------------------------
+#                                                               common methods
+# ----------------------------------------------------------------------------
+def _id(instance: object, arr: List[str]) -> List[int]:
+    account_id = []
+
+    for name in arr:
+        id = getattr(instance, name, None)
+        if id:
+            account_id.append(id)
+
+    return account_id
