@@ -2,6 +2,7 @@ from datetime import date as dt
 from decimal import Decimal
 
 import factory
+from django.db.models.signals import post_save
 
 from ..accounts.factories import AccountFactory
 from .models import Saving, SavingType
@@ -15,6 +16,7 @@ class SavingTypeFactory(factory.DjangoModelFactory):
     title = 'Savings'
 
 
+@factory.django.mute_signals(post_save)
 class SavingFactory(factory.DjangoModelFactory):
     class Meta:
         model = Saving

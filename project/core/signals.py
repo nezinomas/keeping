@@ -9,9 +9,11 @@ from ..accounts.models import Account, AccountBalance
 from ..bookkeeping.lib.account_stats import AccountStats
 from ..bookkeeping.lib.summary import collect_summary_data
 from ..incomes.models import Income
+from ..savings.models import Saving
 
 
 @receiver(post_save, sender=Income)
+@receiver(post_save, sender=Saving)
 def post_save_account_stats(instance, *args, **kwargs):
     request = CrequestMiddleware.get_request()
     year = request.user.profile.year
