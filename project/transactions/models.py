@@ -6,7 +6,6 @@ from django.db import models
 from django.db.models import Case, Count, F, Sum, When
 
 from ..accounts.models import Account
-from ..core.lib.post_save import post_save_account_stats
 from ..core.mixins.queryset_sum import SumMixin
 from ..savings.models import SavingType
 
@@ -112,11 +111,6 @@ class Transaction(models.Model):
             '{} {}->{}: {}'.
             format(self.date, self.from_account, self.to_account, self.price)
         )
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        post_save_account_stats()
 
     objects = TransactionQuerySet.as_manager()
 
@@ -230,11 +224,6 @@ class SavingClose(models.Model):
             '{} {}->{}: {}'.
             format(self.date, self.from_account, self.to_account, self.price)
         )
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        post_save_account_stats(self.to_account.id)
 
     objects = SavingCloseQuerySet.as_manager()
 

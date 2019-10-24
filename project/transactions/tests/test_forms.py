@@ -15,7 +15,7 @@ def test_transactions_init():
 
 
 @pytest.mark.django_db
-def test_transactions_valid_data():
+def test_transactions_valid_data(mock_crequest):
     a_from = AccountFactory()
     a_to = AccountFactory(title='Account2')
 
@@ -70,7 +70,7 @@ def test_savings_close_init():
 
 
 @pytest.mark.django_db
-def test_savings_close_valid_data():
+def test_savings_close_valid_data(mock_crequest):
     a_from = SavingTypeFactory()
     a_to = AccountFactory(title='Account2')
 
