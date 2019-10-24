@@ -21,7 +21,7 @@ def test_account_list_one():
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
 
-    actual = T._accounts(a1.id)
+    actual = T._accounts([a1.id])
 
     assert {'A1': a1.id} == actual
 
