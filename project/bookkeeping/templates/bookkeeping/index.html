@@ -34,6 +34,11 @@
         <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="fas fa-plus"></i> Įrašyti sąskaitose esančias sumas</button>
         {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
         <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Įrašyti fondų rinkos vertes</button>
+        <a class="btn btn-sm btn-outline-secondary"
+            href="{% url 'core:regenerate_balances_current_year' year %}" data-toggle="tooltip"
+            data-placement="top" title="Bus atnaujintas šių metų balansas."><i class="fas fa-sync"> </i> Atnaujinti {{ year|safe }} balansus</a>
+        <a class="btn btn-sm btn-outline-danger" href="{% url 'core:regenerate_balances' %}" data-toggle="tooltip"
+            data-placement="top" title="Bus atnaujinti visų metų balansai."><i class="fas fa-sync"> </i> Atnaujinti balansus</a>
     </div>
 </div>
 
