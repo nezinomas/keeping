@@ -78,7 +78,7 @@ def test_account_worth_init():
 
 
 @pytest.mark.django_db
-def test_account_worth_valid_data():
+def test_account_worth_valid_data(mock_crequest):
     a = AccountFactory()
 
     form = AccountWorthForm(data={
