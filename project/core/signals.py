@@ -32,7 +32,8 @@ def post_save_account_stats(instance, *args, **kwargs):
 
 
 def _account_update_or_create(instance: object, year: int) -> None:
-    account_id = _account_id(instance)
+    account_id = _id(
+        instance, ['account_id', 'from_account_id', 'to_account_id'])
 
     stats = _account_stats(year, account_id)
 
@@ -51,9 +52,9 @@ def _account_update_or_create(instance: object, year: int) -> None:
         )
 
 
-def _account_id(instance: object) -> List[int]:
+def _id(instance: object, arr: List[str]) -> List[int]:
     account_id = []
-    arr = ['account_id', 'from_account_id', 'to_account_id']
+
     for name in arr:
         id = getattr(instance, name, None)
         if id:
