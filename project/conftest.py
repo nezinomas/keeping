@@ -27,7 +27,7 @@ def _fake_request(rf):
     return request
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def mock_crequest(monkeypatch, _fake_request):
     mock_func = 'crequest.middleware.CrequestMiddleware.get_request'
 
