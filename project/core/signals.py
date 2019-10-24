@@ -2,15 +2,23 @@ from typing import Dict, List
 
 from crequest.middleware import CrequestMiddleware
 from django.apps import apps
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-from ...accounts.models import Account, AccountBalance
-from ...bookkeeping.lib.account_stats import AccountStats
-from ...bookkeeping.lib.summary import collect_summary_data
+from ..accounts.models import Account, AccountBalance
+from ..bookkeeping.lib.account_stats import AccountStats
+from ..bookkeeping.lib.summary import collect_summary_data
+from ..incomes.models import Income
 
 
-def post_save_account_stats(account_id: int = None):
+@receiver(post_save, sender=Income)
+def post_save_account_stats(instance, *args, **kwargs):
     request = CrequestMiddleware.get_request()
     year = request.user.profile.year
+
+    account_id = None
+    if hasattr(instance, 'account_id'):
+        account_id = instance.account_id
 
     stats = _account_stats(year, account_id)
 
