@@ -16,9 +16,7 @@ def post_save_account_stats(instance, *args, **kwargs):
     request = CrequestMiddleware.get_request()
     year = request.user.profile.year
 
-    account_id = None
-    if hasattr(instance, 'account_id'):
-        account_id = instance.account_id
+    account_id = _account_id(instance)
 
     stats = _account_stats(year, account_id)
 
@@ -37,16 +35,27 @@ def post_save_account_stats(instance, *args, **kwargs):
         )
 
 
+def _account_id(instance: object) -> List[int]:
+    account_id = []
+    arr = ['account_id', 'from_account_id', 'to_account_id']
+    for name in arr:
+        id = getattr(instance, name, None)
+        if id:
+            account_id.append(id)
+
+    return account_id
+
+
 def _account_worth() -> List[Dict]:
     model = apps.get_model('bookkeeping.AccountWorth')
     return model.objects.items()
 
 
-def _accounts(account_id: int = None) -> Dict[str, int]:
+def _accounts(account_id: List[int] = None) -> Dict[str, int]:
     qs = Account.objects.items()
 
     if account_id:
-        qs = qs.filter(id=account_id)
+        qs = qs.filter(id__in=account_id)
 
     qs = qs.values('id', 'title')
 
