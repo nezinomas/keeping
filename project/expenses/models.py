@@ -6,7 +6,6 @@ from django.db import models
 from django.db.models import Case, Count, F, Q, Sum, When
 
 from ..accounts.models import Account
-from ..core.lib.post_save import post_save_account_stats
 from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
 
@@ -194,11 +193,6 @@ class Expense(models.Model):
 
     def __str__(self):
         return f'{(self.date)}/{self.expense_type}/{self.expense_name}'
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        post_save_account_stats(self.account.id)
 
     # Managers
     objects = ExpenseQuerySet.as_manager()
