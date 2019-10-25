@@ -6,7 +6,7 @@ from pandas import to_numeric
 from ...core.mixins.calc_balance import BalanceStats
 
 
-class AccountStats(BalanceStats):
+class Balance(BalanceStats):
     _columns = ['past', 'incomes', 'expenses', 'balance', 'have', 'delta']
 
     def __init__(self, data: DF, account_worth: List):

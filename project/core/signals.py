@@ -5,6 +5,7 @@ from django.apps import apps
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from ..accounts.lib.balance import Balance as AccountStats
 from ..accounts.models import Account, AccountBalance
 from ..bookkeeping.lib.account_stats import AccountStats
 from ..bookkeeping.lib.summary import collect_summary_data
