@@ -33,7 +33,7 @@ class AccountBalanceQuerySet(models.QuerySet):
             qs = self._related()
 
         return qs.values(
-            'past', 'balance', 'incomes',
+            'year', 'past', 'balance', 'incomes',
             'expenses', 'have', 'delta',
             title=F('account__title')
         )
