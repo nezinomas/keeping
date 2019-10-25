@@ -290,3 +290,16 @@ def test_saving_balance_items():
     actual = SavingBalance.objects.items(1999)
 
     assert len(actual) == 1
+
+
+def test_saving_balance_queries(django_assert_num_queries):
+    s1 = SavingTypeFactory(title='s1')
+    s2 = SavingTypeFactory(title='s2')
+
+    SavingBalanceFactory(saving=s1)
+    SavingBalanceFactory(saving=s2)
+
+    with django_assert_num_queries(1) as captured:
+        q = SavingBalance.objects.items()
+        for i in q:
+            title = i['title']
