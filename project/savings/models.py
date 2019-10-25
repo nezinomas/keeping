@@ -215,7 +215,7 @@ class Saving(models.Model):
 
 class SavingBalanceQuerySet(models.QuerySet):
     def _related(self):
-        return self.select_related('saving_type')
+        return self.select_related('saving')
 
     def items(self, year: int = None):
         if year:
