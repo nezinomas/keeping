@@ -11,7 +11,8 @@ from ..bookkeeping.lib.summary import collect_summary_data
 from ..bookkeeping.models import AccountWorth, SavingWorth
 from ..expenses.models import Expense
 from ..incomes.models import Income
-from ..savings.models import Saving
+from ..savings.lib.balance import Balance as SavingStats
+from ..savings.models import Saving, SavingBalance, SavingType
 from ..transactions.models import SavingChange, SavingClose, Transaction
 
 

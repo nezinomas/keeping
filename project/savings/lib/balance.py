@@ -4,10 +4,10 @@ from pandas import DataFrame as DF
 from pandas import to_numeric
 
 from ...core.mixins.calc_balance import BalanceStats
-from .helpers import calc_percent, calc_sum
+from ...bookkeeping.lib.helpers import calc_percent, calc_sum
 
 
-class SavingStats(BalanceStats):
+class Balance(BalanceStats):
     _columns = [
         'past_amount',
         'past_fee',

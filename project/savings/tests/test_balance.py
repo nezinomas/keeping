@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
-from ..lib.saving_stats import SavingStats as T
+from ..lib.balance import Balance as T
 
 
 @pytest.fixture()
