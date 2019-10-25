@@ -6,8 +6,9 @@ from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
-from ...savings.factories import SavingFactory, SavingTypeFactory
-from ..models import Saving, SavingType
+from ...savings.factories import (SavingBalanceFactory, SavingFactory,
+                                  SavingTypeFactory)
+from ..models import Saving, SavingBalance, SavingType
 
 pytestmark = pytest.mark.django_db
 
@@ -252,3 +253,40 @@ def test_saving_year_with_type_closed_in_past():
     actual = Saving.objects.year(1999)
 
     assert 1 == actual.count()
+
+
+# ----------------------------------------------------------------------------
+#                                                               SavingBalance
+# ----------------------------------------------------------------------------
+def test_saving_balance_init():
+    actual = SavingBalanceFactory.build()
+
+    assert str(actual.saving) == 'Savings'
+
+    assert actual.past_amount == 2.0
+    assert actual.past_fee == 2.1
+    assert actual.fees == 2.2
+    assert actual.invested == 2.3
+    assert actual.incomes == 2.4
+    assert actual.market_value == 2.5
+    assert actual.profit_incomes_proc == 2.6
+    assert actual.profit_incomes_sum == 2.7
+    assert actual.profit_invested_proc == 2.8
+    assert actual.profit_invested_sum == 2.9
+
+
+def test_saving_balance_str():
+    actual = SavingBalanceFactory.build()
+
+    assert str(actual) == 'Savings'
+
+
+@pytest.mark.django_db
+def test_saving_balance_items():
+    SavingBalanceFactory(year=1998)
+    SavingBalanceFactory(year=1999)
+    SavingBalanceFactory(year=2000)
+
+    actual = SavingBalance.objects.items(1999)
+
+    assert len(actual) == 1
