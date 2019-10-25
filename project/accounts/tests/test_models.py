@@ -39,3 +39,17 @@ def test_account_balance_items():
     actual = AccountBalance.objects.items(1999)
 
     assert len(actual) == 1
+
+
+@pytest.mark.django_db
+def test_account_balance_queries(django_assert_num_queries):
+    a1 = AccountFactory(title='a1')
+    a2 = AccountFactory(title='a2')
+
+    AccountBalanceFactory(account=a1)
+    AccountBalanceFactory(account=a2)
+
+    with django_assert_num_queries(1) as captured:
+        q = AccountBalance.objects.items()
+        for i in q:
+            title = i['title']
