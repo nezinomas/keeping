@@ -98,7 +98,7 @@ def post_save_saving_stats(instance, *args, **kwargs):
 
 def _saving_update_or_create(instance: object, year: int) -> None:
     saving_id = _get_id(instance,
-                    ['saving_type_id', 'from_account_id', 'to_account_id'])
+                        ['saving_type_id', 'from_account_id', 'to_account_id'])
 
     stats = _saving_stats(year=year, saving_id=saving_id)
 
