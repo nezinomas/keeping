@@ -118,7 +118,7 @@ def test_saving_list_one():
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2')
 
-    actual = T._savings(year=1999, id=[s1.id])
+    actual = T._savings(year=1999, saving_id=[s1.id])
 
     assert {'S1': s1.id} == actual
 
@@ -136,7 +136,7 @@ def test_saving_list_without_closed():
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', closed=1974)
 
-    actual = T._savings(year=1999, id=[s2.id])
+    actual = T._savings(year=1999, saving_id=[s2.id])
 
     assert {} == actual
 
@@ -216,7 +216,7 @@ def test_saving_update(_mock, mock_crequest):
 
     _mock.return_value = [{'title': 'S1', 'id': s1.id, 'past_amount': 22.0}]
 
-    instance = SimpleNamespace(id=s1.id)
+    instance = SimpleNamespace(saving_id=s1.id)
     T.post_save_saving_stats(instance=instance)
 
     actual = SavingBalance.objects.items(1999)
