@@ -7,7 +7,6 @@ from django.dispatch import receiver
 
 from ..accounts.lib.balance import Balance as AccountStats
 from ..accounts.models import Account, AccountBalance
-from ..bookkeeping.lib.account_stats import AccountStats
 from ..bookkeeping.lib.summary import collect_summary_data
 from ..bookkeeping.models import AccountWorth, SavingWorth
 from ..expenses.models import Expense
@@ -81,6 +80,66 @@ def _account_stats(year: int, account_id: int) -> List[Dict]:
     )
 
     return AccountStats(data, account_worth).balance
+
+
+# ----------------------------------------------------------------------------
+#                                                               SavingBalance
+# ----------------------------------------------------------------------------
+def post_save_saving_stats(instance, *args, **kwargs):
+    request = CrequestMiddleware.get_request()
+    year = request.user.profile.year
+
+    _saving_update_or_create(instance, year)
+
+
+def _saving_update_or_create(instance: object, year: int) -> None:
+    saving_id = _id(
+        instance, ['saving_type_id', 'from_account_id', 'to_account_id'])
+
+    stats = _saving_stats(year, saving_id)
+
+    for row in stats:
+        # get id
+        id = row['id']
+
+        # delete dictionary keys
+        del row['id']
+        del row['title']
+
+        obj, created = SavingBalance.objects.update_or_create(
+            year=year,
+            saving_id=id,
+            defaults={k: v for k, v in row.items()}
+        )
+
+
+def _savings(year: int, id: List[int] = None) -> Dict[str, int]:
+    qs = SavingType.objects.items(year=year)
+
+    if id:
+        qs = qs.filter(id__in=id)
+
+    qs = qs.values('id', 'title')
+
+    return {x['title']: x['id'] for x in qs}
+
+
+def _saving_worth() -> List[Dict]:
+    model = apps.get_model('bookkeeping.SavingWorth')
+    return model.objects.items()
+
+
+def _saving_stats(year: int, id: int) -> List[Dict]:
+    worth = _saving_worth()
+    id = _savings(id)
+
+    data = collect_summary_data(
+        year=year,
+        types=id,
+        where='savings'
+    )
+
+    return SavingStats(data, worth).balance
 
 
 # ----------------------------------------------------------------------------
