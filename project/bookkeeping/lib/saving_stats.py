@@ -21,9 +21,8 @@ class SavingStats(BalanceStats):
         'profit_invested_sum'
     ]
 
-    def __init__(self, stats: DF, worth: DF, saving_type: str = 'all'):
+    def __init__(self, stats: DF, worth: DF):
         self._balance = DF()
-        self._type = saving_type
 
         if not isinstance(stats, DF):
             return
@@ -67,21 +66,6 @@ class SavingStats(BalanceStats):
 
         return t.get('market_value', 0.0)
 
-    # remove rows dependinf from saving_type
-    def _filter_df(self, df: DF) -> DF:
-        if self._type == 'all':
-            return df
-
-        df = df.reset_index()
-
-        _filter = df['title'].str.contains('pensij', case=False)
-
-        df = df[~_filter] if self._type == 'fund' else df
-        df = df[_filter] if self._type == 'pension' else df
-
-        df.set_index('title', inplace=True)
-
-        return df
 
     def _prepare(self, stats: DF) -> DF:
         for col in self._columns:
@@ -134,9 +118,6 @@ class SavingStats(BalanceStats):
             df = df.join(_worth)
         else:
             df.loc[:, 'have'] = 0.0
-
-        # filter df
-        df = self._filter_df(df)
 
         # copy values from have to market_value
         df['market_value'] = df['have']

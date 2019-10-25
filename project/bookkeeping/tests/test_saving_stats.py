@@ -48,35 +48,6 @@ def _savings_worth():
     )
 
 
-@pytest.fixture
-def _pension():
-    df = pd.DataFrame([{
-        'id': 1,
-        'title': 'Saving',
-        's_past': 1.25, 's_now': 3.5,
-        's_fee_past': 0.25, 's_fee_now': 0.5,
-        's_close_to_past': 0.0, 's_close_to_now': 0.0,
-        's_close_from_past': 0.25, 's_close_from_now': 0.25,
-        's_change_to_past': 0.0, 's_change_to_now': 0.0,
-        's_change_to_fee_past': 0.0, 's_change_to_fee_now': 0.0,
-        's_change_from_past': 2.25, 's_change_from_now': 1.25,
-        's_change_from_fee_past': 0.15, 's_change_from_fee_now': 0.05
-    }, {
-        'id': 2,
-        'title': 'Pensija3',
-        's_past': 0.25, 's_now': 2.25,
-        's_fee_past': 0.0, 's_fee_now': 0.25,
-        's_close_to_past': 0.0, 's_close_to_now': 0.0,
-        's_close_from_past': 0.0, 's_close_from_now': 0.0,
-        's_change_to_past': 2.25, 's_change_to_now': 1.25,
-        's_change_to_fee_past': 0.15, 's_change_to_fee_now': 0.05,
-        's_change_from_past': 0.0, 's_change_from_now': 0.0,
-        's_change_from_fee_past': 0.0, 's_change_from_fee_now': 0.0
-    }])
-    df.set_index('title', inplace=True)
-    return df
-
-
 def test_empty_savings_stats():
     actual = T([], None).balance
 
@@ -219,28 +190,6 @@ def test_saving_totals(_savings, _savings_worth):
 
     for k, v in expect.items():
         assert v == pytest.approx(actual[k], rel=1e-2)
-
-
-def test_savings_only(_pension):
-    actual = T(_pension, None, saving_type='fund').balance
-
-    assert 1 == len(actual)
-    assert 'Saving' == actual[0]['title']
-
-
-def test_pension_only(_pension):
-    actual = T(_pension, None, saving_type='pension').balance
-
-    assert 1 == len(actual)
-    assert 'Pensija3' == actual[0]['title']
-
-
-def test_savings_all(_pension):
-    actual = T(_pension, None).balance
-
-    assert 2 == len(actual)
-    assert 'Saving' == actual[0]['title']
-    assert 'Pensija3' == actual[1]['title']
 
 
 def test_savings_total_market(_savings, _savings_worth):
