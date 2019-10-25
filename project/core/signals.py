@@ -33,7 +33,7 @@ def post_save_account_stats(instance, *args, **kwargs):
 
 
 def _account_update_or_create(instance: object, year: int) -> None:
-    account_id = _id(
+    account_id = _get_id(
         instance, ['account_id', 'from_account_id', 'to_account_id'])
 
     stats = _account_stats(year, account_id)
@@ -90,14 +90,14 @@ def post_save_saving_stats(instance, *args, **kwargs):
     request = CrequestMiddleware.get_request()
     year = request.user.profile.year
 
-    _saving_update_or_create(instance, year)
+    _saving_update_or_create(instance=instance, year=year)
 
 
 def _saving_update_or_create(instance: object, year: int) -> None:
-    saving_id = _id(
-        instance, ['saving_type_id', 'from_account_id', 'to_account_id'])
+    saving_id = _get_id(instance,
+                    ['saving_type_id', 'from_account_id', 'to_account_id'])
 
-    stats = _saving_stats(year, saving_id)
+    stats = _saving_stats(year=year, saving_id=saving_id)
 
     for row in stats:
         # get id
@@ -114,11 +114,11 @@ def _saving_update_or_create(instance: object, year: int) -> None:
         )
 
 
-def _savings(year: int, id: List[int] = None) -> Dict[str, int]:
+def _savings(year: int, saving_id: List[int] = None) -> Dict[str, int]:
     qs = SavingType.objects.items(year=year)
 
-    if id:
-        qs = qs.filter(id__in=id)
+    if saving_id:
+        qs = qs.filter(id__in=saving_id)
 
     qs = qs.values('id', 'title')
 
@@ -130,13 +130,13 @@ def _saving_worth() -> List[Dict]:
     return model.objects.items()
 
 
-def _saving_stats(year: int, id: int) -> List[Dict]:
+def _saving_stats(year: int, saving_id: int) -> List[Dict]:
     worth = _saving_worth()
-    id = _savings(id)
+    saving = _savings(year=year, saving_id=saving_id)
 
     data = collect_summary_data(
         year=year,
-        types=id,
+        types=saving,
         where='savings'
     )
 
@@ -146,7 +146,7 @@ def _saving_stats(year: int, id: int) -> List[Dict]:
 # ----------------------------------------------------------------------------
 #                                                               common methods
 # ----------------------------------------------------------------------------
-def _id(instance: object, arr: List[str]) -> List[int]:
+def _get_id(instance: object, arr: List[str]) -> List[int]:
     account_id = []
 
     for name in arr:
