@@ -5,9 +5,11 @@ import pytest
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
+from ...accounts.models import AccountBalance
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...savings.factories import (SavingBalanceFactory, SavingFactory,
                                   SavingTypeFactory)
+from ...savings.models import SavingBalance
 from ..models import Saving, SavingBalance, SavingType
 
 pytestmark = pytest.mark.django_db
@@ -303,3 +305,61 @@ def test_saving_balance_queries(django_assert_num_queries):
         q = SavingBalance.objects.items()
         for i in q:
             title = i['title']
+
+
+# ----------------------------------------------------------------------------
+#                                                             post_save signal
+# ----------------------------------------------------------------------------
+def test_post_save_account_balace_insert(mock_crequest):
+    account = AccountFactory()
+    saving = SavingTypeFactory()
+
+    obj = Saving(
+        date=date(1999, 1, 1),
+        price=Decimal(1),
+        fee=Decimal(0.5),
+        account=account,
+        saving_type=saving
+    )
+
+    obj.save()
+
+    actual = AccountBalance.objects.items(1999)
+
+    assert 1 == actual.count()
+
+    actual = actual[0]
+
+    assert 'Account1' == actual['title']
+    assert 0.0 == actual['past']
+    assert 0.0 == actual['incomes']
+    assert 1.0 == actual['expenses']
+    assert -1.0 == actual['balance']
+
+
+def test_post_save_saving_balace_insert(mock_crequest):
+    account = AccountFactory()
+    saving = SavingTypeFactory()
+
+    obj = Saving(
+        date=date(1999, 1, 1),
+        price=Decimal(1),
+        fee=Decimal(0.5),
+        account=account,
+        saving_type=saving
+    )
+
+    obj.save()
+
+    actual = SavingBalance.objects.items(1999)
+
+    assert 1 == actual.count()
+
+    actual = actual[0]
+
+    assert 'Savings' == actual['title']
+    assert 0.0 == actual['past_amount']
+    assert 0.0 == actual['past_fee']
+    assert 1.0 == actual['incomes']
+    assert 0.5 == actual['fees']
+    assert 0.5 == actual['invested']

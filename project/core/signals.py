@@ -85,6 +85,7 @@ def _account_stats(year: int, account_id: int) -> List[Dict]:
 # ----------------------------------------------------------------------------
 #                                                               SavingBalance
 # ----------------------------------------------------------------------------
+@receiver(post_save, sender=Saving)
 def post_save_saving_stats(instance, *args, **kwargs):
     request = CrequestMiddleware.get_request()
     year = request.user.profile.year
