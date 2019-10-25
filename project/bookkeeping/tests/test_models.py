@@ -5,9 +5,12 @@ import mock
 import pytest
 import pytz
 
+from ...accounts.factories import AccountFactory
+from ...accounts.models import AccountBalance
 from ...core.lib.utils import sum_all
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...savings.factories import SavingTypeFactory
+from ...savings.models import SavingBalance
 from .. import factories, models
 
 pytestmark = pytest.mark.django_db
@@ -61,3 +64,26 @@ def test_account_worth_str():
         model = factories.AccountWorthFactory()
 
     assert '1999-01-01 02:03 - Account1' == str(model)
+
+
+# ----------------------------------------------------------------------------
+#                                                             post_save signal
+# ----------------------------------------------------------------------------
+def test_post_save_account_worth_insert(mock_crequest):
+    a1 = AccountFactory(title='a1')
+
+    obj = models.AccountWorth(price=Decimal(1), account=a1).save()
+
+    actual = AccountBalance.objects.items(1999)
+
+    assert 1 == actual.count()
+
+
+def test_post_save_saving_worth_insert(mock_crequest):
+    s1 = SavingTypeFactory(title='s1')
+
+    obj = models.SavingWorth(price=Decimal(1), saving_type=s1).save()
+
+    actual = SavingBalance.objects.items(1999)
+
+    assert 1 == actual.count()
