@@ -24,7 +24,8 @@ from ..transactions.models import SavingChange, SavingClose, Transaction
 @receiver(post_save, sender=Transaction)
 @receiver(post_save, sender=SavingClose)
 @receiver(post_save, sender=AccountWorth)
-def post_save_account_stats(instance, year=None, *args, **kwargs):
+def post_save_account_stats(instance: object, year: int = None,
+                            *args, **kwargs):
     class Cls(SignalBase):
         field = 'account_id'
         model_types = Account
@@ -43,7 +44,8 @@ def post_save_account_stats(instance, year=None, *args, **kwargs):
 @receiver(post_save, sender=SavingClose)
 @receiver(post_save, sender=SavingChange)
 @receiver(post_save, sender=SavingWorth)
-def post_save_saving_stats(instance, year=None, *args, **kwargs):
+def post_save_saving_stats(instance: object, year: int = None,
+                           *args, **kwargs):
     class Cls(SignalBase):
         field = 'saving_type_id'
         model_types = SavingType
@@ -59,7 +61,7 @@ def post_save_saving_stats(instance, year=None, *args, **kwargs):
 #                                                   post_save SignalBase class
 # ----------------------------------------------------------------------------
 class SignalBase():
-    def __init__(self, instance, year: int = None):
+    def __init__(self, instance: object, year: int = None):
         if not year:
             request = CrequestMiddleware.get_request()
             self.year = request.user.profile.year
