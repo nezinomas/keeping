@@ -215,7 +215,7 @@ class Saving(models.Model):
 
 class SavingBalanceQuerySet(models.QuerySet):
     def _related(self):
-        return self.select_related('saving')
+        return self.select_related('saving_type')
 
     def items(self, year: int = None):
         if year:
@@ -229,12 +229,12 @@ class SavingBalanceQuerySet(models.QuerySet):
             'fees', 'invested', 'incomes', 'market_value',
             'profit_incomes_proc', 'profit_incomes_sum',
             'profit_invested_proc', 'profit_invested_sum',
-            title=F('saving__title')
+            title=F('saving_type__title')
         )
 
 
 class SavingBalance(models.Model):
-    saving = models.ForeignKey(
+    saving_type = models.ForeignKey(
         SavingType,
         on_delete=models.CASCADE,
         related_name='savings_balance'
@@ -257,4 +257,4 @@ class SavingBalance(models.Model):
     objects = SavingBalanceQuerySet.as_manager()
 
     def __str__(self):
-        return f'{self.saving.title}'
+        return f'{self.saving_type.title}'

@@ -34,7 +34,7 @@ class SavingBalanceFactory(factory.DjangoModelFactory):
         model = SavingBalance
 
     year = 1999
-    saving = factory.SubFactory(SavingTypeFactory)
+    saving_type = factory.SubFactory(SavingTypeFactory)
 
     past_amount = 2.0
     past_fee = 2.1

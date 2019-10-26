@@ -263,7 +263,7 @@ def test_saving_year_with_type_closed_in_past():
 def test_saving_balance_init():
     actual = SavingBalanceFactory.build()
 
-    assert str(actual.saving) == 'Savings'
+    assert str(actual.saving_type) == 'Savings'
 
     assert actual.past_amount == 2.0
     assert actual.past_fee == 2.1
@@ -298,8 +298,8 @@ def test_saving_balance_queries(django_assert_num_queries):
     s1 = SavingTypeFactory(title='s1')
     s2 = SavingTypeFactory(title='s2')
 
-    SavingBalanceFactory(saving=s1)
-    SavingBalanceFactory(saving=s2)
+    SavingBalanceFactory(saving_type=s1)
+    SavingBalanceFactory(saving_type=s2)
 
     with django_assert_num_queries(1) as captured:
         q = SavingBalance.objects.items()
