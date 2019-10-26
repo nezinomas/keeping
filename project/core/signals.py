@@ -24,7 +24,7 @@ from ..transactions.models import SavingChange, SavingClose, Transaction
 @receiver(post_save, sender=Transaction)
 @receiver(post_save, sender=SavingClose)
 @receiver(post_save, sender=AccountWorth)
-def post_save_account_stats(instance, *args, **kwargs):
+def post_save_account_stats(instance, year=None, *args, **kwargs):
     class Cls(SignalBase):
         field = 'account_id'
         model_types = Account
@@ -33,7 +33,7 @@ def post_save_account_stats(instance, *args, **kwargs):
         class_stats = AccountStats
         summary_models = 'accounts'
 
-    Cls(instance=instance)
+    Cls(instance=instance, year=year)
 
 
 # ----------------------------------------------------------------------------
@@ -43,7 +43,7 @@ def post_save_account_stats(instance, *args, **kwargs):
 @receiver(post_save, sender=SavingClose)
 @receiver(post_save, sender=SavingChange)
 @receiver(post_save, sender=SavingWorth)
-def post_save_saving_stats(instance, *args, **kwargs):
+def post_save_saving_stats(instance, year=None, *args, **kwargs):
     class Cls(SignalBase):
         field = 'saving_type_id'
         model_types = SavingType
@@ -52,16 +52,20 @@ def post_save_saving_stats(instance, *args, **kwargs):
         class_stats = SavingStats
         summary_models = 'savings'
 
-    Cls(instance=instance)
+    Cls(instance=instance, year=year)
 
 
 # ----------------------------------------------------------------------------
 #                                                   post_save SignalBase class
 # ----------------------------------------------------------------------------
 class SignalBase():
-    def __init__(self, instance):
-        request = CrequestMiddleware.get_request()
-        self.year = request.user.profile.year
+    def __init__(self, instance, year: int = None):
+        if not year:
+            request = CrequestMiddleware.get_request()
+            self.year = request.user.profile.year
+        else:
+            self.year = year
+
         self.instance = instance
 
         self._update_or_create()
