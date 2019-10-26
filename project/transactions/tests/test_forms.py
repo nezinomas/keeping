@@ -160,7 +160,7 @@ def test_savings_change_init():
 
 
 @pytest.mark.django_db
-def test_savings_change_valid_data():
+def test_savings_change_valid_data(mock_crequest):
     a_from = SavingTypeFactory()
     a_to = SavingTypeFactory(title='Savings2')
 

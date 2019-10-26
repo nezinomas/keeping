@@ -25,13 +25,9 @@ class Index(IndexMixin):
 
         year = self.request.user.profile.year
 
-        qss = SavingType.objects.items(year).values('id', 'title')
-        typess = {x['title']: x['id'] for x in qss}
-        svv = collect_summary_data(year, typess, 'savings')
-
         _account = [*AccountBalance.objects.items(year)]
 
-        _fund, _pension = views_helpers.saving_stats(year, svv)
+        _fund, _pension = views_helpers.split_savings_stats(year)
         _expense_types = views_helpers.expense_types('Taupymas')
 
         qs_income = Income.objects.income_sum(year)
@@ -48,10 +44,11 @@ class Index(IndexMixin):
         _MonthsExpenseType = MonthsExpenseType(
             year, qs_ExpenseType, **{'Taupymas': qs_savings})
 
+        total_market = sum_col(_fund, 'market_value')
         _NoIncomes = NoIncomes(
             money=_MonthsBalance.amount_end,
-            fund=_fund.total_market,
-            pension=_pension.total_market,
+            fund=total_market,
+            pension=total_market,
             avg_expenses=_MonthsBalance.avg_expenses,
             avg_type_expenses=_MonthsExpenseType.average,
             not_use=['Darbas', 'Laisvalaikis', 'Paskolos', 'Taupymas', 'Transportas']
@@ -69,7 +66,7 @@ class Index(IndexMixin):
         context['months_amount_end'] = _MonthsBalance.amount_end
         context['accounts_amount_end'] = sum_col(_account, 'balance')
         context['amount_balance'] = _MonthsBalance.amount_balance
-        context['total_market'] = _fund.total_market
+        context['total_market'] = total_market
         context['avg_incomes'] = _MonthsBalance.avg_incomes
         context['avg_expenses'] = _MonthsBalance.avg_expenses
         context['expenses'] = _MonthsExpenseType.balance
@@ -97,16 +94,12 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
         context = super().get_context_data(**kwargs)
         year = self.request.user.profile.year
 
-        qss = SavingType.objects.items(year).values('id', 'title')
-        typess = {x['title']: x['id'] for x in qss}
-        svv = collect_summary_data(year, typess, 'savings')
+        _fund, _pension = views_helpers.split_savings_stats(year)
 
-        _fund, _pension = views_helpers.saving_stats(year, svv)
-
-        context['fund'] = _fund.balance
-        context['fund_totals'] = _fund.totals
-        context['pension'] = _pension.balance
-        context['pension_totals'] = _pension.totals
+        context['fund'] = _fund
+        context['fund_totals'] = sum_all(_fund)
+        context['pension'] = _pension
+        context['pension_totals'] = sum_all(_pension)
 
         return context
 

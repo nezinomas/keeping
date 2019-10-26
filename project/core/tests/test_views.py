@@ -63,14 +63,14 @@ def test_view_regenerate_balances_current_year_status_200(login, client):
 
 
 @freeze_time('2007-01-01')
-@patch('project.core.views._account_update_or_create')
+@patch('project.core.views.post_save_account_stats')
 def test_view_regenerate_balances_func_called(mck, _fake_request):
     view = views.regenerate_balances(_fake_request)
 
     assert 4 == mck.call_count
 
 
-@patch('project.core.views._account_update_or_create')
+@patch('project.core.views.post_save_account_stats')
 def test_view_regenerate_balances_current_year_func_called(mck, _fake_request):
     view = views.regenerate_balances_current_year(_fake_request, 1999)
 

@@ -6,7 +6,7 @@ import pytest
 
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...incomes.factories import IncomeFactory
-from ..lib.account_stats import AccountStats
+from ...accounts.lib.balance import Balance as AccountStats
 from ..lib.summary import collect_summary_data
 
 pytestmark = pytest.mark.django_db

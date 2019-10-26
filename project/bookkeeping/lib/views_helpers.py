@@ -53,8 +53,8 @@ def render_savings(request, fund, pension, **kwargs):
     return render_to_string(
         'bookkeeping/includes/savings_worth_list.html',
         {
-            'fund': fund.balance, 'fund_totals': fund.totals,
-            'pension': pension.balance, 'pension_totals': pension.totals,
+            'fund': fund, 'fund_totals': sum_all(pension),
+            'pension': pension, 'pension_totals': sum_all(pension),
             **kwargs
         },
         request
