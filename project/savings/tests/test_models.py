@@ -311,15 +311,17 @@ def test_saving_balance_queries(django_assert_num_queries):
 #                                                             post_save signal
 # ----------------------------------------------------------------------------
 def test_post_save_account_balace_insert(mock_crequest):
-    account = AccountFactory()
-    saving = SavingTypeFactory()
+    a1 = AccountFactory()
+    a2 = AccountFactory(title='a2')
+
+    s1 = SavingTypeFactory()
 
     obj = Saving(
         date=date(1999, 1, 1),
         price=Decimal(1),
         fee=Decimal(0.5),
-        account=account,
-        saving_type=saving
+        account=a1,
+        saving_type=s1
     )
 
     obj.save()
@@ -337,16 +339,18 @@ def test_post_save_account_balace_insert(mock_crequest):
     assert -1.0 == actual['balance']
 
 
-def test_post_save_saving_balace_insert(mock_crequest):
+def test_post_save_saving_balace_insert(mock_crequest,
+                                        savings, savings_close, savings_change,
+                                        savings_worth):
     account = AccountFactory()
-    saving = SavingTypeFactory()
+    s1 = SavingType.objects.get(id=1)
 
     obj = Saving(
         date=date(1999, 1, 1),
-        price=Decimal(1),
-        fee=Decimal(0.5),
+        price=Decimal(0.05),
+        fee=Decimal(0.0),
         account=account,
-        saving_type=saving
+        saving_type=s1
     )
 
     obj.save()
@@ -357,9 +361,15 @@ def test_post_save_saving_balace_insert(mock_crequest):
 
     actual = actual[0]
 
-    assert 'Savings' == actual['title']
-    assert 0.0 == actual['past_amount']
-    assert 0.0 == actual['past_fee']
-    assert 1.0 == actual['incomes']
-    assert 0.5 == actual['fees']
-    assert 0.5 == actual['invested']
+    assert 'Saving1' == actual['title']
+
+    assert round(actual['past_amount'], 2) == -1.25
+    assert round(actual['past_fee'], 2) == 0.4
+    assert round(actual['incomes'], 2) == 0.80
+    assert round(actual['fees'], 2) == 0.95
+    assert round(actual['invested'], 2) == -0.15
+    assert round(actual['market_value'], 2) == 0.15
+    assert round(actual['profit_incomes_proc'], 2) == -81.25
+    assert round(actual['profit_incomes_sum'], 2) == -0.65
+    assert round(actual['profit_invested_proc'], 2) == -200.0
+    assert round(actual['profit_invested_sum'], 2) == 0.30

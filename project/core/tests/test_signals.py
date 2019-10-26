@@ -4,33 +4,45 @@ import pytest
 from mock import patch
 
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
-from ...accounts.models import AccountBalance
+from ...accounts.models import Account, AccountBalance
 from ...savings.factories import SavingBalanceFactory, SavingTypeFactory
-from ...savings.models import SavingBalance
+from ...savings.models import SavingBalance, SavingType
 from .. import signals as T
 
 pytestmark = pytest.mark.django_db
 
 
-def test_account_list_full():
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_account_list_full(mck, mock_crequest):
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
 
-    actual = T._accounts()
+    obj = T.SignalBase(None)
+    obj.model_types = Account
 
-    assert {'A1': a1.id, 'A2': a2.id} == actual
+    func = 'project.core.signals.SignalBase._get_id'
+    with patch(func, return_value=None):
+        actual = obj._get_accounts()
+
+        assert {'A1': a1.id, 'A2': a2.id} == actual
 
 
-def test_account_list_one():
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_account_list_one(mock_init, mock_crequest):
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
 
-    actual = T._accounts([a1.id])
+    obj = T.SignalBase(None)
+    obj.model_types = Account
 
-    assert {'A1': a1.id} == actual
+    func = 'project.core.signals.SignalBase._get_id'
+    with patch(func, return_value=[a1.id]):
+        actual = obj._get_accounts()
+
+        assert {'A1': a1.id} == actual
 
 
-@patch('project.core.signals._account_stats')
+@patch('project.core.signals.SignalBase._get_stats')
 def test_account_insert(_mock, mock_crequest):
     a1 = AccountFactory(title='A1')
     _mock.return_value = [
@@ -50,7 +62,7 @@ def test_account_insert(_mock, mock_crequest):
     assert 1999 == actual['year']
 
 
-@patch('project.core.signals._account_stats')
+@patch('project.core.signals.SignalBase._get_stats')
 def test_account_insert_instance_account_id_not_set(_mock, mock_crequest):
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
@@ -77,7 +89,7 @@ def test_account_insert_instance_account_id_not_set(_mock, mock_crequest):
     assert 1999 == actual[1]['year']
 
 
-@patch('project.core.signals._account_stats')
+@patch('project.core.signals.SignalBase._get_stats')
 def test_account_update(_mock, mock_crequest):
     a1 = AccountFactory(title='A1')
     AccountBalanceFactory(account=a1)
@@ -105,43 +117,71 @@ def test_account_update(_mock, mock_crequest):
 # ----------------------------------------------------------------------------
 #                                                      post_save_savings_stats
 # ----------------------------------------------------------------------------
-def test_saving_list_full():
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_saving_list_full(_mock, mock_crequest):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2')
 
-    actual = T._savings(year=2000)
+    obj = T.SignalBase(None)
+    obj.model_types = SavingType
+    obj.year = 2000
 
-    assert {'S1': s1.id, 'S2': s2.id} == actual
+    func = 'project.core.signals.SignalBase._get_id'
+    with patch(func, return_value=None):
+        actual = obj._get_accounts()
+
+        assert {'S1': s1.id, 'S2': s2.id} == actual
 
 
-def test_saving_list_one():
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_saving_list_one(_mock, mock_crequest):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2')
 
-    actual = T._savings(year=1999, saving_id=[s1.id])
+    obj = T.SignalBase(None)
+    obj.model_types = SavingType
+    obj.year = 1999
 
-    assert {'S1': s1.id} == actual
+    func = 'project.core.signals.SignalBase._get_id'
+    with patch(func, return_value=[s1.id]):
+        actual = obj._get_accounts()
+
+        assert {'S1': s1.id} == actual
 
 
-def test_saving_list_full_without_closed():
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_saving_list_full_without_closed(_mock, mock_crequest):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', closed=1974)
 
-    actual = T._savings(year=1999)
+    obj = T.SignalBase(None)
+    obj.model_types = SavingType
+    obj.year = 1999
 
-    assert {'S1': s1.id} == actual
+    func = 'project.core.signals.SignalBase._get_id'
+    with patch(func, return_value=None):
+        actual = obj._get_accounts()
+
+        assert {'S1': s1.id} == actual
 
 
-def test_saving_list_without_closed():
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_saving_list_without_closed(_mock, mock_crequest):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', closed=1974)
 
-    actual = T._savings(year=1999, saving_id=[s2.id])
+    obj = T.SignalBase(None)
+    obj.model_types = SavingType
+    obj.year = 1999
 
-    assert {} == actual
+    func = 'project.core.signals.SignalBase._get_id'
+    with patch(func, return_value=[s2.id]):
+        actual = obj._get_accounts()
+
+        assert {} == actual
 
 
-@patch('project.core.signals._saving_stats')
+@patch('project.core.signals.SignalBase._get_stats')
 def test_saving_insert(_mock, mock_crequest):
     s1 = SavingTypeFactory(title='S1')
     _mock.return_value = [{
@@ -182,7 +222,7 @@ def test_saving_insert(_mock, mock_crequest):
     assert 2.9 == actual['profit_invested_sum']
 
 
-@patch('project.core.signals._saving_stats')
+@patch('project.core.signals.SignalBase._get_stats')
 def test_saving_insert_instance_saving_id_not_set(_mock, mock_crequest):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2')
@@ -209,10 +249,10 @@ def test_saving_insert_instance_saving_id_not_set(_mock, mock_crequest):
     assert 1999 == actual[1]['year']
 
 
-@patch('project.core.signals._saving_stats')
+@patch('project.core.signals.SignalBase._get_stats')
 def test_saving_update(_mock, mock_crequest):
     s1 = SavingTypeFactory(title='S1')
-    SavingBalanceFactory(saving=s1)
+    SavingBalanceFactory(saving_type=s1)
 
     _mock.return_value = [{'title': 'S1', 'id': s1.id, 'past_amount': 22.0}]
 
