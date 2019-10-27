@@ -8,6 +8,7 @@ from ..accounts.factories import AccountFactory
 from .models import Saving, SavingType, SavingBalance
 
 
+@factory.django.mute_signals(post_save)
 class SavingTypeFactory(factory.DjangoModelFactory):
     class Meta:
         model = SavingType
@@ -29,6 +30,7 @@ class SavingFactory(factory.DjangoModelFactory):
     account = factory.SubFactory(AccountFactory)
 
 
+@factory.django.mute_signals(post_save)
 class SavingBalanceFactory(factory.DjangoModelFactory):
     class Meta:
         model = SavingBalance

@@ -33,6 +33,7 @@ def post_save_account_stats(instance: object, year: int = None,
 #                                                               SavingBalance
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=Saving)
+@receiver(post_save, sender=SavingType)
 @receiver(post_save, sender=SavingClose)
 @receiver(post_save, sender=SavingChange)
 @receiver(post_save, sender=SavingWorth)
