@@ -26,15 +26,7 @@ from ..transactions.models import SavingChange, SavingClose, Transaction
 @receiver(post_save, sender=AccountWorth)
 def post_save_account_stats(instance: object, year: int = None,
                             *args, **kwargs):
-    class Cls(SignalBase):
-        field = 'account_id'
-        model_types = Account
-        model_balance = AccountBalance
-        model_worth = AccountWorth
-        class_stats = AccountStats
-        summary_models = 'accounts'
-
-    Cls(instance=instance, year=year)
+    SignalBase.post_save_accounts(instance, year)
 
 
 # ----------------------------------------------------------------------------
@@ -46,15 +38,7 @@ def post_save_account_stats(instance: object, year: int = None,
 @receiver(post_save, sender=SavingWorth)
 def post_save_saving_stats(instance: object, year: int = None,
                            *args, **kwargs):
-    class Cls(SignalBase):
-        field = 'saving_type_id'
-        model_types = SavingType
-        model_balance = SavingBalance
-        model_worth = SavingWorth
-        class_stats = SavingStats
-        summary_models = 'savings'
-
-    Cls(instance=instance, year=year)
+    SignalBase.post_save_savings(instance, year)
 
 
 # ----------------------------------------------------------------------------
@@ -71,6 +55,28 @@ class SignalBase():
         self.instance = instance
 
         self._update_or_create()
+
+    @classmethod
+    def post_save_accounts(cls, instance: object, year: int):
+        cls.field = 'account_id'
+        cls.model_types = Account
+        cls.model_balance = AccountBalance
+        cls.model_worth = AccountWorth
+        cls.class_stats = AccountStats
+        cls.summary_models = 'accounts'
+
+        return cls(instance, year)
+
+    @classmethod
+    def post_save_savings(cls, instance: object, year: int):
+        cls.field = 'saving_type_id'
+        cls.model_types = SavingType
+        cls.model_balance = SavingBalance
+        cls.model_worth = SavingWorth
+        cls.class_stats = SavingStats
+        cls.summary_models = 'savings'
+
+        return cls(instance, year)
 
     def _update_or_create(self) -> None:
         stats = self._get_stats()
