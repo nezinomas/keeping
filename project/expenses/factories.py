@@ -8,6 +8,7 @@ from ..accounts.factories import AccountFactory
 from .models import Expense, ExpenseName, ExpenseType
 
 
+@factory.django.mute_signals(post_save)
 class ExpenseTypeFactory(factory.DjangoModelFactory):
     class Meta:
         model = ExpenseType
@@ -16,6 +17,7 @@ class ExpenseTypeFactory(factory.DjangoModelFactory):
     title = 'Expense Type'
 
 
+@factory.django.mute_signals(post_save)
 class ExpenseNameFactory(factory.DjangoModelFactory):
     class Meta:
         model = ExpenseName

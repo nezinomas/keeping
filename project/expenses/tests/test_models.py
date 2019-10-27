@@ -4,6 +4,7 @@ from decimal import Decimal
 import pytest
 
 from ...accounts.factories import AccountFactory
+from ...accounts.models import AccountBalance
 from ...expenses.factories import ExpenseFactory
 from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ..models import Expense, ExpenseName, ExpenseType
@@ -218,3 +219,15 @@ def test_summary(expenses):
     actual = [*Expense.objects.summary(1999).order_by('account__title')]
 
     assert expect == actual
+
+
+# ----------------------------------------------------------------------------
+#                                                             post_save signal
+# ----------------------------------------------------------------------------
+def test_post_save_expense_type_insert_new(mock_crequest, expenses):
+    obj = ExpenseType(title='e1')
+    obj.save()
+
+    actual = AccountBalance.objects.items()
+
+    assert 2 == actual.count()

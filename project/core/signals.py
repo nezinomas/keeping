@@ -8,7 +8,7 @@ from ..accounts.lib.balance import Balance as AccountStats
 from ..accounts.models import Account, AccountBalance
 from ..bookkeeping.lib.summary import collect_summary_data
 from ..bookkeeping.models import AccountWorth, SavingWorth
-from ..expenses.models import Expense
+from ..expenses.models import Expense, ExpenseType
 from ..incomes.models import Income
 from ..savings.lib.balance import Balance as SavingStats
 from ..savings.models import Saving, SavingBalance, SavingType
@@ -20,6 +20,7 @@ from ..transactions.models import SavingChange, SavingClose, Transaction
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=Income)
 @receiver(post_save, sender=Expense)
+@receiver(post_save, sender=ExpenseType)
 @receiver(post_save, sender=Saving)
 @receiver(post_save, sender=Transaction)
 @receiver(post_save, sender=SavingClose)
