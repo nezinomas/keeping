@@ -70,7 +70,7 @@ def test_income_type_init():
 
 
 @pytest.mark.django_db
-def test_income_type_valid_data():
+def test_income_type_valid_data(mock_crequest):
     form = IncomeTypeForm(data={
         'title': 'Title',
     })
