@@ -33,16 +33,6 @@ def test_month_expense_type(expenses):
     assert expect == actual
 
 
-def test_month_expense_type_one_month(expenses):
-    expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(0.5), 'title': 'Expense Type'},
-    ]
-
-    actual = [*Expense.objects.month_expense_type(1999, 1)]
-
-    assert expect == actual
-
-
 def test_day_expense_type(expenses_january):
     expect = [
         {
