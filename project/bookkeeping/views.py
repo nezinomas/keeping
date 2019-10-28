@@ -52,12 +52,18 @@ class Index(IndexMixin):
             pension=total_market,
             avg_expenses=_MonthsBalance.avg_expenses,
             avg_type_expenses=_MonthsExpenseType.average,
-            not_use=['Darbas', 'Laisvalaikis', 'Paskolos', 'Taupymas', 'Transportas']
+            not_use=[
+                'Darbas',
+                'Laisvalaikis',
+                'Paskolos',
+                'Taupymas',
+                'Transportas']
         )
 
         context['year'] = year
         context['accounts'] = views_helpers.render_accounts(
-            self.request, _account, **{'months_amount_end': _MonthsBalance.amount_end})
+            self.request, _account,
+            **{'months_amount_end': _MonthsBalance.amount_end})
         context['savings'] = views_helpers.render_savings(
             self.request, _fund, _pension)
         context['balance'] = _MonthsBalance.balance
