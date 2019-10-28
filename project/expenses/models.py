@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 from django.db.models import Case, Count, F, Q, Sum, When
+from django.db.models.functions import TruncDay, TruncMonth
 
 from ..accounts.models import Account
 from ..core.mixins.queryset_sum import SumMixin
@@ -80,15 +81,21 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self._related().all()
 
-    def month_expense_type(self, year, month=None):
-        summed_name = 'sum'
-
+    def month_expense_type(self, year):
         return (
-            super()
-            .sum_by_month(
-                year=year, month=month,
-                summed_name=summed_name, groupby='expense_type')
-            .values('date', summed_name, title=F('expense_type__title'))
+            self
+            .filter(date__year=year)
+            .annotate(cnt=Count('expense_type'))
+            .values('expense_type')
+            .annotate(date=TruncMonth('date'))
+            .values('date')
+            .annotate(c=Count('id'))
+            .annotate(sum=Sum('price'))
+            .order_by('date')
+            .values(
+                'date',
+                'sum',
+                title=F('expense_type__title'))
         )
 
     def month_exceptions(self, year, month=None):
