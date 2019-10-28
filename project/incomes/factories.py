@@ -8,6 +8,7 @@ from ..accounts.factories import AccountFactory
 from .models import Income, IncomeType
 
 
+@factory.django.mute_signals(post_save)
 class IncomeTypeFactory(factory.DjangoModelFactory):
     class Meta:
         model = IncomeType

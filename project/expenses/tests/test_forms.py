@@ -113,7 +113,7 @@ def test_expense_type_init():
 
 
 @pytest.mark.django_db
-def test_expense_type_valid_data():
+def test_expense_type_valid_data(mock_crequest):
     form = ExpenseTypeForm(data={
         'title': 'Title',
         'necessary': True

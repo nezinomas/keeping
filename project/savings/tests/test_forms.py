@@ -72,7 +72,7 @@ def test_saving_type_init():
 
 
 @pytest.mark.django_db
-def test_saving_type_valid_data():
+def test_saving_type_valid_data(mock_crequest):
     form = SavingTypeForm(data={
         'title': 'Title',
         'closed': '2000',
