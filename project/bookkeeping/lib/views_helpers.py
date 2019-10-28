@@ -8,7 +8,10 @@ from ...savings.models import SavingBalance
 
 
 def expense_types(*args: str) -> List[str]:
-    qs = list(ExpenseType.objects.all().values_list('title', flat=True))
+    qs = list(
+        ExpenseType.objects.items()
+        .values_list('title', flat=True)
+    )
 
     [qs.append(x) for x in args]
 
@@ -18,7 +21,11 @@ def expense_types(*args: str) -> List[str]:
 
 
 def necessary_expense_types(*args: str) -> List[str]:
-    qs = list(ExpenseType.objects.filter(necessary=True).values_list('title', flat=True))
+    qs = list(
+        ExpenseType.objects.items()
+        .filter(necessary=True)
+        .values_list('title', flat=True)
+    )
 
     [qs.append(x) for x in args]
 
