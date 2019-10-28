@@ -120,14 +120,14 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
             .annotate(date=TruncDay('date'))
             .annotate(sum=Sum('price'))
             .annotate(
-                __exception__=Sum(
+                exception_sum=Sum(
                     Case(When(exception=1, then='price'), default=0.0))
             )
             .order_by('date')
             .values(
                 'date',
                 'sum',
-                '__exception__',
+                'exception_sum',
                 title=F('expense_type__title'))
         )
 

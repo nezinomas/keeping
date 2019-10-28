@@ -39,12 +39,12 @@ def test_day_expense_type(expenses_january):
             'date': date(1999, 1, 1),
             'sum': Decimal(0.5),
             'title': 'Expense Type',
-            '__exception__': Decimal(0.25),
+            'exception_sum': Decimal(0.25),
         }, {
             'date': date(1999, 1, 11),
             'sum': Decimal(0.5),
             'title': 'Expense Type',
-            '__exception__': Decimal(0),
+            'exception_sum': Decimal(0),
         },
     ]
 
