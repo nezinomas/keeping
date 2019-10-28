@@ -15,13 +15,13 @@ class MonthsBalance(BalanceStats):
         '''
         year: int
 
-        incomes: [{'date': datetime.date(), 'incomes': Decimal()}, ... ]
+        incomes: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
 
-        expenses: [{'date': datetime.date(), 'expenses': Decimal()}, ... ]
+        expenses: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
 
-        savings: [{'date': datetime.date(), 'savings': Decimal()}, ... ]
+        savings: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
 
-        savings_close: [{'date': datetime.date(), 'to_account': Decimal()}, ... ]
+        savings_close: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
 
         amount_start: year start worth amount
         '''
