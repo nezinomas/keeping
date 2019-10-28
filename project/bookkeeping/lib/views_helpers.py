@@ -41,7 +41,7 @@ def render_accounts(request, account, **kwargs):
         'bookkeeping/includes/accounts_worth_list.html',
         {
             'accounts': account,
-            'totals': sum_all(account),
+            'total_row': sum_all(account),
             'accounts_amount_end': sum_col(account, 'balance'),
             **kwargs
         },
@@ -53,8 +53,8 @@ def render_savings(request, fund, pension, **kwargs):
     return render_to_string(
         'bookkeeping/includes/savings_worth_list.html',
         {
-            'fund': fund, 'fund_totals': sum_all(pension),
-            'pension': pension, 'pension_totals': sum_all(pension),
+            'fund': fund, 'fund_total_row': sum_all(pension),
+            'pension': pension, 'pension_total_row': sum_all(pension),
             **kwargs
         },
         request

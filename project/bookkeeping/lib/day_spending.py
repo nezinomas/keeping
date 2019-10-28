@@ -67,13 +67,13 @@ class DaySpending(BalanceStats):
         # filter dateframe
         df = self._filter(df)
 
-        # calculate totals for filtered dataframe
+        # calculate total_row for filtered dataframe
         df.loc[:, 'total'] = df.sum(axis=1)
 
         # select only total column
         df = df.loc[:, ['total']]
 
-        # remove exceptions sums from totals
+        # remove exceptions sums from total_row
         if self._exceptions:
             for ex in self._exceptions:
                 cell = (ex['date'], 'total')

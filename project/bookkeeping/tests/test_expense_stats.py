@@ -74,10 +74,10 @@ def test_months_expense_type(_ex):
     assert expect == actual
 
 
-def test_months_expense_type_totals(_ex):
+def test_months_expense_type_total_row(_ex):
     expect = {'T1': 1.0, 'T2': 0.85, 'total': 1.85}
 
-    actual = MonthsExpenseType(1999, _ex).totals
+    actual = MonthsExpenseType(1999, _ex).total_row
 
     assert expect == actual
 

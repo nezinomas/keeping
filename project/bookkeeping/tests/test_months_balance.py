@@ -89,10 +89,10 @@ def test_months_balance(_incomes, _expenses, _residual, _expect):
     assert _expect == actual
 
 
-def test_months_balance_totals(_incomes, _expenses, _residual):
+def test_months_balance_total_row(_incomes, _expenses, _residual):
     expect = {'incomes': 6.75, 'expenses': 1.75, 'balance': 5.0, 'residual': 70.75}
     actual = MonthsBalance(year=1999, incomes=_incomes,
-                           expenses=_expenses, amount_start=_residual).totals
+                           expenses=_expenses, amount_start=_residual).total_row
 
     assert expect == actual
 

@@ -39,7 +39,7 @@ class Balance(BalanceStats):
         self._balance = df
 
     @property
-    def totals(self) -> Dict:
+    def total_row(self) -> Dict:
         val = {}
 
         if self._balance.empty:
@@ -62,7 +62,7 @@ class Balance(BalanceStats):
 
     @property
     def total_market(self) -> float:
-        t = self.totals
+        t = self.total_row
 
         return t.get('market_value', 0.0)
 

@@ -39,17 +39,17 @@ class MonthExpenseType(BalanceStats):
 
     @property
     def total(self):
-        t = super().totals
+        t = super().total_row
 
         return t.get('total', 0.0)
 
     def chart_expenses(self, expenses_types: List[str]) -> List[Dict]:
-        totals = super().totals
+        total_row = super().total_row
         rtn = []
 
-        # make List[Dict] from expenses_types and totals
+        # make List[Dict] from expenses_types and total_row
         for name in expenses_types:
-            value = totals.get(name, 0.0)
+            value = total_row.get(name, 0.0)
             arr = {'name': name.upper(), 'y': value}
             rtn.append(arr)
 
@@ -64,12 +64,12 @@ class MonthExpenseType(BalanceStats):
 
     def chart_targets(self, expenses_types: List[str],
                       targets: Dict) -> (List[str], List[float], List[Dict]):
-        totals = super().totals
+        total_row = super().total_row
         tmp = []
 
-        # make List[Dict] from expenses_types and totals
+        # make List[Dict] from expenses_types and total_row
         for name in expenses_types:
-            value = totals.get(name, 0.0)
+            value = total_row.get(name, 0.0)
             arr = {'name': name, 'y': value}
             tmp.append(arr)
 
@@ -105,7 +105,7 @@ class MonthsExpenseType(BalanceStats):
     @property
     def chart_data(self) -> List[Dict[str, float]]:
         rtn = []
-        arr = super().totals
+        arr = super().total_row
 
         if arr:
             # delete total cell

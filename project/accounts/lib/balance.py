@@ -28,13 +28,13 @@ class Balance(BalanceStats):
 
     @property
     def balance_start(self) -> float:
-        t = super().totals
+        t = super().total_row
 
         return t.get('past', 0.0)
 
     @property
     def balance_end(self) -> float:
-        t = super().totals
+        t = super().total_row
 
         return t.get('balance', 0.0)
 

@@ -31,8 +31,8 @@
         </tr>
         <tr class="total">
             <th class="text-left">Viso</th>
-            {% for cat in expense_types %}{% cell expenses_totals|get_item:cat tag='th' %}{% endfor %}
-            {% cell expenses_totals.total tag='th' css_class="bl" %}
+            {% for cat in expense_types %}{% cell expenses_total_row|get_item:cat tag='th' %}{% endfor %}
+            {% cell expenses_total_row.total tag='th' css_class="bl" %}
         </tr>
     </tfoot>
 </table>

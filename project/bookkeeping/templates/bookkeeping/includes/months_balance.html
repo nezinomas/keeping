@@ -33,9 +33,9 @@
         </tr>
         <tr class="total">
             <th class="text-left">Viso</th>
-            {% cell balance_totals.incomes tag='th' %}
-            {% cell balance_totals.expenses tag='th' %}
-            {% cell balance_totals.balance tag='th' highlight_value=True %}
+            {% cell balance_total_row.incomes tag='th' %}
+            {% cell balance_total_row.expenses tag='th' %}
+            {% cell balance_total_row.balance tag='th' highlight_value=True %}
             {% if accounts_amount_end|floatformat:2 != months_amount_end|floatformat:2 %}{% cell months_amount_end tag="th" css_class='bad' text_before='!' text_after='!' %}{% else %}{% cell months_amount_end tag='th' highlight_value=True %}{% endif %}
         </tr>
     </tfoot>

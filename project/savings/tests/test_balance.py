@@ -66,8 +66,8 @@ def test_none_savings_stats():
     assert actual == []
 
 
-def test_none_savings_stats_totals():
-    actual = T([], None).totals
+def test_none_savings_stats_total_row():
+    actual = T([], None).total_row
 
     assert actual == {}
 
@@ -172,7 +172,7 @@ def test_saving_stats_worth_None(_savings):
     assert_(expect, actual)
 
 
-def test_saving_totals(_savings, _savings_worth):
+def test_saving_total_row(_savings, _savings_worth):
     expect = {
         'past_amount': 1.25,
         'past_fee': 0.55,
@@ -186,7 +186,7 @@ def test_saving_totals(_savings, _savings_worth):
         'profit_invested_sum': 0.95,
     }
 
-    actual = T(_savings, _savings_worth).totals
+    actual = T(_savings, _savings_worth).total_row
 
     for k, v in expect.items():
         assert v == pytest.approx(actual[k], rel=1e-2)

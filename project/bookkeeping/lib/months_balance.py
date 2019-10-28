@@ -48,13 +48,13 @@ class MonthsBalance(BalanceStats):
     @property
     def amount_end(self) -> float:
         val = 0.0
-        t = super().totals
+        t = super().total_row
 
         return self._amount_start + t.get('balance', 0.0)
 
     @property
     def amount_balance(self) -> float:
-        t = super().totals
+        t = super().total_row
 
         return t.get('balance', 0.0)
 

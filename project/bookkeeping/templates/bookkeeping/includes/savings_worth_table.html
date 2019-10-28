@@ -44,15 +44,15 @@
     <tfoot>
         <tr class="total">
             <th class="text-left">Viso</th>
-            {% cell totals.past_amount tag='th' %}
-            {% cell totals.past_fee tag='th' %}
-            {% cell totals.incomes tag='th' %}
-            {% cell totals.fees tag='th' %}
-            {% cell totals.invested tag='th' %}
-            {% cell totals.market_value tag='th' css_class='br' %}
-            {% cell totals.profit_incomes_sum text_after='€' highlight_value=True tag='th' %}
+            {% cell total_row.past_amount tag='th' %}
+            {% cell total_row.past_fee tag='th' %}
+            {% cell total_row.incomes tag='th' %}
+            {% cell total_row.fees tag='th' %}
+            {% cell total_row.invested tag='th' %}
+            {% cell total_row.market_value tag='th' css_class='br' %}
+            {% cell total_row.profit_incomes_sum text_after='€' highlight_value=True tag='th' %}
             <th class="br_s"></th>
-            {% cell totals.profit_invested_sum text_after='€' highlight_value=True tag='th' %}
+            {% cell total_row.profit_invested_sum text_after='€' highlight_value=True tag='th' %}
             <th></th>
         </tr>
     </tfoot>

@@ -64,7 +64,7 @@ class BalanceStats():
         return arr.to_dict('records')
 
     @property
-    def totals(self) -> Dict[str, float]:
+    def total_row(self) -> Dict[str, float]:
         val = {}
 
         if not isinstance(self._balance, pd.DataFrame):
