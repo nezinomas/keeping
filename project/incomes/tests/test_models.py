@@ -99,6 +99,9 @@ def test_summary(incomes):
     assert expect == actual
 
 
+# ----------------------------------------------------------------------------
+#                                                             post_save signal
+# ----------------------------------------------------------------------------
 def test_post_save_account_balace_insert(mock_crequest):
     AccountWorthFactory()
     account = AccountFactory()
@@ -189,3 +192,12 @@ def test_post_save_account_balace_update_count_queries(mock_crequest,
     )
     with django_assert_max_num_queries(17):
         income.save()
+
+
+def test_post_save_income_type_insert_new(mock_crequest, incomes):
+    obj = IncomeType(title='e1')
+    obj.save()
+
+    actual = AccountBalance.objects.items()
+
+    assert 2 == actual.count()
