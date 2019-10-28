@@ -4,12 +4,13 @@ import pandas as pd
 import pytest
 
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
-from ..lib.account_stats import AccountStats as T
+from ..lib.balance import Balance as T
 
 
 @pytest.fixture()
 def _accounts():
     df = pd.DataFrame([{
+        'id': 1,
         'title': 'Account1',
         'i_past': 5.25, 'i_now': 3.25,
         'e_past': 2.5, 'e_now': 0.5,
@@ -18,6 +19,7 @@ def _accounts():
         'tr_to_past': 5.25, 'tr_to_now': 3.25,
         's_close_to_past': 0.25, 's_close_to_now': 0.25,
     }, {
+        'id': 2,
         'title': 'Account2',
         'i_past': 4.5, 'i_now': 3.5,
         'e_past': 2.25, 'e_now': 1.25,
@@ -51,8 +53,15 @@ def test_none_accounts_stats():
     assert actual == []
 
 
+def test_empty_data_ef_for_accounts_stats():
+    actual = T(pd.DataFrame(), None).balance
+
+    assert actual == []
+
+
 def test_account_stats(_accounts, _accounts_worth):
     expect = [{
+        'id': 1,
         'title': 'Account1',
         'past': 5.75,
         'incomes': 6.75,
@@ -61,6 +70,7 @@ def test_account_stats(_accounts, _accounts_worth):
         'have': 5.75,
         'delta': 1.75
     }, {
+        'id': 2,
         'title': 'Account2',
         'past': -2.0,
         'incomes': 8.0,
@@ -77,6 +87,7 @@ def test_account_stats(_accounts, _accounts_worth):
 
 def test_account_stats_worth_empty(_accounts):
     expect = [{
+        'id': 1,
         'title': 'Account1',
         'past': 5.75,
         'incomes': 6.75,
@@ -85,6 +96,7 @@ def test_account_stats_worth_empty(_accounts):
         'have': 0.0,
         'delta': -4.0
     }, {
+        'id': 2,
         'title': 'Account2',
         'past': -2.0,
         'incomes': 8.0,
@@ -101,6 +113,7 @@ def test_account_stats_worth_empty(_accounts):
 
 def test_account_stats_worth_None(_accounts):
     expect = [{
+        'id': 1,
         'title': 'Account1',
         'past': 5.75,
         'incomes': 6.75,
@@ -109,6 +122,7 @@ def test_account_stats_worth_None(_accounts):
         'have': 0.0,
         'delta': -4.0,
     }, {
+        'id': 2,
         'title': 'Account2',
         'past': -2.0,
         'incomes': 8.0,
@@ -135,7 +149,8 @@ def test_account_totals(_accounts, _accounts_worth):
 
     actual = T(_accounts, _accounts_worth).totals
 
-    assert expect == actual
+    for k, v in expect.items():
+        assert v == actual[k]
 
 
 def test_account_past_property(_accounts):

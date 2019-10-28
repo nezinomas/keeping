@@ -35,7 +35,9 @@ def test_expense_form_init_without_year():
     ExpenseForm()
 
 
-def test_exepense_form_valid_data(_expense_type, _expense_name, _account):
+def test_exepense_form_valid_data(mock_crequest,
+                                  _expense_type, _expense_name,
+                                  _account):
     form = ExpenseForm(
         data={
             'date': '1970-01-01',
@@ -62,7 +64,9 @@ def test_exepense_form_valid_data(_expense_type, _expense_name, _account):
     assert e.quantity == 1
 
 
-def test_exepense_form_without_year_valid_data(_expense_type, _expense_name, _account):
+def test_exepense_form_without_year_valid_data(mock_crequest,
+                                               _expense_type, _expense_name,
+                                               _account):
     form = ExpenseForm(
         data={
             'date': '1970-01-01',
@@ -109,7 +113,7 @@ def test_expense_type_init():
 
 
 @pytest.mark.django_db
-def test_expense_type_valid_data():
+def test_expense_type_valid_data(mock_crequest):
     form = ExpenseTypeForm(data={
         'title': 'Title',
         'necessary': True

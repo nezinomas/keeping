@@ -2,12 +2,13 @@ import pandas as pd
 import pytest
 
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
-from ..lib.saving_stats import SavingStats as T
+from ..lib.balance import Balance as T
 
 
 @pytest.fixture()
 def _savings():
     df = pd.DataFrame([{
+        'id': 1,
         'title': 'Saving1',
         's_past': 1.25, 's_now': 3.5,
         's_fee_past': 0.25, 's_fee_now': 0.5,
@@ -18,6 +19,7 @@ def _savings():
         's_change_from_past': 2.25, 's_change_from_now': 1.25,
         's_change_from_fee_past': 0.15, 's_change_from_fee_now': 0.05
     }, {
+        'id': 2,
         'title': 'Saving2',
         's_past': 0.25, 's_now': 2.25,
         's_fee_past': 0.0, 's_fee_now': 0.25,
@@ -46,33 +48,6 @@ def _savings_worth():
     )
 
 
-@pytest.fixture
-def _pension():
-    df = pd.DataFrame([{
-        'title': 'Saving',
-        's_past': 1.25, 's_now': 3.5,
-        's_fee_past': 0.25, 's_fee_now': 0.5,
-        's_close_to_past': 0.0, 's_close_to_now': 0.0,
-        's_close_from_past': 0.25, 's_close_from_now': 0.25,
-        's_change_to_past': 0.0, 's_change_to_now': 0.0,
-        's_change_to_fee_past': 0.0, 's_change_to_fee_now': 0.0,
-        's_change_from_past': 2.25, 's_change_from_now': 1.25,
-        's_change_from_fee_past': 0.15, 's_change_from_fee_now': 0.05
-    }, {
-        'title': 'Pensija3',
-        's_past': 0.25, 's_now': 2.25,
-        's_fee_past': 0.0, 's_fee_now': 0.25,
-        's_close_to_past': 0.0, 's_close_to_now': 0.0,
-        's_close_from_past': 0.0, 's_close_from_now': 0.0,
-        's_change_to_past': 2.25, 's_change_to_now': 1.25,
-        's_change_to_fee_past': 0.15, 's_change_to_fee_now': 0.05,
-        's_change_from_past': 0.0, 's_change_from_now': 0.0,
-        's_change_from_fee_past': 0.0, 's_change_from_fee_now': 0.0
-    }])
-    df.set_index('title', inplace=True)
-    return df
-
-
 def test_empty_savings_stats():
     actual = T([], None).balance
 
@@ -99,6 +74,7 @@ def test_none_savings_stats_totals():
 
 def test_saving_only(_savings):
     expect = [{
+        'id': 1,
         'title': 'Saving1',
         'past_amount': -1.25,
         'past_fee': 0.4,
@@ -106,6 +82,7 @@ def test_saving_only(_savings):
         'fees': 0.95,
         'invested': -0.2,
     }, {
+        'id': 2,
         'title': 'Saving2',
         'past_amount': 2.5,
         'past_fee': 0.15,
@@ -121,6 +98,7 @@ def test_saving_only(_savings):
 
 def test_savings_worth(_savings, _savings_worth):
     expect = [{
+        'id': 1,
         'title': 'Saving1',
         'incomes': 0.75,
         'invested': -0.2,
@@ -130,6 +108,7 @@ def test_savings_worth(_savings, _savings_worth):
         'profit_invested_proc': -175.0,
         'profit_invested_sum': 0.35,
     }, {
+        'id': 2,
         'title': 'Saving2',
         'incomes': 6.0,
         'invested': 5.55,
@@ -147,6 +126,7 @@ def test_savings_worth(_savings, _savings_worth):
 
 def test_saving_stats_worth_empty(_savings):
     expect = [{
+        'id': 1,
         'title': 'Saving1',
         'market_value': 0.0,
         'profit_incomes_proc': 0.0,
@@ -154,6 +134,7 @@ def test_saving_stats_worth_empty(_savings):
         'profit_invested_proc': 0.0,
         'profit_invested_sum': 0.0,
     }, {
+        'id': 2,
         'title': 'Saving2',
         'market_value': 0.0,
         'profit_incomes_proc': 0.0,
@@ -169,6 +150,7 @@ def test_saving_stats_worth_empty(_savings):
 
 def test_saving_stats_worth_None(_savings):
     expect = [{
+        'id': 1,
         'title': 'Saving1',
         'market_value': 0.0,
         'profit_incomes_proc': 0.0,
@@ -176,6 +158,7 @@ def test_saving_stats_worth_None(_savings):
         'profit_invested_proc': 0.0,
         'profit_invested_sum': 0.0,
     }, {
+        'id': 2,
         'title': 'Saving2',
         'market_value': 0.0,
         'profit_incomes_proc': 0.0,
@@ -205,29 +188,8 @@ def test_saving_totals(_savings, _savings_worth):
 
     actual = T(_savings, _savings_worth).totals
 
-    assert expect == pytest.approx(actual, rel=1e-3)
-
-
-def test_savings_only(_pension):
-    actual = T(_pension, None, saving_type='fund').balance
-
-    assert 1 == len(actual)
-    assert 'Saving' == actual[0]['title']
-
-
-def test_pension_only(_pension):
-    actual = T(_pension, None, saving_type='pension').balance
-
-    assert 1 == len(actual)
-    assert 'Pensija3' == actual[0]['title']
-
-
-def test_savings_all(_pension):
-    actual = T(_pension, None).balance
-
-    assert 2 == len(actual)
-    assert 'Saving' == actual[0]['title']
-    assert 'Pensija3' == actual[1]['title']
+    for k, v in expect.items():
+        assert v == pytest.approx(actual[k], rel=1e-2)
 
 
 def test_savings_total_market(_savings, _savings_worth):

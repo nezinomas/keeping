@@ -2,14 +2,9 @@ from typing import List
 
 from django.template.loader import render_to_string
 
-from ...accounts.models import Account
+from ...core.lib.utils import sum_all, sum_col
 from ...expenses.models import ExpenseType
-from ...savings.models import SavingType
-
-from ..lib.account_stats import AccountStats
-from ..lib.saving_stats import SavingStats
-
-from ..models import AccountWorth, SavingWorth
+from ...savings.models import SavingBalance
 
 
 def expense_types(*args: str) -> List[str]:
@@ -32,40 +27,34 @@ def necessary_expense_types(*args: str) -> List[str]:
     return qs
 
 
-def account_stats(year, _stats):
-    _worth = AccountWorth.objects.items()
+def split_savings_stats(year):
+    arr = SavingBalance.objects.items(year)
 
-    return AccountStats(_stats, _worth)
-
-
-def saving_stats(year, _stats):
-    _worth = SavingWorth.objects.items()
-
-    fund = SavingStats(_stats, _worth, 'fund')
-    pension = SavingStats(_stats, _worth, 'pension')
+    fund = list(filter(lambda x: 'pens' not in x['title'].lower(), arr))
+    pension = list(filter(lambda x: 'pens' in x['title'].lower(), arr))
 
     return fund, pension
 
 
 def render_accounts(request, account, **kwargs):
-        return render_to_string(
-            'bookkeeping/includes/accounts_worth_list.html',
-            {
-                'accounts': account.balance,
-                'totals': account.totals,
-                'accounts_amount_end': account.balance_end,
-                **kwargs
-            },
-            request
-        )
+    return render_to_string(
+        'bookkeeping/includes/accounts_worth_list.html',
+        {
+            'accounts': account,
+            'totals': sum_all(account),
+            'accounts_amount_end': sum_col(account, 'balance'),
+            **kwargs
+        },
+        request
+    )
 
 
 def render_savings(request, fund, pension, **kwargs):
     return render_to_string(
         'bookkeeping/includes/savings_worth_list.html',
         {
-            'fund': fund.balance, 'fund_totals': fund.totals,
-            'pension': pension.balance, 'pension_totals': pension.totals,
+            'fund': fund, 'fund_totals': sum_all(pension),
+            'pension': pension, 'pension_totals': sum_all(pension),
             **kwargs
         },
         request

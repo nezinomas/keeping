@@ -4,6 +4,7 @@ Django==2.2.6
 django-bootstrap-datepicker-plus==3.0.5
 django-bootstrap-datepicker-widget==0.1
 django-bootstrap4==1.0.1
+django-crequest==2018.5.11
 django-crispy-forms==1.7.2
 django-widget-tweaks==1.4.5
 django-pandas==0.6.1

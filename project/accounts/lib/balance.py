@@ -6,19 +6,19 @@ from pandas import to_numeric
 from ...core.mixins.calc_balance import BalanceStats
 
 
-class AccountStats(BalanceStats):
+class Balance(BalanceStats):
     _columns = ['past', 'incomes', 'expenses', 'balance', 'have', 'delta']
 
-    def __init__(self, account_stats: DF, account_worth: List):
+    def __init__(self, data: DF, account_worth: List):
         self._balance = DF()
 
-        if not isinstance(account_stats, DF):
+        if not isinstance(data, DF):
             return
 
-        if account_stats.empty:
+        if data.empty:
             return
 
-        df = self._prepare(account_stats)
+        df = self._prepare(data)
         df = self._calc_balance(df)
         df = self._join_worth(df, account_worth)
         df = self._calc_have(df)
@@ -48,11 +48,11 @@ class AccountStats(BalanceStats):
         df['past'] = (
             0
             + df['i_past']
+            + df['tr_to_past']
+            + df['s_close_to_past']
             - df['e_past']
             - df['s_past']
             - df['tr_from_past']
-            + df['tr_to_past']
-            + df['s_close_to_past']
         )
 
         df['incomes'] = (
@@ -91,4 +91,4 @@ class AccountStats(BalanceStats):
         return df
 
     def _drop_columns(self, df: DF) -> DF:
-        return df[self._columns]
+        return df[[*self._columns, 'id']]

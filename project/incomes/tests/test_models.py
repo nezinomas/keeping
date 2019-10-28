@@ -2,7 +2,11 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from mock import patch
 
+from ...accounts.factories import AccountFactory, AccountBalanceFactory
+from ...accounts.models import AccountBalance
+from ...bookkeeping.factories import AccountWorthFactory
 from ..factories import IncomeFactory, IncomeTypeFactory
 from ..models import Income, IncomeType
 
@@ -78,11 +82,13 @@ def test_income_type_str():
 
 def test_summary(incomes):
     expect = [{
+        'id': 1,
         'title': 'Account1',
         'i_past': Decimal(5.25),
         'i_now': Decimal(3.25),
 
     }, {
+        'id': 2,
         'title': 'Account2',
         'i_past': Decimal(4.5),
         'i_now': Decimal(3.5),
@@ -91,3 +97,107 @@ def test_summary(incomes):
     actual = list(Income.objects.summary(1999).order_by('account__title'))
 
     assert expect == actual
+
+
+# ----------------------------------------------------------------------------
+#                                                             post_save signal
+# ----------------------------------------------------------------------------
+def test_post_save_account_balace_insert(mock_crequest):
+    AccountWorthFactory()
+    account = AccountFactory()
+    income_type = IncomeTypeFactory()
+
+    income = Income(
+        date=date(1999, 1, 1),
+        price=Decimal(1),
+        account=account,
+        income_type=income_type
+    )
+
+    income.save()
+
+    actual = AccountBalance.objects.items(1999)
+
+    assert 1 == actual.count()
+
+    actual = actual[0]
+
+    assert 'Account1' == actual['title']
+    assert 0.0 == actual['past']
+    assert 1.0 == actual['incomes']
+    assert 0.0 == actual['expenses']
+    assert 1.0 == actual['balance']
+    assert 0.5 == actual['have']
+    assert -0.5 == actual['delta']
+
+
+def test_post_save_account_balace_update(mock_crequest):
+    AccountBalanceFactory()
+    AccountWorthFactory()
+    account = AccountFactory()
+    income_type = IncomeTypeFactory()
+
+    income = Income(
+        date=date(1999, 1, 1),
+        price=Decimal(1),
+        account=account,
+        income_type=income_type
+    )
+    income.save()
+
+    actual = AccountBalance.objects.items(1999)
+
+    assert 1 == actual.count()
+
+    actual = actual[0]
+
+    assert 'Account1' == actual['title']
+    assert 0.0 == actual['past']
+    assert 1.0 == actual['incomes']
+    assert 0.0 == actual['expenses']
+    assert 1.0 == actual['balance']
+    assert 0.5 == actual['have']
+    assert -0.5 == actual['delta']
+
+
+def test_post_save_account_balace_insert_count_queries(mock_crequest,
+                                                       django_assert_max_num_queries):
+    AccountBalanceFactory()
+    AccountWorthFactory()
+    account = AccountFactory()
+    income_type = IncomeTypeFactory()
+
+    income = Income(
+        date=date(1999, 1, 1),
+        price=Decimal(1),
+        account=account,
+        income_type=income_type
+    )
+    with django_assert_max_num_queries(15):
+        income.save()
+
+
+def test_post_save_account_balace_update_count_queries(mock_crequest,
+                                                       django_assert_max_num_queries):
+    AccountBalanceFactory()
+    AccountWorthFactory()
+    account = AccountFactory()
+    income_type = IncomeTypeFactory()
+
+    income = Income(
+        date=date(1999, 1, 1),
+        price=Decimal(1),
+        account=account,
+        income_type=income_type
+    )
+    with django_assert_max_num_queries(17):
+        income.save()
+
+
+def test_post_save_income_type_insert_new(mock_crequest, incomes):
+    obj = IncomeType(title='e1')
+    obj.save()
+
+    actual = AccountBalance.objects.items()
+
+    assert 2 == actual.count()

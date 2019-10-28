@@ -41,3 +41,10 @@ def monthnames() -> List[str]:
 def monthlen(year: int, monthname: str) -> int:
     month = datetime.strptime(monthname, "%B").month
     return calendar.monthlen(year, month)
+
+
+def years() -> List[int]:
+    now = datetime.now().year + 1
+    years = [x for x in range(2004, now)]
+
+    return years

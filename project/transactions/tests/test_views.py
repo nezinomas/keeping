@@ -16,6 +16,7 @@ from ..factories import (SavingChangeFactory, SavingCloseFactory,
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
+
 def test_load_saving_type_func():
     view = resolve('/ajax/load_saving_type/')
 
@@ -444,3 +445,34 @@ def test_savings_change_update(login, client):
     assert '1999-12-31' in actual['html_list']
     assert 'Savings To' in actual['html_list']
     assert 'Savings From' in actual['html_list']
+
+
+#
+# ===================================================
+#                                    load_saving_type
+# ===================================================
+#
+def test_load_saving_type_new_func():
+    view = resolve('/ajax/load_saving_type/')
+
+    assert views.load_saving_type == view.func
+
+
+@pytest.mark.django_db
+def test_load_saving_type_status_code(client, login):
+    url = reverse('transactions:load_saving_type')
+    response = client.get(url, {'id': 1})
+
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_load_saving_type_closed_in_past(client, login):
+    s1 = SavingTypeFactory(title='S1')
+    s2 = SavingTypeFactory(title='S2', closed=1000)
+
+    url = reverse('transactions:load_saving_type')
+    response = client.get(url, {'id': s1.pk})
+
+    assert 'S1' not in str(response.content)
+    assert 'S2' not in str(response.content)

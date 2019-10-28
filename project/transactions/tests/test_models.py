@@ -3,7 +3,10 @@ from decimal import Decimal
 
 import pytest
 
+from ...accounts.factories import AccountFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
+from ...savings.factories import SavingTypeFactory
+from ...savings.models import Saving, SavingBalance
 from ..factories import (SavingChangeFactory, SavingCloseFactory,
                          TransactionFactory)
 from ..models import SavingChange, SavingClose, Transaction
@@ -182,3 +185,44 @@ def test_savings_change_summary_to(savings_change):
         .summary_to(1999).order_by('to_account__title'))
 
     assert_(expect, actual)
+
+
+# ----------------------------------------------------------------------------
+#                                                             post_save signal
+# ----------------------------------------------------------------------------
+def _post_save_saving():
+    account = AccountFactory()
+    saving = SavingTypeFactory()
+
+    obj = Saving(
+        date=date(1999, 1, 1),
+        price=Decimal(1),
+        fee=Decimal(0.5),
+        account=account,
+        saving_type=saving
+    )
+
+    obj.save()
+
+    actual = SavingBalance.objects.items(1999)
+
+    assert 1 == actual.count()
+
+    actual = actual[0]
+
+    assert 'Savings' == actual['title']
+    assert 0.0 == actual['past_amount']
+    assert 0.0 == actual['past_fee']
+    assert 1.0 == actual['incomes']
+    assert 0.5 == actual['fees']
+    assert 0.5 == actual['invested']
+
+
+@pytest.mark.django_db
+def test_post_save_saving_close_balace_insert(mock_crequest):
+    _post_save_saving()
+
+
+@pytest.mark.django_db
+def test_post_save_saving_change_balace_insert(mock_crequest):
+    _post_save_saving()

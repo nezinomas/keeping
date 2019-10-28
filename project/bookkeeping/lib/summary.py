@@ -1,16 +1,36 @@
-from typing import List
+from typing import Dict, List
 
-import pandas as pd
+from django.apps import apps
+from pandas import DataFrame as DF
+from pandas import Series, to_numeric
 
-from ...accounts.models import Account
-from ...savings.models import SavingType
+
+def models(where: str) -> List:
+    models = []
+    if where == 'accounts':
+        models = [
+            'incomes.Income',
+            'expenses.Expense',
+            'savings.Saving',
+            'transactions.SavingClose',
+            'transactions.Transaction']
+
+    if where == 'savings':
+        models = [
+            'savings.Saving',
+            'transactions.SavingClose',
+            'transactions.SavingChange']
+
+    return models
 
 
-def collect_summary_data(year: int, models: List) -> pd.DataFrame:
-    df_account = _create_df(Account)
-    df_saving_type = _create_df(SavingType)
+def collect_summary_data(year: int,
+                         types: Dict[str, int], where: str) -> DF:
+    df = _create_df(types)
 
-    for model in models:
+    _models = models(where)
+    for m in _models:
+        model = apps.get_model(m)
         # try 3 methods from model.manager:
         # a) summary(year)
         # b) summary_from(year)
@@ -29,42 +49,37 @@ def collect_summary_data(year: int, models: List) -> pd.DataFrame:
                     continue
 
                 for k, v in row.items():
-                    if k == 'title':
+                    if k == 'title' or k == 'id':
                         continue
                     else:
-                        # copy values from qs to
-                        # df_account or df_saving_type
-                        if idx in df_account.index:
-                            df_account.at[idx, k] = v
-
-                        if idx in df_saving_type.index:
-                            df_saving_type.at[idx, k] = v
+                        # copy values from qs to df
+                        if idx in df.index:
+                            df.at[idx, k] = v
 
     # fill NaN with 0.0
-    df_account.fillna(0.0, inplace=True)
-    df_saving_type.fillna(0.0, inplace=True)
+    df.fillna(0.0, inplace=True)
 
     # convert all columns to float
-    df_account = df_account.apply(pd.to_numeric)
-    df_saving_type = df_saving_type.apply(pd.to_numeric)
+    df = df.apply(to_numeric)
 
-    return (df_account, df_saving_type)
+    return df
 
 
-def _create_df(model) -> pd.DataFrame:
-    df = pd.DataFrame()
-    qs = model.objects.all().values_list('title', flat=True)
+def _create_df(qs: Dict[str, int]) -> DF:
+    df = DF()
 
     if len(qs) >= 1:
         df = _create_columns()
-        df['title'] = pd.Series(qs)  # copy list of titles to df
+        df['title'] = Series([*qs.keys()])  # copy list of titles to df
+        df['id'] = Series([*qs.values()])  # copy list of id to df
         df = df.set_index('title')
 
     return df
 
 
-def _create_columns() -> pd.DataFrame:
-    df = pd.DataFrame(columns=[
+def _create_columns() -> DF:
+    df = DF(columns=[
+        'id',
         'title',
         'i_past', 'i_now',
         'e_past', 'e_now',

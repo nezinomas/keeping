@@ -2,11 +2,15 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
+from ...accounts.models import AccountBalance
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
-from ...savings.factories import SavingFactory, SavingTypeFactory
-from ..models import Saving, SavingType
+from ...savings.factories import (SavingBalanceFactory, SavingFactory,
+                                  SavingTypeFactory)
+from ...savings.models import SavingBalance
+from ..models import Saving, SavingBalance, SavingType
 
 pytestmark = pytest.mark.django_db
 
@@ -185,3 +189,215 @@ def test_summary_to(savings):
     actual = [*Saving.objects.summary_to(1999).order_by('saving_type__title')]
 
     assert expect == actual
+
+
+def test_items_closed_in_past():
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    actual = SavingType.objects.items(3000)
+
+    assert 1 == actual.count()
+
+
+def test_items_closed_in_future():
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    actual = SavingType.objects.items(1000)
+
+    assert 2 == actual.count()
+
+
+def test_items_closed_in_current_year():
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    actual = SavingType.objects.items(2000)
+
+    assert 2 == actual.count()
+
+
+@freeze_time('1999-01-01')
+def test_saving_year_with_type_closed_in_future():
+    s1 = SavingTypeFactory(title='S1')
+    s2 = SavingTypeFactory(title='S2', closed=2000)
+
+    SavingFactory(date=date(1999, 1, 1), saving_type=s1)
+    SavingFactory(date=date(1999, 1, 1), saving_type=s2)
+
+    actual = Saving.objects.year(1999)
+
+    assert 2 == actual.count()
+
+
+@freeze_time('1999-01-01')
+def test_saving_year_with_type_closed_in_current_year():
+    s1 = SavingTypeFactory(title='S1')
+    s2 = SavingTypeFactory(title='S2', closed=1999)
+
+    SavingFactory(date=date(1999, 1, 1), saving_type=s1)
+    SavingFactory(date=date(1999, 1, 1), saving_type=s2)
+
+    actual = Saving.objects.year(1999)
+
+    assert 2 == actual.count()
+
+
+@freeze_time('1999-01-01')
+def test_saving_year_with_type_closed_in_past():
+    s1 = SavingTypeFactory(title='S1')
+    s2 = SavingTypeFactory(title='S2', closed=1974)
+
+    SavingFactory(date=date(1999, 1, 1), saving_type=s1)
+    SavingFactory(date=date(1999, 1, 1), saving_type=s2)
+
+    actual = Saving.objects.year(1999)
+
+    assert 1 == actual.count()
+
+
+# ----------------------------------------------------------------------------
+#                                                               SavingBalance
+# ----------------------------------------------------------------------------
+def test_saving_balance_init():
+    actual = SavingBalanceFactory.build()
+
+    assert str(actual.saving_type) == 'Savings'
+
+    assert actual.past_amount == 2.0
+    assert actual.past_fee == 2.1
+    assert actual.fees == 2.2
+    assert actual.invested == 2.3
+    assert actual.incomes == 2.4
+    assert actual.market_value == 2.5
+    assert actual.profit_incomes_proc == 2.6
+    assert actual.profit_incomes_sum == 2.7
+    assert actual.profit_invested_proc == 2.8
+    assert actual.profit_invested_sum == 2.9
+
+
+def test_saving_balance_str():
+    actual = SavingBalanceFactory.build()
+
+    assert str(actual) == 'Savings'
+
+
+@pytest.mark.django_db
+def test_saving_balance_items():
+    SavingBalanceFactory(year=1998)
+    SavingBalanceFactory(year=1999)
+    SavingBalanceFactory(year=2000)
+
+    actual = SavingBalance.objects.items(1999)
+
+    assert len(actual) == 1
+
+
+def test_saving_balance_queries(django_assert_num_queries):
+    s1 = SavingTypeFactory(title='s1')
+    s2 = SavingTypeFactory(title='s2')
+
+    SavingBalanceFactory(saving_type=s1)
+    SavingBalanceFactory(saving_type=s2)
+
+    with django_assert_num_queries(1) as captured:
+        q = SavingBalance.objects.items()
+        for i in q:
+            title = i['title']
+
+
+# ----------------------------------------------------------------------------
+#                                                             post_save signal
+# ----------------------------------------------------------------------------
+def test_post_save_account_balace_insert(mock_crequest):
+    a1 = AccountFactory()
+    a2 = AccountFactory(title='a2')
+
+    s1 = SavingTypeFactory()
+
+    obj = Saving(
+        date=date(1999, 1, 1),
+        price=Decimal(1),
+        fee=Decimal(0.5),
+        account=a1,
+        saving_type=s1
+    )
+
+    obj.save()
+
+    actual = AccountBalance.objects.items(1999)
+
+    assert 1 == actual.count()
+
+    actual = actual[0]
+
+    assert 'Account1' == actual['title']
+    assert 0.0 == actual['past']
+    assert 0.0 == actual['incomes']
+    assert 1.0 == actual['expenses']
+    assert -1.0 == actual['balance']
+
+
+def test_post_save_saving_balace_insert(mock_crequest,
+                                        savings, savings_close, savings_change,
+                                        savings_worth):
+    account = AccountFactory()
+    s1 = SavingType.objects.get(id=1)
+
+    obj = Saving(
+        date=date(1999, 1, 1),
+        price=Decimal(0.05),
+        fee=Decimal(0.0),
+        account=account,
+        saving_type=s1
+    )
+
+    obj.save()
+
+    actual = SavingBalance.objects.items(1999)
+
+    assert 1 == actual.count()
+
+    actual = actual[0]
+
+    assert 'Saving1' == actual['title']
+
+    assert round(actual['past_amount'], 2) == -1.25
+    assert round(actual['past_fee'], 2) == 0.4
+    assert round(actual['incomes'], 2) == 0.80
+    assert round(actual['fees'], 2) == 0.95
+    assert round(actual['invested'], 2) == -0.15
+    assert round(actual['market_value'], 2) == 0.15
+    assert round(actual['profit_incomes_proc'], 2) == -81.25
+    assert round(actual['profit_incomes_sum'], 2) == -0.65
+    assert round(actual['profit_invested_proc'], 2) == -200.0
+    assert round(actual['profit_invested_sum'], 2) == 0.30
+
+
+def test_post_save_saving_type_insert_saving_balance(mock_crequest):
+    obj = SavingType(title='s1')
+    obj.save()
+
+    actual = SavingBalance.objects.items()
+
+    assert 1 == actual.count()
+
+    actual = actual[0]
+
+    assert 's1' == actual['title']
+
+
+def test_post_save_saving_type_insert_new_account_balance(mock_crequest):
+    AccountFactory()
+
+    obj = SavingType(title='s1')
+    obj.save()
+
+    actual = AccountBalance.objects.items()
+
+    assert 1 == actual.count()
+
+    actual = actual[0]
+
+    assert 'Account1' == actual['title']

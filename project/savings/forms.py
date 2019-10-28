@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from bootstrap_datepicker_plus import DatePickerInput
+from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 
@@ -11,12 +11,22 @@ from .models import Saving, SavingType
 class SavingTypeForm(forms.ModelForm):
     class Meta:
         model = SavingType
-        fields = ['title']
+        fields = ['title', 'closed']
+
+        widgets = {
+            'closed': YearPickerInput(
+                options={
+                    "format": "YYYY",
+                    "locale": "lt",
+                }
+            ),
+        }
 
     def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields['title'].label = 'Fondas'
+        self.fields['closed'].label = 'Uždaryta'
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -56,6 +66,8 @@ class SavingForm(forms.ModelForm):
         self.fields['fee'].label = 'Mokesčiai'
         self.fields['remark'].label = 'Pastaba'
         self.fields['saving_type'].label = 'Fondas'
+
+        self.fields['saving_type'].queryset = SavingType.objects.items(year)
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

@@ -46,6 +46,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
         '''
         return:
             {
+                'id': account.id,
                 'title': account.title,
                 'i_past': Decimal(),
                 'i_now': Decimal()
@@ -66,7 +67,12 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
                         When(**{'date__year': year}, then='price'),
                         default=0))
             )
-            .values('i_past', 'i_now', title=models.F('account__title'))
+            .values(
+                'i_past',
+                'i_now',
+                title=models.F('account__title'),
+                id=models.F('account__pk')
+            )
         )
 
 

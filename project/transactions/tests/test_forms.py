@@ -15,7 +15,7 @@ def test_transactions_init():
 
 
 @pytest.mark.django_db
-def test_transactions_valid_data():
+def test_transactions_valid_data(mock_crequest):
     a_from = AccountFactory()
     a_to = AccountFactory(title='Account2')
 
@@ -70,7 +70,7 @@ def test_savings_close_init():
 
 
 @pytest.mark.django_db
-def test_savings_close_valid_data():
+def test_savings_close_valid_data(mock_crequest):
     a_from = SavingTypeFactory()
     a_to = AccountFactory(title='Account2')
 
@@ -122,12 +122,45 @@ def test_savings_close_price_null():
     assert 'price' in form.errors
 
 
+@pytest.mark.django_db
+def test_savings_close_form_type_closed_in_past():
+    t = SavingTypeFactory(title='S1')
+    t = SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingCloseForm(data={}, year=3000)
+
+    assert 'S1' in str(form['from_account'])
+    assert 'S2' not in str(form['from_account'])
+
+
+@pytest.mark.django_db
+def test_savings_close_form_type_closed_in_future():
+    t = SavingTypeFactory(title='S1')
+    t = SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingCloseForm(data={}, year=1000)
+
+    assert 'S1' in str(form['from_account'])
+    assert 'S2' in str(form['from_account'])
+
+
+@pytest.mark.django_db
+def test_savings_close_form_type_closed_in_current_year():
+    t = SavingTypeFactory(title='S1')
+    t = SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingCloseForm(data={}, year=2000)
+
+    assert 'S1' in str(form['from_account'])
+    assert 'S2' in str(form['from_account'])
+
+
 def test_savings_change_init():
     SavingChangeForm()
 
 
 @pytest.mark.django_db
-def test_savings_change_valid_data():
+def test_savings_change_valid_data(mock_crequest):
     a_from = SavingTypeFactory()
     a_to = SavingTypeFactory(title='Savings2')
 
@@ -177,3 +210,44 @@ def test_savings_change_price_null():
     assert not form.is_valid()
 
     assert 'price' in form.errors
+
+@pytest.mark.django_db
+def test_savings_change_form_type_closed_in_past():
+    t = SavingTypeFactory(title='S1')
+    t = SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingChangeForm(data={}, year=3000)
+
+    assert 'S1' in str(form['from_account'])
+    assert 'S2' not in str(form['from_account'])
+
+    assert 'S1' in str(form['to_account'])
+    assert 'S2' not in str(form['to_account'])
+
+
+@pytest.mark.django_db
+def test_savings_change_form_type_closed_in_future():
+    t = SavingTypeFactory(title='S1')
+    t = SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingChangeForm(data={}, year=1000)
+
+    assert 'S1' in str(form['from_account'])
+    assert 'S2' in str(form['from_account'])
+
+    assert 'S1' in str(form['to_account'])
+    assert 'S2' in str(form['to_account'])
+
+
+@pytest.mark.django_db
+def test_savings_change_form_type_closed_in_current_year():
+    t = SavingTypeFactory(title='S1')
+    t = SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingChangeForm(data={}, year=2000)
+
+    assert 'S1' in str(form['from_account'])
+    assert 'S2' in str(form['from_account'])
+
+    assert 'S1' in str(form['to_account'])
+    assert 'S2' in str(form['to_account'])

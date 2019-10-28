@@ -3,77 +3,13 @@ import json
 import pytest
 from django.urls import resolve, reverse
 
+from ...accounts.factories import AccountFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
+from ...core.tests.utils import setup_view
 from ...savings.factories import SavingTypeFactory
 from .. import views
-from ...accounts.factories import AccountFactory
-
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
-
-
-@pytest.mark.django_db()
-def test_index_context_for_accounts(
-    client, login,
-    incomes, expenses, savings, transactions,
-    savings_close, accounts_worth
-):
-    url = reverse('bookkeeping:index')
-    response = client.get(url)
-
-    expect = [{
-        'title': 'Account1',
-        'past': 5.75,
-        'incomes': 6.75,
-        'expenses': 8.5,
-        'balance': 4.0,
-        'have': 3.25,
-        'delta': -0.75
-    }, {
-        'title': 'Account2',
-        'past': -2.0,
-        'incomes': 8.0,
-        'expenses': 6.75,
-        'balance': -0.75,
-        'have': 8.0,
-        'delta': 8.75
-    }]
-
-    assert_(expect, response.context['accounts'])
-
-
-@pytest.mark.django_db()
-def test_index_context_for_savings(client, login, savings):
-    url = reverse('bookkeeping:index')
-    response = client.get(url)
-
-    expect = [{
-        'title': 'Saving1',
-        'past_amount': 1.25,
-        'past_fee': 0.25,
-        'incomes': 4.75,
-        'fees': 0.75,
-        'invested': 4.0,
-        'market_value': 0.0,
-        'profit_incomes_proc': 0.0,
-        'profit_incomes_sum': 0.0,
-        'profit_invested_proc': 0.0,
-        'profit_invested_sum': 0.0,
-    }, {
-        'title': 'Saving2',
-        'past_amount': 0.25,
-        'past_fee': 0.0,
-        'incomes': 2.50,
-        'fees': 0.25,
-        'invested': 2.25,
-        'market_value': 0.0,
-        'profit_incomes_proc': 0.0,
-        'profit_incomes_sum': 0.0,
-        'profit_invested_proc': 0.0,
-        'profit_invested_sum': 0.0,
-    }]
-
-    assert_(expect, response.context['fund'])
 
 
 def test_view_index_func():
@@ -236,3 +172,48 @@ def test_view_account_worth_invalid_data(client, login):
     actual = json.loads(json_str)
 
     assert not actual['form_is_valid']
+
+
+@pytest.mark.django_db()
+def test_saving_worth_formset_saving_type_closed_in_past(_fake_request):
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=1000)
+
+    _fake_request.user.profile.year = 2000
+
+    view = setup_view(views.SavingsWorthNew(), _fake_request)
+
+    actual = str(view._get_formset())
+
+    assert 'S1' in actual
+    assert 'S2' not in actual
+
+
+@pytest.mark.django_db()
+def test_saving_worth_formset_saving_type_closed_in_current(_fake_request):
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=1000)
+
+    _fake_request.user.profile.year = 1000
+
+    view = setup_view(views.SavingsWorthNew(), _fake_request)
+
+    actual = str(view._get_formset())
+
+    assert 'S1' in actual
+    assert 'S2' in actual
+
+
+@pytest.mark.django_db()
+def test_saving_worth_formset_saving_type_closed_in_future(_fake_request):
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=1000)
+
+    _fake_request.user.profile.year = 1
+
+    view = setup_view(views.SavingsWorthNew(), _fake_request)
+
+    actual = str(view._get_formset())
+
+    assert 'S1' in actual
+    assert 'S2' in actual
