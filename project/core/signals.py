@@ -23,6 +23,7 @@ from ..transactions.models import SavingChange, SavingClose, Transaction
 @receiver(post_save, sender=Expense)
 @receiver(post_save, sender=ExpenseType)
 @receiver(post_save, sender=Saving)
+@receiver(post_save, sender=SavingType)
 @receiver(post_save, sender=Transaction)
 @receiver(post_save, sender=SavingClose)
 @receiver(post_save, sender=AccountWorth)

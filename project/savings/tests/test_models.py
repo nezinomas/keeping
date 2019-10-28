@@ -375,7 +375,7 @@ def test_post_save_saving_balace_insert(mock_crequest,
     assert round(actual['profit_invested_sum'], 2) == 0.30
 
 
-def test_post_save_saving_type_insert_new(mock_crequest):
+def test_post_save_saving_type_insert_saving_balance(mock_crequest):
     obj = SavingType(title='s1')
     obj.save()
 
@@ -386,3 +386,18 @@ def test_post_save_saving_type_insert_new(mock_crequest):
     actual = actual[0]
 
     assert 's1' == actual['title']
+
+
+def test_post_save_saving_type_insert_new_account_balance(mock_crequest):
+    AccountFactory()
+
+    obj = SavingType(title='s1')
+    obj.save()
+
+    actual = AccountBalance.objects.items()
+
+    assert 1 == actual.count()
+
+    actual = actual[0]
+
+    assert 'Account1' == actual['title']
