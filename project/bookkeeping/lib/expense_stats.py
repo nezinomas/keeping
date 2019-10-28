@@ -117,3 +117,20 @@ class MonthsExpenseType(BalanceStats):
             # transfort arr for pie chart
             rtn = [{'name': key, 'y': value} for key, value in arr.items()]
         return rtn
+
+    @property
+    def total_column(self) -> Dict[str, float]:
+        val = {}
+
+        if not isinstance(self._balance, pd.DataFrame):
+            return val
+
+        if self._balance.empty:
+            return val
+
+        df = self._balance.copy()
+        df = df.reset_index()
+        df = df.rename(columns={'total': 'sum'})
+        df = df[['date', 'sum']]
+
+        return df.to_dict('records')

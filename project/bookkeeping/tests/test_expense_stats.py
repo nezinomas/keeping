@@ -286,3 +286,24 @@ def test_month_chart_target_data_fact_target_empty(_ex):
     ]
 
     assert expect == actual
+
+
+def test_months_expense_type_total_column(_ex):
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': 0.75},
+        {'date': date(1999, 2, 1), 'sum': 0.0},
+        {'date': date(1999, 3, 1), 'sum': 0.0},
+        {'date': date(1999, 4, 1), 'sum': 0.0},
+        {'date': date(1999, 5, 1), 'sum': 0.0},
+        {'date': date(1999, 6, 1), 'sum': 0.0},
+        {'date': date(1999, 7, 1), 'sum': 0.0},
+        {'date': date(1999, 8, 1), 'sum': 0.0},
+        {'date': date(1999, 9, 1), 'sum': 0.0},
+        {'date': date(1999, 10, 1), 'sum': 0.0},
+        {'date': date(1999, 11, 1), 'sum': 0.0},
+        {'date': date(1999, 12, 1), 'sum': 1.1},
+    ]
+
+    actual = MonthsExpenseType(1999, _ex).total_column
+
+    assert expect == actual
