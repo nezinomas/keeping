@@ -104,14 +104,24 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
         )
 
     def day_expense_type(self, year, month):
-        summed_name = 'sum'
-
         return (
-            super()
-            .sum_by_day(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values('date', summed_name, title=F('expense_type__title'))
+            self
+            .filter(date__year=year)
+            .filter(date__month=month)
+            .annotate(c=Count('id'))
+            .values('c')
+            .annotate(date=TruncDay('date'))
+            .annotate(sum=Sum('price'))
+            .annotate(
+                __exception__=Sum(
+                    Case(When(exception=1, then='price'), default=0.0))
+            )
+            .order_by('date')
+            .values(
+                'date',
+                'sum',
+                '__exception__',
+                title=F('expense_type__title'))
         )
 
     def summary(self, year: int) -> List[Dict[str, Any]]:

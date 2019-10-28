@@ -45,8 +45,17 @@ def test_month_expense_type_one_month(expenses):
 
 def test_day_expense_type(expenses_january):
     expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(0.5), 'title': 'Expense Type'},
-        {'date': date(1999, 1, 11), 'sum': Decimal(0.5), 'title': 'Expense Type'},
+        {
+            'date': date(1999, 1, 1),
+            'sum': Decimal(0.5),
+            'title': 'Expense Type',
+            '__exception__': Decimal(0.25),
+        }, {
+            'date': date(1999, 1, 11),
+            'sum': Decimal(0.5),
+            'title': 'Expense Type',
+            '__exception__': Decimal(0),
+        },
     ]
 
     actual = [*Expense.objects.day_expense_type(1999, 1)]
