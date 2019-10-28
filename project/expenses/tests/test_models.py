@@ -22,17 +22,6 @@ def expenses_more():
     )
 
 
-def test_sums_months(expenses):
-    expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(0.5)},
-        {'date': date(1999, 12, 1), 'sum': Decimal(1.25)},
-    ]
-
-    actual = [*Expense.objects.month_expense(1999)]
-
-    assert expect == actual
-
-
 def test_month_expense_type(expenses):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(0.5), 'title': 'Expense Type'},
@@ -40,16 +29,6 @@ def test_month_expense_type(expenses):
     ]
 
     actual = [*Expense.objects.month_expense_type(1999)]
-
-    assert expect == actual
-
-
-def test_sums_months_one_month(expenses):
-    expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(0.5)},
-    ]
-
-    actual = [*Expense.objects.month_expense(1999, 1)]
 
     assert expect == actual
 
