@@ -74,9 +74,15 @@ class Expenses():
 
         for row in lst:
             val = row.get('exception_sum', 0.0)
-            df.at[row['date'], 'exception'] = float(val)
+            df.at[row['date'], row['title']] = float(val)
 
         df.fillna(0.0, inplace=True)
+
+        # sum all title columns
+        df['sum'] = df.sum(axis=1)
+
+        # select oncly index and sum columns
+        df = df.loc[:,['sum']]
 
         return df
 
