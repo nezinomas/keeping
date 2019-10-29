@@ -21,7 +21,6 @@ def df_days_of_month(year: int, month: int) -> pd.DataFrame:
     except:
         return df
 
-    df.loc[:, 'total'] = 0.0
     df.set_index('date', inplace=True)
 
     return df
@@ -38,7 +37,6 @@ def df_months_of_year(year: int) -> pd.DataFrame:
     except:
         return df
 
-    df.loc[:, 'total'] = 0.0
     df.set_index('date', inplace=True)
 
     return df

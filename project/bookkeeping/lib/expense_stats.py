@@ -2,36 +2,92 @@ from datetime import datetime
 from operator import itemgetter
 from typing import Dict, List
 
-import pandas as pd
+from pandas import DataFrame as DF
 
 from ...core.lib.colors import CHART
 from ...core.mixins.calc_balance import (BalanceStats, df_days_of_month,
                                          df_months_of_year)
 
 
-def calc(expenses: List[Dict], df: pd.DataFrame, **kwargs) -> pd.DataFrame:
-    # copy values from expenses to data_frame
-    if expenses:
-        for d in expenses:
-            df.at[d['date'], d['title']] = float(d['sum'])
+class Expenses():
+    def __init__(self, df: DF, expenses: List[Dict], **kwargs):
+        _expenses = self._expenses_df(df, expenses)
+        _savings = self._savings_df(df, kwargs)
 
-    if kwargs:
-        for title, arr in kwargs.items():
+        self._exceptions = self._exception_df(df, expenses)
+        self._expenses = self._calc(_expenses, _savings)
+
+    @property
+    def exceptions(self) -> List[Dict]:
+        val = []
+
+        if self._exceptions.empty:
+            return val
+
+        arr = self._exceptions.copy()
+        arr.reset_index(inplace=True)
+
+        return arr.to_dict('records')
+
+    @property
+    def expenses(self) -> DF:
+        return self._expenses
+
+    def _calc(self, expenses: DF, savings: DF) -> DF:
+        df = expenses.copy()
+        df = expenses.join(savings)
+        df['total'] = df.sum(axis=1)
+
+        return df
+
+    def _expenses_df(self, df: DF, lst: List[Dict]) -> DF:
+        df = df.copy()
+        if not lst:
+            return df
+
+        for row in lst:
+            df.at[row['date'], row['title']] = float(row['sum'])
+
+        df.fillna(0.0, inplace=True)
+
+        return df
+
+    def _savings_df(self, df: DF, lst: Dict[str, Dict]) -> DF:
+        df = df.copy()
+        if not lst:
+            return df
+
+        for title, arr in lst.items():
             for row in arr:
-                if 'date' in row and 'sum' in row:
-                    df.at[row['date'], title] = float(row['sum'])
+                _title = row.get('title', title)
+                df.at[row['date'], title] = float(row['sum'])
 
-    df.fillna(0.0, inplace=True)
+        df.fillna(0.0, inplace=True)
 
-    df['total'] = df.sum(axis=1)
+        return df
 
-    return df
+    def _exception_df(self, df: DF, lst: List[Dict]) -> DF:
+        df = df.copy()
+
+        if not lst:
+            return df
+
+        for row in lst:
+            val = row.get('exception_sum', 0.0)
+            df.at[row['date'], 'exception'] = float(val)
+
+        df.fillna(0.0, inplace=True)
+
+        return df
 
 
-class MonthExpenseType(BalanceStats):
+class MonthExpenseType(BalanceStats, Expenses):
     def __init__(self, year: int, month: int, expenses: List[Dict], **kwargs):
         self._balance = df_days_of_month(year, month)
-        self._balance = calc(expenses, self._balance, **kwargs)
+
+        Expenses.__init__(self, self._balance, expenses, **kwargs)
+
+        self._balance = self.expenses
 
     @property
     def total(self):
@@ -93,10 +149,13 @@ class MonthExpenseType(BalanceStats):
         return (rtn_categories, rtn_data_target, rtn_data_fact)
 
 
-class MonthsExpenseType(BalanceStats):
+class MonthsExpenseType(BalanceStats, Expenses):
     def __init__(self, year, expenses: List[Dict], **kwargs):
         self._balance = df_months_of_year(year)
-        self._balance = calc(expenses, self._balance, **kwargs)
+
+        Expenses.__init__(self, self._balance, expenses, **kwargs)
+
+        self._balance = self.expenses
 
     @property
     def chart_data(self) -> List[Dict[str, float]]:
@@ -118,7 +177,7 @@ class MonthsExpenseType(BalanceStats):
     def total_column(self) -> Dict[str, float]:
         val = {}
 
-        if not isinstance(self._balance, pd.DataFrame):
+        if not isinstance(self._balance, DF):
             return val
 
         if self._balance.empty:
