@@ -34,10 +34,6 @@ class MonthExpenseType(BalanceStats):
         self._balance = calc(expenses, self._balance, **kwargs)
 
     @property
-    def balance_df(self):
-        return self._balance
-
-    @property
     def total(self):
         t = super().total_row
 

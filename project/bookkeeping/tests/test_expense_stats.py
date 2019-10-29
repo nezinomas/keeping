@@ -149,13 +149,6 @@ def test_months_with_only_savings(_savings):
     assert expect == actual[0]
 
 
-def test_month_return_dataframe(_ex):
-    actual = MonthExpenseType(year=1999, month=1, expenses=_ex[:2]).balance_df
-
-    assert isinstance(actual, pd.DataFrame)
-    assert 31 == len(actual)
-
-
 def test_month_total(_ex):
     actual = MonthExpenseType(year=1999, month=1, expenses=_ex[:2]).total
 
