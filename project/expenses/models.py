@@ -115,9 +115,10 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
             self
             .filter(date__year=year)
             .filter(date__month=month)
-            .annotate(c=Count('id'))
-            .values('c')
+            .annotate(cnt_id=Count('id'))
+            .values('cnt_id')
             .annotate(date=TruncDay('date'))
+            .values('date')
             .annotate(sum=Sum('price'))
             .annotate(
                 exception_sum=Sum(
