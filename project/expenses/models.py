@@ -181,9 +181,9 @@ class Expense(models.Model):
     class Meta:
         ordering = ['-date', 'expense_type', F('expense_name').asc(), 'price']
         indexes = [
-            models.Index(fields=['account', 'expense_type']),
-            models.Index(fields=['expense_type']),
             models.Index(fields=['date']),
+            models.Index(fields=['expense_type']),
+            models.Index(fields=['expense_name']),
         ]
 
     def __str__(self):
