@@ -7,7 +7,6 @@ from django.db.models import Case, Count, F, Q, Sum, When
 from django.db.models.functions import TruncDay, TruncMonth
 
 from ..accounts.models import Account
-from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
 
 
@@ -71,7 +70,7 @@ class ExpenseName(TitleAbstract):
     objects = ExpenseNameQuerySet.as_manager()
 
 
-class ExpenseQuerySet(SumMixin, models.QuerySet):
+class ExpenseQuerySet(models.QuerySet):
     def _related(self):
         return self.select_related('expense_type', 'expense_name', 'account')
 
@@ -96,18 +95,6 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
                 'date',
                 'sum',
                 title=F('expense_type__title'))
-        )
-
-    def month_exceptions(self, year, month=None):
-        summed_name = 'sum'
-
-        return (
-            super()
-            .filter(exception=True)
-            .sum_by_day(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values(summed_name, 'date', title=F('expense_type__title'))
         )
 
     def day_expense_type(self, year, month):

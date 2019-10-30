@@ -53,14 +53,6 @@ def test_day_expense_type(expenses_january):
     assert expect == actual
 
 
-def test_month_exception_sum(expenses_january, expenses_more):
-    actual = [*Expense.objects.month_exceptions(1999, 1)]
-
-    assert date(1999, 1, 1) == actual[0]['date']
-    assert 'Expense Type' == actual[0]['title']
-    assert round(Decimal(0.55), 2) == round(actual[0]['sum'], 2)
-
-
 def test_expense_str():
     e = ExpenseFactory.build()
 
