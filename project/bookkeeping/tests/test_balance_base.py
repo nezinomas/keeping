@@ -2,8 +2,8 @@ import pandas as pd
 import pytest
 from freezegun import freeze_time
 
-from ...core.mixins.balance_base import (BalanceBase, df_days_of_month,
-                                         df_months_of_year)
+from ...core.lib.balance_base import (BalanceBase, df_days_of_month,
+                                      df_months_of_year)
 
 
 def create_df():

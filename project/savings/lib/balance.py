@@ -3,8 +3,8 @@ from typing import Dict, List
 from pandas import DataFrame as DF
 from pandas import to_numeric
 
-from ...core.mixins.balance_base import BalanceBase
 from ...bookkeeping.lib.helpers import calc_percent, calc_sum
+from ...core.lib.balance_base import BalanceBase
 
 
 class Balance(BalanceBase):

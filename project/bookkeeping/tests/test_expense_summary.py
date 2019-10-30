@@ -4,7 +4,7 @@ from decimal import Decimal
 import pandas as pd
 import pytest
 
-from ...core.mixins.balance_base import df_months_of_year
+from ...core.lib.balance_base import df_months_of_year
 from ..lib.expense_summary import DayExpense, ExpenseBase, MonthExpense
 
 

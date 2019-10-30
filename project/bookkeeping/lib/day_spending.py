@@ -1,8 +1,8 @@
-from typing import List, Dict
+from typing import Dict, List
 
 import pandas as pd
 
-from ...core.mixins.balance_base import BalanceBase
+from ...core.lib.balance_base import BalanceBase
 from ...core.lib.utils import get_value_from_dict
 
 

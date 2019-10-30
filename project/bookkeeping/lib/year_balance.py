@@ -3,7 +3,7 @@ from typing import Dict, List
 
 from pandas import DataFrame as DF
 
-from ...core.mixins.balance_base import BalanceBase, df_months_of_year
+from ...core.lib.balance_base import BalanceBase, df_months_of_year
 
 
 class YearBalance(BalanceBase):
