@@ -1,11 +1,9 @@
 from datetime import date
 from typing import Dict, List
 
-import pandas as pd
+from pandas import DataFrame as DF
 
-from ...core.mixins.balance_base import (BalanceBase,
-                                         df_days_of_month,
-                                         df_months_of_year)
+from ...core.mixins.balance_base import BalanceBase, df_months_of_year
 
 
 class YearBalance(BalanceBase):
@@ -43,7 +41,13 @@ class YearBalance(BalanceBase):
         if not incomes and not expenses:
             return
 
-        self._balance = self._make_df(year, incomes, expenses, savings, savings_close)
+        self._balance = self._make_df(
+            year=year,
+            incomes=incomes,
+            expenses=expenses,
+            savings=savings,
+            savings_close=savings_close)
+
         self._balance = self._calc(self._balance)
 
     @property
@@ -99,8 +103,12 @@ class YearBalance(BalanceBase):
 
         return rtn
 
-    def _make_df(self, year: int, incomes: List[Dict], expenses: List[Dict],
-                 savings: List[Dict], savings_close: List[Dict]) -> pd.DataFrame:
+    def _make_df(self,
+                 year: int,
+                 incomes: List[Dict],
+                 expenses: List[Dict],
+                 savings: List[Dict],
+                 savings_close: List[Dict]) -> DF:
 
         df = df_months_of_year(year)
 
@@ -132,15 +140,14 @@ class YearBalance(BalanceBase):
 
         return df
 
-    def _clean_df(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _clean_df(self, df: DF) -> DF:
         # delete not necessary columns
         df.drop('savings', axis=1, inplace=True)
         df.drop('savings_close', axis=1, inplace=True)
-        # df.drop('total', axis=1, inplace=True)
 
         return df
 
-    def _calc(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _calc(self, df: DF) -> DF:
         # calculate balance
         df['incomes'] = df.incomes + df.savings_close
         df['expenses'] = df.expenses + df.savings
