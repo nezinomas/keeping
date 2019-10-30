@@ -11,9 +11,13 @@ class DaySpending(BalanceStats):
     _avg_per_day = pd.DataFrame()
     _spending = pd.DataFrame()
 
-    def __init__(self, year: int, month: int, month_df: pd.DataFrame,
+    def __init__(self,
+                 year: int,
+                 month: int,
+                 month_df: pd.DataFrame,
                  necessary: List[str], plan_day_sum: float,
-                 plan_free_sum: float, exceptions: Dict = {}):
+                 plan_free_sum: float,
+                 exceptions: pd.DataFrame = pd.DataFrame()):
 
         if not isinstance(month_df, pd.DataFrame):
             return
@@ -74,10 +78,8 @@ class DaySpending(BalanceStats):
         df = df.loc[:, ['total']]
 
         # remove exceptions sums from total_row
-        if self._exceptions:
-            for ex in self._exceptions:
-                cell = (ex['date'], 'total')
-                df.loc[cell] = df.loc[cell] - float(ex['sum'])
+        if not self._exceptions.empty:
+            df['total'] = df['total'] - self._exceptions['sum']
 
         df.loc[:, 'teoretical'] = 0.0
         df.loc[:, 'real'] = 0.0
