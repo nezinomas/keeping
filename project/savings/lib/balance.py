@@ -31,7 +31,7 @@ class Balance(BalanceBase):
             return
 
         df = self._prepare(stats)
-        df = self._balance_base(df)
+        df = self._calc_balance(df)
         df = self._calc_have(df, worth)
         df = self._calc_profit(df)
         df = self._drop_columns(df)
@@ -73,7 +73,7 @@ class Balance(BalanceBase):
 
         return stats
 
-    def _balance_base(self, df: DF) -> DF:
+    def _calc_balance(self, df: DF) -> DF:
         df['past_amount'] = (
             0.0
             + df['s_past']
@@ -125,9 +125,6 @@ class Balance(BalanceBase):
         return df
 
     def _calc_profit(self, df: DF) -> DF:
-        if df.empty:
-            return df
-
         # calculate percent of profit/loss
         df['profit_incomes_proc'] = (
             df[['market_value', 'incomes']]
