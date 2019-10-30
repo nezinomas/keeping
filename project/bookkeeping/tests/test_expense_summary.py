@@ -332,3 +332,10 @@ def test_month_total_column(_ex):
     actual = MonthExpense(1999, _ex).total_column
 
     assert expect == actual
+
+
+def test_month_total_column_empty_data():
+    actual = MonthExpense(1999, []).total_column
+
+    assert actual
+    assert 12 == len(actual)
