@@ -1,21 +1,26 @@
 from ..accounts.models import Account, AccountBalance
+
 from ..core.lib.date import current_day, year_month_list
+from ..core.lib.summary import collect_summary_data
 from ..core.lib.utils import get_value_from_dict, sum_all, sum_col
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin
+
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..plans.lib.calc_day_sum import CalcDaySum
 from ..plans.models import DayPlan
 from ..savings.models import Saving, SavingType
 from ..transactions.models import SavingClose
+
 from .forms import AccountWorthForm, SavingWorthForm
+
 from .lib import views_helpers
 from .lib.day_spending import DaySpending
 from .lib.expense_summary import DayExpense, MonthExpense
-from .lib.year_balance import YearBalance
 from .lib.no_incomes import NoIncomes
-from .lib.summary import collect_summary_data
+from .lib.year_balance import YearBalance
+
 from .models import AccountWorth, SavingWorth
 
 
