@@ -4,16 +4,30 @@ from decimal import Decimal
 import pandas as pd
 import pytest
 
-from ..lib.expense_summary import DayExpense, MonthExpense
+from ...core.mixins.balance_base import df_months_of_year
+from ..lib.expense_summary import DayExpense, ExpenseBase, MonthExpense
 
 
 @pytest.fixture
 def _ex():
     return ([
-        {'date': date(1999, 1, 1), 'sum': Decimal(0.25), 'title': 'T1'},
-        {'date': date(1999, 1, 1), 'sum': Decimal(0.5), 'title': 'T2'},
-        {'date': date(1999, 12, 1), 'sum': Decimal(0.75), 'title': 'T1'},
-        {'date': date(1999, 12, 1), 'sum': Decimal(0.35), 'title': 'T2'},
+        {
+            'date': date(1999, 1, 1),
+            'title': 'T1',
+            'sum': Decimal(0.25), 'exception_sum': Decimal(1.0)
+        }, {
+            'date': date(1999, 1, 1),
+            'title': 'T2',
+            'sum': Decimal(0.5), 'exception_sum': Decimal(0)
+        }, {
+            'date': date(1999, 12, 1),
+            'title': 'T1',
+            'sum': Decimal(0.75), 'exception_sum': Decimal(0)
+        }, {
+            'date': date(1999, 12, 1),
+            'title': 'T2',
+            'sum': Decimal(0.35), 'exception_sum': Decimal(0)
+        },
     ])
 
 
@@ -31,6 +45,40 @@ def _savings():
             {'date': date(1999, 1, 1), 'sum': Decimal(0.5)},
         ]
     })
+
+
+# ----------------------------------------------------------------------------
+#                                                                  ExpenseBase
+# ----------------------------------------------------------------------------
+def test_base_expenses_exceptions_same_size(_ex):
+    df = df_months_of_year(1999)
+
+    actual = ExpenseBase(df, _ex)
+
+    assert actual.exceptions.shape[0] == actual.expenses.shape[0]
+
+
+def test_base_exceptions(_ex):
+    df = df_months_of_year(1999)
+
+    actual = ExpenseBase(df, _ex).exceptions
+
+    assert isinstance(actual, pd.DataFrame)
+    assert 1.0 == actual.at['1999-01-01', 'sum']
+
+
+def test_base_expenses(_ex):
+    df = df_months_of_year(1999)
+
+    actual = ExpenseBase(df, _ex).expenses
+
+    assert isinstance(actual, pd.DataFrame)
+
+    assert 0.25 == actual.at['1999-01-01', 'T1']
+    assert 0.5 == actual.at['1999-01-01', 'T2']
+
+    assert 0.75 == actual.at['1999-12-01', 'T1']
+    assert 0.35 == actual.at['1999-12-01', 'T2']
 
 
 # ----------------------------------------------------------------------------
