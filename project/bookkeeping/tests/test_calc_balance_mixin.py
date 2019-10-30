@@ -3,7 +3,7 @@ import pytest
 from freezegun import freeze_time
 
 from ...core.mixins.calc_balance import (BalanceStats, df_days_of_month,
-                                   df_months_of_year)
+                                         df_months_of_year)
 
 
 def create_df():
@@ -76,7 +76,6 @@ def test_df_days_of_month():
     assert 29 == len(actual)
 
     assert 'date' == actual.index.name
-    assert 'total' in actual
 
 
 data_days_of_month = [
@@ -99,7 +98,6 @@ def test_df_months_of_year():
     assert 12 == len(actual)
 
     assert 'date' == actual.index.name
-    assert 'total' in actual
 
     assert pd.Timestamp(2020, 1, 1) == actual.index[0]
     assert pd.Timestamp(2020, 12, 1) == actual.index[-1]

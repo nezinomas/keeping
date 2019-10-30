@@ -147,6 +147,7 @@ class Month(IndexMixin):
             Expense.objects.day_expense_type(year, month),
             **{'Taupymas': Saving.objects.day_saving(year, month)}
         )
+
         _CalcDaySum = CalcDaySum(year)
 
         fact_incomes = Income.objects.income_sum(year, month)
@@ -167,11 +168,11 @@ class Month(IndexMixin):
         _DaySpending = DaySpending(
             year=year,
             month=month,
-            month_df=_MonthExpenseType.balance_df,
+            month_df=_MonthExpenseType.expenses,
             necessary=views_helpers.necessary_expense_types('Taupymas'),
             plan_day_sum=plan_day_sum,
             plan_free_sum=plan_free_sum,
-            exceptions=Expense.objects.month_exceptions(year, month)
+            exceptions=_MonthExpenseType.exceptions
         )
 
         context['month_list'] = year_month_list(year)

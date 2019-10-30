@@ -3,14 +3,19 @@ from typing import Dict, List
 
 import pandas as pd
 
-from ...core.mixins.calc_balance import (BalanceStats, df_days_of_month,
-                                   df_months_of_year)
+from ...core.mixins.calc_balance import (BalanceStats,
+                                         df_days_of_month,
+                                         df_months_of_year)
 
 
 class MonthsBalance(BalanceStats):
-    def __init__(self, year: int, incomes: List[Dict],
-                 expenses: List[Dict], savings: List[Dict]=[],
-                 savings_close: List[Dict]=[], amount_start: float=0.0):
+    def __init__(self,
+                 year: int,
+                 incomes: List[Dict],
+                 expenses: List[Dict],
+                 savings: List[Dict]=[],
+                 savings_close: List[Dict]=[],
+                 amount_start: float=0.0):
 
         '''
         year: int
@@ -131,7 +136,7 @@ class MonthsBalance(BalanceStats):
         # delete not necessary columns
         df.drop('savings', axis=1, inplace=True)
         df.drop('savings_close', axis=1, inplace=True)
-        df.drop('total', axis=1, inplace=True)
+        # df.drop('total', axis=1, inplace=True)
 
         return df
 
