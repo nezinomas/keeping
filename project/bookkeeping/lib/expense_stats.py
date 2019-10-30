@@ -18,16 +18,8 @@ class Expenses():
         self._expenses = self._calc(_expenses, _savings)
 
     @property
-    def exceptions(self) -> List[Dict]:
-        val = []
-
-        if self._exceptions.empty:
-            return val
-
-        arr = self._exceptions.copy()
-        arr.reset_index(inplace=True)
-
-        return arr.to_dict('records')
+    def exceptions(self) -> DF:
+        return self._exceptions
 
     @property
     def expenses(self) -> DF:
