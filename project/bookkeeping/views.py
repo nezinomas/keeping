@@ -13,7 +13,7 @@ from .forms import AccountWorthForm, SavingWorthForm
 from .lib import views_helpers
 from .lib.day_spending import DaySpending
 from .lib.expense_stats import MonthExpenseType, MonthsExpenseType
-from .lib.months_balance import MonthsBalance
+from .lib.year_balance import YearBalance
 from .lib.no_incomes import NoIncomes
 from .lib.summary import collect_summary_data
 from .models import AccountWorth, SavingWorth
@@ -38,7 +38,7 @@ class Index(IndexMixin):
         _MonthsExpenseType = MonthsExpenseType(
             year, qs_ExpenseType, **{'Taupymas': qs_savings})
 
-        _MonthsBalance = MonthsBalance(
+        _YearBalance = YearBalance(
             year=year,
             incomes=qs_income,
             expenses=_MonthsExpenseType.total_column,
@@ -47,10 +47,10 @@ class Index(IndexMixin):
 
         total_market = sum_col(_fund, 'market_value')
         _NoIncomes = NoIncomes(
-            money=_MonthsBalance.amount_end,
+            money=_YearBalance.amount_end,
             fund=total_market,
             pension=total_market,
-            avg_expenses=_MonthsBalance.avg_expenses,
+            avg_expenses=_YearBalance.avg_expenses,
             avg_type_expenses=_MonthsExpenseType.average,
             not_use=[
                 'Darbas',
@@ -63,19 +63,19 @@ class Index(IndexMixin):
         context['year'] = year
         context['accounts'] = views_helpers.render_accounts(
             self.request, _account,
-            **{'months_amount_end': _MonthsBalance.amount_end})
+            **{'months_amount_end': _YearBalance.amount_end})
         context['savings'] = views_helpers.render_savings(
             self.request, _fund, _pension)
-        context['balance'] = _MonthsBalance.balance
-        context['balance_total_row'] = _MonthsBalance.total_row
-        context['balance_avg'] = _MonthsBalance.average
-        context['amount_start'] = _MonthsBalance.amount_start
-        context['months_amount_end'] = _MonthsBalance.amount_end
+        context['balance'] = _YearBalance.balance
+        context['balance_total_row'] = _YearBalance.total_row
+        context['balance_avg'] = _YearBalance.average
+        context['amount_start'] = _YearBalance.amount_start
+        context['months_amount_end'] = _YearBalance.amount_end
         context['accounts_amount_end'] = sum_col(_account, 'balance')
-        context['amount_balance'] = _MonthsBalance.amount_balance
+        context['amount_balance'] = _YearBalance.amount_balance
         context['total_market'] = total_market
-        context['avg_incomes'] = _MonthsBalance.avg_incomes
-        context['avg_expenses'] = _MonthsBalance.avg_expenses
+        context['avg_incomes'] = _YearBalance.avg_incomes
+        context['avg_expenses'] = _YearBalance.avg_expenses
         context['expenses'] = _MonthsExpenseType.balance
         context['expense_types'] = _expense_types
         context['expenses_total_row'] = _MonthsExpenseType.total_row
@@ -85,9 +85,9 @@ class Index(IndexMixin):
 
         # charts data
         context['pie'] = _MonthsExpenseType.chart_data
-        context['e'] = _MonthsBalance.expense_data
-        context['i'] = _MonthsBalance.income_data
-        context['s'] = _MonthsBalance.save_data
+        context['e'] = _YearBalance.expense_data
+        context['i'] = _YearBalance.income_data
+        context['s'] = _YearBalance.save_data
 
         return context
 

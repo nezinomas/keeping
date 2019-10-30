@@ -8,7 +8,7 @@ from ...core.mixins.calc_balance import (BalanceStats,
                                          df_months_of_year)
 
 
-class MonthsBalance(BalanceStats):
+class YearBalance(BalanceStats):
     def __init__(self,
                  year: int,
                  incomes: List[Dict],

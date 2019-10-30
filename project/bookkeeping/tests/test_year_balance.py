@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from ..lib.months_balance import MonthsBalance
+from ..lib.year_balance import YearBalance
 
 
 @pytest.fixture()
@@ -83,7 +83,7 @@ def _expect():
 
 
 def test_months_balance(_incomes, _expenses, _residual, _expect):
-    actual = MonthsBalance(year=1999, incomes=_incomes,
+    actual = YearBalance(year=1999, incomes=_incomes,
                            expenses=_expenses, amount_start=_residual).balance
 
     assert _expect == actual
@@ -91,7 +91,7 @@ def test_months_balance(_incomes, _expenses, _residual, _expect):
 
 def test_months_balance_total_row(_incomes, _expenses, _residual):
     expect = {'incomes': 6.75, 'expenses': 1.75, 'balance': 5.0, 'residual': 70.75}
-    actual = MonthsBalance(year=1999, incomes=_incomes,
+    actual = YearBalance(year=1999, incomes=_incomes,
                            expenses=_expenses, amount_start=_residual).total_row
 
     assert expect == actual
@@ -99,49 +99,49 @@ def test_months_balance_total_row(_incomes, _expenses, _residual):
 
 def test_months_balance_average(_incomes, _expenses, _residual):
     expect = {'incomes': 3.38, 'expenses': 1.75, 'balance': 2.5, 'residual': 5.90}
-    actual = MonthsBalance(year=1999, incomes=_incomes,
+    actual = YearBalance(year=1999, incomes=_incomes,
                            expenses=_expenses, amount_start=_residual).average
 
     assert expect == pytest.approx(actual, rel=1e-2)
 
 
 def test_amount_start():
-    actual = MonthsBalance(year=1999, incomes=None,
+    actual = YearBalance(year=1999, incomes=None,
                            expenses=None, amount_start=10).amount_start
 
     assert 10 == actual
 
 
 def test_amount_start_none():
-    actual = MonthsBalance(year=1999, incomes=None,
+    actual = YearBalance(year=1999, incomes=None,
                            expenses=None, amount_start=None).amount_start
 
     assert 0.0 == actual
 
 
 def test_amount_end(_incomes, _expenses, _residual):
-    actual = MonthsBalance(year=1999, incomes=_incomes,
+    actual = YearBalance(year=1999, incomes=_incomes,
                            expenses=_expenses, amount_start=_residual).amount_end
 
     assert 6.0 == actual
 
 
 def test_amount_end_none():
-    actual = MonthsBalance(year=1999, incomes=None,
+    actual = YearBalance(year=1999, incomes=None,
                            expenses=None, amount_start=None).amount_end
 
     assert 0.0 == actual
 
 
 def test_amount_balance(_incomes, _expenses, _residual):
-    actual = MonthsBalance(year=1999, incomes=_incomes,
+    actual = YearBalance(year=1999, incomes=_incomes,
                            expenses=_expenses, amount_start=_residual).amount_balance
 
     assert 5.0 == actual
 
 
 def test_balance_none():
-    actual = MonthsBalance(year=1999, incomes=[],
+    actual = YearBalance(year=1999, incomes=[],
                            expenses=[], amount_start=None).amount_balance
 
     assert 0.0 == actual
@@ -150,7 +150,7 @@ def test_balance_none():
 def test_balance_income_data(_incomes):
     expect = [5.5, 1.25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-    actual = MonthsBalance(year=1999, incomes=_incomes,
+    actual = YearBalance(year=1999, incomes=_incomes,
                            expenses=[], amount_start=None).income_data
 
     assert expect == actual
@@ -159,7 +159,7 @@ def test_balance_income_data(_incomes):
 def test_balance_expense_data(_expenses):
     expect = [1.75, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-    actual = MonthsBalance(year=1999, incomes=[],
+    actual = YearBalance(year=1999, incomes=[],
                            expenses=_expenses, amount_start=None).expense_data
 
     assert expect == actual
@@ -168,35 +168,35 @@ def test_balance_expense_data(_expenses):
 def test_balance_save_data(_incomes, _expenses, _residual):
     expect = [4.75, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
 
-    actual = MonthsBalance(year=1999, incomes=_incomes,
+    actual = YearBalance(year=1999, incomes=_incomes,
                            expenses=_expenses, amount_start=_residual).save_data
 
     assert expect == actual
 
 
 def test_avg_incomes(_incomes, _expenses):
-    actual = MonthsBalance(year=1999, incomes=_incomes,
+    actual = YearBalance(year=1999, incomes=_incomes,
                            expenses=_expenses, amount_start=None).avg_incomes
 
     assert 3.38 == pytest.approx(actual, rel=1e-2)
 
 
 def test_avg_incomes_none():
-    actual = MonthsBalance(year=1999, incomes=None,
+    actual = YearBalance(year=1999, incomes=None,
                            expenses=None, amount_start=None).avg_incomes
 
     assert 0.0 == actual
 
 
 def test_avg_expenses(_incomes, _expenses):
-    actual = MonthsBalance(year=1999, incomes=_incomes,
+    actual = YearBalance(year=1999, incomes=_incomes,
                            expenses=_expenses, amount_start=None).avg_expenses
 
     assert 1.75 == actual
 
 
 def test_avg_expenses_none():
-    actual = MonthsBalance(year=1999, incomes=None,
+    actual = YearBalance(year=1999, incomes=None,
                            expenses=None, amount_start=None).avg_expenses
 
     assert 0.0 == actual
@@ -210,7 +210,7 @@ def test_months_balace_with_savings(
         'incomes': 5.5, 'expenses': 2.75, 'balance': 2.75, 'residual': 3.75
     }
 
-    actual = MonthsBalance(year=1999, incomes=_incomes, expenses=_expenses,
+    actual = YearBalance(year=1999, incomes=_incomes, expenses=_expenses,
                            savings=_savings, amount_start=_residual).balance
 
     assert 12 == len(actual)
@@ -224,7 +224,7 @@ def test_months_balace_with_savings_february_without_savings(
         'date': date(1999, 2, 1),
         'incomes': 1.25, 'expenses': 0.0, 'balance': 1.25, 'residual': 5.0}
 
-    actual = MonthsBalance(year=1999, incomes=_incomes, expenses=_expenses,
+    actual = YearBalance(year=1999, incomes=_incomes, expenses=_expenses,
                            savings=_savings, amount_start=_residual).balance
 
     assert 12 == len(actual)
@@ -238,7 +238,7 @@ def test_months_balace_with_savings_close(
         'date': date(1999, 1, 1),
         'incomes': 6.0, 'expenses': 1.75, 'balance': 4.25, 'residual': 5.25}
 
-    actual = MonthsBalance(year=1999, incomes=_incomes, expenses=_expenses,
+    actual = YearBalance(year=1999, incomes=_incomes, expenses=_expenses,
                            savings_close=_savings_close, amount_start=_residual).balance
 
     assert 12 == len(actual)
@@ -252,7 +252,7 @@ def test_months_balace_full(
         'date': date(1999, 1, 1),
         'incomes': 6.0, 'expenses': 2.75, 'balance': 3.25, 'residual': 4.25}
 
-    actual = MonthsBalance(year=1999, incomes=_incomes, expenses=_expenses,
+    actual = YearBalance(year=1999, incomes=_incomes, expenses=_expenses,
                            savings_close=_savings_close, savings=_savings,
                            amount_start=_residual).balance
 
