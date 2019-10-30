@@ -12,7 +12,7 @@ from ..transactions.models import SavingClose
 from .forms import AccountWorthForm, SavingWorthForm
 from .lib import views_helpers
 from .lib.day_spending import DaySpending
-from .lib.expense_stats import MonthExpenseType, MonthsExpenseType
+from .lib.expense_stats import DayExpense, MonthExpense
 from .lib.year_balance import YearBalance
 from .lib.no_incomes import NoIncomes
 from .lib.summary import collect_summary_data
@@ -35,13 +35,13 @@ class Index(IndexMixin):
         qs_savings_close = SavingClose.objects.month_sum(year)
         qs_ExpenseType = Expense.objects.month_expense_type(year)
 
-        _MonthsExpenseType = MonthsExpenseType(
+        _MonthExpense = MonthExpense(
             year, qs_ExpenseType, **{'Taupymas': qs_savings})
 
         _YearBalance = YearBalance(
             year=year,
             incomes=qs_income,
-            expenses=_MonthsExpenseType.total_column,
+            expenses=_MonthExpense.total_column,
             savings_close=qs_savings_close,
             amount_start=sum_col(_account, 'past'))
 
@@ -51,7 +51,7 @@ class Index(IndexMixin):
             fund=total_market,
             pension=total_market,
             avg_expenses=_YearBalance.avg_expenses,
-            avg_type_expenses=_MonthsExpenseType.average,
+            avg_type_expenses=_MonthExpense.average,
             not_use=[
                 'Darbas',
                 'Laisvalaikis',
@@ -76,15 +76,15 @@ class Index(IndexMixin):
         context['total_market'] = total_market
         context['avg_incomes'] = _YearBalance.avg_incomes
         context['avg_expenses'] = _YearBalance.avg_expenses
-        context['expenses'] = _MonthsExpenseType.balance
+        context['expenses'] = _MonthExpense.balance
         context['expense_types'] = _expense_types
-        context['expenses_total_row'] = _MonthsExpenseType.total_row
-        context['expenses_average'] = _MonthsExpenseType.average
+        context['expenses_total_row'] = _MonthExpense.total_row
+        context['expenses_average'] = _MonthExpense.average
         context['no_incomes'] = _NoIncomes.summary
         context['save_sum'] = _NoIncomes.save_sum
 
         # charts data
-        context['pie'] = _MonthsExpenseType.chart_data
+        context['pie'] = _MonthExpense.chart_data
         context['e'] = _YearBalance.expense_data
         context['i'] = _YearBalance.income_data
         context['s'] = _YearBalance.save_data
@@ -141,7 +141,7 @@ class Month(IndexMixin):
         year = self.request.user.profile.year
         month = self.request.user.profile.month
 
-        _MonthExpenseType = MonthExpenseType(
+        _DayExpense = DayExpense(
             year,
             month,
             Expense.objects.day_expense_type(year, month),
@@ -152,7 +152,7 @@ class Month(IndexMixin):
 
         fact_incomes = Income.objects.income_sum(year, month)
         fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
-        fact_expenses = _MonthExpenseType.total
+        fact_expenses = _DayExpense.total
 
         plan_incomes = get_value_from_dict(_CalcDaySum.incomes, month)
         plan_day_sum = get_value_from_dict(_CalcDaySum.day_input, month)
@@ -162,22 +162,22 @@ class Month(IndexMixin):
         expenses_types = views_helpers.expense_types('Taupymas')
 
         targets = _CalcDaySum.targets(month, 'Taupymas')
-        (categories, data_target, data_fact) = _MonthExpenseType.chart_targets(
+        (categories, data_target, data_fact) = _DayExpense.chart_targets(
             expenses_types, targets)
 
         _DaySpending = DaySpending(
             year=year,
             month=month,
-            month_df=_MonthExpenseType.expenses,
+            month_df=_DayExpense.expenses,
             necessary=views_helpers.necessary_expense_types('Taupymas'),
             plan_day_sum=plan_day_sum,
             plan_free_sum=plan_free_sum,
-            exceptions=_MonthExpenseType.exceptions
+            exceptions=_DayExpense.exceptions
         )
 
         context['month_list'] = year_month_list(year)
-        context['expenses'] = _MonthExpenseType.balance
-        context['total_row'] = _MonthExpenseType.total_row
+        context['expenses'] = _DayExpense.balance
+        context['total_row'] = _DayExpense.total_row
         context['expense_types'] = expenses_types
         context['day'] = current_day(year, month)
         context['spending_table'] = _DaySpending.spending
@@ -189,7 +189,7 @@ class Month(IndexMixin):
         context['fact_incomes'] = fact_incomes
         context['fact_remains'] = fact_incomes - fact_expenses
 
-        context['chart_expenses'] = _MonthExpenseType.chart_expenses(
+        context['chart_expenses'] = _DayExpense.chart_expenses(
             expenses_types)
         context['chart_targets_categories'] = categories
         context['chart_targets_data_target'] = data_target

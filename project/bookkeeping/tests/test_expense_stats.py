@@ -4,7 +4,7 @@ from decimal import Decimal
 import pandas as pd
 import pytest
 
-from ..lib.expense_stats import MonthExpenseType, MonthsExpenseType
+from ..lib.expense_stats import DayExpense, MonthExpense
 
 
 @pytest.fixture
@@ -34,13 +34,13 @@ def _savings():
 
 
 def test_month_balance_lenght_empty_expenses():
-    actual = MonthExpenseType(1999, 1, []).balance
+    actual = DayExpense(1999, 1, []).balance
 
     assert 31 == len(actual)
 
 
 def test_month_balance_lenght_none_expenses():
-    actual = MonthExpenseType(1999, 1, None).balance
+    actual = DayExpense(1999, 1, None).balance
 
     assert 31 == len(actual)
 
@@ -48,7 +48,7 @@ def test_month_balance_lenght_none_expenses():
 def test_month_balance_january(_ex):
     expect = {'date': date(1999, 1, 1), 'T1': 0.25, 'T2': 0.5, 'total': 0.75}
 
-    actual = MonthExpenseType(year=1999, month=1, expenses=_ex[:2]).balance
+    actual = DayExpense(year=1999, month=1, expenses=_ex[:2]).balance
 
     assert expect == actual[0]
 
@@ -69,7 +69,7 @@ def test_months_expense_type(_ex):
         {'date': date(1999, 12, 1), 'T1': 0.75, 'T2': 0.35, 'total': 1.1},
     ]
 
-    actual = MonthsExpenseType(1999, _ex).balance
+    actual = MonthExpense(1999, _ex).balance
 
     assert expect == actual
 
@@ -77,7 +77,7 @@ def test_months_expense_type(_ex):
 def test_months_expense_type_total_row(_ex):
     expect = {'T1': 1.0, 'T2': 0.85, 'total': 1.85}
 
-    actual = MonthsExpenseType(1999, _ex).total_row
+    actual = MonthExpense(1999, _ex).total_row
 
     assert expect == actual
 
@@ -85,7 +85,7 @@ def test_months_expense_type_total_row(_ex):
 def test_months_expense_type_average(_ex):
     expect = {'T1': 0.5, 'T2': 0.425, 'total': 0.925}
 
-    actual = MonthsExpenseType(1999, _ex).average
+    actual = MonthExpense(1999, _ex).average
 
     assert expect == actual
 
@@ -96,7 +96,7 @@ def test_months_expense_chart_data(_ex):
         {'name': 'T2', 'y': 0.85}
     ]
 
-    actual = MonthsExpenseType(1999, _ex).chart_data
+    actual = MonthExpense(1999, _ex).chart_data
 
     assert expect == actual
 
@@ -104,7 +104,7 @@ def test_months_expense_chart_data(_ex):
 def test_months_expense_chart_data_none():
     expect = []
 
-    actual = MonthsExpenseType(1999, None).chart_data
+    actual = MonthExpense(1999, None).chart_data
 
     assert expect == actual
 
@@ -112,7 +112,7 @@ def test_months_expense_chart_data_none():
 def test_months_expense_chart_data_empty():
     expect = []
 
-    actual = MonthsExpenseType(1999, []).chart_data
+    actual = MonthExpense(1999, []).chart_data
 
     assert expect == actual
 
@@ -120,7 +120,7 @@ def test_months_expense_chart_data_empty():
 def test_month_with_savings(_ex, _savings):
     expect = {'date': date(1999, 1, 1), 'T1': 0.25, 'T2': 0.5, 'X': 0.5, 'total': 1.25}
 
-    actual = MonthExpenseType(year=1999, month=1, expenses=_ex[:2], **_savings).balance
+    actual = DayExpense(year=1999, month=1, expenses=_ex[:2], **_savings).balance
 
     assert expect == actual[0]
 
@@ -128,7 +128,7 @@ def test_month_with_savings(_ex, _savings):
 def test_month_with_only_savings(_savings):
     expect = {'date': date(1999, 1, 1), 'X': 0.5, 'total': 0.5}
 
-    actual = MonthExpenseType(year=1999, month=1, expenses=[], **_savings).balance
+    actual = DayExpense(year=1999, month=1, expenses=[], **_savings).balance
 
     assert expect == actual[0]
 
@@ -136,7 +136,7 @@ def test_month_with_only_savings(_savings):
 def test_months_with_savings(_ex, _savings):
     expect = {'date': date(1999, 1, 1), 'T1': 0.25, 'T2': 0.5, 'X': 0.5, 'total': 1.25}
 
-    actual = MonthsExpenseType(year=1999, expenses=_ex, **_savings).balance
+    actual = MonthExpense(year=1999, expenses=_ex, **_savings).balance
 
     assert expect == actual[0]
 
@@ -144,25 +144,25 @@ def test_months_with_savings(_ex, _savings):
 def test_months_with_only_savings(_savings):
     expect = {'date': date(1999, 1, 1), 'X': 0.5, 'total': 0.5}
 
-    actual = MonthsExpenseType(year=1999, expenses=[], **_savings).balance
+    actual = MonthExpense(year=1999, expenses=[], **_savings).balance
 
     assert expect == actual[0]
 
 
 def test_month_total(_ex):
-    actual = MonthExpenseType(year=1999, month=1, expenses=_ex[:2]).total
+    actual = DayExpense(year=1999, month=1, expenses=_ex[:2]).total
 
     assert 0.75 == actual
 
 
 def test_month_total_no_expenses(_ex):
-    actual = MonthExpenseType(year=1999, month=1, expenses=[]).total
+    actual = DayExpense(year=1999, month=1, expenses=[]).total
 
     assert 0.0 == actual
 
 
 def test_month_chart_expenses(_ex):
-    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+    obj = DayExpense(year=1999, month=1, expenses=_ex[:2])
 
     actual = obj.chart_expenses(['T1', 'T2', 'T3'])
 
@@ -176,7 +176,7 @@ def test_month_chart_expenses(_ex):
 
 
 def test_month_chart_expenses_no_types(_ex):
-    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+    obj = DayExpense(year=1999, month=1, expenses=_ex[:2])
 
     actual = obj.chart_expenses(['T5'])
 
@@ -188,7 +188,7 @@ def test_month_chart_expenses_no_types(_ex):
 
 
 def test_month_chart_expenses_no_types_no_expenses():
-    obj = MonthExpenseType(year=1999, month=1, expenses=[])
+    obj = DayExpense(year=1999, month=1, expenses=[])
 
     actual = obj.chart_expenses(['T5'])
 
@@ -200,7 +200,7 @@ def test_month_chart_expenses_no_types_no_expenses():
 
 
 def test_month_chart_target_categories(_ex, _ex_targets):
-    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+    obj = DayExpense(year=1999, month=1, expenses=_ex[:2])
 
     (actual, _, _) = obj.chart_targets(['T1', 'T2', 'T3'], _ex_targets)
 
@@ -210,7 +210,7 @@ def test_month_chart_target_categories(_ex, _ex_targets):
 
 
 def test_month_chart_target_data_target(_ex, _ex_targets):
-    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+    obj = DayExpense(year=1999, month=1, expenses=_ex[:2])
 
     (_, actual, _) = obj.chart_targets(['T1', 'T2', 'T3'], _ex_targets)
 
@@ -220,7 +220,7 @@ def test_month_chart_target_data_target(_ex, _ex_targets):
 
 
 def test_month_chart_target_data_target_partial(_ex):
-    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+    obj = DayExpense(year=1999, month=1, expenses=_ex[:2])
 
     (_, actual, _) = obj.chart_targets(['T1', 'T2', 'T3'], {'T2': 0.4})
 
@@ -230,7 +230,7 @@ def test_month_chart_target_data_target_partial(_ex):
 
 
 def test_month_chart_target_data_target_empty(_ex):
-    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+    obj = DayExpense(year=1999, month=1, expenses=_ex[:2])
 
     (_, actual, _) = obj.chart_targets(['T1', 'T2', 'T3'], {})
 
@@ -240,7 +240,7 @@ def test_month_chart_target_data_target_empty(_ex):
 
 
 def test_month_chart_target_data_fact(_ex, _ex_targets):
-    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+    obj = DayExpense(year=1999, month=1, expenses=_ex[:2])
 
     (_, _, actual) = obj.chart_targets(['T1', 'T2', 'T3'], _ex_targets)
 
@@ -254,7 +254,7 @@ def test_month_chart_target_data_fact(_ex, _ex_targets):
 
 
 def test_month_chart_target_data_fact_target_partial(_ex):
-    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+    obj = DayExpense(year=1999, month=1, expenses=_ex[:2])
 
     (_, _, actual) = obj.chart_targets(['T1', 'T2', 'T3'], {'T2': 0.4})
 
@@ -268,7 +268,7 @@ def test_month_chart_target_data_fact_target_partial(_ex):
 
 
 def test_month_chart_target_data_fact_target_empty(_ex):
-    obj = MonthExpenseType(year=1999, month=1, expenses=_ex[:2])
+    obj = DayExpense(year=1999, month=1, expenses=_ex[:2])
 
     (_, _, actual) = obj.chart_targets(['T1', 'T2', 'T3'], {})
 
@@ -297,6 +297,6 @@ def test_months_expense_type_total_column(_ex):
         {'date': date(1999, 12, 1), 'sum': 1.1},
     ]
 
-    actual = MonthsExpenseType(1999, _ex).total_column
+    actual = MonthExpense(1999, _ex).total_column
 
     assert expect == actual

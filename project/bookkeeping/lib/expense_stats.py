@@ -9,7 +9,7 @@ from ...core.mixins.balance_base import (BalanceBase, df_days_of_month,
                                          df_months_of_year)
 
 
-class Expenses():
+class ExpenseBase():
     def __init__(self, df: DF, expenses: List[Dict], **kwargs):
         _expenses = self._expenses_df(df, expenses)
         _savings = self._savings_df(df, kwargs)
@@ -79,11 +79,11 @@ class Expenses():
         return df
 
 
-class MonthExpenseType(BalanceBase, Expenses):
+class DayExpense(BalanceBase, ExpenseBase):
     def __init__(self, year: int, month: int, expenses: List[Dict], **kwargs):
         self._balance = df_days_of_month(year, month)
 
-        Expenses.__init__(self, self._balance, expenses, **kwargs)
+        ExpenseBase.__init__(self, self._balance, expenses, **kwargs)
 
         self._balance = self.expenses
 
@@ -147,11 +147,11 @@ class MonthExpenseType(BalanceBase, Expenses):
         return (rtn_categories, rtn_data_target, rtn_data_fact)
 
 
-class MonthsExpenseType(BalanceBase, Expenses):
+class MonthExpense(BalanceBase, ExpenseBase):
     def __init__(self, year, expenses: List[Dict], **kwargs):
         self._balance = df_months_of_year(year)
 
-        Expenses.__init__(self, self._balance, expenses, **kwargs)
+        ExpenseBase.__init__(self, self._balance, expenses, **kwargs)
 
         self._balance = self.expenses
 
