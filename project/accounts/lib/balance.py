@@ -19,7 +19,7 @@ class Balance(BalanceBase):
             return
 
         df = self._prepare(data)
-        df = self._balance_base(df)
+        df = self._calc_balance(df)
         df = self._join_worth(df, account_worth)
         df = self._calc_have(df)
         df = self._drop_columns(df)
@@ -44,7 +44,7 @@ class Balance(BalanceBase):
 
         return df
 
-    def _balance_base(self, df: DF) -> DF:
+    def _calc_balance(self, df: DF) -> DF:
         df['past'] = (
             0
             + df['i_past']
