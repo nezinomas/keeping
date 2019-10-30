@@ -12,7 +12,7 @@ from ..transactions.models import SavingClose
 from .forms import AccountWorthForm, SavingWorthForm
 from .lib import views_helpers
 from .lib.day_spending import DaySpending
-from .lib.expense_stats import DayExpense, MonthExpense
+from .lib.expense_summary import DayExpense, MonthExpense
 from .lib.year_balance import YearBalance
 from .lib.no_incomes import NoIncomes
 from .lib.summary import collect_summary_data
