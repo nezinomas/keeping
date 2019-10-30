@@ -3,15 +3,16 @@ from datetime import date, datetime
 from typing import Dict, List
 
 import pandas as pd
+from pandas import DataFrame as DF
 
 from ...core.lib.date import current_day
 
 
-def df_days_of_month(year: int, month: int) -> pd.DataFrame:
-    df = pd.DataFrame()
+def df_days_of_month(year: int, month: int) -> DF:
+    df = DF()
 
     try:
-        df = pd.DataFrame({
+        df = DF({
             'date': pd.date_range(
                 start=pd.Timestamp(year, month, 1),
                 end=pd.Timestamp(year, month, 1) + pd.offsets.MonthEnd(0),
@@ -26,14 +27,14 @@ def df_days_of_month(year: int, month: int) -> pd.DataFrame:
     return df
 
 
-def df_months_of_year(year: int) -> pd.DataFrame:
-    df = pd.DataFrame()
+def df_months_of_year(year: int) -> DF:
+    df = DF()
 
     try:
         # create empty DataFrame object with index containing all months
         dt_range = pd.date_range(f'{year}', periods=12, freq='MS')
 
-        df = pd.DataFrame(dt_range, columns=['date'])
+        df = DF(dt_range, columns=['date'])
     except:
         return df
 
@@ -44,13 +45,13 @@ def df_months_of_year(year: int) -> pd.DataFrame:
 
 class BalanceStats():
     def __init__(self):
-        self._balance = pd.DataFrame()
+        self._balance = DF()
 
     @property
     def balance(self) -> List[Dict]:
         val = []
 
-        if not isinstance(self._balance, pd.DataFrame):
+        if not isinstance(self._balance, DF):
             return val
 
         if self._balance.empty:
@@ -65,7 +66,7 @@ class BalanceStats():
     def total_row(self) -> Dict[str, float]:
         val = {}
 
-        if not isinstance(self._balance, pd.DataFrame):
+        if not isinstance(self._balance, DF):
             return val
 
         if self._balance.empty:
@@ -79,7 +80,7 @@ class BalanceStats():
     def average(self) -> Dict[str, float]:
         val = {}
 
-        if not isinstance(self._balance, pd.DataFrame):
+        if not isinstance(self._balance, DF):
             return val
 
         if self._balance.empty:
@@ -95,7 +96,7 @@ class BalanceStats():
     def average_month(self, year: int, month: int) -> Dict[str, float]:
         val = {}
 
-        if not isinstance(self._balance, pd.DataFrame):
+        if not isinstance(self._balance, DF):
             return val
 
         if self._balance.empty:
@@ -111,8 +112,8 @@ class BalanceStats():
 
         return row.to_dict()
 
-    def _calc_avg(self, df: pd.DataFrame,
-                  year: int, month: int, day: int) -> pd.DataFrame:
+    def _calc_avg(self, df: DF,
+                  year: int, month: int, day: int) -> DF:
 
         # sort index, in case if dates not ordered
         df.sort_index(inplace=True)
