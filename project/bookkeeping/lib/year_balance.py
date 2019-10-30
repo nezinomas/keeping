@@ -3,12 +3,12 @@ from typing import Dict, List
 
 import pandas as pd
 
-from ...core.mixins.calc_balance import (BalanceStats,
+from ...core.mixins.balance_base import (BalanceBase,
                                          df_days_of_month,
                                          df_months_of_year)
 
 
-class YearBalance(BalanceStats):
+class YearBalance(BalanceBase):
     def __init__(self,
                  year: int,
                  incomes: List[Dict],

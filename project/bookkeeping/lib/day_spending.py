@@ -2,11 +2,11 @@ from typing import List, Dict
 
 import pandas as pd
 
-from ...core.mixins.calc_balance import BalanceStats
+from ...core.mixins.balance_base import BalanceBase
 from ...core.lib.utils import get_value_from_dict
 
 
-class DaySpending(BalanceStats):
+class DaySpending(BalanceBase):
     _balance = pd.DataFrame()
     _avg_per_day = pd.DataFrame()
     _spending = pd.DataFrame()

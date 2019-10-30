@@ -5,7 +5,7 @@ from typing import Dict, List
 from pandas import DataFrame as DF
 
 from ...core.lib.colors import CHART
-from ...core.mixins.calc_balance import (BalanceStats, df_days_of_month,
+from ...core.mixins.balance_base import (BalanceBase, df_days_of_month,
                                          df_months_of_year)
 
 
@@ -79,7 +79,7 @@ class Expenses():
         return df
 
 
-class MonthExpenseType(BalanceStats, Expenses):
+class MonthExpenseType(BalanceBase, Expenses):
     def __init__(self, year: int, month: int, expenses: List[Dict], **kwargs):
         self._balance = df_days_of_month(year, month)
 
@@ -147,7 +147,7 @@ class MonthExpenseType(BalanceStats, Expenses):
         return (rtn_categories, rtn_data_target, rtn_data_fact)
 
 
-class MonthsExpenseType(BalanceStats, Expenses):
+class MonthsExpenseType(BalanceBase, Expenses):
     def __init__(self, year, expenses: List[Dict], **kwargs):
         self._balance = df_months_of_year(year)
 

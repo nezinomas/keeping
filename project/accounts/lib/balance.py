@@ -3,10 +3,10 @@ from typing import List
 from pandas import DataFrame as DF
 from pandas import to_numeric
 
-from ...core.mixins.calc_balance import BalanceStats
+from ...core.mixins.balance_base import BalanceBase
 
 
-class Balance(BalanceStats):
+class Balance(BalanceBase):
     _columns = ['past', 'incomes', 'expenses', 'balance', 'have', 'delta']
 
     def __init__(self, data: DF, account_worth: List):
@@ -19,7 +19,7 @@ class Balance(BalanceStats):
             return
 
         df = self._prepare(data)
-        df = self._calc_balance(df)
+        df = self._balance_base(df)
         df = self._join_worth(df, account_worth)
         df = self._calc_have(df)
         df = self._drop_columns(df)
@@ -44,7 +44,7 @@ class Balance(BalanceStats):
 
         return df
 
-    def _calc_balance(self, df: DF) -> DF:
+    def _balance_base(self, df: DF) -> DF:
         df['past'] = (
             0
             + df['i_past']

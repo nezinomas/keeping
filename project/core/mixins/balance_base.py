@@ -43,7 +43,7 @@ def df_months_of_year(year: int) -> DF:
     return df
 
 
-class BalanceStats():
+class BalanceBase():
     def __init__(self):
         self._balance = DF()
 

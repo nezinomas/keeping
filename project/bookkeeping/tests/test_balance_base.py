@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 from freezegun import freeze_time
 
-from ...core.mixins.calc_balance import (BalanceStats, df_days_of_month,
+from ...core.mixins.balance_base import (BalanceBase, df_days_of_month,
                                          df_months_of_year)
 
 
@@ -22,7 +22,7 @@ data_balance = [
 
 @pytest.mark.parametrize("df,expected", data_balance)
 def test_balance(df, expected):
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = df
 
     assert o.balance == expected
@@ -30,7 +30,7 @@ def test_balance(df, expected):
 
 @pytest.mark.parametrize("df,expected", data_balance)
 def test_balance_then_before_was_called_total_row(df, expected):
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = df
 
     o.total_row
@@ -49,7 +49,7 @@ data_average = [
 
 @pytest.mark.parametrize('df,expected', data_average)
 def test_average(df, expected):
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = df
 
     assert pytest.approx(o.average, rel=1e-2) == expected
@@ -64,7 +64,7 @@ data_total_row = [
 
 @pytest.mark.parametrize('df,expected', data_total_row)
 def test_total_row(df, expected):
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = df
 
     assert pytest.approx(o.total_row, rel=1e-2) == expected
@@ -125,7 +125,7 @@ def df():
 
 @freeze_time("1999-01-02")
 def test_average_month_two_days(df):
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = df
 
     actual = o.average_month(1999, 1)
@@ -134,7 +134,7 @@ def test_average_month_two_days(df):
 
 @freeze_time("1999-01-31")
 def test_average_month_last_day(df):
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = df
 
     actual = o.average_month(1999, 1)
@@ -144,7 +144,7 @@ def test_average_month_last_day(df):
 
 @freeze_time("1970-01-01")
 def test_average_month_other_year(df):
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = df
 
     actual = o.average_month(1999, 1)
@@ -153,7 +153,7 @@ def test_average_month_other_year(df):
 
 
 def test_average_month_empty_dataframe():
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = pd.DataFrame()
 
     actual = o.average_month(1999, 1)
@@ -161,7 +161,7 @@ def test_average_month_empty_dataframe():
 
 
 def test_average_month_no_dataframe():
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = None
 
     actual = o.average_month(1999, 1)

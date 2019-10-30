@@ -3,11 +3,11 @@ from typing import Dict, List
 from pandas import DataFrame as DF
 from pandas import to_numeric
 
-from ...core.mixins.calc_balance import BalanceStats
+from ...core.mixins.balance_base import BalanceBase
 from ...bookkeeping.lib.helpers import calc_percent, calc_sum
 
 
-class Balance(BalanceStats):
+class Balance(BalanceBase):
     _columns = [
         'past_amount',
         'past_fee',
@@ -31,7 +31,7 @@ class Balance(BalanceStats):
             return
 
         df = self._prepare(stats)
-        df = self._calc_balance(df)
+        df = self._balance_base(df)
         df = self._calc_have(df, worth)
         df = self._calc_profit(df)
         df = self._drop_columns(df)
@@ -73,7 +73,7 @@ class Balance(BalanceStats):
 
         return stats
 
-    def _calc_balance(self, df: DF) -> DF:
+    def _balance_base(self, df: DF) -> DF:
         df['past_amount'] = (
             0.0
             + df['s_past']
