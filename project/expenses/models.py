@@ -183,6 +183,7 @@ class Expense(models.Model):
         indexes = [
             models.Index(fields=['account', 'expense_type']),
             models.Index(fields=['expense_type']),
+            models.Index(fields=['date']),
         ]
 
     def __str__(self):
