@@ -2,8 +2,8 @@ import pandas as pd
 import pytest
 from freezegun import freeze_time
 
-from ...core.mixins.calc_balance import (BalanceStats, df_days_of_month,
-                                   df_months_of_year)
+from ...core.mixins.balance_base import (BalanceBase, df_days_of_month,
+                                         df_months_of_year)
 
 
 def create_df():
@@ -22,18 +22,18 @@ data_balance = [
 
 @pytest.mark.parametrize("df,expected", data_balance)
 def test_balance(df, expected):
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = df
 
     assert o.balance == expected
 
 
 @pytest.mark.parametrize("df,expected", data_balance)
-def test_balance_then_before_was_called_totals(df, expected):
-    o = BalanceStats()
+def test_balance_then_before_was_called_total_row(df, expected):
+    o = BalanceBase()
     o._balance = df
 
-    o.totals
+    o.total_row
 
     assert o.balance == expected
 
@@ -49,25 +49,25 @@ data_average = [
 
 @pytest.mark.parametrize('df,expected', data_average)
 def test_average(df, expected):
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = df
 
     assert pytest.approx(o.average, rel=1e-2) == expected
 
 
-data_totals = [
+data_total_row = [
     (pd.DataFrame({'x': [1.05, 2.05]}), {'x': 3.1}),
     (pd.DataFrame(), {}),
     (None, {}),
 ]
 
 
-@pytest.mark.parametrize('df,expected', data_totals)
-def test_totals(df, expected):
-    o = BalanceStats()
+@pytest.mark.parametrize('df,expected', data_total_row)
+def test_total_row(df, expected):
+    o = BalanceBase()
     o._balance = df
 
-    assert pytest.approx(o.totals, rel=1e-2) == expected
+    assert pytest.approx(o.total_row, rel=1e-2) == expected
 
 
 def test_df_days_of_month():
@@ -76,7 +76,6 @@ def test_df_days_of_month():
     assert 29 == len(actual)
 
     assert 'date' == actual.index.name
-    assert 'total' in actual
 
 
 data_days_of_month = [
@@ -99,7 +98,6 @@ def test_df_months_of_year():
     assert 12 == len(actual)
 
     assert 'date' == actual.index.name
-    assert 'total' in actual
 
     assert pd.Timestamp(2020, 1, 1) == actual.index[0]
     assert pd.Timestamp(2020, 12, 1) == actual.index[-1]
@@ -127,7 +125,7 @@ def df():
 
 @freeze_time("1999-01-02")
 def test_average_month_two_days(df):
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = df
 
     actual = o.average_month(1999, 1)
@@ -136,7 +134,7 @@ def test_average_month_two_days(df):
 
 @freeze_time("1999-01-31")
 def test_average_month_last_day(df):
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = df
 
     actual = o.average_month(1999, 1)
@@ -146,7 +144,7 @@ def test_average_month_last_day(df):
 
 @freeze_time("1970-01-01")
 def test_average_month_other_year(df):
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = df
 
     actual = o.average_month(1999, 1)
@@ -155,7 +153,7 @@ def test_average_month_other_year(df):
 
 
 def test_average_month_empty_dataframe():
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = pd.DataFrame()
 
     actual = o.average_month(1999, 1)
@@ -163,7 +161,7 @@ def test_average_month_empty_dataframe():
 
 
 def test_average_month_no_dataframe():
-    o = BalanceStats()
+    o = BalanceBase()
     o._balance = None
 
     actual = o.average_month(1999, 1)

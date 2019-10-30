@@ -1,27 +1,30 @@
 from datetime import date
 from typing import Dict, List
 
-import pandas as pd
+from pandas import DataFrame as DF
 
-from ...core.mixins.calc_balance import (BalanceStats, df_days_of_month,
-                                   df_months_of_year)
+from ...core.mixins.balance_base import BalanceBase, df_months_of_year
 
 
-class MonthsBalance(BalanceStats):
-    def __init__(self, year: int, incomes: List[Dict],
-                 expenses: List[Dict], savings: List[Dict]=[],
-                 savings_close: List[Dict]=[], amount_start: float=0.0):
+class YearBalance(BalanceBase):
+    def __init__(self,
+                 year: int,
+                 incomes: List[Dict],
+                 expenses: List[Dict],
+                 savings: List[Dict]=[],
+                 savings_close: List[Dict]=[],
+                 amount_start: float=0.0):
 
         '''
         year: int
 
-        incomes: [{'date': datetime.date(), 'incomes': Decimal()}, ... ]
+        incomes: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
 
-        expenses: [{'date': datetime.date(), 'expenses': Decimal()}, ... ]
+        expenses: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
 
-        savings: [{'date': datetime.date(), 'savings': Decimal()}, ... ]
+        savings: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
 
-        savings_close: [{'date': datetime.date(), 'to_account': Decimal()}, ... ]
+        savings_close: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
 
         amount_start: year start worth amount
         '''
@@ -38,7 +41,13 @@ class MonthsBalance(BalanceStats):
         if not incomes and not expenses:
             return
 
-        self._balance = self._make_df(year, incomes, expenses, savings, savings_close)
+        self._balance = self._make_df(
+            year=year,
+            incomes=incomes,
+            expenses=expenses,
+            savings=savings,
+            savings_close=savings_close)
+
         self._balance = self._calc(self._balance)
 
     @property
@@ -48,13 +57,13 @@ class MonthsBalance(BalanceStats):
     @property
     def amount_end(self) -> float:
         val = 0.0
-        t = super().totals
+        t = super().total_row
 
         return self._amount_start + t.get('balance', 0.0)
 
     @property
     def amount_balance(self) -> float:
-        t = super().totals
+        t = super().total_row
 
         return t.get('balance', 0.0)
 
@@ -94,8 +103,12 @@ class MonthsBalance(BalanceStats):
 
         return rtn
 
-    def _make_df(self, year: int, incomes: List[Dict], expenses: List[Dict],
-                 savings: List[Dict], savings_close: List[Dict]) -> pd.DataFrame:
+    def _make_df(self,
+                 year: int,
+                 incomes: List[Dict],
+                 expenses: List[Dict],
+                 savings: List[Dict],
+                 savings_close: List[Dict]) -> DF:
 
         df = df_months_of_year(year)
 
@@ -127,15 +140,14 @@ class MonthsBalance(BalanceStats):
 
         return df
 
-    def _clean_df(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _clean_df(self, df: DF) -> DF:
         # delete not necessary columns
         df.drop('savings', axis=1, inplace=True)
         df.drop('savings_close', axis=1, inplace=True)
-        df.drop('total', axis=1, inplace=True)
 
         return df
 
-    def _calc(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _calc(self, df: DF) -> DF:
         # calculate balance
         df['incomes'] = df.incomes + df.savings_close
         df['expenses'] = df.expenses + df.savings

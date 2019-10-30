@@ -32,23 +32,34 @@ def necessary():
 
 @pytest.fixture()
 def exceptions():
-    return [
-        {'date': date(1999, 1, 1), 'expense_type': 'O2', 'sum': Decimal(1.0)}
-    ]
+    df = pd.DataFrame([
+        {'date': date(1999, 1, 1), 'sum': 1.0},
+        {'date': date(1999, 1, 2), 'sum': 0.0},
+        {'date': date(1999, 1, 3), 'sum': 0.0},
+    ])
+    df.set_index('date', inplace=True)
+
+    return df
 
 
 @freeze_time('1999-01-02')
 def test_avg_per_day(balance_df, necessary):
-    actual = DaySpending(year=1999, month=1, month_df=balance_df,
-                         necessary=necessary, plan_day_sum=Decimal(0.25),
+    actual = DaySpending(year=1999,
+                         month=1,
+                         month_df=balance_df,
+                         necessary=necessary,
+                         plan_day_sum=Decimal(0.25),
                          plan_free_sum=Decimal(20)).avg_per_day
 
     assert 1.65 == actual
 
 
 def test_spending_first_day(balance_df, necessary):
-    actual = DaySpending(year=1999, month=1, month_df=balance_df,
-                         necessary=necessary, plan_day_sum=Decimal(0.25),
+    actual = DaySpending(year=1999,
+                         month=1,
+                         month_df=balance_df,
+                         necessary=necessary,
+                         plan_day_sum=Decimal(0.25),
                          plan_free_sum=Decimal(20)).spending
 
     assert pd.datetime(1999, 1, 1) == actual[0]['date']

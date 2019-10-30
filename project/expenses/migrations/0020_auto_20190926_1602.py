@@ -10,10 +10,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddIndex(
-            model_name='expense',
-            index=models.Index(fields=['account', 'expense_type'], name='expenses_ex_account_5de667_idx'),
-        ),
+        # migrations.AddIndex(
+        #     model_name='expense',
+        #     index=models.Index(fields=['account', 'expense_type'], name='expenses_ex_account_5de667_idx'),
+        # ),
         migrations.AddIndex(
             model_name='expense',
             index=models.Index(fields=['expense_type'], name='expenses_ex_expense_3c4432_idx'),

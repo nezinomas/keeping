@@ -3,11 +3,11 @@ from typing import Dict, List
 from pandas import DataFrame as DF
 from pandas import to_numeric
 
-from ...core.mixins.calc_balance import BalanceStats
+from ...core.mixins.balance_base import BalanceBase
 from ...bookkeeping.lib.helpers import calc_percent, calc_sum
 
 
-class Balance(BalanceStats):
+class Balance(BalanceBase):
     _columns = [
         'past_amount',
         'past_fee',
@@ -39,7 +39,7 @@ class Balance(BalanceStats):
         self._balance = df
 
     @property
-    def totals(self) -> Dict:
+    def total_row(self) -> Dict:
         val = {}
 
         if self._balance.empty:
@@ -62,7 +62,7 @@ class Balance(BalanceStats):
 
     @property
     def total_market(self) -> float:
-        t = self.totals
+        t = self.total_row
 
         return t.get('market_value', 0.0)
 
@@ -125,9 +125,6 @@ class Balance(BalanceStats):
         return df
 
     def _calc_profit(self, df: DF) -> DF:
-        if df.empty:
-            return df
-
         # calculate percent of profit/loss
         df['profit_incomes_proc'] = (
             df[['market_value', 'incomes']]

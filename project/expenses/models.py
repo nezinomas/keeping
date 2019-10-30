@@ -4,9 +4,9 @@ from typing import Any, Dict, List
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 from django.db.models import Case, Count, F, Q, Sum, When
+from django.db.models.functions import TruncDay, TruncMonth
 
 from ..accounts.models import Account
-from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
 
 
@@ -70,7 +70,7 @@ class ExpenseName(TitleAbstract):
     objects = ExpenseNameQuerySet.as_manager()
 
 
-class ExpenseQuerySet(SumMixin, models.QuerySet):
+class ExpenseQuerySet(models.QuerySet):
     def _related(self):
         return self.select_related('expense_type', 'expense_name', 'account')
 
@@ -80,49 +80,43 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self._related().all()
 
-    def month_expense(self, year, month=None):
-        summed_name = 'sum'
-
+    def month_expense_type(self, year):
         return (
-            super()
-            .sum_by_month(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values('date', summed_name)
-        )
-
-    def month_expense_type(self, year, month=None):
-        summed_name = 'sum'
-
-        return (
-            super()
-            .sum_by_month(
-                year=year, month=month,
-                summed_name=summed_name, groupby='expense_type')
-            .values('date', summed_name, title=F('expense_type__title'))
-        )
-
-    def month_exceptions(self, year, month=None):
-        summed_name = 'sum'
-
-        return (
-            super()
-            .filter(exception=True)
-            .sum_by_day(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values(summed_name, 'date', title=F('expense_type__title'))
+            self
+            .filter(date__year=year)
+            .annotate(cnt=Count('expense_type'))
+            .values('expense_type')
+            .annotate(date=TruncMonth('date'))
+            .values('date')
+            .annotate(c=Count('id'))
+            .annotate(sum=Sum('price'))
+            .order_by('date')
+            .values(
+                'date',
+                'sum',
+                title=F('expense_type__title'))
         )
 
     def day_expense_type(self, year, month):
-        summed_name = 'sum'
-
         return (
-            super()
-            .sum_by_day(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values('date', summed_name, title=F('expense_type__title'))
+            self
+            .filter(date__year=year)
+            .filter(date__month=month)
+            .annotate(cnt_id=Count('id'))
+            .values('cnt_id')
+            .annotate(date=TruncDay('date'))
+            .values('date')
+            .annotate(sum=Sum('price'))
+            .annotate(
+                exception_sum=Sum(
+                    Case(When(exception=1, then='price'), default=0.0))
+            )
+            .order_by('date')
+            .values(
+                'date',
+                'sum',
+                'exception_sum',
+                title=F('expense_type__title'))
         )
 
     def summary(self, year: int) -> List[Dict[str, Any]]:
@@ -187,8 +181,9 @@ class Expense(models.Model):
     class Meta:
         ordering = ['-date', 'expense_type', F('expense_name').asc(), 'price']
         indexes = [
-            models.Index(fields=['account', 'expense_type']),
+            models.Index(fields=['date']),
             models.Index(fields=['expense_type']),
+            models.Index(fields=['expense_name']),
         ]
 
     def __str__(self):

@@ -137,7 +137,7 @@ def test_account_stats_worth_None(_accounts):
     assert_(expect, actual)
 
 
-def test_account_totals(_accounts, _accounts_worth):
+def test_account_total_row(_accounts, _accounts_worth):
     expect = {
         'past': 3.75,
         'incomes': 14.75,
@@ -147,7 +147,7 @@ def test_account_totals(_accounts, _accounts_worth):
         'delta': 3.5
     }
 
-    actual = T(_accounts, _accounts_worth).totals
+    actual = T(_accounts, _accounts_worth).total_row
 
     for k, v in expect.items():
         assert v == actual[k]

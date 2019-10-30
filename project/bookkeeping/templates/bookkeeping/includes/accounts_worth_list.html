@@ -32,12 +32,12 @@
     <tfoot>
         <tr  class="total">
             <th class="text-left">Viso</th>
-            {% cell totals.past tag="th" %}
-            {% cell totals.incomes tag="th" %}
-            {% cell totals.expenses tag="th" %}
-            {% if accounts_amount_end|floatformat:2 != months_amount_end|floatformat:2 %}{% cell totals.balance tag="th" css_class='bad' text_before='!' text_after='!' %}{% else %}{% cell totals.balance tag="th" %}{% endif %}
-            {% cell totals.have tag="th" css_class='bl' %}
-            {% cell totals.delta tag="th" %}
+            {% cell total_row.past tag="th" %}
+            {% cell total_row.incomes tag="th" %}
+            {% cell total_row.expenses tag="th" %}
+            {% if accounts_amount_end|floatformat:2 != months_amount_end|floatformat:2 %}{% cell total_row.balance tag="th" css_class='bad' text_before='!' text_after='!' %}{% else %}{% cell total_row.balance tag="th" %}{% endif %}
+            {% cell total_row.have tag="th" css_class='bl' %}
+            {% cell total_row.delta tag="th" %}
         </tr>
     </tfoot>
 </table>

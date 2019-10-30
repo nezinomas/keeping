@@ -22,8 +22,8 @@
     <tfoot>
         <tr class="total">
             <th class="text-left">&#8721;</th>
-            {% for cat in expense_types %}{% cell totals|get_item:cat tag='th' %}{% endfor %}
-            {% cell totals.total tag='th' css_class="bl" %}
+            {% for cat in expense_types %}{% cell total_row|get_item:cat tag='th' %}{% endfor %}
+            {% cell total_row.total tag='th' css_class="bl" %}
         </tr>
     </tfoot>
 </table>

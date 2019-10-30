@@ -8,7 +8,10 @@ from ...savings.models import SavingBalance
 
 
 def expense_types(*args: str) -> List[str]:
-    qs = list(ExpenseType.objects.all().values_list('title', flat=True))
+    qs = list(
+        ExpenseType.objects.items()
+        .values_list('title', flat=True)
+    )
 
     [qs.append(x) for x in args]
 
@@ -18,7 +21,11 @@ def expense_types(*args: str) -> List[str]:
 
 
 def necessary_expense_types(*args: str) -> List[str]:
-    qs = list(ExpenseType.objects.filter(necessary=True).values_list('title', flat=True))
+    qs = list(
+        ExpenseType.objects.items()
+        .filter(necessary=True)
+        .values_list('title', flat=True)
+    )
 
     [qs.append(x) for x in args]
 
@@ -41,7 +48,7 @@ def render_accounts(request, account, **kwargs):
         'bookkeeping/includes/accounts_worth_list.html',
         {
             'accounts': account,
-            'totals': sum_all(account),
+            'total_row': sum_all(account),
             'accounts_amount_end': sum_col(account, 'balance'),
             **kwargs
         },
@@ -53,8 +60,8 @@ def render_savings(request, fund, pension, **kwargs):
     return render_to_string(
         'bookkeeping/includes/savings_worth_list.html',
         {
-            'fund': fund, 'fund_totals': sum_all(pension),
-            'pension': pension, 'pension_totals': sum_all(pension),
+            'fund': fund, 'fund_total_row': sum_all(pension),
+            'pension': pension, 'pension_total_row': sum_all(pension),
             **kwargs
         },
         request

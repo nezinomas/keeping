@@ -2,18 +2,22 @@ from typing import List, Dict
 
 import pandas as pd
 
-from ...core.mixins.calc_balance import BalanceStats
+from ...core.mixins.balance_base import BalanceBase
 from ...core.lib.utils import get_value_from_dict
 
 
-class DaySpending(BalanceStats):
+class DaySpending(BalanceBase):
     _balance = pd.DataFrame()
     _avg_per_day = pd.DataFrame()
     _spending = pd.DataFrame()
 
-    def __init__(self, year: int, month: int, month_df: pd.DataFrame,
+    def __init__(self,
+                 year: int,
+                 month: int,
+                 month_df: pd.DataFrame,
                  necessary: List[str], plan_day_sum: float,
-                 plan_free_sum: float, exceptions: Dict = {}):
+                 plan_free_sum: float,
+                 exceptions: pd.DataFrame = pd.DataFrame()):
 
         if not isinstance(month_df, pd.DataFrame):
             return
@@ -67,17 +71,15 @@ class DaySpending(BalanceStats):
         # filter dateframe
         df = self._filter(df)
 
-        # calculate totals for filtered dataframe
+        # calculate total_row for filtered dataframe
         df.loc[:, 'total'] = df.sum(axis=1)
 
         # select only total column
         df = df.loc[:, ['total']]
 
-        # remove exceptions sums from totals
-        if self._exceptions:
-            for ex in self._exceptions:
-                cell = (ex['date'], 'total')
-                df.loc[cell] = df.loc[cell] - float(ex['sum'])
+        # remove exceptions sums from total_row
+        if not self._exceptions.empty:
+            df['total'] = df['total'] - self._exceptions['sum']
 
         df.loc[:, 'teoretical'] = 0.0
         df.loc[:, 'real'] = 0.0
