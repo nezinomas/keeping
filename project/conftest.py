@@ -9,6 +9,7 @@ from .bookkeeping.factories import AccountWorthFactory, SavingWorthFactory
 from .core.factories import UserFactory
 from .expenses.factories import ExpenseFactory
 from .incomes.factories import IncomeFactory
+from .pensions.factories import PensionFactory
 from .savings.factories import SavingFactory, SavingTypeFactory
 from .transactions.factories import (SavingChangeFactory, SavingCloseFactory,
                                      TransactionFactory)
@@ -250,6 +251,26 @@ def savings_change():
         fee=0.15,
         to_account=SavingTypeFactory(title='Saving2'),
         from_account=SavingTypeFactory(title='Saving1'),
+    )
+
+
+@pytest.fixture()
+def pensions():
+    PensionFactory(
+        price=1.25,
+        date=date(1974, 1, 1),
+    )
+    PensionFactory(
+        price=2.25,
+        date=date(1974, 1, 1),
+    )
+    PensionFactory(
+        price=2.25,
+        date=date(1999, 1, 1),
+    )
+    PensionFactory(
+        price=2.25,
+        date=date(1999, 1, 1),
     )
 
 
