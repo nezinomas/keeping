@@ -1,4 +1,7 @@
-from ..core.mixins.views import CreateAjaxMixin, ListMixin, UpdateAjaxMixin, IndexMixin
+from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
+                                 UpdateAjaxMixin)
+from ..pensions.views import Lists as PensionLists
+from ..pensions.views import TypeLists as PensionTypeLists
 from . import forms, models
 
 
@@ -9,6 +12,13 @@ class Index(IndexMixin):
             self.request,
             as_string=True)
         context['categories'] = TypeLists.as_view()(
+            self.request,
+            as_string=True)
+
+        context['pension_type'] = PensionTypeLists.as_view()(
+            self.request,
+            as_string=True)
+        context['pension'] = PensionLists.as_view()(
             self.request,
             as_string=True)
 
