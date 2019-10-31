@@ -16,6 +16,18 @@ from .. import factories, models
 pytestmark = pytest.mark.django_db
 
 
+# ----------------------------------------------------------------------------
+#                                                                 AccountWorth
+# ---------------------------------------------------------------------------
+def test_account_worth_str():
+    with mock.patch('django.utils.timezone.now') as mock_now:
+        mock_now.return_value = dt(1999, 1, 1, 2, 3, 4, tzinfo=pytz.utc)
+
+        model = factories.AccountWorthFactory()
+
+    assert '1999-01-01 02:03 - Account1' == str(model)
+
+
 def test_account_worth_latest_values(accounts_worth):
     actual = list(models.AccountWorth.objects.items())
 
@@ -30,6 +42,18 @@ def test_account_worth_latest_values(accounts_worth):
 def test_account_worth_queries(django_assert_num_queries, accounts_worth):
     with django_assert_num_queries(1) as captured:
         list(models.AccountWorth.objects.items())
+
+
+# ----------------------------------------------------------------------------
+#                                                                  SavingWorth
+# ----------------------------------------------------------------------------
+def test_saving_worth_str():
+    with mock.patch('django.utils.timezone.now') as mock_now:
+        mock_now.return_value = dt(1999, 1, 1, 2, 3, 4, tzinfo=pytz.utc)
+
+        model = factories.SavingWorthFactory()
+
+    assert '1999-01-01 02:03 - Savings' == str(model)
 
 
 def test_saving_worth_latest_values(savings_worth):
@@ -48,22 +72,31 @@ def test_saving_worth_queries(django_assert_num_queries, savings_worth):
         list(models.SavingWorth.objects.items())
 
 
-def test_saving_worth_str():
+# ----------------------------------------------------------------------------
+#                                                                 PensionWorth
+# ----------------------------------------------------------------------------
+def test_pension_worth_str():
     with mock.patch('django.utils.timezone.now') as mock_now:
         mock_now.return_value = dt(1999, 1, 1, 2, 3, 4, tzinfo=pytz.utc)
 
-        model = factories.SavingWorthFactory()
+        model = factories.PensionWorthFactory()
 
-    assert '1999-01-01 02:03 - Savings' == str(model)
+    assert '1999-01-01 02:03 - PensionType' == str(model)
 
 
-def test_account_worth_str():
-    with mock.patch('django.utils.timezone.now') as mock_now:
-        mock_now.return_value = dt(1999, 1, 1, 2, 3, 4, tzinfo=pytz.utc)
+def test_pension_worth_latest_values(pensions_worth):
+    actual = list(models.PensionWorth.objects.items())
 
-        model = factories.AccountWorthFactory()
+    expect = [
+        {'title': 'PensionType', 'have': 2.15},
+    ]
 
-    assert '1999-01-01 02:03 - Account1' == str(model)
+    assert_(expect, actual)
+
+
+def test_pension_worth_queries(django_assert_num_queries, pensions_worth):
+    with django_assert_num_queries(1) as captured:
+        list(models.PensionWorth.objects.items())
 
 
 # ----------------------------------------------------------------------------

@@ -13,13 +13,20 @@ def models(where: str) -> List:
             'expenses.Expense',
             'savings.Saving',
             'transactions.SavingClose',
-            'transactions.Transaction']
+            'transactions.Transaction'
+        ]
 
     if where == 'savings':
         models = [
             'savings.Saving',
             'transactions.SavingClose',
-            'transactions.SavingChange']
+            'transactions.SavingChange'
+        ]
+
+    if where == 'pensions':
+        models = [
+            'pensions.Pension',
+        ]
 
     return models
 

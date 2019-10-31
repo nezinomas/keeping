@@ -1,3 +1,15 @@
 from django.contrib import admin
 
-# Register your models here.
+from . import models
+
+
+class SavingAdmin(admin.ModelAdmin):
+    pass
+
+
+class SavingTypeAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(models.SavingType, SavingTypeAdmin)
+admin.site.register(models.Saving, SavingAdmin)
