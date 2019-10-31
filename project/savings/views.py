@@ -5,8 +5,12 @@ from . import forms, models
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['savings'] = Lists.as_view()(self.request, as_string=True)
-        context['categories'] = TypeLists.as_view()(self.request, as_string=True)
+        context['savings'] = Lists.as_view()(
+            self.request,
+            as_string=True)
+        context['categories'] = TypeLists.as_view()(
+            self.request,
+            as_string=True)
 
         return context
 
