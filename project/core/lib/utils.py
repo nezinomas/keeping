@@ -1,4 +1,4 @@
-from collections import Counter
+from collections import Counter, ChainMap
 from typing import Any, Dict, List
 
 from django.db.models.query import QuerySet
@@ -14,16 +14,15 @@ def sum_all(arr: List[Dict]) -> Dict:
     if isinstance(arr, QuerySet):
         arr = [*arr.values()]
 
-    d = Counter()
-    {d.update(row) for row in arr}
+    rtn = Counter()
 
-    return d
+    for row in arr:
+        rtn.update(row)
+
+    return {**rtn}
 
 
 def sum_col(arr: List[Dict], key: Any) -> float:
-    if isinstance(arr, QuerySet):
-        arr = [*arr.values()]
-
     rtn = sum_all(arr)
 
     return rtn.get(key, 0.0)
