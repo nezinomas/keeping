@@ -83,3 +83,50 @@ class Pension(models.Model):
 
     # managers
     objects = PensionQuerySet.as_manager()
+
+
+class PensionBalanceQuerySet(models.QuerySet):
+    def _related(self):
+        return self.select_related('pension_type')
+
+    def items(self, year: int = None):
+        if year:
+            qs = self._related().filter(year=year)
+        else:
+            qs = self._related()
+
+        return qs.values(
+            'year',
+            'past_amount', 'past_fee',
+            'fees', 'invested', 'incomes', 'market_value',
+            'profit_incomes_proc', 'profit_incomes_sum',
+            'profit_invested_proc', 'profit_invested_sum',
+            title=F('pension_type__title')
+        )
+
+
+class PensionBalance(models.Model):
+    pension_type = models.ForeignKey(
+        PensionType,
+        on_delete=models.CASCADE,
+        related_name='pensions_balance'
+    )
+    year = models.PositiveIntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)]
+    )
+    past_amount = models.FloatField(default=0.0)
+    past_fee = models.FloatField(default=0.0)
+    fees = models.FloatField(default=0.0)
+    invested = models.FloatField(default=0.0)
+    incomes = models.FloatField(default=0.0)
+    market_value = models.FloatField(default=0.0)
+    profit_incomes_proc = models.FloatField(default=0.0)
+    profit_incomes_sum = models.FloatField(default=0.0)
+    profit_invested_proc = models.FloatField(default=0.0)
+    profit_invested_sum = models.FloatField(default=0.0)
+
+    # Managers
+    objects = PensionBalanceQuerySet.as_manager()
+
+    def __str__(self):
+        return f'{self.pension_type.title}'
