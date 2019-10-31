@@ -341,3 +341,13 @@ def test_all_qs_count_for_savings(saving_types,
                                   django_assert_max_num_queries):
     with django_assert_max_num_queries(6):
         [*collect_summary_data(1999, saving_types, 'savings')]
+
+
+def test_pension(pensions):
+    actual = collect_summary_data(1999, {'PensionType': 1}, 'pensions')
+
+    assert 1 == actual.shape[0]  # rows
+
+    assert 1 == actual.at['PensionType', 'id']
+    assert 3.5 == actual.at['PensionType', 's_past']
+    assert 4.5 == actual.at['PensionType', 's_now']

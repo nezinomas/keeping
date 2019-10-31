@@ -5,10 +5,12 @@ import pytest
 import pytz
 
 from .accounts.factories import AccountFactory
-from .bookkeeping.factories import AccountWorthFactory, SavingWorthFactory
+from .bookkeeping.factories import (AccountWorthFactory, PensionWorthFactory,
+                                    SavingWorthFactory)
 from .core.factories import UserFactory
 from .expenses.factories import ExpenseFactory
 from .incomes.factories import IncomeFactory
+from .pensions.factories import PensionFactory
 from .savings.factories import SavingFactory, SavingTypeFactory
 from .transactions.factories import (SavingChangeFactory, SavingCloseFactory,
                                      TransactionFactory)
@@ -254,6 +256,26 @@ def savings_change():
 
 
 @pytest.fixture()
+def pensions():
+    PensionFactory(
+        price=1.25,
+        date=date(1974, 1, 1),
+    )
+    PensionFactory(
+        price=2.25,
+        date=date(1974, 1, 1),
+    )
+    PensionFactory(
+        price=2.25,
+        date=date(1999, 1, 1),
+    )
+    PensionFactory(
+        price=2.25,
+        date=date(1999, 1, 1),
+    )
+
+
+@pytest.fixture()
 def accounts_worth():
     with mock.patch('django.utils.timezone.now') as mock_now:
         mock_now.return_value = datetime(1999, 1, 1, tzinfo=pytz.utc)
@@ -304,4 +326,21 @@ def savings_worth():
         SavingWorthFactory(
             price=10,
             saving_type=SavingTypeFactory(title='Saving1')
+        )
+
+
+@pytest.fixture()
+def pensions_worth():
+    with mock.patch('django.utils.timezone.now') as mock_now:
+        mock_now.return_value = datetime(1999, 1, 1, tzinfo=pytz.utc)
+
+        PensionWorthFactory(
+            price=2.15,
+        )
+
+    with mock.patch('django.utils.timezone.now') as mock_now:
+        mock_now.return_value = datetime(1974, 1, 1, tzinfo=pytz.utc)
+
+        PensionWorthFactory(
+            price=6,
         )

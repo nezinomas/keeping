@@ -1,19 +1,33 @@
-from ..core.mixins.views import CreateAjaxMixin, ListMixin, UpdateAjaxMixin, IndexMixin
+from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
+                                 UpdateAjaxMixin)
+from ..pensions.views import Lists as PensionLists
+from ..pensions.views import TypeLists as PensionTypeLists
 from . import forms, models
 
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['savings'] = Lists.as_view()(self.request, as_string=True)
-        context['categories'] = TypeLists.as_view()(self.request, as_string=True)
+        context['savings'] = Lists.as_view()(
+            self.request,
+            as_string=True)
+        context['categories'] = TypeLists.as_view()(
+            self.request,
+            as_string=True)
+
+        context['pension_type'] = PensionTypeLists.as_view()(
+            self.request,
+            as_string=True)
+        context['pension'] = PensionLists.as_view()(
+            self.request,
+            as_string=True)
 
         return context
 
 
-#
-# Saving views
-#
+# ----------------------------------------------------------------------------
+#                                                                 Saving Views
+# ----------------------------------------------------------------------------
 class Lists(ListMixin):
     model = models.Saving
 
@@ -28,9 +42,9 @@ class Update(UpdateAjaxMixin):
     form_class = forms.SavingForm
 
 
-#
-# SavingType views
-#
+# ----------------------------------------------------------------------------
+#                                                            Saving Type Views
+# ----------------------------------------------------------------------------
 class TypeLists(ListMixin):
     model = models.SavingType
 

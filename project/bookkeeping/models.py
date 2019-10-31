@@ -5,12 +5,13 @@ from django.db import models
 from django.db.models import F, Max
 
 from ..accounts.models import Account
+from ..pensions.models import PensionType
 from ..savings.models import SavingType
 
 
-#
-# Savings Worth
-#
+# ----------------------------------------------------------------------------
+#                                                                  SavingWorth
+# ----------------------------------------------------------------------------
 class SavingWorthQuerySet(models.QuerySet):
     def related(self):
         return self.select_related('saving_type')
@@ -48,9 +49,9 @@ class SavingWorth(models.Model):
     objects = SavingWorthQuerySet.as_manager()
 
 
-#
-# Accounts Worth
-#
+# ----------------------------------------------------------------------------
+#                                                                 AccountWorth
+# ----------------------------------------------------------------------------
 class AccountWorthQuerySet(models.QuerySet):
     def related(self):
         return self.select_related('account')
@@ -88,3 +89,43 @@ class AccountWorth(models.Model):
 
     # Managers
     objects = AccountWorthQuerySet.as_manager()
+
+
+# ----------------------------------------------------------------------------
+#                                                                  PensionWorth
+# ----------------------------------------------------------------------------
+class PensionWorthQuerySet(models.QuerySet):
+    def related(self):
+        return self.select_related('pension_type')
+
+    def items(self):
+        return (
+            self
+            .related()
+            .annotate(max_date=Max('pension_type__pensions_worth__date'))
+            .filter(date=F('max_date'))
+            .values(title=F('pension_type__title'), have=F('price'))
+        )
+
+
+class PensionWorth(models.Model):
+    date = models.DateTimeField(auto_now_add=True)
+    price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))]
+    )
+    pension_type = models.ForeignKey(
+        PensionType,
+        on_delete=models.CASCADE,
+        related_name='pensions_worth'
+    )
+
+    class Meta:
+        get_latest_by = ['date']
+
+    def __str__(self):
+        return f'{self.date:%Y-%m-%d %H:%M} - {self.pension_type}'
+
+    # Managers
+    objects = PensionWorthQuerySet.as_manager()
