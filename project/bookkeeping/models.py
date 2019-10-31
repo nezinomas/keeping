@@ -8,9 +8,9 @@ from ..accounts.models import Account
 from ..savings.models import SavingType
 
 
-#
-# Savings Worth
-#
+# ----------------------------------------------------------------------------
+#                                                                  SavingWorth
+# ----------------------------------------------------------------------------
 class SavingWorthQuerySet(models.QuerySet):
     def related(self):
         return self.select_related('saving_type')
@@ -48,9 +48,9 @@ class SavingWorth(models.Model):
     objects = SavingWorthQuerySet.as_manager()
 
 
-#
-# Accounts Worth
-#
+# ----------------------------------------------------------------------------
+#                                                                 AccountWorth
+# ----------------------------------------------------------------------------
 class AccountWorthQuerySet(models.QuerySet):
     def related(self):
         return self.select_related('account')
