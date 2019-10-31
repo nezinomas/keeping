@@ -73,6 +73,33 @@ def test_saving_worth_queries(django_assert_num_queries, savings_worth):
 
 
 # ----------------------------------------------------------------------------
+#                                                                 PensionWorth
+# ----------------------------------------------------------------------------
+def test_pension_worth_str():
+    with mock.patch('django.utils.timezone.now') as mock_now:
+        mock_now.return_value = dt(1999, 1, 1, 2, 3, 4, tzinfo=pytz.utc)
+
+        model = factories.PensionWorthFactory()
+
+    assert '1999-01-01 02:03 - PensionType' == str(model)
+
+
+def test_pension_worth_latest_values(pensions_worth):
+    actual = list(models.PensionWorth.objects.items())
+
+    expect = [
+        {'title': 'PensionType', 'have': 2.15},
+    ]
+
+    assert_(expect, actual)
+
+
+def test_pension_worth_queries(django_assert_num_queries, pensions_worth):
+    with django_assert_num_queries(1) as captured:
+        list(models.PensionWorth.objects.items())
+
+
+# ----------------------------------------------------------------------------
 #                                                             post_save signal
 # ----------------------------------------------------------------------------
 def test_post_save_account_worth_insert(mock_crequest):
