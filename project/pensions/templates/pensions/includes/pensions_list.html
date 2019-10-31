@@ -1,0 +1,26 @@
+{% load humanize %}
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th>Data</th>
+            <th>Pesijų fondas</th>
+            <th>Pastaba</th>
+            <th class="text-right">Suma</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        {% url 'pensions:pensions_update' item.id as url_update %}
+        <tr data-url="{{ url_update }}">
+            <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
+            <td class="text-left">{{ item.pension_type }}</td>
+            <td class="text-left">{{ item.remark }}</td>
+            <td>{{ item.price|intcomma }}</td>
+        </tr>
+        {% empty %}
+        <tr class="table-warning text-center">
+            <td colspan="4" class="py-2"><b>{{ request.user.profile.year|title }}</b> metais irašų nėra.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
