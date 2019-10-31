@@ -3,8 +3,10 @@ from decimal import Decimal
 
 import pytest
 
-from ..factories import PensionFactory, PensionTypeFactory
-from ..models import Pension, PensionType
+from ...bookkeeping.factories import PensionWorthFactory
+from ..factories import (PensionBalanceFactory, PensionFactory,
+                         PensionTypeFactory)
+from ..models import Pension, PensionBalance, PensionType
 
 pytestmark = pytest.mark.django_db
 
@@ -68,3 +70,127 @@ def test_pension_summary(pensions):
     actual = list(Pension.objects.summary(1999))
 
     assert expect == actual
+
+
+# ----------------------------------------------------------------------------
+#                                                                 PensionWorth
+# ----------------------------------------------------------------------------
+def test_saving_balance_init():
+    actual = PensionBalanceFactory.build()
+
+    assert str(actual.pension_type) == 'PensionType'
+
+    assert actual.past_amount == 2.0
+    assert actual.past_fee == 2.1
+    assert actual.fees == 2.2
+    assert actual.invested == 2.3
+    assert actual.incomes == 2.4
+    assert actual.market_value == 2.5
+    assert actual.profit_incomes_proc == 2.6
+    assert actual.profit_incomes_sum == 2.7
+    assert actual.profit_invested_proc == 2.8
+    assert actual.profit_invested_sum == 2.9
+
+
+def test_saving_balance_str():
+    actual = PensionBalanceFactory.build()
+
+    assert str(actual) == 'PensionType'
+
+
+@pytest.mark.django_db
+def test_saving_balance_items():
+    PensionBalanceFactory(year=1998)
+    PensionBalanceFactory(year=1999)
+    PensionBalanceFactory(year=2000)
+
+    actual = PensionBalance.objects.items(1999)
+
+    assert len(actual) == 1
+
+
+def test_saving_balance_queries(django_assert_num_queries):
+    p1 = PensionTypeFactory(title='p1')
+    p2 = PensionTypeFactory(title='p2')
+
+    PensionBalanceFactory(pension_type=p1)
+    PensionBalanceFactory(pension_type=p2)
+
+    with django_assert_num_queries(1) as captured:
+        q = PensionBalance.objects.items()
+        for i in q:
+            title = i['title']
+
+
+# ----------------------------------------------------------------------------
+#                                                             post_save signal
+# ----------------------------------------------------------------------------
+def test_post_save_pension_balace_insert(mock_crequest):
+    PensionWorthFactory()
+    pension_type = PensionTypeFactory()
+
+    income = Pension(
+        date=date(1999, 1, 1),
+        price=Decimal(1),
+        pension_type=pension_type
+    )
+
+    income.save()
+
+    actual = PensionBalance.objects.items(1999)
+
+    assert 1 == actual.count()
+
+    actual = actual[0]
+
+    assert 'PensionType' == actual['title']
+
+    assert round(actual['past_amount'], 2) == 0.0
+    assert round(actual['past_fee'], 2) == 0.0
+    assert round(actual['incomes'], 2) == 1.0
+    assert round(actual['fees'], 2) == 0.0
+    assert round(actual['invested'], 2) == 1.0
+    assert round(actual['market_value'], 2) == 0.5
+    assert round(actual['profit_incomes_proc'], 2) == -50.0
+    assert round(actual['profit_incomes_sum'], 2) == -0.5
+    assert round(actual['profit_invested_proc'], 2) == -50.0
+    assert round(actual['profit_invested_sum'], 2) == -0.5
+
+
+def test_post_save_pension_balace_insert_count_queries(mock_crequest,
+                                                       django_assert_max_num_queries):
+    PensionBalanceFactory()
+    PensionWorthFactory()
+    pension_type = PensionTypeFactory()
+
+    income = Pension(
+        date=date(1999, 1, 1),
+        price=Decimal(1),
+        pension_type=pension_type
+    )
+    with django_assert_max_num_queries(8):
+        income.save()
+
+
+def test_post_save_pension_balace_update_count_queries(mock_crequest,
+                                                       django_assert_max_num_queries):
+    PensionBalanceFactory()
+    PensionWorthFactory()
+    pension_type = PensionTypeFactory()
+
+    income = Pension(
+        date=date(1999, 1, 1),
+        price=Decimal(1),
+        pension_type=pension_type
+    )
+    with django_assert_max_num_queries(8):
+        income.save()
+
+
+def test_post_save_pension_type_insert_new(mock_crequest, pensions):
+    obj = PensionType(title='p1')
+    obj.save()
+
+    actual = PensionBalance.objects.items()
+
+    assert 2 == actual.count()

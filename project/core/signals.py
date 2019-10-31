@@ -6,9 +6,10 @@ from django.dispatch import receiver
 
 from ..accounts.lib.balance import Balance as AccountStats
 from ..accounts.models import Account, AccountBalance
-from ..bookkeeping.models import AccountWorth, SavingWorth
+from ..bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ..expenses.models import Expense, ExpenseType
 from ..incomes.models import Income, IncomeType
+from ..pensions.models import Pension, PensionBalance, PensionType
 from ..savings.lib.balance import Balance as SavingStats
 from ..savings.models import Saving, SavingBalance, SavingType
 from ..transactions.models import SavingChange, SavingClose, Transaction
@@ -46,6 +47,16 @@ def post_save_saving_stats(instance: object, year: int = None,
 
 
 # ----------------------------------------------------------------------------
+#                                                               PensionBalance
+# ----------------------------------------------------------------------------
+@receiver(post_save, sender=Pension)
+@receiver(post_save, sender=PensionType)
+def post_save_pension_stats(instance: object, year: int = None,
+                            *args, **kwargs):
+    SignalBase.post_save_pensions(instance, year)
+
+
+# ----------------------------------------------------------------------------
 #                                                   post_save SignalBase class
 # ----------------------------------------------------------------------------
 class SignalBase():
@@ -79,6 +90,17 @@ class SignalBase():
         cls.model_worth = SavingWorth
         cls.class_stats = SavingStats
         cls.summary_models = 'savings'
+
+        return cls(instance, year)
+
+    @classmethod
+    def post_save_pensions(cls, instance: object, year: int):
+        cls.field = 'pension_type_id'
+        cls.model_types = PensionType
+        cls.model_balance = PensionBalance
+        cls.model_worth = PensionWorth
+        cls.class_stats = SavingStats  # using same savings Balance class
+        cls.summary_models = 'pensions'
 
         return cls(instance, year)
 

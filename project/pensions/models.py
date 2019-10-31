@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Any, Dict, List
 
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Case, Count, F, Sum, When
 
@@ -10,9 +10,17 @@ from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
 
 
+class PensionTypeQuerySet(models.QuerySet):
+    def items(self, year: int = None):
+        return self
+
+
 class PensionType(TitleAbstract):
     class Meta:
         ordering = ['title']
+
+    # Managers
+    objects = PensionTypeQuerySet.as_manager()
 
 
 class PensionQuerySet(SumMixin, models.QuerySet):
