@@ -15,9 +15,9 @@ class Index(IndexMixin):
         return context
 
 
-#
-# Saving views
-#
+# ----------------------------------------------------------------------------
+#                                                                 Saving Views
+# ----------------------------------------------------------------------------
 class Lists(ListMixin):
     model = models.Saving
 
@@ -32,9 +32,9 @@ class Update(UpdateAjaxMixin):
     form_class = forms.SavingForm
 
 
-#
-# SavingType views
-#
+# ----------------------------------------------------------------------------
+#                                                            Saving Type Views
+# ----------------------------------------------------------------------------
 class TypeLists(ListMixin):
     model = models.SavingType
 
