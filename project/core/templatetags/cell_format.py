@@ -8,11 +8,8 @@ register = template.Library()
 def _to_float(_str: Any) -> float:
     if type(_str) == float or type(_str) == int or type(_str) == Decimal:
         return float(_str)
-
-    if type(_str) == str:
+    else:
         return float(_str.replace('.', '').replace(',', '.'))
-
-    raise Exception('Bad type.')
 
 
 @register.filter
