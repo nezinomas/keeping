@@ -36,7 +36,9 @@ class Update(UpdateAjaxMixin):
 
 def load_expense_name(request):
     pk = request.GET.get('expense_type')
-    objects = models.ExpenseName.objects.parent(pk).year(request.user.profile.year)
+    objects = (models.ExpenseName.objects
+               .parent(pk)
+               .year(request.user.profile.year))
 
     return render(
         request,
