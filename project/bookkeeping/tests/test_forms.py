@@ -8,6 +8,11 @@ from ..factories import SavingTypeFactory
 from ..forms import AccountWorthForm, SavingWorthForm
 
 
+#
+# =============================================================
+#                                                  Saving Worth
+# =============================================================
+#
 @pytest.mark.django_db
 def test_saving_worth_init():
     SavingWorthForm()
@@ -73,6 +78,11 @@ def test_saving_form_type_closed_in_current_year():
     assert 'S2' in str(form['saving_type'])
 
 
+#
+# =============================================================
+#                                                 Account Worth
+# =============================================================
+#
 def test_account_worth_init():
     AccountWorthForm()
 
