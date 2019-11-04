@@ -6,7 +6,7 @@ from django.urls import resolve, reverse
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...core.tests.utils import setup_view
-from ...pensions.factories import PensionFactory
+from ...pensions.factories import PensionFactory, PensionTypeFactory
 from ...savings.factories import SavingTypeFactory
 from .. import views
 
@@ -275,12 +275,12 @@ def test_view_pension_worth_formset(login, client):
 
 @pytest.mark.django_db()
 def test_view_pension_worth_new(client, login):
-    i = PensionFactory()
+    i = PensionTypeFactory()
     data = {
         'form-TOTAL_FORMS': 1,
         'form-INITIAL_FORMS': 0,
         'form-0-price': '999',
-        'form-0-pension': i.pk
+        'form-0-pension_type': i.pk
     }
 
     url = reverse('bookkeeping:pensions_worth_new')
@@ -300,7 +300,7 @@ def test_view_pension_worth_invalid_data(client, login):
         'form-TOTAL_FORMS': 1,
         'form-INITIAL_FORMS': 0,
         'form-0-price': 'x',
-        'form-0-pension': 0
+        'form-0-pension_type': 0
     }
 
     url = reverse('bookkeeping:pensions_worth_new')
