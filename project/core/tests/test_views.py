@@ -56,7 +56,10 @@ def test_view_regenerate_balances_status_200(login, client):
 
 @pytest.mark.django_db
 def test_view_regenerate_balances_current_year_status_200(login, client):
-    url = reverse('core:regenerate_balances_current_year', kwargs={'year': 1999})
+    url = reverse(
+        'core:regenerate_balances_current_year',
+        kwargs={'year': 1999}
+    )
     response = client.get(url, follow=True)
 
     assert 200 == response.status_code
