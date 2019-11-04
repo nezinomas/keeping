@@ -24,11 +24,13 @@ class Lists(ListMixin):
 class New(CreateAjaxMixin):
     model = models.Expense
     form_class = forms.ExpenseForm
+    list_render_output = False
 
 
 class Update(UpdateAjaxMixin):
     model = models.Expense
     form_class = forms.ExpenseForm
+    list_render_output = False
 
 
 def load_expense_name(request):
