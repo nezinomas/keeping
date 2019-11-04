@@ -4,7 +4,6 @@ from django.template.loader import render_to_string
 
 from ...core.lib.utils import sum_all, sum_col
 from ...expenses.models import ExpenseType
-from ...savings.models import SavingBalance
 
 
 def expense_types(*args: str) -> List[str]:
