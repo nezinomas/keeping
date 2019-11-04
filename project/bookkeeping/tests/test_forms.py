@@ -4,8 +4,9 @@ from decimal import Decimal
 import pytest
 
 from ...accounts.factories import AccountFactory
+from ...pensions.factories import PensionTypeFactory
 from ..factories import SavingTypeFactory
-from ..forms import AccountWorthForm, SavingWorthForm
+from ..forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
 
 
 #
@@ -112,3 +113,39 @@ def test_account_worth_blank_data():
 
     assert 'price' in form.errors
     assert 'account' in form.errors
+
+
+#
+# =============================================================
+#                                                 Pension Worth
+# =============================================================
+#
+def test_pension_worth_init():
+    PensionWorthForm()
+
+
+@pytest.mark.django_db
+def test_pension_worth_valid_data(mock_crequest):
+    p = PensionTypeFactory()
+
+    form = PensionWorthForm(data={
+        'price': '1.0',
+        'pension_type': p.pk,
+    })
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.price == Decimal(1.0)
+    assert data.pension_type.title == p.title
+
+
+@pytest.mark.django_db
+def test_pension_worth_blank_data():
+    form = PensionWorthForm(data={})
+
+    assert not form.is_valid()
+
+    assert 'price' in form.errors
+    assert 'pension_type' in form.errors

@@ -4,7 +4,7 @@ from django.forms.models import modelformset_factory
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..savings.models import SavingType
-from .models import AccountWorth, SavingWorth
+from .models import AccountWorth, SavingWorth, PensionWorth
 
 
 class SavingWorthForm(forms.ModelForm):
@@ -25,6 +25,18 @@ class AccountWorthForm(forms.ModelForm):
     class Meta:
         model = AccountWorth
         fields = ['account', 'price']
+
+    def __init__(self, year=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
+
+
+class PensionWorthForm(forms.ModelForm):
+    class Meta:
+        model = PensionWorth
+        fields = ['pension_type', 'price']
 
     def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
