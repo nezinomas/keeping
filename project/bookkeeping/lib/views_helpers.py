@@ -34,15 +34,6 @@ def necessary_expense_types(*args: str) -> List[str]:
     return qs
 
 
-def split_savings_stats(year):
-    arr = SavingBalance.objects.items(year)
-
-    fund = list(filter(lambda x: 'pens' not in x['title'].lower(), arr))
-    pension = list(filter(lambda x: 'pens' in x['title'].lower(), arr))
-
-    return fund, pension
-
-
 def render_accounts(request, account, **kwargs):
     return render_to_string(
         'bookkeeping/includes/accounts_worth_list.html',
