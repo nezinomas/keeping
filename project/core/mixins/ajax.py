@@ -7,6 +7,7 @@ from .helpers import template_name
 
 class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
     list_template_name = None
+    list_render_output = True  # can turn-off render list
     object = None
 
     def get_template_names(self):
@@ -42,10 +43,12 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
             context['form'] = form
 
             data['form_is_valid'] = True
-            data['html_list'] = (
-                render_to_string(
-                    self._get_list_template_name(), context, self.request)
-            )
+
+            if self.list_render_output:
+                data['html_list'] = (
+                    render_to_string(
+                        self._get_list_template_name(), context, self.request)
+                )
 
         self._render_form(data, context)
 
