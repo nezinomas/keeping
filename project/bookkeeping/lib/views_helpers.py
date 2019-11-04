@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 from django.template.loader import render_to_string
 
@@ -31,6 +31,10 @@ def necessary_expense_types(*args: str) -> List[str]:
     qs.sort()
 
     return qs
+
+
+def split_funds(lst: List[Dict], key: str) -> List[Dict]:
+    return list(filter(lambda x: key in x['title'].lower(), lst))
 
 
 def render_accounts(request, account, **kwargs):

@@ -20,3 +20,12 @@ def test_expenses_types(qs):
     actual = T.expense_types('A')
 
     assert ['A', 'T'] == actual
+
+
+def test_split_funds():
+    lst = [{'title': 'AAA LX'}, {'title': 'INVL'}]
+
+    actual = T.split_funds(lst, 'lx')
+
+    assert 1 == len(actual)
+    assert 'AAA LX' == actual[0]['title']
