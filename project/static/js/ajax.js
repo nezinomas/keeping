@@ -63,7 +63,7 @@ $(function () {
 
                     var price = document.getElementById("id_price");
                     if (price) {
-                        price.value = '';
+                        price.value = '0.00';
                     }
 
                     var title = document.getElementById("id_title");
