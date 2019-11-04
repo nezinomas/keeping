@@ -55,22 +55,22 @@
             enabled: false
         },
         plotOptions: {
-            areaspline: {
+            area: {
                 fillOpacity: 0.5
             }
         },
         series: [{
-            type: 'areaspline',
+            type: 'area',
             name: 'Pajamos',
             data: {{ i }},
             color: '#77933c'
         }, {
-            type: 'areaspline',
+            type: 'area',
             name: 'Išlaidos',
             data: {{ e }},
             color: '#c0504d'
         }, {
-            type: 'spline',
+            type: 'line',
             name: 'Taupymas',
             data: {{ s }},
             color: '#ffc000',
