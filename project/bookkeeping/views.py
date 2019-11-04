@@ -83,6 +83,10 @@ class Index(IndexMixin):
         context['expenses_average'] = _MonthExpense.average
         context['no_incomes'] = _NoIncomes.summary
         context['save_sum'] = _NoIncomes.save_sum
+        wealth_money = _YearBalance.amount_end + sum_col(_fund, 'market_value')
+        wealth = wealth_money + sum_col(_pension, 'market_value')
+        context['wealth_money'] = wealth_money
+        context['wealth'] = wealth
 
         # charts data
         context['pie'] = _MonthExpense.chart_data
