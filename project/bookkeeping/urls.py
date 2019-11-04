@@ -17,4 +17,9 @@ urlpatterns = [
         views.AccountsWorthNew.as_view(),
         name='accounts_worth_new'
     ),
+    path(
+        'bookkeeping/pensions_worth/new/',
+        views.PensionsWorthNew.as_view(),
+        name='pensions_worth_new'
+    ),
 ]

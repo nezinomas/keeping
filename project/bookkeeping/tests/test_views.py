@@ -6,6 +6,7 @@ from django.urls import resolve, reverse
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...core.tests.utils import setup_view
+from ...pensions.factories import PensionFactory
 from ...savings.factories import SavingTypeFactory
 from .. import views
 
@@ -237,3 +238,76 @@ def test_saving_worth_formset_saving_type_closed_in_future(_fake_request):
 
     assert 'S1' in actual
     assert 'S2' in actual
+
+
+#
+# =============================================================
+#                                                 Pension Worth
+# =============================================================
+#
+def test_view_pension_worth_func():
+    view = resolve('/bookkeeping/pensions_worth/new/')
+
+    assert views.PensionsWorthNew == view.func.view_class
+
+
+@pytest.mark.django_db
+def test_view_pension_worth_200(login, client):
+    response = client.get('/bookkeeping/pensions_worth/new/')
+
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_view_pension_worth_formset(login, client):
+    PensionFactory()
+
+    url = reverse('bookkeeping:pensions_worth_new')
+    response = client.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert 200 == response.status_code
+    assert 'Pensijų vertė' in actual['html_form']
+    assert '<option value="1" selected>PensionType</option>' in actual['html_form']
+
+
+@pytest.mark.django_db()
+def test_view_pension_worth_new(client, login):
+    i = PensionFactory()
+    data = {
+        'form-TOTAL_FORMS': 1,
+        'form-INITIAL_FORMS': 0,
+        'form-0-price': '999',
+        'form-0-pension': i.pk
+    }
+
+    url = reverse('bookkeeping:pensions_worth_new')
+
+    response = client.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert '999' in actual['html_list']
+
+
+@pytest.mark.django_db()
+def test_view_pension_worth_invalid_data(client, login):
+    data = {
+        'form-TOTAL_FORMS': 1,
+        'form-INITIAL_FORMS': 0,
+        'form-0-price': 'x',
+        'form-0-pension': 0
+    }
+
+    url = reverse('bookkeeping:pensions_worth_new')
+
+    response = client.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
