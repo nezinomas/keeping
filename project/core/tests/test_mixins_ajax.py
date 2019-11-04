@@ -134,6 +134,32 @@ def test_form_valid_ajax_response(mck_render, mck_context, _ajax_request):
 
 
 @patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
+@patch('project.core.mixins.ajax.render_to_string')
+def test_form_valid_ajax_response_list_not_rendered(mck_render, mck_context, _ajax_request):
+    class Dummy(AjaxCreateUpdateMixin, FormMixin):
+        list_render_output = False
+        list_template_name = 'XXX'
+        template_name = 'YYY'
+        model = Mock()
+
+    mck_render.side_effect = ['html_form']
+
+    mck_form = Mock()
+    mck_form.is_valid.return_value = True
+
+    view = setup_view(Dummy(), _ajax_request)
+    response = view.form_valid(mck_form)
+
+    assert 200 == response.status_code
+    assert 1 == mck_render.call_count
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert 'html_list' not in actual
+
+
+@patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
 def test_form_invalid_render(mck_context, _request):
     class Dummy(AjaxCreateUpdateMixin, CreateView):
         list_template_name = 'XXX'

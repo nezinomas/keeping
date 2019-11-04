@@ -29,6 +29,11 @@ e = [
         'ajax/load_expense_name/',
         expenses.load_expense_name,
         name='load_expense_name'
+    ),
+    path(
+        'expenses/reload/',
+        expenses.reload,
+        name='reload_expenses'
     )
 ]
 

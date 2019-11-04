@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.template.loader import render_to_string
 
 from ...core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                   UpdateAjaxMixin)
@@ -24,11 +25,13 @@ class Lists(ListMixin):
 class New(CreateAjaxMixin):
     model = models.Expense
     form_class = forms.ExpenseForm
+    list_render_output = False
 
 
 class Update(UpdateAjaxMixin):
     model = models.Expense
     form_class = forms.ExpenseForm
+    list_render_output = False
 
 
 def load_expense_name(request):
@@ -40,3 +43,20 @@ def load_expense_name(request):
         'core/dropdown.html',
         {'objects': objects}
     )
+
+
+def reload(request):
+    year = request.user.profile.year
+    ajax_trigger = request.GET.get('ajax_trigger')
+    name = 'expenses/includes/reload.html'
+
+    context = {}
+
+    if ajax_trigger:
+        context['expenses_list'] = render_to_string(
+            'expenses/includes/expenses_list.html',
+            {'items': models.Expense.objects.year(year)},
+            request
+        )
+
+        return render(request, name, context)
