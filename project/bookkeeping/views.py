@@ -6,18 +6,18 @@ from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin
 from ..expenses.models import Expense
 from ..incomes.models import Income
-from ..pensions.models import Pension, PensionBalance
+from ..pensions.models import PensionBalance, PensionType
 from ..plans.lib.calc_day_sum import CalcDaySum
 from ..plans.models import DayPlan
 from ..savings.models import Saving, SavingBalance, SavingType
 from ..transactions.models import SavingClose
-from .forms import AccountWorthForm, SavingWorthForm
+from .forms import AccountWorthForm, SavingWorthForm, PensionWorthForm
 from .lib import views_helpers
 from .lib.day_spending import DaySpending
 from .lib.expense_summary import DayExpense, MonthExpense
 from .lib.no_incomes import NoIncomes
 from .lib.year_balance import YearBalance
-from .models import AccountWorth, SavingWorth
+from .models import AccountWorth, PensionWorth, SavingWorth
 
 
 class Index(IndexMixin):
@@ -65,8 +65,8 @@ class Index(IndexMixin):
         context['accounts'] = views_helpers.render_accounts(
             self.request, _account,
             **{'months_amount_end': _YearBalance.amount_end})
-        context['savings'] = views_helpers.render_savings(
-            self.request, _fund, _pension)
+        context['savings'] = views_helpers.render_savings(self.request, _fund)
+        context['pensions'] = views_helpers.render_pensions(self.request, _pension)
         context['balance'] = _YearBalance.balance
         context['balance_total_row'] = _YearBalance.total_row
         context['balance_avg'] = _YearBalance.average
@@ -127,6 +127,23 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
 
         context['accounts'] = _account
         context['total_row'] = sum_all(_account)
+
+        return context
+
+
+class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
+    type_model = PensionType
+    model = PensionWorth
+    form_class = PensionWorthForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        year = self.request.user.profile.year
+
+        _pension = PensionBalance.objects.items(year)
+
+        context['pension'] = _pension
+        context['pension_total_row'] = sum_all(_pension)
 
         return context
 

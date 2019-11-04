@@ -31,9 +31,11 @@
 <div class="row mt-4 mb-3">
     <div class="col-lg-12">
         {% url 'bookkeeping:accounts_worth_new' as url_accounts %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="fas fa-plus"></i> Įrašyti sąskaitose esančias sumas</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="fas fa-plus"></i> Sąskaitų faktas</button>
         {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Įrašyti fondų rinkos vertes</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Fondų faktas</button>
+        {% url 'bookkeeping:pensions_worth_new' as url_pensions_new %}
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions_new }}"><i class="fas fa-plus"></i> Pensijos faktas</button>
         <a class="btn btn-sm btn-outline-secondary"
             href="{% url 'core:regenerate_balances_current_year' year %}" data-toggle="tooltip"
             data-placement="top" title="Bus atnaujintas šių metų balansas."><i class="fas fa-sync"> </i> Atnaujinti {{ year|safe }} balansus</a>
@@ -135,6 +137,11 @@
 <!-- savings -->
 <div class="row mt-5">
     <div id="saving_worth" class="col-lg-8">{{ savings }}</div>
+</div>
+
+<!-- pensions -->
+<div class="row mt-5">
+    <div id="pension_worth" class="col-lg-8">{{ pensions }}</div>
 </div>
 
 
