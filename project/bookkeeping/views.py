@@ -11,8 +11,8 @@ from ..plans.lib.calc_day_sum import CalcDaySum
 from ..plans.models import DayPlan
 from ..savings.models import Saving, SavingBalance, SavingType
 from ..transactions.models import SavingClose
-from .forms import AccountWorthForm, SavingWorthForm, PensionWorthForm
-from .lib import views_helpers
+from .forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
+from .lib import views_helpers as H
 from .lib.day_spending import DaySpending
 from .lib.expense_summary import DayExpense, MonthExpense
 from .lib.no_incomes import NoIncomes
@@ -29,7 +29,7 @@ class Index(IndexMixin):
         _account = [*AccountBalance.objects.items(year)]
         _fund = [*SavingBalance.objects.items(year)]
         _pension = [*PensionBalance.objects.items(year)]
-        _expense_types = views_helpers.expense_types('Taupymas')
+        _expense_types = H.expense_types('Taupymas')
 
         qs_income = Income.objects.income_sum(year)
         qs_savings = Saving.objects.month_saving(year)
@@ -46,11 +46,13 @@ class Index(IndexMixin):
             savings_close=qs_savings_close,
             amount_start=sum_col(_account, 'past'))
 
-        total_market = sum_col(_fund, 'market_value')
+        wealth_money = _YearBalance.amount_end + sum_col(_fund, 'market_value')
+        wealth = wealth_money + sum_col(_pension, 'market_value')
+
         _NoIncomes = NoIncomes(
-            money=_YearBalance.amount_end,
-            fund=total_market,
-            pension=total_market,
+            money=wealth_money,
+            fund=sum_col(H.split_funds(_fund, 'lx'), 'market_value'),
+            pension=sum_col(H.split_funds(_fund, 'invl'), 'market_value'),
             avg_expenses=_YearBalance.avg_expenses,
             avg_type_expenses=_MonthExpense.average,
             not_use=[
@@ -62,11 +64,11 @@ class Index(IndexMixin):
         )
 
         context['year'] = year
-        context['accounts'] = views_helpers.render_accounts(
+        context['accounts'] = H.render_accounts(
             self.request, _account,
             **{'months_amount_end': _YearBalance.amount_end})
-        context['savings'] = views_helpers.render_savings(self.request, _fund)
-        context['pensions'] = views_helpers.render_pensions(self.request, _pension)
+        context['savings'] = H.render_savings(self.request, _fund)
+        context['pensions'] = H.render_pensions(self.request, _pension)
         context['balance'] = _YearBalance.balance
         context['balance_total_row'] = _YearBalance.total_row
         context['balance_avg'] = _YearBalance.average
@@ -74,7 +76,6 @@ class Index(IndexMixin):
         context['months_amount_end'] = _YearBalance.amount_end
         context['accounts_amount_end'] = sum_col(_account, 'balance')
         context['amount_balance'] = _YearBalance.amount_balance
-        context['total_market'] = total_market
         context['avg_incomes'] = _YearBalance.avg_incomes
         context['avg_expenses'] = _YearBalance.avg_expenses
         context['expenses'] = _MonthExpense.balance
@@ -83,8 +84,6 @@ class Index(IndexMixin):
         context['expenses_average'] = _MonthExpense.average
         context['no_incomes'] = _NoIncomes.summary
         context['save_sum'] = _NoIncomes.save_sum
-        wealth_money = _YearBalance.amount_end + sum_col(_fund, 'market_value')
-        wealth = wealth_money + sum_col(_pension, 'market_value')
         context['wealth_money'] = wealth_money
         context['wealth'] = wealth
 
@@ -179,7 +178,7 @@ class Month(IndexMixin):
         plan_free_sum = get_value_from_dict(_CalcDaySum.expenses_free, month)
         plan_remains = get_value_from_dict(_CalcDaySum.remains, month)
 
-        expenses_types = views_helpers.expense_types('Taupymas')
+        expenses_types = H.expense_types('Taupymas')
 
         targets = _CalcDaySum.targets(month, 'Taupymas')
         (categories, data_target, data_fact) = _DayExpense.chart_targets(
@@ -189,7 +188,7 @@ class Month(IndexMixin):
             year=year,
             month=month,
             month_df=_DayExpense.expenses,
-            necessary=views_helpers.necessary_expense_types('Taupymas'),
+            necessary=H.necessary_expense_types('Taupymas'),
             plan_day_sum=plan_day_sum,
             plan_free_sum=plan_free_sum,
             exceptions=_DayExpense.exceptions
