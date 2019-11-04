@@ -25,7 +25,8 @@
         event.preventDefault();
         if (event.keyCode === 13) {
             var total_sum = eval(document.getElementById("id_price").value);
-            var input_value = eval(this.value.replace(',', '.').replace(/[^\d\-\.\+\/\*]/g, ''));
+            var input_value = eval(this.value.replace(/,/g, '.').replace(/[^\d\-\.\+\/\*]/g, ''));
+
             if (!input_value || input_value === Infinity ) {
                 input_value = 0;
             }
