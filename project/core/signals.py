@@ -51,6 +51,7 @@ def post_save_saving_stats(instance: object, year: int = None,
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=Pension)
 @receiver(post_save, sender=PensionType)
+@receiver(post_save, sender=PensionWorth)
 def post_save_pension_stats(instance: object, year: int = None,
                             *args, **kwargs):
     SignalBase.post_save_pensions(instance, year)
