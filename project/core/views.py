@@ -3,7 +3,8 @@ from types import SimpleNamespace
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render, reverse
 
-from ..core.signals import post_save_account_stats, post_save_saving_stats
+from ..core.signals import (post_save_account_stats, post_save_pension_stats,
+                            post_save_saving_stats)
 from .lib.date import years
 
 
@@ -40,6 +41,7 @@ def regenerate_balances(request):
     for year in _years:
         post_save_account_stats(SimpleNamespace(), year)
         post_save_saving_stats(SimpleNamespace(), year)
+        post_save_pension_stats(SimpleNamespace(), year)
 
     return redirect(
         reverse('bookkeeping:index', kwargs={})
@@ -50,6 +52,7 @@ def regenerate_balances(request):
 def regenerate_balances_current_year(request, year):
     post_save_account_stats(SimpleNamespace(), year)
     post_save_saving_stats(SimpleNamespace(), year)
+    post_save_pension_stats(SimpleNamespace(), year)
 
     return redirect(
         reverse('bookkeeping:index', kwargs={})
