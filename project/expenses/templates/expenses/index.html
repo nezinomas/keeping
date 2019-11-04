@@ -35,9 +35,23 @@
     </div>
 </div>
 
-<div class="modal fade" id="modal-form">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content"></div>
-    </div>
-</div>
+{% include 'modal.html' %}
+
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'expenses:reload_expenses' %}`;
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1'
+            },
+            success: function (data) {
+                var expenses_list = $(data).filter('#expenses_list');
+                $('#expenses_list').html(expenses_list);
+            }
+        });
+    });
+</script>
+
 {% endblock content %}

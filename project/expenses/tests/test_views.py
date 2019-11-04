@@ -3,6 +3,7 @@ import json
 import pytest
 from django.urls import resolve, reverse
 
+from ...core.factories import UserFactory
 from ...core.tests.utils import change_profile_year
 from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ..models import ExpenseName
@@ -188,3 +189,24 @@ def test_load_expense_name_all(client, login, db_data):
     response = client.get(url, {'expense_type': 1})
 
     assert 2 == response.context['objects'].count()
+
+
+#
+# =============================================================
+#                                               realod expenses
+# =============================================================
+#
+def test_view_reload_stats_func():
+    view = resolve('/expenses/reload/')
+
+    assert expenses.reload == view.func
+
+
+@pytest.mark.django_db
+def test_view_reload_stats_render(rf):
+    request = rf.get('/expenses/reload/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = expenses.reload(request)
+
+    assert response.status_code == 200
