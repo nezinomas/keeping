@@ -176,8 +176,6 @@ def test_savings_change_summary_to(savings_change):
     expect = [{
         's_change_to_past': Decimal(2.25),
         's_change_to_now': Decimal(1.25),
-        's_change_to_fee_past': Decimal(0.15),
-        's_change_to_fee_now': Decimal(0.05),
     }]
 
     actual = list(

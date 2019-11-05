@@ -97,7 +97,6 @@ def _create_columns() -> DF:
         's_close_to_past', 's_close_to_now',
         's_close_from_past', 's_close_from_now',
         's_change_to_past', 's_change_to_now',
-        's_change_to_fee_past', 's_change_to_fee_now',
         's_change_from_past', 's_change_from_now',
         's_change_from_fee_past', 's_change_from_fee_now',
     ])

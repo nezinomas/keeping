@@ -294,20 +294,10 @@ class SavingChangeQuerySet(TransactionQuerySet):
                     Case(
                         When(**{'date__year': year}, then='price'),
                         default=0)),
-                s_change_to_fee_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='fee'),
-                        default=0)),
-                s_change_to_fee_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='fee'),
-                        default=0))
             )
             .values(
                 's_change_to_past',
                 's_change_to_now',
-                's_change_to_fee_past',
-                's_change_to_fee_now',
                 title=models.F('to_account__title'))
         )
 

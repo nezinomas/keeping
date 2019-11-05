@@ -15,7 +15,6 @@ def _savings():
         's_close_to_past': 0.0, 's_close_to_now': 0.0,
         's_close_from_past': 0.25, 's_close_from_now': 0.25,
         's_change_to_past': 0.0, 's_change_to_now': 0.0,
-        's_change_to_fee_past': 0.0, 's_change_to_fee_now': 0.0,
         's_change_from_past': 2.25, 's_change_from_now': 1.25,
         's_change_from_fee_past': 0.15, 's_change_from_fee_now': 0.05
     }, {
@@ -26,7 +25,6 @@ def _savings():
         's_close_to_past': 0.0, 's_close_to_now': 0.0,
         's_close_from_past': 0.0, 's_close_from_now': 0.0,
         's_change_to_past': 2.25, 's_change_to_now': 1.25,
-        's_change_to_fee_past': 0.15, 's_change_to_fee_now': 0.05,
         's_change_from_past': 0.0, 's_change_from_now': 0.0,
         's_change_from_fee_past': 0.0, 's_change_from_fee_now': 0.0
     }])
@@ -85,10 +83,10 @@ def test_saving_only(_savings):
         'id': 2,
         'title': 'Saving2',
         'past_amount': 2.5,
-        'past_fee': 0.15,
+        'past_fee': 0.0,
         'incomes': 6.0,
-        'fees': 0.45,
-        'invested': 5.55,
+        'fees': 0.25,
+        'invested': 5.75,
     }]
 
     actual = T(_savings, []).balance
@@ -111,12 +109,12 @@ def test_savings_worth(_savings, _savings_worth):
         'id': 2,
         'title': 'Saving2',
         'incomes': 6.0,
-        'invested': 5.55,
+        'invested': 5.75,
         'market_value': 6.15,
         'profit_incomes_proc': 2.5,
         'profit_incomes_sum': 0.15,
-        'profit_invested_proc': 10.81,
-        'profit_invested_sum': 0.6,
+        'profit_invested_proc': 6.96,
+        'profit_invested_sum': 0.4,
     }]
 
     actual = T(_savings, _savings_worth).balance
@@ -175,15 +173,15 @@ def test_saving_stats_worth_None(_savings):
 def test_saving_total_row(_savings, _savings_worth):
     expect = {
         'past_amount': 1.25,
-        'past_fee': 0.55,
+        'past_fee': 0.4,
         'incomes': 6.75,
-        'fees': 1.4,
-        'invested': 5.35,
+        'fees': 1.2,
+        'invested': 5.55,
         'market_value': 6.3,
         'profit_incomes_proc': -6.66,
         'profit_incomes_sum': -0.45,
-        'profit_invested_proc': 17.76,
-        'profit_invested_sum': 0.95,
+        'profit_invested_proc': 13.51,
+        'profit_invested_sum': 0.75,
     }
 
     actual = T(_savings, _savings_worth).total_row
