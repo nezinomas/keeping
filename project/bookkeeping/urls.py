@@ -22,4 +22,9 @@ urlpatterns = [
         views.PensionsWorthNew.as_view(),
         name='pensions_worth_new'
     ),
+    path(
+        'month/reload/',
+        views.reload_month,
+        name='reload_month'
+    ),
 ]

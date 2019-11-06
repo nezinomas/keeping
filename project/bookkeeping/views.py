@@ -1,5 +1,7 @@
+from django.shortcuts import render
+from django.template.loader import render_to_string
+
 from ..accounts.models import Account, AccountBalance
-from ..core.lib.date import current_day, year_month_list
 from ..core.lib.summary import collect_summary_data
 from ..core.lib.utils import sum_all, sum_col
 from ..core.mixins.formset import FormsetMixin
@@ -167,3 +169,24 @@ class Month(IndexMixin):
         context['chart_targets'] = obj.render_chart_targets()
 
         return context
+
+
+def reload_month(request):
+    template = 'bookkeeping/includes/reload_month.html'
+    ajax_trigger = request.GET.get('ajax_trigger')
+
+    year = request.user.profile.year
+    month = request.user.profile.month
+
+    context = {}
+
+    if ajax_trigger:
+        obj = H.MonthHelper(request, year, month)
+
+        context['month_table'] = obj.render_month_table()
+        context['spending'] = obj.render_spending()
+        context['info'] = obj.render_info()
+        context['chart_expenses'] = obj.render_chart_expenses()
+        context['chart_targets'] = obj.render_chart_targets()
+
+        return render(request, template, context)

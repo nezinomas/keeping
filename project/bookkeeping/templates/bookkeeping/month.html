@@ -8,19 +8,19 @@
 {% block content %}
 
 <div class="row my-2">
-    <div class="col-md-6 mr-0 pr-0 table-responsive">
+    <div class="col-md-6 mr-0 pr-0 table-responsive" id="month_table">
         {{ month_table }}
     </div>
     <div class="col-md-6">
         <div class="row">
-            <div class="col-lg-3 mx-0 px-2">{{ spending }}</div>
+            <div class="col-lg-3 mx-0 px-2" id="spending">{{ spending }}</div>
             <div class="col-lg-9 pl-0">
                 <div class="row">
-                    <div style="display: none;" id='expenses-visibility' class="col-lg-12">{{ chart_expenses }}</div>
-                    <div id='target-visibility' class="col-lg-12">{{ chart_targets }}</div>
+                    <div style="display: none;" id='chart_expenses' class="col-lg-12">{{ chart_expenses }}</div>
+                    <div id='chart_targets' class="col-lg-12">{{ chart_targets }}</div>
                 </div>
                 <div class="row mt-2">
-                    <div class="col-lg-12">{{ info }}</div>
+                    <div class="col-lg-12" id="info">{{ info }}</div>
                 </div>
             </div>
         </div>
@@ -43,8 +43,8 @@
 </div>
 <script>
     function myFunction() {
-        var x = document.getElementById("expenses-visibility");
-        var c = document.getElementById("target-visibility");
+        var x = document.getElementById("chart_expenses");
+        var c = document.getElementById("chart_targets");
         if (x.style.display === "none") {
             x.style.display = "block";
             c.style.display = 'none';
@@ -55,9 +55,34 @@
     }
 </script>
 
-<div class="modal fade" id="modal-form">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content"></div>
-    </div>
-</div>
+{% include 'modal.html' %}
+
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'bookkeeping:reload_month' %}`;
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1'
+            },
+            success: function (data) {
+                var month_table = $(data).filter('#month_table');
+                $('#month_table').html(month_table);
+
+                var spending = $(data).filter('#spending');
+                $('#spending').html(spending);
+
+                var info = $(data).filter('#info');
+                $('#info').html(info);
+
+                var chart_expenses = $(data).filter('#chart_expenses');
+                $('#chart_expenses').html(chart_expenses);
+
+                var chart_targets = $(data).filter('#chart_targets');
+                $('#chart_targets').html(chart_targets);
+            }
+        });
+    });
+</script>
 {% endblock content%}

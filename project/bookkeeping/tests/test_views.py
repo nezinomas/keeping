@@ -4,6 +4,7 @@ import pytest
 from django.urls import resolve, reverse
 
 from ...accounts.factories import AccountFactory
+from ...core.factories import UserFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...core.tests.utils import setup_view
 from ...pensions.factories import PensionFactory, PensionTypeFactory
@@ -311,3 +312,24 @@ def test_view_pension_worth_invalid_data(client, login):
     actual = json.loads(json_str)
 
     assert not actual['form_is_valid']
+
+
+#
+# ----------------------------------------------------------------------------
+#                                                                 Realod Month
+# ----------------------------------------------------------------------------
+#
+def test_view_reload_month_func():
+    view = resolve('/month/reload/')
+
+    assert views.reload_month == view.func
+
+
+@pytest.mark.django_db
+def test_view_reload_month_render(rf):
+    request = rf.get('/month/reload/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = views.reload_month(request)
+
+    assert response.status_code == 200
