@@ -2,8 +2,12 @@ from typing import Dict, List
 
 from django.template.loader import render_to_string
 
-from ...core.lib.utils import sum_all, sum_col
-from ...expenses.models import ExpenseType
+from ...core.lib.utils import get_value_from_dict, sum_all, sum_col
+from ...expenses.models import Expense, ExpenseType
+from ...incomes.models import Income
+from ...plans.lib.calc_day_sum import CalcDaySum
+from ...savings.models import Saving
+from ..lib.day_spending import DaySpending
 from ..lib.expense_summary import DayExpense
 
 
@@ -118,3 +122,62 @@ def render_spending(request,
         context=context,
         request=request
     )
+
+
+class MonthHelper():
+    def __init__(self, year, month):
+        self.year = year
+        self.month = month
+
+        self._DayExpense = DayExpense(
+            year,
+            month,
+            Expense.objects.day_expense_type(self.year, self.month),
+            **{'Taupymas': Saving.objects.day_saving(self.year, self.month)}
+        )
+
+        self._CalcDaySum = CalcDaySum(self.year)
+
+        self._DaySpending = DaySpending(
+            year=self.year,
+            month=self.month,
+            month_df=self._DayExpense.expenses,
+            necessary=necessary_expense_types('Taupymas'),
+            plan_day_sum=get_value_from_dict(
+                self._CalcDaySum.day_input, month),
+            plan_free_sum=get_value_from_dict(
+                self._CalcDaySum.expenses_free, month),
+            exceptions=self._DayExpense.exceptions
+        )
+
+        self.expenses_types = expense_types('Taupymas')
+        targets = self._CalcDaySum.targets(month, 'Taupymas')
+
+    def render_info(self, request):
+        fact_incomes = Income.objects.income_sum(self.year, self.month)
+        fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
+        fact_expenses = self._DayExpense.total
+
+        plan_incomes = get_value_from_dict(
+            self._CalcDaySum.incomes, self.month)
+        plan_day_sum = get_value_from_dict(
+            self._CalcDaySum.day_input, self.month)
+        plan_free_sum = get_value_from_dict(
+            self._CalcDaySum.expenses_free, self.month)
+        plan_remains = get_value_from_dict(
+            self._CalcDaySum.remains, self.month)
+
+        info = {
+            'plan_per_day': plan_day_sum,
+            'plan_incomes': plan_incomes,
+            'plan_remains': plan_remains,
+            'fact_per_day': self._DaySpending.avg_per_day,
+            'fact_incomes': fact_incomes,
+            'fact_remains': fact_incomes - fact_expenses,
+        }
+
+        return render_to_string(
+            template_name='bookkeeping/includes/month_spending_info.html',
+            context=info,
+            request=request
+        )
