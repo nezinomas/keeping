@@ -160,7 +160,7 @@ class Month(IndexMixin):
 
         year = self.request.user.profile.year
 
-        context['month_list'] = year_month_list(year)
+        context['buttons'] = year_month_list(year)
         context = _month_context(self.request, year, context)
 
         return context
