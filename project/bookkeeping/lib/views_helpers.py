@@ -85,31 +85,31 @@ class MonthHelper():
         self.year = year
         self.month = month
 
-        self._DayExpense = DayExpense(
+        self._day = DayExpense(
             year,
             month,
             Expense.objects.day_expense_type(self.year, self.month),
             **{'Taupymas': Saving.objects.day_saving(self.year, self.month)}
         )
 
-        self._CalcDaySum = CalcDaySum(self.year)
+        self._day_plans = CalcDaySum(self.year)
 
-        self._DaySpending = DaySpending(
+        self._spending = DaySpending(
             year=self.year,
             month=self.month,
-            month_df=self._DayExpense.expenses,
+            month_df=self._day.expenses,
             necessary=necessary_expense_types('Taupymas'),
-            plan_day_sum=get_val(self._CalcDaySum.day_input, month),
-            plan_free_sum=get_val(self._CalcDaySum.expenses_free, month),
-            exceptions=self._DayExpense.exceptions
+            plan_day_sum=get_val(self._day_plans.day_input, month),
+            plan_free_sum=get_val(self._day_plans.expenses_free, month),
+            exceptions=self._day.exceptions
         )
 
         self.expenses_types = expense_types('Taupymas')
         self.current_day = current_day(year, month)
 
     def render_chart_targets(self):
-        targets = self._CalcDaySum.targets(self.month, 'Taupymas')
-        (categories, data_target, data_fact) = self._DayExpense.chart_targets(
+        targets = self._day_plans.targets(self.month, 'Taupymas')
+        (categories, data_target, data_fact) = self._day.chart_targets(
             self.expenses_types, targets)
 
         context = {
@@ -126,7 +126,7 @@ class MonthHelper():
 
     def render_chart_expenses(self):
         context = {
-            'expenses': self._DayExpense.chart_expenses(self.expenses_types)
+            'expenses': self._day.chart_expenses(self.expenses_types)
         }
 
         return render_to_string(
@@ -137,7 +137,7 @@ class MonthHelper():
 
     def render_spending(self):
         context = {
-            'spending_table': self._DaySpending.spending,
+            'spending_table': self._spending.spending,
             'day': self.current_day,
         }
 
@@ -150,18 +150,18 @@ class MonthHelper():
     def render_info(self):
         fact_incomes = Income.objects.income_sum(self.year, self.month)
         fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
-        fact_expenses = self._DayExpense.total
+        fact_expenses = self._day.total
 
-        plan_incomes = get_val(self._CalcDaySum.incomes, self.month)
-        plan_day_sum = get_val(self._CalcDaySum.day_input, self.month)
-        plan_free_sum = get_val(self._CalcDaySum.expenses_free, self.month)
-        plan_remains = get_val(self._CalcDaySum.remains, self.month)
+        plan_incomes = get_val(self._day_plans.incomes, self.month)
+        plan_day_sum = get_val(self._day_plans.day_input, self.month)
+        plan_free_sum = get_val(self._day_plans.expenses_free, self.month)
+        plan_remains = get_val(self._day_plans.remains, self.month)
 
         context = {
             'plan_per_day': plan_day_sum,
             'plan_incomes': plan_incomes,
             'plan_remains': plan_remains,
-            'fact_per_day': self._DaySpending.avg_per_day,
+            'fact_per_day': self._spending.avg_per_day,
             'fact_incomes': fact_incomes,
             'fact_remains': fact_incomes - fact_expenses,
         }
@@ -175,8 +175,8 @@ class MonthHelper():
     def render_month_table(self):
         context = {
             'month_list': year_month_list(self.year),
-            'expenses': self._DayExpense.balance,
-            'total_row': self._DayExpense.total_row,
+            'expenses': self._day.balance,
+            'total_row': self._day.total_row,
             'expense_types': self.expenses_types,
             'day': self.current_day,
         }
