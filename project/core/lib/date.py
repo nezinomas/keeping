@@ -17,7 +17,7 @@ def current_day(year: int, month: int) -> int:
         return calendar.monthrange(year, month)[1]
 
 
-def year_month_list(year: int) -> List[date]:
+def year_month_list(year: int = None) -> List[date]:
     '''
     returns: list of months for selected year e.g.
     [datetime.date(1970, 1, 1), datetime.date(1970, 2, 1), ...]

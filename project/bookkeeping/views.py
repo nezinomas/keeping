@@ -158,10 +158,8 @@ class Month(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        year = self.request.user.profile.year
-
-        context['buttons'] = year_month_list(year)
-        context = _month_context(self.request, year, context)
+        context['buttons'] = year_month_list()
+        context = _month_context(self.request, context)
 
         return context
 
@@ -170,16 +168,14 @@ def reload_month(request):
     template = 'bookkeeping/includes/reload_month.html'
     ajax_trigger = request.GET.get('ajax_trigger')
 
-    context = {}
-
     if ajax_trigger:
-        year = request.user.profile.year
-        context = _month_context(request, year, context)
+        context = _month_context(request, {})
 
         return render(request, template, context)
 
 
-def _month_context(request, year, context):
+def _month_context(request, context):
+    year = request.user.profile.year
     month = request.user.profile.month
 
     obj = H.MonthHelper(request, year, month)
