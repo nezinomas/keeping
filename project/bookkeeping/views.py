@@ -209,7 +209,7 @@ class Month(IndexMixin):
             expenses_types)
 
         context['chart_targets'] = (
-            H.render_chart_target(request=self.request,
+            H.render_chart_targets(request=self.request,
                                   day_expense=_DayExpense,
                                   targets=targets,
                                   expenses_types=expenses_types))

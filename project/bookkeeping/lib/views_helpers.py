@@ -70,3 +70,23 @@ def render_pensions(request, pension, **kwargs):
         },
         request
     )
+
+
+def render_chart_targets(request,
+                        day_expense: object,
+                        targets: Dict,
+                        expenses_types: List):
+    context = {}
+
+    (categories, data_target, data_fact) = day_expense.chart_targets(
+        expenses_types, targets)
+
+    context['chart_targets_categories'] = categories
+    context['chart_targets_data_target'] = data_target
+    context['chart_targets_data_fact'] = data_fact
+
+    return render_to_string(
+        template_name='bookkeeping/includes/chart_target.html',
+        context=context,
+        request=request
+    )
