@@ -16,7 +16,9 @@ X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
 #
-#         DrinkTarget create/update
+# ----------------------------------------------------------------------------
+#                                                    DrinkTarget create/update
+# ----------------------------------------------------------------------------
 #
 @freeze_time('1999-01-01')
 def test_view_drinks(admin_client):
@@ -79,7 +81,9 @@ def test_view_drinks_update(client, login):
 
 
 #
-#         DrinkTarget create/update
+# ----------------------------------------------------------------------------
+#                                                    DrinkTarget create/update
+# ----------------------------------------------------------------------------
 #
 @freeze_time('1999-01-01')
 def test_view_drinks_target(admin_client):
