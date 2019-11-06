@@ -191,12 +191,13 @@ class Month(IndexMixin):
             exceptions=_DayExpense.exceptions
         )
 
+        day = current_day(year, month)
+
         context['month_list'] = year_month_list(year)
         context['expenses'] = _DayExpense.balance
         context['total_row'] = _DayExpense.total_row
         context['expense_types'] = expenses_types
-        context['day'] = current_day(year, month)
-        context['spending_table'] = _DaySpending.spending
+        context['day'] = day
 
         context['plan_per_day'] = plan_day_sum
         context['plan_incomes'] = plan_incomes
@@ -204,6 +205,12 @@ class Month(IndexMixin):
         context['fact_per_day'] = _DaySpending.avg_per_day
         context['fact_incomes'] = fact_incomes
         context['fact_remains'] = fact_incomes - fact_expenses
+
+        context['spending'] = (
+            H.render_spending(
+                request=self.request,
+                current_day=day,
+                spending=_DaySpending.spending))
 
         context['chart_expenses'] = (
             H.render_chart_expenses(

@@ -13,9 +13,7 @@
     </div>
     <div class="col-md-6">
         <div class="row">
-            <div class="col-lg-3 mx-0 px-2">
-                    {% include 'bookkeeping/includes/month_day_spending.html' %}
-            </div>
+            <div class="col-lg-3 mx-0 px-2">{{ spending }}</div>
             <div class="col-lg-9 pl-0">
                 <div class="row">
                     <div style="display: none;" id='expenses-visibility' class="col-lg-12">{{ chart_expenses }}</div>

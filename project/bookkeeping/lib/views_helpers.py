@@ -104,3 +104,17 @@ def render_chart_expenses(request,
         context=context,
         request=request
     )
+
+
+def render_spending(request,
+                    current_day: int,
+                    spending: List[Dict]):
+    context = {}
+    context['spending_table'] = spending
+    context['day'] = current_day
+
+    return render_to_string(
+        template_name='bookkeeping/includes/month_day_spending.html',
+        context=context,
+        request=request
+    )
