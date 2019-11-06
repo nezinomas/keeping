@@ -193,6 +193,15 @@ class Month(IndexMixin):
 
         day = current_day(year, month)
 
+        info = {
+            'plan_per_day': plan_day_sum,
+            'plan_incomes': plan_incomes,
+            'plan_remains': plan_remains,
+            'fact_per_day': _DaySpending.avg_per_day,
+            'fact_incomes': fact_incomes,
+            'fact_remains': fact_incomes - fact_expenses,
+        }
+
         context['month_list'] = year_month_list(year)
         context['expenses'] = _DayExpense.balance
         context['total_row'] = _DayExpense.total_row
@@ -211,6 +220,12 @@ class Month(IndexMixin):
                 request=self.request,
                 current_day=day,
                 spending=_DaySpending.spending))
+
+        context['info'] = render_to_string(
+            template_name='bookkeeping/includes/month_spending_info.html',
+            context=info,
+            request=self.request
+        )
 
         context['chart_expenses'] = (
             H.render_chart_expenses(
