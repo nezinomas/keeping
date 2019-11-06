@@ -43,7 +43,7 @@ class DaySpending(BalanceBase):
         return self._avg_per_day
 
     @property
-    def spending(self):
+    def spending(self) -> List[Dict]:
         if self._spending.empty:
             return self._spending
 
