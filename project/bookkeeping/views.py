@@ -205,13 +205,16 @@ class Month(IndexMixin):
         context['fact_incomes'] = fact_incomes
         context['fact_remains'] = fact_incomes - fact_expenses
 
-        context['chart_expenses'] = _DayExpense.chart_expenses(
-            expenses_types)
+        context['chart_expenses'] = (
+            H.render_chart_expenses(
+                request=self.request,
+                day_expense=_DayExpense,
+                expenses_types=expenses_types))
 
         context['chart_targets'] = (
             H.render_chart_targets(request=self.request,
-                                  day_expense=_DayExpense,
-                                  targets=targets,
-                                  expenses_types=expenses_types))
+                                   day_expense=_DayExpense,
+                                   targets=targets,
+                                   expenses_types=expenses_types))
 
         return context

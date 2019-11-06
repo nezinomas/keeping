@@ -4,6 +4,7 @@ from django.template.loader import render_to_string
 
 from ...core.lib.utils import sum_all, sum_col
 from ...expenses.models import ExpenseType
+from ..lib.expense_summary import DayExpense
 
 
 def expense_types(*args: str) -> List[str]:
@@ -87,6 +88,19 @@ def render_chart_targets(request,
 
     return render_to_string(
         template_name='bookkeeping/includes/chart_target.html',
+        context=context,
+        request=request
+    )
+
+
+def render_chart_expenses(request,
+                          day_expense: DayExpense,
+                          expenses_types: List):
+    context = {}
+    context['expenses'] = day_expense.chart_expenses(expenses_types)
+
+    return render_to_string(
+        template_name='bookkeeping/includes/chart_month_expenses.html',
         context=context,
         request=request
     )
