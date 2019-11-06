@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from django.template.loader import render_to_string
 
-from ...core.lib.date import current_day
+from ...core.lib.date import current_day, year_month_list
 from ...core.lib.utils import get_value_from_dict, sum_all, sum_col
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
@@ -173,6 +173,21 @@ class MonthHelper():
 
         return render_to_string(
             template_name='bookkeeping/includes/month_spending_info.html',
+            context=context,
+            request=self.request
+        )
+
+    def render_month_table(self):
+        context = {
+            'month_list': year_month_list(self.year),
+            'expenses': self._DayExpense.balance,
+            'total_row': self._DayExpense.total_row,
+            'expense_types': self.expenses_types,
+            'day': self.current_day,
+        }
+
+        return render_to_string(
+            template_name='bookkeeping/includes/month_balance.html',
             context=context,
             request=self.request
         )
