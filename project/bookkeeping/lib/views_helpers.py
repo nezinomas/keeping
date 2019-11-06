@@ -122,7 +122,7 @@ class MonthHelper():
         }
 
         return render_to_string(
-            template_name='bookkeeping/includes/chart_target.html',
+            template_name='bookkeeping/includes/chart_month_targets.html',
             context=context,
             request=self.request
         )
@@ -145,7 +145,7 @@ class MonthHelper():
         }
 
         return render_to_string(
-            template_name='bookkeeping/includes/month_day_spending.html',
+            template_name='bookkeeping/includes/spending.html',
             context=context,
             request=self.request
         )
@@ -170,7 +170,7 @@ class MonthHelper():
         }
 
         return render_to_string(
-            template_name='bookkeeping/includes/month_spending_info.html',
+            template_name='bookkeeping/includes/spending_info.html',
             context=context,
             request=self.request
         )
