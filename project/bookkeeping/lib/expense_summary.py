@@ -74,7 +74,7 @@ class ExpenseBase():
         df['sum'] = df.sum(axis=1)
 
         # select oncly index and sum columns
-        df = df.loc[:,['sum']]
+        df = df.loc[:, ['sum']]
 
         return df
 
