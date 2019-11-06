@@ -73,9 +73,9 @@ def render_pensions(request, pension, **kwargs):
 
 
 def render_chart_targets(request,
-                        day_expense: object,
-                        targets: Dict,
-                        expenses_types: List):
+                         day_expense: object,
+                         targets: Dict,
+                         expenses_types: List):
     context = {}
 
     (categories, data_target, data_fact) = day_expense.chart_targets(
