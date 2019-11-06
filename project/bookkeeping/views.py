@@ -179,10 +179,7 @@ class Month(IndexMixin):
         plan_remains = get_value_from_dict(_CalcDaySum.remains, month)
 
         expenses_types = H.expense_types('Taupymas')
-
         targets = _CalcDaySum.targets(month, 'Taupymas')
-        (categories, data_target, data_fact) = _DayExpense.chart_targets(
-            expenses_types, targets)
 
         _DaySpending = DaySpending(
             year=year,
@@ -210,8 +207,11 @@ class Month(IndexMixin):
 
         context['chart_expenses'] = _DayExpense.chart_expenses(
             expenses_types)
-        context['chart_targets_categories'] = categories
-        context['chart_targets_data_target'] = data_target
-        context['chart_targets_data_fact'] = data_fact
+
+        context['chart_targets'] = (
+            H.render_chart_target(request=self.request,
+                                  day_expense=_DayExpense,
+                                  targets=targets,
+                                  expenses_types=expenses_types))
 
         return context

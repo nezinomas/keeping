@@ -19,7 +19,7 @@
             <div class="col-lg-9 pl-0">
                 <div class="row">
                     <div style="display: none;" id='expenses-visibility' class="col-lg-12">{% include 'bookkeeping/includes/chart_month_expenses.html' %}</div>
-                    <div id='target-visibility' class="col-lg-12">{% include 'bookkeeping/includes/chart_target.html' %}</div>
+                    <div id='target-visibility' class="col-lg-12">{{ chart_targets }}</div>
                 </div>
                 <div class="row mt-2">
                     <div class="col-lg-12">
