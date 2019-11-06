@@ -3,7 +3,8 @@ from typing import Dict, List
 from django.template.loader import render_to_string
 
 from ...core.lib.date import current_day, year_month_list
-from ...core.lib.utils import get_value_from_dict, sum_all, sum_col
+from ...core.lib.utils import get_value_from_dict as get_val
+from ...core.lib.utils import sum_all, sum_col
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
 from ...plans.lib.calc_day_sum import CalcDaySum
@@ -98,10 +99,8 @@ class MonthHelper():
             month=self.month,
             month_df=self._DayExpense.expenses,
             necessary=necessary_expense_types('Taupymas'),
-            plan_day_sum=get_value_from_dict(
-                self._CalcDaySum.day_input, month),
-            plan_free_sum=get_value_from_dict(
-                self._CalcDaySum.expenses_free, month),
+            plan_day_sum=get_val(self._CalcDaySum.day_input, month),
+            plan_free_sum=get_val(self._CalcDaySum.expenses_free, month),
             exceptions=self._DayExpense.exceptions
         )
 
@@ -153,14 +152,10 @@ class MonthHelper():
         fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
         fact_expenses = self._DayExpense.total
 
-        plan_incomes = get_value_from_dict(
-            self._CalcDaySum.incomes, self.month)
-        plan_day_sum = get_value_from_dict(
-            self._CalcDaySum.day_input, self.month)
-        plan_free_sum = get_value_from_dict(
-            self._CalcDaySum.expenses_free, self.month)
-        plan_remains = get_value_from_dict(
-            self._CalcDaySum.remains, self.month)
+        plan_incomes = get_val(self._CalcDaySum.incomes, self.month)
+        plan_day_sum = get_val(self._CalcDaySum.day_input, self.month)
+        plan_free_sum = get_val(self._CalcDaySum.expenses_free, self.month)
+        plan_remains = get_val(self._CalcDaySum.remains, self.month)
 
         context = {
             'plan_per_day': plan_day_sum,
