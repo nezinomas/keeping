@@ -85,23 +85,26 @@ class MonthHelper():
         self.year = year
         self.month = month
 
+        qs_expenses = Expense.objects.day_expense_type(year, month)
+        qs_savings = Saving.objects.day_saving(year, month)
+
         self._day = DayExpense(
-            year,
-            month,
-            Expense.objects.day_expense_type(self.year, self.month),
-            **{'Taupymas': Saving.objects.day_saving(self.year, self.month)}
+            year=year,
+            month=month,
+            expenses=qs_expenses,
+            **{'Taupymas': qs_savings}
         )
 
-        self._day_plans = CalcDaySum(self.year)
+        self._day_plans = CalcDaySum(year)
 
         self._spending = DaySpending(
-            year=self.year,
-            month=self.month,
+            year=year,
+            month=month,
             month_df=self._day.expenses,
+            exceptions=self._day.exceptions,
             necessary=necessary_expense_types('Taupymas'),
             plan_day_sum=get_val(self._day_plans.day_input, month),
             plan_free_sum=get_val(self._day_plans.expenses_free, month),
-            exceptions=self._day.exceptions
         )
 
         self.expenses_types = expense_types('Taupymas')
