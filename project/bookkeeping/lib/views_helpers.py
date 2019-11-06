@@ -2,6 +2,7 @@ from typing import Dict, List
 
 from django.template.loader import render_to_string
 
+from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict, sum_all, sum_col
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
@@ -77,55 +78,9 @@ def render_pensions(request, pension, **kwargs):
     )
 
 
-def render_chart_targets(request,
-                         day_expense: DayExpense,
-                         targets: Dict,
-                         expenses_types: List):
-    context = {}
-
-    (categories, data_target, data_fact) = day_expense.chart_targets(
-        expenses_types, targets)
-
-    context['chart_targets_categories'] = categories
-    context['chart_targets_data_target'] = data_target
-    context['chart_targets_data_fact'] = data_fact
-
-    return render_to_string(
-        template_name='bookkeeping/includes/chart_target.html',
-        context=context,
-        request=request
-    )
-
-
-def render_chart_expenses(request,
-                          day_expense: DayExpense,
-                          expenses_types: List):
-    context = {}
-    context['expenses'] = day_expense.chart_expenses(expenses_types)
-
-    return render_to_string(
-        template_name='bookkeeping/includes/chart_month_expenses.html',
-        context=context,
-        request=request
-    )
-
-
-def render_spending(request,
-                    current_day: int,
-                    spending: List[Dict]):
-    context = {}
-    context['spending_table'] = spending
-    context['day'] = current_day
-
-    return render_to_string(
-        template_name='bookkeeping/includes/month_day_spending.html',
-        context=context,
-        request=request
-    )
-
-
 class MonthHelper():
-    def __init__(self, year, month):
+    def __init__(self, request, year, month):
+        self.request = request
         self.year = year
         self.month = month
 
@@ -151,9 +106,49 @@ class MonthHelper():
         )
 
         self.expenses_types = expense_types('Taupymas')
-        targets = self._CalcDaySum.targets(month, 'Taupymas')
+        self.current_day = current_day(year, month)
 
-    def render_info(self, request):
+    def render_chart_targets(self):
+        targets = self._CalcDaySum.targets(self.month, 'Taupymas')
+        (categories, data_target, data_fact) = self._DayExpense.chart_targets(
+            self.expenses_types, targets)
+
+        context = {
+            'chart_targets_categories': categories,
+            'chart_targets_data_target': data_target,
+            'chart_targets_data_fact': data_fact,
+        }
+
+        return render_to_string(
+            template_name='bookkeeping/includes/chart_target.html',
+            context=context,
+            request=self.request
+        )
+
+    def render_chart_expenses(self):
+        context = {
+            'expenses': self._DayExpense.chart_expenses(self.expenses_types)
+        }
+
+        return render_to_string(
+            template_name='bookkeeping/includes/chart_month_expenses.html',
+            context=context,
+            request=self.request
+        )
+
+    def render_spending(self):
+        context = {
+            'spending_table': self._DaySpending.spending,
+            'day': self.current_day,
+        }
+
+        return render_to_string(
+            template_name='bookkeeping/includes/month_day_spending.html',
+            context=context,
+            request=self.request
+        )
+
+    def render_info(self):
         fact_incomes = Income.objects.income_sum(self.year, self.month)
         fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
         fact_expenses = self._DayExpense.total
@@ -167,7 +162,7 @@ class MonthHelper():
         plan_remains = get_value_from_dict(
             self._CalcDaySum.remains, self.month)
 
-        info = {
+        context = {
             'plan_per_day': plan_day_sum,
             'plan_incomes': plan_incomes,
             'plan_remains': plan_remains,
@@ -178,6 +173,6 @@ class MonthHelper():
 
         return render_to_string(
             template_name='bookkeeping/includes/month_spending_info.html',
-            context=info,
-            request=request
+            context=context,
+            request=self.request
         )

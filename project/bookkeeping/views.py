@@ -199,27 +199,11 @@ class Month(IndexMixin):
         context['expense_types'] = expenses_types
         context['day'] = day
 
-        context['spending'] = (
-            H.render_spending(
-                request=self.request,
-                current_day=day,
-                spending=_DaySpending.spending))
+        helper = H.MonthHelper(self.request, year, month)
 
-        helper = H.MonthHelper(year, month)
-
-        context['info'] = helper.render_info(self.request)
-
-        context['chart_expenses'] = (
-            H.render_chart_expenses(
-                request=self.request,
-                day_expense=_DayExpense,
-                expenses_types=expenses_types))
-
-        context['chart_targets'] = (
-            H.render_chart_targets(
-                request=self.request,
-                day_expense=_DayExpense,
-                targets=targets,
-                expenses_types=expenses_types))
+        context['spending'] = helper.render_spending()
+        context['info'] = helper.render_info()
+        context['chart_expenses'] = helper.render_chart_expenses()
+        context['chart_targets'] = helper.render_chart_targets()
 
         return context
