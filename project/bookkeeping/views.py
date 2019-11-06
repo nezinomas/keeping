@@ -157,18 +157,7 @@ class Month(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        year = self.request.user.profile.year
-        month = self.request.user.profile.month
-
-        obj = H.MonthHelper(self.request, year, month)
-
-        context['month_table'] = obj.render_month_table()
-        context['spending'] = obj.render_spending()
-        context['info'] = obj.render_info()
-        context['chart_expenses'] = obj.render_chart_expenses()
-        context['chart_targets'] = obj.render_chart_targets()
-
-        return context
+        return _month_context(self.request, context)
 
 
 def reload_month(request):
@@ -181,12 +170,21 @@ def reload_month(request):
     context = {}
 
     if ajax_trigger:
-        obj = H.MonthHelper(request, year, month)
-
-        context['month_table'] = obj.render_month_table()
-        context['spending'] = obj.render_spending()
-        context['info'] = obj.render_info()
-        context['chart_expenses'] = obj.render_chart_expenses()
-        context['chart_targets'] = obj.render_chart_targets()
+        context = _month_context(request, context)
 
         return render(request, template, context)
+
+
+def _month_context(request, context):
+    year = request.user.profile.year
+    month = request.user.profile.month
+
+    obj = H.MonthHelper(request, year, month)
+
+    context['month_table'] = obj.render_month_table()
+    context['spending'] = obj.render_spending()
+    context['info'] = obj.render_info()
+    context['chart_expenses'] = obj.render_chart_expenses()
+    context['chart_targets'] = obj.render_chart_targets()
+
+    return context
