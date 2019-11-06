@@ -184,7 +184,7 @@ class MonthHelper():
         }
 
         return render_to_string(
-            template_name='bookkeeping/includes/month_balance.html',
+            template_name='bookkeeping/includes/month_table.html',
             context=context,
             request=self.request
         )
