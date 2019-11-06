@@ -8,23 +8,19 @@
 {% block content %}
 
 <div class="row my-2">
-    <div class="col-md-6 mr-0 pr-0 table-responsive">
-        {% include 'bookkeeping/includes/month_balance.html' %}
+    <div class="col-md-6 mr-0 pr-0 table-responsive" id="month_table">
+        {{ month_table }}
     </div>
     <div class="col-md-6">
         <div class="row">
-            <div class="col-lg-3 mx-0 px-2">
-                    {% include 'bookkeeping/includes/month_day_spending.html' %}
-            </div>
+            <div class="col-lg-3 mx-0 px-2" id="spending">{{ spending }}</div>
             <div class="col-lg-9 pl-0">
                 <div class="row">
-                    <div style="display: none;" id='expenses-visibility' class="col-lg-12">{% include 'bookkeeping/includes/chart_month_expenses.html' %}</div>
-                    <div id='target-visibility' class="col-lg-12">{% include 'bookkeeping/includes/chart_target.html' %}</div>
+                    <div style="display: none;" id='chart_expenses' class="col-lg-12">{{ chart_expenses }}</div>
+                    <div id='chart_targets' class="col-lg-12">{{ chart_targets }}</div>
                 </div>
                 <div class="row mt-2">
-                    <div class="col-lg-12">
-                        {% include 'bookkeeping/includes/month_spending_info.html' %}
-                    </div>
+                    <div class="col-lg-12" id="info">{{ info }}</div>
                 </div>
             </div>
         </div>
@@ -32,23 +28,29 @@
 </div>
 
 <div class="row my-2">
-    <div class="col-lg-10">
+    <div class="col-lg-8">
         {% with request.user.profile.month as month %}
         {% for m in month_list %}
         {% with m|date:'n' as m_num %}
         <a href="{% url 'core:set_month' m_num 'bookkeeping:month' %}" class="btn btn-sm mr-1 px-3 {% if month|slugify == m_num %}btn-primary{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</a>
         {% endwith %}{% endfor %}{% endwith %}
     </div>
-    <div class="col-lg-2 text-right">
-        {% url 'expenses:expenses_new' as url_expense_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expense_new }}"><i class="fas fa-plus"></i> Išlaidas</button>
-        <button class="btn btn-sm btn-info ml-2" onclick="myFunction()">Rodyti kitą grafiką</button>
+    <div class="col-lg-4 text-right">
+        {% url 'expenses:expenses_new' as url_expenses_new %}
+        <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Išlaidas</button>
+        {% url 'incomes:incomes_new' as url_incomes_new %}
+        <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_incomes_new }}"><i class="fas fa-plus"></i> Pajamas</button>
+        {% url 'savings:savings_new' as url_savings_new %}
+        <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_savings_new }}"><i class="fas fa-plus"></i> Taupymą</button>
+        {% url 'transactions:transactions_new' as url_transactions_new %}
+        <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_transactions_new }}"><i class="fas fa-plus"></i> Pervedimą</button>
+        <button class="btn btn-sm btn-info ml-1" onclick="myFunction()">Rodyti kitą grafiką</button>
     </div>
 </div>
 <script>
     function myFunction() {
-        var x = document.getElementById("expenses-visibility");
-        var c = document.getElementById("target-visibility");
+        var x = document.getElementById("chart_expenses");
+        var c = document.getElementById("chart_targets");
         if (x.style.display === "none") {
             x.style.display = "block";
             c.style.display = 'none';
@@ -59,9 +61,34 @@
     }
 </script>
 
-<div class="modal fade" id="modal-form">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content"></div>
-    </div>
-</div>
+{% include 'modal.html' %}
+
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'bookkeeping:reload_month' %}`;
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1'
+            },
+            success: function (data) {
+                var month_table = $(data).filter('#month_table');
+                $('#month_table').html(month_table);
+
+                var spending = $(data).filter('#spending');
+                $('#spending').html(spending);
+
+                var info = $(data).filter('#info');
+                $('#info').html(info);
+
+                var chart_expenses = $(data).filter('#chart_expenses');
+                $('#chart_expenses').html(chart_expenses);
+
+                var chart_targets = $(data).filter('#chart_targets');
+                $('#chart_targets').html(chart_targets);
+            }
+        });
+    });
+</script>
 {% endblock content%}

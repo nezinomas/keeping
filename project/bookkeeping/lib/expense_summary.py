@@ -74,7 +74,7 @@ class ExpenseBase():
         df['sum'] = df.sum(axis=1)
 
         # select oncly index and sum columns
-        df = df.loc[:,['sum']]
+        df = df.loc[:, ['sum']]
 
         return df
 
@@ -112,8 +112,10 @@ class DayExpense(BalanceBase, ExpenseBase):
 
         return rtn
 
-    def chart_targets(self, expenses_types: List[str],
-                      targets: Dict) -> (List[str], List[float], List[Dict]):
+    def chart_targets(self,
+                      expenses_types: List[str],
+                      targets: Dict
+                      ) -> (List[str], List[float], List[Dict]):
         total_row = super().total_row
         tmp = []
 

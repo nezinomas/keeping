@@ -4,6 +4,7 @@ import pytest
 from django.urls import resolve, reverse
 
 from ...accounts.factories import AccountFactory
+from ...core.factories import UserFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...core.tests.utils import setup_view
 from ...pensions.factories import PensionFactory, PensionTypeFactory
@@ -14,9 +15,9 @@ X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
 #
-# =============================================================
-#                                                         Index
-# =============================================================
+# ----------------------------------------------------------------------------
+#                                                                        Index
+# ----------------------------------------------------------------------------
 #
 def test_view_index_func():
     view = resolve('/')
@@ -32,9 +33,9 @@ def test_view_index_200(login, client):
 
 
 #
-# =============================================================
-#                                                         Month
-# =============================================================
+# ----------------------------------------------------------------------------
+#                                                                        Month
+# ----------------------------------------------------------------------------
 #
 def test_view_month_func():
     view = resolve('/month/')
@@ -50,9 +51,9 @@ def test_view_month_200(login, client):
 
 
 #
-# =============================================================
-#                                                 Account Worth
-# =============================================================
+# ----------------------------------------------------------------------------
+#                                                                Account Worth
+# ----------------------------------------------------------------------------
 #
 def test_view_accounts_worth_func():
     view = resolve('/bookkeeping/accounts_worth/new/')
@@ -123,9 +124,9 @@ def test_view_account_worth_invalid_data(client, login):
 
 
 #
-# =============================================================
-#                                                  Saving Worth
-# =============================================================
+# ----------------------------------------------------------------------------
+#                                                                 Saving Worth
+# ----------------------------------------------------------------------------
 #
 def test_view_savings_worth_func():
     view = resolve('/bookkeeping/savings_worth/new/')
@@ -241,9 +242,9 @@ def test_saving_worth_formset_saving_type_closed_in_future(_fake_request):
 
 
 #
-# =============================================================
-#                                                 Pension Worth
-# =============================================================
+# ----------------------------------------------------------------------------
+#                                                                Pension Worth
+# ----------------------------------------------------------------------------
 #
 def test_view_pension_worth_func():
     view = resolve('/bookkeeping/pensions_worth/new/')
@@ -311,3 +312,24 @@ def test_view_pension_worth_invalid_data(client, login):
     actual = json.loads(json_str)
 
     assert not actual['form_is_valid']
+
+
+#
+# ----------------------------------------------------------------------------
+#                                                                 Realod Month
+# ----------------------------------------------------------------------------
+#
+def test_view_reload_month_func():
+    view = resolve('/month/reload/')
+
+    assert views.reload_month == view.func
+
+
+@pytest.mark.django_db
+def test_view_reload_month_render(rf):
+    request = rf.get('/month/reload/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = views.reload_month(request)
+
+    assert response.status_code == 200

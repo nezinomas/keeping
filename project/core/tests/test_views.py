@@ -75,9 +75,9 @@ def test_view_regenerate_balances_func_called(mck_pension,
                                               _fake_request):
     view = views.regenerate_balances(_fake_request)
 
-    assert 4 == mck_account.call_count
-    assert 4 == mck_saving.call_count
-    assert 4 == mck_pension.call_count
+    assert 5 == mck_account.call_count
+    assert 5 == mck_saving.call_count
+    assert 5 == mck_pension.call_count
 
 
 @patch('project.core.views.post_save_saving_stats')
