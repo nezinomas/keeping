@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from django.template.loader import render_to_string
 
-from ...core.lib.date import current_day, year_month_list
+from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...core.lib.utils import sum_all, sum_col
 from ...expenses.models import Expense, ExpenseType
@@ -177,7 +177,6 @@ class MonthHelper():
 
     def render_month_table(self):
         context = {
-            'month_list': year_month_list(self.year),
             'expenses': self._day.balance,
             'total_row': self._day.total_row,
             'expense_types': self.expenses_types,

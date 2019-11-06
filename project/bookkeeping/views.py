@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 
 from ..accounts.models import Account, AccountBalance
+from ..core.lib.date import year_month_list
 from ..core.lib.summary import collect_summary_data
 from ..core.lib.utils import sum_all, sum_col
 from ..core.mixins.formset import FormsetMixin
@@ -157,26 +158,28 @@ class Month(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        return _month_context(self.request, context)
+        year = self.request.user.profile.year
+
+        context['month_list'] = year_month_list(year)
+        context = _month_context(self.request, year, context)
+
+        return context
 
 
 def reload_month(request):
     template = 'bookkeeping/includes/reload_month.html'
     ajax_trigger = request.GET.get('ajax_trigger')
 
-    year = request.user.profile.year
-    month = request.user.profile.month
-
     context = {}
 
     if ajax_trigger:
-        context = _month_context(request, context)
+        year = request.user.profile.year
+        context = _month_context(request, year, context)
 
         return render(request, template, context)
 
 
-def _month_context(request, context):
-    year = request.user.profile.year
+def _month_context(request, year, context):
     month = request.user.profile.month
 
     obj = H.MonthHelper(request, year, month)
