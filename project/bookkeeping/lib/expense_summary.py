@@ -112,8 +112,10 @@ class DayExpense(BalanceBase, ExpenseBase):
 
         return rtn
 
-    def chart_targets(self, expenses_types: List[str],
-                      targets: Dict) -> (List[str], List[float], List[Dict]):
+    def chart_targets(self,
+                      expenses_types: List[str],
+                      targets: Dict
+                      ) -> (List[str], List[float], List[Dict]):
         total_row = super().total_row
         tmp = []
 
