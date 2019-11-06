@@ -26,6 +26,13 @@ MIDDLEWARE = [
 ] + MIDDLEWARE
 
 
+# Overwriten TEMPLATE OPTION
+# disabled template cashing
+TEMPLATES[0]['OPTIONS']['loaders'] = [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',]
+
+
 # ================   DEBUG_TOOLBAR_PANEL
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
 INTERNAL_IPS = ['127.0.0.1', 'localhost']
