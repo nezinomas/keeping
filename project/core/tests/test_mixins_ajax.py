@@ -65,7 +65,7 @@ def test_lists_template_names_set_automatically(_request):
 
     view = setup_view(Dummy(), _request)
 
-    actual = view._get_list_template_name()
+    actual = view.get_list_template_name()
     expect = 'app_name/includes/plurals_list.html'
 
     assert actual == expect
@@ -78,7 +78,7 @@ def test_lists_template_names(_request):
 
     view = setup_view(Dummy(), _request)
 
-    actual = view._get_list_template_name()
+    actual = view.get_list_template_name()
     expect = 'XXX'
 
     assert actual == expect

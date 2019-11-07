@@ -47,7 +47,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
             if self.list_render_output:
                 data['html_list'] = (
                     render_to_string(
-                        self._get_list_template_name(), context, self.request)
+                        self.get_list_template_name(), context, self.request)
                 )
 
         self._render_form(data, context)
@@ -89,7 +89,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
 
         # data['js'] = js_url
 
-    def _get_list_template_name(self):
+    def get_list_template_name(self):
         if not self.list_template_name:
             return template_name(self, 'list')
         else:
