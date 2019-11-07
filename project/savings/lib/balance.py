@@ -66,7 +66,6 @@ class Balance(BalanceBase):
 
         return t.get('market_value', 0.0)
 
-
     def _prepare(self, stats: DF) -> DF:
         for col in self._columns:
             stats.loc[:, col] = 0.0
@@ -112,13 +111,16 @@ class Balance(BalanceBase):
         # join savings and worth dataframes
         if worth:
             _worth = DF(worth).set_index('title')
-            _worth = _worth.apply(to_numeric)
             df = df.join(_worth)
         else:
             df.loc[:, 'have'] = 0.0
 
         # copy values from have to market_value
         df['market_value'] = df['have']
+
+        # nan -> 0 and convert to numeric Decimals
+        df = df.fillna(0.0)
+        df = df.apply(to_numeric)
 
         return df
 
