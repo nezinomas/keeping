@@ -11,6 +11,8 @@
     <tbody>
         {% for item in items %}
         {% url url_name item.id as url %}
+        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="5" class="row-spacer"></td>{% endif %}</tr>
+        {% endifchanged %}
         <tr data-url="{{ url }}">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ item.from_account }}</td>

@@ -13,6 +13,8 @@
     <tbody>
         {% for item in items %}
         {% url 'savings:savings_update' item.id as url_update %}
+        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="6" class="row-spacer"></td>{% endif %}</tr>
+        {% endifchanged %}
         <tr data-url="{{ url_update }}">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ item.saving_type }}</td>

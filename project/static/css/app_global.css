@@ -160,3 +160,8 @@ tr.top-text, tr.top-text th {
 .invalid-feedback {
     display: block!important;
 }
+
+.row-spacer {
+    height: .5rem;
+    background-color:#a5a4a4;
+}

@@ -13,6 +13,7 @@
     <tbody>
         {% for item in items %}
         {% url 'expenses:expenses_update' item.id as url_update %}
+        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="6" class="row-spacer"></td>{% endif %}</tr>{% endifchanged %}
         <tr data-url="{{ url_update }}" class="{% if item.expense_type.pk == 11 or item.expenses_type.pk == 12 or item.expenses_type.pk == 8 %}fees{% endif %}{% if item.expense_type.pk == 2 %}drinks{% endif %}{% if item.expense_type.pk == 1 %}food{% endif %}{% if item.expense_type.pk == 3 %}leisure{% endif %}{% if item.expense_type.pk == 9 %}work{% endif %}">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ item.expense_type }}</td>
