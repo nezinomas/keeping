@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import pandas as pd
 import pytest
 
@@ -79,6 +81,7 @@ def test_saving_only(_savings):
         'incomes': 0.75,
         'fees': 0.95,
         'invested': -0.2,
+        'market_value': 0.0,
     }, {
         'id': 2,
         'title': 'Saving2',
@@ -87,9 +90,45 @@ def test_saving_only(_savings):
         'incomes': 6.0,
         'fees': 0.25,
         'invested': 5.75,
+        'market_value': 0.0,
     }]
 
     actual = T(_savings, []).balance
+
+    assert_(expect, actual)
+
+
+def test_saving_when_worth_filled_partially(_savings):
+    expect = [{
+        'id': 1,
+        'title': 'Saving1',
+        'past_amount': -1.25,
+        'past_fee': 0.4,
+        'incomes': 0.75,
+        'fees': 0.95,
+        'invested': -0.2,
+        'market_value': 0.0,
+        'profit_incomes_proc': 0.0,
+        'profit_incomes_sum': 0.0,
+        'profit_invested_proc': 0.0,
+        'profit_invested_sum': 0.0,
+    }, {
+        'id': 2,
+        'title': 'Saving2',
+        'past_amount': 2.5,
+        'past_fee': 0.0,
+        'incomes': 6.0,
+        'fees': 0.25,
+        'invested': 5.75,
+        'market_value': 0.0,
+        'profit_incomes_proc': 0.0,
+        'profit_incomes_sum': 0.0,
+        'profit_invested_proc': 0.0,
+        'profit_invested_sum': 0.0,
+    }]
+    worth = [{'title': 'Saving1', 'have': Decimal(0)}]
+
+    actual = T(_savings, worth).balance
 
     assert_(expect, actual)
 
