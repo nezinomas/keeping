@@ -7,24 +7,26 @@
             <th>Išlaidų pavadinimas</th>
             <th class="text-right">Kiekis</th>
             <th class="text-right">Kaina</th>
+            <th width="260rem">Pastaba</th>
             <th class="text-right">Sąskaita</th>
         </tr>
     </thead>
     <tbody>
         {% for item in items %}
         {% url 'expenses:expenses_update' item.id as url_update %}
-        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="6" class="row-spacer"></td>{% endif %}</tr>{% endifchanged %}
+        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="7" class="row-spacer"></td>{% endif %}</tr>{% endifchanged %}
         <tr data-url="{{ url_update }}" class="{% if item.expense_type.pk == 11 or item.expenses_type.pk == 12 or item.expenses_type.pk == 8 %}fees{% endif %}{% if item.expense_type.pk == 2 %}drinks{% endif %}{% if item.expense_type.pk == 1 %}food{% endif %}{% if item.expense_type.pk == 3 %}leisure{% endif %}{% if item.expense_type.pk == 9 %}work{% endif %}">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ item.expense_type }}</td>
             <td class="text-left">{{ item.expense_name }}</td>
             <td>{{ item.quantity }}</td>
-            <td {% if item.remark %}data-toggle="tooltip" data-html="true" data-placement="right" title="{{ item.remark|linebreaks}}" style="border-right: 5px solid lightgreen!important;"{% endif %}>{{ item.price|intcomma }}</td>
+            <td>{{ item.price|intcomma }}</td>
+            <td class="text-left">{{ item.remark|linebreaksbr }}</td>
             <td {% if item.exception %} style="border-right: 5px solid red!important;"{% endif %}>{{ item.account }}</td>
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="6" class="py-2"><b>{{ request.user.profile.year|title }}</b> metais išlaidų nėra.</td>
+            <td colspan="7" class="py-2"><b>{{ request.user.profile.year|title }}</b> metais išlaidų nėra.</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -52,8 +54,3 @@
         background-color: #fff0c1;
     }
 </style>
-<script>
-    $(document).ready(function () {
-        $('[data-toggle="tooltip"]').tooltip();
-    });
-</script>
