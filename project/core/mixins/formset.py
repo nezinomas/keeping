@@ -1,4 +1,6 @@
 from django.forms.models import modelformset_factory
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 from django.utils.functional import curry
 
 
@@ -55,11 +57,29 @@ class FormsetMixin():
 
     def post(self, request, *args, **kwargs):
         formset = self._get_formset(request.POST or None)
-
         if formset.is_valid():
-            return self.form_valid(formset)
+            data = dict()
+
+            # if from has price and price > 0 save that form
+            for form in formset:
+                price = form.cleaned_data.get('price')
+
+                if float(price) > 0:
+                    form.save()
+
+            context = self.get_context_data()
+
+            data['form_is_valid'] = True
+            data['html_list'] = (
+                render_to_string(
+                    self.get_list_template_name(), context, self.request)
+            )
+
+            if self.request.is_ajax():
+                return JsonResponse(data)
+
         else:
-            return self.form_invalid(formset)
+            return super().form_invalid(formset)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
