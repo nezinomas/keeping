@@ -127,7 +127,7 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
         typesa = {x['title']: x['id'] for x in qsa}
         acc = collect_summary_data(year, typesa, 'accounts')
 
-        _account = AccountBalance.objects.items()
+        _account = AccountBalance.objects.items(year)
 
         context['accounts'] = _account
         context['total_row'] = sum_all(_account)
