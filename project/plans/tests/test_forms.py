@@ -8,6 +8,9 @@ from ..forms import (DayPlanForm, ExpensePlanForm, IncomePlanForm,
                      NecessaryPlanForm, SavingPlanForm)
 
 
+# ----------------------------------------------------------------------------
+#                                                               Necessary Form
+# ----------------------------------------------------------------------------
 def test_necessary_init():
     NecessaryPlanForm()
 
@@ -42,6 +45,9 @@ def test_necessary_blank_data():
     }
 
 
+# ----------------------------------------------------------------------------
+#                                                                     Day Form
+# ----------------------------------------------------------------------------
 def test_day_init():
     DayPlanForm()
 
@@ -73,6 +79,9 @@ def test_day_blank_data():
     }
 
 
+# ----------------------------------------------------------------------------
+#                                                                  Saving Form
+# ----------------------------------------------------------------------------
 def test_saving_init():
     SavingPlanForm()
 
@@ -141,6 +150,9 @@ def test_saving_form_type_closed_in_current_year():
     assert 'S2' in str(form['saving_type'])
 
 
+# ----------------------------------------------------------------------------
+#                                                                  Income Form
+# ----------------------------------------------------------------------------
 def test_income_init():
     IncomePlanForm()
 
@@ -176,6 +188,9 @@ def test_income_blank_data():
     }
 
 
+# ----------------------------------------------------------------------------
+#                                                                 Expense Form
+# ----------------------------------------------------------------------------
 def test_expense_init():
     ExpensePlanForm()
 
