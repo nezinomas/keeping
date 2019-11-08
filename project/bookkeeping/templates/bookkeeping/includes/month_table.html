@@ -10,7 +10,8 @@
     </thead>
     <tbody>
         {% for row in expenses %}
-        <tr {% if day|slugify == row.date|date:'j' %}class="bg-warning" {% endif %}>
+        {% with row.date|date:'w' as weekend %}
+        <tr class="{% if day|slugify == row.date|date:'j' %}_current_day{% endif %} {% if weekend == '0' or weekend == '6' %}_weekend{% endif %} " >{% endwith %}
             <td class="text-left">{{ row.date|date:'d' }}</td>
             {% for cat in expense_types %}
             {% cell row|get_item:cat %}
