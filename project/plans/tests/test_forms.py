@@ -4,8 +4,8 @@ from freezegun import freeze_time
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
 from ...savings.factories import SavingTypeFactory
-from ..forms import (DayPlanForm, ExpensePlanForm, IncomePlanForm,
-                     NecessaryPlanForm, SavingPlanForm)
+from ..forms import (CopyPlanForm, DayPlanForm, ExpensePlanForm,
+                     IncomePlanForm, NecessaryPlanForm, SavingPlanForm)
 
 
 # ----------------------------------------------------------------------------
@@ -223,4 +223,62 @@ def test_expense_blank_data():
     assert form.errors == {
         'year': ['Šis laukas yra privalomas.'],
         'expense_type': ['Šis laukas yra privalomas.'],
+    }
+
+
+# ----------------------------------------------------------------------------
+#                                                                    Copy Form
+# ----------------------------------------------------------------------------
+def test_copy_init():
+    CopyPlanForm()
+
+
+def test_copy_have_fields():
+    form = CopyPlanForm().as_p()
+
+    assert '<input type="text" name="year_from"' in form
+    assert '<input type="text" name="year_to"' in form
+    assert '<input type="checkbox" name="income"' in form
+    assert '<input type="checkbox" name="expense"' in form
+    assert '<input type="checkbox" name="saving"' in form
+    assert '<input type="checkbox" name="day"' in form
+    assert '<input type="checkbox" name="necessary"' in form
+
+
+def test_copy_blank_data():
+    form = CopyPlanForm(data={})
+
+    assert not form.is_valid()
+
+    assert form.errors == {
+        'year_from': ['Šis laukas yra privalomas.'],
+        'year_to': ['Šis laukas yra privalomas.'],
+    }
+
+
+def test_copy_all_checkboxes_unselected():
+    form = CopyPlanForm(data={
+        'year_from': 1999,
+        'year_to': 2000,
+    })
+
+    assert not form.is_valid()
+
+    assert form.errors == {
+        '__all__': ['Reikia pažymėti nors vieną planą.']
+    }
+
+
+@pytest.mark.django_db
+def test_copy_empty_from_tables():
+    form = CopyPlanForm(data={
+        'year_from': 1999,
+        'year_to': 2000,
+        'income': True
+    })
+
+    assert not form.is_valid()
+
+    assert form.errors == {
+        'income': ['Nėra ką kopijuoti.']
     }

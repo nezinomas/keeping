@@ -4,6 +4,7 @@ from datetime import datetime
 from bootstrap_datepicker_plus import YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib.date import monthnames
@@ -147,6 +148,69 @@ class NecessaryPlanForm(forms.ModelForm):
 
         # field translation
         common_field_transalion(self)
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
+
+
+class CopyPlanForm(forms.Form):
+    CHOICES = (
+        ('income', 'Pajamas'),
+        ('expense', 'Išlaidas'),
+        ('saving', 'Taupimus'),
+        ('day', 'Dienos sumas'),
+        ('necessary', 'Papildomos išlaidas'),
+    )
+    year_from = forms.IntegerField(
+        widget=YearPickerInput(format='%Y'),
+        validators=[
+            MinValueValidator(1974),
+            MaxValueValidator(2050)],
+    )
+    year_to = forms.IntegerField(
+        widget=YearPickerInput(format='%Y'),
+        validators=[
+            MinValueValidator(1974),
+            MaxValueValidator(2050)],
+    )
+    income = forms.BooleanField(required=False)
+    expense = forms.BooleanField(required=False)
+    saving = forms.BooleanField(required=False)
+    day = forms.BooleanField(required=False)
+    necessary = forms.BooleanField(required=False)
+
+    # def clean_copy(self):
+    #     data = self.cleaned_data['copy']
+    #     print(f'data: {data}')
+    #     raise forms.ValidationError("You have forgotten about Fred!")
+    #     return data
+
+    def clean(self):
+        chk = []
+        cleaned_data = super().clean()
+        d = {
+            'income': cleaned_data.get("income"),
+            'expense': cleaned_data.get("expense"),
+            'saving': cleaned_data.get("saving"),
+            'day': cleaned_data.get("day"),
+            'necessary': cleaned_data.get("necessary"),
+        }
+
+        [chk.append[v] for k, v in d.items() if v]
+
+        if not chk:
+            raise forms.ValidationError(
+                "Reikia pažymėti nors vieną planą."
+            )
+
+    def __init__(self, year=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['income'].initial = True
+        self.fields['expense'].initial = True
+        self.fields['saving'].initial = True
+        self.fields['day'].initial = True
+        self.fields['necessary'].initial = True
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
