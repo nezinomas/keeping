@@ -126,7 +126,7 @@ tr.top-text, tr.top-text th {
 .table-hover tbody td._weekend:hover,
 .table-hover tbody tr._weekend:hover td,
 .table-hover tbody tr._current_day:hover td {
-    background: #f9f6cf;
+    background: #f9f6cf!important;
 }
 
 .table-hover tbody tr:hover td.table-danger {
@@ -173,6 +173,6 @@ tr._weekend td, td._weekend {
     background-color:rgb(202, 235, 204);
 }
 
-._current_day, tr._current_day._weekend > td{
+._current_day, tr._current_day._weekend > td, tr._current_day > td._weekend {
     background-color:#ffc107!important;
 }
