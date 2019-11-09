@@ -257,14 +257,5 @@ class CopyPlanForm(forms.Form):
         self.fields['day'].initial = True
         self.fields['necessary'].initial = True
 
-        # # fields labels
-        # self.fields['year_from'].label = 'Kopijuoti iš'
-        # self.fields['year_to'].label = 'Kopijuoti į'
-        # self.fields['income'].label = 'Pajamų planus'
-        # self.fields['expense'].label = 'Išlaidų planus'
-        # self.fields['saving'].label = 'Taupymo planus'
-        # self.fields['day'].label = 'Dienos planus'
-        # self.fields['necessary'].label = 'Papildomų būtinų išlaidų planus'
-
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
