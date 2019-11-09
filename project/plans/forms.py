@@ -186,6 +186,14 @@ class CopyPlanForm(forms.Form):
     def _get_model(self, name):
         return apps.get_model(f'plans.{name.title()}Plan')
 
+    def _append_error_message(errors, msg):
+        err = errors.get(k)
+        if err:
+            err.append(msg)
+            errors[k] = err
+        else:
+            errors[k] = [msg]
+
     def clean(self):
         cleaned_data = super().clean()
 
@@ -202,22 +210,26 @@ class CopyPlanForm(forms.Form):
             )
 
         # copy from table must contain data
+        errors = {}
+        msg = 'Nėra ką kopijuoti.'
         for k, v in dict_.items():
             if v:
                 model = self._get_model(k)
                 qs = model.objects.year(year_from)
                 if not qs.exists():
-                    msg = ['Nėra ką kopijuoti.']
-                    raise forms.ValidationError({k: msg})
+                    self._append_error_message(errors, msg)
 
         # copy to table must be empty
+        msg = f'{year_to} metai jau turi planus.'
         for k, v in dict_.items():
             if v:
                 model = self._get_model(k)
                 qs = model.objects.year(year_to)
                 if qs.exists():
-                    msg = [f'{year_to} metai jau turi planus.']
-                    raise forms.ValidationError({k: msg})
+                    self._append_error_message(errors, msg)
+
+        if errors:
+            raise forms.ValidationError(errors)
 
     def save(self):
         dict_ = self._get_cleaned_checkboxes(self.cleaned_data)
@@ -245,14 +257,14 @@ class CopyPlanForm(forms.Form):
         self.fields['day'].initial = True
         self.fields['necessary'].initial = True
 
-        # fields labels
-        self.fields['year_from'].label = 'Kopijuoti iš'
-        self.fields['year_to'].label = 'Kopijuoti į'
-        self.fields['income'].label = 'Pajamų planus'
-        self.fields['expense'].label = 'Išlaidų planus'
-        self.fields['saving'].label = 'Taupymo planus'
-        self.fields['day'].label = 'Dienos planus'
-        self.fields['necessary'].label = 'Papildomų būtinų išlaidų planus'
+        # # fields labels
+        # self.fields['year_from'].label = 'Kopijuoti iš'
+        # self.fields['year_to'].label = 'Kopijuoti į'
+        # self.fields['income'].label = 'Pajamų planus'
+        # self.fields['expense'].label = 'Išlaidų planus'
+        # self.fields['saving'].label = 'Taupymo planus'
+        # self.fields['day'].label = 'Dienos planus'
+        # self.fields['necessary'].label = 'Papildomų būtinų išlaidų planus'
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
