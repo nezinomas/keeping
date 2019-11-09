@@ -4,10 +4,15 @@ from freezegun import freeze_time
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
 from ...savings.factories import SavingTypeFactory
-from ..forms import (DayPlanForm, ExpensePlanForm, IncomePlanForm,
-                     NecessaryPlanForm, SavingPlanForm)
+from ..factories import IncomePlanFactory
+from ..forms import (CopyPlanForm, DayPlanForm, ExpensePlanForm,
+                     IncomePlanForm, NecessaryPlanForm, SavingPlanForm)
+from ..models import IncomePlan
 
 
+# ----------------------------------------------------------------------------
+#                                                               Necessary Form
+# ----------------------------------------------------------------------------
 def test_necessary_init():
     NecessaryPlanForm()
 
@@ -42,6 +47,9 @@ def test_necessary_blank_data():
     }
 
 
+# ----------------------------------------------------------------------------
+#                                                                     Day Form
+# ----------------------------------------------------------------------------
 def test_day_init():
     DayPlanForm()
 
@@ -73,6 +81,9 @@ def test_day_blank_data():
     }
 
 
+# ----------------------------------------------------------------------------
+#                                                                  Saving Form
+# ----------------------------------------------------------------------------
 def test_saving_init():
     SavingPlanForm()
 
@@ -141,6 +152,9 @@ def test_saving_form_type_closed_in_current_year():
     assert 'S2' in str(form['saving_type'])
 
 
+# ----------------------------------------------------------------------------
+#                                                                  Income Form
+# ----------------------------------------------------------------------------
 def test_income_init():
     IncomePlanForm()
 
@@ -176,6 +190,9 @@ def test_income_blank_data():
     }
 
 
+# ----------------------------------------------------------------------------
+#                                                                 Expense Form
+# ----------------------------------------------------------------------------
 def test_expense_init():
     ExpensePlanForm()
 
@@ -209,3 +226,100 @@ def test_expense_blank_data():
         'year': ['Šis laukas yra privalomas.'],
         'expense_type': ['Šis laukas yra privalomas.'],
     }
+
+
+# ----------------------------------------------------------------------------
+#                                                                    Copy Form
+# ----------------------------------------------------------------------------
+def test_copy_init():
+    CopyPlanForm()
+
+
+def test_copy_have_fields():
+    form = CopyPlanForm().as_p()
+
+    assert '<input type="text" name="year_from"' in form
+    assert '<input type="text" name="year_to"' in form
+    assert '<input type="checkbox" name="income"' in form
+    assert '<input type="checkbox" name="expense"' in form
+    assert '<input type="checkbox" name="saving"' in form
+    assert '<input type="checkbox" name="day"' in form
+    assert '<input type="checkbox" name="necessary"' in form
+
+
+def test_copy_blank_data():
+    form = CopyPlanForm(data={})
+
+    assert not form.is_valid()
+
+    assert form.errors == {
+        '__all__': ['Reikia pažymėti nors vieną planą.'],
+        'year_from': ['Šis laukas yra privalomas.'],
+        'year_to': ['Šis laukas yra privalomas.'],
+    }
+
+
+def test_copy_all_checkboxes_unselected():
+    form = CopyPlanForm(data={
+        'year_from': 1999,
+        'year_to': 2000,
+    })
+
+    assert not form.is_valid()
+
+    assert form.errors == {
+        '__all__': ['Reikia pažymėti nors vieną planą.']
+    }
+
+
+@pytest.mark.django_db
+def test_copy_empty_from_tables():
+    form = CopyPlanForm(data={
+        'year_from': 1999,
+        'year_to': 2000,
+        'income': True
+    })
+
+    assert not form.is_valid()
+
+    assert form.errors == {
+        'income': ['Nėra ką kopijuoti.']
+    }
+
+
+@pytest.mark.django_db
+def test_copy_to_table_have_records():
+    IncomePlanFactory(year=1999)
+    IncomePlanFactory(year=2000)
+
+    form = CopyPlanForm(data={
+        'year_from': 1999,
+        'year_to': 2000,
+        'income': True
+    })
+
+    assert not form.is_valid()
+
+    assert form.errors == {
+        'income': ['2000 metai jau turi planus.']
+    }
+
+
+@pytest.mark.django_db
+def test_copy_data():
+    IncomePlanFactory(year=1999)
+
+    form = CopyPlanForm(data={
+        'year_from': 1999,
+        'year_to': 2000,
+        'income': True
+    })
+
+    assert form.is_valid()
+
+    form.save()
+
+    data = IncomePlan.objects.year(2000)
+
+    assert data.exists()
+    assert 2000 == data[0].year

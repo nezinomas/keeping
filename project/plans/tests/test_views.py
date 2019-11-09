@@ -10,14 +10,14 @@ from ...savings.factories import SavingTypeFactory
 from ..factories import (
     DayPlanFactory, ExpensePlanFactory, IncomePlanFactory,
     NecessaryPlanFactory, SavingPlanFactory)
-from ..views import Index
+from .. import views
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
-#
-#         IndexPlan
-#
+# ----------------------------------------------------------------------------
+#                                                                   Index Plan
+# ----------------------------------------------------------------------------
 @pytest.mark.django_db()
 def test_view_index(client, login):
     url = reverse('plans:plans_index')
@@ -39,12 +39,12 @@ def test_view_index_not_logged(client):
 def test_view_index_func(client):
     view = resolve('/plans/')
 
-    assert Index == view.func.view_class
+    assert views.Index == view.func.view_class
 
 
-#
-#         plans_stats view
-#
+# ----------------------------------------------------------------------------
+#                                                                  plans_stats
+# ----------------------------------------------------------------------------
 @pytest.mark.django_db()
 def test_view_plan_stats_render(client, login):
     url = reverse('plans:reload_plan_stats')
@@ -63,9 +63,9 @@ def test_view_plan_stats_render_to_string(client, login):
     assert 200 == response.status_code
 
 
-#
-#         IncomePlan create/update
-#
+# ----------------------------------------------------------------------------
+#                                                     IncomePlan create/update
+# ----------------------------------------------------------------------------
 @freeze_time('1999-1-1')
 def test_view_incomes(admin_client):
     url = reverse('plans:incomes_plan_new')
@@ -138,9 +138,9 @@ def test_view_incomes_update_year_not_match(client, login):
     assert 404 == response.status_code
 
 
-#
-#         ExpensesPlan create/update
-#
+# ----------------------------------------------------------------------------
+#                                                   ExpensesPlan create/update
+# ----------------------------------------------------------------------------
 @freeze_time('1999-1-1')
 def test_view_expenses(admin_client):
     url = reverse('plans:expenses_plan_new')
@@ -213,9 +213,9 @@ def test_view_expenses_update_year_not_match(client, login):
     assert 404 == response.status_code
 
 
-#
-#         SavingPlan create/update
-#
+# ----------------------------------------------------------------------------
+#                                                     SavingPlan create/update
+# ----------------------------------------------------------------------------
 @freeze_time('1999-1-1')
 def test_view_savings(admin_client):
     url = reverse('plans:savings_plan_new')
@@ -288,9 +288,9 @@ def test_view_savings_update_year_not_match(client, login):
     assert 404 == response.status_code
 
 
-#
-#         DayPlan create/update
-#
+# ----------------------------------------------------------------------------
+#                                                        DayPlan create/update
+# ----------------------------------------------------------------------------
 @freeze_time('1999-1-1')
 def test_view_days(admin_client):
     url = reverse('plans:days_plan_new')
@@ -362,9 +362,9 @@ def test_view_days_update_year_not_match(client, login):
     assert 404 == response.status_code
 
 
-#
-#         NecessaryPlan create/update
-#
+# ----------------------------------------------------------------------------
+#                                                  NecessaryPlan create/update
+# ----------------------------------------------------------------------------
 @freeze_time('1999-1-1')
 def test_view_necessarys(admin_client):
     url = reverse('plans:necessarys_plan_new')
@@ -434,3 +434,19 @@ def test_view_necessarys_update_year_not_match(client, login):
     response = client.get(url, {}, **X_Req)
 
     assert 404 == response.status_code
+
+
+# ----------------------------------------------------------------------------
+#                                                                   Copy Plans
+# ----------------------------------------------------------------------------
+def test_copy_func():
+    view = resolve('/plans/copy/')
+
+    assert views.copy_plans == view.func
+
+
+@pytest.mark.django_db
+def test_copy_200(login, client):
+    response = client.get('/plans/copy/')
+
+    assert response.status_code == 200
