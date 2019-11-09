@@ -362,9 +362,9 @@ def test_view_days_update_year_not_match(client, login):
     assert 404 == response.status_code
 
 
-#
-#         NecessaryPlan create/update
-#
+# ----------------------------------------------------------------------------
+#                                                  NecessaryPlan create/update
+# ----------------------------------------------------------------------------
 @freeze_time('1999-1-1')
 def test_view_necessarys(admin_client):
     url = reverse('plans:necessarys_plan_new')
