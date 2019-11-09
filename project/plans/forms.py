@@ -185,18 +185,22 @@ class CopyPlanForm(forms.Form):
     #     raise forms.ValidationError("You have forgotten about Fred!")
     #     return data
 
-    def clean(self):
-        chk = []
-        cleaned_data = super().clean()
-        d = {
+    def _get_cleaned_checkboxes(self, cleaned_data):
+        dict_ = {
             'income': cleaned_data.get("income"),
             'expense': cleaned_data.get("expense"),
             'saving': cleaned_data.get("saving"),
             'day': cleaned_data.get("day"),
             'necessary': cleaned_data.get("necessary"),
         }
+        return dict_
 
-        [chk.append[v] for k, v in d.items() if v]
+    def clean(self):
+        chk = []
+        cleaned_data = super().clean()
+        dict_ = self._get_cleaned_checkboxes(cleaned_data)
+
+        [chk.append[v] for k, v in dict_.items() if v]
 
         if not chk:
             raise forms.ValidationError(
