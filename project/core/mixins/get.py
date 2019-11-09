@@ -6,6 +6,7 @@ class GetQuerysetMixin():
     def get_queryset(self):
         year = self.request.user.profile.year
         month = self.request.user.profile.month
+
         try:
             if self.month:
                 qs = self.model.objects.month(year, month)
