@@ -4,8 +4,10 @@ from freezegun import freeze_time
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
 from ...savings.factories import SavingTypeFactory
+from ..factories import IncomePlanFactory
 from ..forms import (CopyPlanForm, DayPlanForm, ExpensePlanForm,
                      IncomePlanForm, NecessaryPlanForm, SavingPlanForm)
+from ..models import IncomePlan
 
 
 # ----------------------------------------------------------------------------
@@ -251,6 +253,7 @@ def test_copy_blank_data():
     assert not form.is_valid()
 
     assert form.errors == {
+        '__all__': ['Reikia pažymėti nors vieną planą.'],
         'year_from': ['Šis laukas yra privalomas.'],
         'year_to': ['Šis laukas yra privalomas.'],
     }
@@ -282,3 +285,41 @@ def test_copy_empty_from_tables():
     assert form.errors == {
         'income': ['Nėra ką kopijuoti.']
     }
+
+
+@pytest.mark.django_db
+def test_copy_to_table_have_records():
+    IncomePlanFactory(year=1999)
+    IncomePlanFactory(year=2000)
+
+    form = CopyPlanForm(data={
+        'year_from': 1999,
+        'year_to': 2000,
+        'income': True
+    })
+
+    assert not form.is_valid()
+
+    assert form.errors == {
+        'income': ['2000 metai jau turi planus.']
+    }
+
+
+@pytest.mark.django_db
+def test_copy_data():
+    IncomePlanFactory(year=1999)
+
+    form = CopyPlanForm(data={
+        'year_from': 1999,
+        'year_to': 2000,
+        'income': True
+    })
+
+    assert form.is_valid()
+
+    form.save()
+
+    data = IncomePlan.objects.year(2000)
+
+    assert data.exists()
+    assert 2000 == data[0].year

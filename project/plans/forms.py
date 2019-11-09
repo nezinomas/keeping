@@ -4,6 +4,7 @@ from datetime import datetime
 from bootstrap_datepicker_plus import YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from ..core.helpers.helper_forms import set_field_properties
@@ -154,13 +155,6 @@ class NecessaryPlanForm(forms.ModelForm):
 
 
 class CopyPlanForm(forms.Form):
-    CHOICES = (
-        ('income', 'Pajamas'),
-        ('expense', 'Išlaidas'),
-        ('saving', 'Taupimus'),
-        ('day', 'Dienos sumas'),
-        ('necessary', 'Papildomos išlaidas'),
-    )
     year_from = forms.IntegerField(
         widget=YearPickerInput(format='%Y'),
         validators=[
@@ -179,12 +173,6 @@ class CopyPlanForm(forms.Form):
     day = forms.BooleanField(required=False)
     necessary = forms.BooleanField(required=False)
 
-    # def clean_copy(self):
-    #     data = self.cleaned_data['copy']
-    #     print(f'data: {data}')
-    #     raise forms.ValidationError("You have forgotten about Fred!")
-    #     return data
-
     def _get_cleaned_checkboxes(self, cleaned_data):
         dict_ = {
             'income': cleaned_data.get("income"),
@@ -195,26 +183,76 @@ class CopyPlanForm(forms.Form):
         }
         return dict_
 
-    def clean(self):
-        chk = []
-        cleaned_data = super().clean()
-        dict_ = self._get_cleaned_checkboxes(cleaned_data)
+    def _get_model(self, name):
+        return apps.get_model(f'plans.{name.title()}Plan')
 
-        [chk.append[v] for k, v in dict_.items() if v]
+    def clean(self):
+        cleaned_data = super().clean()
+
+        dict_ = self._get_cleaned_checkboxes(cleaned_data)
+        year_from = cleaned_data.get('year_from')
+        year_to = cleaned_data.get('year_to')
+
+        # at least one checkbox must be selected
+        chk = [v for k, v in dict_.items() if v]
 
         if not chk:
             raise forms.ValidationError(
                 "Reikia pažymėti nors vieną planą."
             )
 
+        # copy from table must contain data
+        for k, v in dict_.items():
+            if v:
+                model = self._get_model(k)
+                qs = model.objects.year(year_from)
+                if not qs.exists():
+                    msg = ['Nėra ką kopijuoti.']
+                    raise forms.ValidationError({k: msg})
+
+        # copy to table must be empty
+        for k, v in dict_.items():
+            if v:
+                model = self._get_model(k)
+                qs = model.objects.year(year_to)
+                if qs.exists():
+                    msg = [f'{year_to} metai jau turi planus.']
+                    raise forms.ValidationError({k: msg})
+
+    def save(self):
+        dict_ = self._get_cleaned_checkboxes(self.cleaned_data)
+        year_from = self.cleaned_data.get('year_from')
+        year_to = self.cleaned_data.get('year_to')
+
+        for k, v in dict_.items():
+            if v:
+                model = self._get_model(k)
+                qs = model.objects.year(year_from).values_list('pk', flat=True)
+
+                for i in qs:
+                    obj = model.objects.get(pk=i)
+                    obj.pk = None
+                    obj.year = year_to
+                    obj.save()
+
     def __init__(self, year=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # initail values
         self.fields['income'].initial = True
         self.fields['expense'].initial = True
         self.fields['saving'].initial = True
         self.fields['day'].initial = True
         self.fields['necessary'].initial = True
+
+        # fields labels
+        self.fields['year_from'].label = 'Kopijuoti iš'
+        self.fields['year_to'].label = 'Kopijuoti į'
+        self.fields['income'].label = 'Pajamų planus'
+        self.fields['expense'].label = 'Išlaidų planus'
+        self.fields['savings'].label = 'Taupymo planus'
+        self.fields['day'].label = 'Dienos planus'
+        self.fields['necessary'].label = 'Papildomų būtinų išlaidų planus'
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
