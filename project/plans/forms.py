@@ -250,7 +250,7 @@ class CopyPlanForm(forms.Form):
         self.fields['year_to'].label = 'Kopijuoti į'
         self.fields['income'].label = 'Pajamų planus'
         self.fields['expense'].label = 'Išlaidų planus'
-        self.fields['savings'].label = 'Taupymo planus'
+        self.fields['saving'].label = 'Taupymo planus'
         self.fields['day'].label = 'Dienos planus'
         self.fields['necessary'].label = 'Papildomų būtinų išlaidų planus'
 
