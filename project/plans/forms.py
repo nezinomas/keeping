@@ -3,6 +3,7 @@ from datetime import datetime
 
 from bootstrap_datepicker_plus import YearPickerInput
 from crispy_forms.helper import FormHelper
+from dateutil.relativedelta import relativedelta
 from django import forms
 from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -251,6 +252,8 @@ class CopyPlanForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         # initail values
+        self.fields['year_from'].initial = datetime.now()
+        self.fields['year_to'].initial = datetime.now() + relativedelta(years=1)
         self.fields['income'].initial = True
         self.fields['expense'].initial = True
         self.fields['saving'].initial = True
