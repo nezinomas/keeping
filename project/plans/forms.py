@@ -186,13 +186,13 @@ class CopyPlanForm(forms.Form):
     def _get_model(self, name):
         return apps.get_model(f'plans.{name.title()}Plan')
 
-    def _append_error_message(errors, msg):
-        err = errors.get(k)
+    def _append_error_message(self, msg, errors, key):
+        err = errors.get(key)
         if err:
             err.append(msg)
-            errors[k] = err
+            errors[key] = err
         else:
-            errors[k] = [msg]
+            errors[key] = [msg]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -217,7 +217,7 @@ class CopyPlanForm(forms.Form):
                 model = self._get_model(k)
                 qs = model.objects.year(year_from)
                 if not qs.exists():
-                    self._append_error_message(errors, msg)
+                    self._append_error_message(msg, errors, k)
 
         # copy to table must be empty
         msg = f'{year_to} metai jau turi planus.'
@@ -226,7 +226,7 @@ class CopyPlanForm(forms.Form):
                 model = self._get_model(k)
                 qs = model.objects.year(year_to)
                 if qs.exists():
-                    self._append_error_message(errors, msg)
+                    self._append_error_message(msg, errors, k)
 
         if errors:
             raise forms.ValidationError(errors)
