@@ -104,5 +104,13 @@ urlpatterns = [
         'plans/reload_plan_stats/',
         views.plans_stats,
         name='reload_plan_stats'
-    )
+    ),
+    #
+    # copy plans
+    #
+    path(
+        'plans/copy/',
+        views.copy_plans,
+        name='copy_plans'
+    ),
 ]

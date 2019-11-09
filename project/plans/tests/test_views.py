@@ -10,7 +10,7 @@ from ...savings.factories import SavingTypeFactory
 from ..factories import (
     DayPlanFactory, ExpensePlanFactory, IncomePlanFactory,
     NecessaryPlanFactory, SavingPlanFactory)
-from ..views import Index
+from .. import views
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
@@ -39,7 +39,7 @@ def test_view_index_not_logged(client):
 def test_view_index_func(client):
     view = resolve('/plans/')
 
-    assert Index == view.func.view_class
+    assert views.Index == view.func.view_class
 
 
 # ----------------------------------------------------------------------------
@@ -434,3 +434,19 @@ def test_view_necessarys_update_year_not_match(client, login):
     response = client.get(url, {}, **X_Req)
 
     assert 404 == response.status_code
+
+
+# ----------------------------------------------------------------------------
+#                                                                   Copy Plans
+# ----------------------------------------------------------------------------
+def test_copy_func():
+    view = resolve('/plans/copy/')
+
+    assert views.copy_plans == view.func
+
+
+@pytest.mark.django_db
+def test_copy_200(login, client):
+    response = client.get('/plans/copy/')
+
+    assert response.status_code == 200

@@ -15,8 +15,8 @@
             </div>
             <div class="col-lg-2 text-right">
                 {% url 'plans:incomes_plan_new' as url_incomes_new %}
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_new }}"><i
-                        class="fas fa-plus"></i> Įrašą</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url 'plans:copy_plans' %}"><i class="fas fa-plus"></i> Kopijuoti planus</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_new }}"><i class="fas fa-plus"></i> Įrašą</button>
             </div>
         </div>
         <div class="row mt-2">
