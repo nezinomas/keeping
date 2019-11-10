@@ -169,6 +169,17 @@ class Month(IndexMixin):
 class Detailed(LoginRequiredMixin, TemplateView):
     template_name = 'bookkeeping/detailed.html'
 
+    def get_context_data(self, **kwargs):
+        year = self.request.user.profile.year
+
+        qs_incomes = Income.objects.month_type_sum(year)
+
+        context = super().get_context_data(**kwargs)
+        context['months'] = range(0, 12)
+        context['incomes'] = qs_incomes
+
+        return context
+
 
 def reload_month(request):
     template = 'bookkeeping/includes/reload_month.html'
