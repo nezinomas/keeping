@@ -86,7 +86,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             .values('date')
             .annotate(c=Count('id'))
             .annotate(sum=Sum('price'))
-            .order_by('date')
+            .order_by('income_type__title', 'date')
             .values(
                 'date',
                 'sum',
