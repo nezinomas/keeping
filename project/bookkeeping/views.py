@@ -1,5 +1,7 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.template.loader import render_to_string
+from django.views.generic import TemplateView
 
 from ..accounts.models import Account, AccountBalance
 from ..core.lib.date import year_month_list
@@ -162,6 +164,11 @@ class Month(IndexMixin):
         context = _month_context(self.request, context)
 
         return context
+
+
+class Detailed(LoginRequiredMixin, TemplateView):
+    template_name = 'bookkeeping/detailed.html'
+
 
 
 def reload_month(request):

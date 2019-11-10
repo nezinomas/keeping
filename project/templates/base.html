@@ -45,6 +45,9 @@
             <a class="nav-link {% if '/month/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:month' %}">Mėnuo</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link {% if '/detailed/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:detailed' %}">Detali</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link {% if '/expenses/' in request.path %}active{% endif %}" href="{% url 'expenses:expenses_index' %}">Išlaidos</a>
           </li>
           <li class="nav-item">

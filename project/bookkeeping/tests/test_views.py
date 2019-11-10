@@ -333,3 +333,29 @@ def test_view_reload_month_render(rf):
     response = views.reload_month(request)
 
     assert response.status_code == 200
+
+
+#
+# ----------------------------------------------------------------------------
+#                                                                     Detailed
+# ----------------------------------------------------------------------------
+#
+def test_view_detailed_func():
+    view = resolve('/detailed/')
+
+    assert views.Detailed == view.func.view_class
+
+
+@pytest.mark.django_db
+def test_view_detailed_200(login, client):
+    url = reverse('bookkeeping:detailed')
+    response = client.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_detailed_302(client):
+    url = reverse('bookkeeping:detailed')
+    response = client.get(url)
+
+    assert response.status_code == 302
