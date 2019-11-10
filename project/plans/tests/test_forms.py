@@ -306,6 +306,26 @@ def test_copy_to_table_have_records():
 
 
 @pytest.mark.django_db
+def test_copy_to_table_have_records_from_empty():
+    IncomePlanFactory(year=2000)
+
+    form = CopyPlanForm(data={
+        'year_from': 1999,
+        'year_to': 2000,
+        'income': True
+    })
+
+    assert not form.is_valid()
+
+    assert form.errors == {
+        'income': [
+            'Nėra ką kopijuoti.',
+            '2000 metai jau turi planus.'
+        ]
+    }
+
+
+@pytest.mark.django_db
 def test_copy_data():
     IncomePlanFactory(year=1999)
 
