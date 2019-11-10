@@ -7,10 +7,10 @@ from freezegun import freeze_time
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
 from ...savings.factories import SavingTypeFactory
+from .. import models, views
 from ..factories import (
     DayPlanFactory, ExpensePlanFactory, IncomePlanFactory,
     NecessaryPlanFactory, SavingPlanFactory)
-from .. import views
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
@@ -450,3 +450,37 @@ def test_copy_200(login, client):
     response = client.get('/plans/copy/')
 
     assert response.status_code == 200
+
+
+@pytest.mark.django_db()
+def test_copy_success(client, login):
+    IncomePlanFactory(year=1999)
+    data = {'year_from': '1999', 'year_to': '2000', 'income': True}
+
+    url = reverse('plans:copy_plans')
+
+    response = client.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    data = models.IncomePlan.objects.year(2000)
+
+    assert data.exists()
+    assert 2000 == data[0].year
+
+
+@pytest.mark.django_db()
+def test_copy_fails(client, login):
+    data = {'year_from': '1999', 'year_to': '2000', 'income': True}
+
+    url = reverse('plans:copy_plans')
+
+    response = client.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']

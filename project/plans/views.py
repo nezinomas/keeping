@@ -130,6 +130,7 @@ def copy_plans(request):
     form = forms.CopyPlanForm(data=(request.POST or None))
     if request.method == 'POST':
         if form.is_valid():
+            data['form_is_valid'] = True
             form.save()
         else:
             data['form_is_valid'] = False
