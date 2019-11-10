@@ -39,11 +39,17 @@
             enabled: false
         },
         tooltip: {
-            pointFormat: '<b>{point.y:.1f}€</b>'
+            formatter: function() {
+                var pcnt = (this.y / this.series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100;
+                var rtn = '<b>' + this.point.name + '</b>';
+                rtn += '<br>' + Highcharts.numberFormat(this.y, 0) + '€<br>';
+                rtn += Highcharts.numberFormat(pcnt, 1) + '%';
+                return rtn
+            },
         },
         plotOptions: {
             column: {
-                colorByPoint: true
+                colorByPoint: true,
             }
         },
         colors: [
@@ -73,14 +79,17 @@
                 rotation: -90,
                 color: '#000',
                 align: 'right',
-                format: '{point.y:.0f}', // one decimal
                 y: 5,
                 style: {
                     fontSize: '10px',
                     fontWeight: 'bold',
                     fontFamily: 'Verdana, sans-serif',
                     textOutline: false
-                }
+                },
+                formatter: function() {
+                    var pcnt = (this.y / this.series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100;
+                    return Highcharts.numberFormat(pcnt, 1) + '%';
+                },
             }
         }]
     });
