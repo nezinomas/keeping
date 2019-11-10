@@ -17,7 +17,7 @@ def _dict():
 
 @pytest.fixture()
 def _date():
-    return {'date': date(1999, 1, 1), 'sum': 12}
+    return [{'date': date(1999, 1, 1), 'sum': 12}]
 
 
 def test_attr_exists(_object):
@@ -57,7 +57,7 @@ def test_dict_val_then_dictionary_none():
 
 
 def test_get_sum_normal(_date):
-    actual = get_sum(_date, 1)
+    actual = get_sum(_date, 0)
 
     assert 12 == actual
 
@@ -68,7 +68,7 @@ def test_get_sum_month_not_exists(_date):
     assert not actual
 
 
-def test_get_sum_month_dict_empty():
-    actual = get_sum({}, 12)
+def test_get_sum_month_list_empty():
+    actual = get_sum([], 12)
 
     assert not actual

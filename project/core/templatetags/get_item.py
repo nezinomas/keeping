@@ -29,8 +29,9 @@ def get_dict_val(obj: Dict, key: Any):
 
 @register.filter
 def get_sum(dict_: Dict, month: int):
-    dt = dict_.get('date')
-    if dt:
-        d = dt.month
-        if d == month:
-            return dict_.get('sum')
+    try:
+        item = dict_[month]
+    except Exception as ex:
+        return
+
+    return item.get('sum')
