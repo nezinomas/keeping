@@ -170,7 +170,6 @@ class Detailed(LoginRequiredMixin, TemplateView):
     template_name = 'bookkeeping/detailed.html'
 
 
-
 def reload_month(request):
     template = 'bookkeeping/includes/reload_month.html'
     ajax_trigger = request.GET.get('ajax_trigger')
