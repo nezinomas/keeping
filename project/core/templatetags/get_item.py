@@ -25,3 +25,12 @@ def get_dict_val(obj: Dict, key: Any):
         _key = key
 
     return _key
+
+
+@register.filter
+def get_sum(dict_: Dict, month: int):
+    dt = dict_.get('date')
+    if dt:
+        d = dt.month
+        if d == month:
+            return dict_.get('sum')

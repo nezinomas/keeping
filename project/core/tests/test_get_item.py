@@ -1,6 +1,8 @@
+from datetime import date
+
 import pytest
 
-from ..templatetags.get_item import get_obj_attr, get_dict_val
+from ..templatetags.get_item import get_dict_val, get_obj_attr, get_sum
 
 
 @pytest.fixture()
@@ -11,6 +13,11 @@ def _object():
 @pytest.fixture()
 def _dict():
     return {'key': 'value'}
+
+
+@pytest.fixture()
+def _date():
+    return {'date': date(1999, 1, 1), 'sum': 12}
 
 
 def test_attr_exists(_object):
@@ -47,3 +54,21 @@ def test_dict_val_then_dictionary_none():
     actual = get_dict_val(None, 'X')
 
     assert 'X' == actual
+
+
+def test_get_sum_normal(_date):
+    actual = get_sum(_date, 1)
+
+    assert 12 == actual
+
+
+def test_get_sum_month_not_exists(_date):
+    actual = get_sum(_date, 12)
+
+    assert not actual
+
+
+def test_get_sum_month_dict_empty():
+    actual = get_sum({}, 12)
+
+    assert not actual
