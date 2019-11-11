@@ -44,7 +44,7 @@ def split_funds(lst: List[Dict], key: str) -> List[Dict]:
     return list(filter(lambda x: key in x['title'].lower(), lst))
 
 
-def sum_detailed(lst: List[Dict]) -> List[Dict]:
+def sum_rows_detailed(lst: List[Dict]) -> List[Dict]:
     rtn = []
     for r in lst:
         m = r['date'].month - 1
@@ -56,7 +56,6 @@ def sum_detailed(lst: List[Dict]) -> List[Dict]:
             rtn.insert(m, r)
 
     return rtn
-
 
 
 def render_accounts(request, account, **kwargs):
