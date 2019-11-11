@@ -51,7 +51,7 @@ class Index(IndexMixin):
         wealth = wealth_money + sum_col(_pension, 'market_value')
 
         _NoIncomes = NoIncomes(
-            money=wealth_money,
+            money=_YearBalance.amount_end,
             fund=sum_col(H.split_funds(_fund, 'lx'), 'market_value'),
             pension=sum_col(H.split_funds(_fund, 'invl'), 'market_value'),
             avg_expenses=_YearBalance.avg_expenses,
