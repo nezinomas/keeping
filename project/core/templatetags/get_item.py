@@ -28,9 +28,17 @@ def get_dict_val(obj: Dict, key: Any):
 
 
 @register.filter
-def get_sum(lst: List[Dict], month: int):
+def get_sum_by_month(lst: List[Dict], month: int):
     for _dict in lst:
         dt = _dict.get('date')
         if dt:
             if dt.month == month:
                 return _dict.get('sum')
+
+
+@register.filter
+def get_sum_by_title(lst: List[Dict], title: str):
+    for _dict in lst:
+        _title = _dict.get('title')
+        if _title == title:
+            return _dict.get('sum')

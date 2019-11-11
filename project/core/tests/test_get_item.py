@@ -2,7 +2,8 @@ from datetime import date
 
 import pytest
 
-from ..templatetags.get_item import get_dict_val, get_obj_attr, get_sum
+from ..templatetags.get_item import (get_dict_val, get_obj_attr,
+                                     get_sum_by_month, get_sum_by_title)
 
 
 @pytest.fixture()
@@ -59,19 +60,45 @@ def _date():
     ]
 
 
-def test_get_sum_normal(_date):
-    actual = get_sum(_date, 2)
+def test_get_sum_by_month_normal(_date):
+    actual = get_sum_by_month(_date, 2)
 
     assert 12 == actual
 
 
-def test_get_sum_month_not_exists(_date):
-    actual = get_sum(_date, 12)
+def test_get_sum_by_month_not_exists(_date):
+    actual = get_sum_by_month(_date, 12)
 
     assert not actual
 
 
-def test_get_sum_month_list_empty():
-    actual = get_sum([], 12)
+def test_get_sum_by_month_list_empty():
+    actual = get_sum_by_month([], 12)
+
+    assert not actual
+
+
+@pytest.fixture()
+def _title():
+    return [
+        {'title': 'A', 'sum': 12},
+        {'title': 'B', 'sum': 66},
+    ]
+
+
+def test_get_sum_by_title_normal(_title):
+    actual = get_sum_by_title(_title, 'A')
+
+    assert 12 == actual
+
+
+def test_get_sum_by_title_not_exists(_title):
+    actual = get_sum_by_title(_title, 'x')
+
+    assert not actual
+
+
+def test_get_sum_by_title_list_empty():
+    actual = get_sum_by_title([], 12)
 
     assert not actual
