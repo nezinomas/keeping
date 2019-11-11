@@ -46,14 +46,14 @@ def split_funds(lst: List[Dict], key: str) -> List[Dict]:
 
 def sum_rows_detailed(lst: List[Dict]) -> List[Dict]:
     rtn = []
-    for r in lst:
-        m = r['date'].month - 1
+    for _dict in lst:
+        m = _dict['date'].month - 1
         try:
-            rtn[m]['sum'] += r['sum']
+            rtn[m]['sum'] += _dict['sum']
         except:
-            r = r.copy()
-            r.pop('title')
-            rtn.insert(m, r)
+            _dict = _dict.copy()
+            _dict.pop('title')
+            rtn.insert(m, _dict)
 
     return rtn
 
