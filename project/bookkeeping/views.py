@@ -175,8 +175,9 @@ class Detailed(LoginRequiredMixin, TemplateView):
         qs_incomes = Income.objects.month_type_sum(year)
 
         context = super().get_context_data(**kwargs)
-        context['months'] = range(0, 12)
+        context['months'] = range(1, 13)
         context['incomes'] = qs_incomes
+        context['incomes_totals'] = H.sum_detailed(qs_incomes)
 
         return context
 

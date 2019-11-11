@@ -33,6 +33,12 @@
                 </tr>
                 {% endfor %}
             </tbody>
+            <tfoot>
+                <tr>
+                    <td>Viso</td>
+{% for i in months %}{% with incomes_totals|get_sum:i as sum %}{% cell sum %}{% endwith %}</td>{% endfor %}
+                </tr>
+            </tfoot>
         </table>
 
     </div>
