@@ -63,14 +63,23 @@ class Index(IndexMixin):
                 'Laisvalaikis',
                 'Paskolos',
                 'Taupymas',
-                'Transportas']
+                'Transportas',
+            ]
         )
 
         context['year'] = year
         context['accounts'] = H.render_accounts(
             self.request, _account,
             **{'months_amount_end': _YearBalance.amount_end})
-        context['savings'] = H.render_savings(self.request, _fund)
+        context['savings'] = H.render_savings(
+            self.request,
+            _fund,
+            **{'percentage_from_incomes': (
+                H.percentage_from_incomes(
+                    incomes=_YearBalance.total_row['incomes'],
+                    savings=_MonthExpense.total_row['Taupymas'])
+                )}
+        )
         context['pensions'] = H.render_pensions(self.request, _pension)
         context['balance'] = _YearBalance.balance
         context['balance_total_row'] = _YearBalance.total_row

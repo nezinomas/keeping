@@ -62,3 +62,9 @@ def test_sum_detailed_columns(_income):
     actual = T.sum_detailed(_income, 'title', ['sum'])
 
     assert expect == actual
+
+
+def test_percentage_from_incomes():
+    actual = T.percentage_from_incomes(10, 1.5)
+
+    assert 15 == actual
