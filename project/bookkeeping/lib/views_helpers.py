@@ -63,7 +63,8 @@ def sum_detailed(dataset, group_by_key, sum_value_keys):
 
 
 def percentage_from_incomes(incomes, savings):
-    return (savings * 100) / incomes
+    if incomes and savings:
+        return (savings * 100) / incomes
 
 
 def render_accounts(request, account, **kwargs):

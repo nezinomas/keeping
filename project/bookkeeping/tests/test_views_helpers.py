@@ -68,3 +68,9 @@ def test_percentage_from_incomes():
     actual = T.percentage_from_incomes(10, 1.5)
 
     assert 15 == actual
+
+
+def test_percentage_from_incomes_saving_none():
+    actual = T.percentage_from_incomes(10, None)
+
+    assert not actual

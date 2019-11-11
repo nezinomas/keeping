@@ -76,8 +76,8 @@ class Index(IndexMixin):
             _fund,
             **{'percentage_from_incomes': (
                 H.percentage_from_incomes(
-                    incomes=_YearBalance.total_row['incomes'],
-                    savings=_MonthExpense.total_row['Taupymas'])
+                    incomes=_YearBalance.total_row.get('incomes'),
+                    savings=_MonthExpense.total_row.get('Taupymas'))
                 )}
         )
         context['pensions'] = H.render_pensions(self.request, _pension)
