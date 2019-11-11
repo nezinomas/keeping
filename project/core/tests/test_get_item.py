@@ -15,11 +15,6 @@ def _dict():
     return {'key': 'value'}
 
 
-@pytest.fixture()
-def _date():
-    return [{'date': date(1999, 1, 1), 'sum': 12}]
-
-
 def test_attr_exists(_object):
     actual = get_obj_attr(_object, 'foo')
 
@@ -56,8 +51,16 @@ def test_dict_val_then_dictionary_none():
     assert 'X' == actual
 
 
+@pytest.fixture()
+def _date():
+    return [
+        {'date': date(1999, 2, 1), 'sum': 12},
+        {'date': date(1999, 6, 1), 'sum': 66},
+    ]
+
+
 def test_get_sum_normal(_date):
-    actual = get_sum(_date, 0)
+    actual = get_sum(_date, 2)
 
     assert 12 == actual
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from django import template
 
@@ -28,10 +28,9 @@ def get_dict_val(obj: Dict, key: Any):
 
 
 @register.filter
-def get_sum(dict_: Dict, month: int):
-    try:
-        item = dict_[month]
-    except Exception as ex:
-        return
-
-    return item.get('sum')
+def get_sum(lst: List[Dict], month: int):
+    for _dict in lst:
+        dt = _dict.get('date')
+        if dt:
+            if dt.month == month:
+                return _dict.get('sum')
