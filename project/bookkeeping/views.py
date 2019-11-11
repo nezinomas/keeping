@@ -198,6 +198,22 @@ class Detailed(LoginRequiredMixin, TemplateView):
         context['savings_total_col'] = total_col
         context['savings_total'] = total
 
+        # Expenses
+        context['expenses'] = []
+        for expense_type in H.expense_types():
+            qs = Expense.objects.month_name_sum(year, expense_type)
+            total_row = H.sum_detailed(qs, 'date', ['sum'])
+            total_col = H.sum_detailed(qs, 'title', ['sum'])
+            total = sum_col(total_col, 'sum')
+
+            context['expenses'].append({
+                'name': f'Išlaidos / {expense_type}',
+                'data': qs,
+                'total_row': total_row,
+                'total_col': total_col,
+                'total': total,
+            })
+
         return context
 
 
