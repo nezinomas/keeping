@@ -359,3 +359,16 @@ def test_view_detailed_302(client):
     response = client.get(url)
 
     assert response.status_code == 302
+
+
+@pytest.mark.django_db
+def test_view_detailed_rendered_expenses(login, client, expenses):
+    url = reverse('bookkeeping:detailed')
+    response = client.get(url)
+
+    assert response.status_code == 200
+
+    content = response.content.decode("utf-8")
+
+    assert "Expense Name" in content
+    assert "Išlaidos / Expense Type" in content
