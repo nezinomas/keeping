@@ -3,26 +3,26 @@
     <thead class="thead-light">
         <tr class="top">
             <th>{{ name }}</th>
-            <th class="text-right" width="7.5%">Sausis</th>
-            <th class="text-right" width="7.5%">Vasaris</th>
-            <th class="text-right" width="7.5%">Kovas</th>
-            <th class="text-right" width="7.5%">Balandis</th>
-            <th class="text-right" width="7.5%">Gegužė</th>
-            <th class="text-right" width="7.5%">Birželis</th>
-            <th class="text-right" width="7.5%">Liepa</th>
-            <th class="text-right" width="7.5%">Rugpjūtis</th>
-            <th class="text-right" width="7.5%">Rugsėjis</th>
-            <th class="text-right" width="7.5%">Spalis</th>
-            <th class="text-right" width="7.5%">Lapkritis</th>
-            <th class="text-right" width="7.5%">Gruodis</th>
-            <th class="text-right" width="7.5%">Viso</th>
+            <th class="text-right" width="7%">Sausis</th>
+            <th class="text-right" width="7%">Vasaris</th>
+            <th class="text-right" width="7%">Kovas</th>
+            <th class="text-right" width="7%">Balandis</th>
+            <th class="text-right" width="7%">Gegužė</th>
+            <th class="text-right" width="7%">Birželis</th>
+            <th class="text-right" width="7%">Liepa</th>
+            <th class="text-right" width="7%">Rugpjūtis</th>
+            <th class="text-right" width="7%">Rugsėjis</th>
+            <th class="text-right" width="7%">Spalis</th>
+            <th class="text-right" width="7%">Lapkritis</th>
+            <th class="text-right" width="7%">Gruodis</th>
+            <th class="text-right" width="7%">Viso</th>
         </tr>
     </thead>
     <tbody>
         {% regroup items by title as grouped %}
         {% for title in grouped %}
         <tr>
-            <td>{{ title.grouper }}</td>
+            <td class="text-left">{{ title.grouper }}</td>
             {% for i in months %}{% with title.list|get_sum_by_month:i as sum %}{% cell sum %}{% endwith %}</td>{% endfor %}
             {% with total_col|get_sum_by_title:title.grouper as col_value %}
             <td>{{ col_value }}</td>{% endwith %}
@@ -31,7 +31,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <td>Viso</td>
+            <td class="text-left">Viso</td>
             {% for i in months %}{% with total_row|get_sum_by_month:i as sum %}{% cell sum %}{% endwith %}</td>{% endfor %}
             <td>{{ total }}</td>
         </tr>
