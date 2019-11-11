@@ -175,6 +175,7 @@ class Detailed(LoginRequiredMixin, TemplateView):
         year = self.request.user.profile.year
 
         context['months'] = range(1, 13)
+        context['data'] = []
 
         # Incomes
         qs = Income.objects.month_type_sum(year)
@@ -182,10 +183,13 @@ class Detailed(LoginRequiredMixin, TemplateView):
         total_col = H.sum_detailed(qs, 'title', ['sum'])
         total = sum_col(total_col, 'sum')
 
-        context['incomes'] = qs
-        context['incomes_total_row'] = total_row
-        context['incomes_total_col'] = total_col
-        context['incomes_total'] = total
+        context['data'].append({
+            'name': 'Pajamos',
+            'data': qs,
+            'total_row': total_row,
+            'total_col': total_col,
+            'total': total,
+        })
 
         # Savings
         qs = Saving.objects.month_type_sum(year)
@@ -193,20 +197,22 @@ class Detailed(LoginRequiredMixin, TemplateView):
         total_col = H.sum_detailed(qs, 'title', ['sum'])
         total = sum_col(total_col, 'sum')
 
-        context['savings'] = qs
-        context['savings_total_row'] = total_row
-        context['savings_total_col'] = total_col
-        context['savings_total'] = total
+        context['data'].append({
+            'name': 'Taupymas',
+            'data': qs,
+            'total_row': total_row,
+            'total_col': total_col,
+            'total': total,
+        })
 
         # Expenses
-        context['expenses'] = []
         for expense_type in H.expense_types():
             qs = Expense.objects.month_name_sum(year, expense_type)
             total_row = H.sum_detailed(qs, 'date', ['sum'])
             total_col = H.sum_detailed(qs, 'title', ['sum'])
             total = sum_col(total_col, 'sum')
 
-            context['expenses'].append({
+            context['data'].append({
                 'name': f'Išlaidos / {expense_type}',
                 'data': qs,
                 'total_row': total_row,
