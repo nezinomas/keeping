@@ -1,3 +1,6 @@
+from datetime import date
+from decimal import Decimal
+
 import pytest
 from mock import patch
 
@@ -29,3 +32,23 @@ def test_split_funds():
 
     assert 1 == len(actual)
     assert 'AAA LX' == actual[0]['title']
+
+
+@pytest.fixture
+def _income():
+    return [
+        {'date': date(1999, 1, 1), 'title': 'A', 'sum': Decimal(1)},
+        {'date': date(1999, 1, 1), 'title': 'A', 'sum': Decimal(4)},
+        {'date': date(1999, 6, 1), 'title': 'B', 'sum': Decimal(2)},
+    ]
+
+
+def test_sum_detailed(_income):
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': Decimal(5)},
+        {'date': date(1999, 6, 1), 'sum': Decimal(2)},
+    ]
+    actual = T.sum_detailed(_income)
+    print(f'actual:\n{actual}\n')
+    # assert 0
+    assert expect == actual

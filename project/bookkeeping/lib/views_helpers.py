@@ -44,6 +44,21 @@ def split_funds(lst: List[Dict], key: str) -> List[Dict]:
     return list(filter(lambda x: key in x['title'].lower(), lst))
 
 
+def sum_detailed(lst: List[Dict]) -> List[Dict]:
+    rtn = []
+    for r in lst:
+        m = r['date'].month - 1
+        try:
+            rtn[m]['sum'] += r['sum']
+        except:
+            r = r.copy()
+            r.pop('title')
+            rtn.insert(m, r)
+
+    return rtn
+
+
+
 def render_accounts(request, account, **kwargs):
     return render_to_string(
         'bookkeeping/includes/accounts_worth_list.html',
