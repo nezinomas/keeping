@@ -187,6 +187,17 @@ class Detailed(LoginRequiredMixin, TemplateView):
         context['incomes_total_col'] = total_col
         context['incomes_total'] = total
 
+        # Savings
+        qs = Saving.objects.month_type_sum(year)
+        total_row = H.sum_detailed(qs, 'date', ['sum'])
+        total_col = H.sum_detailed(qs, 'title', ['sum'])
+        total = sum_col(total_col, 'sum')
+
+        context['savings'] = qs
+        context['savings_total_row'] = total_row
+        context['savings_total_col'] = total_col
+        context['savings_total'] = total
+
         return context
 
 
