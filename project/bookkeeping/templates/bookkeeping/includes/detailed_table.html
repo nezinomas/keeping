@@ -15,6 +15,7 @@
             <th class="text-right" width="7.5%">Spalis</th>
             <th class="text-right" width="7.5%">Lapkritis</th>
             <th class="text-right" width="7.5%">Gruodis</th>
+            <th class="text-right" width="7.5%">Viso</th>
         </tr>
     </thead>
     <tbody>
@@ -22,14 +23,17 @@
         {% for title in grouped %}
         <tr>
             <td>{{ title.grouper }}</td>
-            {% for i in months %}{% with title.list|get_sum:i as sum %}{% cell sum %}{% endwith %}</td>{% endfor %}
+            {% for i in months %}{% with title.list|get_sum_by_month:i as sum %}{% cell sum %}{% endwith %}</td>{% endfor %}
+            {% with total_col|get_sum_by_title:title.grouper as col_value %}
+            <td>{{ col_value }}</td>{% endwith %}
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
             <td>Viso</td>
-            {% for i in months %}{% with total_row|get_sum:i as sum %}{% cell sum %}{% endwith %}</td>{% endfor %}
+            {% for i in months %}{% with total_row|get_sum_by_month:i as sum %}{% cell sum %}{% endwith %}</td>{% endfor %}
+            <td>{{ total }}</td>
         </tr>
     </tfoot>
 </table>

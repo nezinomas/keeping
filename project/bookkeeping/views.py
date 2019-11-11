@@ -170,14 +170,22 @@ class Detailed(LoginRequiredMixin, TemplateView):
     template_name = 'bookkeeping/detailed.html'
 
     def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
         year = self.request.user.profile.year
 
-        qs_incomes = Income.objects.month_type_sum(year)
-
-        context = super().get_context_data(**kwargs)
         context['months'] = range(1, 13)
-        context['incomes'] = qs_incomes
-        context['incomes_total_row'] = H.sum_rows_detailed(qs_incomes)
+
+        # Incomes
+        qs = Income.objects.month_type_sum(year)
+        total_row = H.sum_detailed(qs, 'date', ['sum'])
+        total_col = H.sum_detailed(qs, 'title', ['sum'])
+        total = sum_col(total_col, 'sum')
+
+        context['incomes'] = qs
+        context['incomes_total_row'] = total_row
+        context['incomes_total_col'] = total_col
+        context['incomes_total'] = total
 
         return context
 
