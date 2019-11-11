@@ -49,6 +49,5 @@ def test_sum_detailed(_income):
         {'date': date(1999, 6, 1), 'sum': Decimal(2)},
     ]
     actual = T.sum_detailed(_income)
-    print(f'actual:\n{actual}\n')
-    # assert 0
+
     assert expect == actual
