@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Case, Count, F, Q, Sum, When
+from django.db.models.functions import TruncMonth
 
 from ..accounts.models import Account
 from ..core.mixins.queryset_sum import SumMixin
@@ -97,15 +98,21 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .values('date', summed_name)
         )
 
-    def month_type_sum(self, year, month=None):
-        summed_name = 'sum'
-
+    def month_type_sum(self, year):
         return (
-            super()
-            .sum_by_month(
-                year=year, month=month,
-                summed_name=summed_name, groupby='saving_type')
-            .values('date', summed_name, title=F('saving_type__title'))
+            self
+            .filter(date__year=year)
+            .annotate(cnt=Count('saving_type'))
+            .values('saving_type')
+            .annotate(date=TruncMonth('date'))
+            .values('date')
+            .annotate(c=Count('id'))
+            .annotate(sum=Sum('price'))
+            .order_by('saving_type__title', 'date')
+            .values(
+                'date',
+                'sum',
+                title=F('saving_type__title'))
         )
 
     def day_saving_type(self, year, month):

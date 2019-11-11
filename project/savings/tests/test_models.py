@@ -44,25 +44,6 @@ def test_saving_month_sum(savings):
     assert expect == actual
 
 
-def test_saving_month_sum_januarty(savings):
-    expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(3.5), 'title': 'Saving1'},
-        {'date': date(1999, 1, 1), 'sum': Decimal(2.25), 'title': 'Saving2'},
-    ]
-
-    actual = list(Saving.objects.month_type_sum(1999, 1))
-
-    assert expect == actual
-
-
-def test_saving_month_sum_february(savings):
-    expect = []
-
-    actual = list(Saving.objects.month_type_sum(1999, 2))
-
-    assert expect == actual
-
-
 def test_saving_type_day_sum(savings):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(3.5), 'title': 'Saving1'},
