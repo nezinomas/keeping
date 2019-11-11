@@ -43,11 +43,22 @@ def _income():
     ]
 
 
-def test_sum_rows_detailed(_income):
+def test_sum_detailed_rows(_income):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(5)},
         {'date': date(1999, 6, 1), 'sum': Decimal(2)},
     ]
-    actual = T.sum_rows_detailed(_income)
+    actual = T.sum_detailed(_income, 'date', ['sum'])
+
+    assert expect == actual
+
+
+def test_sum_detailed_columns(_income):
+    expect = [
+        {'title': 'A', 'sum': Decimal(5)},
+        {'title': 'B', 'sum': Decimal(2)},
+    ]
+
+    actual = T.sum_detailed(_income, 'title', ['sum'])
 
     assert expect == actual

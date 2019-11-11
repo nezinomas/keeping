@@ -1,3 +1,4 @@
+from collections import Counter, defaultdict
 from typing import Dict, List
 
 from django.template.loader import render_to_string
@@ -44,18 +45,21 @@ def split_funds(lst: List[Dict], key: str) -> List[Dict]:
     return list(filter(lambda x: key in x['title'].lower(), lst))
 
 
-def sum_rows_detailed(lst: List[Dict]) -> List[Dict]:
-    rtn = []
-    for _dict in lst:
-        m = _dict['date'].month - 1
-        try:
-            rtn[m]['sum'] += _dict['sum']
-        except:
-            _dict = _dict.copy()
-            _dict.pop('title')
-            rtn.insert(m, _dict)
+def sum_detailed(dataset, group_by_key, sum_value_keys):
+    container = defaultdict(Counter)
 
-    return rtn
+    for item in dataset:
+        key = item[group_by_key]
+        values = {k: item[k] for k in sum_value_keys}
+        container[key].update(values)
+
+    new_dataset = []
+    for item in container.items():
+        new_dataset.append({group_by_key: item[0], **item[1]})
+
+    new_dataset.sort(key=lambda item: item[group_by_key])
+
+    return new_dataset
 
 
 def render_accounts(request, account, **kwargs):
