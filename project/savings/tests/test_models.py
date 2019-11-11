@@ -39,7 +39,7 @@ def test_saving_month_sum(savings):
         {'date': date(1999, 1, 1), 'sum': Decimal(2.25), 'title': 'Saving2'},
     ]
 
-    actual = list(Saving.objects.month_saving_type(1999))
+    actual = list(Saving.objects.month_type_sum(1999))
 
     assert expect == actual
 
@@ -50,7 +50,7 @@ def test_saving_month_sum_januarty(savings):
         {'date': date(1999, 1, 1), 'sum': Decimal(2.25), 'title': 'Saving2'},
     ]
 
-    actual = list(Saving.objects.month_saving_type(1999, 1))
+    actual = list(Saving.objects.month_type_sum(1999, 1))
 
     assert expect == actual
 
@@ -58,7 +58,7 @@ def test_saving_month_sum_januarty(savings):
 def test_saving_month_sum_february(savings):
     expect = []
 
-    actual = list(Saving.objects.month_saving_type(1999, 2))
+    actual = list(Saving.objects.month_type_sum(1999, 2))
 
     assert expect == actual
 
@@ -127,9 +127,9 @@ def test_savings_month_saving_query_count(django_assert_max_num_queries):
         [*Saving.objects.month_saving(1999)]
 
 
-def test_savings_month_saving_type_query_count(django_assert_max_num_queries):
+def test_savings_month_type_sum_query_count(django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        [*Saving.objects.month_saving_type(1999)]
+        [*Saving.objects.month_type_sum(1999)]
 
 
 def test_savings_day_saving_type_query_count(django_assert_max_num_queries):
