@@ -3,7 +3,8 @@
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
-            <th colspan="7" rowspan="2" class="br">{% if label %}<h1>{{ label }}</h1>{% endif %}</th>
+            <th colspan="4" rowspan="2">{% if label %}<h1>{{ label }}</h1>{% endif %}</th>
+            <th colspan="3" rowspan="2" class="br text-right">{% if percentage_from_incomes %} Nuo pajamų: {{ percentage_from_incomes|floatformat:1 }}%{% endif %}</th>
             <th colspan="4" class="text-center">Pelnas/Nuostolis</th>
         </tr>
         <tr class="top">
@@ -57,3 +58,10 @@
         </tr>
     </tfoot>
 </table>
+
+<style>
+    th > span {
+        background-color: aliceblue;
+        position: relative; top:0; right:0;
+    }
+</style>

@@ -62,6 +62,10 @@ def sum_detailed(dataset, group_by_key, sum_value_keys):
     return new_dataset
 
 
+def percentage_from_incomes(incomes, savings):
+    return (savings * 100) / incomes
+
+
 def render_accounts(request, account, **kwargs):
     return render_to_string(
         'bookkeeping/includes/accounts_worth_list.html',
