@@ -227,11 +227,12 @@ def test_month_name_sum():
     )
 
     expect = [
-        {'date': date(1999, 1, 1), 'title': 'N1', 'sum': Decimal(2)},
-        {'date': date(1999, 2, 1), 'title': 'N1', 'sum': Decimal(9)},
+        {'date': date(1999, 1, 1), 'title': 'N1', 'type_title': 'T1', 'sum': Decimal(2)},
+        {'date': date(1999, 1, 1), 'title': 'N1', 'type_title': 'T2', 'sum': Decimal(3)},
+        {'date': date(1999, 2, 1), 'title': 'N1', 'type_title': 'T1', 'sum': Decimal(9)},
     ]
 
-    actual = Expense.objects.month_name_sum(1999, 'T1')
+    actual = Expense.objects.month_name_sum(1999)
 
     assert expect == [*actual]
 

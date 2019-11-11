@@ -215,15 +215,16 @@ class Detailed(LoginRequiredMixin, TemplateView):
         })
 
         # Expenses
+        qs = [*Expense.objects.month_name_sum(year)]
         for expense_type in H.expense_types():
-            qs = Expense.objects.month_name_sum(year, expense_type)
-            total_row = H.sum_detailed(qs, 'date', ['sum'])
-            total_col = H.sum_detailed(qs, 'title', ['sum'])
+            filtered = [*filter(lambda x: expense_type in x['type_title'], qs)]
+            total_row = H.sum_detailed(filtered, 'date', ['sum'])
+            total_col = H.sum_detailed(filtered, 'title', ['sum'])
             total = sum_col(total_col, 'sum')
 
             context['data'].append({
                 'name': f'Išlaidos / {expense_type}',
-                'data': qs,
+                'data': filtered,
                 'total_row': total_row,
                 'total_col': total_col,
                 'total': total,
