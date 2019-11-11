@@ -97,6 +97,24 @@ class ExpenseQuerySet(models.QuerySet):
                 title=F('expense_type__title'))
         )
 
+    def month_name_sum(self, year, expense_type):
+        return (
+            self
+            .filter(date__year=year)
+            .filter(expense_type__title=expense_type)
+            .annotate(cnt=Count('expense_name'))
+            .values('expense_name')
+            .annotate(date=TruncMonth('date'))
+            .values('date')
+            .annotate(c=Count('id'))
+            .annotate(sum=Sum('price'))
+            .order_by('expense_name__title', 'date')
+            .values(
+                'date',
+                'sum',
+                title=F('expense_name__title'))
+        )
+
     def day_expense_type(self, year, month):
         return (
             self

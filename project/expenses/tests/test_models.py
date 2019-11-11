@@ -194,6 +194,51 @@ def test_summary(expenses):
 # ----------------------------------------------------------------------------
 #                                                             post_save signal
 # ----------------------------------------------------------------------------
+def test_month_name_sum():
+    ExpenseFactory(
+        date=date(1974, 1, 1),
+        price=1,
+        expense_type=ExpenseTypeFactory(title='T1'),
+        expense_name=ExpenseNameFactory(title='N1')
+    )
+    ExpenseFactory(
+        date=date(1999, 1, 1),
+        price=2,
+        expense_type=ExpenseTypeFactory(title='T1'),
+        expense_name=ExpenseNameFactory(title='N1')
+    )
+    ExpenseFactory(
+        date=date(1999, 1, 1),
+        price=3,
+        expense_type=ExpenseTypeFactory(title='T2'),
+        expense_name=ExpenseNameFactory(title='N1')
+    )
+    ExpenseFactory(
+        date=date(1999, 2, 1),
+        price=4,
+        expense_type=ExpenseTypeFactory(title='T1'),
+        expense_name=ExpenseNameFactory(title='N1')
+    )
+    ExpenseFactory(
+        date=date(1999, 2, 1),
+        price=5,
+        expense_type=ExpenseTypeFactory(title='T1'),
+        expense_name=ExpenseNameFactory(title='N1')
+    )
+
+    expect = [
+        {'date': date(1999, 1, 1), 'title': 'N1', 'sum': Decimal(2)},
+        {'date': date(1999, 2, 1), 'title': 'N1', 'sum': Decimal(9)},
+    ]
+
+    actual = Expense.objects.month_name_sum(1999, 'T1')
+
+    assert expect == [*actual]
+
+
+# ----------------------------------------------------------------------------
+#                                                             post_save signal
+# ----------------------------------------------------------------------------
 def test_post_save_expense_type_insert_new(mock_crequest, expenses):
     obj = ExpenseType(title='e1')
     obj.save()
