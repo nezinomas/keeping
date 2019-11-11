@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Case, Count, F, Sum, When
+from django.db.models.functions import TruncMonth
 
 from ..accounts.models import Account
 from ..core.mixins.queryset_sum import SumMixin
@@ -73,6 +74,23 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
                 title=models.F('account__title'),
                 id=models.F('account__pk')
             )
+        )
+
+    def month_type_sum(self, year):
+        return (
+            self
+            .filter(date__year=year)
+            .annotate(cnt=Count('income_type'))
+            .values('income_type')
+            .annotate(date=TruncMonth('date'))
+            .values('date')
+            .annotate(c=Count('id'))
+            .annotate(sum=Sum('price'))
+            .order_by('income_type__title', 'date')
+            .values(
+                'date',
+                'sum',
+                title=F('income_type__title'))
         )
 
 

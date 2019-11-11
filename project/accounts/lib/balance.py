@@ -88,6 +88,11 @@ class Balance(BalanceBase):
 
     def _calc_have(self, df: DF) -> DF:
         df.loc[:, 'delta'] = df['have'] - df['balance']
+
+        # nan -> 0 and convert to numeric Decimals
+        df = df.fillna(0.0)
+        df = df.apply(to_numeric)
+
         return df
 
     def _drop_columns(self, df: DF) -> DF:

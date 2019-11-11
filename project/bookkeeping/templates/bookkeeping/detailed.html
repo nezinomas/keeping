@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load detailed_table %}
+{% block head %}{% endblock head %}
+
+{% block content %}
+
+{% for e in data %}
+<div class="row mt-2">
+    <div class="col-lg-12">
+        {% detailed_table e.name e.data e.total_row e.total_col e.total %}
+    </div>
+</div>
+{% endfor %}
+{% endblock content %}

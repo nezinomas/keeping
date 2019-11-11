@@ -27,4 +27,9 @@ urlpatterns = [
         views.reload_month,
         name='reload_month'
     ),
+    path(
+        'detailed/',
+        views.Detailed.as_view(),
+        name='detailed'
+    ),
 ]

@@ -1,3 +1,4 @@
+from collections import Counter, defaultdict
 from typing import Dict, List
 
 from django.template.loader import render_to_string
@@ -42,6 +43,23 @@ def necessary_expense_types(*args: str) -> List[str]:
 
 def split_funds(lst: List[Dict], key: str) -> List[Dict]:
     return list(filter(lambda x: key in x['title'].lower(), lst))
+
+
+def sum_detailed(dataset, group_by_key, sum_value_keys):
+    container = defaultdict(Counter)
+
+    for item in dataset:
+        key = item[group_by_key]
+        values = {k: item[k] for k in sum_value_keys}
+        container[key].update(values)
+
+    new_dataset = []
+    for item in container.items():
+        new_dataset.append({group_by_key: item[0], **item[1]})
+
+    new_dataset.sort(key=lambda item: item[group_by_key])
+
+    return new_dataset
 
 
 def render_accounts(request, account, **kwargs):

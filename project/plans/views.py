@@ -1,4 +1,8 @@
-from django.shortcuts import render
+from types import SimpleNamespace
+
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import render, reverse
 from django.template.loader import render_to_string
 
 from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
@@ -115,3 +119,32 @@ class NecessaryNew(CreateAjaxMixin):
 class NecessaryUpdate(UpdateAjaxMixin):
     model = models.NecessaryPlan
     form_class = forms.NecessaryPlanForm
+
+
+# ----------------------------------------------------------------------------
+#                                                                   Copy Plans
+# ----------------------------------------------------------------------------
+@login_required
+def copy_plans(request):
+    data = {}
+    form = forms.CopyPlanForm(data=(request.POST or None))
+    if request.method == 'POST':
+        if form.is_valid():
+            data['form_is_valid'] = True
+            form.save()
+        else:
+            data['form_is_valid'] = False
+
+    context = {
+        'form': form,
+        'action': 'insert',
+        'url': reverse('plans:copy_plans'),
+    }
+
+    data['html_form'] = render_to_string(
+        template_name='plans/includes/copy_plans_form.html',
+        context=context,
+        request=request
+    )
+
+    return JsonResponse(data)

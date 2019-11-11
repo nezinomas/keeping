@@ -1,5 +1,7 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.template.loader import render_to_string
+from django.views.generic import TemplateView
 
 from ..accounts.models import Account, AccountBalance
 from ..core.lib.date import year_month_list
@@ -160,6 +162,63 @@ class Month(IndexMixin):
 
         context['buttons'] = year_month_list()
         context = _month_context(self.request, context)
+
+        return context
+
+
+class Detailed(LoginRequiredMixin, TemplateView):
+    template_name = 'bookkeeping/detailed.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        year = self.request.user.profile.year
+
+        context['months'] = range(1, 13)
+        context['data'] = []
+
+        # Incomes
+        qs = Income.objects.month_type_sum(year)
+        total_row = H.sum_detailed(qs, 'date', ['sum'])
+        total_col = H.sum_detailed(qs, 'title', ['sum'])
+        total = sum_col(total_col, 'sum')
+
+        context['data'].append({
+            'name': 'Pajamos',
+            'data': qs,
+            'total_row': total_row,
+            'total_col': total_col,
+            'total': total,
+        })
+
+        # Savings
+        qs = Saving.objects.month_type_sum(year)
+        total_row = H.sum_detailed(qs, 'date', ['sum'])
+        total_col = H.sum_detailed(qs, 'title', ['sum'])
+        total = sum_col(total_col, 'sum')
+
+        context['data'].append({
+            'name': 'Taupymas',
+            'data': qs,
+            'total_row': total_row,
+            'total_col': total_col,
+            'total': total,
+        })
+
+        # Expenses
+        for expense_type in H.expense_types():
+            qs = Expense.objects.month_name_sum(year, expense_type)
+            total_row = H.sum_detailed(qs, 'date', ['sum'])
+            total_col = H.sum_detailed(qs, 'title', ['sum'])
+            total = sum_col(total_col, 'sum')
+
+            context['data'].append({
+                'name': f'Išlaidos / {expense_type}',
+                'data': qs,
+                'total_row': total_row,
+                'total_col': total_col,
+                'total': total,
+            })
 
         return context
 

@@ -201,3 +201,42 @@ def test_post_save_income_type_insert_new(mock_crequest, incomes):
     actual = AccountBalance.objects.items()
 
     assert 2 == actual.count()
+
+
+# ----------------------------------------------------------------------------
+#                                                   months sums by income type
+# ----------------------------------------------------------------------------
+def test_income_month_type_sum():
+    IncomeFactory(
+        price=4,
+        date=date(1999, 1, 2),
+        income_type=IncomeTypeFactory(title='I-2')
+    )
+    IncomeFactory(
+        price=3,
+        date=date(1999, 1, 1),
+        income_type=IncomeTypeFactory(title='I-2')
+    )
+    IncomeFactory(
+        price=1,
+        date=date(1974, 1, 1),
+        income_type=IncomeTypeFactory(title='I-1')
+    )
+    IncomeFactory(
+        price=2,
+        date=date(1999, 1, 2),
+        income_type=IncomeTypeFactory(title='I-1')
+    )
+    IncomeFactory(
+        price=1,
+        date=date(1999, 1, 1),
+        income_type=IncomeTypeFactory(title='I-1')
+    )
+
+    expect = [
+        {'date': date(1999, 1, 1), 'title': 'I-1', 'sum': Decimal(3)},
+        {'date': date(1999, 1, 1), 'title': 'I-2', 'sum': Decimal(7)},
+    ]
+    actual = Income.objects.month_type_sum(1999)
+
+    assert expect == [*actual]

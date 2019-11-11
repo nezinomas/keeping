@@ -8,8 +8,11 @@
         }
     });
     Highcharts.chart('container-for-balance', {
+        chart: {
+            marginBottom: 67,
+        },
         title: {
-            text: ''
+            text: '',
         },
         legend: {
             layout: 'horizontal',
@@ -21,6 +24,10 @@
         xAxis: {
             min: 0.4,
             max: 10.8,
+            lineColor: '#000',
+            lineWidth: 2,
+            gridLineWidth: 1,
+            tickmarkPlacement: 'on',
             categories: [
                 'Sausis',
                 'Vasaris',
@@ -34,7 +41,14 @@
                 'Spalis',
                 'Lapkritis',
                 'Gruodis'
-            ]
+            ],
+            labels: {
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+                rotation: -45,
+            }
         },
         yAxis: {
             labels: {
@@ -42,10 +56,14 @@
                     if (this.value >= 100) return Highcharts.numberFormat(this.value / 1000, 1) + "k";
                     return Highcharts.numberFormat(this.value, 0);
                 },
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                },
             },
             title: {
-                text: 'Suma, €'
-            }
+                text: ''
+            },
         },
         tooltip: {
             shared: true,
