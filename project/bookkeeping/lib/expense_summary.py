@@ -1,4 +1,3 @@
-from datetime import datetime
 from operator import itemgetter
 from typing import Dict, List
 
@@ -175,8 +174,6 @@ class MonthExpense(BalanceBase, ExpenseBase):
 
     @property
     def total_column(self) -> Dict[str, float]:
-        val = {}
-
         df = self._balance.copy()
         df = df.reset_index()
         df = df.rename(columns={'total': 'sum'})
