@@ -150,7 +150,6 @@ class MonthHelper():
 
         plan_incomes = get_val(self._day_plans.incomes, self.month)
         plan_day_sum = get_val(self._day_plans.day_input, self.month)
-        plan_free_sum = get_val(self._day_plans.expenses_free, self.month)
         plan_remains = get_val(self._day_plans.remains, self.month)
 
         context = {
@@ -206,9 +205,6 @@ class IndexHelper():
             expenses=self._MonthExpense.total_column,
             savings_close=qs_savings_close,
             amount_start=sum_col(self._account, 'past'))
-
-        wealth_money = self._YearBalance.amount_end + sum_col(self._fund, 'market_value')
-        wealth = wealth_money + sum_col(self._pension, 'market_value')
 
     def render_year_balance(self):
         context = {
