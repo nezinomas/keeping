@@ -45,6 +45,7 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = SavingType
     model = SavingWorth
     form_class = SavingWorthForm
+    list_template_name = 'bookkeeping/includes/worth_table.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -52,8 +53,9 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
 
         _fund = SavingBalance.objects.items(year)
 
-        context['fund'] = _fund
-        context['fund_total_row'] = sum_all(_fund)
+        context['title'] = 'Fondai'
+        context['items'] = _fund
+        context['total_row'] = sum_all(_fund)
 
         return context
 
@@ -79,6 +81,7 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = PensionType
     model = PensionWorth
     form_class = PensionWorthForm
+    list_template_name = 'bookkeeping/includes/worth_table.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -86,8 +89,9 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
 
         _pension = PensionBalance.objects.items(year)
 
-        context['pension'] = _pension
-        context['pension_total_row'] = sum_all(_pension)
+        context['title'] = 'Pensija'
+        context['items'] = _pension
+        context['total_row'] = sum_all(_pension)
 
         return context
 

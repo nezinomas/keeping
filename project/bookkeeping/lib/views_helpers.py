@@ -287,8 +287,9 @@ class IndexHelper():
 
     def render_savings(self):
         context = {
-            'fund': self._fund,
-            'fund_total_row': sum_all(self._fund),
+            'title': 'Fondai',
+            'items': self._fund,
+            'total_row': sum_all(self._fund),
             'percentage_from_incomes': (
                 percentage_from_incomes(
                     incomes=self._YearBalance.total_row.get('incomes'),
@@ -297,19 +298,20 @@ class IndexHelper():
         }
 
         return render_to_string(
-            'bookkeeping/includes/savings_worth_list.html',
+            'bookkeeping/includes/worth_table.html',
             context,
             self.request
         )
 
     def render_pensions(self):
         context = {
-            'pension': self._pension,
-            'pension_total_row': sum_all(self._pension),
+            'title': 'Pensija',
+            'items': self._pension,
+            'total_row': sum_all(self._pension),
         }
 
         return render_to_string(
-            'bookkeeping/includes/pensions_worth_list.html',
+            'bookkeeping/includes/worth_table.html',
             context,
             self.request
         )
