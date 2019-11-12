@@ -326,11 +326,18 @@ def test_view_reload_month_func():
 
 
 @pytest.mark.django_db
-def test_view_reload_month_render(rf):
-    request = rf.get('/month/reload/?ajax_trigger=1')
-    request.user = UserFactory.build()
+def test_view_reload_month_render(login, client):
+    url = reverse('bookkeeping:reload_month')
+    response = client.get(url, follow=True)
 
-    response = views.reload_month(request)
+    assert response.status_code == 200
+    assert views.Month == response.resolver_match.func.view_class
+
+
+@pytest.mark.django_db
+def test_view_reload_month_render_ajax_trigger(login, client):
+    url = reverse('bookkeeping:reload_month')
+    response = client.get(url, {'ajax_trigger': 1})
 
     assert response.status_code == 200
 
