@@ -1,0 +1,17 @@
+{% load table_cell %}
+<table class="table table-striped table-hover table-sm stats">
+    <thead>
+        <tr class="top">
+            <th class="text-right">Metų pradžioje</th>
+            <th class="text-right">Metų pabaigoje</th>
+            <th class="text-right">Metų balansas</th>
+        </tr>
+    </thead>
+    <tfoot>
+        <tr>
+            {% cell amount_start tag='th' %}
+            {% cell months_amount_end tag='th' %}
+            {% cell amount_balance tag='th' highlight_value=True %}
+        </tr>
+    </tfoot>
+</table>
