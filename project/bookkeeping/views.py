@@ -1,5 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render
+from django.shortcuts import redirect, render, reverse
 from django.views.generic import TemplateView
 
 from ..accounts.models import Account, AccountBalance
@@ -147,6 +147,18 @@ class Detailed(LoginRequiredMixin, TemplateView):
             _gen_data(filtered, f'Išlaidos / {expense_type}')
 
         return context
+
+
+def reload_index(request):
+    template = 'bookkeeping/includes/reload_index.html'
+    ajax_trigger = request.GET.get('ajax_trigger')
+
+    if ajax_trigger:
+        context = {}
+
+        return render(request, template, context)
+    else:
+        return redirect(reverse('bookkeeping:index'))
 
 
 def reload_month(request):

@@ -337,6 +337,34 @@ def test_view_reload_month_render(rf):
 
 #
 # ----------------------------------------------------------------------------
+#                                                                 Realod Index
+# ----------------------------------------------------------------------------
+#
+def test_view_reload_index_func():
+    view = resolve('/bookkeeping/reload/')
+
+    assert views.reload_index == view.func
+
+
+@pytest.mark.django_db
+def test_view_reload_index_render(login, client):
+    url = reverse('bookkeeping:reload_index')
+    response = client.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert views.Index == response.resolver_match.func.view_class
+
+
+@pytest.mark.django_db
+def test_view_reload_index_render_ajax_trigger(login, client):
+    url = reverse('bookkeeping:reload_index')
+    response = client.get(url, {'ajax_trigger': 1})
+
+    assert response.status_code == 200
+
+
+#
+# ----------------------------------------------------------------------------
 #                                                                     Detailed
 # ----------------------------------------------------------------------------
 #
@@ -372,3 +400,6 @@ def test_view_detailed_rendered_expenses(login, client, expenses):
 
     assert "Expense Name" in content
     assert "Išlaidos / Expense Type" in content
+
+
+

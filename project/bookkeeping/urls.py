@@ -23,6 +23,11 @@ urlpatterns = [
         name='pensions_worth_new'
     ),
     path(
+        'bookkeeping/reload/',
+        views.reload_index,
+        name='reload_index'
+    ),
+    path(
         'month/reload/',
         views.reload_month,
         name='reload_month'
