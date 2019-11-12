@@ -9,9 +9,7 @@
 {% block content %}
 
 <div class="row my-2 border-bottom border-primary">
-    <div class="col-lg-4 pr-3">
-        {% include 'bookkeeping/includes/months_balance.html' %}
-    </div>
+    <div class="col-lg-4 pr-3">{{ year_balance }}</div>
 
     <div class="col-lg-8 pl-3">
         {% include 'bookkeeping/includes/months_expense_type.html' %}

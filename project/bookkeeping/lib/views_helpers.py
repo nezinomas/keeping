@@ -211,6 +211,21 @@ class IndexHelper():
         wealth_money = self._YearBalance.amount_end + sum_col(self._fund, 'market_value')
         wealth = wealth_money + sum_col(self._pension, 'market_value')
 
+    def render_year_balance(self):
+        context = {
+            'year': self.year,
+            'data': self._YearBalance.balance,
+            'total_row': self._YearBalance.total_row,
+            'avg_row': self._YearBalance.average,
+            'accounts_amount_end': sum_col(self._account, 'balance'),
+            'months_amount_end': self._YearBalance.amount_end,
+        }
+        return render_to_string(
+            'bookkeeping/includes/year_balance.html',
+            context,
+            self.request
+        )
+
     def render_accounts(self):
         context = {
             'accounts': self._account,
