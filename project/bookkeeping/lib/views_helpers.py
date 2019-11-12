@@ -247,6 +247,19 @@ class IndexHelper():
             self.request
         )
 
+    def render_chart_balance(self):
+        context = {
+            'e': self._YearBalance.expense_data,
+            'i': self._YearBalance.income_data,
+            's': self._YearBalance.save_data,
+        }
+
+        return render_to_string(
+            'bookkeeping/includes/chart_balance.html',
+            context,
+            self.request
+        )
+
     def render_year_expenses(self):
         _expense_types = expense_types('Taupymas')
 
