@@ -45,24 +45,10 @@
 
     <div class="col-md-2">
         <!-- Average Incomes -->
-        <table class="table table-striped table-hover table-sm stats">
-            <thead>
-                <tr class="top"><th class="text-right">Vidutinė pajamos</th></tr>
-            </thead>
-            <tfoot>
-                <tr>{% cell avg_incomes tag='th' %}</tr>
-            </tfoot>
-        </table>
+        <div id="avg_incomes">{{ avg_incomes }}</div>
 
         <!-- Average Expenses -->
-        <table class="table table-striped table-hover table-sm stats">
-            <thead>
-                <tr class="top"><th class="text-right">Vidutinė išlaidos</th></tr>
-            </thead>
-            <tfoot>
-                <tr>{% cell avg_expenses tag='th' %}</tr>
-            </tfoot>
-        </table>
+        <div id="avg_expenses">{{ avg_expenses }}</div>
 
         <!-- Money -->
         <div id="money">{{ money }}</div>

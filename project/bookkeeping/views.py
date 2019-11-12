@@ -72,6 +72,8 @@ class Index(IndexMixin):
         context['expenses_average'] = _MonthExpense.average
         context['no_incomes'] = obj.render_no_incomes()
 
+        context['avg_incomes'] = obj.render_avg_incomes()
+        context['avg_expenses'] = obj.render_avg_expenses()
         context['money'] = obj.render_money()
         context['wealth'] = obj.render_wealth()
 

@@ -373,23 +373,15 @@ class IndexHelper():
         )
 
     def render_avg_incomes(self):
-        context = {
-
-        }
-
         return render_to_string(
             'bookkeeping/includes/avg_incomes.html',
-            context,
+            {'data': self._YearBalance.avg_incomes},
             self.request
         )
 
     def render_avg_expenses(self):
-        context = {
-
-        }
-
         return render_to_string(
             'bookkeeping/includes/avg_expenses.html',
-            context,
+            {'data': self._YearBalance.avg_expenses},
             self.request
         )
