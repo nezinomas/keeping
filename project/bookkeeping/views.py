@@ -142,9 +142,9 @@ class Detailed(LoginRequiredMixin, TemplateView):
 
         # Expenses
         qs = [*Expense.objects.month_name_sum(year)]
-        for expense_type in H.expense_types():
-            filtered = [*filter(lambda x: expense_type in x['type_title'], qs)]
-            _gen_data(filtered, f'Išlaidos / {expense_type}')
+        for i in H.expense_types():
+            filtered = filter(lambda x: i in x['type_title'], qs)
+            _gen_data([*filtered], f'Išlaidos / {i}')
 
         return context
 
