@@ -74,9 +74,9 @@ def percentage_from_incomes(incomes, savings):
 
 class MonthHelper():
     def __init__(self, request, year, month):
-        self.request = request
-        self.year = year
-        self.month = month
+        self._request = request
+        self._year = year
+        self._month = month
 
         qs_expenses = Expense.objects.day_expense_type(year, month)
         qs_savings = Saving.objects.day_saving(year, month)
@@ -100,13 +100,13 @@ class MonthHelper():
             plan_free_sum=get_val(self._day_plans.expenses_free, month),
         )
 
-        self.expenses_types = expense_types('Taupymas')
-        self.current_day = current_day(year, month)
+        self._expenses_types = expense_types('Taupymas')
+        self._current_day = current_day(year, month)
 
     def render_chart_targets(self):
-        targets = self._day_plans.targets(self.month, 'Taupymas')
+        targets = self._day_plans.targets(self._month, 'Taupymas')
         (categories, data_target, data_fact) = self._day.chart_targets(
-            self.expenses_types, targets)
+            self._expenses_types, targets)
 
         context = {
             'chart_targets_categories': categories,
@@ -117,40 +117,40 @@ class MonthHelper():
         return render_to_string(
             template_name='bookkeeping/includes/chart_month_targets.html',
             context=context,
-            request=self.request
+            request=self._request
         )
 
     def render_chart_expenses(self):
         context = {
-            'expenses': self._day.chart_expenses(self.expenses_types)
+            'expenses': self._day.chart_expenses(self._expenses_types)
         }
 
         return render_to_string(
             template_name='bookkeeping/includes/chart_month_expenses.html',
             context=context,
-            request=self.request
+            request=self._request
         )
 
     def render_spending(self):
         context = {
             'spending_table': self._spending.spending,
-            'day': self.current_day,
+            'day': self._current_day,
         }
 
         return render_to_string(
             template_name='bookkeeping/includes/spending.html',
             context=context,
-            request=self.request
+            request=self._request
         )
 
     def render_info(self):
-        fact_incomes = Income.objects.income_sum(self.year, self.month)
+        fact_incomes = Income.objects.income_sum(self._year, self._month)
         fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
         fact_expenses = self._day.total
 
-        plan_incomes = get_val(self._day_plans.incomes, self.month)
-        plan_day_sum = get_val(self._day_plans.day_input, self.month)
-        plan_remains = get_val(self._day_plans.remains, self.month)
+        plan_incomes = get_val(self._day_plans.incomes, self._month)
+        plan_day_sum = get_val(self._day_plans.day_input, self._month)
+        plan_remains = get_val(self._day_plans.remains, self._month)
 
         context = {
             'plan_per_day': plan_day_sum,
@@ -164,28 +164,28 @@ class MonthHelper():
         return render_to_string(
             template_name='bookkeeping/includes/spending_info.html',
             context=context,
-            request=self.request
+            request=self._request
         )
 
     def render_month_table(self):
         context = {
             'expenses': self._day.balance,
             'total_row': self._day.total_row,
-            'expense_types': self.expenses_types,
-            'day': self.current_day,
+            'expense_types': self._expenses_types,
+            'day': self._current_day,
         }
 
         return render_to_string(
             template_name='bookkeeping/includes/month_table.html',
             context=context,
-            request=self.request
+            request=self._request
         )
 
 
 class IndexHelper():
     def __init__(self, request, year):
-        self.request = request
-        self.year = year
+        self._request = request
+        self._year = year
 
         self._account = [*AccountBalance.objects.items(year)]
         self._fund = [*SavingBalance.objects.items(year)]
@@ -208,7 +208,7 @@ class IndexHelper():
 
     def render_year_balance(self):
         context = {
-            'year': self.year,
+            'year': self._year,
             'data': self._YearBalance.balance,
             'total_row': self._YearBalance.total_row,
             'avg_row': self._YearBalance.average,
@@ -218,7 +218,7 @@ class IndexHelper():
         return render_to_string(
             'bookkeeping/includes/year_balance.html',
             context,
-            self.request
+            self._request
         )
 
     def render_year_balance_short(self):
@@ -230,7 +230,7 @@ class IndexHelper():
         return render_to_string(
             'bookkeeping/includes/year_balance_short.html',
             context,
-            self.request
+            self._request
         )
 
     def render_chart_expenses(self):
@@ -240,7 +240,7 @@ class IndexHelper():
         return render_to_string(
             'bookkeeping/includes/chart_expenses.html',
             context,
-            self.request
+            self._request
         )
 
     def render_chart_balance(self):
@@ -253,14 +253,14 @@ class IndexHelper():
         return render_to_string(
             'bookkeeping/includes/chart_balance.html',
             context,
-            self.request
+            self._request
         )
 
     def render_year_expenses(self):
         _expense_types = expense_types('Taupymas')
 
         context = {
-            'year': self.year,
+            'year': self._year,
             'data': self._MonthExpense.balance,
             'categories': _expense_types,
             'total_row': self._MonthExpense.total_row,
@@ -269,7 +269,7 @@ class IndexHelper():
         return render_to_string(
             'bookkeeping/includes/year_expenses.html',
             context,
-            self.request
+            self._request
         )
 
     def render_accounts(self):
@@ -282,7 +282,7 @@ class IndexHelper():
         return render_to_string(
             'bookkeeping/includes/accounts_worth_list.html',
             context,
-            self.request
+            self._request
         )
 
     def render_savings(self):
@@ -300,7 +300,7 @@ class IndexHelper():
         return render_to_string(
             'bookkeeping/includes/worth_table.html',
             context,
-            self.request
+            self._request
         )
 
     def render_pensions(self):
@@ -313,7 +313,7 @@ class IndexHelper():
         return render_to_string(
             'bookkeeping/includes/worth_table.html',
             context,
-            self.request
+            self._request
         )
 
     def render_no_incomes(self):
@@ -342,7 +342,7 @@ class IndexHelper():
         return render_to_string(
             'bookkeeping/includes/no_incomes.html',
             context,
-            self.request
+            self._request
         )
 
     def render_money(self):
@@ -387,5 +387,5 @@ class IndexHelper():
         return render_to_string(
             'bookkeeping/includes/info_table.html',
             context,
-            self.request
+            self._request
         )
