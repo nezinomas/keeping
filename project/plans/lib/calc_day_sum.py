@@ -1,4 +1,3 @@
-import calendar
 from collections import namedtuple
 from decimal import Decimal
 from typing import Dict, List

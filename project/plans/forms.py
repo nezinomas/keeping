@@ -1,4 +1,3 @@
-import calendar
 from datetime import datetime
 
 from bootstrap_datepicker_plus import YearPickerInput

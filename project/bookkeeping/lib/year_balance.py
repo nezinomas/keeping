@@ -1,4 +1,3 @@
-from datetime import date
 from typing import Dict, List
 
 from pandas import DataFrame as DF
@@ -56,7 +55,6 @@ class YearBalance(BalanceBase):
 
     @property
     def amount_end(self) -> float:
-        val = 0.0
         t = super().total_row
 
         return self._amount_start + t.get('balance', 0.0)
