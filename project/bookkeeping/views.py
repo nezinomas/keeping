@@ -4,7 +4,6 @@ from django.views.generic import TemplateView
 
 from ..accounts.models import Account, AccountBalance
 from ..core.lib.date import year_month_list
-from ..core.lib.summary import collect_summary_data
 from ..core.lib.utils import sum_all, sum_col
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin
@@ -67,10 +66,6 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         year = self.request.user.profile.year
-
-        qsa = Account.objects.items().values('id', 'title')
-        typesa = {x['title']: x['id'] for x in qsa}
-        acc = collect_summary_data(year, typesa, 'accounts')
 
         _account = AccountBalance.objects.items(year)
 
