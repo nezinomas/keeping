@@ -18,7 +18,6 @@ from ..transactions.models import SavingClose
 from .forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
 from .lib import views_helpers as H
 from .lib.expense_summary import MonthExpense
-from .lib.no_incomes import NoIncomes
 from .lib.year_balance import YearBalance
 from .models import AccountWorth, PensionWorth, SavingWorth
 
@@ -52,21 +51,6 @@ class Index(IndexMixin):
         wealth_money = _YearBalance.amount_end + sum_col(_fund, 'market_value')
         wealth = wealth_money + sum_col(_pension, 'market_value')
 
-        _NoIncomes = NoIncomes(
-            money=_YearBalance.amount_end,
-            fund=sum_col(H.split_funds(_fund, 'lx'), 'market_value'),
-            pension=sum_col(H.split_funds(_fund, 'invl'), 'market_value'),
-            avg_expenses=_YearBalance.avg_expenses,
-            avg_type_expenses=_MonthExpense.average,
-            not_use=[
-                'Darbas',
-                'Laisvalaikis',
-                'Paskolos',
-                'Taupymas',
-                'Transportas',
-            ]
-        )
-
         context['year'] = year
         context['accounts'] = H.render_accounts(
             self.request, _account,
@@ -94,10 +78,14 @@ class Index(IndexMixin):
         context['expense_types'] = _expense_types
         context['expenses_total_row'] = _MonthExpense.total_row
         context['expenses_average'] = _MonthExpense.average
-        context['no_incomes'] = _NoIncomes.summary
-        context['save_sum'] = _NoIncomes.save_sum
         context['wealth_money'] = wealth_money
         context['wealth'] = wealth
+        context['no_incomes'] = (
+            H.render_no_incomes(request=self.request,
+                                money=_YearBalance.amount_end,
+                                avg_expenses=_YearBalance.avg_expenses,
+                                avg_type_expenses=_MonthExpense.average,
+                                funds=_fund))
 
         # charts data
         context['pie'] = _MonthExpense.chart_data

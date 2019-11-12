@@ -12,6 +12,7 @@ from ...plans.lib.calc_day_sum import CalcDaySum
 from ...savings.models import Saving
 from ..lib.day_spending import DaySpending
 from ..lib.expense_summary import DayExpense
+from ..lib.no_incomes import NoIncomes
 
 
 def expense_types(*args: str) -> List[str]:
@@ -98,6 +99,37 @@ def render_pensions(request, pension, **kwargs):
             'pension': pension, 'pension_total_row': sum_all(pension),
             **kwargs
         },
+        request
+    )
+
+
+def render_no_incomes(request,
+                      money: float,
+                      avg_expenses: float,
+                      avg_type_expenses: Dict[str, float],
+                      funds: List[Dict]):
+    _NoIncomes = NoIncomes(
+        money=money,
+        fund=sum_col(split_funds(funds, 'lx'), 'market_value'),
+        pension=sum_col(split_funds(funds, 'invl'), 'market_value'),
+        avg_expenses=avg_expenses,
+        avg_type_expenses=avg_type_expenses,
+        not_use=[
+            'Darbas',
+            'Laisvalaikis',
+            'Paskolos',
+            'Taupymas',
+            'Transportas',
+        ]
+    )
+    context = {
+        'no_incomes': _NoIncomes.summary,
+        'save_sum': _NoIncomes.save_sum,
+    }
+
+    return render_to_string(
+        'bookkeeping/includes/no_incomes.html',
+        context,
         request
     )
 
