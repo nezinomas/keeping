@@ -56,7 +56,7 @@ class Index(IndexMixin):
         context['year'] = year
         context['accounts'] = obj.render_accounts()
         context['savings'] = obj.render_savings()
-        context['pensions'] = H.render_pensions(self.request, _pension)
+        context['pensions'] = obj.render_pensions()
         context['balance'] = _YearBalance.balance
         context['balance_total_row'] = _YearBalance.total_row
         context['balance_avg'] = _YearBalance.average

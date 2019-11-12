@@ -72,17 +72,6 @@ def percentage_from_incomes(incomes, savings):
         return (savings * 100) / incomes
 
 
-def render_pensions(request, pension, **kwargs):
-    return render_to_string(
-        'bookkeeping/includes/pensions_worth_list.html',
-        {
-            'pension': pension, 'pension_total_row': sum_all(pension),
-            **kwargs
-        },
-        request
-    )
-
-
 class MonthHelper():
     def __init__(self, request, year, month):
         self.request = request
@@ -248,6 +237,18 @@ class IndexHelper():
 
         return render_to_string(
             'bookkeeping/includes/savings_worth_list.html',
+            context,
+            self.request
+        )
+
+    def render_pensions(self):
+        context = {
+            'pension': self._pension,
+            'pension_total_row': sum_all(self._pension),
+        }
+
+        return render_to_string(
+            'bookkeeping/includes/pensions_worth_list.html',
             context,
             self.request
         )
