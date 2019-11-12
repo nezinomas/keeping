@@ -3,16 +3,20 @@ from typing import Dict, List
 
 from django.template.loader import render_to_string
 
+from ...accounts.models import AccountBalance
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...core.lib.utils import sum_all, sum_col
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
+from ...pensions.models import PensionBalance
 from ...plans.lib.calc_day_sum import CalcDaySum
-from ...savings.models import Saving
+from ...savings.models import Saving, SavingBalance
+from ...transactions.models import SavingClose
 from ..lib.day_spending import DaySpending
-from ..lib.expense_summary import DayExpense
+from ..lib.expense_summary import DayExpense, MonthExpense
 from ..lib.no_incomes import NoIncomes
+from ..lib.year_balance import YearBalance
 
 
 def expense_types(*args: str) -> List[str]:
@@ -242,4 +246,62 @@ class MonthHelper():
             template_name='bookkeeping/includes/month_table.html',
             context=context,
             request=self.request
+        )
+
+
+class IndexHelper():
+    def __init__(self, request, year):
+        self.request = request
+        self.year = year
+
+        self._account = [*AccountBalance.objects.items(year)]
+        self._fund = [*SavingBalance.objects.items(year)]
+        self._pension = [*PensionBalance.objects.items(year)]
+        self._expense_types = expense_types('Taupymas')
+
+        qs_income = Income.objects.income_sum(year)
+        qs_savings = Saving.objects.month_saving(year)
+        qs_savings_close = SavingClose.objects.month_sum(year)
+        qs_ExpenseType = Expense.objects.month_expense_type(year)
+
+        self._MonthExpense = MonthExpense(
+            year, qs_ExpenseType, **{'Taupymas': qs_savings})
+
+        self._YearBalance = YearBalance(
+            year=year,
+            incomes=qs_income,
+            expenses=self._MonthExpense.total_column,
+            savings_close=qs_savings_close,
+            amount_start=sum_col(self._account, 'past'))
+
+        wealth_money = self._YearBalance.amount_end + sum_col(self._fund, 'market_value')
+        wealth = wealth_money + sum_col(self._pension, 'market_value')
+
+    def render_no_incomes(self):
+        fund = split_funds(self._fund, 'lx')
+        pension = split_funds(self._fund, 'invl')
+
+        obj = NoIncomes(
+            money=self._YearBalance.amount_end,
+            fund=sum_col(fund, 'market_value'),
+            pension=sum_col(pension, 'market_value'),
+            avg_expenses=self._YearBalance.avg_expenses,
+            avg_type_expenses=self._MonthExpense.average,
+            not_use=[
+                'Darbas',
+                'Laisvalaikis',
+                'Paskolos',
+                'Taupymas',
+                'Transportas',
+            ]
+        )
+        context = {
+            'no_incomes': obj.summary,
+            'save_sum': obj.save_sum,
+        }
+
+        return render_to_string(
+            'bookkeeping/includes/no_incomes.html',
+            context,
+            self.request
         )
