@@ -4,8 +4,6 @@ import pytest
 from django.urls import resolve, reverse
 
 from ...accounts.factories import AccountFactory
-from ...core.factories import UserFactory
-from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...core.tests.utils import setup_view
 from ...pensions.factories import PensionFactory, PensionTypeFactory
 from ...savings.factories import SavingTypeFactory
@@ -407,6 +405,3 @@ def test_view_detailed_rendered_expenses(login, client, expenses):
 
     assert "Expense Name" in content
     assert "Išlaidos / Expense Type" in content
-
-
-
