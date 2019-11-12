@@ -156,8 +156,8 @@ def reload_index(request):
     if ajax_trigger:
         context = {}
         return render(request, template, context)
-    else:
-        return redirect(reverse('bookkeeping:index'))
+
+    return redirect(reverse('bookkeeping:index'))
 
 
 def reload_month(request):
@@ -167,8 +167,8 @@ def reload_month(request):
     if ajax_trigger:
         context = _month_context(request, {})
         return render(request, template, context)
-    else:
-        return redirect(reverse('bookkeeping:month'))
+
+    return redirect(reverse('bookkeeping:month'))
 
 
 def _month_context(request, context):
