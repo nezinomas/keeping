@@ -51,12 +51,10 @@ class Index(IndexMixin):
         wealth_money = _YearBalance.amount_end + sum_col(_fund, 'market_value')
         wealth = wealth_money + sum_col(_pension, 'market_value')
 
-
         obj = H.IndexHelper(self.request, year)
+
         context['year'] = year
-        context['accounts'] = H.render_accounts(
-            self.request, _account,
-            **{'months_amount_end': _YearBalance.amount_end})
+        context['accounts'] = obj.render_accounts()
         context['savings'] = H.render_savings(
             self.request,
             _fund,

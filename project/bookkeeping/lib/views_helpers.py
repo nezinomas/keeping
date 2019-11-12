@@ -72,19 +72,6 @@ def percentage_from_incomes(incomes, savings):
         return (savings * 100) / incomes
 
 
-def render_accounts(request, account, **kwargs):
-    return render_to_string(
-        'bookkeeping/includes/accounts_worth_list.html',
-        {
-            'accounts': account,
-            'total_row': sum_all(account),
-            'accounts_amount_end': sum_col(account, 'balance'),
-            **kwargs
-        },
-        request
-    )
-
-
 def render_savings(request, fund, **kwargs):
     return render_to_string(
         'bookkeeping/includes/savings_worth_list.html',
@@ -276,6 +263,19 @@ class IndexHelper():
 
         wealth_money = self._YearBalance.amount_end + sum_col(self._fund, 'market_value')
         wealth = wealth_money + sum_col(self._pension, 'market_value')
+
+    def render_accounts(self):
+        context = {
+            'accounts': self._account,
+            'total_row': sum_all(self._account),
+            'accounts_amount_end': sum_col(self._account, 'balance'),
+            'months_amount_end': self._YearBalance.amount_end,
+        }
+        return render_to_string(
+            'bookkeeping/includes/accounts_worth_list.html',
+            context,
+            self.request
+        )
 
     def render_no_incomes(self):
         fund = split_funds(self._fund, 'lx')
