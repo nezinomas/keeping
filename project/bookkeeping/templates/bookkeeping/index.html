@@ -67,8 +67,29 @@
     <div id="pension_worth" class="col-lg-8">{{ pensions }}</div>
 </div>
 
-
 {% include 'modal.html' %}
 
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'bookkeeping:reload_index' %}`;
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1'
+            },
+            success: function (data) {
+                var no_incomes = $(data).filter('#no_incomes');
+                $('#no_incomes').html(no_incomes);
+
+                var money = $(data).filter('#money');
+                $('#money').html(money);
+
+                var wealth = $(data).filter('#wealth');
+                $('#wealth').html(wealth);
+            }
+        });
+    });
+</script>
 {% endblock content %}
 

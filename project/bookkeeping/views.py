@@ -154,7 +154,14 @@ def reload_index(request):
     ajax_trigger = request.GET.get('ajax_trigger')
 
     if ajax_trigger:
-        context = {}
+        year = request.user.profile.year
+        obj = H.IndexHelper(request, year)
+
+        context = {
+            'no_incomes': obj.render_no_incomes(),
+            'money': obj.render_money(),
+            'wealth': obj.render_wealth(),
+        }
         return render(request, template, context)
 
     return redirect(reverse('bookkeeping:index'))
