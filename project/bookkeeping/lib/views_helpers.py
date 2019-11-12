@@ -348,12 +348,11 @@ class IndexHelper():
             self._YearBalance.amount_end
             + sum_col(self._fund, 'market_value')
         )
-
-        return render_to_string(
-            'bookkeeping/includes/money.html',
-            {'data': wealth_money},
-            self.request
-        )
+        context = {
+            'title': 'Pinigai',
+            'data': wealth_money,
+        }
+        return self._render_info_table(context)
 
     def render_wealth(self):
         wealth_money = (
@@ -362,22 +361,29 @@ class IndexHelper():
         )
         wealth = wealth_money + sum_col(self._pension, 'market_value')
 
-        return render_to_string(
-            'bookkeeping/includes/wealth.html',
-            {'data': wealth},
-            self.request
-        )
+        context = {
+            'title': 'Turtas',
+            'data': wealth,
+        }
+        return self._render_info_table(context)
 
     def render_avg_incomes(self):
-        return render_to_string(
-            'bookkeeping/includes/avg_incomes.html',
-            {'data': self._YearBalance.avg_incomes},
-            self.request
-        )
+        context = {
+            'title': 'Vidutinės pajamos',
+            'data': self._YearBalance.avg_incomes,
+        }
+        return self._render_info_table(context)
 
     def render_avg_expenses(self):
+        context = {
+            'title': 'Vidutinės išlaidos',
+            'data': self._YearBalance.avg_expenses,
+        }
+        return self._render_info_table(context)
+
+    def _render_info_table(self, context):
         return render_to_string(
-            'bookkeeping/includes/avg_expenses.html',
-            {'data': self._YearBalance.avg_expenses},
+            'bookkeeping/includes/info_table.html',
+            context,
             self.request
         )
