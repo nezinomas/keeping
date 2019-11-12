@@ -115,49 +115,32 @@ class Detailed(LoginRequiredMixin, TemplateView):
         context['months'] = range(1, 13)
         context['data'] = []
 
+        def _gen_data(data, name):
+            total_row = H.sum_detailed(data, 'date', ['sum'])
+            total_col = H.sum_detailed(data, 'title', ['sum'])
+            total = sum_col(total_col, 'sum')
+
+            context['data'].append({
+                'name': name,
+                'data': data,
+                'total_row': total_row,
+                'total_col': total_col,
+                'total': total,
+            })
+
         # Incomes
         qs = Income.objects.month_type_sum(year)
-        total_row = H.sum_detailed(qs, 'date', ['sum'])
-        total_col = H.sum_detailed(qs, 'title', ['sum'])
-        total = sum_col(total_col, 'sum')
-
-        context['data'].append({
-            'name': 'Pajamos',
-            'data': qs,
-            'total_row': total_row,
-            'total_col': total_col,
-            'total': total,
-        })
+        _gen_data(qs, 'Pajamos')
 
         # Savings
         qs = Saving.objects.month_type_sum(year)
-        total_row = H.sum_detailed(qs, 'date', ['sum'])
-        total_col = H.sum_detailed(qs, 'title', ['sum'])
-        total = sum_col(total_col, 'sum')
-
-        context['data'].append({
-            'name': 'Taupymas',
-            'data': qs,
-            'total_row': total_row,
-            'total_col': total_col,
-            'total': total,
-        })
+        _gen_data(qs, 'Taupymas')
 
         # Expenses
         qs = [*Expense.objects.month_name_sum(year)]
         for expense_type in H.expense_types():
             filtered = [*filter(lambda x: expense_type in x['type_title'], qs)]
-            total_row = H.sum_detailed(filtered, 'date', ['sum'])
-            total_col = H.sum_detailed(filtered, 'title', ['sum'])
-            total = sum_col(total_col, 'sum')
-
-            context['data'].append({
-                'name': f'Išlaidos / {expense_type}',
-                'data': filtered,
-                'total_row': total_row,
-                'total_col': total_col,
-                'total': total,
-            })
+            _gen_data(filtered, f'Išlaidos / {expense_type}')
 
         return context
 
