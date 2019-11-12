@@ -3,15 +3,20 @@ from typing import Dict, List
 
 from django.template.loader import render_to_string
 
+from ...accounts.models import AccountBalance
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...core.lib.utils import sum_all, sum_col
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
+from ...pensions.models import PensionBalance
 from ...plans.lib.calc_day_sum import CalcDaySum
-from ...savings.models import Saving
+from ...savings.models import Saving, SavingBalance
+from ...transactions.models import SavingClose
 from ..lib.day_spending import DaySpending
-from ..lib.expense_summary import DayExpense
+from ..lib.expense_summary import DayExpense, MonthExpense
+from ..lib.no_incomes import NoIncomes
+from ..lib.year_balance import YearBalance
 
 
 def expense_types(*args: str) -> List[str]:
@@ -67,46 +72,11 @@ def percentage_from_incomes(incomes, savings):
         return (savings * 100) / incomes
 
 
-def render_accounts(request, account, **kwargs):
-    return render_to_string(
-        'bookkeeping/includes/accounts_worth_list.html',
-        {
-            'accounts': account,
-            'total_row': sum_all(account),
-            'accounts_amount_end': sum_col(account, 'balance'),
-            **kwargs
-        },
-        request
-    )
-
-
-def render_savings(request, fund, **kwargs):
-    return render_to_string(
-        'bookkeeping/includes/savings_worth_list.html',
-        {
-            'fund': fund, 'fund_total_row': sum_all(fund),
-            **kwargs
-        },
-        request
-    )
-
-
-def render_pensions(request, pension, **kwargs):
-    return render_to_string(
-        'bookkeeping/includes/pensions_worth_list.html',
-        {
-            'pension': pension, 'pension_total_row': sum_all(pension),
-            **kwargs
-        },
-        request
-    )
-
-
 class MonthHelper():
     def __init__(self, request, year, month):
-        self.request = request
-        self.year = year
-        self.month = month
+        self._request = request
+        self._year = year
+        self._month = month
 
         qs_expenses = Expense.objects.day_expense_type(year, month)
         qs_savings = Saving.objects.day_saving(year, month)
@@ -130,13 +100,13 @@ class MonthHelper():
             plan_free_sum=get_val(self._day_plans.expenses_free, month),
         )
 
-        self.expenses_types = expense_types('Taupymas')
-        self.current_day = current_day(year, month)
+        self._expenses_types = expense_types('Taupymas')
+        self._current_day = current_day(year, month)
 
     def render_chart_targets(self):
-        targets = self._day_plans.targets(self.month, 'Taupymas')
+        targets = self._day_plans.targets(self._month, 'Taupymas')
         (categories, data_target, data_fact) = self._day.chart_targets(
-            self.expenses_types, targets)
+            self._expenses_types, targets)
 
         context = {
             'chart_targets_categories': categories,
@@ -147,41 +117,40 @@ class MonthHelper():
         return render_to_string(
             template_name='bookkeeping/includes/chart_month_targets.html',
             context=context,
-            request=self.request
+            request=self._request
         )
 
     def render_chart_expenses(self):
         context = {
-            'expenses': self._day.chart_expenses(self.expenses_types)
+            'expenses': self._day.chart_expenses(self._expenses_types)
         }
 
         return render_to_string(
             template_name='bookkeeping/includes/chart_month_expenses.html',
             context=context,
-            request=self.request
+            request=self._request
         )
 
     def render_spending(self):
         context = {
             'spending_table': self._spending.spending,
-            'day': self.current_day,
+            'day': self._current_day,
         }
 
         return render_to_string(
             template_name='bookkeeping/includes/spending.html',
             context=context,
-            request=self.request
+            request=self._request
         )
 
     def render_info(self):
-        fact_incomes = Income.objects.income_sum(self.year, self.month)
+        fact_incomes = Income.objects.income_sum(self._year, self._month)
         fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
         fact_expenses = self._day.total
 
-        plan_incomes = get_val(self._day_plans.incomes, self.month)
-        plan_day_sum = get_val(self._day_plans.day_input, self.month)
-        plan_free_sum = get_val(self._day_plans.expenses_free, self.month)
-        plan_remains = get_val(self._day_plans.remains, self.month)
+        plan_incomes = get_val(self._day_plans.incomes, self._month)
+        plan_day_sum = get_val(self._day_plans.day_input, self._month)
+        plan_remains = get_val(self._day_plans.remains, self._month)
 
         context = {
             'plan_per_day': plan_day_sum,
@@ -195,19 +164,228 @@ class MonthHelper():
         return render_to_string(
             template_name='bookkeeping/includes/spending_info.html',
             context=context,
-            request=self.request
+            request=self._request
         )
 
     def render_month_table(self):
         context = {
             'expenses': self._day.balance,
             'total_row': self._day.total_row,
-            'expense_types': self.expenses_types,
-            'day': self.current_day,
+            'expense_types': self._expenses_types,
+            'day': self._current_day,
         }
 
         return render_to_string(
             template_name='bookkeeping/includes/month_table.html',
             context=context,
-            request=self.request
+            request=self._request
+        )
+
+
+class IndexHelper():
+    def __init__(self, request, year):
+        self._request = request
+        self._year = year
+
+        self._account = [*AccountBalance.objects.items(year)]
+        self._fund = [*SavingBalance.objects.items(year)]
+        self._pension = [*PensionBalance.objects.items(year)]
+
+        qs_income = Income.objects.income_sum(year)
+        qs_savings = Saving.objects.month_saving(year)
+        qs_savings_close = SavingClose.objects.month_sum(year)
+        qs_ExpenseType = Expense.objects.month_expense_type(year)
+
+        self._MonthExpense = MonthExpense(
+            year, qs_ExpenseType, **{'Taupymas': qs_savings})
+
+        self._YearBalance = YearBalance(
+            year=year,
+            incomes=qs_income,
+            expenses=self._MonthExpense.total_column,
+            savings_close=qs_savings_close,
+            amount_start=sum_col(self._account, 'past'))
+
+    def render_year_balance(self):
+        context = {
+            'year': self._year,
+            'data': self._YearBalance.balance,
+            'total_row': self._YearBalance.total_row,
+            'avg_row': self._YearBalance.average,
+            'accounts_amount_end': sum_col(self._account, 'balance'),
+            'months_amount_end': self._YearBalance.amount_end,
+        }
+        return render_to_string(
+            'bookkeeping/includes/year_balance.html',
+            context,
+            self._request
+        )
+
+    def render_year_balance_short(self):
+        context = {
+            'amount_start': self._YearBalance.amount_start,
+            'months_amount_end': self._YearBalance.amount_end,
+            'amount_balance': self._YearBalance.amount_balance,
+        }
+        return render_to_string(
+            'bookkeeping/includes/year_balance_short.html',
+            context,
+            self._request
+        )
+
+    def render_chart_expenses(self):
+        context = {
+            'data': self._MonthExpense.chart_data
+        }
+        return render_to_string(
+            'bookkeeping/includes/chart_expenses.html',
+            context,
+            self._request
+        )
+
+    def render_chart_balance(self):
+        context = {
+            'e': self._YearBalance.expense_data,
+            'i': self._YearBalance.income_data,
+            's': self._YearBalance.save_data,
+        }
+
+        return render_to_string(
+            'bookkeeping/includes/chart_balance.html',
+            context,
+            self._request
+        )
+
+    def render_year_expenses(self):
+        _expense_types = expense_types('Taupymas')
+
+        context = {
+            'year': self._year,
+            'data': self._MonthExpense.balance,
+            'categories': _expense_types,
+            'total_row': self._MonthExpense.total_row,
+            'avg_row': self._MonthExpense.average,
+        }
+        return render_to_string(
+            'bookkeeping/includes/year_expenses.html',
+            context,
+            self._request
+        )
+
+    def render_accounts(self):
+        context = {
+            'accounts': self._account,
+            'total_row': sum_all(self._account),
+            'accounts_amount_end': sum_col(self._account, 'balance'),
+            'months_amount_end': self._YearBalance.amount_end,
+        }
+        return render_to_string(
+            'bookkeeping/includes/accounts_worth_list.html',
+            context,
+            self._request
+        )
+
+    def render_savings(self):
+        context = {
+            'title': 'Fondai',
+            'items': self._fund,
+            'total_row': sum_all(self._fund),
+            'percentage_from_incomes': (
+                percentage_from_incomes(
+                    incomes=self._YearBalance.total_row.get('incomes'),
+                    savings=self._MonthExpense.total_row.get('Taupymas'))
+            )
+        }
+
+        return render_to_string(
+            'bookkeeping/includes/worth_table.html',
+            context,
+            self._request
+        )
+
+    def render_pensions(self):
+        context = {
+            'title': 'Pensija',
+            'items': self._pension,
+            'total_row': sum_all(self._pension),
+        }
+
+        return render_to_string(
+            'bookkeeping/includes/worth_table.html',
+            context,
+            self._request
+        )
+
+    def render_no_incomes(self):
+        fund = split_funds(self._fund, 'lx')
+        pension = split_funds(self._fund, 'invl')
+
+        obj = NoIncomes(
+            money=self._YearBalance.amount_end,
+            fund=sum_col(fund, 'market_value'),
+            pension=sum_col(pension, 'market_value'),
+            avg_expenses=self._YearBalance.avg_expenses,
+            avg_type_expenses=self._MonthExpense.average,
+            not_use=[
+                'Darbas',
+                'Laisvalaikis',
+                'Paskolos',
+                'Taupymas',
+                'Transportas',
+            ]
+        )
+        context = {
+            'no_incomes': obj.summary,
+            'save_sum': obj.save_sum,
+        }
+
+        return render_to_string(
+            'bookkeeping/includes/no_incomes.html',
+            context,
+            self._request
+        )
+
+    def render_money(self):
+        wealth_money = (
+            self._YearBalance.amount_end
+            + sum_col(self._fund, 'market_value')
+        )
+        context = {
+            'title': 'Pinigai',
+            'data': wealth_money,
+        }
+        return self._render_info_table(context)
+
+    def render_wealth(self):
+        wealth_money = (
+            self._YearBalance.amount_end
+            + sum_col(self._fund, 'market_value')
+        )
+        wealth = wealth_money + sum_col(self._pension, 'market_value')
+
+        context = {
+            'title': 'Turtas',
+            'data': wealth,
+        }
+        return self._render_info_table(context)
+
+    def render_avg_incomes(self):
+        context = {
+            'title': 'Vidutinės pajamos',
+            'data': self._YearBalance.avg_incomes,
+        }
+        return self._render_info_table(context)
+
+    def render_avg_expenses(self):
+        context = {
+            'title': 'Vidutinės išlaidos',
+            'data': self._YearBalance.avg_expenses,
+        }
+        return self._render_info_table(context)
+
+    def _render_info_table(self, context):
+        return render_to_string(
+            'bookkeeping/includes/info_table.html',
+            context,
+            self._request
         )

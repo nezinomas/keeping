@@ -5,7 +5,7 @@
             <th colspan="5"><h1>Balansas</h1></th>
         </tr>
         <tr>
-            <th width="80rem" class="text-left">{{ request.user.profile.year|title }}</th>
+            <th width="80rem" class="text-left">{{ year|title }}</th>
             <th>Pajamos</th>
             <th>Išlaidos</th>
             <th>Balansas</th>
@@ -13,7 +13,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in balance  %}
+        {% for item in data %}
         <tr>
             <td class="text-left">{{ item.date|date:"F"|title }}</td>
             {% cell item.incomes %}
@@ -26,16 +26,16 @@
     <tfoot>
         <tr>
             <th class="text-left">Avg</th>
-            {% cell balance_avg.incomes tag='th' %}
-            {% cell balance_avg.expenses tag='th' %}
+            {% cell avg_row.incomes tag='th' %}
+            {% cell avg_row.expenses tag='th' %}
             <th></th>
             <th><b>Metų gale</b></th>
         </tr>
         <tr class="total">
             <th class="text-left">Viso</th>
-            {% cell balance_total_row.incomes tag='th' %}
-            {% cell balance_total_row.expenses tag='th' %}
-            {% cell balance_total_row.balance tag='th' highlight_value=True %}
+            {% cell total_row.incomes tag='th' %}
+            {% cell total_row.expenses tag='th' %}
+            {% cell total_row.balance tag='th' highlight_value=True %}
             {% if accounts_amount_end|floatformat:2 != months_amount_end|floatformat:2 %}{% cell months_amount_end tag="th" css_class='bad' text_before='!' text_after='!' %}{% else %}{% cell months_amount_end tag='th' highlight_value=True %}{% endif %}
         </tr>
     </tfoot>
