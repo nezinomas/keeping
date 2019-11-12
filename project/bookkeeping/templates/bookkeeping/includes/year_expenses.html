@@ -7,7 +7,7 @@
             <th class="bl top"></th>
         </tr>
         <tr>
-            <th width="80rem" class="text-left">{{ request.user.profile.year|title }}</th>
+            <th width="80rem" class="text-left">{{ year|title }}</th>
             {% for cat in expense_types %}<th>{{ cat }}</th>{% endfor %}
             <th class="bl">Viso</th>
         </tr>

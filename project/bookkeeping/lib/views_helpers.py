@@ -191,7 +191,6 @@ class IndexHelper():
         self._account = [*AccountBalance.objects.items(year)]
         self._fund = [*SavingBalance.objects.items(year)]
         self._pension = [*PensionBalance.objects.items(year)]
-        self._expense_types = expense_types('Taupymas')
 
         qs_income = Income.objects.income_sum(year)
         qs_savings = Saving.objects.month_saving(year)
@@ -222,6 +221,22 @@ class IndexHelper():
         }
         return render_to_string(
             'bookkeeping/includes/year_balance.html',
+            context,
+            self.request
+        )
+
+    def render_year_expenses(self):
+        _expense_types = expense_types('Taupymas')
+
+        context = {
+            'year': self.year,
+            'expenses': self._MonthExpense.balance,
+            'expense_types': _expense_types,
+            'expenses_total_row': self._MonthExpense.total_row,
+            'expenses_average': self._MonthExpense.average,
+        }
+        return render_to_string(
+            'bookkeeping/includes/year_expenses.html',
             context,
             self.request
         )
