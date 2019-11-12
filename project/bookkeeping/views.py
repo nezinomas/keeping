@@ -1,6 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
-from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 
 from ..accounts.models import Account, AccountBalance
@@ -12,13 +11,9 @@ from ..core.mixins.views import CreateAjaxMixin, IndexMixin
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
-from ..plans.models import DayPlan
 from ..savings.models import Saving, SavingBalance, SavingType
-from ..transactions.models import SavingClose
 from .forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
 from .lib import views_helpers as H
-from .lib.expense_summary import MonthExpense
-from .lib.year_balance import YearBalance
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 
@@ -27,27 +22,6 @@ class Index(IndexMixin):
         context = super().get_context_data(**kwargs)
 
         year = self.request.user.profile.year
-
-        _account = [*AccountBalance.objects.items(year)]
-        _fund = [*SavingBalance.objects.items(year)]
-        _pension = [*PensionBalance.objects.items(year)]
-        _expense_types = H.expense_types('Taupymas')
-
-        qs_income = Income.objects.income_sum(year)
-        qs_savings = Saving.objects.month_saving(year)
-        qs_savings_close = SavingClose.objects.month_sum(year)
-        qs_ExpenseType = Expense.objects.month_expense_type(year)
-
-        _MonthExpense = MonthExpense(
-            year, qs_ExpenseType, **{'Taupymas': qs_savings})
-
-        _YearBalance = YearBalance(
-            year=year,
-            incomes=qs_income,
-            expenses=_MonthExpense.total_column,
-            savings_close=qs_savings_close,
-            amount_start=sum_col(_account, 'past'))
-
         obj = H.IndexHelper(self.request, year)
 
         context['year'] = year
@@ -57,27 +31,11 @@ class Index(IndexMixin):
         context['year_balance'] = obj.render_year_balance()
         context['year_balance_short'] = obj.render_year_balance_short()
         context['year_expenses'] = obj.render_year_expenses()
-
-        context['balance_total_row'] = _YearBalance.total_row
-        context['balance_avg'] = _YearBalance.average
-        context['amount_start'] = _YearBalance.amount_start
-        context['months_amount_end'] = _YearBalance.amount_end
-        context['accounts_amount_end'] = sum_col(_account, 'balance')
-        context['amount_balance'] = _YearBalance.amount_balance
-        context['avg_incomes'] = _YearBalance.avg_incomes
-        context['avg_expenses'] = _YearBalance.avg_expenses
-        context['expenses'] = _MonthExpense.balance
-        context['expense_types'] = _expense_types
-        context['expenses_total_row'] = _MonthExpense.total_row
-        context['expenses_average'] = _MonthExpense.average
         context['no_incomes'] = obj.render_no_incomes()
-
         context['avg_incomes'] = obj.render_avg_incomes()
         context['avg_expenses'] = obj.render_avg_expenses()
         context['money'] = obj.render_money()
         context['wealth'] = obj.render_wealth()
-
-        # charts data
         context['chart_expenses'] = obj.render_chart_expenses()
         context['chart_balance'] = obj.render_chart_balance()
 
