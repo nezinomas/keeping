@@ -48,9 +48,6 @@ class Index(IndexMixin):
             savings_close=qs_savings_close,
             amount_start=sum_col(_account, 'past'))
 
-        wealth_money = _YearBalance.amount_end + sum_col(_fund, 'market_value')
-        wealth = wealth_money + sum_col(_pension, 'market_value')
-
         obj = H.IndexHelper(self.request, year)
 
         context['year'] = year
@@ -73,16 +70,14 @@ class Index(IndexMixin):
         context['expense_types'] = _expense_types
         context['expenses_total_row'] = _MonthExpense.total_row
         context['expenses_average'] = _MonthExpense.average
-        context['wealth_money'] = wealth_money
-        context['wealth'] = wealth
         context['no_incomes'] = obj.render_no_incomes()
+
+        context['money'] = obj.render_money()
+        context['wealth'] = obj.render_wealth()
 
         # charts data
         context['chart_expenses'] = obj.render_chart_expenses()
         context['chart_balance'] = obj.render_chart_balance()
-        context['e'] = _YearBalance.expense_data
-        context['i'] = _YearBalance.income_data
-        context['s'] = _YearBalance.save_data
 
         return context
 

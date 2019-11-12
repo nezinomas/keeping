@@ -65,24 +65,10 @@
         </table>
 
         <!-- Money -->
-        <table class="table table-striped table-hover table-sm stats">
-            <thead>
-                <tr class="top"><th class="text-right">Pinigai</th></tr>
-            </thead>
-            <tfoot>
-                <tr>{% cell wealth_money tag='th' %}</tr>
-            </tfoot>
-        </table>
+        <div id="money">{{ money }}</div>
 
         <!-- Worth -->
-        <table class="table table-striped table-hover table-sm stats">
-            <thead>
-                <tr class="top"><th class="text-right">Turtas</th></tr>
-            </thead>
-            <tfoot>
-                <tr>{% cell wealth tag='th' %}</tr>
-            </tfoot>
-        </table>
+        <div id="wealth">{{ wealth }}</div>
     </div>
 </div>
 

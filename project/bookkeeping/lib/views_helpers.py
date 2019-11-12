@@ -346,3 +346,50 @@ class IndexHelper():
             context,
             self.request
         )
+
+    def render_money(self):
+        wealth_money = (
+            self._YearBalance.amount_end
+            + sum_col(self._fund, 'market_value')
+        )
+
+        return render_to_string(
+            'bookkeeping/includes/money.html',
+            {'data': wealth_money},
+            self.request
+        )
+
+    def render_wealth(self):
+        wealth_money = (
+            self._YearBalance.amount_end
+            + sum_col(self._fund, 'market_value')
+        )
+        wealth = wealth_money + sum_col(self._pension, 'market_value')
+
+        return render_to_string(
+            'bookkeeping/includes/wealth.html',
+            {'data': wealth},
+            self.request
+        )
+
+    def render_avg_incomes(self):
+        context = {
+
+        }
+
+        return render_to_string(
+            'bookkeeping/includes/avg_incomes.html',
+            context,
+            self.request
+        )
+
+    def render_avg_expenses(self):
+        context = {
+
+        }
+
+        return render_to_string(
+            'bookkeeping/includes/avg_expenses.html',
+            context,
+            self.request
+        )
