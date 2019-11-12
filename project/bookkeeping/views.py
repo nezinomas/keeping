@@ -78,7 +78,7 @@ class Index(IndexMixin):
         context['no_incomes'] = obj.render_no_incomes()
 
         # charts data
-        context['pie'] = _MonthExpense.chart_data
+        context['chart_expenses'] = obj.render_chart_expenses()
         context['e'] = _YearBalance.expense_data
         context['i'] = _YearBalance.income_data
         context['s'] = _YearBalance.save_data

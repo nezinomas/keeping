@@ -237,6 +237,16 @@ class IndexHelper():
             self.request
         )
 
+    def render_chart_expenses(self):
+        context = {
+            'data': self._MonthExpense.chart_data
+        }
+        return render_to_string(
+            'bookkeeping/includes/chart_expenses.html',
+            context,
+            self.request
+        )
+
     def render_year_expenses(self):
         _expense_types = expense_types('Taupymas')
 
