@@ -55,15 +55,7 @@ class Index(IndexMixin):
 
         context['year'] = year
         context['accounts'] = obj.render_accounts()
-        context['savings'] = H.render_savings(
-            self.request,
-            _fund,
-            **{'percentage_from_incomes': (
-                H.percentage_from_incomes(
-                    incomes=_YearBalance.total_row.get('incomes'),
-                    savings=_MonthExpense.total_row.get('Taupymas'))
-                )}
-        )
+        context['savings'] = obj.render_savings()
         context['pensions'] = H.render_pensions(self.request, _pension)
         context['balance'] = _YearBalance.balance
         context['balance_total_row'] = _YearBalance.total_row
