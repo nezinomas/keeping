@@ -13,8 +13,8 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
     def get_template_names(self):
         if self.template_name is None:
             return [template_name(self, 'form')]
-        else:
-            return [self.template_name]
+
+        return [self.template_name]
 
     def get(self, request, *args, **kwargs):
         if 'pk' in self.kwargs:
@@ -26,8 +26,8 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
             self._render_form(data, context)
 
             return JsonResponse(data)
-        else:
-            return super().get(request, *args, **kwargs)
+
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -54,8 +54,8 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
 
         if self.request.is_ajax():
             return JsonResponse(data)
-        else:
-            return super().form_valid(form)
+
+        return super().form_valid(form)
 
     def form_invalid(self, form):
         context = self.get_context_data()
@@ -66,8 +66,8 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
         if self.request.is_ajax():
             self._render_form(data, context)
             return JsonResponse(data)
-        else:
-            return super().form_invalid(form)
+
+        return super().form_invalid(form)
 
     def _render_form(self, data, context):
         data['html_form'] = (
@@ -92,5 +92,5 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
     def get_list_template_name(self):
         if not self.list_template_name:
             return template_name(self, 'list')
-        else:
-            return self.list_template_name
+
+        return self.list_template_name

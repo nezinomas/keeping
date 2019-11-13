@@ -20,7 +20,7 @@ class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        year = self.request.user.profile.year
+        year = self.request.user.year
         obj = H.IndexHelper(self.request, year)
 
         context['year'] = year
@@ -49,7 +49,7 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        year = self.request.user.profile.year
+        year = self.request.user.year
 
         _fund = SavingBalance.objects.items(year)
 
@@ -67,7 +67,7 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        year = self.request.user.profile.year
+        year = self.request.user.year
 
         _account = AccountBalance.objects.items(year)
 
@@ -85,7 +85,7 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        year = self.request.user.profile.year
+        year = self.request.user.year
 
         _pension = PensionBalance.objects.items(year)
 
@@ -114,7 +114,7 @@ class Detailed(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        year = self.request.user.profile.year
+        year = self.request.user.year
 
         context['months'] = range(1, 13)
         context['data'] = []
@@ -154,7 +154,7 @@ def reload_index(request):
     ajax_trigger = request.GET.get('ajax_trigger')
 
     if ajax_trigger:
-        year = request.user.profile.year
+        year = request.user.year
         obj = H.IndexHelper(request, year)
 
         context = {
@@ -179,8 +179,8 @@ def reload_month(request):
 
 
 def _month_context(request, context):
-    year = request.user.profile.year
-    month = request.user.profile.month
+    year = request.user.year
+    month = request.user.month
 
     obj = H.MonthHelper(request, year, month)
 

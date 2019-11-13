@@ -21,7 +21,7 @@ def reload_stats(request):
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
-        year = self.request.user.profile.year
+        year = self.request.user.year
         qs_target = models.DrinkTarget.objects.year(year)
 
         context = super().get_context_data(**kwargs)

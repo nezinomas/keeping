@@ -29,7 +29,7 @@
       <nav class="navbar navbar-expand navbar-light bg-light">
         <ul class="nav nav-pills">
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ request.user.profile.year|title }}</a>
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ request.user.year|title }}</a>
             <div class="dropdown-menu">
               {% with request.resolver_match.view_name as m_url %}
               {% for y in years %}

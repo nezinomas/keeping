@@ -10,11 +10,11 @@ class CustomLogin(auth_views.LoginView):
         user = form.get_user()
         login(self.request, user)
 
-        if not user.profile.year:
-            user.profile.year = datetime.now().year
+        if not user.year:
+            user.year = datetime.now().year
 
-        if not user.profile.month:
-            user.profile.month = datetime.now().month
+        if not user.month:
+            user.month = datetime.now().month
 
         user.save()
 

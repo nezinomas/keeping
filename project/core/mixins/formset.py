@@ -17,7 +17,7 @@ class FormsetMixin():
             return _list
 
         model = self._get_type_model()
-        _objects = model.objects.items(self.request.user.profile.year)
+        _objects = model.objects.items(self.request.user.year)
         for _object in _objects:
             _list.append({'price': 0, foreign_key[0]: _object})
 
@@ -26,12 +26,12 @@ class FormsetMixin():
     def _get_type_model(self):
         if not self.type_model:
             return self.model
-        else:
-            return self.type_model
+
+        return self.type_model
 
     def _get_formset(self, post=None):
         form = self.get_form_class()
-        year = self.request.user.profile.year
+        year = self.request.user.year
         _formset = (
             modelformset_factory(
                 extra=0,
@@ -78,8 +78,7 @@ class FormsetMixin():
             if self.request.is_ajax():
                 return JsonResponse(data)
 
-        else:
-            return super().form_invalid(formset)
+        return super().form_invalid(formset)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

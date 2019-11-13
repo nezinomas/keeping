@@ -3,8 +3,6 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
 
-from ...accounts.factories import AccountFactory
-from ...core.factories import ProfileFactory, UserFactory
 from .. import views
 
 
@@ -18,7 +16,7 @@ def test_set_year(login, client):
     response = client.get(url, follow=True)
 
     assert response.status_code == 200
-    assert response.wsgi_request.user.profile.year == 1970
+    assert response.wsgi_request.user.year == 1970
 
 
 @pytest.mark.django_db()
@@ -31,7 +29,7 @@ def test_set_month(login, client):
     response = client.get(url, follow=True)
 
     assert response.status_code == 200
-    assert response.wsgi_request.user.profile.month == 12
+    assert response.wsgi_request.user.month == 12
 
 
 def test_view_regenerate_balances():

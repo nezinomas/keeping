@@ -1,9 +1,11 @@
 import pytest
 from django.contrib.auth import views as auth_views
 from django.urls import resolve, reverse
-from ...core.factories import UserFactory, ProfileFactory
-from ..views import CustomLogin
 from freezegun import freeze_time
+
+from ...auths.factories import UserFactory
+from ..views import CustomLogin
+
 
 def test_custom_login_func():
     view = resolve('/login/')
@@ -26,22 +28,22 @@ def test_successful_login(client):
 
     response = client.post(url, credentials, follow=True)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert response.context['user'].is_authenticated
 
 
 @pytest.mark.django_db
 @freeze_time('2000-01-01')
-def test_fill_user_profile_on_login(client):
-    p = ProfileFactory(year=None, month=None)
+def test_fill_user_on_login(client):
+    UserFactory(year=None, month=None)
 
     url = reverse('auths:login')
     credentials = {'username': 'bob', 'password': '123'}
 
     response = client.post(url, credentials, follow=True)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert response.context['user'].is_authenticated
 
-    assert 2000 == response.context['user'].profile.year
-    assert 1 == response.context['user'].profile.month
+    assert response.context['user'].year == 2000
+    assert response.context['user'].month == 1

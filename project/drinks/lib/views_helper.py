@@ -7,7 +7,7 @@ from .drinks_stats import DrinkStats, std_av
 
 
 def context_to_reload(request, context):
-    year = request.user.profile.year
+    year = request.user.year
 
     qs_target = models.DrinkTarget.objects.year(year)
     qs_drinks = models.Drink.objects.month_sum(year)

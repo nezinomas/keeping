@@ -1,16 +1,15 @@
 import json
-from datetime import date, datetime
+from datetime import date
 
 import pandas  # need to import before freezegun, why?
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
-from ...core.factories import UserFactory
+from ...auths.factories import UserFactory
 from ...core.tests.utils import change_profile_year
 from .. import views
 from ..factories import DrinkFactory, DrinkTargetFactory
-from ..models import Drink, DrinkTarget
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 

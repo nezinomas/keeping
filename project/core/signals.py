@@ -64,7 +64,7 @@ class SignalBase():
     def __init__(self, instance: object, year: int = None):
         if not year:
             request = CrequestMiddleware.get_request()
-            self.year = request.user.profile.year
+            self.year = request.user.year
         else:
             self.year = year
 

@@ -199,7 +199,7 @@ def test_saving_worth_formset_saving_type_closed_in_past(_fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1000)
 
-    _fake_request.user.profile.year = 2000
+    _fake_request.user.year = 2000
 
     view = setup_view(views.SavingsWorthNew(), _fake_request)
 
@@ -214,7 +214,7 @@ def test_saving_worth_formset_saving_type_closed_in_current(_fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1000)
 
-    _fake_request.user.profile.year = 1000
+    _fake_request.user.year = 1000
 
     view = setup_view(views.SavingsWorthNew(), _fake_request)
 
@@ -229,7 +229,7 @@ def test_saving_worth_formset_saving_type_closed_in_future(_fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1000)
 
-    _fake_request.user.profile.year = 1
+    _fake_request.user.year = 1
 
     view = setup_view(views.SavingsWorthNew(), _fake_request)
 
