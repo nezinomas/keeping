@@ -17,14 +17,9 @@ from .transactions.factories import (SavingChangeFactory, SavingCloseFactory,
 
 
 @pytest.fixture()
-def user():
-    UserFactory()
-
-
-@pytest.fixture()
 def _fake_request(rf):
     request = rf.get('/fake/')
-    request.user = UserFactory()
+    request.user = UserFactory.build()
 
     return request
 
@@ -39,8 +34,19 @@ def mock_crequest(monkeypatch, _fake_request):
 
 
 @pytest.fixture()
-def login(client, user):
-    client.login(username='bob', password='123')
+def get_user(monkeypatch):
+    user = UserFactory()
+
+    mock_func = 'project.core.lib.utils.get_user'
+    monkeypatch.setattr(mock_func, lambda: user)
+
+
+@pytest.fixture()
+def client_logged(client):
+    u = UserFactory()
+    client.login(username=u.username, password=u.password)
+
+    return client
 
 
 @pytest.fixture()

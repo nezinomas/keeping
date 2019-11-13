@@ -63,7 +63,7 @@ def test_day_expense_type(expenses_january):
     assert actual == expect
 
 
-def test_expense_type_items(mock_crequest):
+def test_expense_type_items(get_user):
     ExpenseTypeFactory(title='T1')
     ExpenseTypeFactory(title='T2')
 
@@ -72,10 +72,8 @@ def test_expense_type_items(mock_crequest):
     assert actual.count() == 2
 
 
-def test_expense_type_items_user(mock_crequest):
-    mock_crequest.user = UserFactory(username='u1')
-
-    ExpenseTypeFactory(title='T1', user=UserFactory(username='u1'))
+def test_expense_type_items_user(get_user):
+    ExpenseTypeFactory(title='T1', user=UserFactory())
     ExpenseTypeFactory(title='T2', user=UserFactory(username='u2'))
 
     actual = ExpenseType.objects.items()
@@ -83,7 +81,7 @@ def test_expense_type_items_user(mock_crequest):
     assert actual.count() == 1
 
 
-def test_expense_type_items_query_count(django_assert_max_num_queries, mock_crequest):
+def test_expense_type_items_query_count(django_assert_max_num_queries, get_user):
     ExpenseTypeFactory(title='T1')
     ExpenseTypeFactory(title='T2')
 
@@ -91,7 +89,7 @@ def test_expense_type_items_query_count(django_assert_max_num_queries, mock_creq
         list(ExpenseType.objects.items().values())
 
 
-def test_post_save_expense_type_insert_new(mock_crequest, expenses):
+def test_post_save_expense_type_insert_new(get_user, expenses):
     obj = ExpenseType(title='e1', user=UserFactory())
     obj.save()
 

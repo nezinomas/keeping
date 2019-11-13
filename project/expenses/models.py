@@ -8,13 +8,13 @@ from django.db.models.functions import TruncDay, TruncMonth
 
 from ..accounts.models import Account
 from ..auths.models import User
-from ..core.lib.utils import get_user
+from ..core.lib import utils
 from ..core.models import TitleAbstract
 
 
 class ExpenseTypeQuerySet(models.QuerySet):
     def _related(self):
-        user = get_user()
+        user = utils.get_user()
         return (
             self.prefetch_related('user', 'expensename_set')
             .filter(user=user))

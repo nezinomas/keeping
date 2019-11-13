@@ -12,8 +12,8 @@ from ..pensions.models import Pension, PensionBalance, PensionType
 from ..savings.lib.balance import Balance as SavingStats
 from ..savings.models import Saving, SavingBalance, SavingType
 from ..transactions.models import SavingChange, SavingClose, Transaction
+from .lib import utils
 from .lib.summary import collect_summary_data
-from .lib.utils import get_user
 
 
 # ----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ def post_save_pension_stats(instance: object, year: int = None,
 class SignalBase():
     def __init__(self, instance: object, year: int = None):
         if not year:
-            self.year = get_user().year
+            self.year = utils.get_user().year
         else:
             self.year = year
 
