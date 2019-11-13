@@ -70,8 +70,8 @@ def test_view_regenerate_balances_current_year_status_200(login, client):
 def test_view_regenerate_balances_func_called(mck_pension,
                                               mck_account,
                                               mck_saving,
-                                              _fake_request):
-    view = views.regenerate_balances(_fake_request)
+                                              fake_request):
+    view = views.regenerate_balances(fake_request)
 
     assert 5 == mck_account.call_count
     assert 5 == mck_saving.call_count
@@ -84,8 +84,8 @@ def test_view_regenerate_balances_func_called(mck_pension,
 def test_view_regenerate_balances_current_year_func_called(mck_pension,
                                                            mck_account,
                                                            mck_saving,
-                                                           _fake_request):
-    view = views.regenerate_balances_current_year(_fake_request, 1999)
+                                                           fake_request):
+    view = views.regenerate_balances_current_year(fake_request, 1999)
 
     assert 1 == mck_account.call_count
     assert 1 == mck_saving.call_count

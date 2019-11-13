@@ -17,7 +17,7 @@ from .transactions.factories import (SavingChangeFactory, SavingCloseFactory,
 
 
 @pytest.fixture()
-def _fake_request(rf):
+def fake_request(rf):
     request = rf.get('/fake/')
     request.user = UserFactory.build()
 
@@ -25,12 +25,10 @@ def _fake_request(rf):
 
 
 @pytest.fixture()
-def mock_crequest(monkeypatch, _fake_request):
+def mock_crequest(monkeypatch, fake_request):
     mock_func = 'crequest.middleware.CrequestMiddleware.get_request'
 
-    monkeypatch.setattr(mock_func, lambda: _fake_request)
-
-    return _fake_request
+    monkeypatch.setattr(mock_func, lambda: fake_request)
 
 
 @pytest.fixture()

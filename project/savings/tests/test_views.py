@@ -282,11 +282,11 @@ def test_view_index_200(login, client):
 
 
 @pytest.mark.django_db
-def test_type_list_view_has_all(_fake_request):
+def test_type_list_view_has_all(fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1974)
 
-    view = setup_view(views.TypeLists(), _fake_request)
+    view = setup_view(views.TypeLists(), fake_request)
 
     ctx = view.get_context_data()
     actual = [str(x) for x in ctx['items']]

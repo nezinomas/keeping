@@ -21,8 +21,8 @@ def test_no_request_in_context(_template):
     assert '<b>xxxx</b> metais įrašų nėra.' in actual
 
 
-def test_request_in_context(_template, _fake_request):
-    ctx = Context({'request': _fake_request, 'items': []})
+def test_request_in_context(_template, fake_request):
+    ctx = Context({'request': fake_request, 'items': []})
 
     actual = _template.render(ctx)
 
