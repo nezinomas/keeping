@@ -24,7 +24,7 @@ def test_get_execute_objects_year(mock_obj, _fake_request):
 @mock.patch('project.incomes.models.Income')
 def test_get_execute_objects_items(mock_obj, _fake_request):
     mock_obj.objects = mock.MagicMock()
-    mock_obj.objects.year.side_effect = Exception('Unknown')
+    mock_obj.objects.year.side_effect = AttributeError
     mock_obj.objects.items.return_value = 2
 
     actual = GetQueryset(mock_obj, _fake_request).get_queryset()
@@ -35,26 +35,12 @@ def test_get_execute_objects_items(mock_obj, _fake_request):
 @mock.patch('project.incomes.models.Income')
 def test_get_exexute_objects_all(mock_obj, _fake_request):
     mock_obj.objects = mock.MagicMock()
-    mock_obj.objects.year.side_effect = Exception('Unknown1')
-    mock_obj.objects.items.side_effect = Exception('Unknown2')
-    mock_obj.objects.all.return_value = 3
+    mock_obj.objects.year.side_effect = AttributeError
+    mock_obj.objects.items.side_effect = AttributeError
 
     actual = GetQueryset(mock_obj, _fake_request).get_queryset()
 
-    assert actual == 3
-
-
-@mock.patch('project.incomes.models.Income')
-def test_get_execute_objects_month(mock_obj, _fake_request):
-    mock_obj.objects = mock.MagicMock()
-    mock_obj.objects.month.return_value = 1
-
-    obj = GetQueryset(mock_obj, _fake_request)
-    obj.month = True
-
-    actual = obj.get_queryset()
-
-    assert actual == 1
+    assert actual == {}
 
 
 @mock.patch('project.incomes.models.Income')

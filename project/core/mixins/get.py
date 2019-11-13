@@ -1,22 +1,17 @@
 class GetQuerysetMixin():
     context_object_name = 'items'
-    object_list = 'itms'
-    month = False
+    object_list = 'objects'
 
     def get_queryset(self):
         year = self.request.user.year
-        month = self.request.user.month
 
         try:
-            if self.month:
-                qs = self.model.objects.month(year, month)
-            else:
-                qs = self.model.objects.year(year)
-        except Exception as e1:
+            qs = self.model.objects.year(year)
+        except AttributeError:
             try:
                 qs = self.model.objects.items()
-            except Exception as e2:
-                qs = self.model.objects.all()
+            except AttributeError:
+                qs = {}
 
         return qs
 
