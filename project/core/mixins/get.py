@@ -25,11 +25,3 @@ class GetQuerysetMixin():
         context[self.context_object_name] = self.get_queryset()
 
         return context
-
-
-class GetFormKwargsMixin():
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['year'] = self.request.user.year
-
-        return kwargs

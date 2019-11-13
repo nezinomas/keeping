@@ -3,7 +3,7 @@ from django.template.loader import render_to_string
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
 from .ajax import AjaxCreateUpdateMixin
-from .get import GetFormKwargsMixin, GetQuerysetMixin
+from .get import GetQuerysetMixin
 from .helpers import template_name, update_context
 
 
@@ -30,8 +30,8 @@ class ListMixin(
     def get_template_names(self):
         if self.template_name is None:
             return [template_name(self, 'list')]
-        else:
-            return [self.template_name]
+
+        return [self.template_name]
 
     def _render_to_string(self, request, **kwargs):
         template_name = self.get_template_names()
