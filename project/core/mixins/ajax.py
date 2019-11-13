@@ -13,8 +13,8 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
     def get_template_names(self):
         if self.template_name is None:
             return [template_name(self, 'form')]
-        else:
-            return [self.template_name]
+
+        return [self.template_name]
 
     def get(self, request, *args, **kwargs):
         if 'pk' in self.kwargs:
@@ -26,8 +26,8 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
             self._render_form(data, context)
 
             return JsonResponse(data)
-        else:
-            return super().get(request, *args, **kwargs)
+
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
