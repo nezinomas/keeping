@@ -9,6 +9,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib.date import monthnames
+from ..core.lib.utils import get_user
 from .models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
                      SavingPlan, SavingType)
 
@@ -40,7 +41,7 @@ class ExpensePlanForm(forms.ModelForm):
 
     field_order = ['year', 'expense_type'] + monthnames()
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # inital values
@@ -65,7 +66,7 @@ class IncomePlanForm(forms.ModelForm):
 
     field_order = ['year', 'income_type'] + monthnames()
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # inital values
@@ -90,9 +91,10 @@ class SavingPlanForm(forms.ModelForm):
 
     field_order = ['year', 'saving_type'] + monthnames()
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        year = get_user().year
         self.fields['saving_type'].queryset = SavingType.objects.items(year)
 
         # inital values
@@ -117,7 +119,7 @@ class DayPlanForm(forms.ModelForm):
 
     field_order = ['year'] + monthnames()
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # inital values
@@ -141,7 +143,7 @@ class NecessaryPlanForm(forms.ModelForm):
 
     field_order = ['year', 'title'] + monthnames()
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # inital values
@@ -247,7 +249,7 @@ class CopyPlanForm(forms.Form):
                     obj.year = year_to
                     obj.save()
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # initail values

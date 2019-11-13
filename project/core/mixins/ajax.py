@@ -1,11 +1,11 @@
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 
-from .get import GetFormKwargsMixin, GetQuerysetMixin
+from .get import GetQuerysetMixin
 from .helpers import template_name
 
 
-class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
+class AjaxCreateUpdateMixin(GetQuerysetMixin):
     list_template_name = None
     list_render_output = True  # can turn-off render list
     object = None

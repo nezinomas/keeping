@@ -1,5 +1,6 @@
 import pytest
 from freezegun import freeze_time
+from mock import patch
 
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
@@ -84,12 +85,12 @@ def test_day_blank_data():
 # ----------------------------------------------------------------------------
 #                                                                  Saving Form
 # ----------------------------------------------------------------------------
-def test_saving_init():
+def test_saving_init(mock_crequest):
     SavingPlanForm()
 
 
 @pytest.mark.django_db
-def test_saving_valid_data():
+def test_saving_valid_data(mock_crequest):
     type_ = SavingTypeFactory()
     form = SavingPlanForm(data={
         'year': 1999,
@@ -108,7 +109,7 @@ def test_saving_valid_data():
 
 
 @freeze_time('1999-01-01')
-def test_saving_blank_data():
+def test_saving_blank_data(mock_crequest):
     form = SavingPlanForm(data={})
 
     assert not form.is_valid()
@@ -120,33 +121,42 @@ def test_saving_blank_data():
 
 
 @pytest.mark.django_db
-def test_saving_form_type_closed_in_past():
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_saving_form_type_closed_in_past(mock_):
+    mock_.return_value.user.year = 3000
+
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
-    form = SavingPlanForm(data={}, year=3000)
+    form = SavingPlanForm()
 
     assert 'S1' in str(form['saving_type'])
     assert 'S2' not in str(form['saving_type'])
 
 
 @pytest.mark.django_db
-def test_saving_form_type_closed_in_future():
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_saving_form_type_closed_in_future(mock_):
+    mock_.return_value.user.year = 1000
+
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
-    form = SavingPlanForm(data={}, year=1000)
+    form = SavingPlanForm()
 
     assert 'S1' in str(form['saving_type'])
     assert 'S2' in str(form['saving_type'])
 
 
 @pytest.mark.django_db
-def test_saving_form_type_closed_in_current_year():
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_saving_form_type_closed_in_current_year(mock_):
+    mock_.return_value.user.year = 2000
+
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
-    form = SavingPlanForm(data={}, year=2000)
+    form = SavingPlanForm()
 
     assert 'S1' in str(form['saving_type'])
     assert 'S2' in str(form['saving_type'])

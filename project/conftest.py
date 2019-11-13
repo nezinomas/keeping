@@ -35,6 +35,8 @@ def mock_crequest(monkeypatch, _fake_request):
 
     monkeypatch.setattr(mock_func, lambda: _fake_request)
 
+    return _fake_request
+
 
 @pytest.fixture()
 def login(client, user):

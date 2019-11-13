@@ -2,11 +2,10 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from mock import patch
 
 from ...accounts.factories import AccountFactory
 from ...savings.factories import SavingTypeFactory
-from ..factories import (SavingChangeFactory, SavingCloseFactory,
-                         TransactionFactory)
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
 
 
@@ -65,7 +64,7 @@ def test_transactions_price_null():
     assert 'price' in form.errors
 
 
-def test_savings_close_init():
+def test_savings_close_init(mock_crequest):
     SavingCloseForm()
 
 
@@ -94,7 +93,7 @@ def test_savings_close_valid_data(mock_crequest):
 
 
 @pytest.mark.django_db
-def test_savings_close_blank_data():
+def test_savings_close_blank_data(mock_crequest):
     form = SavingCloseForm(data={})
 
     assert not form.is_valid()
@@ -106,7 +105,7 @@ def test_savings_close_blank_data():
 
 
 @pytest.mark.django_db
-def test_savings_close_price_null():
+def test_savings_close_price_null(mock_crequest):
     a_from = SavingTypeFactory()
     a_to = AccountFactory(title='Account2')
 
@@ -123,39 +122,48 @@ def test_savings_close_price_null():
 
 
 @pytest.mark.django_db
-def test_savings_close_form_type_closed_in_past():
-    t = SavingTypeFactory(title='S1')
-    t = SavingTypeFactory(title='S2', closed=2000)
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_savings_close_form_type_closed_in_past(mock_):
+    mock_.return_value.user.year = 3000
 
-    form = SavingCloseForm(data={}, year=3000)
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingCloseForm(data={})
 
     assert 'S1' in str(form['from_account'])
     assert 'S2' not in str(form['from_account'])
 
 
 @pytest.mark.django_db
-def test_savings_close_form_type_closed_in_future():
-    t = SavingTypeFactory(title='S1')
-    t = SavingTypeFactory(title='S2', closed=2000)
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_savings_close_form_type_closed_in_future(mock_):
+    mock_.return_value.user.year = 1000
 
-    form = SavingCloseForm(data={}, year=1000)
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingCloseForm(data={})
 
     assert 'S1' in str(form['from_account'])
     assert 'S2' in str(form['from_account'])
 
 
 @pytest.mark.django_db
-def test_savings_close_form_type_closed_in_current_year():
-    t = SavingTypeFactory(title='S1')
-    t = SavingTypeFactory(title='S2', closed=2000)
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_savings_close_form_type_closed_in_current_year(mock_):
+    mock_.return_value.user.year = 2000
 
-    form = SavingCloseForm(data={}, year=2000)
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingCloseForm(data={})
 
     assert 'S1' in str(form['from_account'])
     assert 'S2' in str(form['from_account'])
 
 
-def test_savings_change_init():
+def test_savings_change_init(mock_crequest):
     SavingChangeForm()
 
 
@@ -184,7 +192,7 @@ def test_savings_change_valid_data(mock_crequest):
 
 
 @pytest.mark.django_db
-def test_savings_change_blank_data():
+def test_savings_change_blank_data(mock_crequest):
     form = SavingChangeForm(data={})
 
     assert not form.is_valid()
@@ -196,7 +204,7 @@ def test_savings_change_blank_data():
 
 
 @pytest.mark.django_db
-def test_savings_change_price_null():
+def test_savings_change_price_null(mock_crequest):
     a_from = SavingTypeFactory()
     a_to = SavingTypeFactory(title='Savings2')
 
@@ -212,11 +220,14 @@ def test_savings_change_price_null():
     assert 'price' in form.errors
 
 @pytest.mark.django_db
-def test_savings_change_form_type_closed_in_past():
-    t = SavingTypeFactory(title='S1')
-    t = SavingTypeFactory(title='S2', closed=2000)
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_savings_change_form_type_closed_in_past(mock_):
+    mock_.return_value.user.year = 3000
 
-    form = SavingChangeForm(data={}, year=3000)
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingChangeForm(data={})
 
     assert 'S1' in str(form['from_account'])
     assert 'S2' not in str(form['from_account'])
@@ -226,11 +237,14 @@ def test_savings_change_form_type_closed_in_past():
 
 
 @pytest.mark.django_db
-def test_savings_change_form_type_closed_in_future():
-    t = SavingTypeFactory(title='S1')
-    t = SavingTypeFactory(title='S2', closed=2000)
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_savings_change_form_type_closed_in_future(mock_):
+    mock_.return_value.user.year = 1000
 
-    form = SavingChangeForm(data={}, year=1000)
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingChangeForm(data={})
 
     assert 'S1' in str(form['from_account'])
     assert 'S2' in str(form['from_account'])
@@ -240,11 +254,14 @@ def test_savings_change_form_type_closed_in_future():
 
 
 @pytest.mark.django_db
-def test_savings_change_form_type_closed_in_current_year():
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_savings_change_form_type_closed_in_current_year(mock_):
+    mock_.return_value.user.year = 2000
+
     t = SavingTypeFactory(title='S1')
     t = SavingTypeFactory(title='S2', closed=2000)
 
-    form = SavingChangeForm(data={}, year=2000)
+    form = SavingChangeForm(data={})
 
     assert 'S1' in str(form['from_account'])
     assert 'S2' in str(form['from_account'])

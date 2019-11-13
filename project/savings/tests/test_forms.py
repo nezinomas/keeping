@@ -2,13 +2,14 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from mock import patch
 
 from ...accounts.factories import AccountFactory
-from ..factories import SavingFactory, SavingTypeFactory
+from ..factories import SavingTypeFactory
 from ..forms import SavingForm, SavingTypeForm
 
 
-def test_saving_init():
+def test_saving_init(mock_crequest):
     SavingForm()
 
 
@@ -39,7 +40,7 @@ def test_saving_valid_data(mock_crequest):
 
 
 @pytest.mark.django_db
-def test_saving_blank_data():
+def test_saving_blank_data(mock_crequest):
     form = SavingForm(data={})
 
     assert not form.is_valid()
@@ -51,7 +52,7 @@ def test_saving_blank_data():
 
 
 @pytest.mark.django_db
-def test_saving_price_null():
+def test_saving_price_null(mock_crequest):
     a = AccountFactory()
     t = SavingTypeFactory()
 
@@ -123,33 +124,42 @@ def test_saving_type_title_too_short():
 
 
 @pytest.mark.django_db
-def test_saving_form_type_closed_in_past():
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_saving_form_type_closed_in_past(mock_):
+    mock_.return_value.user.year = 3000
+
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
-    form = SavingForm(data={}, year=3000)
+    form = SavingForm(data={})
 
     assert 'S1' in str(form['saving_type'])
     assert 'S2' not in str(form['saving_type'])
 
 
 @pytest.mark.django_db
-def test_saving_form_type_closed_in_future():
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_saving_form_type_closed_in_future(mock_):
+    mock_.return_value.user.year = 1000
+
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
-    form = SavingForm(data={}, year=1000)
+    form = SavingForm(data={})
 
     assert 'S1' in str(form['saving_type'])
     assert 'S2' in str(form['saving_type'])
 
 
 @pytest.mark.django_db
-def test_saving_form_type_closed_in_current_year():
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_saving_form_type_closed_in_current_year(mock_):
+    mock_.return_value.user.year = 2000
+
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
-    form = SavingForm(data={}, year=2000)
+    form = SavingForm(data={})
 
     assert 'S1' in str(form['saving_type'])
     assert 'S2' in str(form['saving_type'])

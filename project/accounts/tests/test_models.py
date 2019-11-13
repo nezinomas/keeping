@@ -7,7 +7,7 @@ from ..models import AccountBalance
 def test_str():
     actual = AccountFactory.build()
 
-    assert 'Account1' == str(actual)
+    assert str(actual) == 'Account1'
 
 
 def test_account_balance_init():
@@ -49,7 +49,5 @@ def test_account_balance_queries(django_assert_num_queries):
     AccountBalanceFactory(account=a1)
     AccountBalanceFactory(account=a2)
 
-    with django_assert_num_queries(1) as captured:
-        q = AccountBalance.objects.items()
-        for i in q:
-            title = i['title']
+    with django_assert_num_queries(1):
+        list(AccountBalance.objects.items().values())

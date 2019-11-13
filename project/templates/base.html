@@ -74,6 +74,19 @@
               href="{% url 'plans:plans_index' %}">Planavimas</a>
           </li>
         </ul>
+
+        <div class="collapse navbar-collapse">
+          <ul class="navbar navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true"
+                aria-expanded="false">{{ user.username }}</a>
+              <div class="dropdown-menu dropdown-menu-right">
+                <a class="dropdown-item btn-sm pl-2" href="{% url 'auths:logout' %}">Log out</a>
+              </div>
+            </li>
+          </ul>
+        </div>
+
       </nav>
 
       {% block content %}{% endblock content %}
