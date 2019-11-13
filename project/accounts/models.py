@@ -1,6 +1,6 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import Case, F, When
+from django.db.models import F
 
 from ..core.models import TitleAbstract
 
