@@ -63,7 +63,7 @@ def test_day_expense_type(expenses_january):
     assert actual == expect
 
 
-def test_expense_type_items():
+def test_expense_type_items(mock_crequest):
     ExpenseTypeFactory(title='T1')
     ExpenseTypeFactory(title='T2')
 
@@ -83,7 +83,7 @@ def test_expense_type_items_user(mock_crequest):
     assert actual.count() == 1
 
 
-def test_expense_type_items_query_count(django_assert_max_num_queries):
+def test_expense_type_items_query_count(django_assert_max_num_queries, mock_crequest):
     ExpenseTypeFactory(title='T1')
     ExpenseTypeFactory(title='T2')
 
@@ -92,7 +92,7 @@ def test_expense_type_items_query_count(django_assert_max_num_queries):
 
 
 def test_post_save_expense_type_insert_new(mock_crequest, expenses):
-    obj = ExpenseType(title='e1')
+    obj = ExpenseType(title='e1', user=UserFactory())
     obj.save()
 
     actual = AccountBalance.objects.items()

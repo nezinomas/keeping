@@ -15,9 +15,8 @@ from ..core.models import TitleAbstract
 class ExpenseTypeQuerySet(models.QuerySet):
     def _related(self):
         user = get_user()
-
         return (
-            self.prefetch_related('expensename_set')
+            self.prefetch_related('user', 'expensename_set')
             .filter(user=user))
 
     def items(self):
@@ -34,11 +33,11 @@ class ExpenseType(TitleAbstract):
         default=False
     )
 
-    class Meta:
-        ordering = ['title']
-
     # Managers
     objects = ExpenseTypeQuerySet.as_manager()
+
+    class Meta:
+        ordering = ['title']
 
 
 class ExpenseNameQuerySet(models.QuerySet):

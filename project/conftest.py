@@ -24,7 +24,7 @@ def user():
 @pytest.fixture()
 def _fake_request(rf):
     request = rf.get('/fake/')
-    request.user = UserFactory.build()
+    request.user = UserFactory()
 
     return request
 
