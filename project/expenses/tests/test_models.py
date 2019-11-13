@@ -29,7 +29,7 @@ def expenses_more():
 def test_expense_type_str():
     e = ExpenseTypeFactory.build()
 
-    assert 'Expense Type' == str(e)
+    assert str(e) == 'Expense Type'
 
 
 def test_month_expense_type(expenses):
@@ -40,7 +40,7 @@ def test_month_expense_type(expenses):
 
     actual = [*Expense.objects.month_expense_type(1999)]
 
-    assert expect == actual
+    assert actual == expect
 
 
 def test_day_expense_type(expenses_january):
@@ -60,7 +60,7 @@ def test_day_expense_type(expenses_january):
 
     actual = [*Expense.objects.day_expense_type(1999, 1)]
 
-    assert expect == actual
+    assert actual == expect
 
 
 def test_expense_type_items():
@@ -69,7 +69,7 @@ def test_expense_type_items():
 
     actual = ExpenseType.objects.items()
 
-    assert 2 == actual.count()
+    assert actual.count() == 2
 
 
 def test_expense_type_items_user(mock_crequest):
@@ -97,7 +97,7 @@ def test_post_save_expense_type_insert_new(mock_crequest, expenses):
 
     actual = AccountBalance.objects.items()
 
-    assert 2 == actual.count()
+    assert actual.count() == 2
 
 
 # ----------------------------------------------------------------------------
@@ -106,7 +106,7 @@ def test_post_save_expense_type_insert_new(mock_crequest, expenses):
 def test_expnese_name_str():
     e = ExpenseNameFactory.build()
 
-    assert 'Expense Name' == str(e)
+    assert str(e) == 'Expense Name'
 
 
 def test_expense_name_items():
@@ -115,7 +115,7 @@ def test_expense_name_items():
 
     actual = ExpenseName.objects.items()
 
-    assert 2 == actual.count()
+    assert actual.count() == 2
 
 
 def test_expense_name_year():
@@ -124,8 +124,8 @@ def test_expense_name_year():
 
     actual = ExpenseName.objects.year(2000)
 
-    assert 1 == actual.count()
-    assert 'N1' == actual[0].title
+    assert actual.count() == 1
+    assert actual[0].title == 'N1'
 
 
 def test_expense_name_year_02():
@@ -134,9 +134,9 @@ def test_expense_name_year_02():
 
     actual = ExpenseName.objects.year(2000)
 
-    assert 2 == actual.count()
-    assert 'N2' == actual[0].title
-    assert 'N1' == actual[1].title
+    assert actual.count() == 2
+    assert actual[0].title == 'N2'
+    assert actual[1].title == 'N1'
 
 
 def test_expense_name_parent():
@@ -149,7 +149,7 @@ def test_expense_name_parent():
 
     actual = ExpenseName.objects.parent(p1.pk)
 
-    assert 2 == actual.count()
+    assert actual.count() == 2
 
 
 @pytest.mark.django_db
@@ -167,7 +167,7 @@ def test_expense_name_no_dublicates():
 def test_expense_str():
     e = ExpenseFactory.build()
 
-    assert '1999-01-01/Expense Type/Expense Name' == str(e)
+    assert str(e) == '1999-01-01/Expense Type/Expense Name'
 
 
 def test_expense_year():
@@ -176,7 +176,7 @@ def test_expense_year():
 
     actual = Expense.objects.year(2000)
 
-    assert 1 == actual.count()
+    assert actual.count() == 1
 
 
 def test_expense_year_query_count(django_assert_max_num_queries):
@@ -193,7 +193,7 @@ def test_expense_items():
 
     actual = Expense.objects.items()
 
-    assert 2 == actual.count()
+    assert actual.count() == 2
 
 
 def test_expense_items_query_count(django_assert_max_num_queries):
@@ -244,7 +244,7 @@ def test_month_name_sum():
 
     actual = Expense.objects.month_name_sum(1999)
 
-    assert expect == [*actual]
+    assert [*actual] == expect
 
 
 def test_summary(expenses):
@@ -261,4 +261,4 @@ def test_summary(expenses):
 
     actual = [*Expense.objects.summary(1999).order_by('account__title')]
 
-    assert expect == actual
+    assert actual == expect
