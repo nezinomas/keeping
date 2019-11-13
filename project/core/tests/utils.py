@@ -35,7 +35,7 @@ def change_profile_year(client, year=1):
     response = client.get(url)
 
     u = response.wsgi_request.user
-    u.profile.year = year
+    u.year = year
     u.save()
 
 

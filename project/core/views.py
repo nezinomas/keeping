@@ -12,7 +12,7 @@ from .lib.date import years
 def set_year(request, year, view_name):
 
     user = request.user
-    user.profile.year = year
+    user.year = year
     user.save()
 
     return redirect(
@@ -22,7 +22,7 @@ def set_year(request, year, view_name):
 @login_required
 def set_month(request, month, view_name):
     user = request.user
-    user.profile.month = month
+    user.month = month
     user.save()
 
     return redirect(

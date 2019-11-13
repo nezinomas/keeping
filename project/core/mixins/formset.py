@@ -17,7 +17,7 @@ class FormsetMixin():
             return _list
 
         model = self._get_type_model()
-        _objects = model.objects.items(self.request.user.profile.year)
+        _objects = model.objects.items(self.request.user.year)
         for _object in _objects:
             _list.append({'price': 0, foreign_key[0]: _object})
 
@@ -31,7 +31,7 @@ class FormsetMixin():
 
     def _get_formset(self, post=None):
         form = self.get_form_class()
-        year = self.request.user.profile.year
+        year = self.request.user.year
         _formset = (
             modelformset_factory(
                 extra=0,

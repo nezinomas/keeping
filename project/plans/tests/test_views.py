@@ -128,7 +128,7 @@ def test_view_incomes_update(client, login):
 
 @pytest.mark.django_db()
 def test_view_incomes_update_year_not_match(client, login):
-    # if year in Plan and urser.profile not match, 404 error
+    # if year in Plan and urser not match, 404 error
     p = IncomePlanFactory()
 
     url = reverse('plans:incomes_plan_update', kwargs={'pk': p.pk})
@@ -203,7 +203,7 @@ def test_view_expenses_update(client, login):
 
 @pytest.mark.django_db()
 def test_view_expenses_update_year_not_match(client, login):
-    # if year in Plan and urser.profile not match, 404 error
+    # if year in Plan and urser. not match, 404 error
     p = ExpensePlanFactory()
 
     url = reverse('plans:expenses_plan_update', kwargs={'pk': p.pk})
@@ -278,7 +278,7 @@ def test_view_savings_update(client, login):
 
 @pytest.mark.django_db()
 def test_view_savings_update_year_not_match(client, login):
-    # if year in Plan and urser.profile not match, 404 error
+    # if year in Plan and urser not match, 404 error
     p = SavingPlanFactory()
 
     url = reverse('plans:savings_plan_update', kwargs={'pk': p.pk})
@@ -352,7 +352,7 @@ def test_view_days_update(client, login):
 
 @pytest.mark.django_db()
 def test_view_days_update_year_not_match(client, login):
-    # if year in Plan and urser.profile not match, 404 error
+    # if year in Plan and urser not match, 404 error
     p = DayPlanFactory()
 
     url = reverse('plans:days_plan_update', kwargs={'pk': p.pk})
@@ -426,7 +426,7 @@ def test_view_necessarys_update(client, login):
 
 @pytest.mark.django_db()
 def test_view_necessarys_update_year_not_match(client, login):
-    # if year in Plan and urser.profile not match, 404 error
+    # if year in Plan and urser not match, 404 error
     p = NecessaryPlanFactory()
 
     url = reverse('plans:necessarys_plan_update', kwargs={'pk': p.pk})

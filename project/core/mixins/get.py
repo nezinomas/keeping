@@ -4,8 +4,8 @@ class GetQuerysetMixin():
     month = False
 
     def get_queryset(self):
-        year = self.request.user.profile.year
-        month = self.request.user.profile.month
+        year = self.request.user.year
+        month = self.request.user.month
 
         try:
             if self.month:
@@ -30,6 +30,6 @@ class GetQuerysetMixin():
 class GetFormKwargsMixin():
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['year'] = self.request.user.profile.year
+        kwargs['year'] = self.request.user.year
 
         return kwargs

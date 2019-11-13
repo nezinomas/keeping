@@ -36,7 +36,7 @@ class Update(UpdateAjaxMixin):
 
 def load_expense_name(request):
     pk = request.GET.get('expense_type')
-    objects = models.ExpenseName.objects.parent(pk).year(request.user.profile.year)
+    objects = models.ExpenseName.objects.parent(pk).year(request.user.year)
 
     return render(
         request,
@@ -46,7 +46,7 @@ def load_expense_name(request):
 
 
 def reload(request):
-    year = request.user.profile.year
+    year = request.user.year
     ajax_trigger = request.GET.get('ajax_trigger')
     name = 'expenses/includes/reload.html'
 
