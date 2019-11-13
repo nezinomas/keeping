@@ -1,6 +1,5 @@
 from typing import Dict, List
 
-from crequest.middleware import CrequestMiddleware
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -14,6 +13,7 @@ from ..savings.lib.balance import Balance as SavingStats
 from ..savings.models import Saving, SavingBalance, SavingType
 from ..transactions.models import SavingChange, SavingClose, Transaction
 from .lib.summary import collect_summary_data
+from .lib.utils import get_user
 
 
 # ----------------------------------------------------------------------------
@@ -63,8 +63,7 @@ def post_save_pension_stats(instance: object, year: int = None,
 class SignalBase():
     def __init__(self, instance: object, year: int = None):
         if not year:
-            request = CrequestMiddleware.get_request()
-            self.year = request.user.year
+            self.year = get_user().year
         else:
             self.year = year
 

@@ -6,6 +6,7 @@ from django import forms
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
+from ..core.lib.utils import get_user
 from .models import Expense, ExpenseName, ExpenseType
 
 
@@ -28,7 +29,7 @@ class ExpenseForm(forms.ModelForm):
     field_order = ['date', 'expense_type', 'expense_name', 'account',
                    'total_sum', 'quantity', 'remark', 'price', 'exception']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # field translation
@@ -53,13 +54,11 @@ class ExpenseForm(forms.ModelForm):
         self.fields['expense_name'].queryset = Expense.objects.none()
 
         # chained dropdown
-        id = ChainedDropDown(self, 'expense_type').parent_field_id
-        if id:
-            if not year:
-                year = datetime.now().year
-
+        _id = ChainedDropDown(self, 'expense_type').parent_field_id
+        if _id:
+            year = get_user().year
             self.fields['expense_name'].queryset = (
-                ExpenseName.objects.parent(id).year(year)
+                ExpenseName.objects.parent(_id).year(year)
             )
 
         self.helper = FormHelper()
@@ -71,7 +70,7 @@ class ExpenseTypeForm(forms.ModelForm):
         model = ExpenseType
         fields = '__all__'
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.helper = FormHelper()
@@ -92,7 +91,7 @@ class ExpenseNameForm(forms.ModelForm):
 
     field_order = ['parent', 'title', 'valid_for']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.helper = FormHelper()

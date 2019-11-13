@@ -24,7 +24,7 @@ class IncomeForm(forms.ModelForm):
 
     field_order = ['date', 'income_type', 'account', 'price', 'remark']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # form inputs settings
@@ -50,7 +50,7 @@ class IncomeTypeForm(forms.ModelForm):
         model = IncomeType
         fields = ['title']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields['title'].label = 'Pajamų rūšis'

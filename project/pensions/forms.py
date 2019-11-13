@@ -24,7 +24,7 @@ class PensionForm(forms.ModelForm):
 
     field_order = ['date', 'pension_type', 'price', 'remark']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # form inputs settings
@@ -49,7 +49,7 @@ class PensionTypeForm(forms.ModelForm):
         model = PensionType
         fields = ['title']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields['title'].label = 'Fondo pavadinimas'

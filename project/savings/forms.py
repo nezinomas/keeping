@@ -5,6 +5,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.lib.utils import get_user
 from .models import Saving, SavingType
 
 
@@ -22,7 +23,7 @@ class SavingTypeForm(forms.ModelForm):
             ),
         }
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields['title'].label = 'Fondas'
@@ -48,7 +49,7 @@ class SavingForm(forms.ModelForm):
 
     field_order = ['date', 'saving_type', 'account', 'price', 'fee', 'remark']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # form inputs settings
@@ -67,6 +68,7 @@ class SavingForm(forms.ModelForm):
         self.fields['remark'].label = 'Pastaba'
         self.fields['saving_type'].label = 'Fondas'
 
+        year = get_user().year
         self.fields['saving_type'].queryset = SavingType.objects.items(year)
 
         self.helper = FormHelper()

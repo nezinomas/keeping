@@ -1,12 +1,13 @@
 from datetime import datetime
 
 from bootstrap_datepicker_plus import DatePickerInput
+from ..core.lib.utils import get_user
 from crispy_forms.helper import FormHelper
 from django import forms
 
-from ..core.helpers.helper_forms import set_field_properties, ChainedDropDown
-from .models import Transaction, SavingClose, SavingChange, SavingType
 from ..accounts.models import Account
+from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
+from .models import SavingChange, SavingClose, SavingType, Transaction
 
 
 class TransactionForm(forms.ModelForm):
@@ -25,7 +26,7 @@ class TransactionForm(forms.ModelForm):
 
     field_order = ['date', 'from_account', 'to_account', 'price']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields['price'].initial = '0.01'
@@ -40,10 +41,10 @@ class TransactionForm(forms.ModelForm):
         self.fields['to_account'].label = 'Į sąskaitą'
 
         # chained dropdown
-        id = ChainedDropDown(self, 'from_account').parent_field_id
-        if id:
+        _id = ChainedDropDown(self, 'from_account').parent_field_id
+        if _id:
             self.fields['to_account'].queryset = (
-                Account.objects.exclude(pk=id)
+                Account.objects.exclude(pk=_id)
             )
 
         self.helper = FormHelper()
@@ -66,8 +67,10 @@ class SavingCloseForm(forms.ModelForm):
 
     field_order = ['date', 'from_account', 'to_account', 'price', 'fee']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        year = get_user().year
 
         self.fields['from_account'].queryset = SavingType.objects.items(year)
 
@@ -107,8 +110,10 @@ class SavingChangeForm(forms.ModelForm):
 
     field_order = ['date', 'from_account', 'to_account', 'price', 'fee']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        year = get_user().year
 
         self.fields['from_account'].queryset = SavingType.objects.items(year)
         self.fields['to_account'].queryset = SavingType.objects.items(year)
@@ -130,10 +135,10 @@ class SavingChangeForm(forms.ModelForm):
         self.fields['to_account'].label = 'Į sąskaitą'
 
         # chained dropdown
-        id = ChainedDropDown(self, 'from_account').parent_field_id
-        if id:
+        _id = ChainedDropDown(self, 'from_account').parent_field_id
+        if _id:
             self.fields['to_account'].queryset = (
-                SavingType.objects.exclude(pk=id)
+                SavingType.objects.exclude(pk=_id)
             )
 
         self.helper = FormHelper()

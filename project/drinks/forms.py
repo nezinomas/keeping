@@ -24,7 +24,7 @@ class DrinkForm(forms.ModelForm):
 
     field_order = ['date', 'quantity']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # inital values
@@ -48,7 +48,7 @@ class DrinkTargetForm(forms.ModelForm):
 
     field_order = ['year', 'quantity']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # inital values
