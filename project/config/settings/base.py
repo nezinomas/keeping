@@ -1,6 +1,10 @@
 import os
 from ..secrets import get_secret
 
+
+AUTH_USER_MODEL = 'auths.User'
+
+
 # ================   PATH CONFIGURATION
 # ..\root_catalog\project_catalog\config
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
