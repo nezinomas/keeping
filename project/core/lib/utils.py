@@ -1,9 +1,15 @@
-from collections import Counter, ChainMap
+from collections import Counter
 from typing import Any, Dict, List
 
+from crequest.middleware import CrequestMiddleware
 from django.db.models.query import QuerySet
 
 from .date import monthname
+
+
+def get_user():
+    request = CrequestMiddleware.get_request()
+    return request.user
 
 
 def get_value_from_dict(arr: Dict, month: int) -> float:
