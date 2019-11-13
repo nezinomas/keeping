@@ -7,18 +7,29 @@ from django.db.models import Case, Count, F, Q, Sum, When
 from django.db.models.functions import TruncDay, TruncMonth
 
 from ..accounts.models import Account
+from ..auths.models import User
+from ..core.lib.utils import get_user
 from ..core.models import TitleAbstract
 
 
 class ExpenseTypeQuerySet(models.QuerySet):
     def _related(self):
-        return self.prefetch_related('expensename_set')
+        user = get_user()
+
+        return (
+            self.prefetch_related('expensename_set')
+            .filter(user=user))
 
     def items(self):
         return self._related()
 
 
 class ExpenseType(TitleAbstract):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='expense_types'
+    )
     necessary = models.BooleanField(
         default=False
     )

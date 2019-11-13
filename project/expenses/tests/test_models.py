@@ -72,6 +72,17 @@ def test_expense_type_items():
     assert 2 == actual.count()
 
 
+def test_expense_type_items_user(mock_crequest):
+    mock_crequest.user = UserFactory(username='u1')
+
+    ExpenseTypeFactory(title='T1', user=UserFactory(username='u1'))
+    ExpenseTypeFactory(title='T2', user=UserFactory(username='u2'))
+
+    actual = ExpenseType.objects.items()
+
+    assert actual.count() == 1
+
+
 def test_expense_type_items_query_count(django_assert_max_num_queries):
     ExpenseTypeFactory(title='T1')
     ExpenseTypeFactory(title='T2')

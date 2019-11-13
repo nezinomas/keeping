@@ -5,6 +5,7 @@ import factory
 from django.db.models.signals import post_save
 
 from ..accounts.factories import AccountFactory
+from ..auths.factories import UserFactory
 from .models import Expense, ExpenseName, ExpenseType
 
 
@@ -14,6 +15,7 @@ class ExpenseTypeFactory(factory.DjangoModelFactory):
         model = ExpenseType
         django_get_or_create = ('title',)
 
+    user = factory.SubFactory(UserFactory)
     title = 'Expense Type'
 
 
