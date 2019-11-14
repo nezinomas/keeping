@@ -43,8 +43,8 @@ def get_user(monkeypatch):
 
 @pytest.fixture()
 def client_logged(client):
-    u = UserFactory()
-    client.login(username=u.username, password=u.password)
+    UserFactory()
+    client.login(username='bob', password='123')
 
     return client
 
