@@ -38,6 +38,8 @@ def get_user(monkeypatch):
     mock_func = 'project.core.lib.utils.get_user'
     monkeypatch.setattr(mock_func, lambda: user)
 
+    return user
+
 
 @pytest.fixture()
 def client_logged(client):

@@ -33,6 +33,27 @@ class ExpenseForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # inital values
+        self.fields['date'].initial = datetime.now()
+        self.fields['account'].initial = Account.objects.first()
+        self.fields['price'].initial = '0.00'
+        self.fields['expense_name'].queryset = Expense.objects.none()
+
+        # overwrite ForeignKey expense_type queryset
+        self.fields['expense_type'].queryset = ExpenseType.objects.items()
+
+        # chained dropdown to select expense_names
+        _id = ChainedDropDown(self, 'expense_type').parent_field_id
+        if _id:
+            year = utils.get_user().year
+            self.fields['expense_name'].queryset = (
+                ExpenseName.objects.parent(_id).year(year)
+            )
+
+        # form inputs settings
+        self.fields['price'].widget.attrs = {'readonly': True, 'step': '0.01'}
+        self.fields['remark'].widget.attrs['rows'] = 3
+
         # field translation
         self.fields['date'].label = 'Data'
         self.fields['price'].label = 'Visa kaina'
@@ -44,23 +65,7 @@ class ExpenseForm(forms.ModelForm):
         self.fields['account'].label = 'Sąskaita'
         self.fields['total_sum'].label = 'Kaina'
 
-        # form inputs settings
-        self.fields['price'].widget.attrs = {'readonly': True, 'step': '0.01'}
-        self.fields['remark'].widget.attrs['rows'] = 3
 
-        # inital values
-        self.fields['date'].initial = datetime.now()
-        self.fields['account'].initial = Account.objects.first()
-        self.fields['price'].initial = '0.00'
-        self.fields['expense_name'].queryset = Expense.objects.none()
-
-        # chained dropdown
-        _id = ChainedDropDown(self, 'expense_type').parent_field_id
-        if _id:
-            year = utils.get_user().year
-            self.fields['expense_name'].queryset = (
-                ExpenseName.objects.parent(_id).year(year)
-            )
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

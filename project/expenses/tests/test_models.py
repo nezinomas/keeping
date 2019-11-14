@@ -32,7 +32,7 @@ def test_expense_type_str():
     assert str(e) == 'Expense Type'
 
 
-def test_month_expense_type(expenses):
+def test_month_expense_type(get_user, expenses):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(0.5), 'title': 'Expense Type'},
         {'date': date(1999, 12, 1), 'sum': Decimal(1.25), 'title': 'Expense Type'},
@@ -43,7 +43,7 @@ def test_month_expense_type(expenses):
     assert actual == expect
 
 
-def test_day_expense_type(expenses_january):
+def test_day_expense_type(get_user, expenses_january):
     expect = [
         {
             'date': date(1999, 1, 1),
@@ -189,7 +189,23 @@ def test_expense_str():
     assert str(e) == '1999-01-01/Expense Type/Expense Name'
 
 
-def test_expense_year():
+def test_expense_related(get_user):
+    u = UserFactory(username='tom')
+
+    t1 = ExpenseTypeFactory(title='T1')  # user bob, current user
+    t2 = ExpenseTypeFactory(title='T2', user=u)  # user tom
+
+    ExpenseFactory(expense_type=t1)
+    ExpenseFactory(expense_type=t2)
+
+    # must by selected bob expenses
+    actual = Expense.objects.related()
+
+    assert len(actual) == 1
+    assert str(actual[0].expense_type) == 'T1'
+
+
+def test_expense_year(get_user):
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(2000, 1, 1))
 
@@ -198,7 +214,7 @@ def test_expense_year():
     assert actual.count() == 1
 
 
-def test_expense_year_query_count(django_assert_max_num_queries):
+def test_expense_year_query_count(get_user, django_assert_max_num_queries):
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(2000, 1, 1))
 
@@ -206,7 +222,7 @@ def test_expense_year_query_count(django_assert_max_num_queries):
         list(Expense.objects.year(2000).values())
 
 
-def test_expense_items():
+def test_expense_items(get_user):
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(2000, 1, 1))
 
@@ -215,7 +231,7 @@ def test_expense_items():
     assert actual.count() == 2
 
 
-def test_expense_items_query_count(django_assert_max_num_queries):
+def test_expense_items_query_count(get_user, django_assert_max_num_queries):
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(2000, 1, 1))
 
@@ -223,7 +239,7 @@ def test_expense_items_query_count(django_assert_max_num_queries):
         list(Expense.objects.items().values('expense_type__title'))
 
 
-def test_month_name_sum():
+def test_month_name_sum(get_user):
     ExpenseFactory(
         date=date(1974, 1, 1),
         price=1,
@@ -266,7 +282,7 @@ def test_month_name_sum():
     assert [*actual] == expect
 
 
-def test_summary(expenses):
+def test_summary(get_user, expenses):
     expect = [{
         'title': 'Account1',
         'e_past': 2.5,

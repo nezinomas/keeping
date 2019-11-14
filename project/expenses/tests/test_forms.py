@@ -11,40 +11,38 @@ from ..forms import ExpenseForm, ExpenseNameForm, ExpenseTypeForm
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture()
-def _expense_type():
-    ExpenseTypeFactory.reset_sequence()
-    return ExpenseTypeFactory()
-
-
-@pytest.fixture()
-def _expense_name():
-    return ExpenseNameFactory()
-
-
-@pytest.fixture()
-def _account():
-    return AccountFactory()
-
-
 # ----------------------------------------------------------------------------
 #                                                                      Expense
 # ----------------------------------------------------------------------------
-def test_expense_form_init():
+def test_expense_form_init(get_user):
     ExpenseForm(data={})
 
 
-def test_exepense_form_valid_data(get_user,
-                                  _expense_type, _expense_name,
-                                  _account):
+def test_expense_current_user_expense_types(get_user):
+    u = UserFactory(username='tom')
+
+    ExpenseTypeFactory(title='T1')  # user bob, current user
+    ExpenseTypeFactory(title='T2', user=u)  # user tom
+
+    form = ExpenseForm().as_p()
+
+    assert 'T1' in form
+    assert 'T2' not in form
+
+
+def test_exepense_form_valid_data(get_user):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(parent=t)
+
     form = ExpenseForm(
         data={
-            'date': '1970-01-01',
+            'date': '1999-01-01',
             'price': 1.12,
             'quantity': 1,
-            'expense_type': 1,
-            'expense_name': 1,
-            'account': 1,
+            'expense_type': t.pk,
+            'expense_name': n.pk,
+            'account': a.pk,
             'remark': None,
             'exception': None
         },
@@ -53,16 +51,15 @@ def test_exepense_form_valid_data(get_user,
     assert form.is_valid()
 
     e = form.save()
-
-    assert e.date == date(1970, 1, 1)
+    assert e.date == date(1999, 1, 1)
     assert e.price == round(Decimal(1.12), 2)
-    assert e.expense_type == _expense_type
-    assert e.expense_name == _expense_name
-    assert e.account == _account
+    assert e.expense_type == t
+    assert e.expense_name == n
+    assert e.account == a
     assert e.quantity == 1
 
 
-def test_expenses_form_blank_data():
+def test_expenses_form_blank_data(get_user):
     form = ExpenseForm(data={})
 
     assert not form.is_valid()

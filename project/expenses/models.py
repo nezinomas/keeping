@@ -101,6 +101,7 @@ class ExpenseQuerySet(models.QuerySet):
         qs = (
             self
             .select_related('expense_type', 'expense_name', 'account')
+            .filter(expense_type__user=user)
         )
         return qs
 
