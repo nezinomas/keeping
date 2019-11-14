@@ -1,12 +1,12 @@
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
 
 import pytest
 
 from ...accounts.factories import AccountFactory
+from ...auths.factories import UserFactory
 from ..factories import ExpenseNameFactory, ExpenseTypeFactory
 from ..forms import ExpenseForm, ExpenseNameForm, ExpenseTypeForm
-from .helper_session import add_session, add_session_to_request
 
 pytestmark = pytest.mark.django_db
 
@@ -151,6 +151,18 @@ def test_expense_type_title_too_short():
 # ----------------------------------------------------------------------------
 def test_expense_name_init():
     ExpenseNameForm()
+
+
+def test_expense_name_current_user_expense_types(get_user):
+    u = UserFactory(username='tom')
+
+    ExpenseTypeFactory(title='T1') # user bob, current user
+    ExpenseTypeFactory(title='T2', user=u) # user tom
+
+    form = ExpenseNameForm().as_p()
+
+    assert 'T1' in form
+    assert 'T2' not in form
 
 
 @pytest.mark.django_db

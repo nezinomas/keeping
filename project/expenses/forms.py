@@ -95,9 +95,14 @@ class ExpenseNameForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        # overwrite ForeignKey parent queryset
+        self.fields['parent'].queryset = ExpenseType.objects.items()
 
+        # field labels
         self.fields['parent'].label = 'Išlaidų rūšis'
         self.fields['title'].label = 'Išlaidų pavadinimas'
         self.fields['valid_for'].label = 'Galioja tik'
+
+        # crispy forms settings
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
