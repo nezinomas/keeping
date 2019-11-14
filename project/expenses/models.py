@@ -92,14 +92,23 @@ class ExpenseName(TitleAbstract):
 
 
 class ExpenseQuerySet(models.QuerySet):
-    def _related(self):
-        return self.select_related('expense_type', 'expense_name', 'account')
+    def related(self):
+        user = utils.get_user()
+        qs = (
+            self
+            .select_related('expense_type', 'expense_name', 'account')
+        )
+        return qs
 
     def year(self, year):
-        return self._related().filter(date__year=year)
+        return (
+            self
+            .related()
+            .filter(date__year=year)
+        )
 
     def items(self):
-        return self._related().all()
+        return self.related().all()
 
     def month_expense_type(self, year):
         return (
