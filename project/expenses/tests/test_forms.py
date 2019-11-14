@@ -85,8 +85,16 @@ def test_expense_type_init():
     ExpenseTypeForm()
 
 
+def test_expense_type_init_fields():
+    form = ExpenseTypeForm().as_p()
+
+    assert '<input type="text" name="title"' in form
+    assert '<input type="checkbox" name="necessary"' in form
+    assert '<select name="user"' not in form
+
+
 @pytest.mark.django_db
-def test_expense_type_valid_data(mock_crequest):
+def test_expense_type_valid_data(get_user):
     form = ExpenseTypeForm(data={
         'title': 'Title',
         'necessary': True
@@ -98,6 +106,7 @@ def test_expense_type_valid_data(mock_crequest):
 
     assert data.title == 'Title'
     assert data.necessary
+    assert data.user.username == 'bob'
 
 
 @pytest.mark.django_db
@@ -106,6 +115,7 @@ def test_expense_type_blank_data():
 
     assert not form.is_valid()
 
+    assert len(form.errors) == 1
     assert 'title' in form.errors
 
 

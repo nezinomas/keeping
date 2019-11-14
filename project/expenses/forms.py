@@ -6,7 +6,8 @@ from django import forms
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
-from ..core.lib.utils import get_user
+from ..core.lib import utils
+from ..core.mixins.form_mixin import FormMixin
 from .models import Expense, ExpenseName, ExpenseType
 
 
@@ -56,7 +57,7 @@ class ExpenseForm(forms.ModelForm):
         # chained dropdown
         _id = ChainedDropDown(self, 'expense_type').parent_field_id
         if _id:
-            year = get_user().year
+            year = utils.get_user().year
             self.fields['expense_name'].queryset = (
                 ExpenseName.objects.parent(_id).year(year)
             )
@@ -65,10 +66,10 @@ class ExpenseForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
-class ExpenseTypeForm(forms.ModelForm):
+class ExpenseTypeForm(FormMixin, forms.ModelForm):
     class Meta:
         model = ExpenseType
-        fields = '__all__'
+        fields = ['title', 'necessary']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
