@@ -41,20 +41,31 @@ class ExpenseType(TitleAbstract):
 
 
 class ExpenseNameQuerySet(models.QuerySet):
-    def _related(self):
-        return self.select_related('parent')
+    def related(self):
+        user = utils.get_user()
+        qs = (self
+            .select_related('parent')
+            .filter(parent__user=user))
+        return qs
 
     def year(self, year):
-        return self._related().filter(
-            Q(valid_for__isnull=True) |
-            Q(valid_for=year)
-        )
+        qs = (
+            self
+            .related()
+            .filter(
+                Q(valid_for__isnull=True) |
+                Q(valid_for=year)
+            ))
+        return qs
 
     def parent(self, parent_id):
-        return self._related().filter(parent_id=parent_id)
+        return (
+            self
+            .related()
+            .filter(parent_id=parent_id))
 
     def items(self):
-        return self._related().all()
+        return self.related()
 
 
 class ExpenseName(TitleAbstract):

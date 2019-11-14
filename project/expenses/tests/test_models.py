@@ -107,7 +107,7 @@ def test_expnese_name_str():
     assert str(e) == 'Expense Name'
 
 
-def test_expense_name_items():
+def test_expense_name_items(get_user):
     ExpenseNameFactory(title='N1')
     ExpenseNameFactory(title='N2')
 
@@ -116,7 +116,28 @@ def test_expense_name_items():
     assert actual.count() == 2
 
 
-def test_expense_name_year():
+def test_expense_name_related_different_users(get_user):
+    u = UserFactory(username='tom')
+
+    t1 = ExpenseTypeFactory(title='T1') # user bob
+    t2 = ExpenseTypeFactory(title='T2', user=u) # user tom
+
+    ExpenseNameFactory(title='N1', parent=t1)
+    ExpenseNameFactory(title='N2', parent=t2)
+
+    actual = ExpenseName.objects.related()
+
+    # expense names for user bob
+    assert len(actual) == 1
+    assert actual[0].title == 'N1'
+
+
+def test_expense_name_related_qs_count(get_user, django_assert_max_num_queries):
+    with django_assert_max_num_queries(1):
+        list(ExpenseName.objects.related().values())
+
+
+def test_expense_name_year(get_user):
     ExpenseNameFactory(title='N1', valid_for=2000)
     ExpenseNameFactory(title='N2', valid_for=1999)
 
@@ -126,7 +147,7 @@ def test_expense_name_year():
     assert actual[0].title == 'N1'
 
 
-def test_expense_name_year_02():
+def test_expense_name_year_02(get_user):
     ExpenseNameFactory(title='N1', valid_for=2000)
     ExpenseNameFactory(title='N2')
 
@@ -137,7 +158,7 @@ def test_expense_name_year_02():
     assert actual[1].title == 'N1'
 
 
-def test_expense_name_parent():
+def test_expense_name_parent(get_user):
     p1 = ExpenseTypeFactory(title='P1')
     p2 = ExpenseTypeFactory(title='P2')
 
