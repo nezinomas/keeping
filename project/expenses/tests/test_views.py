@@ -102,8 +102,6 @@ def test_expense_name_save_data(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    json_str = response.content
-
     assert 200 == response.status_code
 
     templates = [t.name for t in response.templates]
@@ -201,7 +199,7 @@ def test_view_reload_stats_func():
 
 
 @pytest.mark.django_db
-def test_view_reload_stats_render(rf):
+def test_view_reload_stats_render(get_user, rf):
     request = rf.get('/expenses/reload/?ajax_trigger=1')
     request.user = UserFactory.build()
 

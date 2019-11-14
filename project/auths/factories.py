@@ -1,4 +1,5 @@
 import factory
+from django.contrib.auth.hashers import make_password
 from django.db.models.signals import post_save
 
 from ..auths.models import User
@@ -11,7 +12,7 @@ class UserFactory(factory.DjangoModelFactory):
         django_get_or_create = ('username',)
 
     username = 'bob'
-    password = factory.PostGenerationMethodCall('set_password', '123')
+    password = make_password('123')
     email = 'bob@bob.com'
     year = 1999
     month = 12
