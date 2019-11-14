@@ -7,26 +7,26 @@ from .. import views
 
 
 @pytest.mark.django_db()
-def test_set_year(login, client):
+def test_set_year(client_logged):
     url = reverse(
         'core:set_year',
         kwargs={'year': 1970, 'view_name': 'core:core_index'}
     )
 
-    response = client.get(url, follow=True)
+    response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
     assert response.wsgi_request.user.year == 1970
 
 
 @pytest.mark.django_db()
-def test_set_month(login, client):
+def test_set_month(client_logged):
     url = reverse(
         'core:set_month',
         kwargs={'month': 12, 'view_name': 'core:core_index'}
     )
 
-    response = client.get(url, follow=True)
+    response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
     assert response.wsgi_request.user.month == 12
@@ -45,20 +45,20 @@ def test_view_regenerate_balances_current_year():
 
 
 @pytest.mark.django_db
-def test_view_regenerate_balances_status_200(login, client):
+def test_view_regenerate_balances_status_200(client_logged):
     url = reverse('core:regenerate_balances')
-    response = client.get(url, follow=True)
+    response = client_logged.get(url, follow=True)
 
     assert 200 == response.status_code
 
 
 @pytest.mark.django_db
-def test_view_regenerate_balances_current_year_status_200(login, client):
+def test_view_regenerate_balances_current_year_status_200(client_logged):
     url = reverse(
         'core:regenerate_balances_current_year',
         kwargs={'year': 1999}
     )
-    response = client.get(url, follow=True)
+    response = client_logged.get(url, follow=True)
 
     assert 200 == response.status_code
 

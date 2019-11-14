@@ -19,9 +19,9 @@ X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 #                                                                   Index Plan
 # ----------------------------------------------------------------------------
 @pytest.mark.django_db()
-def test_view_index(client, login):
+def test_view_index(client_logged):
     url = reverse('plans:plans_index')
-    response = client.get(url)
+    response = client_logged.get(url)
 
     assert 200 == response.status_code
 
@@ -46,19 +46,19 @@ def test_view_index_func(client):
 #                                                                  plans_stats
 # ----------------------------------------------------------------------------
 @pytest.mark.django_db()
-def test_view_plan_stats_render(client, login):
+def test_view_plan_stats_render(client_logged):
     url = reverse('plans:reload_plan_stats')
 
-    response = client.get(url, {'ajax_trigger': True})
+    response = client_logged.get(url, {'ajax_trigger': True})
 
     assert 200 == response.status_code
 
 
 @pytest.mark.django_db()
-def test_view_plan_stats_render_to_string(client, login):
+def test_view_plan_stats_render_to_string(client_logged):
     url = reverse('plans:reload_plan_stats')
 
-    response = client.get(url, {'ajax_trigger': False})
+    response = client_logged.get(url, {'ajax_trigger': False})
 
     assert 200 == response.status_code
 
@@ -79,13 +79,13 @@ def test_view_incomes(admin_client):
 
 
 @pytest.mark.django_db()
-def test_view_incomes_new(client, login):
+def test_view_incomes_new(client_logged):
     i = IncomeTypeFactory()
     data = {'year': '1999', 'income_type': i.pk, 'january': 999.99}
 
     url = reverse('plans:incomes_plan_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -95,12 +95,12 @@ def test_view_incomes_new(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_incomes_new_invalid_data(client, login):
+def test_view_incomes_new_invalid_data(client_logged):
     data = {'year': 'x', 'income_type': 0, 'january': 999.99}
 
     url = reverse('plans:incomes_plan_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -109,13 +109,13 @@ def test_view_incomes_new_invalid_data(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_incomes_update(client, login):
+def test_view_incomes_update(client_logged):
     p = IncomePlanFactory(year=1999)
 
     data = {'year': '1999', 'income_type': p.income_type.pk, 'january': 999.99}
     url = reverse('plans:incomes_plan_update', kwargs={'pk': p.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 
@@ -127,13 +127,13 @@ def test_view_incomes_update(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_incomes_update_year_not_match(client, login):
+def test_view_incomes_update_year_not_match(client_logged):
     # if year in Plan and urser not match, 404 error
     p = IncomePlanFactory()
 
     url = reverse('plans:incomes_plan_update', kwargs={'pk': p.pk})
 
-    response = client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     assert 404 == response.status_code
 
@@ -154,13 +154,13 @@ def test_view_expenses(admin_client):
 
 
 @pytest.mark.django_db()
-def test_view_expenses_new(client, login):
+def test_view_expenses_new(client_logged):
     i = ExpenseTypeFactory()
     data = {'year': '1999', 'expense_type': i.pk, 'january': 999.99}
 
     url = reverse('plans:expenses_plan_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -170,12 +170,12 @@ def test_view_expenses_new(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_expenses_new_invalid_data(client, login):
+def test_view_expenses_new_invalid_data(client_logged):
     data = {'year': 'x', 'expense_type': 0, 'january': 999.99}
 
     url = reverse('plans:expenses_plan_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -184,13 +184,13 @@ def test_view_expenses_new_invalid_data(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_expenses_update(client, login):
+def test_view_expenses_update(client_logged):
     p = ExpensePlanFactory(year=1999)
 
     data = {'year': '1999', 'expense_type': p.expense_type.pk, 'january': 999.99}
     url = reverse('plans:expenses_plan_update', kwargs={'pk': p.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 
@@ -202,13 +202,13 @@ def test_view_expenses_update(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_expenses_update_year_not_match(client, login):
+def test_view_expenses_update_year_not_match(client_logged):
     # if year in Plan and urser. not match, 404 error
     p = ExpensePlanFactory()
 
     url = reverse('plans:expenses_plan_update', kwargs={'pk': p.pk})
 
-    response = client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     assert 404 == response.status_code
 
@@ -229,13 +229,13 @@ def test_view_savings(admin_client):
 
 
 @pytest.mark.django_db()
-def test_view_savings_new(client, login):
+def test_view_savings_new(client_logged):
     i = SavingTypeFactory()
     data = {'year': '1999', 'saving_type': i.pk, 'january': 999.99}
 
     url = reverse('plans:savings_plan_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -245,12 +245,12 @@ def test_view_savings_new(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_savings_new_invalid_data(client, login):
+def test_view_savings_new_invalid_data(client_logged):
     data = {'year': 'x', 'saving_type': 0, 'january': 999.99}
 
     url = reverse('plans:savings_plan_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -259,13 +259,13 @@ def test_view_savings_new_invalid_data(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_savings_update(client, login):
+def test_view_savings_update(client_logged):
     p = SavingPlanFactory(year=1999)
 
     data = {'year': '1999', 'saving_type': p.saving_type.pk, 'january': 999.99}
     url = reverse('plans:savings_plan_update', kwargs={'pk': p.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 
@@ -277,13 +277,13 @@ def test_view_savings_update(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_savings_update_year_not_match(client, login):
+def test_view_savings_update_year_not_match(client_logged):
     # if year in Plan and urser not match, 404 error
     p = SavingPlanFactory()
 
     url = reverse('plans:savings_plan_update', kwargs={'pk': p.pk})
 
-    response = client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     assert 404 == response.status_code
 
@@ -304,12 +304,12 @@ def test_view_days(admin_client):
 
 
 @pytest.mark.django_db()
-def test_view_days_new(client, login):
+def test_view_days_new(client_logged):
     data = {'year': '1999', 'january': 999.99}
 
     url = reverse('plans:days_plan_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -319,12 +319,12 @@ def test_view_days_new(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_days_new_invalid_data(client, login):
+def test_view_days_new_invalid_data(client_logged):
     data = {'year': 'x', 'january': 999.99}
 
     url = reverse('plans:days_plan_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -333,13 +333,13 @@ def test_view_days_new_invalid_data(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_days_update(client, login):
+def test_view_days_update(client_logged):
     p = DayPlanFactory(year=1999)
 
     data = {'year': '1999', 'january': 999.99}
     url = reverse('plans:days_plan_update', kwargs={'pk': p.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 
@@ -351,13 +351,13 @@ def test_view_days_update(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_days_update_year_not_match(client, login):
+def test_view_days_update_year_not_match(client_logged):
     # if year in Plan and urser not match, 404 error
     p = DayPlanFactory()
 
     url = reverse('plans:days_plan_update', kwargs={'pk': p.pk})
 
-    response = client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     assert 404 == response.status_code
 
@@ -378,12 +378,12 @@ def test_view_necessarys(admin_client):
 
 
 @pytest.mark.django_db()
-def test_view_necessarys_new(client, login):
+def test_view_necessarys_new(client_logged):
     data = {'year': '1999', 'title': 'X', 'january': 999.99}
 
     url = reverse('plans:necessarys_plan_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -393,12 +393,12 @@ def test_view_necessarys_new(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_necessarys_new_invalid_data(client, login):
+def test_view_necessarys_new_invalid_data(client_logged):
     data = {'year': 'x', 'title': '', 'january': 999.99}
 
     url = reverse('plans:necessarys_plan_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -407,13 +407,13 @@ def test_view_necessarys_new_invalid_data(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_necessarys_update(client, login):
+def test_view_necessarys_update(client_logged):
     p = NecessaryPlanFactory(year=1999)
 
     data = {'year': '1999',  'title': 'X', 'january': 999.99}
     url = reverse('plans:necessarys_plan_update', kwargs={'pk': p.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 
@@ -425,13 +425,13 @@ def test_view_necessarys_update(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_necessarys_update_year_not_match(client, login):
+def test_view_necessarys_update_year_not_match(client_logged):
     # if year in Plan and urser not match, 404 error
     p = NecessaryPlanFactory()
 
     url = reverse('plans:necessarys_plan_update', kwargs={'pk': p.pk})
 
-    response = client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     assert 404 == response.status_code
 
@@ -446,20 +446,20 @@ def test_copy_func():
 
 
 @pytest.mark.django_db
-def test_copy_200(login, client):
-    response = client.get('/plans/copy/')
+def test_copy_200(client_logged):
+    response = client_logged.get('/plans/copy/')
 
     assert response.status_code == 200
 
 
 @pytest.mark.django_db()
-def test_copy_success(client, login):
+def test_copy_success(client_logged):
     IncomePlanFactory(year=1999)
     data = {'year_from': '1999', 'year_to': '2000', 'income': True}
 
     url = reverse('plans:copy_plans')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -473,12 +473,12 @@ def test_copy_success(client, login):
 
 
 @pytest.mark.django_db()
-def test_copy_fails(client, login):
+def test_copy_fails(client_logged):
     data = {'year_from': '1999', 'year_to': '2000', 'income': True}
 
     url = reverse('plans:copy_plans')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)

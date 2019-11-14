@@ -69,7 +69,7 @@ def test_pensions_load_form(admin_client):
 
 
 @pytest.mark.django_db()
-def test_pensions_save(client, login):
+def test_pensions_save(client_logged):
     i = PensionTypeFactory()
 
     data = {
@@ -80,7 +80,7 @@ def test_pensions_save(client, login):
 
     url = reverse('pensions:pensions_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -92,7 +92,7 @@ def test_pensions_save(client, login):
 
 
 @pytest.mark.django_db()
-def test_pensions_save_invalid_data(client, login):
+def test_pensions_save_invalid_data(client_logged):
     data = {
         'date': 'x',
         'price': 'x',
@@ -101,7 +101,7 @@ def test_pensions_save_invalid_data(client, login):
 
     url = reverse('pensions:pensions_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -110,7 +110,7 @@ def test_pensions_save_invalid_data(client, login):
 
 
 @pytest.mark.django_db()
-def test_pensions_update_to_another_year(client, login):
+def test_pensions_update_to_another_year(client_logged):
     income = PensionFactory()
 
     data = {'price': '150',
@@ -121,7 +121,7 @@ def test_pensions_update_to_another_year(client, login):
     }
     url = reverse('pensions:pensions_update', kwargs={'pk': income.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 
@@ -133,7 +133,7 @@ def test_pensions_update_to_another_year(client, login):
 
 
 @pytest.mark.django_db()
-def test_pensions_update(client, login):
+def test_pensions_update(client_logged):
     income = PensionFactory()
 
     data = {
@@ -144,7 +144,7 @@ def test_pensions_update(client, login):
     }
     url = reverse('pensions:pensions_update', kwargs={'pk': income.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 
@@ -174,14 +174,14 @@ def test_type_load_form(admin_client):
 
 
 @pytest.mark.django_db()
-def test_type_save(client, login):
+def test_type_save(client_logged):
     data = {
         'title': 'TTT',
     }
 
     url = reverse('pensions:pensions_type_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -191,12 +191,12 @@ def test_type_save(client, login):
 
 
 @pytest.mark.django_db()
-def test_type_save_invalid_data(client, login):
+def test_type_save_invalid_data(client_logged):
     data = {'title': ''}
 
     url = reverse('pensions:pensions_type_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -205,13 +205,13 @@ def test_type_save_invalid_data(client, login):
 
 
 @pytest.mark.django_db()
-def test_type_update(client, login):
+def test_type_update(client_logged):
     income = PensionTypeFactory()
 
     data = {'title': 'TTT'}
     url = reverse('pensions:pensions_type_update', kwargs={'pk': income.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 
@@ -223,8 +223,8 @@ def test_type_update(client, login):
 
 
 @pytest.mark.django_db
-def test_view_index_200(login, client):
-    response = client.get('/pensions/')
+def test_view_index_200(client_logged):
+    response = client_logged.get('/pensions/')
 
     assert response.status_code == 200
 

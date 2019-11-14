@@ -44,12 +44,12 @@ def test_load_book_form(admin_client):
 
 
 @pytest.mark.django_db()
-def test_save_book(client, login):
+def test_save_book(client_logged):
     data = {'started': '1999-01-01', 'author': 'AAA', 'title': 'TTT'}
 
     url = reverse('books:books_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -61,12 +61,12 @@ def test_save_book(client, login):
 
 
 @pytest.mark.django_db()
-def test_books_save_invalid_data(client, login):
+def test_books_save_invalid_data(client_logged):
     data = {'started': 'x', 'author': 'A', 'title': 'T'}
 
     url = reverse('books:books_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -75,7 +75,7 @@ def test_books_save_invalid_data(client, login):
 
 
 @pytest.mark.django_db()
-def test_book_update(client, login):
+def test_book_update(client_logged):
     book = BookFactory()
 
     data = {
@@ -86,7 +86,7 @@ def test_book_update(client, login):
     }
     url = reverse('books:books_update', kwargs={'pk': book.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 

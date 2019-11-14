@@ -24,8 +24,8 @@ def test_view_index_func():
 
 
 @pytest.mark.django_db
-def test_view_index_200(login, client):
-    response = client.get('/')
+def test_view_index_200(client_logged):
+    response = client_logged.get('/')
 
     assert response.status_code == 200
 
@@ -42,8 +42,8 @@ def test_view_month_func():
 
 
 @pytest.mark.django_db
-def test_view_month_200(login, client):
-    response = client.get('/month/')
+def test_view_month_200(client_logged):
+    response = client_logged.get('/month/')
 
     assert response.status_code == 200
 
@@ -60,18 +60,18 @@ def test_view_accounts_worth_func():
 
 
 @pytest.mark.django_db
-def test_view_account_worth_200(login, client):
-    response = client.get('/bookkeeping/accounts_worth/new/')
+def test_view_account_worth_200(client_logged):
+    response = client_logged.get('/bookkeeping/accounts_worth/new/')
 
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_view_account_worth_formset(login, client):
+def test_view_account_worth_formset(client_logged):
     AccountFactory()
 
     url = reverse('bookkeeping:accounts_worth_new')
-    response = client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -82,7 +82,7 @@ def test_view_account_worth_formset(login, client):
 
 
 @pytest.mark.django_db()
-def test_view_account_worth_new(client, login):
+def test_view_account_worth_new(client_logged):
     i = AccountFactory()
     data = {
         'form-TOTAL_FORMS': 1,
@@ -93,7 +93,7 @@ def test_view_account_worth_new(client, login):
 
     url = reverse('bookkeeping:accounts_worth_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -103,7 +103,7 @@ def test_view_account_worth_new(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_account_worth_invalid_data(client, login):
+def test_view_account_worth_invalid_data(client_logged):
     data = {
         'form-TOTAL_FORMS': 1,
         'form-INITIAL_FORMS': 0,
@@ -113,7 +113,7 @@ def test_view_account_worth_invalid_data(client, login):
 
     url = reverse('bookkeeping:accounts_worth_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -133,18 +133,18 @@ def test_view_savings_worth_func():
 
 
 @pytest.mark.django_db
-def test_view_saving_worth_200(login, client):
-    response = client.get('/bookkeeping/savings_worth/new/')
+def test_view_saving_worth_200(client_logged):
+    response = client_logged.get('/bookkeeping/savings_worth/new/')
 
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_view_saving_worth_formset(login, client):
+def test_view_saving_worth_formset(client_logged):
     SavingTypeFactory()
 
     url = reverse('bookkeeping:savings_worth_new')
-    response = client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -155,7 +155,7 @@ def test_view_saving_worth_formset(login, client):
 
 
 @pytest.mark.django_db()
-def test_view_saving_worth_new(client, login):
+def test_view_saving_worth_new(client_logged):
     i = SavingTypeFactory()
     data = {
         'form-TOTAL_FORMS': 1,
@@ -166,7 +166,7 @@ def test_view_saving_worth_new(client, login):
 
     url = reverse('bookkeeping:savings_worth_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -176,7 +176,7 @@ def test_view_saving_worth_new(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_saving_worth_invalid_data(client, login):
+def test_view_saving_worth_invalid_data(client_logged):
     data = {
         'form-TOTAL_FORMS': 1,
         'form-INITIAL_FORMS': 0,
@@ -186,7 +186,7 @@ def test_view_saving_worth_invalid_data(client, login):
 
     url = reverse('bookkeeping:savings_worth_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -251,18 +251,18 @@ def test_view_pension_worth_func():
 
 
 @pytest.mark.django_db
-def test_view_pension_worth_200(login, client):
-    response = client.get('/bookkeeping/pensions_worth/new/')
+def test_view_pension_worth_200(client_logged):
+    response = client_logged.get('/bookkeeping/pensions_worth/new/')
 
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_view_pension_worth_formset(login, client):
+def test_view_pension_worth_formset(client_logged):
     PensionFactory()
 
     url = reverse('bookkeeping:pensions_worth_new')
-    response = client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -273,7 +273,7 @@ def test_view_pension_worth_formset(login, client):
 
 
 @pytest.mark.django_db()
-def test_view_pension_worth_new(client, login):
+def test_view_pension_worth_new(client_logged):
     i = PensionTypeFactory()
     data = {
         'form-TOTAL_FORMS': 1,
@@ -284,7 +284,7 @@ def test_view_pension_worth_new(client, login):
 
     url = reverse('bookkeeping:pensions_worth_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -294,7 +294,7 @@ def test_view_pension_worth_new(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_pension_worth_invalid_data(client, login):
+def test_view_pension_worth_invalid_data(client_logged):
     data = {
         'form-TOTAL_FORMS': 1,
         'form-INITIAL_FORMS': 0,
@@ -304,7 +304,7 @@ def test_view_pension_worth_invalid_data(client, login):
 
     url = reverse('bookkeeping:pensions_worth_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -324,18 +324,18 @@ def test_view_reload_month_func():
 
 
 @pytest.mark.django_db
-def test_view_reload_month_render(login, client):
+def test_view_reload_month_render(client_logged):
     url = reverse('bookkeeping:reload_month')
-    response = client.get(url, follow=True)
+    response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
     assert views.Month == response.resolver_match.func.view_class
 
 
 @pytest.mark.django_db
-def test_view_reload_month_render_ajax_trigger(login, client):
+def test_view_reload_month_render_ajax_trigger(client_logged):
     url = reverse('bookkeeping:reload_month')
-    response = client.get(url, {'ajax_trigger': 1})
+    response = client_logged.get(url, {'ajax_trigger': 1})
 
     assert response.status_code == 200
 
@@ -352,18 +352,18 @@ def test_view_reload_index_func():
 
 
 @pytest.mark.django_db
-def test_view_reload_index_render(login, client):
+def test_view_reload_index_render(client_logged):
     url = reverse('bookkeeping:reload_index')
-    response = client.get(url, follow=True)
+    response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
     assert views.Index == response.resolver_match.func.view_class
 
 
 @pytest.mark.django_db
-def test_view_reload_index_render_ajax_trigger(login, client):
+def test_view_reload_index_render_ajax_trigger(client_logged):
     url = reverse('bookkeeping:reload_index')
-    response = client.get(url, {'ajax_trigger': 1})
+    response = client_logged.get(url, {'ajax_trigger': 1})
 
     assert response.status_code == 200
 
@@ -380,9 +380,9 @@ def test_view_detailed_func():
 
 
 @pytest.mark.django_db
-def test_view_detailed_200(login, client):
+def test_view_detailed_200(client_logged):
     url = reverse('bookkeeping:detailed')
-    response = client.get(url)
+    response = client_logged.get(url)
 
     assert response.status_code == 200
 
@@ -395,9 +395,9 @@ def test_view_detailed_302(client):
 
 
 @pytest.mark.django_db
-def test_view_detailed_rendered_expenses(login, client, expenses):
+def test_view_detailed_rendered_expenses(client_logged, expenses):
     url = reverse('bookkeeping:detailed')
-    response = client.get(url)
+    response = client_logged.get(url)
 
     assert response.status_code == 200
 

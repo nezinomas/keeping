@@ -46,12 +46,12 @@ def test_load_account_form(admin_client):
 
 
 @pytest.mark.django_db()
-def test_save_account(client, login):
+def test_save_account(client_logged):
     data = {'title': 'Title', 'order': '111'}
 
     url = reverse('accounts:accounts_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -61,12 +61,12 @@ def test_save_account(client, login):
 
 
 @pytest.mark.django_db()
-def test_accounts_save_invalid_data(client, login):
+def test_accounts_save_invalid_data(client_logged):
     data = {'title': '', 'order': 'x'}
 
     url = reverse('accounts:accounts_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -75,13 +75,13 @@ def test_accounts_save_invalid_data(client, login):
 
 
 @pytest.mark.django_db()
-def test_account_update(client, login):
+def test_account_update(client_logged):
     account = AccountFactory()
 
     data = {'title': 'Title', 'order': '111'}
     url = reverse('accounts:accounts_update', kwargs={'pk': account.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 
@@ -93,13 +93,13 @@ def test_account_update(client, login):
 
 
 @pytest.mark.django_db
-def test_load_to_account(login, client):
+def test_load_to_account(client_logged):
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
 
     url = reverse('accounts:load_to_account')
 
-    response = client.get(url, {'id': a1.pk})
+    response = client_logged.get(url, {'id': a1.pk})
 
     assert 200 == response.status_code
     assert 1 == len(response.context['objects'])
