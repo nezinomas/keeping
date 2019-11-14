@@ -13,14 +13,16 @@ from ..core.models import TitleAbstract
 
 
 class ExpenseTypeQuerySet(models.QuerySet):
-    def _related(self):
+    def related(self):
         user = utils.get_user()
         return (
-            self.prefetch_related('user', 'expensename_set')
-            .filter(user=user))
+            self
+            .prefetch_related('user', 'expensename_set')
+            .filter(user=user)
+        )
 
     def items(self):
-        return self._related()
+        return self.related()
 
 
 class ExpenseType(TitleAbstract):
@@ -43,9 +45,11 @@ class ExpenseType(TitleAbstract):
 class ExpenseNameQuerySet(models.QuerySet):
     def related(self):
         user = utils.get_user()
-        qs = (self
+        qs = (
+            self
             .select_related('parent')
-            .filter(parent__user=user))
+            .filter(parent__user=user)
+        )
         return qs
 
     def year(self, year):
@@ -53,8 +57,7 @@ class ExpenseNameQuerySet(models.QuerySet):
             self
             .related()
             .filter(
-                Q(valid_for__isnull=True) |
-                Q(valid_for=year)
+                Q(valid_for__isnull=True) | Q(valid_for=year)
             ))
         return qs
 
@@ -62,7 +65,8 @@ class ExpenseNameQuerySet(models.QuerySet):
         return (
             self
             .related()
-            .filter(parent_id=parent_id))
+            .filter(parent_id=parent_id)
+        )
 
     def items(self):
         return self.related()
@@ -113,6 +117,7 @@ class ExpenseQuerySet(models.QuerySet):
     def month_expense_type(self, year):
         return (
             self
+            .related()
             .filter(date__year=year)
             .annotate(cnt=Count('expense_type'))
             .values('expense_type')
@@ -130,6 +135,7 @@ class ExpenseQuerySet(models.QuerySet):
     def month_name_sum(self, year):
         return (
             self
+            .related()
             .filter(date__year=year)
             .annotate(cnt=Count('expense_type'))
             .values('expense_type')
@@ -150,6 +156,7 @@ class ExpenseQuerySet(models.QuerySet):
     def day_expense_type(self, year, month):
         return (
             self
+            .related()
             .filter(date__year=year)
             .filter(date__month=month)
             .annotate(cnt_id=Count('id'))
@@ -180,6 +187,7 @@ class ExpenseQuerySet(models.QuerySet):
         '''
         return (
             self
+            .related()
             .annotate(cnt=Count('expense_type'))
             .values('cnt')
             .order_by('cnt')
