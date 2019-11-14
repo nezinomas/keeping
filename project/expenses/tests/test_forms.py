@@ -34,7 +34,7 @@ def test_expense_form_init():
     ExpenseForm(data={})
 
 
-def test_exepense_form_valid_data(mock_crequest,
+def test_exepense_form_valid_data(get_user,
                                   _expense_type, _expense_name,
                                   _account):
     form = ExpenseForm(
@@ -149,7 +149,7 @@ def test_expense_type_title_too_short():
 # ----------------------------------------------------------------------------
 #                                                                 Expense Name
 # ----------------------------------------------------------------------------
-def test_expense_name_init():
+def test_expense_name_init(get_user):
     ExpenseNameForm()
 
 
@@ -166,7 +166,7 @@ def test_expense_name_current_user_expense_types(get_user):
 
 
 @pytest.mark.django_db
-def test_expense_name_valid_data():
+def test_expense_name_valid_data(get_user):
     p = ExpenseTypeFactory()
 
     form = ExpenseNameForm(data={
@@ -184,7 +184,7 @@ def test_expense_name_valid_data():
 
 
 @pytest.mark.django_db
-def test_expense_name_blank_data():
+def test_expense_name_blank_data(get_user):
     form = ExpenseNameForm(data={})
 
     assert not form.is_valid()
@@ -194,7 +194,7 @@ def test_expense_name_blank_data():
 
 
 @pytest.mark.django_db
-def test_expense_name_title_null():
+def test_expense_name_title_null(get_user):
     p = ExpenseTypeFactory()
     form = ExpenseNameForm(data={'title': None, 'parent': p.pk})
 
@@ -204,7 +204,7 @@ def test_expense_name_title_null():
 
 
 @pytest.mark.django_db
-def test_expense_name_title_too_long():
+def test_expense_name_title_too_long(get_user):
     p = ExpenseTypeFactory()
     form = ExpenseNameForm(data={'title': 'a'*255, 'parent': p.pk})
 
@@ -214,7 +214,7 @@ def test_expense_name_title_too_long():
 
 
 @pytest.mark.django_db
-def test_expense_name_title_too_short():
+def test_expense_name_title_too_short(get_user):
     p = ExpenseTypeFactory()
     form = ExpenseNameForm(data={'title': 'x', 'parent': p.pk})
 
