@@ -1,5 +1,4 @@
 import mock
-import pytest
 from django.views.generic.list import MultipleObjectMixin
 
 from ..mixins.get import GetQuerysetMixin
@@ -51,7 +50,7 @@ def test_get_context_data(mock_obj, fake_request):
     actual = GetQueryset(mock_obj, fake_request).get_context_data(**{})
 
     assert 'items' in actual
-    assert 1 == actual['items']
+    assert actual['items'] == 1
 
 
 @mock.patch('project.incomes.models.Income')
@@ -65,4 +64,4 @@ def test_get_context_data_changed_context_object_name(mock_obj, fake_request):
     actual = obj.get_context_data(**{})
 
     assert 'X' in actual
-    assert 1 == actual['X']
+    assert actual['X'] == 1

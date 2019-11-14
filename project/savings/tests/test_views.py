@@ -65,7 +65,7 @@ def test_saving_load_form(admin_client):
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert '2000-01-01' in actual['html_form']
 
 
@@ -121,18 +121,19 @@ def test_saving_save_invalid_data(client_logged):
 def test_saving_update_to_another_year(client_logged):
     saving = SavingFactory()
 
-    data = {'price': '150',
-            'date': '2010-12-31',
-            'remark': 'Pastaba',
-            'fee': '25',
-            'account': 1,
-            'saving_type': 1
+    data = {
+        'price': '150',
+        'date': '2010-12-31',
+        'remark': 'Pastaba',
+        'fee': '25',
+        'account': 1,
+        'saving_type': 1
     }
     url = reverse('savings:savings_update', kwargs={'pk': saving.pk})
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -157,7 +158,7 @@ def test_saving_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -179,10 +180,7 @@ def test_type_load_form(admin_client):
 
     response = admin_client.get(url, {}, **X_Req)
 
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
 
 @pytest.mark.django_db()
@@ -242,7 +240,7 @@ def test_type_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -260,7 +258,7 @@ def test_type_update_with_closed(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -289,6 +287,6 @@ def test_type_list_view_has_all(fake_request):
     ctx = view.get_context_data()
     actual = [str(x) for x in ctx['items']]
 
-    assert 2 == len(actual)
+    assert len(actual) == 2
     assert 'S1' in actual
     assert 'S2' in actual

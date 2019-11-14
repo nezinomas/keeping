@@ -1,6 +1,5 @@
 from types import SimpleNamespace
 
-import pytest
 from mock import Mock, patch
 
 from ..mixins.formset import FormsetMixin
@@ -17,7 +16,7 @@ def test_get_type_model_type_model_not_set(fake_request):
 
     actual = view._get_type_model()
 
-    assert 'Model' == actual
+    assert actual == 'Model'
 
 
 def test_get_type_model_type_model_is_set(fake_request):
@@ -30,7 +29,7 @@ def test_get_type_model_type_model_is_set(fake_request):
 
     actual = view._get_type_model()
 
-    assert 'Type' == actual
+    assert actual == 'Type'
 
 
 def test_model_type_without_foreignkey(fake_request):
@@ -72,7 +71,7 @@ def test_model_type_items_is_called(mocked_model, fake_request):
 
     actual = view._formset_initial()
 
-    assert 1 == mocked_items.objects.items.call_count
+    assert mocked_items.objects.items.call_count == 1
 
-    assert 1 == len(actual)
-    assert 'XXX' == actual[0]['F']
+    assert len(actual) == 1
+    assert actual[0]['F'] == 'XXX'
