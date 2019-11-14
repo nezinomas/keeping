@@ -27,6 +27,9 @@ def _account():
     return AccountFactory()
 
 
+# ----------------------------------------------------------------------------
+#                                                                      Expense
+# ----------------------------------------------------------------------------
 def test_expense_form_init():
     ExpenseForm(data={})
 
@@ -75,6 +78,9 @@ def test_expenses_form_blank_data():
     assert form.errors == errors
 
 
+# ----------------------------------------------------------------------------
+#                                                                 Expense Type
+# ----------------------------------------------------------------------------
 def test_expense_type_init():
     ExpenseTypeForm()
 
@@ -130,6 +136,9 @@ def test_expense_type_title_too_short():
     assert 'title' in form.errors
 
 
+# ----------------------------------------------------------------------------
+#                                                                 Expense Name
+# ----------------------------------------------------------------------------
 def test_expense_name_init():
     ExpenseNameForm()
 
