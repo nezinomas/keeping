@@ -32,7 +32,13 @@ class Account(TitleAbstract):
 
 class AccountBalanceQuerySet(models.QuerySet):
     def related(self):
-        return self.select_related('account')
+        user = utils.get_user()
+        qs = (
+            self
+            .select_related('account')
+            .filter(account__user=user)
+        )
+        return qs
 
     def items(self, year: int = None):
         if year:
