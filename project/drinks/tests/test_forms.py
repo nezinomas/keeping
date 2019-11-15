@@ -5,12 +5,16 @@ import pytest
 from ..factories import DrinkTargetFactory
 from ..forms import DrinkForm, DrinkTargetForm
 
+pytestmark = pytest.mark.django_db
 
+
+# ----------------------------------------------------------------------------
+#                                                                        Drink
+# ----------------------------------------------------------------------------
 def test_drink_init():
     DrinkForm()
 
 
-@pytest.mark.django_db
 def test_drink_valid_data():
     form = DrinkForm(data={
         'date': '1974-01-01',
@@ -34,11 +38,13 @@ def test_drink_blank_data():
     assert 'quantity' in form.errors
 
 
+# ----------------------------------------------------------------------------
+#                                                                 Drink Target
+# ----------------------------------------------------------------------------
 def test_drink_target_init():
     DrinkTargetForm()
 
 
-@pytest.mark.django_db
 def test_drink_target_valid_data():
     form = DrinkTargetForm(data={
         'year': 1974,
@@ -53,7 +59,6 @@ def test_drink_target_valid_data():
     assert data.quantity == 1.0
 
 
-@pytest.mark.django_db
 def test_drink_target_year_validation():
     DrinkTargetFactory()
 
