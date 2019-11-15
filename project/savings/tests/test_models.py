@@ -359,7 +359,7 @@ def test_saving_balance_queries(get_user, django_assert_num_queries):
 
 def test_saving_balance_new_post_save_account_balace(get_user):
     a1 = AccountFactory()
-    a2 = AccountFactory(title='a2')
+    AccountFactory(title='a2')
 
     s1 = SavingTypeFactory()
 
