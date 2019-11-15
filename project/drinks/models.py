@@ -2,21 +2,33 @@ import calendar
 from datetime import date, datetime
 
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models import (Case, Count, DateField, ExpressionWrapper, F,
-                              FloatField, IntegerField, Model,
-                              PositiveIntegerField, QuerySet, Sum, When)
-from django.db.models.functions import (ExtractDay, ExtractMonth, TruncDate,
-                                        TruncYear)
+from django.db import models
+from django.db.models import Case, Count, ExpressionWrapper, F, Sum, When
+from django.db.models.functions import ExtractMonth, TruncYear
 
+from ..auths.models import User
+from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 
 
-class DrinkQuerySet(SumMixin, QuerySet):
+class DrinkQuerySet(SumMixin, models.QuerySet):
+    def related(self):
+        user = utils.get_user()
+        return (
+            self
+            .select_related('user')
+            .filter(user=user)
+        )
+
     def year(self, year):
-        return self.filter(date__year=year)
+        return (
+            self
+            .related()
+            .filter(date__year=year)
+        )
 
     def items(self):
-        return self.all()
+        return self.related()
 
     def month_sum(self, year, month=None):
         summed_name = 'sum'
@@ -33,7 +45,7 @@ class DrinkQuerySet(SumMixin, QuerySet):
                     *[When(date__month=i, then=calendar.monthlen(year, i))
                         for i in range(1, 13)],
                     default=1,
-                    output_field=IntegerField())
+                    output_field=models.IntegerField())
             )
             .annotate(
                 per_month=self._per_period(F('sum'), F('monthlen')))
@@ -65,14 +77,19 @@ class DrinkQuerySet(SumMixin, QuerySet):
     def _per_period(self, qty: float, end: int) -> float:
         return ExpressionWrapper(
             ((qty * 0.5) / end) * 1000,
-            output_field=FloatField()
+            output_field=models.FloatField()
         )
 
 
-class Drink(Model):
-    date = DateField()
-    quantity = FloatField(
+class Drink(models.Model):
+    date = models.DateField()
+    quantity = models.FloatField(
         validators=[MinValueValidator(0.1)]
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='drinks'
     )
 
     objects = DrinkQuerySet.as_manager()
@@ -85,7 +102,7 @@ class Drink(Model):
         get_latest_by = ['date']
 
 
-class DrinkTargetQuerySet(SumMixin, QuerySet):
+class DrinkTargetQuerySet(SumMixin, models.QuerySet):
     def year(self, year):
         return self.filter(year=year)
 
@@ -93,12 +110,12 @@ class DrinkTargetQuerySet(SumMixin, QuerySet):
         return self.all()
 
 
-class DrinkTarget(Model):
-    year = PositiveIntegerField(
+class DrinkTarget(models.Model):
+    year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
         unique=True
     )
-    quantity = PositiveIntegerField()
+    quantity = models.PositiveIntegerField()
 
     objects = DrinkTargetQuerySet.as_manager()
 
