@@ -34,7 +34,8 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
         summed_name = 'sum'
 
         return (
-            super()
+            self
+            .related()
             .sum_by_month(
                 year=year, month=month,
                 summed_name=summed_name, sum_column_name='quantity')
@@ -63,6 +64,7 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
 
         qs = (
             self
+            .related()
             .filter(date__range=(start, end))
             .annotate(c=Count('id'))
             .values('c')

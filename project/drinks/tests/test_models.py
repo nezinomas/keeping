@@ -16,11 +16,11 @@ def _drinks():
     DrinkFactory(date=date(1999, 1, 1), quantity=1.5)
     DrinkFactory(date=date(1999, 2, 1), quantity=2.0)
     DrinkFactory(date=date(1999, 2, 1), quantity=1.0)
-    # DrinkFactory(
-    #     date=date(1999, 2, 1),
-    #     quantity=100.0,
-    #     user=UserFactory(username='XXX')
-    # )
+    DrinkFactory(
+        date=date(1999, 2, 1),
+        quantity=100.0,
+        user=UserFactory(username='XXX')
+    )
 
 
 # ----------------------------------------------------------------------------
@@ -89,7 +89,7 @@ def test_drink_order(get_user):
     assert str(actual[1]) == '1999-01-01: 1.0'
 
 
-def test_drink_months_consumsion(_drinks):
+def test_drink_months_consumsion(get_user, _drinks):
     actual = Drink.objects.month_sum(1999).values_list('per_month', flat=True)
 
     expect = [40.32, 53.57]
@@ -97,7 +97,7 @@ def test_drink_months_consumsion(_drinks):
     assert expect == pytest.approx(actual, rel=1e-2)
 
 
-def test_drink_months_quantity_sum(_drinks):
+def test_drink_months_quantity_sum(get_user, _drinks):
     actual = Drink.objects.month_sum(1999).values_list('sum', flat=True)
 
     expect = [2.5, 3.0]
@@ -105,9 +105,10 @@ def test_drink_months_quantity_sum(_drinks):
     assert expect == pytest.approx(actual, rel=1e-2)
 
 
-def test_drink_months_quantity_sum_no_records_for_current_year():
+def test_drink_months_quantity_sum_no_records_for_current_year(get_user):
     DrinkFactory(date=date(1970, 1, 1), quantity=1.0)
     DrinkFactory(date=date(2000, 1, 1), quantity=1.5)
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.5, user=UserFactory(username='XXX'))
 
     actual = Drink.objects.month_sum(1999).values_list('sum', flat=True)
 
@@ -116,7 +117,7 @@ def test_drink_months_quantity_sum_no_records_for_current_year():
     assert expect == pytest.approx(actual, rel=1e-2)
 
 
-def test_drink_months_month_num(_drinks):
+def test_drink_months_month_num(get_user, _drinks):
     actual = Drink.objects.month_sum(1999).values_list('month', flat=True)
 
     expect = [1, 2]
@@ -124,7 +125,7 @@ def test_drink_months_month_num(_drinks):
     assert expect == list(actual)
 
 
-def test_drink_months_month_len(_drinks):
+def test_drink_months_month_len(get_user, _drinks):
     actual = Drink.objects.month_sum(1999).values_list('monthlen', flat=True)
 
     expect = [31, 28]
@@ -133,9 +134,10 @@ def test_drink_months_month_len(_drinks):
 
 
 @freeze_time('1999-11-01')
-def test_drink_days_sum_november():
+def test_drink_days_sum_november(get_user):
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
     DrinkFactory(date=date(1999, 11, 1), quantity=1.5)
+    DrinkFactory(date=date(1999, 11, 1), quantity=111, user=UserFactory(username='XXX'))
 
     actual = Drink.objects.day_sum(1999)
 
@@ -144,8 +146,9 @@ def test_drink_days_sum_november():
 
 
 @freeze_time('1999-01-03')
-def test_drink_days_sum_january():
+def test_drink_days_sum_january(get_user):
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
+    DrinkFactory(date=date(1999, 1, 1), quantity=111, user=UserFactory(username='XXX'))
     DrinkFactory(date=date(1999, 11, 1), quantity=1.5)
 
     actual = Drink.objects.day_sum(1999)
@@ -155,8 +158,9 @@ def test_drink_days_sum_january():
 
 
 @freeze_time('1999-01-03')
-def test_drink_days_sum_no_records_for_selected_year():
+def test_drink_days_sum_no_records_for_selected_year(get_user):
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.0, user=UserFactory(username='XXX'))
     DrinkFactory(date=date(1999, 11, 1), quantity=1.5)
 
     actual = Drink.objects.day_sum(1998)
