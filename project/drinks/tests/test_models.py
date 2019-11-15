@@ -60,7 +60,7 @@ def test_drink_year(get_user):
 
     assert len(actual) == 1
     assert actual[0].date == date(1999, 1, 1)
-
+    assert actual[0].user.username == 'bob'
 
 def test_drink_quantity_float():
     p = DrinkFactory(quantity=0.5)
@@ -87,49 +87,6 @@ def test_drink_order(get_user):
 
     assert str(actual[0]) == '1999-12-01: 1.0'
     assert str(actual[1]) == '1999-01-01: 1.0'
-
-
-# ----------------------------------------------------------------------------
-#                                                                 Drink Target
-# ----------------------------------------------------------------------------
-def test_drink_target_str():
-    actual = DrinkTargetFactory.build()
-
-    assert str(actual) == '1999: 100'
-
-
-def test_drink_target_year_positive():
-    actual = DrinkTargetFactory.build(year=-2000)
-
-    try:
-        actual.full_clean()
-    except ValidationError as e:
-        assert 'year' in e.message_dict
-
-
-@pytest.mark.xfail(raises=Exception)
-def test_drink_target_year_unique():
-    DrinkTargetFactory(year=1999)
-    DrinkTargetFactory(year=1999)
-
-
-def test_drink_target_ordering():
-    DrinkTargetFactory(year=1970)
-    DrinkTargetFactory(year=1999)
-
-    actual = list(DrinkTarget.objects.all())
-
-    assert str(actual[0]) == '1999: 100'
-    assert str(actual[1]) == '1970: 100'
-
-
-def test_drink_target_year():
-    DrinkTargetFactory(year=1970)
-
-    actual = list(DrinkTarget.objects.year(1970))
-
-    assert len(actual) == 1
-    assert actual[0].year == 1970
 
 
 def test_drink_months_consumsion(_drinks):
@@ -207,15 +164,51 @@ def test_drink_days_sum_no_records_for_selected_year():
     assert actual == {}
 
 
-def test_drinks_items(get_user):
-    DrinkFactory()
 
-    actual = Drink.objects.items()
+# ----------------------------------------------------------------------------
+#                                                                 Drink Target
+# ----------------------------------------------------------------------------
+def test_drink_target_str():
+    actual = DrinkTargetFactory.build()
 
-    assert actual.count() == 1
+    assert str(actual) == '1999: 100'
 
 
-def test_drinks_target_items():
+def test_drink_target_year_positive():
+    actual = DrinkTargetFactory.build(year=-2000)
+
+    try:
+        actual.full_clean()
+    except ValidationError as e:
+        assert 'year' in e.message_dict
+
+
+@pytest.mark.xfail(raises=Exception)
+def test_drink_target_year_unique():
+    DrinkTargetFactory(year=1999)
+    DrinkTargetFactory(year=1999)
+
+
+def test_drink_target_ordering():
+    DrinkTargetFactory(year=1970)
+    DrinkTargetFactory(year=1999)
+
+    actual = list(DrinkTarget.objects.all())
+
+    assert str(actual[0]) == '1999: 100'
+    assert str(actual[1]) == '1970: 100'
+
+
+def test_drink_target_year():
+    DrinkTargetFactory(year=1970)
+
+    actual = list(DrinkTarget.objects.year(1970))
+
+    assert len(actual) == 1
+    assert actual[0].year == 1970
+
+
+def test_drink_target_items():
     DrinkTargetFactory()
 
     actual = DrinkTarget.objects.items()
