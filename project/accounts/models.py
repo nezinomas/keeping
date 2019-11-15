@@ -2,17 +2,25 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import F
 
+from ..auths.models import User
+from ..core.lib import utils
 from ..core.models import TitleAbstract
 
 
 class AccountQuerySet(models.QuerySet):
     def items(self, year: int = None):
-        return self
+        user = utils.get_user()
+        return self.filter(user=user)
 
 
 class Account(TitleAbstract):
     order = models.PositiveIntegerField(
         default=10
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='accounts'
     )
 
     class Meta:

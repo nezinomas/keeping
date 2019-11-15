@@ -1,7 +1,8 @@
 import pytest
 
+from ...auths.factories import UserFactory
 from ..factories import AccountBalanceFactory, AccountFactory
-from ..models import AccountBalance
+from ..models import Account, AccountBalance
 
 
 # ----------------------------------------------------------------------------
@@ -11,6 +12,20 @@ def test_account_model_str():
     actual = AccountFactory.build()
 
     assert str(actual) == 'Account1'
+
+
+@pytest.mark.django_db
+def test_account_items_current_user(get_user):
+    u = UserFactory(username='XXX')
+
+    AccountFactory(title='A1')
+    AccountFactory(title='A2', user=u)
+
+    actual = Account.objects.items()
+
+    assert len(actual) == 1
+    assert str(actual[0]) == 'A1'
+    assert actual[0].user.username == 'bob'
 
 
 # ----------------------------------------------------------------------------
