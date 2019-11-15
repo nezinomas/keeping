@@ -31,14 +31,14 @@ class Account(TitleAbstract):
 
 
 class AccountBalanceQuerySet(models.QuerySet):
-    def _related(self):
+    def related(self):
         return self.select_related('account')
 
     def items(self, year: int = None):
         if year:
-            qs = self._related().filter(year=year)
+            qs = self.related().filter(year=year)
         else:
-            qs = self._related()
+            qs = self.related()
 
         return qs.values(
             'year', 'past', 'balance', 'incomes',
