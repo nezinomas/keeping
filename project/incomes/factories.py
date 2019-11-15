@@ -5,6 +5,7 @@ import factory
 from django.db.models.signals import post_save
 
 from ..accounts.factories import AccountFactory
+from ..auths.factories import UserFactory
 from .models import Income, IncomeType
 
 
@@ -15,6 +16,7 @@ class IncomeTypeFactory(factory.DjangoModelFactory):
         django_get_or_create = ('title',)
 
     title = 'Income Type'
+    user = factory.SubFactory(UserFactory)
 
 
 @factory.django.mute_signals(post_save)

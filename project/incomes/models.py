@@ -7,18 +7,48 @@ from django.db.models import Case, Count, F, Sum, When
 from django.db.models.functions import TruncMonth
 
 from ..accounts.models import Account
+from ..auths.models import User
+from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
+
+
+class IncomeTypeQuerySet(models.QuerySet):
+    def related(self):
+        user = utils.get_user()
+        return (
+            self
+            .prefetch_related('user')
+            .filter(user=user)
+        )
+
+    def items(self):
+        return self.related()
 
 
 class IncomeType(TitleAbstract):
     class Meta:
         ordering = ['title']
 
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='income_types'
+    )
+
+    # Managers
+    objects = IncomeTypeQuerySet.as_manager()
+
 
 class IncomeQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        return self.select_related('account', 'income_type')
+        user = utils.get_user()
+        qs = (
+            self
+            .select_related('account', 'income_type')
+            .filter(income_type__user=user)
+        )
+        return qs
 
     def year(self, year):
         return self.related().filter(date__year=year)
@@ -39,6 +69,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
 
         return (
             super()
+            .related()
             .sum_by_month(year, summed_name, month=month)
             .values('date', summed_name)
         )
@@ -55,6 +86,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
         '''
         return (
             self
+            .related()
             .annotate(cnt=Count('income_type'))
             .values('cnt')
             .order_by('cnt')
@@ -79,6 +111,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
     def month_type_sum(self, year):
         return (
             self
+            .related()
             .filter(date__year=year)
             .annotate(cnt=Count('income_type'))
             .values('income_type')

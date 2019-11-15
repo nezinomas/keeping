@@ -5,6 +5,7 @@ import pytest
 
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import AccountBalance
+from ...auths.factories import UserFactory
 from ...bookkeeping.factories import AccountWorthFactory
 from ..factories import IncomeFactory, IncomeTypeFactory
 from ..models import Income, IncomeType
@@ -19,6 +20,16 @@ def test_income_type_str():
     i = IncomeTypeFactory.build()
 
     assert str(i) == 'Income Type'
+
+
+def test_income_type_items_user(get_user):
+    IncomeTypeFactory(title='T1', user=UserFactory())
+    IncomeTypeFactory(title='T2', user=UserFactory(username='u2'))
+
+    actual = IncomeType.objects.items()
+
+    assert actual.count() == 1
+    assert actual[0].title == 'T1'
 
 
 def test_income_type_new_post_save(mock_crequest, incomes):
@@ -37,6 +48,21 @@ def test_income_str():
     i = IncomeFactory.build()
 
     assert str(i) == '1999-01-01: Income Type'
+
+
+def test_income_related(get_user):
+    u1 = UserFactory()
+    u2 = UserFactory(username='XXX')
+    t1 = IncomeTypeFactory(title='T1', user=u1)
+    t2 = IncomeTypeFactory(title='T2', user=u2)
+
+    IncomeFactory(income_type=t1)
+    IncomeFactory(income_type=t2)
+
+    actual = Income.objects.related()
+
+    assert len(actual) == 1
+    assert str(actual[0].income_type) == 'T1'
 
 
 def test_sum_all_months(incomes):
