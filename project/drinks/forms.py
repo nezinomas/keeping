@@ -64,6 +64,11 @@ class DrinkTargetForm(FormMixin, forms.ModelForm):
     def clean_year(self):
         year = self.cleaned_data['year']
 
+        # if update
+        if self.instance.pk:
+            return year
+
+        # if new record
         qs = DrinkTarget.objects.year(year)
         if qs.exists():
             raise forms.ValidationError(f'{year} metai jau turi tikslą.')

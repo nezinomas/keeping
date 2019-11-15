@@ -127,7 +127,7 @@ def test_view_drinks_target_new_invalid_data(client_logged):
 
 
 @pytest.mark.django_db()
-def test_view_drinks_target_update(client_logged):
+def test_view_drinks_target_update(get_user, client_logged):
     p = DrinkTargetFactory()
 
     data = {'year': 1999, 'quantity': 999}
@@ -157,7 +157,7 @@ def test_view_reload_stats_func():
 
 
 @pytest.mark.django_db
-def test_view_reload_stats_render(rf):
+def test_view_reload_stats_render(get_user, rf):
     request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
     request.user = UserFactory.build()
 
