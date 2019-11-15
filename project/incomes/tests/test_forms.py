@@ -8,6 +8,59 @@ from ..factories import IncomeFactory, IncomeTypeFactory
 from ..forms import IncomeForm, IncomeTypeForm
 
 
+# ----------------------------------------------------------------------------
+#                                                                  Income Type
+# ----------------------------------------------------------------------------
+def test_income_type_init():
+    IncomeTypeForm()
+
+
+def test_income_type_init_fields():
+    form = IncomeTypeForm().as_p()
+
+    assert '<input type="text" name="title"' in form
+    assert '<select name="user"' not in form
+
+
+@pytest.mark.django_db
+def test_income_type_blank_data():
+    form = IncomeTypeForm(data={})
+
+    assert not form.is_valid()
+
+    assert 'title' in form.errors
+
+
+@pytest.mark.django_db
+def test_income_type_title_null():
+    form = IncomeTypeForm(data={'title': None})
+
+    assert not form.is_valid()
+
+    assert 'title' in form.errors
+
+
+@pytest.mark.django_db
+def test_income_type_title_too_long():
+    form = IncomeTypeForm(data={'title': 'a'*255})
+
+    assert not form.is_valid()
+
+    assert 'title' in form.errors
+
+
+@pytest.mark.django_db
+def test_income_type_title_too_short():
+    form = IncomeTypeForm(data={'title': 'aa'})
+
+    assert not form.is_valid()
+
+    assert 'title' in form.errors
+
+
+# ----------------------------------------------------------------------------
+#                                                                       Income
+# ----------------------------------------------------------------------------
 def test_income_init():
     IncomeForm()
 
@@ -63,56 +116,3 @@ def test_income_price_null():
 
     assert not form.is_valid()
     assert 'price' in form.errors
-
-
-def test_income_type_init():
-    IncomeTypeForm()
-
-
-@pytest.mark.django_db
-def test_income_type_valid_data(mock_crequest):
-    form = IncomeTypeForm(data={
-        'title': 'Title',
-    })
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.title == 'Title'
-
-
-@pytest.mark.django_db
-def test_income_type_blank_data():
-    form = IncomeTypeForm(data={})
-
-    assert not form.is_valid()
-
-    assert 'title' in form.errors
-
-
-@pytest.mark.django_db
-def test_income_type_title_null():
-    form = IncomeTypeForm(data={'title': None})
-
-    assert not form.is_valid()
-
-    assert 'title' in form.errors
-
-
-@pytest.mark.django_db
-def test_income_type_title_too_long():
-    form = IncomeTypeForm(data={'title': 'a'*255})
-
-    assert not form.is_valid()
-
-    assert 'title' in form.errors
-
-
-@pytest.mark.django_db
-def test_income_type_title_too_short():
-    form = IncomeTypeForm(data={'title': 'aa'})
-
-    assert not form.is_valid()
-
-    assert 'title' in form.errors
