@@ -62,21 +62,11 @@ def context_to_reload(request, context):
 
 
 def _avg_label_position(avg, target):
-    y = -5
-
-    if avg >= target - 50 and avg <= target:
-        y = 15
-
-    return y
+    return 15 if target - 50 <= avg <= target else -5
 
 
 def _target_label_position(avg, target):
-    y = -5
-
-    if target >= avg - 50 and target <= avg:
-        y = 15
-
-    return y
+    return 15 if avg - 50 <= target <= avg else -5
 
 
 def _dry_days(year):
