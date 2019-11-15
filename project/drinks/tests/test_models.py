@@ -9,17 +9,20 @@ from ..models import Drink, DrinkTarget
 
 
 @pytest.fixture()
-def drinks():
+def _drinks():
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
     DrinkFactory(date=date(1999, 1, 1), quantity=1.5)
     DrinkFactory(date=date(1999, 2, 1), quantity=2.0)
     DrinkFactory(date=date(1999, 2, 1), quantity=1.0)
 
 
+# ----------------------------------------------------------------------------
+#                                                                        Drink
+# ----------------------------------------------------------------------------
 def test_drink_str():
     actual = DrinkFactory.build()
 
-    assert '1999-01-01: 1' == str(actual)
+    assert str(actual) == '1999-01-01: 1'
 
 
 @pytest.mark.django_db
@@ -28,8 +31,8 @@ def test_drink_year():
 
     actual = list(Drink.objects.year(1999))
 
-    assert 1 == len(actual)
-    assert date(1999, 1, 1) == actual[0].date
+    assert len(actual) == 1
+    assert actual[0].date == date(1999, 1, 1)
 
 
 def test_drink_quantity_float():
@@ -37,7 +40,7 @@ def test_drink_quantity_float():
 
     p.full_clean()
 
-    assert '1999-01-01: 0.5' == str(p)
+    assert str(p) == '1999-01-01: 0.5'
 
 
 def test_drink_quantity_int():
@@ -45,7 +48,7 @@ def test_drink_quantity_int():
 
     p.full_clean()
 
-    assert '1999-01-01: 5.0' == str(p)
+    assert str(p) == '1999-01-01: 5.0'
 
 
 @pytest.mark.django_db()
@@ -55,14 +58,17 @@ def test_drink_order():
 
     actual = list(Drink.objects.year(1999))
 
-    assert '1999-12-01: 1.0' == str(actual[0])
-    assert '1999-01-01: 1.0' == str(actual[1])
+    assert str(actual[0]) == '1999-12-01: 1.0'
+    assert str(actual[1]) == '1999-01-01: 1.0'
 
 
+# ----------------------------------------------------------------------------
+#                                                                 Drink Target
+# ----------------------------------------------------------------------------
 def test_drink_target_str():
     actual = DrinkTargetFactory.build()
 
-    assert '1999: 100' == str(actual)
+    assert str(actual) == '1999: 100'
 
 
 def test_drink_target_year_positive():
@@ -88,8 +94,8 @@ def test_drink_target_ordering():
 
     actual = list(DrinkTarget.objects.all())
 
-    assert '1999: 100' == str(actual[0])
-    assert '1970: 100' == str(actual[1])
+    assert str(actual[0]) == '1999: 100'
+    assert str(actual[1]) == '1970: 100'
 
 
 @pytest.mark.django_db
@@ -98,12 +104,12 @@ def test_drink_target_year():
 
     actual = list(DrinkTarget.objects.year(1970))
 
-    assert 1 == len(actual)
-    assert 1970 == actual[0].year
+    assert len(actual) == 1
+    assert actual[0].year == 1970
 
 
 @pytest.mark.django_db
-def test_drink_months_consumsion(drinks):
+def test_drink_months_consumsion(_drinks):
     actual = Drink.objects.month_sum(1999).values_list('per_month', flat=True)
 
     expect = [40.32, 53.57]
@@ -112,7 +118,7 @@ def test_drink_months_consumsion(drinks):
 
 
 @pytest.mark.django_db
-def test_drink_months_quantity_sum(drinks):
+def test_drink_months_quantity_sum(_drinks):
     actual = Drink.objects.month_sum(1999).values_list('sum', flat=True)
 
     expect = [2.5, 3.0]
@@ -133,7 +139,7 @@ def test_drink_months_quantity_sum_no_records_for_current_year():
 
 
 @pytest.mark.django_db
-def test_drink_months_month_num(drinks):
+def test_drink_months_month_num(_drinks):
     actual = Drink.objects.month_sum(1999).values_list('month', flat=True)
 
     expect = [1, 2]
@@ -142,7 +148,7 @@ def test_drink_months_month_num(drinks):
 
 
 @pytest.mark.django_db
-def test_drink_months_month_len(drinks):
+def test_drink_months_month_len(_drinks):
     actual = Drink.objects.month_sum(1999).values_list('monthlen', flat=True)
 
     expect = [31, 28]
@@ -158,8 +164,8 @@ def test_drink_days_sum_november():
 
     actual = Drink.objects.day_sum(1999)
 
-    assert 2.5 == actual['qty']
-    assert 4.1 == round(actual['per_day'], 2)
+    assert actual['qty'] == 2.5
+    assert round(actual['per_day'], 2) == 4.1
 
 
 @pytest.mark.django_db
@@ -170,8 +176,8 @@ def test_drink_days_sum_january():
 
     actual = Drink.objects.day_sum(1999)
 
-    assert 1.0 == actual['qty']
-    assert 166.67 == round(actual['per_day'], 2)
+    assert actual['qty'] == 1.0
+    assert round(actual['per_day'], 2) == 166.67
 
 
 @pytest.mark.django_db
@@ -182,7 +188,7 @@ def test_drink_days_sum_no_records_for_selected_year():
 
     actual = Drink.objects.day_sum(1998)
 
-    assert {} == actual
+    assert actual == {}
 
 
 @pytest.mark.django_db
@@ -191,7 +197,7 @@ def test_drinks_items():
 
     actual = Drink.objects.items()
 
-    assert 1 == actual.count()
+    assert actual.count() == 1
 
 
 @pytest.mark.django_db
@@ -200,4 +206,4 @@ def test_drinks_target_items():
 
     actual = DrinkTarget.objects.items()
 
-    assert 1 == actual.count()
+    assert actual.count() == 1
