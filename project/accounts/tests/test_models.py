@@ -4,8 +4,20 @@ from ..factories import AccountBalanceFactory, AccountFactory
 from ..models import AccountBalance
 
 
-def test_str():
+# ----------------------------------------------------------------------------
+#                                                                      Account
+# ----------------------------------------------------------------------------
+def test_account_model_str():
     actual = AccountFactory.build()
+
+    assert str(actual) == 'Account1'
+
+
+# ----------------------------------------------------------------------------
+#                                                              Account Balance
+# ----------------------------------------------------------------------------
+def test_account_balance_str():
+    actual = AccountBalanceFactory.build()
 
     assert str(actual) == 'Account1'
 
@@ -22,12 +34,6 @@ def test_account_balance_init():
     assert actual.balance == 1.25
     assert actual.have == 0.20
     assert actual.delta == -1.05
-
-
-def test_account_balance_str():
-    actual = AccountBalanceFactory.build()
-
-    assert str(actual) == 'Account1'
 
 
 @pytest.mark.django_db
