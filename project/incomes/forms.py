@@ -4,7 +4,9 @@ from bootstrap_datepicker_plus import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 
+from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.mixins.form_mixin import FormMixin
 from .models import Income, IncomeType
 
 
@@ -32,8 +34,13 @@ class IncomeForm(forms.ModelForm):
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # inital values
+        self.fields['account'].initial = Account.objects.items().first()
         self.fields['date'].initial = datetime.now()
         self.fields['price'].initial = '0.01'
+
+        # overwrite ForeignKey expense_type queryset
+        self.fields['income_type'].queryset = IncomeType.objects.items()
+        self.fields['account'].queryset = Account.objects.items()
 
         self.fields['date'].label = 'Data'
         self.fields['account'].label = 'Sąskaita'
@@ -45,7 +52,7 @@ class IncomeForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
-class IncomeTypeForm(forms.ModelForm):
+class IncomeTypeForm(FormMixin, forms.ModelForm):
     class Meta:
         model = IncomeType
         fields = ['title']
