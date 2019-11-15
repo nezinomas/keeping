@@ -30,7 +30,6 @@ class IncomeForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # form inputs settings
-        self.fields['price'].widget.attrs = {'step': '0.01'}
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # inital values

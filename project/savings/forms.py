@@ -62,7 +62,6 @@ class SavingForm(forms.ModelForm):
         # inital values
         self.fields['account'].initial = Account.objects.items().first()
         self.fields['date'].initial = datetime.now()
-        self.fields['price'].initial = '0.01'
 
         # overwrite ForeignKey expense_type queryset
         year = utils.get_user().year
