@@ -4,12 +4,14 @@ from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 
+from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
-from ..core.lib.utils import get_user
+from ..core.lib import utils
+from ..core.mixins.form_mixin import FormMixin
 from .models import Saving, SavingType
 
 
-class SavingTypeForm(forms.ModelForm):
+class SavingTypeForm(FormMixin, forms.ModelForm):
     class Meta:
         model = SavingType
         fields = ['title', 'closed']
@@ -58,8 +60,14 @@ class SavingForm(forms.ModelForm):
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # inital values
+        self.fields['account'].initial = Account.objects.items().first()
         self.fields['date'].initial = datetime.now()
         self.fields['price'].initial = '0.01'
+
+        # overwrite ForeignKey expense_type queryset
+        year = utils.get_user().year
+        self.fields['saving_type'].queryset = SavingType.objects.items(year)
+        self.fields['account'].queryset = Account.objects.items()
 
         self.fields['date'].label = 'Data'
         self.fields['account'].label = 'Iš sąskaitos'
@@ -67,9 +75,6 @@ class SavingForm(forms.ModelForm):
         self.fields['fee'].label = 'Mokesčiai'
         self.fields['remark'].label = 'Pastaba'
         self.fields['saving_type'].label = 'Fondas'
-
-        year = get_user().year
-        self.fields['saving_type'].queryset = SavingType.objects.items(year)
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
