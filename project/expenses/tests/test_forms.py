@@ -30,6 +30,30 @@ def test_expense_current_user_expense_types(get_user):
     assert 'T2' not in form
 
 
+def test_expense_current_user_accounts(get_user):
+    u = UserFactory(username='tom')
+
+    AccountFactory(title='A1')  # user bob, current user
+    AccountFactory(title='A2', user=u)  # user tom
+
+    form = ExpenseForm().as_p()
+
+    assert 'A1' in form
+    assert 'A2' not in form
+
+
+def test_expense_select_first_account(get_user):
+    u = UserFactory(username='XXX')
+    AccountFactory(title='A1', user=u)
+
+    a2 = AccountFactory(title='A2')
+
+    form = ExpenseForm().as_p()
+
+    expect = f'<option value="{a2.pk}" selected>{a2}</option>'
+    assert expect in form
+
+
 def test_exepense_form_valid_data(get_user):
     a = AccountFactory()
     t = ExpenseTypeFactory()

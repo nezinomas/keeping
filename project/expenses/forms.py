@@ -35,12 +35,13 @@ class ExpenseForm(forms.ModelForm):
 
         # inital values
         self.fields['date'].initial = datetime.now()
-        self.fields['account'].initial = Account.objects.first()
+        self.fields['account'].initial = Account.objects.items().first()
         self.fields['price'].initial = '0.00'
         self.fields['expense_name'].queryset = Expense.objects.none()
 
         # overwrite ForeignKey expense_type queryset
         self.fields['expense_type'].queryset = ExpenseType.objects.items()
+        self.fields['account'].queryset = Account.objects.items()
 
         # chained dropdown to select expense_names
         _id = ChainedDropDown(self, 'expense_type').parent_field_id
