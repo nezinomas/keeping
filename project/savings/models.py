@@ -18,7 +18,7 @@ class SavingTypeQuerySet(models.QuerySet):
         user = utils.get_user()
         return (
             self
-            .prefetch_related('user')
+            .select_related('user')
             .filter(user=user)
         )
 
