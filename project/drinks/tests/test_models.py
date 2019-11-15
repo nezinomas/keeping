@@ -10,6 +10,7 @@ from ..models import Drink, DrinkTarget
 
 pytestmark = pytest.mark.django_db
 
+
 @pytest.fixture()
 def _drinks():
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
@@ -178,6 +179,37 @@ def test_drink_target_str():
     assert str(actual) == '1999: 100'
 
 
+def test_drink_target_related(get_user):
+    DrinkTargetFactory()
+    DrinkTargetFactory(user=UserFactory(username='XXX'))
+
+    actual = DrinkTarget.objects.related()
+
+    assert len(actual) == 1
+    assert actual[0].user.username == 'bob'
+
+
+def test_drink_target_items(get_user):
+    DrinkTargetFactory(year=1999)
+    DrinkTargetFactory(year=2000, user=UserFactory(username='XXX'))
+
+    actual = DrinkTarget.objects.items()
+
+    assert len(actual) == 1
+    assert actual[0].user.username == 'bob'
+
+
+def test_drink_target_year(get_user):
+    DrinkTargetFactory(year=1999)
+    DrinkTargetFactory(year=1999, user=UserFactory(username='XXX'))
+
+    actual = list(DrinkTarget.objects.year(1999))
+
+    assert len(actual) == 1
+    assert actual[0].year == 1999
+    assert actual[0].user.username == 'bob'
+
+
 def test_drink_target_year_positive():
     actual = DrinkTargetFactory.build(year=-2000)
 
@@ -201,20 +233,3 @@ def test_drink_target_ordering():
 
     assert str(actual[0]) == '1999: 100'
     assert str(actual[1]) == '1970: 100'
-
-
-def test_drink_target_year():
-    DrinkTargetFactory(year=1970)
-
-    actual = list(DrinkTarget.objects.year(1970))
-
-    assert len(actual) == 1
-    assert actual[0].year == 1970
-
-
-def test_drink_target_items():
-    DrinkTargetFactory()
-
-    actual = DrinkTarget.objects.items()
-
-    assert actual.count() == 1

@@ -105,19 +105,35 @@ class Drink(models.Model):
 
 
 class DrinkTargetQuerySet(SumMixin, models.QuerySet):
+    def related(self):
+        user = utils.get_user()
+        return (
+            self
+            .select_related('user')
+            .filter(user=user)
+        )
+
     def year(self, year):
-        return self.filter(year=year)
+        return (
+            self
+            .related()
+            .filter(year=year)
+        )
 
     def items(self):
-        return self.all()
+        return self.related()
 
 
 class DrinkTarget(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
-        unique=True
     )
     quantity = models.PositiveIntegerField()
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='drink_targets'
+    )
 
     objects = DrinkTargetQuerySet.as_manager()
 
@@ -126,3 +142,4 @@ class DrinkTarget(models.Model):
 
     class Meta:
         ordering = ['-year']
+        unique_together = ['year', 'user']

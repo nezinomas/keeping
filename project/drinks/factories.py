@@ -21,3 +21,4 @@ class DrinkTargetFactory(factory.DjangoModelFactory):
 
     year = 1999
     quantity = 100
+    user = factory.SubFactory(UserFactory)
