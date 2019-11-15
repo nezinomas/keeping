@@ -3,16 +3,71 @@ from decimal import Decimal
 
 import pytest
 
-from ..factories import PensionFactory, PensionTypeFactory
+from ..factories import PensionTypeFactory
 from ..forms import PensionForm, PensionTypeForm
 
+pytestmark = pytest.mark.django_db
 
+
+# ----------------------------------------------------------------------------
+#                                                                  PensionType
+# ----------------------------------------------------------------------------
+def test_pension_type_init():
+    PensionTypeForm()
+
+
+def test_pension_type_valid_data(get_user):
+    form = PensionTypeForm(data={
+        'title': 'Title',
+    })
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.title == 'Title'
+
+
+def test_pension_type_blank_data():
+    form = PensionTypeForm(data={})
+
+    assert not form.is_valid()
+
+    assert 'title' in form.errors
+
+
+def test_pension_type_title_null():
+    form = PensionTypeForm(data={'title': None})
+
+    assert not form.is_valid()
+
+    assert 'title' in form.errors
+
+
+def test_pension_type_title_too_long():
+    form = PensionTypeForm(data={'title': 'a'*255})
+
+    assert not form.is_valid()
+
+    assert 'title' in form.errors
+
+
+def test_pension_type_title_too_short():
+    form = PensionTypeForm(data={'title': 'aa'})
+
+    assert not form.is_valid()
+
+    assert 'title' in form.errors
+
+
+# ----------------------------------------------------------------------------
+#                                                                      Pension
+# ----------------------------------------------------------------------------
 def test_pension_init():
     PensionForm()
 
 
-@pytest.mark.django_db
-def test_pension_valid_data(mock_crequest):
+def test_pension_valid_data(get_user):
     t = PensionTypeFactory()
 
     form = PensionForm(data={
@@ -32,7 +87,6 @@ def test_pension_valid_data(mock_crequest):
     assert data.pension_type.title == t.title
 
 
-@pytest.mark.django_db
 def test_pension_blank_data():
     form = PensionForm(data={})
 
@@ -43,7 +97,6 @@ def test_pension_blank_data():
     assert 'pension_type' in form.errors
 
 
-@pytest.mark.django_db
 def test_pension_price_null():
     t = PensionTypeFactory()
 
@@ -56,56 +109,3 @@ def test_pension_price_null():
 
     assert not form.is_valid()
     assert 'price' in form.errors
-
-
-def test_pension_type_init():
-    PensionTypeForm()
-
-
-@pytest.mark.django_db
-def test_pension_type_valid_data(mock_crequest):
-    form = PensionTypeForm(data={
-        'title': 'Title',
-    })
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.title == 'Title'
-
-
-@pytest.mark.django_db
-def test_pension_type_blank_data():
-    form = PensionTypeForm(data={})
-
-    assert not form.is_valid()
-
-    assert 'title' in form.errors
-
-
-@pytest.mark.django_db
-def test_pension_type_title_null():
-    form = PensionTypeForm(data={'title': None})
-
-    assert not form.is_valid()
-
-    assert 'title' in form.errors
-
-
-@pytest.mark.django_db
-def test_pension_type_title_too_long():
-    form = PensionTypeForm(data={'title': 'a'*255})
-
-    assert not form.is_valid()
-
-    assert 'title' in form.errors
-
-
-@pytest.mark.django_db
-def test_pension_type_title_too_short():
-    form = PensionTypeForm(data={'title': 'aa'})
-
-    assert not form.is_valid()
-
-    assert 'title' in form.errors
