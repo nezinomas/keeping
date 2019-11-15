@@ -17,14 +17,14 @@ class IncomeType(TitleAbstract):
 
 
 class IncomeQuerySet(SumMixin, models.QuerySet):
-    def _related(self):
+    def related(self):
         return self.select_related('account', 'income_type')
 
     def year(self, year):
-        return self._related().filter(date__year=year)
+        return self.related().filter(date__year=year)
 
     def items(self):
-        return self._related().all()
+        return self.related().all()
 
     def income_sum(self, year: int, month: int=None) -> List[Dict[str, Any]]:
         '''
