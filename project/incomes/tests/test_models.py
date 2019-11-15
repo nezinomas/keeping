@@ -32,8 +32,12 @@ def test_income_type_items_user(get_user):
     assert actual[0].title == 'T1'
 
 
-def test_income_type_new_post_save(mock_crequest, incomes):
-    obj = IncomeType(title='e1')
+def test_income_type_new_post_save(get_user, incomes):
+    # befor post_save AccountBalance empty
+    actual = AccountBalance.objects.items()
+    assert len(actual) == 0
+
+    obj = IncomeType(title='T1', user=UserFactory())
     obj.save()
 
     actual = AccountBalance.objects.items()
@@ -65,7 +69,7 @@ def test_income_related(get_user):
     assert str(actual[0].income_type) == 'T1'
 
 
-def test_sum_all_months(incomes):
+def test_sum_all_months(get_user, incomes):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(5.5)},
         {'date': date(1999, 2, 1), 'sum': Decimal(1.25)},
@@ -76,14 +80,14 @@ def test_sum_all_months(incomes):
     assert expect == actual
 
 
-def test_sum_all_months_ordering(incomes):
+def test_sum_all_months_ordering(get_user, incomes):
     actual = list(Income.objects.income_sum(1999))
 
     assert actual[0]['date'] == date(1999, 1, 1)
     assert actual[1]['date'] == date(1999, 2, 1)
 
 
-def test_sum_one_month(incomes):
+def test_sum_one_month(get_user, incomes):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(5.5)}
     ]
@@ -94,27 +98,27 @@ def test_sum_one_month(incomes):
     assert expect == actual
 
 
-def test_incomes_items():
+def test_incomes_items(get_user):
     IncomeFactory()
 
     assert len(Income.objects.items()) == 1
 
 
-def test_incomes_items_query_count(django_assert_max_num_queries):
+def test_incomes_items_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         Income.objects.items().values()
 
 
-def test_incomes_year_query_count(django_assert_max_num_queries):
+def test_incomes_year_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         Income.objects.year(1999).values()
 
 
-def test_incomes_income_sum_query_count(django_assert_max_num_queries):
+def test_incomes_income_sum_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         Income.objects.income_sum(1999).values()
 
-def test_summary(incomes):
+def test_summary(get_user, incomes):
     expect = [{
         'id': 1,
         'title': 'Account1',
@@ -133,7 +137,7 @@ def test_summary(incomes):
     assert expect == actual
 
 
-def test_income_month_type_sum():
+def test_income_month_type_sum(get_user):
     IncomeFactory(
         price=4,
         date=date(1999, 1, 2),
@@ -169,7 +173,7 @@ def test_income_month_type_sum():
     assert expect == [*actual]
 
 
-def test_income_new_post_save(mock_crequest):
+def test_income_new_post_save(get_user):
     AccountWorthFactory()
     account = AccountFactory()
     income_type = IncomeTypeFactory()
@@ -198,7 +202,7 @@ def test_income_new_post_save(mock_crequest):
     assert actual['delta'] == -0.5
 
 
-def test_income_update_post_save(mock_crequest):
+def test_income_update_post_save(get_user):
     AccountBalanceFactory()
     AccountWorthFactory()
     account = AccountFactory()
@@ -227,7 +231,7 @@ def test_income_update_post_save(mock_crequest):
     assert actual['delta'] == -0.5
 
 
-def test_income_new_post_save_count_qs(mock_crequest,
+def test_income_new_post_save_count_qs(get_user,
                                        django_assert_max_num_queries):
     AccountBalanceFactory()
     AccountWorthFactory()
@@ -244,7 +248,7 @@ def test_income_new_post_save_count_qs(mock_crequest,
         income.save()
 
 
-def test_income_update_post_save_count_qs(mock_crequest,
+def test_income_update_post_save_count_qs(get_user,
                                           django_assert_max_num_queries):
     AccountBalanceFactory()
     AccountWorthFactory()

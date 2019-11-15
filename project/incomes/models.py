@@ -65,10 +65,11 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
         return:
             {'date': datetime.date(), 'sum': Decimal()}
         '''
+
         summed_name = 'sum'
 
         return (
-            super()
+            self
             .related()
             .sum_by_month(year, summed_name, month=month)
             .values('date', summed_name)
