@@ -80,14 +80,15 @@ def _target_label_position(avg, target):
 
 
 def _dry_days(year):
-    latest = None
-    delta = None
-
+    qs = None
     try:
-        qs = models.Drink.objects.filter(date__year=year).latest()
-        latest = qs.date
-        delta = (datetime.now().date() - latest).days
-    except:
+        qs = models.Drink.objects.year(year).latest()
+    except models.Drink.DoesNotExist:
         pass
 
-    return {'date': latest, 'delta': delta}
+    if qs:
+        latest = qs.date
+        delta = (datetime.now().date() - latest).days
+        return {'date': latest, 'delta': delta}
+
+    return {}
