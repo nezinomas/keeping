@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import F, Max
 
 from ..accounts.models import Account
+from ..core.lib import utils
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 
@@ -14,7 +15,12 @@ from ..savings.models import SavingType
 # ----------------------------------------------------------------------------
 class SavingWorthQuerySet(models.QuerySet):
     def related(self):
-        return self.select_related('saving_type')
+        user = utils.get_user()
+        return (
+            self
+            .select_related('saving_type')
+            .filter(saving_type__user=user)
+        )
 
     def items(self):
         return (
@@ -54,7 +60,12 @@ class SavingWorth(models.Model):
 # ----------------------------------------------------------------------------
 class AccountWorthQuerySet(models.QuerySet):
     def related(self):
-        return self.select_related('account')
+        user = utils.get_user()
+        return (
+            self
+            .select_related('account')
+            .filter(account__user=user)
+        )
 
     def items(self):
         return (
@@ -96,7 +107,12 @@ class AccountWorth(models.Model):
 # ----------------------------------------------------------------------------
 class PensionWorthQuerySet(models.QuerySet):
     def related(self):
-        return self.select_related('pension_type')
+        user = utils.get_user()
+        return (
+            self
+            .select_related('pension_type')
+            .filter(pension_type__user=user)
+        )
 
     def items(self):
         return (

@@ -1,12 +1,12 @@
 from datetime import datetime
 
 from bootstrap_datepicker_plus import DatePickerInput
-from ..core.lib.utils import get_user
 from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
+from ..core.lib import utils
 from .models import SavingChange, SavingClose, SavingType, Transaction
 
 
@@ -29,22 +29,26 @@ class TransactionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # initial values
         self.fields['price'].initial = '0.01'
         self.fields['price'].widget.attrs = {'step': '0.01'}
         self.fields['price'].label = 'Suma'
-
         self.fields['date'].initial = datetime.now()
+
+        # overwrite ForeignKey expense_type queryset
+        self.fields['from_account'].queryset = Account.objects.items()
+        self.fields['to_account'].queryset = Account.objects.items()
+
+        # field labels
         self.fields['date'].label = 'Data'
-
         self.fields['from_account'].label = 'Iš sąskaitos'
-
         self.fields['to_account'].label = 'Į sąskaitą'
 
         # chained dropdown
         _id = ChainedDropDown(self, 'from_account').parent_field_id
         if _id:
             self.fields['to_account'].queryset = (
-                Account.objects.exclude(pk=_id)
+                Account.objects.items().exclude(pk=_id)
             )
 
         self.helper = FormHelper()
@@ -70,24 +74,26 @@ class SavingCloseForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        year = get_user().year
-
-        self.fields['from_account'].queryset = SavingType.objects.items(year)
-
-        self.fields['price'].initial = '0.01'
+        # form input settings
         self.fields['price'].widget.attrs = {'step': '0.01'}
+        self.fields['fee'].widget.attrs = {'step': '0.01'}
+
+        # form initial values
+        self.fields['date'].initial = datetime.now()
+        self.fields['price'].initial = '0.01'
+        self.fields['fee'].initial = '0.00'
+
+        # overwrite ForeignKey expense_type queryset
+        year = utils.get_user().year
+        self.fields['from_account'].queryset = SavingType.objects.items(year)
+        self.fields['to_account'].queryset = Account.objects.items(year)
+
+        # form fields labels
         self.fields['price'].label = 'Suma'
         self.fields['price'].help_text = 'Suma kuri lieka atskaičius mokesčius'
-
-        self.fields['fee'].initial = '0.00'
-        self.fields['fee'].widget.attrs = {'step': '0.01'}
         self.fields['fee'].label = 'Mokesčiai'
-
-        self.fields['date'].initial = datetime.now()
         self.fields['date'].label = 'Data'
-
         self.fields['from_account'].label = 'Iš sąskaitos'
-
         self.fields['to_account'].label = 'Į sąskaitą'
 
         self.helper = FormHelper()
@@ -113,25 +119,26 @@ class SavingChangeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        year = get_user().year
+        # form input settings
+        self.fields['price'].widget.attrs = {'step': '0.01'}
+        self.fields['fee'].widget.attrs = {'step': '0.01'}
 
+        # initial values
+        self.fields['date'].initial = datetime.now()
+        self.fields['price'].initial = '0.01'
+        self.fields['fee'].initial = '0.00'
+
+        # overwrite ForeignKey expense_type queryset
+        year = utils.get_user().year
         self.fields['from_account'].queryset = SavingType.objects.items(year)
         self.fields['to_account'].queryset = SavingType.objects.items(year)
 
-        self.fields['price'].initial = '0.01'
-        self.fields['price'].widget.attrs = {'step': '0.01'}
+        # fields labels
         self.fields['price'].label = 'Suma'
         self.fields['price'].help_text = 'Suma kuri lieka atskaičius mokesčius'
-
-        self.fields['fee'].initial = '0.00'
-        self.fields['fee'].widget.attrs = {'step': '0.01'}
         self.fields['fee'].label = 'Mokesčiai'
-
-        self.fields['date'].initial = datetime.now()
         self.fields['date'].label = 'Data'
-
         self.fields['from_account'].label = 'Iš sąskaitos'
-
         self.fields['to_account'].label = 'Į sąskaitą'
 
         # chained dropdown

@@ -6,17 +6,18 @@ from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
-from ...core.tests.utils import equal_list_of_dictionaries as assert_
+from ...auths.factories import UserFactory
 from ...savings.factories import (SavingBalanceFactory, SavingFactory,
                                   SavingTypeFactory)
 from ...savings.models import SavingBalance
 from ..models import Saving, SavingBalance, SavingType
 
+
 pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture()
-def savings_extra():
+def _savings_extra():
     SavingFactory(
         date=date(1999, 1, 1),
         price=1.0,
@@ -33,7 +34,119 @@ def savings_extra():
     )
 
 
-def test_saving_month_sum(savings):
+# ----------------------------------------------------------------------------
+#                                                                  Saving Type
+# ----------------------------------------------------------------------------
+def test_saving_type_str():
+    i = SavingFactory.build()
+
+    assert str(i) == '1999-01-01: Savings'
+
+
+def test_saving_type_items_user(get_user):
+    SavingTypeFactory(title='T1', user=UserFactory())
+    SavingTypeFactory(title='T2', user=UserFactory(username='u2'))
+
+    actual = SavingType.objects.items()
+
+    assert actual.count() == 1
+    assert actual[0].title == 'T1'
+
+
+def test_saving_type_day_sum_empty_month(get_user, savings):
+    expect = []
+
+    actual = list(Saving.objects.day_saving_type(1999, 2))
+
+    assert expect == actual
+
+
+def test_saving_type_items_closed_in_past(get_user):
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    actual = SavingType.objects.items(3000)
+
+    assert actual.count() == 1
+
+
+def test_saving_type_items_closed_in_future(get_user):
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    actual = SavingType.objects.items(1000)
+
+    assert actual.count() == 2
+
+
+def test_saving_type_items_closed_in_current_year(get_user):
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    actual = SavingType.objects.items(2000)
+
+    assert actual.count() == 2
+
+
+def test_saving_type_post_save_new_saving_balance(get_user):
+    obj = SavingType(title='s1', user=UserFactory())
+    obj.save()
+
+    actual = SavingBalance.objects.items()
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+
+    assert actual['title'] == 's1'
+
+
+def test_saving_type_post_save_new_account_balance(get_user):
+    AccountFactory()
+
+    obj = SavingType(title='s1', user=UserFactory())
+    obj.save()
+
+    actual = AccountBalance.objects.items()
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+
+
+# ----------------------------------------------------------------------------
+#                                                                       Saving
+# ----------------------------------------------------------------------------
+def test_saving_str():
+    actual = SavingTypeFactory.build()
+
+    assert str(actual) == 'Savings'
+
+
+def test_saving_related(get_user):
+    u1 = UserFactory()
+    u2 = UserFactory(username='XXX')
+    t1 = SavingTypeFactory(title='T1', user=u1)
+    t2 = SavingTypeFactory(title='T2', user=u2)
+
+    SavingFactory(saving_type=t1)
+    SavingFactory(saving_type=t2)
+
+    actual = Saving.objects.related()
+
+    assert len(actual) == 1
+    assert str(actual[0].saving_type) == 'T1'
+
+
+def test_saving_items(get_user):
+    SavingFactory()
+
+    assert len(Saving.objects.items()) == 1
+
+
+def test_saving_month_sum(get_user, savings):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(3.5), 'title': 'Saving1'},
         {'date': date(1999, 1, 1), 'sum': Decimal(2.25), 'title': 'Saving2'},
@@ -44,7 +157,7 @@ def test_saving_month_sum(savings):
     assert expect == actual
 
 
-def test_saving_type_day_sum(savings):
+def test_saving_type_day_sum(get_user, savings):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(3.5), 'title': 'Saving1'},
         {'date': date(1999, 1, 1), 'sum': Decimal(2.25), 'title': 'Saving2'},
@@ -55,7 +168,7 @@ def test_saving_type_day_sum(savings):
     assert expect == actual
 
 
-def test_saving_day_sum(savings_extra):
+def test_saving_day_sum(get_user, _savings_extra):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(2.0)},
     ]
@@ -65,15 +178,7 @@ def test_saving_day_sum(savings_extra):
     assert expect == actual
 
 
-def test_saving_type_day_sum_empty_month(savings):
-    expect = []
-
-    actual = list(Saving.objects.day_saving_type(1999, 2))
-
-    assert expect == actual
-
-
-def test_saving_months_sum(savings):
+def test_saving_months_sum(get_user, savings):
     expect = [{'date': date(1999, 1, 1), 'sum': Decimal(5.75)}]
 
     actual = list(Saving.objects.month_saving(1999))
@@ -81,61 +186,37 @@ def test_saving_months_sum(savings):
     assert expect == actual
 
 
-def test_model_saving_str():
-    actual = SavingTypeFactory.build()
-
-    assert 'Savings' == str(actual)
-
-
-def test_savings_items():
-    SavingFactory()
-
-    assert 1 == len(Saving.objects.items())
-
-
-def test_savings_items_query_count(django_assert_max_num_queries):
+def test_saving_items_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        [*Saving.objects.items()]
+        Saving.objects.items().values()
 
 
-def test_savings_year_query_count(django_assert_max_num_queries):
+def test_saving_year_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        [*Saving.objects.year(1999)]
+        Saving.objects.year(1999).values()
 
 
-def test_savings_month_saving_query_count(django_assert_max_num_queries):
+def test_saving_month_saving_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        [*Saving.objects.month_saving(1999)]
+        Saving.objects.month_saving(1999).values()
 
 
-def test_savings_month_type_sum_query_count(django_assert_max_num_queries):
+def test_saving_month_type_sum_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        [*Saving.objects.month_type_sum(1999)]
+        Saving.objects.month_type_sum(1999).values()
 
 
-def test_savings_day_saving_type_query_count(django_assert_max_num_queries):
+def test_saving_day_saving_type_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        [*Saving.objects.day_saving_type(1999, 1)]
+        Saving.objects.day_saving_type(1999, 1).values()
 
 
-def test_savings_day_saving_query_count(django_assert_max_num_queries):
+def test_saving_day_saving_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        [*Saving.objects.day_saving(1999, 1)]
+        Saving.objects.day_saving(1999, 1).values()
 
 
-def test_income_str():
-    i = SavingFactory.build()
-
-    assert '1999-01-01: Savings' == str(i)
-
-
-def test_income_type_str():
-    i = SavingTypeFactory.build()
-
-    assert 'Savings' == str(i)
-
-
-def test_summary_from(savings):
+def test_saving_summary_from(get_user, savings):
     expect = [{
         'title': 'Account1',
         's_past': 1.25,
@@ -151,7 +232,7 @@ def test_summary_from(savings):
     assert expect == actual
 
 
-def test_summary_to(savings):
+def test_saving_summary_to(get_user, savings):
     expect = [{
         'title': 'Saving1',
         's_past': 1.25,
@@ -172,35 +253,8 @@ def test_summary_to(savings):
     assert expect == actual
 
 
-def test_items_closed_in_past():
-    SavingTypeFactory(title='S1')
-    SavingTypeFactory(title='S2', closed=2000)
-
-    actual = SavingType.objects.items(3000)
-
-    assert 1 == actual.count()
-
-
-def test_items_closed_in_future():
-    SavingTypeFactory(title='S1')
-    SavingTypeFactory(title='S2', closed=2000)
-
-    actual = SavingType.objects.items(1000)
-
-    assert 2 == actual.count()
-
-
-def test_items_closed_in_current_year():
-    SavingTypeFactory(title='S1')
-    SavingTypeFactory(title='S2', closed=2000)
-
-    actual = SavingType.objects.items(2000)
-
-    assert 2 == actual.count()
-
-
 @freeze_time('1999-01-01')
-def test_saving_year_with_type_closed_in_future():
+def test_saving_year_with_type_closed_in_future(get_user):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', closed=2000)
 
@@ -209,11 +263,11 @@ def test_saving_year_with_type_closed_in_future():
 
     actual = Saving.objects.year(1999)
 
-    assert 2 == actual.count()
+    assert actual.count() == 2
 
 
 @freeze_time('1999-01-01')
-def test_saving_year_with_type_closed_in_current_year():
+def test_saving_year_with_type_closed_in_current_year(get_user):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', closed=1999)
 
@@ -222,11 +276,11 @@ def test_saving_year_with_type_closed_in_current_year():
 
     actual = Saving.objects.year(1999)
 
-    assert 2 == actual.count()
+    assert actual.count() == 2
 
 
 @freeze_time('1999-01-01')
-def test_saving_year_with_type_closed_in_past():
+def test_saving_year_with_type_closed_in_past(get_user):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', closed=1974)
 
@@ -235,7 +289,7 @@ def test_saving_year_with_type_closed_in_past():
 
     actual = Saving.objects.year(1999)
 
-    assert 1 == actual.count()
+    assert actual.count() == 1
 
 
 # ----------------------------------------------------------------------------
@@ -265,7 +319,24 @@ def test_saving_balance_str():
 
 
 @pytest.mark.django_db
-def test_saving_balance_items():
+def test_saving_balance_related_for_user(get_user):
+    u = UserFactory(username='XXX')
+
+    s1 = SavingTypeFactory(title='S1')
+    s2 = SavingTypeFactory(title='S2', user=u)
+
+    SavingBalanceFactory(saving_type=s1)
+    SavingBalanceFactory(saving_type=s2)
+
+    actual = SavingBalance.objects.related()
+
+    assert len(actual) == 1
+    assert str(actual[0].saving_type) == 'S1'
+    assert actual[0].saving_type.user.username == 'bob'
+
+
+@pytest.mark.django_db
+def test_saving_balance_items(get_user):
     SavingBalanceFactory(year=1998)
     SavingBalanceFactory(year=1999)
     SavingBalanceFactory(year=2000)
@@ -275,25 +346,20 @@ def test_saving_balance_items():
     assert len(actual) == 1
 
 
-def test_saving_balance_queries(django_assert_num_queries):
+def test_saving_balance_queries(get_user, django_assert_num_queries):
     s1 = SavingTypeFactory(title='s1')
     s2 = SavingTypeFactory(title='s2')
 
     SavingBalanceFactory(saving_type=s1)
     SavingBalanceFactory(saving_type=s2)
 
-    with django_assert_num_queries(1) as captured:
-        q = SavingBalance.objects.items()
-        for i in q:
-            title = i['title']
+    with django_assert_num_queries(1):
+        list(SavingBalance.objects.items().values())
 
 
-# ----------------------------------------------------------------------------
-#                                                             post_save signal
-# ----------------------------------------------------------------------------
-def test_post_save_account_balace_insert(mock_crequest):
+def test_saving_balance_new_post_save_account_balace(get_user):
     a1 = AccountFactory()
-    a2 = AccountFactory(title='a2')
+    AccountFactory(title='a2')
 
     s1 = SavingTypeFactory()
 
@@ -309,20 +375,22 @@ def test_post_save_account_balace_insert(mock_crequest):
 
     actual = AccountBalance.objects.items(1999)
 
-    assert 1 == actual.count()
+    assert actual.count() == 1
 
     actual = actual[0]
 
-    assert 'Account1' == actual['title']
-    assert 0.0 == actual['past']
-    assert 0.0 == actual['incomes']
-    assert 1.0 == actual['expenses']
-    assert -1.0 == actual['balance']
+    assert actual['title'] == 'Account1'
+    assert actual['past'] == 0.0
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 1.0
+    assert actual['balance'] == -1.0
 
 
-def test_post_save_saving_balace_insert(mock_crequest,
-                                        savings, savings_close, savings_change,
-                                        savings_worth):
+def test_saving_balance_new_post_save_saving_balance(get_user,
+                                                     savings,
+                                                     savings_close,
+                                                     savings_change,
+                                                     savings_worth):
     account = AccountFactory()
     s1 = SavingType.objects.get(id=1)
 
@@ -338,11 +406,11 @@ def test_post_save_saving_balace_insert(mock_crequest,
 
     actual = SavingBalance.objects.items(1999)
 
-    assert 1 == actual.count()
+    assert actual.count() == 1
 
     actual = actual[0]
 
-    assert 'Saving1' == actual['title']
+    assert actual['title'] == 'Saving1'
 
     assert round(actual['past_amount'], 2) == -1.25
     assert round(actual['past_fee'], 2) == 0.4
@@ -354,31 +422,3 @@ def test_post_save_saving_balace_insert(mock_crequest,
     assert round(actual['profit_incomes_sum'], 2) == -0.65
     assert round(actual['profit_invested_proc'], 2) == -200.0
     assert round(actual['profit_invested_sum'], 2) == 0.30
-
-
-def test_post_save_saving_type_insert_saving_balance(mock_crequest):
-    obj = SavingType(title='s1')
-    obj.save()
-
-    actual = SavingBalance.objects.items()
-
-    assert 1 == actual.count()
-
-    actual = actual[0]
-
-    assert 's1' == actual['title']
-
-
-def test_post_save_saving_type_insert_new_account_balance(mock_crequest):
-    AccountFactory()
-
-    obj = SavingType(title='s1')
-    obj.save()
-
-    actual = AccountBalance.objects.items()
-
-    assert 1 == actual.count()
-
-    actual = actual[0]
-
-    assert 'Account1' == actual['title']

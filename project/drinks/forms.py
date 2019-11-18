@@ -5,10 +5,11 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.mixins.form_mixin import FormMixin
 from .models import Drink, DrinkTarget
 
 
-class DrinkForm(forms.ModelForm):
+class DrinkForm(FormMixin, forms.ModelForm):
     class Meta:
         model = Drink
         fields = ['date', 'quantity']
@@ -37,7 +38,7 @@ class DrinkForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
-class DrinkTargetForm(forms.ModelForm):
+class DrinkTargetForm(FormMixin, forms.ModelForm):
     class Meta:
         model = DrinkTarget
         fields = ['year', 'quantity']
@@ -59,3 +60,17 @@ class DrinkTargetForm(forms.ModelForm):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+    def clean_year(self):
+        year = self.cleaned_data['year']
+
+        # if update
+        if self.instance.pk:
+            return year
+
+        # if new record
+        qs = DrinkTarget.objects.year(year)
+        if qs.exists():
+            raise forms.ValidationError(f'{year} metai jau turi tikslą.')
+
+        return year

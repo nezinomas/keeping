@@ -24,9 +24,13 @@ class Index(IndexMixin):
 
 # SavingType dropdown
 def load_saving_type(request):
-    id = request.GET.get('id')
+    _id = request.GET.get('id')
     year = request.user.year
-    objects = models.SavingType.objects.items(year).exclude(pk=id)
+    objects = (
+        models.SavingType.objects
+        .items(year)
+        .exclude(pk=_id)
+    )
 
     return render(
         request,

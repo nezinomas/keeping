@@ -5,15 +5,14 @@ from django.urls import resolve, reverse
 
 from ...auths.factories import UserFactory
 from ...core.tests.utils import change_profile_year
-from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
-from ..models import ExpenseName
+from ..factories import ExpenseNameFactory, ExpenseTypeFactory
 from ..views import expenses, expenses_name, expenses_type
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
 @pytest.fixture()
-def db_data():
+def _db_data():
     ExpenseTypeFactory.reset_sequence()
     ExpenseNameFactory(title='F')
     ExpenseNameFactory(title='S', valid_for=1999)
@@ -49,8 +48,8 @@ def test_expenses_update_func():
 
 
 @pytest.mark.django_db
-def test_expenses_index_200(login, client):
-    response = client.get('/expenses/')
+def test_expenses_index_200(client_logged):
+    response = client_logged.get('/expenses/')
 
     assert response.status_code == 200
 
@@ -93,7 +92,7 @@ def test_expenses_name_update_func():
 
 
 @pytest.mark.django_db
-def test_expense_name_save_data(login, client):
+def test_expense_name_save_data(client_logged):
     url = reverse('expenses:expenses_name_new')
     p = ExpenseTypeFactory()
 
@@ -101,12 +100,9 @@ def test_expense_name_save_data(login, client):
         'title': 'TTT', 'parent': p.pk
     }
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     templates = [t.name for t in response.templates]
     template = 'expenses/includes/expenses_type_list.html'
@@ -116,7 +112,7 @@ def test_expense_name_save_data(login, client):
 
 
 @pytest.mark.django_db()
-def test_expense_name_save_invalid_data(client, login):
+def test_expense_name_save_invalid_data(client_logged):
     data = {
         'title': 'x',
         'parent': 0
@@ -124,7 +120,7 @@ def test_expense_name_save_invalid_data(client, login):
 
     url = reverse('expenses:expenses_name_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -133,7 +129,7 @@ def test_expense_name_save_invalid_data(client, login):
 
 
 @pytest.mark.django_db()
-def test_expense_name_update(client, login):
+def test_expense_name_update(client_logged):
     e = ExpenseNameFactory()
 
     data = {
@@ -143,9 +139,9 @@ def test_expense_name_update(client, login):
     }
     url = reverse('expenses:expenses_name_update', kwargs={'pk': e.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -160,35 +156,35 @@ def test_expense_name_update(client, login):
 # ----------------------------------------------------------------------------
 #
 def test_load_expenses_name_new_func():
-    view = resolve('/ajax/load_expense_name/')
+    actual = resolve('/ajax/load_expense_name/')
 
-    assert expenses.load_expense_name == view.func
+    assert expenses.load_expense_name == actual.func
 
 
 @pytest.mark.django_db
-def test_load_expense_name_status_code(client, login):
+def test_load_expense_name_status_code(client_logged):
     url = reverse('expenses:load_expense_name')
-    response = client.get(url, {'expense_type': 1})
+    response = client_logged.get(url, {'expense_type': 1})
 
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_load_expense_name_isnull_count(client, login, db_data):
-    change_profile_year(client)
+def test_load_expense_name_isnull_count(client_logged, _db_data):
+    change_profile_year(client_logged)
 
     url = reverse('expenses:load_expense_name')
-    response = client.get(url, {'expense_type': 1})
+    response = client_logged.get(url, {'expense_type': 1})
 
-    assert 1 == response.context['objects'].count()
+    assert response.context['objects'].count() == 1
 
 
 @pytest.mark.django_db
-def test_load_expense_name_all(client, login, db_data):
+def test_load_expense_name_all(client_logged, _db_data):
     url = reverse('expenses:load_expense_name')
-    response = client.get(url, {'expense_type': 1})
+    response = client_logged.get(url, {'expense_type': 1})
 
-    assert 2 == response.context['objects'].count()
+    assert response.context['objects'].count() == 2
 
 
 #
@@ -203,7 +199,7 @@ def test_view_reload_stats_func():
 
 
 @pytest.mark.django_db
-def test_view_reload_stats_render(rf):
+def test_view_reload_stats_render(get_user, rf):
     request = rf.get('/expenses/reload/?ajax_trigger=1')
     request.user = UserFactory.build()
 

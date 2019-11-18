@@ -3,22 +3,35 @@ from typing import Any, Dict, List
 
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import Case, Count, F, Sum, When
+from django.db.models import Case, Count, Sum, When
 
 from ..accounts.models import Account
+from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 from ..savings.models import SavingType
 
 
+# ----------------------------------------------------------------------------
+#                                                                  Transaction
+# ----------------------------------------------------------------------------
 class TransactionQuerySet(models.QuerySet):
-    def _related(self):
-        return self.select_related('from_account', 'to_account')
+    def related(self):
+        user = utils.get_user()
+        return (
+            self
+            .select_related('from_account', 'to_account')
+            .filter(from_account__user=user, to_account__user=user)
+        )
 
     def year(self, year):
-        return self._related().filter(date__year=year)
+        return (
+            self
+            .related()
+            .filter(date__year=year)
+        )
 
     def items(self):
-        return self._related()
+        return self.related()
 
     def summary_from(self, year: int) -> List[Dict[str, Any]]:
         '''
@@ -31,6 +44,7 @@ class TransactionQuerySet(models.QuerySet):
         '''
         return (
             self
+            .related()
             .annotate(cnt=Count('from_account'))
             .values('cnt')
             .order_by('cnt')
@@ -61,6 +75,7 @@ class TransactionQuerySet(models.QuerySet):
         '''
         return (
             self
+            .related()
             .annotate(cnt=Count('to_account'))
             .values('cnt')
             .order_by('cnt')
@@ -115,12 +130,16 @@ class Transaction(models.Model):
     objects = TransactionQuerySet.as_manager()
 
 
+# ----------------------------------------------------------------------------
+#                                                                 Saving Close
+# ----------------------------------------------------------------------------
 class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
     def month_sum(self, year, month=None):
         summed_name = 'sum'
 
         return (
-            super()
+            self
+            .related()
             .sum_by_month(
                 year=year, month=month,
                 summed_name=summed_name)
@@ -138,6 +157,7 @@ class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
         '''
         return (
             self
+            .related()
             .annotate(cnt=Count('from_account'))
             .values('cnt')
             .order_by('cnt')
@@ -168,6 +188,7 @@ class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
         '''
         return (
             self
+            .related()
             .annotate(cnt=Count('to_account'))
             .values('cnt')
             .order_by('cnt')
@@ -228,6 +249,9 @@ class SavingClose(models.Model):
     objects = SavingCloseQuerySet.as_manager()
 
 
+# ----------------------------------------------------------------------------
+#                                                                Saving Change
+# ----------------------------------------------------------------------------
 class SavingChangeQuerySet(TransactionQuerySet):
     def summary_from(self, year: int) -> List[Dict[str, Any]]:
         '''
@@ -242,6 +266,7 @@ class SavingChangeQuerySet(TransactionQuerySet):
         '''
         return (
             self
+            .related()
             .annotate(cnt=Count('from_account'))
             .values('cnt')
             .order_by('cnt')
@@ -282,6 +307,7 @@ class SavingChangeQuerySet(TransactionQuerySet):
         '''
         return (
             self
+            .related()
             .annotate(cnt=Count('to_account'))
             .values('cnt')
             .order_by('cnt')

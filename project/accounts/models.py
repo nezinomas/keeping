@@ -2,17 +2,25 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import F
 
+from ..auths.models import User
+from ..core.lib import utils
 from ..core.models import TitleAbstract
 
 
 class AccountQuerySet(models.QuerySet):
     def items(self, year: int = None):
-        return self
+        user = utils.get_user()
+        return self.filter(user=user)
 
 
 class Account(TitleAbstract):
     order = models.PositiveIntegerField(
         default=10
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='accounts'
     )
 
     class Meta:
@@ -23,14 +31,20 @@ class Account(TitleAbstract):
 
 
 class AccountBalanceQuerySet(models.QuerySet):
-    def _related(self):
-        return self.select_related('account')
+    def related(self):
+        user = utils.get_user()
+        qs = (
+            self
+            .select_related('account')
+            .filter(account__user=user)
+        )
+        return qs
 
     def items(self, year: int = None):
         if year:
-            qs = self._related().filter(year=year)
+            qs = self.related().filter(year=year)
         else:
-            qs = self._related()
+            qs = self.related()
 
         return qs.values(
             'year', 'past', 'balance', 'incomes',

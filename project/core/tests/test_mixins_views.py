@@ -1,5 +1,4 @@
 import mock
-import pytest
 
 from ..mixins.views import ListMixin
 from .utils import setup_view

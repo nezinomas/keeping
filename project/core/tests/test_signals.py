@@ -13,7 +13,7 @@ pytestmark = pytest.mark.django_db
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_account_list_full(mck, mock_crequest):
+def test_account_list_full(mck, get_user):
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
 
@@ -28,7 +28,7 @@ def test_account_list_full(mck, mock_crequest):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_account_list_one(mock_init, mock_crequest):
+def test_account_list_one(mock_init, get_user):
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
 
@@ -43,7 +43,7 @@ def test_account_list_one(mock_init, mock_crequest):
 
 
 @patch('project.core.signals.SignalBase._get_stats')
-def test_account_insert(_mock, mock_crequest):
+def test_account_insert(_mock, get_user):
     a1 = AccountFactory(title='A1')
     _mock.return_value = [
         {'title': 'A1', 'id': a1.id, 'balance': 2.0}]
@@ -53,17 +53,17 @@ def test_account_insert(_mock, mock_crequest):
 
     actual = AccountBalance.objects.items(1999)
 
-    assert 1 == actual.count()
+    assert actual.count() == 1
 
     actual = list(actual)[0]
 
-    assert 'A1' == actual['title']
-    assert 2.0 == actual['balance']
-    assert 1999 == actual['year']
+    assert actual['title'] == 'A1'
+    assert actual['balance'] == 2.0
+    assert actual['year'] == 1999
 
 
 @patch('project.core.signals.SignalBase._get_stats')
-def test_account_insert_instance_account_id_not_set(_mock, mock_crequest):
+def test_account_insert_instance_account_id_not_set(_mock, get_user):
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
     _mock.return_value = [
@@ -76,21 +76,21 @@ def test_account_insert_instance_account_id_not_set(_mock, mock_crequest):
 
     actual = AccountBalance.objects.items(1999)
 
-    assert 2 == actual.count()
+    assert actual.count() == 2
 
     actual = list(actual)
 
-    assert 'A1' == actual[0]['title']
-    assert 2.0 == actual[0]['balance']
-    assert 1999 == actual[0]['year']
+    assert actual[0]['title'] == 'A1'
+    assert actual[0]['balance'] == 2.0
+    assert actual[0]['year'] == 1999
 
-    assert 'A2' == actual[1]['title']
-    assert 4.0 == actual[1]['balance']
-    assert 1999 == actual[1]['year']
+    assert actual[1]['title'] == 'A2'
+    assert actual[1]['balance'] == 4.0
+    assert actual[1]['year'] == 1999
 
 
 @patch('project.core.signals.SignalBase._get_stats')
-def test_account_update(_mock, mock_crequest):
+def test_account_update(_mock, get_user):
     a1 = AccountFactory(title='A1')
     AccountBalanceFactory(account=a1)
 
@@ -101,24 +101,24 @@ def test_account_update(_mock, mock_crequest):
 
     actual = AccountBalance.objects.items(1999)
 
-    assert 1 == actual.count()
+    assert actual.count() == 1
 
     actual = list(actual)[0]
 
-    assert 'A1' == actual['title']
-    assert 2.0 == actual['balance']
-    assert 1.0 == actual['past']
-    assert 6.75 == actual['incomes']
-    assert 6.5 == actual['expenses']
-    assert 0.20 == actual['have']
-    assert -1.05 == actual['delta']
+    assert actual['title'] == 'A1'
+    assert actual['balance'] == 2.0
+    assert actual['past'] == 1.0
+    assert actual['incomes'] == 6.75
+    assert actual['expenses'] == 6.5
+    assert actual['have'] == 0.20
+    assert actual['delta'] == -1.05
 
 
 # ----------------------------------------------------------------------------
 #                                                      post_save_savings_stats
 # ----------------------------------------------------------------------------
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_saving_list_full(_mock, mock_crequest):
+def test_saving_list_full(_mock, get_user):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2')
 
@@ -134,7 +134,7 @@ def test_saving_list_full(_mock, mock_crequest):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_saving_list_one(_mock, mock_crequest):
+def test_saving_list_one(_mock, get_user):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2')
 
@@ -150,7 +150,7 @@ def test_saving_list_one(_mock, mock_crequest):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_saving_list_full_without_closed(_mock, mock_crequest):
+def test_saving_list_full_without_closed(_mock, get_user):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', closed=1974)
 
@@ -166,7 +166,7 @@ def test_saving_list_full_without_closed(_mock, mock_crequest):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_saving_list_without_closed(_mock, mock_crequest):
+def test_saving_list_without_closed(_mock, get_user):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', closed=1974)
 
@@ -182,7 +182,7 @@ def test_saving_list_without_closed(_mock, mock_crequest):
 
 
 @patch('project.core.signals.SignalBase._get_stats')
-def test_saving_insert(_mock, mock_crequest):
+def test_saving_insert(_mock, get_user):
     s1 = SavingTypeFactory(title='S1')
     _mock.return_value = [{
         'title': 'S1',
@@ -204,26 +204,26 @@ def test_saving_insert(_mock, mock_crequest):
 
     actual = SavingBalance.objects.items(1999)
 
-    assert 1 == actual.count()
+    assert actual.count() == 1
 
     actual = list(actual)[0]
 
-    assert 1999 == actual['year']
-    assert 'S1' == actual['title']
-    assert 2.0 == actual['past_amount']
-    assert 2.1 == actual['past_fee']
-    assert 2.2 == actual['fees']
-    assert 2.3 == actual['invested']
-    assert 2.4 == actual['incomes']
-    assert 2.5 == actual['market_value']
-    assert 2.6 == actual['profit_incomes_proc']
-    assert 2.7 == actual['profit_incomes_sum']
-    assert 2.8 == actual['profit_invested_proc']
-    assert 2.9 == actual['profit_invested_sum']
+    assert actual['year'] == 1999
+    assert actual['title'] == 'S1'
+    assert actual['past_amount'] == 2.0
+    assert actual['past_fee'] == 2.1
+    assert actual['fees'] == 2.2
+    assert actual['invested'] == 2.3
+    assert actual['incomes'] == 2.4
+    assert actual['market_value'] == 2.5
+    assert actual['profit_incomes_proc'] == 2.6
+    assert actual['profit_incomes_sum'] == 2.7
+    assert actual['profit_invested_proc'] == 2.8
+    assert actual['profit_invested_sum'] == 2.9
 
 
 @patch('project.core.signals.SignalBase._get_stats')
-def test_saving_insert_instance_saving_id_not_set(_mock, mock_crequest):
+def test_saving_insert_instance_saving_id_not_set(_mock, get_user):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2')
     _mock.return_value = [
@@ -236,21 +236,21 @@ def test_saving_insert_instance_saving_id_not_set(_mock, mock_crequest):
 
     actual = SavingBalance.objects.items(1999)
 
-    assert 2 == actual.count()
+    assert actual.count() == 2
 
     actual = list(actual)
 
-    assert 'S1' == actual[0]['title']
-    assert 2.0 == actual[0]['past_amount']
-    assert 1999 == actual[0]['year']
+    assert actual[0]['title'] == 'S1'
+    assert actual[0]['past_amount'] == 2.0
+    assert actual[0]['year'] == 1999
 
-    assert 'S2' == actual[1]['title']
-    assert 4.0 == actual[1]['past_amount']
-    assert 1999 == actual[1]['year']
+    assert actual[1]['title'] == 'S2'
+    assert actual[1]['past_amount'] == 4.0
+    assert actual[1]['year'] == 1999
 
 
 @patch('project.core.signals.SignalBase._get_stats')
-def test_saving_update(_mock, mock_crequest):
+def test_saving_update(_mock, get_user):
     s1 = SavingTypeFactory(title='S1')
     SavingBalanceFactory(saving_type=s1)
 
@@ -261,9 +261,9 @@ def test_saving_update(_mock, mock_crequest):
 
     actual = SavingBalance.objects.items(1999)
 
-    assert 1 == actual.count()
+    assert actual.count() == 1
 
     actual = list(actual)[0]
 
-    assert 'S1' == actual['title']
-    assert 22.0 == actual['past_amount']
+    assert actual['title'] == 'S1'
+    assert actual['past_amount'] == 22.0

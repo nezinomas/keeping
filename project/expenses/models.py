@@ -13,14 +13,16 @@ from ..core.models import TitleAbstract
 
 
 class ExpenseTypeQuerySet(models.QuerySet):
-    def _related(self):
+    def related(self):
         user = utils.get_user()
         return (
-            self.prefetch_related('user', 'expensename_set')
-            .filter(user=user))
+            self
+            .prefetch_related('user', 'expensename_set')
+            .filter(user=user)
+        )
 
     def items(self):
-        return self._related()
+        return self.related()
 
 
 class ExpenseType(TitleAbstract):
@@ -41,20 +43,33 @@ class ExpenseType(TitleAbstract):
 
 
 class ExpenseNameQuerySet(models.QuerySet):
-    def _related(self):
-        return self.select_related('parent')
+    def related(self):
+        user = utils.get_user()
+        qs = (
+            self
+            .select_related('parent')
+            .filter(parent__user=user)
+        )
+        return qs
 
     def year(self, year):
-        return self._related().filter(
-            Q(valid_for__isnull=True) |
-            Q(valid_for=year)
-        )
+        qs = (
+            self
+            .related()
+            .filter(
+                Q(valid_for__isnull=True) | Q(valid_for=year)
+            ))
+        return qs
 
     def parent(self, parent_id):
-        return self._related().filter(parent_id=parent_id)
+        return (
+            self
+            .related()
+            .filter(parent_id=parent_id)
+        )
 
     def items(self):
-        return self._related().all()
+        return self.related()
 
 
 class ExpenseName(TitleAbstract):
@@ -81,18 +96,29 @@ class ExpenseName(TitleAbstract):
 
 
 class ExpenseQuerySet(models.QuerySet):
-    def _related(self):
-        return self.select_related('expense_type', 'expense_name', 'account')
+    def related(self):
+        user = utils.get_user()
+        qs = (
+            self
+            .select_related('expense_type', 'expense_name', 'account')
+            .filter(expense_type__user=user)
+        )
+        return qs
 
     def year(self, year):
-        return self._related().filter(date__year=year)
+        return (
+            self
+            .related()
+            .filter(date__year=year)
+        )
 
     def items(self):
-        return self._related().all()
+        return self.related().all()
 
     def month_expense_type(self, year):
         return (
             self
+            .related()
             .filter(date__year=year)
             .annotate(cnt=Count('expense_type'))
             .values('expense_type')
@@ -110,6 +136,7 @@ class ExpenseQuerySet(models.QuerySet):
     def month_name_sum(self, year):
         return (
             self
+            .related()
             .filter(date__year=year)
             .annotate(cnt=Count('expense_type'))
             .values('expense_type')
@@ -130,6 +157,7 @@ class ExpenseQuerySet(models.QuerySet):
     def day_expense_type(self, year, month):
         return (
             self
+            .related()
             .filter(date__year=year)
             .filter(date__month=month)
             .annotate(cnt_id=Count('id'))
@@ -160,6 +188,7 @@ class ExpenseQuerySet(models.QuerySet):
         '''
         return (
             self
+            .related()
             .annotate(cnt=Count('expense_type'))
             .values('cnt')
             .order_by('cnt')

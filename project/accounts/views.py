@@ -20,8 +20,8 @@ class Update(UpdateAjaxMixin):
 
 
 def load_to_account(request):
-    id = request.GET.get('id')
-    objects = models.Account.objects.exclude(pk=id)
+    _id = request.GET.get('id')
+    objects = models.Account.objects.items().exclude(pk=_id)
     return render(
         request,
         'core/dropdown.html',

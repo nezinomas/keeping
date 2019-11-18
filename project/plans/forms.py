@@ -9,7 +9,11 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib.date import monthnames
-from ..core.lib.utils import get_user
+from ..core.lib import utils
+from ..core.mixins.form_mixin import FormMixin
+from ..expenses.models import ExpenseType
+from ..incomes.models import IncomeType
+from ..savings.models import SavingType
 from .models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
                      SavingPlan, SavingType)
 
@@ -30,32 +34,10 @@ def common_field_transalion(self):
     self.fields['december'].label = 'Gruodis'
 
 
-class ExpensePlanForm(forms.ModelForm):
-    class Meta:
-        model = ExpensePlan
-        fields = ['year', 'expense_type'] + monthnames()
-
-        widgets = {
-            'year': YearPickerInput(format='%Y'),
-        }
-
-    field_order = ['year', 'expense_type'] + monthnames()
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # inital values
-        self.fields['year'].initial = datetime.now()
-
-        # field translation
-        self.fields['expense_type'].label = 'Išlaidų rūšis'
-        common_field_transalion(self)
-
-        self.helper = FormHelper()
-        set_field_properties(self, self.helper)
-
-
-class IncomePlanForm(forms.ModelForm):
+# ----------------------------------------------------------------------------
+#                                                             Income Plan Form
+# ----------------------------------------------------------------------------
+class IncomePlanForm(FormMixin, forms.ModelForm):
     class Meta:
         model = IncomePlan
         fields = ['year', 'income_type'] + monthnames()
@@ -72,6 +54,9 @@ class IncomePlanForm(forms.ModelForm):
         # inital values
         self.fields['year'].initial = datetime.now()
 
+        # overwrite ForeignKey expense_type queryset
+        self.fields['income_type'].queryset = IncomeType.objects.items()
+
         # field translation
         self.fields['income_type'].label = 'Išlaidų rūšis'
         common_field_transalion(self)
@@ -79,8 +64,74 @@ class IncomePlanForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+    def clean(self):
+        cleaned_data = super().clean()
+        year = cleaned_data.get('year')
 
-class SavingPlanForm(forms.ModelForm):
+        # if update
+        if self.instance.pk:
+            return
+
+        qs = IncomePlan.objects.year(year)
+        if qs.exists():
+            _type = cleaned_data.get('income_type')
+            _msg = f'{year} metai jau turi {_type} planą.'
+            raise forms.ValidationError([{'__all__': _msg}])
+
+        return
+
+
+# ----------------------------------------------------------------------------
+#                                                            Expense Plan Form
+# ----------------------------------------------------------------------------
+class ExpensePlanForm(FormMixin, forms.ModelForm):
+    class Meta:
+        model = ExpensePlan
+        fields = ['year', 'expense_type'] + monthnames()
+
+        widgets = {
+            'year': YearPickerInput(format='%Y'),
+        }
+
+    field_order = ['year', 'expense_type'] + monthnames()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # inital values
+        self.fields['year'].initial = datetime.now()
+
+        # overwrite ForeignKey expense_type queryset
+        self.fields['expense_type'].queryset = ExpenseType.objects.items()
+
+        # field translation
+        self.fields['expense_type'].label = 'Išlaidų rūšis'
+        common_field_transalion(self)
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        year = cleaned_data.get('year')
+
+        # if update
+        if self.instance.pk:
+            return
+
+        qs = ExpensePlan.objects.year(year)
+        if qs.exists():
+            _type = cleaned_data.get('expense_type')
+            _msg = f'{year} metai jau turi {_type} planą.'
+            raise forms.ValidationError([{'__all__': _msg}])
+
+        return
+
+
+# ----------------------------------------------------------------------------
+#                                                              Saving Plan Form
+# ----------------------------------------------------------------------------
+class SavingPlanForm(FormMixin, forms.ModelForm):
     class Meta:
         model = SavingPlan
         fields = ['year', 'saving_type'] + monthnames()
@@ -94,7 +145,8 @@ class SavingPlanForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        year = get_user().year
+        # overwrite ForeignKey expense_type queryset
+        year = utils.get_user().year
         self.fields['saving_type'].queryset = SavingType.objects.items(year)
 
         # inital values
@@ -107,8 +159,27 @@ class SavingPlanForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+    def clean(self):
+        cleaned_data = super().clean()
+        year = cleaned_data.get('year')
 
-class DayPlanForm(forms.ModelForm):
+        # if update
+        if self.instance.pk:
+            return
+
+        qs = SavingPlan.objects.year(year)
+        if qs.exists():
+            _type = cleaned_data.get('saving_type')
+            _msg = f'{year} metai jau turi {_type} planą.'
+            raise forms.ValidationError([{'__all__': _msg}])
+
+        return
+
+
+# ----------------------------------------------------------------------------
+#                                                                Day Plan Form
+# ----------------------------------------------------------------------------
+class DayPlanForm(FormMixin, forms.ModelForm):
     class Meta:
         model = DayPlan
         fields = ['year'] + monthnames()
@@ -131,8 +202,26 @@ class DayPlanForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+    def clean(self):
+        cleaned_data = super().clean()
+        year = cleaned_data.get('year')
 
-class NecessaryPlanForm(forms.ModelForm):
+        # if update
+        if self.instance.pk:
+            return
+
+        qs = DayPlan.objects.year(year)
+        if qs.exists():
+            _msg = f'{year} metai jau turi Dienos planą.'
+            raise forms.ValidationError([{'__all__': _msg}])
+
+        return
+
+
+# ----------------------------------------------------------------------------
+#                                                          Necessary Plan Form
+# ----------------------------------------------------------------------------
+class NecessaryPlanForm(FormMixin, forms.ModelForm):
     class Meta:
         model = NecessaryPlan
         fields = ['year', 'title'] + monthnames()
@@ -155,7 +244,26 @@ class NecessaryPlanForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+    def clean(self):
+        cleaned_data = super().clean()
+        year = cleaned_data.get('year')
 
+        # if update
+        if self.instance.pk:
+            return
+
+        qs = NecessaryPlan.objects.year(year)
+        if qs.exists():
+            title = cleaned_data.get('title')
+            _msg = f'{year} metai jau turi {title} planą.'
+            raise forms.ValidationError([{'__all__': _msg}])
+
+        return
+
+
+# ----------------------------------------------------------------------------
+#                                                               Copy Plan Form
+# ----------------------------------------------------------------------------
 class CopyPlanForm(forms.Form):
     year_from = forms.IntegerField(
         widget=YearPickerInput(format='%Y'),
