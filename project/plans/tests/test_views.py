@@ -63,9 +63,9 @@ def test_view_plan_stats_render_to_string(client_logged):
 #                                                     IncomePlan create/update
 # ----------------------------------------------------------------------------
 @freeze_time('1999-1-1')
-def test_view_incomes(admin_client):
+def test_view_incomes(get_user, client_logged):
     url = reverse('plans:incomes_plan_new')
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -120,8 +120,8 @@ def test_view_incomes_update(client_logged):
 
 
 def test_view_incomes_update_year_not_match(client_logged):
-    # if year in Plan and urser not match, 404 error
-    p = IncomePlanFactory()
+    # if year in Plan and user not match, 404 error
+    p = IncomePlanFactory(year=2000)
 
     url = reverse('plans:incomes_plan_update', kwargs={'pk': p.pk})
 
@@ -134,9 +134,9 @@ def test_view_incomes_update_year_not_match(client_logged):
 #                                                   ExpensesPlan create/update
 # ----------------------------------------------------------------------------
 @freeze_time('1999-1-1')
-def test_view_expenses(admin_client):
+def test_view_expenses(client_logged):
     url = reverse('plans:expenses_plan_new')
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -192,7 +192,7 @@ def test_view_expenses_update(client_logged):
 
 def test_view_expenses_update_year_not_match(client_logged):
     # if year in Plan and urser. not match, 404 error
-    p = ExpensePlanFactory()
+    p = ExpensePlanFactory(year=1974)
 
     url = reverse('plans:expenses_plan_update', kwargs={'pk': p.pk})
 
@@ -205,9 +205,9 @@ def test_view_expenses_update_year_not_match(client_logged):
 #                                                     SavingPlan create/update
 # ----------------------------------------------------------------------------
 @freeze_time('1999-1-1')
-def test_view_savings(admin_client):
+def test_view_savings(client_logged):
     url = reverse('plans:savings_plan_new')
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -263,7 +263,7 @@ def test_view_savings_update(client_logged):
 
 def test_view_savings_update_year_not_match(client_logged):
     # if year in Plan and urser not match, 404 error
-    p = SavingPlanFactory()
+    p = SavingPlanFactory(year=1974)
 
     url = reverse('plans:savings_plan_update', kwargs={'pk': p.pk})
 
@@ -276,9 +276,9 @@ def test_view_savings_update_year_not_match(client_logged):
 #                                                        DayPlan create/update
 # ----------------------------------------------------------------------------
 @freeze_time('1999-1-1')
-def test_view_days(admin_client):
+def test_view_days(client_logged):
     url = reverse('plans:days_plan_new')
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -333,7 +333,7 @@ def test_view_days_update(client_logged):
 
 def test_view_days_update_year_not_match(client_logged):
     # if year in Plan and urser not match, 404 error
-    p = DayPlanFactory()
+    p = DayPlanFactory(year=1974)
 
     url = reverse('plans:days_plan_update', kwargs={'pk': p.pk})
 
@@ -346,9 +346,9 @@ def test_view_days_update_year_not_match(client_logged):
 #                                                  NecessaryPlan create/update
 # ----------------------------------------------------------------------------
 @freeze_time('1999-1-1')
-def test_view_necessarys(admin_client):
+def test_view_necessarys(client_logged):
     url = reverse('plans:necessarys_plan_new')
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -403,7 +403,7 @@ def test_view_necessarys_update(client_logged):
 
 def test_view_necessarys_update_year_not_match(client_logged):
     # if year in Plan and urser not match, 404 error
-    p = NecessaryPlanFactory()
+    p = NecessaryPlanFactory(year=1974)
 
     url = reverse('plans:necessarys_plan_update', kwargs={'pk': p.pk})
 
@@ -428,7 +428,7 @@ def test_copy_200(client_logged):
     assert response.status_code == 200
 
 
-def test_copy_success(client_logged):
+def test_copy_success(get_user, client_logged):
     IncomePlanFactory(year=1999)
     data = {'year_from': '1999', 'year_to': '2000', 'income': True}
 
