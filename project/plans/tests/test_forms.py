@@ -10,157 +10,7 @@ from ..forms import (CopyPlanForm, DayPlanForm, ExpensePlanForm,
                      IncomePlanForm, NecessaryPlanForm, SavingPlanForm)
 from ..models import IncomePlan
 
-
-# ----------------------------------------------------------------------------
-#                                                               Necessary Form
-# ----------------------------------------------------------------------------
-def test_necessary_init():
-    NecessaryPlanForm()
-
-
-@pytest.mark.django_db
-def test_necessary_valid_data():
-    form = NecessaryPlanForm(data={
-        'year': 1999,
-        'title': 'X',
-        'january': 15.0,
-    })
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.year == 1999
-    assert data.title == 'X'
-    assert data.january == 15.0
-    assert not data.february
-
-
-@freeze_time('1999-01-01')
-def test_necessary_blank_data():
-    form = NecessaryPlanForm(data={})
-
-    assert not form.is_valid()
-
-    assert form.errors == {
-        'year': ['Šis laukas yra privalomas.'],
-        'title': ['Šis laukas yra privalomas.'],
-    }
-
-
-# ----------------------------------------------------------------------------
-#                                                                     Day Form
-# ----------------------------------------------------------------------------
-def test_day_init():
-    DayPlanForm()
-
-
-@pytest.mark.django_db
-def test_day_valid_data():
-    form = DayPlanForm(data={
-        'year': 1999,
-        'january': 15.0,
-    })
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.year == 1999
-    assert data.january == 15.0
-    assert not data.february
-
-
-@freeze_time('1999-01-01')
-def test_day_blank_data():
-    form = DayPlanForm(data={})
-
-    assert not form.is_valid()
-
-    assert form.errors == {
-        'year': ['Šis laukas yra privalomas.'],
-    }
-
-
-# ----------------------------------------------------------------------------
-#                                                                  Saving Form
-# ----------------------------------------------------------------------------
-def test_saving_init(mock_crequest):
-    SavingPlanForm()
-
-
-@pytest.mark.django_db
-def test_saving_valid_data(mock_crequest):
-    type_ = SavingTypeFactory()
-    form = SavingPlanForm(data={
-        'year': 1999,
-        'saving_type': type_.pk,
-        'january': 15.0,
-    })
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.year == 1999
-    assert data.january == 15.0
-    assert str(data.saving_type) == 'Savings'
-    assert not data.february
-
-
-@freeze_time('1999-01-01')
-def test_saving_blank_data(mock_crequest):
-    form = SavingPlanForm(data={})
-
-    assert not form.is_valid()
-
-    assert form.errors == {
-        'year': ['Šis laukas yra privalomas.'],
-        'saving_type': ['Šis laukas yra privalomas.'],
-    }
-
-
-@pytest.mark.django_db
-@patch('crequest.middleware.CrequestMiddleware.get_request')
-def test_saving_form_type_closed_in_past(mock_):
-    mock_.return_value.user.year = 3000
-
-    SavingTypeFactory(title='S1')
-    SavingTypeFactory(title='S2', closed=2000)
-
-    form = SavingPlanForm()
-
-    assert 'S1' in str(form['saving_type'])
-    assert 'S2' not in str(form['saving_type'])
-
-
-@pytest.mark.django_db
-@patch('crequest.middleware.CrequestMiddleware.get_request')
-def test_saving_form_type_closed_in_future(mock_):
-    mock_.return_value.user.year = 1000
-
-    SavingTypeFactory(title='S1')
-    SavingTypeFactory(title='S2', closed=2000)
-
-    form = SavingPlanForm()
-
-    assert 'S1' in str(form['saving_type'])
-    assert 'S2' in str(form['saving_type'])
-
-
-@pytest.mark.django_db
-@patch('crequest.middleware.CrequestMiddleware.get_request')
-def test_saving_form_type_closed_in_current_year(mock_):
-    mock_.return_value.user.year = 2000
-
-    SavingTypeFactory(title='S1')
-    SavingTypeFactory(title='S2', closed=2000)
-
-    form = SavingPlanForm()
-
-    assert 'S1' in str(form['saving_type'])
-    assert 'S2' in str(form['saving_type'])
-
+pytestmark = pytest.mark.django_db
 
 # ----------------------------------------------------------------------------
 #                                                                  Income Form
@@ -169,7 +19,6 @@ def test_income_init():
     IncomePlanForm()
 
 
-@pytest.mark.django_db
 def test_income_valid_data():
     type_ = IncomeTypeFactory()
     form = IncomePlanForm(data={
@@ -207,7 +56,6 @@ def test_expense_init():
     ExpensePlanForm()
 
 
-@pytest.mark.django_db
 def test_expense_valid_data():
     type_ = ExpenseTypeFactory()
     form = ExpensePlanForm(data={
@@ -235,6 +83,151 @@ def test_expense_blank_data():
     assert form.errors == {
         'year': ['Šis laukas yra privalomas.'],
         'expense_type': ['Šis laukas yra privalomas.'],
+    }
+
+
+# ----------------------------------------------------------------------------
+#                                                                  Saving Form
+# ----------------------------------------------------------------------------
+def test_saving_init(mock_crequest):
+    SavingPlanForm()
+
+
+def test_saving_valid_data(mock_crequest):
+    type_ = SavingTypeFactory()
+    form = SavingPlanForm(data={
+        'year': 1999,
+        'saving_type': type_.pk,
+        'january': 15.0,
+    })
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.year == 1999
+    assert data.january == 15.0
+    assert str(data.saving_type) == 'Savings'
+    assert not data.february
+
+
+@freeze_time('1999-01-01')
+def test_saving_blank_data(mock_crequest):
+    form = SavingPlanForm(data={})
+
+    assert not form.is_valid()
+
+    assert form.errors == {
+        'year': ['Šis laukas yra privalomas.'],
+        'saving_type': ['Šis laukas yra privalomas.'],
+    }
+
+
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_saving_form_type_closed_in_past(mock_):
+    mock_.return_value.user.year = 3000
+
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingPlanForm()
+
+    assert 'S1' in str(form['saving_type'])
+    assert 'S2' not in str(form['saving_type'])
+
+
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_saving_form_type_closed_in_future(mock_):
+    mock_.return_value.user.year = 1000
+
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingPlanForm()
+
+    assert 'S1' in str(form['saving_type'])
+    assert 'S2' in str(form['saving_type'])
+
+
+@patch('crequest.middleware.CrequestMiddleware.get_request')
+def test_saving_form_type_closed_in_current_year(mock_):
+    mock_.return_value.user.year = 2000
+
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=2000)
+
+    form = SavingPlanForm()
+
+    assert 'S1' in str(form['saving_type'])
+    assert 'S2' in str(form['saving_type'])
+
+
+# ----------------------------------------------------------------------------
+#                                                                     Day Form
+# ----------------------------------------------------------------------------
+def test_day_init():
+    DayPlanForm()
+
+
+def test_day_valid_data():
+    form = DayPlanForm(data={
+        'year': 1999,
+        'january': 15.0,
+    })
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.year == 1999
+    assert data.january == 15.0
+    assert not data.february
+
+
+@freeze_time('1999-01-01')
+def test_day_blank_data():
+    form = DayPlanForm(data={})
+
+    assert not form.is_valid()
+
+    assert form.errors == {
+        'year': ['Šis laukas yra privalomas.'],
+    }
+
+
+# ----------------------------------------------------------------------------
+#                                                               Necessary Form
+# ----------------------------------------------------------------------------
+def test_necessary_init():
+    NecessaryPlanForm()
+
+
+def test_necessary_valid_data():
+    form = NecessaryPlanForm(data={
+        'year': 1999,
+        'title': 'X',
+        'january': 15.0,
+    })
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.year == 1999
+    assert data.title == 'X'
+    assert data.january == 15.0
+    assert not data.february
+
+
+@freeze_time('1999-01-01')
+def test_necessary_blank_data():
+    form = NecessaryPlanForm(data={})
+
+    assert not form.is_valid()
+
+    assert form.errors == {
+        'year': ['Šis laukas yra privalomas.'],
+        'title': ['Šis laukas yra privalomas.'],
     }
 
 
@@ -282,7 +275,6 @@ def test_copy_all_checkboxes_unselected():
     }
 
 
-@pytest.mark.django_db
 def test_copy_empty_from_tables():
     form = CopyPlanForm(data={
         'year_from': 1999,
@@ -297,7 +289,6 @@ def test_copy_empty_from_tables():
     }
 
 
-@pytest.mark.django_db
 def test_copy_to_table_have_records():
     IncomePlanFactory(year=1999)
     IncomePlanFactory(year=2000)
@@ -315,7 +306,6 @@ def test_copy_to_table_have_records():
     }
 
 
-@pytest.mark.django_db
 def test_copy_to_table_have_records_from_empty():
     IncomePlanFactory(year=2000)
 
@@ -335,7 +325,6 @@ def test_copy_to_table_have_records_from_empty():
     }
 
 
-@pytest.mark.django_db
 def test_copy_data():
     IncomePlanFactory(year=1999)
 
@@ -352,4 +341,4 @@ def test_copy_data():
     data = IncomePlan.objects.year(2000)
 
     assert data.exists()
-    assert 2000 == data[0].year
+    assert data[0].year == 2000
