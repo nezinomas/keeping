@@ -92,7 +92,7 @@ def test_model_summary_without_title(mock_get, mock_models):
 
 @patch('project.core.lib.summary.models',
        return_value={'incomes.Income'})
-def test_incomes_df_accounts(mock_models, account_types, incomes):
+def test_incomes_df_accounts(mock_models, get_user, account_types, incomes):
     actual = collect_summary_data(1999, account_types, 'accounts')
 
     assert isinstance(actual, pd.DataFrame)
@@ -110,7 +110,7 @@ def test_incomes_df_accounts(mock_models, account_types, incomes):
 
 @patch('project.core.lib.summary.models',
        return_value={'incomes.Income'})
-def test_incomes_df_accounts_only_one_account(mock_models, incomes):
+def test_incomes_df_accounts_only_one_account(mock_models, get_user, incomes):
     actual = collect_summary_data(1999, {'Account1': 1}, 'accounts')
 
     assert isinstance(actual, pd.DataFrame)
@@ -160,7 +160,7 @@ def test_incomes_qs_count(mock_models,
 
 @patch('project.core.lib.summary.models',
        return_value={'expenses.Expense'})
-def test_expenses(mock_models, account_types, expenses):
+def test_expenses(mock_models, get_user, account_types, expenses):
     actual = collect_summary_data(1999, account_types, 'accounts')
 
     assert 2 == actual.shape[0]  # rows
@@ -185,7 +185,7 @@ def test_expenses_qs_count(mock_models,
 
 @patch('project.core.lib.summary.models',
        return_value={'savings.Saving'})
-def test_savings_for_accounts(mock_models, account_types, savings):
+def test_savings_for_accounts(mock_models, get_user, account_types, savings):
     actual = collect_summary_data(1999, account_types, 'accounts')
 
     assert 2 == actual.shape[0]  # rows
@@ -201,7 +201,7 @@ def test_savings_for_accounts(mock_models, account_types, savings):
 
 @patch('project.core.lib.summary.models',
        return_value={'savings.Saving'})
-def test_savings_for_savings_with_fees(mock_models, saving_types, savings):
+def test_savings_for_savings_with_fees(mock_models, get_user, saving_types, savings):
     actual = collect_summary_data(1999, saving_types, 'savings')
 
     assert 2 == actual.shape[0]  # rows
@@ -240,7 +240,7 @@ def test_savings_qs_count(mock_models,
 
 @patch('project.core.lib.summary.models',
        return_value={'transactions.Transaction'})
-def test_transactions(mock_models, account_types, transactions):
+def test_transactions(mock_models, get_user, account_types, transactions):
     actual = collect_summary_data(1999, account_types, 'accounts')
 
     assert 2 == actual.shape[0]  # rows
@@ -269,7 +269,7 @@ def test_transactions_qs_count(mock_models,
 
 @patch('project.core.lib.summary.models',
        return_value={'transactions.SavingClose'})
-def test_saving_close_accounts(mock_models, account_types, savings_close):
+def test_saving_close_accounts(mock_models, get_user, account_types, savings_close):
     actual = collect_summary_data(1999, account_types, 'accounts')
 
     assert 2 == actual.shape[0]  # rows
@@ -285,7 +285,7 @@ def test_saving_close_accounts(mock_models, account_types, savings_close):
 
 @patch('project.core.lib.summary.models',
        return_value={'transactions.SavingClose'})
-def test_saving_close_saving_type(mock_models, savings_close):
+def test_saving_close_saving_type(mock_models, get_user, savings_close):
     actual = collect_summary_data(1999, {'Saving1': 1}, 'savings')
 
     assert 1 == actual.shape[0]  # rows
@@ -342,7 +342,7 @@ def test_all_qs_count_for_savings(saving_types,
         [*collect_summary_data(1999, saving_types, 'savings')]
 
 
-def test_pension(pensions):
+def test_pension(get_user, pensions):
     actual = collect_summary_data(1999, {'PensionType': 1}, 'pensions')
 
     assert 1 == actual.shape[0]  # rows

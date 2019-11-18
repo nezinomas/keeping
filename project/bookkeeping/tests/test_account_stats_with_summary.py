@@ -1,7 +1,5 @@
 from datetime import date
-from decimal import Decimal
 
-import pandas as pd
 import pytest
 
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
@@ -12,7 +10,7 @@ from ...core.lib.summary import collect_summary_data
 pytestmark = pytest.mark.django_db
 
 
-def test_account_stats_for_two_years_in_past():
+def test_account_stats_for_two_years_in_past(get_user):
     IncomeFactory(date=date(1974, 1, 1), price=5)
     IncomeFactory(date=date(1974, 1, 1), price=5)
     IncomeFactory(date=date(1999, 1, 1), price=2.5)
