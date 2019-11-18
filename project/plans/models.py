@@ -1,6 +1,8 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from ..auths.models import User
+from ..core.lib import utils
 from ..core.models import MonthAbstract
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
@@ -8,25 +10,34 @@ from ..savings.models import SavingType
 
 
 class YearManager(models.Manager):
-    def __init__(self, prefetch, *args, **kwargs):
+    def __init__(self, prefetch=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._prefetch = prefetch
 
-    def year(self, year):
-        qs = self.get_queryset().filter(year=year)
+    def related(self):
+        user = utils.get_user()
+        related = ['user']
 
         if self._prefetch:
-            qs = qs.select_related(self._prefetch)
+            related.append(self._prefetch)
+
+        qs = (
+            self
+            .select_related(*related)
+            .filter(user=user)
+        )
 
         return qs
+
+    def year(self, year):
+        return(
+            self
+            .related()
+            .filter(year=year)
+        )
 
     def items(self):
-        qs = self.get_queryset().all()
-
-        if self._prefetch:
-            qs = qs.select_related(self._prefetch)
-
-        return qs
+        return self.related()
 
 
 class ExpensePlan(MonthAbstract):
@@ -37,6 +48,11 @@ class ExpensePlan(MonthAbstract):
         ExpenseType,
         on_delete=models.CASCADE
     )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='expense_plans'
+    )
 
     objects = YearManager('expense_type')
 
@@ -45,7 +61,7 @@ class ExpensePlan(MonthAbstract):
 
     class Meta:
         ordering = ['expense_type']
-        unique_together = ('year', 'expense_type')
+        unique_together = ('year', 'expense_type', 'user')
 
 
 class SavingPlan(MonthAbstract):
@@ -56,6 +72,11 @@ class SavingPlan(MonthAbstract):
         SavingType,
         on_delete=models.CASCADE
     )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='saving_plans'
+    )
 
     objects = YearManager('saving_type')
 
@@ -64,7 +85,7 @@ class SavingPlan(MonthAbstract):
 
     class Meta:
         ordering = ['saving_type']
-        unique_together = ('year', 'saving_type')
+        unique_together = ('year', 'saving_type', 'user')
 
 
 class IncomePlan(MonthAbstract):
@@ -75,6 +96,11 @@ class IncomePlan(MonthAbstract):
         IncomeType,
         on_delete=models.CASCADE
     )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='income_plans'
+    )
 
     objects = YearManager('income_type')
 
@@ -83,19 +109,27 @@ class IncomePlan(MonthAbstract):
 
     class Meta:
         ordering = ['income_type']
-        unique_together = ('year', 'income_type')
+        unique_together = ('year', 'income_type', 'user')
 
 
 class DayPlan(MonthAbstract):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
-        unique=True
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='day_plans'
     )
 
-    objects = YearManager(None)
+    objects = YearManager()
 
     def __str__(self):
         return f'{self.year}'
+
+    class Meta:
+        ordering = ['year']
+        unique_together = ('year', 'user')
 
 
 class NecessaryPlan(MonthAbstract):
@@ -103,11 +137,17 @@ class NecessaryPlan(MonthAbstract):
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
     title = models.CharField(max_length=100)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='necessary_plans'
+    )
 
-    objects = YearManager(None)
+    objects = YearManager()
 
     def __str__(self):
         return f'{self.year}/{self.title}'
 
     class Meta:
-        unique_together = ('year', 'title')
+        ordering = ['year', 'title']
+        unique_together = ('year', 'title', 'user')
