@@ -1,6 +1,5 @@
 import json
 
-import pandas as pd
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
@@ -10,8 +9,8 @@ from ...core.tests.utils import setup_view
 from .. import views
 from ..factories import SavingFactory, SavingTypeFactory
 
+pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
-
 
 
 def test_savings_index_func():
@@ -57,10 +56,10 @@ def test_types_update_func():
 
 
 @freeze_time('2000-01-01')
-def test_saving_load_form(admin_client):
+def test_saving_load_form(client_logged):
     url = reverse('savings:savings_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -69,7 +68,6 @@ def test_saving_load_form(admin_client):
     assert '2000-01-01' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_saving_save(client_logged):
     a = AccountFactory()
     i = SavingTypeFactory()
@@ -97,7 +95,6 @@ def test_saving_save(client_logged):
     assert 'Savings' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_saving_save_invalid_data(client_logged):
     data = {
         'date': 'x',
@@ -117,7 +114,6 @@ def test_saving_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_saving_update_to_another_year(client_logged):
     saving = SavingFactory()
 
@@ -142,7 +138,6 @@ def test_saving_update_to_another_year(client_logged):
     assert '2010-12-31' not in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_saving_update(client_logged):
     saving = SavingFactory()
 
@@ -175,15 +170,14 @@ def test_saving_update(client_logged):
 #
 
 @freeze_time('2000-01-01')
-def test_type_load_form(admin_client):
+def test_type_load_form(client_logged):
     url = reverse('savings:savings_type_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     assert response.status_code == 200
 
 
-@pytest.mark.django_db()
 def test_type_save(client_logged):
     data = {
         'title': 'TTT',
@@ -200,7 +194,6 @@ def test_type_save(client_logged):
     assert 'TTT' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_type_save_with_closed(client_logged):
     data = {
         'title': 'TTT', 'closed': '2000'
@@ -217,7 +210,6 @@ def test_type_save_with_closed(client_logged):
     assert 'TTT' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_type_save_invalid_data(client_logged):
     data = {'title': ''}
 
@@ -231,7 +223,6 @@ def test_type_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_type_update(client_logged):
     saving = SavingTypeFactory()
 
@@ -249,7 +240,6 @@ def test_type_update(client_logged):
     assert 'TTT' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_type_update_with_closed(client_logged):
     saving = SavingTypeFactory()
 
@@ -278,7 +268,7 @@ def test_view_index_200(client_logged):
 
 
 @pytest.mark.django_db
-def test_type_list_view_has_all(fake_request):
+def test_type_list_view_has_all(get_user, fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1974)
 
