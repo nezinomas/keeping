@@ -1,5 +1,4 @@
 import json
-from datetime import date
 
 import pytest
 from django.urls import resolve, reverse
@@ -8,6 +7,7 @@ from ..factories import AccountFactory
 from ..views import Lists, New, Update, load_to_account
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+
 
 
 def test_view_lists_func():
@@ -26,23 +26,6 @@ def test_view_update_func():
     view = resolve('/accounts/update/1/')
 
     assert Update == view.func.view_class
-
-
-def test_load_to_account_func():
-    view = resolve('/ajax/load_to_account/')
-
-    assert load_to_account == view.func
-
-
-def test_load_account_form(admin_client):
-    url = reverse('accounts:accounts_new')
-
-    response = admin_client.get(url, {}, **X_Req)
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert 200 == response.status_code
 
 
 @pytest.mark.django_db()
@@ -83,7 +66,7 @@ def test_account_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -92,14 +75,32 @@ def test_account_update(client_logged):
     assert 'Title' in actual['html_list']
 
 
+
+# ----------------------------------------------------------------------------
+#                                                                 load_account
+# ----------------------------------------------------------------------------
+def test_load_to_account_func():
+    view = resolve('/ajax/load_to_account/')
+
+    assert load_to_account == view.func
+
+
+def test_load_t_account_form(admin_client):
+    url = reverse('accounts:accounts_new')
+
+    response = admin_client.get(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+
 @pytest.mark.django_db
 def test_load_to_account(client_logged):
     a1 = AccountFactory(title='A1')
-    a2 = AccountFactory(title='A2')
+    AccountFactory(title='A2')
 
     url = reverse('accounts:load_to_account')
 
     response = client_logged.get(url, {'id': a1.pk})
 
-    assert 200 == response.status_code
-    assert 1 == len(response.context['objects'])
+    assert response.status_code == 200
+    assert len(response.context['objects']) == 1
