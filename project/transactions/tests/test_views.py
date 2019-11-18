@@ -9,7 +9,7 @@ from ...savings.factories import SavingTypeFactory
 from .. import views
 from ..factories import (SavingChangeFactory, SavingCloseFactory,
                          TransactionFactory)
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 

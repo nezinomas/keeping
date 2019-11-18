@@ -5,7 +5,7 @@ import pytest
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 from ...expenses.factories import ExpenseFactory
 from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ..models import Expense, ExpenseName, ExpenseType

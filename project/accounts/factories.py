@@ -1,6 +1,6 @@
 import factory
 
-from ..auths.factories import UserFactory
+from ..users.factories import UserFactory
 from .models import Account, AccountBalance
 
 

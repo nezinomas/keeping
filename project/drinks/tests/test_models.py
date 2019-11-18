@@ -4,7 +4,7 @@ import pytest
 from django.core.validators import ValidationError
 from freezegun import freeze_time
 
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 from ..factories import DrinkFactory, DrinkTargetFactory
 from ..models import Drink, DrinkTarget
 

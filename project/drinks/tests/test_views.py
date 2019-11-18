@@ -6,7 +6,7 @@ import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 from ...core.tests.utils import change_profile_year
 from .. import views
 from ..factories import DrinkFactory, DrinkTargetFactory

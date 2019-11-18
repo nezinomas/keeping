@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 from ...bookkeeping.factories import PensionWorthFactory
 from ..factories import (PensionBalanceFactory, PensionFactory,
                          PensionTypeFactory)

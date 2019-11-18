@@ -1,6 +1,6 @@
 import pytest
 
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 from ..factories import AccountBalanceFactory, AccountFactory
 from ..models import Account, AccountBalance
 

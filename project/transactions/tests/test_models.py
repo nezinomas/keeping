@@ -10,7 +10,7 @@ from ...savings.models import SavingBalance
 from ..factories import (SavingChangeFactory, SavingCloseFactory,
                          TransactionFactory)
 from ..models import SavingChange, SavingClose, Transaction
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 
 pytestmark = pytest.mark.django_db
 

@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 
 from ...accounts.factories import AccountFactory
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 from ...pensions.factories import PensionTypeFactory
 from ..factories import SavingTypeFactory
 from ..forms import AccountWorthForm, PensionWorthForm, SavingWorthForm

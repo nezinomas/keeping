@@ -1,7 +1,7 @@
 import pytest
 from freezegun import freeze_time
 
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
 from ...savings.factories import SavingTypeFactory

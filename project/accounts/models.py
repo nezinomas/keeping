@@ -2,7 +2,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import F
 
-from ..auths.models import User
+from ..users.models import User
 from ..core.lib import utils
 from ..core.models import TitleAbstract
 

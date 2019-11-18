@@ -3,7 +3,7 @@ import json
 import pytest
 from django.urls import resolve, reverse
 
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 from ..factories import AccountFactory
 from ..views import Lists, New, Update, load_to_account
 

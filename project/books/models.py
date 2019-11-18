@@ -1,7 +1,7 @@
 from django.core.validators import MinLengthValidator
 from django.db import models
 
-from ..auths.models import User
+from ..users.models import User
 from ..core.lib import utils
 
 

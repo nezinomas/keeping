@@ -1,7 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from ..auths.models import User
+from ..users.models import User
 from ..core.lib import utils
 from ..core.models import MonthAbstract
 from ..expenses.models import ExpenseType

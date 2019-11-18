@@ -2,7 +2,7 @@ import os
 from ..secrets import get_secret
 
 
-AUTH_USER_MODEL = 'auths.User'
+AUTH_USER_MODEL = 'users.User'
 
 
 # ================   PATH CONFIGURATION
@@ -17,7 +17,7 @@ PROJECT_ROOT = os.path.dirname(SITE_ROOT)
 # ================   SITE CONFIGURATION
 LOGOUT_REDIRECT_URL = 'bookkeeping:index'
 LOGIN_REDIRECT_URL = 'bookkeeping:index'
-LOGIN_URL = 'auths:login'
+LOGIN_URL = 'users:login'
 
 
 # ================   MEDIA CONFIGURATION
@@ -113,7 +113,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'bootstrap4',
     'crequest',
-    'project.auths',
+    'project.users',
     'project.accounts',
     'project.bookkeeping',
     'project.books',

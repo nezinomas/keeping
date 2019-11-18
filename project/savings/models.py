@@ -7,7 +7,7 @@ from django.db.models import Case, Count, F, Q, Sum, When
 from django.db.models.functions import TruncMonth
 
 from ..accounts.models import Account
-from ..auths.models import User
+from ..users.models import User
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract

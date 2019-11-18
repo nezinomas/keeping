@@ -7,7 +7,7 @@ import pytz
 from .accounts.factories import AccountFactory
 from .bookkeeping.factories import (AccountWorthFactory, PensionWorthFactory,
                                     SavingWorthFactory)
-from .auths.factories import UserFactory
+from .users.factories import UserFactory
 from .expenses.factories import ExpenseFactory
 from .incomes.factories import IncomeFactory
 from .pensions.factories import PensionFactory

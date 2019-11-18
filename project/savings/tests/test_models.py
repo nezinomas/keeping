@@ -6,7 +6,7 @@ from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 from ...savings.factories import (SavingBalanceFactory, SavingFactory,
                                   SavingTypeFactory)
 from ...savings.models import SavingBalance

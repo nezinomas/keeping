@@ -3,7 +3,7 @@ from django.contrib.auth import views as auth_views
 
 from . import views
 
-app_name = 'auths'
+app_name = 'users'
 
 
 urlpatterns = [
@@ -14,7 +14,7 @@ urlpatterns = [
     ),
     path(
         'login/',
-        views.CustomLogin.as_view(template_name='auths/login.html'),
+        views.CustomLogin.as_view(template_name='users/login.html'),
         name='login'
     ),
 ]

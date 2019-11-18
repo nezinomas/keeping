@@ -7,7 +7,7 @@ import pytz
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...pensions.factories import PensionTypeFactory
 from ...pensions.models import PensionBalance

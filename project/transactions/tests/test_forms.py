@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 
 from ...accounts.factories import AccountFactory
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 from ...savings.factories import SavingTypeFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
 

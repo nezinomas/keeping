@@ -4,7 +4,7 @@ from decimal import Decimal
 import factory
 from django.db.models.signals import post_save
 
-from ..auths.factories import UserFactory
+from ..users.factories import UserFactory
 from .models import Pension, PensionBalance, PensionType
 
 
