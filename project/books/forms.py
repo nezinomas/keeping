@@ -5,10 +5,11 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.mixins.form_mixin import FormMixin
 from .models import Book
 
 
-class BookForm(forms.ModelForm):
+class BookForm(FormMixin, forms.ModelForm):
     class Meta:
         model = Book
         fields = ['started', 'ended', 'author', 'title']
