@@ -3,13 +3,16 @@ from typing import Any, Dict, List
 
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import Case, Count, F, Sum, When
+from django.db.models import Case, Count, Sum, When
 
 from ..accounts.models import Account
 from ..core.mixins.queryset_sum import SumMixin
 from ..savings.models import SavingType
 
 
+# ----------------------------------------------------------------------------
+#                                                                  Transaction
+# ----------------------------------------------------------------------------
 class TransactionQuerySet(models.QuerySet):
     def _related(self):
         return self.select_related('from_account', 'to_account')
@@ -115,6 +118,9 @@ class Transaction(models.Model):
     objects = TransactionQuerySet.as_manager()
 
 
+# ----------------------------------------------------------------------------
+#                                                                 Saving Close
+# ----------------------------------------------------------------------------
 class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
     def month_sum(self, year, month=None):
         summed_name = 'sum'
@@ -228,6 +234,9 @@ class SavingClose(models.Model):
     objects = SavingCloseQuerySet.as_manager()
 
 
+# ----------------------------------------------------------------------------
+#                                                                Saving Change
+# ----------------------------------------------------------------------------
 class SavingChangeQuerySet(TransactionQuerySet):
     def summary_from(self, year: int) -> List[Dict[str, Any]]:
         '''
