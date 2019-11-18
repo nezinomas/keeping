@@ -12,30 +12,28 @@ from ..factories import (
     DayPlanFactory, ExpensePlanFactory, IncomePlanFactory,
     NecessaryPlanFactory, SavingPlanFactory)
 
+pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
 # ----------------------------------------------------------------------------
 #                                                                   Index Plan
 # ----------------------------------------------------------------------------
-@pytest.mark.django_db()
 def test_view_index(client_logged):
     url = reverse('plans:plans_index')
     response = client_logged.get(url)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
 
-@pytest.mark.django_db()
 def test_view_index_not_logged(client):
     url = reverse('plans:plans_index')
     response = client.get(url)
 
     # redirection to login page
-    assert 302 == response.status_code
+    assert response.status_code == 302
 
 
-@pytest.mark.django_db()
 def test_view_index_func(client):
     view = resolve('/plans/')
 
@@ -45,22 +43,20 @@ def test_view_index_func(client):
 # ----------------------------------------------------------------------------
 #                                                                  plans_stats
 # ----------------------------------------------------------------------------
-@pytest.mark.django_db()
 def test_view_plan_stats_render(client_logged):
     url = reverse('plans:reload_plan_stats')
 
     response = client_logged.get(url, {'ajax_trigger': True})
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
 
-@pytest.mark.django_db()
 def test_view_plan_stats_render_to_string(client_logged):
     url = reverse('plans:reload_plan_stats')
 
     response = client_logged.get(url, {'ajax_trigger': False})
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
 
 # ----------------------------------------------------------------------------
@@ -74,11 +70,10 @@ def test_view_incomes(admin_client):
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert '<input type="text" name="year" value="1999"' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_view_incomes_new(client_logged):
     i = IncomeTypeFactory()
     data = {'year': '1999', 'income_type': i.pk, 'january': 999.99}
@@ -94,7 +89,6 @@ def test_view_incomes_new(client_logged):
     assert '999,99' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_view_incomes_new_invalid_data(client_logged):
     data = {'year': 'x', 'income_type': 0, 'january': 999.99}
 
@@ -108,7 +102,6 @@ def test_view_incomes_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_view_incomes_update(client_logged):
     p = IncomePlanFactory(year=1999)
 
@@ -117,7 +110,7 @@ def test_view_incomes_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -126,7 +119,6 @@ def test_view_incomes_update(client_logged):
     assert '999,99' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_view_incomes_update_year_not_match(client_logged):
     # if year in Plan and urser not match, 404 error
     p = IncomePlanFactory()
@@ -135,7 +127,7 @@ def test_view_incomes_update_year_not_match(client_logged):
 
     response = client_logged.get(url, {}, **X_Req)
 
-    assert 404 == response.status_code
+    assert response.status_code == 404
 
 
 # ----------------------------------------------------------------------------
@@ -149,11 +141,10 @@ def test_view_expenses(admin_client):
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert '<input type="text" name="year" value="1999"' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_view_expenses_new(client_logged):
     i = ExpenseTypeFactory()
     data = {'year': '1999', 'expense_type': i.pk, 'january': 999.99}
@@ -169,7 +160,6 @@ def test_view_expenses_new(client_logged):
     assert '999,99' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_view_expenses_new_invalid_data(client_logged):
     data = {'year': 'x', 'expense_type': 0, 'january': 999.99}
 
@@ -183,7 +173,6 @@ def test_view_expenses_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_view_expenses_update(client_logged):
     p = ExpensePlanFactory(year=1999)
 
@@ -192,7 +181,7 @@ def test_view_expenses_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -201,7 +190,6 @@ def test_view_expenses_update(client_logged):
     assert '999,99' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_view_expenses_update_year_not_match(client_logged):
     # if year in Plan and urser. not match, 404 error
     p = ExpensePlanFactory()
@@ -210,7 +198,7 @@ def test_view_expenses_update_year_not_match(client_logged):
 
     response = client_logged.get(url, {}, **X_Req)
 
-    assert 404 == response.status_code
+    assert response.status_code == 404
 
 
 # ----------------------------------------------------------------------------
@@ -224,11 +212,10 @@ def test_view_savings(admin_client):
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert '<input type="text" name="year" value="1999"' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_view_savings_new(client_logged):
     i = SavingTypeFactory()
     data = {'year': '1999', 'saving_type': i.pk, 'january': 999.99}
@@ -244,7 +231,6 @@ def test_view_savings_new(client_logged):
     assert '999,99' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_view_savings_new_invalid_data(client_logged):
     data = {'year': 'x', 'saving_type': 0, 'january': 999.99}
 
@@ -258,7 +244,6 @@ def test_view_savings_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_view_savings_update(client_logged):
     p = SavingPlanFactory(year=1999)
 
@@ -267,7 +252,7 @@ def test_view_savings_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -276,7 +261,6 @@ def test_view_savings_update(client_logged):
     assert '999,99' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_view_savings_update_year_not_match(client_logged):
     # if year in Plan and urser not match, 404 error
     p = SavingPlanFactory()
@@ -285,7 +269,7 @@ def test_view_savings_update_year_not_match(client_logged):
 
     response = client_logged.get(url, {}, **X_Req)
 
-    assert 404 == response.status_code
+    assert response.status_code == 404
 
 
 # ----------------------------------------------------------------------------
@@ -299,11 +283,10 @@ def test_view_days(admin_client):
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert '<input type="text" name="year" value="1999"' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_view_days_new(client_logged):
     data = {'year': '1999', 'january': 999.99}
 
@@ -318,7 +301,6 @@ def test_view_days_new(client_logged):
     assert '999,99' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_view_days_new_invalid_data(client_logged):
     data = {'year': 'x', 'january': 999.99}
 
@@ -332,7 +314,6 @@ def test_view_days_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_view_days_update(client_logged):
     p = DayPlanFactory(year=1999)
 
@@ -341,7 +322,7 @@ def test_view_days_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -350,7 +331,6 @@ def test_view_days_update(client_logged):
     assert '999,99' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_view_days_update_year_not_match(client_logged):
     # if year in Plan and urser not match, 404 error
     p = DayPlanFactory()
@@ -359,7 +339,7 @@ def test_view_days_update_year_not_match(client_logged):
 
     response = client_logged.get(url, {}, **X_Req)
 
-    assert 404 == response.status_code
+    assert response.status_code == 404
 
 
 # ----------------------------------------------------------------------------
@@ -373,11 +353,10 @@ def test_view_necessarys(admin_client):
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert '<input type="text" name="year" value="1999"' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_view_necessarys_new(client_logged):
     data = {'year': '1999', 'title': 'X', 'january': 999.99}
 
@@ -392,7 +371,6 @@ def test_view_necessarys_new(client_logged):
     assert '999,99' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_view_necessarys_new_invalid_data(client_logged):
     data = {'year': 'x', 'title': '', 'january': 999.99}
 
@@ -406,7 +384,6 @@ def test_view_necessarys_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_view_necessarys_update(client_logged):
     p = NecessaryPlanFactory(year=1999)
 
@@ -415,7 +392,7 @@ def test_view_necessarys_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -424,7 +401,6 @@ def test_view_necessarys_update(client_logged):
     assert '999,99' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_view_necessarys_update_year_not_match(client_logged):
     # if year in Plan and urser not match, 404 error
     p = NecessaryPlanFactory()
@@ -433,7 +409,7 @@ def test_view_necessarys_update_year_not_match(client_logged):
 
     response = client_logged.get(url, {}, **X_Req)
 
-    assert 404 == response.status_code
+    assert response.status_code == 404
 
 
 # ----------------------------------------------------------------------------
@@ -452,7 +428,6 @@ def test_copy_200(client_logged):
     assert response.status_code == 200
 
 
-@pytest.mark.django_db()
 def test_copy_success(client_logged):
     IncomePlanFactory(year=1999)
     data = {'year_from': '1999', 'year_to': '2000', 'income': True}
@@ -469,10 +444,9 @@ def test_copy_success(client_logged):
     data = models.IncomePlan.objects.year(2000)
 
     assert data.exists()
-    assert 2000 == data[0].year
+    assert data[0].year == 2000
 
 
-@pytest.mark.django_db()
 def test_copy_fails(client_logged):
     data = {'year_from': '1999', 'year_to': '2000', 'income': True}
 
