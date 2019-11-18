@@ -4,6 +4,7 @@ from decimal import Decimal
 import pytest
 
 from ...accounts.factories import AccountFactory
+from ...auths.factories import UserFactory
 from ...savings.factories import SavingTypeFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
 
@@ -13,8 +14,43 @@ pytestmark = pytest.mark.django_db
 # ----------------------------------------------------------------------------
 #                                                                  Transaction
 # ----------------------------------------------------------------------------
-def test_transaction_init():
+def test_transaction_init(get_user):
     TransactionForm()
+
+
+def test_transaction_init_fields(get_user):
+    form = TransactionForm().as_p()
+
+    assert '<input type="text" name="date"' in form
+    assert '<input type="number" name="price"' in form
+    assert '<select name="from_account"' in form
+    assert '<select name="to_account"' in form
+
+
+def test_transaction_current_user_accounts(get_user):
+    u = UserFactory(username='tom')
+
+    AccountFactory(title='A1')  # user bob, current user
+    AccountFactory(title='A2', user=u)  # user tom
+
+    form = TransactionForm().as_p()
+
+    assert 'A1' in form
+    assert 'A2' not in form
+
+
+def test_transaction_current_user_accounts_selected_parent(get_user):
+    u = UserFactory(username='tom')
+
+    a1 = AccountFactory(title='A1')  # user bob, current user
+    AccountFactory(title='A2', user=u)  # user tom
+
+    form = TransactionForm({
+        'from_account': a1.pk
+    }).as_p()
+
+    assert '<option value="1" selected>A1</option>' in form
+    assert '<option value="1">A1</option>' not in form
 
 
 def test_transaction_valid_data(get_user):
@@ -38,7 +74,7 @@ def test_transaction_valid_data(get_user):
     assert data.to_account == a_to
 
 
-def test_transaction_blank_data():
+def test_transaction_blank_data(get_user):
     form = TransactionForm({})
 
     assert not form.is_valid()
@@ -70,6 +106,32 @@ def test_transaction_price_null(get_user):
 # ----------------------------------------------------------------------------
 def test_saving_change_init(get_user):
     SavingChangeForm()
+
+
+def test_saving_change_current_user(get_user):
+    u = UserFactory(username='tom')
+
+    SavingTypeFactory(title='S1')  # user bob, current user
+    SavingTypeFactory(title='S2', user=u)  # user tom
+
+    form = SavingChangeForm().as_p()
+
+    assert 'S1' in form
+    assert 'S2' not in form
+
+
+def test_saving_change_current_user_accounts_selected_parent(get_user):
+    u = UserFactory(username='tom')
+
+    s1 = SavingTypeFactory(title='S1')  # user bob, current user
+    SavingTypeFactory(title='S2', user=u)  # user tom
+
+    form = SavingChangeForm({
+        'from_account': s1.pk
+    }).as_p()
+
+    assert '<option value="1" selected>S1</option>' in form
+    assert '<option value="1">S1</option>' not in form
 
 
 def test_saving_change_valid_data(get_user):
@@ -172,6 +234,30 @@ def test_saving_change_form_type_closed_in_current_year(get_user):
 # ----------------------------------------------------------------------------
 def test_saving_close_init(get_user):
     SavingCloseForm()
+
+
+def test_saving_close_current_user_saving_types(get_user):
+    u = UserFactory(username='tom')
+
+    SavingTypeFactory(title='S1')  # user bob, current user
+    SavingTypeFactory(title='S2', user=u)  # user tom
+
+    form = SavingCloseForm().as_p()
+
+    assert 'S1' in form
+    assert 'S2' not in form
+
+
+def test_saving_close_current_user_accounts(get_user):
+    u = UserFactory(username='tom')
+
+    AccountFactory(title='A1')  # user bob, current user
+    AccountFactory(title='A2', user=u)  # user tom
+
+    form = SavingCloseForm().as_p()
+
+    assert 'A1' in form
+    assert 'A2' not in form
 
 
 def test_saving_close_valid_data(get_user):
