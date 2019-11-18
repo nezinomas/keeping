@@ -10,6 +10,7 @@ from ...savings.models import SavingBalance
 from ..factories import (SavingChangeFactory, SavingCloseFactory,
                          TransactionFactory)
 from ..models import SavingChange, SavingClose, Transaction
+from ...auths.factories import UserFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -17,32 +18,75 @@ pytestmark = pytest.mark.django_db
 # ----------------------------------------------------------------------------
 #                                                                  Transaction
 # ----------------------------------------------------------------------------
-def test_transactions_str():
+def test_transaction_str():
     t = TransactionFactory.build()
 
     assert str(t) == '1999-01-01 Account1->Account2: 200'
 
 
-def test_transactions_year():
+def test_transaction_related(get_user):
+    u1 = UserFactory()
+    u2 = UserFactory(username='XXX')
+
+    t1 = AccountFactory(title='T1', user=u1)
+    f1 = AccountFactory(title='F1', user=u1)
+
+    t2 = AccountFactory(title='T2', user=u2)
+    f2 = AccountFactory(title='F2', user=u2)
+
+    TransactionFactory(to_account=t1, from_account=f1)
+    TransactionFactory(to_account=t2, from_account=f2)
+
+    actual = Transaction.objects.related()
+
+    assert len(actual) == 1
+    assert str(actual[0].from_account) == 'F1'
+    assert str(actual[0].to_account) == 'T1'
+
+
+def test_transaction_items(get_user):
+    u1 = UserFactory()
+    u2 = UserFactory(username='XXX')
+
+    t1 = AccountFactory(title='T1', user=u1)
+    f1 = AccountFactory(title='F1', user=u1)
+
+    t2 = AccountFactory(title='T2', user=u2)
+    f2 = AccountFactory(title='F2', user=u2)
+
+    TransactionFactory(to_account=t1, from_account=f1)
+    TransactionFactory(to_account=t2, from_account=f2)
+
+    actual = Transaction.objects.related()
+
+    assert len(actual) == 1
+    assert str(actual[0].from_account) == 'F1'
+    assert str(actual[0].to_account) == 'T1'
+
+
+def test_transaction_year(get_user):
+    a = AccountFactory(title='T1', user=UserFactory(username='XXX'))
+
     TransactionFactory(date=date(1999, 1, 1))
     TransactionFactory(date=date(2000, 1, 1))
+    TransactionFactory(date=date(2000, 1, 1), from_account=a)
 
     actual = Transaction.objects.year(1999)
 
     assert actual.count() == 1
 
 
-def test_transactions_items_query_count(django_assert_max_num_queries):
+def test_transaction_items_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         list(Transaction.objects.items())
 
 
-def test_transactions_year_query_count(django_assert_max_num_queries):
+def test_transaction_year_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         list(Transaction.objects.year(1999))
 
 
-def test_transaction_summary_from(transactions):
+def test_transaction_summary_from(get_user, transactions):
     expect = [{
         'title': 'Account1',
         'tr_from_past': 1.25,
@@ -62,7 +106,7 @@ def test_transaction_summary_from(transactions):
     assert expect == actual
 
 
-def test_transaction_summary_to(transactions):
+def test_transaction_summary_to(get_user, transactions):
     expect = [{
         'title': 'Account1',
         'tr_to_past': 5.25,
@@ -83,13 +127,33 @@ def test_transaction_summary_to(transactions):
 # ----------------------------------------------------------------------------
 #                                                                 Saving Close
 # ----------------------------------------------------------------------------
-def test_savings_close_str():
+def test_saving_close_str():
     s = SavingCloseFactory.build()
 
     assert str(s) == '1999-01-01 Savings From->Account To: 10'
 
 
-def test_saving_close_month_sums(savings_close):
+def test_saving_close_related(get_user):
+    u1 = UserFactory()
+    u2 = UserFactory(username='XXX')
+
+    a1 = AccountFactory(title='A1', user=u1)
+    a2 = AccountFactory(title='A2', user=u2)
+
+    s1 = SavingTypeFactory(title='S1', user=u1)
+    s2 = SavingTypeFactory(title='S2', user=u2)
+
+    SavingCloseFactory(to_account=a1, from_account=s1)
+    SavingCloseFactory(to_account=a2, from_account=s2)
+
+    actual = SavingClose.objects.related()
+
+    assert len(actual) == 1
+    assert str(actual[0].from_account) == 'S1'
+    assert str(actual[0].to_account) == 'A1'
+
+
+def test_saving_close_month_sums(get_user, savings_close):
     expect = [{'date': date(1999, 1, 1), 'sum': Decimal(0.25)}]
 
     actual = list(SavingClose.objects.month_sum(1999))
@@ -97,7 +161,7 @@ def test_saving_close_month_sums(savings_close):
     assert expect == actual
 
 
-def test_saving_close_month_sums_only_january(savings_close):
+def test_saving_close_month_sums_only_january(get_user, savings_close):
     expect = [{'date': date(1999, 1, 1), 'sum': Decimal(0.25)}]
 
     actual = list(SavingClose.objects.month_sum(1999, 1))
@@ -105,12 +169,12 @@ def test_saving_close_month_sums_only_january(savings_close):
     assert expect == actual
 
 
-def test_saving_close_month_sum_query_count(django_assert_max_num_queries):
+def test_saving_close_month_sum_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         list(SavingClose.objects.month_sum(1999))
 
 
-def test_savings_close_summary_from(savings_close):
+def test_saving_close_summary_from(get_user, savings_close):
     expect = [{
         'title': 'Saving1',
         's_close_from_past': 0.25,
@@ -124,7 +188,7 @@ def test_savings_close_summary_from(savings_close):
     assert expect == actual
 
 
-def test_savings_close_summary_to(savings_close):
+def test_saving_close_summary_to(get_user, savings_close):
     expect = [{
         'title': 'Account1',
         's_close_to_past': 0.25,
@@ -181,12 +245,32 @@ def test_savings_change_str():
     assert str(s) == '1999-01-01 Savings From->Savings To: 10'
 
 
-def test_saving_change_items_query_count(django_assert_max_num_queries):
+def test_saving_change_related(get_user):
+    u1 = UserFactory()
+    u2 = UserFactory(username='XXX')
+
+    f1 = SavingTypeFactory(title='F1', user=u1)
+    f2 = SavingTypeFactory(title='F2', user=u2)
+
+    t1 = SavingTypeFactory(title='T1', user=u1)
+    t2 = SavingTypeFactory(title='T2', user=u2)
+
+    SavingChangeFactory(from_account=f1, to_account=t1)
+    SavingChangeFactory(from_account=f2, to_account=t2)
+
+    actual = SavingChange.objects.related()
+
+    assert len(actual) == 1
+    assert str(actual[0].from_account) == 'F1'
+    assert str(actual[0].to_account) == 'T1'
+
+
+def test_saving_change_items_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         list(SavingChange.objects.items())
 
 
-def test_savings_change_summary_from(savings_change):
+def test_savings_change_summary_from(get_user, savings_change):
     expect = [{
         'title': 'Saving1',
         's_change_from_past': 2.25,
@@ -202,7 +286,7 @@ def test_savings_change_summary_from(savings_change):
     assert_(expect, actual)
 
 
-def test_savings_change_summary_to(savings_change):
+def test_savings_change_summary_to(get_user, savings_change):
     expect = [{
         's_change_to_past': Decimal(2.25),
         's_change_to_now': Decimal(1.25),
