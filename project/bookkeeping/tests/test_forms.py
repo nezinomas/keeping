@@ -3,17 +3,37 @@ from decimal import Decimal
 import pytest
 
 from ...accounts.factories import AccountFactory
+from ...auths.factories import UserFactory
 from ...pensions.factories import PensionTypeFactory
 from ..factories import SavingTypeFactory
 from ..forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
 
 pytestmark = pytest.mark.django_db
 
+
 # ----------------------------------------------------------------------------
 #                                                                 Saving Worth
 # ----------------------------------------------------------------------------
 def test_saving_worth_init(get_user):
     SavingWorthForm()
+
+def test_saving_worth_init_fields(get_user):
+    form = SavingWorthForm().as_p()
+
+    assert '<input type="number" name="price"' in form
+    assert '<select name="saving_type"' in form
+
+
+def test_saving_worth_current_user_types(get_user):
+    u = UserFactory(username='tom')
+
+    SavingTypeFactory(title='T1')  # user bob, current user
+    SavingTypeFactory(title='T2', user=u)  # user tom
+
+    form = SavingWorthForm().as_p()
+
+    assert 'T1' in form
+    assert 'T2' not in form
 
 
 def test_saving_worth_valid_data(get_user):
@@ -80,8 +100,27 @@ def test_saving_form_type_closed_in_current_year(get_user):
 # ----------------------------------------------------------------------------
 #                                                                Account Worth
 # ----------------------------------------------------------------------------
-def test_account_worth_init():
+def test_account_worth_init(get_user):
     AccountWorthForm()
+
+
+def test_account_worth_init_fields(get_user):
+    form = AccountWorthForm().as_p()
+
+    assert '<input type="number" name="price"' in form
+    assert '<select name="account"' in form
+
+
+def test_account_worth_current_user_types(get_user):
+    u = UserFactory(username='tom')
+
+    AccountFactory(title='T1')  # user bob, current user
+    AccountFactory(title='T2', user=u)  # user tom
+
+    form = AccountWorthForm().as_p()
+
+    assert 'T1' in form
+    assert 'T2' not in form
 
 
 def test_account_worth_valid_data(get_user):
@@ -100,7 +139,7 @@ def test_account_worth_valid_data(get_user):
     assert data.account.title == a.title
 
 
-def test_account_worth_blank_data():
+def test_account_worth_blank_data(get_user):
     form = AccountWorthForm(data={})
 
     assert not form.is_valid()
@@ -112,8 +151,27 @@ def test_account_worth_blank_data():
 # ----------------------------------------------------------------------------
 #                                                                Pension Worth
 # ----------------------------------------------------------------------------
-def test_pension_worth_init():
+def test_pension_worth_init(get_user):
     PensionWorthForm()
+
+
+def test_pension_worth_init_fields(get_user):
+    form = PensionWorthForm().as_p()
+
+    assert '<input type="number" name="price"' in form
+    assert '<select name="pension_type"' in form
+
+
+def test_pension_worth_current_user_types(get_user):
+    u = UserFactory(username='tom')
+
+    PensionTypeFactory(title='T1')  # user bob, current user
+    PensionTypeFactory(title='T2', user=u)  # user tom
+
+    form = PensionWorthForm().as_p()
+
+    assert 'T1' in form
+    assert 'T2' not in form
 
 
 def test_pension_worth_valid_data(get_user):
@@ -132,7 +190,7 @@ def test_pension_worth_valid_data(get_user):
     assert data.pension_type.title == p.title
 
 
-def test_pension_worth_blank_data():
+def test_pension_worth_blank_data(get_user):
     form = PensionWorthForm(data={})
 
     assert not form.is_valid()
