@@ -30,31 +30,9 @@ def common_field_transalion(self):
     self.fields['december'].label = 'Gruodis'
 
 
-class ExpensePlanForm(forms.ModelForm):
-    class Meta:
-        model = ExpensePlan
-        fields = ['year', 'expense_type'] + monthnames()
-
-        widgets = {
-            'year': YearPickerInput(format='%Y'),
-        }
-
-    field_order = ['year', 'expense_type'] + monthnames()
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # inital values
-        self.fields['year'].initial = datetime.now()
-
-        # field translation
-        self.fields['expense_type'].label = 'Išlaidų rūšis'
-        common_field_transalion(self)
-
-        self.helper = FormHelper()
-        set_field_properties(self, self.helper)
-
-
+# ----------------------------------------------------------------------------
+#                                                             Income Plan Form
+# ----------------------------------------------------------------------------
 class IncomePlanForm(forms.ModelForm):
     class Meta:
         model = IncomePlan
@@ -80,6 +58,37 @@ class IncomePlanForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
+# ----------------------------------------------------------------------------
+#                                                            Expense Plan Form
+# ----------------------------------------------------------------------------
+class ExpensePlanForm(forms.ModelForm):
+    class Meta:
+        model = ExpensePlan
+        fields = ['year', 'expense_type'] + monthnames()
+
+        widgets = {
+            'year': YearPickerInput(format='%Y'),
+        }
+
+    field_order = ['year', 'expense_type'] + monthnames()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # inital values
+        self.fields['year'].initial = datetime.now()
+
+        # field translation
+        self.fields['expense_type'].label = 'Išlaidų rūšis'
+        common_field_transalion(self)
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
+
+
+# ----------------------------------------------------------------------------
+#                                                              Saving Plan Form
+# ----------------------------------------------------------------------------
 class SavingPlanForm(forms.ModelForm):
     class Meta:
         model = SavingPlan
@@ -108,6 +117,9 @@ class SavingPlanForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
+# ----------------------------------------------------------------------------
+#                                                                Day Plan Form
+# ----------------------------------------------------------------------------
 class DayPlanForm(forms.ModelForm):
     class Meta:
         model = DayPlan
@@ -132,6 +144,9 @@ class DayPlanForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
+# ----------------------------------------------------------------------------
+#                                                          Necessary Plan Form
+# ----------------------------------------------------------------------------
 class NecessaryPlanForm(forms.ModelForm):
     class Meta:
         model = NecessaryPlan
@@ -156,6 +171,9 @@ class NecessaryPlanForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
+# ----------------------------------------------------------------------------
+#                                                               Copy Plan Form
+# ----------------------------------------------------------------------------
 class CopyPlanForm(forms.Form):
     year_from = forms.IntegerField(
         widget=YearPickerInput(format='%Y'),
