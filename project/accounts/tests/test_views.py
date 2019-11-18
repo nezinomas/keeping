@@ -3,6 +3,7 @@ import json
 import pytest
 from django.urls import resolve, reverse
 
+from ...auths.factories import UserFactory
 from ..factories import AccountFactory
 from ..views import Lists, New, Update, load_to_account
 
@@ -97,6 +98,7 @@ def test_load_t_account_form(admin_client):
 def test_load_to_account(client_logged):
     a1 = AccountFactory(title='A1')
     AccountFactory(title='A2')
+    AccountFactory(title='A3', user=UserFactory(username='XXX'))
 
     url = reverse('accounts:load_to_account')
 
