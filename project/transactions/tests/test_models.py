@@ -6,83 +6,42 @@ import pytest
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...savings.factories import SavingTypeFactory
-from ...savings.models import Saving, SavingBalance
+from ...savings.models import SavingBalance
 from ..factories import (SavingChangeFactory, SavingCloseFactory,
                          TransactionFactory)
 from ..models import SavingChange, SavingClose, Transaction
 
-
-@pytest.mark.django_db
-def test_month_sums(savings_close):
-    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(0.25)}]
-
-    actual = list(SavingClose.objects.month_sum(1999))
-
-    assert expect == actual
+pytestmark = pytest.mark.django_db
 
 
-@pytest.mark.django_db
-def test_month_sums_only_january(savings_close):
-    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(0.25)}]
-
-    actual = list(SavingClose.objects.month_sum(1999, 1))
-
-    assert expect == actual
-
-
+# ----------------------------------------------------------------------------
+#                                                                  Transaction
+# ----------------------------------------------------------------------------
 def test_transactions_str():
     t = TransactionFactory.build()
 
-    assert '1999-01-01 Account1->Account2: 200' == str(t)
+    assert str(t) == '1999-01-01 Account1->Account2: 200'
 
 
-def test_savings_close_str():
-    s = SavingCloseFactory.build()
-
-    assert '1999-01-01 Savings From->Account To: 10' == str(s)
-
-
-def test_savings_change_str():
-    s = SavingChangeFactory.build()
-
-    assert '1999-01-01 Savings From->Savings To: 10' == str(s)
-
-
-@pytest.mark.django_db
 def test_transactions_year():
     TransactionFactory(date=date(1999, 1, 1))
     TransactionFactory(date=date(2000, 1, 1))
 
     actual = Transaction.objects.year(1999)
 
-    assert 1 == actual.count()
+    assert actual.count() == 1
 
 
-@pytest.mark.django_db
 def test_transactions_items_query_count(django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        [*Transaction.objects.items()]
+        list(Transaction.objects.items())
 
 
-@pytest.mark.django_db
 def test_transactions_year_query_count(django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        [*Transaction.objects.year(1999)]
+        list(Transaction.objects.year(1999))
 
 
-@pytest.mark.django_db
-def test_saving_close_month_sum_query_count(django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        [*SavingClose.objects.month_sum(1999)]
-
-
-@pytest.mark.django_db
-def test_saving_change_items_query_count(django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        [*SavingChange.objects.items()]
-
-
-@pytest.mark.django_db
 def test_transaction_summary_from(transactions):
     expect = [{
         'title': 'Account1',
@@ -96,12 +55,13 @@ def test_transaction_summary_from(transactions):
 
     actual = list(
         Transaction.objects
-        .summary_from(1999).order_by('from_account__title'))
+        .summary_from(1999)
+        .order_by('from_account__title')
+    )
 
     assert expect == actual
 
 
-@pytest.mark.django_db
 def test_transaction_summary_to(transactions):
     expect = [{
         'title': 'Account1',
@@ -120,7 +80,36 @@ def test_transaction_summary_to(transactions):
     assert expect == actual
 
 
-@pytest.mark.django_db
+# ----------------------------------------------------------------------------
+#                                                                 Saving Close
+# ----------------------------------------------------------------------------
+def test_savings_close_str():
+    s = SavingCloseFactory.build()
+
+    assert str(s) == '1999-01-01 Savings From->Account To: 10'
+
+
+def test_saving_close_month_sums(savings_close):
+    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(0.25)}]
+
+    actual = list(SavingClose.objects.month_sum(1999))
+
+    assert expect == actual
+
+
+def test_saving_close_month_sums_only_january(savings_close):
+    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(0.25)}]
+
+    actual = list(SavingClose.objects.month_sum(1999, 1))
+
+    assert expect == actual
+
+
+def test_saving_close_month_sum_query_count(django_assert_max_num_queries):
+    with django_assert_max_num_queries(1):
+        list(SavingClose.objects.month_sum(1999))
+
+
 def test_savings_close_summary_from(savings_close):
     expect = [{
         'title': 'Saving1',
@@ -135,7 +124,6 @@ def test_savings_close_summary_from(savings_close):
     assert expect == actual
 
 
-@pytest.mark.django_db
 def test_savings_close_summary_to(savings_close):
     expect = [{
         'title': 'Account1',
@@ -149,12 +137,55 @@ def test_savings_close_summary_to(savings_close):
 
     actual = list(
         SavingClose.objects
-        .summary_to(1999).order_by('to_account__title'))
+        .summary_to(1999)
+        .order_by('to_account__title')
+    )
 
     assert expect == actual
 
 
-@pytest.mark.django_db
+def test_saving_close_post_save_saving_balance(get_user):
+    account = AccountFactory()
+    saving = SavingTypeFactory()
+
+    obj = SavingClose(
+        date=date(1999, 1, 1),
+        price=Decimal(1),
+        fee=Decimal(0.5),
+        from_account=saving,
+        to_account=account
+    )
+
+    obj.save()
+
+    actual = SavingBalance.objects.items(1999)
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Savings'
+    assert actual['past_amount'] == 0.0
+    assert actual['past_fee'] == 0.0
+    assert actual['incomes'] == -1.0
+    assert actual['fees'] == 0.0
+    assert actual['invested'] == -1.0
+
+
+# ----------------------------------------------------------------------------
+#                                                                 Saving Change
+# ----------------------------------------------------------------------------
+def test_savings_change_str():
+    s = SavingChangeFactory.build()
+
+    assert str(s) == '1999-01-01 Savings From->Savings To: 10'
+
+
+def test_saving_change_items_query_count(django_assert_max_num_queries):
+    with django_assert_max_num_queries(1):
+        list(SavingChange.objects.items())
+
+
 def test_savings_change_summary_from(savings_change):
     expect = [{
         'title': 'Saving1',
@@ -171,7 +202,6 @@ def test_savings_change_summary_from(savings_change):
     assert_(expect, actual)
 
 
-@pytest.mark.django_db
 def test_savings_change_summary_to(savings_change):
     expect = [{
         's_change_to_past': Decimal(2.25),
@@ -185,42 +215,29 @@ def test_savings_change_summary_to(savings_change):
     assert_(expect, actual)
 
 
-# ----------------------------------------------------------------------------
-#                                                             post_save signal
-# ----------------------------------------------------------------------------
-def _post_save_saving():
-    account = AccountFactory()
-    saving = SavingTypeFactory()
+def test_saving_change_post_save_saving_balance(get_user):
+    _from = SavingTypeFactory(title='F')
+    _to = SavingTypeFactory(title='T')
 
-    obj = Saving(
+    obj = SavingChange(
         date=date(1999, 1, 1),
         price=Decimal(1),
         fee=Decimal(0.5),
-        account=account,
-        saving_type=saving
+        to_account=_to,
+        from_account=_from,
     )
 
     obj.save()
 
     actual = SavingBalance.objects.items(1999)
 
-    assert 1 == actual.count()
+    assert actual.count() == 2
 
     actual = actual[0]
 
-    assert 'Savings' == actual['title']
-    assert 0.0 == actual['past_amount']
-    assert 0.0 == actual['past_fee']
-    assert 1.0 == actual['incomes']
-    assert 0.5 == actual['fees']
-    assert 0.5 == actual['invested']
-
-
-@pytest.mark.django_db
-def test_post_save_saving_close_balace_insert(mock_crequest):
-    _post_save_saving()
-
-
-@pytest.mark.django_db
-def test_post_save_saving_change_balace_insert(mock_crequest):
-    _post_save_saving()
+    assert actual['title'] == 'F'
+    assert actual['past_amount'] == 0.0
+    assert actual['past_fee'] == 0.0
+    assert actual['incomes'] == -1.0
+    assert actual['fees'] == 0.5
+    assert actual['invested'] == -1.5
