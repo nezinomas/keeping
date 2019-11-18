@@ -7,7 +7,6 @@ import pytz
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
-from ...core.lib.utils import sum_all
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...savings.factories import SavingTypeFactory
 from ...savings.models import SavingBalance
@@ -25,7 +24,7 @@ def test_account_worth_str():
 
         model = factories.AccountWorthFactory()
 
-    assert '1999-01-01 02:03 - Account1' == str(model)
+    assert str(model) == '1999-01-01 02:03 - Account1'
 
 
 def test_account_worth_latest_values(accounts_worth):
@@ -40,7 +39,7 @@ def test_account_worth_latest_values(accounts_worth):
 
 
 def test_account_worth_queries(django_assert_num_queries, accounts_worth):
-    with django_assert_num_queries(1) as captured:
+    with django_assert_num_queries(1):
         list(models.AccountWorth.objects.items())
 
 
@@ -53,7 +52,7 @@ def test_saving_worth_str():
 
         model = factories.SavingWorthFactory()
 
-    assert '1999-01-01 02:03 - Savings' == str(model)
+    assert str(model) == '1999-01-01 02:03 - Savings'
 
 
 def test_saving_worth_latest_values(savings_worth):
@@ -68,7 +67,7 @@ def test_saving_worth_latest_values(savings_worth):
 
 
 def test_saving_worth_queries(django_assert_num_queries, savings_worth):
-    with django_assert_num_queries(1) as captured:
+    with django_assert_num_queries(1):
         list(models.SavingWorth.objects.items())
 
 
@@ -81,7 +80,7 @@ def test_pension_worth_str():
 
         model = factories.PensionWorthFactory()
 
-    assert '1999-01-01 02:03 - PensionType' == str(model)
+    assert str(model) == '1999-01-01 02:03 - PensionType'
 
 
 def test_pension_worth_latest_values(pensions_worth):
@@ -109,14 +108,14 @@ def test_post_save_account_worth_insert(mock_crequest):
 
     actual = AccountBalance.objects.items(1999)
 
-    assert 1 == actual.count()
+    assert actual.count() == 1
 
 
 def test_post_save_saving_worth_insert(mock_crequest):
     s1 = SavingTypeFactory(title='s1')
 
-    obj = models.SavingWorth(price=Decimal(1), saving_type=s1).save()
+    models.SavingWorth(price=Decimal(1), saving_type=s1).save()
 
     actual = SavingBalance.objects.items(1999)
 
-    assert 1 == actual.count()
+    assert actual.count() == 1
