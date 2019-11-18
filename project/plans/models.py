@@ -40,54 +40,9 @@ class YearManager(models.Manager):
         return self.related()
 
 
-class ExpensePlan(MonthAbstract):
-    year = models.PositiveIntegerField(
-        validators=[MinValueValidator(1974), MaxValueValidator(2050)]
-    )
-    expense_type = models.ForeignKey(
-        ExpenseType,
-        on_delete=models.CASCADE
-    )
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='expense_plans'
-    )
-
-    objects = YearManager('expense_type')
-
-    def __str__(self):
-        return f'{self.year}/{self.expense_type.title}'
-
-    class Meta:
-        ordering = ['expense_type']
-        unique_together = ('year', 'expense_type', 'user')
-
-
-class SavingPlan(MonthAbstract):
-    year = models.PositiveIntegerField(
-        validators=[MinValueValidator(1974), MaxValueValidator(2050)]
-    )
-    saving_type = models.ForeignKey(
-        SavingType,
-        on_delete=models.CASCADE
-    )
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='saving_plans'
-    )
-
-    objects = YearManager('saving_type')
-
-    def __str__(self):
-        return f'{self.year}/{self.saving_type.title}'
-
-    class Meta:
-        ordering = ['saving_type']
-        unique_together = ('year', 'saving_type', 'user')
-
-
+# ----------------------------------------------------------------------------
+#                                                                  Income Plan
+# ----------------------------------------------------------------------------
 class IncomePlan(MonthAbstract):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
@@ -112,6 +67,63 @@ class IncomePlan(MonthAbstract):
         unique_together = ('year', 'income_type', 'user')
 
 
+# ----------------------------------------------------------------------------
+#                                                                 Expense Plan
+# ----------------------------------------------------------------------------
+class ExpensePlan(MonthAbstract):
+    year = models.PositiveIntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)]
+    )
+    expense_type = models.ForeignKey(
+        ExpenseType,
+        on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='expense_plans'
+    )
+
+    objects = YearManager('expense_type')
+
+    def __str__(self):
+        return f'{self.year}/{self.expense_type.title}'
+
+    class Meta:
+        ordering = ['expense_type']
+        unique_together = ('year', 'expense_type', 'user')
+
+
+# ----------------------------------------------------------------------------
+#                                                                  Saving Plan
+# ----------------------------------------------------------------------------
+class SavingPlan(MonthAbstract):
+    year = models.PositiveIntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)]
+    )
+    saving_type = models.ForeignKey(
+        SavingType,
+        on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='saving_plans'
+    )
+
+    objects = YearManager('saving_type')
+
+    def __str__(self):
+        return f'{self.year}/{self.saving_type.title}'
+
+    class Meta:
+        ordering = ['saving_type']
+        unique_together = ('year', 'saving_type', 'user')
+
+
+# ----------------------------------------------------------------------------
+#                                                                     Day Plan
+# ----------------------------------------------------------------------------
 class DayPlan(MonthAbstract):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
@@ -132,6 +144,9 @@ class DayPlan(MonthAbstract):
         unique_together = ('year', 'user')
 
 
+# ----------------------------------------------------------------------------
+#                                                               Necessary Plan
+# ----------------------------------------------------------------------------
 class NecessaryPlan(MonthAbstract):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
