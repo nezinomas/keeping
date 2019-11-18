@@ -85,7 +85,7 @@ def test_transactions_load_form(admin_client):
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert '2000-01-01' in actual['html_form']
 
 
@@ -138,16 +138,17 @@ def test_transactions_save_invalid_data(client_logged):
 def test_transactions_update_to_another_year(client_logged):
     tr = TransactionFactory()
 
-    data = {'price': '150',
-            'date': '2010-12-31',
-            'to_account': tr.to_account.pk,
-            'from_account': tr.from_account.pk
+    data = {
+        'price': '150',
+        'date': '2010-12-31',
+        'to_account': tr.to_account.pk,
+        'from_account': tr.from_account.pk,
     }
     url = reverse('transactions:transactions_update', kwargs={'pk': tr.pk})
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -170,7 +171,7 @@ def test_transactions_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -211,7 +212,7 @@ def test_savings_close_load_form(admin_client):
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert  response.status_code == 200
     assert '2000-01-01' in actual['html_form']
 
 
@@ -275,7 +276,7 @@ def test_savings_close_update_to_another_year(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -299,7 +300,7 @@ def test_savings_close_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -340,7 +341,7 @@ def test_savings_change_load_form(admin_client):
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert '2000-01-01' in actual['html_form']
 
 
@@ -404,7 +405,7 @@ def test_savings_change_update_to_another_year(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -428,7 +429,7 @@ def test_savings_change_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -459,7 +460,7 @@ def test_load_saving_type_status_code(client_logged):
 @pytest.mark.django_db
 def test_load_saving_type_closed_in_past(client_logged):
     s1 = SavingTypeFactory(title='S1')
-    s2 = SavingTypeFactory(title='S2', closed=1000)
+    SavingTypeFactory(title='S2', closed=1000)
 
     url = reverse('transactions:load_saving_type')
     response = client_logged.get(url, {'id': s1.pk})
