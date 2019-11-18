@@ -1,7 +1,5 @@
 import json
-from datetime import date
 
-import pandas as pd  # must be load before freezegun, why?
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
@@ -39,7 +37,7 @@ def test_load_book_form(admin_client):
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert '<input type="text" name="started" value="1999-01-01"' in actual['html_form']
 
 
@@ -88,7 +86,7 @@ def test_book_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
