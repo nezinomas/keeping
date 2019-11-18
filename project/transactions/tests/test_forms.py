@@ -2,14 +2,13 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from mock import patch
 
 from ...accounts.factories import AccountFactory
 from ...savings.factories import SavingTypeFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
 
-
 pytestmark = pytest.mark.django_db
+
 
 # ----------------------------------------------------------------------------
 #                                                                  Transaction
