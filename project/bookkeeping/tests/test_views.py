@@ -195,13 +195,13 @@ def test_view_saving_worth_invalid_data(client_logged):
 
 
 @pytest.mark.django_db()
-def test_saving_worth_formset_saving_type_closed_in_past(mock_crequest):
+def test_saving_worth_formset_saving_type_closed_in_past(get_user, fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1000)
 
-    mock_crequest.user.year = 2000
+    get_user.year = 2000
 
-    view = setup_view(views.SavingsWorthNew(), mock_crequest)
+    view = setup_view(views.SavingsWorthNew(), fake_request)
 
     actual = str(view._get_formset())
 
@@ -210,13 +210,13 @@ def test_saving_worth_formset_saving_type_closed_in_past(mock_crequest):
 
 
 @pytest.mark.django_db()
-def test_saving_worth_formset_saving_type_closed_in_current(mock_crequest):
+def test_saving_worth_formset_saving_type_closed_in_current(get_user, fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1000)
 
-    mock_crequest.user.year = 1000
+    get_user.year = 1000
 
-    view = setup_view(views.SavingsWorthNew(), mock_crequest)
+    view = setup_view(views.SavingsWorthNew(), fake_request)
 
     actual = str(view._get_formset())
 
@@ -225,13 +225,13 @@ def test_saving_worth_formset_saving_type_closed_in_current(mock_crequest):
 
 
 @pytest.mark.django_db()
-def test_saving_worth_formset_saving_type_closed_in_future(mock_crequest):
+def test_saving_worth_formset_saving_type_closed_in_future(get_user, fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1000)
 
-    mock_crequest.user.year = 1
+    get_user.year = 1
 
-    view = setup_view(views.SavingsWorthNew(), mock_crequest)
+    view = setup_view(views.SavingsWorthNew(), fake_request)
 
     actual = str(view._get_formset())
 

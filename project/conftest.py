@@ -25,13 +25,6 @@ def fake_request(rf):
 
 
 @pytest.fixture()
-def mock_crequest(monkeypatch, fake_request):
-    mock_func = 'crequest.middleware.CrequestMiddleware.get_request'
-
-    monkeypatch.setattr(mock_func, lambda: fake_request)
-
-
-@pytest.fixture()
 def get_user(monkeypatch):
     user = UserFactory()
 
