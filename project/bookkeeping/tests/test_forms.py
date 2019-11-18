@@ -1,26 +1,22 @@
 from decimal import Decimal
 
 import pytest
-from mock import patch
 
 from ...accounts.factories import AccountFactory
 from ...pensions.factories import PensionTypeFactory
 from ..factories import SavingTypeFactory
 from ..forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
 
+pytestmark = pytest.mark.django_db
 
-#
-# =============================================================
-#                                                  Saving Worth
-# =============================================================
-#
-@pytest.mark.django_db
-def test_saving_worth_init(mock_crequest):
+# ----------------------------------------------------------------------------
+#                                                                 Saving Worth
+# ----------------------------------------------------------------------------
+def test_saving_worth_init(get_user):
     SavingWorthForm()
 
 
-@pytest.mark.django_db
-def test_saving_worth_valid_data(mock_crequest):
+def test_saving_worth_valid_data(get_user):
     t = SavingTypeFactory()
 
     form = SavingWorthForm(data={
@@ -36,8 +32,7 @@ def test_saving_worth_valid_data(mock_crequest):
     assert data.saving_type.title == t.title
 
 
-@pytest.mark.django_db
-def test_saving_blank_data(mock_crequest):
+def test_saving_blank_data(get_user):
     form = SavingWorthForm({})
 
     assert not form.is_valid()
@@ -46,10 +41,8 @@ def test_saving_blank_data(mock_crequest):
     assert 'saving_type' in form.errors
 
 
-@pytest.mark.django_db
-@patch('crequest.middleware.CrequestMiddleware.get_request')
-def test_saving_form_type_closed_in_past(mock_):
-    mock_.return_value.user.year = 3000
+def test_saving_form_type_closed_in_past(get_user):
+    get_user.year = 3000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -60,10 +53,8 @@ def test_saving_form_type_closed_in_past(mock_):
     assert 'S2' not in str(form['saving_type'])
 
 
-@pytest.mark.django_db
-@patch('crequest.middleware.CrequestMiddleware.get_request')
-def test_saving_form_type_closed_in_future(mock_):
-    mock_.return_value.user.year = 1000
+def test_saving_form_type_closed_in_future(get_user):
+    get_user.year = 1000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -74,10 +65,8 @@ def test_saving_form_type_closed_in_future(mock_):
     assert 'S2' in str(form['saving_type'])
 
 
-@pytest.mark.django_db
-@patch('crequest.middleware.CrequestMiddleware.get_request')
-def test_saving_form_type_closed_in_current_year(mock_):
-    mock_.return_value.user.year = 2000
+def test_saving_form_type_closed_in_current_year(get_user):
+    get_user.year = 2000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -88,17 +77,14 @@ def test_saving_form_type_closed_in_current_year(mock_):
     assert 'S2' in str(form['saving_type'])
 
 
-#
-# =============================================================
-#                                                 Account Worth
-# =============================================================
-#
+# ----------------------------------------------------------------------------
+#                                                                Account Worth
+# ----------------------------------------------------------------------------
 def test_account_worth_init():
     AccountWorthForm()
 
 
-@pytest.mark.django_db
-def test_account_worth_valid_data(mock_crequest):
+def test_account_worth_valid_data(get_user):
     a = AccountFactory()
 
     form = AccountWorthForm(data={
@@ -114,7 +100,6 @@ def test_account_worth_valid_data(mock_crequest):
     assert data.account.title == a.title
 
 
-@pytest.mark.django_db
 def test_account_worth_blank_data():
     form = AccountWorthForm(data={})
 
@@ -124,17 +109,14 @@ def test_account_worth_blank_data():
     assert 'account' in form.errors
 
 
-#
-# =============================================================
-#                                                 Pension Worth
-# =============================================================
-#
+# ----------------------------------------------------------------------------
+#                                                                Pension Worth
+# ----------------------------------------------------------------------------
 def test_pension_worth_init():
     PensionWorthForm()
 
 
-@pytest.mark.django_db
-def test_pension_worth_valid_data(mock_crequest):
+def test_pension_worth_valid_data(get_user):
     p = PensionTypeFactory()
 
     form = PensionWorthForm(data={
@@ -150,7 +132,6 @@ def test_pension_worth_valid_data(mock_crequest):
     assert data.pension_type.title == p.title
 
 
-@pytest.mark.django_db
 def test_pension_worth_blank_data():
     form = PensionWorthForm(data={})
 
