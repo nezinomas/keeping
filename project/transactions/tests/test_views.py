@@ -1,8 +1,5 @@
 import json
-from datetime import date, datetime
-from decimal import Decimal
 
-import pandas as pd
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
@@ -12,6 +9,7 @@ from ...savings.factories import SavingTypeFactory
 from .. import views
 from ..factories import (SavingChangeFactory, SavingCloseFactory,
                          TransactionFactory)
+from ...auths.factories import UserFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
@@ -39,11 +37,9 @@ def test_load_saving_type_has_saving_type(client_logged):
     assert 'Savings' in str(response.content)
 
 
-#
-# ===================================================
-#                                        Transactions
-# ===================================================
-#
+# ----------------------------------------------------------------------------
+#                                                                  Transaction
+# ----------------------------------------------------------------------------
 @pytest.mark.django_db
 def test_view_index_200(client_logged):
     response = client_logged.get('/transactions/')
@@ -185,11 +181,9 @@ def test_transactions_update(client_logged):
     assert 'Account2' in actual['html_list']
 
 
-#
-# ===================================================
-#                                        SavingsClose
-# ===================================================
-#
+# ----------------------------------------------------------------------------
+#                                                                 Saving Close
+# ----------------------------------------------------------------------------
 def test_saving_close_lists_func():
     view = resolve('/savings_close/lists/')
 
@@ -316,11 +310,9 @@ def test_savings_close_update(client_logged):
     assert 'Savings From' in actual['html_list']
 
 
-#
-# ===================================================
-#                                       SavingsChange
-# ===================================================
-#
+# ----------------------------------------------------------------------------
+#                                                                Saving Change
+# ----------------------------------------------------------------------------
 def test_saving_change_lists_func():
     view = resolve('/savings_change/lists/')
 
@@ -447,11 +439,9 @@ def test_savings_change_update(client_logged):
     assert 'Savings From' in actual['html_list']
 
 
-#
-# ===================================================
-#                                    load_saving_type
-# ===================================================
-#
+# ----------------------------------------------------------------------------
+#                                                             load_saving_type
+# ----------------------------------------------------------------------------
 def test_load_saving_type_new_func():
     view = resolve('/ajax/load_saving_type/')
 
@@ -470,6 +460,18 @@ def test_load_saving_type_status_code(client_logged):
 def test_load_saving_type_closed_in_past(client_logged):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', closed=1000)
+
+    url = reverse('transactions:load_saving_type')
+    response = client_logged.get(url, {'id': s1.pk})
+
+    assert 'S1' not in str(response.content)
+    assert 'S2' not in str(response.content)
+
+
+@pytest.mark.django_db
+def test_load_saving_type_for_current_user(client_logged):
+    s1 = SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', user=UserFactory(username='XXX'))
 
     url = reverse('transactions:load_saving_type')
     response = client_logged.get(url, {'id': s1.pk})
