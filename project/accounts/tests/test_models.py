@@ -57,7 +57,7 @@ def test_account_balance_items(get_user):
     AccountBalanceFactory(year=1999)
     AccountBalanceFactory(year=2000)
 
-    actual = AccountBalance.objects.items(1999)
+    actual = AccountBalance.objects.year(1999)
 
     assert len(actual) == 1
 

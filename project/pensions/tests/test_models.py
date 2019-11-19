@@ -116,7 +116,7 @@ def test_pension_new_post_save(get_user):
 
     income.save()
 
-    actual = PensionBalance.objects.items(1999)
+    actual = PensionBalance.objects.year(1999)
 
     assert actual.count() == 1
 
@@ -214,7 +214,7 @@ def test_pension_balance_items(get_user):
     PensionBalanceFactory(year=1999)
     PensionBalanceFactory(year=2000)
 
-    actual = PensionBalance.objects.items(1999)
+    actual = PensionBalance.objects.year(1999)
 
     assert len(actual) == 1
 

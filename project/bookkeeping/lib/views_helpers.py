@@ -187,9 +187,9 @@ class IndexHelper():
         self._request = request
         self._year = year
 
-        self._account = [*AccountBalance.objects.items(year)]
-        self._fund = [*SavingBalance.objects.items(year)]
-        self._pension = [*PensionBalance.objects.items(year)]
+        self._account = [*AccountBalance.objects.year(year)]
+        self._fund = [*SavingBalance.objects.year(year)]
+        self._pension = [*PensionBalance.objects.year(year)]
 
         qs_income = Income.objects.income_sum(year)
         qs_savings = Saving.objects.month_saving(year)

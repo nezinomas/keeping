@@ -125,11 +125,11 @@ class PensionBalanceQuerySet(models.QuerySet):
         )
         return qs
 
-    def items(self, year: int = None):
-        if year:
-            qs = self.related().filter(year=year)
-        else:
-            qs = self.related()
+    def items(self):
+        return self.related()
+
+    def year(self, year: int):
+        qs = self.related().filter(year=year)
 
         return qs.values(
             'year',

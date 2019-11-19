@@ -51,7 +51,7 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
         context = super().get_context_data(**kwargs)
         year = self.request.user.year
 
-        _fund = SavingBalance.objects.items(year)
+        _fund = SavingBalance.objects.year(year)
 
         context['title'] = 'Fondai'
         context['items'] = _fund
@@ -69,7 +69,7 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
         context = super().get_context_data(**kwargs)
         year = self.request.user.year
 
-        _account = AccountBalance.objects.items(year)
+        _account = AccountBalance.objects.year(year)
 
         context['accounts'] = _account
         context['total_row'] = sum_all(_account)
@@ -87,7 +87,7 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
         context = super().get_context_data(**kwargs)
         year = self.request.user.year
 
-        _pension = PensionBalance.objects.items(year)
+        _pension = PensionBalance.objects.year(year)
 
         context['title'] = 'Pensija'
         context['items'] = _pension

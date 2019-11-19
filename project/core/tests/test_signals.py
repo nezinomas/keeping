@@ -51,7 +51,7 @@ def test_account_insert(_mock, get_user):
     instance = SimpleNamespace(account_id=a1.id)
     T.post_save_account_stats(instance=instance)
 
-    actual = AccountBalance.objects.items(1999)
+    actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
 
@@ -74,7 +74,7 @@ def test_account_insert_instance_account_id_not_set(_mock, get_user):
     instance = SimpleNamespace()
     T.post_save_account_stats(instance=instance)
 
-    actual = AccountBalance.objects.items(1999)
+    actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 2
 
@@ -99,7 +99,7 @@ def test_account_update(_mock, get_user):
     instance = SimpleNamespace(account_id=a1.id)
     T.post_save_account_stats(instance=instance)
 
-    actual = AccountBalance.objects.items(1999)
+    actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
 
@@ -202,7 +202,7 @@ def test_saving_insert(_mock, get_user):
     instance = SimpleNamespace(id=1)
     T.post_save_saving_stats(instance=instance)
 
-    actual = SavingBalance.objects.items(1999)
+    actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
 
@@ -234,7 +234,7 @@ def test_saving_insert_instance_saving_id_not_set(_mock, get_user):
     instance = SimpleNamespace()
     T.post_save_saving_stats(instance=instance)
 
-    actual = SavingBalance.objects.items(1999)
+    actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 2
 
@@ -259,7 +259,7 @@ def test_saving_update(_mock, get_user):
     instance = SimpleNamespace(saving_id=s1.id)
     T.post_save_saving_stats(instance=instance)
 
-    actual = SavingBalance.objects.items(1999)
+    actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
 

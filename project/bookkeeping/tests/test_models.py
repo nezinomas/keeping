@@ -69,7 +69,7 @@ def test_account_worth_post_save(get_user):
 
     AccountWorth(price=Decimal(1), account=a1).save()
 
-    actual = AccountBalance.objects.items(1999)
+    actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
 
@@ -123,7 +123,7 @@ def test_saving_worth_post_save(get_user):
 
     SavingWorth(price=Decimal(1), saving_type=s1).save()
 
-    actual = SavingBalance.objects.items(1999)
+    actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
 
@@ -176,6 +176,6 @@ def test_pension_worth_post_save(get_user):
 
     PensionWorth(price=Decimal(1), pension_type=p1).save()
 
-    actual = PensionBalance.objects.items(1999)
+    actual = PensionBalance.objects.year(1999)
 
     assert actual.count() == 1

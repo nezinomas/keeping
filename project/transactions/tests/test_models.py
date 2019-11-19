@@ -222,7 +222,7 @@ def test_saving_close_post_save_saving_balance(get_user):
 
     obj.save()
 
-    actual = SavingBalance.objects.items(1999)
+    actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
 
@@ -313,7 +313,7 @@ def test_saving_change_post_save_saving_balance(get_user):
 
     obj.save()
 
-    actual = SavingBalance.objects.items(1999)
+    actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 2
 

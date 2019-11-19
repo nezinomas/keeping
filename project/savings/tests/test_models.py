@@ -101,7 +101,7 @@ def test_saving_type_post_save_new_saving_balance(get_user):
 
     actual = actual[0]
 
-    assert actual['title'] == 's1'
+    assert actual.saving_type.title == 's1'
 
 
 def test_saving_type_post_save_new_account_balance(get_user):
@@ -116,7 +116,7 @@ def test_saving_type_post_save_new_account_balance(get_user):
 
     actual = actual[0]
 
-    assert actual['title'] == 'Account1'
+    assert actual.account.title == 'Account1'
 
 
 # ----------------------------------------------------------------------------
@@ -339,17 +339,17 @@ def test_saving_balance_related_for_user(get_user):
 
 
 @pytest.mark.django_db
-def test_saving_balance_items(get_user):
+def test_saving_balance_year(get_user):
     SavingBalanceFactory(year=1998)
     SavingBalanceFactory(year=1999)
     SavingBalanceFactory(year=2000)
 
-    actual = SavingBalance.objects.items(1999)
+    actual = SavingBalance.objects.year(1999)
 
     assert len(actual) == 1
 
 
-def test_saving_balance_queries(get_user, django_assert_num_queries):
+def test_saving_balance_items_queries(get_user, django_assert_num_queries):
     s1 = SavingTypeFactory(title='s1')
     s2 = SavingTypeFactory(title='s2')
 
@@ -376,7 +376,7 @@ def test_saving_balance_new_post_save_account_balace(get_user):
 
     obj.save()
 
-    actual = AccountBalance.objects.items(1999)
+    actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
 
@@ -407,7 +407,7 @@ def test_saving_balance_new_post_save_saving_balance(get_user,
 
     obj.save()
 
-    actual = SavingBalance.objects.items(1999)
+    actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
 

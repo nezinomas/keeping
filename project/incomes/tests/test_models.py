@@ -187,7 +187,7 @@ def test_income_new_post_save(get_user):
 
     income.save()
 
-    actual = AccountBalance.objects.items(1999)
+    actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
 
@@ -216,7 +216,7 @@ def test_income_update_post_save(get_user):
     )
     income.save()
 
-    actual = AccountBalance.objects.items(1999)
+    actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
 
