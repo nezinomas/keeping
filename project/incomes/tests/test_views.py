@@ -57,10 +57,11 @@ def test_types_update_func():
 
 
 @freeze_time('2000-01-01')
-def test_income_load_form(admin_client):
+@pytest.mark.django_db()
+def test_income_load_form(client_logged):
     url = reverse('incomes:incomes_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -168,10 +169,11 @@ def test_income_update(client_logged):
 #
 
 @freeze_time('2000-01-01')
-def test_type_load_form(admin_client):
+@pytest.mark.django_db()
+def test_type_load_form(client_logged):
     url = reverse('incomes:incomes_type_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
