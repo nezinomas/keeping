@@ -2,6 +2,8 @@ import calendar
 from datetime import date, datetime
 from typing import List
 
+from . import utils
+
 
 def current_day(year: int, month: int) -> int:
     year = year if year else datetime.now().year
@@ -44,7 +46,14 @@ def monthlen(year: int, monthname: str) -> int:
 
 
 def years() -> List[int]:
-    now = datetime.now().year + 2
-    years = [x for x in range(2004, now)]
+    now = datetime.now().year
+    start = now
 
-    return years
+    try:
+        start = utils.get_user().date_joined.year
+    except AttributeError:
+        pass
+
+    _years = [x for x in range(start, now + 2)]
+
+    return _years
