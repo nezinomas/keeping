@@ -3,6 +3,7 @@ import json
 import pytest
 from django.urls import resolve, reverse
 
+from ...core.tests.utils import setup_view
 from ...users.factories import UserFactory
 from ..factories import AccountFactory
 from ..views import Lists, New, Update, load_to_account
@@ -76,6 +77,20 @@ def test_account_update(client_logged):
     assert 'Title' in actual['html_list']
 
 
+@pytest.mark.django_db()
+def test_account_list_view_has_all(get_user, fake_request):
+    AccountFactory(title='S1')
+    AccountFactory(title='S2', closed=1974)
+
+    view = setup_view(Lists(), fake_request)
+
+    ctx = view.get_context_data()
+    actual = [str(x) for x in ctx['items']]
+
+    assert len(actual) == 2
+    assert 'S1' in actual
+    assert 'S2' in actual
+
 
 # ----------------------------------------------------------------------------
 #                                                                 load_account
@@ -86,10 +101,11 @@ def test_load_to_account_func():
     assert load_to_account == view.func
 
 
-def test_load_t_account_form(admin_client):
+@pytest.mark.django_db
+def test_load_to_account_form(client_logged):
     url = reverse('accounts:accounts_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     assert response.status_code == 200
 

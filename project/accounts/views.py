@@ -8,6 +8,9 @@ class Lists(ListMixin):
     model = models.Account
     template_name = 'accounts/includes/accounts_list.html'
 
+    def get_queryset(self):
+        return models.Account.objects.related()
+
 
 class New(CreateAjaxMixin):
     model = models.Account
