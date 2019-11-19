@@ -2,6 +2,7 @@
     <div class="list-group-item list-group-item-action list-group-item-primary">Sąskaitos</div>
     {% for item in items %}
     {% url 'accounts:accounts_update' item.id as url_update %}
-    <div class="list-group-item list-group-item-action" data-url="{{ url_update }}">{{ item.title }}</div>
+    <div class="list-group-item list-group-item-action" data-url="{{ url_update }}">{% if item.closed %}<strike>{{ item.title }}</strike> <i>uždaryta
+        {{ item.closed|safe }}</i>{% else %}{{ item.title }}{% endif %}</div>
     {% endfor %}
 </div>
