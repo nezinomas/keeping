@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from ..helpers.helper_forms import ChainedDropDown
+from ..helpers.helper_forms import ChainedDropDown, set_field_properties
 
 
 # ----------------------------------------------------------------------------
@@ -46,3 +46,22 @@ def test_id_float():
     actual = ChainedDropDown(obj, 'e').parent_field_id
 
     assert actual == 4
+
+
+# ----------------------------------------------------------------------------
+#                                                         set_field_properties
+# ----------------------------------------------------------------------------
+def test_set_field_properties():
+    obj = SimpleNamespace(
+        fields={
+            'x': SimpleNamespace(
+                widget=SimpleNamespace(attrs={'class': None})
+            )
+        })
+
+    helper = SimpleNamespace(form_show_labels=True)
+
+    set_field_properties(obj, helper)
+
+    assert obj.fields['x'].widget.attrs['class'] == 'form-control-sm'
+    assert not helper.form_show_labels
