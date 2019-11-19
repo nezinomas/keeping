@@ -69,7 +69,7 @@ class IncomePlanForm(FormMixin, forms.ModelForm):
         year = cleaned_data.get('year')
 
         # if update
-        if self.instance.pk:
+        if 'year' not in self.changed_data:
             return
 
         qs = IncomePlan.objects.year(year)
@@ -116,7 +116,7 @@ class ExpensePlanForm(FormMixin, forms.ModelForm):
         year = cleaned_data.get('year')
 
         # if update
-        if self.instance.pk:
+        if 'year' not in self.changed_data:
             return
 
         qs = ExpensePlan.objects.year(year)
@@ -164,7 +164,7 @@ class SavingPlanForm(FormMixin, forms.ModelForm):
         year = cleaned_data.get('year')
 
         # if update
-        if self.instance.pk:
+        if 'year' not in self.changed_data:
             return
 
         qs = SavingPlan.objects.year(year)
@@ -207,7 +207,7 @@ class DayPlanForm(FormMixin, forms.ModelForm):
         year = cleaned_data.get('year')
 
         # if update
-        if self.instance.pk:
+        if 'year' not in self.changed_data:
             return
 
         qs = DayPlan.objects.year(year)
@@ -249,7 +249,7 @@ class NecessaryPlanForm(FormMixin, forms.ModelForm):
         year = cleaned_data.get('year')
 
         # if update
-        if self.instance.pk:
+        if 'year' not in self.changed_data:
             return
 
         qs = NecessaryPlan.objects.year(year)

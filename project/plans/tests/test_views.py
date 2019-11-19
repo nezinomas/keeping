@@ -119,6 +119,21 @@ def test_view_incomes_update(client_logged):
     assert '999,99' in actual['html_list']
 
 
+def test_view_incomes_update_unique_together_user_change_year(client_logged):
+    IncomePlanFactory(year=2000)
+    p = IncomePlanFactory(year=1999)
+
+    data = {'year': '2000', 'income_type': p.income_type.pk, 'january': 999.99}
+    url = reverse('plans:incomes_plan_update', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
+
+
 def test_view_incomes_update_year_not_match(client_logged):
     # if year in Plan and user not match, 404 error
     p = IncomePlanFactory(year=2000)
@@ -188,6 +203,21 @@ def test_view_expenses_update(client_logged):
 
     assert actual['form_is_valid']
     assert '999,99' in actual['html_list']
+
+
+def test_view_expenses_update_unique_together_user_change_year(client_logged):
+    ExpensePlanFactory(year=2000)
+    p = ExpensePlanFactory(year=1999)
+
+    data = {'year': '2000', 'expense_type': p.expense_type.pk, 'january': 999.99}
+    url = reverse('plans:expenses_plan_update', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
 
 
 def test_view_expenses_update_year_not_match(client_logged):
@@ -261,6 +291,21 @@ def test_view_savings_update(client_logged):
     assert '999,99' in actual['html_list']
 
 
+def test_view_savings_update_unique_together_user_change_year(client_logged):
+    SavingPlanFactory(year=2000)
+    p = SavingPlanFactory(year=1999)
+
+    data = {'year': '2000', 'saving_type': p.saving_type.pk, 'january': 999.99}
+    url = reverse('plans:savings_plan_update', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
+
+
 def test_view_savings_update_year_not_match(client_logged):
     # if year in Plan and urser not match, 404 error
     p = SavingPlanFactory(year=1974)
@@ -331,6 +376,21 @@ def test_view_days_update(client_logged):
     assert '999,99' in actual['html_list']
 
 
+def test_view_days_update_unique_together_user_change_year(client_logged):
+    DayPlanFactory(year=2000)
+    p = DayPlanFactory(year=1999)
+
+    data = {'year': '2000', 'january': 999.99}
+    url = reverse('plans:days_plan_update', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
+
+
 def test_view_days_update_year_not_match(client_logged):
     # if year in Plan and urser not match, 404 error
     p = DayPlanFactory(year=1974)
@@ -387,7 +447,7 @@ def test_view_necessarys_new_invalid_data(client_logged):
 def test_view_necessarys_update(client_logged):
     p = NecessaryPlanFactory(year=1999)
 
-    data = {'year': '1999',  'title': 'X', 'january': 999.99}
+    data = {'year': '1999', 'title': 'X', 'january': 999.99}
     url = reverse('plans:necessarys_plan_update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data, **X_Req)
@@ -399,6 +459,21 @@ def test_view_necessarys_update(client_logged):
 
     assert actual['form_is_valid']
     assert '999,99' in actual['html_list']
+
+
+def test_view_necessarys_update_unique_together_user_change_year(client_logged):
+    NecessaryPlanFactory(year=2000)
+    p = NecessaryPlanFactory(year=1999)
+
+    data = {'year': '2000', 'title': 'X', 'january': 999.99}
+    url = reverse('plans:necessarys_plan_update', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
 
 
 def test_view_necessarys_update_year_not_match(client_logged):
