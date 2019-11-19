@@ -45,6 +45,6 @@ def monthlen(year: int, monthname: str) -> int:
 
 def years() -> List[int]:
     now = datetime.now().year + 2
-    years = [x for x in range(2004, now)]
+    _years = [x for x in range(2004, now)]
 
-    return years
+    return _years
