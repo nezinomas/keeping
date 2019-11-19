@@ -269,8 +269,6 @@ def test_view_index_200(client_logged):
 
 @pytest.mark.django_db
 def test_type_list_view_has_all(get_user, fake_request):
-    print(f'user year: {get_user.year}')
-    print(f'fake request user year: {fake_request.user.year}')
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1974)
 
