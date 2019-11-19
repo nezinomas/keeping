@@ -1,5 +1,6 @@
 import pytest
 
+from ...bookkeeping.forms import AccountWorthForm
 from ...expenses.forms import ExpenseForm
 from ...incomes.forms import IncomeForm
 from ...savings.forms import SavingForm
@@ -232,6 +233,42 @@ def test_account_closed_in_current_year_saving(get_user):
     AccountFactory(title='S2', closed=2000)
 
     form = SavingForm(data={})
+
+    assert 'S1' in str(form['account'])
+    assert 'S2' in str(form['account'])
+
+
+def test_account_closed_in_past_account_worth(get_user):
+    get_user.year = 3000
+
+    AccountFactory(title='S1')
+    AccountFactory(title='S2', closed=2000)
+
+    form = AccountWorthForm(data={})
+
+    assert 'S1' in str(form['account'])
+    assert 'S2' not in str(form['account'])
+
+
+def test_account_closed_in_future_account_worth(get_user):
+    get_user.year = 1000
+
+    AccountFactory(title='S1')
+    AccountFactory(title='S2', closed=2000)
+
+    form = AccountWorthForm(data={})
+
+    assert 'S1' in str(form['account'])
+    assert 'S2' in str(form['account'])
+
+
+def test_account_closed_in_current_year_account_worth(get_user):
+    get_user.year = 2000
+
+    AccountFactory(title='S1')
+    AccountFactory(title='S2', closed=2000)
+
+    form = AccountWorthForm(data={})
 
     assert 'S1' in str(form['account'])
     assert 'S2' in str(form['account'])
