@@ -4,6 +4,8 @@ from ...users.factories import UserFactory
 from ..factories import AccountBalanceFactory, AccountFactory
 from ..models import Account, AccountBalance
 
+pytestmark = pytest.mark.django_db
+
 
 # ----------------------------------------------------------------------------
 #                                                                      Account
@@ -14,7 +16,6 @@ def test_account_model_str():
     assert str(actual) == 'Account1'
 
 
-@pytest.mark.django_db
 def test_account_items_current_user(get_user):
     u = UserFactory(username='XXX')
 
@@ -26,6 +27,36 @@ def test_account_items_current_user(get_user):
     assert len(actual) == 1
     assert str(actual[0]) == 'A1'
     assert actual[0].user.username == 'bob'
+
+
+def test_account_closed_in_past(get_user):
+    get_user.year = 3000
+    AccountFactory(title='A1')
+    AccountFactory(title='A2', closed=2000)
+
+    actual = Account.objects.items()
+
+    assert actual.count() == 1
+
+
+def test_account_closed_in_future(get_user):
+    get_user.year = 1000
+    AccountFactory(title='A1')
+    AccountFactory(title='A2', closed=2000)
+
+    actual = Account.objects.items()
+
+    assert actual.count() == 2
+
+
+def test_account_closed_in_current_year(get_user):
+    get_user.year = 2000
+    AccountFactory(title='A1')
+    AccountFactory(title='A2', closed=2000)
+
+    actual = Account.objects.items()
+
+    assert actual.count() == 2
 
 
 # ----------------------------------------------------------------------------
@@ -51,7 +82,6 @@ def test_account_balance_init():
     assert actual.delta == -1.05
 
 
-@pytest.mark.django_db
 def test_account_balance_items(get_user):
     AccountBalanceFactory(year=1998)
     AccountBalanceFactory(year=1999)
@@ -62,7 +92,6 @@ def test_account_balance_items(get_user):
     assert len(actual) == 1
 
 
-@pytest.mark.django_db
 def test_account_balance_queries(get_user, django_assert_num_queries):
     a1 = AccountFactory(title='a1')
     a2 = AccountFactory(title='a2')
@@ -74,7 +103,6 @@ def test_account_balance_queries(get_user, django_assert_num_queries):
         list(AccountBalance.objects.items().values())
 
 
-@pytest.mark.django_db
 def test_account_balance_related_for_user(get_user):
     u = UserFactory(username='XXX')
 

@@ -53,21 +53,21 @@ def test_view_month_200(client_logged):
 #                                                                Account Worth
 # ----------------------------------------------------------------------------
 #
-def test_view_accounts_worth_func():
+def test_accounts_worth_func():
     view = resolve('/bookkeeping/accounts_worth/new/')
 
     assert views.AccountsWorthNew == view.func.view_class
 
 
 @pytest.mark.django_db
-def test_view_account_worth_200(client_logged):
+def test_account_worth_200(client_logged):
     response = client_logged.get('/bookkeeping/accounts_worth/new/')
 
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_view_account_worth_formset(client_logged):
+def test_account_worth_formset(client_logged):
     AccountFactory()
 
     url = reverse('bookkeeping:accounts_worth_new')
@@ -82,7 +82,7 @@ def test_view_account_worth_formset(client_logged):
 
 
 @pytest.mark.django_db()
-def test_view_account_worth_new(client_logged):
+def test_account_worth_new(client_logged):
     i = AccountFactory()
     data = {
         'form-TOTAL_FORMS': 1,
@@ -103,7 +103,7 @@ def test_view_account_worth_new(client_logged):
 
 
 @pytest.mark.django_db()
-def test_view_account_worth_invalid_data(client_logged):
+def test_account_worth_invalid_data(client_logged):
     data = {
         'form-TOTAL_FORMS': 1,
         'form-INITIAL_FORMS': 0,
@@ -119,6 +119,51 @@ def test_view_account_worth_invalid_data(client_logged):
     actual = json.loads(json_str)
 
     assert not actual['form_is_valid']
+
+
+@pytest.mark.django_db()
+def test_account_worth_formset_closed_in_past(get_user, fake_request):
+    AccountFactory(title='S1')
+    AccountFactory(title='S2', closed=1000)
+
+    get_user.year = 2000
+
+    view = setup_view(views.AccountsWorthNew(), fake_request)
+
+    actual = str(view._get_formset())
+
+    assert 'S1' in actual
+    assert 'S2' not in actual
+
+
+@pytest.mark.django_db()
+def test_account_worth_formset_closed_in_current(get_user, fake_request):
+    AccountFactory(title='S1')
+    AccountFactory(title='S2', closed=1000)
+
+    get_user.year = 1000
+
+    view = setup_view(views.AccountsWorthNew(), fake_request)
+
+    actual = str(view._get_formset())
+
+    assert 'S1' in actual
+    assert 'S2' in actual
+
+
+@pytest.mark.django_db()
+def test_account_worth_formset_closed_in_future(get_user, fake_request):
+    AccountFactory(title='S1')
+    AccountFactory(title='S2', closed=1000)
+
+    get_user.year = 1
+
+    view = setup_view(views.AccountsWorthNew(), fake_request)
+
+    actual = str(view._get_formset())
+
+    assert 'S1' in actual
+    assert 'S2' in actual
 
 
 #

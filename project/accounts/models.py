@@ -1,6 +1,6 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Q
 
 from ..users.models import User
 from ..core.lib import utils
@@ -8,14 +8,33 @@ from ..core.models import TitleAbstract
 
 
 class AccountQuerySet(models.QuerySet):
+    def related(self):
+        user = utils.get_user()
+        return (
+            self
+            .select_related('user')
+            .filter(user=user)
+        )
+
     def items(self):
         user = utils.get_user()
-        return self.filter(user=user)
+        return (
+            self
+            .related()
+            .filter(
+                Q(closed__isnull=True) |
+                Q(closed__gte=user.year)
+            )
+        )
 
 
 class Account(TitleAbstract):
     order = models.PositiveIntegerField(
         default=10
+    )
+    closed = models.PositiveIntegerField(
+        blank=True,
+        null=True,
     )
     user = models.ForeignKey(
         User,

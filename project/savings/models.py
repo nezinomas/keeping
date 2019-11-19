@@ -62,20 +62,10 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         )
         return qs
 
-    def _filter_closed(self, year):
-        return (
-            self
-            .filter(
-                Q(saving_type__closed__isnull=True) |
-                Q(saving_type__closed__gte=year)
-            )
-        )
-
     def _summary(self, year):
         return (
             self
             .related()
-            ._filter_closed(year)
             .annotate(cnt=Count('saving_type'))
             .values('cnt')
             .order_by('cnt')
@@ -103,7 +93,6 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         return (
             self
             .related()
-            ._filter_closed(year)
             .filter(date__year=year))
 
     def items(self):

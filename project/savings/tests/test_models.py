@@ -256,45 +256,6 @@ def test_saving_summary_to(get_user, savings):
     assert expect == actual
 
 
-@freeze_time('1999-01-01')
-def test_saving_year_with_type_closed_in_future(get_user):
-    s1 = SavingTypeFactory(title='S1')
-    s2 = SavingTypeFactory(title='S2', closed=2000)
-
-    SavingFactory(date=date(1999, 1, 1), saving_type=s1)
-    SavingFactory(date=date(1999, 1, 1), saving_type=s2)
-
-    actual = Saving.objects.year(1999)
-
-    assert actual.count() == 2
-
-
-@freeze_time('1999-01-01')
-def test_saving_year_with_type_closed_in_current_year(get_user):
-    s1 = SavingTypeFactory(title='S1')
-    s2 = SavingTypeFactory(title='S2', closed=1999)
-
-    SavingFactory(date=date(1999, 1, 1), saving_type=s1)
-    SavingFactory(date=date(1999, 1, 1), saving_type=s2)
-
-    actual = Saving.objects.year(1999)
-
-    assert actual.count() == 2
-
-
-@freeze_time('1999-01-01')
-def test_saving_year_with_type_closed_in_past(get_user):
-    s1 = SavingTypeFactory(title='S1')
-    s2 = SavingTypeFactory(title='S2', closed=1974)
-
-    SavingFactory(date=date(1999, 1, 1), saving_type=s1)
-    SavingFactory(date=date(1999, 1, 1), saving_type=s2)
-
-    actual = Saving.objects.year(1999)
-
-    assert actual.count() == 1
-
-
 # ----------------------------------------------------------------------------
 #                                                               SavingBalance
 # ----------------------------------------------------------------------------

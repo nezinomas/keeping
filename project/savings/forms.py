@@ -6,7 +6,6 @@ from django import forms
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
-from ..core.lib import utils
 from ..core.mixins.form_mixin import FormMixin
 from .models import Saving, SavingType
 
