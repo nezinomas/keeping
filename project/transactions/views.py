@@ -25,10 +25,10 @@ class Index(IndexMixin):
 # SavingType dropdown
 def load_saving_type(request):
     _id = request.GET.get('id')
-    year = request.user.year
+
     objects = (
         models.SavingType.objects
-        .items(year)
+        .items()
         .exclude(pk=_id)
     )
 

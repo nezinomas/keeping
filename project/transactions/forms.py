@@ -84,9 +84,8 @@ class SavingCloseForm(forms.ModelForm):
         self.fields['fee'].initial = '0.00'
 
         # overwrite ForeignKey expense_type queryset
-        year = utils.get_user().year
-        self.fields['from_account'].queryset = SavingType.objects.items(year)
-        self.fields['to_account'].queryset = Account.objects.items(year)
+        self.fields['from_account'].queryset = SavingType.objects.items()
+        self.fields['to_account'].queryset = Account.objects.items()
 
         # form fields labels
         self.fields['price'].label = 'Suma'
@@ -129,9 +128,8 @@ class SavingChangeForm(forms.ModelForm):
         self.fields['fee'].initial = '0.00'
 
         # overwrite ForeignKey expense_type queryset
-        year = utils.get_user().year
-        self.fields['from_account'].queryset = SavingType.objects.items(year)
-        self.fields['to_account'].queryset = SavingType.objects.items(year)
+        self.fields['from_account'].queryset = SavingType.objects.items()
+        self.fields['to_account'].queryset = SavingType.objects.items()
 
         # fields labels
         self.fields['price'].label = 'Suma'

@@ -8,7 +8,7 @@ from ..core.models import TitleAbstract
 
 
 class AccountQuerySet(models.QuerySet):
-    def items(self, year: int = None):
+    def items(self):
         user = utils.get_user()
         return self.filter(user=user)
 

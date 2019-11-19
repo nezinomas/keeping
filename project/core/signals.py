@@ -136,7 +136,7 @@ class SignalBase():
         return account_id
 
     def _get_accounts(self) -> Dict[str, int]:
-        qs = self.model_types.objects.items(year=self.year)
+        qs = self.model_types.objects.items()
 
         account_id = self._get_id()
         if account_id:

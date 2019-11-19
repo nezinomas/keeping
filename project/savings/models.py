@@ -22,16 +22,14 @@ class SavingTypeQuerySet(models.QuerySet):
             .filter(user=user)
         )
 
-    def items(self, year: int = None):
-        if not year:
-            return self.related()
-
+    def items(self):
+        user = utils.get_user()
         return (
             self
             .related()
             .filter(
                 Q(closed__isnull=True) |
-                Q(closed__gte=year)
+                Q(closed__gte=user.year)
             )
         )
 

@@ -62,28 +62,31 @@ def test_saving_type_day_sum_empty_month(get_user, savings):
 
 
 def test_saving_type_items_closed_in_past(get_user):
+    get_user.year = 3000
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
-    actual = SavingType.objects.items(3000)
+    actual = SavingType.objects.items()
 
     assert actual.count() == 1
 
 
 def test_saving_type_items_closed_in_future(get_user):
+    get_user.year = 1000
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
-    actual = SavingType.objects.items(1000)
+    actual = SavingType.objects.items()
 
     assert actual.count() == 2
 
 
 def test_saving_type_items_closed_in_current_year(get_user):
+    get_user.year = 2000
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
-    actual = SavingType.objects.items(2000)
+    actual = SavingType.objects.items()
 
     assert actual.count() == 2
 

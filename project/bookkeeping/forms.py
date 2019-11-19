@@ -21,8 +21,7 @@ class SavingWorthForm(forms.ModelForm):
         self.fields['price'].initial = '0'
 
         # overwrite FK
-        year = utils.get_user().year
-        self.fields['saving_type'].queryset = SavingType.objects.items(year)
+        self.fields['saving_type'].queryset = SavingType.objects.items()
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -40,8 +39,7 @@ class AccountWorthForm(forms.ModelForm):
         self.fields['price'].initial = '0'
 
         # overwrite FK
-        year = utils.get_user().year
-        self.fields['account'].queryset = Account.objects.items(year)
+        self.fields['account'].queryset = Account.objects.items()
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -58,8 +56,7 @@ class PensionWorthForm(forms.ModelForm):
         self.fields['price'].initial = '0'
 
         # overwrite FK
-        year = utils.get_user().year
-        self.fields['pension_type'].queryset = PensionType.objects.items(year)
+        self.fields['pension_type'].queryset = PensionType.objects.items()
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

@@ -48,6 +48,9 @@ class Update(UpdateAjaxMixin):
 class TypeLists(ListMixin):
     model = models.SavingType
 
+    def get_queryset(self):
+        return models.SavingType.objects.related()
+
 
 class TypeNew(CreateAjaxMixin):
     model = models.SavingType

@@ -16,7 +16,7 @@ class FormsetMixin():
             return _list
 
         model = self._get_type_model()
-        _objects = model.objects.items(self.request.user.year)
+        _objects = model.objects.items()
         for _object in _objects:
             _list.append({'price': 0, foreign_key[0]: _object})
 

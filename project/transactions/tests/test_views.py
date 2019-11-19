@@ -11,8 +11,8 @@ from ..factories import (SavingChangeFactory, SavingCloseFactory,
                          TransactionFactory)
 from ...users.factories import UserFactory
 
+pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
-
 
 
 def test_load_saving_type_func():
@@ -77,10 +77,10 @@ def test_transactions_update_func():
 
 
 @freeze_time('2000-01-01')
-def test_transactions_load_form(admin_client):
+def test_transactions_load_form(client_logged):
     url = reverse('transactions:transactions_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -89,7 +89,6 @@ def test_transactions_load_form(admin_client):
     assert '2000-01-01' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_transactions_save(client_logged):
     a1 = AccountFactory()
     a2 = AccountFactory(title='Account2')
@@ -115,7 +114,6 @@ def test_transactions_save(client_logged):
     assert 'Account2' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_transactions_save_invalid_data(client_logged):
     data = {
         'date': 'x',
@@ -134,7 +132,6 @@ def test_transactions_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_transactions_update_to_another_year(client_logged):
     tr = TransactionFactory()
 
@@ -157,7 +154,6 @@ def test_transactions_update_to_another_year(client_logged):
     assert '2010-12-31' not in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_transactions_update(client_logged):
     tr = TransactionFactory()
 
@@ -204,10 +200,10 @@ def test_saving_close_update_func():
 
 
 @freeze_time('2000-01-01')
-def test_savings_close_load_form(admin_client):
+def test_savings_close_load_form(client_logged):
     url = reverse('transactions:savings_close_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -216,7 +212,6 @@ def test_savings_close_load_form(admin_client):
     assert '2000-01-01' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_savings_close_save(client_logged):
     a1 = SavingTypeFactory()
     a2 = AccountFactory()
@@ -242,7 +237,6 @@ def test_savings_close_save(client_logged):
     assert 'Savings' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_savings_close_save_invalid_data(client_logged):
     data = {
         'date': 'x',
@@ -261,7 +255,6 @@ def test_savings_close_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_savings_close_update_to_another_year(client_logged):
     tr = SavingCloseFactory()
 
@@ -285,7 +278,6 @@ def test_savings_close_update_to_another_year(client_logged):
     assert '2010-12-31' not in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_savings_close_update(client_logged):
     tr = SavingCloseFactory()
 
@@ -333,10 +325,10 @@ def test_saving_change_update_func():
 
 
 @freeze_time('2000-01-01')
-def test_savings_change_load_form(admin_client):
+def test_savings_change_load_form(client_logged):
     url = reverse('transactions:savings_change_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -345,7 +337,6 @@ def test_savings_change_load_form(admin_client):
     assert '2000-01-01' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_savings_change_save(client_logged):
     a1 = SavingTypeFactory()
     a2 = SavingTypeFactory(title='Savings2')
@@ -371,7 +362,6 @@ def test_savings_change_save(client_logged):
     assert 'Savings2' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_savings_change_save_invalid_data(client_logged):
     data = {
         'date': 'x',
@@ -390,7 +380,6 @@ def test_savings_change_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_savings_change_update_to_another_year(client_logged):
     tr = SavingChangeFactory()
 
@@ -414,7 +403,6 @@ def test_savings_change_update_to_another_year(client_logged):
     assert '2010-12-31' not in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_savings_change_update(client_logged):
     tr = SavingChangeFactory()
 

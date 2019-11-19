@@ -64,8 +64,7 @@ class SavingForm(forms.ModelForm):
         self.fields['date'].initial = datetime.now()
 
         # overwrite ForeignKey saving_type and account queryset
-        year = utils.get_user().year
-        self.fields['saving_type'].queryset = SavingType.objects.items(year)
+        self.fields['saving_type'].queryset = SavingType.objects.items()
         self.fields['account'].queryset = Account.objects.items()
 
         self.fields['date'].label = 'Data'

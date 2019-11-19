@@ -146,8 +146,7 @@ class SavingPlanForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # overwrite ForeignKey expense_type queryset
-        year = utils.get_user().year
-        self.fields['saving_type'].queryset = SavingType.objects.items(year)
+        self.fields['saving_type'].queryset = SavingType.objects.items()
 
         # inital values
         self.fields['year'].initial = datetime.now()
