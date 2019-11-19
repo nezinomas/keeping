@@ -33,13 +33,13 @@ def year_month_list(year: int = None) -> List[date]:
 
 
 def monthname(month: int) -> str:
-    month = 'january'
+    _month = 'january'
     try:
-        month = calendar.month_name[month]
+        _month = calendar.month_name[month]
     except:
         pass
 
-    return month.lower()
+    return _month.lower()
 
 
 def monthnames() -> List[str]:
