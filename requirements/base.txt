@@ -10,7 +10,7 @@ django-widget-tweaks==1.4.5
 django-pandas==0.6.1
 lxml==4.4.1
 mysqlclient==1.4.5
-numpy==1.17.3
+numpy==1.17.4
 pandas==0.25.3
 pip-review==1.0
 requests==2.22.0
