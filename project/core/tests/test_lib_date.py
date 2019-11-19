@@ -1,9 +1,9 @@
 from datetime import date
+from types import SimpleNamespace
 
 import pytest
 from freezegun import freeze_time
 from mock import patch
-from types import SimpleNamespace
 
 from ..lib import date as T
 
@@ -63,3 +63,38 @@ def test_years_user_anonymous_user(mck):
     actual = T.years()
 
     assert actual == [2001, 2002]
+
+
+def test_monthname_correct():
+    assert T.monthname(1) == 'january'
+
+
+def test_monthname_wrong_number():
+    assert T.monthname(13) == 'january'
+
+
+def test_monthnames():
+    actual = T.monthnames()
+
+    assert len(actual) == 12
+    assert actual[0] == 'january'
+    assert actual[1] == 'february'
+    assert actual[11] == 'december'
+
+
+def test_monthlen_leap_not():
+    actual = T.monthlen(1999, 'february')
+
+    assert actual == 28
+
+
+def test_monthlen_leap():
+    actual = T.monthlen(2000, 'february')
+
+    assert actual == 29
+
+
+def test_monthlen_wrong_input():
+    actual = T.monthlen(2, 'xxx')
+
+    assert actual == 31

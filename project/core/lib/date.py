@@ -15,8 +15,8 @@ def current_day(year: int, month: int) -> int:
 
     if _year == year and _month == month:
         return _day
-    else:
-        return calendar.monthrange(year, month)[1]
+
+    return calendar.monthrange(year, month)[1]
 
 
 def year_month_list(year: int = None) -> List[date]:
@@ -33,15 +33,25 @@ def year_month_list(year: int = None) -> List[date]:
 
 
 def monthname(month: int) -> str:
-    return calendar.month_name[month].lower()
+    month = 'january'
+    try:
+        month = calendar.month_name[month]
+    except:
+        pass
+
+    return month.lower()
 
 
 def monthnames() -> List[str]:
     return [x.lower() for x in calendar.month_name[1:]]
 
 
-def monthlen(year: int, monthname: str) -> int:
-    month = datetime.strptime(monthname, "%B").month
+def monthlen(year: int, month_name: str) -> int:
+    if month_name not in monthnames():
+        return 31
+
+    month = datetime.strptime(month_name, "%B").month
+
     return calendar.monthlen(year, month)
 
 
