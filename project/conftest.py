@@ -7,7 +7,7 @@ import pytz
 from .accounts.factories import AccountFactory
 from .bookkeeping.factories import (AccountWorthFactory, PensionWorthFactory,
                                     SavingWorthFactory)
-from .auths.factories import UserFactory
+from .users.factories import UserFactory
 from .expenses.factories import ExpenseFactory
 from .incomes.factories import IncomeFactory
 from .pensions.factories import PensionFactory
@@ -25,24 +25,19 @@ def fake_request(rf):
 
 
 @pytest.fixture()
-def mock_crequest(monkeypatch, fake_request):
-    mock_func = 'crequest.middleware.CrequestMiddleware.get_request'
-
-    monkeypatch.setattr(mock_func, lambda: fake_request)
-
-
-@pytest.fixture()
 def get_user(monkeypatch):
     user = UserFactory()
 
     mock_func = 'project.core.lib.utils.get_user'
     monkeypatch.setattr(mock_func, lambda: user)
 
+    return user
+
 
 @pytest.fixture()
 def client_logged(client):
-    u = UserFactory()
-    client.login(username=u.username, password=u.password)
+    UserFactory()
+    client.login(username='bob', password='123')
 
     return client
 

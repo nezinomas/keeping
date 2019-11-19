@@ -1,8 +1,6 @@
 import pytest
 from django.template import Context, Template
 
-from ..templatetags.table import table
-
 
 @pytest.fixture
 def _template():

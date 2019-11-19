@@ -4,6 +4,7 @@ from decimal import Decimal
 import factory
 from django.db.models.signals import post_save
 
+from ..users.factories import UserFactory
 from .models import Pension, PensionBalance, PensionType
 
 
@@ -14,6 +15,7 @@ class PensionTypeFactory(factory.DjangoModelFactory):
         django_get_or_create = ('title',)
 
     title = 'PensionType'
+    user = factory.SubFactory(UserFactory)
 
 
 @factory.django.mute_signals(post_save)

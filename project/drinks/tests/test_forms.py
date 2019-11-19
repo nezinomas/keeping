@@ -5,13 +5,25 @@ import pytest
 from ..factories import DrinkTargetFactory
 from ..forms import DrinkForm, DrinkTargetForm
 
+pytestmark = pytest.mark.django_db
 
+
+# ----------------------------------------------------------------------------
+#                                                                        Drink
+# ----------------------------------------------------------------------------
 def test_drink_init():
     DrinkForm()
 
 
-@pytest.mark.django_db
-def test_drink_valid_data():
+def test_drink_init_fields():
+    form = DrinkForm().as_p()
+
+    assert '<input type="text" name="date"' in form
+    assert '<input type="number" name="quantity"' in form
+    assert '<select name="user"' not in form
+
+
+def test_drink_valid_data(get_user):
     form = DrinkForm(data={
         'date': '1974-01-01',
         'quantity': 1.0
@@ -23,23 +35,35 @@ def test_drink_valid_data():
 
     assert data.date == date(1974, 1, 1)
     assert data.quantity == 1.0
+    assert data.user.username == 'bob'
 
 
 def test_drink_blank_data():
-    form = DrinkForm(data={})
+    form = DrinkForm({})
 
     assert not form.is_valid()
 
+    assert len(form.errors) == 2
     assert 'date' in form.errors
     assert 'quantity' in form.errors
 
 
+# ----------------------------------------------------------------------------
+#                                                                 Drink Target
+# ----------------------------------------------------------------------------
 def test_drink_target_init():
     DrinkTargetForm()
 
 
-@pytest.mark.django_db
-def test_drink_target_valid_data():
+def test_drink_target_init_fields():
+    form = DrinkTargetForm().as_p()
+
+    assert '<input type="text" name="year"' in form
+    assert '<input type="number" name="quantity"' in form
+    assert '<select name="user"' not in form
+
+
+def test_drink_target_valid_data(get_user):
     form = DrinkTargetForm(data={
         'year': 1974,
         'quantity': 1.0
@@ -51,10 +75,10 @@ def test_drink_target_valid_data():
 
     assert data.year == 1974
     assert data.quantity == 1.0
+    assert data.user.username == 'bob'
 
 
-@pytest.mark.django_db
-def test_drink_target_year_validation():
+def test_drink_target_year_validation(get_user):
     DrinkTargetFactory()
 
     form = DrinkTargetForm(data={
@@ -72,5 +96,6 @@ def test_drink_target_blank_data():
 
     assert not form.is_valid()
 
+    assert len(form.errors) == 2
     assert 'year' in form.errors
     assert 'quantity' in form.errors

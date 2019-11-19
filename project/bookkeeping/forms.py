@@ -1,8 +1,10 @@
 from crispy_forms.helper import FormHelper
 from django import forms
 
+from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
-from ..core.lib.utils import get_user
+from ..core.lib import utils
+from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from .models import AccountWorth, PensionWorth, SavingWorth
 
@@ -15,11 +17,12 @@ class SavingWorthForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        year = get_user().year
-
-        self.fields['saving_type'].queryset = SavingType.objects.items(year)
-
+        # form initial values
         self.fields['price'].initial = '0'
+
+        # overwrite FK
+        year = utils.get_user().year
+        self.fields['saving_type'].queryset = SavingType.objects.items(year)
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -33,7 +36,12 @@ class AccountWorthForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # form initial values
         self.fields['price'].initial = '0'
+
+        # overwrite FK
+        year = utils.get_user().year
+        self.fields['account'].queryset = Account.objects.items(year)
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -48,6 +56,10 @@ class PensionWorthForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['price'].initial = '0'
+
+        # overwrite FK
+        year = utils.get_user().year
+        self.fields['pension_type'].queryset = PensionType.objects.items(year)
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

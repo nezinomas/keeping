@@ -5,6 +5,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.mixins.form_mixin import FormMixin
 from .models import Pension, PensionType
 
 
@@ -33,7 +34,9 @@ class PensionForm(forms.ModelForm):
 
         # inital values
         self.fields['date'].initial = datetime.now()
-        self.fields['pension_type'].initial = 1
+
+        # overwrite ForeignKey saving_type queryset
+        self.fields['pension_type'].queryset = PensionType.objects.items()
 
         self.fields['date'].label = 'Data'
         self.fields['price'].label = 'Suma'
@@ -44,7 +47,7 @@ class PensionForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
-class PensionTypeForm(forms.ModelForm):
+class PensionTypeForm(FormMixin, forms.ModelForm):
     class Meta:
         model = PensionType
         fields = ['title']

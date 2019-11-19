@@ -62,32 +62,23 @@ def context_to_reload(request, context):
 
 
 def _avg_label_position(avg, target):
-    y = -5
-
-    if avg >= target - 50 and avg <= target:
-        y = 15
-
-    return y
+    return 15 if target - 50 <= avg <= target else -5
 
 
 def _target_label_position(avg, target):
-    y = -5
-
-    if target >= avg - 50 and target <= avg:
-        y = 15
-
-    return y
+    return 15 if avg - 50 <= target <= avg else -5
 
 
 def _dry_days(year):
-    latest = None
-    delta = None
-
+    qs = None
     try:
-        qs = models.Drink.objects.filter(date__year=year).latest()
-        latest = qs.date
-        delta = (datetime.now().date() - latest).days
-    except:
+        qs = models.Drink.objects.year(year).latest()
+    except models.Drink.DoesNotExist:
         pass
 
-    return {'date': latest, 'delta': delta}
+    if qs:
+        latest = qs.date
+        delta = (datetime.now().date() - latest).days
+        return {'date': latest, 'delta': delta}
+
+    return {}

@@ -1,5 +1,6 @@
 import factory
 
+from ..users.factories import UserFactory
 from .models import Account, AccountBalance
 
 
@@ -9,6 +10,7 @@ class AccountFactory(factory.DjangoModelFactory):
         django_get_or_create = ('title',)
 
     title = 'Account1'
+    user = factory.SubFactory(UserFactory)
 
 
 class AccountBalanceFactory(factory.DjangoModelFactory):

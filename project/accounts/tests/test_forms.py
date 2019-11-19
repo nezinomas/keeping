@@ -1,8 +1,5 @@
-from datetime import date
-
 import pytest
 
-from ..factories import AccountFactory
 from ..forms import AccountForm
 
 
@@ -10,8 +7,16 @@ def test_account_init():
     AccountForm()
 
 
+def test_account_form_has_fields():
+    form = AccountForm().as_p()
+
+    assert '<input type="text" name="title"' in form
+    assert '<input type="number" name="order"' in form
+    assert '<select name="user"' not in form
+
+
 @pytest.mark.django_db
-def test_account_valid_data():
+def test_account_valid_data(get_user):
     form = AccountForm(data={
         'title': 'Title',
         'order': '1'
@@ -23,6 +28,7 @@ def test_account_valid_data():
 
     assert data.title == 'Title'
     assert data.order == 1
+    assert data.user.username == 'bob'
 
 
 def test_account_blank_data():

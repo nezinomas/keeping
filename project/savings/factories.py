@@ -5,7 +5,8 @@ import factory
 from django.db.models.signals import post_save
 
 from ..accounts.factories import AccountFactory
-from .models import Saving, SavingType, SavingBalance
+from ..users.factories import UserFactory
+from .models import Saving, SavingBalance, SavingType
 
 
 @factory.django.mute_signals(post_save)
@@ -15,6 +16,7 @@ class SavingTypeFactory(factory.DjangoModelFactory):
         django_get_or_create = ('title',)
 
     title = 'Savings'
+    user = factory.SubFactory(UserFactory)
 
 
 @factory.django.mute_signals(post_save)

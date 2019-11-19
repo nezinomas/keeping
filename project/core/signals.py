@@ -109,15 +109,15 @@ class SignalBase():
 
         for row in stats:
             # get id
-            id = row['id']
+            _id = row['id']
 
             # delete dictionary keys
             del row['id']
             del row['title']
 
-            obj, created = self.model_balance.objects.update_or_create(
+            self.model_balance.objects.update_or_create(
                 year=self.year,
-                **{self.field: id},
+                **{self.field: _id},
                 defaults={k: v for k, v in row.items()}
             )
 
@@ -129,9 +129,9 @@ class SignalBase():
         field_list = [self.field, 'from_account_id', 'to_account_id']
 
         for name in field_list:
-            id = getattr(self.instance, name, None)
-            if id:
-                account_id.append(id)
+            _id = getattr(self.instance, name, None)
+            if _id:
+                account_id.append(_id)
 
         return account_id
 

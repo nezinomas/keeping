@@ -7,26 +7,26 @@ from .. import views
 
 
 @pytest.mark.django_db()
-def test_set_year(login, client):
+def test_set_year(client_logged):
     url = reverse(
         'core:set_year',
         kwargs={'year': 1970, 'view_name': 'core:core_index'}
     )
 
-    response = client.get(url, follow=True)
+    response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
     assert response.wsgi_request.user.year == 1970
 
 
 @pytest.mark.django_db()
-def test_set_month(login, client):
+def test_set_month(client_logged):
     url = reverse(
         'core:set_month',
         kwargs={'month': 12, 'view_name': 'core:core_index'}
     )
 
-    response = client.get(url, follow=True)
+    response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
     assert response.wsgi_request.user.month == 12
@@ -45,22 +45,22 @@ def test_view_regenerate_balances_current_year():
 
 
 @pytest.mark.django_db
-def test_view_regenerate_balances_status_200(login, client):
+def test_view_regenerate_balances_status_200(client_logged):
     url = reverse('core:regenerate_balances')
-    response = client.get(url, follow=True)
+    response = client_logged.get(url, follow=True)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_view_regenerate_balances_current_year_status_200(login, client):
+def test_view_regenerate_balances_current_year_status_200(client_logged):
     url = reverse(
         'core:regenerate_balances_current_year',
         kwargs={'year': 1999}
     )
-    response = client.get(url, follow=True)
+    response = client_logged.get(url, follow=True)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
 
 @freeze_time('2007-01-01')
@@ -71,11 +71,11 @@ def test_view_regenerate_balances_func_called(mck_pension,
                                               mck_account,
                                               mck_saving,
                                               fake_request):
-    view = views.regenerate_balances(fake_request)
+    views.regenerate_balances(fake_request)
 
-    assert 5 == mck_account.call_count
-    assert 5 == mck_saving.call_count
-    assert 5 == mck_pension.call_count
+    assert mck_account.call_count == 5
+    assert mck_saving.call_count == 5
+    assert mck_pension.call_count == 5
 
 
 @patch('project.core.views.post_save_saving_stats')
@@ -85,8 +85,8 @@ def test_view_regenerate_balances_current_year_func_called(mck_pension,
                                                            mck_account,
                                                            mck_saving,
                                                            fake_request):
-    view = views.regenerate_balances_current_year(fake_request, 1999)
+    views.regenerate_balances_current_year(fake_request, 1999)
 
-    assert 1 == mck_account.call_count
-    assert 1 == mck_saving.call_count
-    assert 1 == mck_pension.call_count
+    assert mck_account.call_count == 1
+    assert mck_saving.call_count == 1
+    assert mck_pension.call_count == 1

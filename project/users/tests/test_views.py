@@ -3,7 +3,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 from ..views import CustomLogin
 
 
@@ -23,7 +23,7 @@ def test_custom_logout_func():
 def test_successful_login(client):
     UserFactory()
 
-    url = reverse('auths:login')
+    url = reverse('users:login')
     credentials = {'username': 'bob', 'password': '123'}
 
     response = client.post(url, credentials, follow=True)
@@ -37,7 +37,7 @@ def test_successful_login(client):
 def test_fill_user_on_login(client):
     UserFactory(year=None, month=None)
 
-    url = reverse('auths:login')
+    url = reverse('users:login')
     credentials = {'username': 'bob', 'password': '123'}
 
     response = client.post(url, credentials, follow=True)

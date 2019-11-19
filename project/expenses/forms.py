@@ -6,7 +6,8 @@ from django import forms
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
-from ..core.lib.utils import get_user
+from ..core.lib import utils
+from ..core.mixins.form_mixin import FormMixin
 from .models import Expense, ExpenseName, ExpenseType
 
 
@@ -32,6 +33,28 @@ class ExpenseForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # inital values
+        self.fields['date'].initial = datetime.now()
+        self.fields['account'].initial = Account.objects.items().first()
+        self.fields['price'].initial = '0.00'
+        self.fields['expense_name'].queryset = Expense.objects.none()
+
+        # overwrite ForeignKey expense_type queryset
+        self.fields['expense_type'].queryset = ExpenseType.objects.items()
+        self.fields['account'].queryset = Account.objects.items()
+
+        # chained dropdown to select expense_names
+        _id = ChainedDropDown(self, 'expense_type').parent_field_id
+        if _id:
+            year = utils.get_user().year
+            self.fields['expense_name'].queryset = (
+                ExpenseName.objects.parent(_id).year(year)
+            )
+
+        # form inputs settings
+        self.fields['price'].widget.attrs = {'readonly': True, 'step': '0.01'}
+        self.fields['remark'].widget.attrs['rows'] = 3
+
         # field translation
         self.fields['date'].label = 'Data'
         self.fields['price'].label = 'Visa kaina'
@@ -43,32 +66,16 @@ class ExpenseForm(forms.ModelForm):
         self.fields['account'].label = 'Sąskaita'
         self.fields['total_sum'].label = 'Kaina'
 
-        # form inputs settings
-        self.fields['price'].widget.attrs = {'readonly': True, 'step': '0.01'}
-        self.fields['remark'].widget.attrs['rows'] = 3
 
-        # inital values
-        self.fields['date'].initial = datetime.now()
-        self.fields['account'].initial = Account.objects.first()
-        self.fields['price'].initial = '0.00'
-        self.fields['expense_name'].queryset = Expense.objects.none()
-
-        # chained dropdown
-        _id = ChainedDropDown(self, 'expense_type').parent_field_id
-        if _id:
-            year = get_user().year
-            self.fields['expense_name'].queryset = (
-                ExpenseName.objects.parent(_id).year(year)
-            )
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
 
-class ExpenseTypeForm(forms.ModelForm):
+class ExpenseTypeForm(FormMixin, forms.ModelForm):
     class Meta:
         model = ExpenseType
-        fields = '__all__'
+        fields = ['title', 'necessary']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -94,9 +101,14 @@ class ExpenseNameForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        # overwrite ForeignKey parent queryset
+        self.fields['parent'].queryset = ExpenseType.objects.items()
 
+        # field labels
         self.fields['parent'].label = 'Išlaidų rūšis'
         self.fields['title'].label = 'Išlaidų pavadinimas'
         self.fields['valid_for'].label = 'Galioja tik'
+
+        # crispy forms settings
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)

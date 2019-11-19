@@ -70,7 +70,7 @@ def test_income_load_form(admin_client):
 
 
 @pytest.mark.django_db()
-def test_income_save(client, login):
+def test_income_save(client_logged):
     a = AccountFactory()
     i = IncomeTypeFactory()
 
@@ -83,7 +83,7 @@ def test_income_save(client, login):
 
     url = reverse('incomes:incomes_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -96,7 +96,7 @@ def test_income_save(client, login):
 
 
 @pytest.mark.django_db()
-def test_income_save_invalid_data(client, login):
+def test_income_save_invalid_data(client_logged):
     data = {
         'date': 'x',
         'price': 'x',
@@ -106,7 +106,7 @@ def test_income_save_invalid_data(client, login):
 
     url = reverse('incomes:incomes_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -115,7 +115,7 @@ def test_income_save_invalid_data(client, login):
 
 
 @pytest.mark.django_db()
-def test_income_update_to_another_year(client, login):
+def test_income_update_to_another_year(client_logged):
     income = IncomeFactory()
 
     data = {'price': '150',
@@ -126,7 +126,7 @@ def test_income_update_to_another_year(client, login):
     }
     url = reverse('incomes:incomes_update', kwargs={'pk': income.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 
@@ -138,7 +138,7 @@ def test_income_update_to_another_year(client, login):
 
 
 @pytest.mark.django_db()
-def test_income_update(client, login):
+def test_income_update(client_logged):
     income = IncomeFactory()
 
     data = {
@@ -150,7 +150,7 @@ def test_income_update(client, login):
     }
     url = reverse('incomes:incomes_update', kwargs={'pk': income.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 
@@ -180,14 +180,14 @@ def test_type_load_form(admin_client):
 
 
 @pytest.mark.django_db()
-def test_type_save(client, login):
+def test_type_save(client_logged):
     data = {
         'title': 'TTT',
     }
 
     url = reverse('incomes:incomes_type_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -197,12 +197,12 @@ def test_type_save(client, login):
 
 
 @pytest.mark.django_db()
-def test_type_save_invalid_data(client, login):
+def test_type_save_invalid_data(client_logged):
     data = {'title': ''}
 
     url = reverse('incomes:incomes_type_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -211,13 +211,13 @@ def test_type_save_invalid_data(client, login):
 
 
 @pytest.mark.django_db()
-def test_type_update(client, login):
+def test_type_update(client_logged):
     income = IncomeTypeFactory()
 
     data = {'title': 'TTT'}
     url = reverse('incomes:incomes_type_update', kwargs={'pk': income.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 
@@ -229,8 +229,8 @@ def test_type_update(client, login):
 
 
 @pytest.mark.django_db
-def test_view_index_200(login, client):
-    response = client.get('/incomes/')
+def test_view_index_200(client_logged):
+    response = client_logged.get('/incomes/')
 
     assert response.status_code == 200
 

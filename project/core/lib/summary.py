@@ -6,9 +6,9 @@ from pandas import Series, to_numeric
 
 
 def models(where: str) -> List:
-    models = []
+    _models = []
     if where == 'accounts':
-        models = [
+        _models = [
             'incomes.Income',
             'expenses.Expense',
             'savings.Saving',
@@ -17,18 +17,18 @@ def models(where: str) -> List:
         ]
 
     if where == 'savings':
-        models = [
+        _models = [
             'savings.Saving',
             'transactions.SavingClose',
             'transactions.SavingChange'
         ]
 
     if where == 'pensions':
-        models = [
+        _models = [
             'pensions.Pension',
         ]
 
-    return models
+    return _models
 
 
 def collect_summary_data(year: int,
@@ -58,10 +58,10 @@ def collect_summary_data(year: int,
                 for k, v in row.items():
                     if k == 'title' or k == 'id':
                         continue
-                    else:
-                        # copy values from qs to df
-                        if idx in df.index:
-                            df.at[idx, k] = v
+
+                    # copy values from qs to df
+                    if idx in df.index:
+                        df.at[idx, k] = v
 
     # fill NaN with 0.0
     df.fillna(0.0, inplace=True)

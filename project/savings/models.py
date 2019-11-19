@@ -7,28 +7,44 @@ from django.db.models import Case, Count, F, Q, Sum, When
 from django.db.models.functions import TruncMonth
 
 from ..accounts.models import Account
+from ..users.models import User
+from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
 
 
 class SavingTypeQuerySet(models.QuerySet):
+    def related(self):
+        user = utils.get_user()
+        return (
+            self
+            .select_related('user')
+            .filter(user=user)
+        )
+
     def items(self, year: int = None):
         if not year:
-            return self
-        else:
-            return (
-                self
-                .filter(
-                    Q(closed__isnull=True) |
-                    Q(closed__gte=year)
-                )
+            return self.related()
+
+        return (
+            self
+            .related()
+            .filter(
+                Q(closed__isnull=True) |
+                Q(closed__gte=year)
             )
+        )
 
 
 class SavingType(TitleAbstract):
     closed = models.PositiveIntegerField(
         blank=True,
         null=True,
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='saving_types'
     )
 
     class Meta:
@@ -39,8 +55,14 @@ class SavingType(TitleAbstract):
 
 
 class SavingQuerySet(SumMixin, models.QuerySet):
-    def _related(self):
-        return self.select_related('account', 'saving_type')
+    def related(self):
+        user = utils.get_user()
+        qs = (
+            self
+            .select_related('account', 'saving_type')
+            .filter(saving_type__user=user)
+        )
+        return qs
 
     def _filter_closed(self, year):
         return (
@@ -54,6 +76,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
     def _summary(self, year):
         return (
             self
+            .related()
             ._filter_closed(year)
             .annotate(cnt=Count('saving_type'))
             .values('cnt')
@@ -80,18 +103,20 @@ class SavingQuerySet(SumMixin, models.QuerySet):
 
     def year(self, year):
         return (
-            self._related()
+            self
+            .related()
             ._filter_closed(year)
             .filter(date__year=year))
 
     def items(self):
-        return self._related()
+        return self.related()
 
     def month_saving(self, year, month=None):
         summed_name = 'sum'
 
         return (
-            super()
+            self
+            .related()
             .sum_by_month(
                 year=year, month=month,
                 summed_name=summed_name)
@@ -101,6 +126,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
     def month_type_sum(self, year):
         return (
             self
+            .related()
             .filter(date__year=year)
             .annotate(cnt=Count('saving_type'))
             .values('saving_type')
@@ -119,7 +145,8 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         summed_name = 'sum'
 
         return (
-            super()
+            self
+            .related()
             .sum_by_day(
                 year=year, month=month,
                 summed_name=summed_name)
@@ -130,7 +157,8 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         summed_name = 'sum'
 
         return (
-            super()
+            self
+            .related()
             .sum_by_day(
                 year=year, month=month,
                 summed_name=summed_name)
@@ -149,6 +177,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         '''
         return (
             self
+            .related()
             ._summary(year)
             .values(
                 's_past', 's_now',
@@ -170,6 +199,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         '''
         return (
             self
+            .related()
             ._summary(year)
             .values(
                 's_past', 's_now',
@@ -221,14 +251,20 @@ class Saving(models.Model):
 
 
 class SavingBalanceQuerySet(models.QuerySet):
-    def _related(self):
-        return self.select_related('saving_type')
+    def related(self):
+        user = utils.get_user()
+        qs = (
+            self
+            .select_related('saving_type')
+            .filter(saving_type__user=user)
+        )
+        return qs
 
     def items(self, year: int = None):
         if year:
-            qs = self._related().filter(year=year)
+            qs = self.related().filter(year=year)
         else:
-            qs = self._related()
+            qs = self.related()
 
         return qs.values(
             'year',

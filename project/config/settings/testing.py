@@ -37,7 +37,7 @@ MIGRATION_MODULES = {
     'default': None,
     'sessions': None,
 
-    'auths': None,
+    'users': None,
     'accounts': None,
     'bookkeeping': None,
     'books': None,

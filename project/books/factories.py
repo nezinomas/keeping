@@ -2,6 +2,7 @@ from datetime import date
 
 import factory
 
+from ..users.factories import UserFactory
 from .models import Book
 
 
@@ -13,3 +14,4 @@ class BookFactory(factory.DjangoModelFactory):
     author = 'Author'
     title = 'Book Title'
     remark = 'Remark'
+    user = factory.SubFactory(UserFactory)

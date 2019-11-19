@@ -1,8 +1,5 @@
 import json
-from datetime import date, datetime
-from decimal import Decimal
 
-import pandas as pd
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
@@ -12,8 +9,8 @@ from ...core.tests.utils import setup_view
 from .. import views
 from ..factories import SavingFactory, SavingTypeFactory
 
+pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
-
 
 
 def test_savings_index_func():
@@ -59,20 +56,19 @@ def test_types_update_func():
 
 
 @freeze_time('2000-01-01')
-def test_saving_load_form(admin_client):
+def test_saving_load_form(client_logged):
     url = reverse('savings:savings_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert '2000-01-01' in actual['html_form']
 
 
-@pytest.mark.django_db()
-def test_saving_save(client, login):
+def test_saving_save(client_logged):
     a = AccountFactory()
     i = SavingTypeFactory()
 
@@ -86,7 +82,7 @@ def test_saving_save(client, login):
 
     url = reverse('savings:savings_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -99,8 +95,7 @@ def test_saving_save(client, login):
     assert 'Savings' in actual['html_list']
 
 
-@pytest.mark.django_db()
-def test_saving_save_invalid_data(client, login):
+def test_saving_save_invalid_data(client_logged):
     data = {
         'date': 'x',
         'price': 'x',
@@ -111,7 +106,7 @@ def test_saving_save_invalid_data(client, login):
 
     url = reverse('savings:savings_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -119,22 +114,22 @@ def test_saving_save_invalid_data(client, login):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
-def test_saving_update_to_another_year(client, login):
+def test_saving_update_to_another_year(client_logged):
     saving = SavingFactory()
 
-    data = {'price': '150',
-            'date': '2010-12-31',
-            'remark': 'Pastaba',
-            'fee': '25',
-            'account': 1,
-            'saving_type': 1
+    data = {
+        'price': '150',
+        'date': '2010-12-31',
+        'remark': 'Pastaba',
+        'fee': '25',
+        'account': 1,
+        'saving_type': 1
     }
     url = reverse('savings:savings_update', kwargs={'pk': saving.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -143,8 +138,7 @@ def test_saving_update_to_another_year(client, login):
     assert '2010-12-31' not in actual['html_list']
 
 
-@pytest.mark.django_db()
-def test_saving_update(client, login):
+def test_saving_update(client_logged):
     saving = SavingFactory()
 
     data = {
@@ -157,9 +151,9 @@ def test_saving_update(client, login):
     }
     url = reverse('savings:savings_update', kwargs={'pk': saving.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -176,26 +170,22 @@ def test_saving_update(client, login):
 #
 
 @freeze_time('2000-01-01')
-def test_type_load_form(admin_client):
+def test_type_load_form(client_logged):
     url = reverse('savings:savings_type_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
 
-@pytest.mark.django_db()
-def test_type_save(client, login):
+def test_type_save(client_logged):
     data = {
         'title': 'TTT',
     }
 
     url = reverse('savings:savings_type_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -204,15 +194,14 @@ def test_type_save(client, login):
     assert 'TTT' in actual['html_list']
 
 
-@pytest.mark.django_db()
-def test_type_save_with_closed(client, login):
+def test_type_save_with_closed(client_logged):
     data = {
         'title': 'TTT', 'closed': '2000'
     }
 
     url = reverse('savings:savings_type_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -221,13 +210,12 @@ def test_type_save_with_closed(client, login):
     assert 'TTT' in actual['html_list']
 
 
-@pytest.mark.django_db()
-def test_type_save_invalid_data(client, login):
+def test_type_save_invalid_data(client_logged):
     data = {'title': ''}
 
     url = reverse('savings:savings_type_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -235,16 +223,15 @@ def test_type_save_invalid_data(client, login):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
-def test_type_update(client, login):
+def test_type_update(client_logged):
     saving = SavingTypeFactory()
 
     data = {'title': 'TTT'}
     url = reverse('savings:savings_type_update', kwargs={'pk': saving.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -253,16 +240,15 @@ def test_type_update(client, login):
     assert 'TTT' in actual['html_list']
 
 
-@pytest.mark.django_db()
-def test_type_update_with_closed(client, login):
+def test_type_update_with_closed(client_logged):
     saving = SavingTypeFactory()
 
     data = {'title': 'TTT', 'closed': '2000'}
     url = reverse('savings:savings_type_update', kwargs={'pk': saving.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -272,8 +258,8 @@ def test_type_update_with_closed(client, login):
 
 
 @pytest.mark.django_db
-def test_view_index_200(login, client):
-    response = client.get('/savings/')
+def test_view_index_200(client_logged):
+    response = client_logged.get('/savings/')
 
     assert response.status_code == 200
 
@@ -282,7 +268,7 @@ def test_view_index_200(login, client):
 
 
 @pytest.mark.django_db
-def test_type_list_view_has_all(fake_request):
+def test_type_list_view_has_all(get_user, fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1974)
 
@@ -291,6 +277,6 @@ def test_type_list_view_has_all(fake_request):
     ctx = view.get_context_data()
     actual = [str(x) for x in ctx['items']]
 
-    assert 2 == len(actual)
+    assert len(actual) == 2
     assert 'S1' in actual
     assert 'S2' in actual

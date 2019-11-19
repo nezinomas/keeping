@@ -6,7 +6,7 @@ import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
-from ...auths.factories import UserFactory
+from ...users.factories import UserFactory
 from ...core.tests.utils import change_profile_year
 from .. import views
 from ..factories import DrinkFactory, DrinkTargetFactory
@@ -33,12 +33,12 @@ def test_view_drinks(admin_client):
 
 
 @pytest.mark.django_db()
-def test_view_drinks_new(client, login):
+def test_view_drinks_new(client_logged):
     data = {'date': '1999-01-01', 'quantity': 999}
 
     url = reverse('drinks:drinks_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -48,12 +48,12 @@ def test_view_drinks_new(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_drinks_new_invalid_data(client, login):
+def test_view_drinks_new_invalid_data(client_logged):
     data = {'date': -2, 'quantity': 'x'}
 
     url = reverse('drinks:drinks_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -62,13 +62,13 @@ def test_view_drinks_new_invalid_data(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_drinks_update(client, login):
+def test_view_drinks_update(client_logged):
     p = DrinkFactory()
 
     data = {'date': '1999-01-01', 'quantity': 999}
     url = reverse('drinks:drinks_update', kwargs={'pk': p.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 
@@ -98,12 +98,12 @@ def test_view_drinks_target(admin_client):
 
 
 @pytest.mark.django_db()
-def test_view_drinks_target_new(client, login):
+def test_view_drinks_target_new(client_logged):
     data = {'year': 1999, 'quantity': 999}
 
     url = reverse('drinks:drinks_target_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -113,12 +113,12 @@ def test_view_drinks_target_new(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_drinks_target_new_invalid_data(client, login):
+def test_view_drinks_target_new_invalid_data(client_logged):
     data = {'year': -2, 'quantity': 'x'}
 
     url = reverse('drinks:drinks_target_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -127,13 +127,13 @@ def test_view_drinks_target_new_invalid_data(client, login):
 
 
 @pytest.mark.django_db()
-def test_view_drinks_target_update(client, login):
+def test_view_drinks_target_update(get_user, client_logged):
     p = DrinkTargetFactory()
 
     data = {'year': 1999, 'quantity': 999}
     url = reverse('drinks:drinks_target_update', kwargs={'pk': p.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     assert 200 == response.status_code
 
@@ -157,7 +157,7 @@ def test_view_reload_stats_func():
 
 
 @pytest.mark.django_db
-def test_view_reload_stats_render(rf):
+def test_view_reload_stats_render(get_user, rf):
     request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
     request.user = UserFactory.build()
 
@@ -167,8 +167,8 @@ def test_view_reload_stats_render(rf):
 
 
 @pytest.mark.django_db
-def test_view_index_200(login, client):
-    response = client.get('/drinks/')
+def test_view_index_200(client_logged):
+    response = client_logged.get('/drinks/')
 
     assert response.status_code == 200
 
@@ -183,53 +183,53 @@ def test_view_index_200(login, client):
 
 
 @pytest.mark.django_db
-def test_view_index_drinked_date(login, client):
+def test_view_index_drinked_date(client_logged):
     DrinkFactory(date=date(1999, 1, 2))
     DrinkFactory(date=date(1998, 1, 2))
 
-    change_profile_year(client, 1998)
+    change_profile_year(client_logged, 1998)
 
-    response = client.get('/drinks/')
+    response = client_logged.get('/drinks/')
 
     assert '1998-01-02' in response.context["tbl_last_day"]
 
 
 @pytest.mark.django_db
-def test_view_index_drinked_date_empty_db(login, client):
-    response = client.get('/drinks/')
+def test_view_index_drinked_date_empty_db(client_logged):
+    response = client_logged.get('/drinks/')
 
     assert 'Nėra duomenų' in response.context["tbl_last_day"]
 
 
 @pytest.mark.django_db
-def test_view_index_target_empty_db(login, client):
-    response = client.get('/drinks/')
+def test_view_index_target_empty_db(client_logged):
+    response = client_logged.get('/drinks/')
 
     assert 'Neįvestas tikslas' in response.context["target_list"]
 
 
 @pytest.mark.django_db
-def test_view_index_drinks_list_empty_current_year(login, client):
+def test_view_index_drinks_list_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
-    response = client.get('/drinks/')
+    response = client_logged.get('/drinks/')
 
     assert '<b>1999</b> metais įrašų nėra.' in response.context["drinks_list"]
 
 
 @pytest.mark.django_db
-def test_view_index_tbl_consumsion_empty_current_year(login, client):
+def test_view_index_tbl_consumsion_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
-    response = client.get('/drinks/')
+    response = client_logged.get('/drinks/')
 
     assert 'Nėra duomenų' in response.context["tbl_consumsion"]
 
 
 @pytest.mark.django_db
-def test_view_index_tbl_std_av_empty_current_year(login, client):
+def test_view_index_tbl_std_av_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
-    response = client.get('/drinks/')
+    response = client_logged.get('/drinks/')
 
     assert 'Nėra duomenų' in response.context["tbl_std_av"]
