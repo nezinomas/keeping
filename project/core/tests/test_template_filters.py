@@ -75,28 +75,17 @@ def test_cellformat_str_zero():
     assert expect == actual
 
 
-def test_get_item():
-    expect = 'val'
-
-    actual = T.get_item({'x': 'val'}, 'x')
-
-    assert expect == actual
-
-
-def test_get_item_wrong_key():
-    expect = 0.0
-
-    actual = T.get_item({'x': 'val'}, 'y')
-
-    assert expect == actual
-
-
-def test_get_item_dictionary_none():
-    expect = None
-
-    actual = T.get_item(None, 'y')
-
-    assert expect == actual
+@pytest.mark.parametrize(
+    'dictionary, key, expect',
+    [
+        ({'x': 'val'}, 'x', 'val'),
+        ({'x': 'val'}, 'y', 0.0),
+        (None, 'y', None),
+        ({}, 'y', None),
+    ]
+)
+def test_get_item(dictionary, key, expect):
+    assert T.get_item(dictionary, key) == expect
 
 
 @pytest.mark.parametrize(
