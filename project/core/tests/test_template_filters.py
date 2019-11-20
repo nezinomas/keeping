@@ -3,76 +3,23 @@ import pytest
 from ..templatetags import template_filters as T
 
 
-def test_cellformat_int():
-    expect = '1,00'
-
-    actual = T.cellformat(1)
-
-    assert expect == actual
-
-
-def test_cellformat_float():
-    expect = '1,00'
-
-    actual = T.cellformat(1.0)
-
-    assert expect == actual
-
-
-def test_cellformat_str_dot():
-    expect = '1,00'
-
-    actual = T.cellformat('1.0')
-
-    assert expect == actual
-
-
-def test_cellformat_str():
-    expect = 'xx'
-
-    actual = T.cellformat('xx')
-
-    assert expect == actual
-
-
-def test_cellformat_none():
-    expect = '-'
-
-    actual = T.cellformat(None)
-
-    assert expect == actual
-
-
-def test_cellformat_long_float():
-    expect = '1,01'
-
-    actual = T.cellformat(1.0111)
-
-    assert expect == actual
-
-
-def test_cellformat_float_zero():
-    expect = '-'
-
-    actual = T.cellformat(0.0)
-
-    assert expect == actual
-
-
-def test_cellformat_int_zero():
-    expect = '-'
-
-    actual = T.cellformat(0)
-
-    assert expect == actual
-
-
-def test_cellformat_str_zero():
-    expect = '-'
-
-    actual = T.cellformat('0')
-
-    assert expect == actual
+@pytest.mark.parametrize(
+    'value, expect',
+    [
+        (1, '1,00'),
+        (1.0, '1,00'),
+        ('1,00', '1,00'),
+        ('xx', 'xx'),
+        (None, '-'),
+        (1.0111, '1,01'),
+        (1.049, '1,05'),
+        (0.0, '-'),
+        (0, '-'),
+        ('0', '-'),
+    ]
+)
+def test_cellformat(value, expect):
+    assert T.cellformat(value) == expect
 
 
 @pytest.mark.parametrize(
