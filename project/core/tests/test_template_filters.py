@@ -1,12 +1,12 @@
 import pytest
 
-from ..templatetags.template_filters import cellformat, get_item
+from ..templatetags import template_filters as T
 
 
 def test_cellformat_int():
     expect = '1,00'
 
-    actual = cellformat(1)
+    actual = T.cellformat(1)
 
     assert expect == actual
 
@@ -14,7 +14,7 @@ def test_cellformat_int():
 def test_cellformat_float():
     expect = '1,00'
 
-    actual = cellformat(1.0)
+    actual = T.cellformat(1.0)
 
     assert expect == actual
 
@@ -22,7 +22,7 @@ def test_cellformat_float():
 def test_cellformat_str_dot():
     expect = '1,00'
 
-    actual = cellformat('1.0')
+    actual = T.cellformat('1.0')
 
     assert expect == actual
 
@@ -30,7 +30,7 @@ def test_cellformat_str_dot():
 def test_cellformat_str():
     expect = 'xx'
 
-    actual = cellformat('xx')
+    actual = T.cellformat('xx')
 
     assert expect == actual
 
@@ -38,7 +38,7 @@ def test_cellformat_str():
 def test_cellformat_none():
     expect = '-'
 
-    actual = cellformat(None)
+    actual = T.cellformat(None)
 
     assert expect == actual
 
@@ -46,7 +46,7 @@ def test_cellformat_none():
 def test_cellformat_long_float():
     expect = '1,01'
 
-    actual = cellformat(1.0111)
+    actual = T.cellformat(1.0111)
 
     assert expect == actual
 
@@ -54,7 +54,7 @@ def test_cellformat_long_float():
 def test_cellformat_float_zero():
     expect = '-'
 
-    actual = cellformat(0.0)
+    actual = T.cellformat(0.0)
 
     assert expect == actual
 
@@ -62,7 +62,7 @@ def test_cellformat_float_zero():
 def test_cellformat_int_zero():
     expect = '-'
 
-    actual = cellformat(0)
+    actual = T.cellformat(0)
 
     assert expect == actual
 
@@ -70,7 +70,7 @@ def test_cellformat_int_zero():
 def test_cellformat_str_zero():
     expect = '-'
 
-    actual = cellformat('0')
+    actual = T.cellformat('0')
 
     assert expect == actual
 
@@ -78,7 +78,7 @@ def test_cellformat_str_zero():
 def test_get_item():
     expect = 'val'
 
-    actual = get_item({'x': 'val'}, 'x')
+    actual = T.get_item({'x': 'val'}, 'x')
 
     assert expect == actual
 
@@ -86,7 +86,7 @@ def test_get_item():
 def test_get_item_wrong_key():
     expect = 0.0
 
-    actual = get_item({'x': 'val'}, 'y')
+    actual = T.get_item({'x': 'val'}, 'y')
 
     assert expect == actual
 
@@ -94,7 +94,7 @@ def test_get_item_wrong_key():
 def test_get_item_dictionary_none():
     expect = None
 
-    actual = get_item(None, 'y')
+    actual = T.get_item(None, 'y')
 
     assert expect == actual
 
