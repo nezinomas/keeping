@@ -28,3 +28,11 @@ def cellformat(value):
         _value = floatformat(_value, 2)
 
     return _value
+
+
+@register.filter
+def weekend(value, css_class):
+    if int(value) in (0, 6):
+        return css_class
+
+    return None

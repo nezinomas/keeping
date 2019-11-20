@@ -97,3 +97,17 @@ def test_get_item_dictionary_none():
     actual = get_item(None, 'y')
 
     assert expect == actual
+
+
+@pytest.mark.parametrize(
+    'value, css_class, expect',
+    [
+        ('0', 'X', 'X'),
+        (0, 'X', 'X'),
+        ('6', 'X', 'X'),
+        (6, 'X', 'X'),
+        ('1', 'X', None),
+        (1, 'X', None),
+    ])
+def test_weekend(value, css_class, expect):
+    assert T.weekend(value, css_class) == expect
