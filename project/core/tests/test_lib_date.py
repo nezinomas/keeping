@@ -26,24 +26,16 @@ def test_year_month_list_year_none():
 
 
 @freeze_time("1970-01-11")
-def test_current_day():
-    actual = T.current_day(1970, 1)
-
-    assert actual == 11
-
-
-@freeze_time("1970-01-11")
-def test_current_day_1():
-    actual = T.current_day(1970, 12)
-
-    assert actual == 31
-
-
-@freeze_time("1970-01-11")
-def test_current_day_2():
-    actual = T.current_day(2020, 2)
-
-    assert actual == 29
+@pytest.mark.parametrize(
+    'year, month, expect',
+    [
+        (1970, 1, 11),
+        (1970, 12, 31),
+        (2020, 2, 29),
+    ]
+)
+def test_current_day(year, month, expect):
+    assert T.current_day(year, month) == expect
 
 
 @freeze_time("2001-01-01")
