@@ -102,7 +102,6 @@ class MonthHelper():
         )
 
         self._expenses_types = expense_types('Taupymas')
-        self._current_day = current_day(year, month)
 
     def render_chart_targets(self):
         targets = self._day_plans.targets(self._month, 'Taupymas')
@@ -161,7 +160,7 @@ class MonthHelper():
             'expenses': it.zip_longest(self._day.balance, self._spending.spending),
             'total_row': self._day.total_row,
             'expense_types': self._expenses_types,
-            'day': self._current_day,
+            'day': current_day(self._year, self._month, False),
         }
 
         return render_to_string(

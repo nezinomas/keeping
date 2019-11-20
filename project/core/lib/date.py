@@ -5,7 +5,7 @@ from typing import List
 from . import utils
 
 
-def current_day(year: int, month: int) -> int:
+def current_day(year: int, month: int, return_past_day: bool = True) -> int:
     year = year if year else datetime.now().year
     month = month if month else datetime.now().month
 
@@ -16,7 +16,10 @@ def current_day(year: int, month: int) -> int:
     if _year == year and _month == month:
         return _day
 
-    return calendar.monthrange(year, month)[1]
+    if return_past_day:
+        return calendar.monthrange(year, month)[1]
+
+    return None
 
 
 def year_month_list(year: int = None) -> List[date]:
