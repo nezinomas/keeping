@@ -1,4 +1,4 @@
-{% load table_cell %}{% load template_filters %}
+{% load table_cell %}{% load template_filters %}{% load cell_format %}
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
@@ -6,18 +6,27 @@
             {% for cat in expense_types %}<th class="text-right" data-toggle="tooltip" data-placement="bottom"
                 title="{{ cat }}">{{ cat|truncatechars:8 }}</th>{% endfor %}
             <th class="bl text-right">Viso</th>
+            <th class="empty"></th>
+            <th></th>
+            <th class="text-right">Diena</th>
+            <th class="text-right">Viso</th>
         </tr>
     </thead>
     <tbody>
-        {% for row in expenses %}
-        {% with row.date|date:'w' as weekend %}
-        <tr class="{% if day|slugify == row.date|date:'j' %}_current_day{% endif %} {% if weekend == '0' or weekend == '6' %}_weekend{% endif %} " >{% endwith %}
-            <td class="text-left">{{ row.date|date:'d' }}</td>
+        {% for row, sp in expenses %}
+        {% with row.date|date:'w'|weekend:'_weekend_col' as weekend_col %}
+        {% with row.date|date:'w'|weekend:'_weekend_row' as weekend_row %}
+        <tr class="{% if day|slugify == row.date|date:'j' %}_current_day{% endif %} {{ weekend_row }}">{% endwith %}
+            <td class="text-left {{ weekend_col }}">{{ row.date|date:'d' }}</td>
             {% for cat in expense_types %}
-            {% cell row|get_item:cat %}
+            {% cell row|get_item:cat css_class=weekend_col %}
             {% endfor %}
-            {% cell row.total css_class="bl" %}
-        </tr>
+            {% cell row.total css_class=weekend_col|add:' bl' %}
+
+            <td class="empty"></td>
+            <td class="text-left {{ weekend_col }}">{{ sp.date|date:'l' }}</td>
+            {% cell sp.day css_class=sp.day|negative %}{% cell sp.full css_class=sp.full|negative|add:' -full' %}
+        </tr>{% endwith %}
         {% endfor %}
     </tbody>
     <tfoot>
@@ -25,6 +34,25 @@
             <th class="text-left">&#8721;</th>
             {% for cat in expense_types %}{% cell total_row|get_item:cat tag='th' %}{% endfor %}
             {% cell total_row.total tag='th' css_class="bl" %}
+            <th class="empty"></th>
+            <th></th>
+            <th></th>
+            <th></th>
         </tr>
     </tfoot>
 </table>
+
+<style>
+    table.stats tr td.empty, table.stats tr th.empty {
+        background-color: white!important;
+        border: 0!important;
+    }
+    .table-danger {
+        font-weight: bold;
+    }
+
+    .table-danger.-full {
+        background-color: #fe536a;
+        font-weight: bold;
+    }
+</style>
