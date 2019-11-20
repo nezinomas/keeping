@@ -36,10 +36,10 @@ def test_get_item(dictionary, key, expect):
 @pytest.mark.parametrize(
     'value, css_class, expect',
     [
-        ('0', 'X', 'X'),
-        (0, 'X', 'X'),
-        ('6', 'X', 'X'),
-        (6, 'X', 'X'),
+        ('0', 'X', 'X'), # saturday
+        (0, 'X', 'X'), # saturday
+        ('6', 'X', 'X'), # sunday
+        (6, 'X', 'X'), # sunday
         ('1', 'X', ''),
         (1, 'X', ''),
     ])
