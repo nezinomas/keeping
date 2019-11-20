@@ -5,9 +5,9 @@
             <th></th>
             {% for cat in expense_types %}<th class="text-right" data-toggle="tooltip" data-placement="bottom"
                 title="{{ cat }}">{{ cat|truncatechars:8 }}</th>{% endfor %}
-            <th class="bl text-right">Viso</th>
+            <th class="bl text-right no-right-border">Viso</th>
             <th class="empty"></th>
-            <th></th>
+            <th class="no-left-border"></th>
             <th class="text-right">Diena</th>
             <th class="text-right">Viso</th>
         </tr>
@@ -21,10 +21,10 @@
             {% for cat in expense_types %}
             {% cell row|get_item:cat css_class=weekend_col %}
             {% endfor %}
-            {% cell row.total css_class=weekend_col|add:' bl' %}
+            {% cell row.total css_class=weekend_col|add:' bl'|add:' no-right-border' %}
 
             <td class="empty"></td>
-            <td class="text-left {{ weekend_col }}">{{ sp.date|date:'l' }}</td>
+            <td class="text-left {{ weekend_col }} no-left-border">{{ sp.date|date:'l' }}</td>
             {% cell sp.day css_class=sp.day|negative %}{% cell sp.full css_class=sp.full|negative|add:' -full' %}
         </tr>{% endwith %}
         {% endfor %}
@@ -33,9 +33,9 @@
         <tr class="total">
             <th class="text-left">&#8721;</th>
             {% for cat in expense_types %}{% cell total_row|get_item:cat tag='th' %}{% endfor %}
-            {% cell total_row.total tag='th' css_class="bl" %}
+            {% cell total_row.total tag='th' css_class="bl no-right-border" %}
             <th class="empty"></th>
-            <th></th>
+            <th class="no-left-border"></th>
             <th></th>
             <th></th>
         </tr>
@@ -47,6 +47,7 @@
         background-color: white!important;
         border: 0!important;
     }
+
     .table-danger {
         font-weight: bold;
     }
@@ -54,5 +55,13 @@
     .table-danger.-full {
         background-color: #fe536a;
         font-weight: bold;
+    }
+
+    .stats .no-left-border {
+        border-left: 0!important;
+    }
+
+    .stats .no-right-border {
+        border-right: 0!important;
     }
 </style>
