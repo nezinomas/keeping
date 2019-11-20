@@ -185,7 +185,6 @@ def _month_context(request, context):
     obj = H.MonthHelper(request, year, month)
 
     context['month_table'] = obj.render_month_table()
-    context['spending'] = obj.render_spending()
     context['info'] = obj.render_info()
     context['chart_expenses'] = obj.render_chart_expenses()
     context['chart_targets'] = obj.render_chart_targets()

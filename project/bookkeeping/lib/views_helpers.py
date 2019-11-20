@@ -1,3 +1,4 @@
+import itertools as it
 from collections import Counter, defaultdict
 from typing import Dict, List
 
@@ -131,18 +132,6 @@ class MonthHelper():
             request=self._request
         )
 
-    def render_spending(self):
-        context = {
-            'spending_table': self._spending.spending,
-            'day': self._current_day,
-        }
-
-        return render_to_string(
-            template_name='bookkeeping/includes/spending.html',
-            context=context,
-            request=self._request
-        )
-
     def render_info(self):
         fact_incomes = Income.objects.income_sum(self._year, self._month)
         fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
@@ -169,7 +158,7 @@ class MonthHelper():
 
     def render_month_table(self):
         context = {
-            'expenses': self._day.balance,
+            'expenses': it.zip_longest(self._day.balance, self._spending.spending),
             'total_row': self._day.total_row,
             'expense_types': self._expenses_types,
             'day': self._current_day,
