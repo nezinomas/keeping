@@ -19,7 +19,6 @@ table.stats tfoot {
 
 table.stats td, table.stats th {
     border: 1px solid #b4b4b3!important;
-    /* border-right: 1px solid #b7b7b6!important; */
     vertical-align: middle!important;
     padding-top: .09rem!important;
     padding-bottom: .09rem!important;
@@ -43,8 +42,8 @@ table.stats td, table.stats th {
     text-align: right;
 }
 
-table.stats > tfoot > tr {
-    border-top: double #0359b0;
+table.stats > tfoot > tr > th {
+    border-top: double #0359b0!important;
 }
 
 table.stats > tfoot > tr > th {
@@ -123,8 +122,7 @@ tr.top-text, tr.top-text th {
 }
 
 .table-hover tbody tr:hover,
-.table-hover tbody td._weekend:hover,
-.table-hover tbody tr._weekend:hover td,
+.table-hover tbody tr._weekend_row:hover td,
 .table-hover tbody tr._current_day:hover td {
     background: #f9f6cf!important;
 }
@@ -169,10 +167,10 @@ tr.top-text, tr.top-text th {
     background-color:#a5a4a4;
 }
 
-tr._weekend td, td._weekend {
+._weekend_col {
     background-color:rgb(202, 235, 204);
 }
 
-._current_day, tr._current_day._weekend > td, tr._current_day > td._weekend {
+._current_day, tr._current_day > td._weekend_col {
     background-color:#ffc107!important;
 }
