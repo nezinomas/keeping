@@ -40,8 +40,8 @@ def test_get_item(dictionary, key, expect):
         (0, 'X', 'X'),
         ('6', 'X', 'X'),
         (6, 'X', 'X'),
-        ('1', 'X', None),
-        (1, 'X', None),
+        ('1', 'X', ''),
+        (1, 'X', ''),
     ])
 def test_weekend(value, css_class, expect):
     assert T.weekend(value, css_class) == expect
