@@ -16,8 +16,7 @@ from ..templatetags import template_filters as T
         (0.0, '-'),
         (0, '-'),
         ('0', '-'),
-    ]
-)
+    ])
 def test_cellformat(value, expect):
     assert T.cellformat(value) == expect
 
@@ -29,8 +28,7 @@ def test_cellformat(value, expect):
         ({'x': 'val'}, 'y', 0.0),
         (None, 'y', None),
         ({}, 'y', None),
-    ]
-)
+    ])
 def test_get_item(dictionary, key, expect):
     assert T.get_item(dictionary, key) == expect
 
