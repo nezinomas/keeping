@@ -35,8 +35,7 @@ def test_year_month_list_year_none():
         (1970, 1, False, 11),
         (1970, 12, False, None),
         (2020, 2, False, None),
-    ]
-)
+    ])
 def test_current_day(year, month, return_past_day, expect):
     assert T.current_day(year, month, return_past_day) == expect
 
