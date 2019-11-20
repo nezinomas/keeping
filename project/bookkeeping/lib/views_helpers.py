@@ -26,7 +26,7 @@ def expense_types(*args: str) -> List[str]:
         .values_list('title', flat=True)
     )
 
-    [qs.append(x) for x in args]
+    list(qs.append(x) for x in args)
 
     qs.sort()
 
@@ -40,7 +40,7 @@ def necessary_expense_types(*args: str) -> List[str]:
         .values_list('title', flat=True)
     )
 
-    [qs.append(x) for x in args]
+    list(qs.append(x) for x in args)
 
     qs.sort()
 
