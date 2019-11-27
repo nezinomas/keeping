@@ -10,8 +10,8 @@
         {% for item in no_incomes %}
         <tr>
             <td>{% if item.label == 'money' %}Pinigai, € {% endif %}{% if item.label == 'no_cut' %}Nekeičiant išlaidų, mėn{% endif %}{% if item.label == 'cut' %}Sumažinus išlaidas, mėn{% endif %}</td>
-            <td>{{ item.money_fund|floatformat:0 }}</td>
-            <td>{{ item.money_fund_pension|floatformat:0 }}</td>
+            <td>{{ item.money_fund|floatformat:1 }}</td>
+            <td>{{ item.money_fund_pension|floatformat:1 }}</td>
         </tr>
         {% endfor %}
     </tbody>
