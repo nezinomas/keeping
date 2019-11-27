@@ -307,6 +307,12 @@ class IndexHelper():
     def render_no_incomes(self):
         fund = split_funds(self._fund, 'lx')
         pension = split_funds(self._fund, 'invl')
+        not_use = [
+            'Darbas',
+            'Laisvalaikis',
+            'Taupymas',
+            'Transportas',
+        ]
 
         obj = NoIncomes(
             money=self._YearBalance.amount_end,
@@ -314,17 +320,12 @@ class IndexHelper():
             pension=sum_col(pension, 'market_value'),
             avg_expenses=self._YearBalance.avg_expenses,
             avg_type_expenses=self._MonthExpense.average,
-            not_use=[
-                'Darbas',
-                'Laisvalaikis',
-                'Paskolos',
-                'Taupymas',
-                'Transportas',
-            ]
+            not_use=not_use
         )
         context = {
             'no_incomes': obj.summary,
             'save_sum': obj.save_sum,
+            'not_use': not_use,
         }
 
         return render_to_string(
