@@ -462,10 +462,10 @@ def test_view_necessarys_update(client_logged):
 
 
 def test_view_necessarys_update_unique_together_user_change_year(client_logged):
-    NecessaryPlanFactory(year=2000)
-    p = NecessaryPlanFactory(year=1999)
+    NecessaryPlanFactory(year=2000, title='XXX')
+    p = NecessaryPlanFactory(year=1999, title='XXX')
 
-    data = {'year': '2000', 'title': 'X', 'january': 999.99}
+    data = {'year': '2000', 'title': 'XXX', 'january': 999.99}
     url = reverse('plans:necessarys_plan_update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data, **X_Req)

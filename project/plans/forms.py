@@ -67,15 +67,15 @@ class IncomePlanForm(FormMixin, forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         year = cleaned_data.get('year')
+        income_type = cleaned_data.get('income_type')
 
         # if update
         if 'year' not in self.changed_data:
             return
 
-        qs = IncomePlan.objects.year(year)
+        qs = IncomePlan.objects.year(year).filter(income_type=income_type)
         if qs.exists():
-            _type = cleaned_data.get('income_type')
-            _msg = f'{year} metai jau turi {_type} planą.'
+            _msg = f'{year} metai jau turi {income_type} planą.'
             raise forms.ValidationError([{'__all__': _msg}])
 
         return
@@ -114,15 +114,15 @@ class ExpensePlanForm(FormMixin, forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         year = cleaned_data.get('year')
+        expense_type = cleaned_data.get('expense_type')
 
         # if update
         if 'year' not in self.changed_data:
             return
 
-        qs = ExpensePlan.objects.year(year)
+        qs = ExpensePlan.objects.year(year).filter(expense_type=expense_type)
         if qs.exists():
-            _type = cleaned_data.get('expense_type')
-            _msg = f'{year} metai jau turi {_type} planą.'
+            _msg = f'{year} metai jau turi {expense_type} planą.'
             raise forms.ValidationError([{'__all__': _msg}])
 
         return
@@ -161,15 +161,15 @@ class SavingPlanForm(FormMixin, forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         year = cleaned_data.get('year')
+        saving_type = cleaned_data.get('saving_type')
 
         # if update
         if 'year' not in self.changed_data:
             return
 
-        qs = SavingPlan.objects.year(year)
+        qs = SavingPlan.objects.year(year).filter(saving_type=saving_type)
         if qs.exists():
-            _type = cleaned_data.get('saving_type')
-            _msg = f'{year} metai jau turi {_type} planą.'
+            _msg = f'{year} metai jau turi {saving_type} planą.'
             raise forms.ValidationError([{'__all__': _msg}])
 
         return
@@ -246,14 +246,14 @@ class NecessaryPlanForm(FormMixin, forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         year = cleaned_data.get('year')
+        title = cleaned_data.get('title')
 
         # if update
         if 'year' not in self.changed_data:
             return
 
-        qs = NecessaryPlan.objects.year(year)
+        qs = NecessaryPlan.objects.year(year).filter(title=title)
         if qs.exists():
-            title = cleaned_data.get('title')
             _msg = f'{year} metai jau turi {title} planą.'
             raise forms.ValidationError([{'__all__': _msg}])
 
