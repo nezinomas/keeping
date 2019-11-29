@@ -6,6 +6,7 @@ from django import forms
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.lib.date import set_year_for_form
 from ..core.mixins.form_mixin import FormMixin
 from .models import Income, IncomeType
 
@@ -34,7 +35,7 @@ class IncomeForm(forms.ModelForm):
 
         # inital values
         self.fields['account'].initial = Account.objects.items().first()
-        self.fields['date'].initial = datetime.now()
+        self.fields['date'].initial = set_year_for_form()
         self.fields['price'].initial = '0.01'
 
         # overwrite ForeignKey expense_type queryset
