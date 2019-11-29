@@ -44,6 +44,15 @@ def test_income_init_fields(get_user):
     assert '<select name="user"' not in form
 
 
+@freeze_time('1000-01-01')
+def test_income_year_initial_value(get_user):
+    UserFactory()
+
+    form = IncomePlanForm().as_p()
+
+    assert '<input type="text" name="year" value="1999"' in form
+
+
 def test_income_current_user_types(get_user):
     u = UserFactory(username='tom')
 
@@ -144,6 +153,14 @@ def test_expense_init_fields(get_user):
 
     assert '<select name="user"' not in form
 
+@freeze_time('1000-01-01')
+def test_expense_year_initial_value(get_user):
+    UserFactory()
+
+    form = ExpensePlanForm().as_p()
+
+    assert '<input type="text" name="year" value="1999"' in form
+
 
 def test_expense_current_user_types(get_user):
     u = UserFactory(username='tom')
@@ -242,6 +259,15 @@ def test_saving_init_fields(get_user):
     assert '<input type="number" name="december"' in form
 
     assert '<select name="user"' not in form
+
+
+@freeze_time('1000-01-01')
+def test_saving_year_initial_value(get_user):
+    UserFactory()
+
+    form = SavingPlanForm().as_p()
+
+    assert '<input type="text" name="year" value="1999"' in form
 
 
 def test_saving_current_user_types(get_user):
@@ -380,6 +406,15 @@ def test_day_init_fields(get_user):
     assert '<select name="user"' not in form
 
 
+@freeze_time('1000-01-01')
+def test_day_year_initial_value(get_user):
+    UserFactory()
+
+    form = DayPlanForm().as_p()
+
+    assert '<input type="text" name="year" value="1999"' in form
+
+
 def test_day_valid_data(get_user):
     form = DayPlanForm({
         'year': 1999,
@@ -449,6 +484,15 @@ def test_necessary_init_fields(get_user):
     assert '<input type="number" name="december"' in form
 
     assert '<select name="user"' not in form
+
+
+@freeze_time('1000-01-01')
+def test_income_year_initial_value(get_user):
+    UserFactory()
+
+    form = NecessaryPlanForm().as_p()
+
+    assert '<input type="text" name="year" value="1999"' in form
 
 
 def test_necessary_valid_data(get_user):

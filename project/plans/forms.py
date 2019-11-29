@@ -34,6 +34,16 @@ def common_field_transalion(self):
     self.fields['december'].label = 'Gruodis'
 
 
+def set_year():
+    now = datetime.now()
+    month = now.month
+    day = now.day
+    year = utils.get_user().year
+
+    return datetime(year, month, day)
+
+
+
 # ----------------------------------------------------------------------------
 #                                                             Income Plan Form
 # ----------------------------------------------------------------------------
@@ -52,7 +62,7 @@ class IncomePlanForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year()
 
         # overwrite ForeignKey expense_type queryset
         self.fields['income_type'].queryset = IncomeType.objects.items()
@@ -99,7 +109,7 @@ class ExpensePlanForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year()
 
         # overwrite ForeignKey expense_type queryset
         self.fields['expense_type'].queryset = ExpenseType.objects.items()
@@ -149,7 +159,7 @@ class SavingPlanForm(FormMixin, forms.ModelForm):
         self.fields['saving_type'].queryset = SavingType.objects.items()
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year()
 
         # field translation
         self.fields['saving_type'].label = 'Taupymo rūšis'
@@ -193,7 +203,7 @@ class DayPlanForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year()
 
         # field translation
         common_field_transalion(self)
@@ -235,7 +245,7 @@ class NecessaryPlanForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year()
 
         # field translation
         common_field_transalion(self)
