@@ -86,7 +86,7 @@ def test_transactions_load_form(client_logged):
     actual = json.loads(json_str)
 
     assert response.status_code == 200
-    assert '2000-01-01' in actual['html_form']
+    assert '1999-01-01' in actual['html_form']
 
 
 def test_transactions_save(client_logged):
@@ -209,7 +209,7 @@ def test_savings_close_load_form(client_logged):
     actual = json.loads(json_str)
 
     assert  response.status_code == 200
-    assert '2000-01-01' in actual['html_form']
+    assert '1999-01-01' in actual['html_form']
 
 
 def test_savings_close_save(client_logged):
@@ -334,7 +334,7 @@ def test_savings_change_load_form(client_logged):
     actual = json.loads(json_str)
 
     assert response.status_code == 200
-    assert '2000-01-01' in actual['html_form']
+    assert '1999-01-01' in actual['html_form']
 
 
 def test_savings_change_save(client_logged):
