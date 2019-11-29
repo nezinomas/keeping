@@ -2,12 +2,12 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...users.factories import UserFactory
 from ..factories import SavingTypeFactory
 from ..forms import SavingForm, SavingTypeForm
-
 
 pytestmark = pytest.mark.django_db
 
@@ -116,6 +116,15 @@ def test_saving_type_closed_in_current_year(get_user):
 # ----------------------------------------------------------------------------
 def test_saving_init(get_user):
     SavingForm()
+
+
+@freeze_time('1000-01-01')
+def test_expense_year_initial_value(get_user):
+    UserFactory()
+
+    form = SavingForm().as_p()
+
+    assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
 def test_saving_current_user_types(get_user):
