@@ -8,7 +8,7 @@ from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from ..core.helpers.helper_forms import set_field_properties
-from ..core.lib.date import monthnames
+from ..core.lib.date import monthnames, set_year_for_form
 from ..core.lib import utils
 from ..core.mixins.form_mixin import FormMixin
 from ..expenses.models import ExpenseType
@@ -52,7 +52,7 @@ class IncomePlanForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year_for_form()
 
         # overwrite ForeignKey expense_type queryset
         self.fields['income_type'].queryset = IncomeType.objects.items()
@@ -99,7 +99,7 @@ class ExpensePlanForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year_for_form()
 
         # overwrite ForeignKey expense_type queryset
         self.fields['expense_type'].queryset = ExpenseType.objects.items()
@@ -149,7 +149,7 @@ class SavingPlanForm(FormMixin, forms.ModelForm):
         self.fields['saving_type'].queryset = SavingType.objects.items()
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year_for_form()
 
         # field translation
         self.fields['saving_type'].label = 'Taupymo rūšis'
@@ -193,7 +193,7 @@ class DayPlanForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year_for_form()
 
         # field translation
         common_field_transalion(self)
@@ -235,7 +235,7 @@ class NecessaryPlanForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year_for_form()
 
         # field translation
         common_field_transalion(self)

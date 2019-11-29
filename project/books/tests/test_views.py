@@ -8,7 +8,7 @@ from ..factories import BookFactory
 from ..views import Lists, New, Update
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
-
+pytestmark = pytest.mark.django_db
 
 def test_view_lists_func():
     view = resolve('/books/')
@@ -28,11 +28,11 @@ def test_view_update_func():
     assert Update == view.func.view_class
 
 
-@freeze_time('1999-01-01')
-def test_load_book_form(admin_client):
+@freeze_time('2000-01-01')
+def test_load_book_form(client_logged):
     url = reverse('books:books_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -41,7 +41,6 @@ def test_load_book_form(admin_client):
     assert '<input type="text" name="started" value="1999-01-01"' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_save_book(client_logged):
     data = {'started': '1999-01-01', 'author': 'AAA', 'title': 'TTT'}
 
@@ -58,7 +57,6 @@ def test_save_book(client_logged):
     assert 'TTT' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_books_save_invalid_data(client_logged):
     data = {'started': 'x', 'author': 'A', 'title': 'T'}
 
@@ -72,7 +70,6 @@ def test_books_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_book_update(client_logged):
     book = BookFactory()
 
