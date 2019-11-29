@@ -28,7 +28,6 @@ class TransactionForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # initial values
-        self.fields['price'].initial = '0.01'
         self.fields['price'].widget.attrs = {'step': '0.01'}
         self.fields['price'].label = 'Suma'
         self.fields['date'].initial = set_year_for_form()
@@ -78,8 +77,6 @@ class SavingCloseForm(forms.ModelForm):
 
         # form initial values
         self.fields['date'].initial = set_year_for_form()
-        self.fields['price'].initial = '0.01'
-        self.fields['fee'].initial = '0.00'
 
         # overwrite ForeignKey expense_type queryset
         self.fields['from_account'].queryset = SavingType.objects.items()
@@ -122,8 +119,6 @@ class SavingChangeForm(forms.ModelForm):
 
         # initial values
         self.fields['date'].initial = set_year_for_form()
-        self.fields['price'].initial = '0.01'
-        self.fields['fee'].initial = '0.00'
 
         # overwrite ForeignKey expense_type queryset
         self.fields['from_account'].queryset = SavingType.objects.items()
