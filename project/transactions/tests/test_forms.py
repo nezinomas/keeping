@@ -2,10 +2,11 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
-from ...users.factories import UserFactory
 from ...savings.factories import SavingTypeFactory
+from ...users.factories import UserFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
 
 pytestmark = pytest.mark.django_db
@@ -25,6 +26,15 @@ def test_transaction_init_fields(get_user):
     assert '<input type="number" name="price"' in form
     assert '<select name="from_account"' in form
     assert '<select name="to_account"' in form
+
+
+@freeze_time('1000-01-01')
+def test_transaction_year_initial_value(get_user):
+    UserFactory()
+
+    form = TransactionForm().as_p()
+
+    assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
 def test_transaction_current_user_accounts(get_user):
@@ -106,6 +116,15 @@ def test_transaction_price_null(get_user):
 # ----------------------------------------------------------------------------
 def test_saving_change_init(get_user):
     SavingChangeForm()
+
+
+@freeze_time('1000-01-01')
+def test_saving_change_year_initial_value(get_user):
+    UserFactory()
+
+    form = SavingChangeForm().as_p()
+
+    assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
 def test_saving_change_current_user(get_user):
@@ -234,6 +253,15 @@ def test_saving_change_form_type_closed_in_current_year(get_user):
 # ----------------------------------------------------------------------------
 def test_saving_close_init(get_user):
     SavingCloseForm()
+
+
+@freeze_time('1000-01-01')
+def test_saving_close_year_initial_value(get_user):
+    UserFactory()
+
+    form = SavingCloseForm().as_p()
+
+    assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
 def test_saving_close_current_user_saving_types(get_user):
