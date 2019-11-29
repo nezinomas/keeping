@@ -119,7 +119,7 @@ def test_saving_init(get_user):
 
 
 @freeze_time('1000-01-01')
-def test_expense_year_initial_value(get_user):
+def test_saving_year_initial_value(get_user):
     UserFactory()
 
     form = SavingForm().as_p()
