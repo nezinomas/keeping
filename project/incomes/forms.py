@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from bootstrap_datepicker_plus import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
