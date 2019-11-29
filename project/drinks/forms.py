@@ -1,10 +1,9 @@
-from datetime import datetime
-
 from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.lib.date import set_year_for_form
 from ..core.mixins.form_mixin import FormMixin
 from .models import Drink, DrinkTarget
 
@@ -29,7 +28,7 @@ class DrinkForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['date'].initial = datetime.now()
+        self.fields['date'].initial = set_year_for_form()
 
         self.fields['date'].label = 'Data'
         self.fields['quantity'].label = 'Kiekis (0,5L alaus)'
@@ -53,7 +52,7 @@ class DrinkTargetForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year_for_form()
 
         self.fields['year'].label = 'Metai'
         self.fields['quantity'].label = 'Kiekis ml'
