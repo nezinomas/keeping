@@ -12,7 +12,7 @@
     <tbody>
         {% for item in items %}
         {% url 'books:books_update' item.id as url_update %}
-        <tr data-url="{{ url_update }}">
+        <tr data-url="{{ url_update }}" {% if not item.ended %}class="teal"{% endif %}>
             <td class="text-left">{{ forloop.revcounter }}</td>
             <td class="text-left">{{ item.author }}</td>
             <td class="text-left">„{{ item.title }}”</td>
@@ -27,3 +27,9 @@
         {% endfor %}
     </tbody>
 </table>
+
+<style>
+    .teal {
+        background-color: #8ce7c2!important;
+    }
+</style>
