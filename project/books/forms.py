@@ -11,7 +11,7 @@ from .models import Book
 class BookForm(FormMixin, forms.ModelForm):
     class Meta:
         model = Book
-        fields = ['started', 'ended', 'author', 'title']
+        fields = ['started', 'ended', 'author', 'title', 'remark']
 
         widgets = {
             'started': DatePickerInput(
@@ -28,7 +28,7 @@ class BookForm(FormMixin, forms.ModelForm):
             ).end_of('event days'),
         }
 
-    field_order = ['started', 'ended', 'author', 'title']
+    field_order = ['started', 'ended', 'author', 'title', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
