@@ -72,6 +72,7 @@ def percentage_from_incomes(incomes, savings):
     if incomes and savings:
         return (savings * 100) / incomes
 
+    return 0
 
 class MonthHelper():
     def __init__(self, request, year, month):
