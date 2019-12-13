@@ -3,13 +3,13 @@
 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
     <div class="panel panel-default mb-2">
         <div class="panel-heading" role="tab" data-url="{{ url_type_update }}">
-            <a role="button" class="list-group-item list-group-item-primary list-group-item-action" data-toggle="collapse" data-parent="#accordion" href="#_{{ item.id }}_"
-                aria-expanded="true" aria-controls="collapseOne" >
+            <a role="button" class="list-group-item list-group-item-primary list-group-item-action" data-toggle="collapse" href="#_{{ item.id }}_"
+                aria-expanded="true" >
                 {{ item.title }}
                 {% if item.necessary %}<span class="badge badge-primary"><i class="far fa-star"></i></span>{% endif %}
             </a>
         </div>
-        <div id="_{{ item.id }}_" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+        <div id="_{{ item.id }}_" class="panel-collapse collapse" role="tabpanel">
             {% for sub in item.expensename_set.all %}
             {% url 'expenses:expenses_name_update' sub.id as url_name_update %}
             <div class="list-group-item list-group-item-action" data-url="{{ url_name_update }}">{{ sub.title }}
