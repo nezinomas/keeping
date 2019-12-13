@@ -66,10 +66,11 @@ class FormsetMixin():
             context = self.get_context_data()
 
             data['form_is_valid'] = True
-            data['html_list'] = (
-                render_to_string(
-                    self.get_list_template_name(), context, self.request)
-            )
+            if self.list_render_output:
+                data['html_list'] = (
+                    render_to_string(
+                        self.get_list_template_name(), context, self.request)
+                )
 
             if self.request.is_ajax():
                 return JsonResponse(data)
