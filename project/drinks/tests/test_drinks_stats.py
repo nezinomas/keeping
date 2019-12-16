@@ -7,7 +7,7 @@ from ..lib.drinks_stats import DrinkStats, std_av
 
 
 @pytest.fixture
-def month_sum():
+def _month_sum():
     return [
         {
             'date': date(2019, 5, 1),
@@ -31,8 +31,8 @@ def month_sum():
     ]
 
 
-def test_per_month_consumsion(month_sum):
-    actual = DrinkStats(month_sum).consumsion
+def test_per_month_consumsion(_month_sum):
+    actual = DrinkStats(_month_sum).consumsion
 
     assert len(actual) == 12
 
@@ -69,8 +69,8 @@ def test_per_month_consumsion_invalid_data02():
     assert actual[11] == 0
 
 
-def test_per_month_quantity(month_sum):
-    actual = DrinkStats(month_sum).quantity
+def test_per_month_quantity(_month_sum):
+    actual = DrinkStats(_month_sum).quantity
 
     assert len(actual) == 12
 
