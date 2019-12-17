@@ -32,7 +32,7 @@ def _month_sum():
 
 
 def test_per_month_consumsion(_month_sum):
-    actual = DrinkStats(_month_sum).consumsion
+    actual = DrinkStats(_month_sum).consumption
 
     assert len(actual) == 12
 
@@ -43,7 +43,7 @@ def test_per_month_consumsion(_month_sum):
 
 
 def test_per_month_consumsion_empty():
-    actual = DrinkStats([]).consumsion
+    actual = DrinkStats([]).consumption
 
     assert len(actual) == 12
 
@@ -52,7 +52,7 @@ def test_per_month_consumsion_empty():
 
 
 def test_per_month_consumsion_invalid_data01():
-    actual = DrinkStats([{'x': 'X'}]).consumsion
+    actual = DrinkStats([{'x': 'X'}]).consumption
 
     assert len(actual) == 12
 
@@ -61,7 +61,7 @@ def test_per_month_consumsion_invalid_data01():
 
 
 def test_per_month_consumsion_invalid_data02():
-    actual = DrinkStats([{'month': 12}]).consumsion
+    actual = DrinkStats([{'month': 12}]).consumption
 
     assert len(actual) == 12
 

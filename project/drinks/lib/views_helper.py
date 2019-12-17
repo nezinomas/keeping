@@ -28,7 +28,7 @@ def context_to_reload(request, context):
 
     context['chart_consumsion'] = render_to_string(
         'drinks/includes/chart_consumsion_per_month.html', {
-            'data': _DrinkStats.consumsion,
+            'data': _DrinkStats.consumption,
             'target': target,
             'avg': avg,
             'avg_label_y': _avg_label_position(avg, target),
