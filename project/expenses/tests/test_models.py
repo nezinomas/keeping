@@ -133,8 +133,10 @@ def test_expense_name_related_different_users(get_user):
 
 
 def test_expense_name_related_qs_count(get_user, django_assert_max_num_queries):
+    ExpenseNameFactory(title='T1')
+    ExpenseNameFactory(title='T2')
     with django_assert_max_num_queries(1):
-        list(ExpenseName.objects.related().values())
+        list(q.parent.title for q in ExpenseName.objects.related())
 
 
 def test_expense_name_year(get_user):
