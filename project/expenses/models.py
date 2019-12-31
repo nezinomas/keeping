@@ -17,7 +17,8 @@ class ExpenseTypeQuerySet(models.QuerySet):
         user = utils.get_user()
         return (
             self
-            .prefetch_related('user', 'expensename_set')
+            .select_related('user')
+            .prefetch_related('expensename_set')
             .filter(user=user)
         )
 

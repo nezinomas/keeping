@@ -81,12 +81,13 @@ def test_expense_type_items_user(get_user):
     assert actual.count() == 1
 
 
-def test_expense_type_items_query_count(django_assert_max_num_queries, get_user):
+def test_expense_type_related_qs_count(django_assert_max_num_queries, get_user):
     ExpenseTypeFactory(title='T1')
     ExpenseTypeFactory(title='T2')
+    ExpenseTypeFactory(title='T3')
 
-    with django_assert_max_num_queries(1):
-        list(ExpenseType.objects.items().values())
+    with django_assert_max_num_queries(2):
+        list(q.title for q in ExpenseType.objects.items())
 
 
 def test_post_save_expense_type_insert_new(get_user, expenses):
@@ -222,7 +223,7 @@ def test_expense_year_query_count(get_user, django_assert_max_num_queries):
     ExpenseFactory(date=date(2000, 1, 1))
 
     with django_assert_max_num_queries(1):
-        list(Expense.objects.year(2000).values())
+        list(q.expense_type for q in Expense.objects.year(2000))
 
 
 def test_expense_items(get_user):
@@ -239,7 +240,7 @@ def test_expense_items_query_count(get_user, django_assert_max_num_queries):
     ExpenseFactory(date=date(2000, 1, 1))
 
     with django_assert_max_num_queries(1):
-        list(Expense.objects.items().values('expense_type__title'))
+        list(q.expense_type.title for q in Expense.objects.items())
 
 
 def test_month_name_sum(get_user):
