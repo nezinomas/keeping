@@ -20,9 +20,9 @@
     <tbody>
         {% for item in items %}
         {% if url_update %}{% url url_update item.id as url %}{% else %}{% define '' as url %}{% endif %}
-        <tr data-url="{{ url }}">
-            {% with item|get_obj_attr:type as name %}
-            <td class="text-left">{{ name }}{% if item.expense_type.necessary or item.saving_type or 'Būtin' in name or item.title %} <i class="far fa-star star"></i>{% endif %}</td>{% endwith %}
+        {% with item|get_obj_attr:type as name %}
+        <tr data-url="{{ url }}" {% if name == 'Likutis' %}class="bg-warning"{% endif %}>
+            <td class="text-left">{{ name }}{% if item.expense_type.necessary or item.saving_type or 'Būtin' in name or item.title %} <i class="far fa-star star"></i>{% endif %}</td>
             {% cell item.january %}
             {% cell item.february %}
             {% cell item.march %}
@@ -35,7 +35,7 @@
             {% cell item.october %}
             {% cell item.november %}
             {% cell item.december %}
-        </tr>
+        </tr>{% endwith %}
         {% empty %}
         <tr class="table-warning text-center">
             <td colspan="13" class="py-2"><b>{{ year|title }}</b> metais įrašų nėra.</td>
