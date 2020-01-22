@@ -275,15 +275,29 @@ class IndexHelper():
         )
 
     def render_savings(self):
+        total_row = sum_all(self._fund)
+
         context = {
             'title': 'Fondai',
             'items': self._fund,
-            'total_row': sum_all(self._fund),
+            'total_row': total_row,
             'percentage_from_incomes': (
                 percentage_from_incomes(
                     incomes=self._YearBalance.total_row.get('incomes'),
                     savings=self._MonthExpense.total_row.get('Taupymas'))
-            )
+            ),
+            'profit_incomes_proc': (
+                percentage_from_incomes(
+                    total_row['incomes'],
+                    total_row['market_value']
+                ) - 100
+            ),
+            'profit_invested_proc': (
+                percentage_from_incomes(
+                    total_row['invested'],
+                    total_row['market_value']
+                ) - 100
+            ),
         }
 
         return render_to_string(
