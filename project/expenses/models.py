@@ -40,6 +40,7 @@ class ExpenseType(TitleAbstract):
     objects = ExpenseTypeQuerySet.as_manager()
 
     class Meta:
+        unique_together = ['user', 'title']
         ordering = ['title']
 
 

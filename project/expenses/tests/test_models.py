@@ -99,6 +99,17 @@ def test_post_save_expense_type_insert_new(get_user, expenses):
     assert actual.count() == 2
 
 
+@pytest.mark.xfail
+def test_expense_type_unique_user(get_user):
+    ExpenseType.objects.create(title='T1', user=UserFactory())
+    ExpenseType.objects.create(title='T1', user=UserFactory())
+
+
+def test_expense_type_unique_users(get_user):
+    ExpenseType.objects.create(title='T1', user=UserFactory(username='x'))
+    ExpenseType.objects.create(title='T1', user=UserFactory(username='y'))
+
+
 # ----------------------------------------------------------------------------
 #                                                                 Expense Name
 # ----------------------------------------------------------------------------
