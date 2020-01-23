@@ -72,7 +72,7 @@ $(function () {
                     }
 
                     // on update close modal
-                    if (action == 'update') {
+                    if (action == 'update' || action == 'delete') {
                         $("#modal-form").modal("hide");
                     }
 
