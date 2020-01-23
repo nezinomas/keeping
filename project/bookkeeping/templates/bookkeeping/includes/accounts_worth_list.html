@@ -25,7 +25,7 @@
             {% cell item.expenses width='110rem' %}
             {% cell item.balance width='110rem' %}
             {% cell item.have width='110rem' css_class='bl' %}
-            {% cell item.delta width='110rem' highlight_value=True  %}
+            {% cell item.delta width='110rem' highlight_value=True default_if_empty='ok' %}
         </tr>
         {% endfor %}
     </tbody>

@@ -11,8 +11,9 @@ def get_item(dictionary, key):
 
 
 @register.filter
-def cellformat(value):
-    default = '-'
+def cellformat(value, default='-'):
+    if not default:
+        default = '-'
 
     if value is None:
         return default
@@ -21,6 +22,9 @@ def cellformat(value):
         _value = float(value)
     except:
         return value
+
+    # first round _value
+    _value = round(_value, 2)
 
     if _value == 0.0:
         _value = default

@@ -40,6 +40,17 @@ def test_pension_type_new_post_save(get_user, pensions):
     assert actual.count() == 2
 
 
+@pytest.mark.xfail
+def test_pension_type_unique_for_user(get_user):
+    PensionType.objects.create(title='T1', user=UserFactory())
+    PensionType.objects.create(title='T1', user=UserFactory())
+
+
+def test_pension_type_unique_for_users(get_user):
+    PensionType.objects.create(title='T1', user=UserFactory(username='x'))
+    PensionType.objects.create(title='T1', user=UserFactory(username='y'))
+
+
 # ----------------------------------------------------------------------------
 #                                                                      Pension
 # ----------------------------------------------------------------------------

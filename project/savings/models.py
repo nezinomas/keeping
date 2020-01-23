@@ -45,11 +45,13 @@ class SavingType(TitleAbstract):
         related_name='saving_types'
     )
 
-    class Meta:
-        ordering = ['title']
-
     # Managers
     objects = SavingTypeQuerySet.as_manager()
+
+    class Meta:
+        unique_together = ['user', 'title']
+        ordering = ['title']
+
 
 
 class SavingQuerySet(SumMixin, models.QuerySet):
