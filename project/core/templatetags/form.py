@@ -13,3 +13,13 @@ def generic_form(context, title, update_container, chained_dropdown=None):
         'url': context['url'] if 'url' in context else '',
         'chained_dropdown': chained_dropdown
     }
+
+
+@register.inclusion_tag('core/includes/generic_delete_form.html', takes_context=True)
+def generic_delete_form(context, title, update_container):
+    return {
+        'title': title,
+        'update_container': update_container,
+        'action': context['action'] if 'action' in context else '',
+        'url': context['url'] if 'url' in context else '',
+    }
