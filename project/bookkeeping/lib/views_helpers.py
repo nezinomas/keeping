@@ -288,14 +288,14 @@ class IndexHelper():
             ),
             'profit_incomes_proc': (
                 percentage_from_incomes(
-                    total_row['incomes'],
-                    total_row['market_value']
+                    total_row.get('incomes'),
+                    total_row.get('market_value')
                 ) - 100
             ),
             'profit_invested_proc': (
                 percentage_from_incomes(
-                    total_row['invested'],
-                    total_row['market_value']
+                    total_row.get('invested'),
+                    total_row.get('market_value')
                 ) - 100
             ),
         }
