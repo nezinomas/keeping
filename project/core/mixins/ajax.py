@@ -140,7 +140,6 @@ class AjaxDeleteMixin(GetQuerysetMixin):
                     self.get_list_template_name(), context, self.request)
             )
 
-        if self.request.is_ajax():
             return JsonResponse(data)
 
         return self.delete(*args, **kwargs)
