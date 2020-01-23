@@ -4,7 +4,7 @@ from django.shortcuts import render, reverse
 from django.template.loader import render_to_string
 
 from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
+                                 UpdateAjaxMixin, DeleteAjaxMixin)
 from . import forms, models
 from .lib.calc_day_sum import CalcDaySum
 
@@ -49,6 +49,10 @@ class ExpensesNew(CreateAjaxMixin):
 class ExpensesUpdate(UpdateAjaxMixin):
     model = models.ExpensePlan
     form_class = forms.ExpensePlanForm
+
+
+class ExpensesDelete(DeleteAjaxMixin):
+    model = models.ExpensePlan
 
 
 #

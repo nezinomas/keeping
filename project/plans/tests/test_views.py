@@ -232,6 +232,38 @@ def test_view_expenses_update_year_not_match(client_logged):
 
 
 # ----------------------------------------------------------------------------
+#                                                          ExpensesPlan delete
+# ----------------------------------------------------------------------------
+def test_view_expenses_delete_func():
+    view = resolve('/plans/expenses/delete/1/')
+
+    assert views.ExpensesDelete == view.func.view_class
+
+
+def test_view_expenses_delete_200(client_logged):
+    p = ExpensePlanFactory()
+
+    url = reverse('plans:expenses_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_expenses_delete(client_logged):
+    p = ExpensePlanFactory(year=1999)
+
+    assert models.ExpensePlan.objects.all().count() == 1
+    url = reverse('plans:expenses_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.ExpensePlan.objects.all().count() == 0
+
+
+# ----------------------------------------------------------------------------
 #                                                     SavingPlan create/update
 # ----------------------------------------------------------------------------
 @freeze_time('1999-1-1')

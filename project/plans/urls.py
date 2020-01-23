@@ -28,6 +28,11 @@ urlpatterns = [
         views.ExpensesUpdate.as_view(),
         name='expenses_plan_update'
     ),
+    path(
+        'plans/expenses/delete/<int:pk>/',
+        views.ExpensesDelete.as_view(),
+        name='expenses_plan_delete'
+    ),
     #
     # income plans
     #
