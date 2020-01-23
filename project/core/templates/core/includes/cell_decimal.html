@@ -1,6 +1,6 @@
 {% load cell_format %}{% load template_filters %}
 
-{% with value|cellformat as val %}
+{% with value|cellformat:default_if_empty as val %}
 <{{ tag }} class="{% if highlight_value %}{{ val|positive_negative }}{% endif %}{% if css_class %} {{ css_class }}{% endif %}{% if val == '-' %} dash{% endif %}"{% if width %} width="{{ width }}"{% endif %}>
 {% if text_before %}{{ text_before }}{% endif %}
 {{ val }}
