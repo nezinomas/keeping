@@ -326,7 +326,7 @@ class IndexHelper():
             'Darbas',
             'Laisvalaikis',
             'Taupymas',
-            'Transportas',
+            'Buitinės',
         ]
 
         obj = NoIncomes(
