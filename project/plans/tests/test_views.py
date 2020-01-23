@@ -250,6 +250,20 @@ def test_view_expenses_delete_200(client_logged):
     assert response.status_code == 200
 
 
+def test_view_expenses_delete_load_form(client_logged):
+    p = ExpensePlanFactory(year=1999)
+
+    url = reverse('plans:expenses_plan_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/plans/expenses/delete/1/"' in actual['html_form']
+
+
 def test_view_expenses_delete(client_logged):
     p = ExpensePlanFactory(year=1999)
 
