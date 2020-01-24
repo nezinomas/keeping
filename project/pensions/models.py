@@ -31,11 +31,13 @@ class PensionType(TitleAbstract):
         related_name='pension_types'
     )
 
-    class Meta:
-        ordering = ['title']
-
     # Managers
     objects = PensionTypeQuerySet.as_manager()
+
+    class Meta:
+        unique_together = ['user', 'title']
+        ordering = ['title']
+
 
 
 class PensionQuerySet(SumMixin, models.QuerySet):

@@ -43,6 +43,7 @@ class Account(TitleAbstract):
     )
 
     class Meta:
+        unique_together = ['user', 'title']
         ordering = ['order', 'title']
 
     # Managers

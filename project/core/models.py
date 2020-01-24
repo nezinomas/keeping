@@ -10,7 +10,6 @@ class TitleAbstract(models.Model):
     title = models.CharField(
         max_length=254,
         blank=False,
-        unique=True,
         validators=[MinLengthValidator(3)]
     )
     slug = models.SlugField(
