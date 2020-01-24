@@ -72,6 +72,10 @@ class IncomesUpdate(UpdateAjaxMixin):
     form_class = forms.IncomePlanForm
 
 
+class IncomesDelete(DeleteAjaxMixin):
+    model = models.IncomePlan
+
+
 #
 # Saving Plan views
 #

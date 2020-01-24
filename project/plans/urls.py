@@ -51,6 +51,11 @@ urlpatterns = [
         views.IncomesUpdate.as_view(),
         name='incomes_plan_update'
     ),
+    path(
+        'plans/incomes/delete/<int:pk>/',
+        views.IncomesDelete.as_view(),
+        name='incomes_plan_delete'
+    ),
     #
     # saving plan
     #
