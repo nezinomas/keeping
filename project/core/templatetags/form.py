@@ -22,4 +22,5 @@ def generic_delete_form(context, title, update_container):
         'update_container': update_container,
         'action': context['action'] if 'action' in context else '',
         'url': context['url'] if 'url' in context else '',
+        'object': context['object'] if 'object' in context else '',
     }
