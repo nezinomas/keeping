@@ -1,17 +1,17 @@
 <form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}">
     {% csrf_token %}
     <div class="modal-header">
-        <h4 class="modal-title">Confirm {{object}} deletion</h4>
+        <h5 class="modal-title">Trynimo patvirtinimas</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
     </div>
     <div class="modal-body">
-        <p class="lead">Are you sure you want to delete : <strong>{{ object }}</strong>?</p>
+        <p>Ar tikrai nori išrinti : <strong>{{ object }}</strong>?</p>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-danger">Delete {{object}}</button>
+        <button type="button" class="btn btn-sm btn-danger" id="save_close">Delete</button>
+        <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
     </div>
 </form>
 {% include 'core/includes/modal_form_js.html' %}

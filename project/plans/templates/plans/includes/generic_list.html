@@ -15,6 +15,7 @@
             <th class="text-right" width="7.5%">Spalis</th>
             <th class="text-right" width="7.5%">Lapkritis</th>
             <th class="text-right" width="7.5%">Gruodis</th>
+            {% if url_delete %}<th></th>{% endif %}
         </tr>
     </thead>
     <tbody>
@@ -35,10 +36,13 @@
             {% cell item.october %}
             {% cell item.november %}
             {% cell item.december %}
+            {% if url_delete %}<td>
+                <button type="button" class="btn btn-sm btn-super-sm btn-danger js-delete" data-url="{% url url_delete item.id %}">Delete</button>
+            </td>{% endif %}
         </tr>{% endwith %}
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="13" class="py-2"><b>{{ year|title }}</b> metais įrašų nėra.</td>
+            <td colspan="{% if url_delete %}14{% else %}13{% endif %}" class="py-2"><b>{{ year|title }}</b> metais įrašų nėra.</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -48,5 +52,13 @@
     .star {
         color: #e83e8c;
         padding-left: .5rem;
+    }
+    .btn-super-sm {
+        line-height: 0.25rem!important;
+        padding-top: 0.2rem!important;
+        padding-bottom: 0.25rem!important;
+        margin-top: 0!important;
+        margin-bottom: .15rem!important;
+
     }
 </style>
