@@ -114,6 +114,10 @@ class DayUpdate(UpdateAjaxMixin):
     form_class = forms.DayPlanForm
 
 
+class DayDelete(DeleteAjaxMixin):
+    model = models.DayPlan
+
+
 #
 # Necessary Plan views
 #

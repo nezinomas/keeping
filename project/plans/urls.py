@@ -97,6 +97,11 @@ urlpatterns = [
         views.DayUpdate.as_view(),
         name='days_plan_update'
     ),
+    path(
+        'plans/day/delete/<int:pk>/',
+        views.DayDelete.as_view(),
+        name='days_plan_delete'
+    ),
     #
     # necessary plan
     #
