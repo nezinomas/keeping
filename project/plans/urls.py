@@ -10,9 +10,9 @@ urlpatterns = [
         views.Index.as_view(),
         name='plans_index'
     ),
-    #
-    # expenses plan
-    #
+    #------------------------------------------------------------------------------------
+    #                                                                       expenses plan
+    #------------------------------------------------------------------------------------
     path(
         'plans/expenses/',
         views.ExpensesLists.as_view(),
@@ -33,9 +33,9 @@ urlpatterns = [
         views.ExpensesDelete.as_view(),
         name='expenses_plan_delete'
     ),
-    #
-    # income plans
-    #
+    #------------------------------------------------------------------------------------
+    #                                                                         income plan
+    #------------------------------------------------------------------------------------
     path(
         'plans/incomes/',
         views.IncomesLists.as_view(),
@@ -56,9 +56,9 @@ urlpatterns = [
         views.IncomesDelete.as_view(),
         name='incomes_plan_delete'
     ),
-    #
-    # saving plan
-    #
+    #------------------------------------------------------------------------------------
+    #                                                                         saving plan
+    #------------------------------------------------------------------------------------
     path(
         'plans/savings/',
         views.SavingsLists.as_view(),
@@ -79,9 +79,9 @@ urlpatterns = [
         views.SavingsDelete.as_view(),
         name='savings_plan_delete'
     ),
-    #
-    # day plan
-    #
+    #------------------------------------------------------------------------------------
+    #                                                                            day plan
+    #------------------------------------------------------------------------------------
     path(
         'plans/day/',
         views.DayLists.as_view(),
@@ -102,9 +102,9 @@ urlpatterns = [
         views.DayDelete.as_view(),
         name='days_plan_delete'
     ),
-    #
-    # necessary plan
-    #
+    #------------------------------------------------------------------------------------
+    #                                                                      necessary plan
+    #------------------------------------------------------------------------------------
     path(
         'plans/necessary/',
         views.NecessaryLists.as_view(),
@@ -130,9 +130,9 @@ urlpatterns = [
         views.NecessaryDelete.as_view(),
         name='necessarys_plan_delete'
     ),
-    #
-    # copy plans
-    #
+    #------------------------------------------------------------------------------------
+    #                                                                          copy plans
+    #------------------------------------------------------------------------------------
     path(
         'plans/copy/',
         views.copy_plans,
