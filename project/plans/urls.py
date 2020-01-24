@@ -74,6 +74,11 @@ urlpatterns = [
         views.SavingsUpdate.as_view(),
         name='savings_plan_update'
     ),
+    path(
+        'plans/savings/delete/<int:pk>/',
+        views.SavingsDelete.as_view(),
+        name='savings_plan_delete'
+    ),
     #
     # day plan
     #

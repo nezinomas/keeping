@@ -93,6 +93,10 @@ class SavingsUpdate(UpdateAjaxMixin):
     form_class = forms.SavingPlanForm
 
 
+class SavingsDelete(DeleteAjaxMixin):
+    model = models.SavingPlan
+
+
 #
 # Day Plan views
 #

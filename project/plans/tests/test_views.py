@@ -410,6 +410,52 @@ def test_view_savings_update_year_not_match(client_logged):
 
 
 # ----------------------------------------------------------------------------
+#                                                            SavingPlan delete
+# ----------------------------------------------------------------------------
+def test_view_savings_delete_func():
+    view = resolve('/plans/savings/delete/1/')
+
+    assert views.SavingsDelete == view.func.view_class
+
+
+def test_view_savings_delete_200(client_logged):
+    p = SavingPlanFactory()
+
+    url = reverse('plans:savings_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_savings_delete_load_form(client_logged):
+    p = SavingPlanFactory(year=1999)
+
+    url = reverse('plans:savings_plan_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/plans/savings/delete/1/"' in actual['html_form']
+
+
+def test_view_savings_delete(client_logged):
+    p = SavingPlanFactory(year=1999)
+
+    assert models.SavingPlan.objects.all().count() == 1
+    url = reverse('plans:savings_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.SavingPlan.objects.all().count() == 0
+
+
+# ----------------------------------------------------------------------------
 #                                                        DayPlan create/update
 # ----------------------------------------------------------------------------
 @freeze_time('1999-1-1')
