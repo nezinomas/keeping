@@ -672,6 +672,52 @@ def test_view_necessarys_update_year_not_match(client_logged):
 
 
 # ----------------------------------------------------------------------------
+#                                                               NecessaryPlan delete
+# ----------------------------------------------------------------------------
+def test_view_necessarys_delete_func():
+    view = resolve('/plans/necessary/delete/1/')
+
+    assert views.NecessaryDelete == view.func.view_class
+
+
+def test_view_necessarys_delete_200(client_logged):
+    p = NecessaryPlanFactory()
+
+    url = reverse('plans:necessarys_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_necessarys_delete_load_form(client_logged):
+    p = NecessaryPlanFactory(year=1999)
+
+    url = reverse('plans:necessarys_plan_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/plans/necessary/delete/1/"' in actual['html_form']
+
+
+def test_view_necessarys_delete(client_logged):
+    p = NecessaryPlanFactory(year=1999)
+
+    assert models.NecessaryPlan.objects.all().count() == 1
+    url = reverse('plans:necessarys_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.NecessaryPlan.objects.all().count() == 0
+
+
+# ----------------------------------------------------------------------------
 #                                                                   Copy Plans
 # ----------------------------------------------------------------------------
 def test_copy_func():

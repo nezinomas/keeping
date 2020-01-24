@@ -125,6 +125,11 @@ urlpatterns = [
         views.plans_stats,
         name='reload_plan_stats'
     ),
+    path(
+        'plans/necessary/delete/<int:pk>/',
+        views.NecessaryDelete.as_view(),
+        name='necessarys_plan_delete'
+    ),
     #
     # copy plans
     #

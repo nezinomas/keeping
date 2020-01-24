@@ -135,6 +135,10 @@ class NecessaryUpdate(UpdateAjaxMixin):
     form_class = forms.NecessaryPlanForm
 
 
+class NecessaryDelete(DeleteAjaxMixin):
+    model = models.NecessaryPlan
+
+
 # ----------------------------------------------------------------------------
 #                                                                   Copy Plans
 # ----------------------------------------------------------------------------
