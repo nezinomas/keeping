@@ -24,7 +24,7 @@ def update_context(self, context, action):
     plural = format_plural(self.model._meta.verbose_name)
     app_name = self.request.resolver_match.app_name
 
-    if action is 'update':
+    if action == 'update':
         context['action'] = 'update'
         context['url'] = (
             reverse(
@@ -33,6 +33,11 @@ def update_context(self, context, action):
             )
         )
 
-    if action is 'create':
+    if action == 'create':
         context['action'] = 'insert'
         context['url'] = reverse(f'{app_name}:{plural}_new')
+
+    if action == 'delete' and self.object.pk:
+        context['action'] = 'delete'
+        context['url'] = reverse(f'{app_name}:{plural}_delete',
+                                 kwargs={'pk': self.object.pk})

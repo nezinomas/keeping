@@ -94,3 +94,58 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
             return template_name(self, 'list')
 
         return self.list_template_name
+
+
+class AjaxDeleteMixin(GetQuerysetMixin):
+    list_template_name = None
+    object = None
+
+    def get_template_names(self):
+        if self.template_name is None:
+            return [template_name(self, 'delete_form')]
+
+        return [self.template_name]
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        if request.is_ajax():
+            data = dict()
+            context = self.get_context_data()
+            rendered = render_to_string(template_name=self.get_template_names(),
+                                        context=context,
+                                        request=request)
+
+            data['html_form'] = rendered
+
+            return JsonResponse(data)
+
+        return super().get(request, *args, **kwargs)
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     return context
+
+    def post(self, *args, **kwargs):
+        if self.request.is_ajax():
+            self.object = self.get_object()
+            self.object.delete()
+
+            data = dict()
+            data['form_is_valid'] = True
+            context = self.get_context_data()
+
+            data['html_list'] = (
+                render_to_string(
+                    self.get_list_template_name(), context, self.request)
+            )
+
+            return JsonResponse(data)
+
+        return self.delete(*args, **kwargs)
+
+    def get_list_template_name(self):
+        if not self.list_template_name:
+            return template_name(self, 'list')
+
+        return self.list_template_name

@@ -1,2 +1,2 @@
 {% load generic_list %}
-{% generic_list items 'plans:savings_plan_update' request.user.year 'saving_type' %}
+{% generic_list items 'plans:savings_plan_update' request.user.year 'saving_type' url_delete='plans:savings_plan_delete' %}

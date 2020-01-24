@@ -1,8 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template.loader import render_to_string
-from django.views.generic import CreateView, ListView, TemplateView, UpdateView
+from django.views.generic import (CreateView, DeleteView, ListView,
+                                  TemplateView, UpdateView)
 
-from .ajax import AjaxCreateUpdateMixin
+from .ajax import AjaxCreateUpdateMixin, AjaxDeleteMixin
 from .get import GetQuerysetMixin
 from .helpers import template_name, update_context
 
@@ -65,5 +66,18 @@ class UpdateAjaxMixin(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         update_context(self, context, 'update')
+
+        return context
+
+
+class DeleteAjaxMixin(
+        LoginRequiredMixin,
+        AjaxDeleteMixin,
+        DeleteView):
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        update_context(self, context, 'delete')
 
         return context
