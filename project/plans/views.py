@@ -34,9 +34,9 @@ class Index(IndexMixin):
         return context
 
 
-#
-# Expense Plan views
-#
+# ---------------------------------------------------------------------------------------
+#                                                                           Expense Plans
+# ---------------------------------------------------------------------------------------
 class ExpensesLists(ListMixin):
     model = models.ExpensePlan
 
@@ -55,9 +55,9 @@ class ExpensesDelete(DeleteAjaxMixin):
     model = models.ExpensePlan
 
 
-#
-# Income Plan views
-#
+# ---------------------------------------------------------------------------------------
+#                                                                            Income Plans
+# ---------------------------------------------------------------------------------------
 class IncomesLists(ListMixin):
     model = models.IncomePlan
 
@@ -76,9 +76,9 @@ class IncomesDelete(DeleteAjaxMixin):
     model = models.IncomePlan
 
 
-#
-# Saving Plan views
-#
+# ---------------------------------------------------------------------------------------
+#                                                                            Saving Plans
+# ---------------------------------------------------------------------------------------
 class SavingsLists(ListMixin):
     model = models.SavingPlan
 
@@ -97,9 +97,9 @@ class SavingsDelete(DeleteAjaxMixin):
     model = models.SavingPlan
 
 
-#
-# Day Plan views
-#
+# ---------------------------------------------------------------------------------------
+#                                                                               Day Plans
+# ---------------------------------------------------------------------------------------
 class DayLists(ListMixin):
     model = models.DayPlan
 
@@ -118,9 +118,9 @@ class DayDelete(DeleteAjaxMixin):
     model = models.DayPlan
 
 
-#
-# Necessary Plan views
-#
+# ---------------------------------------------------------------------------------------
+#                                                                         Necessary Plans
+# ---------------------------------------------------------------------------------------
 class NecessaryLists(ListMixin):
     model = models.NecessaryPlan
 
@@ -139,9 +139,9 @@ class NecessaryDelete(DeleteAjaxMixin):
     model = models.NecessaryPlan
 
 
-# ----------------------------------------------------------------------------
-#                                                                   Copy Plans
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                              Copy Plans
+# ---------------------------------------------------------------------------------------
 @login_required
 def copy_plans(request):
     data = {}
