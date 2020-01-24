@@ -105,10 +105,10 @@ def test_form_valid_render(mck_render, mck_context, _request):
 
     response = view.form_valid(mck_form)
 
-    assert 2 == mck_render.call_count
-    assert 1 == mck_context.call_count
+    assert mck_render.call_count == 2
+    assert mck_context.call_count == 1
 
-    assert 302 == response.status_code
+    assert response.status_code == 302
 
 
 @patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
@@ -127,13 +127,13 @@ def test_form_valid_ajax_response(mck_render, mck_context, _ajax_request):
     view = setup_view(Dummy(), _ajax_request)
     response = view.form_valid(mck_form)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 'html_list' == actual['html_list']
-    assert 'html_form' == actual['html_form']
+    assert actual['html_list'] == 'html_list'
+    assert actual['html_form'] == 'html_form'
 
 
 @patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
@@ -153,8 +153,8 @@ def test_form_valid_ajax_response_list_not_rendered(mck_render, mck_context, _aj
     view = setup_view(Dummy(), _ajax_request)
     response = view.form_valid(mck_form)
 
-    assert 200 == response.status_code
-    assert 1 == mck_render.call_count
+    assert response.status_code == 200
+    assert mck_render.call_count == 1
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -176,7 +176,7 @@ def test_form_invalid_render(mck_context, _request):
 
     response = view.form_invalid(mck_form)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
 
 @patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
@@ -195,12 +195,12 @@ def test_form_invalid_ajax_response(mck_render, mck_context, _ajax_request):
     view = setup_view(Dummy(), _ajax_request)
     response = view.form_invalid(mck_form)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 'html_form' == actual['html_form']
+    assert actual['html_form'] == 'html_form'
 
 
 # ---------------------------------------------------------------------------------------
