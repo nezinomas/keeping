@@ -324,7 +324,7 @@ def test_expense_avg_last_six_months_full(get_user):
 
     actual = Expense.objects.last_six_months()
 
-    assert float(round(actual['avg'], 2)) == 1.17
+    assert round(actual, 2) == 1.17
 
 
 @freeze_time('1999-06-01')
@@ -335,4 +335,4 @@ def test_expense_avg_last_six_months_cut(get_user):
 
     actual = Expense.objects.last_six_months(['x'])
 
-    assert float(round(actual['avg'], 2)) == 0.5
+    assert round(actual, 2) == 0.5

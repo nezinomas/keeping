@@ -218,7 +218,7 @@ class ExpenseQuerySet(models.QuerySet):
         if types:
             qs = qs.filter(expense_type__title__in=types)
 
-        return qs.aggregate(avg=Sum('price')/6.0)
+        return float(qs.aggregate(avg=Sum('price')/6.0)['avg'])
 
 
 class Expense(models.Model):
