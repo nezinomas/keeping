@@ -328,18 +328,20 @@ class IndexHelper():
             'Taupymas',
             'Buitinės',
         ]
+        avg_expenses = Expense.objects.last_six_months()
+        cut_sum = Expense.objects.last_six_months(not_use)
 
         obj = NoIncomes(
             money=self._YearBalance.amount_end,
             fund=sum_col(fund, 'market_value'),
             pension=sum_col(pension, 'market_value'),
-            avg_expenses=self._YearBalance.avg_expenses,
-            avg_type_expenses=self._MonthExpense.average,
-            not_use=not_use
+            avg_expenses=avg_expenses,
+            cut_sum=cut_sum
         )
+
         context = {
             'no_incomes': obj.summary,
-            'save_sum': obj.save_sum,
+            'save_sum': cut_sum,
             'not_use': not_use,
         }
 
