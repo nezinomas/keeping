@@ -52,9 +52,9 @@
             {% cell total_row.invested tag='th' %}
             {% cell total_row.market_value tag='th' css_class='br' %}
             {% cell total_row.profit_incomes_sum text_after='€' highlight_value=True tag='th' %}
-            <th class="br_s"></th>
+            {% cell profit_incomes_proc text_after='%' highlight_value=True css_class='br_s' tag='th' %}
             {% cell total_row.profit_invested_sum text_after='€' highlight_value=True tag='th' %}
-            <th></th>
+            {% cell profit_invested_proc text_after='%' highlight_value=True tag='th' %}
         </tr>
     </tfoot>
 </table>

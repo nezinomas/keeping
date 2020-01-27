@@ -12,6 +12,7 @@ from .. import views
 from ..factories import DrinkFactory, DrinkTargetFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+pytestmark = pytest.mark.django_db
 
 
 #
@@ -19,20 +20,19 @@ X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 #                                                    DrinkTarget create/update
 # ----------------------------------------------------------------------------
 #
-@freeze_time('1999-01-01')
-def test_view_drinks(admin_client):
+@freeze_time('2000-01-01')
+def test_view_drinks(client_logged):
     url = reverse('drinks:drinks_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert '<input type="text" name="date" value="1999-01-01"' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_view_drinks_new(client_logged):
     data = {'date': '1999-01-01', 'quantity': 999}
 
@@ -47,7 +47,6 @@ def test_view_drinks_new(client_logged):
     assert '999' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_view_drinks_new_invalid_data(client_logged):
     data = {'date': -2, 'quantity': 'x'}
 
@@ -61,7 +60,6 @@ def test_view_drinks_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_view_drinks_update(client_logged):
     p = DrinkFactory()
 
@@ -84,20 +82,18 @@ def test_view_drinks_update(client_logged):
 #                                                    DrinkTarget create/update
 # ----------------------------------------------------------------------------
 #
-@freeze_time('1999-01-01')
-def test_view_drinks_target(admin_client):
+def test_view_drinks_target(client_logged):
     url = reverse('drinks:drinks_target_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert '<input type="text" name="year" value="1999"' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_view_drinks_target_new(client_logged):
     data = {'year': 1999, 'quantity': 999}
 
@@ -112,7 +108,6 @@ def test_view_drinks_target_new(client_logged):
     assert '999' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_view_drinks_target_new_invalid_data(client_logged):
     data = {'year': -2, 'quantity': 'x'}
 
@@ -126,7 +121,6 @@ def test_view_drinks_target_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_view_drinks_target_update(get_user, client_logged):
     p = DrinkTargetFactory()
 

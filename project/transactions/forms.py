@@ -1,12 +1,10 @@
-from datetime import datetime
-
 from bootstrap_datepicker_plus import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
-from ..core.lib import utils
+from ..core.lib.date import set_year_for_form
 from .models import SavingChange, SavingClose, SavingType, Transaction
 
 
@@ -30,10 +28,9 @@ class TransactionForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # initial values
-        self.fields['price'].initial = '0.01'
         self.fields['price'].widget.attrs = {'step': '0.01'}
         self.fields['price'].label = 'Suma'
-        self.fields['date'].initial = datetime.now()
+        self.fields['date'].initial = set_year_for_form()
 
         # overwrite ForeignKey expense_type queryset
         self.fields['from_account'].queryset = Account.objects.items()
@@ -79,9 +76,7 @@ class SavingCloseForm(forms.ModelForm):
         self.fields['fee'].widget.attrs = {'step': '0.01'}
 
         # form initial values
-        self.fields['date'].initial = datetime.now()
-        self.fields['price'].initial = '0.01'
-        self.fields['fee'].initial = '0.00'
+        self.fields['date'].initial = set_year_for_form()
 
         # overwrite ForeignKey expense_type queryset
         self.fields['from_account'].queryset = SavingType.objects.items()
@@ -123,9 +118,7 @@ class SavingChangeForm(forms.ModelForm):
         self.fields['fee'].widget.attrs = {'step': '0.01'}
 
         # initial values
-        self.fields['date'].initial = datetime.now()
-        self.fields['price'].initial = '0.01'
-        self.fields['fee'].initial = '0.00'
+        self.fields['date'].initial = set_year_for_form()
 
         # overwrite ForeignKey expense_type queryset
         self.fields['from_account'].queryset = SavingType.objects.items()

@@ -48,7 +48,7 @@
                     fontFamily: 'Calibri, Verdana',
                 },
                 rotation: -45,
-            }
+            },
         },
         yAxis: {
             labels: {
@@ -66,8 +66,12 @@
             },
         },
         tooltip: {
-            shared: true,
-            pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br/>'
+            split: true,
+            pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br/>',
+                style: {
+                    fontSize: '13px',
+                    fontFamily: 'Calibri, Verdana',
+                },
         },
         credits: {
             enabled: false

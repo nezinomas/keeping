@@ -72,6 +72,7 @@ def percentage_from_incomes(incomes, savings):
     if incomes and savings:
         return (savings * 100) / incomes
 
+    return 0
 
 class MonthHelper():
     def __init__(self, request, year, month):
@@ -274,15 +275,29 @@ class IndexHelper():
         )
 
     def render_savings(self):
+        total_row = sum_all(self._fund)
+
         context = {
             'title': 'Fondai',
             'items': self._fund,
-            'total_row': sum_all(self._fund),
+            'total_row': total_row,
             'percentage_from_incomes': (
                 percentage_from_incomes(
                     incomes=self._YearBalance.total_row.get('incomes'),
                     savings=self._MonthExpense.total_row.get('Taupymas'))
-            )
+            ),
+            'profit_incomes_proc': (
+                percentage_from_incomes(
+                    total_row.get('incomes'),
+                    total_row.get('market_value')
+                ) - 100
+            ),
+            'profit_invested_proc': (
+                percentage_from_incomes(
+                    total_row.get('invested'),
+                    total_row.get('market_value')
+                ) - 100
+            ),
         }
 
         return render_to_string(
@@ -307,24 +322,27 @@ class IndexHelper():
     def render_no_incomes(self):
         fund = split_funds(self._fund, 'lx')
         pension = split_funds(self._fund, 'invl')
+        not_use = [
+            'Darbas',
+            'Laisvalaikis',
+            'Taupymas',
+            'Buitinės',
+        ]
+        avg_expenses = Expense.objects.last_six_months()
+        cut_sum = Expense.objects.last_six_months(not_use)
 
         obj = NoIncomes(
             money=self._YearBalance.amount_end,
             fund=sum_col(fund, 'market_value'),
             pension=sum_col(pension, 'market_value'),
-            avg_expenses=self._YearBalance.avg_expenses,
-            avg_type_expenses=self._MonthExpense.average,
-            not_use=[
-                'Darbas',
-                'Laisvalaikis',
-                'Paskolos',
-                'Taupymas',
-                'Transportas',
-            ]
+            avg_expenses=avg_expenses,
+            cut_sum=cut_sum
         )
+
         context = {
             'no_incomes': obj.summary,
-            'save_sum': obj.save_sum,
+            'save_sum': cut_sum,
+            'not_use': not_use,
         }
 
         return render_to_string(

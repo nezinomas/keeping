@@ -31,9 +31,17 @@
     </tbody>
     <tfoot>
         <tr>
-            <td class="text-left">Viso</td>
-            {% for i in months %}{% with total_row|get_sum_by_month:i as sum %}{% cell sum %}{% endwith %}</td>{% endfor %}
-            <td>{{ total }}</td>
+            <th class="text-left">Viso</th>
+            {% for i in months %}{% with total_row|get_sum_by_month:i as sum %}{% cell sum tag='th' %}{% endwith %}{% endfor %}
+            <th>{{ total }}</th>
         </tr>
     </tfoot>
 </table>
+
+<style>
+    tfoot > tr > th {
+        font-weight: bold!important;
+        color: gray;
+        background-color: aliceblue!important;
+    }
+</style>

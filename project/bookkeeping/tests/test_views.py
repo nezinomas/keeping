@@ -217,7 +217,7 @@ def test_view_saving_worth_new(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '999' in actual['html_list']
+    assert not actual.get('html_list')
 
 
 @pytest.mark.django_db()

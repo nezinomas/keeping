@@ -2,12 +2,12 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...users.factories import UserFactory
 from ..factories import IncomeTypeFactory
 from ..forms import IncomeForm, IncomeTypeForm
-
 
 pytestmark = pytest.mark.django_db
 
@@ -76,6 +76,15 @@ def test_income_type_title_too_short():
 # ----------------------------------------------------------------------------
 def test_income_init(get_user):
     IncomeForm()
+
+
+@freeze_time('1000-01-01')
+def test_income_year_initial_value(get_user):
+    UserFactory()
+
+    form = IncomeForm().as_p()
+
+    assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
 def test_income_current_user_types(get_user):

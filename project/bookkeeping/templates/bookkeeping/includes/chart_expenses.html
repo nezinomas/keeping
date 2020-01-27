@@ -12,6 +12,7 @@
             lineColor: '#000',
             lineWidth: 2,
             type: 'category',
+            crosshair: true,
             labels: {
                 rotation: -45,
                 style: {
@@ -39,13 +40,15 @@
             enabled: false
         },
         tooltip: {
-            formatter: function() {
-                var pcnt = (this.y / this.series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100;
-                var rtn = '<b>' + this.point.name + '</b>';
-                rtn += '<br>' + Highcharts.numberFormat(this.y, 0) + '€<br>';
+            shared: true,
+            formatter: function () {
+                var rtn = ''
+                var pcnt = ((this.points[0].y / this.points[0].series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100);
+                rtn = '<b>' + this.points[0].key + '</b>';
+                rtn += '<br>' + Highcharts.numberFormat(this.points[0].y, 0) + '€<br>';
                 rtn += Highcharts.numberFormat(pcnt, 1) + '%';
                 return rtn
-            },
+            }
         },
         plotOptions: {
             column: {

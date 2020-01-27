@@ -1,10 +1,9 @@
-from datetime import datetime
-
 from bootstrap_datepicker_plus import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.lib.date import set_year_for_form
 from ..core.mixins.form_mixin import FormMixin
 from .models import Book
 
@@ -12,7 +11,7 @@ from .models import Book
 class BookForm(FormMixin, forms.ModelForm):
     class Meta:
         model = Book
-        fields = ['started', 'ended', 'author', 'title']
+        fields = ['started', 'ended', 'author', 'title', 'remark']
 
         widgets = {
             'started': DatePickerInput(
@@ -29,13 +28,13 @@ class BookForm(FormMixin, forms.ModelForm):
             ).end_of('event days'),
         }
 
-    field_order = ['started', 'ended', 'author', 'title']
+    field_order = ['started', 'ended', 'author', 'title', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['started'].initial = datetime.now()
+        self.fields['started'].initial = set_year_for_form()
 
         self.fields['started'].label = 'Pradėta skaityti'
         self.fields['ended'].label = 'Pabaigta skaityti'

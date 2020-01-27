@@ -106,7 +106,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    # 'django.contrib.staticfiles',
+    'django.contrib.staticfiles',
     'django.contrib.humanize',
     'bootstrap_datepicker_plus',
     'widget_tweaks',

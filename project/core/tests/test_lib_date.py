@@ -1,10 +1,11 @@
-from datetime import date
+from datetime import date, datetime
 from types import SimpleNamespace
 
 import pytest
 from freezegun import freeze_time
 from mock import patch
 
+from ...users.factories import UserFactory
 from ..lib import date as T
 
 
@@ -92,3 +93,13 @@ def test_monthlen_wrong_input():
     actual = T.monthlen(2, 'xxx')
 
     assert actual == 31
+
+
+@freeze_time('1000-01-01')
+@pytest.mark.django_db
+def test_set_year_for_month(get_user):
+    UserFactory()
+
+    actual = T.set_year_for_form()
+
+    assert actual == datetime(1999, 1, 1)

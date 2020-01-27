@@ -27,9 +27,6 @@ class IncomeTypeQuerySet(models.QuerySet):
 
 
 class IncomeType(TitleAbstract):
-    class Meta:
-        ordering = ['title']
-
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -39,6 +36,9 @@ class IncomeType(TitleAbstract):
     # Managers
     objects = IncomeTypeQuerySet.as_manager()
 
+    class Meta:
+        unique_together = ['user', 'title']
+        ordering = ['title']
 
 class IncomeQuerySet(SumMixin, models.QuerySet):
     def related(self):

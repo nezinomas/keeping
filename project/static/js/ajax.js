@@ -72,7 +72,7 @@ $(function () {
                     }
 
                     // on update close modal
-                    if (action == 'update') {
+                    if (action == 'update' || action == 'delete') {
                         $("#modal-form").modal("hide");
                     }
 
@@ -105,6 +105,7 @@ $(function () {
     $('.dblclick').on('dblclick', 'div', loadFormDblClc);
 
     $(".js-create").click(loadFormClc);
+    $(".dblclick").on('click', '.js-delete', loadFormClc);
 
     $('#modal-form').on('click', "#submit", {save_close: false}, saveForm)
     $('#modal-form').on('click', "#save_close", {save_close: true}, saveForm)

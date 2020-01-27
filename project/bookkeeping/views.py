@@ -45,7 +45,8 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = SavingType
     model = SavingWorth
     form_class = SavingWorthForm
-    list_template_name = 'bookkeeping/includes/worth_table.html'
+    # list_template_name = 'bookkeeping/includes/worth_table.html'
+    list_render_output = False
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -161,6 +162,7 @@ def reload_index(request):
             'no_incomes': obj.render_no_incomes(),
             'money': obj.render_money(),
             'wealth': obj.render_wealth(),
+            'savings': obj.render_savings(),
         }
         return render(request, template, context)
 

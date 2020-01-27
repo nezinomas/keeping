@@ -44,6 +44,15 @@ def test_income_init_fields(get_user):
     assert '<select name="user"' not in form
 
 
+@freeze_time('1000-01-01')
+def test_income_year_initial_value(get_user):
+    UserFactory()
+
+    form = IncomePlanForm().as_p()
+
+    assert '<input type="text" name="year" value="1999"' in form
+
+
 def test_income_current_user_types(get_user):
     u = UserFactory(username='tom')
 
@@ -102,6 +111,19 @@ def test_income_unique_together_validation(get_user):
     }
 
 
+def test_income_unique_together_validation_more_than_one(get_user):
+    IncomePlanFactory(income_type=IncomeTypeFactory(title='First'))
+
+    type_ = IncomeTypeFactory()
+    form = IncomePlanForm({
+        'year': 1999,
+        'income_type': type_.pk,
+        'january': 15.0,
+    })
+
+    assert form.is_valid()
+
+
 
 # ----------------------------------------------------------------------------
 #                                                                 Expense Form
@@ -130,6 +152,14 @@ def test_expense_init_fields(get_user):
     assert '<input type="number" name="december"' in form
 
     assert '<select name="user"' not in form
+
+@freeze_time('1000-01-01')
+def test_expense_year_initial_value(get_user):
+    UserFactory()
+
+    form = ExpensePlanForm().as_p()
+
+    assert '<input type="text" name="year" value="1999"' in form
 
 
 def test_expense_current_user_types(get_user):
@@ -190,6 +220,18 @@ def test_expense_unique_together_validation(get_user):
     }
 
 
+def test_expense_unique_together_validation_more_than_one(get_user):
+    ExpensePlanFactory(expense_type=ExpenseTypeFactory(title='First'))
+    t = ExpenseTypeFactory()
+    form = ExpensePlanForm({
+        'year': 1999,
+        'expense_type': t.pk,
+        'january': 15.0,
+    })
+
+    assert form.is_valid()
+
+
 # ----------------------------------------------------------------------------
 #                                                                  Saving Form
 # ----------------------------------------------------------------------------
@@ -217,6 +259,15 @@ def test_saving_init_fields(get_user):
     assert '<input type="number" name="december"' in form
 
     assert '<select name="user"' not in form
+
+
+@freeze_time('1000-01-01')
+def test_saving_year_initial_value(get_user):
+    UserFactory()
+
+    form = SavingPlanForm().as_p()
+
+    assert '<input type="text" name="year" value="1999"' in form
 
 
 def test_saving_current_user_types(get_user):
@@ -275,6 +326,20 @@ def test_saving_unique_together_validation(get_user):
     assert form.errors == {
         '__all__': ['1999 metai jau turi Savings planą.']
     }
+
+
+def test_saving_unique_together_validation_more_than_on(get_user):
+    SavingPlanFactory(saving_type=SavingTypeFactory(title='First'))
+
+    t = SavingTypeFactory()
+    form = SavingPlanForm({
+        'year': 1999,
+        'saving_type': t.pk,
+        'january': 15.0,
+    })
+
+
+    assert form.is_valid()
 
 
 def test_saving_form_type_closed_in_past(get_user):
@@ -339,6 +404,15 @@ def test_day_init_fields(get_user):
     assert '<input type="number" name="december"' in form
 
     assert '<select name="user"' not in form
+
+
+@freeze_time('1000-01-01')
+def test_day_year_initial_value(get_user):
+    UserFactory()
+
+    form = DayPlanForm().as_p()
+
+    assert '<input type="text" name="year" value="1999"' in form
 
 
 def test_day_valid_data(get_user):
@@ -412,6 +486,15 @@ def test_necessary_init_fields(get_user):
     assert '<select name="user"' not in form
 
 
+@freeze_time('1000-01-01')
+def test_income_year_initial_value(get_user):
+    UserFactory()
+
+    form = NecessaryPlanForm().as_p()
+
+    assert '<input type="text" name="year" value="1999"' in form
+
+
 def test_necessary_valid_data(get_user):
     form = NecessaryPlanForm({
         'year': 1999,
@@ -455,6 +538,18 @@ def test_necessary_unique_together_validation(get_user):
     assert form.errors == {
         '__all__': ['1999 metai jau turi XXX planą.']
     }
+
+
+def test_necessary_unique_together_validation_more_than_one(get_user):
+    NecessaryPlanFactory(title='First')
+
+    form = NecessaryPlanForm({
+        'year': 1999,
+        'title': 'XXX',
+        'january': 15.0,
+    })
+
+    assert form.is_valid()
 
 
 # ----------------------------------------------------------------------------

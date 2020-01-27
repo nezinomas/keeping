@@ -9,38 +9,61 @@
     .exception {
         margin-top: 2rem;
     }
+    #div_sum_prices {
+        padding-top: 0.3rem;
+        padding-left: 0;
+        margin-left: 0;
+        text-align: right;
+    }
 </style>
+
 
 <script>
     $('#div_id_exception').parents().eq(2).addClass("exception");
 
+    // on escape key hide modal form
     $(document).keydown(function (event) {
         if (event.keyCode == 27) {
             $('#modal-form').modal("hide");
         }
     });
 
+    // sum prices
+    function sum_prices() {
+        var input_total = document.getElementById("id_price")
+        var input_price = document.getElementById("id_total_sum")
+
+        var total = eval(input_total.value);
+        var price = eval(input_price.value.replace(/[^\d\-\.\+\/\*]/g, ''));
+
+        if (!price || price === Infinity) {
+            price = 0;
+        }
+
+        var res = total + price;
+        if (!res || res <= 0) {
+            res = 0;
+        }
+
+        input_total.value = res.toFixed(2);
+        input_price.value = ''
+    };
+
+    $("#add_price").click(function () {
+        sum_prices();
+    });
+
+
     var input = document.getElementById("id_total_sum");
     input.addEventListener("keyup", function (event) {
         event.preventDefault();
         if (event.keyCode === 13) {
-            var total_sum = eval(document.getElementById("id_price").value);
-            var input_value = eval(this.value.replace(/,/g, '.').replace(/[^\d\-\.\+\/\*]/g, ''));
-
-            if (!input_value || input_value === Infinity ) {
-                input_value = 0;
-            }
-
-            var res = total_sum + input_value;
-            if(!res || res <= 0) {
-                res = 0;
-            }
-
-            document.getElementById("id_price").value = res.toFixed(2);
-            this.value = ''
+            sum_prices();
         }
     });
 
+
+    // expense type dropdown event
     $("#id_expense_type").change(function () {
         var url = $("#js-form").attr("data-chained-dropdown");
         var expense_typeId = $(this).val();

@@ -4,21 +4,24 @@ from ..templatetags import template_filters as T
 
 
 @pytest.mark.parametrize(
-    'value, expect',
+    'value, default, expect',
     [
-        (1, '1,00'),
-        (1.0, '1,00'),
-        ('1,00', '1,00'),
-        ('xx', 'xx'),
-        (None, '-'),
-        (1.0111, '1,01'),
-        (1.049, '1,05'),
-        (0.0, '-'),
-        (0, '-'),
-        ('0', '-'),
+        (1, '-', '1,00'),
+        (1.0, '-', '1,00'),
+        ('1,00', '-', '1,00'),
+        ('xx', '-', 'xx'),
+        (None, '-', '-'),
+        (1.0111, '-', '1,01'),
+        (1.049, '-', '1,05'),
+        (0.0, '-', '-'),
+        (0, '-', '-'),
+        ('0', '-', '-'),
+        ('-0.0001', '-', '-'),
+        (-0.0001, '-', '-'),
+        (None, 'ok', 'ok'),
     ])
-def test_cellformat(value, expect):
-    assert T.cellformat(value) == expect
+def test_cellformat(value, default, expect):
+    assert T.cellformat(value, default) == expect
 
 
 @pytest.mark.parametrize(

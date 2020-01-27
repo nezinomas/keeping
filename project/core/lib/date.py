@@ -70,3 +70,12 @@ def years() -> List[int]:
     _years = [x for x in range(start, now + 2)]
 
     return _years
+
+
+def set_year_for_form():
+    now = datetime.now()
+    month = now.month
+    day = now.day
+    year = utils.get_user().year
+
+    return datetime(year, month, day)

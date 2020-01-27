@@ -59,6 +59,17 @@ def test_account_closed_in_current_year(get_user):
     assert actual.count() == 2
 
 
+@pytest.mark.xfail
+def test_account_unique_for_user(get_user):
+    Account.objects.create(title='T1', user=UserFactory())
+    Account.objects.create(title='T1', user=UserFactory())
+
+
+def test_account_unique_for_users(get_user):
+    Account.objects.create(title='T1', user=UserFactory(username='x'))
+    Account.objects.create(title='T1', user=UserFactory(username='y'))
+
+
 # ----------------------------------------------------------------------------
 #                                                              Account Balance
 # ----------------------------------------------------------------------------

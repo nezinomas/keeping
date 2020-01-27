@@ -45,6 +45,17 @@ def test_income_type_new_post_save(get_user, incomes):
     assert actual.count() == 2
 
 
+@pytest.mark.xfail
+def test_income_type_unique_for_user(get_user):
+    IncomeType.objects.create(title='T', user=UserFactory())
+    IncomeType.objects.create(title='T', user=UserFactory())
+
+
+def test_income_type_unique_for_users(get_user):
+    IncomeType.objects.create(title='T', user=UserFactory(username='x'))
+    IncomeType.objects.create(title='T', user=UserFactory(username='y'))
+
+
 # ----------------------------------------------------------------------------
 #                                                                       Income
 # ----------------------------------------------------------------------------

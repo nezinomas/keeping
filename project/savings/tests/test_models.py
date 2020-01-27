@@ -119,6 +119,17 @@ def test_saving_type_post_save_new_account_balance(get_user):
     assert actual.account.title == 'Account1'
 
 
+@pytest.mark.xfail
+def test_saving_type_unique_for_user(get_user):
+    SavingType.objects.create(title='T1', user=UserFactory())
+    SavingType.objects.create(title='T1', user=UserFactory())
+
+
+def test_saving_type_unique_for_users(get_user):
+    SavingType.objects.create(title='T1', user=UserFactory(username='x'))
+    SavingType.objects.create(title='T1', user=UserFactory(username='y'))
+
+
 # ----------------------------------------------------------------------------
 #                                                                       Saving
 # ----------------------------------------------------------------------------

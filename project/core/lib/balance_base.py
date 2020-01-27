@@ -91,7 +91,13 @@ class BalanceBase():
         arr = self._balance.copy()
         arr.replace(0.0, pd.NaT, inplace=True)
 
-        return arr.mean(skipna=True).to_dict()
+        # calculate average
+        arr = arr.mean(skipna=True)
+
+        # replace nan -> 0.0
+        arr = arr.fillna(0.0)
+
+        return arr.to_dict()
 
     def average_month(self, year: int, month: int) -> Dict[str, float]:
         val = {}

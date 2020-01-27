@@ -16,9 +16,9 @@ pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
-# ----------------------------------------------------------------------------
-#                                                                   Index Plan
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                              Index Plan
+# ---------------------------------------------------------------------------------------
 def test_view_index(client_logged):
     url = reverse('plans:plans_index')
     response = client_logged.get(url)
@@ -40,9 +40,9 @@ def test_view_index_func(client):
     assert views.Index == view.func.view_class
 
 
-# ----------------------------------------------------------------------------
-#                                                                  plans_stats
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                             plans_stats
+# ---------------------------------------------------------------------------------------
 def test_view_plan_stats_render(client_logged):
     url = reverse('plans:reload_plan_stats')
 
@@ -59,9 +59,9 @@ def test_view_plan_stats_render_to_string(client_logged):
     assert response.status_code == 200
 
 
-# ----------------------------------------------------------------------------
-#                                                     IncomePlan create/update
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                IncomePlan create/update
+# ---------------------------------------------------------------------------------------
 @freeze_time('1999-1-1')
 def test_view_incomes(get_user, client_logged):
     url = reverse('plans:incomes_plan_new')
@@ -145,9 +145,55 @@ def test_view_incomes_update_year_not_match(client_logged):
     assert response.status_code == 404
 
 
-# ----------------------------------------------------------------------------
-#                                                   ExpensesPlan create/update
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                       IncomePlan delete
+# ---------------------------------------------------------------------------------------
+def test_view_incomes_delete_func():
+    view = resolve('/plans/incomes/delete/1/')
+
+    assert views.IncomesDelete == view.func.view_class
+
+
+def test_view_incomes_delete_200(client_logged):
+    p = IncomePlanFactory()
+
+    url = reverse('plans:incomes_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_incomes_delete_load_form(client_logged):
+    p = IncomePlanFactory(year=1999)
+
+    url = reverse('plans:incomes_plan_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/plans/incomes/delete/1/"' in actual['html_form']
+
+
+def test_view_incomes_delete(client_logged):
+    p = IncomePlanFactory(year=1999)
+
+    assert models.IncomePlan.objects.all().count() == 1
+    url = reverse('plans:incomes_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.IncomePlan.objects.all().count() == 0
+
+
+# ---------------------------------------------------------------------------------------
+#                                                              ExpensesPlan create/update
+# ---------------------------------------------------------------------------------------
 @freeze_time('1999-1-1')
 def test_view_expenses(client_logged):
     url = reverse('plans:expenses_plan_new')
@@ -231,9 +277,55 @@ def test_view_expenses_update_year_not_match(client_logged):
     assert response.status_code == 404
 
 
-# ----------------------------------------------------------------------------
-#                                                     SavingPlan create/update
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                     ExpensesPlan delete
+# ---------------------------------------------------------------------------------------
+def test_view_expenses_delete_func():
+    view = resolve('/plans/expenses/delete/1/')
+
+    assert views.ExpensesDelete == view.func.view_class
+
+
+def test_view_expenses_delete_200(client_logged):
+    p = ExpensePlanFactory()
+
+    url = reverse('plans:expenses_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_expenses_delete_load_form(client_logged):
+    p = ExpensePlanFactory(year=1999)
+
+    url = reverse('plans:expenses_plan_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/plans/expenses/delete/1/"' in actual['html_form']
+
+
+def test_view_expenses_delete(client_logged):
+    p = ExpensePlanFactory(year=1999)
+
+    assert models.ExpensePlan.objects.all().count() == 1
+    url = reverse('plans:expenses_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.ExpensePlan.objects.all().count() == 0
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                SavingPlan create/update
+# ---------------------------------------------------------------------------------------
 @freeze_time('1999-1-1')
 def test_view_savings(client_logged):
     url = reverse('plans:savings_plan_new')
@@ -317,9 +409,55 @@ def test_view_savings_update_year_not_match(client_logged):
     assert response.status_code == 404
 
 
-# ----------------------------------------------------------------------------
-#                                                        DayPlan create/update
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                       SavingPlan delete
+# ---------------------------------------------------------------------------------------
+def test_view_savings_delete_func():
+    view = resolve('/plans/savings/delete/1/')
+
+    assert views.SavingsDelete == view.func.view_class
+
+
+def test_view_savings_delete_200(client_logged):
+    p = SavingPlanFactory()
+
+    url = reverse('plans:savings_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_savings_delete_load_form(client_logged):
+    p = SavingPlanFactory(year=1999)
+
+    url = reverse('plans:savings_plan_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/plans/savings/delete/1/"' in actual['html_form']
+
+
+def test_view_savings_delete(client_logged):
+    p = SavingPlanFactory(year=1999)
+
+    assert models.SavingPlan.objects.all().count() == 1
+    url = reverse('plans:savings_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.SavingPlan.objects.all().count() == 0
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                   DayPlan create/update
+# ---------------------------------------------------------------------------------------
 @freeze_time('1999-1-1')
 def test_view_days(client_logged):
     url = reverse('plans:days_plan_new')
@@ -402,9 +540,55 @@ def test_view_days_update_year_not_match(client_logged):
     assert response.status_code == 404
 
 
-# ----------------------------------------------------------------------------
-#                                                  NecessaryPlan create/update
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                          DayPlan delete
+# ---------------------------------------------------------------------------------------
+def test_view_days_delete_func():
+    view = resolve('/plans/day/delete/1/')
+
+    assert views.DayDelete == view.func.view_class
+
+
+def test_view_days_delete_200(client_logged):
+    p = DayPlanFactory()
+
+    url = reverse('plans:days_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_days_delete_load_form(client_logged):
+    p = DayPlanFactory(year=1999)
+
+    url = reverse('plans:days_plan_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/plans/day/delete/1/"' in actual['html_form']
+
+
+def test_view_days_delete(client_logged):
+    p = DayPlanFactory(year=1999)
+
+    assert models.DayPlan.objects.all().count() == 1
+    url = reverse('plans:days_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.DayPlan.objects.all().count() == 0
+
+
+# ---------------------------------------------------------------------------------------
+#                                                             NecessaryPlan create/update
+# ---------------------------------------------------------------------------------------
 @freeze_time('1999-1-1')
 def test_view_necessarys(client_logged):
     url = reverse('plans:necessarys_plan_new')
@@ -462,10 +646,10 @@ def test_view_necessarys_update(client_logged):
 
 
 def test_view_necessarys_update_unique_together_user_change_year(client_logged):
-    NecessaryPlanFactory(year=2000)
-    p = NecessaryPlanFactory(year=1999)
+    NecessaryPlanFactory(year=2000, title='XXX')
+    p = NecessaryPlanFactory(year=1999, title='XXX')
 
-    data = {'year': '2000', 'title': 'X', 'january': 999.99}
+    data = {'year': '2000', 'title': 'XXX', 'january': 999.99}
     url = reverse('plans:necessarys_plan_update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data, **X_Req)
@@ -487,9 +671,55 @@ def test_view_necessarys_update_year_not_match(client_logged):
     assert response.status_code == 404
 
 
-# ----------------------------------------------------------------------------
-#                                                                   Copy Plans
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                    NecessaryPlan delete
+# ---------------------------------------------------------------------------------------
+def test_view_necessarys_delete_func():
+    view = resolve('/plans/necessary/delete/1/')
+
+    assert views.NecessaryDelete == view.func.view_class
+
+
+def test_view_necessarys_delete_200(client_logged):
+    p = NecessaryPlanFactory()
+
+    url = reverse('plans:necessarys_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_necessarys_delete_load_form(client_logged):
+    p = NecessaryPlanFactory(year=1999)
+
+    url = reverse('plans:necessarys_plan_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/plans/necessary/delete/1/"' in actual['html_form']
+
+
+def test_view_necessarys_delete(client_logged):
+    p = NecessaryPlanFactory(year=1999)
+
+    assert models.NecessaryPlan.objects.all().count() == 1
+    url = reverse('plans:necessarys_plan_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.NecessaryPlan.objects.all().count() == 0
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                              Copy Plans
+# ---------------------------------------------------------------------------------------
 def test_copy_func():
     view = resolve('/plans/copy/')
 

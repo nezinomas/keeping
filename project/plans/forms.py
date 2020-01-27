@@ -8,7 +8,7 @@ from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from ..core.helpers.helper_forms import set_field_properties
-from ..core.lib.date import monthnames
+from ..core.lib.date import monthnames, set_year_for_form
 from ..core.lib import utils
 from ..core.mixins.form_mixin import FormMixin
 from ..expenses.models import ExpenseType
@@ -52,7 +52,7 @@ class IncomePlanForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year_for_form()
 
         # overwrite ForeignKey expense_type queryset
         self.fields['income_type'].queryset = IncomeType.objects.items()
@@ -67,15 +67,15 @@ class IncomePlanForm(FormMixin, forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         year = cleaned_data.get('year')
+        income_type = cleaned_data.get('income_type')
 
         # if update
         if 'year' not in self.changed_data:
             return
 
-        qs = IncomePlan.objects.year(year)
+        qs = IncomePlan.objects.year(year).filter(income_type=income_type)
         if qs.exists():
-            _type = cleaned_data.get('income_type')
-            _msg = f'{year} metai jau turi {_type} planą.'
+            _msg = f'{year} metai jau turi {income_type} planą.'
             raise forms.ValidationError([{'__all__': _msg}])
 
         return
@@ -99,7 +99,7 @@ class ExpensePlanForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year_for_form()
 
         # overwrite ForeignKey expense_type queryset
         self.fields['expense_type'].queryset = ExpenseType.objects.items()
@@ -114,15 +114,15 @@ class ExpensePlanForm(FormMixin, forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         year = cleaned_data.get('year')
+        expense_type = cleaned_data.get('expense_type')
 
         # if update
         if 'year' not in self.changed_data:
             return
 
-        qs = ExpensePlan.objects.year(year)
+        qs = ExpensePlan.objects.year(year).filter(expense_type=expense_type)
         if qs.exists():
-            _type = cleaned_data.get('expense_type')
-            _msg = f'{year} metai jau turi {_type} planą.'
+            _msg = f'{year} metai jau turi {expense_type} planą.'
             raise forms.ValidationError([{'__all__': _msg}])
 
         return
@@ -149,7 +149,7 @@ class SavingPlanForm(FormMixin, forms.ModelForm):
         self.fields['saving_type'].queryset = SavingType.objects.items()
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year_for_form()
 
         # field translation
         self.fields['saving_type'].label = 'Taupymo rūšis'
@@ -161,15 +161,15 @@ class SavingPlanForm(FormMixin, forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         year = cleaned_data.get('year')
+        saving_type = cleaned_data.get('saving_type')
 
         # if update
         if 'year' not in self.changed_data:
             return
 
-        qs = SavingPlan.objects.year(year)
+        qs = SavingPlan.objects.year(year).filter(saving_type=saving_type)
         if qs.exists():
-            _type = cleaned_data.get('saving_type')
-            _msg = f'{year} metai jau turi {_type} planą.'
+            _msg = f'{year} metai jau turi {saving_type} planą.'
             raise forms.ValidationError([{'__all__': _msg}])
 
         return
@@ -193,7 +193,7 @@ class DayPlanForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year_for_form()
 
         # field translation
         common_field_transalion(self)
@@ -235,7 +235,7 @@ class NecessaryPlanForm(FormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # inital values
-        self.fields['year'].initial = datetime.now()
+        self.fields['year'].initial = set_year_for_form()
 
         # field translation
         common_field_transalion(self)
@@ -246,14 +246,14 @@ class NecessaryPlanForm(FormMixin, forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         year = cleaned_data.get('year')
+        title = cleaned_data.get('title')
 
         # if update
         if 'year' not in self.changed_data:
             return
 
-        qs = NecessaryPlan.objects.year(year)
+        qs = NecessaryPlan.objects.year(year).filter(title=title)
         if qs.exists():
-            title = cleaned_data.get('title')
             _msg = f'{year} metai jau turi {title} planą.'
             raise forms.ValidationError([{'__all__': _msg}])
 

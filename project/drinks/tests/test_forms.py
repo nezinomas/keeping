@@ -1,7 +1,9 @@
 from datetime import date
 
 import pytest
+from freezegun import freeze_time
 
+from ...users.factories import UserFactory
 from ..factories import DrinkTargetFactory
 from ..forms import DrinkForm, DrinkTargetForm
 
@@ -11,16 +13,25 @@ pytestmark = pytest.mark.django_db
 # ----------------------------------------------------------------------------
 #                                                                        Drink
 # ----------------------------------------------------------------------------
-def test_drink_init():
+def test_drink_init(get_user):
     DrinkForm()
 
 
-def test_drink_init_fields():
+def test_drink_init_fields(get_user):
     form = DrinkForm().as_p()
 
     assert '<input type="text" name="date"' in form
     assert '<input type="number" name="quantity"' in form
     assert '<select name="user"' not in form
+
+
+@freeze_time('1000-01-01')
+def test_drink_year_initial_value(get_user):
+    UserFactory()
+
+    form = DrinkForm().as_p()
+
+    assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
 def test_drink_valid_data(get_user):
@@ -38,7 +49,7 @@ def test_drink_valid_data(get_user):
     assert data.user.username == 'bob'
 
 
-def test_drink_blank_data():
+def test_drink_blank_data(get_user):
     form = DrinkForm({})
 
     assert not form.is_valid()
@@ -51,16 +62,25 @@ def test_drink_blank_data():
 # ----------------------------------------------------------------------------
 #                                                                 Drink Target
 # ----------------------------------------------------------------------------
-def test_drink_target_init():
+def test_drink_target_init(get_user):
     DrinkTargetForm()
 
 
-def test_drink_target_init_fields():
+def test_drink_target_init_fields(get_user):
     form = DrinkTargetForm().as_p()
 
     assert '<input type="text" name="year"' in form
     assert '<input type="number" name="quantity"' in form
     assert '<select name="user"' not in form
+
+
+@freeze_time('1000-01-01')
+def test_drink_target_year_initial_value(get_user):
+    UserFactory()
+
+    form = DrinkTargetForm().as_p()
+
+    assert '<input type="text" name="year" value="1999"' in form
 
 
 def test_drink_target_valid_data(get_user):
@@ -91,7 +111,7 @@ def test_drink_target_year_validation(get_user):
     assert 'year' in form.errors
 
 
-def test_drink_target_blank_data():
+def test_drink_target_blank_data(get_user):
     form = DrinkTargetForm(data={})
 
     assert not form.is_valid()

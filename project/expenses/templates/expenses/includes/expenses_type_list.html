@@ -1,16 +1,25 @@
 {% for item in items %}
 {% url 'expenses:expenses_type_update' item.id as url_type_update %}
-<div class="list-group mb-2">
-    <div class="list-group-item list-group-item-action list-group-item-primary" data-url="{{ url_type_update }}">
-        {{ item.title }}
-        {% if item.necessary %}<span class="badge badge-primary"><i class="far fa-star"></i></span>{% endif %}
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+    <div class="panel panel-default mb-2">
+        <div class="panel-heading" role="tab" data-url="{{ url_type_update }}">
+            <a role="button" class="list-group-item list-group-item-primary list-group-item-action pr-2" data-toggle="collapse" href="#_{{ item.id }}_"
+                aria-expanded="true" >
+                {{ item.title }}
+                {% if item.necessary %}<span class="badge badge-primary"><i class="far fa-star"></i></span>{% endif %}
+            </a>
+        </div>
+        <div id="_{{ item.id }}_" class="panel-collapse collapse" role="tabpanel">
+            {% for sub in item.expensename_set.all %}
+            {% url 'expenses:expenses_name_update' sub.id as url_name_update %}
+            <div class="list-group-item list-group-item-action" data-url="{{ url_name_update }}">{{ sub.title }}
+                {% if sub.valid_for %}<span class="badge badge-secondary">{{ sub.valid_for|safe }}</span>{% endif %}</div>
+            {% endfor %}
+        </div>
     </div>
-    {% for sub in item.expensename_set.all %}
-    {% url 'expenses:expenses_name_update' sub.id as url_name_update %}
-    <div class="list-group-item list-group-item-action" data-url="{{ url_name_update }}">{{ sub.title }} {% if sub.valid_for %}<span class="badge badge-secondary">{{ sub.valid_for }}</span>{% endif %}</div>
-    {% endfor %}
 </div>
 {% endfor %}
+
 
 <style>
     .list-group-item {
@@ -24,5 +33,29 @@
 
     .badge {
         font-weight: normal;
+        padding: 0.25rem .25rem;
+    }
+
+    .panel-heading  a:before {
+        font-family: 'Glyphicons Halflings';
+        content: "\e114";
+        float: right;
+        transition: all 0.5s;
+    }
+
+    .panel-heading.active a:before {
+        -webkit-transform: rotate(180deg);
+        -moz-transform: rotate(180deg);
+        transform: rotate(180deg);
     }
 </style>
+
+<script>
+    $('.panel-collapse').on('show.bs.collapse', function () {
+        $(this).siblings('.panel-heading').addClass('active');
+    });
+
+    $('.panel-collapse').on('hide.bs.collapse', function () {
+        $(this).siblings('.panel-heading').removeClass('active');
+    });
+</script>

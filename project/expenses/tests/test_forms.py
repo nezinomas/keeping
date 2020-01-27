@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...users.factories import UserFactory
@@ -16,6 +17,15 @@ pytestmark = pytest.mark.django_db
 # ----------------------------------------------------------------------------
 def test_expense_form_init(get_user):
     ExpenseForm(data={})
+
+
+@freeze_time('1000-01-01')
+def test_expense_year_initial_value(get_user):
+    UserFactory()
+
+    form = ExpenseForm().as_p()
+
+    assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
 def test_expense_current_user_expense_types(get_user):
