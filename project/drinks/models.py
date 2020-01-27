@@ -18,6 +18,7 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
             self
             .select_related('user')
             .filter(user=user)
+            .order_by('-date')
         )
 
     def year(self, year):
