@@ -209,7 +209,7 @@ class ExpenseQuerySet(models.QuerySet):
             .values('e_past', 'e_now', title=models.F('account__title'))
         )
 
-    def last_six_months(self, types=None):
+    def last_six_months(self, types: List[str] = None) -> float:
         start = datetime.now()
         end = start - relativedelta(months=6)
 
@@ -218,7 +218,13 @@ class ExpenseQuerySet(models.QuerySet):
         if types:
             qs = qs.filter(expense_type__title__in=types)
 
-        return float(qs.aggregate(avg=Sum('price')/6.0)['avg'])
+        val = qs.aggregate(avg=Sum('price')/6.0)['avg']
+
+        if val:
+            return float(val)
+
+        return 0.0
+
 
 
 class Expense(models.Model):

@@ -328,6 +328,21 @@ def test_expense_avg_last_six_months_full(get_user):
 
 
 @freeze_time('1999-06-01')
+def test_expense_avg_last_six_months_full_no_data(get_user):
+    actual = Expense.objects.last_six_months()
+
+    assert round(actual, 2) == 0.0
+
+
+@freeze_time('1999-06-01')
+def test_expense_avg_last_six_months_full_qs_count(get_user, django_assert_max_num_queries):
+    ExpenseFactory(date=date(1999, 1, 1), price=2)
+
+    with django_assert_max_num_queries(1):
+        print(Expense.objects.last_six_months())
+
+
+@freeze_time('1999-06-01')
 def test_expense_avg_last_six_months_cut(get_user):
     ExpenseFactory(date=date(1999, 1, 1), price=1, expense_type=ExpenseTypeFactory(title='x'))
     ExpenseFactory(date=date(1999, 1, 1), price=2, expense_type=ExpenseTypeFactory(title='x'))
