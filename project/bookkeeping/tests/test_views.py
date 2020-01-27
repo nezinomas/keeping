@@ -9,6 +9,7 @@ from ...pensions.factories import PensionFactory, PensionTypeFactory
 from ...savings.factories import SavingTypeFactory
 from .. import views
 
+pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
@@ -21,7 +22,6 @@ def test_view_index_func():
     assert views.Index == view.func.view_class
 
 
-@pytest.mark.django_db
 def test_view_index_200(client_logged):
     response = client_logged.get('/')
 
@@ -37,7 +37,6 @@ def test_view_month_func():
     assert views.Month == view.func.view_class
 
 
-@pytest.mark.django_db
 def test_view_month_200(client_logged):
     response = client_logged.get('/month/')
 
@@ -53,14 +52,12 @@ def test_accounts_worth_func():
     assert views.AccountsWorthNew == view.func.view_class
 
 
-@pytest.mark.django_db
 def test_account_worth_200(client_logged):
     response = client_logged.get('/bookkeeping/accounts_worth/new/')
 
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
 def test_account_worth_formset(client_logged):
     AccountFactory()
 
@@ -75,7 +72,6 @@ def test_account_worth_formset(client_logged):
     assert '<option value="1" selected>Account1</option>' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_account_worth_new(client_logged):
     i = AccountFactory()
     data = {
@@ -96,7 +92,6 @@ def test_account_worth_new(client_logged):
     assert '999' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_account_worth_invalid_data(client_logged):
     data = {
         'form-TOTAL_FORMS': 1,
@@ -115,7 +110,6 @@ def test_account_worth_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_account_worth_formset_closed_in_past(get_user, fake_request):
     AccountFactory(title='S1')
     AccountFactory(title='S2', closed=1000)
@@ -130,7 +124,6 @@ def test_account_worth_formset_closed_in_past(get_user, fake_request):
     assert 'S2' not in actual
 
 
-@pytest.mark.django_db()
 def test_account_worth_formset_closed_in_current(get_user, fake_request):
     AccountFactory(title='S1')
     AccountFactory(title='S2', closed=1000)
@@ -145,7 +138,6 @@ def test_account_worth_formset_closed_in_current(get_user, fake_request):
     assert 'S2' in actual
 
 
-@pytest.mark.django_db()
 def test_account_worth_formset_closed_in_future(get_user, fake_request):
     AccountFactory(title='S1')
     AccountFactory(title='S2', closed=1000)
@@ -169,14 +161,12 @@ def test_view_savings_worth_func():
     assert views.SavingsWorthNew == view.func.view_class
 
 
-@pytest.mark.django_db
 def test_view_saving_worth_200(client_logged):
     response = client_logged.get('/bookkeeping/savings_worth/new/')
 
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
 def test_view_saving_worth_formset(client_logged):
     SavingTypeFactory()
 
@@ -191,7 +181,6 @@ def test_view_saving_worth_formset(client_logged):
     assert '<option value="1" selected>Savings</option>' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_view_saving_worth_new(client_logged):
     i = SavingTypeFactory()
     data = {
@@ -212,7 +201,6 @@ def test_view_saving_worth_new(client_logged):
     assert not actual.get('html_list')
 
 
-@pytest.mark.django_db()
 def test_view_saving_worth_invalid_data(client_logged):
     data = {
         'form-TOTAL_FORMS': 1,
@@ -231,7 +219,6 @@ def test_view_saving_worth_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_saving_worth_formset_saving_type_closed_in_past(get_user, fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1000)
@@ -246,7 +233,6 @@ def test_saving_worth_formset_saving_type_closed_in_past(get_user, fake_request)
     assert 'S2' not in actual
 
 
-@pytest.mark.django_db()
 def test_saving_worth_formset_saving_type_closed_in_current(get_user, fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1000)
@@ -261,7 +247,6 @@ def test_saving_worth_formset_saving_type_closed_in_current(get_user, fake_reque
     assert 'S2' in actual
 
 
-@pytest.mark.django_db()
 def test_saving_worth_formset_saving_type_closed_in_future(get_user, fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1000)
@@ -285,14 +270,12 @@ def test_view_pension_worth_func():
     assert views.PensionsWorthNew == view.func.view_class
 
 
-@pytest.mark.django_db
 def test_view_pension_worth_200(client_logged):
     response = client_logged.get('/bookkeeping/pensions_worth/new/')
 
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
 def test_view_pension_worth_formset(client_logged):
     PensionFactory()
 
@@ -307,7 +290,6 @@ def test_view_pension_worth_formset(client_logged):
     assert '<option value="1" selected>PensionType</option>' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_view_pension_worth_new(client_logged):
     i = PensionTypeFactory()
     data = {
@@ -328,7 +310,6 @@ def test_view_pension_worth_new(client_logged):
     assert '999' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_view_pension_worth_invalid_data(client_logged):
     data = {
         'form-TOTAL_FORMS': 1,
@@ -356,7 +337,6 @@ def test_view_reload_month_func():
     assert views.reload_month == view.func
 
 
-@pytest.mark.django_db
 def test_view_reload_month_render(client_logged):
     url = reverse('bookkeeping:reload_month')
     response = client_logged.get(url, follow=True)
@@ -365,7 +345,6 @@ def test_view_reload_month_render(client_logged):
     assert views.Month == response.resolver_match.func.view_class
 
 
-@pytest.mark.django_db
 def test_view_reload_month_render_ajax_trigger(client_logged):
     url = reverse('bookkeeping:reload_month')
     response = client_logged.get(url, {'ajax_trigger': 1})
@@ -382,7 +361,6 @@ def test_view_reload_index_func():
     assert views.reload_index == view.func
 
 
-@pytest.mark.django_db
 def test_view_reload_index_render(client_logged):
     url = reverse('bookkeeping:reload_index')
     response = client_logged.get(url, follow=True)
@@ -391,7 +369,6 @@ def test_view_reload_index_render(client_logged):
     assert views.Index == response.resolver_match.func.view_class
 
 
-@pytest.mark.django_db
 def test_view_reload_index_render_ajax_trigger(client_logged):
     url = reverse('bookkeeping:reload_index')
     response = client_logged.get(url, {'ajax_trigger': 1})
@@ -408,7 +385,6 @@ def test_view_detailed_func():
     assert views.Detailed == view.func.view_class
 
 
-@pytest.mark.django_db
 def test_view_detailed_200(client_logged):
     url = reverse('bookkeeping:detailed')
     response = client_logged.get(url)
@@ -423,7 +399,6 @@ def test_view_detailed_302(client):
     assert response.status_code == 302
 
 
-@pytest.mark.django_db
 def test_view_detailed_rendered_expenses(client_logged, expenses):
     url = reverse('bookkeeping:detailed')
     response = client_logged.get(url)
@@ -434,3 +409,19 @@ def test_view_detailed_rendered_expenses(client_logged, expenses):
 
     assert "Expense Name" in content
     assert "Išlaidos / Expense Type" in content
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                                 Summary
+# ---------------------------------------------------------------------------------------
+def test_view_summary_func():
+    view = resolve('/summary/')
+
+    assert views.Summary == view.func.view_class
+
+
+def test_view_summary_200(client_logged):
+    url = reverse('bookkeeping:summary')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200

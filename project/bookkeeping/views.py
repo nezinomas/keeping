@@ -150,6 +150,10 @@ class Detailed(LoginRequiredMixin, TemplateView):
         return context
 
 
+class Summary(LoginRequiredMixin, TemplateView):
+    template_name = 'bookkeeping/summary.html'
+
+
 def reload_index(request):
     template = 'bookkeeping/includes/reload_index.html'
     ajax_trigger = request.GET.get('ajax_trigger')

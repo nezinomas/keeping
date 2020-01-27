@@ -37,4 +37,9 @@ urlpatterns = [
         views.Detailed.as_view(),
         name='detailed'
     ),
+    path(
+        'summary/',
+        views.Summary.as_view(),
+        name='summary'
+    ),
 ]
