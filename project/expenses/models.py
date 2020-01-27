@@ -1,15 +1,17 @@
+from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, List
 
+from dateutil.relativedelta import relativedelta
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 from django.db.models import Case, Count, F, Q, Sum, When
 from django.db.models.functions import TruncDay, TruncMonth
 
 from ..accounts.models import Account
-from ..users.models import User
 from ..core.lib import utils
 from ..core.models import TitleAbstract
+from ..users.models import User
 
 
 class ExpenseTypeQuerySet(models.QuerySet):
@@ -206,6 +208,23 @@ class ExpenseQuerySet(models.QuerySet):
             )
             .values('e_past', 'e_now', title=models.F('account__title'))
         )
+
+    def last_six_months(self, types: List[str] = None) -> float:
+        start = datetime.now()
+        end = start - relativedelta(months=6)
+
+        qs = self.related().filter(date__range=(end, start))
+
+        if types:
+            qs = qs.filter(expense_type__title__in=types)
+
+        val = qs.aggregate(avg=Sum('price')/6.0)['avg']
+
+        if val:
+            return float(val)
+
+        return 0.0
+
 
 
 class Expense(models.Model):

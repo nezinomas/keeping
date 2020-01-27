@@ -2,11 +2,12 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
-from ...users.factories import UserFactory
 from ...expenses.factories import ExpenseFactory
+from ...users.factories import UserFactory
 from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ..models import Expense, ExpenseName, ExpenseType
 
@@ -312,3 +313,41 @@ def test_summary(get_user, expenses):
     actual = [*Expense.objects.summary(1999).order_by('account__title')]
 
     assert actual == expect
+
+
+@freeze_time('1999-06-01')
+def test_expense_avg_last_six_months_full(get_user):
+    ExpenseFactory(date=date(1998, 1, 1), price=10)
+    ExpenseFactory(date=date(1999, 1, 1), price=1)
+    ExpenseFactory(date=date(1999, 1, 1), price=2)
+    ExpenseFactory(date=date(1999, 6, 1), price=4)
+
+    actual = Expense.objects.last_six_months()
+
+    assert round(actual, 2) == 1.17
+
+
+@freeze_time('1999-06-01')
+def test_expense_avg_last_six_months_full_no_data(get_user):
+    actual = Expense.objects.last_six_months()
+
+    assert round(actual, 2) == 0.0
+
+
+@freeze_time('1999-06-01')
+def test_expense_avg_last_six_months_full_qs_count(get_user, django_assert_max_num_queries):
+    ExpenseFactory(date=date(1999, 1, 1), price=2)
+
+    with django_assert_max_num_queries(1):
+        print(Expense.objects.last_six_months())
+
+
+@freeze_time('1999-06-01')
+def test_expense_avg_last_six_months_cut(get_user):
+    ExpenseFactory(date=date(1999, 1, 1), price=1, expense_type=ExpenseTypeFactory(title='x'))
+    ExpenseFactory(date=date(1999, 1, 1), price=2, expense_type=ExpenseTypeFactory(title='x'))
+    ExpenseFactory(date=date(1999, 6, 1), price=4, expense_type=ExpenseTypeFactory(title='y'))
+
+    actual = Expense.objects.last_six_months(['x'])
+
+    assert round(actual, 2) == 0.5
