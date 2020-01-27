@@ -70,7 +70,7 @@ def test_account_worth_formset(client_logged):
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert 'Sąskaitų vertė' in actual['html_form']
     assert '<option value="1" selected>Account1</option>' in actual['html_form']
 
@@ -186,7 +186,7 @@ def test_view_saving_worth_formset(client_logged):
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert 'Fondų vertė' in actual['html_form']
     assert '<option value="1" selected>Savings</option>' in actual['html_form']
 
@@ -302,7 +302,7 @@ def test_view_pension_worth_formset(client_logged):
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert 'Pensijų vertė' in actual['html_form']
     assert '<option value="1" selected>PensionType</option>' in actual['html_form']
 
