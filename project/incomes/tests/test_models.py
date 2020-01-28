@@ -274,3 +274,18 @@ def test_income_update_post_save_count_qs(get_user,
     )
     with django_assert_max_num_queries(17):
         income.save()
+
+
+def test_income_years_sum(get_user):
+    IncomeFactory(date=date(1998, 1, 1), price=4.0)
+    IncomeFactory(date=date(1998, 1, 1), price=4.0)
+    IncomeFactory(date=date(1999, 1, 1), price=5.0)
+    IncomeFactory(date=date(1999, 1, 1), price=5.0)
+
+    actual = Income.objects.year_income()
+
+    assert actual[0]['year'] == 1998
+    assert actual[0]['sum'] == 8.0
+
+    assert actual[1]['year'] == 1999
+    assert actual[1]['sum'] == 10.0

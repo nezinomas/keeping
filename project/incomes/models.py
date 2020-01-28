@@ -4,13 +4,13 @@ from typing import Any, Dict, List
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Case, Count, F, Sum, When
-from django.db.models.functions import TruncMonth
+from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
 
 from ..accounts.models import Account
-from ..users.models import User
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
+from ..users.models import User
 
 
 class IncomeTypeQuerySet(models.QuerySet):
@@ -56,7 +56,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self.related().all()
 
-    def income_sum(self, year: int, month: int=None) -> List[Dict[str, Any]]:
+    def income_sum(self, year: int, month: int = None) -> List[Dict[str, Any]]:
         '''
         year:
             filter data by year and return sums for every month
@@ -73,6 +73,19 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             .related()
             .sum_by_month(year, summed_name, month=month)
             .values('date', summed_name)
+        )
+
+    def year_income(self):
+        return (
+            self
+            .related()
+            .annotate(c=Count('id'))
+            .values('c')
+            .annotate(date=TruncYear('date'))
+            .annotate(year=ExtractYear(F('date')))
+            .annotate(sum=Sum('price'))
+            .order_by('year')
+            .values('year', 'sum')
         )
 
     def summary(self, year: int) -> List[Dict[str, Any]]:
