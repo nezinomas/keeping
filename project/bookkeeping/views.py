@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render, reverse
 from django.views.generic import TemplateView
@@ -182,13 +184,25 @@ class Summary(LoginRequiredMixin, TemplateView):
         # data for salary summary
         qs = list(Income.objects.year_income(['Atlyginimas', 'Premijos']))
 
-        salary_years = [x['year'] for x in qs]
+        salary_years = []
+        salary_data_avg = []
+        for r in qs:
+            year = r['year']
+            salary_years.append(year)
+            average(salary_data_avg, year, float(r['sum']))
 
         context['salary_categories'] = salary_years
-        context['salary_data_avg'] = [float(x['sum']/12) for x in qs]
+        context['salary_data_avg'] = salary_data_avg
         context['salary_cnt'] = len(salary_years) - offset
 
         return context
+
+
+def average(arr, year, sum_val):
+    now = datetime.now()
+    cnt = now.month if year == now.year else 12
+
+    arr.append(sum_val / cnt)
 
 
 def reload_index(request):

@@ -1,10 +1,13 @@
 import json
+from datetime import date
 
 import pytest
 from django.urls import resolve, reverse
+from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import setup_view
+from ...incomes.factories import IncomeFactory, IncomeTypeFactory
 from ...pensions.factories import PensionFactory, PensionTypeFactory
 from ...savings.factories import SavingTypeFactory
 from .. import views
@@ -425,3 +428,14 @@ def test_view_summary_200(client_logged):
     response = client_logged.get(url)
 
     assert response.status_code == 200
+
+
+@freeze_time('1999-01-01')
+def test_view_summary_salary_avg(client_logged):
+    IncomeFactory(date=date(1998, 1, 1), price=12.0, income_type=IncomeTypeFactory(title='Atlyginimas'))
+    IncomeFactory(date=date(1999, 1, 1), price=10.0, income_type=IncomeTypeFactory(title='Atlyginimas'))
+
+    url = reverse('bookkeeping:summary')
+    response = client_logged.get(url)
+
+    assert response.context['salary_data_avg'] == [1.0, 10.0]
