@@ -4,7 +4,7 @@ from datetime import date, datetime
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Case, Count, ExpressionWrapper, F, Sum, When
-from django.db.models.functions import ExtractMonth, TruncYear
+from django.db.models.functions import ExtractMonth, TruncYear, ExtractYear
 
 from ..users.models import User
 from ..core.lib import utils
@@ -18,6 +18,7 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
             self
             .select_related('user')
             .filter(user=user)
+            .order_by('-date')
         )
 
     def year(self, year):
@@ -74,13 +75,36 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
                 per_day=self._per_period(F('qty'), day_of_year))
             .values('qty', 'per_day')
         )
+
         return qs[0] if qs else {}
 
-    def _per_period(self, qty: float, end: int) -> float:
+    def summary(self):
+        qs = (
+            self
+            .related()
+            .annotate(c=Count('id'))
+            .values('c')
+            .annotate(date=TruncYear('date'))
+            .annotate(year=ExtractYear(F('date')))
+            .annotate(qty=Sum('quantity'))
+            .values('year', 'qty')
+            .order_by('year')
+        )
+
+        for row in qs:
+            days = 366 if calendar.isleap(row.get('year')) else 365
+            row['per_day'] = self._consumption(row.get('qty'), days)
+
+        return qs
+
+    def _per_period(self, qty: float, days: int) -> float:
         return ExpressionWrapper(
-            ((qty * 0.5) / end) * 1000,
+            self._consumption(qty, days),
             output_field=models.FloatField()
         )
+
+    def _consumption(self, qty: float, days: int) -> float:
+        return ((qty * 0.5) / days) * 1000
 
 
 class Drink(models.Model):

@@ -1,0 +1,76 @@
+<div id="container-for-drinks-summary"></div>
+<script>
+    Highcharts.setOptions({
+        lang: {
+            thousandsSep: '.',
+            decimalPoint: ',',
+        }
+    });
+    Highcharts.chart('container-for-drinks-summary', {
+        chart: {
+            marginBottom: 67,
+        },
+        title: {
+            text: 'Gėrimai',
+        },
+        legend: {
+            layout: 'horizontal',
+            align: 'right',
+            verticalAlign: 'top',
+            floating: true,
+            borderWidth: 0,
+            x: -10,
+        },
+        xAxis: {
+            min: 0.5,
+            max: {{ drinks_cnt|safe }},
+            lineColor: '#000',
+            lineWidth: 2,
+            gridLineWidth: 1,
+            tickmarkPlacement: 'on',
+            categories: {{ drinks_categories|safe }},
+            labels: {
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+            },
+        },
+        yAxis: {
+            labels: {
+                format: '{value:.0f}',
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+            },
+            title: {
+                text: ''
+            },
+
+        },
+        tooltip: {
+            pointFormat: '<b>{point.y:,.0f} ml</b><br/>',
+                style: {
+                    fontSize: '13px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+        },
+        plotOptions: {
+            area: {
+                fillOpacity: 0.5
+            },
+            area: {
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.y:.0f}'
+                },
+                enableMouseTracking: false,
+                fillOpacity: 0.5,
+            }
+        },
+        series: [
+            {'name': 'Vidutiniškai per dieną, ml', 'data': {{ drinks_data_ml|safe }}, 'type': 'area'},
+        ]
+    });
+</script>

@@ -169,6 +169,28 @@ def test_drink_days_sum_no_records_for_selected_year(get_user):
     assert actual == {}
 
 
+def test_drink_summary(get_user):
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
+    DrinkFactory(date=date(1999, 1, 2), quantity=2.0)
+    DrinkFactory(date=date(2000, 1, 1), quantity=1.0)
+    DrinkFactory(date=date(2000, 1, 2), quantity=3.0)
+
+    expect = [
+        {'year': 1999, 'qty': 3.0, 'per_day': 4.11},
+        {'year': 2000, 'qty': 4.0, 'per_day': 5.46},
+    ]
+    actual = list(Drink.objects.summary())
+
+    assert len(actual) == 2
+    assert expect[0] == pytest.approx(actual[0], 0.01)
+    assert expect[1] == pytest.approx(actual[1], 0.001)
+
+
+def test_drink_summary_no_records(get_user):
+    actual = list(Drink.objects.summary())
+
+    assert actual == []
+
 
 # ----------------------------------------------------------------------------
 #                                                                 Drink Target

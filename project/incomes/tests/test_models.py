@@ -274,3 +274,55 @@ def test_income_update_post_save_count_qs(get_user,
     )
     with django_assert_max_num_queries(17):
         income.save()
+
+
+def test_income_years_sum(get_user):
+    IncomeFactory(date=date(1998, 1, 1), price=4.0)
+    IncomeFactory(date=date(1998, 1, 1), price=4.0)
+    IncomeFactory(date=date(1999, 1, 1), price=5.0)
+    IncomeFactory(date=date(1999, 1, 1), price=5.0)
+
+    actual = Income.objects.year_income()
+
+    assert actual[0]['year'] == 1998
+    assert actual[0]['sum'] == 8.0
+
+    assert actual[1]['year'] == 1999
+    assert actual[1]['sum'] == 10.0
+
+
+def test_income_year_sum_count_qs(get_user, django_assert_max_num_queries):
+    IncomeFactory()
+
+    with django_assert_max_num_queries(1):
+        list([x['year'] for x in Income.objects.year_income()])
+
+
+def test_income_year_sum_filter(get_user):
+    IncomeFactory(date=date(1999, 1, 1), price=5.0, income_type=IncomeTypeFactory(title='x'))
+    IncomeFactory(date=date(1999, 1, 1), price=5.0, income_type=IncomeTypeFactory(title='x'))
+    IncomeFactory(date=date(1999, 1, 1), price=15.0, income_type=IncomeTypeFactory(title='y'))
+
+    actual = Income.objects.year_income(['x'])
+
+    assert actual[0]['year'] == 1999
+    assert actual[0]['sum'] == 10.0
+
+
+def test_income_year_sum_filter_two_types(get_user):
+    IncomeFactory(date=date(1999, 1, 1), price=5.0, income_type=IncomeTypeFactory(title='x'))
+    IncomeFactory(date=date(1999, 1, 1), price=5.0, income_type=IncomeTypeFactory(title='x'))
+    IncomeFactory(date=date(1999, 1, 1), price=15.0, income_type=IncomeTypeFactory(title='y'))
+    IncomeFactory(date=date(1999, 1, 1), price=20.0, income_type=IncomeTypeFactory(title='z'))
+
+    actual = Income.objects.year_income(['x', 'y'])
+
+    assert actual[0]['year'] == 1999
+    assert actual[0]['sum'] == 25.0
+
+
+def test_income_year_sum_filter_count_qs(get_user, django_assert_max_num_queries):
+    IncomeFactory()
+
+    with django_assert_max_num_queries(1):
+        list([x['year'] for x in Income.objects.year_income(['x'])])

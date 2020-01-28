@@ -13,7 +13,7 @@ class DrinkStats():
         self._calc(arr)
 
     @property
-    def consumsion(self) -> List[float]:
+    def consumption(self) -> List[float]:
         return self._consumsion
 
     @property

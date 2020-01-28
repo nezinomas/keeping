@@ -7,6 +7,7 @@ from ..core.lib.date import year_month_list
 from ..core.lib.utils import sum_all, sum_col
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin
+from ..drinks.models import Drink
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
@@ -146,6 +147,46 @@ class Detailed(LoginRequiredMixin, TemplateView):
         for i in H.expense_types():
             filtered = filter(lambda x: i in x['type_title'], qs)
             _gen_data([*filtered], f'Išlaidos / {i}')
+
+        return context
+
+
+class Summary(LoginRequiredMixin, TemplateView):
+    template_name = 'bookkeeping/summary.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        offset = 1.3
+
+        # data for drinks summary
+        qs = list(Drink.objects.summary())
+
+        drink_years = [x['year'] for x in qs]
+
+        context['drinks_categories'] = drink_years
+        context['drinks_data_ml'] = [x['per_day'] for x in qs]
+        context['drinks_cnt'] = len(drink_years) - offset
+
+        # data for balance summary
+        qs_inc = list(Income.objects.year_income())
+        qs_exp = list(Expense.objects.year_expense())
+
+        balance_years = [x['year'] for x in qs_exp]
+
+        context['balance_categories'] = balance_years
+        context['balance_income_data'] = [float(x['sum']) for x in qs_inc]
+        context['balance_expense_data'] = [float(x['sum']) for x in qs_exp]
+        context['balance_cnt'] = len(balance_years) - offset
+
+        # data for salary summary
+        qs = list(Income.objects.year_income(['Atlyginimas', 'Premijos']))
+
+        salary_years = [x['year'] for x in qs]
+
+        context['salary_categories'] = salary_years
+        context['salary_data_avg'] = [float(x['sum']/12) for x in qs]
+        context['salary_cnt'] = len(salary_years) - offset
 
         return context
 

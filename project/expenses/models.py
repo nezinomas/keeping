@@ -6,7 +6,8 @@ from dateutil.relativedelta import relativedelta
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 from django.db.models import Case, Count, F, Q, Sum, When
-from django.db.models.functions import TruncDay, TruncMonth
+from django.db.models.functions import (ExtractYear, TruncDay, TruncMonth,
+                                        TruncYear)
 
 from ..accounts.models import Account
 from ..core.lib import utils
@@ -179,6 +180,19 @@ class ExpenseQuerySet(models.QuerySet):
                 'sum',
                 'exception_sum',
                 title=F('expense_type__title'))
+        )
+
+    def year_expense(self):
+        return (
+            self
+            .related()
+            .annotate(c=Count('id'))
+            .values('c')
+            .annotate(date=TruncYear('date'))
+            .annotate(year=ExtractYear(F('date')))
+            .annotate(sum=Sum('price'))
+            .order_by('year')
+            .values('year', 'sum')
         )
 
     def summary(self, year: int) -> List[Dict[str, Any]]:
