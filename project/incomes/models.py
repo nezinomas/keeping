@@ -75,8 +75,8 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             .values('date', summed_name)
         )
 
-    def year_income(self):
-        return (
+    def year_income(self, income_type: List[str] = None):
+        qs = (
             self
             .related()
             .annotate(c=Count('id'))
@@ -87,6 +87,11 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             .order_by('year')
             .values('year', 'sum')
         )
+
+        if income_type:
+            qs = qs.filter(income_type__title__in=income_type)
+
+        return qs
 
     def summary(self, year: int) -> List[Dict[str, Any]]:
         '''

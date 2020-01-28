@@ -289,3 +289,28 @@ def test_income_years_sum(get_user):
 
     assert actual[1]['year'] == 1999
     assert actual[1]['sum'] == 10.0
+
+
+def test_income_year_sum_count_qs(get_user, django_assert_max_num_queries):
+    IncomeFactory()
+
+    with django_assert_max_num_queries(1):
+        list([x['year'] for x in Income.objects.year_income()])
+
+
+def test_income_year_sum_filter(get_user):
+    IncomeFactory(date=date(1999, 1, 1), price=5.0, income_type=IncomeTypeFactory(title='x'))
+    IncomeFactory(date=date(1999, 1, 1), price=5.0, income_type=IncomeTypeFactory(title='x'))
+    IncomeFactory(date=date(1999, 1, 1), price=15.0, income_type=IncomeTypeFactory(title='y'))
+
+    actual = Income.objects.year_income(['x'])
+
+    assert actual[0]['year'] == 1999
+    assert actual[0]['sum'] == 10.0
+
+
+def test_income_year_sum_filter_count_qs(get_user, django_assert_max_num_queries):
+    IncomeFactory()
+
+    with django_assert_max_num_queries(1):
+        list([x['year'] for x in Income.objects.year_income(['x'])])
