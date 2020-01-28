@@ -157,6 +157,8 @@ class Summary(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        offset = 1.3
+
         # data for drinks summary
         qs = list(Drink.objects.summary())
 
@@ -164,7 +166,7 @@ class Summary(LoginRequiredMixin, TemplateView):
 
         context['drinks_categories'] = drink_years
         context['drinks_data_ml'] = [x['per_day'] for x in qs]
-        context['drinks_cnt'] = len(drink_years) - 1.5
+        context['drinks_cnt'] = len(drink_years) - offset
 
         # data for balance summary
         qs_inc = list(Income.objects.year_income())
@@ -175,7 +177,16 @@ class Summary(LoginRequiredMixin, TemplateView):
         context['balance_categories'] = balance_years
         context['balance_income_data'] = [float(x['sum']) for x in qs_inc]
         context['balance_expense_data'] = [float(x['sum']) for x in qs_exp]
-        context['balance_cnt'] = len(balance_years) - 1.5
+        context['balance_cnt'] = len(balance_years) - offset
+
+        # data for salary summary
+        qs = list(Income.objects.year_income(['Atlyginimas', 'Premijos']))
+
+        salary_years = [x['year'] for x in qs]
+
+        context['salary_categories'] = salary_years
+        context['salary_data_avg'] = [float(x['sum']/12) for x in qs]
+        context['salary_cnt'] = len(salary_years) - offset
 
         return context
 
