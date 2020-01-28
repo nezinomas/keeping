@@ -1,0 +1,75 @@
+<div id="container-balance-summary"></div>
+<script>
+    Highcharts.setOptions({
+        lang: {
+            thousandsSep: '.',
+            decimalPoint: ',',
+        }
+    });
+    Highcharts.chart('container-balance-summary', {
+        chart: {
+            marginBottom: 67,
+        },
+        title: {
+            text: 'Pajamos/Išlaidos',
+        },
+        legend: {
+            layout: 'horizontal',
+            align: 'right',
+            verticalAlign: 'top',
+            floating: true,
+            borderWidth: 1,
+        },
+        xAxis: {
+            min: 0.5,
+            max: {{ balance_cnt|safe }},
+            lineColor: '#000',
+            lineWidth: 2,
+            gridLineWidth: 1,
+            tickmarkPlacement: 'on',
+            categories: {{ balance_categories|safe }},
+            labels: {
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+            },
+        },
+        yAxis: {
+            labels: {
+                formatter: function () {
+                    if (this.value >= 100) return Highcharts.numberFormat(this.value / 1000, 1) + "k";
+                    return Highcharts.numberFormat(this.value, 0);
+                },
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+            },
+            title: {
+                text: ''
+            },
+
+        },
+        tooltip: {
+            split: true,
+            pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br/>',
+                style: {
+                    fontSize: '13px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+        },
+        plotOptions: {
+            area: {
+                fillOpacity: 0.5
+            },
+            area: {
+                fillOpacity: 0.5,
+            }
+        },
+        series: [
+            {'name': 'Pajamos', 'data': {{ balance_income_data|safe }}, color: '#77933c', 'type': 'area'},
+            {'name': 'Išlaidos', 'data': {{ balance_expense_data|safe }}, color: '#c0504d', 'type': 'area'},
+        ]
+    });
+</script>

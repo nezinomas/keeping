@@ -166,6 +166,17 @@ class Summary(LoginRequiredMixin, TemplateView):
         context['drinks_data_ml'] = [x['per_day'] for x in qs]
         context['drinks_cnt'] = len(drink_years) - 1.5
 
+        # data for balance summary
+        qs_inc = list(Income.objects.year_income())
+        qs_exp = list(Expense.objects.year_expense())
+
+        balance_years = [x['year'] for x in qs_exp]
+
+        context['balance_categories'] = balance_years
+        context['balance_income_data'] = [float(x['sum']) for x in qs_inc]
+        context['balance_expense_data'] = [float(x['sum']) for x in qs_exp]
+        context['balance_cnt'] = len(balance_years) - 1.5
+
         return context
 
 
