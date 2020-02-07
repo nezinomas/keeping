@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pandas as pd
 import pytest
 from freezegun import freeze_time
@@ -114,10 +116,10 @@ def test_df_months_of_year_invalid(year):
 @pytest.fixture()
 def df():
     df = pd.DataFrame([
-        {'t': 1.1, 'date': pd.datetime(1999, 1, 1)},
-        {'t': 2.1, 'date': pd.datetime(1999, 1, 2)},
-        {'t': 3.1, 'date': pd.datetime(1999, 1, 3)},
-        {'t': 4.1, 'date': pd.datetime(1999, 1, 31)},
+        {'t': 1.1, 'date': datetime(1999, 1, 1)},
+        {'t': 2.1, 'date': datetime(1999, 1, 2)},
+        {'t': 3.1, 'date': datetime(1999, 1, 3)},
+        {'t': 4.1, 'date': datetime(1999, 1, 31)},
     ])
     df.set_index('date', inplace=True)
 

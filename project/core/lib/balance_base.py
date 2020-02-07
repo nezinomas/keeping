@@ -124,7 +124,7 @@ class BalanceBase():
         # sort index, in case if dates not ordered
         df.sort_index(inplace=True)
 
-        to_date = pd.datetime(year, month, day)
+        to_date = datetime(year, month, day)
 
         sum_ = df.loc[:to_date, :].sum()
 
