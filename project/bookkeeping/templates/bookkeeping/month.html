@@ -39,6 +39,8 @@
         <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_savings_new }}"><i class="fas fa-plus"></i> Taupymą</button>
         {% url 'transactions:transactions_new' as url_transactions_new %}
         <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_transactions_new }}"><i class="fas fa-plus"></i> Pervedimą</button>
+        {% url 'drinks:drinks_new' as url_drinks_new %}
+        <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_drinks_new }}"><i class="fas fa-plus"></i> Gertynės</button>
         <button class="btn btn-sm btn-info ml-1" onclick="myFunction()">Rodyti kitą grafiką</button>
     </div>
 </div>
