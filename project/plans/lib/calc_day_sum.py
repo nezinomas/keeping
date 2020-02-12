@@ -118,7 +118,7 @@ class CalcDaySum():
 
     def targets(self,
                 month: int,
-                saving_title: str=None) -> Dict[str, float]:
+                saving_title: str = None) -> Dict[str, float]:
         rtn = {}
 
         month = monthname(month)
