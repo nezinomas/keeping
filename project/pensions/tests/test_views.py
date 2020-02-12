@@ -1,8 +1,5 @@
 import json
-from datetime import date, datetime
-from decimal import Decimal
 
-import pandas as pd
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
@@ -64,7 +61,7 @@ def test_pensions_load_form(admin_client):
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
     assert '2000-01-01' in actual['html_form']
 
 
@@ -113,17 +110,18 @@ def test_pensions_save_invalid_data(client_logged):
 def test_pensions_update_to_another_year(client_logged):
     income = PensionFactory()
 
-    data = {'price': '150',
-            'date': '2010-12-31',
-            'remark': 'Pastaba',
-            'account': 1,
-            'pension_type': 1
+    data = {
+        'price': '150',
+        'date': '2010-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'pension_type': 1,
     }
     url = reverse('pensions:pensions_update', kwargs={'pk': income.pk})
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -146,7 +144,7 @@ def test_pensions_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -167,10 +165,7 @@ def test_type_load_form(admin_client):
 
     response = admin_client.get(url, {}, **X_Req)
 
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
 
 @pytest.mark.django_db()
@@ -213,7 +208,7 @@ def test_type_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
