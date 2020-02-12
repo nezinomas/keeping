@@ -32,13 +32,13 @@
     </div>
     <div class="col pl-0 text-right">
         {% url 'expenses:expenses_new' as url_expenses_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Išlaidas</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Išlaidos</button>
         {% url 'incomes:incomes_new' as url_incomes_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_incomes_new }}"><i class="fas fa-plus"></i> Pajamas</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_incomes_new }}"><i class="fas fa-plus"></i> Pajamos</button>
         {% url 'savings:savings_new' as url_savings_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_savings_new }}"><i class="fas fa-plus"></i> Taupymą</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_savings_new }}"><i class="fas fa-plus"></i> Taupymas</button>
         {% url 'transactions:transactions_new' as url_transactions_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_transactions_new }}"><i class="fas fa-plus"></i> Pervedimą</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_transactions_new }}"><i class="fas fa-plus"></i> Pervedimas</button>
         {% url 'drinks:drinks_new' as url_drinks_new %}
         <button type="button" class="btn btn-sm btn-outline-success js-create mx-1" data-url="{{ url_drinks_new }}"><i class="fas fa-plus"></i> Gertynės</button>
         <button class="btn btn-sm btn-info ml-1" onclick="myFunction()">Rodyti kitą grafiką</button>
