@@ -134,19 +134,23 @@ class MonthHelper():
 
     def render_info(self):
         fact_incomes = Income.objects.income_sum(self._year, self._month)
+        fact_expenses = self._day.total_row.get('total')
         fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
         fact_expenses = self._day.total
 
         plan_incomes = get_val(self._day_plans.incomes, self._month)
+        plan_expenses = plan_incomes
         plan_day_sum = get_val(self._day_plans.day_input, self._month)
         plan_remains = get_val(self._day_plans.remains, self._month)
 
         context = {
             'plan_per_day': plan_day_sum,
             'plan_incomes': plan_incomes,
+            'plan_expenses': plan_expenses,
             'plan_remains': plan_remains,
             'fact_per_day': self._spending.avg_per_day,
             'fact_incomes': fact_incomes,
+            'fact_expenses': fact_expenses,
             'fact_remains': fact_incomes - fact_expenses,
         }
 
