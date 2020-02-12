@@ -84,7 +84,7 @@ def test_pensions_save(client_logged):
 
     json_str = response.content
     actual = json.loads(json_str)
-    print(actual)
+
     assert actual['form_is_valid']
     assert '1999-01-01' in actual['html_list']
     assert '1,05' in actual['html_list']
