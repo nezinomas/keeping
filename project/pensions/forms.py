@@ -52,10 +52,6 @@ class PensionForm(forms.ModelForm):
         price = cleaned_data.get('price')
         fee = cleaned_data.get('fee')
 
-        # if update
-        if 'date' not in self.changed_data:
-            return
-
         if not price and not fee:
             _msg = 'Laukeliai `Suma` ir `Mokestis` abu negali būti tušti.'
 
