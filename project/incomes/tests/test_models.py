@@ -117,17 +117,20 @@ def test_incomes_items(get_user):
 
 def test_incomes_items_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        Income.objects.items().values()
+        qs = Income.objects.items()
+        list([x['date'] for x in qs])
 
 
 def test_incomes_year_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        Income.objects.year(1999).values()
+        qs = Income.objects.year(1999)
+        list([x['date'] for x in qs])
 
 
 def test_incomes_income_sum_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        Income.objects.income_sum(1999).values()
+        qs = Income.objects.income_sum(1999)
+        list([x['date'] for x in qs])
 
 def test_summary(get_user, incomes):
     expect = [{
