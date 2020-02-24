@@ -98,12 +98,14 @@ class Pension(models.Model):
         decimal_places=2,
         null=True,
         blank=True,
+        validators=[MinValueValidator(Decimal('0'))]
     )
     fee = models.DecimalField(
         max_digits=8,
         decimal_places=2,
         null=True,
         blank=True,
+        validators=[MinValueValidator(Decimal('0'))]
     )
     remark = models.TextField(
         max_length=1000,

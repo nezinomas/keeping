@@ -47,6 +47,22 @@ class PensionForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+    def clean(self):
+        cleaned_data = super().clean()
+        price = cleaned_data.get('price')
+        fee = cleaned_data.get('fee')
+
+        # if update
+        if 'date' not in self.changed_data:
+            return
+
+        if not price and not fee:
+            _msg = 'Laukeliai `Suma` ir `Mokestis` abu negali būti tušti.'
+
+            self.add_error('price', _msg)
+            self.add_error('fee', _msg)
+
+        return
 
 class PensionTypeForm(FormMixin, forms.ModelForm):
     class Meta:
