@@ -119,11 +119,12 @@ def test_pension_summary(get_user, pensions):
         'title': 'PensionType',
         's_past': Decimal(3.5),
         's_now': Decimal(4.5),
-
+        's_fee_past': Decimal(0.25),
+        's_fee_now': Decimal(0.5),
     }]
 
     actual = list(Pension.objects.summary(1999))
-
+    print(f'actual:\n{actual}\n\n')
     assert expect == actual
 
 
