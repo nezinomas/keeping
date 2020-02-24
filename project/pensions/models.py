@@ -135,10 +135,16 @@ class PensionBalanceQuerySet(models.QuerySet):
 
         return qs.values(
             'year',
-            'past_amount', 'past_fee',
-            'fees', 'invested', 'incomes', 'market_value',
-            'profit_incomes_proc', 'profit_incomes_sum',
-            'profit_invested_proc', 'profit_invested_sum',
+            'past_amount',
+            'past_fee',
+            'fees',
+            'invested',
+            'incomes',
+            'market_value',
+            'profit_incomes_proc',
+            'profit_incomes_sum',
+            'profit_invested_proc',
+            'profit_invested_sum',
             title=F('pension_type__title')
         )
 
