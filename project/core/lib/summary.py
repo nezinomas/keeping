@@ -1,14 +1,20 @@
-from typing import Dict, List
+from abc import ABC, abstractmethod
+from typing import Dict
 
 from django.apps import apps
 from pandas import DataFrame as DF
 from pandas import Series, to_numeric
 
 
-def models(where: str) -> List:
-    _models = []
-    if where == 'accounts':
-        _models = [
+class ModelsAbstract(ABC):
+    @abstractmethod
+    def models(self):
+        pass
+
+
+class AccountsBalanceModels(ModelsAbstract):
+    def models(self):
+        return [
             'incomes.Income',
             'expenses.Expense',
             'savings.Saving',
@@ -16,26 +22,28 @@ def models(where: str) -> List:
             'transactions.Transaction'
         ]
 
-    if where == 'savings':
-        _models = [
+
+class SavingsBalanceModels(ModelsAbstract):
+    def models(self):
+        return [
             'savings.Saving',
             'transactions.SavingClose',
             'transactions.SavingChange'
         ]
 
-    if where == 'pensions':
-        _models = [
+
+class PensionsBalanceModels(ModelsAbstract):
+    def models(self):
+        return [
             'pensions.Pension',
         ]
 
-    return _models
-
 
 def collect_summary_data(year: int,
-                         types: Dict[str, int], where: str) -> DF:
+                         types: Dict[str, int], where: ModelsAbstract) -> DF:
     df = _create_df(types)
 
-    _models = models(where)
+    _models = where().models()
     for m in _models:
         model = apps.get_model(m)
         # try 3 methods from model.manager:

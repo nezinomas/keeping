@@ -13,7 +13,8 @@ from ..savings.lib.balance import Balance as SavingStats
 from ..savings.models import Saving, SavingBalance, SavingType
 from ..transactions.models import SavingChange, SavingClose, Transaction
 from .lib import utils
-from .lib.summary import collect_summary_data
+from .lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
+                          SavingsBalanceModels, collect_summary_data)
 
 
 # ----------------------------------------------------------------------------
@@ -78,7 +79,7 @@ class SignalBase():
         cls.model_balance = AccountBalance
         cls.model_worth = AccountWorth
         cls.class_stats = AccountStats
-        cls.summary_models = 'accounts'
+        cls.summary_models = AccountsBalanceModels
 
         return cls(instance, year)
 
@@ -89,7 +90,7 @@ class SignalBase():
         cls.model_balance = SavingBalance
         cls.model_worth = SavingWorth
         cls.class_stats = SavingStats
-        cls.summary_models = 'savings'
+        cls.summary_models = SavingsBalanceModels
 
         return cls(instance, year)
 
@@ -100,7 +101,7 @@ class SignalBase():
         cls.model_balance = PensionBalance
         cls.model_worth = PensionWorth
         cls.class_stats = SavingStats  # using same savings Balance class
-        cls.summary_models = 'pensions'
+        cls.summary_models = PensionsBalanceModels
 
         return cls(instance, year)
 

@@ -5,7 +5,7 @@ import pytest
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...incomes.factories import IncomeFactory
 from ...accounts.lib.balance import Balance as AccountStats
-from ...core.lib.summary import collect_summary_data
+from ...core.lib.summary import collect_summary_data, AccountsBalanceModels
 
 pytestmark = pytest.mark.django_db
 
@@ -25,7 +25,7 @@ def test_account_stats_for_two_years_in_past(get_user):
         'balance': 20.0,
     }]
 
-    summary = collect_summary_data(2000, {'Account1': 1}, 'accounts')
+    summary = collect_summary_data(2000, {'Account1': 1}, AccountsBalanceModels)
     actual = AccountStats(summary, []).balance
 
     assert_(expect, actual)
