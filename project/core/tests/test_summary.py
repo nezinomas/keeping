@@ -7,8 +7,9 @@ from mock import Mock, patch
 from pandas.api.types import is_numeric_dtype
 
 from ...savings.factories import SavingFactory, SavingTypeFactory
-from ..lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
-                           SavingsBalanceModels, collect_summary_data)
+from ..lib.summary import (AccountsBalanceModels, ModelsAbstract,
+                           PensionsBalanceModels, SavingsBalanceModels,
+                           collect_summary_data)
 
 pytestmark = pytest.mark.django_db
 
@@ -351,3 +352,8 @@ def test_pension(get_user, pensions):
     assert 1 == actual.at['PensionType', 'id']
     assert 3.5 == actual.at['PensionType', 's_past']
     assert 4.5 == actual.at['PensionType', 's_now']
+
+
+@patch.multiple(ModelsAbstract, __abstractmethods__=set())
+def test_models_abstract_class():
+    ModelsAbstract().models()
