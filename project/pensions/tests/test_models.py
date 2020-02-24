@@ -60,6 +60,18 @@ def test_pension_str():
     assert str(p) == '1999-01-01: PensionType'
 
 
+def test_pension_object():
+    p = PensionFactory()
+
+    actual = Pension.objects.get(pk=p.id)
+
+    assert actual.date == date(1999, 1, 1)
+    assert actual.price == Decimal(100)
+    assert actual.fee == pytest.approx(Decimal(1.01))
+    assert actual.remark == 'remark'
+    assert actual.pension_type.title == 'PensionType'
+
+
 def test_pension_related(get_user):
     u1 = UserFactory()
     u2 = UserFactory(username='XXX')

@@ -25,6 +25,7 @@ class PensionFactory(factory.DjangoModelFactory):
 
     date = dt(1999, 1, 1)
     price = Decimal(100)
+    fee = Decimal(1.01)
     remark = 'remark'
     pension_type = factory.SubFactory(PensionTypeFactory)
 
