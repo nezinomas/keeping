@@ -12,7 +12,7 @@ from .models import Pension, PensionType
 class PensionForm(forms.ModelForm):
     class Meta:
         model = Pension
-        fields = ['date', 'price', 'remark', 'pension_type']
+        fields = ['date', 'price', 'fee', 'remark', 'pension_type']
 
         widgets = {
             'date': DatePickerInput(
@@ -23,7 +23,7 @@ class PensionForm(forms.ModelForm):
             ),
         }
 
-    field_order = ['date', 'pension_type', 'price', 'remark']
+    field_order = ['date', 'pension_type', 'price', 'fee', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -40,12 +40,25 @@ class PensionForm(forms.ModelForm):
 
         self.fields['date'].label = 'Data'
         self.fields['price'].label = 'Suma'
+        self.fields['fee'].label = 'Mokestis'
         self.fields['remark'].label = 'Pastaba'
         self.fields['pension_type'].label = 'Fondas'
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+    def clean(self):
+        cleaned_data = super().clean()
+        price = cleaned_data.get('price')
+        fee = cleaned_data.get('fee')
+
+        if not price and not fee:
+            _msg = 'Laukeliai `Suma` ir `Mokestis` abu negali būti tušti.'
+
+            self.add_error('price', _msg)
+            self.add_error('fee', _msg)
+
+        return
 
 class PensionTypeForm(FormMixin, forms.ModelForm):
     class Meta:

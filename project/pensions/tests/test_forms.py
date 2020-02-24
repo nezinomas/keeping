@@ -77,6 +77,16 @@ def test_pension_init(get_user):
     PensionForm()
 
 
+def test_pension_init_fields(get_user):
+    form = PensionForm().as_p()
+
+    assert '<input type="text" name="date"' in form
+    assert '<select name="pension_type"' in form
+    assert '<input type="number" name="price"' in form
+    assert '<input type="number" name="fee"' in form
+    assert '<textarea name="remark"' in form
+
+
 def test_saving_current_user_types(get_user):
     u = UserFactory(username='tom')
 
@@ -95,6 +105,7 @@ def test_pension_valid_data(get_user):
     form = PensionForm(data={
         'date': '2000-01-01',
         'price': '1.0',
+        'fee': '0.0',
         'remark': 'remark',
         'pension_type': t.pk
     })
@@ -105,6 +116,7 @@ def test_pension_valid_data(get_user):
 
     assert data.date == date(2000, 1, 1)
     assert data.price == Decimal(1.0)
+    assert data.fee == Decimal(0.0)
     assert data.remark == 'remark'
     assert data.pension_type.title == t.title
 
@@ -116,18 +128,51 @@ def test_pension_blank_data(get_user):
 
     assert 'date' in form.errors
     assert 'price' in form.errors
+    assert 'fee' in form.errors
     assert 'pension_type' in form.errors
 
 
-def test_pension_price_null(get_user):
+def test_pension_price_and_fee_null(get_user):
     t = PensionTypeFactory()
 
     form = PensionForm(data={
         'date': '2000-01-01',
         'price': '0',
+        'fee': '0',
         'remark': 'remark',
         'pension_type': t.pk
     })
 
     assert not form.is_valid()
     assert 'price' in form.errors
+    assert 'fee' in form.errors
+
+
+def test_pension_price_negative(get_user):
+    t = PensionTypeFactory()
+
+    form = PensionForm(data={
+        'date': '2000-01-01',
+        'price': '-10',
+        'fee': '0',
+        'remark': 'remark',
+        'pension_type': t.pk
+    })
+
+    assert not form.is_valid()
+    assert 'price' in form.errors
+
+
+def test_pension_fee_negative(get_user):
+    t = PensionTypeFactory()
+
+    form = PensionForm(data={
+        'date': '2000-01-01',
+        'price': '0',
+        'fee': '-10',
+        'remark': 'remark',
+        'pension_type': t.pk
+    })
+
+    assert not form.is_valid()
+    assert 'fee' in form.errors

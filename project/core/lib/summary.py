@@ -40,7 +40,8 @@ class PensionsBalanceModels(ModelsAbstract):
 
 
 def collect_summary_data(year: int,
-                         types: Dict[str, int], where: ModelsAbstract) -> DF:
+                         types: Dict[str, int],
+                         where: ModelsAbstract) -> DF:
     df = _create_df(types)
 
     _models = where().models()

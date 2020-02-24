@@ -80,11 +80,21 @@ class PensionQuerySet(SumMixin, models.QuerySet):
                 s_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='price'),
+                        default=0)),
+                s_fee_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='fee'),
+                        default=0)),
+                s_fee_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='fee'),
                         default=0))
             )
             .values(
                 's_past',
                 's_now',
+                's_fee_now',
+                's_fee_past',
                 title=models.F('pension_type__title'),
                 id=models.F('pension_type__pk')
             )
@@ -96,7 +106,16 @@ class Pension(models.Model):
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))]
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal('0'))]
+    )
+    fee = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal('0'))]
     )
     remark = models.TextField(
         max_length=1000,
@@ -135,10 +154,16 @@ class PensionBalanceQuerySet(models.QuerySet):
 
         return qs.values(
             'year',
-            'past_amount', 'past_fee',
-            'fees', 'invested', 'incomes', 'market_value',
-            'profit_incomes_proc', 'profit_incomes_sum',
-            'profit_invested_proc', 'profit_invested_sum',
+            'past_amount',
+            'past_fee',
+            'fees',
+            'invested',
+            'incomes',
+            'market_value',
+            'profit_incomes_proc',
+            'profit_incomes_sum',
+            'profit_invested_proc',
+            'profit_invested_sum',
             title=F('pension_type__title')
         )
 

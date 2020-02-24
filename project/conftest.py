@@ -260,18 +260,22 @@ def savings_change():
 def pensions():
     PensionFactory(
         price=1.25,
+        fee=0,
         date=date(1974, 1, 1),
     )
     PensionFactory(
         price=2.25,
+        fee=0.25,
         date=date(1974, 1, 1),
     )
     PensionFactory(
         price=2.25,
+        fee=0,
         date=date(1999, 1, 1),
     )
     PensionFactory(
         price=2.25,
+        fee=0.5,
         date=date(1999, 1, 1),
     )
 
