@@ -96,7 +96,8 @@ class Pension(models.Model):
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))]
+        null=True,
+        blank=True,
     )
     fee = models.DecimalField(
         max_digits=8,

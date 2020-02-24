@@ -87,7 +87,6 @@ def test_pension_init_fields(get_user):
     assert '<textarea name="remark"' in form
 
 
-
 def test_saving_current_user_types(get_user):
     u = UserFactory(username='tom')
 

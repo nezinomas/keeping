@@ -40,6 +40,7 @@ class PensionForm(forms.ModelForm):
 
         self.fields['date'].label = 'Data'
         self.fields['price'].label = 'Suma'
+        self.fields['fee'].label = 'Mokestis'
         self.fields['remark'].label = 'Pastaba'
         self.fields['pension_type'].label = 'Fondas'
 
