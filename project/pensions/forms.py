@@ -12,7 +12,7 @@ from .models import Pension, PensionType
 class PensionForm(forms.ModelForm):
     class Meta:
         model = Pension
-        fields = ['date', 'price', 'remark', 'pension_type']
+        fields = ['date', 'price', 'fee', 'remark', 'pension_type']
 
         widgets = {
             'date': DatePickerInput(
@@ -23,7 +23,7 @@ class PensionForm(forms.ModelForm):
             ),
         }
 
-    field_order = ['date', 'pension_type', 'price', 'remark']
+    field_order = ['date', 'pension_type', 'price', 'fee', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

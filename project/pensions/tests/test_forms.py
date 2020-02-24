@@ -77,6 +77,17 @@ def test_pension_init(get_user):
     PensionForm()
 
 
+def test_pension_init_fields(get_user):
+    form = PensionForm().as_p()
+
+    assert '<input type="text" name="date"' in form
+    assert '<select name="pension_type"' in form
+    assert '<input type="number" name="price"' in form
+    assert '<input type="number" name="fee"' in form
+    assert '<textarea name="remark"' in form
+
+
+
 def test_saving_current_user_types(get_user):
     u = UserFactory(username='tom')
 
