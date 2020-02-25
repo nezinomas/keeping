@@ -8,8 +8,8 @@
 {% block content %}
 
 <div class="row my-2 border-bottom border-primary">
-    <div class="col-lg-4 pr-3">{{ year_balance }}</div>
-    <div class="col-lg-8 pl-3">{{ year_expenses }}</div>
+    <div class="col-lg-4">{{ year_balance }}</div>
+    <div class="col-lg-8">{{ year_expenses }}</div>
 </div>
 
 <div class="row my-2 border-bottom border-primary">
@@ -35,8 +35,8 @@
 
 <!-- accounts stats -->
 <div class="row mt-2">
-    <div id="accounts_worth" class="col-md-7 pr-2">{{ accounts }}</div>
-    <div class="col-md-3 pl-2">
+    <div id="accounts_worth" class="col-md-7">{{ accounts }}</div>
+    <div class="col-md-3">
         <div>{{ year_balance_short }}</div>
         <div id="no_incomes">{{ no_incomes }}</div>
     </div>
@@ -59,12 +59,12 @@
 
 <!-- savings -->
 <div class="row mt-5">
-    <div id="saving_worth" class="col-lg-8">{{ savings }}</div>
+    <div id="saving_worth" class="col-lg-12">{{ savings }}</div>
 </div>
 
 <!-- pensions -->
 <div class="row mt-5">
-    <div id="pension_worth" class="col-lg-8">{{ pensions }}</div>
+    <div id="pension_worth" class="col-lg-12">{{ pensions }}</div>
 </div>
 
 {% include 'modal.html' %}
