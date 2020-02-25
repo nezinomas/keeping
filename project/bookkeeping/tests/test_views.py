@@ -7,6 +7,7 @@ from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import setup_view
+from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory, IncomeTypeFactory
 from ...pensions.factories import PensionFactory, PensionTypeFactory
 from ...savings.factories import SavingTypeFactory
@@ -29,6 +30,28 @@ def test_view_index_200(client_logged):
     response = client_logged.get('/')
 
     assert response.status_code == 200
+
+
+@freeze_time('1999-06-01')
+def test_no_incomes(get_user, client_logged):
+    ExpenseFactory(date=date(1999, 1, 1), price=1.0, expense_type=ExpenseTypeFactory(title='Darbas'))
+    ExpenseFactory(date=date(1999, 1, 1), price=2.0, expense_type=ExpenseTypeFactory(title='Darbas'))
+    ExpenseFactory(date=date(1999, 6, 1), price=4.0, expense_type=ExpenseTypeFactory(title='y'))
+
+    url = reverse('bookkeeping:index')
+    response = client_logged.get(url)
+
+    assert round(response.context['avg_expenses'], 2) == 1.17
+    assert round(response.context['save_sum'], 2) == 0.5
+
+
+@freeze_time('1999-06-01')
+def test_no_incomes_no_data(get_user, client_logged):
+    url = reverse('bookkeeping:index')
+    response = client_logged.get(url)
+
+    assert round(response.context['avg_expenses'], 2) == 0
+    assert round(response.context['save_sum'], 2) == 0
 
 
 # ---------------------------------------------------------------------------------------

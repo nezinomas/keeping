@@ -3,6 +3,7 @@ from collections import Counter, defaultdict
 from typing import Dict, List
 
 from django.template.loader import render_to_string
+from pandas import DataFrame as DF
 
 from ...accounts.models import AccountBalance
 from ...core.lib.date import current_day
@@ -332,8 +333,20 @@ class IndexHelper():
             'Taupymas',
             'Buitinės',
         ]
-        avg_expenses = Expense.objects.last_six_months()
-        cut_sum = Expense.objects.last_six_months(not_use)
+        months_back = 6
+        qs = (
+            Expense.objects
+            .last_months(months=months_back)
+            .values_list('price', 'expense_type__title')
+        )
+        df = DF.from_records(qs, columns=['price', 'title'], coerce_float=True)
+
+        # 6 months average expenses
+        avg_expenses = df.price.sum() / months_back
+
+        # 6 months average [Not Use] expenses sum
+        # this sum may not be spent
+        cut_sum = df.loc[df.title.isin(not_use)].price.sum() / months_back
 
         obj = NoIncomes(
             money=self._YearBalance.amount_end,
@@ -347,6 +360,7 @@ class IndexHelper():
             'no_incomes': obj.summary,
             'save_sum': cut_sum,
             'not_use': not_use,
+            'avg_expenses': avg_expenses,
         }
 
         return render_to_string(
