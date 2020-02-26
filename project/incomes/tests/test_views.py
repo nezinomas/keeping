@@ -119,11 +119,12 @@ def test_income_save_invalid_data(client_logged):
 def test_income_update_to_another_year(client_logged):
     income = IncomeFactory()
 
-    data = {'price': '150',
-            'date': '2010-12-31',
-            'remark': 'Pastaba',
-            'account': 1,
-            'income_type': 1
+    data = {
+        'price': '150',
+        'date': '2010-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'income_type': 1
     }
     url = reverse('incomes:incomes_update', kwargs={'pk': income.pk})
 

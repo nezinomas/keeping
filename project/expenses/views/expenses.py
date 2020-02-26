@@ -17,9 +17,7 @@ class Index(IndexMixin):
         return context
 
 
-class Lists(ListMixin):
-    model = models.Expense
-
+class GetQuerySetMixin():
     def get_queryset(self):
         return (
             super()
@@ -28,13 +26,17 @@ class Lists(ListMixin):
         )
 
 
-class New(CreateAjaxMixin):
+class Lists(GetQuerySetMixin, ListMixin):
+    model = models.Expense
+
+
+class New(GetQuerySetMixin, CreateAjaxMixin):
     model = models.Expense
     form_class = forms.ExpenseForm
     list_render_output = False
 
 
-class Update(UpdateAjaxMixin):
+class Update(GetQuerySetMixin, UpdateAjaxMixin):
     model = models.Expense
     form_class = forms.ExpenseForm
     list_render_output = False

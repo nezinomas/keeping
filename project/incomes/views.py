@@ -18,31 +18,25 @@ class Index(IndexMixin):
 #
 # Income views
 #
-class Lists(ListMixin):
-    model = models.Income
-
+class GetQuerySetMixin():
     def get_queryset(self):
         return (
             super()
             .get_queryset()
-            .values(
-                'id',
-                'date',
-                'remark',
-                'price',
-                account_title=F('account__title'),
-                income_title=F('income_type__title')
-            )
             .order_by('-date', 'price')
         )
 
 
-class New(CreateAjaxMixin):
+class Lists(GetQuerySetMixin, ListMixin):
+    model = models.Income
+
+
+class New(GetQuerySetMixin, CreateAjaxMixin):
     model = models.Income
     form_class = forms.IncomeForm
 
 
-class Update(UpdateAjaxMixin):
+class Update(GetQuerySetMixin, UpdateAjaxMixin):
     model = models.Income
     form_class = forms.IncomeForm
 

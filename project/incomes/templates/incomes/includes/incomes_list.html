@@ -16,8 +16,8 @@
         {% endifchanged %}
         <tr data-url="{{ url_update }}">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-left">{{ item.income_title }}</td>
-            <td class="text-left">{{ item.account_title }}</td>
+            <td class="text-left">{{ item.income_type }}</td>
+            <td class="text-left">{{ item.account }}</td>
             <td class="text-left">{{ item.remark }}</td>
             <td>{{ item.price|intcomma }}</td>
         </tr>
