@@ -1,3 +1,4 @@
+from django.db.models import F
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
@@ -10,16 +11,21 @@ from ..views.expenses_type import Lists as TypeLists
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = TypeLists.as_view()(
-            self.request, as_string=True)
-        context['expenses'] = Lists.as_view()(
-            self.request, as_string=True)
+        context['categories'] = TypeLists.as_view()(self.request, as_string=True)
+        context['expenses'] = Lists.as_view()(self.request, as_string=True)
 
         return context
 
 
 class Lists(ListMixin):
     model = models.Expense
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .order_by('-date', 'expense_type', F('expense_name').asc())
+        )
 
 
 class New(CreateAjaxMixin):

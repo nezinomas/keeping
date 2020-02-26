@@ -171,8 +171,8 @@ class Summary(LoginRequiredMixin, TemplateView):
         context['drinks_cnt'] = len(drink_years) - offset
 
         # data for balance summary
-        qs_inc = list(Income.objects.year_income())
-        qs_exp = list(Expense.objects.year_expense())
+        qs_inc = Income.objects.year_income()
+        qs_exp = Expense.objects.year_expense()
 
         balance_years = [x['year'] for x in qs_exp]
 
