@@ -329,7 +329,7 @@ def test_expense_years_sum(get_user):
     ExpenseFactory(date=date(1999, 1, 1), price=5.0)
     ExpenseFactory(date=date(1999, 1, 1), price=5.0)
 
-    actual = Expense.objects.year_expense()
+    actual = Expense.objects.sum_by_year()
 
     assert actual[0]['year'] == 1998
     assert actual[0]['sum'] == 8.0

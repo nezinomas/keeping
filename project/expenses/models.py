@@ -182,7 +182,7 @@ class ExpenseQuerySet(models.QuerySet):
                 title=F('expense_type__title'))
         )
 
-    def year_expense(self):
+    def sum_by_year(self):
         return (
             self
             .related()

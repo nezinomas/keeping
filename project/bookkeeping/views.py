@@ -171,8 +171,8 @@ class Summary(LoginRequiredMixin, TemplateView):
         context['drinks_cnt'] = len(drink_years) - offset
 
         # data for balance summary
-        qs_inc = Income.objects.year_income()
-        qs_exp = Expense.objects.year_expense()
+        qs_inc = Income.objects.sum_by_year()
+        qs_exp = Expense.objects.sum_by_year()
 
         balance_years = [x['year'] for x in qs_exp]
 
@@ -182,7 +182,7 @@ class Summary(LoginRequiredMixin, TemplateView):
         context['balance_cnt'] = len(balance_years) - offset
 
         # data for salary summary
-        qs = list(Income.objects.year_income(['Atlyginimas', 'Premijos']))
+        qs = list(Income.objects.sum_by_year(['Atlyginimas', 'Premijos']))
 
         salary_years = []
         salary_data_avg = []

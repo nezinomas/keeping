@@ -75,7 +75,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             .values('date', summed_name)
         )
 
-    def year_income(self, income_type: List[str] = None):
+    def sum_by_year(self, income_type: List[str] = None):
         qs = (
             self
             .related()
