@@ -91,7 +91,7 @@ def test_drink_order(get_user):
 
 
 def test_drink_months_consumsion(get_user, _drinks):
-    actual = Drink.objects.month_sum(1999).values_list('per_month', flat=True)
+    actual = Drink.objects.sum_by_month(1999).values_list('per_month', flat=True)
 
     expect = [40.32, 53.57]
 
@@ -99,7 +99,7 @@ def test_drink_months_consumsion(get_user, _drinks):
 
 
 def test_drink_months_quantity_sum(get_user, _drinks):
-    actual = Drink.objects.month_sum(1999).values_list('sum', flat=True)
+    actual = Drink.objects.sum_by_month(1999).values_list('sum', flat=True)
 
     expect = [2.5, 3.0]
 
@@ -111,7 +111,7 @@ def test_drink_months_quantity_sum_no_records_for_current_year(get_user):
     DrinkFactory(date=date(2000, 1, 1), quantity=1.5)
     DrinkFactory(date=date(1999, 1, 1), quantity=1.5, user=UserFactory(username='XXX'))
 
-    actual = Drink.objects.month_sum(1999).values_list('sum', flat=True)
+    actual = Drink.objects.sum_by_month(1999).values_list('sum', flat=True)
 
     expect = []
 
@@ -119,7 +119,7 @@ def test_drink_months_quantity_sum_no_records_for_current_year(get_user):
 
 
 def test_drink_months_month_num(get_user, _drinks):
-    actual = Drink.objects.month_sum(1999).values_list('month', flat=True)
+    actual = Drink.objects.sum_by_month(1999).values_list('month', flat=True)
 
     expect = [1, 2]
 
@@ -127,7 +127,7 @@ def test_drink_months_month_num(get_user, _drinks):
 
 
 def test_drink_months_month_len(get_user, _drinks):
-    actual = Drink.objects.month_sum(1999).values_list('monthlen', flat=True)
+    actual = Drink.objects.sum_by_month(1999).values_list('monthlen', flat=True)
 
     expect = [31, 28]
 

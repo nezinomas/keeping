@@ -31,7 +31,7 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self.related()
 
-    def month_sum(self, year, month=None):
+    def sum_by_month(self, year, month=None):
         summed_name = 'sum'
 
         return (

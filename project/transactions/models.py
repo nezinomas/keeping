@@ -134,14 +134,15 @@ class Transaction(models.Model):
 #                                                                 Saving Close
 # ----------------------------------------------------------------------------
 class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
-    def month_sum(self, year, month=None):
+    def sum_by_month(self, year, month=None):
         summed_name = 'sum'
 
         return (
             self
             .related()
             .month_sum(
-                year=year, month=month,
+                year=year,
+                month=month,
                 summed_name=summed_name)
             .values('date', summed_name)
         )

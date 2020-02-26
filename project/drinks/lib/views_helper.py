@@ -10,7 +10,7 @@ def context_to_reload(request, context):
     year = request.user.year
 
     qs_target = models.DrinkTarget.objects.year(year)
-    qs_drinks = models.Drink.objects.month_sum(year)
+    qs_drinks = models.Drink.objects.sum_by_month(year)
     qs_drinks_days = models.Drink.objects.day_sum(year)
 
     _DrinkStats = DrinkStats(qs_drinks)

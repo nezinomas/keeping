@@ -12,8 +12,12 @@ class SumMixin():
         else:
             return self
 
-    def month_sum(self, year, summed_name,
-                     month=None, groupby='id', sum_column_name='price'):
+    def month_sum(self,
+                  year,
+                  summed_name,
+                  month=None,
+                  groupby='id',
+                  sum_column_name='price'):
         return (
             self
             ._year(year)

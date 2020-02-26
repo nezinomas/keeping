@@ -187,7 +187,7 @@ class IndexHelper():
 
         qs_income = Income.objects.sum_by_month(year)
         qs_savings = Saving.objects.month_saving(year)
-        qs_savings_close = SavingClose.objects.month_sum(year)
+        qs_savings_close = SavingClose.objects.sum_by_month(year)
         qs_ExpenseType = Expense.objects.month_expense_type(year)
 
         self._MonthExpense = MonthExpense(

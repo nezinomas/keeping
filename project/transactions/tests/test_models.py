@@ -156,7 +156,7 @@ def test_saving_close_related(get_user):
 def test_saving_close_month_sums(get_user, savings_close):
     expect = [{'date': date(1999, 1, 1), 'sum': Decimal(0.25)}]
 
-    actual = list(SavingClose.objects.month_sum(1999))
+    actual = list(SavingClose.objects.sum_by_month(1999))
 
     assert expect == actual
 
@@ -164,14 +164,14 @@ def test_saving_close_month_sums(get_user, savings_close):
 def test_saving_close_month_sums_only_january(get_user, savings_close):
     expect = [{'date': date(1999, 1, 1), 'sum': Decimal(0.25)}]
 
-    actual = list(SavingClose.objects.month_sum(1999, 1))
+    actual = list(SavingClose.objects.sum_by_month(1999, 1))
 
     assert expect == actual
 
 
 def test_saving_close_month_sum_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        list(SavingClose.objects.month_sum(1999))
+        list(SavingClose.objects.sum_by_month(1999))
 
 
 def test_saving_close_summary_from(get_user, savings_close):
