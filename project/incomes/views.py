@@ -1,7 +1,7 @@
 from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from . import forms, models
-
+from django.db.models import F
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
@@ -22,7 +22,19 @@ class Lists(ListMixin):
     model = models.Income
 
     def get_queryset(self):
-        return super().get_queryset().order_by('-date', 'price')
+        return (
+            super()
+            .get_queryset()
+            .values(
+                'id',
+                'date',
+                'remark',
+                'price',
+                account_title=F('account__title'),
+                income_title=F('income_type__title')
+            )
+            .order_by('-date', 'price')
+        )
 
 
 class New(CreateAjaxMixin):
