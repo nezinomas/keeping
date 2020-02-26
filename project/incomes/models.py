@@ -168,7 +168,6 @@ class Income(models.Model):
     )
 
     class Meta:
-        ordering = ['-date', 'price']
         indexes = [
             models.Index(fields=['account', 'income_type']),
             models.Index(fields=['income_type']),

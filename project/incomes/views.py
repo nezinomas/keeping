@@ -21,6 +21,9 @@ class Index(IndexMixin):
 class Lists(ListMixin):
     model = models.Income
 
+    def get_queryset(self):
+        return super().get_queryset().order_by('-date', 'price')
+
 
 class New(CreateAjaxMixin):
     model = models.Income
