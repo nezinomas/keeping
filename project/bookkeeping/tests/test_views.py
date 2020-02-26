@@ -32,7 +32,7 @@ def test_view_index_200(client_logged):
     assert response.status_code == 200
 
 
-@freeze_time('1999-06-01')
+@freeze_time('1999-07-01')
 def test_no_incomes(get_user, client_logged):
     ExpenseFactory(date=date(1999, 1, 1), price=1.0, expense_type=ExpenseTypeFactory(title='Darbas'))
     ExpenseFactory(date=date(1999, 1, 1), price=2.0, expense_type=ExpenseTypeFactory(title='Darbas'))
@@ -45,7 +45,7 @@ def test_no_incomes(get_user, client_logged):
     assert round(response.context['save_sum'], 2) == 0.5
 
 
-@freeze_time('1999-06-01')
+@freeze_time('1999-07-01')
 def test_no_incomes_no_data(get_user, client_logged):
     url = reverse('bookkeeping:index')
     response = client_logged.get(url)
