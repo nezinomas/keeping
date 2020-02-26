@@ -137,11 +137,11 @@ class Detailed(LoginRequiredMixin, TemplateView):
             })
 
         # Incomes
-        qs = Income.objects.month_type_sum(year)
+        qs = Income.objects.sum_by_month_and_type(year)
         _gen_data(qs, 'Pajamos')
 
         # Savings
-        qs = Saving.objects.month_type_sum(year)
+        qs = Saving.objects.sum_by_month_and_type(year)
         _gen_data(qs, 'Taupymas')
 
         # Expenses

@@ -182,7 +182,7 @@ def test_income_month_type_sum(get_user):
         {'date': date(1999, 1, 1), 'title': 'I-1', 'sum': Decimal(3)},
         {'date': date(1999, 1, 1), 'title': 'I-2', 'sum': Decimal(7)},
     ]
-    actual = Income.objects.month_type_sum(1999)
+    actual = Income.objects.sum_by_month_and_type(1999)
 
     assert expect == [*actual]
 

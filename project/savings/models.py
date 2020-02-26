@@ -112,7 +112,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .values('date', summed_name)
         )
 
-    def month_type_sum(self, year):
+    def sum_by_month_and_type(self, year):
         return (
             self
             .related()

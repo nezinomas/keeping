@@ -127,7 +127,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             )
         )
 
-    def month_type_sum(self, year):
+    def sum_by_month_and_type(self, year):
         return (
             self
             .related()
