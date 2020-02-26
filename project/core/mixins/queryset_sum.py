@@ -31,7 +31,7 @@ class SumMixin():
             .order_by('date')
         )
 
-    def sum_by_day(self, year, month, summed_name):
+    def day_sum(self, year, month, summed_name):
         return (
             self
             ._year(year)

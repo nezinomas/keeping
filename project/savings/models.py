@@ -136,7 +136,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         return (
             self
             .related()
-            .sum_by_day(
+            .day_sum(
                 year=year, month=month,
                 summed_name=summed_name)
             .values(summed_name, 'date', title=F('saving_type__title'))
@@ -148,7 +148,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         return (
             self
             .related()
-            .sum_by_day(
+            .day_sum(
                 year=year, month=month,
                 summed_name=summed_name)
             .values(summed_name, 'date')
