@@ -56,7 +56,7 @@ def test_saving_type_items_user(get_user):
 def test_saving_type_day_sum_empty_month(get_user, savings):
     expect = []
 
-    actual = list(Saving.objects.day_saving_type(1999, 2))
+    actual = list(Saving.objects.sum_by_day_and_type(1999, 2))
 
     assert expect == actual
 
@@ -177,7 +177,7 @@ def test_saving_type_day_sum(get_user, savings):
         {'date': date(1999, 1, 1), 'sum': Decimal(2.25), 'title': 'Saving2'},
     ]
 
-    actual = list(Saving.objects.day_saving_type(1999, 1))
+    actual = list(Saving.objects.sum_by_day_and_type(1999, 1))
 
     assert expect == actual
 
@@ -187,7 +187,7 @@ def test_saving_day_sum(get_user, _savings_extra):
         {'date': date(1999, 1, 1), 'sum': Decimal(2.0)},
     ]
 
-    actual = list(Saving.objects.day_saving(1999, 1))
+    actual = list(Saving.objects.sum_by_day(1999, 1))
 
     assert expect == actual
 
@@ -195,7 +195,7 @@ def test_saving_day_sum(get_user, _savings_extra):
 def test_saving_months_sum(get_user, savings):
     expect = [{'date': date(1999, 1, 1), 'sum': Decimal(5.75)}]
 
-    actual = list(Saving.objects.month_saving(1999))
+    actual = list(Saving.objects.sum_by_month(1999))
 
     assert expect == actual
 
@@ -212,7 +212,7 @@ def test_saving_year_query_count(get_user, django_assert_max_num_queries):
 
 def test_saving_month_saving_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        Saving.objects.month_saving(1999).values()
+        Saving.objects.sum_by_month(1999).values()
 
 
 def test_saving_month_type_sum_query_count(get_user, django_assert_max_num_queries):
@@ -222,12 +222,12 @@ def test_saving_month_type_sum_query_count(get_user, django_assert_max_num_queri
 
 def test_saving_day_saving_type_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        Saving.objects.day_saving_type(1999, 1).values()
+        Saving.objects.sum_by_day_and_type(1999, 1).values()
 
 
 def test_saving_day_saving_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        Saving.objects.day_saving(1999, 1).values()
+        Saving.objects.sum_by_day(1999, 1).values()
 
 
 def test_saving_summary_from(get_user, savings):
