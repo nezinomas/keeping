@@ -13,7 +13,8 @@ class ModelsAbstract(ABC):
 
 
 class AccountsBalanceModels(ModelsAbstract):
-    def models(self):
+    @classmethod
+    def models(cls):
         return [
             'incomes.Income',
             'expenses.Expense',
@@ -24,7 +25,8 @@ class AccountsBalanceModels(ModelsAbstract):
 
 
 class SavingsBalanceModels(ModelsAbstract):
-    def models(self):
+    @classmethod
+    def models(cls):
         return [
             'savings.Saving',
             'transactions.SavingClose',
@@ -33,7 +35,8 @@ class SavingsBalanceModels(ModelsAbstract):
 
 
 class PensionsBalanceModels(ModelsAbstract):
-    def models(self):
+    @classmethod
+    def models(cls):
         return [
             'pensions.Pension',
         ]
@@ -44,7 +47,7 @@ def collect_summary_data(year: int,
                          where: ModelsAbstract) -> DF:
     df = _create_df(types)
 
-    _models = where().models()
+    _models = where.models()
     for m in _models:
         model = apps.get_model(m)
         # try 3 methods from model.manager:
