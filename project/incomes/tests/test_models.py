@@ -86,13 +86,13 @@ def test_sum_all_months(get_user, incomes):
         {'date': date(1999, 2, 1), 'sum': Decimal(1.25)},
     ]
 
-    actual = list(Income.objects.income_sum(1999))
+    actual = list(Income.objects.sum_by_month(1999))
 
     assert expect == actual
 
 
 def test_sum_all_months_ordering(get_user, incomes):
-    actual = list(Income.objects.income_sum(1999))
+    actual = list(Income.objects.sum_by_month(1999))
 
     assert actual[0]['date'] == date(1999, 1, 1)
     assert actual[1]['date'] == date(1999, 2, 1)
@@ -103,7 +103,7 @@ def test_sum_one_month(get_user, incomes):
         {'date': date(1999, 1, 1), 'sum': Decimal(5.5)}
     ]
 
-    actual = list(Income.objects.income_sum(1999, 1))
+    actual = list(Income.objects.sum_by_month(1999, 1))
 
     assert len(expect) == 1
     assert expect == actual
@@ -129,7 +129,7 @@ def test_incomes_year_query_count(get_user, django_assert_max_num_queries):
 
 def test_incomes_income_sum_query_count(get_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        qs = Income.objects.income_sum(1999)
+        qs = Income.objects.sum_by_month(1999)
         list([x['date'] for x in qs])
 
 def test_summary(get_user, incomes):

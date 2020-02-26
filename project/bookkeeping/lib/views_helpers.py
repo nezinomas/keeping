@@ -134,7 +134,7 @@ class MonthHelper():
         )
 
     def render_info(self):
-        fact_incomes = Income.objects.income_sum(self._year, self._month)
+        fact_incomes = Income.objects.sum_by_month(self._year, self._month)
         fact_expenses = self._day.total_row.get('total')
         fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
         fact_expenses = self._day.total
@@ -185,7 +185,7 @@ class IndexHelper():
         self._fund = [*SavingBalance.objects.year(year)]
         self._pension = [*PensionBalance.objects.year(year)]
 
-        qs_income = Income.objects.income_sum(year)
+        qs_income = Income.objects.sum_by_month(year)
         qs_savings = Saving.objects.month_saving(year)
         qs_savings_close = SavingClose.objects.month_sum(year)
         qs_ExpenseType = Expense.objects.month_expense_type(year)
