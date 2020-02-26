@@ -39,7 +39,7 @@ def test_month_expense_type(get_user, expenses):
         {'date': date(1999, 12, 1), 'sum': Decimal(1.25), 'title': 'Expense Type'},
     ]
 
-    actual = [*Expense.objects.month_expense_type(1999)]
+    actual = [*Expense.objects.sum_by_month_and_type(1999)]
 
     assert actual == expect
 
@@ -59,7 +59,7 @@ def test_day_expense_type(get_user, expenses_january):
         },
     ]
 
-    actual = [*Expense.objects.day_expense_type(1999, 1)]
+    actual = [*Expense.objects.sum_by_day_ant_type(1999, 1)]
 
     assert actual == expect
 
@@ -293,7 +293,7 @@ def test_month_name_sum(get_user):
         {'date': date(1999, 2, 1), 'title': 'N1', 'type_title': 'T1', 'sum': Decimal(9)},
     ]
 
-    actual = Expense.objects.month_name_sum(1999)
+    actual = Expense.objects.sum_by_month_and_name(1999)
 
     assert [*actual] == expect
 

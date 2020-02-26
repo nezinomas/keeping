@@ -81,7 +81,7 @@ class MonthHelper():
         self._year = year
         self._month = month
 
-        qs_expenses = Expense.objects.day_expense_type(year, month)
+        qs_expenses = Expense.objects.sum_by_day_ant_type(year, month)
         qs_savings = Saving.objects.day_saving(year, month)
 
         self._day = DayExpense(
@@ -188,7 +188,7 @@ class IndexHelper():
         qs_income = Income.objects.sum_by_month(year)
         qs_savings = Saving.objects.month_saving(year)
         qs_savings_close = SavingClose.objects.sum_by_month(year)
-        qs_ExpenseType = Expense.objects.month_expense_type(year)
+        qs_ExpenseType = Expense.objects.sum_by_month_and_type(year)
 
         self._MonthExpense = MonthExpense(
             year, qs_ExpenseType, **{'Taupymas': qs_savings})

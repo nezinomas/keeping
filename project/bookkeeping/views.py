@@ -145,7 +145,7 @@ class Detailed(LoginRequiredMixin, TemplateView):
         _gen_data(qs, 'Taupymas')
 
         # Expenses
-        qs = [*Expense.objects.month_name_sum(year)]
+        qs = [*Expense.objects.sum_by_month_and_name(year)]
         for i in H.expense_types():
             filtered = filter(lambda x: i in x['type_title'], qs)
             _gen_data([*filtered], f'Išlaidos / {i}')

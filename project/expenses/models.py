@@ -120,7 +120,7 @@ class ExpenseQuerySet(models.QuerySet):
     def items(self):
         return self.related().all()
 
-    def month_expense_type(self, year):
+    def sum_by_month_and_type(self, year):
         return (
             self
             .related()
@@ -138,7 +138,7 @@ class ExpenseQuerySet(models.QuerySet):
                 title=F('expense_type__title'))
         )
 
-    def month_name_sum(self, year):
+    def sum_by_month_and_name(self, year):
         return (
             self
             .related()
@@ -159,7 +159,7 @@ class ExpenseQuerySet(models.QuerySet):
                 type_title=F('expense_type__title'))
         )
 
-    def day_expense_type(self, year, month):
+    def sum_by_day_ant_type(self, year, month):
         return (
             self
             .related()
