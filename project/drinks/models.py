@@ -37,7 +37,7 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
         return (
             self
             .related()
-            .sum_by_month(
+            .month_sum(
                 year=year, month=month,
                 summed_name=summed_name, sum_column_name='quantity')
             .order_by('date')

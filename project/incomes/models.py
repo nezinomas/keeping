@@ -71,7 +71,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
         return (
             self
             .related()
-            .sum_by_month(year, summed_name, month=month)
+            .month_sum(year, summed_name, month=month)
             .values('date', summed_name)
         )
 

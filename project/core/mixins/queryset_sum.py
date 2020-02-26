@@ -12,7 +12,7 @@ class SumMixin():
         else:
             return self
 
-    def sum_by_month(self, year, summed_name,
+    def month_sum(self, year, summed_name,
                      month=None, groupby='id', sum_column_name='price'):
         return (
             self

@@ -106,7 +106,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         return (
             self
             .related()
-            .sum_by_month(
+            .month_sum(
                 year=year, month=month,
                 summed_name=summed_name)
             .values('date', summed_name)
