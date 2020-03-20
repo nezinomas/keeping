@@ -8,6 +8,10 @@ from .. import forms, models
 from ..views.expenses_type import Lists as TypeLists
 
 
+def _qs_default_ordering(qs):
+    return qs.order_by('-date', 'expense_type', F('expense_name').asc())
+
+
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -17,26 +21,20 @@ class Index(IndexMixin):
         return context
 
 
-class GetQuerySetMixin():
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .order_by('-date', 'expense_type', F('expense_name').asc())
-        )
-
-
-class Lists(GetQuerySetMixin, ListMixin):
+class Lists(ListMixin):
     model = models.Expense
 
+    def get_queryset(self):
+        return _qs_default_ordering(super().get_queryset())
 
-class New(GetQuerySetMixin, CreateAjaxMixin):
+
+class New(CreateAjaxMixin):
     model = models.Expense
     form_class = forms.ExpenseForm
     list_render_output = False
 
 
-class Update(GetQuerySetMixin, UpdateAjaxMixin):
+class Update(UpdateAjaxMixin):
     model = models.Expense
     form_class = forms.ExpenseForm
     list_render_output = False
@@ -61,9 +59,12 @@ def reload(request):
     context = {}
 
     if ajax_trigger:
+        qs = models.Expense.objects.year(year)
+        qs = _qs_default_ordering(qs)
+
         context['expenses_list'] = render_to_string(
             'expenses/includes/expenses_list.html',
-            {'items': models.Expense.objects.year(year)},
+            {'items': qs},
             request
         )
 
