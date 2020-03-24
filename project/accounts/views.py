@@ -21,6 +21,8 @@ class Update(UpdateAjaxMixin):
     model = models.Account
     form_class = forms.AccountForm
 
+    def get_queryset(self):
+        return models.Account.objects.related()
 
 def load_to_account(request):
     _id = request.GET.get('id')
