@@ -13,8 +13,8 @@ class IndexMixin(LoginRequiredMixin, TemplateView):
         if self.template_name is None:
             app_name = self.request.resolver_match.app_name
             return [f'{app_name}/index.html']
-        else:
-            return [self.template_name]
+
+        return [self.template_name]
 
 
 class ListMixin(
@@ -35,13 +35,11 @@ class ListMixin(
         return [self.template_name]
 
     def _render_to_string(self, request, **kwargs):
-        template_name = self.get_template_names()
-
         return (
             render_to_string(
-                template_name,
-                self.get_context_data(),
-                request
+                template_name=self.get_template_names(),
+                context=self.get_context_data(),
+                request=request
             )
         )
 
@@ -77,7 +75,6 @@ class DeleteAjaxMixin(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         update_context(self, context, 'delete')
 
         return context
