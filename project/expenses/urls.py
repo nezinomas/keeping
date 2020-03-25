@@ -16,6 +16,11 @@ e = [
         name='expenses_list'
     ),
     path(
+        'expenses/lists/<int:month>/',
+        expenses.MonthLists.as_view(),
+        name='expenses_month_list'
+    ),
+    path(
         'expenses/new/',
         expenses.New.as_view(),
         name='expenses_new'

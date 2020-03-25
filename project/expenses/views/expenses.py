@@ -1,7 +1,10 @@
+from datetime import datetime
+
 from django.db.models import F
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
+from ...core.lib.date import year_month_list
 from ...core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                   UpdateAjaxMixin)
 from .. import forms, models
@@ -16,7 +19,10 @@ class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = TypeLists.as_view()(self.request, as_string=True)
-        context['expenses'] = Lists.as_view()(self.request, as_string=True)
+        context['expenses'] = MonthLists.as_view()(self.request, as_string=True)
+
+        context['buttons'] = year_month_list()
+        context['current_month'] = datetime.now().month
 
         return context
 
@@ -26,6 +32,19 @@ class Lists(ListMixin):
 
     def get_queryset(self):
         return _qs_default_ordering(super().get_queryset())
+
+
+class MonthLists(ListMixin):
+    model = models.Expense
+
+    def get_queryset(self):
+        month = self.kwargs.get('month')
+
+        if not month or month not in range(1, 13):
+            month = datetime.now().month
+
+        qs = super().get_queryset().filter(date__month=month)
+        return _qs_default_ordering(qs)
 
 
 class New(CreateAjaxMixin):
