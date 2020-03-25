@@ -40,7 +40,7 @@ class ListMixin(
         return (
             render_to_string(
                 template_name,
-                {self.context_object_name: self.get_queryset()},
+                self.get_context_data(),
                 request
             )
         )
