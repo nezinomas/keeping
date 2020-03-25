@@ -17,10 +17,10 @@
             <div class="col-lg-11">
             {% for m in buttons %}
                 {% with m|date:'n' as m_num %}
-                <button id="btn{{m_num}}" type="button" data-url="{% url 'expenses:expenses_month_list' m_num %}" class="btn btn-sm btn-month js-filter mr-1 {% if current_month|slugify == m_num %}btn-info{% endif %}">{{ m|date:'F'|title }}</button>
+                <button id="{{m_num}}" type="button" data-url="{% url 'expenses:expenses_month_list' m_num %}" class="btn btn-sm btn-month js-filter mr-1 {% if current_month|slugify == m_num %}btn-info{% endif %}">{{ m|date:'F'|title }}</button>
                 {% endwith %}
                 {% endfor %}
-                <button id="btn-all" type="button" data-url="{% url 'expenses:expenses_list' %}"
+                <button id="13" type="button" data-url="{% url 'expenses:expenses_list' %}"
                     class="btn btn-sm btn-month js-filter ml-5">Visi įrašai</button>
             </div>
             <div class="col-lg-1 text-right">
@@ -49,11 +49,13 @@
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
         var url = `{% url 'expenses:reload_expenses' %}`;
+        var btn_month = $('.btn-info');
 
         $.ajax({
             url: url,
             data: {
-                'ajax_trigger': '1'
+                'ajax_trigger': '1',
+                'month': btn_month.attr('id'),
             },
             success: function (data) {
                 var expenses_list = $(data).filter('#expenses_list');

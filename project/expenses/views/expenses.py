@@ -78,7 +78,15 @@ def reload(request):
     context = {}
 
     if ajax_trigger:
+        try:
+            month = int(request.GET.get('month'))
+        except:
+            month = datetime.now().month
+
         qs = models.Expense.objects.year(year)
+        if month in range(1, 13):
+            qs = qs.filter(date__month=month)
+
         qs = _qs_default_ordering(qs)
 
         context['expenses_list'] = render_to_string(
