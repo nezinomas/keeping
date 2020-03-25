@@ -14,7 +14,16 @@
 <div class="row mt-2">
     <div class="col-lg-8">
         <div class="row my-2">
-            <div class="col text-right">
+            <div class="col-lg-11">
+            {% for m in buttons %}
+                {% with m|date:'n' as m_num %}
+                <button id="btn{{m_num}}" type="button" data-url="{% url 'expenses:expenses_month_list' m_num %}" class="btn btn-sm btn-month js-filter mr-1 {% if current_month|slugify == m_num %}btn-info{% endif %}">{{ m|date:'F'|title }}</button>
+                {% endwith %}
+                {% endfor %}
+                <button id="btn-all" type="button" data-url="{% url 'expenses:expenses_list' %}"
+                    class="btn btn-sm btn-month js-filter ml-5">Visi įrašai</button>
+            </div>
+            <div class="col-lg-1 text-right">
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expense_new }}"><i class="fas fa-plus"></i> Išlaidas</button>
             </div>
         </div>
@@ -51,6 +60,24 @@
                 $('#expenses_list').html(expenses_list);
             }
         });
+    });
+
+    $(document).on('click', '.js-filter', function () {
+        var url = $(this).attr('data-url');
+        $.ajax({
+            url: url,
+            type: 'get',
+
+            success: function (data) {
+                var expenses_list = data;
+                $('#expenses_list').html(expenses_list);
+            }
+        });
+    });
+
+    $('.btn-month').on('click', function () {
+        $('.btn-month').removeClass('btn-info');
+        $(this).addClass('btn-info');
     });
 </script>
 
