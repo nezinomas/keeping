@@ -124,7 +124,7 @@ def test_pension_summary(get_user, pensions):
     }]
 
     actual = list(Pension.objects.summary(1999))
-    print(f'actual:\n{actual}\n\n')
+
     assert expect == actual
 
 
