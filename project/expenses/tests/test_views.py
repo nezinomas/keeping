@@ -35,6 +35,12 @@ def test_expenses_lists_func():
     assert expenses.Lists == view.func.view_class
 
 
+def test_expenses_lists_month_func():
+    view = resolve('/expenses/lists/1/')
+
+    assert expenses.MonthLists == view.func.view_class
+
+
 def test_expenses_new_func():
     view = resolve('/expenses/new/')
 
@@ -55,6 +61,13 @@ def test_expenses_index_200(client_logged):
 
     assert 'expenses' in response.context
     assert 'categories' in response.context
+
+
+@pytest.mark.django_db
+def test_expenses_month_list_200(client_logged):
+    response = client_logged.get('/expenses/lists/1/')
+
+    assert response.status_code == 200
 
 
 #
