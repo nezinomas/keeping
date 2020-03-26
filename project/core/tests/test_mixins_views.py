@@ -25,7 +25,7 @@ def test_views_mixin_dispatch(mck, fake_request):
     assert mck.assert_called_once
 
 
-@mock.patch('project.core.mixins.views.ListMixin._render_to_string')
+@mock.patch('project.core.mixins.views.render_to_string')
 def test_views_mixin_dispatch_render_as_string(mck, fake_request):
     class DummyListMixin(ListMixin):
         template_name = 'T'
