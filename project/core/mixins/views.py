@@ -1,11 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import reverse
 from django.template.loader import render_to_string
 from django.views.generic import (CreateView, DeleteView, ListView,
                                   TemplateView, UpdateView)
 
+from . import helpers as H
 from .ajax import AjaxCreateUpdateMixin, AjaxDeleteMixin
 from .get import GetQuerysetMixin
-from .helpers import CreateAction, DeleteAction, UpdateAction, template_name
 
 
 class IndexMixin(LoginRequiredMixin, TemplateView):
@@ -35,7 +36,7 @@ class ListMixin(
 
     def get_template_names(self):
         if self.template_name is None:
-            return [template_name(self, 'list')]
+            return [H.template_name(self, 'list')]
 
         return [self.template_name]
 
@@ -46,8 +47,12 @@ class CreateAjaxMixin(
         CreateView):
 
     def get_context_data(self, **kwargs):
+        app = H.app_name(self)
+        model = H.model_plural_name(self)
+
         context = super().get_context_data(**kwargs)
-        CreateAction.update_context(self, context)
+        context['action'] = 'insert'
+        context['url'] = reverse(f'{app}:{model}_new')
 
         return context
 
@@ -58,8 +63,17 @@ class UpdateAjaxMixin(
         UpdateView):
 
     def get_context_data(self, **kwargs):
+        app = H.app_name(self)
+        model = H.model_plural_name(self)
+
         context = super().get_context_data(**kwargs)
-        UpdateAction.update_context(self, context)
+        context['action'] = 'update'
+        context['url'] = (
+            reverse(
+                f'{app}:{model}_update',
+                kwargs={'pk': self.object.pk}
+            )
+        )
 
         return context
 
@@ -70,7 +84,14 @@ class DeleteAjaxMixin(
         DeleteView):
 
     def get_context_data(self, **kwargs):
+        app = H.app_name(self)
+        model = H.model_plural_name(self)
+        pk = self.object.pk
+
         context = super().get_context_data(**kwargs)
-        DeleteAction.update_context(self, context)
+
+        if pk:
+            context['action'] = 'delete'
+            context['url'] = reverse(f'{app}:{model}_delete', kwargs={'pk': pk})
 
         return context
