@@ -24,7 +24,12 @@ class ListMixin(
 
     def dispatch(self, request, *args, **kwargs):
         if 'as_string' in kwargs:
-            return self._render_to_string(request, **kwargs)
+            rendered = render_to_string(
+                template_name=self.get_template_names(),
+                context=self.get_context_data(),
+                request=request
+            )
+            return rendered
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -33,15 +38,6 @@ class ListMixin(
             return [template_name(self, 'list')]
 
         return [self.template_name]
-
-    def _render_to_string(self, request, **kwargs):
-        return (
-            render_to_string(
-                template_name=self.get_template_names(),
-                context=self.get_context_data(),
-                request=request
-            )
-        )
 
 
 class CreateAjaxMixin(
