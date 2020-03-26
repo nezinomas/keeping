@@ -5,7 +5,7 @@ from django.views.generic import (CreateView, DeleteView, ListView,
 
 from .ajax import AjaxCreateUpdateMixin, AjaxDeleteMixin
 from .get import GetQuerysetMixin
-from .helpers import template_name, update_context
+from .helpers import CreateAction, DeleteAction, UpdateAction, template_name
 
 
 class IndexMixin(LoginRequiredMixin, TemplateView):
@@ -47,7 +47,7 @@ class CreateAjaxMixin(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        update_context(self, context, 'create')
+        CreateAction.update_context(self, context)
 
         return context
 
@@ -59,7 +59,7 @@ class UpdateAjaxMixin(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        update_context(self, context, 'update')
+        UpdateAction.update_context(self, context)
 
         return context
 
@@ -71,6 +71,6 @@ class DeleteAjaxMixin(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        update_context(self, context, 'delete')
+        DeleteAction.update_context(self, context)
 
         return context
