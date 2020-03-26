@@ -1,24 +1,25 @@
 from typing import Dict, List
 
-import pandas as pd
+from pandas import DataFrame as DF
 
 from ...core.lib.balance_base import BalanceBase
 
 
 class DaySpending(BalanceBase):
-    _balance = pd.DataFrame()
-    _avg_per_day = pd.DataFrame()
-    _spending = pd.DataFrame()
+    _balance = DF()
+    _avg_per_day = DF()
+    _spending = DF()
 
     def __init__(self,
                  year: int,
                  month: int,
-                 month_df: pd.DataFrame,
-                 necessary: List[str], plan_day_sum: float,
+                 month_df: DF,
+                 necessary: List[str],
+                 plan_day_sum: float,
                  plan_free_sum: float,
-                 exceptions: pd.DataFrame = pd.DataFrame()):
+                 exceptions: DF = DF()):
 
-        if not isinstance(month_df, pd.DataFrame):
+        if not isinstance(month_df, DF):
             return
 
         if month_df.empty:
@@ -51,7 +52,7 @@ class DaySpending(BalanceBase):
 
         return df.to_dict('records')
 
-    def _filter(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _filter(self, df: DF) -> DF:
         col_name_list = [*df.columns]
         col_name_leave = [*set(col_name_list).difference(set(self._necessary))]
 
@@ -66,7 +67,7 @@ class DaySpending(BalanceBase):
 
         return avg.get('total', 0.0)
 
-    def _calc_spending(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _calc_spending(self, df: DF) -> DF:
         # filter dateframe
         df = self._filter(df)
 
