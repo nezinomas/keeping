@@ -4,8 +4,8 @@ def calc_percent(args):
 
     if market and invested:
         return ((market * 100) / invested) - 100
-    else:
-        return 0.0
+
+    return 0.0
 
 
 def calc_sum(args):
@@ -14,5 +14,5 @@ def calc_sum(args):
 
     if market:
         return market - invested
-    else:
-        return 0.0
+
+    return 0.0
