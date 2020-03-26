@@ -1,13 +1,8 @@
 {% extends 'base.html' %}
 
-
-{% block head %}
-
-{% endblock head %}
-
+{% block head %}{% endblock head %}
 
 {% block content %}
-
 {% url 'expenses:expenses_new' as url_expense_new %}
 {% url 'expenses:expenses_type_new' as url_expenses_type_new %}
 {% url 'expenses:expenses_name_new' as url_expenses_name_new %}
@@ -81,5 +76,4 @@
         $(this).addClass('btn-info');
     });
 </script>
-
 {% endblock content %}
