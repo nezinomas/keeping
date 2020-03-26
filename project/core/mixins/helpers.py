@@ -1,4 +1,4 @@
-def format_plural(verbose_name):
+def format_plural(verbose_name: str) -> str:
     plural = verbose_name + 's'
 
     if ' ' in verbose_name:
@@ -10,11 +10,11 @@ def format_plural(verbose_name):
     return plural
 
 
-def app_name(obj: object):
+def app_name(obj: object) -> str:
     return obj.request.resolver_match.app_name
 
 
-def model_plural_name(obj: object):
+def model_plural_name(obj: object) -> str:
     return format_plural(obj.model._meta.verbose_name)
 
 
