@@ -75,20 +75,6 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
                              context, request=self.request)
         )
 
-        #  comment code which extracts js files from form.media._js
-        #  and append to data['js'] dictionary
-        #  then ajax.js loads these files with jquery function $.getScript()
-        #  ToDo: delete after some time
-        #  code commented on 2019.09.17
-
-        # form = self.get_form()
-        # js_url = []
-
-        # for js in form.media._js:  # for all the scripts used by the form
-        #     js_url.append(form.media.absolute_path(js))
-
-        # data['js'] = js_url
-
     def get_list_template_name(self):
         if not self.list_template_name:
             return template_name(self, 'list')
@@ -121,10 +107,6 @@ class AjaxDeleteMixin(GetQuerysetMixin):
             return JsonResponse(data)
 
         return super().get(request, *args, **kwargs)
-
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     return context
 
     def post(self, *args, **kwargs):
         if self.request.is_ajax():
