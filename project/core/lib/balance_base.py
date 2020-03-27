@@ -8,18 +8,16 @@ from ...core.lib.date import current_day
 
 
 def df_days_of_month(year: int, month: int) -> DF:
-    df = DF()
-
     try:
-        df = DF({
-            'date': pd.date_range(
-                start=pd.Timestamp(year, month, 1),
-                end=pd.Timestamp(year, month, 1) + pd.offsets.MonthEnd(0),
-                freq='D'
-            )
-        })
-    except:
-        return df
+        _range = pd.date_range(
+            start=pd.Timestamp(year, month, 1),
+            end=pd.Timestamp(year, month, 1) + pd.offsets.MonthEnd(0),
+            freq='D'
+        )
+    except ValueError:
+        return DF()
+
+    df = DF(_range, columns=['date'])
 
     df.set_index('date', inplace=True)
 
@@ -27,15 +25,13 @@ def df_days_of_month(year: int, month: int) -> DF:
 
 
 def df_months_of_year(year: int) -> DF:
-    df = DF()
-
     try:
-        # create empty DataFrame object with index containing all months
-        dt_range = pd.date_range(f'{year}', periods=12, freq='MS')
+        _range = pd.date_range(f'{year}', periods=12, freq='MS')
+    except ValueError:
+        return DF()
 
-        df = DF(dt_range, columns=['date'])
-    except:
-        return df
+    # create empty DataFrame object with index containing all months
+    df = DF(_range, columns=['date'])
 
     df.set_index('date', inplace=True)
 
@@ -48,13 +44,11 @@ class BalanceBase():
 
     @property
     def balance(self) -> List[Dict]:
-        val = []
-
         if not isinstance(self._balance, DF):
-            return val
+            return []
 
         if self._balance.empty:
-            return val
+            return []
 
         arr = self._balance.copy()
         arr.reset_index(inplace=True)
@@ -63,13 +57,11 @@ class BalanceBase():
 
     @property
     def total_row(self) -> Dict[str, float]:
-        val = {}
-
         if not isinstance(self._balance, DF):
-            return val
+            return {}
 
         if self._balance.empty:
-            return val
+            return {}
 
         arr = self._balance.copy()
 
@@ -77,13 +69,11 @@ class BalanceBase():
 
     @property
     def average(self) -> Dict[str, float]:
-        val = {}
-
         if not isinstance(self._balance, DF):
-            return val
+            return {}
 
         if self._balance.empty:
-            return val
+            return {}
 
         # replace 0.0 to None
         # average will be calculated only for months with non zero values
@@ -99,13 +89,11 @@ class BalanceBase():
         return arr.to_dict()
 
     def average_month(self, year: int, month: int) -> Dict[str, float]:
-        val = {}
-
         if not isinstance(self._balance, DF):
-            return val
+            return {}
 
         if self._balance.empty:
-            return val
+            return {}
 
         day = current_day(year, month)
 
