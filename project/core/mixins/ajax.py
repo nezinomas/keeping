@@ -16,6 +16,12 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
 
         return [self.template_name]
 
+    def get_list_template_name(self):
+        if not self.list_template_name:
+            return template_name(self, 'list')
+
+        return self.list_template_name
+
     def get(self, request, *args, **kwargs):
         if 'pk' in self.kwargs:
             self.object = self.get_object()
@@ -71,12 +77,6 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
                              context, request=self.request)
         )
 
-    def get_list_template_name(self):
-        if not self.list_template_name:
-            return template_name(self, 'list')
-
-        return self.list_template_name
-
 
 class AjaxDeleteMixin(GetQuerysetMixin):
     list_template_name = None
@@ -87,6 +87,12 @@ class AjaxDeleteMixin(GetQuerysetMixin):
             return [template_name(self, 'delete_form')]
 
         return [self.template_name]
+
+    def get_list_template_name(self):
+        if not self.list_template_name:
+            return template_name(self, 'list')
+
+        return self.list_template_name
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -121,9 +127,3 @@ class AjaxDeleteMixin(GetQuerysetMixin):
             return JsonResponse(data)
 
         return self.delete(*args, **kwargs)
-
-    def get_list_template_name(self):
-        if not self.list_template_name:
-            return template_name(self, 'list')
-
-        return self.list_template_name
