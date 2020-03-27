@@ -58,7 +58,7 @@ def collect_summary_data(year: int,
             try:
                 method = getattr(model.objects, f'summary{i}')
                 qs = method(year)
-            except Exception as e:
+            except Exception:
                 continue
 
             for row in qs:
@@ -68,7 +68,7 @@ def collect_summary_data(year: int,
                     continue
 
                 for k, v in row.items():
-                    if k == 'title' or k == 'id':
+                    if k in ('title', 'id'):
                         continue
 
                     # copy values from qs to df
