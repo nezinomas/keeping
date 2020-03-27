@@ -32,6 +32,7 @@ def year_month_list(year: int = None) -> List[date]:
 
     for i in range(1, 13):
         months.append(date(year, i, 1))
+
     return months
 
 
