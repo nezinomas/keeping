@@ -9,8 +9,8 @@ class SumMixin():
     def _month(self, month):
         if month:
             return self.filter(date__month=month)
-        else:
-            return self
+
+        return self
 
     def month_sum(self,
                   year,
