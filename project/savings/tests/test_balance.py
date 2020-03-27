@@ -3,7 +3,7 @@ from decimal import Decimal
 import pandas as pd
 import pytest
 
-from ...core.tests.utils import equal_list_of_dictionaries as assert_
+from ...core.tests.utils import equal_list_of_dictionaries as my_assert
 from ..lib.balance import Balance as T
 
 
@@ -95,7 +95,7 @@ def test_saving_only(_savings):
 
     actual = T(_savings, []).balance
 
-    assert_(expect, actual)
+    my_assert(expect, actual)
 
 
 def test_saving_when_worth_filled_partially(_savings):
@@ -130,7 +130,7 @@ def test_saving_when_worth_filled_partially(_savings):
 
     actual = T(_savings, worth).balance
 
-    assert_(expect, actual)
+    my_assert(expect, actual)
 
 
 def test_savings_worth(_savings, _savings_worth):
@@ -158,7 +158,7 @@ def test_savings_worth(_savings, _savings_worth):
 
     actual = T(_savings, _savings_worth).balance
 
-    assert_(expect, actual)
+    my_assert(expect, actual)
 
 
 def test_saving_stats_worth_empty(_savings):
@@ -182,7 +182,7 @@ def test_saving_stats_worth_empty(_savings):
 
     actual = T(_savings, []).balance
 
-    assert_(expect, actual)
+    my_assert(expect, actual)
 
 
 def test_saving_stats_worth_None(_savings):
@@ -206,7 +206,7 @@ def test_saving_stats_worth_None(_savings):
 
     actual = T(_savings, None).balance
 
-    assert_(expect, actual)
+    my_assert(expect, actual)
 
 
 def test_saving_total_row(_savings, _savings_worth):
@@ -232,16 +232,16 @@ def test_saving_total_row(_savings, _savings_worth):
 def test_savings_total_market(_savings, _savings_worth):
     actual = T(_savings, _savings_worth).total_market
 
-    assert 6.3 == pytest.approx(actual, rel=1e-2)
+    assert pytest.approx(actual, rel=1e-2) == 6.3
 
 
 def test_savings_total_market_empty_lists():
     actual = T([], []).total_market
 
-    assert 0 == actual
+    assert actual == 0
 
 
 def test_savings_total_market_none_values():
     actual = T(None, None).total_market
 
-    assert 0 == actual
+    assert actual == 0
