@@ -1,5 +1,4 @@
-import calendar
-from datetime import date, datetime
+from datetime import datetime
 from typing import Dict, List
 
 import pandas as pd
