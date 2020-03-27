@@ -60,12 +60,17 @@ def test_years_user_anonymous_user(mck):
     assert actual == [2001, 2002]
 
 
-def test_monthname_correct():
-    assert T.monthname(1) == 'january'
-
-
-def test_monthname_wrong_number():
-    assert T.monthname(13) == 'january'
+@pytest.mark.parametrize(
+    'month, expect',
+    [
+        (1, 'january'),
+        (13, 'january'),
+        ('1', 'january'),
+        ('x', 'january')
+    ]
+)
+def test_monthname(month, expect):
+    assert T.monthname(month) == expect
 
 
 def test_monthnames():
