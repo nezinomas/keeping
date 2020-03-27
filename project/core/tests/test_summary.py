@@ -193,11 +193,11 @@ def test_savings_for_accounts(mock_models, get_user, _account_types, savings):
 
     assert actual.at['Account1', 'id'] == 1
     assert actual.at['Account1', 's_past'] == 1.25
-    assert actual.at['Account1', 's_now'] == 3.25
+    assert actual.at['Account1', 's_now'] == 3.5
 
     assert actual.at['Account2', 'id'] == 2
     assert actual.at['Account2', 's_past'] == 0.25
-    assert actual.at['Account2', 's_now'] == 3.25
+    assert actual.at['Account2', 's_now'] == 2.25
 
 
 @patch('project.core.lib.summary.SavingsBalanceModels.models',
@@ -253,7 +253,7 @@ def test_transactions(mock_models, get_user, _account_types, transactions):
     assert actual.at['Account1', 'tr_to_now'] == 3.25
 
     assert actual.at['Account2', 'id'] == 2
-    assert actual.at['Account2', 'tr_fro_past'] == 5.25
+    assert actual.at['Account2', 'tr_from_past'] == 5.25
     assert actual.at['Account2', 'tr_from_now'] == 3.25
     assert actual.at['Account2', 'tr_to_past'] == 1.25
     assert actual.at['Account2', 'tr_to_now'] == 4.5
