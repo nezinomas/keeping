@@ -12,8 +12,8 @@ from .get import GetQuerysetMixin
 class IndexMixin(LoginRequiredMixin, TemplateView):
     def get_template_names(self):
         if self.template_name is None:
-            app_name = self.request.resolver_match.app_name
-            return [f'{app_name}/index.html']
+            app = H.app_name(self)
+            return [f'{app}/index.html']
 
         return [self.template_name]
 
