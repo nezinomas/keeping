@@ -1,4 +1,3 @@
-import pytest
 from ..templatetags.define_action import define
 
 

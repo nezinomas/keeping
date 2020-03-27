@@ -30,7 +30,7 @@ def test_account_list_full(mck, get_user):
 @patch('project.core.signals.SignalBase._update_or_create')
 def test_account_list_one(mock_init, get_user):
     a1 = AccountFactory(title='A1')
-    a2 = AccountFactory(title='A2')
+    AccountFactory(title='A2')
 
     obj = T.SignalBase(None)
     obj.model_types = Account
@@ -136,7 +136,7 @@ def test_saving_list_full(_mock, get_user):
 @patch('project.core.signals.SignalBase._update_or_create')
 def test_saving_list_one(_mock, get_user):
     s1 = SavingTypeFactory(title='S1')
-    s2 = SavingTypeFactory(title='S2')
+    SavingTypeFactory(title='S2')
 
     obj = T.SignalBase(None)
     obj.model_types = SavingType
@@ -152,7 +152,7 @@ def test_saving_list_one(_mock, get_user):
 @patch('project.core.signals.SignalBase._update_or_create')
 def test_saving_list_full_without_closed(_mock, get_user):
     s1 = SavingTypeFactory(title='S1')
-    s2 = SavingTypeFactory(title='S2', closed=1974)
+    SavingTypeFactory(title='S2', closed=1974)
 
     obj = T.SignalBase(None)
     obj.model_types = SavingType
@@ -167,7 +167,7 @@ def test_saving_list_full_without_closed(_mock, get_user):
 
 @patch('project.core.signals.SignalBase._update_or_create')
 def test_saving_list_without_closed(_mock, get_user):
-    s1 = SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', closed=1974)
 
     obj = T.SignalBase(None)

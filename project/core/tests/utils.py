@@ -1,4 +1,4 @@
-from django.urls import resolve, reverse
+from django.urls import reverse
 
 
 def equal_list_of_dictionaries(expect, actual):
