@@ -13,12 +13,10 @@ class ChainedDropDown():
 
     @property
     def parent_field_id(self) -> int:
-        _id = None
-
         try:
             _id = int(self._id)
-        except Exception:
-            pass
+        except (TypeError, ValueError):
+            _id = None
 
         return _id
 
