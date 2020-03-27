@@ -64,9 +64,9 @@ def test_model_not_exists(mock_models, account_types):
 @patch('django.apps.apps.get_model')
 def test_model_dont_have_summary_method(mock_get, mock_models):
     model = Mock()
-    model.objects.summary.side_effect = Exception('no summary')
-    model.objects.summary_to.side_effect = Exception('no summary_to')
-    model.objects.summary_from.side_effect = Exception('no summary_from')
+    model.objects.summary.side_effect = AttributeError('no summary')
+    model.objects.summary_to.side_effect = AttributeError('no summary_to')
+    model.objects.summary_from.side_effect = AttributeError('no summary_from')
 
     mock_get.return_value = model
 
@@ -82,8 +82,8 @@ def test_model_dont_have_summary_method(mock_get, mock_models):
 def test_model_summary_without_title(mock_get, mock_models):
     model = Mock()
     model.objects.summary.return_value = [{'x': 'x'}]
-    model.objects.summary_to.side_effect = Exception('no summary_to')
-    model.objects.summary_from.side_effect = Exception('no summary_from')
+    model.objects.summary_to.side_effect = AttributeError('no summary_to')
+    model.objects.summary_from.side_effect = AttributeError('no summary_from')
 
     mock_get.return_value = model
     actual = collect_summary_data(1999, {}, AccountsBalanceModels)

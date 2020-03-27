@@ -58,7 +58,8 @@ def collect_summary_data(year: int,
             try:
                 method = getattr(model.objects, f'summary{i}')
                 qs = method(year)
-            except Exception:
+            except AttributeError:
+                # some models may not have implemented methods:
                 continue
 
             for row in qs:
