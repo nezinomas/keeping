@@ -1,8 +1,8 @@
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 
+from . import helpers as H
 from .get import GetQuerysetMixin
-from .helpers import template_name
 
 
 class AjaxCreateUpdateMixin(GetQuerysetMixin):
@@ -12,13 +12,13 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
 
     def get_template_names(self):
         if self.template_name is None:
-            return [template_name(self, 'form')]
+            return [H.template_name(self, 'form')]
 
         return [self.template_name]
 
     def get_list_template_name(self):
         if not self.list_template_name:
-            return template_name(self, 'list')
+            return H.template_name(self, 'list')
 
         return self.list_template_name
 
@@ -84,13 +84,13 @@ class AjaxDeleteMixin(GetQuerysetMixin):
 
     def get_template_names(self):
         if self.template_name is None:
-            return [template_name(self, 'delete_form')]
+            return [H.template_name(self, 'delete_form')]
 
         return [self.template_name]
 
     def get_list_template_name(self):
         if not self.list_template_name:
-            return template_name(self, 'list')
+            return H.template_name(self, 'list')
 
         return self.list_template_name
 
