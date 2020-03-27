@@ -37,11 +37,10 @@ def year_month_list(year: int = None) -> List[date]:
 
 
 def monthname(month: int) -> str:
-    _month = 'january'
     try:
         _month = calendar.month_name[month]
-    except:
-        pass
+    except (TypeError, IndexError):
+        return 'january'
 
     return _month.lower()
 
