@@ -23,7 +23,9 @@ from ..lib.year_balance import YearBalance
 
 def expense_types(*args: str) -> List[str]:
     qs = list(
-        ExpenseType.objects.items()
+        ExpenseType
+        .objects
+        .items()
         .values_list('title', flat=True)
     )
 
@@ -36,7 +38,9 @@ def expense_types(*args: str) -> List[str]:
 
 def necessary_expense_types(*args: str) -> List[str]:
     qs = list(
-        ExpenseType.objects.items()
+        ExpenseType
+        .objects
+        .items()
         .filter(necessary=True)
         .values_list('title', flat=True)
     )
