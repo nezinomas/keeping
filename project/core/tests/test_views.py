@@ -20,16 +20,22 @@ def test_set_year(client_logged):
 
 
 @pytest.mark.django_db()
-def test_set_month(client_logged):
+@pytest.mark.parametrize(
+    'month, expect',
+    [
+        (12, 12),
+        (13, 1),
+    ])
+def test_set_month(month, expect, client_logged):
     url = reverse(
         'core:set_month',
-        kwargs={'month': 12}
+        kwargs={'month': month}
     )
 
     response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
-    assert response.wsgi_request.user.month == 12
+    assert response.wsgi_request.user.month == expect
 
 
 def test_view_regenerate_balances():
