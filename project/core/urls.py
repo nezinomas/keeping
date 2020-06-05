@@ -6,7 +6,7 @@ app_name = 'core'
 urlpatterns = [
     path('core/', views.index, name='core_index'),
     path(
-        'set/year/<int:year>/<str:view_name>/',
+        'year/<int:year>/',
         views.set_year,
         name='set_year'),
     path(

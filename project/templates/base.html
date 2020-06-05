@@ -31,11 +31,9 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ request.user.year|title }}</a>
             <div class="dropdown-menu">
-              {% with request.resolver_match.view_name as m_url %}
               {% for y in years %}
-              <a class="dropdown-item btn-sm py-1 pl-2" href="{% url 'core:set_year' y m_url  %}">{{ y|safe }}</a>
+              <a class="dropdown-item btn-sm py-1 pl-2" href="{% url 'core:set_year' y %}">{{ y|safe }}</a>
               {% endfor %}
-              {% endwith %}
             </div>
           </li>
           <li class="nav-item">

@@ -9,14 +9,15 @@ from .lib.date import years
 
 
 @login_required()
-def set_year(request, year, view_name):
+def set_year(request, year):
 
     user = request.user
     user.year = year
     user.save()
 
-    return redirect(
-        reverse(view_name, kwargs={}))
+    url = request.META.get('HTTP_REFERER', '/')
+
+    return redirect(url)
 
 
 @login_required

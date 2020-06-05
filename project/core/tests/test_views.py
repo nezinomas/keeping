@@ -10,7 +10,7 @@ from .. import views
 def test_set_year(client_logged):
     url = reverse(
         'core:set_year',
-        kwargs={'year': 1970, 'view_name': 'core:core_index'}
+        kwargs={'year': 1970}
     )
 
     response = client_logged.get(url, follow=True)
