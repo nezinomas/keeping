@@ -16,3 +16,4 @@ class UserFactory(factory.DjangoModelFactory):
     email = 'bob@bob.com'
     year = 1999
     month = 12
+    date_joined = '1999-01-01'

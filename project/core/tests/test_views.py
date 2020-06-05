@@ -6,12 +6,12 @@ from mock import patch
 from .. import views
 
 
-@freeze_time('1999-01-01')
+@freeze_time('2020-01-01')
 @pytest.mark.django_db()
 @pytest.mark.parametrize(
     'year, expect',
     [
-        (1999, 1999),
+        (2010, 2010),
         (1000, 1999),
         (3000, 1999),
     ])
