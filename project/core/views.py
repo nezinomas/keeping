@@ -22,13 +22,10 @@ def set_year(request, year):
 
 @login_required
 def set_month(request, month):
-    months = range(1, 13)
-    if month not in months:
-        month = 1
-
-    user = request.user
-    user.month = month
-    user.save()
+    if month in range(1, 13):
+        user = request.user
+        user.month = month
+        user.save()
 
     url = request.META.get('HTTP_REFERER', '/')
 

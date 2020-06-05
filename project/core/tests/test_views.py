@@ -31,8 +31,9 @@ def test_set_year(year, expect, client_logged):
 @pytest.mark.parametrize(
     'month, expect',
     [
+        (1, 1),
         (12, 12),
-        (13, 1),
+        (13, 12),
     ])
 def test_set_month(month, expect, client_logged):
     url = reverse(
