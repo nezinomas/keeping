@@ -6,17 +6,25 @@ from mock import patch
 from .. import views
 
 
+@freeze_time('1999-01-01')
 @pytest.mark.django_db()
-def test_set_year(client_logged):
+@pytest.mark.parametrize(
+    'year, expect',
+    [
+        (1999, 1999),
+        (1000, 1999),
+        (3000, 1999),
+    ])
+def test_set_year(year, expect, client_logged):
     url = reverse(
         'core:set_year',
-        kwargs={'year': 1970}
+        kwargs={'year': year}
     )
 
     response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
-    assert response.wsgi_request.user.year == 1970
+    assert response.wsgi_request.user.year == expect
 
 
 @pytest.mark.django_db()

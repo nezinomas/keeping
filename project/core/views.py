@@ -10,10 +10,10 @@ from .lib.date import years
 
 @login_required()
 def set_year(request, year):
-
-    user = request.user
-    user.year = year
-    user.save()
+    if year in years():
+        user = request.user
+        user.year = year
+        user.save()
 
     url = request.META.get('HTTP_REFERER', '/')
 
