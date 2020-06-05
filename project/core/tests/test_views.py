@@ -23,7 +23,7 @@ def test_set_year(client_logged):
 def test_set_month(client_logged):
     url = reverse(
         'core:set_month',
-        kwargs={'month': 12, 'view_name': 'core:core_index'}
+        kwargs={'month': 12}
     )
 
     response = client_logged.get(url, follow=True)

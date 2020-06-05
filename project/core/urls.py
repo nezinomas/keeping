@@ -10,7 +10,7 @@ urlpatterns = [
         views.set_year,
         name='set_year'),
     path(
-        'set/month/<int:month>/<str:view_name>/',
+        'month/<int:month>/',
         views.set_month,
         name='set_month'),
     path(

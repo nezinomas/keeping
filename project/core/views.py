@@ -20,13 +20,14 @@ def set_year(request, year, view_name):
 
 
 @login_required
-def set_month(request, month, view_name):
+def set_month(request, month):
     user = request.user
     user.month = month
     user.save()
 
-    return redirect(
-        reverse(view_name, kwargs={}))
+    url = request.META.get('HTTP_REFERER', '/')
+
+    return redirect(url)
 
 
 @login_required
