@@ -27,7 +27,7 @@
         {% with request.user.month as month %}
         {% for m in buttons %}
         {% with m|date:'n' as m_num %}
-        <a href="{% url 'core:set_month' m_num 'bookkeeping:month' %}" class="btn btn-sm btn-month my-1 {% if month|slugify == m_num %}btn-primary{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</a>
+        <a href="{% url 'core:set_month' m_num %}" class="btn btn-sm btn-month my-1 {% if month|slugify == m_num %}btn-primary{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</a>
         {% endwith %}{% endfor %}{% endwith %}
     </div>
     <div class="col-lg-4 px-m text-right">
