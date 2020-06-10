@@ -1,8 +1,11 @@
-from django.urls import path
+from django.urls import path, register_converter
 
+from ..core import converters
 from . import views
 
 app_name = 'bookkeeping'
+
+register_converter(converters.DateConverter, 'date')
 
 urlpatterns = [
     path('', views.Index.as_view(), name='index'),
