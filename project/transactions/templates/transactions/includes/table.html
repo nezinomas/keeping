@@ -13,7 +13,7 @@
         {% url url_name item.id as url %}
         {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="5" class="row-spacer"></td>{% endif %}</tr>
         {% endifchanged %}
-        <tr data-url="{{ url }}">
+        <tr data-url="{{ url }}" class="dblclick">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ item.from_account }}</td>
             <td class="text-left">{{ item.to_account }}</td>

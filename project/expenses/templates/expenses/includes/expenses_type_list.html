@@ -2,7 +2,7 @@
 {% url 'expenses:expenses_type_update' item.id as url_type_update %}
 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
     <div class="panel panel-default mb-2">
-        <div class="panel-heading" role="tab" data-url="{{ url_type_update }}">
+        <div class="panel-heading dblclick" role="tab" data-url="{{ url_type_update }}">
             <a role="button" class="list-group-item list-group-item-primary list-group-item-action pr-2" data-toggle="collapse" href="#_{{ item.id }}_"
                 aria-expanded="true" >
                 {{ item.title }}
@@ -12,7 +12,7 @@
         <div id="_{{ item.id }}_" class="panel-collapse collapse" role="tabpanel">
             {% for sub in item.expensename_set.all %}
             {% url 'expenses:expenses_name_update' sub.id as url_name_update %}
-            <div class="list-group-item list-group-item-action" data-url="{{ url_name_update }}">{{ sub.title }}
+            <div class="list-group-item list-group-item-action dblclick" data-url="{{ url_name_update }}">{{ sub.title }}
                 {% if sub.valid_for %}<span class="badge badge-secondary">{{ sub.valid_for|safe }}</span>{% endif %}</div>
             {% endfor %}
         </div>

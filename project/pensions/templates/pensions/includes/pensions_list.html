@@ -12,7 +12,7 @@
     <tbody>
         {% for item in items %}
         {% url 'pensions:pensions_update' item.id as url_update %}
-        <tr data-url="{{ url_update }}">
+        <tr data-url="{{ url_update }}" class="dblclick">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ item.pension_type }}</td>
             <td class="text-left">{{ item.remark }}</td>
