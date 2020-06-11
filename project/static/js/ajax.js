@@ -54,9 +54,19 @@ $(function () {
                         price.value = '0.00';
                     }
 
+                    var qty = document.getElementById("id_quantity");
+                    if (qty) {
+                        qty.value = 1;
+                    }
+
                     var title = document.getElementById("id_title");
                     if (title) {
                         title.value = ''
+                    }
+
+                    var remark = document.getElementById("id_remark");
+                    if (remark) {
+                        remark.value = ''
                     }
 
                     // on update close modal
