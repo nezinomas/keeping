@@ -45,4 +45,9 @@ urlpatterns = [
         views.Summary.as_view(),
         name='summary'
     ),
+    path(
+        'month/<date:date>/',
+        views.month_day_list,
+        name='month_day_list'
+    ),
 ]

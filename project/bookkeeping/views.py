@@ -1,7 +1,11 @@
 from datetime import datetime
 
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import F
+from django.http import JsonResponse
 from django.shortcuts import redirect, render, reverse
+from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 
 from ..accounts.models import Account, AccountBalance
@@ -222,6 +226,30 @@ def reload_index(request):
         return render(request, template, context)
 
     return redirect(reverse('bookkeeping:index'))
+
+
+@login_required()
+def month_day_list(request, date):
+    try:
+        year = int(date[:4])
+        month = int(date[4:6])
+        day = int(date[6:8])
+        dt = datetime(year, month, day)
+    except Exception:  # pylint: disable=broad-except
+        dt = datetime(1970, 1, 1)
+
+    items = (
+        Expense.objects
+        .items()
+        .filter(date=dt)
+        .order_by('expense_type', F('expense_name').asc(), 'price')
+    )
+
+    context = {'items': items}
+    template = 'bookkeeping/includes/month_day_list.html'
+    rendered = render_to_string(template, context, request)
+
+    return JsonResponse({'html': rendered})
 
 
 def reload_month(request):
