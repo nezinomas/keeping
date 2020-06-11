@@ -70,6 +70,58 @@ def test_view_month_200(client_logged):
 
 
 # ---------------------------------------------------------------------------------------
+#                                                                                   Month
+# ---------------------------------------------------------------------------------------
+def test_view_month_day_list_func():
+    view = resolve('/month/11112233/')
+
+    assert views.month_day_list == view.func
+
+
+def test_view_month_day_list_200(client_logged):
+    response = client_logged.get('/month/')
+
+    assert response.status_code == 200
+
+
+@pytest.mark.parametrize(
+    'dt, expect',
+    [
+        ('19701301', 'išlaidų nėra'),
+        ('19701232', 'išlaidų nėra'),
+    ]
+)
+def test_view_month_day_list_wrong_dates(dt, expect, client_logged):
+    url = reverse('bookkeeping:month_day_list', kwargs={'date': dt})
+    response = client_logged.get(url)
+
+    actual = json.loads(response.content)
+
+    assert expect in actual['html']
+
+
+def test_view_month_day_list_302(client):
+    url = reverse('bookkeeping:month_day_list', kwargs={'date': '19700101'})
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
+def test_view_month_day_list_ajax(client_logged):
+    ExpenseFactory()
+
+    url = reverse('bookkeeping:month_day_list', kwargs={'date': '19990101'})
+    response = client_logged.get(url, {}, **X_Req)
+
+    actual = json.loads(response.content)
+
+    assert response.status_code == 200
+    assert '1999-01-01' in actual['html']
+    assert 'Expense Type' in actual['html']
+    assert 'Expense Name' in actual['html']
+
+
+# ---------------------------------------------------------------------------------------
 #                                                                           Account Worth
 # ---------------------------------------------------------------------------------------
 def test_accounts_worth_func():

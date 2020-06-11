@@ -53,6 +53,17 @@
     .px-m {
         padding: 0 .5rem;
     }
+
+    table.stats td.td_month_day_list {
+        padding-top: .25rem!important;
+        padding-left: .3rem!important;
+        padding-right: .3rem!important;
+        background-color: rgb(228, 227, 227);
+    }
+
+    td.td_month_day_list > table.table {
+        margin-bottom: 0.25rem!important;
+    }
 </style>
 
 <script>
@@ -96,4 +107,43 @@
         });
     });
 </script>
+
+<script>
+    $(function () {
+        var load_html = function () {
+            var btn = $(this);
+            var url = btn.data('url');
+            var id = btn.data('id');
+
+            if (url == undefined) {
+                return;
+            }
+
+            var row = `#row-${id}`;
+            var active_class = $(`${row} td`).hasClass('active');
+
+            if(!active_class) {
+                $.ajax({
+                    url: url,
+                    type: 'get',
+                    dataType: 'json',
+                    success: function (data) {
+                        $(row).after(data['html']);
+                        $(`${row} td.panel-heading`).addClass('active');
+                    },
+                    error: function (xhr, status, error) {
+                        alert(`err: ${error}\n\nstatus: ${status}`)
+                    }
+                });
+            } else {
+                $(`${row} + tr`).remove();
+                $(`${row} td.panel-heading`).removeClass('active');
+            };
+        };
+
+        $(document).on('click', '.row_click', load_html);
+    });
+</script>
+
+
 {% endblock content%}

@@ -2,6 +2,6 @@
     <div class="list-group-item list-group-item-action list-group-item-primary">Pensijų fondai</div>
     {% for item in items %}
     {% url 'pensions:pensions_type_update' item.id as url_update %}
-    <div class="list-group-item list-group-item-action" data-url="{{ url_update }}">{{ item.title }}</div>
+    <div class="list-group-item list-group-item-action dblclick" data-url="{{ url_update }}">{{ item.title }}</div>
     {% endfor %}
 </div>

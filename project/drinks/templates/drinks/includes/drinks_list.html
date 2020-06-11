@@ -10,7 +10,7 @@
         {% url 'drinks:drinks_update' item.id as url_update %}
         {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="2" class="row-spacer"></td>{% endif %}</tr>
         {% endifchanged %}
-        <tr data-url="{{ url_update }}">
+        <tr data-url="{{ url_update }}" class="dblclick">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
             <td>{{ item.quantity }}</td>
         </tr>

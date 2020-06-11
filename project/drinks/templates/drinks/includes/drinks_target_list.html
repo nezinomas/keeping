@@ -8,7 +8,7 @@
     <tfoot>
         {% for item in items %}
         {% url 'drinks:drinks_target_update' item.id as url_update %}
-        <tr data-url="{{ url_update }}">
+        <tr data-url="{{ url_update }}" class="dblclick">
             <td>{{ item.quantity }}</td>
         </tr>
         {% empty %}

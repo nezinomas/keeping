@@ -1,7 +1,7 @@
 $(function () {
 
     var loadForm = function(url) {
-        if (url == undefined) {
+        if (url == undefined || !url) {
             return;
         }
 
@@ -89,10 +89,9 @@ $(function () {
 
 
     /* Binding */
-    $('.dblclick').on('dblclick', 'tr', loadFormDblClc);
-    $('.dblclick').on('dblclick', 'div', loadFormDblClc);
+    $(document).on('dblclick', '.dblclick', loadFormDblClc);
 
-    $(".js-create").click(loadFormClc);
+    $(document).on('click', '.js-create', loadFormClc);
     $(".dblclick").on('click', '.js-delete', loadFormClc);
 
     $('#modal-form').on('click', "#submit", {save_close: false}, saveForm)
