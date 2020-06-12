@@ -14,7 +14,7 @@ def context_to_reload(request, context):
     qs_drinks_days = models.Drink.objects.day_sum(year)
 
     _DrinkStats = DrinkStats(qs_drinks)
-
+    print(_DrinkStats.consumption)
     # values
     avg = qs_drinks_days.get('per_day', 0) if qs_drinks_days else 0
     qty = qs_drinks_days.get('qty', 0) if qs_drinks_days else 0
