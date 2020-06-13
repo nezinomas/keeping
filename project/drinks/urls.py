@@ -45,7 +45,7 @@ urlpatterns = [
         name='reload_stats'
     ),
     path(
-        'drinks/historical_data//<int:qty>/',
+        'drinks/historical_data/<int:qty>/',
         views.historical_data,
         name='historical_data'
     ),
