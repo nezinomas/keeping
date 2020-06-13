@@ -60,8 +60,11 @@
             }
         },
         tooltip: {
-            shared: true,
-            pointFormat: '<b>{point.y:,.1f} ml</b><br/>'
+            formatter: function() {
+                var point = this.point
+                return `<b>${this.series.name}<b><br/>
+                       ${this.x}  ${point.y.toFixed(0)}ml`
+                }
         },
         credits: {
             enabled: false
@@ -71,19 +74,6 @@
                 fillOpacity: 0.4
             }
         },
-        series: [
-            {
-                name: '2018',
-                data: [120, 130, 150, 160, 185, 90, 80, 70, 200, 15, 5, 305]
-            },
-            {
-                name: '2019',
-                data: [130, 140, 160, 170, 195, 100, 90, 80, 220, 15, 15, 5]
-            },
-            {
-                name: '2020',
-                data: [13, 14, 16, 17, 195, 10, 9, 8, 22, 1, 3, 120]
-            },
-        ]
+        series: {{ ser|safe }}
     });
 </script>
