@@ -29,9 +29,9 @@ from .lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
 @receiver(post_save, sender=Transaction)
 @receiver(post_save, sender=SavingClose)
 @receiver(post_save, sender=AccountWorth)
-def post_save_account_stats(instance: object, year: int = None,
+def post_save_account_stats(sender, instance: object, year: int = None,
                             *args, **kwargs):
-    SignalBase.post_save_accounts(instance, year)
+    SignalBase.post_save_accounts(sender, instance, year)
 
 
 # ----------------------------------------------------------------------------
@@ -42,9 +42,9 @@ def post_save_account_stats(instance: object, year: int = None,
 @receiver(post_save, sender=SavingClose)
 @receiver(post_save, sender=SavingChange)
 @receiver(post_save, sender=SavingWorth)
-def post_save_saving_stats(instance: object, year: int = None,
+def post_save_saving_stats(sender, instance: object, year: int = None,
                            *args, **kwargs):
-    SignalBase.post_save_savings(instance, year)
+    SignalBase.post_save_savings(sender, instance, year)
 
 
 # ----------------------------------------------------------------------------
@@ -53,9 +53,9 @@ def post_save_saving_stats(instance: object, year: int = None,
 @receiver(post_save, sender=Pension)
 @receiver(post_save, sender=PensionType)
 @receiver(post_save, sender=PensionWorth)
-def post_save_pension_stats(instance: object, year: int = None,
+def post_save_pension_stats(sender, instance: object, year: int = None,
                             *args, **kwargs):
-    SignalBase.post_save_pensions(instance, year)
+    SignalBase.post_save_pensions(sender, instance, year)
 
 
 # ----------------------------------------------------------------------------
@@ -73,35 +73,38 @@ class SignalBase():
         self._update_or_create()
 
     @classmethod
-    def post_save_accounts(cls, instance: object, year: int):
+    def post_save_accounts(cls, sender: object, instance: object, year: int = None):
         cls.field = 'account_id'
         cls.model_types = Account
         cls.model_balance = AccountBalance
         cls.model_worth = AccountWorth
         cls.class_stats = AccountStats
         cls.summary_models = AccountsBalanceModels
+        cls.sender = sender
 
         return cls(instance, year)
 
     @classmethod
-    def post_save_savings(cls, instance: object, year: int):
+    def post_save_savings(cls, sender: object, instance: object, year: int = None):
         cls.field = 'saving_type_id'
         cls.model_types = SavingType
         cls.model_balance = SavingBalance
         cls.model_worth = SavingWorth
         cls.class_stats = SavingStats
         cls.summary_models = SavingsBalanceModels
+        cls.sender = sender
 
         return cls(instance, year)
 
     @classmethod
-    def post_save_pensions(cls, instance: object, year: int):
+    def post_save_pensions(cls, sender: object, instance: object, year: int = None):
         cls.field = 'pension_type_id'
         cls.model_types = PensionType
         cls.model_balance = PensionBalance
         cls.model_worth = PensionWorth
         cls.class_stats = SavingStats  # using same savings Balance class
         cls.summary_models = PensionsBalanceModels
+        cls.sender = sender
 
         return cls(instance, year)
 
