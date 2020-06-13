@@ -1,9 +1,13 @@
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
+from ..core.lib.date import years
 from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from . import forms, models
+from .lib.drinks_stats import DrinkStats
 from .lib.views_helper import context_to_reload
 
 
@@ -17,6 +21,29 @@ def reload_stats(request):
         context_to_reload(request, context)
 
         return render(request, name, context)
+
+@login_required()
+def historical_data(request, qty):
+    ser = []
+    year = request.user.year + 1
+    for y in range (year - qty, year):
+        qs_drinks = models.Drink.objects.sum_by_month(y)
+        data = DrinkStats(qs_drinks).consumption
+
+        if not any(data):
+            continue
+
+        d = {
+            'name': y,
+            'data': data
+        }
+        ser.append(d)
+
+    template = 'drinks/includes/chart_consumsion_history.html'
+    context = {'ser': ser}
+    rendered = render_to_string(template, context, request)
+
+    return JsonResponse({'html': rendered})
 
 
 class Index(IndexMixin):
@@ -34,6 +61,8 @@ class Index(IndexMixin):
             'drinks/includes/drinks_target_list.html',
             {'items': qs_target},
             self.request)
+
+        context['all_years'] = len(years())
 
         return context
 

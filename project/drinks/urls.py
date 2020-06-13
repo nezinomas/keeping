@@ -43,5 +43,10 @@ urlpatterns = [
         'drinks/reload_stats/',
         views.reload_stats,
         name='reload_stats'
-    )
+    ),
+    path(
+        'drinks/historical_data//<int:qty>/',
+        views.historical_data,
+        name='historical_data'
+    ),
 ]
