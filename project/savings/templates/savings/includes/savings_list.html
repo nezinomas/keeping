@@ -8,12 +8,13 @@
             <th>Pastaba</th>
             <th class="text-right">Suma</th>
             <th class="text-right">Mokesčiai</th>
+            <th width="45rem"></th>
         </tr>
     </thead>
     <tbody>
         {% for item in items %}
         {% url 'savings:savings_update' item.id as url_update %}
-        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="6" class="row-spacer"></td>{% endif %}</tr>
+        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="7" class="row-spacer"></td>{% endif %}</tr>
         {% endifchanged %}
         <tr data-url="{{ url_update }}" class="dblclick">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
@@ -22,10 +23,11 @@
             <td class="text-left">{{ item.remark }}</td>
             <td>{{ item.price|intcomma }}</td>
             <td>{{ item.fee|default_if_none:'-'|intcomma }}</td>
+            <td class="text-center"><a type="button" data-url="{{ url_update }}" class="btn btn-super-sm btn-outline-info js-create">Edit</a></td>
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="6" class="py-2"><b>{{ request.user.year|title }}</b> metais įrašų nėra.</td>
+            <td colspan="7" class="py-2"><b>{{ request.user.year|title }}</b> metais įrašų nėra.</td>
         </tr>
         {% endfor %}
     </tbody>

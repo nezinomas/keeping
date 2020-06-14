@@ -7,6 +7,7 @@
             <th>Pastaba</th>
             <th class="text-right">Suma</th>
             <th class="text-right">Mokestis</th>
+            <th width="45rem"></th>
         </tr>
     </thead>
     <tbody>
@@ -18,10 +19,11 @@
             <td class="text-left">{{ item.remark }}</td>
             <td>{{ item.price|default_if_none:'-'|intcomma }}</td>
             <td>{{ item.fee|default_if_none:'-'|intcomma }}</td>
+            <td class="text-center"><a type="button" data-url="{{ url_update }}" class="btn btn-super-sm btn-outline-info js-create">Edit</a></td>
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="5" class="py-2"><b>{{ request.user.year|title }}</b> metais irašų nėra.</td>
+            <td colspan="6" class="py-2"><b>{{ request.user.year|title }}</b> metais irašų nėra.</td>
         </tr>
         {% endfor %}
     </tbody>
