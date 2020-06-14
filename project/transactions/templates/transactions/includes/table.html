@@ -6,12 +6,13 @@
             <th>Į sąskaitą</th>
             <th class="text-right">Suma</th>
             {% if fees %}<th class="text-right">Mokesčiai</th>{% endif %}
+            <th width="45rem"></th>
         </tr>
     </thead>
     <tbody>
         {% for item in items %}
         {% url url_name item.id as url %}
-        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="5" class="row-spacer"></td>{% endif %}</tr>
+        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="6" class="row-spacer"></td>{% endif %}</tr>
         {% endifchanged %}
         <tr data-url="{{ url }}" class="dblclick">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
@@ -19,10 +20,11 @@
             <td class="text-left">{{ item.to_account }}</td>
             <td>{{ item.price }}</td>
             {% if fees %}<td>{{ item.fee }}</td>{% endif %}
+            <td class="text-center"><a type="button" data-url="{{ url }}" class="btn btn-super-sm btn-outline-info js-create">Edit</a></td>
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="{% if fees %}5{% else %}4{% endif %}" class="py-2"><b>{{ year|default_if_none:'xxxx'|safe }}</b> metais įrašų nėra.</td>
+            <td colspan="{% if fees %}6{% else %}5{% endif %}" class="py-2"><b>{{ year|default_if_none:'xxxx'|safe }}</b> metais įrašų nėra.</td>
         </tr>
         {% endfor %}
     </tbody>

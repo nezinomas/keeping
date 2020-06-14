@@ -143,6 +143,17 @@ tr.top-text, tr.top-text th {
   padding: .15rem .25rem;
 }
 
+.btn-super-sm {
+    font-size: .65rem;
+    line-height: 0.25rem!important;
+    padding-top: 0.25rem!important;
+    padding-bottom: 0.25rem!important;
+    padding-left: 0.25rem!important;
+    padding-right: 0.25rem!important;
+    margin-top: -0.65rem!important;
+    margin-bottom: -0.45rem!important;
+}
+
 .list-group-item {
     padding: .25rem 0 .25rem 1.25rem;
     margin: 0;

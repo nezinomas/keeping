@@ -2,17 +2,18 @@
     <thead class="thead-light">
         <tr class="top-text"><th colspan="2">Dienos riba</th></tr>
         <tr class="top">
-            <th class="text-right">Max per dieną</th>
+            <th class="text-right" colspan="2">Max per dieną</th>
         </tr>
     </thead>
     <tfoot>
         {% for item in items %}
         {% url 'drinks:drinks_target_update' item.id as url_update %}
         <tr data-url="{{ url_update }}" class="dblclick">
-            <td>{{ item.quantity }}</td>
+            <td width="38rem" style="border-right: 0!important;"><button type="button" data-url="{{ url_update }}" class="btn btn-super-sm btn-outline-info js-create">Edit</button></td>
+            <td style="border-left: 0!important;">{{ item.quantity }}</td>
         </tr>
         {% empty %}
-        <tr><td>Neįvestas tikslas</td></tr>
+        <tr><td colspan="2">Neįvestas tikslas</td></tr>
         {% endfor %}
     </tbody>
 </table>
