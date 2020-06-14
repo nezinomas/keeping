@@ -37,7 +37,7 @@
             {% cell item.november %}
             {% cell item.december %}
             <td>{% if url_delete %}
-                <button type="button" class="btn btn-sm btn-super-sm btn-danger js-delete" data-url="{% url url_delete item.id %}">Delete</button>
+                <button type="button" class="btn btn-super-sm btn-danger js-delete" data-url="{% url url_delete item.id %}">Delete</button>
             {% endif %}</td>
         </tr>{% endwith %}
         {% empty %}
@@ -53,13 +53,5 @@
     .star {
         color: #e83e8c;
         padding-left: .5rem;
-    }
-    .btn-super-sm {
-        line-height: 0.25rem!important;
-        padding-top: 0.2rem!important;
-        padding-bottom: 0.25rem!important;
-        margin-top: 0!important;
-        margin-bottom: .15rem!important;
-
     }
 </style>
