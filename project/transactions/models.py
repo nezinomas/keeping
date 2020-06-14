@@ -7,6 +7,7 @@ from django.db.models import Case, Count, Sum, When
 
 from ..accounts.models import Account
 from ..core.lib import utils
+from ..core.mixins.from_db import MixinFromDbFromAccountId
 from ..core.mixins.queryset_sum import SumMixin
 from ..savings.models import SavingType
 
@@ -96,7 +97,7 @@ class TransactionQuerySet(models.QuerySet):
         )
 
 
-class Transaction(models.Model):
+class Transaction(MixinFromDbFromAccountId):
     date = models.DateField()
     from_account = models.ForeignKey(
         Account,
@@ -210,7 +211,7 @@ class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
         )
 
 
-class SavingClose(models.Model):
+class SavingClose(MixinFromDbFromAccountId):
     date = models.DateField()
     from_account = models.ForeignKey(
         SavingType,
@@ -329,7 +330,7 @@ class SavingChangeQuerySet(TransactionQuerySet):
         )
 
 
-class SavingChange(models.Model):
+class SavingChange(MixinFromDbFromAccountId):
     date = models.DateField()
     from_account = models.ForeignKey(
         SavingType,

@@ -11,6 +11,7 @@ from django.db.models.functions import (ExtractYear, TruncDay, TruncMonth,
 
 from ..accounts.models import Account
 from ..core.lib import utils
+from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.models import TitleAbstract
 from ..users.models import User
 
@@ -236,7 +237,7 @@ class ExpenseQuerySet(models.QuerySet):
         return qs
 
 
-class Expense(models.Model):
+class Expense(MixinFromDbAccountId):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,

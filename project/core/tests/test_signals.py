@@ -28,6 +28,48 @@ def test_account_list_full(mck, get_user):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
+def test_get_id(mck, get_user):
+    instance = SimpleNamespace(
+        account_id=1,
+        _old_values=[2]
+    )
+    obj = T.SignalBase(instance=instance)
+    obj.field = 'account_id'
+
+    actual = obj._get_id()
+
+    assert [1, 2] == actual
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_year_none(mck, get_user):
+    obj = T.SignalBase(instance=SimpleNamespace())
+
+    assert obj.year == 1999
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_year(mck):
+    obj = T.SignalBase(instance=SimpleNamespace(), year=123)
+
+    assert obj.year == 123
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_id_dublicated(mck, get_user):
+    instance = SimpleNamespace(
+        account_id=1,
+        _old_values=[1]
+    )
+    obj = T.SignalBase(instance=instance)
+    obj.field = 'account_id'
+
+    actual = obj._get_id()
+
+    assert [1] == actual
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
 def test_account_list_one(mock_init, get_user):
     a1 = AccountFactory(title='A1')
     AccountFactory(title='A2')

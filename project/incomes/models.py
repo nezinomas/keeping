@@ -8,6 +8,7 @@ from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
 
 from ..accounts.models import Account
 from ..core.lib import utils
+from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
 from ..users.models import User
@@ -146,7 +147,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
         )
 
 
-class Income(models.Model):
+class Income(MixinFromDbAccountId):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,

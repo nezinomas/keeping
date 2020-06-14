@@ -137,6 +137,10 @@ class SignalBase():
             if _id:
                 account_id.append(_id)
 
+        # list of original, before change, account_id values
+        if hasattr(self.instance, '_old_values'):
+            account_id = list(set(account_id + self.instance._old_values))
+
         return account_id
 
     def _get_accounts(self) -> Dict[str, int]:
