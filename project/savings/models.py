@@ -7,10 +7,11 @@ from django.db.models import Case, Count, F, Q, Sum, When
 from django.db.models.functions import TruncMonth
 
 from ..accounts.models import Account
-from ..users.models import User
 from ..core.lib import utils
+from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
+from ..users.models import User
 
 
 class SavingTypeQuerySet(models.QuerySet):
@@ -198,7 +199,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         )
 
 
-class Saving(models.Model):
+class Saving(MixinFromDbAccountId):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,

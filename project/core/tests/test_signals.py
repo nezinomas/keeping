@@ -17,7 +17,7 @@ def test_account_list_full(mck, get_user):
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
 
-    obj = T.SignalBase(None)
+    obj = T.SignalBase(instance=None)
     obj.model_types = Account
 
     func = 'project.core.signals.SignalBase._get_id'
@@ -28,11 +28,53 @@ def test_account_list_full(mck, get_user):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
+def test_get_id(mck, get_user):
+    instance = SimpleNamespace(
+        account_id=1,
+        _old_values=[2]
+    )
+    obj = T.SignalBase(instance=instance)
+    obj.field = 'account_id'
+
+    actual = obj._get_id()
+
+    assert [1, 2] == actual
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_year_none(mck, get_user):
+    obj = T.SignalBase(instance=SimpleNamespace())
+
+    assert obj.year == 1999
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_year(mck):
+    obj = T.SignalBase(instance=SimpleNamespace(), year=123)
+
+    assert obj.year == 123
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_id_dublicated(mck, get_user):
+    instance = SimpleNamespace(
+        account_id=1,
+        _old_values=[1]
+    )
+    obj = T.SignalBase(instance=instance)
+    obj.field = 'account_id'
+
+    actual = obj._get_id()
+
+    assert [1] == actual
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
 def test_account_list_one(mock_init, get_user):
     a1 = AccountFactory(title='A1')
     AccountFactory(title='A2')
 
-    obj = T.SignalBase(None)
+    obj = T.SignalBase(instance=None)
     obj.model_types = Account
 
     func = 'project.core.signals.SignalBase._get_id'
@@ -49,7 +91,7 @@ def test_account_insert(_mock, get_user):
         {'title': 'A1', 'id': a1.id, 'balance': 2.0}]
 
     instance = SimpleNamespace(account_id=a1.id)
-    T.post_save_account_stats(instance=instance)
+    T.post_save_account_stats(sender=SimpleNamespace(), instance=instance)
 
     actual = AccountBalance.objects.year(1999)
 
@@ -71,8 +113,7 @@ def test_account_insert_instance_account_id_not_set(_mock, get_user):
         {'title': 'A2', 'id': a2.id, 'balance': 4.0},
     ]
 
-    instance = SimpleNamespace()
-    T.post_save_account_stats(instance=instance)
+    T.post_save_account_stats(sender=SimpleNamespace(), instance=SimpleNamespace())
 
     actual = AccountBalance.objects.year(1999)
 
@@ -97,7 +138,7 @@ def test_account_update(_mock, get_user):
     _mock.return_value = [{'title': 'A1', 'id': a1.id, 'balance': 2.0}]
 
     instance = SimpleNamespace(account_id=a1.id)
-    T.post_save_account_stats(instance=instance)
+    T.post_save_account_stats(sender=SimpleNamespace(), instance=instance)
 
     actual = AccountBalance.objects.year(1999)
 
@@ -122,7 +163,7 @@ def test_saving_list_full(_mock, get_user):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2')
 
-    obj = T.SignalBase(None)
+    obj = T.SignalBase(instance=None)
     obj.model_types = SavingType
     obj.year = 2000
 
@@ -138,7 +179,7 @@ def test_saving_list_one(_mock, get_user):
     s1 = SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2')
 
-    obj = T.SignalBase(None)
+    obj = T.SignalBase(instance=None)
     obj.model_types = SavingType
     obj.year = 1999
 
@@ -154,7 +195,7 @@ def test_saving_list_full_without_closed(_mock, get_user):
     s1 = SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1974)
 
-    obj = T.SignalBase(None)
+    obj = T.SignalBase(instance=None)
     obj.model_types = SavingType
     obj.year = 1999
 
@@ -170,7 +211,7 @@ def test_saving_list_without_closed(_mock, get_user):
     SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', closed=1974)
 
-    obj = T.SignalBase(None)
+    obj = T.SignalBase(instance=None)
     obj.model_types = SavingType
     obj.year = 1999
 
@@ -200,7 +241,7 @@ def test_saving_insert(_mock, get_user):
     }]
 
     instance = SimpleNamespace(id=1)
-    T.post_save_saving_stats(instance=instance)
+    T.post_save_saving_stats(sender=SimpleNamespace(), instance=instance)
 
     actual = SavingBalance.objects.year(1999)
 
@@ -232,7 +273,7 @@ def test_saving_insert_instance_saving_id_not_set(_mock, get_user):
     ]
 
     instance = SimpleNamespace()
-    T.post_save_saving_stats(instance=instance)
+    T.post_save_saving_stats(sender=SimpleNamespace(), instance=instance)
 
     actual = SavingBalance.objects.year(1999)
 
@@ -257,7 +298,7 @@ def test_saving_update(_mock, get_user):
     _mock.return_value = [{'title': 'S1', 'id': s1.id, 'past_amount': 22.0}]
 
     instance = SimpleNamespace(saving_id=s1.id)
-    T.post_save_saving_stats(instance=instance)
+    T.post_save_saving_stats(sender=SimpleNamespace(), instance=instance)
 
     actual = SavingBalance.objects.year(1999)
 

@@ -336,3 +336,13 @@ def test_expense_years_sum(get_user):
 
     assert actual[1]['year'] == 1999
     assert actual[1]['sum'] == 10.0
+
+
+def test_expense_from_db(get_user):
+    a1 = AccountFactory(title='A1')
+
+    e = ExpenseFactory(account=a1)
+
+    e1 = Expense.objects.get(pk=e.pk)
+
+    assert e1._old_values == [a1.pk]
