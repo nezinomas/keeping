@@ -7,6 +7,7 @@
             <th>Pastaba</th>
             <th class="text-center">Pradėta skaityti</th>
             <th class="text-center">Baigta skaityti</th>
+            <th width="45rem"></th>
         </tr>
     </thead>
     <tbody>
@@ -19,10 +20,11 @@
             <td class="text-left">{{ item.remark }}</td>
             <td class="text-center">{{ item.started|date:"Y-m-d" }}</td>
             <td class="text-center">{{ item.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
+            <td class="text-center"><a type="button" data-url="{{ url_update }}" class="btn btn-super-sm btn-outline-info js-create">Edit</a></td>
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="6" class="py-2"><b>{{ request.user.year|title }}</b> metais irašų nėra.</td>
+            <td colspan="7" class="py-2"><b>{{ request.user.year|title }}</b> metais irašų nėra.</td>
         </tr>
         {% endfor %}
     </tbody>
