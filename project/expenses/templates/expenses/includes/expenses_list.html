@@ -29,7 +29,7 @@
         {% empty %}
         <tr class="table-warning text-center">
             <td colspan="8" class="py-2"><b>{% if notice %}{{ notice }}{% else %}{{ request.user.year|title }}</b> metais išlaidų nėra.{% endif %}</td>
-        </tr>{
+        </tr>
         {% endfor %}
     </tbody>
 </table>
