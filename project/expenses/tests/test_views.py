@@ -35,6 +35,22 @@ def test_expenses_lists_func():
     assert expenses.Lists == view.func.view_class
 
 
+@pytest.mark.django_db
+def test_expenses_lists_200(client_logged):
+    url = reverse('expenses:expenses_list')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_expenses_lists_302(client):
+    url = reverse('expenses:expenses_list')
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
 def test_expenses_lists_month_func():
     view = resolve('/expenses/lists/1/')
 
