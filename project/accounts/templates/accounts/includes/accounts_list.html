@@ -2,7 +2,9 @@
     <div class="list-group-item list-group-item-action list-group-item-primary">Sąskaitos</div>
     {% for item in items %}
     {% url 'accounts:accounts_update' item.id as url_update %}
-    <div class="list-group-item list-group-item-action dblclick" data-url="{{ url_update }}">{% if item.closed %}<strike>{{ item.title }}</strike> <i>uždaryta
-        {{ item.closed|safe }}</i>{% else %}{{ item.title }}{% endif %}</div>
+    <div class="list-group-item list-group-item-action dblclick" data-url="{{ url_update }}">
+        {% if item.closed %}<strike>{{ item.title }}</strike> <i>uždaryta {{ item.closed|safe }}</i>{% else %}{{ item.title }}{% endif %}
+        <span style="position: absolute; top: .25rem; right: 5px; display: block;"><button type="button" data-url="{{ url_update }}" class="btn btn-super-sm btn-outline-info js-create">Edit</button>
+    </div>
     {% endfor %}
 </div>
