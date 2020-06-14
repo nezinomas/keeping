@@ -15,7 +15,7 @@
     <tbody>
         {% for item in items %}
         {% url 'expenses:expenses_update' item.id as url_update %}
-        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="7" class="row-spacer"></td>{% endif %}</tr>{% endifchanged %}
+        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="8" class="row-spacer"></td>{% endif %}</tr>{% endifchanged %}
         <tr data-url="{{ url_update }}" class="{{ item.expense_type.pk|bg_color }} dblclick">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ item.expense_type }}</td>
