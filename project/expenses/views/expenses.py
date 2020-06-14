@@ -37,15 +37,23 @@ class Lists(ListMixin):
 class MonthLists(ListMixin):
     model = models.Expense
 
-    def get_queryset(self):
+    def month(self):
         month = self.kwargs.get('month')
 
         if not month or month not in range(1, 13):
             month = datetime.now().month
 
-        qs = super().get_queryset().filter(date__month=month)
+        return month
+
+    def get_queryset(self):
+        qs = super().get_queryset().filter(date__month=self.month())
         return _qs_default_ordering(qs)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['notice'] = f'{self.month()} mėnesį įrašų nėra.'
+
+        return context
 
 class New(CreateAjaxMixin):
     model = models.Expense

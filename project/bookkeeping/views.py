@@ -245,7 +245,10 @@ def month_day_list(request, date):
         .order_by('expense_type', F('expense_name').asc(), 'price')
     )
 
-    context = {'items': items}
+    context = {
+        'items': items,
+        'notice': f'{dt:%F} dieną įrašų nėra',
+    }
     template = 'bookkeeping/includes/month_day_list.html'
     rendered = render_to_string(template, context, request)
 
