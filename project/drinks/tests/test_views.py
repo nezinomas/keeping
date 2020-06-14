@@ -227,3 +227,44 @@ def test_view_index_tbl_std_av_empty_current_year(client_logged):
     response = client_logged.get('/drinks/')
 
     assert 'Nėra duomenų' in response.context["tbl_std_av"]
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                         Hystorical Data
+# ---------------------------------------------------------------------------------------
+def test_historical_data_func():
+    view = resolve('/drinks/historical_data/1/')
+
+    assert views.historical_data == view.func
+
+
+def test_historical_data_200(client_logged):
+    response = client_logged.get('/drinks/historical_data/1/')
+
+    assert response.status_code == 200
+
+
+def test_historical_data_404(client_logged):
+    response = client_logged.get('/drinks/historical_data/x/')
+
+    assert response.status_code == 404
+
+
+def test_historical_data_302(client):
+    url = reverse('drinks:historical_data', kwargs={'qty': '1'})
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
+def test_historical_data_ajax(client_logged):
+    DrinkFactory()
+
+    url = reverse('drinks:historical_data', kwargs={'qty': '1'})
+    response = client_logged.get(url, {}, **X_Req)
+
+    actual = json.loads(response.content)
+
+    assert response.status_code == 200
+    assert "'name': 1999" in actual['html']
+    assert "'data': [16.129032258064516, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" in actual['html']
