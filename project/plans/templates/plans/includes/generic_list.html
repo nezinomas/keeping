@@ -37,8 +37,8 @@
             {% cell item.november %}
             {% cell item.december %}
             <td class="text-center">
-                <a type="button" data-url="{{ url }}" class="btn btn-super-sm btn-outline-info js-create">Edit</a>
             {% if url_delete %}
+                <a type="button" data-url="{{ url }}" class="btn btn-super-sm btn-outline-info js-create">Edit</a>
                 <button type="button" class="btn btn-super-sm btn-danger js-delete" data-url="{% url url_delete item.id %}">Delete</button>
             {% endif %}</td>
         </tr>{% endwith %}
