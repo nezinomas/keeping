@@ -87,8 +87,8 @@ def test_view_month_day_list_200(client_logged):
 @pytest.mark.parametrize(
     'dt, expect',
     [
-        ('19701301', 'išlaidų nėra'),
-        ('19701232', 'išlaidų nėra'),
+        ('19701301', '1970-01-01 dieną įrašų nėra'),
+        ('19701232', '1970-01-01 dieną įrašų nėra'),
     ]
 )
 def test_view_month_day_list_wrong_dates(dt, expect, client_logged):
