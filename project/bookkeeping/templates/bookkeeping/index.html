@@ -70,6 +70,32 @@
 {% include 'modal.html' %}
 
 <script>
+    $(function () {
+        var load_html = function () {
+            var btn = $(this);
+            var url = btn.data('url');
+
+            if (url == undefined || !url) {
+                return;
+            }
+
+            $.ajax({
+                url: url,
+                data: {
+                    'ajax_trigger': '1'
+                },
+                success: function (data) {
+                    if (data) {
+                        var accounts = $(data).filter('#accounts_worth');
+                        $('#accounts_worth').html(accounts);
+                    }
+                }
+            });
+        };
+
+        $(document).on('click', '.reset', load_html);
+    });
+
     $(document).on('hidden.bs.modal', '#modal-form', function () {
         var url = `{% url 'bookkeeping:reload_index' %}`;
 
