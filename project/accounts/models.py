@@ -67,9 +67,9 @@ class AccountBalanceQuerySet(models.QuerySet):
         qs = self.related().filter(year=year)
 
         return qs.values(
-            'year', 'past', 'balance', 'incomes',
+            'pk', 'year', 'past', 'balance', 'incomes',
             'expenses', 'have', 'delta',
-            title=F('account__title')
+            title=F('account__title'), account_pk=F('account__pk')
         )
 
 

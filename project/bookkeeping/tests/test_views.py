@@ -1,5 +1,6 @@
 import json
 from datetime import date
+from decimal import Decimal
 
 import pytest
 from django.urls import resolve, reverse
@@ -11,7 +12,8 @@ from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory, IncomeTypeFactory
 from ...pensions.factories import PensionFactory, PensionTypeFactory
 from ...savings.factories import SavingTypeFactory
-from .. import views
+from .. import models, views
+from ..factories import AccountWorthFactory
 
 pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -229,6 +231,68 @@ def test_account_worth_formset_closed_in_future(get_user, fake_request):
     assert 'S1' in actual
     assert 'S2' in actual
 
+
+# ---------------------------------------------------------------------------------------
+#                                                                     Account Worth Reset
+# ---------------------------------------------------------------------------------------
+def test_account_worth_reset_func():
+    view = resolve('/bookkeeping/accounts_worth/reset/1/')
+
+    assert views.accounts_worth_reset == view.func
+
+
+def test_account_worth_reset_200(client_logged):
+    a = AccountWorthFactory()
+    url = reverse('bookkeeping:accounts_worth_reset', kwargs={'pk': a.pk})
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_account_worth_reset_302(client):
+    a = AccountWorthFactory()
+    url = reverse('bookkeeping:accounts_worth_reset', kwargs={'pk': a.pk})
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
+def test_account_worth_reset_404(client_logged):
+    url = reverse('bookkeeping:accounts_worth_reset', kwargs={'pk': 1})
+    response = client_logged.get(url)
+
+    assert response.status_code == 404
+
+
+def test_account_worth_reset_string_404(client_logged):
+    url = '/bookkeeping/accounts_worth/reset/x/'
+    response = client_logged.get(url)
+
+    assert response.status_code == 404
+
+
+def test_account_worth_reset_already_reseted(client_logged):
+    a = AccountWorthFactory(price=0)
+
+    url = reverse('bookkeeping:accounts_worth_reset', kwargs={'pk': a.account.pk})
+    response = client_logged.get(url)
+
+    assert response.status_code == 204
+
+
+def test_account_worth_reset(client_logged):
+    a = AccountWorthFactory()
+
+    url = reverse('bookkeeping:accounts_worth_reset', kwargs={'pk': a.account.pk})
+    client_logged.get(url)
+
+    actual = models.AccountWorth.objects.last()
+
+    assert actual.price == Decimal(0.0)
+
+    actual = models.AccountWorth.objects.all()
+
+    assert actual.count() == 2
 
 # ---------------------------------------------------------------------------------------
 #                                                                            Saving Worth
