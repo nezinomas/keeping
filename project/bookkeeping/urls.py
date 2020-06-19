@@ -21,6 +21,11 @@ urlpatterns = [
         name='accounts_worth_new'
     ),
     path(
+        'bookkeeping/accounts_worth/reset/<int:pk>/',
+        views.accounts_worth_reset,
+        name='accounts_worth_reset'
+    ),
+    path(
         'bookkeeping/pensions_worth/new/',
         views.PensionsWorthNew.as_view(),
         name='pensions_worth_new'

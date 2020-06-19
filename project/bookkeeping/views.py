@@ -3,8 +3,8 @@ from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
-from django.http import JsonResponse
-from django.shortcuts import redirect, render, reverse
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 
@@ -253,6 +253,28 @@ def month_day_list(request, date):
     rendered = render_to_string(template, context, request)
 
     return JsonResponse({'html': rendered})
+
+
+@login_required()
+def accounts_worth_reset(request, pk):
+    account = get_object_or_404(Account, pk=pk)
+
+    w = AccountWorth.objects.filter(account=account).latest('date')
+
+    if w.price == 0:
+        return HttpResponse(status=204)
+
+    AccountWorth.objects.create(price=0, account=account)
+
+    template = 'bookkeeping/includes/reload_index.html'
+
+    year = request.user.year
+    obj = H.IndexHelper(request, year)
+
+    context = {
+        'accounts': obj.render_accounts(),
+    }
+    return render(request, template, context)
 
 
 def reload_month(request):
