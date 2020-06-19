@@ -1,4 +1,7 @@
+from datetime import datetime
+
 import factory
+import pytz
 from django.contrib.auth.hashers import make_password
 from django.db.models.signals import post_save
 
@@ -16,4 +19,4 @@ class UserFactory(factory.DjangoModelFactory):
     email = 'bob@bob.com'
     year = 1999
     month = 12
-    date_joined = '1999-01-01'
+    date_joined = datetime(1999, 1, 1, tzinfo=pytz.utc)
