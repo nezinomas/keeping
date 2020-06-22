@@ -53,7 +53,16 @@ def necessary_expense_types(*args: str) -> List[str]:
 
 
 def split_funds(lst: List[Dict], key: str) -> List[Dict]:
-    return list(filter(lambda x: key in x['title'].lower(), lst))
+    trues = []
+    falses = []
+
+    for x in lst:
+        if key in x['title'].lower():
+            trues.append(x)
+        else:
+            falses.append(x)
+
+    return trues, falses
 
 
 def sum_detailed(dataset, group_by_key, sum_value_keys):
@@ -329,8 +338,7 @@ class IndexHelper():
         )
 
     def render_no_incomes(self):
-        fund = split_funds(self._fund, 'lx')
-        pension = split_funds(self._fund, 'invl')
+        pension, fund = split_funds(self._fund, 'invl')
         not_use = [
             'Darbas',
             'Laisvalaikis',
