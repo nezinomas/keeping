@@ -28,10 +28,10 @@ def test_expenses_types(qs):
 def test_split_funds():
     lst = [{'title': 'AAA LX'}, {'title': 'INVL'}]
 
-    actual = T.split_funds(lst, 'lx')
+    a1, a2 = T.split_funds(lst, 'lx')
 
-    assert 1 == len(actual)
-    assert 'AAA LX' == actual[0]['title']
+    assert a1[0]['title'] == 'AAA LX'
+    assert a2[0]['title'] == 'INVL'
 
 
 @pytest.fixture
