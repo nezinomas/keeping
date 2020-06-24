@@ -182,7 +182,7 @@ class Summary(LoginRequiredMixin, TemplateView):
 
         context['balance_categories'] = balance_years
         context['balance_income_data'] = [float(x['sum']) for x in qs_inc]
-        context['balance_income_avg'] = [float(x['sum'])/12 for x in qs_inc]
+        context['balance_income_avg'] = average(qs_inc)
         context['balance_expense_data'] = [float(x['sum']) for x in qs_exp]
         context['balance_cnt'] = len(balance_years) - offset
 
@@ -190,23 +190,26 @@ class Summary(LoginRequiredMixin, TemplateView):
         qs = list(Income.objects.sum_by_year(['Atlyginimas', 'Premijos']))
         salary_years = [x['year'] for x in qs]
 
-        salary_data_avg = []
-        for r in qs:
-            year = r['year']
-            average(salary_data_avg, year, float(r['sum']))
-
         context['salary_categories'] = salary_years
-        context['salary_data_avg'] = salary_data_avg
+        context['salary_data_avg'] = average(qs)
         context['salary_cnt'] = len(salary_years) - offset
 
         return context
 
 
-def average(arr, year, sum_val):
+def average(qs):
     now = datetime.now()
-    cnt = now.month if year == now.year else 12
+    arr = []
 
-    arr.append(sum_val / cnt)
+    for r in qs:
+        year = r['year']
+        sum_val = float(r['sum'])
+
+        cnt = now.month if year == now.year else 12
+
+        arr.append(sum_val / cnt)
+
+    return arr
 
 
 def reload_index(request):
