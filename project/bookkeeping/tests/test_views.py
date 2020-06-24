@@ -578,3 +578,32 @@ def test_view_summary_salary_avg(client_logged):
     response = client_logged.get(url)
 
     assert response.context['salary_data_avg'] == [1.0, 10.0]
+
+
+@freeze_time('1999-01-01')
+def test_view_summary_incomes_avg(client_logged):
+    IncomeFactory(
+        date=date(1998, 1, 1),
+        price=12.0,
+        income_type=IncomeTypeFactory(title='Atlyginimas')
+    )
+    IncomeFactory(
+        date=date(1998, 1, 1),
+        price=12.0,
+        income_type=IncomeTypeFactory(title='Kita')
+    )
+    IncomeFactory(
+        date=date(1999, 1, 1),
+        price=10.0,
+        income_type=IncomeTypeFactory(title='Atlyginimas')
+    )
+    IncomeFactory(
+        date=date(1999, 1, 1),
+        price=2.0,
+        income_type=IncomeTypeFactory(title='Kt')
+    )
+
+    url = reverse('bookkeeping:summary')
+    response = client_logged.get(url)
+
+    assert response.context['balance_income_avg'] == [2.0, 12.0]
