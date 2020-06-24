@@ -53,7 +53,7 @@
 
         },
         tooltip: {
-            pointFormat: '<b>{point.y:,.0f} ml</b><br/>',
+            pointFormat: '<b>{point.y:,.0f}</b><br/>',
                 style: {
                     fontSize: '13px',
                     fontFamily: 'Calibri, Verdana',
@@ -61,19 +61,34 @@
         },
         plotOptions: {
             area: {
-                fillOpacity: 0.5
-            },
-            area: {
                 dataLabels: {
                     enabled: true,
-                    format: '{point.y:.0f}'
+                    format: '{point.y:.0f}',
+                    verticalAlign:'top',
+                    color: '#77933c',
+                    style: {
+                        textOutline: 0,
+                    },
                 },
                 enableMouseTracking: false,
-                fillOpacity: 0.5,
+                fillOpacity: 0.65,
+            },
+            line: {
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.y:.0f}',
+                    y: -5,
+                    color: '#2d5f2e',
+                    style: {
+                        textOutline: 0,
+                    },
+                },
+                enableMouseTracking: false,
             }
         },
         series: [
-            {'name': 'Vidutinis atlyginimas', 'data': {{ salary_data_avg|safe }}, 'type': 'area', 'color': '#77933c'},
+            {'name': 'Vidutinis atlyginimas, €', 'data': {{ salary_data_avg|safe }}, 'type': 'area', 'color': '#98bc62'},
+            {'name': 'Vidutinės pajamos, €', 'data': {{ balance_income_avg|safe }}, 'type': 'line', 'color': '#2d5f2e'},
         ]
     });
 </script>
