@@ -171,7 +171,7 @@ class Summary(LoginRequiredMixin, TemplateView):
 
         context['drinks_categories'] = drink_years
         context['drinks_data_ml'] = [x['per_day'] for x in qs]
-        context['drinks_data_alcohol'] = [x['qty']*0.025 for x in qs]
+        context['drinks_data_alcohol'] = [x['qty'] * 0.025 for x in qs]
         context['drinks_cnt'] = len(drink_years) - offset
 
         # data for balance summary
