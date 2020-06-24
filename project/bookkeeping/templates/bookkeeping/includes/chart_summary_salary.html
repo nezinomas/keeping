@@ -87,8 +87,17 @@
             }
         },
         series: [
-            {'name': 'Vidutinis atlyginimas, €', 'data': {{ salary_data_avg|safe }}, 'type': 'area', 'color': '#98bc62'},
-            {'name': 'Vidutinės pajamos, €', 'data': {{ balance_income_avg|safe }}, 'type': 'line', 'color': '#2d5f2e'},
-        ]
+        {
+            name: 'Vidutinis atlyginimas, €',
+            data: {{ salary_data_avg|safe }},
+            type: 'area',
+            color: '#98bc62',
+        }, {
+            name: 'Vidutinės pajamos, €',
+            data: {{ balance_income_avg|safe }},
+            type: 'line',
+            color: '#2d5f2e',
+        },
+        ],
     });
 </script>
