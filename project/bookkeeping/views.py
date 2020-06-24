@@ -188,12 +188,11 @@ class Summary(LoginRequiredMixin, TemplateView):
 
         # data for salary summary
         qs = list(Income.objects.sum_by_year(['Atlyginimas', 'Premijos']))
+        salary_years = [x['year'] for x in qs]
 
-        salary_years = []
         salary_data_avg = []
         for r in qs:
             year = r['year']
-            salary_years.append(year)
             average(salary_data_avg, year, float(r['sum']))
 
         context['salary_categories'] = salary_years
