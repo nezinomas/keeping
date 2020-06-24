@@ -36,19 +36,40 @@
                 },
             },
         },
-        yAxis: {
+        yAxis: [{
             labels: {
                 format: '{value:.0f}',
                 style: {
                     fontSize: '10px',
                     fontFamily: 'Calibri, Verdana',
+                    color: '#46ab9d',
                 },
             },
             title: {
-                text: ''
+                text: '',
+                style: {
+                    color: '#46ab9d',
+                }
             },
 
-        },
+        }, {
+            opposite: true,
+            labels: {
+                format: '{value:.0f}',
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                    color: '#d13572',
+                },
+            },
+            title: {
+                text: '',
+                style: {
+                    color: '#d13572',
+                }
+            },
+
+        }],
         tooltip: {
             pointFormat: '<b>{point.y:,.0f} ml</b><br/>',
                 style: {
@@ -56,21 +77,40 @@
                     fontFamily: 'Calibri, Verdana',
                 },
         },
-        plotOptions: {
-            area: {
-                fillOpacity: 0.5
-            },
-            area: {
-                dataLabels: {
-                    enabled: true,
-                    format: '{point.y:.0f}'
+        series: [{
+            name: 'Vidutiniškai per dieną, ml',
+            yAxis: 0,
+            data: {{ drinks_data_ml|safe }},
+            color: '#46ab9d',
+            type: 'area',
+            dataLabels: {
+                enabled: true,
+                format: '{point.y:.0f}',
+                y: -25,
+                verticalAlign:'top',
+                color: '#28695f',
+                style: {
+                    textOutline: 0,
                 },
-                enableMouseTracking: false,
-                fillOpacity: 0.5,
-            }
-        },
-        series: [
-            {'name': 'Vidutiniškai per dieną, ml', 'data': {{ drinks_data_ml|safe }}, 'type': 'area'},
-        ]
+            },
+            enableMouseTracking: false,
+            fillOpacity: 0.65,
+        }, {
+            name: 'Per metus gryno alkoholio, L',
+            yAxis: 1,
+            data: {{ drinks_data_alcohol|safe }},
+            color: '#d13572',
+            type: 'line',
+            dataLabels: {
+                enabled: true,
+                format: '{point.y:.1f}',
+                y: 25,
+                color: '#d13572',
+                style: {
+                    textOutline: 0,
+                },
+            },
+            enableMouseTracking: false,
+        }],
     });
 </script>
