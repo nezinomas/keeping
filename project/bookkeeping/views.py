@@ -182,6 +182,7 @@ class Summary(LoginRequiredMixin, TemplateView):
 
         context['balance_categories'] = balance_years
         context['balance_income_data'] = [float(x['sum']) for x in qs_inc]
+        context['balance_income_avg'] = [float(x['sum'])/12 for x in qs_inc]
         context['balance_expense_data'] = [float(x['sum']) for x in qs_exp]
         context['balance_cnt'] = len(balance_years) - offset
 
