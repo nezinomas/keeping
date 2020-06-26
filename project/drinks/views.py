@@ -40,7 +40,7 @@ def historical_data(request, qty):
         ser.append(d)
 
     template = 'drinks/includes/chart_consumsion_history.html'
-    context = {'ser': ser}
+    context = {'ser': ser, 'chart_container_name': 'history_chart'}
     rendered = render_to_string(template, context, request)
 
     return JsonResponse({'html': rendered})
