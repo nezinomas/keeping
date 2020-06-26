@@ -164,3 +164,21 @@ def test_drink_filter_form_invalid(year1, year2):
     )
 
     assert not form.is_valid()
+
+
+@pytest.mark.parametrize(
+    'year1, year2',
+    [
+        (1111, 1111),
+        (1111, 9999),
+    ]
+)
+def test_drink_filter_form_valid(year1, year2):
+    form = DrinkHistoryFilterForm(
+        data={
+            'year1': year1,
+            'year2': year2,
+        }
+    )
+
+    assert form.is_valid()
