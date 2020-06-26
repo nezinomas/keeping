@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
@@ -73,3 +75,40 @@ class DrinkTargetForm(FormMixin, forms.ModelForm):
             raise forms.ValidationError(f'{year} metai jau turi tikslą.')
 
         return year
+
+
+class DrinkHistoryFilterForm(forms.Form):
+    year1 = forms.IntegerField()
+    year2 = forms.IntegerField()
+
+    field_order = ['year1', 'year2']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['year1'].label = None
+        self.fields['year2'].label = None
+
+        # inital values
+        self.fields['year2'].initial = datetime.now().year
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
+
+    def clean_year1(self):
+        year = self.cleaned_data['year1']
+
+        self._validation_error(year)
+
+        return year
+
+    def clean_year2(self):
+        year = self.cleaned_data['year2']
+
+        self._validation_error(year)
+
+        return year
+
+    def _validation_error(self, field):
+        if len(str(abs(field))) != 4:
+            raise forms.ValidationError('Turi būti 4 skaitmenys.')
