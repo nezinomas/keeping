@@ -152,6 +152,7 @@ def test_drink_filter_initial_values(get_user):
         (1111, None),
         (1111, ''),
         (111, 111),
+        (11111, 11111),
         ('xxx', 'xxx'),
     ]
 )
