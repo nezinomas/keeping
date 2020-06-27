@@ -50,11 +50,11 @@ def historical_data(request, qty):
 
 
 @login_required()
-def compared(request):
+def compare(request):
     form_data = request.POST.get('form_data')
 
     if not form_data:
-        return JsonResponse({'error': 'Compared Form is broken.'}, status=404)
+        return JsonResponse({'error': 'compare Form is broken.'}, status=404)
 
     try:
         form_data_dict = {}
@@ -65,11 +65,11 @@ def compared(request):
             form_data_dict[field["name"]] = field["value"]
 
     except Exception:
-        return JsonResponse({'error': 'Compared Form is broken.'}, status=500)
+        return JsonResponse({'error': 'compare Form is broken.'}, status=500)
 
     json_data = {}
     ser = []
-    form = forms.DrinkHistoryFilterForm(data=form_data_dict)
+    form = forms.DrinkCompareForm(data=form_data_dict)
 
     if form.is_valid():
         json_data['form_is_valid'] = True
@@ -95,11 +95,11 @@ def compared(request):
         json_data['html'] = 'Trūksta duomenų'
     else:
         template = 'drinks/includes/chart_consumsion_history.html'
-        context = {'ser': ser, 'chart_container_name': 'compared_chart'}
+        context = {'ser': ser, 'chart_container_name': 'compare_chart'}
         json_data['html'] = render_to_string(template, context, request)
 
     json_data['html_form'] = render_to_string(
-        template_name='drinks/includes/compared_form.html',
+        template_name='drinks/includes/compare_form.html',
         context={'form': form},
         request=request
     )
@@ -124,9 +124,9 @@ class Index(IndexMixin):
 
         context['all_years'] = len(years())
 
-        context['compared_form'] = render_to_string(
-            template_name='drinks/includes/compared_form.html',
-            context={'form': forms.DrinkHistoryFilterForm()},
+        context['compare_form'] = render_to_string(
+            template_name='drinks/includes/compare_form.html',
+            context={'form': forms.DrinkCompareForm()},
             request=self.request
         )
 

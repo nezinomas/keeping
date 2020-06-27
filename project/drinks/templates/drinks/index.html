@@ -51,12 +51,12 @@
                     <div class="col-lg-12 px-1 pt-5">
                         <div class="row">
                             <div class="col-lg-5" style="font-size: .9rem;"><b>Metų palyginimas</b></div>
-                            <div class="col-lg-7 text-right" id="compared_form_data">{{ compared_form }}</div>
+                            <div class="col-lg-7 text-right" id="compare_form_data">{{ compare_form }}</div>
                         </div>
                     </div>
                 </div>
                 <div class="row px-3">
-                    <div class="col-lg-12 px-1" id="compared_data"></div>
+                    <div class="col-lg-12 px-1" id="compare_data"></div>
                 </div>
             </div>
         </div>
@@ -151,7 +151,7 @@
 
 <script>
     $(function () {
-        var load_compared = function () {
+        var load_compare = function () {
             var btn = $(this);
             var url = btn.data('url');
 
@@ -163,8 +163,8 @@
             event.preventDefault();
 
             // Capture form input
-            csrfmiddlewaretoken = $("#compared_form").find("input[name='csrfmiddlewaretoken']" ).val();
-            form_data = $('#compared_form').serializeArray();
+            csrfmiddlewaretoken = $("#compare_form").find("input[name='csrfmiddlewaretoken']" ).val();
+            form_data = $('#compare_form').serializeArray();
             form_data = JSON.stringify(form_data);
 
             $.ajax({
@@ -178,10 +178,10 @@
                 },
                 success: function (data) {
                     if (data.form_is_valid) {
-                        $('#compared_data').html(data.html);
-                        $('#compared_form_data').html(data.html_form);
+                        $('#compare_data').html(data.html);
+                        $('#compare_form_data').html(data.html_form);
                     } else {
-                        $('#compared_form_data').html(data.html_form);
+                        $('#compare_form_data').html(data.html_form);
                     }
                 },
                 error: function (xhr, status, error) {
@@ -190,7 +190,7 @@
             });
         };
 
-        $(document).on('click', '.filter_click', load_compared);
+        $(document).on('click', '.filter_click', load_compare);
     });
 </script>
 

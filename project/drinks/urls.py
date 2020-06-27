@@ -50,8 +50,8 @@ urlpatterns = [
         name='historical_data'
     ),
     path(
-        'drinks/compared/',
-        views.compared,
-        name='compared'
+        'drinks/compare/',
+        views.compare,
+        name='compare'
     ),
 ]

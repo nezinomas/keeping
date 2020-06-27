@@ -5,7 +5,7 @@ from freezegun import freeze_time
 
 from ...users.factories import UserFactory
 from ..factories import DrinkTargetFactory
-from ..forms import DrinkForm, DrinkHistoryFilterForm, DrinkTargetForm
+from ..forms import DrinkForm, DrinkCompareForm, DrinkTargetForm
 
 pytestmark = pytest.mark.django_db
 
@@ -125,11 +125,11 @@ def test_drink_target_blank_data(get_user):
 #                                                                 Drink Filter
 # ----------------------------------------------------------------------------
 def test_drink_filter_init(get_user):
-    DrinkHistoryFilterForm()
+    DrinkCompareForm()
 
 
 def test_drink_filter_init_fields(get_user):
-    form = DrinkHistoryFilterForm().as_p()
+    form = DrinkCompareForm().as_p()
 
     assert '<input type="number" name="year1"' in form
     assert '<input type="number" name="year2"' in form
@@ -137,7 +137,7 @@ def test_drink_filter_init_fields(get_user):
 
 @freeze_time('1999-01-01')
 def test_drink_filter_initial_values(get_user):
-    form = DrinkHistoryFilterForm().as_p()
+    form = DrinkCompareForm().as_p()
 
     assert '<input type="number" name="year2" value="1999"' in form
 
@@ -157,7 +157,7 @@ def test_drink_filter_initial_values(get_user):
     ]
 )
 def test_drink_filter_form_invalid(year1, year2):
-    form = DrinkHistoryFilterForm(
+    form = DrinkCompareForm(
         data={
             'year1': year1,
             'year2': year2,
@@ -175,7 +175,7 @@ def test_drink_filter_form_invalid(year1, year2):
     ]
 )
 def test_drink_filter_form_valid(year1, year2):
-    form = DrinkHistoryFilterForm(
+    form = DrinkCompareForm(
         data={
             'year1': year1,
             'year2': year2,

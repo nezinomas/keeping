@@ -77,7 +77,7 @@ class DrinkTargetForm(FormMixin, forms.ModelForm):
         return year
 
 
-class DrinkHistoryFilterForm(forms.Form):
+class DrinkCompareForm(forms.Form):
     year1 = forms.IntegerField()
     year2 = forms.IntegerField()
 

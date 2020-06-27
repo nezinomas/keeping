@@ -266,7 +266,7 @@ def test_historical_data_ajax(client_logged):
 #                                                                   Filtered Compare Data
 # ---------------------------------------------------------------------------------------
 @pytest.fixture()
-def compared_form_data():
+def compare_form_data():
     return ([
         {"name":"csrfmiddlewaretoken","value":"RIFWoIjFMOnqjK9mbzZdjeJYucGzet4hcimTmCRnsIw0MTV7eyjvdxFK6FriXrDy"},
         {"name":"year1", "value":"1999"},
@@ -274,44 +274,44 @@ def compared_form_data():
     ])
 
 
-def test_view_compared_func():
-    view = resolve('/drinks/compared/')
+def test_view_compare_func():
+    view = resolve('/drinks/compare/')
 
-    assert views.compared == view.func
+    assert views.compare == view.func
 
 
-def test_view_compared_200(client_logged, compared_form_data):
-    form_data = json.dumps(compared_form_data)
-    response = client_logged.post('/drinks/compared/', {'form_data': form_data})
+def test_view_compare_200(client_logged, compare_form_data):
+    form_data = json.dumps(compare_form_data)
+    response = client_logged.post('/drinks/compare/', {'form_data': form_data})
 
     assert response.status_code == 200
 
 
-def test_view_compared_404(client_logged):
-    response = client_logged.post('/drinks/compared/')
+def test_view_compare_404(client_logged):
+    response = client_logged.post('/drinks/compare/')
 
     assert response.status_code == 404
 
 
-def test_view_compared_500(client_logged):
+def test_view_compare_500(client_logged):
     form_data = json.dumps([{'x': 'y'}])
-    response = client_logged.post('/drinks/compared/', {'form_data': form_data})
+    response = client_logged.post('/drinks/compare/', {'form_data': form_data})
 
     assert response.status_code == 500
 
 
-def test_view_compared_302(client):
-    url = reverse('drinks:compared')
+def test_view_compare_302(client):
+    url = reverse('drinks:compare')
     response = client.post(url)
 
     assert response.status_code == 302
 
 
-def test_view_compared_form_is_not_valid(client_logged, compared_form_data):
-    compared_form_data[1]['value'] = None # year1 = None
-    form_data = json.dumps(compared_form_data)
+def test_view_compare_form_is_not_valid(client_logged, compare_form_data):
+    compare_form_data[1]['value'] = None # year1 = None
+    form_data = json.dumps(compare_form_data)
 
-    url = reverse('drinks:compared')
+    url = reverse('drinks:compare')
     response = client_logged.post(url, {'form_data': form_data})
 
     actual = json.loads(response.content)
@@ -319,10 +319,10 @@ def test_view_compared_form_is_not_valid(client_logged, compared_form_data):
     assert not actual['form_is_valid']
 
 
-def test_view_compared_form_is_valid(client_logged, compared_form_data):
-    form_data = json.dumps(compared_form_data)
+def test_view_compare_form_is_valid(client_logged, compare_form_data):
+    form_data = json.dumps(compare_form_data)
 
-    url = reverse('drinks:compared')
+    url = reverse('drinks:compare')
     response = client_logged.post(url, {'form_data': form_data})
 
     actual = json.loads(response.content)
@@ -330,10 +330,10 @@ def test_view_compared_form_is_valid(client_logged, compared_form_data):
     assert actual['form_is_valid']
 
 
-def test_view_compared_no_records_for_year(client_logged, compared_form_data):
-    form_data = json.dumps(compared_form_data)
+def test_view_compare_no_records_for_year(client_logged, compare_form_data):
+    form_data = json.dumps(compare_form_data)
 
-    url = reverse('drinks:compared')
+    url = reverse('drinks:compare')
     response = client_logged.post(url, {'form_data': form_data})
 
     actual = json.loads(response.content)
@@ -341,13 +341,13 @@ def test_view_compared_no_records_for_year(client_logged, compared_form_data):
     assert 'Trūksta duomenų' in actual['html']
 
 
-def test_view_compared_chart_data(client_logged, compared_form_data):
+def test_view_compare_chart_data(client_logged, compare_form_data):
     DrinkFactory()
     DrinkFactory(date = date(2020, 1, 1), quantity=10)
 
-    form_data = json.dumps(compared_form_data)
+    form_data = json.dumps(compare_form_data)
 
-    url = reverse('drinks:compared')
+    url = reverse('drinks:compare')
     response = client_logged.post(url, {'form_data': form_data})
 
     actual = json.loads(response.content)
