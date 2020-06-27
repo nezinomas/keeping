@@ -41,7 +41,7 @@ def compare(request):
     form_data = request.POST.get('form_data')
 
     if not form_data:
-        return JsonResponse({'error': 'compare Form is broken.'}, status=404)
+        return JsonResponse({'error': 'CompareForm is broken.'}, status=404)
 
     try:
         form_data_dict = {}
@@ -52,7 +52,7 @@ def compare(request):
             form_data_dict[field["name"]] = field["value"]
 
     except Exception:
-        return JsonResponse({'error': 'compare Form is broken.'}, status=500)
+        return JsonResponse({'error': 'CompareForm is broken.'}, status=500)
 
     json_data = {}
     chart_serries = None
