@@ -7,7 +7,7 @@ from .drinks_stats import DrinkStats, std_av
 
 
 def several_years_consumption(years):
-    ser = []
+    serries = []
     for y in years:
         qs_drinks = models.Drink.objects.sum_by_month(int(y))
         data = DrinkStats(qs_drinks).consumption
@@ -15,13 +15,9 @@ def several_years_consumption(years):
         if not any(data):
             continue
 
-        d = {
-            'name': y,
-            'data': data
-        }
-        ser.append(d)
+        serries.append({'name': y, 'data': data})
 
-    return ser
+    return serries
 
 
 def context_to_reload(request, context):
