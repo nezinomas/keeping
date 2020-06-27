@@ -30,7 +30,7 @@ def historical_data(request, qty):
     chart_serries = several_years_consumption(range(year - qty, year))
 
     template = 'drinks/includes/chart_consumsion_history.html'
-    context = {'ser': chart_serries, 'chart_container_name': 'history_chart'}
+    context = {'serries': chart_serries, 'chart_container_name': 'history_chart'}
     rendered = render_to_string(template, context, request)
 
     return JsonResponse({'html': rendered})
@@ -71,7 +71,7 @@ def compare(request):
         json_data['html'] = 'Trūksta duomenų'
     else:
         template = 'drinks/includes/chart_consumsion_history.html'
-        context = {'ser': chart_serries, 'chart_container_name': 'compare_chart'}
+        context = {'serries': chart_serries, 'chart_container_name': 'compare_chart'}
         json_data['html'] = render_to_string(template, context, request)
 
     json_data['html_form'] = render_to_string(
