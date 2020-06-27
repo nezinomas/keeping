@@ -150,7 +150,6 @@ def test_view_reload_stats_func():
     assert views.reload_stats == view.func
 
 
-@pytest.mark.django_db
 def test_view_reload_stats_render(get_user, rf):
     request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
     request.user = UserFactory.build()
@@ -160,7 +159,6 @@ def test_view_reload_stats_render(get_user, rf):
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
 def test_view_index_200(client_logged):
     response = client_logged.get('/drinks/')
 
@@ -176,7 +174,6 @@ def test_view_index_200(client_logged):
     assert 'tbl_std_av' in response.context
 
 
-@pytest.mark.django_db
 def test_view_index_drinked_date(client_logged):
     DrinkFactory(date=date(1999, 1, 2))
     DrinkFactory(date=date(1998, 1, 2))
@@ -188,21 +185,18 @@ def test_view_index_drinked_date(client_logged):
     assert '1998-01-02' in response.context["tbl_last_day"]
 
 
-@pytest.mark.django_db
 def test_view_index_drinked_date_empty_db(client_logged):
     response = client_logged.get('/drinks/')
 
     assert 'Nėra duomenų' in response.context["tbl_last_day"]
 
 
-@pytest.mark.django_db
 def test_view_index_target_empty_db(client_logged):
     response = client_logged.get('/drinks/')
 
     assert 'Neįvestas tikslas' in response.context["target_list"]
 
 
-@pytest.mark.django_db
 def test_view_index_drinks_list_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
@@ -211,7 +205,6 @@ def test_view_index_drinks_list_empty_current_year(client_logged):
     assert '<b>1999</b> metais įrašų nėra.' in response.context["drinks_list"]
 
 
-@pytest.mark.django_db
 def test_view_index_tbl_consumsion_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
@@ -220,7 +213,6 @@ def test_view_index_tbl_consumsion_empty_current_year(client_logged):
     assert 'Nėra duomenų' in response.context["tbl_consumsion"]
 
 
-@pytest.mark.django_db
 def test_view_index_tbl_std_av_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
