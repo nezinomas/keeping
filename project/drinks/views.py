@@ -82,21 +82,11 @@ def compare(request):
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        qs_target = models.DrinkTarget.objects.year(year)
-
         context = super().get_context_data(**kwargs)
         context_to_reload(self.request, context)
 
         context['drinks_list'] = Lists.as_view()(self.request, as_string=True)
-
-        context['target_list'] = render_to_string(
-            'drinks/includes/drinks_target_list.html',
-            {'items': qs_target},
-            self.request)
-
         context['all_years'] = len(years())
-
         context['compare_form'] = render_to_string(
             template_name='drinks/includes/compare_form.html',
             context={'form': forms.DrinkCompareForm()},

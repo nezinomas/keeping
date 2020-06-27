@@ -74,6 +74,11 @@ def context_to_reload(request, context):
         request
     )
 
+    context['target_list'] = render_to_string(
+        'drinks/includes/drinks_target_list.html',
+        {'items': qs_target},
+        request)
+
 
 def _avg_label_position(avg, target):
     return 15 if target - 50 <= avg <= target else -5
