@@ -6,6 +6,24 @@ from .. import models
 from .drinks_stats import DrinkStats, std_av
 
 
+def several_years_consumption(years):
+    ser = []
+    for y in years:
+        qs_drinks = models.Drink.objects.sum_by_month(int(y))
+        data = DrinkStats(qs_drinks).consumption
+
+        if not any(data):
+            continue
+
+        d = {
+            'name': y,
+            'data': data
+        }
+        ser.append(d)
+
+    return ser
+
+
 def context_to_reload(request, context):
     year = request.user.year
 

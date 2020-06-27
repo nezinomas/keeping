@@ -10,7 +10,7 @@ from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from . import forms, models
 from .lib.drinks_stats import DrinkStats
-from .lib.views_helper import context_to_reload
+from .lib.views_helper import context_to_reload, several_years_consumption
 
 
 def reload_stats(request):
@@ -27,20 +27,8 @@ def reload_stats(request):
 
 @login_required()
 def historical_data(request, qty):
-    ser = []
     year = request.user.year + 1
-    for y in range (year - qty, year):
-        qs_drinks = models.Drink.objects.sum_by_month(y)
-        data = DrinkStats(qs_drinks).consumption
-
-        if not any(data):
-            continue
-
-        d = {
-            'name': y,
-            'data': data
-        }
-        ser.append(d)
+    ser = several_years_consumption(range(year - qty, year))
 
     template = 'drinks/includes/chart_consumsion_history.html'
     context = {'ser': ser, 'chart_container_name': 'history_chart'}
@@ -68,26 +56,15 @@ def compare(request):
         return JsonResponse({'error': 'compare Form is broken.'}, status=500)
 
     json_data = {}
-    ser = []
+    ser = None
     form = forms.DrinkCompareForm(data=form_data_dict)
 
     if form.is_valid():
         json_data['form_is_valid'] = True
 
         years_data = [form_data_dict['year1'], form_data_dict['year2']]
+        ser = several_years_consumption(years_data)
 
-        for y in years_data:
-            qs_drinks = models.Drink.objects.sum_by_month(int(y))
-            data = DrinkStats(qs_drinks).consumption
-
-            if not any(data):
-                continue
-
-            d = {
-                'name': y,
-                'data': data
-            }
-            ser.append(d)
     else:
         json_data['form_is_valid'] = False
 
