@@ -9,7 +9,6 @@ from ..core.lib.date import years
 from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from . import forms, models
-from .lib.drinks_stats import DrinkStats
 from .lib.views_helper import context_to_reload, several_years_consumption
 
 
