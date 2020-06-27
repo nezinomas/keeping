@@ -1,0 +1,9 @@
+{% load crispy_forms_tags %}
+<form class="filter" novalidate method="post" id="compare_form">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col mx-1 px-0">{{ form.year1|as_crispy_field }}</div>
+        <div class="col mx-1 px-0">{{ form.year2|as_crispy_field }}</div>
+        <div class="col-sm-2 ml-1 pl-0"><input type="button" name="date_filter" value="Filter" class="btn btn-secondary btn-sm filter_click" data-url="{% url 'drinks:compare' %}"></div>
+    </div>
+</form>
