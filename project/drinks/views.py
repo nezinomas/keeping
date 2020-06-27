@@ -27,10 +27,10 @@ def reload_stats(request):
 @login_required()
 def historical_data(request, qty):
     year = request.user.year + 1
-    ser = several_years_consumption(range(year - qty, year))
+    chart_serries = several_years_consumption(range(year - qty, year))
 
     template = 'drinks/includes/chart_consumsion_history.html'
-    context = {'ser': ser, 'chart_container_name': 'history_chart'}
+    context = {'ser': chart_serries, 'chart_container_name': 'history_chart'}
     rendered = render_to_string(template, context, request)
 
     return JsonResponse({'html': rendered})
@@ -55,23 +55,23 @@ def compare(request):
         return JsonResponse({'error': 'compare Form is broken.'}, status=500)
 
     json_data = {}
-    ser = None
+    chart_serries = None
     form = forms.DrinkCompareForm(data=form_data_dict)
 
     if form.is_valid():
         json_data['form_is_valid'] = True
 
         years_data = [form_data_dict['year1'], form_data_dict['year2']]
-        ser = several_years_consumption(years_data)
+        chart_serries = several_years_consumption(years_data)
 
     else:
         json_data['form_is_valid'] = False
 
-    if not ser or len(ser) != 2:
+    if not chart_serries or len(chart_serries) != 2:
         json_data['html'] = 'Trūksta duomenų'
     else:
         template = 'drinks/includes/chart_consumsion_history.html'
-        context = {'ser': ser, 'chart_container_name': 'compare_chart'}
+        context = {'ser': chart_serries, 'chart_container_name': 'compare_chart'}
         json_data['html'] = render_to_string(template, context, request)
 
     json_data['html_form'] = render_to_string(
