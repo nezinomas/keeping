@@ -5,7 +5,7 @@ from freezegun import freeze_time
 
 from ...users.factories import UserFactory
 from ..factories import DrinkTargetFactory
-from ..forms import DrinkForm, DrinkTargetForm
+from ..forms import DrinkForm, DrinkCompareForm, DrinkTargetForm
 
 pytestmark = pytest.mark.django_db
 
@@ -119,3 +119,67 @@ def test_drink_target_blank_data(get_user):
     assert len(form.errors) == 2
     assert 'year' in form.errors
     assert 'quantity' in form.errors
+
+
+# ----------------------------------------------------------------------------
+#                                                                 Drink Filter
+# ----------------------------------------------------------------------------
+def test_drink_filter_init(get_user):
+    DrinkCompareForm()
+
+
+def test_drink_filter_init_fields(get_user):
+    form = DrinkCompareForm().as_p()
+
+    assert '<input type="number" name="year1"' in form
+    assert '<input type="number" name="year2"' in form
+
+
+@freeze_time('1999-01-01')
+def test_drink_filter_initial_values(get_user):
+    form = DrinkCompareForm().as_p()
+
+    assert '<input type="number" name="year2" value="1999"' in form
+
+
+@pytest.mark.parametrize(
+    'year1, year2',
+    [
+        (None, None),
+        ('', ''),
+        (None, 1111),
+        ('', 1111),
+        (1111, None),
+        (1111, ''),
+        (111, 111),
+        (11111, 11111),
+        ('xxx', 'xxx'),
+    ]
+)
+def test_drink_filter_form_invalid(year1, year2):
+    form = DrinkCompareForm(
+        data={
+            'year1': year1,
+            'year2': year2,
+        }
+    )
+
+    assert not form.is_valid()
+
+
+@pytest.mark.parametrize(
+    'year1, year2',
+    [
+        (1111, 1111),
+        (1111, 9999),
+    ]
+)
+def test_drink_filter_form_valid(year1, year2):
+    form = DrinkCompareForm(
+        data={
+            'year1': year1,
+            'year2': year2,
+        }
+    )
+
+    assert form.is_valid()

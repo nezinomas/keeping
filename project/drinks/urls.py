@@ -49,4 +49,9 @@ urlpatterns = [
         views.historical_data,
         name='historical_data'
     ),
+    path(
+        'drinks/compare/',
+        views.compare,
+        name='compare'
+    ),
 ]

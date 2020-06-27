@@ -6,9 +6,9 @@ import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
-from ...users.factories import UserFactory
 from ...core.tests.utils import change_profile_year
-from .. import views
+from ...users.factories import UserFactory
+from .. import forms, views
 from ..factories import DrinkFactory, DrinkTargetFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -150,7 +150,6 @@ def test_view_reload_stats_func():
     assert views.reload_stats == view.func
 
 
-@pytest.mark.django_db
 def test_view_reload_stats_render(get_user, rf):
     request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
     request.user = UserFactory.build()
@@ -160,7 +159,6 @@ def test_view_reload_stats_render(get_user, rf):
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
 def test_view_index_200(client_logged):
     response = client_logged.get('/drinks/')
 
@@ -176,7 +174,6 @@ def test_view_index_200(client_logged):
     assert 'tbl_std_av' in response.context
 
 
-@pytest.mark.django_db
 def test_view_index_drinked_date(client_logged):
     DrinkFactory(date=date(1999, 1, 2))
     DrinkFactory(date=date(1998, 1, 2))
@@ -188,21 +185,18 @@ def test_view_index_drinked_date(client_logged):
     assert '1998-01-02' in response.context["tbl_last_day"]
 
 
-@pytest.mark.django_db
 def test_view_index_drinked_date_empty_db(client_logged):
     response = client_logged.get('/drinks/')
 
     assert 'Nėra duomenų' in response.context["tbl_last_day"]
 
 
-@pytest.mark.django_db
 def test_view_index_target_empty_db(client_logged):
     response = client_logged.get('/drinks/')
 
     assert 'Neįvestas tikslas' in response.context["target_list"]
 
 
-@pytest.mark.django_db
 def test_view_index_drinks_list_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
@@ -211,7 +205,6 @@ def test_view_index_drinks_list_empty_current_year(client_logged):
     assert '<b>1999</b> metais įrašų nėra.' in response.context["drinks_list"]
 
 
-@pytest.mark.django_db
 def test_view_index_tbl_consumsion_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
@@ -220,7 +213,6 @@ def test_view_index_tbl_consumsion_empty_current_year(client_logged):
     assert 'Nėra duomenų' in response.context["tbl_consumsion"]
 
 
-@pytest.mark.django_db
 def test_view_index_tbl_std_av_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
@@ -268,3 +260,102 @@ def test_historical_data_ajax(client_logged):
     assert response.status_code == 200
     assert "'name': 1999" in actual['html']
     assert "'data': [16.129032258064516, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" in actual['html']
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                   Filtered Compare Data
+# ---------------------------------------------------------------------------------------
+@pytest.fixture()
+def compare_form_data():
+    return ([
+        {"name":"csrfmiddlewaretoken","value":"RIFWoIjFMOnqjK9mbzZdjeJYucGzet4hcimTmCRnsIw0MTV7eyjvdxFK6FriXrDy"},
+        {"name":"year1", "value":"1999"},
+        {"name":"year2", "value":"2020"}
+    ])
+
+
+def test_view_compare_func():
+    view = resolve('/drinks/compare/')
+
+    assert views.compare == view.func
+
+
+def test_view_compare_200(client_logged, compare_form_data):
+    form_data = json.dumps(compare_form_data)
+    response = client_logged.post('/drinks/compare/', {'form_data': form_data})
+
+    assert response.status_code == 200
+
+
+def test_view_compare_404(client_logged):
+    response = client_logged.post('/drinks/compare/')
+
+    assert response.status_code == 404
+
+
+def test_view_compare_500(client_logged):
+    form_data = json.dumps([{'x': 'y'}])
+    response = client_logged.post('/drinks/compare/', {'form_data': form_data})
+
+    assert response.status_code == 500
+
+
+def test_view_compare_302(client):
+    url = reverse('drinks:compare')
+    response = client.post(url)
+
+    assert response.status_code == 302
+
+
+def test_view_compare_form_is_not_valid(client_logged, compare_form_data):
+    compare_form_data[1]['value'] = None # year1 = None
+    form_data = json.dumps(compare_form_data)
+
+    url = reverse('drinks:compare')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    actual = json.loads(response.content)
+
+    assert not actual['form_is_valid']
+
+
+def test_view_compare_form_is_valid(client_logged, compare_form_data):
+    form_data = json.dumps(compare_form_data)
+
+    url = reverse('drinks:compare')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    actual = json.loads(response.content)
+
+    assert actual['form_is_valid']
+
+
+def test_view_compare_no_records_for_year(client_logged, compare_form_data):
+    form_data = json.dumps(compare_form_data)
+
+    url = reverse('drinks:compare')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    actual = json.loads(response.content)
+
+    assert 'Trūksta duomenų' in actual['html']
+
+
+def test_view_compare_chart_data(client_logged, compare_form_data):
+    DrinkFactory()
+    DrinkFactory(date = date(2020, 1, 1), quantity=10)
+
+    form_data = json.dumps(compare_form_data)
+
+    url = reverse('drinks:compare')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    actual = json.loads(response.content)
+
+    assert response.status_code == 200
+
+    assert "'name': '1999'" in actual['html']
+    assert "'data': [16.129032258064516, 0.0" in actual['html']
+
+    assert "'name': '2020'" in actual['html']
+    assert "'data': [161.29032258064515, 0.0" in actual['html']

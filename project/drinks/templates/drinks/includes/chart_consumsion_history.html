@@ -1,4 +1,4 @@
-<div id="container-for-consumption-history"></div>
+<div id="{{ chart_container_name }}"></div>
 <script>
     Highcharts.setOptions({
         lang: {
@@ -6,7 +6,7 @@
             decimalPoint: ',',
         }
     });
-    Highcharts.chart('container-for-consumption-history', {
+    Highcharts.chart('{{ chart_container_name }}', {
         title: {
             text: ''
         },
