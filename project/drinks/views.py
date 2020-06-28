@@ -38,9 +38,9 @@ def historical_data(request, qty):
 
 @login_required()
 def compare(request):
-    form_data = request.POST.get('form_data')
-
-    if not form_data:
+    try:
+        form_data = request.POST['form_data']
+    except KeyError:
         return JsonResponse({'error': 'CompareForm is broken.'}, status=404)
 
     try:
@@ -51,7 +51,7 @@ def compare(request):
         for field in form_data_list:
             form_data_dict[field["name"]] = field["value"]
 
-    except Exception:
+    except KeyError:
         return JsonResponse({'error': 'CompareForm is broken.'}, status=500)
 
     chart_serries = []
