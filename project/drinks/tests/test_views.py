@@ -144,21 +144,6 @@ def test_view_index_func():
     assert views.Index == view.func.view_class
 
 
-def test_view_reload_stats_func():
-    view = resolve('/drinks/reload_stats/')
-
-    assert views.reload_stats == view.func
-
-
-def test_view_reload_stats_render(get_user, rf):
-    request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
-    request.user = UserFactory.build()
-
-    response = views.reload_stats(request)
-
-    assert response.status_code == 200
-
-
 def test_view_index_200(client_logged):
     response = client_logged.get('/drinks/')
 
@@ -359,3 +344,36 @@ def test_view_compare_chart_data(client_logged, compare_form_data):
 
     assert "'name': '2020'" in actual['html']
     assert "'data': [161.29032258064515, 0.0" in actual['html']
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                            Realod Stats
+# ---------------------------------------------------------------------------------------
+def test_view_reload_stats_func():
+    view = resolve('/drinks/reload_stats/')
+
+    assert views.reload_stats == view.func
+
+
+def test_view_reload_stats_render(get_user, rf):
+    request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = views.reload_stats(request)
+
+    assert response.status_code == 200
+
+
+def test_view_reload_stats_render_ajax_trigger(client_logged):
+    url = reverse('drinks:reload_stats')
+    response = client_logged.get(url, {'ajax_trigger': 1})
+
+    assert response.status_code == 200
+
+
+def test_view_reload_stats_render_ajax_trigger_not_set(client_logged):
+    url = reverse('drinks:reload_stats')
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert views.Index == response.resolver_match.func.view_class

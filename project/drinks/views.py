@@ -2,7 +2,7 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render, reverse
 from django.template.loader import render_to_string
 
 from ..core.lib.date import years
@@ -22,6 +22,8 @@ def reload_stats(request):
         context_to_reload(request, context)
 
         return render(request, name, context)
+
+    # return redirect(reverse('drinks:drinks_index'))
 
 
 @login_required()
