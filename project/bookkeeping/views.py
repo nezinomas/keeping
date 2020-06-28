@@ -213,22 +213,24 @@ def average(qs):
 
 
 def reload_index(request):
-    template = 'bookkeeping/includes/reload_index.html'
-    ajax_trigger = request.GET.get('ajax_trigger')
+    try:
+        request.GET['ajax_trigger']
+    except KeyError:
+        return redirect(reverse('bookkeeping:index'))
 
-    if ajax_trigger:
-        year = request.user.year
-        obj = H.IndexHelper(request, year)
+    obj = H.IndexHelper(request, request.user.year)
+    context = {
+        'no_incomes': obj.render_no_incomes(),
+        'money': obj.render_money(),
+        'wealth': obj.render_wealth(),
+        'savings': obj.render_savings(),
+    }
 
-        context = {
-            'no_incomes': obj.render_no_incomes(),
-            'money': obj.render_money(),
-            'wealth': obj.render_wealth(),
-            'savings': obj.render_savings(),
-        }
-        return render(request, template, context)
-
-    return redirect(reverse('bookkeeping:index'))
+    return render(
+        request=request,
+        template_name='bookkeeping/includes/reload_index.html',
+        context=context
+    )
 
 
 @login_required()
@@ -281,17 +283,18 @@ def accounts_worth_reset(request, pk):
 
 
 def reload_month(request):
-    template = 'bookkeeping/includes/reload_month.html'
-    ajax_trigger = request.GET.get('ajax_trigger')
+    try:
+        request.GET['ajax_trigger']
+    except KeyError:
+        return redirect(reverse('bookkeeping:month'))
 
-    if ajax_trigger:
-        context = _month_context(request, {})
-        return render(request, template, context)
+    return render(
+        request=request,
+        template_name='bookkeeping/includes/reload_month.html',
+        context=_month_context(request))
 
-    return redirect(reverse('bookkeeping:month'))
 
-
-def _month_context(request, context):
+def _month_context(request, context={}):
     year = request.user.year
     month = request.user.month
 
