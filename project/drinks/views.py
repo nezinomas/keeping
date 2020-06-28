@@ -13,17 +13,16 @@ from .lib.views_helper import context_to_reload, several_years_consumption
 
 
 def reload_stats(request):
-    ajax_trigger = request.GET.get('ajax_trigger')
-    name = 'drinks/includes/reload_stats.html'
+    try:
+        request.GET['ajax_trigger']
+    except KeyError:
+        return redirect(reverse('drinks:drinks_index'))
 
-    context = {}
-
-    if ajax_trigger:
-        context_to_reload(request, context)
-
-        return render(request, name, context)
-
-    # return redirect(reverse('drinks:drinks_index'))
+    return render(
+        request=request,
+        template_name='drinks/includes/reload_stats.html',
+        context=context_to_reload(request)
+    )
 
 
 @login_required()
