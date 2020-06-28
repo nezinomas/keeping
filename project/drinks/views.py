@@ -54,7 +54,7 @@ def compare(request):
     except Exception:
         return JsonResponse({'error': 'CompareForm is broken.'}, status=500)
 
-    chart_serries = None
+    chart_serries = []
     form = forms.DrinkCompareForm(data=form_data_dict)
     json_data = {
         'form_is_valid': False,
@@ -70,12 +70,12 @@ def compare(request):
         years_data = [form_data_dict['year1'], form_data_dict['year2']]
         chart_serries = several_years_consumption(years_data)
 
-    if not chart_serries or len(chart_serries) != 2:
-        json_data['html'] = 'Trūksta duomenų'
-    else:
+    if len(chart_serries) == 2:
         template = 'drinks/includes/chart_consumsion_history.html'
         context = {'serries': chart_serries, 'chart_container_name': 'compare_chart'}
         json_data['html'] = render_to_string(template, context, request)
+    else:
+        json_data['html'] = 'Trūksta duomenų'
 
     return JsonResponse(json_data)
 
