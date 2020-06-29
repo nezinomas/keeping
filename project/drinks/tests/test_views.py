@@ -285,6 +285,13 @@ def test_view_compare_500(client_logged):
     assert response.status_code == 500
 
 
+def test_view_compare_bad_json_data(client_logged):
+    form_data = "{'x': 'y'}"
+    response = client_logged.post('/drinks/compare/', {'form_data': form_data})
+
+    assert response.status_code == 500
+
+
 def test_view_compare_302(client):
     url = reverse('drinks:compare')
     response = client.post(url)

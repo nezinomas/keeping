@@ -51,8 +51,7 @@ def compare(request):
         # flatten list of dictionaries - form_data_list
         for field in form_data_list:
             form_data_dict[field["name"]] = field["value"]
-
-    except KeyError:
+    except (json.decoder.JSONDecodeError, KeyError):
         return JsonResponse({'error': 'CompareForm is broken.'}, status=500)
 
     chart_serries = []
