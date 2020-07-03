@@ -10,9 +10,9 @@ class YearBalance(BalanceBase):
                  year: int,
                  incomes: List[Dict],
                  expenses: List[Dict],
-                 savings: List[Dict]=[],
-                 savings_close: List[Dict]=[],
-                 amount_start: float=0.0):
+                 savings: List[Dict] = None,
+                 savings_close: List[Dict] = None,
+                 amount_start: float = 0.0):
 
         '''
         year: int
@@ -32,7 +32,7 @@ class YearBalance(BalanceBase):
 
         try:
             amount_start = float(amount_start)
-        except:
+        except TypeError:
             amount_start = 0.0
 
         self._amount_start = amount_start
