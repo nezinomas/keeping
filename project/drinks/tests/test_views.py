@@ -67,7 +67,7 @@ def test_view_drinks_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -128,7 +128,7 @@ def test_view_drinks_target_update(get_user, client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -334,7 +334,7 @@ def test_view_compare_no_records_for_year(client_logged, compare_form_data):
 
 def test_view_compare_chart_data(client_logged, compare_form_data):
     DrinkFactory()
-    DrinkFactory(date = date(2020, 1, 1), quantity=10)
+    DrinkFactory(date=date(2020, 1, 1), quantity=10)
 
     form_data = json.dumps(compare_form_data)
 
