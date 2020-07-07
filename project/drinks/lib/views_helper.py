@@ -20,7 +20,8 @@ def several_years_consumption(years):
     return serries
 
 
-def context_to_reload(request, context={}):
+def context_to_reload(request, context=None):
+    context = {} if not context else context
     year = request.user.year
 
     qs_target = models.DrinkTarget.objects.year(year)
