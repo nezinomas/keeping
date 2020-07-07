@@ -33,11 +33,6 @@ def set_month(request, month):
 
 
 @login_required
-def index(request):
-    return render(request, 'core/index.html')
-
-
-@login_required
 def regenerate_balances(request):
     _years = years()
 
