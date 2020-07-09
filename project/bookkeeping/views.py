@@ -1,4 +1,5 @@
 from datetime import datetime
+from project.bookkeeping.lib.views_helpers import expense_types
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -151,7 +152,8 @@ class Detailed(LoginRequiredMixin, TemplateView):
 
         # Expenses
         qs = [*Expense.objects.sum_by_month_and_name(year)]
-        for i in H.expense_types():
+        expenses_types = H.expense_types()
+        for i in expenses_types:
             filtered = filter(lambda x: i in x['type_title'], qs)
             _gen_data([*filtered], f'Išlaidos / {i}')
 
