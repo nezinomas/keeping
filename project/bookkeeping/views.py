@@ -295,7 +295,8 @@ def reload_month(request):
         context=_month_context(request))
 
 
-def _month_context(request, context={}):
+def _month_context(request, context=None):
+    context = context if context else {}
     year = request.user.year
     month = request.user.month
 
