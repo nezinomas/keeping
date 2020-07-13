@@ -1,13 +1,12 @@
 from datetime import datetime
-from project.bookkeeping.lib.views_helpers import expense_types
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.views.generic import TemplateView
 
 from ..accounts.models import Account, AccountBalance
