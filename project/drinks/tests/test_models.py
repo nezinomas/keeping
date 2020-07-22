@@ -63,13 +63,13 @@ def test_drink_year(get_user):
     assert actual[0].date == date(1999, 1, 1)
     assert actual[0].user.username == 'bob'
 
+
 def test_drink_quantity_float():
     p = DrinkFactory(quantity=0.5)
 
     p.full_clean()
 
     assert str(p) == '1999-01-01: 0.5'
-
 
 
 def test_drink_quantity_int():
