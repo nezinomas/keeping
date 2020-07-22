@@ -6,7 +6,7 @@ from ..accounts.models import Account
 from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
-from ..core.mixins.form_mixin import FormMixin
+from ..core.mixins.form_mixin import FormForUserMixin
 from .models import Expense, ExpenseName, ExpenseType
 
 
@@ -71,7 +71,7 @@ class ExpenseForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
-class ExpenseTypeForm(FormMixin, forms.ModelForm):
+class ExpenseTypeForm(FormForUserMixin, forms.ModelForm):
     class Meta:
         model = ExpenseType
         fields = ['title', 'necessary']

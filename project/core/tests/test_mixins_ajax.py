@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 from django.views.generic import CreateView
-from django.views.generic.edit import FormMixin, DeletionMixin
+from django.views.generic.edit import FormForUserMixin, DeletionMixin
 from mock import Mock, patch
 
 from ..mixins.ajax import AjaxCreateUpdateMixin, AjaxDeleteMixin
@@ -90,7 +90,7 @@ def test_lists_template_names(_request):
 @patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
 @patch('project.core.mixins.ajax.render_to_string')
 def test_form_valid_render(mck_render, mck_context, _request):
-    class Dummy(AjaxCreateUpdateMixin, FormMixin):
+    class Dummy(AjaxCreateUpdateMixin, FormForUserMixin):
         list_template_name = 'XXX'
         template_name = 'YYY'
         model = Mock()
@@ -114,7 +114,7 @@ def test_form_valid_render(mck_render, mck_context, _request):
 @patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
 @patch('project.core.mixins.ajax.render_to_string')
 def test_form_valid_ajax_response(mck_render, mck_context, _ajax_request):
-    class Dummy(AjaxCreateUpdateMixin, FormMixin):
+    class Dummy(AjaxCreateUpdateMixin, FormForUserMixin):
         list_template_name = 'XXX'
         template_name = 'YYY'
         model = Mock()
@@ -139,7 +139,7 @@ def test_form_valid_ajax_response(mck_render, mck_context, _ajax_request):
 @patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
 @patch('project.core.mixins.ajax.render_to_string')
 def test_form_valid_ajax_response_list_not_rendered(mck_render, mck_context, _ajax_request):
-    class Dummy(AjaxCreateUpdateMixin, FormMixin):
+    class Dummy(AjaxCreateUpdateMixin, FormForUserMixin):
         list_render_output = False
         list_template_name = 'XXX'
         template_name = 'YYY'
@@ -182,7 +182,7 @@ def test_form_invalid_render(mck_context, _request):
 @patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
 @patch('project.core.mixins.ajax.render_to_string')
 def test_form_invalid_ajax_response(mck_render, mck_context, _ajax_request):
-    class Dummy(AjaxCreateUpdateMixin, FormMixin):
+    class Dummy(AjaxCreateUpdateMixin, FormForUserMixin):
         list_template_name = 'XXX'
         template_name = 'YYY'
         model = Mock()

@@ -3,11 +3,11 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
-from ..core.mixins.form_mixin import FormMixin
+from ..core.mixins.form_mixin import FormForUserMixin
 from .models import Account
 
 
-class AccountForm(FormMixin, forms.ModelForm):
+class AccountForm(FormForUserMixin, forms.ModelForm):
     class Meta:
         model = Account
         fields = ['title', 'closed', 'order']
