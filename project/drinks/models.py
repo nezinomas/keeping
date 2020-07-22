@@ -9,28 +9,10 @@ from django.db.models.functions import ExtractMonth, TruncYear, ExtractYear
 from ..users.models import User
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
+from ..counters.models import CounterQuerySet, Counter
 
 
-class DrinkQuerySet(SumMixin, models.QuerySet):
-    def related(self):
-        user = utils.get_user()
-        return (
-            self
-            .select_related('user')
-            .filter(user=user)
-            .order_by('-date')
-        )
-
-    def year(self, year):
-        return (
-            self
-            .related()
-            .filter(date__year=year)
-        )
-
-    def items(self):
-        return self.related()
-
+class DrinkQuerySet(CounterQuerySet, models.QuerySet):
     def sum_by_month(self, year, month=None):
         summed_name = 'sum'
 
@@ -107,25 +89,11 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
         return ((qty * 0.5) / days) * 1000
 
 
-class Drink(models.Model):
-    date = models.DateField()
-    quantity = models.FloatField(
-        validators=[MinValueValidator(0.1)]
-    )
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='drinks'
-    )
-
+class Drink(Counter):
     objects = DrinkQuerySet.as_manager()
 
-    def __str__(self):
-        return f'{self.date}: {self.quantity}'
-
     class Meta:
-        ordering = ['-date']
-        get_latest_by = ['date']
+        proxy = True
 
 
 class DrinkTargetQuerySet(SumMixin, models.QuerySet):
