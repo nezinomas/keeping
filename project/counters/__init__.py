@@ -1,1 +1,1 @@
-default_app_config = 'project.savings.apps.CountersConfig'
+default_app_config = 'project.counters.apps.CountersConfig'
