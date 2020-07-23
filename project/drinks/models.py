@@ -43,9 +43,9 @@ class DrinkQuerySet(CounterQuerySet, models.QuerySet):
         # {'qty': float, 'per_day': float}
 
         arr = {}
-        qs = super().sum_by_year(year)
+        qs = list(super().sum_by_year(year))
 
-        if qs.count() == 0:
+        if not qs:
             return arr
 
         _date = datetime.now().date()
