@@ -152,7 +152,7 @@ def test_drink_months_month_len(get_user, _drinks):
 
 
 @freeze_time('1999-11-01')
-def test_drink_days_sum_november(get_user, _second_user):
+def test_drink_days_sum(get_user, _second_user):
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
     DrinkFactory(date=date(1999, 11, 1), quantity=1.5)
     DrinkFactory(date=date(1999, 11, 1), quantity=111, counter_type=_second_user)
@@ -161,18 +161,6 @@ def test_drink_days_sum_november(get_user, _second_user):
 
     assert actual['qty'] == 2.5
     assert round(actual['per_day'], 2) == 4.1
-
-
-@freeze_time('1999-01-03')
-def test_drink_days_sum_january(get_user, _second_user):
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
-    DrinkFactory(date=date(1999, 1, 1), quantity=111, counter_type=_second_user)
-    DrinkFactory(date=date(1999, 11, 1), quantity=1.5)
-
-    actual = Drink.objects.day_sum(1999)
-
-    assert actual['qty'] == 1.0
-    assert round(actual['per_day'], 2) == 166.67
 
 
 @freeze_time('1999-01-03')

@@ -15,7 +15,6 @@ from ..users.models import User
 
 class DrinkQuerySet(CounterQuerySet, models.QuerySet):
     def sum_by_month(self, year: int, month: int = None):
-        #
         #Returns
         # DrinkQuerySet [{'date': datetime.date, 'sum': float, 'month': int, 'monthlen': int, 'per_month': float}]
         #
@@ -41,33 +40,27 @@ class DrinkQuerySet(CounterQuerySet, models.QuerySet):
         return arr
 
     def day_sum(self, year: int) -> Dict[float, float]:
-
         # Returns
         # {'qty': float, 'per_day': float}
 
-        start = date(year, 1, 1)
+        arr = {}
+        qs = super().sum_by_year(year)
 
-        if year == datetime.now().date().year:
-            end = datetime.now().date()
-            day_of_year = end.timetuple().tm_yday
+        if qs.count() == 0:
+            return arr
+
+        _date = datetime.now().date()
+        if year == _date.year:
+            _day_of_year = _date.timetuple().tm_yday
         else:
-            end = date(year, 12, 31)
-            day_of_year = 366 if calendar.isleap(year) else 365
+            _day_of_year = 366 if calendar.isleap(year) else 365
 
-        qs = (
-            self
-            .related()
-            .filter(date__range=(start, end))
-            .annotate(c=Count('id'))
-            .values('c')
-            .annotate(date=TruncYear('date'))
-            .annotate(
-                qty=Sum('quantity'),
-                per_day=self._per_period(F('qty'), day_of_year))
-            .values('qty', 'per_day')
-        )
+        _qty = qs[0].get('qty')
 
-        return qs[0] if qs else {}
+        arr['qty'] = _qty
+        arr['per_day'] = self._consumption(_qty, _day_of_year)
+
+        return arr
 
     def summary(self):
         qs = (
