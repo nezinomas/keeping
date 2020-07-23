@@ -16,10 +16,10 @@ class DrinkQuerySet(CounterQuerySet, models.QuerySet):
         #Returns
         # DrinkQuerySet [{'date': datetime.date, 'sum': float, 'month': int, 'monthlen': int, 'per_month': float}]
         #
-        arr = []
 
         qs = super().sum_by_month(year, month)
 
+        arr = []
         for row in qs:
             _date = row.get('date')
             _month = _date.month
@@ -33,7 +33,8 @@ class DrinkQuerySet(CounterQuerySet, models.QuerySet):
             item['monthlen'] = _monthlen
             item['per_month'] = self._consumption(_qty, _monthlen)
 
-            arr.append(item)
+            if item:
+                arr.append(item)
 
         return arr
 
