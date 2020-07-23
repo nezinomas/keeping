@@ -18,7 +18,7 @@ class FormForCounterTypeMixin():
         instance = super().save(commit=False)
 
         try:
-            _counter = CounterType.objects.get(title=counter_type)
+            _counter = CounterType.objects.get(title__iexact=counter_type)
         except ObjectDoesNotExist:
             return instance
 
