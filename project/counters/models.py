@@ -57,7 +57,10 @@ class CounterQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self.related()
 
-    def sum_by_year(self, year=None):
+    def sum_by_year(self, year: int = None) -> List[Dict[date, float]]:
+        #Returns
+        # QuerySet [{'date': datetime.date, 'qty': float}]
+
         summed_name = 'qty'
 
         return (
