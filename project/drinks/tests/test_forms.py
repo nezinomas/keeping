@@ -3,12 +3,16 @@ from datetime import date
 import pytest
 from freezegun import freeze_time
 
+from ...counters.factories import CounterTypeFactory
 from ...users.factories import UserFactory
 from ..factories import DrinkTargetFactory
-from ..forms import DrinkForm, DrinkCompareForm, DrinkTargetForm
+from ..forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
 
 pytestmark = pytest.mark.django_db
 
+@pytest.fixture
+def _counter_type():
+    CounterTypeFactory(title='Drinks')
 
 # ----------------------------------------------------------------------------
 #                                                                        Drink
@@ -34,7 +38,7 @@ def test_drink_year_initial_value(get_user):
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_drink_valid_data(get_user):
+def test_drink_valid_data(get_user, _counter_type):
     form = DrinkForm(data={
         'date': '1974-01-01',
         'quantity': 1.0
@@ -46,7 +50,7 @@ def test_drink_valid_data(get_user):
 
     assert data.date == date(1974, 1, 1)
     assert data.quantity == 1.0
-    assert data.user.username == 'bob'
+    assert data.counter_type.user.username == 'bob'
 
 
 def test_drink_blank_data(get_user):

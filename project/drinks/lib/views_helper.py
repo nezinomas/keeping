@@ -80,6 +80,8 @@ def context_to_reload(request, context=None):
         {'items': qs_target},
         request)
 
+    return context
+
 
 def _avg_label_position(avg, target):
     return 15 if target - 50 <= avg <= target else -5
