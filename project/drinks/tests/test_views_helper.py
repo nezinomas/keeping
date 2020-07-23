@@ -2,6 +2,7 @@ from datetime import date
 
 import freezegun
 import pytest
+from mock import patch
 
 from ..factories import DrinkFactory
 from ..lib import views_helper as T
@@ -9,6 +10,7 @@ from ..lib import views_helper as T
 
 @freezegun.freeze_time('1999-01-03')
 @pytest.mark.django_db
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
 def test_dry_days(get_user):
     DrinkFactory()
 
