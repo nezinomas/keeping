@@ -1,11 +1,9 @@
 import calendar
-from datetime import date, datetime
+from datetime import datetime
 from typing import Dict
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import Case, Count, ExpressionWrapper, F, Sum, When
-from django.db.models.functions import ExtractMonth, ExtractYear, TruncYear
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
