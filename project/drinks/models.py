@@ -11,6 +11,7 @@ from ..counters.models import Counter, CounterQuerySet
 from ..users.models import User
 from .apps import App_name
 
+
 class DrinkQuerySet(CounterQuerySet, models.QuerySet):
     def items(self, counter_type: str = None):
         if not counter_type:
