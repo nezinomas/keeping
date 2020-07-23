@@ -1,15 +1,16 @@
 import calendar
 from datetime import date, datetime
+from typing import Dict
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Case, Count, ExpressionWrapper, F, Sum, When
-from django.db.models.functions import ExtractMonth, TruncYear, ExtractYear
+from django.db.models.functions import ExtractMonth, ExtractYear, TruncYear
 
-from ..users.models import User
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
-from ..counters.models import CounterQuerySet, Counter
+from ..counters.models import Counter, CounterQuerySet
+from ..users.models import User
 
 
 class DrinkQuerySet(CounterQuerySet, models.QuerySet):
@@ -39,7 +40,11 @@ class DrinkQuerySet(CounterQuerySet, models.QuerySet):
 
         return arr
 
-    def day_sum(self, year):
+    def day_sum(self, year: int) -> Dict[float, float]:
+
+        # Returns
+        # {'qty': float, 'per_day': float}
+
         start = date(year, 1, 1)
 
         if year == datetime.now().date().year:
