@@ -1,3 +1,6 @@
+from datetime import date
+from typing import Dict, List
+
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -67,8 +70,10 @@ class CounterQuerySet(SumMixin, models.QuerySet):
             .order_by('date')
         )
 
-    def sum_by_month(self, year, month=None):
-        summed_name = 'qty'
+    def sum_by_month(self, year: int, month: int = None) -> List[Dict[date, float]]:
+        #
+        # returns QuerySet [{'date': datetime.date, 'qty': float}]
+        #
 
         return (
             self
@@ -76,7 +81,7 @@ class CounterQuerySet(SumMixin, models.QuerySet):
             .month_sum(
                 year=year,
                 month=month,
-                summed_name=summed_name,
+                summed_name='qty',
                 sum_column_name='quantity')
             .order_by('date')
         )
