@@ -1,131 +1,97 @@
 import calendar
-from datetime import date, datetime
+from datetime import datetime
+from typing import Dict
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import Case, Count, ExpressionWrapper, F, Sum, When
-from django.db.models.functions import ExtractMonth, TruncYear, ExtractYear
 
-from ..users.models import User
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
+from ..counters.models import Counter, CounterQuerySet
+from ..users.models import User
 
 
-class DrinkQuerySet(SumMixin, models.QuerySet):
-    def related(self):
-        user = utils.get_user()
-        return (
-            self
-            .select_related('user')
-            .filter(user=user)
-            .order_by('-date')
-        )
+class DrinkQuerySet(CounterQuerySet, models.QuerySet):
+    def sum_by_month(self, year: int, month: int = None):
+        #Returns
+        # DrinkQuerySet [{'date': datetime.date, 'sum': float, 'month': int, 'monthlen': int, 'per_month': float}]
+        #
 
-    def year(self, year):
-        return (
-            self
-            .related()
-            .filter(date__year=year)
-        )
+        qs = super().sum_by_month(year, month)
 
-    def items(self):
-        return self.related()
+        arr = []
+        for row in qs:
+            _date = row.get('date')
+            _month = _date.month
+            _monthlen = calendar.monthrange(year, _month)[1]
+            _qty = row.get('qty')
 
-    def sum_by_month(self, year, month=None):
-        summed_name = 'sum'
+            item = {}
+            item['date'] = _date
+            item['sum'] = _qty
+            item['month'] = _month
+            item['monthlen'] = _monthlen
+            item['per_month'] = self._consumption(_qty, _monthlen)
 
-        return (
-            self
-            .related()
-            .month_sum(
-                year=year, month=month,
-                summed_name=summed_name, sum_column_name='quantity')
-            .order_by('date')
-            .annotate(month=ExtractMonth('date'))
-            .annotate(
-                monthlen=Case(
-                    *[When(date__month=i, then=calendar.monthlen(year, i))
-                        for i in range(1, 13)],
-                    default=1,
-                    output_field=models.IntegerField())
-            )
-            .annotate(
-                per_month=self._per_period(F('sum'), F('monthlen')))
-        )
+            if item:
+                arr.append(item)
 
-    def day_sum(self, year):
-        start = date(year, 1, 1)
+        return arr
 
-        if year == datetime.now().date().year:
-            end = datetime.now().date()
-            day_of_year = end.timetuple().tm_yday
+    def day_sum(self, year: int) -> Dict[float, float]:
+        # Returns
+        # {'qty': float, 'per_day': float}
+
+        arr = {}
+        qs = list(super().sum_by_year(year))
+
+        if not qs:
+            return arr
+
+        _date = datetime.now().date()
+        if year == _date.year:
+            _day_of_year = _date.timetuple().tm_yday
         else:
-            end = date(year, 12, 31)
-            day_of_year = 366 if calendar.isleap(year) else 365
+            _day_of_year = 366 if calendar.isleap(year) else 365
 
-        qs = (
-            self
-            .related()
-            .filter(date__range=(start, end))
-            .annotate(c=Count('id'))
-            .values('c')
-            .annotate(date=TruncYear('date'))
-            .annotate(
-                qty=Sum('quantity'),
-                per_day=self._per_period(F('qty'), day_of_year))
-            .values('qty', 'per_day')
-        )
+        _qty = qs[0].get('qty')
 
-        return qs[0] if qs else {}
+        arr['qty'] = _qty
+        arr['per_day'] = self._consumption(_qty, _day_of_year)
+
+        return arr
 
     def summary(self):
-        qs = (
-            self
-            .related()
-            .annotate(c=Count('id'))
-            .values('c')
-            .annotate(date=TruncYear('date'))
-            .annotate(year=ExtractYear(F('date')))
-            .annotate(qty=Sum('quantity'))
-            .values('year', 'qty')
-            .order_by('year')
-        )
+        #Returns
+        # [{'year': int, 'qty': float, 'per_day': float}]
 
+        qs = super().sum_by_year()
+
+        arr = []
         for row in qs:
-            days = 366 if calendar.isleap(row.get('year')) else 365
-            row['per_day'] = self._consumption(row.get('qty'), days)
+            _qty = row.get('qty')
+            _date = row.get('date')
+            _days = 366 if calendar.isleap(_date.year) else 365
 
-        return qs
+            item = {}
+            item['year'] = _date.year
+            item['qty'] = _qty
+            item['per_day'] = self._consumption(_qty, _days)
 
-    def _per_period(self, qty: float, days: int) -> float:
-        return ExpressionWrapper(
-            self._consumption(qty, days),
-            output_field=models.FloatField()
-        )
+            if item:
+                arr.append(item)
+
+        return arr
 
     def _consumption(self, qty: float, days: int) -> float:
         return ((qty * 0.5) / days) * 1000
 
 
-class Drink(models.Model):
-    date = models.DateField()
-    quantity = models.FloatField(
-        validators=[MinValueValidator(0.1)]
-    )
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='drinks'
-    )
-
+class Drink(Counter):
     objects = DrinkQuerySet.as_manager()
 
-    def __str__(self):
-        return f'{self.date}: {self.quantity}'
-
     class Meta:
-        ordering = ['-date']
-        get_latest_by = ['date']
+        proxy = True
 
 
 class DrinkTargetQuerySet(SumMixin, models.QuerySet):

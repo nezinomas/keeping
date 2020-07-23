@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
-from ..core.mixins.form_mixin import FormMixin
+from ..core.mixins.form_mixin import FormForUserMixin
 from .models import Pension, PensionType
 
 
@@ -60,7 +60,7 @@ class PensionForm(forms.ModelForm):
 
         return
 
-class PensionTypeForm(FormMixin, forms.ModelForm):
+class PensionTypeForm(FormForUserMixin, forms.ModelForm):
     class Meta:
         model = PensionType
         fields = ['title']

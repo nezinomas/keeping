@@ -10,7 +10,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib.date import monthnames, set_year_for_form
 from ..core.lib import utils
-from ..core.mixins.form_mixin import FormMixin
+from ..core.mixins.form_mixin import FormForUserMixin
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
 from ..savings.models import SavingType
@@ -37,7 +37,7 @@ def common_field_transalion(self):
 # ----------------------------------------------------------------------------
 #                                                             Income Plan Form
 # ----------------------------------------------------------------------------
-class IncomePlanForm(FormMixin, forms.ModelForm):
+class IncomePlanForm(FormForUserMixin, forms.ModelForm):
     class Meta:
         model = IncomePlan
         fields = ['year', 'income_type'] + monthnames()
@@ -84,7 +84,7 @@ class IncomePlanForm(FormMixin, forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                            Expense Plan Form
 # ----------------------------------------------------------------------------
-class ExpensePlanForm(FormMixin, forms.ModelForm):
+class ExpensePlanForm(FormForUserMixin, forms.ModelForm):
     class Meta:
         model = ExpensePlan
         fields = ['year', 'expense_type'] + monthnames()
@@ -131,7 +131,7 @@ class ExpensePlanForm(FormMixin, forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                              Saving Plan Form
 # ----------------------------------------------------------------------------
-class SavingPlanForm(FormMixin, forms.ModelForm):
+class SavingPlanForm(FormForUserMixin, forms.ModelForm):
     class Meta:
         model = SavingPlan
         fields = ['year', 'saving_type'] + monthnames()
@@ -178,7 +178,7 @@ class SavingPlanForm(FormMixin, forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                                Day Plan Form
 # ----------------------------------------------------------------------------
-class DayPlanForm(FormMixin, forms.ModelForm):
+class DayPlanForm(FormForUserMixin, forms.ModelForm):
     class Meta:
         model = DayPlan
         fields = ['year'] + monthnames()
@@ -220,7 +220,7 @@ class DayPlanForm(FormMixin, forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                          Necessary Plan Form
 # ----------------------------------------------------------------------------
-class NecessaryPlanForm(FormMixin, forms.ModelForm):
+class NecessaryPlanForm(FormForUserMixin, forms.ModelForm):
     class Meta:
         model = NecessaryPlan
         fields = ['year', 'title'] + monthnames()
