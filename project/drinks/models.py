@@ -13,27 +13,31 @@ from ..counters.models import CounterQuerySet, Counter
 
 
 class DrinkQuerySet(CounterQuerySet, models.QuerySet):
-    def sum_by_month(self, year, month=None):
-        summed_name = 'sum'
+    def sum_by_month(self, year: int, month: int = None):
+        #
+        #Returns
+        # DrinkQuerySet [{'date': datetime.date, 'sum': float, 'month': int, 'monthlen': int, 'per_month': float}]
+        #
+        arr = []
 
-        return (
-            self
-            .related()
-            .month_sum(
-                year=year, month=month,
-                summed_name=summed_name, sum_column_name='quantity')
-            .order_by('date')
-            .annotate(month=ExtractMonth('date'))
-            .annotate(
-                monthlen=Case(
-                    *[When(date__month=i, then=calendar.monthlen(year, i))
-                        for i in range(1, 13)],
-                    default=1,
-                    output_field=models.IntegerField())
-            )
-            .annotate(
-                per_month=self._per_period(F('sum'), F('monthlen')))
-        )
+        qs = super().sum_by_month(year, month)
+
+        for row in qs:
+            _date = row.get('date')
+            _month = _date.month
+            _monthlen = calendar.monthrange(year, _month)[1]
+            _qty = row.get('qty')
+
+            item = {}
+            item['date'] = _date
+            item['sum'] = _qty
+            item['month'] = _month
+            item['monthlen'] = _monthlen
+            item['per_month'] = self._consumption(_qty, _monthlen)
+
+            arr.append(item)
+
+        return arr
 
     def day_sum(self, year):
         start = date(year, 1, 1)
