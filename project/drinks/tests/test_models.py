@@ -3,8 +3,9 @@ from datetime import date
 import pytest
 from django.core.validators import ValidationError
 from freezegun import freeze_time
+from mock import patch
 
-from ...counters.factories import CounterTypeFactory
+from ...counters.factories import CounterFactory, CounterTypeFactory
 from ...users.factories import UserFactory
 from ..factories import DrinkFactory, DrinkTargetFactory
 from ..models import Drink, DrinkTarget
@@ -23,7 +24,7 @@ def _drinks():
     DrinkFactory(
         date=date(1999, 2, 1),
         quantity=100.0,
-        counter_type = ct
+        counter_type=ct
     )
 
 
@@ -54,11 +55,37 @@ def test_drink_related(get_user, _different_users):
     assert actual[0].counter_type.user.username == 'bob'
 
 
+@patch('project.drinks.models.App_name', 'Counter Type')
 def test_drink_items(get_user, _different_users):
     actual = Drink.objects.items()
 
     assert len(actual) == 1
     assert actual[0].counter_type.user.username == 'bob'
+
+
+@patch('project.drinks.models.App_name', 'X')
+def test_drink_items_different_counters(get_user):
+    ct1 = CounterTypeFactory(title='x')
+    ct2 = CounterTypeFactory(title='z')
+
+    DrinkFactory(counter_type=ct1)
+    CounterFactory(counter_type=ct2)
+
+    actual = Drink.objects.items(counter_type='x')
+
+    assert len(actual) == 1
+
+
+def test_drink_items_different_counters_default_value(get_user):
+    ct1 = CounterTypeFactory(title='drinks')
+    ct2 = CounterTypeFactory(title='z')
+
+    DrinkFactory(counter_type=ct1)
+    CounterFactory(counter_type=ct2)
+
+    actual = Drink.objects.items()
+
+    assert len(actual) == 1
 
 
 def test_drink_year(get_user, _different_users):

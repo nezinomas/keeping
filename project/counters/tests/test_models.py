@@ -50,7 +50,7 @@ def test_counter_type_items(get_user):
     CounterTypeFactory(title='T1')
     CounterTypeFactory(title='T2')
 
-    actual = CounterType.objects.items()
+    actual = CounterType.objects.related()
 
     assert actual.count() == 2
 
@@ -59,7 +59,7 @@ def test_counter_type_items_user(get_user):
     CounterTypeFactory(title='T1', user=UserFactory())
     CounterTypeFactory(title='T2', user=UserFactory(username='u2'))
 
-    actual = CounterType.objects.items()
+    actual = CounterType.objects.related()
 
     assert actual.count() == 1
 
@@ -70,7 +70,7 @@ def test_counter_type_related_qs_count(django_assert_max_num_queries, get_user):
     CounterTypeFactory(title='T3')
 
     with django_assert_max_num_queries(2):
-        list(q.title for q in CounterType.objects.items())
+        list(q.title for q in CounterType.objects.related())
 
 
 @pytest.mark.xfail
@@ -88,7 +88,7 @@ def test_counter_type_ordering(get_user):
     CounterTypeFactory(title='z')
     CounterTypeFactory(title='a')
 
-    actual = CounterType.objects.items()
+    actual = CounterType.objects.related()
 
     assert list(actual.values_list('title', flat=True)) == ['a', 'z']
 

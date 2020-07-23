@@ -19,9 +19,6 @@ class CounterTypeQuerySet(models.QuerySet):
             .filter(user=user)
         )
 
-    def items(self):
-        return self.related()
-
 
 class CounterType(TitleAbstract):
     user = models.ForeignKey(
