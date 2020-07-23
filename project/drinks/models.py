@@ -63,29 +63,26 @@ class DrinkQuerySet(CounterQuerySet, models.QuerySet):
         return arr
 
     def summary(self):
-        qs = (
-            self
-            .related()
-            .annotate(c=Count('id'))
-            .values('c')
-            .annotate(date=TruncYear('date'))
-            .annotate(year=ExtractYear(F('date')))
-            .annotate(qty=Sum('quantity'))
-            .values('year', 'qty')
-            .order_by('year')
-        )
+        #Returns
+        # [{'year': int, 'qty': float, 'per_day': float}]
 
+        qs = super().sum_by_year()
+
+        arr = []
         for row in qs:
-            days = 366 if calendar.isleap(row.get('year')) else 365
-            row['per_day'] = self._consumption(row.get('qty'), days)
+            _qty = row.get('qty')
+            _date = row.get('date')
+            _days = 366 if calendar.isleap(_date.year) else 365
 
-        return qs
+            item = {}
+            item['year'] = _date.year
+            item['qty'] = _qty
+            item['per_day'] = self._consumption(_qty, _days)
 
-    def _per_period(self, qty: float, days: int) -> float:
-        return ExpressionWrapper(
-            self._consumption(qty, days),
-            output_field=models.FloatField()
-        )
+            if item:
+                arr.append(item)
+
+        return arr
 
     def _consumption(self, qty: float, days: int) -> float:
         return ((qty * 0.5) / days) * 1000
