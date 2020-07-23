@@ -9,9 +9,19 @@ from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 from ..counters.models import Counter, CounterQuerySet
 from ..users.models import User
-
+from .apps import App_name
 
 class DrinkQuerySet(CounterQuerySet, models.QuerySet):
+    def items(self, counter_type: str = None):
+        if not counter_type:
+            counter_type = App_name
+
+        return (
+            self
+            .related()
+            .filter(counter_type__title__iexact=counter_type)
+        )
+
     def sum_by_month(self, year: int, month: int = None):
         #Returns
         # DrinkQuerySet [{'date': datetime.date, 'sum': float, 'month': int, 'monthlen': int, 'per_month': float}]
