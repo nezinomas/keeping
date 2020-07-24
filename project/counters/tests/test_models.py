@@ -29,6 +29,7 @@ def _counters():
 @pytest.fixture()
 def _different_users():
     CounterFactory()
+    CounterFactory(counter_type=CounterTypeFactory(title='xT'))
     CounterFactory(counter_type=CounterTypeFactory(title='xT', user=UserFactory(username='XXX')))
 
 
