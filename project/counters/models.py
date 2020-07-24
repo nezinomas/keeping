@@ -8,6 +8,7 @@ from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
 from ..users.models import User
+from .apps import App_name as CounterAppName
 
 
 class CounterTypeQuerySet(models.QuerySet):
@@ -35,12 +36,15 @@ class CounterType(TitleAbstract):
 
 
 class CounterQuerySet(SumMixin, models.QuerySet):
+    App_name = CounterAppName
+
     def related(self):
         user = utils.get_user()
         return (
             self
             .select_related('counter_type')
             .filter(counter_type__user=user)
+            .filter(counter_type__title__iexact=self.App_name)
             .order_by('-date')
         )
 

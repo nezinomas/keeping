@@ -1,5 +1,6 @@
 from django.apps import AppConfig
 
+App_name = 'counters'
 
 class CountersConfig(AppConfig):
-    name = 'project.counters'
+    name = f'project.{App_name}'
