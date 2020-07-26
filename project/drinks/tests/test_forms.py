@@ -4,7 +4,6 @@ import pytest
 from freezegun import freeze_time
 from mock import patch
 
-from ...counters.factories import CounterTypeFactory
 from ...users.factories import UserFactory
 from ..factories import DrinkTargetFactory
 from ..forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
@@ -38,8 +37,6 @@ def test_drink_year_initial_value(get_user):
 
 @patch('project.drinks.forms.App_name', 'Counter Type')
 def test_drink_valid_data(get_user):
-    CounterTypeFactory()
-
     form = DrinkForm(data={
         'date': '1974-01-01',
         'quantity': 1.0
@@ -51,7 +48,8 @@ def test_drink_valid_data(get_user):
 
     assert data.date == date(1974, 1, 1)
     assert data.quantity == 1.0
-    assert data.counter_type.user.username == 'bob'
+    assert data.user.username == 'bob'
+    assert data.counter_type == 'Counter Type'
 
 
 def test_drink_blank_data(get_user):

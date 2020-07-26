@@ -41,10 +41,10 @@ class DrinkForm(FormForUserMixin, forms.ModelForm):
 
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
-
         instance.counter_type = App_name
-
         instance.save()
+
+        return instance
 
 
 
