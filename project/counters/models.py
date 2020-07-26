@@ -6,7 +6,6 @@ from django.db import models
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
-from ..core.models import TitleAbstract
 from ..users.models import User
 from .apps import App_name as CounterAppName
 
@@ -18,9 +17,9 @@ class CounterQuerySet(SumMixin, models.QuerySet):
         user = utils.get_user()
         return (
             self
-            .select_related('counter_type')
-            .filter(counter_type__user=user)
-            .filter(counter_type__title__iexact=self.App_name)
+            .select_related('user')
+            .filter(user=user)
+            .filter(counter_type__iexact=self.App_name)
             .order_by('-date')
         )
 
