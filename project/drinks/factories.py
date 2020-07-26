@@ -2,7 +2,6 @@ from datetime import date
 
 import factory
 
-from ..counters.factories import CounterTypeFactory
 from ..users.factories import UserFactory
 from .models import Drink, DrinkTarget
 
@@ -13,13 +12,14 @@ class DrinkFactory(factory.DjangoModelFactory):
 
     date = date(1999, 1, 1)
     quantity = 1
-    counter_type = factory.SubFactory(CounterTypeFactory)
+    counter_type = 'Counter Type'
+    user = factory.SubFactory(UserFactory)
 
 
 class DrinkTargetFactory(factory.DjangoModelFactory):
     class Meta:
         model = DrinkTarget
 
-    year = 1999
     quantity = 100
+    year = 1999
     user = factory.SubFactory(UserFactory)

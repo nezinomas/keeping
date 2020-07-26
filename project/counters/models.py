@@ -1,38 +1,13 @@
 from datetime import date
 from typing import Dict, List
 
-from django.core.validators import MinValueValidator
+from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
-from ..core.models import TitleAbstract
 from ..users.models import User
 from .apps import App_name as CounterAppName
-
-
-class CounterTypeQuerySet(models.QuerySet):
-    def related(self):
-        user = utils.get_user()
-        return (
-            self
-            .select_related('user')
-            .filter(user=user)
-        )
-
-
-class CounterType(TitleAbstract):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='counter_types'
-    )
-
-    class Meta:
-        unique_together = ['user', 'title']
-        ordering = ['title']
-
-    objects = CounterTypeQuerySet.as_manager()
 
 
 class CounterQuerySet(SumMixin, models.QuerySet):
@@ -42,9 +17,9 @@ class CounterQuerySet(SumMixin, models.QuerySet):
         user = utils.get_user()
         return (
             self
-            .select_related('counter_type')
-            .filter(counter_type__user=user)
-            .filter(counter_type__title__iexact=self.App_name)
+            .select_related('user')
+            .filter(user=user)
+            .filter(counter_type__iexact=self.App_name)
             .order_by('-date')
         )
 
@@ -96,10 +71,14 @@ class Counter(models.Model):
     quantity = models.FloatField(
         validators=[MinValueValidator(0.1)]
     )
-    counter_type = models.ForeignKey(
-        CounterType,
-        on_delete=models.CASCADE,
-        related_name='counters'
+    counter_type = models.CharField(
+        max_length=254,
+        blank=False,
+        validators=[MinLengthValidator(3)]
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
     )
 
     objects = CounterQuerySet.as_manager()
