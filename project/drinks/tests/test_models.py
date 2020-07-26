@@ -5,7 +5,6 @@ from django.core.validators import ValidationError
 from freezegun import freeze_time
 from mock import patch
 
-from ...counters.factories import CounterFactory, CounterTypeFactory
 from ...users.factories import UserFactory
 from ..factories import DrinkFactory, DrinkTargetFactory
 from ..models import Drink, DrinkTarget
@@ -20,17 +19,17 @@ def _drinks():
     DrinkFactory(date=date(1999, 2, 1), quantity=2.0)
     DrinkFactory(date=date(1999, 2, 1), quantity=1.0)
 
-    ct = CounterTypeFactory(title='NewCounterType', user=UserFactory(username='XXX'))
     DrinkFactory(
         date=date(1999, 2, 1),
         quantity=100.0,
-        counter_type=ct
+        counter_type='Z',
+        user=UserFactory(username='XXX')
     )
 
 
 @pytest.fixture()
 def _second_user():
-    return CounterTypeFactory(title='xT', user=UserFactory(username='XXX'))
+    return DrinkFactory(counter_type='Z', user=UserFactory(username='XXX'))
 
 
 @pytest.fixture()
@@ -53,7 +52,7 @@ def test_drink_related(get_user, _different_users):
     actual = Drink.objects.related()
 
     assert len(actual) == 1
-    assert actual[0].counter_type.user.username == 'bob'
+    assert actual[0].user.username == 'bob'
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
@@ -61,16 +60,13 @@ def test_drink_items(get_user, _different_users):
     actual = Drink.objects.items()
 
     assert len(actual) == 1
-    assert actual[0].counter_type.user.username == 'bob'
+    assert actual[0].user.username == 'bob'
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'X')
 def test_drink_items_different_counters(get_user):
-    ct1 = CounterTypeFactory(title='x')
-    ct2 = CounterTypeFactory(title='z')
-
-    DrinkFactory(counter_type=ct1)
-    CounterFactory(counter_type=ct2)
+    DrinkFactory(counter_type='x')
+    DrinkFactory(counter_type='z')
 
     actual = Drink.objects.items()
 
@@ -78,11 +74,8 @@ def test_drink_items_different_counters(get_user):
 
 
 def test_drink_items_different_counters_default_value(get_user):
-    ct1 = CounterTypeFactory(title='drinks')
-    ct2 = CounterTypeFactory(title='z')
-
-    DrinkFactory(counter_type=ct1)
-    CounterFactory(counter_type=ct2)
+    DrinkFactory(counter_type='drinks')
+    DrinkFactory(counter_type='z')
 
     actual = Drink.objects.items()
 
@@ -95,7 +88,7 @@ def test_drink_year(get_user, _different_users):
 
     assert len(actual) == 1
     assert actual[0].date == date(1999, 1, 1)
-    assert actual[0].counter_type.user.username == 'bob'
+    assert actual[0].user.username == 'bob'
 
 
 def test_drink_quantity_float():
