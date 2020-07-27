@@ -3,17 +3,19 @@ from django.db.models.functions import TruncDay, TruncMonth, TruncYear
 
 
 class SumMixin():
-    def _year(self, year):
+    def year_filter(self, year):
         if year:
             return self.filter(date__year=year)
 
         return self
+    year_filter.queryset_only = True
 
-    def _month(self, month):
+    def month_filter(self, month):
         if month:
             return self.filter(date__month=month)
 
         return self
+    month_filter.queryset_only = True
 
     def year_sum(self,
                  year,
@@ -22,7 +24,7 @@ class SumMixin():
                  sum_column='price'):
         return (
             self
-            ._year(year)
+            .year_filter(year)
             .annotate(cnt=Count(groupby))
             .values(groupby)
             .annotate(date=TruncYear('date'))
@@ -40,8 +42,8 @@ class SumMixin():
                   groupby='id'):
         return (
             self
-            ._year(year)
-            ._month(month)
+            .year_filter(year)
+            .month_filter(month)
             .annotate(cnt=Count(groupby))
             .values(groupby)
             .annotate(date=TruncMonth('date'))
@@ -59,8 +61,8 @@ class SumMixin():
                 groupby='id'):
         return (
             self
-            ._year(year)
-            ._month(month)
+            .year_filter(year)
+            .month_filter(month)
             .annotate(c=Count(groupby))
             .values('c')
             .annotate(date=TruncDay('date'))
