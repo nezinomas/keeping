@@ -34,10 +34,10 @@ class SumMixin():
 
     def month_sum(self,
                   year,
-                  sum_annotation,
                   month=None,
-                  groupby='id',
-                  sum_column='price'):
+                  sum_annotation='sum',
+                  sum_column='price',
+                  groupby='id'):
         return (
             self
             ._year(year)
