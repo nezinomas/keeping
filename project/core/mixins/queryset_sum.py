@@ -16,10 +16,10 @@ class SumMixin():
         return self
 
     def year_sum(self,
-                  year,
-                  summed_name,
-                  groupby='id',
-                  sum_column_name='price'):
+                 year,
+                 sum_annotation,
+                 groupby='id',
+                 sum_column='price'):
         return (
             self
             ._year(year)
@@ -28,16 +28,16 @@ class SumMixin():
             .annotate(date=TruncYear('date'))
             .values('date')
             .annotate(c=Count('id'))
-            .annotate(**{summed_name: Sum(sum_column_name)})
+            .annotate(**{sum_annotation: Sum(sum_column)})
             .order_by('date')
         )
 
     def month_sum(self,
                   year,
-                  summed_name,
+                  sum_annotation,
                   month=None,
                   groupby='id',
-                  sum_column_name='price'):
+                  sum_column='price'):
         return (
             self
             ._year(year)
@@ -47,11 +47,11 @@ class SumMixin():
             .annotate(date=TruncMonth('date'))
             .values('date')
             .annotate(c=Count('id'))
-            .annotate(**{summed_name: Sum(sum_column_name)})
+            .annotate(**{sum_annotation: Sum(sum_column)})
             .order_by('date')
         )
 
-    def day_sum(self, year, month, summed_name):
+    def day_sum(self, year, month, sum_annotation):
         return (
             self
             ._year(year)
@@ -59,6 +59,6 @@ class SumMixin():
             .annotate(c=Count('id'))
             .values('c')
             .annotate(date=TruncDay('date'))
-            .annotate(**{summed_name: Sum('price')})
+            .annotate(**{sum_annotation: Sum('price')})
             .order_by('date')
         )
