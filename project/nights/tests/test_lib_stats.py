@@ -9,10 +9,10 @@ from ..lib.stats import Stats
 @pytest.fixture()
 def _data():
     df = [
-        {'date': date(1999, 1, 8), 'qty': 1.0},
-        {'date': date(1999, 1, 15), 'qty': 2.0},
-        {'date': date(1999, 2, 1), 'qty': 2.0},
         {'date': date(1999, 12, 3), 'qty': 1.0},
+        {'date': date(1999, 2, 1), 'qty': 2.0},
+        {'date': date(1999, 1, 15), 'qty': 2.0},
+        {'date': date(1999, 1, 8), 'qty': 1.0},
     ]
 
     return df

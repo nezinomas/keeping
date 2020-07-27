@@ -109,6 +109,7 @@ class Stats():
 
         if not df.empty:
             df['date'] = pd.to_datetime(df['date'])
+            df.sort_values(by=['date'], inplace=True)
 
         return df
 
