@@ -37,22 +37,19 @@ class CounterQuerySet(SumMixin, models.QuerySet):
         #Returns
         # QuerySet [{'date': datetime.date, 'qty': float}]
 
-        sum_annotation = 'qty'
-
         return (
             self
             .related()
             .year_sum(
                 year=year,
-                sum_annotation=sum_annotation,
+                sum_annotation='qty',
                 sum_column='quantity')
             .order_by('date')
         )
 
     def sum_by_month(self, year: int, month: int = None) -> List[Dict[date, float]]:
-        #
-        # returns QuerySet [{'date': datetime.date, 'qty': float}]
-        #
+        #Returns
+        # QuerySet [{'date': datetime.date, 'qty': float}]
 
         return (
             self
