@@ -51,14 +51,19 @@ class SumMixin():
             .order_by('date')
         )
 
-    def day_sum(self, year, month, sum_annotation):
+    def day_sum(self,
+                year,
+                month=None,
+                sum_annotation='sum',
+                sum_column='price',
+                groupby='id'):
         return (
             self
             ._year(year)
             ._month(month)
-            .annotate(c=Count('id'))
+            .annotate(c=Count(groupby))
             .values('c')
             .annotate(date=TruncDay('date'))
-            .annotate(**{sum_annotation: Sum('price')})
+            .annotate(**{sum_annotation: Sum(sum_column)})
             .order_by('date')
         )

@@ -108,7 +108,8 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             self
             .related()
             .month_sum(
-                year=year, month=month,
+                year=year,
+                month=month,
                 sum_annotation=sum_annotation)
             .values('date', sum_annotation)
         )
@@ -138,9 +139,13 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             self
             .related()
             .day_sum(
-                year=year, month=month,
+                year=year,
+                month=month,
                 sum_annotation=sum_annotation)
-            .values(sum_annotation, 'date', title=F('saving_type__title'))
+            .values(
+                sum_annotation,
+                'date',
+                title=F('saving_type__title'))
         )
 
     def sum_by_day(self, year, month):
@@ -150,9 +155,12 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             self
             .related()
             .day_sum(
-                year=year, month=month,
+                year=year,
+                month=month,
                 sum_annotation=sum_annotation)
-            .values(sum_annotation, 'date')
+            .values(
+                sum_annotation,
+                'date')
         )
 
     def summary_from(self, year: int) -> List[Dict[str, Any]]:
@@ -170,7 +178,8 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .related()
             ._summary(year)
             .values(
-                's_past', 's_now',
+                's_past',
+                's_now',
                 title=models.F('account__title'),
             )
         )
@@ -192,8 +201,10 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .related()
             ._summary(year)
             .values(
-                's_past', 's_now',
-                's_fee_past', 's_fee_now',
+                's_past',
+                's_now',
+                's_fee_past',
+                's_fee_now',
                 title=models.F('saving_type__title'),
             )
         )
