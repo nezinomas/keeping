@@ -62,6 +62,21 @@ class CounterQuerySet(SumMixin, models.QuerySet):
             .order_by('date')
         )
 
+    def sum_by_day(self, year: int, month: int = None) -> List[Dict[date, float]]:
+        #Returns
+        # QuerySet [{'date': datetime.date, 'qty': float}]
+
+        return (
+            self
+            .related()
+            .day_sum(
+                year=year,
+                month=month,
+                sum_annotation='qty',
+                sum_column='quantity')
+            .order_by('date')
+        )
+
 
 class Counter(models.Model):
     date = models.DateField()
