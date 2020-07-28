@@ -112,11 +112,10 @@ class Stats():
 
     def year_totals(self):
         df = self._df.copy()
-
         df = df.groupby(df['date'].dt.year)['qty'].sum()
 
         arr = df.to_dict()
-        print(arr)
+
         if self._year:
             return arr.get(self._year, 0)
         else:
