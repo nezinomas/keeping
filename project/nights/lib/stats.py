@@ -3,7 +3,9 @@ from datetime import date
 from typing import Dict, List
 
 import pandas as pd
+
 from ...core.exceptions import MethodInvalid
+
 
 class Stats():
     def __init__(self, year: int = None, data: List[Dict[date, float]] = None):
@@ -11,7 +13,7 @@ class Stats():
         self._df = self._prepare_df(data if data else [])
 
     @staticmethod
-    def months():
+    def months() -> List[str]:
         arr = [
             'Sausis',
             'Vasaris',
@@ -29,7 +31,7 @@ class Stats():
         return arr
 
     @staticmethod
-    def weekdays():
+    def weekdays() -> List[str]:
         return([
             'Pirmadienis',
             'Antradienis',
@@ -40,7 +42,9 @@ class Stats():
             'Sekmadienis'
         ])
 
-    def weekdays_stats(self):
+    def weekdays_stats(self) -> List[Dict[int, float]]:
+        """Returns [{'weekday': int, 'count': float}]"""
+
         df = self._df.copy()
 
         if not df.empty:
@@ -61,7 +65,9 @@ class Stats():
 
         return arr
 
-    def months_stats(self):
+    def months_stats(self) -> List[float]:
+        """Returns  [float] * 12"""
+
         df = self._df.copy()
 
         if not df.empty:
