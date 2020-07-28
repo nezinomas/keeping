@@ -1,0 +1,75 @@
+<div id="chart_weekdays_container"></div>
+<script>
+    $(function () {
+       Highcharts.chart('chart_weekdays_container', {
+        chart: {
+            type: 'column',
+        },
+        title: {
+            text: ''
+        },
+        xAxis: {
+            lineColor: '#000',
+            lineWidth: 2,
+            categories: {{ weekdays|safe }},
+            crosshair: true,
+            labels: {
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+                rotation: -45,
+            }
+        },
+        yAxis: {
+            title: {
+                text: ''
+            },
+            labels: {
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                }
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            shared: true,
+            headerFormat: '',
+            pointFormat: '{series.name}: <b>{point.y:.0f}</b><br/>',
+            style: {
+                fontSize: '12px',
+                fontFamily: 'Calibri, Verdana',
+            }
+        },
+        plotOptions: {
+            bar: {
+                grouping: false,
+                shadow: false,
+                pointWidth: 13,
+            }
+        },
+        series: [{
+            name: 'Dažnis',
+            data: {{ data|safe }},
+            color: 'rgba(166,193,110,0.8)',
+            pointPadding: 0,
+            pointPlacement: 0,
+            dataLabels: {
+                enabled: true,
+                rotation: 0,
+                color: '#000',
+                format: '{point.y:.1f}',
+                style: {
+                    fontSize: '9px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Verdana, sans-serif',
+                    textOutline: false
+                }
+            }
+        }]
+    });
+});
+</script>
