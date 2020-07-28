@@ -22,7 +22,7 @@ class Index(IndexMixin):
         obj = Stats(year=year, data=list(qs))
 
         context['chart_weekdays'] = render_to_string(
-            'nights/includes/chart_weekdays.html',
+            'nights/includes/chart_periodicity.html',
             {
                 'data': [x['count'] for x in obj.weekdays_stats()],
                 'categories': Stats.weekdays
