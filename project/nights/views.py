@@ -25,7 +25,18 @@ class Index(IndexMixin):
             'nights/includes/chart_periodicity.html',
             {
                 'data': [x['count'] for x in obj.weekdays_stats()],
-                'categories': Stats.weekdays
+                'categories': [x[:4] for x in Stats.weekdays()],
+                'chart': 'chart_weekdays',
+            },
+            self.request
+        )
+
+        context['chart_months'] = render_to_string(
+            'nights/includes/chart_periodicity.html',
+            {
+                'data': obj.months_stats(),
+                'categories': Stats.months(),
+                'chart': 'chart_months',
             },
             self.request
         )

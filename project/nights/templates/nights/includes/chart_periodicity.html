@@ -1,7 +1,7 @@
-<div id="chart_weekdays_container"></div>
+<div id="{{ chart }}_container"></div>
 <script>
     $(function () {
-       Highcharts.chart('chart_weekdays_container', {
+       Highcharts.chart('{{ chart }}_container', {
         chart: {
             type: 'column',
         },
@@ -14,9 +14,13 @@
             categories: {{ categories|safe }},
             crosshair: true,
             labels: {
+                useHTML: true,
                 style: {
                     fontSize: '10px',
                     fontFamily: 'Calibri, Verdana',
+                },
+                formatter: function () {//use formatter to break word.
+                    return '<div align="right" style="word-wrap: break-word;word-break: break-all;width:40px">' + this.value + '</div>';
                 },
                 rotation: -45,
             }
