@@ -1,11 +1,14 @@
 import calendar
+from datetime import date
+from typing import Dict, List
 
 import pandas as pd
-
+from ...core.exceptions import MethodInvalid
 
 class Stats():
-    def __init__(self, data):
-        self._df = self._prepare_df(data)
+    def __init__(self, year: int = None, data: List[Dict[date, float]] = None):
+        self._year = year
+        self._df = self._prepare_df(data if data else [])
 
     @staticmethod
     def months():
@@ -77,8 +80,11 @@ class Stats():
 
         return arr
 
-    def year_stats(self, year: int):
-        arr = self._empty_list(year)
+    def year_stats(self):
+        if not self._year:
+            raise MethodInvalid('class Stats must be called with specified year.')
+
+        arr = self._empty_list()
         df = self._df.copy()
 
         if df.empty:
@@ -104,6 +110,19 @@ class Stats():
 
         return arr
 
+    def year_totals(self):
+        df = self._df.copy()
+
+        df = df.groupby(df['date'].dt.year)['qty'].sum()
+
+        arr = df.to_dict()
+        print(arr)
+        if self._year:
+            return arr.get(self._year, 0)
+        else:
+            return arr
+
+
     def _prepare_df(self, data):
         df = pd.DataFrame(data)
 
@@ -111,12 +130,15 @@ class Stats():
             df['date'] = pd.to_datetime(df['date'])
             df.sort_values(by=['date'], inplace=True)
 
+            if self._year:
+                df = df[df['date'].dt.year == self._year]
+
         return df
 
-    def _empty_list(self, year: int):
+    def _empty_list(self):
         arr = []
         for i in range(1, 13):
-            month_len = calendar.monthlen(year, i)
+            month_len = calendar.monthlen(self._year, i)
             items = []
             for _ in range(0, month_len):
                 items.append({'y': 0, 'gap': 0})

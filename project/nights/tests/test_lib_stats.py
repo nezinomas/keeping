@@ -3,6 +3,7 @@ from datetime import date
 
 import pytest
 
+from ...core.exceptions import MethodInvalid
 from ..lib.stats import Stats
 
 
@@ -13,6 +14,7 @@ def _data():
         {'date': date(1999, 2, 1), 'qty': 2.0},
         {'date': date(1999, 1, 15), 'qty': 2.0},
         {'date': date(1999, 1, 8), 'qty': 1.0},
+        {'date': date(2000, 1, 8), 'qty': 1.0},
     ]
 
     return df
@@ -62,7 +64,7 @@ def test_weekdays():
 
 
 def test_weekdays_stats(_data):
-    actual = Stats(_data).weekdays_stats()
+    actual = Stats(year=1999, data=_data).weekdays_stats()
 
     expect = [
         {'weekday': 0, 'count': 1},  # pirmadienis
@@ -78,7 +80,7 @@ def test_weekdays_stats(_data):
 
 
 def test_weekdays_stats_no_data():
-    actual = Stats([]).weekdays_stats()
+    actual = Stats(year=1999, data=[]).weekdays_stats()
 
     expect = [
         {'weekday': 0, 'count': 0},  # pirmadienis
@@ -102,7 +104,7 @@ def test_months():
 
 
 def test_months_stats(_data):
-    actual = Stats(_data).months_stats()
+    actual = Stats(year=1999, data=_data).months_stats()
 
     expect = [3.0, 2.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
 
@@ -110,27 +112,32 @@ def test_months_stats(_data):
 
 
 def test_months_stats_no_data():
-    actual = Stats([]).months_stats()
+    actual = Stats(year=1999, data=[]).months_stats()
 
     expect = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     assert actual == expect
 
 
+@pytest.mark.xfail(raises=MethodInvalid)
+def test_year_stats_no_year_provided(_data):
+    Stats(data=_data).year_stats()
+
+
 def test_year_stats(_data, _year_stats_expect):
-    actual = Stats(_data).year_stats(1999)
+    actual = Stats(year=1999, data=_data).year_stats()
 
     assert actual == _year_stats_expect
 
 
 def test_year_stats_no_data(_year_stats_expect_empty):
-    actual = Stats([]).year_stats(1999)
+    actual = Stats(year=1999, data=[]).year_stats()
 
     assert actual == _year_stats_expect_empty
 
 
 def test_year_stats_months_len():
-    actual = Stats([]).year_stats(1999)
+    actual = Stats(year=1999, data=[]).year_stats()
 
     assert len(actual[0]) == 31  # sausis
     assert len(actual[1]) == 28  # vasaris
@@ -146,6 +153,24 @@ def test_year_stats_months_len():
     assert len(actual[11]) == 31  # gruodis
 
 def test_year_stats_months_len_leap_year():
-    actual = Stats([]).year_stats(2000)
+    actual = Stats(year=2000, data=[]).year_stats()
 
     assert len(actual[1]) == 29  # vasaris
+
+
+def test_year_totals(_data):
+    actual = Stats(year=1999, data=_data).year_totals()
+
+    assert actual == 6
+
+
+def test_year_totals_all_years(_data):
+    actual = Stats(data=_data).year_totals()
+
+    assert actual == {1999: 6.0, 2000: 1.0}
+
+
+def test_year_totals_year_not_exists_in_data(_data):
+    actual = Stats(year=2010, data=_data).year_totals()
+
+    assert actual == 0
