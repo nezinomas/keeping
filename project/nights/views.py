@@ -20,11 +20,12 @@ class Index(IndexMixin):
 
         qs = models.Night.objects.sum_by_day(year=year)
         obj = Stats(year=year, data=list(qs))
+
         context['chart_weekdays'] = render_to_string(
             'nights/includes/chart_weekdays.html',
             {
                 'data': [x['count'] for x in obj.weekdays_stats()],
-                'weekdays': Stats.weekdays
+                'categories': Stats.weekdays
             },
             self.request
         )
