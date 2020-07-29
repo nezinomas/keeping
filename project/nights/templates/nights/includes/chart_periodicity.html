@@ -42,7 +42,7 @@
         tooltip: {
             shared: true,
             headerFormat: '',
-            pointFormat: '{series.name}: <b>{point.y:.0f}</b><br/>',
+            pointFormat: '<b>{point.y:.0f}</b>',
             style: {
                 fontSize: '12px',
                 fontFamily: 'Calibri, Verdana',
@@ -62,10 +62,10 @@
             pointPadding: 0,
             pointPlacement: 0,
             dataLabels: {
-                enabled: true,
+                enabled: false,
                 rotation: 0,
                 color: '#000',
-                format: '{point.y:.1f}',
+                format: '{point.y:.0f}',
                 style: {
                     fontSize: '9px',
                     fontWeight: 'bold',
