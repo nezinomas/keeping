@@ -17,7 +17,7 @@
 </div>
 
 <div class="row my-3">
-    <div class="col text-center">{{ info_row }}</div>
+    <div class="col text-center" id="info_row">{{ info_row }}</div>
 </div>
 
 <div class="row mt-2">
@@ -29,4 +29,23 @@
 
 {% include 'modal.html' %}
 
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'nights:reload_stats' %}`;
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1'
+            },
+            success: function (data) {
+                var blocks = ['info_row', 'chart_weekdays', 'chart_months', 'chart_year']
+                for(i = 0; i < blocks.length; i++) {
+                    var block = $(data).filter(`#${blocks[i]}`);
+                    $(`#${blocks[i]}`).html(block);
+                }
+            }
+        });
+    });
+</script>
 {% endblock content %}

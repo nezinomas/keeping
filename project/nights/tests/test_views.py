@@ -1,12 +1,12 @@
 import json
 import re
-from datetime import date
 
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
 
+from ...users.factories import UserFactory
 from .. import views
 from ..factories import NightFactory
 
@@ -170,6 +170,42 @@ def test_nigths_index_info_row(client_logged):
 
     content = response.content.decode("utf-8")
 
-    assert 'Kiek: 3' in content
-    assert 'Savaitė: 28' in content
-    assert 'Per savaitę: 0,1' in content
+    pattern = re.compile(r'Kiek:.+(\d+).+Savaitė.+(\d+).+Per savaitę.+([\d,]+)')
+
+    for m in re.finditer(pattern, content):
+        assert m.group(1) == 3
+        assert m.group(2) == 28
+        assert m.group(3) == '0,1'
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                            Realod Stats
+# ---------------------------------------------------------------------------------------
+def test_night_reload_stats_func():
+    view = resolve('/nights/reload_stats/')
+
+    assert views.reload_stats is view.func
+
+
+def test_night_reload_stats_render(get_user, rf):
+    request = rf.get('/nights/reload_stats/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = views.reload_stats(request)
+
+    assert response.status_code == 200
+
+
+def test_night_reload_stats_render_ajax_trigger(client_logged):
+    url = reverse('nights:reload_stats')
+    response = client_logged.get(url, {'ajax_trigger': 1})
+
+    assert response.status_code == 200
+
+
+def test_night_reload_stats_render_ajax_trigger_not_set(client_logged):
+    url = reverse('nights:reload_stats')
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert views.Index == response.resolver_match.func.view_class
