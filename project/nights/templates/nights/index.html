@@ -4,6 +4,7 @@
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script type="text/javascript" src="{% static 'js/reload_stats.js' %}"></script>
 {% endblock head %}
 
 
@@ -39,12 +40,8 @@
                 'ajax_trigger': '1'
             },
             success: function (data) {
-                var blocks = ['info_row', 'chart_weekdays', 'chart_months', 'chart_year']
-                for(i = 0; i < blocks.length; i++) {
-                    var name = `#${blocks[i]}`;
-                    var block = $(data).filter(name).html();
-                    $(name).html(block);
-                }
+                var blocks = ['info_row', 'chart_weekdays', 'chart_months', 'chart_year'];
+                reload_stats(data, blocks);
             }
         });
     });
