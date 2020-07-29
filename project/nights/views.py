@@ -28,6 +28,7 @@ class Index(IndexMixin):
                 'categories': [x[:4] for x in Stats.weekdays()],
                 'chart': 'chart_weekdays',
                 'chart_title': f'Savaitės dienos, {year} metai',
+                'chart_column_color': '70, 171, 157',
             },
             self.request
         )
@@ -38,7 +39,8 @@ class Index(IndexMixin):
                 'data': obj.months_stats(),
                 'categories': Stats.months(),
                 'chart': 'chart_months',
-                'chart_title': f'Mėnesiai, {year} metai'
+                'chart_title': f'Mėnesiai, {year} metai',
+                'chart_column_color': '70, 171, 157',
             },
             self.request
         )
