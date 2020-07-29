@@ -2,7 +2,7 @@ from operator import itemgetter
 from typing import Dict, List
 
 from pandas import DataFrame as DF
-
+from pandas import to_datetime
 from ...core.lib.balance_base import (BalanceBase, df_days_of_month,
                                       df_months_of_year)
 from ...core.lib.colors import CHART
@@ -37,7 +37,7 @@ class ExpenseBase():
             return df
 
         for row in lst:
-            df.at[row['date'], row['title']] = float(row['sum'])
+            df.at[to_datetime(row['date']), row['title']] = float(row['sum'])
 
         df.fillna(0.0, inplace=True)
 
@@ -51,7 +51,7 @@ class ExpenseBase():
         for title, arr in lst.items():
             for row in arr:
                 _title = row.get('title', title)
-                df.at[row['date'], title] = float(row['sum'])
+                df.at[to_datetime(row['date']), title] = float(row['sum'])
 
         df.fillna(0.0, inplace=True)
 
@@ -65,7 +65,7 @@ class ExpenseBase():
 
         for row in lst:
             val = row.get('exception_sum', 0.0)
-            df.at[row['date'], row['title']] = float(val)
+            df.at[to_datetime(row['date']), row['title']] = float(val)
 
         df.fillna(0.0, inplace=True)
 
