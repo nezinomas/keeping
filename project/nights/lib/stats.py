@@ -128,6 +128,21 @@ class Stats():
             return arr
 
 
+    def month_days(self):
+        if not self._year:
+            raise MethodInvalid('class Stats must be called with specified year.')
+
+        arr = []
+        for i in range(1, 13):
+            month_len = calendar.monthlen(self._year, i)
+            items = []
+            for day in range(0, month_len):
+                items.append(day + 1)
+            arr.append(items)
+
+        return arr
+
+
     def _prepare_df(self, data):
         df = pd.DataFrame(data)
 

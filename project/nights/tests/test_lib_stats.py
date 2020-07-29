@@ -6,6 +6,20 @@ import pytest
 from ...core.exceptions import MethodInvalid
 from ..lib.stats import Stats
 
+month_days_1999 = [
+    (1, 31), (2, 28), (3, 31),
+    (4, 30), (5, 31), (6, 30),
+    (7, 31), (8, 31), (9, 30),
+    (10, 31), (11, 30), (12, 31)
+]
+
+month_days_2000 = [
+    (1, 31), (2, 29), (3, 31),
+    (4, 30), (5, 31), (6, 30),
+    (7, 31), (8, 31), (9, 30),
+    (10, 31), (11, 30), (12, 31)
+]
+
 
 @pytest.fixture()
 def _data():
@@ -136,26 +150,18 @@ def test_year_stats_no_data(_year_stats_expect_empty):
     assert actual == _year_stats_expect_empty
 
 
-def test_year_stats_months_len():
+@pytest.mark.parametrize('month, days', month_days_1999)
+def test_year_stats_months_len(month, days):
     actual = Stats(year=1999, data=[]).year_stats()
 
-    assert len(actual[0]) == 31  # sausis
-    assert len(actual[1]) == 28  # vasaris
-    assert len(actual[2]) == 31  # kovas
-    assert len(actual[3]) == 30  # balandis
-    assert len(actual[4]) == 31  # gegužė
-    assert len(actual[5]) == 30  # birželis
-    assert len(actual[6]) == 31  # liepa
-    assert len(actual[7]) == 31  # rugpjūtis
-    assert len(actual[8]) == 30  # rugsėjis
-    assert len(actual[9]) == 31  # spalis
-    assert len(actual[10]) == 30  # lapkritis
-    assert len(actual[11]) == 31  # gruodis
+    assert len(actual[month - 1]) == days
 
-def test_year_stats_months_len_leap_year():
+
+@pytest.mark.parametrize('month, days', month_days_2000)
+def test_year_stats_months_len_leap_year(month, days):
     actual = Stats(year=2000, data=[]).year_stats()
 
-    assert len(actual[1]) == 29  # vasaris
+    assert len(actual[month - 1]) == days
 
 
 def test_year_totals(_data):
@@ -174,3 +180,24 @@ def test_year_totals_year_not_exists_in_data(_data):
     actual = Stats(year=2010, data=_data).year_totals()
 
     assert actual == 0
+
+
+def test_month_days_len():
+    actual = Stats(year=1999, data=[]).month_days()
+
+    assert len(actual) == 12
+
+
+@pytest.mark.parametrize('month, days', month_days_1999)
+def test_month_days(month, days):
+    actual = Stats(year=1999, data=[]).month_days()
+
+    assert len(actual[month - 1]) == days
+
+    for day in range(0, days):
+        assert actual[month - 1][day] == day + 1
+
+
+@pytest.mark.xfail(raises=MethodInvalid)
+def test_year_month_days_no_year_provided():
+    Stats(data=[]).month_days()
