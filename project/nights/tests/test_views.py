@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import date
 
 import pytest
 from django.urls import resolve, reverse
@@ -150,3 +151,25 @@ def test_nigths_index_context_charts_of_year(client_logged):
     response = client_logged.get(url)
 
     assert 'chart_year' in response.context
+
+
+def test_nigths_index_context_info_row(client_logged):
+    url = reverse('nights:nights_index')
+    response = client_logged.get(url)
+
+    assert 'info_row' in response.context
+
+
+@freeze_time('1999-07-18')
+@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+def test_nigths_index_info_row(client_logged):
+    NightFactory(quantity=3)
+
+    url = reverse('nights:nights_index')
+    response = client_logged.get(url)
+
+    content = response.content.decode("utf-8")
+
+    assert 'Kiek: 3' in content
+    assert 'Savaitė: 28' in content
+    assert 'Per savaitę: 0,1' in content

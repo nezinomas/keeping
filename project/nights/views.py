@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render, reverse
 from django.template.loader import render_to_string
 
-from ..core.lib.date import years
+from ..core.lib.date import years, weeknumber
 from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from . import forms, models
@@ -52,6 +52,19 @@ class Index(IndexMixin):
                 'month_titles': obj.months(),
                 'data': obj.year_stats(),
                 'chart_column_color': '113, 149, 198',
+            },
+            self.request
+        )
+
+        week = weeknumber(year)
+        total = obj.year_totals()
+
+        context['info_row'] = render_to_string(
+            'nights/includes/info_row.html',
+            {
+                'week': week,
+                'total': total,
+                'ratio': total/ week,
             },
             self.request
         )
