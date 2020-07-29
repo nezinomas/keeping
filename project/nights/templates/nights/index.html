@@ -41,11 +41,13 @@
             success: function (data) {
                 var blocks = ['info_row', 'chart_weekdays', 'chart_months', 'chart_year']
                 for(i = 0; i < blocks.length; i++) {
-                    var block = $(data).filter(`#${blocks[i]}`);
-                    $(`#${blocks[i]}`).html(block);
+                    var name = `#${blocks[i]}`;
+                    var block = $(data).filter(name).html();
+                    $(name).html(block);
                 }
             }
         });
     });
 </script>
+
 {% endblock content %}
