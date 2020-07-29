@@ -133,3 +133,20 @@ def test_nigths_index_context_chart_months(client_logged):
     response = client_logged.get(url)
 
     assert 'chart_months' in response.context
+
+
+def test_nights_index_charts_of_year(client_logged):
+    url = reverse('nights:nights_index')
+    response = client_logged.get(url)
+
+    content = response.content.decode("utf-8")
+
+    for i in range(1, 13):
+        assert f'<div id="chart_m{i}_container"></div>' in content
+
+
+def test_nigths_index_context_charts_of_year(client_logged):
+    url = reverse('nights:nights_index')
+    response = client_logged.get(url)
+
+    assert 'chart_year' in response.context

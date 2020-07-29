@@ -45,6 +45,17 @@ class Index(IndexMixin):
             self.request
         )
 
+        context['chart_year'] = render_to_string(
+            'nights/includes/chart_month_periodicity.html',
+            {
+                'month_days': obj.month_days(),
+                'month_titles': obj.months(),
+                'data': obj.year_stats(),
+                'chart_column_color': '113, 149, 198',
+            },
+            self.request
+        )
+
         return context
 
 
