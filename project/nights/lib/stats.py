@@ -117,7 +117,17 @@ class Stats():
         return arr
 
     def year_totals(self):
+        """
+        If class called with year value method returns int
+
+        else method returns [int, int]
+        """
+
         df = self._df.copy()
+
+        if df.empty:
+            return 0
+
         df = df.groupby(df['date'].dt.year)['qty'].sum()
 
         arr = df.to_dict()
