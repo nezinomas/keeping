@@ -19,7 +19,7 @@ class Index(IndexMixin):
         year = self.request.user.year
 
         qs = models.Night.objects.sum_by_day(year=year)
-        obj = Stats(year=year, data=list(qs))
+        obj = Stats(year=year, data=qs)
 
         context['chart_weekdays'] = render_to_string(
             'nights/includes/chart_periodicity.html',
@@ -27,7 +27,7 @@ class Index(IndexMixin):
                 'data': [x['count'] for x in obj.weekdays_stats()],
                 'categories': [x[:4] for x in Stats.weekdays()],
                 'chart': 'chart_weekdays',
-                'chart_title': 'Savaitės dienos',
+                'chart_title': f'Savaitės dienos, {year} metai',
             },
             self.request
         )
@@ -38,7 +38,7 @@ class Index(IndexMixin):
                 'data': obj.months_stats(),
                 'categories': Stats.months(),
                 'chart': 'chart_months',
-                'chart_title': f'{year} metų mėnesiai'
+                'chart_title': f'Mėnesiai, {year} metai'
             },
             self.request
         )
