@@ -6,7 +6,11 @@
             type: 'column',
         },
         title: {
-            text: ''
+            text: '{{ chart_title|safe }}',
+            style: {
+                fontSize: '16px',
+                fontFamily: 'Calibri, Verdana',
+            },
         },
         xAxis: {
             lineColor: '#000',
@@ -52,27 +56,12 @@
             bar: {
                 grouping: false,
                 shadow: false,
-                pointWidth: 13,
             }
         },
         series: [{
             name: 'Dažnis',
             data: {{ data|safe }},
-            color: 'rgba(166,193,110,0.8)',
-            pointPadding: 0,
-            pointPlacement: 0,
-            dataLabels: {
-                enabled: false,
-                rotation: 0,
-                color: '#000',
-                format: '{point.y:.0f}',
-                style: {
-                    fontSize: '9px',
-                    fontWeight: 'bold',
-                    fontFamily: 'Verdana, sans-serif',
-                    textOutline: false
-                }
-            }
+            color: 'rgba(48, 123, 110, 0.5)',
         }]
     });
 });
