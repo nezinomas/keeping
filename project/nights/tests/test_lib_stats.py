@@ -225,13 +225,27 @@ def test_items(get_user):
     qs = Night.objects.year(1999)
 
     actual = Stats(year=1999, data=qs).items()
-    print(actual)
+
     assert len(actual) == 1
 
     actual = actual[0]
 
     assert actual['quantity'] == 1
     assert actual['date'] == date(1999, 1, 1)
+
+
+@pytest.mark.django_db
+@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+def test_items_odering(get_user):
+    NightFactory(date=date(1999, 1, 1))
+    NightFactory(date=date(1999, 12, 31))
+
+    qs = Night.objects.year(1999)
+
+    actual = Stats(year=1999, data=qs).items()
+
+    assert actual[0]['date'] == date(1999, 12, 31)
+    assert actual[1]['date'] == date(1999, 1, 1)
 
 
 @pytest.mark.django_db
