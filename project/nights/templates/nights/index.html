@@ -45,6 +45,10 @@
 
 
 {% if tab == 'history' %}
+<div class="row mt-2">
+    <div class="col-lg-6">{{ chart_weekdays }}</div>
+    <div class="col-lg-6">{{ chart_years }}</div>
+</div>
 {% endif %}
 
 {% include 'modal.html' %}

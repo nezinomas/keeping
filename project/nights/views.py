@@ -46,8 +46,40 @@ class Update(UpdateAjaxMixin):
 
 
 class History(IndexMixin):
-    pass
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
+        qs = models.Night.objects.items()
+        obj = Stats(data=qs)
+
+        context['tab'] = 'history'
+
+        context['chart_weekdays'] = render_to_string(
+            'nights/includes/chart_periodicity.html',
+            {
+                'data': [x['count'] for x in obj.weekdays_stats()],
+                'categories': [x[:4] for x in Stats.weekdays()],
+                'chart': 'chart_weekdays',
+                'chart_title': f'Savaitės dienos',
+                'chart_column_color': '70, 171, 157',
+            },
+            self.request
+        )
+
+        stats  = obj.year_totals()
+        context['chart_years'] = render_to_string(
+            'nights/includes/chart_periodicity.html',
+            {
+                'data': list(stats.values()),
+                'categories': list(stats.keys()),
+                'chart': 'chart_years',
+                'chart_title': f'Metai',
+                'chart_column_color': '70, 171, 157',
+            },
+            self.request
+        )
+
+        return context
 
 def reload_stats(request):
     try:

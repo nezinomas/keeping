@@ -252,3 +252,46 @@ def test_nigths_list_context_tab_value(client_logged):
     response = client_logged.get(url)
 
     assert response.context['tab'] == 'data'
+
+
+# ----------------------------------------------------------------------------
+#                                                               Nights History
+# ----------------------------------------------------------------------------
+def test_nights_history_func():
+    view = resolve('/nights/history/')
+
+    assert views.History == view.func.view_class
+
+
+def test_nights_history_200(client_logged):
+    url = reverse('nights:nights_history')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_nigths_history_context(client_logged):
+    url = reverse('nights:nights_history')
+    response = client_logged.get(url)
+
+    assert 'chart_weekdays' in response.context
+    assert 'chart_years' in response.context
+    assert 'tab' in response.context
+
+
+def test_nights_history_chart_weekdays(client_logged):
+    url = reverse('nights:nights_history')
+    response = client_logged.get(url)
+
+    content = response.content.decode("utf-8")
+
+    assert '<div id="chart_weekdays_container"></div>' in content
+
+
+def test_nights_history_chart_years(client_logged):
+    url = reverse('nights:nights_history')
+    response = client_logged.get(url)
+
+    content = response.content.decode("utf-8")
+
+    assert '<div id="chart_years_container"></div>' in content
