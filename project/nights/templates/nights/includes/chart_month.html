@@ -6,6 +6,7 @@
         chart: {
             type: 'column',
             height: '150px',
+            backgroundColor: {% if parent in alternative_bg %}'#fafafa'{% else %}'#ffffff'{% endif %},
         },
         title: {
             text: '{{ month_titles|get_list_val:parent }}',

@@ -103,6 +103,7 @@ def context_to_reload(request, year, context=None):
             'month_titles': obj.months(),
             'data': obj.year_stats(),
             'chart_column_color': '113, 149, 198',
+            'alternative_bg': [3, 4, 5, 9, 10, 11],
         },
         request
     )
