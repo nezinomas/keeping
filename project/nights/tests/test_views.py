@@ -95,13 +95,14 @@ def test_nights_index_add_button(client_logged):
     url = reverse('nights:nights_index')
     response = client_logged.get(url)
 
-    content = response.content.decode("utf-8")
+    content = response.content.decode()
 
-    pattern = re.compile(r'\<button type=\"button\".*?url="(.*?)".*? (\w)\<\/button\>')
+    pattern = re.compile(r'<button type="button".+data-url="(.*?)".+ (\w+)<\/button>', re.MULTILINE)
+    res = re.findall(pattern, content)
 
-    for m in re.finditer(pattern, content):
-        assert m.group(1) == url
-        assert m.group(2) == 'Pridėti'
+    assert len(res[0]) == 2
+    assert res[0][0] == reverse('nights:nights_new')
+    assert res[0][1] == 'Pridėti'
 
 
 def test_nights_index_chart_weekdays(client_logged):
