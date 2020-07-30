@@ -32,8 +32,8 @@ urlpatterns = [
         name='reload_stats'
     ),
     path(
-        'nights/historical_data/',
-        views.historical_data,
-        name='historical_data'
+        'nights/history/',
+        views.History.as_view(),
+        name='nights_history'
     ),
 ]

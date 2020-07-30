@@ -31,8 +31,7 @@ class Update(UpdateAjaxMixin):
     form_class = forms.NightForm
 
 
-@login_required()
-def historical_data(request):
+class History(IndexMixin):
     pass
 
 
