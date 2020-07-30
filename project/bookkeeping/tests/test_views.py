@@ -5,6 +5,7 @@ from decimal import Decimal
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
+from mock import patch
 
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import setup_view
@@ -633,6 +634,7 @@ def test_view_summary_incomes_avg(client_logged):
 
 
 @freeze_time('1999-01-01')
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
 def test_view_summary_drinks_years(client_logged):
     DrinkFactory()
     DrinkFactory(date=date(1998, 1, 1))
@@ -644,6 +646,7 @@ def test_view_summary_drinks_years(client_logged):
 
 
 @freeze_time('1999-01-01')
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
 def test_view_summary_drinks_data_ml(client_logged):
     DrinkFactory(quantity=1)
     DrinkFactory(date=date(1998, 1, 1), quantity=2)
@@ -655,6 +658,7 @@ def test_view_summary_drinks_data_ml(client_logged):
 
 
 @freeze_time('1999-01-01')
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
 def test_view_summary_drinks_data_alcohol(client_logged):
     DrinkFactory(quantity=1)
     DrinkFactory(date=date(1998, 1, 1), quantity=2)

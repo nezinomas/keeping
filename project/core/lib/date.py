@@ -79,3 +79,12 @@ def set_year_for_form():
     year = utils.get_user().year
 
     return datetime(year, month, day)
+
+
+def weeknumber(year: int):
+    _current_year = datetime.now().year
+
+    if _current_year == year:
+        return datetime.now().isocalendar()[1]
+
+    return date(year, 12, 31).isocalendar()[1]

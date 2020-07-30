@@ -4,6 +4,7 @@ from datetime import date
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
+from mock import patch
 
 from ...core.tests.utils import change_profile_year
 from ...users.factories import UserFactory
@@ -16,7 +17,7 @@ pytestmark = pytest.mark.django_db
 
 #
 # ----------------------------------------------------------------------------
-#                                                    DrinkTarget create/update
+#                                                         Drinks create/update
 # ----------------------------------------------------------------------------
 #
 @freeze_time('2000-01-01')
@@ -59,6 +60,7 @@ def test_view_drinks_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
 def test_view_drinks_update(client_logged):
     p = DrinkFactory()
 
@@ -158,6 +160,7 @@ def test_view_index_200(client_logged):
     assert 'tbl_std_av' in response.context
 
 
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
 def test_view_index_drinked_date(client_logged):
     DrinkFactory(date=date(1999, 1, 2))
     DrinkFactory(date=date(1998, 1, 2))
@@ -233,6 +236,7 @@ def test_historical_data_302(client):
     assert response.status_code == 302
 
 
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
 def test_historical_data_ajax(client_logged):
     DrinkFactory()
 
@@ -332,6 +336,7 @@ def test_view_compare_no_records_for_year(client_logged, _compare_form_data):
     assert 'Trūksta duomenų' in actual['html']
 
 
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
 def test_view_compare_chart_data(client_logged, _compare_form_data):
     DrinkFactory()
     DrinkFactory(date=date(2020, 1, 1), quantity=10)
