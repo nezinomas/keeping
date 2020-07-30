@@ -216,3 +216,29 @@ def test_month_days(month, days):
 @pytest.mark.xfail(raises=MethodInvalid)
 def test_year_month_days_no_year_provided():
     Stats(data=[]).month_days()
+
+
+@pytest.mark.django_db
+@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+def test_items(get_user):
+    NightFactory()
+    qs = Night.objects.year(1999)
+
+    actual = Stats(year=1999, data=qs).items()
+    print(actual)
+    assert len(actual) == 1
+
+    actual = actual[0]
+
+    assert actual['quantity'] == 1
+    assert actual['date'] == date(1999, 1, 1)
+
+
+@pytest.mark.django_db
+@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+def test_items_no_data(get_user):
+    qs = Night.objects.year(1999)
+
+    actual = Stats(year=1999, data=qs).items()
+
+    assert actual == []
