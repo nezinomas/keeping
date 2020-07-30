@@ -121,7 +121,7 @@ class Stats():
         """
         If class called with year value method returns int
 
-        else method returns [int, int]
+        else method returns {1999: 12, 2000: 15}
         """
 
         df = self._df.copy()
