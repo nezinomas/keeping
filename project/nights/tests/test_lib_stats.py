@@ -213,6 +213,12 @@ def test_year_totals_year_not_exists_in_data(_data):
     assert actual == 0
 
 
+def test_year_totals_year_no_data():
+    actual = Stats(data=[]).year_totals()
+
+    assert actual == {}
+
+
 def test_month_days_len():
     actual = Stats(year=1999, data=[]).month_days()
 

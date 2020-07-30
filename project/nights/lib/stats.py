@@ -126,17 +126,15 @@ class Stats():
 
         df = self._df.copy()
 
-        if df.empty:
-            return 0
-
-        df = df.groupby(df['date'].dt.year)['qty'].sum()
+        if 'qty' in df:
+            df = df.groupby(df['date'].dt.year)['qty'].sum()
 
         arr = df.to_dict()
 
         if self._year:
             return arr.get(self._year, 0)
-        else:
-            return arr
+
+        return arr
 
 
     def month_days(self):
