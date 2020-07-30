@@ -3,8 +3,7 @@ from django.shortcuts import redirect, render, reverse
 from django.template.loader import render_to_string
 
 from ..core.lib.date import weeknumber
-from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
+from ..core.mixins.views import CreateAjaxMixin, IndexMixin, UpdateAjaxMixin
 from . import forms, models
 from .lib.stats import Stats
 
@@ -17,8 +16,24 @@ class Index(IndexMixin):
         return context_to_reload(self.request, year, context)
 
 
-class Lists(ListMixin):
-    model = models.Night
+class Lists(IndexMixin):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        year = self.request.user.year
+
+        qs = models.Night.objects.year(year)
+        obj = Stats(year=year, data=qs)
+
+        shared_tab_context(self.request, obj, year, context)
+        context['tab'] = 'data'
+        context['data'] = render_to_string(
+            'nights/includes/nights_list.html',
+            {
+                'items': obj.items(),
+            },
+            self.request
+        )
+        return context
 
 
 class New(CreateAjaxMixin):
@@ -54,6 +69,10 @@ def context_to_reload(request, year, context=None):
     qs = models.Night.objects.sum_by_day(year=year)
     obj = Stats(year=year, data=qs)
 
+    context['tab'] = 'index'
+
+    shared_tab_context(request, obj, year, context)
+
     context['chart_weekdays'] = render_to_string(
         'nights/includes/chart_periodicity.html',
         {
@@ -88,7 +107,9 @@ def context_to_reload(request, year, context=None):
         },
         request
     )
+    return context
 
+def shared_tab_context(request, obj: Stats, year: int, context):
     week = weeknumber(year)
     total = obj.year_totals()
 
@@ -101,5 +122,3 @@ def context_to_reload(request, year, context=None):
         },
         request
     )
-
-    return context

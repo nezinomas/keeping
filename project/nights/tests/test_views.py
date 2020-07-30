@@ -97,12 +97,50 @@ def test_nights_index_add_button(client_logged):
 
     content = response.content.decode()
 
-    pattern = re.compile(r'<button type="button".+data-url="(.*?)".+ (\w+)<\/button>', re.MULTILINE)
+    pattern = re.compile(r'<button type="button".+data-url="(.*?)".+ (\w+)<\/button>')
     res = re.findall(pattern, content)
 
     assert len(res[0]) == 2
     assert res[0][0] == reverse('nights:nights_new')
     assert res[0][1] == 'Pridėti'
+
+
+def test_nights_index_links(client_logged):
+    url = reverse('nights:nights_index')
+    response = client_logged.get(url)
+
+    content = response.content.decode()
+
+    pattern = re.compile(r'<a href="(.*?)" class="btn btn-sm.+>(\w+)<\/a>')
+    res = re.findall(pattern, content)
+
+    assert len(res) == 3
+    assert res[0][0] == reverse('nights:nights_index')
+    assert res[0][1] == 'Grafikai'
+
+    assert res[1][0] == reverse('nights:nights_list')
+    assert res[1][1] == 'Duomenys'
+
+    assert res[2][0] == reverse('nights:nights_history')
+    assert res[2][1] == 'Istorija'
+
+
+def test_nigths_index_context(client_logged):
+    url = reverse('nights:nights_index')
+    response = client_logged.get(url)
+
+    assert 'chart_weekdays' in response.context
+    assert 'chart_months' in response.context
+    assert 'chart_year' in response.context
+    assert 'info_row' in response.context
+    assert 'tab' in response.context
+
+
+def test_nigths_index_context_tab_value(client_logged):
+    url = reverse('nights:nights_index')
+    response = client_logged.get(url)
+
+    assert response.context['tab'] == 'index'
 
 
 def test_nights_index_chart_weekdays(client_logged):
@@ -114,13 +152,6 @@ def test_nights_index_chart_weekdays(client_logged):
     assert 'id="chart_weekdays"><div id="chart_weekdays_container"></div>' in content
 
 
-def test_nigths_index_context_chart_weekdays(client_logged):
-    url = reverse('nights:nights_index')
-    response = client_logged.get(url)
-
-    assert 'chart_weekdays' in response.context
-
-
 def test_nights_index_chart_months(client_logged):
     url = reverse('nights:nights_index')
     response = client_logged.get(url)
@@ -128,13 +159,6 @@ def test_nights_index_chart_months(client_logged):
     content = response.content.decode("utf-8")
 
     assert 'id="chart_months"><div id="chart_months_container"></div>' in content
-
-
-def test_nigths_index_context_chart_months(client_logged):
-    url = reverse('nights:nights_index')
-    response = client_logged.get(url)
-
-    assert 'chart_months' in response.context
 
 
 def test_nights_index_charts_of_year(client_logged):
@@ -145,20 +169,6 @@ def test_nights_index_charts_of_year(client_logged):
 
     for i in range(1, 13):
         assert f'<div id="chart_m{i}_container"></div>' in content
-
-
-def test_nigths_index_context_charts_of_year(client_logged):
-    url = reverse('nights:nights_index')
-    response = client_logged.get(url)
-
-    assert 'chart_year' in response.context
-
-
-def test_nigths_index_context_info_row(client_logged):
-    url = reverse('nights:nights_index')
-    response = client_logged.get(url)
-
-    assert 'info_row' in response.context
 
 
 @freeze_time('1999-07-18')
@@ -210,3 +220,35 @@ def test_night_reload_stats_render_ajax_trigger_not_set(client_logged):
 
     assert response.status_code == 200
     assert views.Index == response.resolver_match.func.view_class
+
+
+# ----------------------------------------------------------------------------
+#                                                                  Nights Lists
+# ----------------------------------------------------------------------------
+def test_nights_list_func():
+    view = resolve('/nights/lists/')
+
+    assert views.Lists == view.func.view_class
+
+
+def test_nights_list_200(client_logged):
+    url = reverse('nights:nights_list')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_nigths_list_context(client_logged):
+    url = reverse('nights:nights_list')
+    response = client_logged.get(url)
+
+    assert 'data' in response.context
+    assert 'info_row' in response.context
+    assert 'tab' in response.context
+
+
+def test_nigths_list_context_tab_value(client_logged):
+    url = reverse('nights:nights_list')
+    response = client_logged.get(url)
+
+    assert response.context['tab'] == 'data'

@@ -10,25 +10,50 @@
 
 {% block content %}
 
-<div class="row mt-2">
-    <div class="col-lg-12">
+<div class="row my-3">
+    <div class="col-2 text-left">
+        <a href="{% url 'nights:nights_index' %}" class="btn btn-sm {% if '/nights/' == request.path %}btn-info{% else %}btn-light{% endif %}">Grafikai</a>
+        <a href="{% url 'nights:nights_list' %}" class="btn btn-sm mx-2 {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">Duomenys</a>
+        <a href="{% url 'nights:nights_history' %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">Istorija</a>
+    </div>
+
+    <div class="col text-center" id="info_row">
+        {% if tab == 'index' or tab == 'data' %}{{ info_row }}{% endif %}
+    </div>
+
+    <div class="col-2 text-right">
         {% url 'nights:nights_new' as url_nights %}
         <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_nights }}"><i class="fas fa-plus"></i> Pridėti</button>
     </div>
 </div>
 
-<div class="row my-3">
-    <div class="col text-center" id="info_row">{{ info_row }}</div>
-</div>
-
+{% if tab == 'index' %}
 <div class="row mt-2">
     <div class="col-lg-6" id="chart_weekdays">{{ chart_weekdays }}</div>
     <div class="col-lg-6" id="chart_months">{{ chart_months }}</div>
 </div>
 
 <div id="chart_year">{{ chart_year }}</div>
+{% endif %}
+
+
+{% if tab == 'data' %}
+<div class="row mt-2">
+    <div class="col" id="ajax-content">{{ data }}</div>
+</div>
+{% endif %}
+
+
+{% if tab == 'history' %}
+{% endif %}
 
 {% include 'modal.html' %}
+
+<style>
+    .btn-light {
+        background-color: rgb(239, 239, 239)!important;
+    }
+</style>
 
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
