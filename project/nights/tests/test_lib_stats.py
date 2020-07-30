@@ -2,9 +2,12 @@ import calendar
 from datetime import date
 
 import pytest
+from mock import patch
 
 from ...core.exceptions import MethodInvalid
+from ..factories import NightFactory
 from ..lib.stats import Stats
+from ..models import Night
 
 month_days_1999 = [
     (1, 31), (2, 28), (3, 31),
@@ -12,6 +15,7 @@ month_days_1999 = [
     (7, 31), (8, 31), (9, 30),
     (10, 31), (11, 30), (12, 31)
 ]
+
 
 month_days_2000 = [
     (1, 31), (2, 29), (3, 31),
@@ -168,6 +172,17 @@ def test_year_totals(_data):
     actual = Stats(year=1999, data=_data).year_totals()
 
     assert actual == 6
+
+
+@pytest.mark.django_db
+@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+def test_year_totals_queryset(get_user):
+    NightFactory()
+    qs = Night.objects.year(1999)
+
+    actual = Stats(year=1999, data=qs).year_totals()
+
+    assert actual == 1
 
 
 def test_year_totals_all_years(_data):

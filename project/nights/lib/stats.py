@@ -3,6 +3,7 @@ from datetime import date
 from typing import Dict, List
 
 import pandas as pd
+from django.db.models import QuerySet
 
 from ...core.exceptions import MethodInvalid
 
@@ -154,6 +155,9 @@ class Stats():
 
 
     def _prepare_df(self, data):
+        if isinstance(data, QuerySet):
+            data = data.values()
+
         df = pd.DataFrame(data)
 
         if not df.empty:
@@ -162,6 +166,10 @@ class Stats():
 
             if self._year:
                 df = df[df['date'].dt.year == self._year]
+
+            # copy column quantity to qty
+            if 'quantity' in df:
+                df['qty'] = df['quantity']
 
         return df
 
