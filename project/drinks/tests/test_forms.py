@@ -24,6 +24,7 @@ def test_drink_init_fields(get_user):
     assert '<input type="text" name="date"' in form
     assert '<input type="number" name="quantity"' in form
     assert '<select name="user"' not in form
+    assert '<input type="text" name="counter_type"' not in form
 
 
 @freeze_time('1000-01-01')

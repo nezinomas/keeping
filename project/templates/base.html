@@ -68,6 +68,10 @@
               href="{% url 'drinks:drinks_index' %}">Gėrimai</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link {% if '/nights/' in request.path %}active{% endif %}"
+              href="{% url 'nights:nights_index' %}">Naktys</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link {% if '/plans/' in request.path %}active{% endif %}"
               href="{% url 'plans:plans_index' %}">Planavimas</a>
           </li>

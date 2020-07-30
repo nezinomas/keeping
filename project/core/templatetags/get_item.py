@@ -42,3 +42,23 @@ def get_sum_by_title(lst: List[Dict], title: str):
         _title = _dict.get('title')
         if _title == title:
             return _dict.get('sum')
+
+
+@register.simple_tag
+def get_nested_list_val(arr: List, parent: int, nested: int):
+    try:
+        val = arr[parent][nested]
+    except:
+        val = None
+
+    return val
+
+
+@register.filter
+def get_list_val(arr: List, key: int):
+    try:
+        val = arr[key]
+    except:
+        val = None
+
+    return val

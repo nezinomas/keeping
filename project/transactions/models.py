@@ -136,7 +136,7 @@ class Transaction(MixinFromDbFromAccountId):
 # ----------------------------------------------------------------------------
 class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
     def sum_by_month(self, year, month=None):
-        summed_name = 'sum'
+        sum_annotation = 'sum'
 
         return (
             self
@@ -144,8 +144,8 @@ class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
             .month_sum(
                 year=year,
                 month=month,
-                summed_name=summed_name)
-            .values('date', summed_name)
+                sum_annotation=sum_annotation)
+            .values('date', sum_annotation)
         )
 
     def summary_from(self, year: int) -> List[Dict[str, Any]]:

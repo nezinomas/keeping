@@ -1,0 +1,16 @@
+{% load get_item %}
+
+<div class="row mt-5 mx-2">
+{% for month in month_days %}
+    {% with forloop.counter0 as parent %}
+    <div class="col-lg-4 px-0 mx-0">
+        {% include 'nights/includes/chart_month.html' %}
+    </div>
+    {% if forloop.counter|divisibleby:3 %}
+    </div> <!-- row end loop -->
+    <div class="row mt-3 mx-2">
+    <!-- row start loop -->
+    {% endif %}
+    {% endwith %}
+{% endfor %}
+</div>

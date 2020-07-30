@@ -4,6 +4,7 @@
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script type="text/javascript" src="{% static 'js/reload_stats.js' %}"></script>
 {% endblock head %}
 
 
@@ -100,23 +101,8 @@
                 'ajax_trigger': '1'
             },
             success: function (data) {
-                var chart_consumsion = $(data).filter('#chart_consumsion');
-                $('#chart_consumsion').html(chart_consumsion);
-
-                var chart_quantity = $(data).filter('#chart_quantity');
-                $('#chart_quantity').html(chart_quantity);
-
-                var tbl_consumsion = $(data).filter('#tbl_consumsion');
-                $('#tbl_consumsion').html(tbl_consumsion);
-
-                var tbl_last_day = $(data).filter('#tbl_last_day');
-                $('#tbl_last_day').html(tbl_last_day);
-
-                var tbl_alcohol = $(data).filter('#tbl_alcohol');
-                $('#tbl_alcohol').html(tbl_alcohol);
-
-                var tbl_std_av = $(data).filter('#tbl_std_av');
-                $('#tbl_std_av').html(tbl_std_av);
+                var blocks = ['chart_consumsion', 'chart_quantity', 'tbl_consumsion', 'tbl_last_day', 'tbl_alcohol', 'tbl_std_av'];
+                reload_stats(data, blocks);
             }
         });
     });

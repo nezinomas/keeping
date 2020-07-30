@@ -135,3 +135,21 @@ def test_counter_quantity_for_all_years(get_user, _counters):
 
     assert actual[0]['qty'] == 5.5
     assert actual[1]['qty'] == 15
+
+
+@patch('project.counters.models.CounterQuerySet.App_name', 'Counter Type')
+def test_counter_days_quantity_sum(get_user, _counters):
+    actual = Counter.objects.sum_by_day(1999).values_list('qty', flat=True)
+
+    expect = [2.5, 3.0]
+
+    assert expect == pytest.approx(actual, rel=1e-2)
+
+
+@patch('project.counters.models.CounterQuerySet.App_name', 'Counter Type')
+def test_counter_days_quantity_sum_for_january(get_user, _counters):
+    actual = Counter.objects.sum_by_day(1999, 1).values_list('qty', flat=True)
+
+    expect = [2.5]
+
+    assert expect == pytest.approx(actual, rel=1e-2)

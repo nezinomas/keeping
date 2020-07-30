@@ -17,6 +17,7 @@ urlpatterns = [
     path('', include('project.drinks.urls')),
     path('', include('project.expenses.urls')),
     path('', include('project.incomes.urls')),
+    path('', include('project.nights.urls')),
     path('', include('project.savings.urls')),
     path('', include('project.plans.urls')),
     path('', include('project.pensions.urls')),
