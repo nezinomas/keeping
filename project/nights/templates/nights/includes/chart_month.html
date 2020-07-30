@@ -5,7 +5,7 @@
        Highcharts.chart('chart_m{{ forloop.counter }}_container', {
         chart: {
             type: 'column',
-            height: '150px',
+            height: '140px',
             backgroundColor: {% if parent in alternative_bg %}'#fafafa'{% else %}'#ffffff'{% endif %},
         },
         title: {
@@ -36,7 +36,8 @@
             labels: {
                 enabled: false,
             },
-            max: 2,
+            max: 1,
+            gridLineWidth: 0,
         },
         legend: {
             enabled: false
