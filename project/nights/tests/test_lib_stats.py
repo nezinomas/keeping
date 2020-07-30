@@ -97,6 +97,22 @@ def test_weekdays_stats(_data):
     assert actual == expect
 
 
+def test_weekdays_stats_all_years(_data):
+    actual = Stats(data=_data).weekdays_stats()
+
+    expect = [
+        {'weekday': 0, 'count': 1},  # pirmadienis
+        {'weekday': 1, 'count': 0},  # antradienis
+        {'weekday': 2, 'count': 0},  # treciadienis
+        {'weekday': 3, 'count': 0},  # ketvirtadienis
+        {'weekday': 4, 'count': 3},  # pentadienis
+        {'weekday': 5, 'count': 1},  # šeštadienis
+        {'weekday': 6, 'count': 0},  # sekmdadienis
+    ]
+
+    assert actual == expect
+
+
 def test_weekdays_stats_no_data():
     actual = Stats(year=1999, data=[]).weekdays_stats()
 
