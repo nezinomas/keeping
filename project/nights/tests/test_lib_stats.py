@@ -2,12 +2,14 @@ import calendar
 from datetime import date
 
 import pytest
+from freezegun import freeze_time
 from mock import patch
 
 from ...core.exceptions import MethodInvalid
 from ..factories import NightFactory
 from ..lib.stats import Stats
 from ..models import Night
+
 
 month_days_1999 = [
     (1, 31), (2, 28), (3, 31),
@@ -296,3 +298,29 @@ def test_gaps_no_data():
     actual = Stats(year=1999, data=[]).gaps()
 
     assert actual == []
+
+
+@freeze_time('1999-1-3')
+def test_current_gap_no_data_current_year():
+    actual = Stats(year=1999, data=[]).current_gap()
+
+    assert not actual
+
+
+@pytest.mark.xfail(raises=MethodInvalid)
+def test_current_gap_no_year_provided():
+    Stats(data=[]).current_gap()
+
+
+def test_current_gap(_data):
+    actual = Stats(year=1999, data=_data).current_gap()
+
+    assert actual == 305
+
+
+def test_current_gap_only_one_record():
+    _data = [{'date': date(2000, 1, 8), 'qty': 1.0}]
+
+    actual = Stats(year=2000, data=_data).current_gap()
+
+    assert actual == 7

@@ -161,6 +161,17 @@ class Stats():
 
         return df['duration'].to_list()
 
+    def current_gap(self):
+        if not self._year:
+            raise MethodInvalid('class Stats must be called with specified year.')
+
+        df = self.gaps()
+
+        if not df:
+            return
+
+        return df[-1]
+
     def _prepare_df(self, data):
         if isinstance(data, QuerySet):
             data = data.values()
