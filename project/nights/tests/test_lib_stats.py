@@ -278,3 +278,21 @@ def test_items_no_data(get_user):
     actual = Stats(year=1999, data=qs).items()
 
     assert actual == []
+
+
+def test_gaps_for_current_year(_data):
+    actual = Stats(year=1999, data=_data).gaps()
+
+    assert actual == [7, 7, 17, 305]
+
+
+def test_gaps_for_all_years(_data):
+    actual = Stats(data=_data).gaps()
+
+    assert actual == [7, 7, 17, 305, 36]
+
+
+def test_pats_no_data():
+    actual = Stats(year=1999, data=[]).gaps()
+
+    assert actual == []

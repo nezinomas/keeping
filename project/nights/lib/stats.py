@@ -151,6 +151,16 @@ class Stats():
 
         return df.to_dict('records')
 
+    def gaps(self):
+        df = self._df.copy()
+
+        if df.empty:
+            return []
+
+        df = self._calc_gaps(df)
+
+        return df['duration'].to_list()
+
     def _prepare_df(self, data):
         if isinstance(data, QuerySet):
             data = data.values()
