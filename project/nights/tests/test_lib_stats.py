@@ -292,7 +292,7 @@ def test_gaps_for_all_years(_data):
     assert actual == [7, 7, 17, 305, 36]
 
 
-def test_gats_no_data():
+def test_gaps_no_data():
     actual = Stats(year=1999, data=[]).gaps()
 
     assert actual == []
