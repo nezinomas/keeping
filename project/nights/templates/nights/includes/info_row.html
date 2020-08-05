@@ -1,16 +1,24 @@
-<h6 class="_inline _normal">Kiek:</h> <h6 class="_inline mr-3">{{ total|floatformat:0 }}</h6>
-<h6 class="_inline _normal">Savaitė:</h> <h6 class="_inline mr-3">{{ week|floatformat:0 }}</h6>
-<h6 class="_inline _normal">Per savaitę:</h6> <h6 class="_inline">{{ ratio|floatformat:1 }}</h6>
+<div class="info_row">
+    <span>Kiek:</span> <h6 class="mr-3">{{ total|floatformat:0 }}</h6>
+    <span>Savaitė:</span> <h6 class="mr-3">{{ week|floatformat:0 }}</h6>
+    <span>Per savaitę:</span> <h6>{{ ratio|floatformat:1 }}</h6>
+    {% if current_gap %}<span class="ml-3">Paskutinį sykį prieš:</span> <h6>{{ current_gap|floatformat:0 }}</h6><span>d.</span>{% endif %}
+</div>
 
 <style>
-    ._inline {
-        display: inline;
+    .info_row {
+        font-weight: normal;
+        font-size: 0.8rem;
+    }
+    .info_row > h6 {
         font-size: 1.5rem;
+        display: inline;
         vertical-align: middle;
     }
 
-    ._normal {
-        font-weight: normal;
-        font-size: 0.8rem;
+    .info_row > span {
+        vertical-align: middle;
+        display: inline-block;
+        margin-top: 0.1rem!important;
     }
 </style>

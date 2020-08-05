@@ -151,6 +151,7 @@ def shared_tab_context(request, obj: Stats, year: int, context):
             'week': week,
             'total': total,
             'ratio': total / week,
+            'current_gap': obj.current_gap(),
         },
         request
     )
