@@ -112,7 +112,7 @@ def test_set_year_for_month(get_user):
 
 
 @freeze_time('2020-1-1')
-@pytest.mark.parametrize('year, expect', [(2020, 1), (1999, 52)])
+@pytest.mark.parametrize('year, expect', [(2020, 1), (1999, 52), (2019, 52), (2000, 53), (2003, 53)])
 def test_weeknumber(year, expect):
     actual = T.weeknumber(year=year)
 
