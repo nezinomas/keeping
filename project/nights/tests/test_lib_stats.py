@@ -316,7 +316,7 @@ def test_current_gap_no_year_provided():
 def test_current_gap(_data):
     actual = Stats(year=1999, data=_data).current_gap()
 
-    assert actual == 305
+    assert actual == -328
 
 
 @freeze_time('2000-1-9')
@@ -325,7 +325,7 @@ def test_current_gap_only_one_record():
 
     actual = Stats(year=2000, data=_data).current_gap()
 
-    assert actual == 7
+    assert actual == 1
 
 
 @freeze_time('2000-1-9')

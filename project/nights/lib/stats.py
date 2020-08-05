@@ -165,15 +165,13 @@ class Stats():
         if not self._year:
             raise MethodInvalid('class Stats must be called with specified year.')
 
+        if self._df.empty:
+            return
+
         if datetime.now().year != self._year:
             return
 
-        df = self.gaps()
-
-        if not df:
-            return
-
-        return df[-1]
+        return (datetime.now() - self._df['date'].iloc[-1]).days
 
     def _prepare_df(self, data):
         if isinstance(data, QuerySet):
