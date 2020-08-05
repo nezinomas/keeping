@@ -1,5 +1,5 @@
 import calendar
-from datetime import date
+from datetime import date, datetime
 from typing import Dict, List
 
 import pandas as pd
@@ -164,6 +164,9 @@ class Stats():
     def current_gap(self):
         if not self._year:
             raise MethodInvalid('class Stats must be called with specified year.')
+
+        if datetime.now().year != self._year:
+            return
 
         df = self.gaps()
 

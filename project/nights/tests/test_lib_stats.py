@@ -312,15 +312,24 @@ def test_current_gap_no_year_provided():
     Stats(data=[]).current_gap()
 
 
+@freeze_time('1999-1-9')
 def test_current_gap(_data):
     actual = Stats(year=1999, data=_data).current_gap()
 
     assert actual == 305
 
 
+@freeze_time('2000-1-9')
 def test_current_gap_only_one_record():
     _data = [{'date': date(2000, 1, 8), 'qty': 1.0}]
 
     actual = Stats(year=2000, data=_data).current_gap()
 
     assert actual == 7
+
+
+@freeze_time('2000-1-9')
+def test_current_gap_if_user_look_past_records(_data):
+    actual = Stats(year=1999, data=_data).current_gap()
+
+    assert not actual
