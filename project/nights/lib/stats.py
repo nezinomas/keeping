@@ -97,15 +97,7 @@ class Stats():
         if df.empty:
             return arr
 
-        # time gap between days with records
-        df['duration'] = df['date'].diff().dt.days
-        first_record_date = df['date'].iloc[0]
-
-        # repair time gap for first year record
-        first_date = pd.to_datetime(f'{first_record_date.year}-01-01')
-        first_duration = (first_record_date - first_date).days
-
-        df.loc[df.index[0], 'duration'] = first_duration
+        df = self._calc_gaps(df)
 
         # copy values from DataFrame to arr
         for _, row in df.iterrows():
@@ -188,3 +180,16 @@ class Stats():
             arr.append(items)
 
         return arr
+
+    def _calc_gaps(self, df: pd.DataFrame) -> pd.DataFrame:
+        # time gap between days with records
+        df['duration'] = df['date'].diff().dt.days
+        first_record_date = df['date'].iloc[0]
+
+        # repair time gap for first year record
+        first_date = pd.to_datetime(f'{first_record_date.year}-01-01')
+        first_duration = (first_record_date - first_date).days
+
+        df.loc[df.index[0], 'duration'] = first_duration
+
+        return df
