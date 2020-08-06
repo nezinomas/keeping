@@ -66,7 +66,7 @@ class History(IndexMixin):
             self.request
         )
 
-        stats  = obj.year_totals()
+        stats = obj.year_totals()
         context['chart_years'] = render_to_string(
             'nights/includes/chart_periodicity.html',
             {
@@ -75,6 +75,19 @@ class History(IndexMixin):
                 'chart': 'chart_years',
                 'chart_title': f'Metai',
                 'chart_column_color': '70, 171, 157',
+            },
+            self.request
+        )
+
+        gaps = obj.gaps()
+        context['chart_histogram'] = render_to_string(
+            'nights/includes/chart_periodicity.html',
+            {
+                'data': list(gaps.values()),
+                'categories': [f'{x}d' for x in gaps.keys()],
+                'chart': 'chart_histogram',
+                'chart_title': 'Tarpų dažnis, dienomis',
+                'chart_column_color': '196, 37, 37',
             },
             self.request
         )
@@ -139,6 +152,20 @@ def context_to_reload(request, year, context=None):
         },
         request
     )
+
+    gaps = obj.gaps()
+    context['chart_histogram'] = render_to_string(
+        'nights/includes/chart_periodicity.html',
+        {
+            'data': list(gaps.values()),
+            'categories': [f'{x}d' for x in gaps.keys()],
+            'chart': 'chart_histogram',
+            'chart_title': 'Tarpų dažnis, dienomis',
+            'chart_column_color': '196, 37, 37',
+        },
+        request
+    )
+
     return context
 
 def shared_tab_context(request, obj: Stats, year: int, context):
