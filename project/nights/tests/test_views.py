@@ -132,6 +132,7 @@ def test_nigths_index_context(client_logged):
     assert 'chart_weekdays' in response.context
     assert 'chart_months' in response.context
     assert 'chart_year' in response.context
+    assert 'chart_histogram' in response.context
     assert 'info_row' in response.context
     assert 'tab' in response.context
 
@@ -159,6 +160,15 @@ def test_nights_index_chart_months(client_logged):
     content = response.content.decode("utf-8")
 
     assert 'id="chart_months"><div id="chart_months_container"></div>' in content
+
+
+def test_nights_index_chart_histogram(client_logged):
+    url = reverse('nights:nights_index')
+    response = client_logged.get(url)
+
+    content = response.content.decode("utf-8")
+
+    assert 'id="chart_histogram"><div id="chart_histogram_container"></div>' in content
 
 
 def test_nights_index_charts_of_year(client_logged):

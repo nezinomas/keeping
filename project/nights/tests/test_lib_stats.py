@@ -1,4 +1,5 @@
 import calendar
+import json
 from datetime import date
 
 import pytest
@@ -9,7 +10,6 @@ from ...core.exceptions import MethodInvalid
 from ..factories import NightFactory
 from ..lib.stats import Stats
 from ..models import Night
-
 
 month_days_1999 = [
     (1, 31), (2, 28), (3, 31),
@@ -283,21 +283,23 @@ def test_items_no_data(get_user):
 
 
 def test_gaps_for_current_year(_data):
+    _data.append({'date': date(1999, 2, 2), 'qty': 1.0})
+
     actual = Stats(year=1999, data=_data).gaps()
 
-    assert actual == [7, 7, 17, 305]
+    assert json.dumps(actual) == json.dumps({1: 1, 7: 2, 17: 1, 304: 1})
 
 
 def test_gaps_for_all_years(_data):
     actual = Stats(data=_data).gaps()
 
-    assert actual == [7, 7, 17, 305, 36]
+    assert json.dumps(actual) == json.dumps({7: 2, 17: 1, 36: 1, 305: 1})
 
 
 def test_gaps_no_data():
     actual = Stats(year=1999, data=[]).gaps()
 
-    assert actual == []
+    assert actual == {}
 
 
 @freeze_time('1999-1-3')

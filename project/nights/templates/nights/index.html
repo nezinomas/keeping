@@ -29,8 +29,9 @@
 
 {% if tab == 'index' %}
 <div class="row mt-2">
-    <div class="col-lg-6" id="chart_weekdays">{{ chart_weekdays }}</div>
-    <div class="col-lg-6" id="chart_months">{{ chart_months }}</div>
+    <div class="col-lg-4" id="chart_weekdays">{{ chart_weekdays }}</div>
+    <div class="col-lg-4" id="chart_months">{{ chart_months }}</div>
+    <div class="col-lg-4" id="chart_histogram">{{ chart_histogram }}</div>
 </div>
 
 <div id="chart_year">{{ chart_year }}</div>
@@ -46,8 +47,9 @@
 
 {% if tab == 'history' %}
 <div class="row mt-2">
-    <div class="col-lg-6">{{ chart_weekdays }}</div>
-    <div class="col-lg-6">{{ chart_years }}</div>
+    <div class="col-lg-4">{{ chart_weekdays }}</div>
+    <div class="col-lg-4">{{ chart_years }}</div>
+    <div class="col-lg-4">{{ chart_histogram }}</div>
 </div>
 {% endif %}
 
@@ -69,7 +71,7 @@
                 'ajax_trigger': '1'
             },
             success: function (data) {
-                var blocks = ['info_row', 'chart_weekdays', 'chart_months', 'chart_year'];
+                var blocks = ['info_row', 'chart_weekdays', 'chart_months', 'chart_year', 'chart_histogram'];
                 reload_stats(data, blocks);
             }
         });
