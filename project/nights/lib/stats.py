@@ -151,15 +151,18 @@ class Stats():
 
         return df.to_dict('records')
 
-    def gaps(self):
+    def gaps(self) -> Dict[int, int]:
+        """
+        returns dictionary(int: int) = {gap: count}
+        """
         df = self._df.copy()
 
         if df.empty:
-            return []
+            return {}
 
         df = self._calc_gaps(df)
 
-        return df['duration'].to_list()
+        return df['duration'].value_counts().sort_index().to_dict()
 
     def current_gap(self):
         if not self._year:
@@ -213,5 +216,7 @@ class Stats():
         first_duration = (first_record_date - first_date).days
 
         df.loc[df.index[0], 'duration'] = first_duration
+
+        df['duration'] = df['duration'].astype(int)
 
         return df
