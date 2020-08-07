@@ -36,8 +36,18 @@ def _data():
         {'date': date(1999, 1, 8), 'qty': 1.0},
         {'date': date(2000, 1, 8), 'qty': 1.0},
     ]
-
     return df
+
+
+@pytest.fixture()
+def _data_db():
+    NightFactory(date=date(1999, 12, 3), quantity=1.0)
+    NightFactory(date=date(1999, 2, 1), quantity=1.0)
+    NightFactory(date=date(1999, 2, 1), quantity=1.0)
+    NightFactory(date=date(1999, 1, 15), quantity=1.0)
+    NightFactory(date=date(1999, 1, 15), quantity=1.0)
+    NightFactory(date=date(1999, 1, 8), quantity=1.0)
+    NightFactory(date=date(2000, 1, 8), quantity=1.0)
 
 
 @pytest.fixture()
@@ -147,6 +157,18 @@ def test_months_stats(_data):
     assert actual == expect
 
 
+@pytest.mark.django_db
+@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+def test_months_stats_db(_data_db, get_user):
+    year = 1999
+    qs = Night.objects.sum_by_day(year=year)
+    actual = Stats(year=year, data=qs).months_stats()
+
+    expect = [3.0, 2.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+
+    assert actual == expect
+
+
 def test_months_stats_no_data():
     actual = Stats(year=1999, data=[]).months_stats()
 
@@ -163,6 +185,16 @@ def test_year_stats_no_year_provided(_data):
 def test_year_stats(_data, _year_stats_expect):
     actual = Stats(year=1999, data=_data).year_stats()
 
+    assert actual == _year_stats_expect
+
+
+@pytest.mark.django_db
+@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+def test_year_stats_db(get_user, _year_stats_expect, _data_db):
+    year = 1999
+    qs = Night.objects.sum_by_day(year=year)
+    actual = Stats(year=year, data=qs).year_stats()
+    # assert 0
     assert actual == _year_stats_expect
 
 

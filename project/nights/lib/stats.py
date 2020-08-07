@@ -3,6 +3,7 @@ from datetime import date, datetime
 from typing import Dict, List
 
 import pandas as pd
+from django.db import models
 from django.db.models import QuerySet
 
 from ...core.exceptions import MethodInvalid
@@ -177,8 +178,19 @@ class Stats():
         return (datetime.now() - self._df['date'].iloc[-1]).days
 
     def _prepare_df(self, data):
+        # some methods from QuerySet managers, e.g. sum_by_day returns <Queryset[dict(),]>
+        # other methods e.g. year, items returns <QuerySet[models.Model instance,]
+        # QuerySet with model instances need to convert to List[Dict]
+
         if isinstance(data, QuerySet):
-            data = data.values()
+            first = None
+            try:
+                first = data[0]
+            except KeyError:
+                pass
+
+            if first and isinstance(first, models.Model):
+                data = data.values()
 
         df = pd.DataFrame(data)
 
