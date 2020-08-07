@@ -1,6 +1,7 @@
 from django.forms.models import modelformset_factory
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from ...core.lib import utils
 
 
 class FormsetMixin():
@@ -72,7 +73,7 @@ class FormsetMixin():
                         self.get_list_template_name(), context, self.request)
                 )
 
-            if self.request.is_ajax():
+            if utils.is_ajax(self.request):
                 return JsonResponse(data)
 
         return super().form_invalid(formset)

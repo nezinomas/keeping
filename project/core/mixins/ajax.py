@@ -3,6 +3,7 @@ from django.template.loader import render_to_string
 
 from . import helpers as H
 from .get import GetQuerysetMixin
+from ...core.lib import utils
 
 
 class AjaxCreateUpdateMixin(GetQuerysetMixin):
@@ -26,7 +27,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         if 'pk' in self.kwargs:
             self.object = self.get_object()
 
-        if request.is_ajax():
+        if utils.is_ajax(self.request):
             data = dict()
             context = self.get_context_data()
             self._render_form(data, context)
@@ -54,7 +55,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
 
         self._render_form(data, context)
 
-        if self.request.is_ajax():
+        if utils.is_ajax(self.request):
             return JsonResponse(data)
 
         return super().form_valid(form)
@@ -65,7 +66,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         context['form'] = form
         data = {'form_is_valid': False}
 
-        if self.request.is_ajax():
+        if utils.is_ajax(self.request):
             self._render_form(data, context)
             return JsonResponse(data)
 
@@ -97,7 +98,7 @@ class AjaxDeleteMixin(GetQuerysetMixin):
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
 
-        if request.is_ajax():
+        if utils.is_ajax(self.request):
             data = dict()
             context = self.get_context_data()
             rendered = render_to_string(template_name=self.get_template_names(),
@@ -111,7 +112,7 @@ class AjaxDeleteMixin(GetQuerysetMixin):
         return super().get(request, *args, **kwargs)
 
     def post(self, *args, **kwargs):
-        if self.request.is_ajax():
+        if utils.is_ajax(self.request):
             self.object = self.get_object()
             self.object.delete()
 
