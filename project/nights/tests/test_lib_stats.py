@@ -169,6 +169,18 @@ def test_months_stats_db(_data_db, get_user):
     assert actual == expect
 
 
+@pytest.mark.django_db
+@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+def test_months_stats_db_no_data(get_user):
+    year = 1999
+    qs = Night.objects.sum_by_day(year=year)
+    actual = Stats(year=year, data=qs).months_stats()
+
+    expect = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    assert actual == expect
+
+
 def test_months_stats_no_data():
     actual = Stats(year=1999, data=[]).months_stats()
 

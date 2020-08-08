@@ -12,7 +12,7 @@ from ...core.exceptions import MethodInvalid
 class Stats():
     def __init__(self, year: int = None, data: List[Dict[date, float]] = None):
         self._year = year
-        self._df = self._prepare_df(data if data else [])
+        self._df = self._prepare_df(data)
 
     @staticmethod
     def months() -> List[str]:
@@ -186,13 +186,13 @@ class Stats():
             first = None
             try:
                 first = data[0]
-            except KeyError:
+            except IndexError:
                 pass
 
             if first and isinstance(first, models.Model):
                 data = data.values()
 
-        df = pd.DataFrame(data)
+        df = pd.DataFrame(data if data else [])
 
         if not df.empty:
             df['date'] = pd.to_datetime(df['date'])
