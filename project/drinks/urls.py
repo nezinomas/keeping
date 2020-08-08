@@ -57,8 +57,8 @@ urlpatterns = [
         name='compare'
     ),
     path(
-        'drinks/summary/',
+        'drinks/history/',
         views.Summary.as_view(),
-        name='drinks_summary'
+        name='drinks_history'
     ),
 ]
