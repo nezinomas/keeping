@@ -3,16 +3,16 @@ from django.db.models.functions import TruncDay, TruncMonth, TruncYear
 
 
 class SumMixin():
-    def year_filter(self, year):
+    def year_filter(self, year, field='date'):
         if year:
-            return self.filter(date__year=year)
+            return self.filter(**{f'{field}__year': year})
 
         return self
     year_filter.queryset_only = True
 
-    def month_filter(self, month):
+    def month_filter(self, month, field='date'):
         if month:
-            return self.filter(date__month=month)
+            return self.filter(**{f'{field}__month': month})
 
         return self
     month_filter.queryset_only = True
