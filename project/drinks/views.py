@@ -105,6 +105,22 @@ class New(CreateAjaxMixin):
     form_class = forms.DrinkForm
 
 
+class Summary(LoginRequiredMixin, TemplateView):
+    template_name = 'bookkeeping/summary.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        qs = list(models.Drink.objects.summary())
+        drink_years = [x['year'] for x in qs]
+
+        context['drinks_categories'] = drink_years
+        context['drinks_data_ml'] = [x['per_day'] for x in qs]
+        context['drinks_data_alcohol'] = [x['qty'] * 0.025 for x in qs]
+        context['drinks_cnt'] = len(drink_years) - 1.5
+
+        return context
+
 class Update(UpdateAjaxMixin):
     model = models.Drink
     form_class = forms.DrinkForm
