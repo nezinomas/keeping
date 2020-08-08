@@ -12,8 +12,9 @@
 
 <div class="row my-3">
     <div class="col-2 text-left">
-        <a href="" class="btn btn-sm mx-2 {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">Duomenys</a>
-        <a href="" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">Istorija</a>
+        <a href="{% url 'drinks:drinks_index' %}" class="btn btn-sm {% if '/drinks/' == request.path %}btn-info{% else %}btn-light{% endif %}">Grafikai</a>
+        <a href="{% url 'drinks:drinks_list' %}" class="btn btn-sm mx-2 {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">Duomenys</a>
+        <a href="{% url 'drinks:drinks_summary' %}" class="btn btn-sm {% if '/summary/' in request.path %}btn-info{% else %}btn-light{% endif %}">Istorija</a>
     </div>
 
     <div class="col text-center" id="info_row"></div>
