@@ -1,0 +1,70 @@
+<div id="{{ chart }}_container"></div>
+<script>
+    $(function () {
+       Highcharts.chart('{{ chart }}_container', {
+        chart: {
+            type: 'column',
+            height: '300px',
+        },
+        title: {
+            text: '{{ chart_title|safe }}',
+            style: {
+                fontSize: '16px',
+                fontFamily: 'Calibri, Verdana',
+            },
+        },
+        xAxis: {
+            lineColor: '#000',
+            lineWidth: 2,
+            categories: {{ categories|safe }},
+            crosshair: true,
+            labels: {
+                useHTML: true,
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+                formatter: function () {//use formatter to break word.
+                    return '<div align="right" style="word-wrap: break-word;word-break: break-all;width:40px">' + this.value + '</div>';
+                },
+                rotation: -45,
+            }
+        },
+        yAxis: {
+            title: {
+                text: ''
+            },
+            labels: {
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                }
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            shared: true,
+            headerFormat: '',
+            pointFormat: '<b>{point.y:.0f}</b>',
+            style: {
+                fontSize: '12px',
+                fontFamily: 'Calibri, Verdana',
+            }
+        },
+        plotOptions: {
+            bar: {
+                grouping: false,
+                shadow: false,
+            }
+        },
+        series: [{
+            name: 'Kiekis',
+            data: {{ data|safe }},
+            color: 'rgba({{ chart_column_color }}, 0.65)',
+            borderColor: 'rgba({{ chart_column_color }}, 1)',
+        }]
+    });
+});
+</script>

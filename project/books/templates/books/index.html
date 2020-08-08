@@ -2,24 +2,36 @@
 
 
 {% block head %}
-
+<script src="https://code.highcharts.com/highcharts.src.js"></script>
 {% endblock head %}
 
 
 {% block content %}
 
-{% url 'books:books_new' as url_books %}
-<div class="row mt-2">
-    <div class="col-lg-12">
-        <div class="row mt-2">
-            <div class="col text-right">
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books }}"><i class="fas fa-plus"></i> Knygą</button>
-            </div>
-        </div>
-        <div class="row mt-2">
-            <div id="ajax-content" class="col-lg-12">{% include 'books/includes/books_list.html' %}</div>
+
+<div class="row my-3">
+    <div class="col-2 text-left"></div>
+
+    <div class="col text-center" id="info_row">
+        <div class="info_row">
+            <span>Perskaitytos: </span> <h6 class="mr-3">{{ readed|floatformat:0 }}</h6>
+            <span>Skaitomos: </span> <h6 class="mr-3">{{ reading|floatformat:0 }}</h6>
         </div>
     </div>
+
+    <div class="col-2 text-right">
+        {% url 'books:books_new' as url_books %}
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books }}"><i class="fas fa-plus"></i> Knygą</button>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div id="ajax-content" class="col-lg-12">{{ book_list }}</div>
+</div>
+
+
+<div class="row mt-2">
+    <div class="col-lg-12" id="chart_readed_books">{{ chart_readed_books }}</div>
 </div>
 
 <div class="modal fade" id="modal-form">
