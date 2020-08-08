@@ -1,11 +1,11 @@
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import Count, F
-from django.db.models.functions import TruncYear, ExtractYear
+from django.db.models.functions import ExtractYear, TruncYear
 
 from ..core.lib import utils
-from ..users.models import User
 from ..core.mixins.queryset_sum import SumMixin
+from ..users.models import User
 
 
 class BooksQuerySet(SumMixin, models.QuerySet):
