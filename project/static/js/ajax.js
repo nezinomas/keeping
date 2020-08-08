@@ -69,6 +69,11 @@ $(function () {
                         remark.value = ''
                     }
 
+                    var exception = document.getElementById("id_exception");
+                    if (exception) {
+                        exception.checked = false;
+                    }
+
                     // on update close modal
                     if (action == 'update' || action == 'delete') {
                         $("#modal-form").modal("hide");
