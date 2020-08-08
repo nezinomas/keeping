@@ -631,39 +631,3 @@ def test_view_summary_incomes_avg(client_logged):
     response = client_logged.get(url)
 
     assert response.context['balance_income_avg'] == [2.0, 12.0]
-
-
-@freeze_time('1999-01-01')
-@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-def test_view_summary_drinks_years(client_logged):
-    DrinkFactory()
-    DrinkFactory(date=date(1998, 1, 1))
-
-    url = reverse('bookkeeping:summary')
-    response = client_logged.get(url)
-
-    assert response.context['drinks_categories'] == [1998, 1999]
-
-
-@freeze_time('1999-01-01')
-@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-def test_view_summary_drinks_data_ml(client_logged):
-    DrinkFactory(quantity=1)
-    DrinkFactory(date=date(1998, 1, 1), quantity=2)
-
-    url = reverse('bookkeeping:summary')
-    response = client_logged.get(url)
-
-    assert response.context['drinks_data_ml'] == pytest.approx([2.74, 1.37], rel=1e-2)
-
-
-@freeze_time('1999-01-01')
-@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-def test_view_summary_drinks_data_alcohol(client_logged):
-    DrinkFactory(quantity=1)
-    DrinkFactory(date=date(1998, 1, 1), quantity=2)
-
-    url = reverse('bookkeeping:summary')
-    response = client_logged.get(url)
-
-    assert response.context['drinks_data_alcohol'] == [0.05, 0.025]
