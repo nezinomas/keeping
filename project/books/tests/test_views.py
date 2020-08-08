@@ -6,8 +6,9 @@ import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
+from ...users.factories import UserFactory
 from ..factories import BookFactory
-from ..views import Index, Lists, New, Update
+from ..views import Index, Lists, New, Update, reload_stats
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
@@ -92,6 +93,39 @@ def test_books_index_add_button(client_logged):
     assert res[0][1] == 'Knygą'
 
 
+# ---------------------------------------------------------------------------------------
+#                                                                            Realod Stats
+# ---------------------------------------------------------------------------------------
+def test_books_reload_stats_func():
+    view = resolve('/books/reload_stats/')
+
+    assert reload_stats is view.func
+
+
+def test_books_reload_stats_render(get_user, rf):
+    request = rf.get('/books/reload_stats/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = reload_stats(request)
+
+    assert response.status_code == 200
+
+
+def test_books_reload_stats_render_ajax_trigger(client_logged):
+    url = reverse('books:reload_stats')
+    response = client_logged.get(url, {'ajax_trigger': 1})
+
+    assert response.status_code == 200
+
+
+def test_books_reload_stats_render_ajax_trigger_not_set(client_logged):
+    url = reverse('books:reload_stats')
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert Index == response.resolver_match.func.view_class
+
+
 # ----------------------------------------------------------------------------
 #                                                             Books Lists View
 # ----------------------------------------------------------------------------
@@ -117,7 +151,7 @@ def test_view_update_func():
 
 
 @freeze_time('2000-01-01')
-def test_load_book_form(client_logged):
+def test_load_books_form(client_logged):
     url = reverse('books:books_new')
 
     response = client_logged.get(url, {}, **X_Req)
@@ -158,7 +192,7 @@ def test_books_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-def test_book_update(client_logged):
+def test_books_update(client_logged):
     book = BookFactory()
 
     data = {

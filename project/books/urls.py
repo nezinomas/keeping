@@ -25,4 +25,9 @@ urlpatterns = [
         views.Update.as_view(),
         name='books_update'
     ),
+    path(
+        'books/reload_stats/',
+        views.reload_stats,
+        name='reload_stats'
+    ),
 ]

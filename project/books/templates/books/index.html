@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
-
+{% load static %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script type="text/javascript" src="{% static 'js/reload_stats.js' %}"></script>
 {% endblock head %}
 
 
@@ -12,12 +13,7 @@
 <div class="row my-3">
     <div class="col-2 text-left"></div>
 
-    <div class="col text-center" id="info_row">
-        <div class="info_row">
-            <span>Perskaitytos: </span> <h6 class="mr-3">{{ readed|floatformat:0 }}</h6>
-            <span>Skaitomos: </span> <h6 class="mr-3">{{ reading|floatformat:0 }}</h6>
-        </div>
-    </div>
+    <div class="col text-center" id="info_row">{{ info_row }}</div>
 
     <div class="col-2 text-right">
         {% url 'books:books_new' as url_books %}
@@ -39,4 +35,22 @@
         <div class="modal-content"></div>
     </div>
 </div>
+
+
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'books:reload_stats' %}`;
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1'
+            },
+            success: function (data) {
+                var blocks = ['info_row', 'chart_readed_books'];
+                reload_stats(data, blocks);
+            }
+        });
+    });
+</script>
 {% endblock content %}
