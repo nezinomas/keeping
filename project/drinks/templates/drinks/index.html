@@ -14,7 +14,7 @@
     <div class="col-2 text-left">
         <a href="{% url 'drinks:drinks_index' %}" class="btn btn-sm {% if '/drinks/' == request.path %}btn-info{% else %}btn-light{% endif %}">Grafikai</a>
         <a href="{% url 'drinks:drinks_list' %}" class="btn btn-sm mx-2 {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">Duomenys</a>
-        <a href="{% url 'drinks:drinks_summary' %}" class="btn btn-sm {% if '/summary/' in request.path %}btn-info{% else %}btn-light{% endif %}">Istorija</a>
+        <a href="{% url 'drinks:drinks_history' %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">Istorija</a>
     </div>
 
     <div class="col text-center" id="info_row"></div>
@@ -27,6 +27,7 @@
     </div>
 </div>
 
+{% if tab == 'index' %}
 <div class="row mt-2">
     <div class="col-lg-6" id="chart_consumsion">{{ chart_consumsion }}</div>
     <div class="col-lg-6" id="chart_quantity">{{ chart_quantity }}</div>
@@ -79,7 +80,20 @@
         </div>
     </div>
 </div>
+{% endif %}
 
+{% if tab == 'history' %}
+<div class="row mt-2">
+    <div class="col-lg-12">{% include 'drinks/includes/chart_history.html' %}</div>
+</div>
+{% endif %}
+
+
+{% if tab == 'data' %}
+<div class="row mt-2">
+    <div class="col" id="ajax-content">{{ data }}</div>
+</div>
+{% endif %}
 
 {% include 'modal.html' %}
 <style>
