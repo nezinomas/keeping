@@ -30,6 +30,7 @@ class NightForm(FormForUserMixin, forms.ModelForm):
 
         # inital values
         self.fields['date'].initial = set_year_for_form()
+        self.fields['quantity'].initial = 1
 
         self.fields['date'].label = 'Data'
         self.fields['quantity'].label = 'Kiek'
