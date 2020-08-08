@@ -1,11 +1,14 @@
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django.db.models import Count, F
+from django.db.models.functions import TruncYear, ExtractYear
 
-from ..users.models import User
 from ..core.lib import utils
+from ..users.models import User
+from ..core.mixins.queryset_sum import SumMixin
 
 
-class BooksQuerySet(models.QuerySet):
+class BooksQuerySet(SumMixin, models.QuerySet):
     def related(self):
         user = utils.get_user()
         return (
@@ -23,6 +26,38 @@ class BooksQuerySet(models.QuerySet):
 
     def items(self):
         return self.related()
+
+    def readed(self, year=None):
+        """
+        Returns <QuerySet [{'year': int, 'cnt': int}]>
+        """
+        return (
+            self
+            .exclude(ended__isnull=True)
+            .year_filter(year=year, field='ended')
+            .annotate(date=TruncYear('ended'))
+            .values('date')
+            .annotate(year=ExtractYear(F('date')))
+            .annotate(cnt=Count('id'))
+            .order_by('year')
+            .values('year', 'cnt')
+        )
+
+    def reading(self, year):
+        """
+        Returns <QuerySet [{'year': int, 'cnt': int}]>
+        """
+        return (
+            self
+            .exclude(ended__isnull=False)
+            .year_filter(year=year, field='started')
+            .annotate(date=TruncYear('started'))
+            .values('date')
+            .annotate(year=ExtractYear(F('date')))
+            .annotate(cnt=Count('id'))
+            .order_by('year')
+            .values('year', 'cnt')
+        )
 
 
 class Book(models.Model):
