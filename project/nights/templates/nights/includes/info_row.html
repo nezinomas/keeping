@@ -4,21 +4,3 @@
     <span>Per savaitę:</span> <h6>{{ ratio|floatformat:1 }}</h6>
     {% if current_gap %}<span class="ml-3">Paskutinį sykį prieš:</span> <h6>{{ current_gap|floatformat:0 }}</h6><span>d.</span>{% endif %}
 </div>
-
-<style>
-    .info_row {
-        font-weight: normal;
-        font-size: 0.8rem;
-    }
-    .info_row > h6 {
-        font-size: 1.5rem;
-        display: inline;
-        vertical-align: middle;
-    }
-
-    .info_row > span {
-        vertical-align: middle;
-        display: inline-block;
-        margin-top: 0.1rem!important;
-    }
-</style>
