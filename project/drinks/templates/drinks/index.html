@@ -52,8 +52,8 @@
 
 <div class="row mt-2">
     <div class="col-lg-6">
-        <div class="row">
-            <div class="col-lg-3" style="font-size: .9rem;"><b>Istoriniai duomenys</b></div>
+        <div class="row cmp">
+            <div class="col-lg-3"><b>Istoriniai duomenys</b></div>
             <div class="col-lg-9 text-right">
                 <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 2 %}">2 metų</button>
                 <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 3 %}">3 metų</button>
@@ -68,9 +68,9 @@
     </div>
 
     <div class="col-lg-6">
-        <div class="row">
-            <div class="col-lg-5" style="font-size: .9rem;"><b>Metų palyginimas</b></div>
-            <div class="col-lg-7 text-right" id="compare_form_data">{{ compare_form }}</div>
+        <div class="row cmp">
+            <div class="col-lg-4"><b>Metų palyginimas</b></div>
+            <div class="col-lg-8 text-right" id="compare_form_data">{{ compare_form }}</div>
         </div>
 
         <div class="row">
@@ -81,7 +81,17 @@
 
 
 {% include 'modal.html' %}
+<style>
+    .form-group {
+        padding: 0!important;
+        margin: 0!important;
+    }
 
+    .cmp {
+        height: 3em;
+        font-size: .85rem;
+    }
+</style>
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
         var url = `{% url 'drinks:reload_stats' %}`;
