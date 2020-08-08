@@ -185,3 +185,19 @@ tr.top-text, tr.top-text th {
 ._current_day, tr._current_day > td._weekend_col {
     background-color:#ffc107!important;
 }
+
+.info_row {
+    font-weight: normal;
+    font-size: 0.8rem;
+}
+.info_row > h6 {
+    font-size: 1.5rem;
+    display: inline;
+    vertical-align: middle;
+}
+
+.info_row > span {
+    vertical-align: middle;
+    display: inline-block;
+    margin-top: 0.1rem!important;
+}
