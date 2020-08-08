@@ -2,48 +2,36 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render, reverse
 from django.template.loader import render_to_string
 
 from ..core.lib.date import years
 from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from . import forms, models
-from .lib.drinks_stats import DrinkStats
-from .lib.views_helper import context_to_reload
+from .lib.views_helper import context_to_reload, several_years_consumption
 
 
 def reload_stats(request):
-    ajax_trigger = request.GET.get('ajax_trigger')
-    name = 'drinks/includes/reload_stats.html'
+    try:
+        request.GET['ajax_trigger']
+    except KeyError:
+        return redirect(reverse('drinks:drinks_index'))
 
-    context = {}
-
-    if ajax_trigger:
-        context_to_reload(request, context)
-
-        return render(request, name, context)
+    return render(
+        request=request,
+        template_name='drinks/includes/reload_stats.html',
+        context=context_to_reload(request)
+    )
 
 
 @login_required()
 def historical_data(request, qty):
-    ser = []
     year = request.user.year + 1
-    for y in range (year - qty, year):
-        qs_drinks = models.Drink.objects.sum_by_month(y)
-        data = DrinkStats(qs_drinks).consumption
-
-        if not any(data):
-            continue
-
-        d = {
-            'name': y,
-            'data': data
-        }
-        ser.append(d)
+    chart_serries = several_years_consumption(range(year - qty, year))
 
     template = 'drinks/includes/chart_consumsion_history.html'
-    context = {'ser': ser, 'chart_container_name': 'history_chart'}
+    context = {'serries': chart_serries, 'chart_container_name': 'history_chart'}
     rendered = render_to_string(template, context, request)
 
     return JsonResponse({'html': rendered})
@@ -51,10 +39,10 @@ def historical_data(request, qty):
 
 @login_required()
 def compare(request):
-    form_data = request.POST.get('form_data')
-
-    if not form_data:
-        return JsonResponse({'error': 'compare Form is broken.'}, status=404)
+    try:
+        form_data = request.POST['form_data']
+    except KeyError:
+        return JsonResponse({'error': 'CompareForm is broken.'}, status=404)
 
     try:
         form_data_dict = {}
@@ -63,67 +51,42 @@ def compare(request):
         # flatten list of dictionaries - form_data_list
         for field in form_data_list:
             form_data_dict[field["name"]] = field["value"]
+    except (json.decoder.JSONDecodeError, KeyError):
+        return JsonResponse({'error': 'CompareForm is broken.'}, status=500)
 
-    except Exception:
-        return JsonResponse({'error': 'compare Form is broken.'}, status=500)
-
-    json_data = {}
-    ser = []
+    chart_serries = []
     form = forms.DrinkCompareForm(data=form_data_dict)
+    json_data = {
+        'form_is_valid': False,
+        'html_form': render_to_string(
+            template_name='drinks/includes/compare_form.html',
+            context={'form': form},
+            request=request
+        )
+    }
 
     if form.is_valid():
         json_data['form_is_valid'] = True
-
         years_data = [form_data_dict['year1'], form_data_dict['year2']]
+        chart_serries = several_years_consumption(years_data)
 
-        for y in years_data:
-            qs_drinks = models.Drink.objects.sum_by_month(int(y))
-            data = DrinkStats(qs_drinks).consumption
-
-            if not any(data):
-                continue
-
-            d = {
-                'name': y,
-                'data': data
-            }
-            ser.append(d)
-    else:
-        json_data['form_is_valid'] = False
-
-    if not ser or len(ser) != 2:
-        json_data['html'] = 'Trūksta duomenų'
-    else:
+    if len(chart_serries) == 2:
         template = 'drinks/includes/chart_consumsion_history.html'
-        context = {'ser': ser, 'chart_container_name': 'compare_chart'}
+        context = {'serries': chart_serries, 'chart_container_name': 'compare_chart'}
         json_data['html'] = render_to_string(template, context, request)
-
-    json_data['html_form'] = render_to_string(
-        template_name='drinks/includes/compare_form.html',
-        context={'form': form},
-        request=request
-    )
+    else:
+        json_data['html'] = 'Trūksta duomenų'
 
     return JsonResponse(json_data)
 
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        qs_target = models.DrinkTarget.objects.year(year)
-
         context = super().get_context_data(**kwargs)
         context_to_reload(self.request, context)
 
         context['drinks_list'] = Lists.as_view()(self.request, as_string=True)
-
-        context['target_list'] = render_to_string(
-            'drinks/includes/drinks_target_list.html',
-            {'items': qs_target},
-            self.request)
-
         context['all_years'] = len(years())
-
         context['compare_form'] = render_to_string(
             template_name='drinks/includes/compare_form.html',
             context={'form': forms.DrinkCompareForm()},

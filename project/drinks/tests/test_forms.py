@@ -2,10 +2,11 @@ from datetime import date
 
 import pytest
 from freezegun import freeze_time
+from mock import patch
 
 from ...users.factories import UserFactory
 from ..factories import DrinkTargetFactory
-from ..forms import DrinkForm, DrinkCompareForm, DrinkTargetForm
+from ..forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
 
 pytestmark = pytest.mark.django_db
 
@@ -23,6 +24,7 @@ def test_drink_init_fields(get_user):
     assert '<input type="text" name="date"' in form
     assert '<input type="number" name="quantity"' in form
     assert '<select name="user"' not in form
+    assert '<input type="text" name="counter_type"' not in form
 
 
 @freeze_time('1000-01-01')
@@ -34,6 +36,7 @@ def test_drink_year_initial_value(get_user):
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
+@patch('project.drinks.forms.App_name', 'Counter Type')
 def test_drink_valid_data(get_user):
     form = DrinkForm(data={
         'date': '1974-01-01',
@@ -47,6 +50,7 @@ def test_drink_valid_data(get_user):
     assert data.date == date(1974, 1, 1)
     assert data.quantity == 1.0
     assert data.user.username == 'bob'
+    assert data.counter_type == 'Counter Type'
 
 
 def test_drink_blank_data(get_user):

@@ -79,3 +79,16 @@ def set_year_for_form():
     year = utils.get_user().year
 
     return datetime(year, month, day)
+
+
+def weeknumber(year: int):
+    _current_year = datetime.now().year
+
+    if _current_year == year:
+        return datetime.now().isocalendar()[1]
+
+    # year have 53 weeks if starts on Wednesday or year is leap
+    weekday = date(year, 1, 1).weekday()  # 0=Monday
+    isleap = calendar.isleap(year)
+
+    return 53 if weekday == 2 or isleap else 52

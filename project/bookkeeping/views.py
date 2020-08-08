@@ -4,8 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.views.generic import TemplateView
 
 from ..accounts.models import Account, AccountBalance
@@ -150,9 +151,10 @@ class Detailed(LoginRequiredMixin, TemplateView):
 
         # Expenses
         qs = [*Expense.objects.sum_by_month_and_name(year)]
-        for i in H.expense_types():
-            filtered = filter(lambda x: i in x['type_title'], qs)
-            _gen_data([*filtered], f'Išlaidos / {i}')
+        expenses_types = H.expense_types()
+        for title in expenses_types:
+            filtered = filter(lambda x: title in x['type_title'], qs)
+            _gen_data([*filtered], f'Išlaidos / {title}')
 
         return context
 
@@ -213,22 +215,24 @@ def average(qs):
 
 
 def reload_index(request):
-    template = 'bookkeeping/includes/reload_index.html'
-    ajax_trigger = request.GET.get('ajax_trigger')
+    try:
+        request.GET['ajax_trigger']
+    except KeyError:
+        return redirect(reverse('bookkeeping:index'))
 
-    if ajax_trigger:
-        year = request.user.year
-        obj = H.IndexHelper(request, year)
+    obj = H.IndexHelper(request, request.user.year)
+    context = {
+        'no_incomes': obj.render_no_incomes(),
+        'money': obj.render_money(),
+        'wealth': obj.render_wealth(),
+        'savings': obj.render_savings(),
+    }
 
-        context = {
-            'no_incomes': obj.render_no_incomes(),
-            'money': obj.render_money(),
-            'wealth': obj.render_wealth(),
-            'savings': obj.render_savings(),
-        }
-        return render(request, template, context)
-
-    return redirect(reverse('bookkeeping:index'))
+    return render(
+        request=request,
+        template_name='bookkeeping/includes/reload_index.html',
+        context=context
+    )
 
 
 @login_required()
@@ -281,17 +285,19 @@ def accounts_worth_reset(request, pk):
 
 
 def reload_month(request):
-    template = 'bookkeeping/includes/reload_month.html'
-    ajax_trigger = request.GET.get('ajax_trigger')
+    try:
+        request.GET['ajax_trigger']
+    except KeyError:
+        return redirect(reverse('bookkeeping:month'))
 
-    if ajax_trigger:
-        context = _month_context(request, {})
-        return render(request, template, context)
+    return render(
+        request=request,
+        template_name='bookkeeping/includes/reload_month.html',
+        context=_month_context(request))
 
-    return redirect(reverse('bookkeeping:month'))
 
-
-def _month_context(request, context):
+def _month_context(request, context=None):
+    context = context if context else {}
     year = request.user.year
     month = request.user.month
 

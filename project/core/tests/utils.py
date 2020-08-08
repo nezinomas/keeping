@@ -31,7 +31,7 @@ def _remove_line_end(rendered):
 
 
 def change_profile_year(client, year=1):
-    url = reverse('core:core_index')
+    url = reverse('bookkeeping:index')
     response = client.get(url)
 
     u = response.wsgi_request.user

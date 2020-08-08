@@ -6,11 +6,12 @@ from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib.date import set_year_for_form
-from ..core.mixins.form_mixin import FormMixin
+from ..core.mixins.form_mixin import FormForUserMixin
+from .apps import App_name
 from .models import Drink, DrinkTarget
 
 
-class DrinkForm(FormMixin, forms.ModelForm):
+class DrinkForm(FormForUserMixin, forms.ModelForm):
     class Meta:
         model = Drink
         fields = ['date', 'quantity']
@@ -38,8 +39,16 @@ class DrinkForm(FormMixin, forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+    def save(self, *args, **kwargs):
+        instance = super().save(commit=False)
+        instance.counter_type = App_name
+        instance.save()
 
-class DrinkTargetForm(FormMixin, forms.ModelForm):
+        return instance
+
+
+
+class DrinkTargetForm(FormForUserMixin, forms.ModelForm):
     class Meta:
         model = DrinkTarget
         fields = ['year', 'quantity']

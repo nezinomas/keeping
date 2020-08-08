@@ -1,7 +1,7 @@
 from ..lib import utils
 
 
-class FormMixin():
+class FormForUserMixin():
     def save(self, commit=True):
         instance = super().save(commit=False)
         instance.user = utils.get_user()

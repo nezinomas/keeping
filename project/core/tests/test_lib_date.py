@@ -109,3 +109,11 @@ def test_set_year_for_month(get_user):
     actual = T.set_year_for_form()
 
     assert actual == datetime(1999, 1, 1)
+
+
+@freeze_time('2020-1-1')
+@pytest.mark.parametrize('year, expect', [(2020, 1), (1999, 52), (2019, 52), (2000, 53), (2003, 53)])
+def test_weeknumber(year, expect):
+    actual = T.weeknumber(year=year)
+
+    assert actual == expect

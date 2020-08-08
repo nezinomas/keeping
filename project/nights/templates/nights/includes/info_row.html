@@ -1,0 +1,6 @@
+<div class="info_row">
+    <span>Kiek:</span> <h6 class="mr-3">{{ total|floatformat:0 }}</h6>
+    <span>Savaitė:</span> <h6 class="mr-3">{{ week|floatformat:0 }}</h6>
+    <span>Per savaitę:</span> <h6>{{ ratio|floatformat:1 }}</h6>
+    {% if current_gap %}<span class="ml-3">Paskutinį sykį prieš:</span> <h6>{{ current_gap|floatformat:0 }}</h6><span>d.</span>{% endif %}
+</div>

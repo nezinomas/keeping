@@ -102,15 +102,16 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         return self.related()
 
     def sum_by_month(self, year, month=None):
-        summed_name = 'sum'
+        sum_annotation = 'sum'
 
         return (
             self
             .related()
             .month_sum(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values('date', summed_name)
+                year=year,
+                month=month,
+                sum_annotation=sum_annotation)
+            .values('date', sum_annotation)
         )
 
     def sum_by_month_and_type(self, year):
@@ -132,27 +133,34 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         )
 
     def sum_by_day_and_type(self, year, month):
-        summed_name = 'sum'
+        sum_annotation = 'sum'
 
         return (
             self
             .related()
             .day_sum(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values(summed_name, 'date', title=F('saving_type__title'))
+                year=year,
+                month=month,
+                sum_annotation=sum_annotation)
+            .values(
+                sum_annotation,
+                'date',
+                title=F('saving_type__title'))
         )
 
     def sum_by_day(self, year, month):
-        summed_name = 'sum'
+        sum_annotation = 'sum'
 
         return (
             self
             .related()
             .day_sum(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values(summed_name, 'date')
+                year=year,
+                month=month,
+                sum_annotation=sum_annotation)
+            .values(
+                sum_annotation,
+                'date')
         )
 
     def summary_from(self, year: int) -> List[Dict[str, Any]]:
@@ -170,7 +178,8 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .related()
             ._summary(year)
             .values(
-                's_past', 's_now',
+                's_past',
+                's_now',
                 title=models.F('account__title'),
             )
         )
@@ -192,8 +201,10 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .related()
             ._summary(year)
             .values(
-                's_past', 's_now',
-                's_fee_past', 's_fee_now',
+                's_past',
+                's_now',
+                's_fee_past',
+                's_fee_now',
                 title=models.F('saving_type__title'),
             )
         )

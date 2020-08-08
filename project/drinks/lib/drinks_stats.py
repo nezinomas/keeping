@@ -1,5 +1,5 @@
 import calendar
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import Dict, List
 
 
@@ -80,7 +80,8 @@ def _dates(year: int) -> (int, int, int):
 
     if _year == year:
         return (_day, _week, _month)
-    else:
-        _days = 366 if calendar.isleap(year) else 365
-        _weeks = date(year, 12, 28).isocalendar()[1]
-        return (_days, _weeks, 12)
+
+    _days = 366 if calendar.isleap(year) else 365
+    _weeks = date(year, 12, 28).isocalendar()[1]
+
+    return (_days, _weeks, 12)

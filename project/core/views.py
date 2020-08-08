@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render, reverse
+from django.shortcuts import redirect, reverse
 
 from ..core.signals import (post_save_account_stats, post_save_pension_stats,
                             post_save_saving_stats)
@@ -30,11 +30,6 @@ def set_month(request, month):
     url = request.META.get('HTTP_REFERER', '/')
 
     return redirect(url)
-
-
-@login_required
-def index(request):
-    return render(request, 'core/index.html')
 
 
 @login_required

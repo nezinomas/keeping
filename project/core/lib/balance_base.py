@@ -81,7 +81,7 @@ class BalanceBase():
         arr.replace(0.0, pd.NaT, inplace=True)
 
         # calculate average
-        arr = arr.mean(skipna=True)
+        arr = arr.mean(skipna=True, numeric_only=True)
 
         # replace nan -> 0.0
         arr = arr.fillna(0.0)

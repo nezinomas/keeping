@@ -50,3 +50,46 @@ def test_book_fields(get_user):
 
     assert date(1999, 1, 1) == actual.started
     assert date(1999, 1, 31) == actual.ended
+
+
+def test_book_readed_one_year(get_user):
+    BookFactory()
+    BookFactory(ended=date(1999, 1, 31))
+    BookFactory(ended=date(1999, 12, 31))
+
+    actual = list(Book.objects.readed(year=1999))
+    print(actual)
+    assert actual == [{'year': 1999, 'cnt': 2}]
+
+
+def test_book_readed_one_year_no_data(get_user):
+    actual = list(Book.objects.readed(year=1999))
+
+    assert actual == []
+
+
+def test_book_readed_all_years(get_user):
+    BookFactory()
+    BookFactory(ended=date(1999, 1, 31))
+    BookFactory(ended=date(1999, 12, 31))
+    BookFactory(ended=date(1998, 1, 31))
+
+    actual = list(Book.objects.readed())
+
+    assert actual == [{'year': 1998, 'cnt': 1}, {'year': 1999, 'cnt': 2}]
+
+
+def test_book_readed_all_years_no_data(get_user):
+    actual = list(Book.objects.readed())
+
+    assert actual == []
+
+
+def test_book_reading(get_user):
+    BookFactory()
+    BookFactory()
+    BookFactory(ended=date(1999, 1, 31))
+
+    actual = list(Book.objects.reading(year=1999))
+
+    assert actual == [{'year': 1999, 'cnt': 2}]

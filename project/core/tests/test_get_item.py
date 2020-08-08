@@ -2,9 +2,7 @@ from datetime import date
 
 import pytest
 
-from ..templatetags.get_item import (get_dict_val, get_obj_attr,
-                                     get_sum_by_month, get_sum_by_title)
-
+from ..templatetags import get_item
 
 @pytest.fixture()
 def _object():
@@ -17,37 +15,37 @@ def _dict():
 
 
 def test_attr_exists(_object):
-    actual = get_obj_attr(_object, 'foo')
+    actual = get_item.get_obj_attr(_object, 'foo')
 
     assert actual == 1
 
 
 def test_attr_not_exists(_object):
-    actual = get_obj_attr(_object, 'foo1')
+    actual = get_item.get_obj_attr(_object, 'foo1')
 
     assert actual == 'foo1'
 
 
 def test_attr_object_none():
-    actual = get_obj_attr(None, 'X')
+    actual = get_item.get_obj_attr(None, 'X')
 
     assert actual == 'X'
 
 
 def test_dict_val_key_exists(_dict):
-    actual = get_dict_val(_dict, 'key')
+    actual = get_item.get_dict_val(_dict, 'key')
 
     assert actual == 'value'
 
 
 def test_dict_val_key_not_exists(_dict):
-    actual = get_dict_val(_dict, 'X')
+    actual = get_item.get_dict_val(_dict, 'X')
 
     assert actual == 'X'
 
 
 def test_dict_val_then_dictionary_none():
-    actual = get_dict_val(None, 'X')
+    actual = get_item.get_dict_val(None, 'X')
 
     assert actual == 'X'
 
@@ -61,19 +59,19 @@ def _date():
 
 
 def test_get_sum_by_month_normal(_date):
-    actual = get_sum_by_month(_date, 2)
+    actual = get_item.get_sum_by_month(_date, 2)
 
     assert actual == 12
 
 
 def test_get_sum_by_month_not_exists(_date):
-    actual = get_sum_by_month(_date, 12)
+    actual = get_item.get_sum_by_month(_date, 12)
 
     assert not actual
 
 
 def test_get_sum_by_month_list_empty():
-    actual = get_sum_by_month([], 12)
+    actual = get_item.get_sum_by_month([], 12)
 
     assert not actual
 
@@ -87,18 +85,39 @@ def _title():
 
 
 def test_get_sum_by_title_normal(_title):
-    actual = get_sum_by_title(_title, 'A')
+    actual = get_item.get_sum_by_title(_title, 'A')
 
     assert actual == 12
 
 
 def test_get_sum_by_title_not_exists(_title):
-    actual = get_sum_by_title(_title, 'x')
+    actual = get_item.get_sum_by_title(_title, 'x')
 
     assert not actual
 
 
 def test_get_sum_by_title_list_empty():
-    actual = get_sum_by_title([], 12)
+    actual = get_item.get_sum_by_title([], 12)
 
     assert not actual
+
+
+@pytest.mark.parametrize(
+    'lst, expect',
+    [
+        ([[1]], 1),
+        ([], None),
+        ([[]], None),
+    ]
+    )
+def test_get_nested_list_val(lst, expect):
+    actual = get_item.get_nested_list_val(arr=lst, parent=0, nested=0)
+
+    assert actual == expect
+
+
+@pytest.mark.parametrize('lst, expect', [([1], 1), ([], None)])
+def test_get_list_val(lst, expect):
+    actual = get_item.get_list_val(arr=lst, key=0)
+
+    assert actual == expect

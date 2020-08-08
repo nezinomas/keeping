@@ -6,7 +6,22 @@ from .. import models
 from .drinks_stats import DrinkStats, std_av
 
 
-def context_to_reload(request, context):
+def several_years_consumption(years):
+    serries = []
+    for y in years:
+        qs_drinks = models.Drink.objects.sum_by_month(int(y))
+        data = DrinkStats(qs_drinks).consumption
+
+        if not any(data):
+            continue
+
+        serries.append({'name': y, 'data': data})
+
+    return serries
+
+
+def context_to_reload(request, context=None):
+    context = {} if not context else context
     year = request.user.year
 
     qs_target = models.DrinkTarget.objects.year(year)
@@ -59,6 +74,13 @@ def context_to_reload(request, context):
         {'items': std_av(year, qty)},
         request
     )
+
+    context['target_list'] = render_to_string(
+        'drinks/includes/drinks_target_list.html',
+        {'items': qs_target},
+        request)
+
+    return context
 
 
 def _avg_label_position(avg, target):

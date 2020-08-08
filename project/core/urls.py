@@ -4,7 +4,6 @@ from . import views
 app_name = 'core'
 
 urlpatterns = [
-    path('core/', views.index, name='core_index'),
     path(
         'year/<int:year>/',
         views.set_year,

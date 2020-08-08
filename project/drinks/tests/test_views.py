@@ -1,14 +1,14 @@
 import json
 from datetime import date
 
-import pandas  # need to import before freezegun, why?
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
+from mock import patch
 
 from ...core.tests.utils import change_profile_year
 from ...users.factories import UserFactory
-from .. import forms, views
+from .. import views
 from ..factories import DrinkFactory, DrinkTargetFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -17,7 +17,7 @@ pytestmark = pytest.mark.django_db
 
 #
 # ----------------------------------------------------------------------------
-#                                                    DrinkTarget create/update
+#                                                         Drinks create/update
 # ----------------------------------------------------------------------------
 #
 @freeze_time('2000-01-01')
@@ -60,6 +60,7 @@ def test_view_drinks_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
 def test_view_drinks_update(client_logged):
     p = DrinkFactory()
 
@@ -68,7 +69,7 @@ def test_view_drinks_update(client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -129,7 +130,7 @@ def test_view_drinks_target_update(get_user, client_logged):
 
     response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -142,21 +143,6 @@ def test_view_index_func():
     view = resolve('/drinks/')
 
     assert views.Index == view.func.view_class
-
-
-def test_view_reload_stats_func():
-    view = resolve('/drinks/reload_stats/')
-
-    assert views.reload_stats == view.func
-
-
-def test_view_reload_stats_render(get_user, rf):
-    request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
-    request.user = UserFactory.build()
-
-    response = views.reload_stats(request)
-
-    assert response.status_code == 200
 
 
 def test_view_index_200(client_logged):
@@ -174,6 +160,7 @@ def test_view_index_200(client_logged):
     assert 'tbl_std_av' in response.context
 
 
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
 def test_view_index_drinked_date(client_logged):
     DrinkFactory(date=date(1999, 1, 2))
     DrinkFactory(date=date(1998, 1, 2))
@@ -227,7 +214,7 @@ def test_view_index_tbl_std_av_empty_current_year(client_logged):
 def test_historical_data_func():
     view = resolve('/drinks/historical_data/1/')
 
-    assert views.historical_data == view.func
+    assert views.historical_data is view.func
 
 
 def test_historical_data_200(client_logged):
@@ -249,6 +236,7 @@ def test_historical_data_302(client):
     assert response.status_code == 302
 
 
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
 def test_historical_data_ajax(client_logged):
     DrinkFactory()
 
@@ -266,9 +254,9 @@ def test_historical_data_ajax(client_logged):
 #                                                                   Filtered Compare Data
 # ---------------------------------------------------------------------------------------
 @pytest.fixture()
-def compare_form_data():
+def _compare_form_data():
     return ([
-        {"name":"csrfmiddlewaretoken","value":"RIFWoIjFMOnqjK9mbzZdjeJYucGzet4hcimTmCRnsIw0MTV7eyjvdxFK6FriXrDy"},
+        {"name":"csrfmiddlewaretoken", "value":"RIFWoIjFMOnqjK9mbzZdjeJYucGzet4hcimTmCRnsIw0MTV7eyjvdxFK6FriXrDy"},
         {"name":"year1", "value":"1999"},
         {"name":"year2", "value":"2020"}
     ])
@@ -277,11 +265,11 @@ def compare_form_data():
 def test_view_compare_func():
     view = resolve('/drinks/compare/')
 
-    assert views.compare == view.func
+    assert views.compare is view.func
 
 
-def test_view_compare_200(client_logged, compare_form_data):
-    form_data = json.dumps(compare_form_data)
+def test_view_compare_200(client_logged, _compare_form_data):
+    form_data = json.dumps(_compare_form_data)
     response = client_logged.post('/drinks/compare/', {'form_data': form_data})
 
     assert response.status_code == 200
@@ -300,6 +288,13 @@ def test_view_compare_500(client_logged):
     assert response.status_code == 500
 
 
+def test_view_compare_bad_json_data(client_logged):
+    form_data = "{'x': 'y'}"
+    response = client_logged.post('/drinks/compare/', {'form_data': form_data})
+
+    assert response.status_code == 500
+
+
 def test_view_compare_302(client):
     url = reverse('drinks:compare')
     response = client.post(url)
@@ -307,9 +302,9 @@ def test_view_compare_302(client):
     assert response.status_code == 302
 
 
-def test_view_compare_form_is_not_valid(client_logged, compare_form_data):
-    compare_form_data[1]['value'] = None # year1 = None
-    form_data = json.dumps(compare_form_data)
+def test_view_compare_form_is_not_valid(client_logged, _compare_form_data):
+    _compare_form_data[1]['value'] = None # year1 = None
+    form_data = json.dumps(_compare_form_data)
 
     url = reverse('drinks:compare')
     response = client_logged.post(url, {'form_data': form_data})
@@ -319,8 +314,8 @@ def test_view_compare_form_is_not_valid(client_logged, compare_form_data):
     assert not actual['form_is_valid']
 
 
-def test_view_compare_form_is_valid(client_logged, compare_form_data):
-    form_data = json.dumps(compare_form_data)
+def test_view_compare_form_is_valid(client_logged, _compare_form_data):
+    form_data = json.dumps(_compare_form_data)
 
     url = reverse('drinks:compare')
     response = client_logged.post(url, {'form_data': form_data})
@@ -330,8 +325,8 @@ def test_view_compare_form_is_valid(client_logged, compare_form_data):
     assert actual['form_is_valid']
 
 
-def test_view_compare_no_records_for_year(client_logged, compare_form_data):
-    form_data = json.dumps(compare_form_data)
+def test_view_compare_no_records_for_year(client_logged, _compare_form_data):
+    form_data = json.dumps(_compare_form_data)
 
     url = reverse('drinks:compare')
     response = client_logged.post(url, {'form_data': form_data})
@@ -341,11 +336,12 @@ def test_view_compare_no_records_for_year(client_logged, compare_form_data):
     assert 'Trūksta duomenų' in actual['html']
 
 
-def test_view_compare_chart_data(client_logged, compare_form_data):
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
+def test_view_compare_chart_data(client_logged, _compare_form_data):
     DrinkFactory()
-    DrinkFactory(date = date(2020, 1, 1), quantity=10)
+    DrinkFactory(date=date(2020, 1, 1), quantity=10)
 
-    form_data = json.dumps(compare_form_data)
+    form_data = json.dumps(_compare_form_data)
 
     url = reverse('drinks:compare')
     response = client_logged.post(url, {'form_data': form_data})
@@ -359,3 +355,36 @@ def test_view_compare_chart_data(client_logged, compare_form_data):
 
     assert "'name': '2020'" in actual['html']
     assert "'data': [161.29032258064515, 0.0" in actual['html']
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                            Realod Stats
+# ---------------------------------------------------------------------------------------
+def test_view_reload_stats_func():
+    view = resolve('/drinks/reload_stats/')
+
+    assert views.reload_stats is view.func
+
+
+def test_view_reload_stats_render(get_user, rf):
+    request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = views.reload_stats(request)
+
+    assert response.status_code == 200
+
+
+def test_view_reload_stats_render_ajax_trigger(client_logged):
+    url = reverse('drinks:reload_stats')
+    response = client_logged.get(url, {'ajax_trigger': 1})
+
+    assert response.status_code == 200
+
+
+def test_view_reload_stats_render_ajax_trigger_not_set(client_logged):
+    url = reverse('drinks:reload_stats')
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert views.Index == response.resolver_match.func.view_class

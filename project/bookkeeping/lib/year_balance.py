@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from pandas import DataFrame as DF
-
+from pandas import to_datetime
 from ...core.lib.balance_base import BalanceBase, df_months_of_year
 
 
@@ -10,9 +10,9 @@ class YearBalance(BalanceBase):
                  year: int,
                  incomes: List[Dict],
                  expenses: List[Dict],
-                 savings: List[Dict]=[],
-                 savings_close: List[Dict]=[],
-                 amount_start: float=0.0):
+                 savings: List[Dict] = None,
+                 savings_close: List[Dict] = None,
+                 amount_start: float = 0.0):
 
         '''
         year: int
@@ -32,7 +32,7 @@ class YearBalance(BalanceBase):
 
         try:
             amount_start = float(amount_start)
-        except:
+        except TypeError:
             amount_start = 0.0
 
         self._amount_start = amount_start
@@ -120,21 +120,21 @@ class YearBalance(BalanceBase):
 
         # copy incomes values, convert Decimal to float
         for d in incomes:
-            df.at[d['date'], 'incomes'] = float(d['sum'])
+            df.at[to_datetime(d['date']), 'incomes'] = float(d['sum'])
 
         # copy expenses values, convert Decimal to float
         for d in expenses:
-            df.at[d['date'], 'expenses'] = float(d['sum'])
+            df.at[to_datetime(d['date']), 'expenses'] = float(d['sum'])
 
         if savings:
             # copy savings values, convert Decimal to float
             for d in savings:
-                df.at[d['date'], 'savings'] = float(d['sum'])
+                df.at[to_datetime(d['date']), 'savings'] = float(d['sum'])
 
         if savings_close:
             # copy savings values, convert Decimal to float
             for d in savings_close:
-                df.at[d['date'], 'savings_close'] = float(d['sum'])
+                df.at[to_datetime(d['date']), 'savings_close'] = float(d['sum'])
 
         return df
 

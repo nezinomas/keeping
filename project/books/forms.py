@@ -4,11 +4,11 @@ from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib.date import set_year_for_form
-from ..core.mixins.form_mixin import FormMixin
+from ..core.mixins.form_mixin import FormForUserMixin
 from .models import Book
 
 
-class BookForm(FormMixin, forms.ModelForm):
+class BookForm(FormForUserMixin, forms.ModelForm):
     class Meta:
         model = Book
         fields = ['started', 'ended', 'author', 'title', 'remark']
