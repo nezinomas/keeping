@@ -31,7 +31,7 @@ def test_night_year_initial_value(get_user):
     UserFactory()
 
     form = NightForm().as_p()
-    print(form)
+
     assert '<input type="text" name="date" value="1999-01-01"' in form
     assert '<input type="number" name="quantity" value="1"' in form
 

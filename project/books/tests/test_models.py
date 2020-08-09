@@ -58,7 +58,7 @@ def test_book_readed_one_year(get_user):
     BookFactory(ended=date(1999, 12, 31))
 
     actual = list(Book.objects.readed(year=1999))
-    print(actual)
+
     assert actual == [{'year': 1999, 'cnt': 2}]
 
 
