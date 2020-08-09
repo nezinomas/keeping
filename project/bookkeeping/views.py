@@ -14,7 +14,6 @@ from ..core.lib.date import year_month_list
 from ..core.lib.utils import sum_all, sum_col
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin
-from ..drinks.models import Drink
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
@@ -166,15 +165,6 @@ class Summary(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
 
         offset = 1.2
-
-        # data for drinks summary
-        qs = list(Drink.objects.summary())
-        drink_years = [x['year'] for x in qs]
-
-        context['drinks_categories'] = drink_years
-        context['drinks_data_ml'] = [x['per_day'] for x in qs]
-        context['drinks_data_alcohol'] = [x['qty'] * 0.025 for x in qs]
-        context['drinks_cnt'] = len(drink_years) - 1.5
 
         # data for balance summary
         qs_inc = Income.objects.sum_by_year()

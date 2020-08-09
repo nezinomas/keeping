@@ -85,7 +85,7 @@ class Index(IndexMixin):
         context = super().get_context_data(**kwargs)
         context_to_reload(self.request, context)
 
-        context['drinks_list'] = Lists.as_view()(self.request, as_string=True)
+        context['tab'] = 'index'
         context['all_years'] = len(years())
         context['compare_form'] = render_to_string(
             template_name='drinks/includes/compare_form.html',
@@ -96,14 +96,39 @@ class Index(IndexMixin):
         return context
 
 
-class Lists(ListMixin):
-    model = models.Drink
+class Lists(IndexMixin):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        year = self.request.user.year
+
+        context['tab'] = 'data'
+        context['data'] = render_to_string(
+            'drinks/includes/drinks_list.html',
+            {'items': models.Drink.objects.year(year)},
+            self.request
+        )
+        return context
 
 
 class New(CreateAjaxMixin):
     model = models.Drink
     form_class = forms.DrinkForm
 
+
+class Summary(IndexMixin):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        qs = list(models.Drink.objects.summary())
+        drink_years = [x['year'] for x in qs]
+
+        context['tab'] = 'history'
+        context['drinks_categories'] = drink_years
+        context['drinks_data_ml'] = [x['per_day'] for x in qs]
+        context['drinks_data_alcohol'] = [x['qty'] * 0.025 for x in qs]
+        context['drinks_cnt'] = len(drink_years) - 1.5
+
+        return context
 
 class Update(UpdateAjaxMixin):
     model = models.Drink
