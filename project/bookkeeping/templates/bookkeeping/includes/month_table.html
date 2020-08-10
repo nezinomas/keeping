@@ -19,7 +19,7 @@
         {% with row.date|date:'d' as day_int %}
         <tr id='row-{{ day_int }}' class="{% if day|slugify == row.date|date:'j' %}_current_day{% endif %} {{ weekend_row }}">
             <td class="text-left {{ weekend_col }} panel-heading">
-                <a class="row_click" data-toggle="collapse" aria-expanded="true" data-url="{% url 'bookkeeping:month_day_list' row.date|date:"Ymd" %}" data-id="{{ day_int }}">{{ day_int }}</a>
+                <a class="row_click btn btn-super-sm" role="button" data-toggle="collapse" aria-expanded="true" data-url="{% url 'bookkeeping:month_day_list' row.date|date:"Ymd" %}" data-id="{{ day_int }}">{{ day_int }}</a>
             </td>
             {% for cat in expense_types %}
             {% cell row|get_item:cat css_class=weekend_col %}
@@ -67,11 +67,18 @@
         border-right: 0!important;
     }
 
+    table.stats td.panel-heading {
+        padding: 0!important;
+        width: 2.3rem;
+    }
+
     .panel-heading  a:before {
         font-family: 'Glyphicons Halflings';
         content: "\e114";
         float: right;
         transition: all 0.5s;
+        margin-left: .3rem!important;
+        color: #fe536a;
     }
 
     .panel-heading.active a:before {
