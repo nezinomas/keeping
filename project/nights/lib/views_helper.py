@@ -21,6 +21,35 @@ def render_chart_weekdays(request, obj, title):
     return rendered
 
 
+def render_chart_months(request, obj, title):
+    rendered = render_to_string(
+        f'{App_name}/includes/chart_periodicity.html',
+        {
+            'data': obj.months_stats(),
+            'categories': Stats.months(),
+            'chart': 'chart_months',
+            'chart_title': title,
+            'chart_column_color': '70, 171, 157',
+        },
+        request
+    )
+    return rendered
+
+
+def render_chart_years(request, obj, title):
+    rendered = render_to_string(
+        f'{App_name}/includes/chart_periodicity.html',
+        {
+            'data': list(obj.values()),
+            'categories': list(obj.keys()),
+            'chart': 'chart_years',
+            'chart_title': 'Metai',
+            'chart_column_color': '70, 171, 157',
+        },
+        request
+    )
+    return rendered
+
 def context_to_reload(request, year, context=None):
     context = context if context else {}
 
@@ -33,21 +62,9 @@ def context_to_reload(request, year, context=None):
 
     context.update({
         'tab': 'index',
-        'chart_weekdays': render_chart_weekdays(request, obj, f'Savaitės dienos, {year} metai')
+        'chart_weekdays': render_chart_weekdays(request, obj, f'Savaitės dienos, {year} metai'),
+        'chart_months': render_chart_months(request, obj, f'Mėnesiai, {year} metai')
     })
-
-
-    context['chart_months'] = render_to_string(
-        f'{App_name}/includes/chart_periodicity.html',
-        {
-            'data': obj.months_stats(),
-            'categories': Stats.months(),
-            'chart': 'chart_months',
-            'chart_title': f'Mėnesiai, {year} metai',
-            'chart_column_color': '70, 171, 157',
-        },
-        request
-    )
 
     context['chart_year'] = render_to_string(
         f'{App_name}/includes/chart_month_periodicity.html',
