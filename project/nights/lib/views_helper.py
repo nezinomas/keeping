@@ -82,6 +82,23 @@ def render_chart_histogram(request, obj):
     return rendered
 
 
+def render_info_row(request, obj: Stats, year: int):
+    week = weeknumber(year)
+    total = obj.year_totals()
+
+    rendered = render_to_string(
+        f'{App_name}/includes/info_row.html',
+        {
+            'week': week,
+            'total': total,
+            'ratio': total / week,
+            'current_gap': obj.current_gap(),
+        },
+        request
+    )
+    return rendered
+
+
 def context_to_reload(request, year, context=None):
     context = context if context else {}
 
@@ -98,23 +115,6 @@ def context_to_reload(request, year, context=None):
     })
 
     return context
-
-
-def render_info_row(request, obj: Stats, year: int):
-    week = weeknumber(year)
-    total = obj.year_totals()
-
-    rendered = render_to_string(
-        f'{App_name}/includes/info_row.html',
-        {
-            'week': week,
-            'total': total,
-            'ratio': total / week,
-            'current_gap': obj.current_gap(),
-        },
-        request
-    )
-    return rendered
 
 
 def context_url_names(context):
