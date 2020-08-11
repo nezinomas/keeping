@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 App_name = 'nights'
 
-class NightsConfig(AppConfig):
+class Config(AppConfig):
     name = f'project.{App_name}'
