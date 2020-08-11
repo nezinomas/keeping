@@ -50,6 +50,7 @@ def render_chart_years(request, obj, title):
     )
     return rendered
 
+
 def context_to_reload(request, year, context=None):
     context = context if context else {}
 
