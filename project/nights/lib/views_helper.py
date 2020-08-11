@@ -6,6 +6,21 @@ from ..apps import App_name
 from .stats import Stats
 
 
+def render_chart_weekdays(request, obj, title):
+    rendered = render_to_string(
+        f'{App_name}/includes/chart_periodicity.html',
+        {
+            'data': [x['count'] for x in obj.weekdays_stats()],
+            'categories': [x[:4] for x in Stats.weekdays()],
+            'chart': 'chart_weekdays',
+            'chart_title': title,
+            'chart_column_color': '70, 171, 157',
+        },
+        request
+    )
+    return rendered
+
+
 def context_to_reload(request, year, context=None):
     context = context if context else {}
 
@@ -16,17 +31,11 @@ def context_to_reload(request, year, context=None):
 
     context_info_row(request, obj, year, context)
 
-    context['chart_weekdays'] = render_to_string(
-        f'{App_name}/includes/chart_periodicity.html',
-        {
-            'data': [x['count'] for x in obj.weekdays_stats()],
-            'categories': [x[:4] for x in Stats.weekdays()],
-            'chart': 'chart_weekdays',
-            'chart_title': f'Savaitės dienos, {year} metai',
-            'chart_column_color': '70, 171, 157',
-        },
-        request
-    )
+    context.update({
+        'tab': 'index',
+        'chart_weekdays': render_chart_weekdays(request, obj, f'Savaitės dienos, {year} metai')
+    })
+
 
     context['chart_months'] = render_to_string(
         f'{App_name}/includes/chart_periodicity.html',

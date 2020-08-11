@@ -60,19 +60,11 @@ class History(IndexMixin):
 
         H.context_url_names(context)
 
-        context['tab'] = 'history'
+        context.update({
+            'tab': 'history',
+            'chart_weekdays': H.render_chart_weekdays(self.request, obj, 'Savaitės dienos')
+        })
 
-        context['chart_weekdays'] = render_to_string(
-            f'{App_name}/includes/chart_periodicity.html',
-            {
-                'data': [x['count'] for x in obj.weekdays_stats()],
-                'categories': [x[:4] for x in Stats.weekdays()],
-                'chart': 'chart_weekdays',
-                'chart_title': 'Savaitės dienos',
-                'chart_column_color': '70, 171, 157',
-            },
-            self.request
-        )
 
         stats = obj.year_totals()
         context['chart_years'] = render_to_string(
