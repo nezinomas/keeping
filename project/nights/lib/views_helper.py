@@ -88,7 +88,7 @@ def context_to_reload(request, year, context=None):
     qs = models.Night.objects.sum_by_day(year=year)
     obj = Stats(year=year, data=qs)
 
-    context_info_row(request, obj, year, context)
+    render_info_row(request, obj, year, context)
 
     context.update({
         'tab': 'index',
@@ -101,7 +101,7 @@ def context_to_reload(request, year, context=None):
     return context
 
 
-def context_info_row(request, obj: Stats, year: int, context):
+def render_info_row(request, obj: Stats, year: int, context):
     week = weeknumber(year)
     total = obj.year_totals()
 

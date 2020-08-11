@@ -26,7 +26,7 @@ class Lists(IndexMixin):
         qs = models.Night.objects.year(year)
         obj = Stats(year=year, data=qs)
 
-        H.context_info_row(self.request, obj, year, context)
+        H.render_info_row(self.request, obj, year, context)
         H.context_url_names(context)
 
         context['tab'] = 'data'
@@ -64,7 +64,7 @@ class History(IndexMixin):
             'tab': 'history',
             'chart_weekdays': H.render_chart_weekdays(self.request, obj, 'Savaitės dienos'),
             'chart_years': H.render_chart_years(self.request, obj.year_totals(), 'Metai'),
-            'chart_histogram': H.render_chart_histogram(self.request, obj.gaps())
+            'chart_histogram': H.render_chart_histogram(self.request, obj.gaps()),
         })
 
         return context
