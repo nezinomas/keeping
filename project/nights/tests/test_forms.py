@@ -14,11 +14,11 @@ pytestmark = pytest.mark.django_db
 # ----------------------------------------------------------------------------
 #                                                                       Nights
 # ----------------------------------------------------------------------------
-def test_night_init(get_user):
+def test_form_init(get_user):
     NightForm()
 
 
-def test_night_init_fields(get_user):
+def test_form_init_fields(get_user):
     form = NightForm().as_p()
 
     assert '<input type="text" name="date"' in form
@@ -28,7 +28,7 @@ def test_night_init_fields(get_user):
 
 
 @freeze_time('1000-01-01')
-def test_night_year_initial_value(get_user):
+def test_form_year_initial_value(get_user):
     UserFactory()
 
     form = NightForm().as_p()
@@ -38,7 +38,7 @@ def test_night_year_initial_value(get_user):
 
 
 @patch(f'project.{App_name}.forms.App_name', 'Counter Type')
-def test_night_valid_data(get_user):
+def test_form_valid_data(get_user):
     form = NightForm(data={
         'date': '1974-01-01',
         'quantity': 1.0
@@ -54,7 +54,7 @@ def test_night_valid_data(get_user):
     assert data.counter_type == 'Counter Type'
 
 
-def test_night_blank_data(get_user):
+def test_form_blank_data(get_user):
     form = NightForm({})
 
     assert not form.is_valid()
