@@ -88,24 +88,23 @@ def context_to_reload(request, year, context=None):
     qs = models.Night.objects.sum_by_day(year=year)
     obj = Stats(year=year, data=qs)
 
-    render_info_row(request, obj, year, context)
-
     context.update({
         'tab': 'index',
         'chart_weekdays': render_chart_weekdays(request, obj, f'Savaitės dienos, {year} metai'),
         'chart_months': render_chart_months(request, obj, f'Mėnesiai, {year} metai'),
         'chart_year': render_chart_year(request, obj),
-        'chart_histogram': render_chart_histogram(request, obj.gaps())
+        'chart_histogram': render_chart_histogram(request, obj.gaps()),
+        'info_row': render_info_row(request, obj, year),
     })
 
     return context
 
 
-def render_info_row(request, obj: Stats, year: int, context):
+def render_info_row(request, obj: Stats, year: int):
     week = weeknumber(year)
     total = obj.year_totals()
 
-    context['info_row'] = render_to_string(
+    rendered = render_to_string(
         f'{App_name}/includes/info_row.html',
         {
             'week': week,
@@ -115,6 +114,7 @@ def render_info_row(request, obj: Stats, year: int, context):
         },
         request
     )
+    return rendered
 
 
 def context_url_names(context):

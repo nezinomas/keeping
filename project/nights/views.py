@@ -26,9 +26,9 @@ class Lists(IndexMixin):
         qs = models.Night.objects.year(year)
         obj = Stats(year=year, data=qs)
 
-        H.render_info_row(self.request, obj, year, context)
         H.context_url_names(context)
 
+        context['info_row'] = H.render_info_row(self.request, obj, year)
         context['tab'] = 'data'
         context['data'] = render_to_string(
             f'{App_name}/includes/{App_name}_list.html',
