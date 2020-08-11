@@ -13,6 +13,8 @@ class Index(IndexMixin):
         context = super().get_context_data(**kwargs)
         year = self.request.user.year
 
+        context_url_names(context)
+
         return context_to_reload(self.request, year, context)
 
 
@@ -24,8 +26,8 @@ class Lists(IndexMixin):
         qs = models.Night.objects.year(year)
         obj = Stats(year=year, data=qs)
 
-        shared_tab_context(self.request, obj, year, context)
-        url_for_context(context)
+        context_info_row(self.request, obj, year, context)
+        context_url_names(context)
 
         context['tab'] = 'data'
         context['data'] = render_to_string(
@@ -56,7 +58,7 @@ class History(IndexMixin):
         qs = models.Night.objects.items()
         obj = Stats(data=qs)
 
-        url_for_context(context)
+        context_url_names(context)
 
         context['tab'] = 'history'
 
@@ -121,8 +123,7 @@ def context_to_reload(request, year, context=None):
 
     context['tab'] = 'index'
 
-    shared_tab_context(request, obj, year, context)
-    url_for_context(context)
+    context_info_row(request, obj, year, context)
 
     context['chart_weekdays'] = render_to_string(
         f'{App_name}/includes/chart_periodicity.html',
@@ -176,7 +177,7 @@ def context_to_reload(request, year, context=None):
 
     return context
 
-def shared_tab_context(request, obj: Stats, year: int, context):
+def context_info_row(request, obj: Stats, year: int, context):
     week = weeknumber(year)
     total = obj.year_totals()
 
@@ -192,7 +193,7 @@ def shared_tab_context(request, obj: Stats, year: int, context):
     )
 
 
-def url_for_context(context):
+def context_url_names(context):
     context['app_name'] = App_name
     context['url_new'] = f'{App_name}:{App_name}_new'
     context['url_index'] = f'{App_name}:{App_name}_index'
