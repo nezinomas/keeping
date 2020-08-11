@@ -61,7 +61,7 @@ class History(IndexMixin):
                 'data': [x['count'] for x in obj.weekdays_stats()],
                 'categories': [x[:4] for x in Stats.weekdays()],
                 'chart': 'chart_weekdays',
-                'chart_title': f'Savaitės dienos',
+                'chart_title': 'Savaitės dienos',
                 'chart_column_color': '70, 171, 157',
             },
             self.request
@@ -74,7 +74,7 @@ class History(IndexMixin):
                 'data': list(stats.values()),
                 'categories': list(stats.keys()),
                 'chart': 'chart_years',
-                'chart_title': f'Metai',
+                'chart_title': 'Metai',
                 'chart_column_color': '70, 171, 157',
             },
             self.request
