@@ -16,7 +16,7 @@ pytestmark = pytest.mark.django_db
 
 
 # ----------------------------------------------------------------------------
-#                                                         Nights create/update
+#                                                           Create/Update View
 # ----------------------------------------------------------------------------
 @freeze_time('2000-01-01')
 def test_view_new_form_initial(client_logged):
@@ -58,7 +58,7 @@ def test_view_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
 def test_view_update(client_logged):
     p = NightFactory()
 
@@ -77,10 +77,10 @@ def test_view_update(client_logged):
 
 
 # ----------------------------------------------------------------------------
-#                                                             Nights IndexView
+#                                                                   Index View
 # ----------------------------------------------------------------------------
 def test_index_func():
-    view = resolve('/nights/')
+    view = resolve(f'/{App_name}/')
 
     assert views.Index == view.func.view_class
 
@@ -183,7 +183,7 @@ def test_index_charts_of_year(client_logged):
 
 
 @freeze_time('1999-07-18')
-@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
 def test_index_info_row(client_logged):
     NightFactory(quantity=3)
 
@@ -204,13 +204,13 @@ def test_index_info_row(client_logged):
 #                                                                            Realod Stats
 # ---------------------------------------------------------------------------------------
 def test_reload_stats_func():
-    view = resolve('/nights/reload_stats/')
+    view = resolve(f'/{App_name}/reload_stats/')
 
     assert views.reload_stats is view.func
 
 
 def test_reload_stats_render(get_user, rf):
-    request = rf.get('/nights/reload_stats/?ajax_trigger=1')
+    request = rf.get(f'/{App_name}/reload_stats/?ajax_trigger=1')
     request.user = UserFactory.build()
 
     response = views.reload_stats(request)
@@ -219,14 +219,14 @@ def test_reload_stats_render(get_user, rf):
 
 
 def test_reload_stats_render_ajax_trigger(client_logged):
-    url = reverse('nights:reload_stats')
+    url = reverse(f'{App_name}:reload_stats')
     response = client_logged.get(url, {'ajax_trigger': 1})
 
     assert response.status_code == 200
 
 
 def test_reload_stats_render_ajax_trigger_not_set(client_logged):
-    url = reverse('nights:reload_stats')
+    url = reverse(f'{App_name}:reload_stats')
     response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
@@ -234,10 +234,10 @@ def test_reload_stats_render_ajax_trigger_not_set(client_logged):
 
 
 # ----------------------------------------------------------------------------
-#                                                                  Nights Lists
+#                                                                    List View
 # ----------------------------------------------------------------------------
 def test_list_func():
-    view = resolve('/nights/lists/')
+    view = resolve(f'/{App_name}/lists/')
 
     assert views.Lists == view.func.view_class
 
@@ -266,10 +266,10 @@ def test_list_context_tab_value(client_logged):
 
 
 # ----------------------------------------------------------------------------
-#                                                               Nights History
+#                                                                 History View
 # ----------------------------------------------------------------------------
 def test_history_func():
-    view = resolve('/nights/history/')
+    view = resolve(f'/{App_name}/history/')
 
     assert views.History == view.func.view_class
 
