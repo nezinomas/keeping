@@ -1,5 +1,4 @@
 from django.shortcuts import redirect, render, reverse
-from django.template.loader import render_to_string
 
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin, UpdateAjaxMixin
 from . import forms, models
@@ -23,15 +22,16 @@ class Lists(IndexMixin):
         context = super().get_context_data(**kwargs)
         year = self.request.user.year
 
+        H.context_url_names(context)
+
         qs = models.Night.objects.year(year)
         obj = Stats(year=year, data=qs)
 
-        H.context_url_names(context)
-
-        context['info_row'] = H.render_info_row(self.request, obj, year)
-        context['tab'] = 'data'
-        context['data'] = H.render_list_data(self.request, obj.items())
-
+        context.update({
+            'tab': 'data',
+            'info_row': H.render_info_row(self.request, obj, year),
+            'data': H.render_list_data(self.request, obj.items()),
+        })
         return context
 
 
@@ -60,7 +60,6 @@ class History(IndexMixin):
             'chart_years': H.render_chart_years(self.request, obj.year_totals(), 'Metai'),
             'chart_histogram': H.render_chart_histogram(self.request, obj.gaps()),
         })
-
         return context
 
 def reload_stats(request):
