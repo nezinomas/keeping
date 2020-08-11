@@ -11,11 +11,10 @@ from .lib.stats import Stats
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        year = self.request.user.year
 
         context.update({
             **H.context_url_names(),
-            **H.context_to_reload(self.request, year)
+            **H.context_to_reload(self.request)
         })
         return context
 
@@ -77,5 +76,5 @@ class ReloadStats(TemplateView):
 
 
     def get(self, request, *args, **kwargs):
-        context = H.context_to_reload(request, request.user.year)
+        context = H.context_to_reload(request)
         return self.render_to_response(context)

@@ -111,7 +111,8 @@ def render_list_data(request, obj):
     return rendered
 
 
-def context_to_reload(request, year):
+def context_to_reload(request):
+    year = request.user.year
     qs = models.Night.objects.sum_by_day(year=year)
     obj = Stats(year=year, data=qs)
 
