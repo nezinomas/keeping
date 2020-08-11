@@ -25,11 +25,14 @@ class Lists(IndexMixin):
         obj = Stats(year=year, data=qs)
 
         shared_tab_context(self.request, obj, year, context)
+        url_for_context(context)
+
         context['tab'] = 'data'
         context['data'] = render_to_string(
             f'{App_name}/includes/{App_name}_list.html',
             {
                 'items': obj.items(),
+                'url_update': f'{App_name}:{App_name}_update',
             },
             self.request
         )
@@ -52,6 +55,8 @@ class History(IndexMixin):
 
         qs = models.Night.objects.items()
         obj = Stats(data=qs)
+
+        url_for_context(context)
 
         context['tab'] = 'history'
 
@@ -117,6 +122,7 @@ def context_to_reload(request, year, context=None):
     context['tab'] = 'index'
 
     shared_tab_context(request, obj, year, context)
+    url_for_context(context)
 
     context['chart_weekdays'] = render_to_string(
         f'{App_name}/includes/chart_periodicity.html',
@@ -150,6 +156,7 @@ def context_to_reload(request, year, context=None):
             'data': obj.year_stats(),
             'chart_column_color': '113, 149, 198',
             'alternative_bg': [3, 4, 5, 9, 10, 11],
+            'chart_template': f'{App_name}/includes/chart_month.html'
         },
         request
     )
@@ -183,3 +190,12 @@ def shared_tab_context(request, obj: Stats, year: int, context):
         },
         request
     )
+
+
+def url_for_context(context):
+    context['app_name'] = App_name
+    context['url_new'] = f'{App_name}:{App_name}_new'
+    context['url_index'] = f'{App_name}:{App_name}_index'
+    context['url_list'] = f'{App_name}:{App_name}_list'
+    context['url_history'] = f'{App_name}:{App_name}_history'
+    context['url_reload'] = f'{App_name}:reload_stats'

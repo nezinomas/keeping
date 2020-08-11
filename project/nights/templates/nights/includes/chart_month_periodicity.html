@@ -4,7 +4,7 @@
 {% for month in month_days %}
     {% with forloop.counter0 as parent %}
     <div class="col-lg-4 px-0 mx-0">
-        {% include 'nights/includes/chart_month.html' %}
+        {% include chart_template %}
     </div>
     {% if forloop.counter|divisibleby:3 %}
     </div> <!-- row end loop -->
