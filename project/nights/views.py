@@ -177,6 +177,7 @@ def context_to_reload(request, year, context=None):
 
     return context
 
+
 def context_info_row(request, obj: Stats, year: int, context):
     week = weeknumber(year)
     total = obj.year_totals()
