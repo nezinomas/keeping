@@ -111,30 +111,28 @@ def render_list_data(request, obj):
     return rendered
 
 
-def context_to_reload(request, year, context=None):
-    context = context if context else {}
-
+def context_to_reload(request, year):
     qs = models.Night.objects.sum_by_day(year=year)
     obj = Stats(year=year, data=qs)
 
-    context.update({
+    context = {
         'tab': 'index',
         'chart_weekdays': render_chart_weekdays(request, obj, f'Savaitės dienos, {year} metai'),
         'chart_months': render_chart_months(request, obj, f'Mėnesiai, {year} metai'),
         'chart_year': render_chart_year(request, obj),
         'chart_histogram': render_chart_histogram(request, obj.gaps()),
         'info_row': render_info_row(request, obj, year),
-    })
-
+    }
     return context
 
 
-def context_url_names(context):
-    context.update({
+def context_url_names():
+    context = {
         'app_name': App_name,
         'url_new': f'{App_name}:{App_name}_new',
         'url_index': f'{App_name}:{App_name}_index',
         'url_list': f'{App_name}:{App_name}_list',
         'url_history': f'{App_name}:{App_name}_history',
         'url_reload': f'{App_name}:reload_stats',
-    })
+    }
+    return context

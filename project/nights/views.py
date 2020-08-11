@@ -12,9 +12,10 @@ class Index(IndexMixin):
         context = super().get_context_data(**kwargs)
         year = self.request.user.year
 
-        H.context_url_names(context)
-        H.context_to_reload(self.request, year, context)
-
+        context.update({
+            **H.context_url_names(),
+            **H.context_to_reload(self.request, year)
+        })
         return context
 
 
@@ -23,8 +24,6 @@ class Lists(IndexMixin):
         context = super().get_context_data(**kwargs)
         year = self.request.user.year
 
-        H.context_url_names(context)
-
         qs = models.Night.objects.year(year)
         obj = Stats(year=year, data=qs)
 
@@ -32,6 +31,7 @@ class Lists(IndexMixin):
             'tab': 'data',
             'info_row': H.render_info_row(self.request, obj, year),
             'data': H.render_list_data(self.request, obj.items()),
+            **H.context_url_names()
         })
         return context
 
@@ -53,15 +53,15 @@ class History(IndexMixin):
         qs = models.Night.objects.items()
         obj = Stats(data=qs)
 
-        H.context_url_names(context)
-
         context.update({
             'tab': 'history',
             'chart_weekdays': H.render_chart_weekdays(self.request, obj, 'Savaitės dienos'),
             'chart_years': H.render_chart_years(self.request, obj.year_totals(), 'Metai'),
             'chart_histogram': H.render_chart_histogram(self.request, obj.gaps()),
+            **H.context_url_names()
         })
         return context
+
 
 def reload_stats(request):
     try:
