@@ -30,14 +30,8 @@ class Lists(IndexMixin):
 
         context['info_row'] = H.render_info_row(self.request, obj, year)
         context['tab'] = 'data'
-        context['data'] = render_to_string(
-            f'{App_name}/includes/{App_name}_list.html',
-            {
-                'items': obj.items(),
-                'url_update': f'{App_name}:{App_name}_update',
-            },
-            self.request
-        )
+        context['data'] = H.render_list_data(self.request, obj.items())
+
         return context
 
 

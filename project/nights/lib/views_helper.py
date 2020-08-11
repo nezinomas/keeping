@@ -99,6 +99,18 @@ def render_info_row(request, obj: Stats, year: int):
     return rendered
 
 
+def render_list_data(request, obj):
+    rendered = render_to_string(
+        f'{App_name}/includes/{App_name}_list.html',
+        {
+            'items': obj,
+            'url_update': f'{App_name}:{App_name}_update',
+        },
+        request
+    )
+    return rendered
+
+
 def context_to_reload(request, year, context=None):
     context = context if context else {}
 
