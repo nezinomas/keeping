@@ -4,6 +4,7 @@ from django.template.loader import render_to_string
 from ..core.lib.date import weeknumber
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin, UpdateAjaxMixin
 from . import forms, models
+from .apps import App_name
 from .lib.stats import Stats
 
 
@@ -26,7 +27,7 @@ class Lists(IndexMixin):
         shared_tab_context(self.request, obj, year, context)
         context['tab'] = 'data'
         context['data'] = render_to_string(
-            'nights/includes/nights_list.html',
+            f'{App_name}/includes/{App_name}_list.html',
             {
                 'items': obj.items(),
             },
@@ -55,7 +56,7 @@ class History(IndexMixin):
         context['tab'] = 'history'
 
         context['chart_weekdays'] = render_to_string(
-            'nights/includes/chart_periodicity.html',
+            f'{App_name}/includes/chart_periodicity.html',
             {
                 'data': [x['count'] for x in obj.weekdays_stats()],
                 'categories': [x[:4] for x in Stats.weekdays()],
@@ -68,7 +69,7 @@ class History(IndexMixin):
 
         stats = obj.year_totals()
         context['chart_years'] = render_to_string(
-            'nights/includes/chart_periodicity.html',
+            f'{App_name}/includes/chart_periodicity.html',
             {
                 'data': list(stats.values()),
                 'categories': list(stats.keys()),
@@ -81,7 +82,7 @@ class History(IndexMixin):
 
         gaps = obj.gaps()
         context['chart_histogram'] = render_to_string(
-            'nights/includes/chart_periodicity.html',
+            f'{App_name}/includes/chart_periodicity.html',
             {
                 'data': list(gaps.values()),
                 'categories': [f'{x}d' for x in gaps.keys()],
@@ -98,11 +99,11 @@ def reload_stats(request):
     try:
         request.GET['ajax_trigger']
     except KeyError:
-        return redirect(reverse('nights:nights_index'))
+        return redirect(reverse(f'{App_name}:{App_name}_index'))
 
     return render(
         request=request,
-        template_name='nights/includes/reload_stats.html',
+        template_name=f'{App_name}/includes/reload_stats.html',
         context=context_to_reload(request, request.user.year)
     )
 
@@ -118,7 +119,7 @@ def context_to_reload(request, year, context=None):
     shared_tab_context(request, obj, year, context)
 
     context['chart_weekdays'] = render_to_string(
-        'nights/includes/chart_periodicity.html',
+        f'{App_name}/includes/chart_periodicity.html',
         {
             'data': [x['count'] for x in obj.weekdays_stats()],
             'categories': [x[:4] for x in Stats.weekdays()],
@@ -130,7 +131,7 @@ def context_to_reload(request, year, context=None):
     )
 
     context['chart_months'] = render_to_string(
-        'nights/includes/chart_periodicity.html',
+        f'{App_name}/includes/chart_periodicity.html',
         {
             'data': obj.months_stats(),
             'categories': Stats.months(),
@@ -142,7 +143,7 @@ def context_to_reload(request, year, context=None):
     )
 
     context['chart_year'] = render_to_string(
-        'nights/includes/chart_month_periodicity.html',
+        f'{App_name}/includes/chart_month_periodicity.html',
         {
             'month_days': obj.month_days(),
             'month_titles': obj.months(),
@@ -155,7 +156,7 @@ def context_to_reload(request, year, context=None):
 
     gaps = obj.gaps()
     context['chart_histogram'] = render_to_string(
-        'nights/includes/chart_periodicity.html',
+        f'{App_name}/includes/chart_periodicity.html',
         {
             'data': list(gaps.values()),
             'categories': [f'{x}d' for x in gaps.keys()],
@@ -173,7 +174,7 @@ def shared_tab_context(request, obj: Stats, year: int, context):
     total = obj.year_totals()
 
     context['info_row'] = render_to_string(
-        'nights/includes/info_row.html',
+        f'{App_name}/includes/info_row.html',
         {
             'week': week,
             'total': total,
