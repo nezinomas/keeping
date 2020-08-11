@@ -74,7 +74,6 @@ class ReloadStats(TemplateView):
 
         return super().dispatch(request, *args, **kwargs)
 
-
     def get(self, request, *args, **kwargs):
         context = H.context_to_reload(request)
         return self.render_to_response(context)
