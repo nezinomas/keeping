@@ -51,6 +51,22 @@ def render_chart_years(request, obj, title):
     return rendered
 
 
+def render_chart_year(request, obj):
+    rendered = render_to_string(
+        f'{App_name}/includes/chart_month_periodicity.html',
+        {
+            'month_days': obj.month_days(),
+            'month_titles': obj.months(),
+            'data': obj.year_stats(),
+            'chart_column_color': '113, 149, 198',
+            'alternative_bg': [3, 4, 5, 9, 10, 11],
+            'chart_template': f'{App_name}/includes/chart_month.html'
+        },
+        request
+    )
+    return rendered
+
+
 def context_to_reload(request, year, context=None):
     context = context if context else {}
 
@@ -64,21 +80,10 @@ def context_to_reload(request, year, context=None):
     context.update({
         'tab': 'index',
         'chart_weekdays': render_chart_weekdays(request, obj, f'Savaitės dienos, {year} metai'),
-        'chart_months': render_chart_months(request, obj, f'Mėnesiai, {year} metai')
+        'chart_months': render_chart_months(request, obj, f'Mėnesiai, {year} metai'),
+        'chart_year': render_chart_year(request, obj),
     })
 
-    context['chart_year'] = render_to_string(
-        f'{App_name}/includes/chart_month_periodicity.html',
-        {
-            'month_days': obj.month_days(),
-            'month_titles': obj.months(),
-            'data': obj.year_stats(),
-            'chart_column_color': '113, 149, 198',
-            'alternative_bg': [3, 4, 5, 9, 10, 11],
-            'chart_template': f'{App_name}/includes/chart_month.html'
-        },
-        request
-    )
 
     gaps = obj.gaps()
     context['chart_histogram'] = render_to_string(
