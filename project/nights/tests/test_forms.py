@@ -5,6 +5,7 @@ from freezegun import freeze_time
 from mock import patch
 
 from ...users.factories import UserFactory
+from ..apps import App_name
 from ..forms import NightForm
 
 pytestmark = pytest.mark.django_db
@@ -36,7 +37,7 @@ def test_night_year_initial_value(get_user):
     assert '<input type="number" name="quantity" value="1"' in form
 
 
-@patch('project.nights.forms.App_name', 'Counter Type')
+@patch(f'project.{App_name}.forms.App_name', 'Counter Type')
 def test_night_valid_data(get_user):
     form = NightForm(data={
         'date': '1974-01-01',

@@ -8,6 +8,7 @@ from mock import patch
 
 from ...users.factories import UserFactory
 from .. import views
+from ..apps import App_name
 from ..factories import NightFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -19,7 +20,7 @@ pytestmark = pytest.mark.django_db
 # ----------------------------------------------------------------------------
 @freeze_time('2000-01-01')
 def test_view_nights(client_logged):
-    url = reverse('nights:nights_new')
+    url = reverse(f'{App_name}:{App_name}_new')
 
     response = client_logged.get(url, {}, **X_Req)
 
@@ -33,7 +34,7 @@ def test_view_nights(client_logged):
 def test_view_nights_new(client_logged):
     data = {'date': '1999-01-01', 'quantity': 999}
 
-    url = reverse('nights:nights_new')
+    url = reverse(f'{App_name}:{App_name}_new')
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -47,7 +48,7 @@ def test_view_nights_new(client_logged):
 def test_view_nights_new_invalid_data(client_logged):
     data = {'date': -2, 'quantity': 'x'}
 
-    url = reverse('nights:nights_new')
+    url = reverse(f'{App_name}:{App_name}_new')
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -62,7 +63,7 @@ def test_view_nights_update(client_logged):
     p = NightFactory()
 
     data = {'date': '1999-01-01', 'quantity': 999}
-    url = reverse('nights:nights_update', kwargs={'pk': p.pk})
+    url = reverse(f'{App_name}:{App_name}_update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -85,14 +86,14 @@ def test_nights_index_func():
 
 
 def test_nights_index_200(client_logged):
-    url = reverse('nights:nights_index')
+    url = reverse(f'{App_name}:{App_name}_index')
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_nights_index_add_button(client_logged):
-    url = reverse('nights:nights_index')
+    url = reverse(f'{App_name}:{App_name}_index')
     response = client_logged.get(url)
 
     content = response.content.decode()
@@ -101,12 +102,12 @@ def test_nights_index_add_button(client_logged):
     res = re.findall(pattern, content)
 
     assert len(res[0]) == 2
-    assert res[0][0] == reverse('nights:nights_new')
+    assert res[0][0] == reverse(f'{App_name}:{App_name}_new')
     assert res[0][1] == 'Pridėti'
 
 
 def test_nights_index_links(client_logged):
-    url = reverse('nights:nights_index')
+    url = reverse(f'{App_name}:{App_name}_index')
     response = client_logged.get(url)
 
     content = response.content.decode()
@@ -115,18 +116,18 @@ def test_nights_index_links(client_logged):
     res = re.findall(pattern, content)
 
     assert len(res) == 3
-    assert res[0][0] == reverse('nights:nights_index')
+    assert res[0][0] == reverse(f'{App_name}:{App_name}_index')
     assert res[0][1] == 'Grafikai'
 
-    assert res[1][0] == reverse('nights:nights_list')
+    assert res[1][0] == reverse(f'{App_name}:{App_name}_list')
     assert res[1][1] == 'Duomenys'
 
-    assert res[2][0] == reverse('nights:nights_history')
+    assert res[2][0] == reverse(f'{App_name}:{App_name}_history')
     assert res[2][1] == 'Istorija'
 
 
 def test_nigths_index_context(client_logged):
-    url = reverse('nights:nights_index')
+    url = reverse(f'{App_name}:{App_name}_index')
     response = client_logged.get(url)
 
     assert 'chart_weekdays' in response.context
@@ -138,14 +139,14 @@ def test_nigths_index_context(client_logged):
 
 
 def test_nigths_index_context_tab_value(client_logged):
-    url = reverse('nights:nights_index')
+    url = reverse(f'{App_name}:{App_name}_index')
     response = client_logged.get(url)
 
     assert response.context['tab'] == 'index'
 
 
 def test_nights_index_chart_weekdays(client_logged):
-    url = reverse('nights:nights_index')
+    url = reverse(f'{App_name}:{App_name}_index')
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -154,7 +155,7 @@ def test_nights_index_chart_weekdays(client_logged):
 
 
 def test_nights_index_chart_months(client_logged):
-    url = reverse('nights:nights_index')
+    url = reverse(f'{App_name}:{App_name}_index')
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -163,7 +164,7 @@ def test_nights_index_chart_months(client_logged):
 
 
 def test_nights_index_chart_histogram(client_logged):
-    url = reverse('nights:nights_index')
+    url = reverse(f'{App_name}:{App_name}_index')
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -172,7 +173,7 @@ def test_nights_index_chart_histogram(client_logged):
 
 
 def test_nights_index_charts_of_year(client_logged):
-    url = reverse('nights:nights_index')
+    url = reverse(f'{App_name}:{App_name}_index')
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -186,7 +187,7 @@ def test_nights_index_charts_of_year(client_logged):
 def test_nigths_index_info_row(client_logged):
     NightFactory(quantity=3)
 
-    url = reverse('nights:nights_index')
+    url = reverse(f'{App_name}:{App_name}_index')
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -242,14 +243,14 @@ def test_nights_list_func():
 
 
 def test_nights_list_200(client_logged):
-    url = reverse('nights:nights_list')
+    url = reverse(f'{App_name}:{App_name}_list')
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_nigths_list_context(client_logged):
-    url = reverse('nights:nights_list')
+    url = reverse(f'{App_name}:{App_name}_list')
     response = client_logged.get(url)
 
     assert 'data' in response.context
@@ -258,7 +259,7 @@ def test_nigths_list_context(client_logged):
 
 
 def test_nigths_list_context_tab_value(client_logged):
-    url = reverse('nights:nights_list')
+    url = reverse(f'{App_name}:{App_name}_list')
     response = client_logged.get(url)
 
     assert response.context['tab'] == 'data'
@@ -274,14 +275,14 @@ def test_nights_history_func():
 
 
 def test_nights_history_200(client_logged):
-    url = reverse('nights:nights_history')
+    url = reverse(f'{App_name}:{App_name}_history')
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_nigths_history_context(client_logged):
-    url = reverse('nights:nights_history')
+    url = reverse(f'{App_name}:{App_name}_history')
     response = client_logged.get(url)
 
     assert 'chart_weekdays' in response.context
@@ -290,7 +291,7 @@ def test_nigths_history_context(client_logged):
 
 
 def test_nights_history_chart_weekdays(client_logged):
-    url = reverse('nights:nights_history')
+    url = reverse(f'{App_name}:{App_name}_history')
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -299,7 +300,7 @@ def test_nights_history_chart_weekdays(client_logged):
 
 
 def test_nights_history_chart_years(client_logged):
-    url = reverse('nights:nights_history')
+    url = reverse(f'{App_name}:{App_name}_history')
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")

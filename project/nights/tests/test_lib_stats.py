@@ -7,6 +7,7 @@ from freezegun import freeze_time
 from mock import patch
 
 from ...core.exceptions import MethodInvalid
+from ..apps import App_name
 from ..factories import NightFactory
 from ..lib.stats import Stats
 from ..models import Night
@@ -158,7 +159,7 @@ def test_months_stats(_data):
 
 
 @pytest.mark.django_db
-@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
 def test_months_stats_db(_data_db, get_user):
     year = 1999
     qs = Night.objects.sum_by_day(year=year)
@@ -170,7 +171,7 @@ def test_months_stats_db(_data_db, get_user):
 
 
 @pytest.mark.django_db
-@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
 def test_months_stats_db_no_data(get_user):
     year = 1999
     qs = Night.objects.sum_by_day(year=year)
@@ -201,7 +202,7 @@ def test_year_stats(_data, _year_stats_expect):
 
 
 @pytest.mark.django_db
-@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
 def test_year_stats_db(get_user, _year_stats_expect, _data_db):
     year = 1999
     qs = Night.objects.sum_by_day(year=year)
@@ -237,7 +238,7 @@ def test_year_totals(_data):
 
 
 @pytest.mark.django_db
-@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
 def test_year_totals_queryset(get_user):
     NightFactory()
     qs = Night.objects.year(1999)
@@ -287,7 +288,7 @@ def test_year_month_days_no_year_provided():
 
 
 @pytest.mark.django_db
-@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
 def test_items(get_user):
     NightFactory()
     qs = Night.objects.year(1999)
@@ -303,7 +304,7 @@ def test_items(get_user):
 
 
 @pytest.mark.django_db
-@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
 def test_items_odering(get_user):
     NightFactory(date=date(1999, 1, 1))
     NightFactory(date=date(1999, 12, 31))
@@ -317,7 +318,7 @@ def test_items_odering(get_user):
 
 
 @pytest.mark.django_db
-@patch('project.nights.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
 def test_items_no_data(get_user):
     qs = Night.objects.year(1999)
 
