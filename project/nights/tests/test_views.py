@@ -206,16 +206,7 @@ def test_index_info_row(client_logged):
 def test_reload_stats_func():
     view = resolve(f'/{App_name}/reload_stats/')
 
-    assert views.reload_stats is view.func
-
-
-def test_reload_stats_render(get_user, rf):
-    request = rf.get(f'/{App_name}/reload_stats/?ajax_trigger=1')
-    request.user = UserFactory.build()
-
-    response = views.reload_stats(request)
-
-    assert response.status_code == 200
+    assert views.ReloadStats == view.func.view_class
 
 
 def test_reload_stats_render_ajax_trigger(client_logged):
@@ -223,6 +214,8 @@ def test_reload_stats_render_ajax_trigger(client_logged):
     response = client_logged.get(url, {'ajax_trigger': 1})
 
     assert response.status_code == 200
+    assert views.ReloadStats == response.resolver_match.func.view_class
+
 
 
 def test_reload_stats_render_ajax_trigger_not_set(client_logged):

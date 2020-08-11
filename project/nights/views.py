@@ -1,10 +1,11 @@
-from django.shortcuts import redirect, render, reverse
+from django.shortcuts import redirect, reverse
+from django.views.generic import TemplateView
 
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin, UpdateAjaxMixin
 from . import forms, models
 from .apps import App_name
-from .lib.stats import Stats
 from .lib import views_helper as H
+from .lib.stats import Stats
 
 
 class Index(IndexMixin):
@@ -63,14 +64,18 @@ class History(IndexMixin):
         return context
 
 
-def reload_stats(request):
-    try:
-        request.GET['ajax_trigger']
-    except KeyError:
-        return redirect(reverse(f'{App_name}:{App_name}_index'))
+class ReloadStats(TemplateView):
+    template_name = f'{App_name}/includes/reload_stats.html'
 
-    return render(
-        request=request,
-        template_name=f'{App_name}/includes/reload_stats.html',
-        context=H.context_to_reload(request, request.user.year)
-    )
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            request.GET['ajax_trigger']
+        except KeyError:
+            return redirect(reverse(f'{App_name}:{App_name}_index'))
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+    def get(self, request, *args, **kwargs):
+        context = H.context_to_reload(request, request.user.year)
+        return self.render_to_response(context)
