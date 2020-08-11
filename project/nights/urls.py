@@ -7,33 +7,33 @@ app_name = App_name
 
 urlpatterns = [
     path(
-        'nights/',
+        f'{App_name}/',
         views.Index.as_view(),
-        name='nights_index'
+        name=f'{App_name}_index'
     ),
     path(
-        'nights/lists/',
+        f'{App_name}/lists/',
         views.Lists.as_view(),
-        name='nights_list'
+        name=f'{App_name}_list'
     ),
     path(
-        'nights/new/',
+        f'{App_name}/new/',
         views.New.as_view(),
-        name='nights_new'
+        name=f'{App_name}_new'
     ),
     path(
-        'nights/update/<int:pk>/',
+        f'{App_name}/update/<int:pk>/',
         views.Update.as_view(),
-        name='nights_update'
+        name=f'{App_name}_update'
     ),
     path(
-        'nights/reload_stats/',
+        f'{App_name}/reload_stats/',
         views.reload_stats,
         name='reload_stats'
     ),
     path(
-        'nights/history/',
+        f'{App_name}/history/',
         views.History.as_view(),
-        name='nights_history'
+        name=f'{App_name}_history'
     ),
 ]

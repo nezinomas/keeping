@@ -1,11 +1,11 @@
 from django.db import models
 
 from ..counters.models import Counter, CounterQuerySet
-from .apps import App_name as NightsAppName
+from .apps import App_name as app_name
 
 
 class NightQuerySet(CounterQuerySet, models.QuerySet):
-    App_name = NightsAppName
+    App_name = app_name
 
 
 class Night(Counter):

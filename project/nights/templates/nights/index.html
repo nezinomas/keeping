@@ -12,9 +12,9 @@
 
 <div class="row my-3">
     <div class="col-sm-3 text-left">
-        <a href="{% url 'nights:nights_index' %}" class="btn btn-sm {% if '/nights/' == request.path %}btn-info{% else %}btn-light{% endif %}">Grafikai</a>
-        <a href="{% url 'nights:nights_list' %}" class="btn btn-sm mx-2 {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">Duomenys</a>
-        <a href="{% url 'nights:nights_history' %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">Istorija</a>
+        <a href="{% url url_index %}" class="btn btn-sm {% if '/'|add:app_name|add:'/' == request.path %}btn-info{% else %}btn-light{% endif %}">Grafikai</a>
+        <a href="{% url url_list %}" class="btn btn-sm mx-2 {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">Duomenys</a>
+        <a href="{% url url_history %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">Istorija</a>
     </div>
 
     <div class="col text-center" id="info_row">
@@ -22,8 +22,7 @@
     </div>
 
     <div class="col-sm-3 text-right">
-        {% url 'nights:nights_new' as url_nights %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_nights }}"><i class="fas fa-plus"></i> Pridėti</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url url_new %}"><i class="fas fa-plus"></i> Pridėti</button>
     </div>
 </div>
 
@@ -63,7 +62,7 @@
 
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
-        var url = `{% url 'nights:reload_stats' %}`;
+        var url = `{% url url_reload %}`;
 
         $.ajax({
             url: url,
