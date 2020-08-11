@@ -67,13 +67,26 @@ def render_chart_year(request, obj):
     return rendered
 
 
+def render_chart_histogram(request, obj):
+    rendered = render_to_string(
+        f'{App_name}/includes/chart_periodicity.html',
+        {
+            'data': list(obj.values()),
+            'categories': [f'{x}d' for x in obj.keys()],
+            'chart': 'chart_histogram',
+            'chart_title': 'Tarpų dažnis, dienomis',
+            'chart_column_color': '196, 37, 37',
+        },
+        request
+    )
+    return rendered
+
+
 def context_to_reload(request, year, context=None):
     context = context if context else {}
 
     qs = models.Night.objects.sum_by_day(year=year)
     obj = Stats(year=year, data=qs)
-
-    context['tab'] = 'index'
 
     context_info_row(request, obj, year, context)
 
@@ -82,21 +95,8 @@ def context_to_reload(request, year, context=None):
         'chart_weekdays': render_chart_weekdays(request, obj, f'Savaitės dienos, {year} metai'),
         'chart_months': render_chart_months(request, obj, f'Mėnesiai, {year} metai'),
         'chart_year': render_chart_year(request, obj),
+        'chart_histogram': render_chart_histogram(request, obj.gaps())
     })
-
-
-    gaps = obj.gaps()
-    context['chart_histogram'] = render_to_string(
-        f'{App_name}/includes/chart_periodicity.html',
-        {
-            'data': list(gaps.values()),
-            'categories': [f'{x}d' for x in gaps.keys()],
-            'chart': 'chart_histogram',
-            'chart_title': 'Tarpų dažnis, dienomis',
-            'chart_column_color': '196, 37, 37',
-        },
-        request
-    )
 
     return context
 

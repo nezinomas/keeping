@@ -64,20 +64,8 @@ class History(IndexMixin):
             'tab': 'history',
             'chart_weekdays': H.render_chart_weekdays(self.request, obj, 'Savaitės dienos'),
             'chart_years': H.render_chart_years(self.request, obj.year_totals(), 'Metai'),
+            'chart_histogram': H.render_chart_histogram(self.request, obj.gaps())
         })
-
-        gaps = obj.gaps()
-        context['chart_histogram'] = render_to_string(
-            f'{App_name}/includes/chart_periodicity.html',
-            {
-                'data': list(gaps.values()),
-                'categories': [f'{x}d' for x in gaps.keys()],
-                'chart': 'chart_histogram',
-                'chart_title': 'Tarpų dažnis, dienomis',
-                'chart_column_color': '196, 37, 37',
-            },
-            self.request
-        )
 
         return context
 
