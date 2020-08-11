@@ -6,7 +6,6 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
 
-from ...users.factories import UserFactory
 from .. import views
 from ..apps import App_name
 from ..factories import NightFactory
