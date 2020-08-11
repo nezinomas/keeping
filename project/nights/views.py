@@ -13,8 +13,9 @@ class Index(IndexMixin):
         year = self.request.user.year
 
         H.context_url_names(context)
+        H.context_to_reload(self.request, year, context)
 
-        return H.context_to_reload(self.request, year, context)
+        return context
 
 
 class Lists(IndexMixin):
