@@ -130,9 +130,11 @@ def context_to_reload(request, year, context=None):
 
 
 def context_url_names(context):
-    context['app_name'] = App_name
-    context['url_new'] = f'{App_name}:{App_name}_new'
-    context['url_index'] = f'{App_name}:{App_name}_index'
-    context['url_list'] = f'{App_name}:{App_name}_list'
-    context['url_history'] = f'{App_name}:{App_name}_history'
-    context['url_reload'] = f'{App_name}:reload_stats'
+    context.update({
+        'app_name': App_name,
+        'url_new': f'{App_name}:{App_name}_new',
+        'url_index': f'{App_name}:{App_name}_index',
+        'url_list': f'{App_name}:{App_name}_list',
+        'url_history': f'{App_name}:{App_name}_history',
+        'url_reload': f'{App_name}:reload_stats',
+    })
