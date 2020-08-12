@@ -231,6 +231,12 @@ def test_reload_stats_render_ajax_trigger(client_logged):
     assert response.status_code == 200
     assert views.ReloadStats == response.resolver_match.func.view_class
 
+    assert 'info_row' in response.context
+    assert 'chart_weekdays' in response.context
+    assert 'chart_months' in response.context
+    assert 'chart_year' in response.context
+    assert 'chart_histogram' in response.context
+
 
 def test_reload_stats_render_ajax_trigger_not_set(client_logged):
     url = reverse(f'{App_name}:reload_stats')
