@@ -6,6 +6,7 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
 
+from ...users.factories import UserFactory
 from .. import views
 from ..apps import App_name
 from ..factories import NightFactory
@@ -214,13 +215,21 @@ def test_reload_stats_func():
     assert views.ReloadStats == view.func.view_class
 
 
+def test_reload_stats_render(get_user, rf):
+    request = rf.get(f'/{App_name}/reload_stats/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = views.ReloadStats.as_view()(request)
+
+    assert response.status_code == 200
+
+
 def test_reload_stats_render_ajax_trigger(client_logged):
     url = reverse(f'{App_name}:reload_stats')
     response = client_logged.get(url, {'ajax_trigger': 1})
 
     assert response.status_code == 200
     assert views.ReloadStats == response.resolver_match.func.view_class
-
 
 
 def test_reload_stats_render_ajax_trigger_not_set(client_logged):
