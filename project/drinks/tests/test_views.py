@@ -35,7 +35,7 @@ def test_new_200(client_logged):
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-@patch(f'project.drinks.forms.App_name', 'Counter Type')
+@patch('project.drinks.forms.App_name', 'Counter Type')
 def test_new(client_logged):
     data = {'date': '1999-01-01', 'quantity': 68}
 
