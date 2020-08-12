@@ -43,7 +43,7 @@ urlpatterns = [
     ),
     path(
         'drinks/reload_stats/',
-        views.reload_stats,
+        views.ReloadStats.as_view(),
         name='reload_stats'
     ),
     path(

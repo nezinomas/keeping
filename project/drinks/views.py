@@ -2,27 +2,32 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import redirect, render, reverse
+from django.shortcuts import redirect, reverse
 from django.template.loader import render_to_string
+from django.views.generic import TemplateView
 
 from ..core.lib.date import years
 from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from . import forms, models
+from .apps import App_name
 from .lib.views_helper import context_to_reload, several_years_consumption
 
 
-def reload_stats(request):
-    try:
-        request.GET['ajax_trigger']
-    except KeyError:
-        return redirect(reverse('drinks:drinks_index'))
+class ReloadStats(TemplateView):
+    template_name = f'{App_name}/includes/reload_stats.html'
 
-    return render(
-        request=request,
-        template_name='drinks/includes/reload_stats.html',
-        context=context_to_reload(request)
-    )
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            request.GET['ajax_trigger']
+        except KeyError:
+            return redirect(reverse(f'{App_name}:{App_name}_index'))
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        context = context_to_reload(request)
+        return self.render_to_response(context)
 
 
 @login_required()

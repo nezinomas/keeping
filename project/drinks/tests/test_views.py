@@ -304,14 +304,14 @@ def test_compare_chart_data(client_logged, _compare_form_data):
 def test_reload_stats_func():
     view = resolve('/drinks/reload_stats/')
 
-    assert views.reload_stats is view.func
+    assert views.ReloadStats is view.func.view_class
 
 
 def test_reload_stats_render(get_user, rf):
     request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
     request.user = UserFactory.build()
 
-    response = views.reload_stats(request)
+    response = views.ReloadStats.as_view()(request)
 
     assert response.status_code == 200
 
@@ -321,6 +321,12 @@ def test_reload_stats_render_ajax_trigger(client_logged):
     response = client_logged.get(url, {'ajax_trigger': 1})
 
     assert response.status_code == 200
+    assert 'chart_consumsion' in response.context
+    assert 'chart_quantity' in response.context
+    assert 'tbl_consumsion' in response.context
+    assert 'tbl_last_day' in response.context
+    assert 'tbl_alcohol' in response.context
+    assert 'tbl_std_av' in response.context
 
 
 def test_reload_stats_render_ajax_trigger_not_set(client_logged):
