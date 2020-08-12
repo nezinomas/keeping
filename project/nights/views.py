@@ -1,20 +1,21 @@
-from django.shortcuts import redirect, render, reverse
+from django.shortcuts import redirect, reverse
+from django.views.generic import TemplateView
 
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin, UpdateAjaxMixin
 from . import forms, models
 from .apps import App_name
-from .lib.stats import Stats
 from .lib import views_helper as H
+from .lib.stats import Stats
+from .lib.views_helper import UpdateLinkMixin
 
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        year = self.request.user.year
 
         context.update({
             **H.context_url_names(),
-            **H.context_to_reload(self.request, year)
+            **H.context_to_reload(self.request)
         })
         return context
 
@@ -36,12 +37,12 @@ class Lists(IndexMixin):
         return context
 
 
-class New(CreateAjaxMixin):
+class New(UpdateLinkMixin, CreateAjaxMixin):
     model = models.Night
     form_class = forms.NightForm
 
 
-class Update(UpdateAjaxMixin):
+class Update(UpdateLinkMixin, UpdateAjaxMixin):
     model = models.Night
     form_class = forms.NightForm
 
@@ -63,14 +64,17 @@ class History(IndexMixin):
         return context
 
 
-def reload_stats(request):
-    try:
-        request.GET['ajax_trigger']
-    except KeyError:
-        return redirect(reverse(f'{App_name}:{App_name}_index'))
+class ReloadStats(TemplateView):
+    template_name = f'{App_name}/includes/reload_stats.html'
 
-    return render(
-        request=request,
-        template_name=f'{App_name}/includes/reload_stats.html',
-        context=H.context_to_reload(request, request.user.year)
-    )
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            request.GET['ajax_trigger']
+        except KeyError:
+            return redirect(reverse(f'{App_name}:{App_name}_index'))
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        context = H.context_to_reload(request)
+        return self.render_to_response(context)

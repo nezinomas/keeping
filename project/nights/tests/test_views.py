@@ -6,7 +6,6 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
 
-from ...users.factories import UserFactory
 from .. import views
 from ..apps import App_name
 from ..factories import NightFactory
@@ -29,10 +28,13 @@ def test_view_new_form_initial(client_logged):
 
     assert response.status_code == 200
     assert '<input type="text" name="date" value="1999-01-01"' in actual['html_form']
+    assert '<input type="number" name="quantity" value="1"' in actual['html_form']
 
 
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.forms.App_name', 'Counter Type')
 def test_view_new(client_logged):
-    data = {'date': '1999-01-01', 'quantity': 999}
+    data = {'date': '1999-01-01', 'quantity': 68}
 
     url = reverse(f'{App_name}:{App_name}_new')
 
@@ -42,7 +44,8 @@ def test_view_new(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '999' in actual['html_list']
+    assert '68' in actual['html_list']
+    assert f'<a type="button" data-url="/{App_name}/update/1/"' in actual['html_list']
 
 
 def test_view_new_invalid_data(client_logged):
@@ -59,10 +62,11 @@ def test_view_new_invalid_data(client_logged):
 
 
 @patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.forms.App_name', 'Counter Type')
 def test_view_update(client_logged):
     p = NightFactory()
 
-    data = {'date': '1999-01-01', 'quantity': 999}
+    data = {'date': '1999-01-01', 'quantity': 68}
     url = reverse(f'{App_name}:{App_name}_update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data, **X_Req)
@@ -73,7 +77,8 @@ def test_view_update(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '999' in actual['html_list']
+    assert '68' in actual['html_list']
+    assert f'<a type="button" data-url="/{App_name}/update/{p.pk}/"' in actual['html_list']
 
 
 # ----------------------------------------------------------------------------
@@ -206,16 +211,7 @@ def test_index_info_row(client_logged):
 def test_reload_stats_func():
     view = resolve(f'/{App_name}/reload_stats/')
 
-    assert views.reload_stats is view.func
-
-
-def test_reload_stats_render(get_user, rf):
-    request = rf.get(f'/{App_name}/reload_stats/?ajax_trigger=1')
-    request.user = UserFactory.build()
-
-    response = views.reload_stats(request)
-
-    assert response.status_code == 200
+    assert views.ReloadStats == view.func.view_class
 
 
 def test_reload_stats_render_ajax_trigger(client_logged):
@@ -223,6 +219,8 @@ def test_reload_stats_render_ajax_trigger(client_logged):
     response = client_logged.get(url, {'ajax_trigger': 1})
 
     assert response.status_code == 200
+    assert views.ReloadStats == response.resolver_match.func.view_class
+
 
 
 def test_reload_stats_render_ajax_trigger_not_set(client_logged):
@@ -263,6 +261,32 @@ def test_list_context_tab_value(client_logged):
     response = client_logged.get(url)
 
     assert response.context['tab'] == 'data'
+
+
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+def test_list(client_logged):
+    p = NightFactory(quantity=66)
+    url = reverse(f'{App_name}:{App_name}_list')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+    actual = response.content.decode("utf-8")
+
+    assert '66' in actual
+    assert f'<a type="button" data-url="/{App_name}/update/{p.pk}/"' in actual
+
+
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+def test_list_empty(client_logged):
+    url = reverse(f'{App_name}:{App_name}_list')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+    actual = response.content.decode("utf-8")
+
+    assert '<b>1999</b> metais įrašų nėra.' in actual
 
 
 # ----------------------------------------------------------------------------

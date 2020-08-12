@@ -6,6 +6,17 @@ from ..apps import App_name
 from .stats import Stats
 
 
+class UpdateLinkMixin():
+    def get_context_data(self, **kwargs):
+        try:
+            context = super().get_context_data(**kwargs)
+        except AttributeError:
+            context = {}
+
+        context.update({'url_update': f'{App_name}:{App_name}_update'})
+        return context
+
+
 def render_chart_weekdays(request, obj, title):
     rendered = render_to_string(
         f'{App_name}/includes/chart_periodicity.html',
@@ -104,14 +115,15 @@ def render_list_data(request, obj):
         f'{App_name}/includes/{App_name}_list.html',
         {
             'items': obj,
-            'url_update': f'{App_name}:{App_name}_update',
+            **UpdateLinkMixin().get_context_data(),
         },
         request
     )
     return rendered
 
 
-def context_to_reload(request, year):
+def context_to_reload(request):
+    year = request.user.year
     qs = models.Night.objects.sum_by_day(year=year)
     obj = Stats(year=year, data=qs)
 
