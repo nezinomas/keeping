@@ -321,6 +321,8 @@ def test_reload_stats_render_ajax_trigger(client_logged):
     response = client_logged.get(url, {'ajax_trigger': 1})
 
     assert response.status_code == 200
+    assert views.ReloadStats == response.resolver_match.func.view_class
+
     assert 'chart_consumsion' in response.context
     assert 'chart_quantity' in response.context
     assert 'tbl_consumsion' in response.context
