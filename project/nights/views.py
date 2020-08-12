@@ -6,6 +6,7 @@ from . import forms, models
 from .apps import App_name
 from .lib import views_helper as H
 from .lib.stats import Stats
+from .lib.views_helper import UpdateLinkMixin
 
 
 class Index(IndexMixin):
@@ -36,12 +37,12 @@ class Lists(IndexMixin):
         return context
 
 
-class New(CreateAjaxMixin):
+class New(UpdateLinkMixin, CreateAjaxMixin):
     model = models.Night
     form_class = forms.NightForm
 
 
-class Update(UpdateAjaxMixin):
+class Update(UpdateLinkMixin, UpdateAjaxMixin):
     model = models.Night
     form_class = forms.NightForm
 

@@ -6,6 +6,13 @@ from ..apps import App_name
 from .stats import Stats
 
 
+class UpdateLinkMixin():
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({'url_update': f'{App_name}:{App_name}_update'})
+        return context
+
+
 def render_chart_weekdays(request, obj, title):
     rendered = render_to_string(
         f'{App_name}/includes/chart_periodicity.html',

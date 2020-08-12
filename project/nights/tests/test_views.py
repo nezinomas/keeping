@@ -28,10 +28,13 @@ def test_view_new_form_initial(client_logged):
 
     assert response.status_code == 200
     assert '<input type="text" name="date" value="1999-01-01"' in actual['html_form']
+    assert '<input type="number" name="quantity" value="1"' in actual['html_form']
 
 
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.forms.App_name', 'Counter Type')
 def test_view_new(client_logged):
-    data = {'date': '1999-01-01', 'quantity': 999}
+    data = {'date': '1999-01-01', 'quantity': 68}
 
     url = reverse(f'{App_name}:{App_name}_new')
 
@@ -41,7 +44,8 @@ def test_view_new(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '999' in actual['html_list']
+    assert '68' in actual['html_list']
+    assert f'<a type="button" data-url="/{App_name}/update/1/"' in actual['html_list']
 
 
 def test_view_new_invalid_data(client_logged):
@@ -58,10 +62,11 @@ def test_view_new_invalid_data(client_logged):
 
 
 @patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.forms.App_name', 'Counter Type')
 def test_view_update(client_logged):
     p = NightFactory()
 
-    data = {'date': '1999-01-01', 'quantity': 999}
+    data = {'date': '1999-01-01', 'quantity': 68}
     url = reverse(f'{App_name}:{App_name}_update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data, **X_Req)
@@ -72,7 +77,8 @@ def test_view_update(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '999' in actual['html_list']
+    assert '68' in actual['html_list']
+    assert f'<a type="button" data-url="/{App_name}/update/{p.pk}/"' in actual['html_list']
 
 
 # ----------------------------------------------------------------------------
@@ -255,6 +261,32 @@ def test_list_context_tab_value(client_logged):
     response = client_logged.get(url)
 
     assert response.context['tab'] == 'data'
+
+
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+def test_list(client_logged):
+    p = NightFactory(quantity=66)
+    url = reverse(f'{App_name}:{App_name}_list')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+    actual = response.content.decode("utf-8")
+
+    assert '66' in actual
+    assert f'<a type="button" data-url="/{App_name}/update/{p.pk}/"' in actual
+
+
+@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+def test_list_empty(client_logged):
+    url = reverse(f'{App_name}:{App_name}_list')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+    actual = response.content.decode("utf-8")
+
+    assert '<b>1999</b> metais įrašų nėra.' in actual
 
 
 # ----------------------------------------------------------------------------
