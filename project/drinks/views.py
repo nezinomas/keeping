@@ -130,6 +130,7 @@ class Summary(IndexMixin):
 
         return context
 
+
 class Update(UpdateAjaxMixin):
     model = models.Drink
     form_class = forms.DrinkForm
