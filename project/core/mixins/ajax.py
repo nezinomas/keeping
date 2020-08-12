@@ -29,7 +29,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
 
         if utils.is_ajax(self.request):
             data = dict()
-            context = self.get_context_data()
+            context = self.get_context_data() # calls GetQuerysetMixin get_context_data
             self._render_form(data, context)
 
             return JsonResponse(data)
@@ -38,6 +38,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
 
     def form_valid(self, form):
         data = dict()
+        context = {}
 
         if form.is_valid():
             form.save()
