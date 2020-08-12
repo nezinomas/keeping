@@ -489,6 +489,7 @@ def test_list_context_tab_value(client_logged):
     assert response.context['tab'] == 'data'
 
 
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
 def test_list_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
@@ -496,6 +497,19 @@ def test_list_empty_current_year(client_logged):
     response = client_logged.get(url)
 
     assert '<b>1999</b> metais įrašų nėra.' in response.context["data"]
+
+
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
+def test_list(client_logged):
+    p = DrinkFactory(quantity=66)
+    response = client_logged.get(reverse('drinks:drinks_list'))
+
+    assert response.status_code == 200
+
+    actual = response.content.decode("utf-8")
+
+    assert '66,0' in actual
+    assert f'<a type="button" data-url="/drinks/update/{p.pk}/"' in actual
 
 
 # ---------------------------------------------------------------------------------------
