@@ -11,7 +11,7 @@ from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from . import forms, models
 from .apps import App_name
-from .lib.views_helper import context_to_reload, several_years_consumption
+from .lib import views_helper as H
 
 
 class ReloadStats(TemplateView):
@@ -26,14 +26,14 @@ class ReloadStats(TemplateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        context = context_to_reload(request)
+        context = H.context_to_reload(request)
         return self.render_to_response(context)
 
 
 @login_required()
 def historical_data(request, qty):
     year = request.user.year + 1
-    chart_serries = several_years_consumption(range(year - qty, year))
+    chart_serries = H.several_years_consumption(range(year - qty, year))
 
     template = 'drinks/includes/chart_consumsion_history.html'
     context = {'serries': chart_serries, 'chart_container_name': 'history_chart'}
@@ -73,7 +73,7 @@ def compare(request):
     if form.is_valid():
         json_data['form_is_valid'] = True
         years_data = [form_data_dict['year1'], form_data_dict['year2']]
-        chart_serries = several_years_consumption(years_data)
+        chart_serries = H.several_years_consumption(years_data)
 
     if len(chart_serries) == 2:
         template = 'drinks/includes/chart_consumsion_history.html'
@@ -88,7 +88,7 @@ def compare(request):
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context_to_reload(self.request, context)
+        H.context_to_reload(self.request, context)
 
         context['tab'] = 'index'
         context['all_years'] = len(years())
