@@ -8,7 +8,11 @@ from .stats import Stats
 
 class UpdateLinkMixin():
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        try:
+            context = super().get_context_data(**kwargs)
+        except AttributeError:
+            context = {}
+
         context.update({'url_update': f'{App_name}:{App_name}_update'})
         return context
 
@@ -111,7 +115,7 @@ def render_list_data(request, obj):
         f'{App_name}/includes/{App_name}_list.html',
         {
             'items': obj,
-            'url_update': f'{App_name}:{App_name}_update',
+            **UpdateLinkMixin().get_context_data(),
         },
         request
     )
