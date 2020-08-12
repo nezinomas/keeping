@@ -34,8 +34,10 @@ def test_new_200(client_logged):
     assert '<input type="text" name="date" value="1999-01-01"' in actual['html_form']
 
 
+@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
+@patch(f'project.drinks.forms.App_name', 'Counter Type')
 def test_new(client_logged):
-    data = {'date': '1999-01-01', 'quantity': 999}
+    data = {'date': '1999-01-01', 'quantity': 68}
 
     url = reverse('drinks:drinks_new')
 
@@ -45,7 +47,8 @@ def test_new(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '999' in actual['html_list']
+    assert '68' in actual['html_list']
+    assert '<a type="button" data-url="/drinks/update/1/"' in actual['html_list']
 
 
 def test_new_invalid_data(client_logged):
@@ -62,10 +65,11 @@ def test_new_invalid_data(client_logged):
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
+@patch(f'project.drinks.forms.App_name', 'Counter Type')
 def test_update(client_logged):
     p = DrinkFactory()
 
-    data = {'date': '1999-01-01', 'quantity': 999}
+    data = {'date': '1999-01-01', 'quantity': 68}
     url = reverse('drinks:drinks_update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data, **X_Req)
@@ -76,7 +80,8 @@ def test_update(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '999' in actual['html_list']
+    assert '68' in actual['html_list']
+    assert f'<a type="button" data-url="/drinks/update/{p.pk}/"' in actual['html_list']
 
 
 #
@@ -97,7 +102,7 @@ def test_target(client_logged):
 
 
 def test_target_new(client_logged):
-    data = {'year': 1999, 'quantity': 999}
+    data = {'year': 1999, 'quantity': 66}
 
     url = reverse('drinks:drinks_target_new')
 
@@ -107,7 +112,7 @@ def test_target_new(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '999' in actual['html_list']
+    assert '66' in actual['html_list']
 
 
 def test_target_new_invalid_data(client_logged):
@@ -126,7 +131,7 @@ def test_target_new_invalid_data(client_logged):
 def test_target_update(get_user, client_logged):
     p = DrinkTargetFactory()
 
-    data = {'year': 1999, 'quantity': 999}
+    data = {'year': 1999, 'quantity': 66}
     url = reverse('drinks:drinks_target_update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data, **X_Req)
@@ -137,7 +142,7 @@ def test_target_update(get_user, client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '999' in actual['html_list']
+    assert '66' in actual['html_list']
 
 
 def test_target_empty_db(client_logged):
