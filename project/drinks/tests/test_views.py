@@ -65,7 +65,7 @@ def test_new_invalid_data(client_logged):
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-@patch(f'project.drinks.forms.App_name', 'Counter Type')
+@patch('project.drinks.forms.App_name', 'Counter Type')
 def test_update(client_logged):
     p = DrinkFactory()
 
@@ -84,11 +84,9 @@ def test_update(client_logged):
     assert f'<a type="button" data-url="/drinks/update/{p.pk}/"' in actual['html_list']
 
 
-#
 # ---------------------------------------------------------------------------------------
 #                                                                    Target Create/Update
 # ---------------------------------------------------------------------------------------
-#
 def test_target(client_logged):
     url = reverse('drinks:drinks_target_new')
 
