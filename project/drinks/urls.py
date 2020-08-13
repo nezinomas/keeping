@@ -43,17 +43,17 @@ urlpatterns = [
     ),
     path(
         'drinks/reload_stats/',
-        views.reload_stats,
+        views.ReloadStats.as_view(),
         name='reload_stats'
     ),
     path(
         'drinks/historical_data/<int:qty>/',
-        views.historical_data,
+        views.HistoricalData.as_view(),
         name='historical_data'
     ),
     path(
         'drinks/compare/',
-        views.compare,
+        views.Compare.as_view(),
         name='compare'
     ),
     path(

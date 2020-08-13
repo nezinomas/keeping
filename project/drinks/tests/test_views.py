@@ -35,7 +35,7 @@ def test_new_200(client_logged):
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-@patch(f'project.drinks.forms.App_name', 'Counter Type')
+@patch('project.drinks.forms.App_name', 'Counter Type')
 def test_new(client_logged):
     data = {'date': '1999-01-01', 'quantity': 68}
 
@@ -155,7 +155,7 @@ def test_target_empty_db(client_logged):
 def test_historical_data_func():
     view = resolve('/drinks/historical_data/1/')
 
-    assert views.historical_data is view.func
+    assert views.HistoricalData is view.func.view_class
 
 
 def test_historical_data_200(client_logged):
@@ -185,6 +185,7 @@ def test_historical_data_ajax(client_logged):
     response = client_logged.get(url, {}, **X_Req)
 
     actual = json.loads(response.content)
+    print(actual)
 
     assert response.status_code == 200
     assert "'name': 1999" in actual['html']
@@ -206,7 +207,7 @@ def _compare_form_data():
 def test_compare_func():
     view = resolve('/drinks/compare/')
 
-    assert views.compare is view.func
+    assert views.Compare is view.func.view_class
 
 
 def test_compare_200(client_logged, _compare_form_data):
@@ -304,14 +305,14 @@ def test_compare_chart_data(client_logged, _compare_form_data):
 def test_reload_stats_func():
     view = resolve('/drinks/reload_stats/')
 
-    assert views.reload_stats is view.func
+    assert views.ReloadStats is view.func.view_class
 
 
 def test_reload_stats_render(get_user, rf):
     request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
     request.user = UserFactory.build()
 
-    response = views.reload_stats(request)
+    response = views.ReloadStats.as_view()(request)
 
     assert response.status_code == 200
 
@@ -321,6 +322,14 @@ def test_reload_stats_render_ajax_trigger(client_logged):
     response = client_logged.get(url, {'ajax_trigger': 1})
 
     assert response.status_code == 200
+    assert views.ReloadStats == response.resolver_match.func.view_class
+
+    assert 'chart_consumsion' in response.context
+    assert 'chart_quantity' in response.context
+    assert 'tbl_consumsion' in response.context
+    assert 'tbl_last_day' in response.context
+    assert 'tbl_alcohol' in response.context
+    assert 'tbl_std_av' in response.context
 
 
 def test_reload_stats_render_ajax_trigger_not_set(client_logged):
