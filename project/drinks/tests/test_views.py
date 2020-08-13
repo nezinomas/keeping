@@ -16,11 +16,9 @@ X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
 
 
-#
 # ---------------------------------------------------------------------------------------
 #                                                                           Create/Update
 # ---------------------------------------------------------------------------------------
-#
 @freeze_time('2000-01-01')
 def test_new_200(client_logged):
     url = reverse('drinks:drinks_new')
@@ -245,7 +243,7 @@ def test_compare_302(client):
 
 
 def test_compare_form_is_not_valid(client_logged, _compare_form_data):
-    _compare_form_data[1]['value'] = None # year1 = None
+    _compare_form_data[1]['value'] = None  # year1 = None
     form_data = json.dumps(_compare_form_data)
 
     url = reverse('drinks:compare')

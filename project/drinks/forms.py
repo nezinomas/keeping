@@ -47,7 +47,6 @@ class DrinkForm(FormForUserMixin, forms.ModelForm):
         return instance
 
 
-
 class DrinkTargetForm(FormForUserMixin, forms.ModelForm):
     class Meta:
         model = DrinkTarget

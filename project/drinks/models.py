@@ -16,9 +16,10 @@ class DrinkQuerySet(CounterQuerySet, models.QuerySet):
     App_name = DrinksAppName
 
     def sum_by_month(self, year: int, month: int = None):
-        #Returns
-        # DrinkQuerySet [{'date': datetime.date, 'sum': float, 'month': int, 'monthlen': int, 'per_month': float}]
-        #
+        """
+        Returns
+        DrinkQuerySet [{'date': datetime.date, 'sum': float, 'month': int, 'monthlen': int, 'per_month': float}]
+        """
 
         qs = super().sum_by_month(year, month)
 
@@ -42,8 +43,9 @@ class DrinkQuerySet(CounterQuerySet, models.QuerySet):
         return arr
 
     def day_sum(self, year: int) -> Dict[float, float]:
-        # Returns
-        # {'qty': float, 'per_day': float}
+        """
+        Returns {'qty': float, 'per_day': float}
+        """
 
         arr = {}
         qs = list(super().sum_by_year(year))
