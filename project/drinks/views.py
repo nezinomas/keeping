@@ -4,7 +4,6 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, reverse
 from django.template.loader import render_to_string
-from django.views.generic import TemplateView
 
 from ..core.lib.date import years
 from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
@@ -14,7 +13,7 @@ from .apps import App_name
 from .lib import views_helper as H
 
 
-class ReloadStats(TemplateView):
+class ReloadStats(IndexMixin):
     template_name = f'{App_name}/includes/reload_stats.html'
 
     def dispatch(self, request, *args, **kwargs):
@@ -37,8 +36,10 @@ class HistoricalData(IndexMixin):
         year = request.user.year + 1
         qty = kwargs.get('qty', 0)
         chart_serries = H.several_years_consumption(range(year - qty, year))
-
-        context = {'serries': chart_serries, 'chart_container_name': 'history_chart'}
+        context = {
+            'serries': chart_serries,
+            'chart_container_name': 'history_chart'
+        }
         rendered = render_to_string(self.template_name, context, request)
 
         return JsonResponse({'html': rendered})
