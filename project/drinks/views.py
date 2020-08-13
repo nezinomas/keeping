@@ -48,7 +48,7 @@ class HistoricalData(IndexMixin):
 
 class Compare(LoginRequiredMixin, FormView):
     form_data_dict = {}
-    template_name = 'drinks/includes/compare_form.html'
+    template_name = f'{App_name}/includes/compare_form.html'
 
     def post(self, request, *args, **kwargs):
         try:
@@ -86,7 +86,7 @@ class Compare(LoginRequiredMixin, FormView):
         chart_serries = H.several_years_consumption(years_data)
 
         if len(chart_serries) == 2:
-            template = 'drinks/includes/chart_consumsion_history.html'
+            template = f'{App_name}/includes/chart_consumsion_history.html'
             context = {
                 'serries': chart_serries,
                 'chart_container_name': 'compare_chart'
@@ -114,7 +114,7 @@ class Index(IndexMixin):
         context['tab'] = 'index'
         context['all_years'] = len(years())
         context['compare_form'] = render_to_string(
-            template_name='drinks/includes/compare_form.html',
+            template_name=f'{App_name}/includes/compare_form.html',
             context={'form': forms.DrinkCompareForm()},
             request=self.request
         )
@@ -128,7 +128,7 @@ class Lists(IndexMixin):
 
         context['tab'] = 'data'
         context['data'] = render_to_string(
-            'drinks/includes/drinks_list.html',
+            f'{App_name}/includes/drinks_list.html',
             {'items': models.Drink.objects.year(year)},
             self.request
         )
