@@ -175,12 +175,8 @@
                     "form_data" : form_data
                 },
                 success: function (data) {
-                    if (data.form_is_valid) {
-                        $('#compare_data').html(data.html);
-                        $('#compare_form_data').html(data.html_form);
-                    } else {
-                        $('#compare_form_data').html(data.html_form);
-                    }
+                    $('#compare_data').html(data.html);
+                    $('#compare_form_data').html(data.html_form);
                 },
                 error: function (xhr, status, error) {
                     alert(`${error}\n\n${xhr.responseJSON.error}`)

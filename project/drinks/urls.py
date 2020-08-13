@@ -53,7 +53,7 @@ urlpatterns = [
     ),
     path(
         'drinks/compare/',
-        views.compare,
+        views.Compare.as_view(),
         name='compare'
     ),
     path(

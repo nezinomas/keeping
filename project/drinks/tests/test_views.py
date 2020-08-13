@@ -207,7 +207,7 @@ def _compare_form_data():
 def test_compare_func():
     view = resolve('/drinks/compare/')
 
-    assert views.compare is view.func
+    assert views.Compare is view.func.view_class
 
 
 def test_compare_200(client_logged, _compare_form_data):

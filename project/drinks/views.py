@@ -1,6 +1,7 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import FormView
 import json
 
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, reverse
 from django.template.loader import render_to_string
@@ -45,47 +46,64 @@ class HistoricalData(IndexMixin):
         return JsonResponse({'html': rendered})
 
 
-@login_required()
-def compare(request):
-    try:
-        form_data = request.POST['form_data']
-    except KeyError:
-        return JsonResponse({'error': 'CompareForm is broken.'}, status=404)
+class Compare(LoginRequiredMixin, FormView):
+    form_data_dict = {}
+    template_name = 'drinks/includes/compare_form.html'
 
-    try:
-        form_data_dict = {}
-        form_data_list = json.loads(form_data)
+    def post(self, request, *args, **kwargs):
+        try:
+            form_data = request.POST['form_data']
+        except KeyError:
+            return JsonResponse({'error': 'CompareForm is broken.'}, status=404)
 
-        # flatten list of dictionaries - form_data_list
-        for field in form_data_list:
-            form_data_dict[field["name"]] = field["value"]
-    except (json.decoder.JSONDecodeError, KeyError):
-        return JsonResponse({'error': 'CompareForm is broken.'}, status=500)
+        try:
+            form_data_list = json.loads(form_data)
 
-    chart_serries = []
-    form = forms.DrinkCompareForm(data=form_data_dict)
-    json_data = {
-        'form_is_valid': False,
-        'html_form': render_to_string(
-            template_name='drinks/includes/compare_form.html',
-            context={'form': form},
-            request=request
-        )
-    }
+            # flatten list of dictionaries - form_data_list
+            for field in form_data_list:
+                self.form_data_dict[field["name"]] = field["value"]
 
-    if form.is_valid():
-        json_data['form_is_valid'] = True
-        years_data = [form_data_dict['year1'], form_data_dict['year2']]
+        except (json.decoder.JSONDecodeError, KeyError):
+            return JsonResponse({'error': 'CompareForm is broken.'}, status=500)
+
+        form = forms.DrinkCompareForm(data=self.form_data_dict)
+        if form.is_valid():
+            return self.form_valid(form)
+
+        return self.form_invalid(form, **kwargs)
+
+    def form_invalid(self, form):
+        data = {
+            'form_is_valid': False,
+            'html_form': self._render_form({'form': form}),
+            'html': None,
+        }
+        return JsonResponse(data)
+
+    def form_valid(self, form):
+        html = 'Trūksta duomenų'
+        years_data = [self.form_data_dict['year1'], self.form_data_dict['year2']]
         chart_serries = H.several_years_consumption(years_data)
 
-    if len(chart_serries) == 2:
-        template = 'drinks/includes/chart_consumsion_history.html'
-        context = {'serries': chart_serries, 'chart_container_name': 'compare_chart'}
-        json_data['html'] = render_to_string(template, context, request)
-    else:
-        json_data['html'] = 'Trūksta duomenų'
+        if len(chart_serries) == 2:
+            template = 'drinks/includes/chart_consumsion_history.html'
+            context = {
+                'serries': chart_serries,
+                'chart_container_name': 'compare_chart'
+            }
+            html = render_to_string(template, context, self.request)
 
-    return JsonResponse(json_data)
+        data = {
+            'form_is_valid': True,
+            'html_form': self._render_form({'form': form}),
+            'html': html,
+        }
+        return JsonResponse(data)
+
+    def _render_form(self, context):
+        return (
+            render_to_string(self.template_name, context, request=self.request)
+        )
 
 
 class Index(IndexMixin):
