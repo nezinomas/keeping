@@ -30,16 +30,18 @@ class ReloadStats(TemplateView):
         return self.render_to_response(context)
 
 
-@login_required()
-def historical_data(request, qty):
-    year = request.user.year + 1
-    chart_serries = H.several_years_consumption(range(year - qty, year))
+class HistoricalData(IndexMixin):
+    template_name = f'{App_name}/includes/chart_consumsion_history.html'
 
-    template = 'drinks/includes/chart_consumsion_history.html'
-    context = {'serries': chart_serries, 'chart_container_name': 'history_chart'}
-    rendered = render_to_string(template, context, request)
+    def get(self, request, *args, **kwargs):
+        year = request.user.year + 1
+        qty = kwargs.get('qty', 0)
+        chart_serries = H.several_years_consumption(range(year - qty, year))
 
-    return JsonResponse({'html': rendered})
+        context = {'serries': chart_serries, 'chart_container_name': 'history_chart'}
+        rendered = render_to_string(self.template_name, context, request)
+
+        return JsonResponse({'html': rendered})
 
 
 @login_required()

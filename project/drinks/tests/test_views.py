@@ -155,7 +155,7 @@ def test_target_empty_db(client_logged):
 def test_historical_data_func():
     view = resolve('/drinks/historical_data/1/')
 
-    assert views.historical_data is view.func
+    assert views.HistoricalData is view.func.view_class
 
 
 def test_historical_data_200(client_logged):
@@ -185,6 +185,7 @@ def test_historical_data_ajax(client_logged):
     response = client_logged.get(url, {}, **X_Req)
 
     actual = json.loads(response.content)
+    print(actual)
 
     assert response.status_code == 200
     assert "'name': 1999" in actual['html']
