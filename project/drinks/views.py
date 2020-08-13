@@ -1,10 +1,10 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic.edit import FormView
 import json
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import redirect, reverse
 from django.template.loader import render_to_string
+from django.views.generic.edit import FormView
 
 from ..core.lib.date import years
 from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
