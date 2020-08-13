@@ -47,8 +47,9 @@ class HistoricalData(IndexMixin):
 
 
 class Compare(LoginRequiredMixin, FormView):
-    form_data_dict = {}
     template_name = f'{App_name}/includes/compare_form.html'
+    form_class = forms.DrinkCompareForm
+    form_data_dict = {}
 
     def post(self, request, *args, **kwargs):
         try:
@@ -66,7 +67,7 @@ class Compare(LoginRequiredMixin, FormView):
         except (json.decoder.JSONDecodeError, KeyError):
             return JsonResponse({'error': 'CompareForm is broken.'}, status=500)
 
-        form = forms.DrinkCompareForm(data=self.form_data_dict)
+        form = self.form_class(self.form_data_dict)
         if form.is_valid():
             return self.form_valid(form)
 
