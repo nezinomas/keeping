@@ -100,7 +100,6 @@ class Index(IndexMixin):
             context={'form': forms.DrinkCompareForm()},
             request=self.request
         )
-
         return context
 
 
