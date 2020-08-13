@@ -54,7 +54,7 @@ class Stats():
 
             df = df.groupby('weekday')['date'].count()
 
-        df = df.to_dict() # {0: 1, 1: 0} == {weekday: counts, }
+        df = df.to_dict()  # {0: 1, 1: 0} == {weekday: counts, }
 
         # return list with zeros
         arr = []
@@ -79,7 +79,7 @@ class Stats():
 
         df = df.reset_index().to_dict('records')
 
-        arr = [0] * 12 # return list filled with zeros
+        arr = [0] * 12  # return list filled with zeros
 
         # copy values from DataFrame to list
         for row in df:
@@ -129,7 +129,6 @@ class Stats():
 
         return arr
 
-
     def month_days(self):
         if not self._year:
             raise MethodInvalid('class Stats must be called with specified year.')
@@ -178,9 +177,11 @@ class Stats():
         return (datetime.now() - self._df['date'].iloc[-1]).days
 
     def _prepare_df(self, data):
-        # some methods from QuerySet managers, e.g. sum_by_day returns <Queryset[dict(),]>
-        # other methods e.g. year, items returns <QuerySet[models.Model instance,]
-        # QuerySet with model instances need to convert to List[Dict]
+        """
+        some methods from QuerySet managers, e.g. sum_by_day returns <Queryset[dict(),]>
+        other methods e.g. year, items returns <QuerySet[models.Model instance,]
+        QuerySet with model instances need to convert to List[Dict]
+        """
 
         if isinstance(data, QuerySet):
             first = None
