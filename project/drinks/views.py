@@ -110,29 +110,32 @@ class Compare(LoginRequiredMixin, FormView):
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        H.context_to_reload(self.request, context)
-
-        context['tab'] = 'index'
-        context['all_years'] = len(years())
-        context['compare_form'] = render_to_string(
-            template_name=f'{App_name}/includes/compare_form.html',
-            context={'form': forms.DrinkCompareForm()},
-            request=self.request
-        )
+        context.update({
+            'tab': 'index',
+            'all_years': len(years()),
+            'compare_form': render_to_string(
+                template_name=f'{App_name}/includes/compare_form.html',
+                context={'form': forms.DrinkCompareForm()},
+                request=self.request
+            ),
+            **H.context_to_reload(self.request, context),
+        })
         return context
 
 
 class Lists(IndexMixin):
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
         year = self.request.user.year
 
-        context['tab'] = 'data'
-        context['data'] = render_to_string(
-            f'{App_name}/includes/drinks_list.html',
-            {'items': models.Drink.objects.year(year)},
-            self.request
-        )
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'tab': 'data',
+            'data': render_to_string(
+                template_name=f'{App_name}/includes/drinks_list.html',
+                context={'items': models.Drink.objects.year(year)},
+                request=self.request
+            ),
+        })
         return context
 
 
@@ -143,17 +146,17 @@ class New(CreateAjaxMixin):
 
 class Summary(IndexMixin):
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
         qs = list(models.Drink.objects.summary())
         drink_years = [x['year'] for x in qs]
 
-        context['tab'] = 'history'
-        context['drinks_categories'] = drink_years
-        context['drinks_data_ml'] = [x['per_day'] for x in qs]
-        context['drinks_data_alcohol'] = [x['qty'] * 0.025 for x in qs]
-        context['drinks_cnt'] = len(drink_years) - 1.5
-
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'tab': 'history',
+            'drinks_categories': drink_years,
+            'drinks_data_ml': [x['per_day'] for x in qs],
+            'drinks_data_alcohol': [x['qty'] * 0.025 for x in qs],
+            'drinks_cnt': len(drink_years) - 1.5,
+        })
         return context
 
 
