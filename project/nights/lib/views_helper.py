@@ -2,7 +2,6 @@ from django.http import HttpRequest
 from django.template.loader import render_to_string
 
 from ...core.lib.date import weeknumber
-from .. import models
 from ..apps import App_name
 from .stats import Stats
 
