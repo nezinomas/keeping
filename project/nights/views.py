@@ -31,8 +31,8 @@ class Lists(IndexMixin):
         context = super().get_context_data(**kwargs)
         context.update({
             'tab': 'data',
-            'info_row': r.render_info_row(year),
-            'data': r.render_list_data(),
+            'info_row': r.info_row(year),
+            'data': r.list_data(),
             **r.context_url_names()
         })
         return context
@@ -56,9 +56,9 @@ class History(IndexMixin):
         context = super().get_context_data(**kwargs)
         context.update({
             'tab': 'history',
-            'chart_weekdays': r.render_chart_weekdays('Savaitės dienos'),
-            'chart_years': r.render_chart_years('Metai'),
-            'chart_histogram': r.render_chart_histogram(),
+            'chart_weekdays': r.chart_weekdays('Savaitės dienos'),
+            'chart_years': r.chart_years('Metai'),
+            'chart_histogram': r.chart_histogram(),
             **r.context_url_names()
         })
         return context

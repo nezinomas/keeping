@@ -23,7 +23,7 @@ class RenderContext():
         self._request = request
         self._stats = stats
 
-    def render_chart_weekdays(self, title: str) -> str:
+    def chart_weekdays(self, title: str) -> str:
         rendered = render_to_string(
             f'{App_name}/includes/chart_periodicity.html',
             {
@@ -37,7 +37,7 @@ class RenderContext():
         )
         return rendered
 
-    def render_chart_months(self, title: str) -> str:
+    def chart_months(self, title: str) -> str:
         rendered = render_to_string(
             f'{App_name}/includes/chart_periodicity.html',
             {
@@ -51,7 +51,7 @@ class RenderContext():
         )
         return rendered
 
-    def render_chart_years(self, title: str) -> str:
+    def chart_years(self, title: str) -> str:
         year_totals = self._stats.year_totals()
         rendered = render_to_string(
             f'{App_name}/includes/chart_periodicity.html',
@@ -66,7 +66,7 @@ class RenderContext():
         )
         return rendered
 
-    def render_chart_year(self) -> str:
+    def chart_year(self) -> str:
         rendered = render_to_string(
             f'{App_name}/includes/chart_month_periodicity.html',
             {
@@ -81,7 +81,7 @@ class RenderContext():
         )
         return rendered
 
-    def render_chart_histogram(self) -> str:
+    def chart_histogram(self) -> str:
         gaps = self._stats.gaps()
         rendered = render_to_string(
             f'{App_name}/includes/chart_periodicity.html',
@@ -96,7 +96,7 @@ class RenderContext():
         )
         return rendered
 
-    def render_info_row(self, year: int) -> str:
+    def info_row(self, year: int) -> str:
         week = weeknumber(year)
         total = self._stats.year_totals()
 
@@ -112,7 +112,7 @@ class RenderContext():
         )
         return rendered
 
-    def render_list_data(self) -> str:
+    def list_data(self) -> str:
         rendered = render_to_string(
             f'{App_name}/includes/{App_name}_list.html',
             {
@@ -126,11 +126,11 @@ class RenderContext():
     def context_to_reload(self, year: int) -> Dict[str, str]:
         context = {
             'tab': 'index',
-            'chart_weekdays': self.render_chart_weekdays(f'Savaitės dienos, {year} metai'),
-            'chart_months': self.render_chart_months(f'Mėnesiai, {year} metai'),
-            'chart_year': self.render_chart_year(),
-            'chart_histogram': self.render_chart_histogram(),
-            'info_row': self.render_info_row(year),
+            'chart_weekdays': self.chart_weekdays(f'Savaitės dienos, {year} metai'),
+            'chart_months': self.chart_months(f'Mėnesiai, {year} metai'),
+            'chart_year': self.chart_year(),
+            'chart_histogram': self.chart_histogram(),
+            'info_row': self.info_row(year),
         }
         return context
 
