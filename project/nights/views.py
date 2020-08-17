@@ -2,16 +2,17 @@ from django.shortcuts import redirect, reverse
 from django.views.generic import TemplateView
 
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin, UpdateAjaxMixin
-from . import forms, models
 from .apps import App_name
+from .forms import NightForm as Form
 from .lib.stats import Stats
 from .lib.views_helper import RenderContext, UpdateLinkMixin
+from .models import Night as Counter
 
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        qs = models.Night.objects.sum_by_day(year=year)
+        qs = Counter.objects.sum_by_day(year=year)
         r = RenderContext(self.request, Stats(year=year, data=qs))
 
         context = super().get_context_data(**kwargs)
@@ -25,7 +26,7 @@ class Index(IndexMixin):
 class Lists(IndexMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        qs = models.Night.objects.year(year)
+        qs = Counter.objects.year(year)
         r = RenderContext(self.request, Stats(year=year, data=qs))
 
         context = super().get_context_data(**kwargs)
@@ -39,18 +40,18 @@ class Lists(IndexMixin):
 
 
 class New(UpdateLinkMixin, CreateAjaxMixin):
-    model = models.Night
-    form_class = forms.NightForm
+    model = Counter
+    form_class = Form
 
 
 class Update(UpdateLinkMixin, UpdateAjaxMixin):
-    model = models.Night
-    form_class = forms.NightForm
+    model = Counter
+    form_class = Form
 
 
 class History(IndexMixin):
     def get_context_data(self, **kwargs):
-        qs = models.Night.objects.items()
+        qs = Counter.objects.items()
         r = RenderContext(self.request, Stats(data=qs))
 
         context = super().get_context_data(**kwargs)
@@ -77,7 +78,7 @@ class ReloadStats(TemplateView):
 
     def get(self, request, *args, **kwargs):
         year = request.user.year
-        qs = models.Night.objects.sum_by_day(year=year)
+        qs = Counter.objects.sum_by_day(year=year)
         r = RenderContext(self.request, Stats(year=year, data=qs))
         context = r.context_to_reload(year)
 
