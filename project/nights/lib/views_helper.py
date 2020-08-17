@@ -51,7 +51,7 @@ class RenderContext():
         )
         return rendered
 
-    def chart_years(self, title: str) -> str:
+    def chart_years(self, title: str = 'Metai') -> str:
         year_totals = self._stats.year_totals()
         rendered = render_to_string(
             f'{App_name}/includes/chart_periodicity.html',
@@ -59,7 +59,7 @@ class RenderContext():
                 'data': list(year_totals.values()),
                 'categories': list(year_totals.keys()),
                 'chart': 'chart_years',
-                'chart_title': 'Metai',
+                'chart_title': title,
                 'chart_column_color': '70, 171, 157',
             },
             self._request

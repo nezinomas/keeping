@@ -57,7 +57,7 @@ class History(IndexMixin):
         context.update({
             'tab': 'history',
             'chart_weekdays': r.chart_weekdays('Savaitės dienos'),
-            'chart_years': r.chart_years('Metai'),
+            'chart_years': r.chart_years(),
             'chart_histogram': r.chart_histogram(),
             **r.context_url_names()
         })
