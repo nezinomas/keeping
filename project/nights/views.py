@@ -10,12 +10,14 @@ from .lib.views_helper import RenderContext, UpdateLinkMixin
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
-        r = RenderContext(self.request)
+        year = self.request.user.year
+        qs = models.Night.objects.sum_by_day(year=year)
+        r = RenderContext(self.request, Stats(year=year, data=qs))
 
         context = super().get_context_data(**kwargs)
         context.update({
             **r.context_url_names(),
-            **r.context_to_reload()
+            **r.context_to_reload(year)
         })
         return context
 
@@ -74,5 +76,9 @@ class ReloadStats(TemplateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        r = RenderContext(self.request)
-        return self.render_to_response(context=r.context_to_reload())
+        year = request.user.year
+        qs = models.Night.objects.sum_by_day(year=year)
+        r = RenderContext(self.request, Stats(year=year, data=qs))
+        context = r.context_to_reload(year)
+
+        return self.render_to_response(context=context)

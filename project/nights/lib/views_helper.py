@@ -123,11 +123,7 @@ class RenderContext():
         )
         return rendered
 
-    def context_to_reload(self):
-        year = self._request.user.year
-        qs = models.Night.objects.sum_by_day(year=year)
-        self._stats = Stats(year=year, data=qs)
-
+    def context_to_reload(self, year: int):
         context = {
             'tab': 'index',
             'chart_weekdays': self.render_chart_weekdays(f'Savaitės dienos, {year} metai'),
