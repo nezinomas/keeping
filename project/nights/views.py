@@ -4,35 +4,34 @@ from django.views.generic import TemplateView
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin, UpdateAjaxMixin
 from . import forms, models
 from .apps import App_name
-from .lib import views_helper as H
 from .lib.stats import Stats
-from .lib.views_helper import UpdateLinkMixin
+from .lib.views_helper import RenderContext, UpdateLinkMixin
 
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        r = RenderContext(self.request)
 
+        context = super().get_context_data(**kwargs)
         context.update({
-            **H.context_url_names(),
-            **H.context_to_reload(self.request)
+            **r.context_url_names(),
+            **r.context_to_reload()
         })
         return context
 
 
 class Lists(IndexMixin):
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
         year = self.request.user.year
-
         qs = models.Night.objects.year(year)
-        obj = Stats(year=year, data=qs)
+        r = RenderContext(self.request, Stats(year=year, data=qs))
 
+        context = super().get_context_data(**kwargs)
         context.update({
             'tab': 'data',
-            'info_row': H.render_info_row(self.request, obj, year),
-            'data': H.render_list_data(self.request, obj.items()),
-            **H.context_url_names()
+            'info_row': r.render_info_row(year),
+            'data': r.render_list_data(),
+            **r.context_url_names()
         })
         return context
 
@@ -49,17 +48,16 @@ class Update(UpdateLinkMixin, UpdateAjaxMixin):
 
 class History(IndexMixin):
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
         qs = models.Night.objects.items()
-        obj = Stats(data=qs)
+        r = RenderContext(self.request, Stats(data=qs))
 
+        context = super().get_context_data(**kwargs)
         context.update({
             'tab': 'history',
-            'chart_weekdays': H.render_chart_weekdays(self.request, obj, 'Savaitės dienos'),
-            'chart_years': H.render_chart_years(self.request, obj.year_totals(), 'Metai'),
-            'chart_histogram': H.render_chart_histogram(self.request, obj.gaps()),
-            **H.context_url_names()
+            'chart_weekdays': r.render_chart_weekdays('Savaitės dienos'),
+            'chart_years': r.render_chart_years('Metai'),
+            'chart_histogram': r.render_chart_histogram(),
+            **r.context_url_names()
         })
         return context
 
@@ -76,5 +74,5 @@ class ReloadStats(TemplateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        context = H.context_to_reload(request)
-        return self.render_to_response(context)
+        r = RenderContext(self.request)
+        return self.render_to_response(context=r.context_to_reload())
