@@ -52,10 +52,11 @@ class Compare(LoginRequiredMixin, FormView):
     form_data_dict = {}
 
     def post(self, request, *args, **kwargs):
+        err = {'error': 'CompareForm is broken.'}
         try:
             form_data = request.POST['form_data']
         except KeyError:
-            return JsonResponse(data={'error': 'CompareForm is broken.'}, status=404)
+            return JsonResponse(data=err, status=404)
 
         try:
             form_data_list = json.loads(form_data)
@@ -65,7 +66,7 @@ class Compare(LoginRequiredMixin, FormView):
                 self.form_data_dict[field["name"]] = field["value"]
 
         except (json.decoder.JSONDecodeError, KeyError):
-            return JsonResponse(data={'error': 'CompareForm is broken.'}, status=500)
+            return JsonResponse(data=err, status=500)
 
         form = self.form_class(self.form_data_dict)
         if form.is_valid():
