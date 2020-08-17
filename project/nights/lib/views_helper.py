@@ -1,3 +1,4 @@
+from typing import Dict
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 
@@ -22,7 +23,7 @@ class RenderContext():
         self._request = request
         self._stats = stats
 
-    def render_chart_weekdays(self, title):
+    def render_chart_weekdays(self, title: str) -> str:
         rendered = render_to_string(
             f'{App_name}/includes/chart_periodicity.html',
             {
@@ -36,7 +37,7 @@ class RenderContext():
         )
         return rendered
 
-    def render_chart_months(self, title):
+    def render_chart_months(self, title: str) -> str:
         rendered = render_to_string(
             f'{App_name}/includes/chart_periodicity.html',
             {
@@ -50,7 +51,7 @@ class RenderContext():
         )
         return rendered
 
-    def render_chart_years(self, title):
+    def render_chart_years(self, title: str) -> str:
         year_totals = self._stats.year_totals()
         rendered = render_to_string(
             f'{App_name}/includes/chart_periodicity.html',
@@ -65,7 +66,7 @@ class RenderContext():
         )
         return rendered
 
-    def render_chart_year(self):
+    def render_chart_year(self) -> str:
         rendered = render_to_string(
             f'{App_name}/includes/chart_month_periodicity.html',
             {
@@ -80,7 +81,7 @@ class RenderContext():
         )
         return rendered
 
-    def render_chart_histogram(self):
+    def render_chart_histogram(self) -> str:
         gaps = self._stats.gaps()
         rendered = render_to_string(
             f'{App_name}/includes/chart_periodicity.html',
@@ -95,7 +96,7 @@ class RenderContext():
         )
         return rendered
 
-    def render_info_row(self, year: int):
+    def render_info_row(self, year: int) -> str:
         week = weeknumber(year)
         total = self._stats.year_totals()
 
@@ -111,7 +112,7 @@ class RenderContext():
         )
         return rendered
 
-    def render_list_data(self):
+    def render_list_data(self) -> str:
         rendered = render_to_string(
             f'{App_name}/includes/{App_name}_list.html',
             {
@@ -122,7 +123,7 @@ class RenderContext():
         )
         return rendered
 
-    def context_to_reload(self, year: int):
+    def context_to_reload(self, year: int) -> Dict[str, str]:
         context = {
             'tab': 'index',
             'chart_weekdays': self.render_chart_weekdays(f'Savaitės dienos, {year} metai'),
@@ -133,7 +134,7 @@ class RenderContext():
         }
         return context
 
-    def context_url_names(self):
+    def context_url_names(self) -> Dict[str, str]:
         context = {
             'app_name': App_name,
             'url_new': f'{App_name}:{App_name}_new',
