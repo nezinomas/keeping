@@ -79,13 +79,19 @@ def test_view_month_200(client_logged):
 def test_view_month_day_list_func():
     view = resolve('/month/11112233/')
 
-    assert views.month_day_list == view.func
+    assert views.DayList == view.func.view_class
 
 
 def test_view_month_day_list_200(client_logged):
     response = client_logged.get('/month/')
 
     assert response.status_code == 200
+
+
+@pytest.mark.xfail
+def test_view_month_day_list_str_in_url(client_logged):
+    url = reverse('bookkeeping:month_day_list', kwargs={'date': 'xx'})
+    client_logged.get(url)
 
 
 @pytest.mark.parametrize(

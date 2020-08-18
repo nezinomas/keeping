@@ -225,31 +225,32 @@ def reload_index(request):
     )
 
 
-@login_required()
-def month_day_list(request, date):
-    try:
-        year = int(date[:4])
-        month = int(date[4:6])
-        day = int(date[6:8])
-        dt = datetime(year, month, day)
-    except Exception:  # pylint: disable=broad-except
-        dt = datetime(1970, 1, 1)
+class DayList(IndexMixin):
+    def get(self, request, *args, **kwargs):
+        try:
+            _date = kwargs.get('date')
+            _year = int(_date[:4])
+            _month = int(_date[4:6])
+            _day = int(_date[6:8])
+            dt = datetime(_year, _month, _day)
+        except Exception:  # pylint: disable=broad-except
+            dt = datetime(1970, 1, 1)
 
-    items = (
-        Expense.objects
-        .items()
-        .filter(date=dt)
-        .order_by('expense_type', F('expense_name').asc(), 'price')
-    )
+        items = (
+            Expense.objects
+            .items()
+            .filter(date=dt)
+            .order_by('expense_type', F('expense_name').asc(), 'price')
+        )
 
-    context = {
-        'items': items,
-        'notice': f'{dt:%F} dieną įrašų nėra',
-    }
-    template = 'bookkeeping/includes/month_day_list.html'
-    rendered = render_to_string(template, context, request)
+        context = {
+            'items': items,
+            'notice': f'{dt:%F} dieną įrašų nėra',
+        }
+        template = 'bookkeeping/includes/month_day_list.html'
+        html = render_to_string(template, context, request)
 
-    return JsonResponse({'html': rendered})
+        return JsonResponse({'html': html})
 
 
 @login_required()
