@@ -121,6 +121,23 @@ def month_context(request, context=None):
     return context
 
 
+def detailed_context(context, data, name):
+    if not 'data' in context.keys():
+        context['data'] = []
+
+    total_row = sum_detailed(data, 'date', ['sum'])
+    total_col = sum_detailed(data, 'title', ['sum'])
+    total = sum_col(total_col, 'sum')
+
+    context['data'].append({
+        'name': name,
+        'data': data,
+        'total_row': total_row,
+        'total_col': total_col,
+        'total': total,
+    })
+
+
 class MonthHelper():
     def __init__(self, request, year, month):
         self._request = request

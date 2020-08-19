@@ -10,7 +10,7 @@ from django.views.generic import CreateView, TemplateView
 
 from ..accounts.models import Account, AccountBalance
 from ..core.lib.date import year_month_list
-from ..core.lib.utils import sum_all, sum_col
+from ..core.lib.utils import sum_all
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin
 from ..expenses.models import Expense
@@ -122,35 +122,21 @@ class Detailed(LoginRequiredMixin, TemplateView):
 
         context = super().get_context_data(**kwargs)
         context['months'] = range(1, 13)
-        context['data'] = []
-
-        def _gen_data(data, name):
-            total_row = H.sum_detailed(data, 'date', ['sum'])
-            total_col = H.sum_detailed(data, 'title', ['sum'])
-            total = sum_col(total_col, 'sum')
-
-            context['data'].append({
-                'name': name,
-                'data': data,
-                'total_row': total_row,
-                'total_col': total_col,
-                'total': total,
-            })
 
         # Incomes
         qs = Income.objects.sum_by_month_and_type(year)
-        _gen_data(qs, 'Pajamos')
+        H.detailed_context(context, qs, 'Pajamos')
 
         # Savings
         qs = Saving.objects.sum_by_month_and_type(year)
-        _gen_data(qs, 'Taupymas')
+        H.detailed_context(context, qs, 'Taupymas')
 
         # Expenses
         qs = [*Expense.objects.sum_by_month_and_name(year)]
         expenses_types = H.expense_types()
         for title in expenses_types:
             filtered = filter(lambda x: title in x['type_title'], qs)
-            _gen_data([*filtered], f'Išlaidos / {title}')
+            H.detailed_context(context, [*filtered], f'Išlaidos / {title}')
 
         return context
 
