@@ -88,6 +88,22 @@ def percentage_from_incomes(incomes, savings):
 
     return 0
 
+
+def month_context(request, context=None):
+    context = context if context else {}
+    year = request.user.year
+    month = request.user.month
+
+    obj = MonthHelper(request, year, month)
+
+    context['month_table'] = obj.render_month_table()
+    context['info'] = obj.render_info()
+    context['chart_expenses'] = obj.render_chart_expenses()
+    context['chart_targets'] = obj.render_chart_targets()
+
+    return context
+
+
 class MonthHelper():
     def __init__(self, request, year, month):
         self._request = request

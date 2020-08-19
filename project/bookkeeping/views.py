@@ -110,7 +110,7 @@ class Month(IndexMixin):
         context = super().get_context_data(**kwargs)
 
         context['buttons'] = year_month_list()
-        context = _month_context(self.request, context)
+        context = H.month_context(self.request, context)
 
         return context
 
@@ -288,19 +288,4 @@ def reload_month(request):
     return render(
         request=request,
         template_name='bookkeeping/includes/reload_month.html',
-        context=_month_context(request))
-
-
-def _month_context(request, context=None):
-    context = context if context else {}
-    year = request.user.year
-    month = request.user.month
-
-    obj = H.MonthHelper(request, year, month)
-
-    context['month_table'] = obj.render_month_table()
-    context['info'] = obj.render_info()
-    context['chart_expenses'] = obj.render_chart_expenses()
-    context['chart_targets'] = obj.render_chart_targets()
-
-    return context
+        context=H.month_context(request))
