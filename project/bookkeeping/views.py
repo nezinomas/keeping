@@ -24,26 +24,26 @@ from .models import AccountWorth, PensionWorth, SavingWorth
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
         year = self.request.user.year
         obj = H.IndexHelper(self.request, year)
 
-        context['year'] = year
-        context['accounts'] = obj.render_accounts()
-        context['savings'] = obj.render_savings()
-        context['pensions'] = obj.render_pensions()
-        context['year_balance'] = obj.render_year_balance()
-        context['year_balance_short'] = obj.render_year_balance_short()
-        context['year_expenses'] = obj.render_year_expenses()
-        context['no_incomes'] = obj.render_no_incomes()
-        context['avg_incomes'] = obj.render_avg_incomes()
-        context['avg_expenses'] = obj.render_avg_expenses()
-        context['money'] = obj.render_money()
-        context['wealth'] = obj.render_wealth()
-        context['chart_expenses'] = obj.render_chart_expenses()
-        context['chart_balance'] = obj.render_chart_balance()
-
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'year': year,
+            'accounts': obj.render_accounts(),
+            'savings': obj.render_savings(),
+            'pensions': obj.render_pensions(),
+            'year_balance': obj.render_year_balance(),
+            'year_balance_short': obj.render_year_balance_short(),
+            'year_expenses': obj.render_year_expenses(),
+            'no_incomes': obj.render_no_incomes(),
+            'avg_incomes': obj.render_avg_incomes(),
+            'avg_expenses': obj.render_avg_expenses(),
+            'money': obj.render_money(),
+            'wealth': obj.render_wealth(),
+            'chart_expenses': obj.render_chart_expenses(),
+            'chart_balance': obj.render_chart_balance(),
+        })
         return context
 
 
@@ -51,19 +51,18 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = SavingType
     model = SavingWorth
     form_class = SavingWorthForm
-    # list_template_name = 'bookkeeping/includes/worth_table.html'
     list_render_output = False
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
         year = self.request.user.year
+        fund = SavingBalance.objects.year(year)
 
-        _fund = SavingBalance.objects.year(year)
-
-        context['title'] = 'Fondai'
-        context['items'] = _fund
-        context['total_row'] = sum_all(_fund)
-
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'title': 'Fondai',
+            'items': fund,
+            'total_row': sum_all(fund),
+        })
         return context
 
 
@@ -73,14 +72,14 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
     form_class = AccountWorthForm
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
         year = self.request.user.year
+        account = AccountBalance.objects.year(year)
 
-        _account = AccountBalance.objects.year(year)
-
-        context['accounts'] = _account
-        context['total_row'] = sum_all(_account)
-
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'accounts': account,
+            'total_row': sum_all(account),
+        })
         return context
 
 
@@ -91,15 +90,15 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
     list_template_name = 'bookkeeping/includes/worth_table.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
         year = self.request.user.year
+        pension = PensionBalance.objects.year(year)
 
-        _pension = PensionBalance.objects.year(year)
-
-        context['title'] = 'Pensija'
-        context['items'] = _pension
-        context['total_row'] = sum_all(_pension)
-
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'title': 'Pensija',
+            'items': pension,
+            'total_row': sum_all(pension),
+        })
         return context
 
 
@@ -108,10 +107,10 @@ class Month(IndexMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        context['buttons'] = year_month_list()
-        context = H.month_context(self.request, context)
-
+        context.update({
+            'buttons': year_month_list(),
+            **H.month_context(self.request, context),
+        })
         return context
 
 
@@ -119,10 +118,9 @@ class Detailed(LoginRequiredMixin, TemplateView):
     template_name = 'bookkeeping/detailed.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
         year = self.request.user.year
 
+        context = super().get_context_data(**kwargs)
         context['months'] = range(1, 13)
         context['data'] = []
 
@@ -161,8 +159,6 @@ class Summary(LoginRequiredMixin, TemplateView):
     template_name = 'bookkeeping/summary.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
         offset = 1.2
 
         # data for balance summary
@@ -171,20 +167,24 @@ class Summary(LoginRequiredMixin, TemplateView):
 
         balance_years = [x['year'] for x in qs_exp]
 
-        context['balance_categories'] = balance_years
-        context['balance_income_data'] = [float(x['sum']) for x in qs_inc]
-        context['balance_income_avg'] = average(qs_inc)
-        context['balance_expense_data'] = [float(x['sum']) for x in qs_exp]
-        context['balance_cnt'] = len(balance_years) - offset
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'balance_categories': balance_years,
+            'balance_income_data': [float(x['sum']) for x in qs_inc],
+            'balance_income_avg': average(qs_inc),
+            'balance_expense_data': [float(x['sum']) for x in qs_exp],
+            'balance_cnt': len(balance_years) - offset,
+        })
 
         # data for salary summary
         qs = list(Income.objects.sum_by_year(['Atlyginimas', 'Premijos']))
         salary_years = [x['year'] for x in qs]
 
-        context['salary_categories'] = salary_years
-        context['salary_data_avg'] = average(qs)
-        context['salary_cnt'] = len(salary_years) - offset
-
+        context.update({
+            'salary_categories': salary_years,
+            'salary_data_avg': average(qs),
+            'salary_cnt': len(salary_years) - offset,
+        })
         return context
 
 
