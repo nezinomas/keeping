@@ -3,16 +3,14 @@ from datetime import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
-from django.urls import reverse
 from django.views.generic import CreateView, TemplateView
 
 from ..accounts.models import Account, AccountBalance
 from ..core.lib.date import year_month_list
 from ..core.lib.utils import sum_all
 from ..core.mixins.formset import FormsetMixin
-from ..core.mixins.views import CreateAjaxMixin, IndexMixin
+from ..core.mixins.views import CreateAjaxMixin, IndexMixin, DispatchAjaxMixin
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
@@ -229,16 +227,9 @@ class AccountsWorthReset(LoginRequiredMixin, CreateView):
         return self.render_to_response(context)
 
 
-class ReloadIndex(IndexMixin):
+class ReloadIndex(DispatchAjaxMixin, IndexMixin):
     template_name = 'bookkeeping/includes/reload_index.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        try:
-            request.GET['ajax_trigger']
-        except KeyError:
-            return redirect(reverse('bookkeeping:index'))
-
-        return super().dispatch(request, *args, **kwargs)
+    redirect_view = 'bookkeeping:index'
 
     def get(self, request, *args, **kwargs):
         obj = H.IndexHelper(request, request.user.year)
@@ -251,16 +242,9 @@ class ReloadIndex(IndexMixin):
         return self.render_to_response(context)
 
 
-class ReloadMonth(IndexMixin):
+class ReloadMonth(DispatchAjaxMixin, IndexMixin):
     template_name = 'bookkeeping/includes/reload_month.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        try:
-            request.GET['ajax_trigger']
-        except KeyError:
-            return redirect(reverse('bookkeeping:month'))
-
-        return super().dispatch(request, *args, **kwargs)
+    redirect_view = 'bookkeeping:month'
 
     def get(self, request, *args, **kwargs):
         context = H.month_context(request)

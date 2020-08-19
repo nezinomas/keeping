@@ -1,5 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import reverse
+from django.shortcuts import redirect, reverse
 from django.template.loader import render_to_string
 from django.views.generic import (CreateView, DeleteView, ListView,
                                   TemplateView, UpdateView)
@@ -95,3 +95,13 @@ class DeleteAjaxMixin(
             context['url'] = reverse(f'{app}:{model}_delete', kwargs={'pk': pk})
 
         return context
+
+
+class DispatchAjaxMixin():
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            request.GET['ajax_trigger']
+        except KeyError:
+            return redirect(reverse(self.redirect_view))
+
+        return super().dispatch(request, *args, **kwargs)
