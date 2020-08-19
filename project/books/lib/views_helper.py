@@ -3,8 +3,9 @@ from django.template.loader import render_to_string
 from .. import models
 
 
-def context_to_reload(request, year, context=None):
+def context_to_reload(request, context=None):
     context = context if context else {}
+    year = request.user.year
 
     readed = models.Book.objects.readed()
     reading = models.Book.objects.reading(year=year)

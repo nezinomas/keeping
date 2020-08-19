@@ -8,7 +8,7 @@ from freezegun import freeze_time
 
 from ...users.factories import UserFactory
 from ..factories import BookFactory
-from ..views import Index, Lists, New, Update, reload_stats
+from ..views import Index, Lists, New, ReloadStats, Update
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
@@ -99,14 +99,14 @@ def test_books_index_add_button(client_logged):
 def test_books_reload_stats_func():
     view = resolve('/books/reload_stats/')
 
-    assert reload_stats is view.func
+    assert ReloadStats is view.func.view_class
 
 
 def test_books_reload_stats_render(get_user, rf):
     request = rf.get('/books/reload_stats/?ajax_trigger=1')
     request.user = UserFactory.build()
 
-    response = reload_stats(request)
+    response = ReloadStats.as_view()(request)
 
     assert response.status_code == 200
 

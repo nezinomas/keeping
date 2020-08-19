@@ -27,7 +27,7 @@ urlpatterns = [
     ),
     path(
         'books/reload_stats/',
-        views.reload_stats,
+        views.ReloadStats.as_view(),
         name='reload_stats'
     ),
 ]
