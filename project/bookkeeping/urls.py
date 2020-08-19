@@ -45,7 +45,7 @@ urlpatterns = [
     ),
     path(
         'month/reload/',
-        views.reload_month,
+        views.ReloadMonth.as_view(),
         name='reload_month'
     ),
     path(

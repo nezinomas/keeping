@@ -492,7 +492,7 @@ def test_view_pension_worth_invalid_data(client_logged):
 def test_view_reload_month_func():
     view = resolve('/month/reload/')
 
-    assert views.reload_month is view.func
+    assert views.ReloadMonth is view.func.view_class
 
 
 def test_view_reload_month_render(client_logged):

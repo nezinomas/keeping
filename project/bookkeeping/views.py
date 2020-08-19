@@ -250,13 +250,17 @@ def reload_index(request):
     )
 
 
-def reload_month(request):
-    try:
-        request.GET['ajax_trigger']
-    except KeyError:
-        return redirect(reverse('bookkeeping:month'))
+class ReloadMonth(IndexMixin):
+    template_name = 'bookkeeping/includes/reload_month.html'
 
-    return render(
-        request=request,
-        template_name='bookkeeping/includes/reload_month.html',
-        context=H.month_context(request))
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            request.GET['ajax_trigger']
+        except KeyError:
+            return redirect(reverse('bookkeeping:month'))
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        context = H.month_context(request)
+        return self.render_to_response(context)
