@@ -188,27 +188,6 @@ class Summary(LoginRequiredMixin, TemplateView):
         return context
 
 
-def reload_index(request):
-    try:
-        request.GET['ajax_trigger']
-    except KeyError:
-        return redirect(reverse('bookkeeping:index'))
-
-    obj = H.IndexHelper(request, request.user.year)
-    context = {
-        'no_incomes': obj.render_no_incomes(),
-        'money': obj.render_money(),
-        'wealth': obj.render_wealth(),
-        'savings': obj.render_savings(),
-    }
-
-    return render(
-        request=request,
-        template_name='bookkeeping/includes/reload_index.html',
-        context=context
-    )
-
-
 class ExpandDayExpenses(IndexMixin):
     def get(self, request, *args, **kwargs):
         try:
@@ -262,6 +241,27 @@ class AccountsWorthReset(LoginRequiredMixin, CreateView):
         context = {'accounts': obj.render_accounts()}
 
         return self.render_to_response(context)
+
+
+def reload_index(request):
+    try:
+        request.GET['ajax_trigger']
+    except KeyError:
+        return redirect(reverse('bookkeeping:index'))
+
+    obj = H.IndexHelper(request, request.user.year)
+    context = {
+        'no_incomes': obj.render_no_incomes(),
+        'money': obj.render_money(),
+        'wealth': obj.render_wealth(),
+        'savings': obj.render_savings(),
+    }
+
+    return render(
+        request=request,
+        template_name='bookkeeping/includes/reload_index.html',
+        context=context
+    )
 
 
 def reload_month(request):
