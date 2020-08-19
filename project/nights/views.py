@@ -1,7 +1,8 @@
 from django.shortcuts import redirect, reverse
 from django.views.generic import TemplateView
 
-from ..core.mixins.views import CreateAjaxMixin, IndexMixin, UpdateAjaxMixin
+from ..core.mixins.views import (CreateAjaxMixin, DispatchAjaxMixin,
+                                 IndexMixin, UpdateAjaxMixin)
 from .apps import App_name
 from .forms import NightForm as Form
 from .lib.stats import Stats
@@ -65,16 +66,9 @@ class History(IndexMixin):
         return context
 
 
-class ReloadStats(TemplateView):
+class ReloadStats(DispatchAjaxMixin, TemplateView):
     template_name = f'{App_name}/includes/reload_stats.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        try:
-            request.GET['ajax_trigger']
-        except KeyError:
-            return redirect(reverse(f'{App_name}:{App_name}_index'))
-
-        return super().dispatch(request, *args, **kwargs)
+    redirect_view = f'{App_name}:{App_name}_index'
 
     def get(self, request, *args, **kwargs):
         year = request.user.year
