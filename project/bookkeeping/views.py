@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
-from django.views.generic import CreateView, TemplateView
+from django.views.generic import CreateView
 
 from ..accounts.models import Account, AccountBalance
 from ..core.lib.date import year_month_list
@@ -112,7 +112,7 @@ class Month(IndexMixin):
         return context
 
 
-class Detailed(LoginRequiredMixin, TemplateView):
+class Detailed(IndexMixin):
     template_name = 'bookkeeping/detailed.html'
 
     def get_context_data(self, **kwargs):
@@ -139,7 +139,7 @@ class Detailed(LoginRequiredMixin, TemplateView):
         return context
 
 
-class Summary(LoginRequiredMixin, TemplateView):
+class Summary(IndexMixin):
     template_name = 'bookkeeping/summary.html'
 
     def get_context_data(self, **kwargs):
