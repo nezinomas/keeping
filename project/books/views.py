@@ -7,10 +7,11 @@ from .lib import views_helper as H
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        context['book_list'] = Lists.as_view()(self.request, as_string=True)
-
-        return H.context_to_reload(self.request, context)
+        context.update({
+            'book_list': Lists.as_view()(self.request, as_string=True),
+            **H.context_to_reload(self.request, context)
+        })
+        return context
 
 
 class Lists(ListMixin):
