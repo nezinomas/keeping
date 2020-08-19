@@ -8,8 +8,16 @@ app_name = 'bookkeeping'
 register_converter(converters.DateConverter, 'date')
 
 urlpatterns = [
-    path('', views.Index.as_view(), name='index'),
-    path('month/', views.Month.as_view(), name='month'),
+    path(
+        '',
+        views.Index.as_view(),
+        name='index'
+    ),
+    path(
+        'month/',
+        views.Month.as_view(),
+        name='month'
+    ),
     path(
         'bookkeeping/savings_worth/new/',
         views.SavingsWorthNew.as_view(),
