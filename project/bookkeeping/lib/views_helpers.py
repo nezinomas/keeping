@@ -1,5 +1,6 @@
 import itertools as it
 from collections import Counter, defaultdict
+from datetime import datetime
 from typing import Dict, List
 
 from django.template.loader import render_to_string
@@ -87,6 +88,21 @@ def percentage_from_incomes(incomes, savings):
         return (savings * 100) / incomes
 
     return 0
+
+
+def average(qs):
+    now = datetime.now()
+    arr = []
+
+    for r in qs:
+        year = r['year']
+        sum_val = float(r['sum'])
+
+        cnt = now.month if year == now.year else 12
+
+        arr.append(sum_val / cnt)
+
+    return arr
 
 
 def month_context(request, context=None):

@@ -171,7 +171,7 @@ class Summary(LoginRequiredMixin, TemplateView):
         context.update({
             'balance_categories': balance_years,
             'balance_income_data': [float(x['sum']) for x in qs_inc],
-            'balance_income_avg': average(qs_inc),
+            'balance_income_avg': H.average(qs_inc),
             'balance_expense_data': [float(x['sum']) for x in qs_exp],
             'balance_cnt': len(balance_years) - offset,
         })
@@ -182,25 +182,10 @@ class Summary(LoginRequiredMixin, TemplateView):
 
         context.update({
             'salary_categories': salary_years,
-            'salary_data_avg': average(qs),
+            'salary_data_avg': H.average(qs),
             'salary_cnt': len(salary_years) - offset,
         })
         return context
-
-
-def average(qs):
-    now = datetime.now()
-    arr = []
-
-    for r in qs:
-        year = r['year']
-        sum_val = float(r['sum'])
-
-        cnt = now.month if year == now.year else 12
-
-        arr.append(sum_val / cnt)
-
-    return arr
 
 
 def reload_index(request):
