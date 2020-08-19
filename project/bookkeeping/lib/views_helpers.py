@@ -96,11 +96,12 @@ def month_context(request, context=None):
 
     obj = MonthHelper(request, year, month)
 
-    context['month_table'] = obj.render_month_table()
-    context['info'] = obj.render_info()
-    context['chart_expenses'] = obj.render_chart_expenses()
-    context['chart_targets'] = obj.render_chart_targets()
-
+    context.update({
+        'month_table': obj.render_month_table(),
+        'info': obj.render_info(),
+        'chart_expenses': obj.render_chart_expenses(),
+        'chart_targets': obj.render_chart_targets(),
+    })
     return context
 
 
