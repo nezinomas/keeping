@@ -2,14 +2,24 @@ from django.urls import path, register_converter
 
 from ..core import converters
 from . import views
+from .apps import App_name
 
-app_name = 'bookkeeping'
+
+app_name = App_name
 
 register_converter(converters.DateConverter, 'date')
 
 urlpatterns = [
-    path('', views.Index.as_view(), name='index'),
-    path('month/', views.Month.as_view(), name='month'),
+    path(
+        '',
+        views.Index.as_view(),
+        name='index'
+    ),
+    path(
+        'bookkeeping/reload/',
+        views.ReloadIndex.as_view(),
+        name='reload_index'
+    ),
     path(
         'bookkeeping/savings_worth/new/',
         views.SavingsWorthNew.as_view(),
@@ -22,23 +32,13 @@ urlpatterns = [
     ),
     path(
         'bookkeeping/accounts_worth/reset/<int:pk>/',
-        views.accounts_worth_reset,
+        views.AccountsWorthReset.as_view(),
         name='accounts_worth_reset'
     ),
     path(
         'bookkeeping/pensions_worth/new/',
         views.PensionsWorthNew.as_view(),
         name='pensions_worth_new'
-    ),
-    path(
-        'bookkeeping/reload/',
-        views.reload_index,
-        name='reload_index'
-    ),
-    path(
-        'month/reload/',
-        views.reload_month,
-        name='reload_month'
     ),
     path(
         'detailed/',
@@ -51,8 +51,18 @@ urlpatterns = [
         name='summary'
     ),
     path(
+        'month/',
+        views.Month.as_view(),
+        name='month'
+    ),
+    path(
+        'month/reload/',
+        views.ReloadMonth.as_view(),
+        name='reload_month'
+    ),
+    path(
         'month/<date:date>/',
-        views.month_day_list,
-        name='month_day_list'
+        views.ExpandDayExpenses.as_view(),
+        name='expand_day_expenses'
     ),
 ]

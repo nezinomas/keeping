@@ -5,11 +5,9 @@ from decimal import Decimal
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
-from mock import patch
 
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import setup_view
-from ...drinks.factories import DrinkFactory
 from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory, IncomeTypeFactory
 from ...pensions.factories import PensionFactory, PensionTypeFactory
@@ -76,16 +74,22 @@ def test_view_month_200(client_logged):
 # ---------------------------------------------------------------------------------------
 #                                                                          Month Day List
 # ---------------------------------------------------------------------------------------
-def test_view_month_day_list_func():
+def test_view_expand_day_expenses_func():
     view = resolve('/month/11112233/')
 
-    assert views.month_day_list == view.func
+    assert views.ExpandDayExpenses == view.func.view_class
 
 
-def test_view_month_day_list_200(client_logged):
+def test_view_expand_day_expenses_200(client_logged):
     response = client_logged.get('/month/')
 
     assert response.status_code == 200
+
+
+@pytest.mark.xfail
+def test_view_expand_day_expenses_str_in_url(client_logged):
+    url = reverse('bookkeeping:expand_day_expenses', kwargs={'date': 'xx'})
+    client_logged.get(url)
 
 
 @pytest.mark.parametrize(
@@ -95,8 +99,8 @@ def test_view_month_day_list_200(client_logged):
         ('19701232', '1970-01-01 dieną įrašų nėra'),
     ]
 )
-def test_view_month_day_list_wrong_dates(dt, expect, client_logged):
-    url = reverse('bookkeeping:month_day_list', kwargs={'date': dt})
+def test_view_expand_day_expenses_wrong_dates(dt, expect, client_logged):
+    url = reverse('bookkeeping:expand_day_expenses', kwargs={'date': dt})
     response = client_logged.get(url)
 
     actual = json.loads(response.content)
@@ -104,17 +108,17 @@ def test_view_month_day_list_wrong_dates(dt, expect, client_logged):
     assert expect in actual['html']
 
 
-def test_view_month_day_list_302(client):
-    url = reverse('bookkeeping:month_day_list', kwargs={'date': '19700101'})
+def test_view_expand_day_expenses_302(client):
+    url = reverse('bookkeeping:expand_day_expenses', kwargs={'date': '19700101'})
     response = client.get(url)
 
     assert response.status_code == 302
 
 
-def test_view_month_day_list_ajax(client_logged):
+def test_view_expand_day_expenses_ajax(client_logged):
     ExpenseFactory()
 
-    url = reverse('bookkeeping:month_day_list', kwargs={'date': '19990101'})
+    url = reverse('bookkeeping:expand_day_expenses', kwargs={'date': '19990101'})
     response = client_logged.get(url, {}, **X_Req)
 
     actual = json.loads(response.content)
@@ -200,7 +204,7 @@ def test_account_worth_formset_closed_in_past(get_user, fake_request):
 
     view = setup_view(views.AccountsWorthNew(), fake_request)
 
-    actual = str(view._get_formset())
+    actual = str(view._get_formset())  # pylint: disable=protected-access
 
     assert 'S1' in actual
     assert 'S2' not in actual
@@ -214,7 +218,7 @@ def test_account_worth_formset_closed_in_current(get_user, fake_request):
 
     view = setup_view(views.AccountsWorthNew(), fake_request)
 
-    actual = str(view._get_formset())
+    actual = str(view._get_formset())  #pylint: disable=protected-access
 
     assert 'S1' in actual
     assert 'S2' in actual
@@ -228,7 +232,7 @@ def test_account_worth_formset_closed_in_future(get_user, fake_request):
 
     view = setup_view(views.AccountsWorthNew(), fake_request)
 
-    actual = str(view._get_formset())
+    actual = str(view._get_formset())  #pylint: disable=protected-access
 
     assert 'S1' in actual
     assert 'S2' in actual
@@ -240,7 +244,7 @@ def test_account_worth_formset_closed_in_future(get_user, fake_request):
 def test_account_worth_reset_func():
     view = resolve('/bookkeeping/accounts_worth/reset/1/')
 
-    assert views.accounts_worth_reset == view.func
+    assert views.AccountsWorthReset == view.func.view_class
 
 
 def test_account_worth_reset_200(client_logged):
@@ -295,6 +299,16 @@ def test_account_worth_reset(client_logged):
     actual = models.AccountWorth.objects.all()
 
     assert actual.count() == 2
+
+
+def test_account_worth_reset_no_object(client_logged):
+    url = reverse('bookkeeping:accounts_worth_reset', kwargs={'pk': 1})
+    client_logged.get(url)
+
+    actual = models.AccountWorth.objects.all()
+
+    assert actual.count() == 0
+
 
 # ---------------------------------------------------------------------------------------
 #                                                                            Saving Worth
@@ -371,7 +385,7 @@ def test_saving_worth_formset_saving_type_closed_in_past(get_user, fake_request)
 
     view = setup_view(views.SavingsWorthNew(), fake_request)
 
-    actual = str(view._get_formset())
+    actual = str(view._get_formset())  #pylint: disable=protected-access
 
     assert 'S1' in actual
     assert 'S2' not in actual
@@ -385,7 +399,7 @@ def test_saving_worth_formset_saving_type_closed_in_current(get_user, fake_reque
 
     view = setup_view(views.SavingsWorthNew(), fake_request)
 
-    actual = str(view._get_formset())
+    actual = str(view._get_formset())  #pylint: disable=protected-access
 
     assert 'S1' in actual
     assert 'S2' in actual
@@ -399,7 +413,7 @@ def test_saving_worth_formset_saving_type_closed_in_future(get_user, fake_reques
 
     view = setup_view(views.SavingsWorthNew(), fake_request)
 
-    actual = str(view._get_formset())
+    actual = str(view._get_formset())  #pylint: disable=protected-access
 
     assert 'S1' in actual
     assert 'S2' in actual
@@ -478,7 +492,7 @@ def test_view_pension_worth_invalid_data(client_logged):
 def test_view_reload_month_func():
     view = resolve('/month/reload/')
 
-    assert views.reload_month == view.func
+    assert views.ReloadMonth is view.func.view_class
 
 
 def test_view_reload_month_render(client_logged):
@@ -502,7 +516,7 @@ def test_view_reload_month_render_ajax_trigger(client_logged):
 def test_view_reload_index_func():
     view = resolve('/bookkeeping/reload/')
 
-    assert views.reload_index == view.func
+    assert views.ReloadIndex is view.func.view_class
 
 
 def test_view_reload_index_render(client_logged):

@@ -1,5 +1,6 @@
 import itertools as it
 from collections import Counter, defaultdict
+from datetime import datetime
 from typing import Dict, List
 
 from django.template.loader import render_to_string
@@ -87,6 +88,55 @@ def percentage_from_incomes(incomes, savings):
         return (savings * 100) / incomes
 
     return 0
+
+
+def average(qs):
+    now = datetime.now()
+    arr = []
+
+    for r in qs:
+        year = r['year']
+        sum_val = float(r['sum'])
+
+        cnt = now.month if year == now.year else 12
+
+        arr.append(sum_val / cnt)
+
+    return arr
+
+
+def month_context(request, context=None):
+    context = context if context else {}
+    year = request.user.year
+    month = request.user.month
+
+    obj = MonthHelper(request, year, month)
+
+    context.update({
+        'month_table': obj.render_month_table(),
+        'info': obj.render_info(),
+        'chart_expenses': obj.render_chart_expenses(),
+        'chart_targets': obj.render_chart_targets(),
+    })
+    return context
+
+
+def detailed_context(context, data, name):
+    if not 'data' in context.keys():
+        context['data'] = []
+
+    total_row = sum_detailed(data, 'date', ['sum'])
+    total_col = sum_detailed(data, 'title', ['sum'])
+    total = sum_col(total_col, 'sum')
+
+    context['data'].append({
+        'name': name,
+        'data': data,
+        'total_row': total_row,
+        'total_col': total_col,
+        'total': total,
+    })
+
 
 class MonthHelper():
     def __init__(self, request, year, month):

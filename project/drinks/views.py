@@ -7,23 +7,16 @@ from django.template.loader import render_to_string
 from django.views.generic.edit import FormView
 
 from ..core.lib.date import years
-from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
+from ..core.mixins.views import (CreateAjaxMixin, DispatchAjaxMixin,
+                                 IndexMixin, ListMixin, UpdateAjaxMixin)
 from . import forms, models
 from .apps import App_name
 from .lib import views_helper as H
 
 
-class ReloadStats(IndexMixin):
+class ReloadStats(DispatchAjaxMixin, IndexMixin):
     template_name = f'{App_name}/includes/reload_stats.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        try:
-            request.GET['ajax_trigger']
-        except KeyError:
-            return redirect(reverse(f'{App_name}:{App_name}_index'))
-
-        return super().dispatch(request, *args, **kwargs)
+    redirect_view = f'{App_name}:{App_name}_index'
 
     def get(self, request, *args, **kwargs):
         context = H.context_to_reload(request)

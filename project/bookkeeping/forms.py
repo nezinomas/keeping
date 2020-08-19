@@ -3,7 +3,6 @@ from django import forms
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
-from ..core.lib import utils
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from .models import AccountWorth, PensionWorth, SavingWorth
