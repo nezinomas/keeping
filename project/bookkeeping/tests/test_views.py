@@ -5,11 +5,9 @@ from decimal import Decimal
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
-from mock import patch
 
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import setup_view
-from ...drinks.factories import DrinkFactory
 from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory, IncomeTypeFactory
 from ...pensions.factories import PensionFactory, PensionTypeFactory
@@ -494,7 +492,7 @@ def test_view_pension_worth_invalid_data(client_logged):
 def test_view_reload_month_func():
     view = resolve('/month/reload/')
 
-    assert views.reload_month == view.func
+    assert views.reload_month is view.func
 
 
 def test_view_reload_month_render(client_logged):
@@ -518,7 +516,7 @@ def test_view_reload_month_render_ajax_trigger(client_logged):
 def test_view_reload_index_func():
     view = resolve('/bookkeeping/reload/')
 
-    assert views.reload_index == view.func
+    assert views.reload_index is view.func
 
 
 def test_view_reload_index_render(client_logged):
