@@ -225,7 +225,7 @@ def reload_index(request):
     )
 
 
-class DayList(IndexMixin):
+class ExpandDayExpenses(IndexMixin):
     def get(self, request, *args, **kwargs):
         try:
             _date = kwargs.get('date')
@@ -247,7 +247,7 @@ class DayList(IndexMixin):
             'items': items,
             'notice': f'{dt:%F} dieną įrašų nėra',
         }
-        template = 'bookkeeping/includes/month_day_list.html'
+        template = 'bookkeeping/includes/expand_day_expenses.html'
         html = render_to_string(template, context, request)
 
         return JsonResponse({'html': html})

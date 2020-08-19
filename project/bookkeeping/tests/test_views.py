@@ -76,21 +76,21 @@ def test_view_month_200(client_logged):
 # ---------------------------------------------------------------------------------------
 #                                                                          Month Day List
 # ---------------------------------------------------------------------------------------
-def test_view_month_day_list_func():
+def test_view_expand_day_expenses_func():
     view = resolve('/month/11112233/')
 
-    assert views.DayList == view.func.view_class
+    assert views.ExpandDayExpenses == view.func.view_class
 
 
-def test_view_month_day_list_200(client_logged):
+def test_view_expand_day_expenses_200(client_logged):
     response = client_logged.get('/month/')
 
     assert response.status_code == 200
 
 
 @pytest.mark.xfail
-def test_view_month_day_list_str_in_url(client_logged):
-    url = reverse('bookkeeping:month_day_list', kwargs={'date': 'xx'})
+def test_view_expand_day_expenses_str_in_url(client_logged):
+    url = reverse('bookkeeping:expand_day_expenses', kwargs={'date': 'xx'})
     client_logged.get(url)
 
 
@@ -101,8 +101,8 @@ def test_view_month_day_list_str_in_url(client_logged):
         ('19701232', '1970-01-01 dieną įrašų nėra'),
     ]
 )
-def test_view_month_day_list_wrong_dates(dt, expect, client_logged):
-    url = reverse('bookkeeping:month_day_list', kwargs={'date': dt})
+def test_view_expand_day_expenses_wrong_dates(dt, expect, client_logged):
+    url = reverse('bookkeeping:expand_day_expenses', kwargs={'date': dt})
     response = client_logged.get(url)
 
     actual = json.loads(response.content)
@@ -110,17 +110,17 @@ def test_view_month_day_list_wrong_dates(dt, expect, client_logged):
     assert expect in actual['html']
 
 
-def test_view_month_day_list_302(client):
-    url = reverse('bookkeeping:month_day_list', kwargs={'date': '19700101'})
+def test_view_expand_day_expenses_302(client):
+    url = reverse('bookkeeping:expand_day_expenses', kwargs={'date': '19700101'})
     response = client.get(url)
 
     assert response.status_code == 302
 
 
-def test_view_month_day_list_ajax(client_logged):
+def test_view_expand_day_expenses_ajax(client_logged):
     ExpenseFactory()
 
-    url = reverse('bookkeeping:month_day_list', kwargs={'date': '19990101'})
+    url = reverse('bookkeeping:expand_day_expenses', kwargs={'date': '19990101'})
     response = client_logged.get(url, {}, **X_Req)
 
     actual = json.loads(response.content)

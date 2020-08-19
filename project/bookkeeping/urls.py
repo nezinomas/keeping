@@ -52,7 +52,7 @@ urlpatterns = [
     ),
     path(
         'month/<date:date>/',
-        views.DayList.as_view(),
-        name='month_day_list'
+        views.ExpandDayExpenses.as_view(),
+        name='expand_day_expenses'
     ),
 ]
