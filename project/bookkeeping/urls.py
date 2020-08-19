@@ -14,9 +14,9 @@ urlpatterns = [
         name='index'
     ),
     path(
-        'month/',
-        views.Month.as_view(),
-        name='month'
+        'bookkeeping/reload/',
+        views.ReloadIndex.as_view(),
+        name='reload_index'
     ),
     path(
         'bookkeeping/savings_worth/new/',
@@ -39,16 +39,6 @@ urlpatterns = [
         name='pensions_worth_new'
     ),
     path(
-        'bookkeeping/reload/',
-        views.ReloadIndex.as_view(),
-        name='reload_index'
-    ),
-    path(
-        'month/reload/',
-        views.ReloadMonth.as_view(),
-        name='reload_month'
-    ),
-    path(
         'detailed/',
         views.Detailed.as_view(),
         name='detailed'
@@ -57,6 +47,16 @@ urlpatterns = [
         'summary/',
         views.Summary.as_view(),
         name='summary'
+    ),
+    path(
+        'month/',
+        views.Month.as_view(),
+        name='month'
+    ),
+    path(
+        'month/reload/',
+        views.ReloadMonth.as_view(),
+        name='reload_month'
     ),
     path(
         'month/<date:date>/',
