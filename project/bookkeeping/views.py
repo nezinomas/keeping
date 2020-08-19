@@ -1,13 +1,12 @@
 from datetime import datetime
 
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
-from django.views.generic import TemplateView
+from django.views.generic import CreateView, TemplateView
 
 from ..accounts.models import Account, AccountBalance
 from ..core.lib.date import year_month_list
@@ -253,26 +252,31 @@ class ExpandDayExpenses(IndexMixin):
         return JsonResponse({'html': html})
 
 
-@login_required()
-def accounts_worth_reset(request, pk):
-    account = get_object_or_404(Account, pk=pk)
+class AccountsWorthReset(LoginRequiredMixin, CreateView):
+    account = None
+    model = Account
+    template_name = 'bookkeeping/includes/reload_index.html'
 
-    w = AccountWorth.objects.filter(account=account).latest('date')
+    def dispatch(self, request, *args, **kwargs):
+        self.account = self.get_object()
+        worth = (
+            AccountWorth.objects
+            .filter(account=self.account)
+            .latest('date')
+        )
 
-    if w.price == 0:
-        return HttpResponse(status=204)
+        if worth.price == 0:
+            return HttpResponse(status=204)
 
-    AccountWorth.objects.create(price=0, account=account)
+        return super().dispatch(request, *args, **kwargs)
 
-    template = 'bookkeeping/includes/reload_index.html'
+    def get(self, request, *args, **kwargs):
+        AccountWorth.objects.create(price=0, account=self.account)
 
-    year = request.user.year
-    obj = H.IndexHelper(request, year)
+        obj = H.IndexHelper(request, request.user.year)
+        context = {'accounts': obj.render_accounts()}
 
-    context = {
-        'accounts': obj.render_accounts(),
-    }
-    return render(request, template, context)
+        return self.render_to_response(context)
 
 
 def reload_month(request):

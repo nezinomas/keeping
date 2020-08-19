@@ -22,7 +22,7 @@ urlpatterns = [
     ),
     path(
         'bookkeeping/accounts_worth/reset/<int:pk>/',
-        views.accounts_worth_reset,
+        views.AccountsWorthReset.as_view(),
         name='accounts_worth_reset'
     ),
     path(

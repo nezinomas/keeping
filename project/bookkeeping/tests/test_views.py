@@ -246,7 +246,7 @@ def test_account_worth_formset_closed_in_future(get_user, fake_request):
 def test_account_worth_reset_func():
     view = resolve('/bookkeeping/accounts_worth/reset/1/')
 
-    assert views.accounts_worth_reset == view.func
+    assert views.AccountsWorthReset == view.func.view_class
 
 
 def test_account_worth_reset_200(client_logged):
@@ -301,6 +301,16 @@ def test_account_worth_reset(client_logged):
     actual = models.AccountWorth.objects.all()
 
     assert actual.count() == 2
+
+
+def test_account_worth_reset_no_object(client_logged):
+    url = reverse('bookkeeping:accounts_worth_reset', kwargs={'pk': 1})
+    client_logged.get(url)
+
+    actual = models.AccountWorth.objects.all()
+
+    assert actual.count() == 0
+
 
 # ---------------------------------------------------------------------------------------
 #                                                                            Saving Worth
