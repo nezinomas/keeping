@@ -516,7 +516,7 @@ def test_view_reload_month_render_ajax_trigger(client_logged):
 def test_view_reload_index_func():
     view = resolve('/bookkeeping/reload/')
 
-    assert views.reload_index is view.func
+    assert views.ReloadIndex is view.func.view_class
 
 
 def test_view_reload_index_render(client_logged):

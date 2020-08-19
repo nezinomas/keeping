@@ -229,25 +229,26 @@ class AccountsWorthReset(LoginRequiredMixin, CreateView):
         return self.render_to_response(context)
 
 
-def reload_index(request):
-    try:
-        request.GET['ajax_trigger']
-    except KeyError:
-        return redirect(reverse('bookkeeping:index'))
+class ReloadIndex(IndexMixin):
+    template_name = 'bookkeeping/includes/reload_index.html'
 
-    obj = H.IndexHelper(request, request.user.year)
-    context = {
-        'no_incomes': obj.render_no_incomes(),
-        'money': obj.render_money(),
-        'wealth': obj.render_wealth(),
-        'savings': obj.render_savings(),
-    }
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            request.GET['ajax_trigger']
+        except KeyError:
+            return redirect(reverse('bookkeeping:index'))
 
-    return render(
-        request=request,
-        template_name='bookkeeping/includes/reload_index.html',
-        context=context
-    )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        obj = H.IndexHelper(request, request.user.year)
+        context = {
+            'no_incomes': obj.render_no_incomes(),
+            'money': obj.render_money(),
+            'wealth': obj.render_wealth(),
+            'savings': obj.render_savings(),
+        }
+        return self.render_to_response(context)
 
 
 class ReloadMonth(IndexMixin):

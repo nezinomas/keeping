@@ -40,7 +40,7 @@ urlpatterns = [
     ),
     path(
         'bookkeeping/reload/',
-        views.reload_index,
+        views.ReloadIndex.as_view(),
         name='reload_index'
     ),
     path(
