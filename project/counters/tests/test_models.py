@@ -61,6 +61,16 @@ def test_counter_items(get_user, _different_users):
     assert actual[0].user.username == 'bob'
 
 
+@patch('project.counters.models.CounterQuerySet.App_name', 'X')
+def test_items_with_user(_different_users):
+    u = UserFactory(username='XXX')
+
+    actual = Counter.objects.items(u)
+
+    assert len(actual) == 1
+    assert actual[0].user.username == 'XXX'
+
+
 @patch('project.counters.models.CounterQuerySet.App_name', 'Counter Type')
 def test_counter_year(get_user, _different_users):
     actual = list(Counter.objects.year(1999))
@@ -68,6 +78,16 @@ def test_counter_year(get_user, _different_users):
     assert len(actual) == 1
     assert actual[0].date == date(1999, 1, 1)
     assert actual[0].user.username == 'bob'
+
+
+@patch('project.counters.models.CounterQuerySet.App_name', 'X')
+def test_year_with_user(_different_users):
+    u = UserFactory(username='XXX')
+
+    actual = Counter.objects.year(1999, u)
+
+    assert len(actual) == 1
+    assert actual[0].user.username == 'XXX'
 
 
 def test_counter_quantity_float():
