@@ -13,8 +13,10 @@ from .apps import App_name as CounterAppName
 class CounterQuerySet(SumMixin, models.QuerySet):
     App_name = CounterAppName
 
-    def related(self):
-        user = utils.get_user()
+    def related(self, user: User = None):
+        if not user:
+            user = utils.get_user()
+
         return (
             self
             .select_related('user')
@@ -23,15 +25,15 @@ class CounterQuerySet(SumMixin, models.QuerySet):
             .order_by('-date')
         )
 
-    def year(self, year):
+    def year(self, year, user: User = None):
         return (
             self
-            .related()
+            .related(user)
             .filter(date__year=year)
         )
 
-    def items(self):
-        return self.related()
+    def items(self, user: User = None):
+        return self.related(user)
 
     def sum_by_year(self, year: int = None) -> List[Dict[date, float]]:
         #Returns
