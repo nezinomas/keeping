@@ -41,7 +41,12 @@ TEMPLATES[0]['OPTIONS']['loaders'] = [
 
 # ================   DEBUG_TOOLBAR_PANEL
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
-INTERNAL_IPS = ['127.0.0.1', 'localhost']
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+    'localhost',
+]
+
 DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.versions.VersionsPanel',
     'debug_toolbar.panels.timer.TimerPanel',
@@ -57,6 +62,10 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.redirects.RedirectsPanel',
     'debug_toolbar.panels.profiling.ProfilingPanel',
 ]
+
+DEBUG_TOOLBAR_CONFIG = {
+    'INTERCEPT_REDIRECTS': False,
+}
 
 
 # ================   DUMMY CASHE
