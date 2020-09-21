@@ -6,7 +6,7 @@ from ..users.factories import UserFactory
 from .models import Drink, DrinkTarget
 
 
-class DrinkFactory(factory.DjangoModelFactory):
+class DrinkFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Drink
 
@@ -16,7 +16,7 @@ class DrinkFactory(factory.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
 
 
-class DrinkTargetFactory(factory.DjangoModelFactory):
+class DrinkTargetFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = DrinkTarget
 

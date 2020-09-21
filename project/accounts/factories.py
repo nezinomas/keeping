@@ -4,7 +4,7 @@ from ..users.factories import UserFactory
 from .models import Account, AccountBalance
 
 
-class AccountFactory(factory.DjangoModelFactory):
+class AccountFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Account
         django_get_or_create = ('title',)
@@ -13,7 +13,7 @@ class AccountFactory(factory.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
 
 
-class AccountBalanceFactory(factory.DjangoModelFactory):
+class AccountBalanceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AccountBalance
         # django_get_or_create = ('account',)

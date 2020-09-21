@@ -9,7 +9,7 @@ from ..users.models import User
 
 
 @factory.django.mute_signals(post_save)
-class UserFactory(factory.DjangoModelFactory):
+class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
         django_get_or_create = ('username',)

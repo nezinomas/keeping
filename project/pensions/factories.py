@@ -9,7 +9,7 @@ from .models import Pension, PensionBalance, PensionType
 
 
 @factory.django.mute_signals(post_save)
-class PensionTypeFactory(factory.DjangoModelFactory):
+class PensionTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PensionType
         django_get_or_create = ('title',)
@@ -19,7 +19,7 @@ class PensionTypeFactory(factory.DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class PensionFactory(factory.DjangoModelFactory):
+class PensionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Pension
 
@@ -31,7 +31,7 @@ class PensionFactory(factory.DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class PensionBalanceFactory(factory.DjangoModelFactory):
+class PensionBalanceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PensionBalance
 

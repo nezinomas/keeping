@@ -10,7 +10,7 @@ from .models import Expense, ExpenseName, ExpenseType
 
 
 @factory.django.mute_signals(post_save)
-class ExpenseTypeFactory(factory.DjangoModelFactory):
+class ExpenseTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExpenseType
         django_get_or_create = ('title',)
@@ -20,7 +20,7 @@ class ExpenseTypeFactory(factory.DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class ExpenseNameFactory(factory.DjangoModelFactory):
+class ExpenseNameFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExpenseName
         django_get_or_create = ('title', 'parent',)
@@ -30,7 +30,7 @@ class ExpenseNameFactory(factory.DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class ExpenseFactory(factory.DjangoModelFactory):
+class ExpenseFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Expense
 
