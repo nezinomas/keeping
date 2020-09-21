@@ -10,7 +10,7 @@ from .models import Income, IncomeType
 
 
 @factory.django.mute_signals(post_save)
-class IncomeTypeFactory(factory.DjangoModelFactory):
+class IncomeTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = IncomeType
         django_get_or_create = ('title',)
@@ -20,7 +20,7 @@ class IncomeTypeFactory(factory.DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class IncomeFactory(factory.DjangoModelFactory):
+class IncomeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Income
 

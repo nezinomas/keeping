@@ -10,7 +10,7 @@ from .models import SavingChange, SavingClose, Transaction
 
 
 @factory.django.mute_signals(post_save)
-class TransactionFactory(factory.DjangoModelFactory):
+class TransactionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Transaction
 
@@ -21,7 +21,7 @@ class TransactionFactory(factory.DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class SavingChangeFactory(factory.DjangoModelFactory):
+class SavingChangeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SavingChange
 
@@ -33,7 +33,7 @@ class SavingChangeFactory(factory.DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class SavingCloseFactory(factory.DjangoModelFactory):
+class SavingCloseFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SavingClose
 

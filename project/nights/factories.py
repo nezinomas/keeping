@@ -6,7 +6,7 @@ from ..users.factories import UserFactory
 from .models import Night
 
 
-class NightFactory(factory.DjangoModelFactory):
+class NightFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Night
 
