@@ -6,7 +6,7 @@ from ..users.factories import UserFactory
 from .models import Counter
 
 
-class CounterFactory(factory.DjangoModelFactory):
+class CounterFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Counter
 

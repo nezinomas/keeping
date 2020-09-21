@@ -9,7 +9,7 @@ from ..users.factories import UserFactory
 
 
 @factory.django.mute_signals(post_save)
-class ExpensePlanFactory(factory.DjangoModelFactory):
+class ExpensePlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExpensePlan
         django_get_or_create = ('year', 'expense_type', 'user', )
@@ -21,7 +21,7 @@ class ExpensePlanFactory(factory.DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class IncomePlanFactory(factory.DjangoModelFactory):
+class IncomePlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = IncomePlan
         django_get_or_create = ('year', 'income_type', 'user', )
@@ -35,7 +35,7 @@ class IncomePlanFactory(factory.DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class SavingPlanFactory(factory.DjangoModelFactory):
+class SavingPlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SavingPlan
         django_get_or_create = ('year', 'saving_type', 'user', )
@@ -48,7 +48,7 @@ class SavingPlanFactory(factory.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
 
 
-class DayPlanFactory(factory.DjangoModelFactory):
+class DayPlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = DayPlan
 
@@ -58,7 +58,7 @@ class DayPlanFactory(factory.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
 
 
-class NecessaryPlanFactory(factory.DjangoModelFactory):
+class NecessaryPlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = NecessaryPlan
 

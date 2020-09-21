@@ -8,7 +8,7 @@ from . import models
 
 
 @factory.django.mute_signals(post_save)
-class SavingWorthFactory(factory.DjangoModelFactory):
+class SavingWorthFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.SavingWorth
 
@@ -17,7 +17,7 @@ class SavingWorthFactory(factory.DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class AccountWorthFactory(factory.DjangoModelFactory):
+class AccountWorthFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.AccountWorth
 
@@ -26,7 +26,7 @@ class AccountWorthFactory(factory.DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class PensionWorthFactory(factory.DjangoModelFactory):
+class PensionWorthFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PensionWorth
 

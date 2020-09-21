@@ -10,7 +10,7 @@ from .models import Saving, SavingBalance, SavingType
 
 
 @factory.django.mute_signals(post_save)
-class SavingTypeFactory(factory.DjangoModelFactory):
+class SavingTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SavingType
         django_get_or_create = ('title',)
@@ -20,7 +20,7 @@ class SavingTypeFactory(factory.DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class SavingFactory(factory.DjangoModelFactory):
+class SavingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Saving
 
@@ -33,7 +33,7 @@ class SavingFactory(factory.DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class SavingBalanceFactory(factory.DjangoModelFactory):
+class SavingBalanceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SavingBalance
 

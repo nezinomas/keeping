@@ -6,7 +6,7 @@ from ..users.factories import UserFactory
 from .models import Book
 
 
-class BookFactory(factory.DjangoModelFactory):
+class BookFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Book
 
