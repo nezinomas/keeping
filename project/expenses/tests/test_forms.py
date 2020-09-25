@@ -7,7 +7,8 @@ from freezegun import freeze_time
 from ...accounts.factories import AccountFactory
 from ...users.factories import UserFactory
 from ..factories import ExpenseNameFactory, ExpenseTypeFactory
-from ..forms import ExpenseForm, ExpenseNameForm, ExpenseTypeForm
+from ..forms import (ExpenseForm, ExpenseNameForm, ExpenseSearchForm,
+                     ExpenseTypeForm)
 
 pytestmark = pytest.mark.django_db
 
@@ -252,3 +253,51 @@ def test_expense_name_title_too_short(get_user):
     assert not form.is_valid()
 
     assert 'title' in form.errors
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                          Expense Search
+# ---------------------------------------------------------------------------------------
+def test_search_init(get_user):
+    ExpenseSearchForm()
+
+
+def test_search_fields(get_user):
+    form = ExpenseSearchForm().as_p()
+
+    assert '<input type="text" name="s"' in form
+
+
+@pytest.mark.parametrize(
+    'search',
+    [
+        ('2'),
+        ('x'*3),
+        ('x'*51),
+        ('xxxx-~!@#$%^&*()_+=[]{}|\\/><?'),
+    ]
+)
+def test_search_form_invalid(search):
+    form = ExpenseSearchForm(data={'s': search})
+
+    assert not form.is_valid()
+
+
+@pytest.mark.parametrize(
+    'search',
+    [
+        ('2000'),
+        ('2000.01'),
+        ('2000-01'),
+        ('2000.01.01'),
+        ('2000-01-01'),
+        ('2000 test'),
+        ('2000 test1 test2'),
+        ('test'),
+        ('test1 test2'),
+    ]
+)
+def test_search_form_valid(search):
+    form = ExpenseSearchForm(data={'s': search})
+
+    assert form.is_valid()
