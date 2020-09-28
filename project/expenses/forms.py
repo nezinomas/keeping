@@ -120,7 +120,7 @@ class ExpenseNameForm(forms.ModelForm):
 class ExpenseSearchForm(forms.Form):
     re_alphanumeric = re.compile(r"^[ -.\w\d]+$", re.UNICODE)
 
-    s = forms.CharField(validators=[
+    search = forms.CharField(validators=[
         MinLengthValidator(4),
         MaxLengthValidator(50),
         RegexValidator(re_alphanumeric, 'Only alphabetic')
@@ -129,7 +129,7 @@ class ExpenseSearchForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['s'].label = None
+        self.fields['search'].label = None
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

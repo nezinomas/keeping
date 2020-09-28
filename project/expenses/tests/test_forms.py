@@ -265,7 +265,7 @@ def test_search_init(get_user):
 def test_search_fields(get_user):
     form = ExpenseSearchForm().as_p()
 
-    assert '<input type="text" name="s"' in form
+    assert '<input type="text" name="search"' in form
 
 
 @pytest.mark.parametrize(
@@ -278,7 +278,7 @@ def test_search_fields(get_user):
     ]
 )
 def test_search_form_invalid(search):
-    form = ExpenseSearchForm(data={'s': search})
+    form = ExpenseSearchForm(data={'search': search})
 
     assert not form.is_valid()
 
@@ -298,6 +298,6 @@ def test_search_form_invalid(search):
     ]
 )
 def test_search_form_valid(search):
-    form = ExpenseSearchForm(data={'s': search})
+    form = ExpenseSearchForm(data={'search': search})
 
     assert form.is_valid()
