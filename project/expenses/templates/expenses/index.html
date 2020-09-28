@@ -17,10 +17,11 @@
                 {% endfor %}
                 <button id="13" type="button" data-url="{% url 'expenses:expenses_list' %}" class="btn btn-sm btn-month js-filter ml-2">Visi įrašai</button>
             </div>
-            <div class="col text-right">
+            <div class="col-sm-2 text-right">
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expense_new }}"><i class="fas fa-plus"></i> Išlaidas</button>
             </div>
         </div>
+        <div id="search">{{ search }}</div>
         <div id="expenses_list">{{ expenses }}</div>
     </div>
 

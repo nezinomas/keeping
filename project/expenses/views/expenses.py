@@ -24,6 +24,12 @@ class Index(IndexMixin):
         context['buttons'] = year_month_list()
         context['current_month'] = datetime.now().month
 
+        context['search'] = render_to_string(
+            template_name=f'expenses/includes/search_form.html',
+            context={'form': forms.ExpenseSearchForm()},
+            request=self.request
+        )
+
         return context
 
 

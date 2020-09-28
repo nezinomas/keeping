@@ -86,6 +86,14 @@ def test_expenses_month_list_200(client_logged):
     assert response.status_code == 200
 
 
+@pytest.mark.django_db
+def test_expenses_index_search_form(client_logged):
+    url = reverse('expenses:expenses_index')
+    response = client_logged.get(url).content.decode('utf-8')
+
+    assert '<input type="text" name="search"' in response
+
+
 #
 # ----------------------------------------------------------------------------
 #                                                                  ExpenseType
