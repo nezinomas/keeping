@@ -9,7 +9,7 @@ from ..factories import ExpenseNameFactory, ExpenseTypeFactory
 from ..views import expenses, expenses_name, expenses_type
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
-
+pytestmark = pytest.mark.django_db
 
 @pytest.fixture()
 def _db_data():
@@ -33,7 +33,6 @@ def test_expenses_lists_func():
     assert expenses.Lists == view.func.view_class
 
 
-@pytest.mark.django_db
 def test_expenses_lists_200(client_logged):
     url = reverse('expenses:expenses_list')
     response = client_logged.get(url)
@@ -41,7 +40,6 @@ def test_expenses_lists_200(client_logged):
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
 def test_expenses_lists_302(client):
     url = reverse('expenses:expenses_list')
     response = client.get(url)
@@ -67,7 +65,6 @@ def test_expenses_update_func():
     assert expenses.Update == view.func.view_class
 
 
-@pytest.mark.django_db
 def test_expenses_index_200(client_logged):
     response = client_logged.get('/expenses/')
 
@@ -77,14 +74,12 @@ def test_expenses_index_200(client_logged):
     assert 'categories' in response.context
 
 
-@pytest.mark.django_db
 def test_expenses_month_list_200(client_logged):
     response = client_logged.get('/expenses/lists/1/')
 
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
 def test_expenses_index_search_form(client_logged):
     url = reverse('expenses:expenses_index')
     response = client_logged.get(url).content.decode('utf-8')
@@ -122,7 +117,6 @@ def test_expenses_name_update_func():
     assert expenses_name.Update == view.func.view_class
 
 
-@pytest.mark.django_db
 def test_expense_name_save_data(client_logged):
     url = reverse('expenses:expenses_name_new')
     p = ExpenseTypeFactory()
@@ -142,7 +136,6 @@ def test_expense_name_save_data(client_logged):
     assert template in templates
 
 
-@pytest.mark.django_db()
 def test_expense_name_save_invalid_data(client_logged):
     data = {
         'title': 'x',
@@ -159,7 +152,6 @@ def test_expense_name_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_expense_name_update(client_logged):
     e = ExpenseNameFactory()
 
@@ -190,7 +182,6 @@ def test_load_expenses_name_new_func():
     assert expenses.load_expense_name == actual.func
 
 
-@pytest.mark.django_db
 def test_load_expense_name_status_code(client_logged):
     url = reverse('expenses:load_expense_name')
     response = client_logged.get(url, {'expense_type': 1})
@@ -198,7 +189,6 @@ def test_load_expense_name_status_code(client_logged):
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
 def test_load_expense_name_isnull_count(client_logged, _db_data):
     change_profile_year(client_logged)
 
@@ -208,7 +198,6 @@ def test_load_expense_name_isnull_count(client_logged, _db_data):
     assert response.context['objects'].count() == 1
 
 
-@pytest.mark.django_db
 def test_load_expense_name_all(client_logged, _db_data):
     url = reverse('expenses:load_expense_name')
     response = client_logged.get(url, {'expense_type': 1})
@@ -225,7 +214,6 @@ def test_view_reload_stats_func():
     assert expenses.reload == view.func
 
 
-@pytest.mark.django_db
 def test_view_reload_stats_render(get_user, rf):
     request = rf.get('/expenses/reload/?ajax_trigger=1')
     request.user = UserFactory.build()
@@ -233,3 +221,88 @@ def test_view_reload_stats_render(get_user, rf):
     response = expenses.reload(request)
 
     assert response.status_code == 200
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                         Expenses Search
+# ---------------------------------------------------------------------------------------
+@pytest.fixture()
+def _search_form_data():
+    return ([
+        {"name":"csrfmiddlewaretoken", "value":"RIFWoIjFMOnqjK9mbzZdjeJYucGzet4hcimTmCRnsIw0MTV7eyjvdxFK6FriXrDy"},
+        {"name":"search", "value":"1999 expense_type"},
+    ])
+
+
+def test_search_func():
+    view = resolve('/expenses/search/')
+
+    assert expenses.Search == view.func.view_class
+
+
+def test_search_get_200(client_logged):
+    url = reverse('expenses:expenses_search')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_search_get_302(client):
+    url = reverse('expenses:expenses_search')
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
+def test_search_post_200(client_logged, _search_form_data):
+    form_data = json.dumps(_search_form_data)
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    assert response.status_code == 200
+
+
+def test_search_post_404(client_logged):
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url)
+
+    assert response.status_code == 404
+
+
+def test_search_post_500(client_logged):
+    form_data = json.dumps([{'x': 'y'}])
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    assert response.status_code == 500
+
+
+def test_search_bad_json_data(client_logged):
+    form_data = "{'x': 'y'}"
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    assert response.status_code == 500
+
+
+def test_search_form_is_not_valid(client_logged, _search_form_data):
+    _search_form_data[1]['value'] = '@#$%^&*xxxx'  # search
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    actual = json.loads(response.content)
+
+    assert not actual['form_is_valid']
+
+
+def test_search_form_is_valid(client_logged, _search_form_data):
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    actual = json.loads(response.content)
+
+    assert actual['form_is_valid']

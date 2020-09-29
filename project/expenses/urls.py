@@ -39,6 +39,11 @@ e = [
         'expenses/reload/',
         expenses.reload,
         name='reload_expenses'
+    ),
+    path(
+        'expenses/search/',
+        expenses.Search.as_view(),
+        name='expenses_search'
     )
 ]
 
