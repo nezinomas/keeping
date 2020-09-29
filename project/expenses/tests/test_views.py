@@ -5,7 +5,7 @@ from django.urls import resolve, reverse
 
 from ...users.factories import UserFactory
 from ...core.tests.utils import change_profile_year
-from ..factories import ExpenseNameFactory, ExpenseTypeFactory
+from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ..views import expenses, expenses_name, expenses_type
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -230,7 +230,7 @@ def test_view_reload_stats_render(get_user, rf):
 def _search_form_data():
     return ([
         {"name":"csrfmiddlewaretoken", "value":"RIFWoIjFMOnqjK9mbzZdjeJYucGzet4hcimTmCRnsIw0MTV7eyjvdxFK6FriXrDy"},
-        {"name":"search", "value":"1999 expense_type"},
+        {"name":"search", "value":"1999 type"},
     ])
 
 
@@ -306,3 +306,29 @@ def test_search_form_is_valid(client_logged, _search_form_data):
     actual = json.loads(response.content)
 
     assert actual['form_is_valid']
+
+
+def test_search_not_found(client_logged, _search_form_data):
+    ExpenseFactory()
+
+    _search_form_data[1]['value'] = 'xxxx'
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+    actual = json.loads(response.content)
+
+    assert 'Nieko neradau' in actual['html']
+
+
+def test_search_found(client_logged, _search_form_data):
+    ExpenseFactory()
+
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+    actual = json.loads(response.content)
+
+    assert '1999-01-01' in actual['html']
+    assert 'Remark' in actual['html']

@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from re import search
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
@@ -13,6 +12,7 @@ from ...core.lib.date import year_month_list
 from ...core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                   UpdateAjaxMixin)
 from .. import forms, models
+from ..helpers import views as H
 from ..views.expenses_type import Lists as TypeLists
 
 
@@ -157,10 +157,16 @@ class Search(LoginRequiredMixin, FormView):
         html = 'Nieko neradau'
         _search = self.form_data_dict['search']
 
+        sql = H.search(_search)
+        if sql:
+            template = 'expenses/includes/expenses_list.html'
+            context = {'items': sql}
+            html = render_to_string(template, context, self.request)
+
         data = {
             'form_is_valid': True,
             'html_form': self._render_form({'form': form}),
-            'html': _search,
+            'html': html,
         }
         return JsonResponse(data)
 
