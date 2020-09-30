@@ -3,6 +3,10 @@ class GetQuerysetMixin():
     object_list = 'objects'
 
     def get_queryset(self):
+        obj = self.get_object()
+        if obj:
+            return obj
+
         year = self.request.user.year
 
         try:
@@ -14,6 +18,14 @@ class GetQuerysetMixin():
                 qs = {}
 
         return qs
+
+    def get_object(self):
+        obj = None
+        pk = self.kwargs.get('pk')
+        if pk:
+            obj = self.model.objects.get(pk=pk)
+
+        return obj
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
