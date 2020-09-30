@@ -71,7 +71,7 @@ def test_expenses_update_func():
 
 
 @freeze_time('1974-08-08')
-def test_expenses_load_form(client_logged, get_user):
+def test_expenses_load_new_form(client_logged, get_user):
     get_user.year = 3000
     url = reverse('expenses:expenses_new')
 
@@ -133,6 +133,26 @@ def test_expenses_save_invalid_data(client_logged):
     actual = json.loads(json_str)
 
     assert not actual['form_is_valid']
+
+
+def test_expenses_load_update_form(client_logged):
+    e = ExpenseFactory()
+    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert '1999-01-01' in form
+    assert '1.12' in form
+    assert '13' in form
+    assert 'Expense Type' in form
+    assert 'Expense Name' in form
+    assert 'Remark' in form
 
 
 def test_expenses_update_to_another_year(client_logged):
