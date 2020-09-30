@@ -28,7 +28,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
 
         if utils.is_ajax(self.request):
             data = dict()
-            context = self.get_context_data() # calls GetQuerysetMixin get_context_data
+            context = self.get_context_data(**{'no_items': True}) # calls GetQuerysetMixin get_context_data
             self._render_form(data, context)
 
             return JsonResponse(data)
@@ -42,12 +42,14 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         if form.is_valid():
             form.save()
 
-            context = self.get_context_data()
             context['form'] = form
 
             data['form_is_valid'] = True
 
             if self.list_render_output:
+                context.update({
+                    **self.get_context_data()
+                })
                 data['html_list'] = (
                     render_to_string(
                         self.get_list_template_name(), context, self.request)
@@ -61,7 +63,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        context = self.get_context_data()
+        context = self.get_context_data(**{'no_items': True})
 
         context['form'] = form
         data = {'form_is_valid': False}
@@ -100,7 +102,7 @@ class AjaxDeleteMixin(GetQuerysetMixin):
 
         if utils.is_ajax(self.request):
             data = dict()
-            context = self.get_context_data()
+            context = self.get_context_data(**{'no_items': True})
             rendered = render_to_string(template_name=self.get_template_names(),
                                         context=context,
                                         request=request)

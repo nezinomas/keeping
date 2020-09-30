@@ -29,6 +29,9 @@ class GetQuerysetMixin():
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context[self.context_object_name] = self.get_queryset()
+
+        no_items = kwargs.get('no_items')
+        if not no_items:
+            context[self.context_object_name] = self.get_queryset()
 
         return context
