@@ -3,10 +3,6 @@ class GetQuerysetMixin():
     object_list = 'objects'
 
     def get_queryset(self):
-        obj = self.get_object()
-        if obj:
-            return obj
-
         year = self.request.user.year
 
         try:
