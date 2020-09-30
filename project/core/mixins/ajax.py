@@ -25,7 +25,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
 
     def get(self, request, *args, **kwargs):
         if 'pk' in self.kwargs:
-            self.object = self.get_object()
+            self.object = self.model.objects.get(pk=self.kwargs['pk'])
 
         if utils.is_ajax(self.request):
             data = dict()
