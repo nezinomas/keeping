@@ -69,8 +69,6 @@ class ExpenseForm(forms.ModelForm):
         self.fields['account'].label = 'Sąskaita'
         self.fields['total_sum'].label = 'Kaina'
 
-
-
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 

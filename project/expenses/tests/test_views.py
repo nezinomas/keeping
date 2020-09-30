@@ -1,10 +1,15 @@
 import json
+from datetime import date
+from decimal import Decimal
 
 import pytest
 from django.urls import resolve, reverse
+from freezegun import freeze_time
 
-from ...users.factories import UserFactory
+from ...accounts.factories import AccountFactory
 from ...core.tests.utils import change_profile_year
+from ...users.factories import UserFactory
+from .. import models
 from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ..views import expenses, expenses_name, expenses_type
 
@@ -63,6 +68,186 @@ def test_expenses_update_func():
     view = resolve('/expenses/update/1/')
 
     assert expenses.Update == view.func.view_class
+
+
+@freeze_time('1974-08-08')
+def test_expenses_load_new_form(client_logged, get_user):
+    get_user.year = 3000
+    url = reverse('expenses:expenses_new')
+
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '3000-08-08' in actual['html_form']
+
+
+def test_expenses_save(client_logged):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory()
+
+    data = {
+        'date': '1999-01-01',
+        'price': '1.05',
+        'quantity': 33,
+        'account': a.pk,
+        'expense_type': t.pk,
+        'expense_name': n.pk,
+    }
+
+    url = reverse('expenses:expenses_new')
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    actual = models.Expense.objects.get(pk=1)
+    assert actual.date == date(1999, 1, 1)
+    assert pytest.approx(float(actual.price), rel=1e-2) == 1.05
+    assert actual.quantity == 33
+    assert actual.account.title == 'Account1'
+    assert actual.expense_type.title == 'Expense Type'
+    assert actual.expense_name.title == 'Expense Name'
+
+
+def test_expenses_save_invalid_data(client_logged):
+    data = {
+        'date': 'x',
+        'price': 'x',
+        'quantity': 0,
+        'account': 'x',
+        'expense_type': 'x',
+    }
+
+    url = reverse('expenses:expenses_new')
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
+
+
+def test_expenses_load_update_form(client_logged):
+    e = ExpenseFactory()
+    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert '1999-01-01' in form
+    assert '1.12' in form
+    assert '13' in form
+    assert 'Expense Type' in form
+    assert 'Expense Name' in form
+    assert 'Remark' in form
+
+
+def test_expenses_update_to_another_year(client_logged):
+    e = ExpenseFactory()
+
+    data = {
+        'price': '150',
+        'quantity': 13,
+        'date': '2010-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'expense_type': 1,
+        'expense_name': 1,
+    }
+    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    assert actual['form_is_valid']
+
+    actual = models.Expense.objects.get(pk=e.pk)
+    assert actual.date == date(2010, 12, 31)
+    assert actual.quantity == 13
+
+
+def test_expenses_update(client_logged):
+    e = ExpenseFactory()
+
+    data = {
+        'price': '150',
+        'quantity': 33,
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'expense_type': 1,
+        'expense_name': 1,
+    }
+    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    actual = models.Expense.objects.get(pk=e.pk)
+    assert actual.date == date(1999, 12, 31)
+    assert float(150) == 150
+    assert actual.quantity == 33
+    assert actual.account.title == 'Account1'
+    assert actual.expense_type.title == 'Expense Type'
+    assert actual.expense_name.title == 'Expense Name'
+    assert actual.remark == 'Pastaba'
+
+
+@freeze_time('2000-03-03')
+def test_expenses_update_past_record(client_logged, get_user):
+    get_user.year = 2000
+    e = ExpenseFactory(date=date(1974, 12, 12))
+
+    data = {
+        'price': '150',
+        'quantity': 33,
+        'date': '1974-12-12',
+        'remark': 'Pastaba',
+        'account': 1,
+        'expense_type': 1,
+        'expense_name': 1,
+    }
+    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    actual = models.Expense.objects.get(pk=e.pk)
+    assert actual.date == date(1974, 12, 12)
+    assert float(150) == 150
+    assert actual.quantity == 33
+    assert actual.account.title == 'Account1'
+    assert actual.expense_type.title == 'Expense Type'
+    assert actual.expense_name.title == 'Expense Name'
+    assert actual.remark == 'Pastaba'
 
 
 def test_expenses_index_200(client_logged):
