@@ -1,6 +1,6 @@
 {% load form %}
 {% url 'expenses:load_expense_name' as chained_url %}
-{% generic_form title='Išlaidos' update_container='expenses_list' chained_dropdown=chained_url %}
+{% generic_form title='Išlaidos' update_container='ajax-content' chained_dropdown=chained_url %}
 
 <style>
     .form-check {

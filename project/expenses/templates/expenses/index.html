@@ -22,7 +22,7 @@
             </div>
         </div>
         <div id="search_form_data" class="mt-3">{{ search }}</div>
-        <div id="expenses_list">{{ expenses }}</div>
+        <div id="ajax-content">{{ expenses }}</div>
     </div>
 
     <div class="col-lg-4 px-1">
@@ -53,8 +53,8 @@
                 'month': btn_month.attr('id'),
             },
             success: function (data) {
-                var expenses_list = $(data).filter('#expenses_list');
-                $('#expenses_list').html(expenses_list);
+                var expenses_list = $(data).filter('#ajax-content');
+                $('#ajax-content').html(expenses_list);
             }
         });
     });
@@ -66,7 +66,7 @@
             type: 'get',
             success: function (data) {
                 var expenses_list = data;
-                $('#expenses_list').html(expenses_list);
+                $('#ajax-content').html(expenses_list);
             }
         });
     });
@@ -103,7 +103,7 @@
                     "form_data": form_data
                 },
                 success: function (data) {
-                    $('#expenses_list').html(data.html);
+                    $('#ajax-content').html(data.html);
                     $('#search_form_data').html(data.html_form);
                 },
                 error: function (xhr, status, error) {
