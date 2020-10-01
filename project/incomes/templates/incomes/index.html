@@ -11,7 +11,8 @@
 <div class="row mt-2 px-2">
     <div class="col-lg-8 px-1">
         <div class="row my-2">
-            <div class="col text-right">
+            <div class="col" id="search_form_data">{{ search }}</div>
+            <div class="col auto text-right">
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes }}"><i class="fas fa-plus"></i> Pajamas</button>
             </div>
         </div>
@@ -31,9 +32,45 @@
     </div>
 </div>
 
-<div class="modal fade" id="modal-form">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content"></div>
-    </div>
-</div>
+{% include 'modal.html' %}
+<script>
+    $(function () {
+        var search = function () {
+            var btn = $(this);
+            var url = btn.data('url');
+
+            if (url == undefined) {
+                return;
+            }
+
+            // This prevents the form from submitting
+            event.preventDefault();
+
+            // Capture form input
+            csrfmiddlewaretoken = $("#search_form").find("input[name='csrfmiddlewaretoken']").val();
+            form_data = $('#search_form').serializeArray();
+            form_data = JSON.stringify(form_data);
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                dataType: 'json',
+                type: "POST",
+                data: {
+                    "csrfmiddlewaretoken": csrfmiddlewaretoken,
+                    "form_data": form_data
+                },
+                success: function (data) {
+                    $('#ajax-content').html(data.html);
+                    $('#search_form_data').html(data.html_form);
+                },
+                error: function (xhr, status, error) {
+                    alert(`${error}\n\n${xhr.responseJSON.error}`)
+                }
+            });
+        };
+
+        $(document).on('click', '.search_click', search);
+    });
+</script>
 {% endblock content %}
