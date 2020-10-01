@@ -4,7 +4,7 @@ from operator import or_
 
 from django.db.models import Q
 
-from .. import models
+from ...expenses.models import Expense
 
 
 def parse_search_input(search_str):
@@ -27,10 +27,10 @@ def parse_search_input(search_str):
     return _date, _search
 
 
-def search(search_str):
+def search_expenses(search_str):
     _date, _search = parse_search_input(search_str)
 
-    sql = models.Expense.objects.items()
+    sql = Expense.objects.items()
 
     if _date:
         year = _date[0:4]

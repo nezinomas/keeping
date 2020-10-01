@@ -2,8 +2,9 @@ from datetime import date
 
 import pytest
 
-from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
-from ..helpers import views as H
+from ...expenses.factories import (ExpenseFactory, ExpenseNameFactory,
+                                   ExpenseTypeFactory)
+from ..lib import search as H
 
 
 def test_get_year():
@@ -75,7 +76,7 @@ def test_search(search, cnt, expense_type, expense_name, get_user):
         remark='ZZZ'
     )
 
-    q = H.search(search)
+    q = H.search_expenses(search)
     assert q.count() == cnt
 
     if q:
@@ -91,7 +92,7 @@ def test_search_ordering(get_user):
     ExpenseFactory(date=date(1000, 1, 1))
     ExpenseFactory()
 
-    q = H.search('remark')
+    q = H.search_expenses('remark')
 
     assert q[0].date == date(1999, 1, 1)
     assert q[1].date == date(1000, 1, 1)

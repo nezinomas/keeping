@@ -5,12 +5,12 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
+from ...core.lib import search
 from ...core.lib.date import year_month_list
 from ...core.mixins.ajax import AjaxCustomFormMixin
 from ...core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                   UpdateAjaxMixin)
 from .. import forms, models
-from ..helpers import views as H
 from ..views.expenses_type import Lists as TypeLists
 
 
@@ -124,7 +124,7 @@ class Search(AjaxCustomFormMixin):
         html = 'Nieko neradau'
         _search = self.form_data_dict['search']
 
-        sql = H.search(_search)
+        sql = search.search_expenses(_search)
         if sql:
             template = 'expenses/includes/expenses_list.html'
             context = {'items': sql}
