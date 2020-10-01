@@ -2,8 +2,10 @@ from datetime import date
 
 import pytest
 
-from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
-from ..helpers import views as H
+from ...expenses.factories import (ExpenseFactory, ExpenseNameFactory,
+                                   ExpenseTypeFactory)
+from ...incomes.factories import IncomeFactory, IncomeTypeFactory
+from ..lib import search as H
 
 
 def test_get_year():
@@ -47,6 +49,9 @@ def test_get_nothing():
     assert not _d
 
 
+# ---------------------------------------------------------------------------------------
+#                                                                                 Expense
+# ---------------------------------------------------------------------------------------
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     'search, cnt, expense_type, expense_name',
@@ -66,7 +71,7 @@ def test_get_nothing():
         ('1999-1 type', 1, 'Expense Type', 'Expense Name'),
     ]
 )
-def test_search(search, cnt, expense_type, expense_name, get_user):
+def test_expense_search(search, cnt, expense_type, expense_name, get_user):
     ExpenseFactory()
     ExpenseFactory(
         date=date(3333, 1, 1),
@@ -75,7 +80,7 @@ def test_search(search, cnt, expense_type, expense_name, get_user):
         remark='ZZZ'
     )
 
-    q = H.search(search)
+    q = H.search_expenses(search)
     assert q.count() == cnt
 
     if q:
@@ -87,11 +92,57 @@ def test_search(search, cnt, expense_type, expense_name, get_user):
 
 
 @pytest.mark.django_db
-def test_search_ordering(get_user):
+def test_expense_search_ordering(get_user):
     ExpenseFactory(date=date(1000, 1, 1))
     ExpenseFactory()
 
-    q = H.search('remark')
+    q = H.search_expenses('remark')
+
+    assert q[0].date == date(1999, 1, 1)
+    assert q[1].date == date(1000, 1, 1)
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                                 Income
+# ---------------------------------------------------------------------------------------
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    'search, cnt, income_type',
+    [
+        ('1999', 1, 'Income Type'),
+        ('1999.1', 1, 'Income Type'),
+        ('1999-1', 1, 'Income Type'),
+        ('2000', 0, None),
+        ('type', 1, 'Income Type'),
+        ('remark', 1, 'Income Type'),
+        ('1999.1 type', 1, 'Income Type'),
+        ('1999-1 type', 1, 'Income Type'),
+    ]
+)
+def test_incomes_search(search, cnt, income_type, get_user):
+    IncomeFactory()
+    IncomeFactory(
+        date=date(3333, 1, 1),
+        income_type=IncomeTypeFactory(title='Y'),
+        remark='ZZZ'
+    )
+
+    q = H.search_incomes(search)
+    assert q.count() == cnt
+
+    if q:
+        q = q[0]
+
+        assert q.date == date(1999, 1, 1)
+        assert q.income_type.title == income_type
+
+
+@pytest.mark.django_db
+def test_incomes_search_ordering(get_user):
+    IncomeFactory(date=date(1000, 1, 1))
+    IncomeFactory()
+
+    q = H.search_incomes('remark')
 
     assert q[0].date == date(1999, 1, 1)
     assert q[1].date == date(1000, 1, 1)

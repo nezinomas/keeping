@@ -2,15 +2,16 @@ from datetime import datetime
 
 from django.db.models import F
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import reverse, render
 from django.template.loader import render_to_string
 
+from ...core.forms import SearchForm
+from ...core.lib import search
 from ...core.lib.date import year_month_list
 from ...core.mixins.ajax import AjaxCustomFormMixin
 from ...core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                   UpdateAjaxMixin)
 from .. import forms, models
-from ..helpers import views as H
 from ..views.expenses_type import Lists as TypeLists
 
 
@@ -28,8 +29,8 @@ class Index(IndexMixin):
         context['current_month'] = datetime.now().month
 
         context['search'] = render_to_string(
-            template_name=f'expenses/includes/search_form.html',
-            context={'form': forms.ExpenseSearchForm()},
+            template_name='core/includes/search_form.html',
+            context={'form': SearchForm(), 'url': reverse('expenses:expenses_search')},
             request=self.request
         )
 
@@ -116,15 +117,15 @@ def reload(request):
 
 
 class Search(AjaxCustomFormMixin):
-    template_name = 'expenses/includes/search_form.html'
-    form_class = forms.ExpenseSearchForm
+    template_name = 'core/includes/search_form.html'
+    form_class = SearchForm
     form_data_dict = {}
 
     def form_valid(self, form):
         html = 'Nieko neradau'
         _search = self.form_data_dict['search']
 
-        sql = H.search(_search)
+        sql = search.search_expenses(_search)
         if sql:
             template = 'expenses/includes/expenses_list.html'
             context = {'items': sql}
@@ -132,7 +133,7 @@ class Search(AjaxCustomFormMixin):
 
         data = {
             'form_is_valid': True,
-            'html_form': self._render_form({'form': form}),
+            'html_form': self._render_form({'form': form, 'url': reverse('expenses:expenses_search')}),
             'html': html,
         }
         return JsonResponse(data)

@@ -40,4 +40,9 @@ urlpatterns = [
         views.TypeUpdate.as_view(),
         name='incomes_type_update'
     ),
+    path(
+        'incomes/search/',
+        views.Search.as_view(),
+        name='incomes_search'
+    ),
 ]

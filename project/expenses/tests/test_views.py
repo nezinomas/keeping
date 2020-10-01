@@ -1,6 +1,5 @@
 import json
 from datetime import date
-from decimal import Decimal
 
 import pytest
 from django.urls import resolve, reverse
@@ -270,6 +269,7 @@ def test_expenses_index_search_form(client_logged):
     response = client_logged.get(url).content.decode('utf-8')
 
     assert '<input type="text" name="search"' in response
+    assert reverse('expenses:expenses_search') in response
 
 
 # ---------------------------------------------------------------------------------------

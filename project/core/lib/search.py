@@ -4,7 +4,8 @@ from operator import or_
 
 from django.db.models import Q
 
-from .. import models
+from ...expenses.models import Expense
+from ...incomes.models import Income
 
 
 def parse_search_input(search_str):
@@ -27,11 +28,7 @@ def parse_search_input(search_str):
     return _date, _search
 
 
-def search(search_str):
-    _date, _search = parse_search_input(search_str)
-
-    sql = models.Expense.objects.items()
-
+def filter_dates(_date, sql):
     if _date:
         year = _date[0:4]
         sql = sql.filter(date__year=year)
@@ -40,10 +37,36 @@ def search(search_str):
             month = _date[5:]
             sql = sql.filter(date__month=month)
 
+    return sql
+
+
+def search_expenses(search_str):
+    _date, _search = parse_search_input(search_str)
+
+    sql = Expense.objects.items()
+    sql = filter_dates(_date, sql)
+
     if _search:
         sql = sql.filter(
             reduce(or_, (Q(expense_type__title__icontains=q) for q in _search)) |
             reduce(or_, (Q(expense_name__title__icontains=q) for q in _search)) |
+            reduce(or_, (Q(remark__icontains=q) for q in _search))
+        )
+
+    sql = sql.order_by('-date')
+
+    return sql
+
+
+def search_incomes(search_str):
+    _date, _search = parse_search_input(search_str)
+
+    sql = Income.objects.items()
+    sql = filter_dates(_date, sql)
+
+    if _search:
+        sql = sql.filter(
+            reduce(or_, (Q(income_type__title__icontains=q) for q in _search)) |
             reduce(or_, (Q(remark__icontains=q) for q in _search))
         )
 

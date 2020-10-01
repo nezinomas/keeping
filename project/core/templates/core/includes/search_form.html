@@ -1,0 +1,34 @@
+{% load crispy_forms_tags %}
+
+<form novalidate method="post" id="search_form">
+    {% csrf_token %}
+    <div class="form-row align-items-center">
+        <div class="form-group col">
+            {{ form.search|as_crispy_field }}
+        </div>
+        <div class="form-group col-auto">
+            <input type="submit" name="search" value="Search" id="search_btn" class="btn btn-secondary btn-sm search_click text-right my-auto" data-url="{{ url }}">
+        </div>
+    </div>
+</form>
+
+<style>
+    #search_btn {
+        padding: 0.15rem;
+        width: 3.65rem;
+        text-align: center!important;
+    }
+
+    #search_form {
+        padding: 0 .15rem;
+    }
+
+    #search_form .form-group {
+        margin-bottom: 0!important;
+        padding: 0.15rem!important;
+    }
+
+    #div_id_search {
+        margin: 0!important;
+    }
+</style>

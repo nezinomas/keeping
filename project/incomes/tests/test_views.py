@@ -1,14 +1,16 @@
 import json
+from datetime import date
 
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
-from .. import views
+from .. import models, views
 from ..factories import IncomeFactory, IncomeTypeFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+pytestmark = pytest.mark.django_db
 
 
 # ----------------------------------------------------------------------------
@@ -57,7 +59,6 @@ def test_types_update_func():
 
 
 @freeze_time('2000-01-01')
-@pytest.mark.django_db()
 def test_income_load_form(client_logged):
     url = reverse('incomes:incomes_new')
 
@@ -70,7 +71,6 @@ def test_income_load_form(client_logged):
     assert '1999-01-01' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_income_save(client_logged):
     a = AccountFactory()
     i = IncomeTypeFactory()
@@ -96,7 +96,6 @@ def test_income_save(client_logged):
     assert 'Income Type' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_income_save_invalid_data(client_logged):
     data = {
         'date': 'x',
@@ -115,7 +114,24 @@ def test_income_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
+def test_incomes_load_update_form(client_logged):
+    i = IncomeFactory()
+    url = reverse('incomes:incomes_update', kwargs={'pk': i.pk})
+
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert '1999-01-01' in form
+    assert '1000.62' in form
+    assert 'Income Type' in form
+    assert 'remark' in form
+
+
 def test_income_update_to_another_year(client_logged):
     income = IncomeFactory()
 
@@ -139,7 +155,6 @@ def test_income_update_to_another_year(client_logged):
     assert '2010-12-31' not in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_income_update(client_logged):
     income = IncomeFactory()
 
@@ -165,11 +180,49 @@ def test_income_update(client_logged):
     assert 'Pastaba' in actual['html_list']
 
 
+@freeze_time('2000-03-03')
+def test_incomes_update_past_record(client_logged, get_user):
+    get_user.year = 2000
+    i = IncomeFactory(date=date(1974, 12, 12))
+
+    data = {
+        'price': '150',
+        'date': '1974-12-12',
+        'remark': 'Pastaba',
+        'account': 1,
+        'income_type': 1,
+    }
+    url = reverse('incomes:incomes_update', kwargs={'pk': i.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    actual = models.Income.objects.get(pk=i.pk)
+    assert actual.date == date(1974, 12, 12)
+    assert float(150) == 150
+    assert actual.account.title == 'Account1'
+    assert actual.income_type.title == 'Income Type'
+    assert actual.remark == 'Pastaba'
+
+
+def test_incomes_index_search_form(client_logged):
+    url = reverse('incomes:incomes_index')
+    response = client_logged.get(url).content.decode('utf-8')
+
+    assert '<input type="text" name="search"' in response
+    assert reverse('incomes:incomes_search') in response
+
+
 # ----------------------------------------------------------------------------
 #                                                                 Income Type
 # ----------------------------------------------------------------------------
 @freeze_time('2000-01-01')
-@pytest.mark.django_db()
 def test_type_load_form(client_logged):
     url = reverse('incomes:incomes_type_new')
 
@@ -178,7 +231,6 @@ def test_type_load_form(client_logged):
     assert response.status_code == 200
 
 
-@pytest.mark.django_db()
 def test_type_save(client_logged):
     data = {
         'title': 'TTT',
@@ -195,7 +247,6 @@ def test_type_save(client_logged):
     assert 'TTT' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_type_save_invalid_data(client_logged):
     data = {'title': ''}
 
@@ -209,7 +260,6 @@ def test_type_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_type_update(client_logged):
     income = IncomeTypeFactory()
 
@@ -235,3 +285,114 @@ def test_view_index_200(client_logged):
 
     assert 'incomes' in response.context
     assert 'categories' in response.context
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                          Incomes Search
+# ---------------------------------------------------------------------------------------
+@pytest.fixture()
+def _search_form_data():
+    return ([
+        {"name":"csrfmiddlewaretoken", "value":"RIFWoIjFMOnqjK9mbzZdjeJYucGzet4hcimTmCRnsIw0MTV7eyjvdxFK6FriXrDy"},
+        {"name":"search", "value":"1999 type"},
+    ])
+
+
+def test_search_func():
+    view = resolve('/incomes/search/')
+
+    assert views.Search == view.func.view_class
+
+
+def test_search_get_200(client_logged):
+    url = reverse('incomes:incomes_search')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_search_get_302(client):
+    url = reverse('incomes:incomes_search')
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
+def test_search_post_200(client_logged, _search_form_data):
+    form_data = json.dumps(_search_form_data)
+    url = reverse('incomes:incomes_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    assert response.status_code == 200
+
+
+def test_search_post_404(client_logged):
+    url = reverse('incomes:incomes_search')
+    response = client_logged.post(url)
+
+    assert response.status_code == 404
+
+
+def test_search_post_500(client_logged):
+    form_data = json.dumps([{'x': 'y'}])
+    url = reverse('incomes:incomes_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    assert response.status_code == 500
+
+
+def test_search_bad_json_data(client_logged):
+    form_data = "{'x': 'y'}"
+    url = reverse('incomes:incomes_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    assert response.status_code == 500
+
+
+def test_search_form_is_not_valid(client_logged, _search_form_data):
+    _search_form_data[1]['value'] = '@#$%^&*xxxx'  # search
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('incomes:incomes_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    actual = json.loads(response.content)
+
+    assert not actual['form_is_valid']
+
+
+def test_search_form_is_valid(client_logged, _search_form_data):
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('incomes:incomes_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    actual = json.loads(response.content)
+
+    assert actual['form_is_valid']
+
+
+def test_search_not_found(client_logged, _search_form_data):
+    IncomeFactory()
+
+    _search_form_data[1]['value'] = 'xxxx'
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('incomes:incomes_search')
+    response = client_logged.post(url, {'form_data': form_data})
+    actual = json.loads(response.content)
+
+    assert 'Nieko neradau' in actual['html']
+
+
+def test_search_found(client_logged, _search_form_data):
+    IncomeFactory()
+
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('incomes:incomes_search')
+    response = client_logged.post(url, {'form_data': form_data})
+    actual = json.loads(response.content)
+
+    assert '1999-01-01' in actual['html']
+    assert 'remark' in actual['html']

@@ -1,7 +1,14 @@
+from django.http import JsonResponse
+from django.shortcuts import reverse
+from django.template.loader import render_to_string
+
+from ..core.forms import SearchForm
+from ..core.lib import search
+from ..core.mixins.ajax import AjaxCustomFormMixin
 from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from . import forms, models
-from django.db.models import F
+
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
@@ -11,6 +18,11 @@ class Index(IndexMixin):
             self.request, as_string=True)
         context['categories'] = TypeLists.as_view()(
             self.request, as_string=True)
+        context['search'] = render_to_string(
+            template_name='core/includes/search_form.html',
+            context={'form': SearchForm(), 'url': reverse('incomes:incomes_search')},
+            request=self.request
+        )
 
         return context
 
@@ -56,3 +68,26 @@ class TypeNew(CreateAjaxMixin):
 class TypeUpdate(UpdateAjaxMixin):
     model = models.IncomeType
     form_class = forms.IncomeTypeForm
+
+
+class Search(AjaxCustomFormMixin):
+    template_name = 'core/includes/search_form.html'
+    form_class = SearchForm
+    form_data_dict = {}
+
+    def form_valid(self, form):
+        html = 'Nieko neradau'
+        _search = self.form_data_dict['search']
+
+        sql = search.search_incomes(_search)
+        if sql:
+            template = 'incomes/includes/incomes_list.html'
+            context = {'items': sql}
+            html = render_to_string(template, context, self.request)
+
+        data = {
+            'form_is_valid': True,
+            'html_form': self._render_form({'form': form, 'url': reverse('incomes:incomes_search')}),
+            'html': html,
+        }
+        return JsonResponse(data)

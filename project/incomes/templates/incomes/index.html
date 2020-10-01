@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}{% load static %}
 
 
 {% block head %}{% endblock head %}
@@ -10,8 +10,9 @@
 {% url 'incomes:incomes_type_new' as url_incomes_type_new %}
 <div class="row mt-2 px-2">
     <div class="col-lg-8 px-1">
-        <div class="row my-2">
-            <div class="col text-right">
+        <div class="row my-2 align-items-center mb-1">
+            <div class="col" id="search_form_data">{{ search }}</div>
+            <div class="col-auto text-right">
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes }}"><i class="fas fa-plus"></i> Pajamas</button>
             </div>
         </div>
@@ -31,9 +32,6 @@
     </div>
 </div>
 
-<div class="modal fade" id="modal-form">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content"></div>
-    </div>
-</div>
+{% include 'modal.html' %}
+<script type="text/javascript" src="{% static 'js/search.js' %}"></script>
 {% endblock content %}
