@@ -28,7 +28,7 @@ class Index(IndexMixin):
         context['current_month'] = datetime.now().month
 
         context['search'] = render_to_string(
-            template_name=f'expenses/includes/search_form.html',
+            template_name=f'core/includes/search_form.html',
             context={'form': forms.ExpenseSearchForm()},
             request=self.request
         )
@@ -116,7 +116,7 @@ def reload(request):
 
 
 class Search(AjaxCustomFormMixin):
-    template_name = 'expenses/includes/search_form.html'
+    template_name = 'core/includes/search_form.html'
     form_class = forms.ExpenseSearchForm
     form_data_dict = {}
 
