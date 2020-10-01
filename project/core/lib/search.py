@@ -28,11 +28,7 @@ def parse_search_input(search_str):
     return _date, _search
 
 
-def search_expenses(search_str):
-    _date, _search = parse_search_input(search_str)
-
-    sql = Expense.objects.items()
-
+def filter_dates(_date, sql):
     if _date:
         year = _date[0:4]
         sql = sql.filter(date__year=year)
@@ -40,6 +36,15 @@ def search_expenses(search_str):
         if len(_date) > 4:
             month = _date[5:]
             sql = sql.filter(date__month=month)
+
+    return sql
+
+
+def search_expenses(search_str):
+    _date, _search = parse_search_input(search_str)
+
+    sql = Expense.objects.items()
+    sql = filter_dates(_date, sql)
 
     if _search:
         sql = sql.filter(
@@ -57,14 +62,7 @@ def search_incomes(search_str):
     _date, _search = parse_search_input(search_str)
 
     sql = Income.objects.items()
-
-    if _date:
-        year = _date[0:4]
-        sql = sql.filter(date__year=year)
-
-        if len(_date) > 4:
-            month = _date[5:]
-            sql = sql.filter(date__month=month)
+    sql = filter_dates(_date, sql)
 
     if _search:
         sql = sql.filter(
