@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
+from ...core.forms import SearchForm
 from ...core.lib import search
 from ...core.lib.date import year_month_list
 from ...core.mixins.ajax import AjaxCustomFormMixin
@@ -29,7 +30,7 @@ class Index(IndexMixin):
 
         context['search'] = render_to_string(
             template_name=f'core/includes/search_form.html',
-            context={'form': forms.ExpenseSearchForm()},
+            context={'form': SearchForm()},
             request=self.request
         )
 
@@ -117,7 +118,7 @@ def reload(request):
 
 class Search(AjaxCustomFormMixin):
     template_name = 'core/includes/search_form.html'
-    form_class = forms.ExpenseSearchForm
+    form_class = SearchForm
     form_data_dict = {}
 
     def form_valid(self, form):
