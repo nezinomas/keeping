@@ -1,13 +1,16 @@
 from datetime import datetime
 
 from django.db.models import F
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
 from ...core.lib.date import year_month_list
+from ...core.mixins.ajax import AjaxCustomFormMixin
 from ...core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                   UpdateAjaxMixin)
 from .. import forms, models
+from ..helpers import views as H
 from ..views.expenses_type import Lists as TypeLists
 
 
@@ -23,6 +26,12 @@ class Index(IndexMixin):
 
         context['buttons'] = year_month_list()
         context['current_month'] = datetime.now().month
+
+        context['search'] = render_to_string(
+            template_name=f'expenses/includes/search_form.html',
+            context={'form': forms.ExpenseSearchForm()},
+            request=self.request
+        )
 
         return context
 
@@ -104,3 +113,26 @@ def reload(request):
         )
 
         return render(request, name, context)
+
+
+class Search(AjaxCustomFormMixin):
+    template_name = 'expenses/includes/search_form.html'
+    form_class = forms.ExpenseSearchForm
+    form_data_dict = {}
+
+    def form_valid(self, form):
+        html = 'Nieko neradau'
+        _search = self.form_data_dict['search']
+
+        sql = H.search(_search)
+        if sql:
+            template = 'expenses/includes/expenses_list.html'
+            context = {'items': sql}
+            html = render_to_string(template, context, self.request)
+
+        data = {
+            'form_is_valid': True,
+            'html_form': self._render_form({'form': form}),
+            'html': html,
+        }
+        return JsonResponse(data)

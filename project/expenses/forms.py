@@ -1,6 +1,10 @@
+import re
+
 from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.core.validators import (MaxLengthValidator, MinLengthValidator,
+                                    RegexValidator)
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
@@ -65,8 +69,6 @@ class ExpenseForm(forms.ModelForm):
         self.fields['account'].label = 'Sąskaita'
         self.fields['total_sum'].label = 'Kaina'
 
-
-
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
@@ -109,5 +111,23 @@ class ExpenseNameForm(forms.ModelForm):
         self.fields['valid_for'].label = 'Galioja tik'
 
         # crispy forms settings
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
+
+
+class ExpenseSearchForm(forms.Form):
+    re_alphanumeric = re.compile(r"^[ -.\w\d]+$", re.UNICODE)
+
+    search = forms.CharField(validators=[
+        MinLengthValidator(4),
+        MaxLengthValidator(50),
+        RegexValidator(re_alphanumeric, 'Only alphabetic')
+    ])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['search'].label = None
+
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

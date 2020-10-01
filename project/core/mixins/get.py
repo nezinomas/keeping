@@ -15,8 +15,19 @@ class GetQuerysetMixin():
 
         return qs
 
+    def get_object(self):
+        obj = None
+        pk = self.kwargs.get('pk')
+        if pk:
+            obj = self.model.objects.get(pk=pk)
+
+        return obj
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context[self.context_object_name] = self.get_queryset()
+
+        no_items = kwargs.get('no_items')
+        if not no_items:
+            context[self.context_object_name] = self.get_queryset()
 
         return context

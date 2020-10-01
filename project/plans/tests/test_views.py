@@ -135,14 +135,14 @@ def test_view_incomes_update_unique_together_user_change_year(client_logged):
 
 
 def test_view_incomes_update_year_not_match(client_logged):
-    # if year in Plan and user not match, 404 error
+    # if year in Plan and user not match
     p = IncomePlanFactory(year=2000)
 
     url = reverse('plans:incomes_plan_update', kwargs={'pk': p.pk})
 
     response = client_logged.get(url, {}, **X_Req)
 
-    assert response.status_code == 404
+    assert response.status_code == 200
 
 
 # ---------------------------------------------------------------------------------------
@@ -267,14 +267,14 @@ def test_view_expenses_update_unique_together_user_change_year(client_logged):
 
 
 def test_view_expenses_update_year_not_match(client_logged):
-    # if year in Plan and urser. not match, 404 error
+    # if year in Plan and urser. not match
     p = ExpensePlanFactory(year=1974)
 
     url = reverse('plans:expenses_plan_update', kwargs={'pk': p.pk})
 
     response = client_logged.get(url, {}, **X_Req)
 
-    assert response.status_code == 404
+    assert response.status_code == 200
 
 
 # ---------------------------------------------------------------------------------------
@@ -399,14 +399,14 @@ def test_view_savings_update_unique_together_user_change_year(client_logged):
 
 
 def test_view_savings_update_year_not_match(client_logged):
-    # if year in Plan and urser not match, 404 error
+    # if year in Plan and urser not match
     p = SavingPlanFactory(year=1974)
 
     url = reverse('plans:savings_plan_update', kwargs={'pk': p.pk})
 
     response = client_logged.get(url, {}, **X_Req)
 
-    assert response.status_code == 404
+    assert response.status_code == 200
 
 
 # ---------------------------------------------------------------------------------------
@@ -530,14 +530,14 @@ def test_view_days_update_unique_together_user_change_year(client_logged):
 
 
 def test_view_days_update_year_not_match(client_logged):
-    # if year in Plan and urser not match, 404 error
+    # if year in Plan and urser not match
     p = DayPlanFactory(year=1974)
 
     url = reverse('plans:days_plan_update', kwargs={'pk': p.pk})
 
     response = client_logged.get(url, {}, **X_Req)
 
-    assert response.status_code == 404
+    assert response.status_code == 200
 
 
 # ---------------------------------------------------------------------------------------
@@ -661,14 +661,14 @@ def test_view_necessarys_update_unique_together_user_change_year(client_logged):
 
 
 def test_view_necessarys_update_year_not_match(client_logged):
-    # if year in Plan and urser not match, 404 error
+    # if year in Plan and urser not match
     p = NecessaryPlanFactory(year=1974)
 
     url = reverse('plans:necessarys_plan_update', kwargs={'pk': p.pk})
 
     response = client_logged.get(url, {}, **X_Req)
 
-    assert response.status_code == 404
+    assert response.status_code == 200
 
 
 # ---------------------------------------------------------------------------------------
