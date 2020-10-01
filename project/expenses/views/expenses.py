@@ -1,14 +1,12 @@
-import json
 from datetime import datetime
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
-from django.views.generic.edit import FormView
 
 from ...core.lib.date import year_month_list
+from ...core.mixins.ajax import AjaxCustomFormMixin
 from ...core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
                                   UpdateAjaxMixin)
 from .. import forms, models
@@ -117,41 +115,10 @@ def reload(request):
         return render(request, name, context)
 
 
-class Search(LoginRequiredMixin, FormView):
+class Search(AjaxCustomFormMixin):
     template_name = 'expenses/includes/search_form.html'
     form_class = forms.ExpenseSearchForm
     form_data_dict = {}
-
-    def post(self, request, *args, **kwargs):
-        err = {'error': 'Form is broken.'}
-        try:
-            form_data = request.POST['form_data']
-        except KeyError:
-            return JsonResponse(data=err, status=404)
-
-        try:
-            _list = json.loads(form_data)
-
-            # flatten list of dictionaries - form_data_list
-            for field in _list:
-                self.form_data_dict[field["name"]] = field["value"]
-
-        except (json.decoder.JSONDecodeError, KeyError):
-            return JsonResponse(data=err, status=500)
-
-        form = self.form_class(self.form_data_dict)
-        if form.is_valid():
-            return self.form_valid(form)
-
-        return self.form_invalid(form, **kwargs)
-
-    def form_invalid(self, form):
-        data = {
-            'form_is_valid': False,
-            'html_form': self._render_form({'form': form}),
-            'html': None,
-        }
-        return JsonResponse(data)
 
     def form_valid(self, form):
         html = 'Nieko neradau'
@@ -169,8 +136,3 @@ class Search(LoginRequiredMixin, FormView):
             'html': html,
         }
         return JsonResponse(data)
-
-    def _render_form(self, context):
-        return (
-            render_to_string(self.template_name, context, request=self.request)
-        )
