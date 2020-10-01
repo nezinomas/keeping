@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.db.models import F
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import reverse, render
 from django.template.loader import render_to_string
 
 from ...core.forms import SearchForm
@@ -29,8 +29,8 @@ class Index(IndexMixin):
         context['current_month'] = datetime.now().month
 
         context['search'] = render_to_string(
-            template_name=f'core/includes/search_form.html',
-            context={'form': SearchForm()},
+            template_name='core/includes/search_form.html',
+            context={'form': SearchForm(), 'url': reverse('expenses:expenses_search')},
             request=self.request
         )
 
@@ -133,7 +133,7 @@ class Search(AjaxCustomFormMixin):
 
         data = {
             'form_is_valid': True,
-            'html_form': self._render_form({'form': form}),
+            'html_form': self._render_form({'form': form, 'url': reverse('expenses:expenses_search')}),
             'html': html,
         }
         return JsonResponse(data)
