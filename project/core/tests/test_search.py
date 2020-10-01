@@ -67,7 +67,7 @@ def test_get_nothing():
         ('1999-1 type', 1, 'Expense Type', 'Expense Name'),
     ]
 )
-def test_search(search, cnt, expense_type, expense_name, get_user):
+def test_expense_search(search, cnt, expense_type, expense_name, get_user):
     ExpenseFactory()
     ExpenseFactory(
         date=date(3333, 1, 1),
@@ -88,7 +88,7 @@ def test_search(search, cnt, expense_type, expense_name, get_user):
 
 
 @pytest.mark.django_db
-def test_search_ordering(get_user):
+def test_expense_search_ordering(get_user):
     ExpenseFactory(date=date(1000, 1, 1))
     ExpenseFactory()
 
