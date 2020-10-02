@@ -7,6 +7,7 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 
 from ...users.factories import UserFactory
+from .. import models
 from ..factories import BookFactory
 from ..views import Index, Lists, New, ReloadStats, Update
 
@@ -91,6 +92,14 @@ def test_books_index_add_button(client_logged):
     assert len(res[0]) == 2
     assert res[0][0] == reverse('books:books_new')
     assert res[0][1] == 'Knygą'
+
+
+def test_books_index_search_form(client_logged):
+    url = reverse('books:books_index')
+    response = client_logged.get(url).content.decode('utf-8')
+
+    assert '<input type="text" name="search"' in response
+    assert reverse('books:books_search') in response
 
 
 # ---------------------------------------------------------------------------------------
@@ -215,3 +224,72 @@ def test_books_update(client_logged):
     assert '1999-01-31' in actual['html_list']
     assert 'AAA' in actual['html_list']
     assert 'TTT' in actual['html_list']
+
+
+def test_books_load_update_form(client_logged):
+    i = BookFactory()
+    url = reverse('books:books_update', kwargs={'pk': i.pk})
+
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert '1999-01-01' in form
+    assert 'Author' in form
+    assert 'Book Title' in form
+    assert 'Remark' in form
+
+
+def test_income_update_to_another_year(client_logged):
+    income = BookFactory()
+
+    data = {
+        'started': '2010-12-31',
+        'author': 'Author',
+        'title': 'Book Title',
+        'remark': 'Pastaba',
+    }
+    url = reverse('books:books_update', kwargs={'pk': income.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert '2010-12-31' not in actual['html_list']
+
+
+@freeze_time('2000-03-03')
+def test_books_update_past_record(client_logged, get_user):
+    get_user.year = 2000
+    i = BookFactory(started=date(1974, 12, 12))
+
+    data = {
+        'started': '1999-03-03',
+        'author': 'XXX',
+        'title': 'YYY',
+        'remark': 'ZZZ',
+    }
+    url = reverse('books:books_update', kwargs={'pk': i.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    actual = models.Book.objects.get(pk=i.pk)
+    assert actual.started == date(1999, 3, 3)
+    assert actual.author == 'XXX'
+    assert actual.title == 'YYY'
+    assert actual.remark == 'ZZZ'

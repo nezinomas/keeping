@@ -30,4 +30,9 @@ urlpatterns = [
         views.ReloadStats.as_view(),
         name='reload_stats'
     ),
+    path(
+        'books/search/',
+        views.Search.as_view(),
+        name='books_search'
+    ),
 ]
