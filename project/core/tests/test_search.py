@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 
+from ...books.factories import BookFactory
 from ...expenses.factories import (ExpenseFactory, ExpenseNameFactory,
                                    ExpenseTypeFactory)
 from ...incomes.factories import IncomeFactory, IncomeTypeFactory
@@ -146,3 +147,54 @@ def test_incomes_search_ordering(get_user):
 
     assert q[0].date == date(1999, 1, 1)
     assert q[1].date == date(1000, 1, 1)
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                                    Book
+# ---------------------------------------------------------------------------------------
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    'search, author, title, remark',
+    [
+        ('1999', 'Author', 'Book Title', 'Remark'),
+        ('1999.1', 'Author', 'Book Title', 'Remark'),
+        ('1999-1', 'Author', 'Book Title', 'Remark'),
+        ('2000', None, None, None),
+        ('auth', 'Author', 'Book Title', 'Remark'),
+        ('titl', 'Author', 'Book Title', 'Remark'),
+        ('remark', 'Author', 'Book Title', 'Remark'),
+        ('1999.1 auth', 'Author', 'Book Title', 'Remark'),
+        ('1999-1 auth', 'Author', 'Book Title', 'Remark'),
+        ('1999.1 titl', 'Author', 'Book Title', 'Remark'),
+        ('1999-1 titl', 'Author', 'Book Title', 'Remark'),
+    ]
+)
+def test_books_search(search, author, title, remark, get_user):
+    BookFactory()
+    BookFactory(
+        started=date(3333, 1, 1),
+        author='A',
+        title='T',
+        remark='ZZZ'
+    )
+
+    q = H.search_books(search)
+
+    if q:
+        q = q[0]
+
+        assert q.started == date(1999, 1, 1)
+        assert q.author == author
+        assert q.title == title
+        assert q.remark == remark
+
+
+@pytest.mark.django_db
+def test_books_search_ordering(get_user):
+    BookFactory(started=date(1000, 1, 1))
+    BookFactory()
+
+    q = H.search_books('remark')
+
+    assert q[0].started == date(1999, 1, 1)
+    assert q[1].started == date(1000, 1, 1)
