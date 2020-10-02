@@ -9,7 +9,7 @@ from .helpers.helper_forms import set_field_properties
 
 
 class SearchForm(forms.Form):
-    re_alphanumeric = re.compile(r"^[ -.\w\d]+$", re.UNICODE)
+    re_alphanumeric = re.compile(r"^[ _\w\d\.\-]+$", re.UNICODE)
 
     search = forms.CharField(validators=[
         MinLengthValidator(4),

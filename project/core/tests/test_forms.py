@@ -21,10 +21,16 @@ def test_search_fields(get_user):
 @pytest.mark.parametrize(
     'search',
     [
-        ('2'),
-        ('x'*3),
-        ('x'*51),
-        ('xxxx-~!@#$%^&*()_+=[]{}|\\/><?'),
+        ('xxx \''), ('xxx "'), ('xxx >'),
+        ('xxx <'), ('xxx ?'), ('xxx \\'),
+        ('xxx |'), ('xxx {'), ('xxx }'),
+        ('xxx ]'), ('xxx ['), ('xxx ~'),
+        ('xxx `'), ('xxx !'), ('xxx @'),
+        ('xxx #'), ('xxx $'), ('xxx %'),
+        ('xxx ^'), ('xxx &'), ('xxx *'),
+        ('xxx ('), ('xxx )'), ('xxx +'),
+        ('xxx ='), ('xxx ;'), ('xxx ,'),
+        ('xxx /'), ('x'*3), ('x'*51),
     ]
 )
 def test_search_form_invalid(search):
