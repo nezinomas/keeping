@@ -2,7 +2,7 @@
 
 <form novalidate method="post" id="search_form">
     {% csrf_token %}
-    <div class="form-row align-items-center">
+    <div class="form-row">
         <div class="form-group col">
             {{ form.search|as_crispy_field }}
         </div>
@@ -17,6 +17,7 @@
         padding: 0.15rem;
         width: 3.65rem;
         text-align: center!important;
+        margin-top: 0.2rem!important;
     }
 
     #search_form {
