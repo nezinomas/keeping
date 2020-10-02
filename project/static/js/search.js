@@ -25,7 +25,10 @@ $(function () {
                 "form_data": form_data
             },
             success: function (data) {
-                $('#ajax-content').html(data.html);
+                var _html = data.html
+                if(_html) {
+                    $('#ajax-content').html(_html);
+                }
                 $('#search_form_data').html(data.html_form);
             },
             error: function (xhr, status, error) {
