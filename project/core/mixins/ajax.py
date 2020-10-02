@@ -169,6 +169,9 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
         return JsonResponse(data)
 
     def _render_form(self, context):
+        if hasattr(self, 'url'):
+            context.update({'url': self.url})
+
         return (
             render_to_string(self.template_name, context, request=self.request)
         )

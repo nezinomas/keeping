@@ -1,6 +1,6 @@
 from django.http import JsonResponse
-from django.shortcuts import reverse
 from django.template.loader import render_to_string
+from django.urls import reverse, reverse_lazy
 
 from ..core.forms import SearchForm
 from ..core.lib import search
@@ -53,6 +53,7 @@ class Search(AjaxCustomFormMixin):
     template_name = 'core/includes/search_form.html'
     form_class = SearchForm
     form_data_dict = {}
+    url = reverse_lazy('books:books_search')
 
     def form_valid(self, form):
         html = 'Nieko neradau'
@@ -66,7 +67,7 @@ class Search(AjaxCustomFormMixin):
 
         data = {
             'form_is_valid': True,
-            'html_form': self._render_form({'form': form, 'url': reverse('books:books_search')}),
+            'html_form': self._render_form({'form': form}),
             'html': html,
         }
         return JsonResponse(data)
