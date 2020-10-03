@@ -40,7 +40,7 @@ class Compare(AjaxCustomFormMixin):
     form_class = forms.DrinkCompareForm
     form_data_dict = {}
 
-    def form_valid(self, form):
+    def form_valid(self, form, **kwargs):
         html = 'Trūksta duomenų'
         years_data = [self.form_data_dict['year1'], self.form_data_dict['year2']]
         chart_serries = H.several_years_consumption(years_data)
@@ -53,12 +53,9 @@ class Compare(AjaxCustomFormMixin):
             }
             html = render_to_string(template, context, self.request)
 
-        data = {
-            'form_is_valid': True,
-            'html_form': self._render_form({'form': form}),
-            'html': html,
-        }
-        return JsonResponse(data)
+        kwargs.update({'html': html})
+
+        return super().form_valid(form, **kwargs)
 
 
 class Index(IndexMixin):

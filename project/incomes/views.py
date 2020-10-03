@@ -76,19 +76,13 @@ class Search(AjaxCustomFormMixin):
     form_data_dict = {}
     url = reverse_lazy('incomes:incomes_search')
 
-    def form_valid(self, form):
-        html = 'Nieko neradau'
+    def form_valid(self, form, **kwargs):
         _search = self.form_data_dict['search']
 
         sql = search.search_incomes(_search)
         if sql:
             template = 'incomes/includes/incomes_list.html'
             context = {'items': sql}
-            html = render_to_string(template, context, self.request)
+            kwargs.update({'html': render_to_string(template, context, self.request)})
 
-        data = {
-            'form_is_valid': True,
-            'html_form': self._render_form({'form': form}),
-            'html': html,
-        }
-        return JsonResponse(data)
+        return super().form_valid(form, **kwargs)

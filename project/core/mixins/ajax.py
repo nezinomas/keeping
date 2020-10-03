@@ -168,6 +168,17 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
         }
         return JsonResponse(data)
 
+    def form_valid(self, form, **kwargs):
+        html = kwargs.get('html')
+        html = html if html else 'Nieko neradau'
+
+        data = {
+            'form_is_valid': True,
+            'html_form': self._render_form({'form': form}),
+            'html': html,
+        }
+        return JsonResponse(data)
+
     def _render_form(self, context):
         if hasattr(self, 'url'):
             context.update({'url': self.url})
