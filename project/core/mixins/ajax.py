@@ -46,18 +46,17 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         if form.is_valid():
             form.save()
 
-            context['form'] = form
-
-            data['form_is_valid'] = True
-
             if self.list_render_output:
-                context.update({
-                    **self.get_context_data()
-                })
+                context = self.get_context_data()
                 data['html_list'] = (
                     render_to_string(
                         self.get_list_template_name(), context, self.request)
                 )
+            else:
+                context = self.get_context_data(**{'no_items': True})
+
+            context['form'] = form
+            data['form_is_valid'] = True
 
         self._render_form(data, context)
 
