@@ -219,9 +219,9 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         # back months to past; if months=6 then end=2019-08-01
         end = (start + timedelta(days=1)) - relativedelta(months=months)
 
-        qs = self.related().filter(date__range=(end, start))
+        qs = self.related().filter(date__range=(end, start)).aggregate(Sum('price'))
 
-        return qs
+        return qs['price__sum']
 
 class Saving(MixinFromDbAccountId):
     date = models.DateField()
