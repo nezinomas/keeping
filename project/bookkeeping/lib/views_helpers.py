@@ -403,12 +403,13 @@ class IndexHelper():
         )
         df = DF.from_records(qs, columns=['price', 'title'], coerce_float=True)
 
+        savings = float(Saving.objects.last_months(months=months_back))
         # 6 months average expenses
-        avg_expenses = df.price.sum() / months_back
+        avg_expenses = (df.price.sum() + savings) / months_back
 
         # 6 months average [Not Use] expenses sum
         # this sum may not be spent
-        cut_sum = df.loc[df.title.isin(not_use)].price.sum() / months_back
+        cut_sum = (df.loc[df.title.isin(not_use)].price.sum() + savings) / months_back
 
         obj = NoIncomes(
             money=self._YearBalance.amount_end,
