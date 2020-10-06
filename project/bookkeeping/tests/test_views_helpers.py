@@ -130,14 +130,6 @@ def test_no_incomes_data_not_use_empty(_expenses):
 
 
 @freeze_time('2020-07-07')
-def test_no_incomes_data_not_use_none(_expenses):
-    avg_expenses, cut_sum = T.no_incomes_data(not_use=None, expenses=_expenses)
-
-    assert avg_expenses == pytest.approx(3.69, rel=1e-2)
-    assert cut_sum == 0.0
-
-
-@freeze_time('2020-07-07')
 def test_no_incomes_data_no_savings(_not_use, _expenses):
     avg_expenses, cut_sum = T.no_incomes_data(not_use=_not_use, expenses=_expenses)
 
