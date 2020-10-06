@@ -2,7 +2,6 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance

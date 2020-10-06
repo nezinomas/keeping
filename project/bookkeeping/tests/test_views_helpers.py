@@ -68,7 +68,7 @@ def test_sum_detailed_columns(_income):
 def test_percentage_from_incomes():
     actual = T.percentage_from_incomes(10, 1.5)
 
-    assert 15 == actual
+    assert actual == 15
 
 
 def test_percentage_from_incomes_saving_none():

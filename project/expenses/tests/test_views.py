@@ -364,7 +364,7 @@ def test_expense_name_update(client_logged):
 def test_load_expenses_name_new_func():
     actual = resolve('/ajax/load_expense_name/')
 
-    assert expenses.load_expense_name == actual.func
+    assert expenses.load_expense_name is actual.func
 
 
 def test_load_expense_name_status_code(client_logged):
@@ -396,7 +396,7 @@ def test_load_expense_name_all(client_logged, _db_data):
 def test_view_reload_stats_func():
     view = resolve('/expenses/reload/')
 
-    assert expenses.reload == view.func
+    assert expenses.reload is view.func
 
 
 def test_view_reload_stats_render(get_user, rf):
