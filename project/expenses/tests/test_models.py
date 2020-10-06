@@ -2,7 +2,6 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
@@ -313,26 +312,6 @@ def test_summary(get_user, expenses):
     actual = [*Expense.objects.summary(1999).order_by('account__title')]
 
     assert actual == expect
-
-
-@freeze_time('1999-06-01')
-def test_expense_avg_last_monthst(get_user):
-    ExpenseFactory(date=date(1998, 11, 30), price=3)
-    ExpenseFactory(date=date(1998, 12, 31), price=4)
-    ExpenseFactory(date=date(1999, 1, 1), price=7)
-
-
-    actual = Expense.objects.last_months(6)
-
-    assert actual.count() == 2
-
-
-@freeze_time('1999-06-01')
-def test_expense_avg_last_months_qs_count(get_user, django_assert_max_num_queries):
-    ExpenseFactory(date=date(1999, 1, 1), price=2)
-
-    with django_assert_max_num_queries(1):
-        print(Expense.objects.last_months())
 
 
 def test_expense_years_sum(get_user):
