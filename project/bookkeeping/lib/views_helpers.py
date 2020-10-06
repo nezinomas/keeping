@@ -5,7 +5,6 @@ from typing import Dict, List
 
 from dateutil.relativedelta import relativedelta
 from django.template.loader import render_to_string
-from pandas import DataFrame as DF
 
 from ...accounts.models import AccountBalance
 from ...core.lib.date import current_day
@@ -293,12 +292,12 @@ class IndexHelper():
         self._pension = [*PensionBalance.objects.year(year)]
 
         qs_income = Income.objects.sum_by_month(year)
-        qs_savings = Saving.objects.sum_by_month(year)
+        self.qs_savings = Saving.objects.sum_by_month(year)
         qs_savings_close = SavingClose.objects.sum_by_month(year)
-        qs_ExpenseType = Expense.objects.sum_by_month_and_type(year)
+        self.qs_ExpenseType = Expense.objects.sum_by_month_and_type(year)
 
         self._MonthExpense = MonthExpense(
-            year, qs_ExpenseType, **{'Taupymas': qs_savings})
+            year, self.qs_ExpenseType, **{'Taupymas': self.qs_savings})
 
         self._YearBalance = YearBalance(
             year=year,
@@ -433,27 +432,12 @@ class IndexHelper():
 
     def render_no_incomes(self):
         pension, fund = split_funds(self._fund, 'invl')
-        not_use = [
-            'Darbas',
-            'Laisvalaikis',
-            'Taupymas',
-            'Buitinės',
-        ]
-        months_back = 6
-        qs = (
-            Expense.objects
-            .last_months(months=months_back)
-            .values_list('price', 'expense_type__title')
+        avg_expenses, cut_sum = (
+            no_incomes_data(
+                expenses=self.qs_ExpenseType,
+                savings=self.qs_savings,
+                not_use=NOT_USE)
         )
-        df = DF.from_records(qs, columns=['price', 'title'], coerce_float=True)
-
-        savings = float(Saving.objects.last_months(months=months_back))
-        # 6 months average expenses
-        avg_expenses = (df.price.sum() + savings) / months_back
-
-        # 6 months average [Not Use] expenses sum
-        # this sum may not be spent
-        cut_sum = (df.loc[df.title.isin(not_use)].price.sum() + savings) / months_back
 
         obj = NoIncomes(
             money=self._YearBalance.amount_end,
@@ -466,7 +450,7 @@ class IndexHelper():
         context = {
             'no_incomes': obj.summary,
             'save_sum': cut_sum,
-            'not_use': not_use,
+            'not_use': NOT_USE,
             'avg_expenses': avg_expenses,
         }
 
