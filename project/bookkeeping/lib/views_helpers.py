@@ -135,7 +135,6 @@ def no_incomes_data(expenses, savings=None, not_use=None):
             if r['title'] in not_use:
                 cut_sum += float(r['sum'])
 
-
     savings_sum = 0.0
     if savings:
         for r in savings:
