@@ -1,8 +1,9 @@
 import itertools as it
 from collections import Counter, defaultdict
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from typing import Dict, List
 
+from dateutil.relativedelta import relativedelta
 from django.template.loader import render_to_string
 from pandas import DataFrame as DF
 
@@ -103,6 +104,49 @@ def average(qs):
         arr.append(sum_val / cnt)
 
     return arr
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                             No Incomes
+# --------------------------------------------------------------------------------------
+NOT_USE = [
+    'Darbas',
+    'Laisvalaikis',
+    'Taupymas',
+    'Buitinės',
+]
+
+
+def no_incomes_data(expenses, savings=None, not_use=None):
+    months = 6
+    not_use = not_use if not_use else []
+
+    # if today February, then end is 2020-01-31
+    end = date.today().replace(day=1) - timedelta(days=1)
+
+    # back months to past; if months=6 then start=2019-08-01
+    start = (end + timedelta(days=1)) - relativedelta(months=months)
+
+    expenses_sum = 0.0
+    cut_sum = 0.0
+    for r in expenses:
+        if r['date'] >= start and r['date'] <= end:
+            expenses_sum += float(r['sum'])
+
+            if r['title'] in not_use:
+                cut_sum += float(r['sum'])
+
+
+    savings_sum = 0.0
+    if savings:
+        for r in savings:
+            if r['date'] >= start and r['date'] <= end:
+                savings_sum += float(r['sum'])
+
+    expenses_avg = (expenses_sum + savings_sum) / months
+    cut_avg = (cut_sum + savings_sum) / months
+
+    return expenses_avg, cut_avg
 
 
 def month_context(request, context=None):
