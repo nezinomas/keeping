@@ -266,25 +266,6 @@ def test_saving_summary_to(get_user, savings):
     assert expect == actual
 
 
-@freeze_time('1999-06-01')
-def test_saving_last_monthst(get_user):
-    SavingFactory(date=date(1998, 11, 30), price=3)
-    SavingFactory(date=date(1998, 12, 31), price=4)
-    SavingFactory(date=date(1999, 1, 1), price=7)
-
-    actual = Saving.objects.last_months(6)
-
-    assert actual == Decimal(11)
-
-
-@freeze_time('1999-06-01')
-def test_saving_last_months_qs_count(get_user, django_assert_max_num_queries):
-    SavingFactory(date=date(1999, 1, 1), price=2)
-
-    with django_assert_max_num_queries(1):
-        print(Saving.objects.last_months())
-
-
 # ----------------------------------------------------------------------------
 #                                                               SavingBalance
 # ----------------------------------------------------------------------------
