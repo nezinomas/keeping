@@ -196,7 +196,7 @@ def test_historical_data_ajax(client_logged):
 @pytest.fixture()
 def _compare_form_data():
     return ([
-        {"name":"csrfmiddlewaretoken", "value":"RIFWoIjFMOnqjK9mbzZdjeJYucGzet4hcimTmCRnsIw0MTV7eyjvdxFK6FriXrDy"},
+        {"name":"csrfmiddlewaretoken", "value":"xxx"},
         {"name":"year1", "value":"1999"},
         {"name":"year2", "value":"2020"}
     ])

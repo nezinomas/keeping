@@ -293,7 +293,7 @@ def test_view_index_200(client_logged):
 @pytest.fixture()
 def _search_form_data():
     return ([
-        {"name":"csrfmiddlewaretoken", "value":"RIFWoIjFMOnqjK9mbzZdjeJYucGzet4hcimTmCRnsIw0MTV7eyjvdxFK6FriXrDy"},
+        {"name":"csrfmiddlewaretoken", "value":"xxx"},
         {"name":"search", "value":"1999 type"},
     ])
 

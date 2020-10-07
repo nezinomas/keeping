@@ -301,7 +301,7 @@ def test_books_update_past_record(client_logged, get_user):
 @pytest.fixture()
 def _search_form_data():
     return ([
-        {"name": "csrfmiddlewaretoken", "value": "RIFWoIjFMOnqjK9mbzZdjeJYucGzet4hcimTmCRnsIw0MTV7eyjvdxFK6FriXrDy"},
+        {"name": "csrfmiddlewaretoken", "value": "xxx"},
         {"name": "search", "value": "1999 title"},
     ])
 
