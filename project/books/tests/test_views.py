@@ -9,7 +9,7 @@ from freezegun import freeze_time
 from ...users.factories import UserFactory
 from .. import models
 from ..factories import BookFactory
-from ..views import Index, Lists, New, ReloadStats, Update
+from ..views import Index, Lists, New, ReloadStats, Search, Update
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
@@ -293,3 +293,116 @@ def test_books_update_past_record(client_logged, get_user):
     assert actual.author == 'XXX'
     assert actual.title == 'YYY'
     assert actual.remark == 'ZZZ'
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                          Books Search
+# ---------------------------------------------------------------------------------------
+@pytest.fixture()
+def _search_form_data():
+    return ([
+        {"name": "csrfmiddlewaretoken",
+            "value": "RIFWoIjFMOnqjK9mbzZdjeJYucGzet4hcimTmCRnsIw0MTV7eyjvdxFK6FriXrDy"},
+        {"name": "search", "value": "1999 title"},
+    ])
+
+
+def test_search_func():
+    view = resolve('/books/search/')
+
+    assert Search == view.func.view_class
+
+
+def test_search_get_200(client_logged):
+    url = reverse('books:books_search')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_search_get_302(client):
+    url = reverse('books:books_search')
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
+def test_search_post_200(client_logged, _search_form_data):
+    form_data = json.dumps(_search_form_data)
+    url = reverse('books:books_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    assert response.status_code == 200
+
+
+def test_search_post_404(client_logged):
+    url = reverse('books:books_search')
+    response = client_logged.post(url)
+
+    assert response.status_code == 404
+
+
+def test_search_post_500(client_logged):
+    form_data = json.dumps([{'x': 'y'}])
+    url = reverse('books:books_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    assert response.status_code == 500
+
+
+def test_search_bad_json_data(client_logged):
+    form_data = "{'x': 'y'}"
+    url = reverse('books:books_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    assert response.status_code == 500
+
+
+def test_search_form_is_not_valid(client_logged, _search_form_data):
+    _search_form_data[1]['value'] = '@#$%^&*xxxx'  # search
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('books:books_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    actual = json.loads(response.content)
+
+    assert not actual['form_is_valid']
+
+
+def test_search_form_is_valid(client_logged, _search_form_data):
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('books:books_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    actual = json.loads(response.content)
+
+    assert actual['form_is_valid']
+
+
+def test_search_not_found(client_logged, _search_form_data):
+    BookFactory()
+
+    _search_form_data[1]['value'] = 'xxxx'
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('books:books_search')
+    response = client_logged.post(url, {'form_data': form_data})
+    actual = json.loads(response.content)
+
+    assert 'Nieko neradau' in actual['html']
+
+
+def test_search_found(client_logged, _search_form_data):
+    BookFactory()
+
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('books:books_search')
+    response = client_logged.post(url, {'form_data': form_data})
+    actual = json.loads(response.content)
+
+    assert '1999-01-01' in actual['html']
+    assert 'Book Title' in actual['html']
+    assert 'Author' in actual['html']
