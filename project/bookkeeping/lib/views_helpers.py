@@ -1,9 +1,8 @@
 import itertools as it
 from collections import Counter, defaultdict
-from datetime import date, datetime, timedelta
+from datetime import datetime
 from typing import Dict, List
 
-from dateutil.relativedelta import relativedelta
 from django.template.loader import render_to_string
 
 from ...accounts.models import AccountBalance
