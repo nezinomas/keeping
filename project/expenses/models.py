@@ -1,6 +1,8 @@
+from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any, Dict, List
 
+from dateutil.relativedelta import relativedelta
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 from django.db.models import Case, Count, F, Q, Sum, When
@@ -221,6 +223,25 @@ class ExpenseQuerySet(models.QuerySet):
             )
             .values('e_past', 'e_now', title=models.F('account__title'))
         )
+
+    def last_months(self, months: int = 6) -> float:
+        # previous month
+        # if today February, then start is 2020-01-31
+        start = date.today().replace(day=1) - timedelta(days=1)
+
+        # back months to past; if months=6 then end=2019-08-01
+        end = (start + timedelta(days=1)) - relativedelta(months=months)
+
+        qs = (
+            self
+            .related()
+            .filter(date__range=(end, start))
+            .values('expense_type')
+            .annotate(sum=Sum('price'))
+            .values('sum', title=models.F('expense_type__title'))
+        )
+
+        return qs
 
 
 class Expense(MixinFromDbAccountId):
