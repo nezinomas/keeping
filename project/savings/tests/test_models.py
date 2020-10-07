@@ -274,7 +274,7 @@ def test_saving_last_monthst(get_user):
 
     actual = Saving.objects.last_months(6)
 
-    assert actual == Decimal(11)
+    assert actual['sum'] == 11.0
 
 
 @freeze_time('1999-06-01')
