@@ -120,27 +120,18 @@ def no_incomes_data(expenses, savings=None, not_use=None):
     months = 6
     not_use = not_use if not_use else []
 
-    # if today February, then end is 2020-01-31
-    end = date.today().replace(day=1) - timedelta(days=1)
-
-    # back months to past; if months=6 then start=2019-08-01
-    start = (end + timedelta(days=1)) - relativedelta(months=months)
-
     expenses_sum = 0.0
     cut_sum = 0.0
     for r in expenses:
-        if r['date'] >= start and r['date'] <= end:
-            expenses_sum += float(r['sum'])
+        _sum = float(r['sum'])
 
-            if r['title'] in not_use:
-                cut_sum += float(r['sum'])
+        expenses_sum += _sum
 
+        if r['title'] in not_use:
+            cut_sum += _sum
 
-    savings_sum = 0.0
-    if savings:
-        for r in savings:
-            if r['date'] >= start and r['date'] <= end:
-                savings_sum += float(r['sum'])
+    savings_sum = savings['sum'] if savings else 0
+    savings_sum = float(savings_sum) if savings_sum else 0.0
 
     expenses_avg = (expenses_sum + savings_sum) / months
     cut_avg = (cut_sum + savings_sum) / months
@@ -292,12 +283,12 @@ class IndexHelper():
         self._pension = [*PensionBalance.objects.year(year)]
 
         qs_income = Income.objects.sum_by_month(year)
-        self.qs_savings = Saving.objects.sum_by_month(year)
+        qs_savings = Saving.objects.sum_by_month(year)
         qs_savings_close = SavingClose.objects.sum_by_month(year)
-        self.qs_ExpenseType = Expense.objects.sum_by_month_and_type(year)
+        qs_ExpenseType = Expense.objects.sum_by_month_and_type(year)
 
         self._MonthExpense = MonthExpense(
-            year, self.qs_ExpenseType, **{'Taupymas': self.qs_savings})
+            year, qs_ExpenseType, **{'Taupymas': qs_savings})
 
         self._YearBalance = YearBalance(
             year=year,
@@ -432,10 +423,13 @@ class IndexHelper():
 
     def render_no_incomes(self):
         pension, fund = split_funds(self._fund, 'invl')
+        expenses = Expense.objects.last_months()
+        savings = Saving.objects.last_months()
+
         avg_expenses, cut_sum = (
             no_incomes_data(
-                expenses=self.qs_ExpenseType,
-                savings=self.qs_savings,
+                expenses=expenses,
+                savings=savings,
                 not_use=NOT_USE)
         )
 
