@@ -316,15 +316,16 @@ def test_summary(get_user, expenses):
 
 
 @freeze_time('1999-06-01')
-def test_expense_avg_last_monthst(get_user):
+def test_expense_avg_last_months(get_user):
     ExpenseFactory(date=date(1998, 11, 30), price=3)
     ExpenseFactory(date=date(1998, 12, 31), price=4)
     ExpenseFactory(date=date(1999, 1, 1), price=7)
 
-
     actual = Expense.objects.last_months(6)
 
-    assert actual.count() == 2
+    assert actual.count() == 1
+    assert actual[0]['sum'] == 11.0
+    assert actual[0]['title'] == 'Expense Type'
 
 
 @freeze_time('1999-06-01')

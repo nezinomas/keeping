@@ -232,7 +232,14 @@ class ExpenseQuerySet(models.QuerySet):
         # back months to past; if months=6 then end=2019-08-01
         end = (start + timedelta(days=1)) - relativedelta(months=months)
 
-        qs = self.related().filter(date__range=(end, start))
+        qs = (
+            self
+            .related()
+            .filter(date__range=(end, start))
+            .values('expense_type')
+            .annotate(sum=Sum('price'))
+            .values('sum', title=models.F('expense_type__title'))
+        )
 
         return qs
 
