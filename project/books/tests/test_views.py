@@ -301,8 +301,7 @@ def test_books_update_past_record(client_logged, get_user):
 @pytest.fixture()
 def _search_form_data():
     return ([
-        {"name": "csrfmiddlewaretoken",
-            "value": "RIFWoIjFMOnqjK9mbzZdjeJYucGzet4hcimTmCRnsIw0MTV7eyjvdxFK6FriXrDy"},
+        {"name": "csrfmiddlewaretoken", "value": "RIFWoIjFMOnqjK9mbzZdjeJYucGzet4hcimTmCRnsIw0MTV7eyjvdxFK6FriXrDy"},
         {"name": "search", "value": "1999 title"},
     ])
 
@@ -310,7 +309,7 @@ def _search_form_data():
 def test_search_func():
     view = resolve('/books/search/')
 
-    assert Search == view.func.view_class
+    assert Search is view.func.view_class
 
 
 def test_search_get_200(client_logged):
