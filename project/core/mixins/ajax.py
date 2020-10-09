@@ -141,7 +141,7 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
         try:
             form_data = request.POST['form_data']
         except KeyError:
-            return JsonResponse(json_data=err, status=404)
+            return JsonResponse(data=err, status=404)
 
         try:
             _list = json.loads(form_data)
@@ -151,7 +151,7 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
                 self.form_data_dict[field["name"]] = field["value"]
 
         except (json.decoder.JSONDecodeError, KeyError):
-            return JsonResponse(json_data=err, status=500)
+            return JsonResponse(data=err, status=500)
 
         form = self.form_class(self.form_data_dict)
         if form.is_valid():
