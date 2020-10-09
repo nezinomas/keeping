@@ -115,6 +115,32 @@ def test_expenses_save(client_logged):
     assert actual.expense_name.title == 'Expense Name'
 
 
+def test_expenses_save_insert_button(client_logged):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory()
+
+    data = {
+        'date': '1999-01-01',
+        'price': '1.05',
+        'quantity': 33,
+        'account': a.pk,
+        'expense_type': t.pk,
+        'expense_name': n.pk,
+    }
+
+    url = reverse('expenses:expenses_new')
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
+    assert 'id="submit">Insert</button>' in actual['html_form']
+    assert 'action="/expenses/new/" data-action="insert"' in actual['html_form']
+
+
 def test_expenses_save_invalid_data(client_logged):
     data = {
         'date': 'x',
