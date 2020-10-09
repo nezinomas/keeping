@@ -31,9 +31,8 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         self.object = self.get_object()
 
         if utils.is_ajax(self.request):
-            json_data = dict()
             context = self.get_context_data(**{'no_items': True}) # calls GetQuerysetMixin get_context_data
-            self._render_form(json_data, context)
+            json_data = self._render_form(context=context)
 
             return JsonResponse(json_data)
 
@@ -58,7 +57,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
             context['form'] = form
             json_data['form_is_valid'] = True
 
-        self._render_form(json_data, context)
+        json_data = self._render_form(context, json_data)
 
         if utils.is_ajax(self.request):
             return JsonResponse(json_data)
@@ -67,21 +66,25 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
 
     def form_invalid(self, form):
         context = self.get_context_data(**{'no_items': True})
-
         context['form'] = form
-        json_data = {'form_is_valid': False}
 
         if utils.is_ajax(self.request):
-            self._render_form(json_data, context)
+            json_data = {'form_is_valid': False}
+            json_data = self._render_form(context, json_data)
             return JsonResponse(json_data)
 
         return super().form_invalid(form)
 
-    def _render_form(self, json_data, context):
-        json_data['html_form'] = (
-            render_to_string(self.get_template_names(),
-                             context, request=self.request)
-        )
+    def _render_form(self, context, json_data=None):
+        json_data = json_data if json_data else {}
+        json_data.update({
+            'html_form' : render_to_string(
+                template_name=self.get_template_names(),
+                context=context,
+                request=self.request)
+        })
+
+        return json_data
 
 
 class AjaxDeleteMixin(GetQuerysetMixin):
