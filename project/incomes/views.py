@@ -27,9 +27,9 @@ class Index(IndexMixin):
         return context
 
 
-#
-# Income views
-#
+#----------------------------------------------------------------------------------------
+#                                                                                  Income
+#----------------------------------------------------------------------------------------
 class GetQuerySetMixin():
     def get_queryset(self):
         return (
@@ -53,9 +53,9 @@ class Update(GetQuerySetMixin, UpdateAjaxMixin):
     form_class = forms.IncomeForm
 
 
-#
-# IncomeType views
-#
+#----------------------------------------------------------------------------------------
+#                                                                             Income Type
+#----------------------------------------------------------------------------------------
 class TypeLists(ListMixin):
     model = models.IncomeType
 
@@ -70,6 +70,9 @@ class TypeUpdate(UpdateAjaxMixin):
     form_class = forms.IncomeTypeForm
 
 
+#----------------------------------------------------------------------------------------
+#                                                                                 Search
+#----------------------------------------------------------------------------------------
 class Search(AjaxCustomFormMixin):
     template_name = 'core/includes/search_form.html'
     form_class = SearchForm
