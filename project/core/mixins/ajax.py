@@ -57,9 +57,8 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
             context['form'] = form
             json_data['form_is_valid'] = True
 
-        json_data = self._render_form(context, json_data)
-
         if utils.is_ajax(self.request):
+            json_data = self._render_form(context, json_data)
             return JsonResponse(json_data)
 
         return super().form_valid(form)

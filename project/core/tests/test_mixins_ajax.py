@@ -105,7 +105,7 @@ def test_form_valid_render(mck_render, mck_context, _request):
 
     response = view.form_valid(mck_form)
 
-    assert mck_render.call_count == 2
+    assert mck_render.call_count == 1
     assert mck_context.call_count == 1
 
     assert response.status_code == 302
