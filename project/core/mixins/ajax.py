@@ -31,16 +31,16 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         self.object = self.get_object()
 
         if utils.is_ajax(self.request):
-            data = dict()
+            json_data = dict()
             context = self.get_context_data(**{'no_items': True}) # calls GetQuerysetMixin get_context_data
-            self._render_form(data, context)
+            self._render_form(json_data, context)
 
-            return JsonResponse(data)
+            return JsonResponse(json_data)
 
         return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
-        data = dict()
+        json_data = dict()
         context = {}
 
         if form.is_valid():
@@ -48,7 +48,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
 
             if self.list_render_output:
                 context = self.get_context_data()
-                data['html_list'] = (
+                json_data['html_list'] = (
                     render_to_string(
                         self.get_list_template_name(), context, self.request)
                 )
@@ -56,12 +56,12 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
                 context = self.get_context_data(**{'no_items': True})
 
             context['form'] = form
-            data['form_is_valid'] = True
+            json_data['form_is_valid'] = True
 
-        self._render_form(data, context)
+        self._render_form(json_data, context)
 
         if utils.is_ajax(self.request):
-            return JsonResponse(data)
+            return JsonResponse(json_data)
 
         return super().form_valid(form)
 
@@ -69,16 +69,16 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         context = self.get_context_data(**{'no_items': True})
 
         context['form'] = form
-        data = {'form_is_valid': False}
+        json_data = {'form_is_valid': False}
 
         if utils.is_ajax(self.request):
-            self._render_form(data, context)
-            return JsonResponse(data)
+            self._render_form(json_data, context)
+            return JsonResponse(json_data)
 
         return super().form_invalid(form)
 
-    def _render_form(self, data, context):
-        data['html_form'] = (
+    def _render_form(self, json_data, context):
+        json_data['html_form'] = (
             render_to_string(self.get_template_names(),
                              context, request=self.request)
         )
@@ -104,15 +104,15 @@ class AjaxDeleteMixin(GetQuerysetMixin):
         self.object = self.get_object()
 
         if utils.is_ajax(self.request):
-            data = dict()
+            json_data = dict()
             context = self.get_context_data(**{'no_items': True})
             rendered = render_to_string(template_name=self.get_template_names(),
                                         context=context,
                                         request=request)
 
-            data['html_form'] = rendered
+            json_data['html_form'] = rendered
 
-            return JsonResponse(data)
+            return JsonResponse(json_data)
 
         return super().get(request, *args, **kwargs)
 
@@ -121,16 +121,16 @@ class AjaxDeleteMixin(GetQuerysetMixin):
             self.object = self.get_object()
             self.object.delete()
 
-            data = dict()
-            data['form_is_valid'] = True
+            json_data = dict()
+            json_data['form_is_valid'] = True
             context = self.get_context_data()
 
-            data['html_list'] = (
+            json_data['html_list'] = (
                 render_to_string(
                     self.get_list_template_name(), context, self.request)
             )
 
-            return JsonResponse(data)
+            return JsonResponse(json_data)
 
         return self.delete(*args, **kwargs)
 
@@ -141,7 +141,7 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
         try:
             form_data = request.POST['form_data']
         except KeyError:
-            return JsonResponse(data=err, status=404)
+            return JsonResponse(json_data=err, status=404)
 
         try:
             _list = json.loads(form_data)
@@ -151,7 +151,7 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
                 self.form_data_dict[field["name"]] = field["value"]
 
         except (json.decoder.JSONDecodeError, KeyError):
-            return JsonResponse(data=err, status=500)
+            return JsonResponse(json_data=err, status=500)
 
         form = self.form_class(self.form_data_dict)
         if form.is_valid():
@@ -160,23 +160,23 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
         return self.form_invalid(form, **kwargs)
 
     def form_invalid(self, form):
-        data = {
+        json_data = {
             'form_is_valid': False,
             'html_form': self._render_form({'form': form}),
             'html': None,
         }
-        return JsonResponse(data)
+        return JsonResponse(json_data)
 
     def form_valid(self, form, **kwargs):
         html = kwargs.get('html')
         html = html if html else 'Nieko neradau'
 
-        data = {
+        json_data = {
             'form_is_valid': True,
             'html_form': self._render_form({'form': form}),
             'html': html,
         }
-        return JsonResponse(data)
+        return JsonResponse(json_data)
 
     def _render_form(self, context):
         if hasattr(self, 'url'):
