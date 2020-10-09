@@ -39,7 +39,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
-        json_data = dict()
+        json_data = {}
         context = {}
 
         if form.is_valid():
