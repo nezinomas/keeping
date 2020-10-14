@@ -1,8 +1,13 @@
 {% extends 'base.html' %}{% load static %}
 
-{% block head %}{% endblock head %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
+{% endblock head %}
 
 {% block content %}
+<!-- Loader -->
+<div class="loader loader-default" id="loader"></div>
+
 {% url 'expenses:expenses_new' as url_expense_new %}
 {% url 'expenses:expenses_type_new' as url_expenses_type_new %}
 {% url 'expenses:expenses_name_new' as url_expenses_name_new %}
@@ -60,6 +65,8 @@
     });
 
     $(document).on('click', '.js-filter', function () {
+        $('#loader').addClass('is-active')
+
         var url = $(this).attr('data-url');
         $.ajax({
             url: url,
@@ -67,6 +74,10 @@
             success: function (data) {
                 var expenses_list = data;
                 $('#ajax-content').html(expenses_list);
+                $('#loader').removeClass('is-active')
+            },
+            error: function (data) {
+                $('#loader').removeClass('is-active')
             }
         });
     });
