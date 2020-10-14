@@ -1,5 +1,7 @@
-{% load humanize %}{% load colorize %}
-<table class="table table-hover stats">
+{% load humanize %}{% load colorize %}{% load static %}
+<script type="text/javascript" src="{% static 'js/sticky-table-headers.js' %}"></script>
+
+<table class="table table-hover stats sticky-table">
     <thead class="thead-light">
         <tr class="top">
             <th>Data</th>
@@ -54,3 +56,5 @@
         background-color: #fff0c1;
     }
 </style>
+
+<script>$('.sticky-table').stickyTableHeaders();</script>
