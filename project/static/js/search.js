@@ -1,5 +1,7 @@
 $(function () {
     var search = function () {
+        $('#loader').addClass('is-active')
+
         var btn = $(this);
         var url = btn.data('url');
 
@@ -30,9 +32,13 @@ $(function () {
                     $('#ajax-content').html(_html);
                 }
                 $('#search_form_data').html(data.html_form);
+
+                $('#loader').removeClass('is-active')
             },
             error: function (xhr, status, error) {
                 alert(`${error}\n\n${xhr.responseJSON.error}`)
+
+                $('#loader').removeClass('is-active')
             }
         });
     };

@@ -1,10 +1,14 @@
 {% extends 'base.html' %}{% load static %}
 
 
-{% block head %}{% endblock head %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
+{% endblock head %}
 
 
 {% block content %}
+<!-- Loader -->
+<div class="loader loader-default" id="loader"></div>
 
 {% url 'incomes:incomes_new' as url_incomes %}
 {% url 'incomes:incomes_type_new' as url_incomes_type_new %}
