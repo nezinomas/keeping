@@ -2,13 +2,15 @@
 {% load static %}
 
 {% block head %}
+<link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
 <script type="text/javascript" src="{% static 'js/reload_stats.js' %}"></script>
 {% endblock head %}
 
 
 {% block content %}
-
+<!-- Loader -->
+<div class="loader loader-default" id="loader"></div>
 
 <div class="row my-3">
     <div class="col-2 text-left" id="search_form_data">{{ search }}</div>
