@@ -115,7 +115,7 @@ class DayExpense(BalanceBase, ExpenseBase):
     def chart_targets(self,
                       expenses_types: List[str],
                       targets: Dict
-                      ) -> Tuple(List[str], List[float], List[Dict]):
+                      ) -> Tuple[List[str], List[float], List[Dict]]:
         total_row = super().total_row
         tmp = []
 
