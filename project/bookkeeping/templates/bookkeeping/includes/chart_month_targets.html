@@ -51,25 +51,24 @@
             bar: {
                 grouping: false,
                 shadow: false,
-                pointWidth: 13,
+                // pointWidth: 13,
             }
         },
         series: [{
             name: 'Planas',
-            color: 'rgba(165,170,217,0)',
+            color: 'rgba(0,0,0,0.07)',
             data: {{ chart_targets_data_target|safe }},
-            pointPadding: 0,
-            pointPlacement: 0,
-            borderColor: 'grey',
+            pointWidth: 19,
             dataLabels: {
                 enabled: true,
                 rotation: 0,
                 color: '#000',
-                align: 'left',
-                format: '{point.y:.1f}', // one decimal
-                y: -1,
+                x: -2,
+                y: -11,
+                format: '{point.y:.0f}', // one decimal
+                // y: -1,
                 style: {
-                    fontSize: '9px',
+                    fontSize: '7px',
                     fontWeight: 'bold',
                     fontFamily: 'Verdana, sans-serif',
                     textOutline: false
@@ -80,9 +79,26 @@
             name: 'Faktas',
             opacity: '0.7',
             data: {{ chart_targets_data_fact|safe }},
-            pointPadding: 0.0,
-            pointPlacement: -0.0005,
-            borderWidth: 0,
+            pointWidth: 13,
+            dataLabels: {
+                enabled: true,
+                rotation: 0,
+                align: 'right',
+                y: -1,
+                style: {
+                    fontSize: '9px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Verdana, sans-serif',
+                    textOutline: false
+                },
+                formatter: function () {
+                    var max = this.series.chart.series[0].data[this.point.x].y;
+                    var color = this.y <= max  ? 'green' : '#b4010d';
+                    var y = Highcharts.numberFormat(this.y, 0)
+                    var n = y == 0 ? '' : y;
+                    return '<span style="color: ' + color + '">' + n + ' </span>';
+                },
+            }
         }, {
             type: 'scatter',
             showInLegend: false,
@@ -91,10 +107,11 @@
             marker: {
                 symbol: 'c-rect',
                 lineWidth: 2,
-                lineColor: Highcharts.getOptions().colors[1],
-                radius: 11,
+                lineColor: 'grey',
+                radius: 13,
             },
-        }]
+        }
+    ]
     });
 });
 </script>

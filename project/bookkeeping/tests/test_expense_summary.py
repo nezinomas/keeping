@@ -64,7 +64,7 @@ def test_base_exceptions(_ex):
     actual = ExpenseBase(df, _ex).exceptions
 
     assert isinstance(actual, pd.DataFrame)
-    assert 1.0 == actual.at['1999-01-01', 'sum']
+    assert actual.at['1999-01-01', 'sum'] == 1.0
 
 
 def test_base_expenses(_ex):
@@ -74,11 +74,11 @@ def test_base_expenses(_ex):
 
     assert isinstance(actual, pd.DataFrame)
 
-    assert 0.25 == actual.at['1999-01-01', 'T1']
-    assert 0.5 == actual.at['1999-01-01', 'T2']
+    assert actual.at['1999-01-01', 'T1'] == 0.25
+    assert actual.at['1999-01-01', 'T2'] == 0.5
 
-    assert 0.75 == actual.at['1999-12-01', 'T1']
-    assert 0.35 == actual.at['1999-12-01', 'T2']
+    assert actual.at['1999-12-01', 'T1'] == 0.75
+    assert actual.at['1999-12-01', 'T2'] == 0.35
 
 
 # ----------------------------------------------------------------------------
@@ -87,13 +87,13 @@ def test_base_expenses(_ex):
 def test_day_balance_lenght_empty_expenses():
     actual = DayExpense(1999, 1, []).balance
 
-    assert 31 == len(actual)
+    assert len(actual) == 31
 
 
 def test_day_balance_lenght_none_expenses():
     actual = DayExpense(1999, 1, None).balance
 
-    assert 31 == len(actual)
+    assert len(actual) == 31
 
 
 def test_day_balance_january(_ex):
@@ -138,13 +138,13 @@ def test_day_total(_ex):
         month=1,
         expenses=_ex[:2]).total
 
-    assert 0.75 == actual
+    assert actual == 0.75
 
 
 def test_day_total_no_expenses(_ex):
     actual = DayExpense(year=1999, month=1, expenses=[]).total
 
-    assert 0.0 == actual
+    assert actual == 0.0
 
 
 def test_day_chart_expenses(_ex):
@@ -233,21 +233,21 @@ def test_day_chart_target_data_fact(_ex, _ex_targets):
     expect = [
         {'y': 0.5, 'color': 'red'},
         {'y': 0.25, 'color': 'green'},
-        {'y': 0.0, 'color': 'green'},
+        {'y': 0.0, 'color': 'red'},
     ]
 
     assert expect == actual
 
 
-def test_day_chart_target_data_fact_target_partial(_ex):
+def test_day_chart_target_data_fact_target_partial(_ex, _ex_targets):
     obj = DayExpense(year=1999, month=1, expenses=_ex[:2])
 
-    (_, _, actual) = obj.chart_targets(['T1', 'T2', 'T3'], {'T2': 0.4})
+    (_, _, actual) = obj.chart_targets(['T1', 'T2', 'T3'], _ex_targets)
 
     expect = [
         {'y': 0.5, 'color': 'red'},
         {'y': 0.25, 'color': 'green'},
-        {'y': 0.0, 'color': 'green'},
+        {'y': 0.0, 'color': 'red'},
     ]
 
     assert expect == actual
@@ -259,9 +259,9 @@ def test_day_chart_target_data_fact_target_empty(_ex):
     (_, _, actual) = obj.chart_targets(['T1', 'T2', 'T3'], {})
 
     expect = [
-        {'y': 0.5, 'color': 'green'},
-        {'y': 0.25, 'color': 'green'},
-        {'y': 0.0, 'color': 'green'},
+        {'y': 0.5, 'color': 'red'},
+        {'y': 0.25, 'color': 'red'},
+        {'y': 0.0, 'color': 'red'},
     ]
 
     assert expect == actual
