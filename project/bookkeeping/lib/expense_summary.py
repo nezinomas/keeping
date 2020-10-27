@@ -138,7 +138,7 @@ class DayExpense(BalanceBase, ExpenseBase):
 
             color = 'green'
 
-            if fact > target and target > 0:
+            if fact > target or target == 0:
                 color = 'red'
 
             rtn_categories.append(category.upper())
