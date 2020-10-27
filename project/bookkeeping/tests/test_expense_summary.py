@@ -249,7 +249,7 @@ def test_day_chart_target_data_fact_target_partial(_ex, _ex_targets):
         {'y': 0.25, 'color': 'green'},
         {'y': 0.0, 'color': 'red'},
     ]
-    print(actual)
+
     assert expect == actual
 
 
