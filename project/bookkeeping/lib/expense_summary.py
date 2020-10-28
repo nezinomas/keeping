@@ -137,14 +137,9 @@ class DayExpense(BalanceBase, ExpenseBase):
             target = float(targets.get(category, 0.0))
             fact = float(arr['y'])
 
-            color = 'green'
-
-            if fact > target or target == 0:
-                color = 'red'
-
             rtn_categories.append(category.upper())
             rtn_data_target.append(target)
-            rtn_data_fact.append({'y': fact, 'color': color})
+            rtn_data_fact.append({'y': fact})
 
         return (rtn_categories, rtn_data_target, rtn_data_fact)
 
