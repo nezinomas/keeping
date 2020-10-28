@@ -73,13 +73,13 @@
                     textOutline: false
                 }
             }
-
         }, {
             name: 'Faktas',
             opacity: '0.7',
             data: {{ chart_targets_data_fact|safe }},
             pointWidth: 13,
             dataLabels: {
+                format: '{point.y:.0f}',
                 enabled: true,
                 rotation: 0,
                 align: 'right',
@@ -90,14 +90,7 @@
                     fontFamily: 'Verdana, sans-serif',
                     textOutline: false,
                 },
-                formatter: function () {
-                    var max = this.series.chart.series[0].data[this.point.x].y;
-                    var color = this.y <= max  ? 'green' : '#b4010d';
-                    var y = Highcharts.numberFormat(this.y, 0);
-                    var n = y == 0 ? '' : y;
-                    return '<span style="color: ' + color + '">' + n + ' </span>';
-                },
-            }
+            },
         }, {
             type: 'scatter',
             showInLegend: false,
@@ -113,19 +106,30 @@
     ]
     }, function (chartObj) {
             // align datalabels for expenses that exceeds targets
-            $.each(chartObj.series[1].data, function (i, point) {
+            var series = chartObj.series[1];
+            $.each(series.data, function (i, point) {
                 var max = chartObj.series[0].data[point.x].y;
                 var y = point.y;
+
+                var r = 'red';
+                var g = 'green';
+
                 console.log(point)
 
                 if (y > max) {
                     var p = 28;
                     if (y < 100) { p = 21; }
-                    point.dataLabel.attr({ x: point.dataLabel.x + p });
-                    point.update({color: 'red'});
-                }
-                else {
-                    point.update({color: 'green'});
+                        point.dataLabel.attr({ x: point.dataLabel.x + p});
+                        point.dataLabel.css({color: '#b4010d' })
+
+                        point.color = r;
+                        point.graphic.attr({ fill: r });
+                    }
+                    else {
+                        point.dataLabel.css({color: 'green' })
+
+                        point.color = g;
+                        point.graphic.attr({ fill: g });
                 }
             });
         });
