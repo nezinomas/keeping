@@ -126,6 +126,8 @@
                 else {
                     var p = 28;
                     if (y < 100) { p = 21; }
+                    if (y < 10) { p = -2; }
+
                     point.dataLabel.attr({ x: point.dataLabel.x + p });
                     point.dataLabel.css({color: '#b4010d' })
 
