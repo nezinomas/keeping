@@ -112,6 +112,18 @@
             },
         }
     ]
-    });
+    }, function (chartObj) {
+            // align datalabels for expenses that exceeds targets
+            $.each(chartObj.series[1].data, function (i, point) {
+                var max = chartObj.series[0].data[point.x].y;
+                var y = point.y;
+
+                if (y > max) {
+                    var p = 28;
+                    if (y < 100) { p = 21; }
+                    point.dataLabel.attr({ x: point.dataLabel.x + p });
+                }
+            });
+        });
 });
 </script>
