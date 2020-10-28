@@ -89,12 +89,12 @@
                     fontSize: '9px',
                     fontWeight: 'bold',
                     fontFamily: 'Verdana, sans-serif',
-                    textOutline: false
+                    textOutline: false,
                 },
                 formatter: function () {
                     var max = this.series.chart.series[0].data[this.point.x].y;
                     var color = this.y <= max  ? 'green' : '#b4010d';
-                    var y = Highcharts.numberFormat(this.y, 0)
+                    var y = Highcharts.numberFormat(this.y, 0);
                     var n = y == 0 ? '' : y;
                     return '<span style="color: ' + color + '">' + n + ' </span>';
                 },
