@@ -122,10 +122,10 @@
                     var p = 28;
                     if (y < 100) { p = 21; }
                     point.dataLabel.attr({ x: point.dataLabel.x + p });
-                    point.graphic.attr({fill: 'red'});
+                    point.update({color: 'red'});
                 }
                 else {
-                    point.graphic.attr({fill: 'green'});
+                    point.update({color: 'green'});
                 }
             });
         });
