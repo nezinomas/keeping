@@ -111,8 +111,13 @@
                 var max = chartObj.series[0].data[point.x].y;
                 var y = point.y;
 
+                max = parseFloat(max.toFixed(1));
+                y = parseFloat(y.toFixed(1));
+
                 var r = 'red';
                 var g = 'green';
+
+                console.log(y, max, point)
 
                 if (y <= max) {
                     point.dataLabel.css({color: 'green' })
