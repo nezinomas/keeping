@@ -116,6 +116,7 @@
 
                 var red = 'red';
                 var green = 'green';
+                var yellow = '#ffcc00';
 
                 if (y <= max) {
                     point.dataLabel.css({color: 'green' })
@@ -131,8 +132,11 @@
                     point.dataLabel.attr({ x: point.dataLabel.x + p });
                     point.dataLabel.css({color: '#b4010d' })
 
-                    point.color = red;
-                    point.graphic.attr({ fill: red });
+                    var clr = red;
+                    if(y <= max * 1.1) { clr = yellow; }
+
+                    point.color = clr;
+                    point.graphic.attr({ fill: clr });
                 }
             });
         });
