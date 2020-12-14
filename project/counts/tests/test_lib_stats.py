@@ -8,9 +8,9 @@ from mock import patch
 
 from ...core.exceptions import MethodInvalid
 from ..apps import App_name
-from ..factories import NightFactory
+from ..factories import CountFactory
 from ..lib.stats import Stats
-from ..models import Night
+from ..models import Count
 
 month_days_1999 = [
     (1, 31), (2, 28), (3, 31),
@@ -42,13 +42,13 @@ def _data():
 
 @pytest.fixture()
 def _data_db():
-    NightFactory(date=date(1999, 12, 3), quantity=1.0)
-    NightFactory(date=date(1999, 2, 1), quantity=1.0)
-    NightFactory(date=date(1999, 2, 1), quantity=1.0)
-    NightFactory(date=date(1999, 1, 15), quantity=1.0)
-    NightFactory(date=date(1999, 1, 15), quantity=1.0)
-    NightFactory(date=date(1999, 1, 8), quantity=1.0)
-    NightFactory(date=date(2000, 1, 8), quantity=1.0)
+    CountFactory(date=date(1999, 12, 3), quantity=1.0)
+    CountFactory(date=date(1999, 2, 1), quantity=1.0)
+    CountFactory(date=date(1999, 2, 1), quantity=1.0)
+    CountFactory(date=date(1999, 1, 15), quantity=1.0)
+    CountFactory(date=date(1999, 1, 15), quantity=1.0)
+    CountFactory(date=date(1999, 1, 8), quantity=1.0)
+    CountFactory(date=date(2000, 1, 8), quantity=1.0)
 
 
 @pytest.fixture()
@@ -159,10 +159,10 @@ def test_months_stats(_data):
 
 
 @pytest.mark.django_db
-@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
 def test_months_stats_db(_data_db, get_user):
     year = 1999
-    qs = Night.objects.sum_by_day(year=year)
+    qs = Count.objects.sum_by_day(year=year)
     actual = Stats(year=year, data=qs).months_stats()
 
     expect = [3.0, 2.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
@@ -171,10 +171,10 @@ def test_months_stats_db(_data_db, get_user):
 
 
 @pytest.mark.django_db
-@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
 def test_months_stats_db_no_data(get_user):
     year = 1999
-    qs = Night.objects.sum_by_day(year=year)
+    qs = Count.objects.sum_by_day(year=year)
     actual = Stats(year=year, data=qs).months_stats()
 
     expect = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -202,10 +202,10 @@ def test_year_stats(_data, _year_stats_expect):
 
 
 @pytest.mark.django_db
-@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
 def test_year_stats_db(get_user, _year_stats_expect, _data_db):
     year = 1999
-    qs = Night.objects.sum_by_day(year=year)
+    qs = Count.objects.sum_by_day(year=year)
     actual = Stats(year=year, data=qs).year_stats()
     # assert 0
     assert actual == _year_stats_expect
@@ -238,10 +238,10 @@ def test_year_totals(_data):
 
 
 @pytest.mark.django_db
-@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
 def test_year_totals_queryset(get_user):
-    NightFactory()
-    qs = Night.objects.year(1999)
+    CountFactory()
+    qs = Count.objects.year(1999)
 
     actual = Stats(year=1999, data=qs).year_totals()
 
@@ -288,10 +288,10 @@ def test_year_month_days_no_year_provided():
 
 
 @pytest.mark.django_db
-@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
 def test_items(get_user):
-    NightFactory()
-    qs = Night.objects.year(1999)
+    CountFactory()
+    qs = Count.objects.year(1999)
 
     actual = Stats(year=1999, data=qs).items()
 
@@ -304,12 +304,12 @@ def test_items(get_user):
 
 
 @pytest.mark.django_db
-@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
 def test_items_odering(get_user):
-    NightFactory(date=date(1999, 1, 1))
-    NightFactory(date=date(1999, 12, 31))
+    CountFactory(date=date(1999, 1, 1))
+    CountFactory(date=date(1999, 12, 31))
 
-    qs = Night.objects.year(1999)
+    qs = Count.objects.year(1999)
 
     actual = Stats(year=1999, data=qs).items()
 
@@ -318,9 +318,9 @@ def test_items_odering(get_user):
 
 
 @pytest.mark.django_db
-@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
 def test_items_no_data(get_user):
-    qs = Night.objects.year(1999)
+    qs = Count.objects.year(1999)
 
     actual = Stats(year=1999, data=qs).items()
 

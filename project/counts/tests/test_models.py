@@ -1,10 +1,10 @@
-from ..factories import NightFactory
+from ..factories import CountFactory
 
 
 # ----------------------------------------------------------------------------
-#                                                                        Night
+#                                                                        Count
 # ----------------------------------------------------------------------------
-def test_night_str():
-    actual = NightFactory.build()
+def test_count_str():
+    actual = CountFactory.build()
 
     assert str(actual) == '1999-01-01: 1'

@@ -3,10 +3,10 @@ from django.views.generic import TemplateView
 from ..core.mixins.views import (CreateAjaxMixin, DispatchAjaxMixin,
                                  IndexMixin, UpdateAjaxMixin)
 from .apps import App_name
-from .forms import NightForm as Form
+from .forms import CountForm as Form
 from .lib.stats import Stats
 from .lib.views_helper import RenderContext, UpdateLinkMixin
-from .models import Night as Counter
+from .models import Count as Counter
 
 
 class Index(IndexMixin):

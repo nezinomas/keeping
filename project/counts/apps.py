@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
-App_name = 'nights'
+App_name = 'counts'
 
 
 class Config(AppConfig):
