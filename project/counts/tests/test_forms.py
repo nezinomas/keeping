@@ -6,7 +6,7 @@ from mock import patch
 
 from ...users.factories import UserFactory
 from ..apps import App_name
-from ..forms import NightForm
+from ..forms import CountForm
 
 pytestmark = pytest.mark.django_db
 
@@ -15,11 +15,11 @@ pytestmark = pytest.mark.django_db
 #                                                                   Form Tests
 # ----------------------------------------------------------------------------
 def test_form_init(get_user):
-    NightForm()
+    CountForm()
 
 
 def test_form_init_fields(get_user):
-    form = NightForm().as_p()
+    form = CountForm().as_p()
 
     assert '<input type="text" name="date"' in form
     assert '<input type="number" name="quantity"' in form
@@ -31,7 +31,7 @@ def test_form_init_fields(get_user):
 def test_form_year_initial_value(get_user):
     UserFactory()
 
-    form = NightForm().as_p()
+    form = CountForm().as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
     assert '<input type="number" name="quantity" value="1"' in form
@@ -39,7 +39,7 @@ def test_form_year_initial_value(get_user):
 
 @patch(f'project.{App_name}.forms.App_name', 'Counter Type')
 def test_form_valid_data(get_user):
-    form = NightForm(data={
+    form = CountForm(data={
         'date': '1974-01-01',
         'quantity': 1.0
     })
@@ -55,7 +55,7 @@ def test_form_valid_data(get_user):
 
 
 def test_form_blank_data(get_user):
-    form = NightForm({})
+    form = CountForm({})
 
     assert not form.is_valid()
 

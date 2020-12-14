@@ -9,7 +9,7 @@ from mock import patch
 from ...users.factories import UserFactory
 from .. import views
 from ..apps import App_name
-from ..factories import NightFactory
+from ..factories import CountFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
@@ -32,7 +32,7 @@ def test_view_new_form_initial(client_logged):
     assert '<input type="number" name="quantity" value="1"' in actual['html_form']
 
 
-@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
 @patch(f'project.{App_name}.forms.App_name', 'Counter Type')
 def test_view_new(client_logged):
     data = {'date': '1999-01-01', 'quantity': 68}
@@ -62,10 +62,10 @@ def test_view_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
 @patch(f'project.{App_name}.forms.App_name', 'Counter Type')
 def test_view_update(client_logged):
-    p = NightFactory()
+    p = CountFactory()
 
     data = {'date': '1999-01-01', 'quantity': 68}
     url = reverse(f'{App_name}:{App_name}_update', kwargs={'pk': p.pk})
@@ -189,9 +189,9 @@ def test_index_charts_of_year(client_logged):
 
 
 @freeze_time('1999-07-18')
-@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
 def test_index_info_row(client_logged):
-    NightFactory(quantity=3)
+    CountFactory(quantity=3)
 
     url = reverse(f'{App_name}:{App_name}_index')
     response = client_logged.get(url)
@@ -278,9 +278,9 @@ def test_list_context_tab_value(client_logged):
     assert response.context['tab'] == 'data'
 
 
-@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
 def test_list(client_logged):
-    p = NightFactory(quantity=66)
+    p = CountFactory(quantity=66)
     url = reverse(f'{App_name}:{App_name}_list')
     response = client_logged.get(url)
 
@@ -292,7 +292,7 @@ def test_list(client_logged):
     assert f'<a type="button" data-url="/{App_name}/update/{p.pk}/"' in actual
 
 
-@patch(f'project.{App_name}.models.NightQuerySet.App_name', 'Counter Type')
+@patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
 def test_list_empty(client_logged):
     url = reverse(f'{App_name}:{App_name}_list')
     response = client_logged.get(url)
