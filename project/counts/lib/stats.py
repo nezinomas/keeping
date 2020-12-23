@@ -147,6 +147,7 @@ class Stats():
                     val = 0
 
                 if dt:
+                    # set values for saturday and sunday
                     week = dt.isocalendar()[1]
                     weekday = dt.weekday()
 
@@ -157,6 +158,11 @@ class Stats():
                     else:
                         val = 1
 
+                    # current day
+                    if dt == datetime.now().date():
+                        val = 5
+
+                    # get gap and duration
                     try:
                         f = df.loc[dt]
                         gap = f.duration
@@ -169,6 +175,10 @@ class Stats():
                 if gap:
                     _row = [qty, gap]
                     val = 4
+
+                    # current day has record
+                    if dt == datetime.now().date():
+                        val = 6
 
                 data.append([x, y, val, week, str(dt), *_row])
 

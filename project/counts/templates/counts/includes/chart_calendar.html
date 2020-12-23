@@ -81,11 +81,13 @@ Highcharts.chart('clander_{{ id }}_container', {
         tickInterval: 1,
         tickmarkPlacement: 'on',
         stops: [
-            [0,   '#ffffff'],	 // weiss    : leer
-            [0.1, '#eeeeee'],  // grau     : Wochentag
-            [0.2, '#aac5e6'],  // hellblau : Samstag
-            [0.3, '#1076b0'],  //	blau 	   : Sonntag
-            [0.4, '#ff7d1e'],  //	orange   : Feiertag
+            [0,   '#ffffff'],	 // empty cell
+            [0.1, '#eeeeee'],  // day without record
+            [0.2, '#aac5e6'],  // saturday
+            [0.3, '#1076b0'],  //	sunday
+            [0.4, '#ff7d1e'],  //	day has record
+            [0.5, '#7ecf85'],  //	current day
+            [0.6, '#ff331e'],  //	current day has record
         ],
         labels: {
           enabled: true
@@ -141,23 +143,9 @@ Highcharts.chart('clander_{{ id }}_container', {
             textOutline: 'none'
           },
         },
-        states: {
-            hover: {
-              enabled: false
-            }
-        },
         borderColor: '#ffffff',
         borderWidth: 2
       }
-    },
-
-    responsive: {
-        rules: [{
-            condition: {
-                maxWidth: 500
-            },
-            width: 800,
-          }]
     },
 
     series: {{ data|safe }}
