@@ -145,7 +145,7 @@ class RenderContext():
             'chart_calendar_2H': self.chart_calendar(calendar_data[6:], '2H'),
             'chart_weekdays': self.chart_weekdays(f'Savaitės dienos, {year} metai'),
             'chart_months': self.chart_months(f'Mėnesiai, {year} metai'),
-            'chart_year': self.chart_year(),
+            # 'chart_year': self.chart_year(),
             'chart_histogram': self.chart_histogram(),
             'info_row': self.info_row(year),
         }
