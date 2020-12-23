@@ -146,15 +146,6 @@ Highcharts.chart('clander_{{ id }}_container', {
       }
     },
 
-    responsive: {
-        rules: [{
-            condition: {
-                maxWidth: 500
-            },
-            width: 800,
-          }]
-    },
-
     series: {{ data|safe }}
 });
 </script>
