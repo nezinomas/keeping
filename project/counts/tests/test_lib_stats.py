@@ -471,3 +471,23 @@ def test_chart_calendar_no_data(_data, _chart_calendar_expect_january_no_data):
     actual = Stats(year=1999, data=[]).chart_calendar()
 
     assert actual[0] == _chart_calendar_expect_january_no_data
+
+
+@freeze_time('1999-01-02')
+def test_chart_calendar_current_day_no_data(_chart_calendar_expect_january_no_data):
+    _chart_calendar_expect_january_no_data['data'][5][2] = 5
+
+    actual = Stats(year=1999, data=[]).chart_calendar()
+    print(actual[0])
+    print('----')
+    print(_chart_calendar_expect_january_no_data)
+    assert actual[0] == _chart_calendar_expect_january_no_data
+
+
+@freeze_time('1999-01-08')
+def test_chart_calendar_current_day_has_gap_record(_data, _chart_calendar_expect_january_with_data):
+    _chart_calendar_expect_january_with_data['data'][11][2] = 6
+
+    actual = Stats(year=1999, data=_data).chart_calendar()
+
+    assert actual[0] == _chart_calendar_expect_january_with_data
