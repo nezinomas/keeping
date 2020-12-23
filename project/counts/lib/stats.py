@@ -170,7 +170,7 @@ class Stats():
                     _row = [qty, gap]
                     val = 4
 
-                data.append([x, y, val, week, str(dt) if dt else dt, *_row])
+                data.append([x, y, val, week, str(dt), *_row])
 
             x += 1
 
