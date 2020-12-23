@@ -110,6 +110,78 @@ class Stats():
 
         return arr
 
+    def chart_calendar(self):
+        if not self._year:
+            raise MethodInvalid(
+                'class Stats must be called with specified year.')
+
+        df = self._df.copy()
+        if not df.empty:
+            df = self._calc_gaps(df)
+            df['date'] = pd.to_datetime(df.date).dt.date
+            df.set_index('date', inplace=True)
+
+        x = 0
+        y = -1
+        week = 1
+        val = 0
+        items = []
+        gap = None
+        qty = None
+        _calendar = calendar.Calendar(0)
+
+        for month in range(1, 13):
+            data = []
+            monthdays = _calendar.itermonthdays(year=self._year, month=month)
+            for day in monthdays:
+                if y >= 6:
+                    y = 0
+                    x += 1
+                else:
+                    y += 1
+
+                try:
+                    dt = date(self._year, month, day)
+                except ValueError:
+                    dt = None
+                    val = 0
+
+                if dt:
+                    week = dt.isocalendar()[1]
+                    weekday = dt.weekday()
+
+                    if weekday == 5:
+                        val = 2
+                    elif weekday == 6:
+                        val = 3
+                    else:
+                        val = 1
+
+                    try:
+                        f = df.loc[dt]
+                        gap = f.duration
+                        qty = f.qty
+                    except KeyError:
+                        gap = None
+                        qty = None
+
+                _row = []
+                if gap:
+                    _row = [qty, gap]
+                    val = 4
+
+                data.append([x, y, val, week, str(dt), *_row])
+
+            x += 1
+
+            items.append({
+                'name': self.months()[month-1],
+                'keys': ['x', 'y', 'value', 'week', 'date', 'qty', 'gap'],
+                'data': data,
+            })
+
+        return items
+
     def year_totals(self):
         """
         If class called with year value method returns int

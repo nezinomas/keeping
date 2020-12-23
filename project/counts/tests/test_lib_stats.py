@@ -380,3 +380,94 @@ def test_current_gap_if_user_look_past_records(_data):
     actual = Stats(year=1999, data=_data).current_gap()
 
     assert not actual
+
+
+# ---------------------------------------------------------------------------------------
+# chart_calendar
+# ---------------------------------------------------------------------------------------
+@pytest.fixture
+def _chart_calendar_expect_january_no_data():
+    arr = {
+        'name': 'Sausis',
+        'keys': ['x', 'y', 'value', 'week', 'date', 'qty', 'gap'],
+        'data': [
+            [0, 0, 0, 1, 'None'],
+            [0, 1, 0, 1, 'None'],
+            [0, 2, 0, 1, 'None'],
+            [0, 3, 0, 1, 'None'],
+            [0, 4, 1, 53, '1999-01-01'],
+            [0, 5, 2, 53, '1999-01-02'],
+            [0, 6, 3, 53, '1999-01-03'],
+            [1, 0, 1, 1, '1999-01-04'],
+            [1, 1, 1, 1, '1999-01-05'],
+            [1, 2, 1, 1, '1999-01-06'],
+            [1, 3, 1, 1, '1999-01-07'],
+            [1, 4, 1, 1, '1999-01-08'],
+            [1, 5, 2, 1, '1999-01-09'],
+            [1, 6, 3, 1, '1999-01-10'],
+            [2, 0, 1, 2, '1999-01-11'],
+            [2, 1, 1, 2, '1999-01-12'],
+            [2, 2, 1, 2, '1999-01-13'],
+            [2, 3, 1, 2, '1999-01-14'],
+            [2, 4, 1, 2, '1999-01-15'],
+            [2, 5, 2, 2, '1999-01-16'],
+            [2, 6, 3, 2, '1999-01-17'],
+            [3, 0, 1, 3, '1999-01-18'],
+            [3, 1, 1, 3, '1999-01-19'],
+            [3, 2, 1, 3, '1999-01-20'],
+            [3, 3, 1, 3, '1999-01-21'],
+            [3, 4, 1, 3, '1999-01-22'],
+            [3, 5, 2, 3, '1999-01-23'],
+            [3, 6, 3, 3, '1999-01-24'],
+            [4, 0, 1, 4, '1999-01-25'],
+            [4, 1, 1, 4, '1999-01-26'],
+            [4, 2, 1, 4, '1999-01-27'],
+            [4, 3, 1, 4, '1999-01-28'],
+            [4, 4, 1, 4, '1999-01-29'],
+            [4, 5, 2, 4, '1999-01-30'],
+            [4, 6, 3, 4, '1999-01-31'],
+        ]
+    }
+
+    return arr
+
+
+@pytest.fixture
+def _chart_calendar_expect_january_with_data(_chart_calendar_expect_january_no_data):
+    _chart_calendar_expect_january_no_data['data'][11].append(1.0) #1999-01-08 qty
+    _chart_calendar_expect_january_no_data['data'][11].append(7.0) #1999-01-08 gap
+    _chart_calendar_expect_january_no_data['data'][11][2] = 4
+
+
+    _chart_calendar_expect_january_no_data['data'][18].append(2.0) #1999-01-15 qty
+    _chart_calendar_expect_january_no_data['data'][18].append(7.0) #1999-01-15 gap
+    _chart_calendar_expect_january_no_data['data'][18][2] = 4
+
+    return _chart_calendar_expect_january_no_data
+
+
+@pytest.mark.xfail(raises=MethodInvalid)
+def test_chart_calendar_no_year_provided():
+    Stats(data=[]).chart_calendar()
+
+
+def test_chart_calendar(_data, _chart_calendar_expect_january_with_data):
+    actual = Stats(year=1999, data=_data).chart_calendar()
+
+    assert actual[0] == _chart_calendar_expect_january_with_data
+
+
+@pytest.mark.django_db
+@patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
+def test_chart_calendar_db(get_user, _chart_calendar_expect_january_with_data, _data_db):
+    year = 1999
+    qs = Count.objects.sum_by_day(year=year)
+    actual = Stats(year=year, data=qs).chart_calendar()
+    # assert 0
+    assert actual[0] == _chart_calendar_expect_january_with_data
+
+
+def test_chart_calendar_no_data(_data, _chart_calendar_expect_january_no_data):
+    actual = Stats(year=1999, data=[]).chart_calendar()
+
+    assert actual[0] == _chart_calendar_expect_january_no_data
