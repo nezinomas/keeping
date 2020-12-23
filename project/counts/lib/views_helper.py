@@ -1,4 +1,5 @@
-from typing import Dict
+from typing import Dict, List
+
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 
@@ -81,6 +82,18 @@ class RenderContext():
         )
         return rendered
 
+    def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
+
+        rendered = render_to_string(
+            f'{App_name}/includes/chart_calendar.html',
+            {
+                'data': data,
+                'id': chart_id,
+            },
+            self._request
+        )
+        return rendered
+
     def chart_histogram(self) -> str:
         gaps = self._stats.gaps()
         rendered = render_to_string(
@@ -124,8 +137,12 @@ class RenderContext():
         return rendered
 
     def context_to_reload(self, year: int) -> Dict[str, str]:
+        calendar_data = self._stats.chart_calendar()
+
         context = {
             'tab': 'index',
+            'chart_calendar_1H': self.chart_calendar(calendar_data[0:6], '1H'),
+            'chart_calendar_2H': self.chart_calendar(calendar_data[6:], '2H'),
             'chart_weekdays': self.chart_weekdays(f'Savaitės dienos, {year} metai'),
             'chart_months': self.chart_months(f'Mėnesiai, {year} metai'),
             'chart_year': self.chart_year(),

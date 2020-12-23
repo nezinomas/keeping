@@ -4,6 +4,7 @@
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
 <script type="text/javascript" src="{% static 'js/reload_stats.js' %}"></script>
 {% endblock head %}
 
@@ -33,6 +34,10 @@
     <div class="col-lg-4" id="chart_histogram">{{ chart_histogram }}</div>
 </div>
 
+<div class="row mt-2">
+    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{{ chart_calendar_1H }}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{{ chart_calendar_2H }}</div>
+</div>
 <div id="chart_year">{{ chart_year }}</div>
 {% endif %}
 
@@ -70,7 +75,7 @@
                 'ajax_trigger': '1'
             },
             success: function (data) {
-                var blocks = ['info_row', 'chart_weekdays', 'chart_months', 'chart_year', 'chart_histogram'];
+                var blocks = ['info_row', 'chart_weekdays', 'chart_months', 'chart_year', 'chart_histogram', 'chart_calendar_1H', 'chart_calendar_2H'];
                 reload_stats(data, blocks);
             }
         });
