@@ -6,6 +6,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from ..core.lib import utils
+from ..core.lib.date import ydays
 from ..core.mixins.queryset_sum import SumMixin
 from ..counters.models import Counter, CounterQuerySet
 from ..users.models import User
@@ -57,7 +58,7 @@ class DrinkQuerySet(CounterQuerySet, models.QuerySet):
         if year == _date.year:
             _day_of_year = _date.timetuple().tm_yday
         else:
-            _day_of_year = 366 if calendar.isleap(year) else 365
+            _day_of_year = ydays(year)
 
         _qty = qs[0].get('qty')
 
@@ -76,7 +77,7 @@ class DrinkQuerySet(CounterQuerySet, models.QuerySet):
         for row in qs:
             _qty = row.get('qty')
             _date = row.get('date')
-            _days = 366 if calendar.isleap(_date.year) else 365
+            _days = ydays(_date.year)
 
             item = {}
             item['year'] = _date.year
