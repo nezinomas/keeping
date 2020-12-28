@@ -96,6 +96,7 @@ def weeknumber(year: int):
 
 def yday(year: int) -> Tuple[int, int]:
     now = datetime.now().date()
+    year = year if year else now.year
 
     _year = now.year
     _days = 366 if calendar.isleap(year) else 365
