@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 from freezegun import freeze_time
 
-from ..lib.drinks_stats import DrinkStats, std_av
+from ..lib.drinks_stats import DrinkStats, std_av, max_beer_bottles
 
 
 @pytest.fixture
@@ -180,3 +180,10 @@ def test_std_av_past_recods():
                 assert expect[i][k] == v
             else:
                 assert expect[i][k] == round(v, 2)
+
+
+@freeze_time('2020-6-6')
+def test_max_beer_bottles():
+    actual = max_beer_bottles(2020, 350)
+
+    assert actual == 256.2

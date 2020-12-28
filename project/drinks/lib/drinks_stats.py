@@ -56,6 +56,11 @@ def std_av(year: int, qty: float) -> List[Dict]:
     return arr
 
 
+def max_beer_bottles(year: int, max_quantity: int) -> float:
+    _days = 366 if calendar.isleap(year) else 365
+    return (max_quantity * _days) / 500
+
+
 def _beer(av: float) -> float:
     return (av * 200) / 500
 
