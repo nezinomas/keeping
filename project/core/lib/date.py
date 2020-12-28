@@ -99,10 +99,14 @@ def yday(year: int) -> Tuple[int, int]:
     year = year if year else now.year
 
     _year = now.year
-    _days = 366 if calendar.isleap(year) else 365
+    _days = ydays(year)
 
     if _year == year:
         _day = now.timetuple().tm_yday
         return (_day, _days)
 
     return (_days, _days)
+
+
+def ydays(year: int) -> int:
+    return 366 if calendar.isleap(year) else 365
