@@ -138,7 +138,9 @@ def test_index_context(client_logged):
 
     assert 'chart_weekdays' in response.context
     assert 'chart_months' in response.context
-    assert 'chart_year' in response.context
+    # assert 'chart_year' in response.context
+    assert 'chart_calendar_1H' in response.context
+    assert 'chart_calendar_2H' in response.context
     assert 'chart_histogram' in response.context
     assert 'info_row' in response.context
     assert 'tab' in response.context
@@ -178,14 +180,16 @@ def test_index_chart_histogram(client_logged):
     assert 'id="chart_histogram"><div id="chart_histogram_container"></div>' in content
 
 
-def test_index_charts_of_year(client_logged):
-    url = reverse(f'{App_name}:{App_name}_index')
-    response = client_logged.get(url)
+# Disabled chart, no need for this test
+# ToDo: delete after some time
+# def test_index_charts_of_year(client_logged):
+#     url = reverse(f'{App_name}:{App_name}_index')
+#     response = client_logged.get(url)
 
-    content = response.content.decode("utf-8")
+#     content = response.content.decode("utf-8")
 
-    for i in range(1, 13):
-        assert f'<div id="chart_m{i}_container"></div>' in content
+#     for i in range(1, 13):
+#         assert f'<div id="chart_m{i}_container"></div>' in content
 
 
 @freeze_time('1999-07-18')
@@ -234,7 +238,9 @@ def test_reload_stats_render_ajax_trigger(client_logged):
     assert 'info_row' in response.context
     assert 'chart_weekdays' in response.context
     assert 'chart_months' in response.context
-    assert 'chart_year' in response.context
+    # assert 'chart_year' in response.context
+    assert 'chart_calendar_1H' in response.context
+    assert 'chart_calendar_2H' in response.context
     assert 'chart_histogram' in response.context
 
 

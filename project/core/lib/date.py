@@ -1,6 +1,6 @@
 import calendar
 from datetime import date, datetime
-from typing import List
+from typing import List, Tuple
 
 from . import utils
 
@@ -92,3 +92,17 @@ def weeknumber(year: int):
     isleap = calendar.isleap(year)
 
     return 53 if weekday == 2 or isleap else 52
+
+
+def yday(year: int) -> Tuple[int, int]:
+    now = datetime.now().date()
+    year = year if year else now.year
+
+    _year = now.year
+    _days = 366 if calendar.isleap(year) else 365
+
+    if _year == year:
+        _day = now.timetuple().tm_yday
+        return (_day, _days)
+
+    return (_days, _days)

@@ -80,6 +80,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.static',
                 'project.core.context.years',
+                'project.core.context.yday',
             ],
         },
     },
