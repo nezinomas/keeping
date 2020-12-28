@@ -1,6 +1,6 @@
 import calendar
 from datetime import date, datetime
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 
 class DrinkStats():
@@ -68,7 +68,7 @@ def _vodka(av: float) -> float:
     return (av * 25) / 1000
 
 
-def _dates(year: int) -> (int, int, int):
+def _dates(year: int) -> Tuple[int, int, int]:
     now = datetime.now().date()
 
     year = year if year else now.year
