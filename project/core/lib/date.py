@@ -106,3 +106,7 @@ def yday(year: int) -> Tuple[int, int]:
         return (_day, _days)
 
     return (_days, _days)
+
+
+def ydays(year: int) -> int:
+    return 366 if calendar.isleap(year) else 365

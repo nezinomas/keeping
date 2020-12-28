@@ -133,3 +133,13 @@ def test_yday(year, expect):
     actual = T.yday(year)
 
     assert actual == expect
+
+
+@pytest.mark.parametrize(
+    'year, expect',
+    [(2020, 366), (2019, 365)]
+)
+def test_ydays(year, expect):
+    actual = T.ydays(year)
+
+    assert actual == expect
