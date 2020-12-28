@@ -67,20 +67,22 @@ class RenderContext():
         )
         return rendered
 
-    def chart_year(self) -> str:
-        rendered = render_to_string(
-            f'{App_name}/includes/chart_month_periodicity.html',
-            {
-                'month_days': self._stats.month_days(),
-                'month_titles': self._stats.months(),
-                'data': self._stats.year_stats(),
-                'chart_column_color': '113, 149, 198',
-                'alternative_bg': [3, 4, 5, 9, 10, 11],
-                'chart_template': f'{App_name}/includes/chart_month.html'
-            },
-            self._request
-        )
-        return rendered
+    # Todo: delete this method after some time
+    # disabled at 2020-12-28
+    # def chart_year(self) -> str:
+    #     rendered = render_to_string(
+    #         f'{App_name}/includes/chart_month_periodicity.html',
+    #         {
+    #             'month_days': self._stats.month_days(),
+    #             'month_titles': self._stats.months(),
+    #             'data': self._stats.year_stats(),
+    #             'chart_column_color': '113, 149, 198',
+    #             'alternative_bg': [3, 4, 5, 9, 10, 11],
+    #             'chart_template': f'{App_name}/includes/chart_month.html'
+    #         },
+    #         self._request
+    #     )
+    #     return rendered
 
     def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
 
