@@ -3,7 +3,7 @@ from datetime import datetime
 from django.template.loader import render_to_string
 
 from .. import models
-from .drinks_stats import DrinkStats, std_av
+from .drinks_stats import DrinkStats, max_beer_bottles, std_av
 
 
 def several_years_consumption(years):
@@ -77,9 +77,11 @@ def context_to_reload(request, context=None):
 
     context['target_list'] = render_to_string(
         'drinks/includes/drinks_target_list.html',
-        {'items': qs_target},
+        {
+            'items': qs_target,
+            'max_bottles': max_beer_bottles(request.user.year, target)
+        },
         request)
-
     return context
 
 
