@@ -13,7 +13,7 @@ from ..users.models import User
 from .apps import App_name as DrinksAppName
 
 
-class DrinkQuerySet(CounterQuerySet, models.QuerySet):
+class DrinkQuerySet(CounterQuerySet):
     App_name = DrinksAppName
 
     def sum_by_month(self, year: int, month: int = None):
