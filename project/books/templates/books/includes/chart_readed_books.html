@@ -64,6 +64,18 @@
             data: {{ data|safe }},
             color: 'rgba({{ chart_column_color }}, 0.65)',
             borderColor: 'rgba({{ chart_column_color }}, 1)',
+            dataLabels: {
+                enabled: true,
+                rotation: 0,
+                color: '#000',
+                format: '{point.y:.0f}',
+                style: {
+                    fontSize: '9px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Verdana, sans-serif',
+                    textOutline: false
+                }
+            }
         }]
     });
 });
