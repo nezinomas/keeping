@@ -1,9 +1,10 @@
 from datetime import datetime
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 
+from ...counts.lib.stats import Stats as CountStats
 from .. import models
 from .drinks_stats import DrinkStats, max_beer_bottles, std_av
 
@@ -33,9 +34,13 @@ class RenderContext():
         self._DrinkStats = self._get_drink_stats()
 
     def context_to_reload(self) -> Dict[str, str]:
+        stats = CountStats(self._year, models.Drink.objects.sum_by_day(self._year))
+        data = stats.chart_calendar()
         context = {
             'chart_quantity': self.chart_quantity,
             'chart_consumsion': self.chart_consumsion(),
+            'chart_calendar_1H': self.chart_calendar(data[0:6], '1H'),
+            'chart_calendar_2H': self.chart_calendar(data[6:], '2H'),
             'tbl_consumsion': self.tbl_consumsion(),
             'tbl_last_day': self.tbl_last_day(),
             'tbl_alcohol': self.tbl_alcohol(),
@@ -64,6 +69,17 @@ class RenderContext():
             self._request
         )
         return r
+
+    def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
+        rendered = render_to_string(
+            'counts/includes/chart_calendar.html',
+            {
+                'data': data,
+                'id': chart_id,
+            },
+            self._request
+        )
+        return rendered
 
     def tbl_consumsion(self) -> str:
         r = render_to_string(
@@ -122,7 +138,7 @@ class RenderContext():
         return DrinkStats(qs)
 
     def _get_avg_qty(self) -> Tuple[float, float]:
-        qs = models.Drink.objects.day_sum(self._year)
+        qs = models.Drink.objects.drink_day_sum(self._year)
         avg = qs.get('per_day', 0) if qs else 0
         qty = qs.get('qty', 0) if qs else 0
 
