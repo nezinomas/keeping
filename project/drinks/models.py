@@ -42,7 +42,7 @@ class DrinkQuerySet(CounterQuerySet, models.QuerySet):
 
         return arr
 
-    def day_sum(self, year: int) -> Dict[float, float]:
+    def drink_day_sum(self, year: int) -> Dict[float, float]:
         """
         Returns {'qty': float, 'per_day': float}
         """
