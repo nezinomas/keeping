@@ -15,7 +15,7 @@ class ReloadStats(DispatchAjaxMixin, IndexMixin):
     redirect_view = f'{App_name}:{App_name}_index'
 
     def get(self, request, *args, **kwargs):
-        context = H.context_to_reload(request)
+        context = H.RenderContext(request).context_to_reload()
         return self.render_to_response(context)
 
 
@@ -69,7 +69,7 @@ class Index(IndexMixin):
                 context={'form': forms.DrinkCompareForm()},
                 request=self.request
             ),
-            **H.context_to_reload(self.request, context),
+            **H.RenderContext(self.request).context_to_reload(),
         })
         return context
 

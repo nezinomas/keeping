@@ -1,5 +1,7 @@
 from datetime import datetime
+from typing import Dict, Tuple
 
+from django.http import HttpRequest
 from django.template.loader import render_to_string
 
 from .. import models
@@ -19,90 +21,129 @@ def several_years_consumption(years):
 
     return serries
 
+class RenderContext():
+    def __init__(self, request: HttpRequest):
+        self._request = request
+        self._year = self._request.user.year
 
-def context_to_reload(request, context=None):
-    context = {} if not context else context
-    year = request.user.year
+        self._target_qs = models.DrinkTarget.objects.year(self._year)
+        self._target = self._get_target()
 
-    qs_target = models.DrinkTarget.objects.year(year)
-    qs_drinks = models.Drink.objects.sum_by_month(year)
-    qs_drinks_days = models.Drink.objects.day_sum(year)
+        self._avg, self._qty = self._get_avg_qty()
+        self._DrinkStats = self._get_drink_stats()
 
-    _DrinkStats = DrinkStats(qs_drinks)
+    def context_to_reload(self) -> Dict[str, str]:
+        context = {
+            'chart_quantity': self.chart_quantity,
+            'chart_consumsion': self.chart_consumsion(),
+            'tbl_consumsion': self.tbl_consumsion(),
+            'tbl_last_day': self.tbl_last_day(),
+            'tbl_alcohol': self.tbl_alcohol(),
+            'tbl_std_av': self.tbl_std_av(),
+            'target_list': self.target_list(),
+        }
+        return context
 
-    # values
-    avg = qs_drinks_days.get('per_day', 0) if qs_drinks_days else 0
-    qty = qs_drinks_days.get('qty', 0) if qs_drinks_days else 0
-    target = qs_target[0].quantity if qs_target else 0
+    def chart_quantity(self) -> str:
+        r = render_to_string(
+            'drinks/includes/chart_quantity_per_month.html',
+            {'data': self._DrinkStats.quantity},
+            self._request
+        )
+        return r
 
-    context['chart_quantity'] = render_to_string(
-        'drinks/includes/chart_quantity_per_month.html',
-        {'data': _DrinkStats.quantity},
-        request
-    )
+    def chart_consumsion(self) -> str:
+        r = render_to_string(
+            'drinks/includes/chart_consumsion_per_month.html', {
+                'data': self._DrinkStats.consumption,
+                'target': self._target,
+                'avg': self._avg,
+                'avg_label_y': self._avg_label_position(self._avg, self._target),
+                'target_label_y': self._target_label_position(self._avg, self._target),
+            },
+            self._request
+        )
+        return r
 
-    context['chart_consumsion'] = render_to_string(
-        'drinks/includes/chart_consumsion_per_month.html', {
-            'data': _DrinkStats.consumption,
-            'target': target,
-            'avg': avg,
-            'avg_label_y': _avg_label_position(avg, target),
-            'target_label_y': _target_label_position(avg, target),
-        },
-        request
-    )
+    def tbl_consumsion(self) -> str:
+        r = render_to_string(
+            'drinks/includes/tbl_consumsion.html', {
+                'qty': self._qty,
+                'avg': self._avg,
+                'target': self._target
+            },
+            self._request
+        )
+        return r
 
-    context['tbl_consumsion'] = render_to_string(
-        'drinks/includes/tbl_consumsion.html',
-        {'qty': qty, 'avg': avg, 'target': target},
-        request)
+    def tbl_last_day(self) -> str:
+        r = render_to_string(
+            'drinks/includes/tbl_last_day.html',
+            self._dry_days(),
+            self._request
+        )
+        return r
 
-    context['tbl_last_day'] = render_to_string(
-        'drinks/includes/tbl_last_day.html',
-        _dry_days(year),
-        request=request
-    )
+    def tbl_alcohol(self) -> str:
+        r = render_to_string(
+            'drinks/includes/tbl_alcohol.html', {
+                'l': self._qty * 0.025
+            },
+            self._request
+        )
+        return r
 
-    context['tbl_alcohol'] = render_to_string(
-        'drinks/includes/tbl_alcohol.html',
-        {'l': qty * 0.025},
-        request
-    )
+    def tbl_std_av(self) -> str:
+        r = render_to_string(
+            'drinks/includes/tbl_std_av.html', {
+                'items': std_av(self._year, self._qty)
+            },
+            self._request
+        )
+        return r
 
-    context['tbl_std_av'] = render_to_string(
-        'drinks/includes/tbl_std_av.html',
-        {'items': std_av(year, qty)},
-        request
-    )
+    def target_list(self) -> str:
+        r = render_to_string(
+            'drinks/includes/drinks_target_list.html',
+            {
+                'items': self._target_qs,
+                'max_bottles': max_beer_bottles(self._year, self._target)
+            },
+            self._request)
+        return r
 
-    context['target_list'] = render_to_string(
-        'drinks/includes/drinks_target_list.html',
-        {
-            'items': qs_target,
-            'max_bottles': max_beer_bottles(request.user.year, target)
-        },
-        request)
-    return context
+    def _get_target(self):
+        qs = self._target_qs
+        return qs[0].quantity if qs else 0
 
+    def _get_drink_stats(self):
+        qs = models.Drink.objects.sum_by_month(self._year)
 
-def _avg_label_position(avg, target):
-    return 15 if target - 50 <= avg <= target else -5
+        return DrinkStats(qs)
 
+    def _get_avg_qty(self) -> Tuple[float, float]:
+        qs = models.Drink.objects.day_sum(self._year)
+        avg = qs.get('per_day', 0) if qs else 0
+        qty = qs.get('qty', 0) if qs else 0
 
-def _target_label_position(avg, target):
-    return 15 if avg - 50 <= target <= avg else -5
+        return (avg, qty)
 
+    def _avg_label_position(self, avg: float, target: float) -> int:
+        return 15 if target - 50 <= avg <= target else -5
 
-def _dry_days(year):
-    qs = None
-    try:
-        qs = models.Drink.objects.year(year).latest()
-    except models.Drink.DoesNotExist:
-        pass
+    def _target_label_position(self, avg: float, target: float) -> int:
+        return 15 if avg - 50 <= target <= avg else -5
 
-    if qs:
-        latest = qs.date
-        delta = (datetime.now().date() - latest).days
-        return {'date': latest, 'delta': delta}
+    def _dry_days(self) -> Dict:
+        qs = None
+        try:
+            qs = models.Drink.objects.year(self._year).latest()
+        except models.Drink.DoesNotExist:
+            pass
 
-    return {}
+        if qs:
+            latest = qs.date
+            delta = (datetime.now().date() - latest).days
+            return {'date': latest, 'delta': delta}
+
+        return {}
