@@ -134,6 +134,11 @@ class Stats():
             data = []
             monthdays = _calendar.itermonthdays(year=self._year, month=month)
             for day in monthdays:
+                val = 0
+                dt = None
+                gap = None
+                qty = None
+
                 if y >= 6:
                     y = 0
                     x += 1
@@ -143,8 +148,7 @@ class Stats():
                 try:
                     dt = date(self._year, month, day)
                 except ValueError:
-                    dt = None
-                    val = 0
+                    pass
 
                 if dt:
                     # set values for saturday and sunday
@@ -152,15 +156,15 @@ class Stats():
                     weekday = dt.weekday()
 
                     if weekday == 5:
-                        val = 0.2
+                        val = 0.02
                     elif weekday == 6:
-                        val = 0.3
+                        val = 0.03
                     else:
-                        val = 0.1
+                        val = 0.01
 
                     # current day
                     if dt == datetime.now().date():
-                        val = 0.5
+                        val = 0.05
 
                     # get gap and duration
                     try:
@@ -168,13 +172,12 @@ class Stats():
                         gap = f.duration
                         qty = f.qty
                     except KeyError:
-                        gap = None
-                        qty = None
+                        pass
 
                 _row = []
                 if gap:
                     _row = [qty, gap]
-                    val = int(qty)
+                    val = qty
 
                 data.append([x, y, val, week, str(dt), *_row])
 
