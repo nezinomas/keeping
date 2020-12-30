@@ -463,7 +463,7 @@ def test_chart_calendar_db(get_user, _chart_calendar_expect_january_with_data, _
     year = 1999
     qs = Count.objects.sum_by_day(year=year)
     actual = Stats(year=year, data=qs).chart_calendar()
-    # assert 0
+
     assert actual[0] == _chart_calendar_expect_january_with_data
 
 
@@ -478,9 +478,7 @@ def test_chart_calendar_current_day_no_data(_chart_calendar_expect_january_no_da
     _chart_calendar_expect_january_no_data['data'][5][2] = 5
 
     actual = Stats(year=1999, data=[]).chart_calendar()
-    print(actual[0])
-    print('----')
-    print(_chart_calendar_expect_january_no_data)
+
     assert actual[0] == _chart_calendar_expect_january_no_data
 
 
