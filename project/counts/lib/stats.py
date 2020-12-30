@@ -152,15 +152,15 @@ class Stats():
                     weekday = dt.weekday()
 
                     if weekday == 5:
-                        val = 2
+                        val = 0.2
                     elif weekday == 6:
-                        val = 3
+                        val = 0.3
                     else:
-                        val = 1
+                        val = 0.1
 
                     # current day
                     if dt == datetime.now().date():
-                        val = 5
+                        val = 0.5
 
                     # get gap and duration
                     try:
@@ -174,11 +174,7 @@ class Stats():
                 _row = []
                 if gap:
                     _row = [qty, gap]
-                    val = 4
-
-                    # current day has record
-                    if dt == datetime.now().date():
-                        val = 6
+                    val = int(qty)
 
                 data.append([x, y, val, week, str(dt), *_row])
 
