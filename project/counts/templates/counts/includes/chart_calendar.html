@@ -12,9 +12,7 @@ Highcharts.chart('clander_{{ id }}_container', {
             load: function() {
                 var series = this.series;
                 var bbox;
-
                 series.forEach(function(s) {
-                    bbox = s.group.getBBox(true);
                     bbox = s.dataLabelsGroup.getBBox(true);
                     this.renderer.text(
                             s.name,
@@ -33,7 +31,6 @@ Highcharts.chart('clander_{{ id }}_container', {
             }
         }
     },
-
 
     title: {
         text: '-',
