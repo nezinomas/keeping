@@ -1,5 +1,8 @@
+from types import SimpleNamespace
+
 import pytest
 from freezegun import freeze_time
+from mock import patch
 
 from ..context import yday, years
 
@@ -33,3 +36,13 @@ def test_yday(year, expect, rf, get_user):
     actual = yday(r)
 
     assert actual == expect
+
+
+@freeze_time('2020-1-1')
+@patch('project.core.lib.utils.get_user', return_value=SimpleNamespace())
+def test_yday_anonymous_user(mck, rf):
+    r = rf.get('fake')
+
+    actual = yday(r)
+
+    assert actual == {'yday': 1, 'ydays': 366}
