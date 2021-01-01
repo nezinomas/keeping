@@ -154,15 +154,15 @@ class Stats():
                     weekday = dt.weekday()
 
                     if weekday == 5:
-                        val = 0.02
+                        val = 0.02  # saturday value for chart
                     elif weekday == 6:
-                        val = 0.03
+                        val = 0.03  # sunday
                     else:
-                        val = 0.01
+                        val = 0.01  # monday-friday
 
                     # current day
                     if dt == datetime.now().date():
-                        val = 0.05
+                        val = 0.05  # highlight current day
 
                     # get gap and duration
                     try:
