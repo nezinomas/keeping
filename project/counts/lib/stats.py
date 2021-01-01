@@ -124,10 +124,7 @@ class Stats():
         x = 0
         y = -1
         week = 1
-        val = 0
         items = []
-        gap = None
-        qty = None
         _calendar = calendar.Calendar(0)
 
         for month in range(1, 13):
@@ -150,7 +147,7 @@ class Stats():
                 except ValueError:
                     pass
 
-                _row = []
+                row = []
                 if dt:
                     # set values for saturday and sunday
                     week = dt.isocalendar()[1]
@@ -169,14 +166,14 @@ class Stats():
 
                     # get gap and duration
                     try:
-                        f = df.loc[dt]
-                        gap = f.duration
-                        qty = val = f.qty
-                        _row = [qty, gap]
+                        _f = df.loc[dt]
+                        gap = _f.duration
+                        qty = val = _f.qty
+                        row = [qty, gap]
                     except KeyError:
                         pass
 
-                data.append([x, y, val, week, str(dt), *_row])
+                data.append([x, y, val, week, str(dt), *row])
 
             x += 1
 
