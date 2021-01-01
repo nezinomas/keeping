@@ -150,6 +150,7 @@ class Stats():
                 except ValueError:
                     pass
 
+                _row = []
                 if dt:
                     # set values for saturday and sunday
                     week = dt.isocalendar()[1]
@@ -170,14 +171,10 @@ class Stats():
                     try:
                         f = df.loc[dt]
                         gap = f.duration
-                        qty = f.qty
+                        qty = val = f.qty
+                        _row = [qty, gap]
                     except KeyError:
                         pass
-
-                _row = []
-                if gap:
-                    _row = [qty, gap]
-                    val = qty
 
                 data.append([x, y, val, week, str(dt), *_row])
 

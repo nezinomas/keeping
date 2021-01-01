@@ -480,3 +480,16 @@ def test_chart_calendar_current_day_no_data(_chart_calendar_expect_january_no_da
     actual = Stats(year=1999, data=[]).chart_calendar()
 
     assert actual[0] == _chart_calendar_expect_january_no_data
+
+
+@freeze_time('1999-01-01')
+def test_chart_calendar_first_day_of_year_with_record(_chart_calendar_expect_january_no_data):
+    _data = [{'date': date(1999, 1, 1), 'qty': 1.0},]
+
+    _chart_calendar_expect_january_no_data['data'][4].append(1.0) #1999-01-08 qty
+    _chart_calendar_expect_january_no_data['data'][4].append(0) #1999-01-08 gap
+    _chart_calendar_expect_january_no_data['data'][4][2] = 1.0
+
+    actual = Stats(year=1999, data=_data).chart_calendar()
+
+    assert actual[0] == _chart_calendar_expect_january_no_data
