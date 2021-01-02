@@ -244,7 +244,7 @@ def test_books_load_update_form(client_logged):
     assert 'Remark' in form
 
 
-def test_income_update_to_another_year(client_logged):
+def test_book_update_to_another_year(client_logged):
     income = BookFactory()
 
     data = {
