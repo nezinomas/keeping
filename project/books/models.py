@@ -44,7 +44,7 @@ class BooksQuerySet(SumMixin, models.QuerySet):
             .values('year', 'cnt')
         )
 
-    def reading(self):
+    def reading(self, year):
         """
         Returns {'reading: int}
         """
@@ -52,6 +52,7 @@ class BooksQuerySet(SumMixin, models.QuerySet):
             self
             .related()
             .filter(ended__isnull=True)
+            .filter(started__year__lte=year)
             .aggregate(reading=Count('id'))
         )
 
