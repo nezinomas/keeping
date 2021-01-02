@@ -34,6 +34,7 @@ class BooksQuerySet(SumMixin, models.QuerySet):
         """
         return (
             self
+            .related()
             .exclude(ended__isnull=True)
             .year_filter(year=year, field='ended')
             .annotate(date=TruncYear('ended'))

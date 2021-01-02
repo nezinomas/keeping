@@ -62,6 +62,7 @@ def test_book_readed_one_year(get_user):
     BookFactory()
     BookFactory(ended=date(1999, 1, 31))
     BookFactory(ended=date(1999, 12, 31))
+    BookFactory(ended=date(1999, 12, 31), user=UserFactory(username='X'))
 
     actual = list(Book.objects.readed(year=1999))
 
@@ -79,6 +80,7 @@ def test_book_readed_all_years(get_user):
     BookFactory(ended=date(1999, 1, 31))
     BookFactory(ended=date(1999, 12, 31))
     BookFactory(ended=date(1998, 1, 31))
+    BookFactory(ended=date(1998, 1, 31), user=UserFactory(username='XXX'))
 
     actual = list(Book.objects.readed())
 
