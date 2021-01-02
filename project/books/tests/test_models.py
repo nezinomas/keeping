@@ -32,11 +32,16 @@ def test_book_items(get_user):
 
 
 def test_book_year(get_user):
-    BookFactory()
+    b1 = BookFactory(title='x1')
+    b2 = BookFactory(title='x2', ended=date(1999, 1, 2))
+    BookFactory(ended=date(2000, 1, 1))
     BookFactory(user=UserFactory(username='XXX'))
-    BookFactory(started=date(2000, 1, 1))
 
-    assert Book.objects.year(1999).count() == 1
+    actual = Book.objects.year(1999)
+
+    assert actual.count() == 2
+    assert actual[0] == b1
+    assert actual[1] == b2
 
 
 def test_book_fields(get_user):

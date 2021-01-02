@@ -1,6 +1,6 @@
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.db.models import Count, F
+from django.db.models import Count, F, Q
 from django.db.models.functions import ExtractYear, TruncYear
 
 from ..core.lib import utils
@@ -21,7 +21,7 @@ class BooksQuerySet(SumMixin, models.QuerySet):
         return (
             self
             .related()
-            .filter(started__year=year)
+            .filter(Q(ended__year=year) | Q(ended__isnull=True))
         )
 
     def items(self):

@@ -248,7 +248,8 @@ def test_book_update_to_another_year(client_logged):
     income = BookFactory()
 
     data = {
-        'started': '2010-12-31',
+        'started': '1999-12-31',
+        'ended': '2010-12-31',
         'author': 'Author',
         'title': 'Book Title',
         'remark': 'Pastaba',
