@@ -34,6 +34,7 @@ def test_book_items(get_user):
 def test_book_year(get_user):
     b1 = BookFactory(title='x1')
     b2 = BookFactory(title='x2', ended=date(1999, 1, 2))
+    BookFactory(started=date(2000, 1, 1))
     BookFactory(ended=date(2000, 1, 1))
     BookFactory(user=UserFactory(username='XXX'))
 

@@ -22,6 +22,7 @@ class BooksQuerySet(SumMixin, models.QuerySet):
             self
             .related()
             .filter(Q(ended__year=year) | Q(ended__isnull=True))
+            .filter(started__year__lte=year)
         )
 
     def items(self):
