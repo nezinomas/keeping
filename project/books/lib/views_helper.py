@@ -8,7 +8,7 @@ def context_to_reload(request, context=None):
     year = request.user.year
 
     qs_readed = models.Book.objects.readed()
-    qs_reading = models.Book.objects.reading(year=year)
+    qs_reading = models.Book.objects.reading()
 
     context['chart_readed_books'] = render_to_string(
         'books/includes/chart_readed_books.html',
@@ -27,7 +27,7 @@ def context_to_reload(request, context=None):
         'books/includes/info_row.html',
         {
             'readed': readed[0] if readed else 0,
-            'reading': qs_reading[0]['cnt'] if qs_reading else 0,
+            'reading': qs_reading['reading'] if qs_reading else 0,
         },
         request
     )

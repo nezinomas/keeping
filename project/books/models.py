@@ -43,20 +43,15 @@ class BooksQuerySet(SumMixin, models.QuerySet):
             .values('year', 'cnt')
         )
 
-    def reading(self, year):
+    def reading(self):
         """
-        Returns <QuerySet [{'year': int, 'cnt': int}]>
+        Returns {'reading: int}
         """
         return (
             self
-            .exclude(ended__isnull=False)
-            .year_filter(year=year, field='started')
-            .annotate(date=TruncYear('started'))
-            .values('date')
-            .annotate(year=ExtractYear(F('date')))
-            .annotate(cnt=Count('id'))
-            .order_by('year')
-            .values('year', 'cnt')
+            .related()
+            .filter(ended__isnull=True)
+            .aggregate(reading=Count('id'))
         )
 
 

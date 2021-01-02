@@ -92,9 +92,10 @@ def test_book_readed_all_years_no_data(get_user):
 
 def test_book_reading(get_user):
     BookFactory()
-    BookFactory()
-    BookFactory(ended=date(1999, 1, 31))
+    BookFactory(started=date(1000, 1, 1))
+    BookFactory(ended=date(2000, 1, 31))
+    BookFactory(user=UserFactory(username='XXX'))
 
-    actual = list(Book.objects.reading(year=1999))
+    actual = Book.objects.reading()
 
-    assert actual == [{'year': 1999, 'cnt': 2}]
+    assert actual == {'reading': 2}
