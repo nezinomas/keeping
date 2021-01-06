@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from django.db import models
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
@@ -203,6 +204,17 @@ def test_expense_str():
     e = ExpenseFactory.build()
 
     assert str(e) == '1999-01-01/Expense Type/Expense Name'
+
+
+def test_expense_fields_types():
+    assert isinstance(Expense._meta.get_field('date'), models.DateField)
+    assert isinstance(Expense._meta.get_field('price'), models.DecimalField)
+    assert isinstance(Expense._meta.get_field('quantity'), models.IntegerField)
+    assert isinstance(Expense._meta.get_field('expense_type'), models.ForeignKey)
+    assert isinstance(Expense._meta.get_field('expense_name'), models.ForeignKey)
+    assert isinstance(Expense._meta.get_field('remark'), models.TextField)
+    assert isinstance(Expense._meta.get_field('exception'), models.BooleanField)
+    assert isinstance(Expense._meta.get_field('account'), models.ForeignKey)
 
 
 def test_expense_related(get_user):
