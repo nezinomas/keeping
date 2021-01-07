@@ -1,5 +1,6 @@
 -r base.txt
 django-debug-toolbar==3.0
+django-override-storage==0.3.0
 django-webtest==1.9.7
 factory-boy==3.0.1
 Faker==4.1.3
