@@ -3,7 +3,8 @@ from decimal import Decimal
 from typing import Any, Dict, List
 
 from dateutil.relativedelta import relativedelta
-from django.core.validators import MinLengthValidator, MinValueValidator
+from django.core.validators import (FileExtensionValidator, MinLengthValidator,
+                                    MinValueValidator)
 from django.db import models
 from django.db.models import Case, Count, F, Q, Sum, When
 from django.db.models.functions import (ExtractYear, TruncDay, TruncMonth,
@@ -14,6 +15,7 @@ from ..core.lib import utils
 from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.models import TitleAbstract
 from ..users.models import User
+from .helpers.models_helper import upload_attachment
 
 
 class ExpenseTypeQuerySet(models.QuerySet):
@@ -273,6 +275,11 @@ class Expense(MixinFromDbAccountId):
         Account,
         on_delete=models.CASCADE,
         related_name='expenses'
+    )
+    attachment = models.FileField(
+        blank=True,
+        upload_to=upload_attachment,
+        # validators=[FileExtensionValidator(['pdf'])],
     )
 
     class Meta:
