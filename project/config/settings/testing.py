@@ -49,3 +49,7 @@ MIGRATION_MODULES = {
     'plans': None,
     'transactions': None
 }
+
+
+# Bonus: Use a faster password hasher. This REALLY helps.
+PASSWORD_HASHERS = ('django.contrib.auth.hashers.MD5PasswordHasher',)
