@@ -99,6 +99,13 @@ class Drink(Counter):
     class Meta:
         proxy = True
 
+    def save(self, *args, **kwargs):
+
+        if self.quantity > 20:
+            self.quantity = round(self.quantity / 500, 2)
+
+        super().save(*args, **kwargs)
+
 
 class DrinkTargetQuerySet(SumMixin, models.QuerySet):
     def related(self):
