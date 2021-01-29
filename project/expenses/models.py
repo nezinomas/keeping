@@ -277,7 +277,7 @@ class Expense(MixinFromDbAccountId):
         related_name='expenses'
     )
     attachment = models.FileField(
-        blank=True,null=True,
+        blank=True,
         upload_to=upload_attachment,
         validators=[FileExtensionValidator(['txt', 'pdf', 'jpg', 'xls', 'xlsx', 'doc', 'docx'])],
     )
