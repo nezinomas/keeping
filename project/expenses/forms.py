@@ -16,7 +16,7 @@ class ExpenseForm(forms.ModelForm):
     class Meta:
         model = Expense
         fields = ('date', 'price', 'quantity', 'expense_type',
-                  'expense_name', 'remark', 'exception', 'account')
+                  'expense_name', 'remark', 'exception', 'account', 'attachment')
         widgets = {
             'date': DatePickerInput(
                 options={
@@ -26,8 +26,18 @@ class ExpenseForm(forms.ModelForm):
             ),
         }
 
-    field_order = ['date', 'expense_type', 'expense_name', 'account',
-                   'total_sum', 'quantity', 'remark', 'price', 'exception']
+    field_order = [
+        'date',
+        'expense_type',
+        'expense_name',
+        'account',
+        'total_sum',
+        'quantity',
+        'remark',
+        'price',
+        'attachment',
+        'exception'
+    ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -64,6 +74,7 @@ class ExpenseForm(forms.ModelForm):
         self.fields['exception'].label = 'Nenaudoti planuose'
         self.fields['account'].label = 'Sąskaita'
         self.fields['total_sum'].label = 'Kaina'
+        self.fields['attachment'].label = 'Prisegtukas'
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
