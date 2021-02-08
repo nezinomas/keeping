@@ -163,7 +163,6 @@ def test_expenses_form_filefield(filename, valid, get_user):
     assert form.is_valid() == valid
 
 
-
 # ----------------------------------------------------------------------------
 #                                                                 Expense Type
 # ----------------------------------------------------------------------------
