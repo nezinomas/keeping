@@ -80,17 +80,15 @@ class ExpenseForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
     def clean_exception(self):
-        cleaned_data = super().clean()
+        data = self.cleaned_data
 
-        exception = cleaned_data.get('exception')
-        expense_type = cleaned_data.get('expense_type')
+        _exception = data.get('exception')
+        _expense_type = data.get('expense_type')
 
-        if exception:
-            obj = ExpenseType.objects.get(title=expense_type)
+        if _exception and _expense_type.necessary:
+            raise forms.ValidationError(f'\'{_expense_type.title}\' yra pažymėta kaip \'Būtina\', todėl ji negali būti pažymėta \'Nenaudoti planuose\'')
 
-            if obj.necessary:
-                raise forms.ValidationError(f'\'{expense_type}\' yra pažymėta kaip \'Būtina\', todėl ji negali būti pažymėta \'Nenaudoti planuose\'')
-
+        return _exception
 
 
 class ExpenseTypeForm(FormForUserMixin, forms.ModelForm):
