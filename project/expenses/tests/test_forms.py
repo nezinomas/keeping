@@ -163,6 +163,31 @@ def test_expenses_form_filefield(filename, valid, get_user):
     assert form.is_valid() == valid
 
 
+def test_exepense_form_necessary_type_and_exception(get_user):
+    a = AccountFactory()
+    t = ExpenseTypeFactory(necessary=True)
+    n = ExpenseNameFactory(parent=t)
+
+    form = ExpenseForm(
+        data={
+            'date': '1999-01-01',
+            'price': 1.12,
+            'quantity': 1,
+            'expense_type': t.pk,
+            'expense_name': n.pk,
+            'account': a.pk,
+            'remark': None,
+            'exception': True
+        },
+    )
+
+    assert not form.is_valid()
+
+    assert form.errors == {
+        'exception': ['\'Expense Type\' yra pažymėta kaip \'Būtina\', todėl ji negali būti pažymėta \'Nenaudoti planuose\'']
+    }
+
+
 # ----------------------------------------------------------------------------
 #                                                                 Expense Type
 # ----------------------------------------------------------------------------
