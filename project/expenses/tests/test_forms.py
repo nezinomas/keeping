@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
@@ -17,6 +18,26 @@ pytestmark = pytest.mark.django_db
 # ----------------------------------------------------------------------------
 def test_expense_form_init(get_user):
     ExpenseForm(data={})
+
+
+def test_expense_init_fields(get_user):
+    form = ExpenseForm().as_p()
+
+    assert '<select name="user"' not in form
+
+    assert '<input type="text" name="date"' in form
+
+    assert '<select name="account"' in form
+    assert '<select name="expense_type"' in form
+    assert '<select name="expense_name"' in form
+
+    assert '<input type="text" name="total_sum"' in form
+    assert '<input type="number" name="quantity"' in form
+    assert '<input type="number" name="price"' in form
+    assert '<textarea name="remark"' in form
+
+    assert '<input type="checkbox" name="exception"' in form
+    assert '<input type="file" name="attachment"' in form
 
 
 @freeze_time('1000-01-01')
@@ -107,6 +128,64 @@ def test_expenses_form_blank_data(get_user):
         'account': ['Šis laukas yra privalomas.'],
     }
     assert form.errors == errors
+
+
+@pytest.mark.parametrize(
+    'filename, valid',
+    [
+        ('test.jpg', True), ('test.pdf', True), ('test.xls', True),
+        ('test.xlsx', True), ('test.doc', True), ('test.docx', True),
+        ('test.txt', True),
+        ('test.js', False), ('test.xxx', False),
+    ]
+)
+def test_expenses_form_filefield(filename, valid, get_user):
+    f = SimpleUploadedFile(filename, b'x')
+
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(parent=t)
+
+    form = ExpenseForm(
+        data={
+            'date': '1999-01-01',
+            'price': 1.12,
+            'quantity': 1,
+            'expense_type': t.pk,
+            'expense_name': n.pk,
+            'account': a.pk,
+            'remark': None,
+            'exception': None,
+        },
+        files={'attachment': f}
+    )
+
+    assert form.is_valid() == valid
+
+
+def test_exepense_form_necessary_type_and_exception(get_user):
+    a = AccountFactory()
+    t = ExpenseTypeFactory(necessary=True)
+    n = ExpenseNameFactory(parent=t)
+
+    form = ExpenseForm(
+        data={
+            'date': '1999-01-01',
+            'price': 1.12,
+            'quantity': 1,
+            'expense_type': t.pk,
+            'expense_name': n.pk,
+            'account': a.pk,
+            'remark': None,
+            'exception': True
+        },
+    )
+
+    assert not form.is_valid()
+
+    assert form.errors == {
+        'exception': ['\'Expense Type\' yra pažymėta kaip \'Būtina\', todėl ji negali būti pažymėta \'Nenaudoti planuose\'']
+    }
 
 
 # ----------------------------------------------------------------------------

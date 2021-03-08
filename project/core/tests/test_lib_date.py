@@ -117,3 +117,29 @@ def test_weeknumber(year, expect):
     actual = T.weeknumber(year=year)
 
     assert actual == expect
+
+
+@freeze_time('2020-6-6')
+@pytest.mark.parametrize(
+    'year, expect',
+    [
+        (1999, (365, 365)),
+        (2016, (366, 366)),
+        (2020, (158, 366)),
+        (None, (158, 366)),
+    ]
+)
+def test_yday(year, expect):
+    actual = T.yday(year)
+
+    assert actual == expect
+
+
+@pytest.mark.parametrize(
+    'year, expect',
+    [(2020, 366), (2019, 365)]
+)
+def test_ydays(year, expect):
+    actual = T.ydays(year)
+
+    assert actual == expect

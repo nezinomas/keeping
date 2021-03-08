@@ -73,7 +73,7 @@ tr.total th {
 }
 
 .nav-link {
-    padding: .15rem .5rem;
+    padding: .15rem .45rem;
     margin: .15rem;
 }
 
@@ -135,8 +135,11 @@ tr.top-text, tr.top-text th {
     background: #b7debb;
 }
 
-.btn-sm, .form-control-sm {
-    font-size: .7rem;
+.btn-sm,
+.form-control-sm,
+.form-control,
+.input-group-text {
+    font-size: .7rem!important;
 }
 
 .btn-sm {
@@ -200,4 +203,9 @@ tr.top-text, tr.top-text th {
     vertical-align: middle;
     display: inline-block;
     margin-top: 0.1rem!important;
+}
+
+.modal-dialog.modal-650 {
+    max-width: 650px!important;
+    margin: auto;
 }

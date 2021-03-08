@@ -6,13 +6,14 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from ..core.lib import utils
+from ..core.lib.date import ydays
 from ..core.mixins.queryset_sum import SumMixin
 from ..counters.models import Counter, CounterQuerySet
 from ..users.models import User
 from .apps import App_name as DrinksAppName
 
 
-class DrinkQuerySet(CounterQuerySet, models.QuerySet):
+class DrinkQuerySet(CounterQuerySet):
     App_name = DrinksAppName
 
     def sum_by_month(self, year: int, month: int = None):
@@ -42,7 +43,7 @@ class DrinkQuerySet(CounterQuerySet, models.QuerySet):
 
         return arr
 
-    def day_sum(self, year: int) -> Dict[float, float]:
+    def drink_day_sum(self, year: int) -> Dict[float, float]:
         """
         Returns {'qty': float, 'per_day': float}
         """
@@ -57,7 +58,7 @@ class DrinkQuerySet(CounterQuerySet, models.QuerySet):
         if year == _date.year:
             _day_of_year = _date.timetuple().tm_yday
         else:
-            _day_of_year = 366 if calendar.isleap(year) else 365
+            _day_of_year = ydays(year)
 
         _qty = qs[0].get('qty')
 
@@ -76,7 +77,7 @@ class DrinkQuerySet(CounterQuerySet, models.QuerySet):
         for row in qs:
             _qty = row.get('qty')
             _date = row.get('date')
-            _days = 366 if calendar.isleap(_date.year) else 365
+            _days = ydays(_date.year)
 
             item = {}
             item['year'] = _date.year
@@ -97,6 +98,12 @@ class Drink(Counter):
 
     class Meta:
         proxy = True
+
+    def save(self, *args, **kwargs):
+        if self.quantity > 20:
+            self.quantity = round(self.quantity / 500, 2)
+
+        super().save(*args, **kwargs)
 
 
 class DrinkTargetQuerySet(SumMixin, models.QuerySet):

@@ -12,16 +12,12 @@ Highcharts.chart('clander_{{ id }}_container', {
             load: function() {
                 var series = this.series;
                 var bbox;
-
                 series.forEach(function(s) {
-                    bbox = s.group.getBBox(true);
                     bbox = s.dataLabelsGroup.getBBox(true);
                     this.renderer.text(
                             s.name,
                             bbox.x + this.plotLeft + bbox.width / 2,
-                            bbox.y - this.plotTop - 40
-                            // bbox.x + this.plotLeft + bbox.width / 2,
-                            // bbox.y + this.plotTop - 10
+                            bbox.height + 20
                         )
                         .attr({
                             align: 'center'
@@ -35,7 +31,6 @@ Highcharts.chart('clander_{{ id }}_container', {
             }
         }
     },
-
 
     title: {
         text: '-',
@@ -78,16 +73,19 @@ Highcharts.chart('clander_{{ id }}_container', {
     colorAxis: {
         min: 0,
         max: 10,
-        tickInterval: 1,
-        tickmarkPlacement: 'on',
+        // tickInterval: 1,
+        // tickmarkPlacement: 'on',
         stops: [
             [0,   '#ffffff'],	 // empty cell
-            [0.1, '#eeeeee'],  // day without record
-            [0.2, '#aac5e6'],  // saturday
-            [0.3, '#1076b0'],  //	sunday
-            [0.4, '#ff7d1e'],  //	day has record
-            [0.5, '#7ecf85'],  //	current day
-            [0.6, '#ff331e'],  //	current day has record
+            [0.001, '#f4f4f4'],  // day without record
+            [0.002, '#dfdfdf'],  // saturday
+            [0.003, '#c3c4c2'],  //	sunday
+            [0.005, '#c9edff'],  //	current day
+            [0.01, '#58a70f'],
+            [0.4, '#FFFE55'],
+            [0.6, '#F5C142'],
+            [0.8, '#DF8244'],
+            [1, '#B02418']
         ],
         labels: {
           enabled: true
@@ -111,7 +109,7 @@ Highcharts.chart('clander_{{ id }}_container', {
       formatter: function () {
         if(this.point.value==0) return false;
         var s = this.point.date;
-        if(this.point.value == 4)
+        if(this.point.value >= 0.1)
         {
         	s += '<div class="gap">Tarpas '+this.point.gap+'d.</div>';
         	s += '<div class="qty">Kiek '+this.point.qty+'</div>';

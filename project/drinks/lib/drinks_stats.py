@@ -1,6 +1,7 @@
-import calendar
 from datetime import date, datetime
-from typing import Dict, List
+from typing import Dict, List, Tuple
+
+from ...core.lib.date import ydays
 
 
 class DrinkStats():
@@ -56,6 +57,11 @@ def std_av(year: int, qty: float) -> List[Dict]:
     return arr
 
 
+def max_beer_bottles(year: int, max_quantity: int) -> float:
+    _days = ydays(year)
+    return (max_quantity * _days) / 500
+
+
 def _beer(av: float) -> float:
     return (av * 200) / 500
 
@@ -68,7 +74,7 @@ def _vodka(av: float) -> float:
     return (av * 25) / 1000
 
 
-def _dates(year: int) -> (int, int, int):
+def _dates(year: int) -> Tuple[int, int, int]:
     now = datetime.now().date()
 
     year = year if year else now.year
@@ -81,7 +87,7 @@ def _dates(year: int) -> (int, int, int):
     if _year == year:
         return (_day, _week, _month)
 
-    _days = 366 if calendar.isleap(year) else 365
+    _days = ydays(year)
     _weeks = date(year, 12, 28).isocalendar()[1]
 
     return (_days, _weeks, 12)

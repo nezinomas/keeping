@@ -17,15 +17,11 @@
             lineColor: '#000',
             lineWidth: 2,
             categories: {{ categories|safe }},
-            crosshair: true,
             labels: {
                 useHTML: true,
                 style: {
                     fontSize: '10px',
                     fontFamily: 'Calibri, Verdana',
-                },
-                formatter: function () {//use formatter to break word.
-                    return '<div align="right" style="word-wrap: break-word;word-break: break-all;width:40px">' + this.value + '</div>';
                 },
                 rotation: -45,
             }
@@ -45,13 +41,7 @@
             enabled: false
         },
         tooltip: {
-            shared: true,
-            headerFormat: '',
-            pointFormat: '<b>{point.y:.0f}</b>',
-            style: {
-                fontSize: '12px',
-                fontFamily: 'Calibri, Verdana',
-            }
+            enabled: false,
         },
         plotOptions: {
             bar: {
@@ -64,6 +54,18 @@
             data: {{ data|safe }},
             color: 'rgba({{ chart_column_color }}, 0.65)',
             borderColor: 'rgba({{ chart_column_color }}, 1)',
+            dataLabels: {
+                enabled: true,
+                rotation: 0,
+                color: '#000',
+                format: '{point.y:.0f}',
+                style: {
+                    fontSize: '9px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Verdana, sans-serif',
+                    textOutline: false
+                }
+            }
         }]
     });
 });

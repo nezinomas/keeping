@@ -185,7 +185,7 @@ def test_drink_days_sum(get_user, _second_user):
     DrinkFactory(date=date(1999, 11, 1), quantity=1.5)
     DrinkFactory(date=date(1999, 11, 1), quantity=111, counter_type=_second_user)
 
-    actual = Drink.objects.day_sum(1999)
+    actual = Drink.objects.drink_day_sum(1999)
 
     assert actual['qty'] == 2.5
     assert round(actual['per_day'], 2) == 4.1
@@ -197,7 +197,7 @@ def test_drink_days_sum_no_records_for_selected_year(get_user, _second_user):
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0, counter_type=_second_user)
     DrinkFactory(date=date(1999, 11, 1), quantity=1.5)
 
-    actual = Drink.objects.day_sum(1998)
+    actual = Drink.objects.drink_day_sum(1998)
 
     assert actual == {}
 
@@ -224,6 +224,16 @@ def test_drink_summary_no_records(get_user):
     actual = list(Drink.objects.summary())
 
     assert actual == []
+
+
+@pytest.mark.parametrize(
+    'value, expect',
+    [(20, 20), (21, 0.04), (350, 0.7)]
+)
+def test_drink_recalculate_ml_on_save(value, expect):
+    d = DrinkFactory(quantity=value)
+
+    assert d.quantity == expect
 
 
 # ----------------------------------------------------------------------------

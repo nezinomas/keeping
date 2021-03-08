@@ -10,6 +10,7 @@
             <th class="text-right">Kiekis</th>
             <th class="text-right">Kaina</th>
             <th width="260rem">Pastaba</th>
+            <th width="70rem" class="text-right">Prisegtukas</th>
             <th class="text-right">Sąskaita</th>
             <th width="45rem"></th>
         </tr>
@@ -17,7 +18,7 @@
     <tbody>
         {% for item in items %}
         {% url 'expenses:expenses_update' item.id as url_update %}
-        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="8" class="row-spacer"></td>{% endif %}</tr>{% endifchanged %}
+        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="9" class="row-spacer"></td>{% endif %}</tr>{% endifchanged %}
         <tr data-url="{{ url_update }}" class="{{ item.expense_type.pk|bg_color }} dblclick">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ item.expense_type }}</td>
@@ -25,12 +26,13 @@
             <td>{{ item.quantity }}</td>
             <td>{{ item.price|intcomma }}</td>
             <td class="text-left">{{ item.remark|linebreaksbr }}</td>
+            <td>{% if item.attachment %}<a href="{{ item.attachment.url }}" target="_blank">Žiūrėti</a>{% endif %}</td>
             <td>{{ item.account }}</td>
             <td class="text-center" {%if item.exception %} style="border-right: 5px solid red!important;"{% endif %}><a type="button" data-url="{{ url_update }}" class="btn btn-super-sm btn-outline-info js-create">Edit</a></td>
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="8" class="py-2"><b>{% if notice %}{{ notice }}{% else %}{{ request.user.year|title }}</b> metais išlaidų nėra.{% endif %}</td>
+            <td colspan="9" class="py-2"><b>{% if notice %}{{ notice }}{% else %}{{ request.user.year|title }}</b> metais išlaidų nėra.{% endif %}</td>
         </tr>
         {% endfor %}
     </tbody>

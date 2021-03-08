@@ -124,16 +124,18 @@ class Stats():
         x = 0
         y = -1
         week = 1
-        val = 0
         items = []
-        gap = None
-        qty = None
         _calendar = calendar.Calendar(0)
 
         for month in range(1, 13):
             data = []
             monthdays = _calendar.itermonthdays(year=self._year, month=month)
             for day in monthdays:
+                val = 0
+                dt = None
+                gap = None
+                qty = None
+
                 if y >= 6:
                     y = 0
                     x += 1
@@ -143,44 +145,35 @@ class Stats():
                 try:
                     dt = date(self._year, month, day)
                 except ValueError:
-                    dt = None
-                    val = 0
+                    pass
 
+                row = []
                 if dt:
                     # set values for saturday and sunday
                     week = dt.isocalendar()[1]
                     weekday = dt.weekday()
 
                     if weekday == 5:
-                        val = 2
+                        val = 0.02  # saturday value for chart
                     elif weekday == 6:
-                        val = 3
+                        val = 0.03  # sunday
                     else:
-                        val = 1
+                        val = 0.01  # monday-friday
 
                     # current day
                     if dt == datetime.now().date():
-                        val = 5
+                        val = 0.05  # highlight current day
 
                     # get gap and duration
                     try:
-                        f = df.loc[dt]
-                        gap = f.duration
-                        qty = f.qty
+                        _f = df.loc[dt]
+                        gap = _f.duration
+                        qty = val = _f.qty
+                        row = [qty, gap]
                     except KeyError:
-                        gap = None
-                        qty = None
+                        pass
 
-                _row = []
-                if gap:
-                    _row = [qty, gap]
-                    val = 4
-
-                    # current day has record
-                    if dt == datetime.now().date():
-                        val = 6
-
-                data.append([x, y, val, week, str(dt), *_row])
+                data.append([x, y, val, week, str(dt), *row])
 
             x += 1
 

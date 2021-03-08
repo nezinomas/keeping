@@ -4,6 +4,7 @@
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
 <script type="text/javascript" src="{% static 'js/reload_stats.js' %}"></script>
 {% endblock head %}
 
@@ -52,6 +53,11 @@
     </div>
 </div>
 
+<div class="row pb-5">
+    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{{ chart_calendar_1H }}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{{ chart_calendar_2H }}</div>
+</div>
+
 <div class="row mt-2">
     <div class="col-lg-6">
         <div class="row cmp">
@@ -97,11 +103,6 @@
 
 {% include 'modal.html' %}
 <style>
-    .form-group {
-        padding: 0!important;
-        margin: 0!important;
-    }
-
     .cmp {
         height: 3em;
         font-size: .85rem;
@@ -117,7 +118,7 @@
                 'ajax_trigger': '1'
             },
             success: function (data) {
-                var blocks = ['chart_consumsion', 'chart_quantity', 'tbl_consumsion', 'tbl_last_day', 'tbl_alcohol', 'tbl_std_av'];
+                var blocks = ['chart_consumsion', 'chart_quantity', 'tbl_consumsion', 'tbl_last_day', 'tbl_alcohol', 'tbl_std_av', 'chart_calendar_1H', 'chart_calendar_2H'];
                 reload_stats(data, blocks);
             }
         });

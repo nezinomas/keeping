@@ -34,17 +34,16 @@ $(function () {
         var form = $('.js-form');
         var action = form.attr("data-action");
         var ajax_update_container = form.attr('data-update-container')
+
         $.ajax({
             url: form.attr("action"),
-            data: form.serialize(),
+            data: new FormData($('.js-form')[0]), // The form with the file inputs.
+            processData: false,
+            contentType: false,
             type: form.attr("method"),
             dataType: 'json',
             success: function (data) {
                 if (data.form_is_valid) {
-
-                    // for (var key in data.extra) {
-                    //     $(`#${key}`).html(data.extra[key])
-                    // }
 
                     $(`#${ajax_update_container}`).html(data.html_list);
                     $("#modal-form .modal-content").html(data.html_form);

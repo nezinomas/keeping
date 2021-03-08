@@ -34,7 +34,6 @@ class IncomeForm(forms.ModelForm):
         # inital values
         self.fields['account'].initial = Account.objects.items().first()
         self.fields['date'].initial = set_year_for_form()
-        self.fields['price'].initial = '0.01'
 
         # overwrite ForeignKey expense_type queryset
         self.fields['income_type'].queryset = IncomeType.objects.items()
