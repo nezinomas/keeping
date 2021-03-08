@@ -100,7 +100,6 @@ class Drink(Counter):
         proxy = True
 
     def save(self, *args, **kwargs):
-
         if self.quantity > 20:
             self.quantity = round(self.quantity / 500, 2)
 
