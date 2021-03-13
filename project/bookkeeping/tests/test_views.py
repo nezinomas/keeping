@@ -12,9 +12,9 @@ from ...core.tests.utils import setup_view
 from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory, IncomeTypeFactory
 from ...pensions.factories import PensionFactory, PensionTypeFactory
-from ...savings.factories import SavingTypeFactory
+from ...savings.factories import SavingTypeFactory, SavingBalanceFactory
 from .. import models, views
-from ..factories import AccountWorthFactory
+from ..factories import AccountWorthFactory, SavingWorthFactory
 
 pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -66,6 +66,19 @@ def test_index_account_worth(get_user, client_logged):
     response = client_logged.get(url)
 
     exp = response.context['accounts'][0]
+
+    assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
+
+
+def test_index_savings_worth(get_user, client_logged):
+    SavingWorthFactory(date=datetime(2222, 2, 2))
+    SavingWorthFactory(date=datetime(1111, 1, 1), price=2)
+    SavingBalanceFactory()
+
+    url = reverse('bookkeeping:index')
+    response = client_logged.get(url)
+
+    exp = response.context['items'][0]
 
     assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
 

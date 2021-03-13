@@ -15,6 +15,11 @@ class SavingWorthFactory(factory.django.DjangoModelFactory):
     saving_type = factory.SubFactory(SavingTypeFactory)
     price = 0.5
 
+    @factory.post_generation
+    def date(self, create, extracted, **kwargs):
+        if extracted:
+            self.date = extracted
+
 
 @factory.django.mute_signals(post_save)
 class AccountWorthFactory(factory.django.DjangoModelFactory):

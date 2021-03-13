@@ -28,7 +28,11 @@ class SavingWorthQuerySet(models.QuerySet):
             .related()
             .annotate(max_date=Max('saving_type__savings_worth__date'))
             .filter(date=F('max_date'))
-            .values(title=F('saving_type__title'), have=F('price'))
+            .values(
+                title=F('saving_type__title'),
+                have=F('price'),
+                latest_check=F('date')
+            )
         )
 
 
