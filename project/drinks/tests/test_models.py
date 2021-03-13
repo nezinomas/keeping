@@ -226,6 +226,16 @@ def test_drink_summary_no_records(get_user):
     assert actual == []
 
 
+@pytest.mark.parametrize(
+    'value, expect',
+    [(20, 20), (21, 0.04), (350, 0.7)]
+)
+def test_drink_recalculate_ml_on_save(value, expect):
+    d = DrinkFactory(quantity=value)
+
+    assert d.quantity == expect
+
+
 # ----------------------------------------------------------------------------
 #                                                                 Drink Target
 # ----------------------------------------------------------------------------

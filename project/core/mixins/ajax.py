@@ -38,24 +38,28 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
 
         return super().get(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        self.form_class(request.POST, request.FILES)
+
+        return super().post(request, *args, **kwargs)
+
     def form_valid(self, form):
         context = {}
         json_data = {}
 
-        if form.is_valid():
-            form.save()
+        form.save()
 
-            if self.list_render_output:
-                context = self.get_context_data()
-                json_data['html_list'] = (
-                    render_to_string(
-                        self.get_list_template_name(), context, self.request)
-                )
-            else:
-                context = self.get_context_data(**{'no_items': True})
+        if self.list_render_output:
+            context = self.get_context_data()
+            json_data['html_list'] = (
+                render_to_string(
+                    self.get_list_template_name(), context, self.request)
+            )
+        else:
+            context = self.get_context_data(**{'no_items': True})
 
-            context['form'] = form
-            json_data['form_is_valid'] = True
+        context['form'] = form
+        json_data['form_is_valid'] = True
 
         if utils.is_ajax(self.request):
             json_data = self._render_form(context, json_data)

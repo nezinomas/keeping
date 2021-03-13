@@ -16,7 +16,7 @@ class ExpenseForm(forms.ModelForm):
     class Meta:
         model = Expense
         fields = ('date', 'price', 'quantity', 'expense_type',
-                  'expense_name', 'remark', 'exception', 'account')
+                  'expense_name', 'remark', 'exception', 'account', 'attachment')
         widgets = {
             'date': DatePickerInput(
                 options={
@@ -26,8 +26,18 @@ class ExpenseForm(forms.ModelForm):
             ),
         }
 
-    field_order = ['date', 'expense_type', 'expense_name', 'account',
-                   'total_sum', 'quantity', 'remark', 'price', 'exception']
+    field_order = [
+        'date',
+        'expense_type',
+        'expense_name',
+        'account',
+        'total_sum',
+        'quantity',
+        'remark',
+        'price',
+        'attachment',
+        'exception'
+    ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -64,9 +74,21 @@ class ExpenseForm(forms.ModelForm):
         self.fields['exception'].label = 'Nenaudoti planuose'
         self.fields['account'].label = 'Sąskaita'
         self.fields['total_sum'].label = 'Kaina'
+        self.fields['attachment'].label = 'Prisegtukas'
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+    def clean_exception(self):
+        data = self.cleaned_data
+
+        _exception = data.get('exception')
+        _expense_type = data.get('expense_type')
+
+        if _exception and _expense_type.necessary:
+            raise forms.ValidationError(f'\'{_expense_type.title}\' yra pažymėta kaip \'Būtina\', todėl ji negali būti pažymėta \'Nenaudoti planuose\'')
+
+        return _exception
 
 
 class ExpenseTypeForm(FormForUserMixin, forms.ModelForm):

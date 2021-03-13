@@ -124,10 +124,7 @@ class Stats():
         x = 0
         y = -1
         week = 1
-        val = 0
         items = []
-        gap = None
-        qty = None
         _calendar = calendar.Calendar(0)
 
         for month in range(1, 13):
@@ -150,36 +147,33 @@ class Stats():
                 except ValueError:
                     pass
 
+                row = []
                 if dt:
                     # set values for saturday and sunday
                     week = dt.isocalendar()[1]
                     weekday = dt.weekday()
 
                     if weekday == 5:
-                        val = 0.02
+                        val = 0.02  # saturday value for chart
                     elif weekday == 6:
-                        val = 0.03
+                        val = 0.03  # sunday
                     else:
-                        val = 0.01
+                        val = 0.01  # monday-friday
 
                     # current day
                     if dt == datetime.now().date():
-                        val = 0.05
+                        val = 0.05  # highlight current day
 
                     # get gap and duration
                     try:
-                        f = df.loc[dt]
-                        gap = f.duration
-                        qty = f.qty
+                        _f = df.loc[dt]
+                        gap = _f.duration
+                        qty = val = _f.qty
+                        row = [qty, gap]
                     except KeyError:
                         pass
 
-                _row = []
-                if gap:
-                    _row = [qty, gap]
-                    val = qty
-
-                data.append([x, y, val, week, str(dt), *_row])
+                data.append([x, y, val, week, str(dt), *row])
 
             x += 1
 

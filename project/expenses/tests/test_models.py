@@ -1,8 +1,13 @@
+import os
 from datetime import date
 from decimal import Decimal
 
+import mock
 import pytest
+from django.core.files import File
+from django.db import models
 from freezegun import freeze_time
+from override_storage import override_storage
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
@@ -203,6 +208,29 @@ def test_expense_str():
     e = ExpenseFactory.build()
 
     assert str(e) == '1999-01-01/Expense Type/Expense Name'
+
+
+def test_expense_fields_types():
+    assert isinstance(Expense._meta.get_field('date'), models.DateField)
+    assert isinstance(Expense._meta.get_field('price'), models.DecimalField)
+    assert isinstance(Expense._meta.get_field('quantity'), models.IntegerField)
+    assert isinstance(Expense._meta.get_field('expense_type'), models.ForeignKey)
+    assert isinstance(Expense._meta.get_field('expense_name'), models.ForeignKey)
+    assert isinstance(Expense._meta.get_field('remark'), models.TextField)
+    assert isinstance(Expense._meta.get_field('exception'), models.BooleanField)
+    assert isinstance(Expense._meta.get_field('account'), models.ForeignKey)
+    assert isinstance(Expense._meta.get_field('attachment'), models.FileField)
+
+
+@override_storage()
+@freeze_time('1000-1-2')
+def test_expense_attachment_field():
+    file_mock = mock.MagicMock(spec=File, name='FileMock')
+    file_mock.name = 'test1.jpg'
+
+    e = ExpenseFactory(attachment=file_mock)
+
+    assert str(e.attachment) == os.path.join('expense-type', '1000.01_test1.jpg')
 
 
 def test_expense_related(get_user):

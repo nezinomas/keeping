@@ -9,7 +9,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib.date import monthnames, set_year_for_form
-from ..core.lib import utils
 from ..core.mixins.form_mixin import FormForUserMixin
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
