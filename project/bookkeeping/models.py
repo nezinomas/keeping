@@ -128,7 +128,11 @@ class PensionWorthQuerySet(models.QuerySet):
             .related()
             .annotate(max_date=Max('pension_type__pensions_worth__date'))
             .filter(date=F('max_date'))
-            .values(title=F('pension_type__title'), have=F('price'))
+            .values(
+                title=F('pension_type__title'),
+                have=F('price'),
+                latest_check=F('date')
+            )
         )
 
 

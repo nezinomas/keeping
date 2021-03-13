@@ -42,3 +42,8 @@ class PensionWorthFactory(factory.django.DjangoModelFactory):
 
     pension_type = factory.SubFactory(PensionTypeFactory)
     price = 0.5
+
+    @factory.post_generation
+    def date(self, create, extracted, **kwargs):
+        if extracted:
+            self.date = extracted

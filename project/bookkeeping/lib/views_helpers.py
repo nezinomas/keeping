@@ -6,7 +6,7 @@ from typing import Dict, List
 from django.template.loader import render_to_string
 
 from ...accounts.models import AccountBalance
-from ...bookkeeping.models import AccountWorth, SavingWorth
+from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...core.lib.utils import sum_all, sum_col
@@ -419,6 +419,11 @@ class IndexHelper():
         )
 
     def render_pensions(self):
+        # add latest_check date to pensions dictionary
+        pw = PensionWorth.objects.items()
+        for a in self._pension:
+            a['latest_check'] = [x['latest_check'] for x in pw if x['title'] == a['title']][0]
+
         context = {
             'title': 'Pensija',
             'items': self._pension,
