@@ -1,12 +1,13 @@
 import json
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 import pytest
+import pytz
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
-from ...accounts.factories import AccountFactory
+from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...core.tests.utils import setup_view
 from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory, IncomeTypeFactory
@@ -54,6 +55,19 @@ def test_no_incomes_no_data(get_user, client_logged):
 
     assert round(response.context['avg_expenses'], 2) == 0
     assert round(response.context['save_sum'], 2) == 0
+
+
+def test_index_account_worth(get_user, client_logged):
+    AccountWorthFactory(date=datetime(2222, 2, 2))
+    AccountWorthFactory(date=datetime(1111, 1, 1), price=2)
+    AccountBalanceFactory()
+
+    url = reverse('bookkeeping:index')
+    response = client_logged.get(url)
+
+    exp = response.context['accounts'][0]
+
+    assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
 
 
 # ---------------------------------------------------------------------------------------

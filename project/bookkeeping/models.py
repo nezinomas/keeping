@@ -75,7 +75,11 @@ class AccountWorthQuerySet(models.QuerySet):
             .values('id')
             # extra groupby with unique model field, because
             # keyword 'account' conflicts with model account field
-            .values(title=F('account__title'), have=F('price'))
+            .values(
+                title=F('account__title'),
+                have=F('price'),
+                latest_check=F('date')
+            )
         )
 
 

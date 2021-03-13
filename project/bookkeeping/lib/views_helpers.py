@@ -6,6 +6,7 @@ from typing import Dict, List
 from django.template.loader import render_to_string
 
 from ...accounts.models import AccountBalance
+from ...bookkeeping.models import AccountWorth
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...core.lib.utils import sum_all, sum_col
@@ -363,6 +364,11 @@ class IndexHelper():
         )
 
     def render_accounts(self):
+        # add latest_check date to accounts dictionary
+        aw = AccountWorth.objects.items()
+        for a in self._account:
+            a['latest_check'] = [x['latest_check'] for x in aw if x['title'] == a['title']][0]
+
         context = {
             'accounts': self._account,
             'total_row': sum_all(self._account),
