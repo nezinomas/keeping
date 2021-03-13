@@ -28,7 +28,7 @@
     <tbody>
         {% for item in items %}
         <tr>
-            <td class="text-left">{{ item.title }}</td>
+            <td data-toggle="tooltip" data-html="true" data-placement="right" title="{{ item.latest_check }}" class="text-left">{{ item.title }}</td>
             {% cell item.past_amount width='110rem' %}
             {% cell item.past_fee width='110rem' %}
             {% cell item.incomes width='110rem' %}
