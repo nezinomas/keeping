@@ -27,7 +27,10 @@ def sum_all(arr: List[Dict]) -> Dict:
     rtn = Counter()
 
     for row in arr:
-        rtn.update(row)
+        try:
+            rtn.update(row)
+        except TypeError:
+            pass
 
     return {**rtn}
 
