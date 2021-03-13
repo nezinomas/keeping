@@ -72,6 +72,17 @@ def test_index_account_worth(get_user, client_logged):
     assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
 
 
+def test_index_account_worth_then_last_check_empty(get_user, client_logged):
+    AccountBalanceFactory()
+
+    url = reverse('bookkeeping:index')
+    response = client_logged.get(url)
+
+    exp = response.context['accounts'][0]
+
+    assert exp['latest_check'] == None
+
+
 def test_index_savings_worth(get_user, client_logged):
     SavingWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
     SavingWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
