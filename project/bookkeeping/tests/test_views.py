@@ -80,7 +80,7 @@ def test_index_savings_worth(get_user, client_logged):
     url = reverse('bookkeeping:index')
     response = client_logged.get(url)
 
-    exp = response.context['items'][0]
+    exp = [x['items'] for x in response.context if x.get('title') == 'Fondai'][0][0]
 
     assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
 
@@ -94,7 +94,6 @@ def test_index_pension_worth(get_user, client_logged):
     response = client_logged.get(url)
 
     exp = [x['items'] for x in response.context if x.get('title') == 'Pensija'][0][0]
-    print(exp)
 
     assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
 
