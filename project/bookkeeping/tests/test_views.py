@@ -60,8 +60,8 @@ def test_no_incomes_no_data(get_user, client_logged):
 
 
 def test_index_account_worth(get_user, client_logged):
-    AccountWorthFactory(date=datetime(2222, 2, 2))
-    AccountWorthFactory(date=datetime(1111, 1, 1), price=2)
+    AccountWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
+    AccountWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
     AccountBalanceFactory()
 
     url = reverse('bookkeeping:index')
@@ -73,8 +73,8 @@ def test_index_account_worth(get_user, client_logged):
 
 
 def test_index_savings_worth(get_user, client_logged):
-    SavingWorthFactory(date=datetime(2222, 2, 2))
-    SavingWorthFactory(date=datetime(1111, 1, 1), price=2)
+    SavingWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
+    SavingWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
     SavingBalanceFactory()
 
     url = reverse('bookkeeping:index')
@@ -86,8 +86,8 @@ def test_index_savings_worth(get_user, client_logged):
 
 
 def test_index_pension_worth(get_user, client_logged):
-    PensionWorthFactory(date=datetime(2222, 2, 2))
-    PensionWorthFactory(date=datetime(1111, 1, 1), price=2)
+    PensionWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
+    PensionWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
     PensionBalanceFactory()
 
     url = reverse('bookkeeping:index')
