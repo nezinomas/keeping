@@ -24,6 +24,11 @@ class AccountWorthFactory(factory.django.DjangoModelFactory):
     account = factory.SubFactory(AccountFactory)
     price = 0.5
 
+    @factory.post_generation
+    def date(self, create, extracted, **kwargs):
+        if extracted:
+            self.date = extracted
+
 
 @factory.django.mute_signals(post_save)
 class PensionWorthFactory(factory.django.DjangoModelFactory):
