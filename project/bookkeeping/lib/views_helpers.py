@@ -6,6 +6,7 @@ from typing import Dict, List
 from django.template.loader import render_to_string
 
 from ...accounts.models import AccountBalance
+from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...core.lib.utils import sum_all, sum_col
@@ -363,6 +364,9 @@ class IndexHelper():
         )
 
     def render_accounts(self):
+        # add latest_check date to accounts dictionary
+        self._add_latest_check_key(AccountWorth, self._account)
+
         context = {
             'accounts': self._account,
             'total_row': sum_all(self._account),
@@ -376,6 +380,9 @@ class IndexHelper():
         )
 
     def render_savings(self):
+        # add latest_check date to savibgs dictionary
+        self._add_latest_check_key(SavingWorth, self._fund)
+
         total_row = sum_all(self._fund)
 
         context = {
@@ -408,6 +415,9 @@ class IndexHelper():
         )
 
     def render_pensions(self):
+        # add latest_check date to pensions dictionary
+        self._add_latest_check_key(PensionWorth, self._pension)
+
         context = {
             'title': 'Pensija',
             'items': self._pension,
@@ -497,3 +507,9 @@ class IndexHelper():
             context,
             self._request
         )
+
+    def _add_latest_check_key(self, model, arr):
+        items = model.objects.items()
+        for a in arr:
+            latest = [x['latest_check'] for x in items if x.get('title') == a['title']]
+            a['latest_check'] = latest[0] if latest else None

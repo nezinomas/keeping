@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from ...accounts.factories import AccountBalanceFactory
@@ -41,6 +43,11 @@ def test_sum_all_empty_list():
     actual = T.sum_all([])
 
     assert {} == actual
+
+
+def test_sum_all_with_datetime():
+    arr = [{'a': datetime(2000, 1, 1)}, {'a': datetime(1999, 2, 1)}]
+    T.sum_all(arr)
 
 
 @pytest.mark.django_db
