@@ -4,7 +4,8 @@ import pytest
 from freezegun import freeze_time
 
 from ...users.factories import UserFactory
-from ..forms import BookForm
+from ..factories import BookTargetFactory
+from ..forms import BookForm, BookTargetForm
 
 pytestmark = pytest.mark.django_db
 
@@ -113,3 +114,66 @@ def test_book_title_too_short(get_user):
     assert not form.is_valid()
 
     assert 'title' in form.errors
+
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                            Book Target
+# ---------------------------------------------------------------------------------------
+def test_book_target_init(get_user):
+    BookTargetForm()
+
+
+def test_book_target_init_fields(get_user):
+    form = BookTargetForm().as_p()
+
+    assert '<input type="text" name="year"' in form
+    assert '<input type="number" name="quantity"' in form
+    assert '<select name="user"' not in form
+
+
+@freeze_time('1000-01-01')
+def test_book_target_year_initial_value(get_user):
+    UserFactory()
+
+    form = BookTargetForm().as_p()
+
+    assert '<input type="text" name="year" value="1999"' in form
+
+
+def test_book_target_valid_data(get_user):
+    form = BookTargetForm(data={
+        'year': 1974,
+        'quantity': 1.0
+    })
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.year == 1974
+    assert data.quantity == 1.0
+    assert data.user.username == 'bob'
+
+
+def test_book_target_year_validation(get_user):
+    BookTargetFactory()
+
+    form = BookTargetForm(data={
+        'year': 1999,
+        'quantity': 200
+    })
+
+    assert not form.is_valid()
+
+    assert 'year' in form.errors
+
+
+def test_book_target_blank_data(get_user):
+    form = BookTargetForm(data={})
+
+    assert not form.is_valid()
+
+    assert len(form.errors) == 2
+    assert 'year' in form.errors
+    assert 'quantity' in form.errors
