@@ -1,4 +1,3 @@
-from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 
@@ -15,6 +14,7 @@ class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
+            'year': self.request.user.year,
             'book_list': Lists.as_view()(self.request, as_string=True),
             'search': render_to_string(
                 template_name='core/includes/search_form.html',
@@ -65,3 +65,17 @@ class Search(AjaxCustomFormMixin):
             kwargs.update({'html': render_to_string(template, context, self.request)})
 
         return super().form_valid(form, **kwargs)
+
+
+class TargetLists(ListMixin):
+    model = models.BookTarget
+
+
+class TargetNew(CreateAjaxMixin):
+    model = models.BookTarget
+    form_class = forms.BookTargetForm
+
+
+class TargetUpdate(UpdateAjaxMixin):
+    model = models.BookTarget
+    form_class = forms.BookTargetForm
