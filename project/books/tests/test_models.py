@@ -110,13 +110,13 @@ def test_book_reading(get_user):
 # ----------------------------------------------------------------------------
 #                                                                 Book Target
 # ----------------------------------------------------------------------------
-def test_drink_target_str():
+def test_book_target_str():
     actual = BookTargetFactory.build()
 
     assert str(actual) == '1999: 100'
 
 
-def test_drink_target_related(get_user):
+def test_book_target_related(get_user):
     BookTargetFactory()
     BookTargetFactory(user=UserFactory(username='XXX'))
 
@@ -126,7 +126,7 @@ def test_drink_target_related(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_drink_target_items(get_user):
+def test_book_target_items(get_user):
     BookTargetFactory(year=1999)
     BookTargetFactory(year=2000, user=UserFactory(username='XXX'))
 
@@ -136,7 +136,7 @@ def test_drink_target_items(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_drink_target_year(get_user):
+def test_book_target_year(get_user):
     BookTargetFactory(year=1999)
     BookTargetFactory(year=1999, user=UserFactory(username='XXX'))
 
@@ -147,7 +147,7 @@ def test_drink_target_year(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_drink_target_year_positive():
+def test_book_target_year_positive():
     actual = BookTargetFactory.build(year=-2000)
 
     try:
@@ -157,12 +157,12 @@ def test_drink_target_year_positive():
 
 
 @pytest.mark.xfail(raises=Exception)
-def test_drink_target_year_unique():
+def test_book_target_year_unique():
     BookTargetFactory(year=1999)
     BookTargetFactory(year=1999)
 
 
-def test_drink_target_ordering():
+def test_book_target_ordering():
     BookTargetFactory(year=1970)
     BookTargetFactory(year=1999)
 
