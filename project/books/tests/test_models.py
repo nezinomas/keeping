@@ -1,10 +1,11 @@
 from datetime import date
 
 import pytest
+from django.core.validators import ValidationError
 
 from ...users.factories import UserFactory
-from ..factories import BookFactory
-from ..models import Book
+from ..factories import BookFactory, BookTargetFactory
+from ..models import Book, BookTarget
 
 pytestmark = pytest.mark.django_db
 
@@ -103,3 +104,69 @@ def test_book_reading(get_user):
     actual = Book.objects.reading(1999)
 
     assert actual == {'reading': 2}
+
+
+
+# ----------------------------------------------------------------------------
+#                                                                 Book Target
+# ----------------------------------------------------------------------------
+def test_drink_target_str():
+    actual = BookTargetFactory.build()
+
+    assert str(actual) == '1999: 100'
+
+
+def test_drink_target_related(get_user):
+    BookTargetFactory()
+    BookTargetFactory(user=UserFactory(username='XXX'))
+
+    actual = BookTarget.objects.related()
+
+    assert len(actual) == 1
+    assert actual[0].user.username == 'bob'
+
+
+def test_drink_target_items(get_user):
+    BookTargetFactory(year=1999)
+    BookTargetFactory(year=2000, user=UserFactory(username='XXX'))
+
+    actual = BookTarget.objects.items()
+
+    assert len(actual) == 1
+    assert actual[0].user.username == 'bob'
+
+
+def test_drink_target_year(get_user):
+    BookTargetFactory(year=1999)
+    BookTargetFactory(year=1999, user=UserFactory(username='XXX'))
+
+    actual = list(BookTarget.objects.year(1999))
+
+    assert len(actual) == 1
+    assert actual[0].year == 1999
+    assert actual[0].user.username == 'bob'
+
+
+def test_drink_target_year_positive():
+    actual = BookTargetFactory.build(year=-2000)
+
+    try:
+        actual.full_clean()
+    except ValidationError as e:
+        assert 'year' in e.message_dict
+
+
+@pytest.mark.xfail(raises=Exception)
+def test_drink_target_year_unique():
+    BookTargetFactory(year=1999)
+    BookTargetFactory(year=1999)
+
+
+def test_drink_target_ordering():
+    BookTargetFactory(year=1970)
+    BookTargetFactory(year=1999)
+
+    actual = list(BookTarget.objects.all())
+
+    assert str(actual[0]) == '1999: 100'
+    assert str(actual[1]) == '1970: 100'
