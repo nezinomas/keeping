@@ -121,7 +121,7 @@ class BookTarget(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='drink_targets'
+        related_name='book_targets'
     )
 
     objects = BookTargetQuerySet.as_manager()
