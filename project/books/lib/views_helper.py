@@ -10,7 +10,7 @@ class BookRenderer():
 
         self._qs_readed = models.Book.objects.readed()
         self._qs_reading = models.Book.objects.reading(self._year)
-        self._qs_target = models.BookTarget.objects.year(self._year)
+        self._qs_targets = models.BookTarget.objects.items()
 
     def context_to_reload(self):
         context = {
@@ -31,7 +31,7 @@ class BookRenderer():
         context = {
             'readed': readed[0] if readed else 0,
             'reading': self._qs_reading['reading'] if self._qs_reading else 0,
-            'target': self._qs_target[0] if self._qs_target else None,
+            'target': self._qs_targets[0] if self._qs_targets else None,
         }
         return context
 
@@ -43,9 +43,31 @@ class BookRenderer():
         )
 
     def context_chart_readed_books(self):
+        categories = []
+        targets = []
+        data = []
+        for readed in self._qs_readed:
+            # categories
+            categories.append(readed['year'])
+
+            # targets
+            _target = 0
+            for target in self._qs_targets:
+                if target.year == readed['year']:
+                    _target = target.quantity
+            targets.append(_target)
+
+            # data
+            _data = {
+                'y': readed['cnt'],
+                'target': _target,
+            }
+            data.append(_data)
+
         context = {
-            'categories': [x['year'] for x in self._qs_readed],
-            'data': [x['cnt'] for x in self._qs_readed],
+            'categories': categories,
+            'data': data,
+            'targets': targets,
             'chart': 'chart_readed_books',
             'chart_title': 'Perskaitytos knygos',
             'chart_column_color': '70, 171, 157',
