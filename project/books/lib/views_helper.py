@@ -1,5 +1,7 @@
 from django.template.loader import render_to_string
+from django.urls import reverse
 
+from ...core.forms import SearchForm
 from .. import models
 
 
@@ -72,4 +74,15 @@ class BookRenderer():
             'chart_title': 'Perskaitytos knygos',
             'chart_column_color': '70, 171, 157',
         }
+        return context
+
+    def render_search_form(self):
+        context = render_to_string(
+            template_name='core/includes/search_form.html',
+            context={
+                'form': SearchForm(),
+                'url': reverse('books:books_search')
+            },
+            request=self._request)
+
         return context

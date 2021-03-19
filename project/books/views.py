@@ -1,5 +1,5 @@
 from django.template.loader import render_to_string
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 
 from ..core.forms import SearchForm
 from ..core.lib import search
@@ -18,12 +18,7 @@ class Index(IndexMixin):
         context.update({
             'year': year,
             'book_list': Lists.as_view()(self.request, as_string=True),
-            'search': render_to_string(
-                template_name='core/includes/search_form.html',
-                context={
-                    'form': SearchForm(),
-                    'url': reverse('books:books_search')},
-                request=self.request),
+            'search': obj.render_search_form(),
             **obj.context_to_reload(),
         })
         return context
