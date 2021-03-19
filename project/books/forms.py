@@ -1,11 +1,11 @@
-from bootstrap_datepicker_plus import DatePickerInput
+from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.form_mixin import FormForUserMixin
-from .models import Book
+from .models import Book, BookTarget
 
 
 class BookForm(FormForUserMixin, forms.ModelForm):
@@ -43,3 +43,42 @@ class BookForm(FormForUserMixin, forms.ModelForm):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+
+
+class BookTargetForm(FormForUserMixin, forms.ModelForm):
+    class Meta:
+        model = BookTarget
+        fields = ['year', 'quantity']
+
+        widgets = {
+            'year': YearPickerInput(format='%Y'),
+        }
+
+    field_order = ['year', 'quantity']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # inital values
+        self.fields['year'].initial = set_year_for_form()
+
+        self.fields['year'].label = 'Metai'
+        self.fields['quantity'].label = 'Kiekis ml'
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
+
+    def clean_year(self):
+        year = self.cleaned_data['year']
+
+        # if update
+        if self.instance.pk:
+            return year
+
+        # if new record
+        qs = BookTarget.objects.year(year)
+        if qs.exists():
+            raise forms.ValidationError(f'{year} metai jau turi tikslą.')
+
+        return year

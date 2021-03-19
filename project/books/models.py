@@ -1,4 +1,5 @@
-from django.core.validators import MinLengthValidator
+from django.core.validators import (MaxValueValidator, MinLengthValidator,
+                                    MinValueValidator)
 from django.db import models
 from django.db.models import Count, F, Q
 from django.db.models.functions import ExtractYear, TruncYear
@@ -90,3 +91,44 @@ class Book(models.Model):
 
     def __str__(self):
         return str(self.title)
+
+
+class BookTargetQuerySet(SumMixin, models.QuerySet):
+    def related(self):
+        user = utils.get_user()
+        return (
+            self
+            .select_related('user')
+            .filter(user=user)
+        )
+
+    def year(self, year):
+        return (
+            self
+            .related()
+            .filter(year=year)
+        )
+
+    def items(self):
+        return self.related()
+
+
+class BookTarget(models.Model):
+    year = models.PositiveIntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)],
+    )
+    quantity = models.PositiveIntegerField()
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='book_targets'
+    )
+
+    objects = BookTargetQuerySet.as_manager()
+
+    def __str__(self):
+        return f'{self.year}: {self.quantity}'
+
+    class Meta:
+        ordering = ['-year']
+        unique_together = ['year', 'user']

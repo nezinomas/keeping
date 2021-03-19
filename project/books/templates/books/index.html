@@ -4,6 +4,7 @@
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script src="https://code.highcharts.com/modules/bullet.js"></script>
 <script type="text/javascript" src="{% static 'js/reload_stats.js' %}"></script>
 {% endblock head %}
 
@@ -19,7 +20,9 @@
 
     <div class="col-2 text-right">
         {% url 'books:books_new' as url_books %}
+        {% url 'books:books_target_new' as url_books_target %}
         <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books }}"><i class="fas fa-plus"></i> Knygą</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books_target }}"><i class="fas fa-plus"></i> {{ year|title }} metų tikslą</button>
     </div>
 </div>
 
