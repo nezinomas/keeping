@@ -63,11 +63,12 @@
             }
         },
         tooltip: {
-            formatter: function() {
-                var point = this.point
-                return `<b>${this.series.name}<b><br/>
-                       ${this.x}  ${point.y.toFixed(0)}ml`
-                }
+            split: true,
+            pointFormat: '<b>{series.name}</b>: {point.y:,.0f}ml',
+            style: {
+                fontSize: '13px',
+                fontFamily: 'Calibri, Verdana',
+            },
         },
         credits: {
             enabled: false
