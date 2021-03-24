@@ -3,8 +3,7 @@
     $(function () {
        Highcharts.chart('{{ chart }}_container', {
         chart: {
-            type: 'column',
-            height: '300px',
+            type: 'bullet'
         },
         title: {
             text: '{{ chart_title|safe }}',
@@ -44,28 +43,49 @@
             enabled: false,
         },
         plotOptions: {
-            bar: {
-                grouping: false,
-                shadow: false,
-            }
+            series: {
+                enableMouseTracking: false,
+                targetOptions: {
+                    borderWidth: 0,
+                    height:2,
+                    color: 'green',
+                    width: '110%'
+                }
+            },
         },
         series: [{
-            name: 'Kiekis',
             data: {{ data|safe }},
             color: 'rgba({{ chart_column_color }}, 0.65)',
             borderColor: 'rgba({{ chart_column_color }}, 1)',
-            dataLabels: {
+            dataLabels: [{
                 enabled: true,
-                rotation: 0,
-                color: '#000',
-                format: '{point.y:.0f}',
+                color: 'rgba({{ chart_column_color }}, 1)',
                 style: {
-                    fontSize: '9px',
+                    fontSize: '7px',
                     fontWeight: 'bold',
                     fontFamily: 'Verdana, sans-serif',
                     textOutline: false
                 }
-            }
+            }]
+        }, {
+            type: 'column',
+            borderWidth: 0,
+            data: {{ targets|safe }},
+            color: 'rgba(0,0,0,0)',
+            dataLabels: [{
+                enabled: true,
+                color: 'green',
+                align: 'left',
+                x: -23,
+                y: -11.5,
+                verticalAlign: 'top',
+                style: {
+                    fontSize: '7px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Verdana, sans-serif',
+                    textOutline: false
+                }
+            }]
         }]
     });
 });

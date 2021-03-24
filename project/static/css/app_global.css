@@ -1,4 +1,4 @@
-body {
+body, .tooltip {
   font-size: .7rem!important;
 }
 
@@ -209,3 +209,7 @@ tr.top-text, tr.top-text th {
     max-width: 650px!important;
     margin: auto;
 }
+
+.no-hover:hover {
+    text-decoration: none!important;
+  }

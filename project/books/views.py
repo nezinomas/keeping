@@ -1,6 +1,5 @@
-from django.http import JsonResponse
 from django.template.loader import render_to_string
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 
 from ..core.forms import SearchForm
 from ..core.lib import search
@@ -13,16 +12,14 @@ from .lib import views_helper as H
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
+        year = self.request.user.year
+        obj = H.BookRenderer(self.request, year)
         context = super().get_context_data(**kwargs)
         context.update({
+            'year': year,
             'book_list': Lists.as_view()(self.request, as_string=True),
-            'search': render_to_string(
-                template_name='core/includes/search_form.html',
-                context={
-                    'form': SearchForm(),
-                    'url': reverse('books:books_search')},
-                request=self.request),
-            **H.context_to_reload(self.request, context),
+            'search': obj.render_search_form(),
+            **obj.context_to_reload(),
         })
         return context
 
@@ -46,7 +43,8 @@ class ReloadStats(DispatchAjaxMixin, IndexMixin):
     redirect_view = 'books:books_index'
 
     def get(self, request, *args, **kwargs):
-        return self.render_to_response(H.context_to_reload(request))
+        obj = H.BookRenderer(request)
+        return self.render_to_response(obj.context_to_reload())
 
 
 class Search(AjaxCustomFormMixin):
@@ -65,3 +63,17 @@ class Search(AjaxCustomFormMixin):
             kwargs.update({'html': render_to_string(template, context, self.request)})
 
         return super().form_valid(form, **kwargs)
+
+
+class TargetLists(ListMixin):
+    model = models.BookTarget
+
+
+class TargetNew(CreateAjaxMixin):
+    model = models.BookTarget
+    form_class = forms.BookTargetForm
+
+
+class TargetUpdate(UpdateAjaxMixin):
+    model = models.BookTarget
+    form_class = forms.BookTargetForm

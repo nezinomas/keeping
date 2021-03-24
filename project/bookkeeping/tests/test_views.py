@@ -1,19 +1,22 @@
 import json
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 import pytest
+import pytz
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
-from ...accounts.factories import AccountFactory
+from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...core.tests.utils import setup_view
 from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory, IncomeTypeFactory
-from ...pensions.factories import PensionFactory, PensionTypeFactory
-from ...savings.factories import SavingTypeFactory
+from ...pensions.factories import (PensionBalanceFactory, PensionFactory,
+                                   PensionTypeFactory)
+from ...savings.factories import SavingBalanceFactory, SavingTypeFactory
 from .. import models, views
-from ..factories import AccountWorthFactory
+from ..factories import (AccountWorthFactory, PensionWorthFactory,
+                         SavingWorthFactory)
 
 pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -54,6 +57,56 @@ def test_no_incomes_no_data(get_user, client_logged):
 
     assert round(response.context['avg_expenses'], 2) == 0
     assert round(response.context['save_sum'], 2) == 0
+
+
+def test_index_account_worth(get_user, client_logged):
+    AccountWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
+    AccountWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
+    AccountBalanceFactory()
+
+    url = reverse('bookkeeping:index')
+    response = client_logged.get(url)
+
+    exp = response.context['accounts'][0]
+
+    assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
+
+
+def test_index_account_worth_then_last_check_empty(get_user, client_logged):
+    AccountBalanceFactory()
+
+    url = reverse('bookkeeping:index')
+    response = client_logged.get(url)
+
+    exp = response.context['accounts'][0]
+
+    assert exp['latest_check'] == None
+
+
+def test_index_savings_worth(get_user, client_logged):
+    SavingWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
+    SavingWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
+    SavingBalanceFactory()
+
+    url = reverse('bookkeeping:index')
+    response = client_logged.get(url)
+
+    exp = [x['items'] for x in response.context if x.get('title') == 'Fondai'][0][0]
+
+    assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
+
+
+def test_index_pension_worth(get_user, client_logged):
+    PensionWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
+    PensionWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
+    PensionBalanceFactory()
+
+    url = reverse('bookkeeping:index')
+    response = client_logged.get(url)
+
+    exp = [x['items'] for x in response.context if x.get('title') == 'Pensija'][0][0]
+
+    assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
 
 
 # ---------------------------------------------------------------------------------------

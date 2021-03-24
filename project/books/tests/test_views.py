@@ -8,7 +8,7 @@ from freezegun import freeze_time
 
 from ...users.factories import UserFactory
 from .. import models
-from ..factories import BookFactory
+from ..factories import BookFactory, BookTargetFactory
 from ..views import Index, Lists, New, ReloadStats, Search, Update
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -92,6 +92,37 @@ def test_books_index_add_button(client_logged):
     assert len(res[0]) == 2
     assert res[0][0] == reverse('books:books_new')
     assert res[0][1] == 'Knygą'
+
+
+def test_books_index_add_target_button(client_logged, get_user):
+    get_user.year = 1111
+    get_user.save()
+
+    url = reverse('books:books_index')
+    response = client_logged.get(url)
+
+    content = response.content.decode()
+
+    link = reverse('books:books_target_new')
+    pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
+    res = re.findall(pattern, content)
+
+    assert res[0] == ' 1111 metų tikslą'
+
+
+def test_books_index_target_update_link(client_logged):
+    t = BookTargetFactory()
+
+    url = reverse('books:books_index')
+    response = client_logged.get(url)
+
+    content = response.content.decode()
+    link = reverse('books:books_target_update', kwargs={'pk': t.pk})
+
+    pattern = re.compile(fr'<a type="button" data-url="{ link }".*?>(\d+)<\/a>')
+    res = re.findall(pattern, content)
+
+    assert res[0] == '100'
 
 
 def test_books_index_search_form(client_logged):
@@ -406,3 +437,69 @@ def test_search_found(client_logged, _search_form_data):
     assert '1999-01-01' in actual['html']
     assert 'Book Title' in actual['html']
     assert 'Author' in actual['html']
+
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                    Target Create/Update
+# ---------------------------------------------------------------------------------------
+def test_target(client_logged):
+    url = reverse('books:books_target_new')
+
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<input type="text" name="year" value="1999"' in actual['html_form']
+
+
+def test_target_new(client_logged, get_user):
+    data = {'year': 1999, 'quantity': 66}
+
+    url = reverse('books:books_target_new')
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert models.BookTarget.objects.year(1999)[0].quantity == 66
+
+
+def test_target_new_invalid_data(client_logged):
+    data = {'year': -2, 'quantity': 'x'}
+
+    url = reverse('books:books_target_new')
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
+
+
+def test_target_update(get_user, client_logged):
+    p = BookTargetFactory()
+
+    data = {'year': 1999, 'quantity': 66}
+    url = reverse('books:books_target_update', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert models.BookTarget.objects.year(1999)[0].quantity == 66
+
+
+def test_target_empty_db(client_logged):
+    response = client_logged.get('/books/')
+
+    assert not 'Tikslas' in response.context["info_row"]
