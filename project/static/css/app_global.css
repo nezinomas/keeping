@@ -221,3 +221,13 @@ tr.top-text, tr.top-text th {
 .stats .no-right-border {
     border-right: 0!important;
 }
+
+.trash, .trash:hover {
+    color: #dc3545;
+    width: 100%;
+}
+
+.edit, .edit:hover {
+    color: green;
+    width: 100%;
+}
