@@ -9,7 +9,7 @@ from freezegun import freeze_time
 from ...users.factories import UserFactory
 from .. import models
 from ..factories import BookFactory, BookTargetFactory
-from ..views import Index, Lists, New, ReloadStats, Search, Update
+from ..views import Delete, Index, Lists, New, ReloadStats, Search, Update
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
@@ -325,6 +325,53 @@ def test_books_update_past_record(client_logged, get_user):
     assert actual.author == 'XXX'
     assert actual.title == 'YYY'
     assert actual.remark == 'ZZZ'
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                             Book Delete
+# ---------------------------------------------------------------------------------------
+def test_view_books_delete_func():
+    view = resolve('/books/delete/1/')
+
+    assert Delete is view.func.view_class
+
+
+def test_view_books_delete_200(client_logged):
+    p = BookFactory()
+
+    url = reverse('books:books_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_books_delete_load_form(client_logged):
+    p = BookFactory()
+
+    url = reverse('books:books_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/books/delete/1/"' in actual['html_form']
+
+
+def test_view_books_delete(client_logged):
+    p = BookFactory()
+
+    assert models.Book.objects.all().count() == 1
+    url = reverse('books:books_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.Book.objects.all().count() == 0
+
 
 
 # ---------------------------------------------------------------------------------------
