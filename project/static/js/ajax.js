@@ -106,7 +106,7 @@ $(function () {
     $(document).on('dblclick', '.dblclick', loadFormDblClc);
 
     $(document).on('click', '.js-create', loadFormClc);
-    $(".dblclick").on('click', '.js-delete', loadFormClc);
+    $(document).on('click', '.js-delete', loadFormClc);
 
     $('#modal-form').on('click', "#submit", {save_close: false}, saveForm)
     $('#modal-form').on('click', "#save_close", {save_close: true}, saveForm)
