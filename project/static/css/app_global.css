@@ -213,3 +213,11 @@ tr.top-text, tr.top-text th {
 .no-hover:hover {
     text-decoration: none!important;
   }
+
+.stats .no-left-border {
+    border-left: 0!important;
+}
+
+.stats .no-right-border {
+    border-right: 0!important;
+}
