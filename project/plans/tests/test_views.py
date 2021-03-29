@@ -723,7 +723,7 @@ def test_view_necessarys_delete(client_logged):
 def test_copy_func():
     view = resolve('/plans/copy/')
 
-    assert views.copy_plans == view.func
+    assert views.copy_plans is view.func
 
 
 @pytest.mark.django_db
