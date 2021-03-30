@@ -2,7 +2,7 @@
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
-            <th width="10%">Pavadinimas</th>
+            <th>Pavadinimas</th>
             <th width="7%" class="text-right">Sausis</th>
             <th width="7%" class="text-right">Vasaris</th>
             <th width="7%" class="text-right">Kovas</th>
@@ -15,7 +15,7 @@
             <th width="7%" class="text-right">Spalis</th>
             <th width="7%" class="text-right">Lapkritis</th>
             <th width="7%" class="text-right">Gruodis</th>
-            <th width="6%"></th>
+            <th width="60rem"></th>
         </tr>
     </thead>
     <tbody>
@@ -38,8 +38,8 @@
             {% cell item.december %}
             <td class="text-center">
             {% if url_delete %}
-                <a type="button" data-url="{{ url }}" class="btn btn-super-sm btn-outline-info js-create">Edit</a>
-                <button type="button" class="btn btn-super-sm btn-danger js-delete" data-url="{% url url_delete item.id %}">Delete</button>
+                <span><a type="button" data-url="{{ url }}" class="js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a></span>
+                <span><a type="button" class="js-delete trash" data-url="{% url url_delete item.id %}" title="Delete"><i class="bi bi-trash-fill"></i></a></span>
             {% endif %}</td>
         </tr>{% endwith %}
         {% empty %}
@@ -55,5 +55,11 @@
     .star {
         color: #e83e8c;
         padding-left: .5rem;
+    }
+
+    td span {
+        display: block;
+        width: 50%;
+        float: left;
     }
 </style>
