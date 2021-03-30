@@ -222,17 +222,17 @@ def test_income_update_post_save(get_user):
     account = AccountFactory()
     income_type = IncomeTypeFactory()
 
-    income = Income(
+    i1 = Income(
         date=date(1999, 1, 1),
         price=Decimal(10),
         account=account,
         income_type=income_type
     )
-    income.save()
+    i1.save()
 
     # update
-    income.price = 1
-    income.save()
+    i1.price = 1
+    i1.save()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -294,14 +294,14 @@ def test_income_new_post_save_count_qs(get_user,
     account = AccountFactory()
     income_type = IncomeTypeFactory()
 
-    income = Income(
+    i1 = Income(
         date=date(1999, 1, 1),
         price=Decimal(1),
         account=account,
         income_type=income_type
     )
     with django_assert_max_num_queries(15):
-        income.save()
+        i1.save()
 
 
 def test_income_update_post_save_count_qs(get_user,
