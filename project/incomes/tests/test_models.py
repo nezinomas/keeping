@@ -224,10 +224,14 @@ def test_income_update_post_save(get_user):
 
     income = Income(
         date=date(1999, 1, 1),
-        price=Decimal(1),
+        price=Decimal(10),
         account=account,
         income_type=income_type
     )
+    income.save()
+
+    # update
+    income.price = 1
     income.save()
 
     actual = AccountBalance.objects.year(1999)
