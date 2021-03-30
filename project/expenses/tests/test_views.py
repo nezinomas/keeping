@@ -299,6 +299,52 @@ def test_expenses_index_search_form(client_logged):
 
 
 # ---------------------------------------------------------------------------------------
+#                                                                             Expense Delete
+# ---------------------------------------------------------------------------------------
+def test_view_expenses_delete_func():
+    view = resolve('/expenses/delete/1/')
+
+    assert expenses.Delete is view.func.view_class
+
+
+def test_view_expenses_delete_200(client_logged):
+    p = ExpenseFactory()
+
+    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_expenses_delete_load_form(client_logged):
+    p = ExpenseFactory()
+
+    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/expenses/delete/1/"' in actual['html_form']
+
+
+def test_view_expenses_delete(client_logged):
+    p = ExpenseFactory()
+
+    assert models.Expense.objects.all().count() == 1
+    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.Expense.objects.all().count() == 0
+
+
+# ---------------------------------------------------------------------------------------
 #                                                                             ExpenseType
 # ---------------------------------------------------------------------------------------
 def test_expenses_type_new_func():

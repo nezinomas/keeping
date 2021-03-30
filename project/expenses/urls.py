@@ -31,6 +31,11 @@ e = [
         name='expenses_update'
     ),
     path(
+        'expenses/delete/<int:pk>/',
+        expenses.Delete.as_view(),
+        name='expenses_delete'
+    ),
+    path(
         'ajax/load_expense_name/',
         expenses.load_expense_name,
         name='load_expense_name'

@@ -24,6 +24,7 @@ from .lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
 @receiver(post_delete, sender=Income)
 @receiver(post_save, sender=IncomeType)
 @receiver(post_save, sender=Expense)
+@receiver(post_delete, sender=Expense)
 @receiver(post_save, sender=ExpenseType)
 @receiver(post_save, sender=Saving)
 @receiver(post_save, sender=SavingType)
