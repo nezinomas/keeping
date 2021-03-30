@@ -32,15 +32,15 @@
     </div>
     <div class="col-lg-4 px-m text-right">
         {% url 'expenses:expenses_new' as url_expenses_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create my-1" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Išlaidos</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create my-1 pr-2" data-url="{{ url_expenses_new }}"> <i class="bi bi-plus"></i>Išlaidos</button>
         {% url 'incomes:incomes_new' as url_incomes_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create my-1" data-url="{{ url_incomes_new }}"><i class="fas fa-plus"></i> Pajamos</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create my-1 pr-2" data-url="{{ url_incomes_new }}"> <i class="bi bi-plus"></i>Pajamos</button>
         {% url 'savings:savings_new' as url_savings_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create my-1" data-url="{{ url_savings_new }}"><i class="fas fa-plus"></i> Taupymas</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create my-1 pr-2" data-url="{{ url_savings_new }}"> <i class="bi bi-plus"></i>Taupymas</button>
         {% url 'transactions:transactions_new' as url_transactions_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create my-1" data-url="{{ url_transactions_new }}"><i class="fas fa-plus"></i> Pervedimas</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create my-1 pr-2" data-url="{{ url_transactions_new }}"> <i class="bi bi-plus"></i>Pervedimas</button>
         {% url 'drinks:drinks_new' as url_drinks_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create my-1" data-url="{{ url_drinks_new }}"><i class="fas fa-plus"></i> Gertynės</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create my-1 pr-2" data-url="{{ url_drinks_new }}"><i class="bi bi-plus"></i>Gertynės</button>
         <button class="btn btn-sm btn-info ml-1" onclick="myFunction()">Rodyti kitą grafiką</button>
     </div>
 </div>
