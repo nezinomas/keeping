@@ -11,6 +11,7 @@ from override_storage import override_storage
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
+from ...bookkeeping.factories import AccountWorthFactory
 from ...expenses.factories import ExpenseFactory
 from ...users.factories import UserFactory
 from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
@@ -387,3 +388,117 @@ def test_expense_from_db(get_user):
     e1 = Expense.objects.get(pk=e.pk)
 
     assert e1._old_values == [a1.pk]
+
+
+# ----------------------------------------------------------------------------
+#                                                         Expense post signals
+# ----------------------------------------------------------------------------
+def test_expense_new_post_save(get_user):
+    AccountWorthFactory()
+    _account = AccountFactory()
+    _type = ExpenseTypeFactory()
+    _name = ExpenseNameFactory()
+
+    e1 = Expense(
+        date=date(1999, 1, 1),
+        price=Decimal(1),
+        quantity=1,
+        account=_account,
+        expense_type=_type,
+        expense_name = _name,
+    )
+
+    e1.save()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['past'] == 0.0
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 1.0
+    assert actual['balance'] == -1.0
+    assert actual['have'] == 0.5
+    assert actual['delta'] == 1.5
+
+
+def test_expense_update_post_save(get_user):
+    AccountWorthFactory()
+    _account = AccountFactory()
+    _type = ExpenseTypeFactory()
+    _name = ExpenseNameFactory()
+
+    e1 = Expense(
+        date=date(1999, 1, 1),
+        price=Decimal(10),
+        quantity=1,
+        account=_account,
+        expense_type=_type,
+        expense_name=_name,
+    )
+
+    e1.save()
+
+    # update
+    e1.price = 1
+    e1.save()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['past'] == 0.0
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 1.0
+    assert actual['balance'] == -1.0
+    assert actual['have'] == 0.5
+    assert actual['delta'] == 1.5
+
+
+def test_expense_post_delete(get_user):
+    AccountWorthFactory()
+    _account = AccountFactory()
+    _type = ExpenseTypeFactory()
+    _name = ExpenseNameFactory()
+
+    e1 = Expense(
+        date=date(1999, 1, 1),
+        price=Decimal(1),
+        quantity=1,
+        account=_account,
+        expense_type=_type,
+        expense_name=_name,
+    )
+    e2 = Expense(
+        date=date(1999, 1, 1),
+        price=Decimal(10),
+        quantity=1,
+        account=_account,
+        expense_type=_type,
+        expense_name=_name,
+    )
+
+    e1.save()
+    e2.save()
+
+    e2.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['past'] == 0.0
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 1.0
+    assert actual['balance'] == -1.0
+    assert actual['have'] == 0.5
+    assert actual['delta'] == 1.5
