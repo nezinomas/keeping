@@ -86,12 +86,11 @@ def test_books_index_add_button(client_logged):
 
     content = response.content.decode()
 
-    pattern = re.compile(r'<button type="button".+data-url="(.*?)".+ (\w+)<\/button>')
+    link = reverse('books:books_new')
+    pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
-    assert len(res[0]) == 2
-    assert res[0][0] == reverse('books:books_new')
-    assert res[0][1] == 'Knygą'
+    assert res[0] == 'Knygą'
 
 
 def test_books_index_add_target_button(client_logged, get_user):
@@ -107,7 +106,7 @@ def test_books_index_add_target_button(client_logged, get_user):
     pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
-    assert res[0] == ' 1111 metų tikslą'
+    assert res[0] == '1111 metų tikslą'
 
 
 def test_books_index_target_update_link(client_logged):
