@@ -26,6 +26,11 @@ urlpatterns = [
         name='incomes_update'
     ),
     path(
+        'incomes/delete/<int:pk>/',
+        views.Delete.as_view(),
+        name='incomes_delete'
+    ),
+    path(
         'incomes/type/',
         views.TypeLists.as_view(),
         name='incomes_type_list'

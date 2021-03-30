@@ -222,13 +222,55 @@ def test_income_update_post_save(get_user):
     account = AccountFactory()
     income_type = IncomeTypeFactory()
 
-    income = Income(
+    i1 = Income(
+        date=date(1999, 1, 1),
+        price=Decimal(10),
+        account=account,
+        income_type=income_type
+    )
+    i1.save()
+
+    # update
+    i1.price = 1
+    i1.save()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['past'] == 0.0
+    assert actual['incomes'] == 1.0
+    assert actual['expenses'] == 0.0
+    assert actual['balance'] == 1.0
+    assert actual['have'] == 0.5
+    assert actual['delta'] == -0.5
+
+
+def test_income_post_delete(get_user):
+    AccountBalanceFactory()
+    AccountWorthFactory()
+    account = AccountFactory()
+    income_type = IncomeTypeFactory()
+
+    i1 = Income(
         date=date(1999, 1, 1),
         price=Decimal(1),
         account=account,
         income_type=income_type
     )
-    income.save()
+    i2 = Income(
+        date=date(1999, 1, 1),
+        price=Decimal(10),
+        account=account,
+        income_type=income_type
+    )
+    i1.save()
+    i2.save()
+
+    i2.delete()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -252,14 +294,14 @@ def test_income_new_post_save_count_qs(get_user,
     account = AccountFactory()
     income_type = IncomeTypeFactory()
 
-    income = Income(
+    i1 = Income(
         date=date(1999, 1, 1),
         price=Decimal(1),
         account=account,
         income_type=income_type
     )
     with django_assert_max_num_queries(15):
-        income.save()
+        i1.save()
 
 
 def test_income_update_post_save_count_qs(get_user,

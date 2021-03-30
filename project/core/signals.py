@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from ..accounts.lib.balance import Balance as AccountStats
@@ -21,6 +21,7 @@ from .lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
 #                                                               AccountBalance
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=Income)
+@receiver(post_delete, sender=Income)
 @receiver(post_save, sender=IncomeType)
 @receiver(post_save, sender=Expense)
 @receiver(post_save, sender=ExpenseType)
