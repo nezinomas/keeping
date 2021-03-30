@@ -10,8 +10,8 @@ from ...core.forms import SearchForm
 from ...core.lib import search
 from ...core.lib.date import year_month_list
 from ...core.mixins.ajax import AjaxCustomFormMixin
-from ...core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
-                                  UpdateAjaxMixin)
+from ...core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
+                                  ListMixin, UpdateAjaxMixin)
 from .. import forms, models
 from ..views.expenses_type import Lists as TypeLists
 
@@ -76,6 +76,10 @@ class Update(UpdateAjaxMixin):
     model = models.Expense
     form_class = forms.ExpenseForm
     list_render_output = False
+
+
+class Delete(DeleteAjaxMixin):
+    model = models.Expense
 
 
 def load_expense_name(request):
