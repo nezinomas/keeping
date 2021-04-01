@@ -220,7 +220,7 @@ def test_incomes_index_search_form(client_logged):
 
 
 # ---------------------------------------------------------------------------------------
-#                                                                             Income Delete
+#                                                                           Income Delete
 # ---------------------------------------------------------------------------------------
 def test_view_incomes_delete_func():
     view = resolve('/incomes/delete/1/')
