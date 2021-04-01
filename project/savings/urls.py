@@ -25,6 +25,11 @@ urlpatterns = [
         name='savings_update'
     ),
     path(
+        'savings/delete/<int:pk>/',
+        views.Delete.as_view(),
+        name='savings_delete'
+    ),
+    path(
         'savings/type/',
         views.TypeLists.as_view(),
         name='savings_type_list'
