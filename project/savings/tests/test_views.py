@@ -165,10 +165,9 @@ def test_saving_update(client_logged):
     assert 'Pastaba' in actual['html_list']
 
 
-#
-# SavingType
-#
-
+# ----------------------------------------------------------------------------
+#                                                                  Saving Type
+# ----------------------------------------------------------------------------
 @freeze_time('2000-01-01')
 def test_type_load_form(client_logged):
     url = reverse('savings:savings_type_new')
