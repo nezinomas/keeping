@@ -209,18 +209,7 @@ def test_saving_close_summary_to(savings_close):
 
 
 def test_saving_close_post_save_saving_balance():
-    account = AccountFactory()
-    saving = SavingTypeFactory()
-
-    obj = SavingClose(
-        date=date(1999, 1, 1),
-        price=Decimal(1),
-        fee=Decimal(0.5),
-        from_account=saving,
-        to_account=account
-    )
-
-    obj.save()
+    SavingCloseFactory()
 
     actual = SavingBalance.objects.year(1999)
 
@@ -228,12 +217,10 @@ def test_saving_close_post_save_saving_balance():
 
     actual = actual[0]
 
-    assert actual['title'] == 'Savings'
-    assert actual['past_amount'] == 0.0
-    assert actual['past_fee'] == 0.0
-    assert actual['incomes'] == -1.0
+    assert actual['title'] == 'Savings From'
+    assert actual['incomes'] == -10.0
     assert actual['fees'] == 0.0
-    assert actual['invested'] == -1.0
+    assert actual['invested'] == -10.0
 
 
 # ----------------------------------------------------------------------------
@@ -300,18 +287,7 @@ def test_savings_change_summary_to(savings_change):
 
 
 def test_saving_change_post_save_saving_balance():
-    _from = SavingTypeFactory(title='F')
-    _to = SavingTypeFactory(title='T')
-
-    obj = SavingChange(
-        date=date(1999, 1, 1),
-        price=Decimal(1),
-        fee=Decimal(0.5),
-        to_account=_to,
-        from_account=_from,
-    )
-
-    obj.save()
+    SavingChangeFactory()
 
     actual = SavingBalance.objects.year(1999)
 
@@ -319,9 +295,7 @@ def test_saving_change_post_save_saving_balance():
 
     actual = actual[0]
 
-    assert actual['title'] == 'F'
-    assert actual['past_amount'] == 0.0
-    assert actual['past_fee'] == 0.0
-    assert actual['incomes'] == -1.0
-    assert actual['fees'] == 0.5
-    assert actual['invested'] == -1.5
+    assert actual['title'] == 'Savings From'
+    assert actual['incomes'] == -10.0
+    assert actual['fees'] == 0.25
+    assert actual['invested'] == -10.25
