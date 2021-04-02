@@ -28,6 +28,7 @@ from .lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
 @receiver(post_delete, sender=Saving)
 @receiver(post_save, sender=Transaction)
 @receiver(post_save, sender=SavingClose)
+@receiver(post_delete, sender=SavingClose)
 @receiver(post_save, sender=AccountWorth)
 def post_save_account_stats(sender, instance: object, year: int = None,
                             *args, **kwargs):
@@ -40,6 +41,7 @@ def post_save_account_stats(sender, instance: object, year: int = None,
 @receiver(post_save, sender=Saving)
 @receiver(post_delete, sender=Saving)
 @receiver(post_save, sender=SavingClose)
+@receiver(post_delete, sender=SavingClose)
 @receiver(post_save, sender=SavingChange)
 @receiver(post_save, sender=SavingWorth)
 def post_save_saving_stats(sender, instance: object, year: int = None,

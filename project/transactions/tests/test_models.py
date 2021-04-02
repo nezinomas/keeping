@@ -3,14 +3,14 @@ from decimal import Decimal
 
 import pytest
 
-from ...accounts.factories import AccountFactory
+from ...accounts.factories import AccountBalance, AccountFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...savings.factories import SavingTypeFactory
 from ...savings.models import SavingBalance
+from ...users.factories import UserFactory
 from ..factories import (SavingChangeFactory, SavingCloseFactory,
                          TransactionFactory)
 from ..models import SavingChange, SavingClose, Transaction
-from ...users.factories import UserFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -208,19 +208,68 @@ def test_saving_close_summary_to(savings_close):
     assert expect == actual
 
 
-def test_saving_close_post_save_saving_balance():
+# ----------------------------------------------------------------------------
+#                                                                 Saving Close
+# ----------------------------------------------------------------------------
+def test_saving_close_new_post_save():
     SavingCloseFactory()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['title'] == 'Account To'
+    assert actual[0]['incomes'] == 10.0
+    assert actual[0]['balance'] == 10.0
 
     actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
+    assert actual[0]['invested'] == -10.0
+    assert actual[0]['fees'] == 0
+    assert actual[0]['incomes'] == -10.0
 
-    actual = actual[0]
 
-    assert actual['title'] == 'Savings From'
-    assert actual['incomes'] == -10.0
-    assert actual['fees'] == 0.0
-    assert actual['invested'] == -10.0
+def test_saving_close_update_post_save():
+    obj = SavingCloseFactory()
+
+    # update price
+    obj.price = 10
+    obj.save()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['title'] == 'Account To'
+    assert actual[0]['incomes'] == 10.0
+    assert actual[0]['balance'] == 10.0
+
+    actual = SavingBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['invested'] == -10.0
+    assert actual[0]['fees'] == 0.0
+    assert actual[0]['incomes'] == -10.0
+
+
+def test_saving_close_post_delete():
+    obj = SavingCloseFactory()
+    SavingCloseFactory(price=10)
+
+    obj.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['title'] == 'Account To'
+    assert actual[0]['incomes'] == 10.0
+    assert actual[0]['balance'] == 10.0
+
+    actual = SavingBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['invested'] == -10.0
+    assert actual[0]['fees'] == 0.0
+    assert actual[0]['incomes'] == -10.0
 
 
 # ----------------------------------------------------------------------------
