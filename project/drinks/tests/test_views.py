@@ -124,7 +124,7 @@ def test_target_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-def test_target_update(get_user, client_logged):
+def test_target_update(client_logged):
     p = DrinkTargetFactory()
 
     data = {'year': 1999, 'quantity': 66}
@@ -306,7 +306,7 @@ def test_reload_stats_func():
     assert views.ReloadStats is view.func.view_class
 
 
-def test_reload_stats_render(get_user, rf):
+def test_reload_stats_render(rf):
     request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
     request.user = UserFactory.build()
 

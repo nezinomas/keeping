@@ -32,7 +32,7 @@ def test_account_worth_str():
     assert str(model) == '1999-01-01 02:03 - Account1'
 
 
-def test_account_worth_related(get_user):
+def test_account_worth_related():
     u = UserFactory(username='XXX')
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2', user=u)
@@ -47,7 +47,7 @@ def test_account_worth_related(get_user):
     assert actual[0].account.user.username == 'bob'
 
 
-def test_account_worth_latest_values(get_user, accounts_worth):
+def test_account_worth_latest_values(accounts_worth):
     actual = list(AccountWorth.objects.items())
 
     expect = [
@@ -58,13 +58,13 @@ def test_account_worth_latest_values(get_user, accounts_worth):
     assert_(expect, actual)
 
 
-def test_account_worth_queries(get_user, accounts_worth,
+def test_account_worth_queries(accounts_worth,
                                django_assert_num_queries):
     with django_assert_num_queries(1):
         list(AccountWorth.objects.items())
 
 
-def test_account_worth_post_save(get_user):
+def test_account_worth_post_save():
     a1 = AccountFactory(title='a1')
 
     AccountWorth(price=Decimal(1), account=a1).save()
@@ -86,7 +86,7 @@ def test_saving_worth_str():
     assert str(model) == '1999-01-01 02:03 - Savings'
 
 
-def test_saving_worth_related(get_user):
+def test_saving_worth_related():
     u = UserFactory(username='XXX')
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', user=u)
@@ -101,7 +101,7 @@ def test_saving_worth_related(get_user):
     assert actual[0].saving_type.user.username == 'bob'
 
 
-def test_saving_worth_latest_values(get_user, savings_worth):
+def test_saving_worth_latest_values(savings_worth):
     actual = list(SavingWorth.objects.items())
 
     expect = [
@@ -112,13 +112,13 @@ def test_saving_worth_latest_values(get_user, savings_worth):
     assert_(expect, actual)
 
 
-def test_saving_worth_queries(get_user, savings_worth,
+def test_saving_worth_queries(savings_worth,
                               django_assert_num_queries):
     with django_assert_num_queries(1):
         list(SavingWorth.objects.items())
 
 
-def test_saving_worth_post_save(get_user):
+def test_saving_worth_post_save():
     s1 = SavingTypeFactory(title='s1')
 
     SavingWorth(price=Decimal(1), saving_type=s1).save()
@@ -140,7 +140,7 @@ def test_pension_worth_str():
     assert str(model) == '1999-01-01 02:03 - PensionType'
 
 
-def test_pension_worth_related(get_user):
+def test_pension_worth_related():
     u = UserFactory(username='XXX')
     p1 = PensionTypeFactory(title='P1')
     p2 = PensionTypeFactory(title='P2', user=u)
@@ -155,7 +155,7 @@ def test_pension_worth_related(get_user):
     assert actual[0].pension_type.user.username == 'bob'
 
 
-def test_pension_worth_latest_values(get_user, pensions_worth):
+def test_pension_worth_latest_values(pensions_worth):
     actual = list(PensionWorth.objects.items())
 
     expect = [
@@ -165,13 +165,13 @@ def test_pension_worth_latest_values(get_user, pensions_worth):
     assert_(expect, actual)
 
 
-def test_pension_worth_queries(get_user, pensions_worth,
+def test_pension_worth_queries(pensions_worth,
                                django_assert_num_queries,):
     with django_assert_num_queries(1):
         list(PensionWorth.objects.items())
 
 
-def test_pension_worth_post_save(get_user):
+def test_pension_worth_post_save():
     p1 = PensionTypeFactory(title='P1')
 
     PensionWorth(price=Decimal(1), pension_type=p1).save()

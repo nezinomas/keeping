@@ -33,6 +33,7 @@ def test_successful_login(client):
 
 
 @pytest.mark.django_db
+@pytest.mark.disable_get_user_patch
 @freeze_time('2000-01-01')
 def test_fill_user_on_login(client):
     UserFactory(year=None, month=None)

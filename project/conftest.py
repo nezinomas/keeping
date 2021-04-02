@@ -24,9 +24,17 @@ def fake_request(rf):
     return request
 
 
-@pytest.fixture()
-def get_user(monkeypatch):
-    user = UserFactory()
+@pytest.fixture(autouse=True)
+def get_user(monkeypatch, request):
+    if 'disable_get_user_patch' in request.keywords:
+        return
+
+    # if method or module marked as django_db
+    # create User in db, else build
+    if 'django_db' in request.keywords:
+        user = UserFactory()
+    else:
+        user = UserFactory.build()
 
     mock_func = 'project.core.lib.utils.get_user'
     monkeypatch.setattr(mock_func, lambda: user)

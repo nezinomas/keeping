@@ -15,7 +15,7 @@ def test_book_str():
 
     assert str(book) == 'Book Title'
 
-def test_book_related(get_user):
+def test_book_related():
     BookFactory()
     BookFactory(title='B1', user=UserFactory(username='XXX'))
 
@@ -25,14 +25,14 @@ def test_book_related(get_user):
     assert actual[0].title == 'Book Title'
 
 
-def test_book_items(get_user):
+def test_book_items():
     BookFactory()
     BookFactory(title='B1', user=UserFactory(username='XXX'))
 
     assert Book.objects.items().count() == 1
 
 
-def test_book_year(get_user):
+def test_book_year():
     b1 = BookFactory(title='x1')
     b2 = BookFactory(title='x2', ended=date(1999, 1, 2))
     BookFactory(started=date(2000, 1, 1))
@@ -46,7 +46,7 @@ def test_book_year(get_user):
     assert actual[1] == b2
 
 
-def test_book_fields(get_user):
+def test_book_fields():
     BookFactory(ended=date(1999, 1, 31))
 
     actual = list(Book.objects.items())[0]
@@ -59,7 +59,7 @@ def test_book_fields(get_user):
     assert date(1999, 1, 31) == actual.ended
 
 
-def test_book_readed_one_year(get_user):
+def test_book_readed_one_year():
     BookFactory()
     BookFactory(ended=date(1999, 1, 31))
     BookFactory(ended=date(1999, 12, 31))
@@ -70,13 +70,13 @@ def test_book_readed_one_year(get_user):
     assert actual == [{'year': 1999, 'cnt': 2}]
 
 
-def test_book_readed_one_year_no_data(get_user):
+def test_book_readed_one_year_no_data():
     actual = list(Book.objects.readed(year=1999))
 
     assert actual == []
 
 
-def test_book_readed_all_years(get_user):
+def test_book_readed_all_years():
     BookFactory()
     BookFactory(ended=date(1999, 1, 31))
     BookFactory(ended=date(1999, 12, 31))
@@ -88,13 +88,13 @@ def test_book_readed_all_years(get_user):
     assert actual == [{'year': 1998, 'cnt': 1}, {'year': 1999, 'cnt': 2}]
 
 
-def test_book_readed_all_years_no_data(get_user):
+def test_book_readed_all_years_no_data():
     actual = list(Book.objects.readed())
 
     assert actual == []
 
 
-def test_book_reading(get_user):
+def test_book_reading():
     BookFactory()
     BookFactory(started=date(1000, 1, 1))
     BookFactory(started=date(3000, 1, 1))
@@ -116,7 +116,7 @@ def test_book_target_str():
     assert str(actual) == '1999: 100'
 
 
-def test_book_target_related(get_user):
+def test_book_target_related():
     BookTargetFactory()
     BookTargetFactory(user=UserFactory(username='XXX'))
 
@@ -126,7 +126,7 @@ def test_book_target_related(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_book_target_items(get_user):
+def test_book_target_items():
     BookTargetFactory(year=1999)
     BookTargetFactory(year=2000, user=UserFactory(username='XXX'))
 
@@ -136,7 +136,7 @@ def test_book_target_items(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_book_target_year(get_user):
+def test_book_target_year():
     BookTargetFactory(year=1999)
     BookTargetFactory(year=1999, user=UserFactory(username='XXX'))
 

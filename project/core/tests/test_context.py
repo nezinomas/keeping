@@ -8,6 +8,7 @@ from ..context import yday, years
 
 
 @freeze_time('2006-01-01')
+@pytest.mark.disable_get_user_patch
 def test_years(rf):
     expect = {'years': [2007, 2006]}
     r = rf.get('/fake/')

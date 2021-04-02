@@ -39,7 +39,7 @@ def test_expense_type_str():
     assert str(e) == 'Expense Type'
 
 
-def test_month_expense_type(get_user, expenses):
+def test_month_expense_type(expenses):
     expect = [
         {'date': date(1999, 1, 1), 'sum': Decimal(0.5), 'title': 'Expense Type'},
         {'date': date(1999, 12, 1), 'sum': Decimal(1.25), 'title': 'Expense Type'},
@@ -50,7 +50,7 @@ def test_month_expense_type(get_user, expenses):
     assert actual == expect
 
 
-def test_day_expense_type(get_user, expenses_january):
+def test_day_expense_type(expenses_january):
     expect = [
         {
             'date': date(1999, 1, 1),
@@ -70,7 +70,7 @@ def test_day_expense_type(get_user, expenses_january):
     assert actual == expect
 
 
-def test_expense_type_items(get_user):
+def test_expense_type_items():
     ExpenseTypeFactory(title='T1')
     ExpenseTypeFactory(title='T2')
 
@@ -79,7 +79,7 @@ def test_expense_type_items(get_user):
     assert actual.count() == 2
 
 
-def test_expense_type_items_user(get_user):
+def test_expense_type_items_user():
     ExpenseTypeFactory(title='T1', user=UserFactory())
     ExpenseTypeFactory(title='T2', user=UserFactory(username='u2'))
 
@@ -88,7 +88,7 @@ def test_expense_type_items_user(get_user):
     assert actual.count() == 1
 
 
-def test_expense_type_related_qs_count(django_assert_max_num_queries, get_user):
+def test_expense_type_related_qs_count(django_assert_max_num_queries):
     ExpenseTypeFactory(title='T1')
     ExpenseTypeFactory(title='T2')
     ExpenseTypeFactory(title='T3')
@@ -97,7 +97,7 @@ def test_expense_type_related_qs_count(django_assert_max_num_queries, get_user):
         list(q.title for q in ExpenseType.objects.items())
 
 
-def test_post_save_expense_type_insert_new(get_user, expenses):
+def test_post_save_expense_type_insert_new(expenses):
     obj = ExpenseType(title='e1', user=UserFactory())
     obj.save()
 
@@ -107,12 +107,12 @@ def test_post_save_expense_type_insert_new(get_user, expenses):
 
 
 @pytest.mark.xfail
-def test_expense_type_unique_user(get_user):
+def test_expense_type_unique_user():
     ExpenseType.objects.create(title='T1', user=UserFactory())
     ExpenseType.objects.create(title='T1', user=UserFactory())
 
 
-def test_expense_type_unique_users(get_user):
+def test_expense_type_unique_users():
     ExpenseType.objects.create(title='T1', user=UserFactory(username='x'))
     ExpenseType.objects.create(title='T1', user=UserFactory(username='y'))
 
@@ -126,7 +126,7 @@ def test_expnese_name_str():
     assert str(e) == 'Expense Name'
 
 
-def test_expense_name_items(get_user):
+def test_expense_name_items():
     ExpenseNameFactory(title='N1')
     ExpenseNameFactory(title='N2')
 
@@ -135,7 +135,7 @@ def test_expense_name_items(get_user):
     assert actual.count() == 2
 
 
-def test_expense_name_related_different_users(get_user):
+def test_expense_name_related_different_users():
     u = UserFactory(username='tom')
 
     t1 = ExpenseTypeFactory(title='T1') # user bob
@@ -151,7 +151,7 @@ def test_expense_name_related_different_users(get_user):
     assert actual[0].title == 'N1'
 
 
-def test_expense_name_related_qs_count(get_user, django_assert_max_num_queries):
+def test_expense_name_related_qs_count(django_assert_max_num_queries):
     ExpenseNameFactory(title='T1')
     ExpenseNameFactory(title='T2')
 
@@ -159,7 +159,7 @@ def test_expense_name_related_qs_count(get_user, django_assert_max_num_queries):
         list(q.parent.title for q in ExpenseName.objects.related())
 
 
-def test_expense_name_year(get_user):
+def test_expense_name_year():
     ExpenseNameFactory(title='N1', valid_for=2000)
     ExpenseNameFactory(title='N2', valid_for=1999)
 
@@ -169,7 +169,7 @@ def test_expense_name_year(get_user):
     assert actual[0].title == 'N1'
 
 
-def test_expense_name_year_02(get_user):
+def test_expense_name_year_02():
     ExpenseNameFactory(title='N1', valid_for=2000)
     ExpenseNameFactory(title='N2')
 
@@ -180,7 +180,7 @@ def test_expense_name_year_02(get_user):
     assert actual[1].title == 'N1'
 
 
-def test_expense_name_parent(get_user):
+def test_expense_name_parent():
     p1 = ExpenseTypeFactory(title='P1')
     p2 = ExpenseTypeFactory(title='P2')
 
@@ -234,7 +234,7 @@ def test_expense_attachment_field():
     assert str(e.attachment) == os.path.join('expense-type', '1000.01_test1.jpg')
 
 
-def test_expense_related(get_user):
+def test_expense_related():
     u = UserFactory(username='tom')
 
     t1 = ExpenseTypeFactory(title='T1')  # user bob, current user
@@ -250,7 +250,7 @@ def test_expense_related(get_user):
     assert str(actual[0].expense_type) == 'T1'
 
 
-def test_expense_year(get_user):
+def test_expense_year():
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(2000, 1, 1))
 
@@ -259,7 +259,7 @@ def test_expense_year(get_user):
     assert actual.count() == 1
 
 
-def test_expense_year_query_count(get_user, django_assert_max_num_queries):
+def test_expense_year_query_count(django_assert_max_num_queries):
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(2000, 1, 1))
 
@@ -267,7 +267,7 @@ def test_expense_year_query_count(get_user, django_assert_max_num_queries):
         list(q.expense_type for q in Expense.objects.year(2000))
 
 
-def test_expense_items(get_user):
+def test_expense_items():
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(2000, 1, 1))
 
@@ -276,7 +276,7 @@ def test_expense_items(get_user):
     assert actual.count() == 2
 
 
-def test_expense_items_query_count(get_user, django_assert_max_num_queries):
+def test_expense_items_query_count(django_assert_max_num_queries):
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(2000, 1, 1))
 
@@ -284,7 +284,7 @@ def test_expense_items_query_count(get_user, django_assert_max_num_queries):
         list(q.expense_type.title for q in Expense.objects.items())
 
 
-def test_month_name_sum(get_user):
+def test_month_name_sum():
     ExpenseFactory(
         date=date(1974, 1, 1),
         price=1,
@@ -327,7 +327,7 @@ def test_month_name_sum(get_user):
     assert [*actual] == expect
 
 
-def test_summary(get_user, expenses):
+def test_summary(expenses):
     expect = [{
         'title': 'Account1',
         'e_past': 2.5,
@@ -345,7 +345,7 @@ def test_summary(get_user, expenses):
 
 
 @freeze_time('1999-06-01')
-def test_expense_avg_last_months(get_user):
+def test_expense_avg_last_months():
     ExpenseFactory(date=date(1998, 11, 30), price=3)
     ExpenseFactory(date=date(1998, 12, 31), price=4)
     ExpenseFactory(date=date(1999, 1, 1), price=7)
@@ -358,14 +358,14 @@ def test_expense_avg_last_months(get_user):
 
 
 @freeze_time('1999-06-01')
-def test_expense_avg_last_months_qs_count(get_user, django_assert_max_num_queries):
+def test_expense_avg_last_months_qs_count(django_assert_max_num_queries):
     ExpenseFactory(date=date(1999, 1, 1), price=2)
 
     with django_assert_max_num_queries(1):
         print(Expense.objects.last_months())
 
 
-def test_expense_years_sum(get_user):
+def test_expense_years_sum():
     ExpenseFactory(date=date(1998, 1, 1), price=4.0)
     ExpenseFactory(date=date(1998, 1, 1), price=4.0)
     ExpenseFactory(date=date(1999, 1, 1), price=5.0)
@@ -380,7 +380,7 @@ def test_expense_years_sum(get_user):
     assert actual[1]['sum'] == 10.0
 
 
-def test_expense_from_db(get_user):
+def test_expense_from_db():
     a1 = AccountFactory(title='A1')
 
     e = ExpenseFactory(account=a1)
@@ -393,7 +393,7 @@ def test_expense_from_db(get_user):
 # ----------------------------------------------------------------------------
 #                                                         Expense post signals
 # ----------------------------------------------------------------------------
-def test_expense_new_post_save(get_user):
+def test_expense_new_post_save():
     AccountWorthFactory()
     _account = AccountFactory()
     _type = ExpenseTypeFactory()
@@ -425,7 +425,7 @@ def test_expense_new_post_save(get_user):
     assert actual['delta'] == 1.5
 
 
-def test_expense_update_post_save(get_user):
+def test_expense_update_post_save():
     AccountWorthFactory()
     _account = AccountFactory()
     _type = ExpenseTypeFactory()
@@ -461,7 +461,7 @@ def test_expense_update_post_save(get_user):
     assert actual['delta'] == 1.5
 
 
-def test_expense_post_delete(get_user):
+def test_expense_post_delete():
     AccountWorthFactory()
     _account = AccountFactory()
     _type = ExpenseTypeFactory()

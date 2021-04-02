@@ -313,7 +313,7 @@ def test_view_index_200(client_logged):
 
 
 @pytest.mark.django_db
-def test_type_list_view_has_all(get_user, fake_request):
+def test_type_list_view_has_all(fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1974)
 
