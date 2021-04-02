@@ -257,6 +257,67 @@ def test_saving_last_months_qs_count(django_assert_max_num_queries):
         print(Saving.objects.last_months())
 
 
+def test_saving_new_post_save():
+    SavingFactory()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['title'] == 'Account1'
+    assert actual[0]['expenses'] == 150.0
+    assert actual[0]['balance'] == -150.0
+
+    actual = SavingBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['invested'] == 144.45
+    assert actual[0]['fees'] == 5.55
+    assert actual[0]['incomes'] == 150.0
+
+
+def test_saving_update_post_save():
+    obj = SavingFactory()
+
+    # update price
+    obj.price = 10
+    obj.save()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['title'] == 'Account1'
+    assert actual[0]['expenses'] == 10.0
+    assert actual[0]['balance'] == -10.0
+
+    actual = SavingBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['invested'] == 4.45
+    assert actual[0]['fees'] == 5.55
+    assert actual[0]['incomes'] == 10.0
+
+
+def test_saving_post_delete():
+    obj = SavingFactory()
+    SavingFactory(price=10)
+
+    obj.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['title'] == 'Account1'
+    assert actual[0]['expenses'] == 10.0
+    assert actual[0]['balance'] == -10.0
+
+    actual = SavingBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['invested'] == 4.45
+    assert actual[0]['fees'] == 5.55
+    assert actual[0]['incomes'] == 10.0
+
+
 # ----------------------------------------------------------------------------
 #                                                               SavingBalance
 # ----------------------------------------------------------------------------
@@ -271,8 +332,8 @@ def test_saving_balance_init():
     assert actual.invested == 2.3
     assert actual.incomes == 2.4
     assert actual.market_value == 2.5
-    assert actual.profit_incomes_proc == 2.6
-    assert actual.profit_incomes_sum == 2.7
+    assert actual.profit_savings_proc == 2.6
+    assert actual.profit_savings_sum == 2.7
     assert actual.profit_invested_proc == 2.8
     assert actual.profit_invested_sum == 2.9
 
