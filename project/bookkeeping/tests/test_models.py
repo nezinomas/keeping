@@ -65,9 +65,7 @@ def test_account_worth_queries(accounts_worth,
 
 
 def test_account_worth_post_save():
-    a1 = AccountFactory(title='a1')
-
-    AccountWorth(price=Decimal(1), account=a1).save()
+    AccountWorthFactory()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -119,9 +117,7 @@ def test_saving_worth_queries(savings_worth,
 
 
 def test_saving_worth_post_save():
-    s1 = SavingTypeFactory(title='s1')
-
-    SavingWorth(price=Decimal(1), saving_type=s1).save()
+    SavingWorthFactory()
 
     actual = SavingBalance.objects.year(1999)
 
@@ -172,9 +168,7 @@ def test_pension_worth_queries(pensions_worth,
 
 
 def test_pension_worth_post_save():
-    p1 = PensionTypeFactory(title='P1')
-
-    PensionWorth(price=Decimal(1), pension_type=p1).save()
+    PensionWorthFactory()
 
     actual = PensionBalance.objects.year(1999)
 
