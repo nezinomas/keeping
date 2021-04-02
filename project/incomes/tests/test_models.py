@@ -31,14 +31,6 @@ def test_income_type_items_user():
     assert actual[0].title == 'T1'
 
 
-def test_income_type_new_post_save(incomes):
-    IncomeTypeFactory(title='T1')
-
-    actual = AccountBalance.objects.items()
-
-    assert actual.count() == 2
-
-
 @pytest.mark.xfail
 def test_income_type_unique_for_user():
     IncomeType.objects.create(title='T', user=UserFactory())
@@ -234,16 +226,20 @@ def test_income_new_post_save_count_qs(django_assert_max_num_queries):
     AccountFactory()
     IncomeTypeFactory()
 
-    with django_assert_max_num_queries(19):
+    assert AccountBalance.objects.all().count() == 0
+
+    with django_assert_max_num_queries(21):
         IncomeFactory()
 
 
 def test_income_update_post_save_count_qs(django_assert_max_num_queries):
-    AccountBalanceFactory()
     IncomeTypeFactory()
+    AccountBalanceFactory()
 
-    with django_assert_max_num_queries(17):
-        IncomeTypeFactory()
+    assert AccountBalance.objects.all().count() == 1
+
+    with django_assert_max_num_queries(19):
+        IncomeFactory()
 
 
 def test_income_years_sum():
