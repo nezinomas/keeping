@@ -1,5 +1,4 @@
 import factory
-from django.db.models.signals import post_save
 
 from ..expenses.factories import ExpenseTypeFactory
 from ..incomes.factories import IncomeTypeFactory
@@ -8,7 +7,6 @@ from .models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 from ..users.factories import UserFactory
 
 
-@factory.django.mute_signals(post_save)
 class ExpensePlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExpensePlan
@@ -20,7 +18,6 @@ class ExpensePlanFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
 
 
-@factory.django.mute_signals(post_save)
 class IncomePlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = IncomePlan
@@ -34,7 +31,6 @@ class IncomePlanFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
 
 
-@factory.django.mute_signals(post_save)
 class SavingPlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SavingPlan
