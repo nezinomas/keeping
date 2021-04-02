@@ -6,7 +6,6 @@ import pytest
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import AccountBalance
 from ...users.factories import UserFactory
-from ...bookkeeping.factories import AccountWorthFactory
 from ..factories import IncomeFactory, IncomeTypeFactory
 from ..models import Income, IncomeType
 
@@ -33,8 +32,7 @@ def test_income_type_items_user():
 
 
 def test_income_type_new_post_save(incomes):
-    obj = IncomeType(title='T1', user=UserFactory())
-    obj.save()
+    IncomeTypeFactory(title='T1')
 
     actual = AccountBalance.objects.items()
 
@@ -184,18 +182,7 @@ def test_income_month_type_sum():
 
 
 def test_income_new_post_save():
-    AccountWorthFactory()
-    account = AccountFactory()
-    income_type = IncomeTypeFactory()
-
-    income = Income(
-        date=date(1999, 1, 1),
-        price=Decimal(1),
-        account=account,
-        income_type=income_type
-    )
-
-    income.save()
+    IncomeFactory()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -204,31 +191,16 @@ def test_income_new_post_save():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['past'] == 0.0
-    assert actual['incomes'] == 1.0
-    assert actual['expenses'] == 0.0
-    assert actual['balance'] == 1.0
-    assert actual['have'] == 0.5
-    assert actual['delta'] == -0.5
+    assert actual['incomes'] == 1000.62
+    assert actual['balance'] == 1000.62
 
 
 def test_income_update_post_save():
-    AccountBalanceFactory()
-    AccountWorthFactory()
-    account = AccountFactory()
-    income_type = IncomeTypeFactory()
+    obj = IncomeFactory()
 
-    i1 = Income(
-        date=date(1999, 1, 1),
-        price=Decimal(10),
-        account=account,
-        income_type=income_type
-    )
-    i1.save()
-
-    # update
-    i1.price = 1
-    i1.save()
+    # update price
+    obj.price = 1
+    obj.save()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -237,36 +209,15 @@ def test_income_update_post_save():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['past'] == 0.0
     assert actual['incomes'] == 1.0
-    assert actual['expenses'] == 0.0
     assert actual['balance'] == 1.0
-    assert actual['have'] == 0.5
-    assert actual['delta'] == -0.5
 
 
 def test_income_post_delete():
-    AccountBalanceFactory()
-    AccountWorthFactory()
-    account = AccountFactory()
-    income_type = IncomeTypeFactory()
+    obj = IncomeFactory()
+    IncomeFactory(price=1)
 
-    i1 = Income(
-        date=date(1999, 1, 1),
-        price=Decimal(1),
-        account=account,
-        income_type=income_type
-    )
-    i2 = Income(
-        date=date(1999, 1, 1),
-        price=Decimal(10),
-        account=account,
-        income_type=income_type
-    )
-    i1.save()
-    i2.save()
-
-    i2.delete()
+    obj.delete()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -275,44 +226,24 @@ def test_income_post_delete():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['past'] == 0.0
     assert actual['incomes'] == 1.0
-    assert actual['expenses'] == 0.0
     assert actual['balance'] == 1.0
-    assert actual['have'] == 0.5
-    assert actual['delta'] == -0.5
 
 
 def test_income_new_post_save_count_qs(django_assert_max_num_queries):
-    AccountBalanceFactory()
-    AccountWorthFactory()
-    account = AccountFactory()
-    income_type = IncomeTypeFactory()
+    AccountFactory()
+    IncomeTypeFactory()
 
-    i1 = Income(
-        date=date(1999, 1, 1),
-        price=Decimal(1),
-        account=account,
-        income_type=income_type
-    )
-    with django_assert_max_num_queries(15):
-        i1.save()
+    with django_assert_max_num_queries(19):
+        IncomeFactory()
 
 
 def test_income_update_post_save_count_qs(django_assert_max_num_queries):
     AccountBalanceFactory()
-    AccountWorthFactory()
-    account = AccountFactory()
-    income_type = IncomeTypeFactory()
+    IncomeTypeFactory()
 
-    income = Income(
-        date=date(1999, 1, 1),
-        price=Decimal(1),
-        account=account,
-        income_type=income_type
-    )
     with django_assert_max_num_queries(17):
-        income.save()
+        IncomeTypeFactory()
 
 
 def test_income_years_sum():
