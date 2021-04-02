@@ -6,7 +6,7 @@ from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import setup_view
-from .. import views
+from .. import models, views
 from ..factories import SavingFactory, SavingTypeFactory
 
 pytestmark = pytest.mark.django_db
@@ -165,10 +165,55 @@ def test_saving_update(client_logged):
     assert 'Pastaba' in actual['html_list']
 
 
-#
-# SavingType
-#
+# ---------------------------------------------------------------------------------------
+#                                                                           Saving Delete
+# ---------------------------------------------------------------------------------------
+def test_view_saving_delete_func():
+    view = resolve('/savings/delete/1/')
 
+    assert views.Delete is view.func.view_class
+
+
+def test_view_saving_delete_200(client_logged):
+    p = SavingFactory()
+
+    url = reverse('savings:savings_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_saving_delete_load_form(client_logged):
+    p = SavingFactory()
+
+    url = reverse('savings:savings_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/savings/delete/1/"' in actual['html_form']
+
+
+def test_view_saving_delete(client_logged):
+    p = SavingFactory()
+
+    assert models.Saving.objects.all().count() == 1
+    url = reverse('savings:savings_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.Saving.objects.all().count() == 0
+
+
+# ----------------------------------------------------------------------------
+#                                                                  Saving Type
+# ----------------------------------------------------------------------------
 @freeze_time('2000-01-01')
 def test_type_load_form(client_logged):
     url = reverse('savings:savings_type_new')
@@ -268,7 +313,7 @@ def test_view_index_200(client_logged):
 
 
 @pytest.mark.django_db
-def test_type_list_view_has_all(get_user, fake_request):
+def test_type_list_view_has_all(fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1974)
 

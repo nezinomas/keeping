@@ -2,14 +2,12 @@ from datetime import date as dt
 from decimal import Decimal
 
 import factory
-from django.db.models.signals import post_save
 
 from ..accounts.factories import AccountFactory
 from ..users.factories import UserFactory
 from .models import Expense, ExpenseName, ExpenseType
 
 
-@factory.django.mute_signals(post_save)
 class ExpenseTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExpenseType
@@ -19,7 +17,6 @@ class ExpenseTypeFactory(factory.django.DjangoModelFactory):
     title = 'Expense Type'
 
 
-@factory.django.mute_signals(post_save)
 class ExpenseNameFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExpenseName
@@ -29,7 +26,6 @@ class ExpenseNameFactory(factory.django.DjangoModelFactory):
     parent = factory.SubFactory(ExpenseTypeFactory)
 
 
-@factory.django.mute_signals(post_save)
 class ExpenseFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Expense

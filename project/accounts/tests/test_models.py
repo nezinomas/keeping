@@ -16,7 +16,7 @@ def test_account_model_str():
     assert str(actual) == 'Account1'
 
 
-def test_account_items_current_user(get_user):
+def test_account_items_current_user():
     u = UserFactory(username='XXX')
 
     AccountFactory(title='A1')
@@ -60,12 +60,12 @@ def test_account_closed_in_current_year(get_user):
 
 
 @pytest.mark.xfail
-def test_account_unique_for_user(get_user):
+def test_account_unique_for_user():
     Account.objects.create(title='T1', user=UserFactory())
     Account.objects.create(title='T1', user=UserFactory())
 
 
-def test_account_unique_for_users(get_user):
+def test_account_unique_for_users():
     Account.objects.create(title='T1', user=UserFactory(username='x'))
     Account.objects.create(title='T1', user=UserFactory(username='y'))
 
@@ -93,7 +93,7 @@ def test_account_balance_init():
     assert actual.delta == -1.05
 
 
-def test_account_balance_items(get_user):
+def test_account_balance_items():
     AccountBalanceFactory(year=1998)
     AccountBalanceFactory(year=1999)
     AccountBalanceFactory(year=2000)
@@ -103,7 +103,7 @@ def test_account_balance_items(get_user):
     assert len(actual) == 1
 
 
-def test_account_balance_queries(get_user, django_assert_num_queries):
+def test_account_balance_queries(django_assert_num_queries):
     a1 = AccountFactory(title='a1')
     a2 = AccountFactory(title='a2')
 
@@ -114,7 +114,7 @@ def test_account_balance_queries(get_user, django_assert_num_queries):
         list(AccountBalance.objects.items().values())
 
 
-def test_account_balance_related_for_user(get_user):
+def test_account_balance_related_for_user():
     u = UserFactory(username='XXX')
 
     a1 = AccountFactory(title='A1')

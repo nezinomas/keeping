@@ -219,7 +219,7 @@ def test_reload_stats_func():
     assert views.ReloadStats == view.func.view_class
 
 
-def test_reload_stats_render(get_user, rf):
+def test_reload_stats_render(rf):
     request = rf.get(f'/{App_name}/reload_stats/?ajax_trigger=1')
     request.user = UserFactory.build()
 

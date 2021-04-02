@@ -72,7 +72,7 @@ def test_get_nothing():
         ('1999-1 type', 1, 'Expense Type', 'Expense Name'),
     ]
 )
-def test_expense_search(search, cnt, expense_type, expense_name, get_user):
+def test_expense_search(search, cnt, expense_type, expense_name):
     ExpenseFactory()
     ExpenseFactory(
         date=date(3333, 1, 1),
@@ -93,7 +93,7 @@ def test_expense_search(search, cnt, expense_type, expense_name, get_user):
 
 
 @pytest.mark.django_db
-def test_expense_search_ordering(get_user):
+def test_expense_search_ordering():
     ExpenseFactory(date=date(1000, 1, 1))
     ExpenseFactory()
 
@@ -120,7 +120,7 @@ def test_expense_search_ordering(get_user):
         ('1999-1 type', 1, 'Income Type'),
     ]
 )
-def test_incomes_search(search, cnt, income_type, get_user):
+def test_incomes_search(search, cnt, income_type):
     IncomeFactory()
     IncomeFactory(
         date=date(3333, 1, 1),
@@ -139,7 +139,7 @@ def test_incomes_search(search, cnt, income_type, get_user):
 
 
 @pytest.mark.django_db
-def test_incomes_search_ordering(get_user):
+def test_incomes_search_ordering():
     IncomeFactory(date=date(1000, 1, 1))
     IncomeFactory()
 
@@ -169,7 +169,7 @@ def test_incomes_search_ordering(get_user):
         ('1999-1 titl', 'Author', 'Book Title', 'Remark'),
     ]
 )
-def test_books_search(search, author, title, remark, get_user):
+def test_books_search(search, author, title, remark):
     BookFactory()
     BookFactory(
         started=date(3333, 1, 1),
@@ -190,7 +190,7 @@ def test_books_search(search, author, title, remark, get_user):
 
 
 @pytest.mark.django_db
-def test_books_search_ordering(get_user):
+def test_books_search_ordering():
     BookFactory(started=date(1000, 1, 1))
     BookFactory()
 

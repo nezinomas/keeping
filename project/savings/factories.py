@@ -2,14 +2,12 @@ from datetime import date as dt
 from decimal import Decimal
 
 import factory
-from django.db.models.signals import post_save
 
 from ..accounts.factories import AccountFactory
 from ..users.factories import UserFactory
 from .models import Saving, SavingBalance, SavingType
 
 
-@factory.django.mute_signals(post_save)
 class SavingTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SavingType
@@ -19,7 +17,6 @@ class SavingTypeFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
 
 
-@factory.django.mute_signals(post_save)
 class SavingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Saving
@@ -32,7 +29,6 @@ class SavingFactory(factory.django.DjangoModelFactory):
     account = factory.SubFactory(AccountFactory)
 
 
-@factory.django.mute_signals(post_save)
 class SavingBalanceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SavingBalance

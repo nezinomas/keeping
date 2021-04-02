@@ -22,7 +22,7 @@ def test_income_str():
     assert str(actual) == '2000/Income Type'
 
 
-def test_income_related(get_user):
+def test_income_related():
     IncomePlanFactory()
     IncomePlanFactory(user=UserFactory(username='XXX'))
 
@@ -32,7 +32,7 @@ def test_income_related(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_income_year(get_user):
+def test_income_year():
     IncomePlanFactory()
     IncomePlanFactory(year=1974, user=UserFactory(username='XXX'))
 
@@ -43,7 +43,7 @@ def test_income_year(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_income_items(get_user):
+def test_income_items():
     t1 = IncomeTypeFactory(title='T1')
     t2 = IncomeTypeFactory(title='T2')
 
@@ -77,7 +77,7 @@ def test_expense_str():
     assert str(actual) == '2000/Expense Type'
 
 
-def test_expense_related(get_user):
+def test_expense_related():
     ExpensePlanFactory()
     ExpensePlanFactory(user=UserFactory(username='XXX'))
 
@@ -87,7 +87,7 @@ def test_expense_related(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_expense_year(get_user):
+def test_expense_year():
     ExpensePlanFactory()
     ExpensePlanFactory(year=1974, user=UserFactory(username='XXX'))
 
@@ -98,7 +98,7 @@ def test_expense_year(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_expense_items(get_user):
+def test_expense_items():
     t1 = ExpenseTypeFactory(title='T1')
     t2 = ExpenseTypeFactory(title='T2')
 
@@ -124,12 +124,12 @@ def test_expense_no_dublicates():
 
 
 
-def test_expense_year_query_count(get_user, django_assert_max_num_queries):
+def test_expense_year_query_count(django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         list(ExpensePlan.objects.year(1999))
 
 
-def test_expense_items_query_count(get_user, django_assert_max_num_queries):
+def test_expense_items_query_count(django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         list(ExpensePlan.objects.items())
 
@@ -144,7 +144,7 @@ def test_saving_str():
     assert str(actual) == '2000/Savings'
 
 
-def test_saving_related(get_user):
+def test_saving_related():
     SavingPlanFactory()
     SavingPlanFactory(user=UserFactory(username='XXX'))
 
@@ -154,7 +154,7 @@ def test_saving_related(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_saving_year(get_user):
+def test_saving_year():
     SavingPlanFactory()
     SavingPlanFactory(year=1974, user=UserFactory(username='XXX'))
 
@@ -165,7 +165,7 @@ def test_saving_year(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_saving_items(get_user):
+def test_saving_items():
     t1 = SavingTypeFactory(title='T1')
     t2 = SavingTypeFactory(title='T2')
 
@@ -199,7 +199,7 @@ def test_day_str():
     assert str(actual) == '2000'
 
 
-def test_day_related(get_user):
+def test_day_related():
     DayPlanFactory()
     DayPlanFactory(user=UserFactory(username='XXX'))
 
@@ -209,7 +209,7 @@ def test_day_related(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_day_year(get_user):
+def test_day_year():
     DayPlanFactory()
     DayPlanFactory(year=1974, user=UserFactory(username='XXX'))
 
@@ -220,7 +220,7 @@ def test_day_year(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_day_items(get_user):
+def test_day_items():
     DayPlanFactory()
     DayPlanFactory(year=1974)
     DayPlanFactory(year=1974, user=UserFactory(username='XXX'))
@@ -249,7 +249,7 @@ def test_necessary_str():
     assert str(actual) == '2000/N'
 
 
-def test_necessary_related(get_user):
+def test_necessary_related():
     NecessaryPlanFactory()
     NecessaryPlanFactory(user=UserFactory(username='XXX'))
 
@@ -259,7 +259,7 @@ def test_necessary_related(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_necessary_year(get_user):
+def test_necessary_year():
     NecessaryPlanFactory()
     NecessaryPlanFactory(year=1974, user=UserFactory(username='XXX'))
 
@@ -270,7 +270,7 @@ def test_necessary_year(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_necessary_items(get_user):
+def test_necessary_items():
     NecessaryPlanFactory()
     NecessaryPlanFactory(year=1974)
     NecessaryPlanFactory(year=1974, user=UserFactory(username='XXX'))
