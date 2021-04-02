@@ -90,34 +90,6 @@ def test_saving_type_items_closed_in_current_year(get_user):
     assert actual.count() == 2
 
 
-def test_saving_type_post_save_new_saving_balance():
-    obj = SavingType(title='s1', user=UserFactory())
-    obj.save()
-
-    actual = SavingBalance.objects.items()
-
-    assert actual.count() == 1
-
-    actual = actual[0]
-
-    assert actual.saving_type.title == 's1'
-
-
-def test_saving_type_post_save_new_account_balance():
-    AccountFactory()
-
-    obj = SavingType(title='s1', user=UserFactory())
-    obj.save()
-
-    actual = AccountBalance.objects.items()
-
-    assert actual.count() == 1
-
-    actual = actual[0]
-
-    assert actual.account.title == 'Account1'
-
-
 @pytest.mark.xfail
 def test_saving_type_unique_for_user():
     SavingType.objects.create(title='T1', user=UserFactory())
@@ -379,38 +351,17 @@ def test_saving_balance_new_post_save_account_balace():
     assert actual['balance'] == -1.0
 
 
-def test_saving_balance_new_post_save_saving_balance(savings,
-                                                     savings_close,
-                                                     savings_change,
-                                                     savings_worth):
-    account = AccountFactory()
-    s1 = SavingType.objects.get(id=1)
-
-    obj = Saving(
-        date=date(1999, 1, 1),
-        price=Decimal(0.05),
-        fee=Decimal(0.0),
-        account=account,
-        saving_type=s1
-    )
-
-    obj.save()
+def test_saving_balance_new_post_save_saving_balance():
+    SavingFactory()
 
     actual = SavingBalance.objects.year(1999)
-
+    print(actual.values())
     assert actual.count() == 1
 
     actual = actual[0]
 
-    assert actual['title'] == 'Saving1'
+    assert actual['title'] == 'Savings'
 
-    assert round(actual['past_amount'], 2) == -1.25
-    assert round(actual['past_fee'], 2) == 0.4
-    assert round(actual['incomes'], 2) == 0.80
-    assert round(actual['fees'], 2) == 0.95
-    assert round(actual['invested'], 2) == -0.15
-    assert round(actual['market_value'], 2) == 0.15
-    assert round(actual['profit_incomes_proc'], 2) == -81.25
-    assert round(actual['profit_incomes_sum'], 2) == -0.65
-    assert round(actual['profit_invested_proc'], 2) == -200.0
-    assert round(actual['profit_invested_sum'], 2) == 0.30
+    assert round(actual['incomes'], 2) == 150
+    assert round(actual['fees'], 2) == 5.55
+    assert round(actual['invested'], 2) == 144.45
