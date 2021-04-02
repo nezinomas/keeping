@@ -394,21 +394,7 @@ def test_expense_from_db():
 #                                                         Expense post signals
 # ----------------------------------------------------------------------------
 def test_expense_new_post_save():
-    AccountWorthFactory()
-    _account = AccountFactory()
-    _type = ExpenseTypeFactory()
-    _name = ExpenseNameFactory()
-
-    e1 = Expense(
-        date=date(1999, 1, 1),
-        price=Decimal(1),
-        quantity=1,
-        account=_account,
-        expense_type=_type,
-        expense_name = _name,
-    )
-
-    e1.save()
+    ExpenseFactory(price=1)
 
     actual = AccountBalance.objects.year(1999)
 
@@ -417,34 +403,16 @@ def test_expense_new_post_save():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['past'] == 0.0
-    assert actual['incomes'] == 0.0
     assert actual['expenses'] == 1.0
     assert actual['balance'] == -1.0
-    assert actual['have'] == 0.5
-    assert actual['delta'] == 1.5
 
 
 def test_expense_update_post_save():
-    AccountWorthFactory()
-    _account = AccountFactory()
-    _type = ExpenseTypeFactory()
-    _name = ExpenseNameFactory()
-
-    e1 = Expense(
-        date=date(1999, 1, 1),
-        price=Decimal(10),
-        quantity=1,
-        account=_account,
-        expense_type=_type,
-        expense_name=_name,
-    )
-
-    e1.save()
+    obj = ExpenseFactory()
 
     # update
-    e1.price = 1
-    e1.save()
+    obj.price = 1
+    obj.save()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -453,41 +421,15 @@ def test_expense_update_post_save():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['past'] == 0.0
-    assert actual['incomes'] == 0.0
     assert actual['expenses'] == 1.0
     assert actual['balance'] == -1.0
-    assert actual['have'] == 0.5
-    assert actual['delta'] == 1.5
 
 
 def test_expense_post_delete():
-    AccountWorthFactory()
-    _account = AccountFactory()
-    _type = ExpenseTypeFactory()
-    _name = ExpenseNameFactory()
+    ExpenseFactory(price=1)
+    obj = ExpenseFactory()
 
-    e1 = Expense(
-        date=date(1999, 1, 1),
-        price=Decimal(1),
-        quantity=1,
-        account=_account,
-        expense_type=_type,
-        expense_name=_name,
-    )
-    e2 = Expense(
-        date=date(1999, 1, 1),
-        price=Decimal(10),
-        quantity=1,
-        account=_account,
-        expense_type=_type,
-        expense_name=_name,
-    )
-
-    e1.save()
-    e2.save()
-
-    e2.delete()
+    obj.delete()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -496,9 +438,5 @@ def test_expense_post_delete():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['past'] == 0.0
-    assert actual['incomes'] == 0.0
     assert actual['expenses'] == 1.0
     assert actual['balance'] == -1.0
-    assert actual['have'] == 0.5
-    assert actual['delta'] == 1.5
