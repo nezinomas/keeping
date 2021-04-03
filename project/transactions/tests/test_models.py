@@ -208,9 +208,6 @@ def test_saving_close_summary_to(savings_close):
     assert expect == actual
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Saving Close
-# ----------------------------------------------------------------------------
 def test_saving_close_new_post_save():
     SavingCloseFactory()
 
