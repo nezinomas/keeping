@@ -426,17 +426,32 @@ def test_expense_update_post_save():
 
 
 def test_expense_post_delete():
-    ExpenseFactory(price=1)
     obj = ExpenseFactory()
-
     obj.delete()
 
     actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
 
-    actual = actual[0]
+    assert actual[0]['title'] == 'Account1'
+    assert actual[0]['expenses'] == 0
+    assert actual[0]['balance'] == 0
 
-    assert actual['title'] == 'Account1'
-    assert actual['expenses'] == 1.0
-    assert actual['balance'] == -1.0
+    assert Expense.objects.all().count() == 0
+
+
+def test_expense_post_delete_with_update():
+    ExpenseFactory(price=1)
+
+    obj = ExpenseFactory()
+    obj.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    assert actual[0]['title'] == 'Account1'
+    assert actual[0]['expenses'] == 1.0
+    assert actual[0]['balance'] == -1.0
+
+    assert Expense.objects.all().count() == 1

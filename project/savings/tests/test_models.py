@@ -299,8 +299,29 @@ def test_saving_update_post_save():
 
 def test_saving_post_delete():
     obj = SavingFactory()
+    obj.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['title'] == 'Account1'
+    assert actual[0]['expenses'] == 0
+    assert actual[0]['balance'] == 0
+
+    actual = SavingBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['invested'] == 0
+    assert actual[0]['fees'] == 0
+    assert actual[0]['incomes'] == 0
+
+    assert Saving.objects.all().count() == 0
+
+
+def test_saving_post_delete_with_update():
     SavingFactory(price=10)
 
+    obj = SavingFactory()
     obj.delete()
 
     actual = AccountBalance.objects.year(1999)
@@ -316,6 +337,8 @@ def test_saving_post_delete():
     assert actual[0]['invested'] == 4.45
     assert actual[0]['fees'] == 5.55
     assert actual[0]['incomes'] == 10.0
+
+    assert Saving.objects.all().count() == 1
 
 
 # ----------------------------------------------------------------------------

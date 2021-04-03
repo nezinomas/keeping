@@ -168,6 +168,29 @@ def test_transaction_update_post_save():
 
 
 def test_transaction_post_delete():
+    u = TransactionFactory()
+    u.delete()
+
+    actual = AccountBalance.objects.items()
+
+    assert actual.count() == 2
+
+    assert actual[0].account.title == 'Account2'
+    assert actual[0].incomes == 0
+    assert actual[0].expenses == 0
+    assert actual[0].balance == 0
+    assert actual[0].delta == 0
+
+    assert actual[1].account.title == 'Account1'
+    assert actual[1].incomes == 0
+    assert actual[1].expenses == 0
+    assert actual[1].balance == 0
+    assert actual[1].delta == 0
+
+    assert Transaction.objects.all().count() == 0
+
+
+def test_transaction_post_delete_with_update():
     TransactionFactory(price=10)
 
     u = TransactionFactory()
@@ -188,6 +211,8 @@ def test_transaction_post_delete():
     assert actual[1].expenses == 10.0
     assert actual[1].balance == -10.0
     assert actual[1].delta == 10
+
+    assert Transaction.objects.all().count() == 1
 
 
 # ----------------------------------------------------------------------------
@@ -316,8 +341,29 @@ def test_saving_close_update_post_save():
 
 def test_saving_close_post_delete():
     obj = SavingCloseFactory()
+    obj.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['title'] == 'Account To'
+    assert actual[0]['incomes'] == 0
+    assert actual[0]['balance'] == 0
+
+    actual = SavingBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['invested'] == 0
+    assert actual[0]['fees'] == 0
+    assert actual[0]['incomes'] == 0
+
+    assert SavingClose.objects.all().count() == 0
+
+
+def test_saving_close_post_delete_with_update():
     SavingCloseFactory(price=1)
 
+    obj = SavingCloseFactory()
     obj.delete()
 
     actual = AccountBalance.objects.year(1999)
@@ -333,6 +379,8 @@ def test_saving_close_post_delete():
     assert actual[0]['invested'] == -1.0
     assert actual[0]['fees'] == 0.0
     assert actual[0]['incomes'] == -1.0
+
+    assert SavingClose.objects.all().count() == 1
 
 
 # ----------------------------------------------------------------------------
@@ -440,8 +488,30 @@ def test_saving_change_update_post_save():
 
 def test_saving_change_post_delete():
     obj = SavingChangeFactory()
+    obj.delete()
+
+    actual = SavingBalance.objects.year(1999)
+    print(actual.values())
+
+    assert actual.count() == 2
+
+    assert actual[0]['title'] == 'Savings From'
+    assert actual[0]['invested'] == 0
+    assert actual[0]['fees'] == 0
+    assert actual[0]['incomes'] == 0
+
+    assert actual[1]['title'] == 'Savings To'
+    assert actual[1]['invested'] == 0
+    assert actual[1]['fees'] == 0
+    assert actual[1]['incomes'] == 0
+
+    assert SavingChange.objects.all().count() == 0
+
+
+def test_saving_change_post_delete_with_update():
     SavingChangeFactory(price=1)
 
+    obj = SavingChangeFactory()
     obj.delete()
 
     actual = SavingBalance.objects.year(1999)
@@ -458,3 +528,5 @@ def test_saving_change_post_delete():
     assert actual[1]['invested'] == 1.0
     assert actual[1]['fees'] == 0.0
     assert actual[1]['incomes'] == 1.0
+
+    assert SavingChange.objects.all().count() == 1

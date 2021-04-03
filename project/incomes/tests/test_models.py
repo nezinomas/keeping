@@ -207,19 +207,34 @@ def test_income_update_post_save():
 
 def test_income_post_delete():
     obj = IncomeFactory()
-    IncomeFactory(price=1)
-
     obj.delete()
 
     actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
 
-    actual = actual[0]
+    assert actual[0]['title'] == 'Account1'
+    assert actual[0]['incomes'] == 0
+    assert actual[0]['balance'] == 0
 
-    assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 1.0
-    assert actual['balance'] == 1.0
+    assert Income.objects.all().count() == 0
+
+
+def test_income_post_delete_with_update():
+    IncomeFactory(price=1)
+
+    obj = IncomeFactory()
+    obj.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    assert actual[0]['title'] == 'Account1'
+    assert actual[0]['incomes'] == 1.0
+    assert actual[0]['balance'] == 1.0
+
+    assert Income.objects.all().count() == 1
 
 
 def test_income_new_post_save_count_qs(django_assert_max_num_queries):
