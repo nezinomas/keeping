@@ -7,7 +7,7 @@ from freezegun import freeze_time
 from mock import patch
 
 from ...users.factories import UserFactory
-from .. import views
+from .. import models, views
 from ..apps import App_name
 from ..factories import CountFactory
 
@@ -80,6 +80,52 @@ def test_view_update(client_logged):
     assert actual['form_is_valid']
     assert '68' in actual['html_list']
     assert f'<a type="button" data-url="/{App_name}/update/{p.pk}/"' in actual['html_list']
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                                  Delete
+# ---------------------------------------------------------------------------------------
+def test_view_delete_func():
+    view = resolve(f'/{App_name}/delete/1/')
+
+    assert views.Delete is view.func.view_class
+
+
+def test_view_delete_200(client_logged):
+    p = CountFactory()
+
+    url = reverse(f'{App_name}:{App_name}_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_delete_load_form(client_logged):
+    p = CountFactory()
+
+    url = reverse(f'{App_name}:{App_name}_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert f'action="/{App_name}/delete/1/"' in actual['html_form']
+
+
+def test_view_delete(client_logged):
+    p = CountFactory()
+
+    assert models.Count.objects.all().count() == 1
+    url = reverse(f'{App_name}:{App_name}_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.Count.objects.all().count() == 0
 
 
 # --------------------------------------------------------------------------------------------------
