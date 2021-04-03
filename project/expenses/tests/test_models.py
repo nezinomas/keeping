@@ -11,7 +11,6 @@ from override_storage import override_storage
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
-from ...bookkeeping.factories import AccountWorthFactory
 from ...expenses.factories import ExpenseFactory
 from ...users.factories import UserFactory
 from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory

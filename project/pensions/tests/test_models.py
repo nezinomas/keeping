@@ -4,7 +4,6 @@ from decimal import Decimal
 import pytest
 
 from ...users.factories import UserFactory
-from ...bookkeeping.factories import PensionWorthFactory
 from ..factories import (PensionBalanceFactory, PensionFactory,
                          PensionTypeFactory)
 from ..models import Pension, PensionBalance, PensionType
