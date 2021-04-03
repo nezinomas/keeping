@@ -1,8 +1,8 @@
 from django.shortcuts import render
 
 from ..accounts.views import Lists as accounts_list
-from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
+from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
+                                 ListMixin, UpdateAjaxMixin)
 from . import forms, models
 
 
@@ -56,6 +56,10 @@ class Update(UpdateAjaxMixin):
     form_class = forms.TransactionForm
 
 
+class Delete(DeleteAjaxMixin):
+    model = models.Transaction
+
+
 #----------------------------------------------------------------------------------------
 #                                   Savings Transactions from Savings to regular Accounts
 #----------------------------------------------------------------------------------------
@@ -73,6 +77,10 @@ class SavingsCloseUpdate(UpdateAjaxMixin):
     form_class = forms.SavingCloseForm
 
 
+class SavingsCloseDelete(DeleteAjaxMixin):
+    model = models.SavingClose
+
+
 #----------------------------------------------------------------------------------------
 #                                           Savings Transactions between Savings accounts
 #----------------------------------------------------------------------------------------
@@ -88,3 +96,7 @@ class SavingsChangeNew(CreateAjaxMixin):
 class SavingsChangeUpdate(UpdateAjaxMixin):
     model = models.SavingChange
     form_class = forms.SavingChangeForm
+
+
+class SavingsChangeDelete(DeleteAjaxMixin):
+    model = models.SavingChange

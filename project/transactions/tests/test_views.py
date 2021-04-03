@@ -6,10 +6,10 @@ from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...savings.factories import SavingTypeFactory
-from .. import views
+from ...users.factories import UserFactory
+from .. import models, views
 from ..factories import (SavingChangeFactory, SavingCloseFactory,
                          TransactionFactory)
-from ...users.factories import UserFactory
 
 pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -21,14 +21,12 @@ def test_load_saving_type_func():
     assert views.load_saving_type is view.func
 
 
-@pytest.mark.django_db
 def test_load_saving_type_200(client_logged):
     response = client_logged.get('/ajax/load_saving_type/')
 
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
 def test_load_saving_type_has_saving_type(client_logged):
     SavingTypeFactory()
 
@@ -40,7 +38,6 @@ def test_load_saving_type_has_saving_type(client_logged):
 # ----------------------------------------------------------------------------
 #                                                                  Transaction
 # ----------------------------------------------------------------------------
-@pytest.mark.django_db
 def test_view_index_200(client_logged):
     response = client_logged.get('/transactions/')
 
@@ -178,6 +175,52 @@ def test_transactions_update(client_logged):
     assert 'Account2' in actual['html_list']
 
 
+# ---------------------------------------------------------------------------------------
+#                                                                           Transaction Delete
+# ---------------------------------------------------------------------------------------
+def test_view_transactions_delete_func():
+    view = resolve('/transactions/delete/1/')
+
+    assert views.Delete is view.func.view_class
+
+
+def test_view_transactions_delete_200(client_logged):
+    p = TransactionFactory()
+
+    url = reverse('transactions:transactions_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_transactions_delete_load_form(client_logged):
+    p = TransactionFactory()
+
+    url = reverse('transactions:transactions_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/transactions/delete/1/"' in actual['html_form']
+
+
+def test_view_transactions_delete(client_logged):
+    p = TransactionFactory()
+
+    assert models.Transaction.objects.all().count() == 1
+    url = reverse('transactions:transactions_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.Transaction.objects.all().count() == 0
+
+
 # ----------------------------------------------------------------------------
 #                                                                 Saving Close
 # ----------------------------------------------------------------------------
@@ -301,6 +344,52 @@ def test_savings_close_update(client_logged):
     assert '1999-12-31' in actual['html_list']
     assert 'Account To' in actual['html_list']
     assert 'Savings From' in actual['html_list']
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                      SavingClose Delete
+# ---------------------------------------------------------------------------------------
+def test_view_savings_close_delete_func():
+    view = resolve('/savings_close/delete/1/')
+
+    assert views.SavingsCloseDelete is view.func.view_class
+
+
+def test_view_savings_close_delete_200(client_logged):
+    p = SavingCloseFactory()
+
+    url = reverse('transactions:savings_close_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_savings_close_delete_load_form(client_logged):
+    p = SavingCloseFactory()
+
+    url = reverse('transactions:savings_close_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/savings_close/delete/1/"' in actual['html_form']
+
+
+def test_view_savings_close_delete(client_logged):
+    p = SavingCloseFactory()
+
+    assert models.SavingClose.objects.all().count() == 1
+    url = reverse('transactions:savings_close_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.SavingClose.objects.all().count() == 0
 
 
 # ----------------------------------------------------------------------------
@@ -437,7 +526,6 @@ def test_load_saving_type_new_func():
     assert views.load_saving_type == view.func
 
 
-@pytest.mark.django_db
 def test_load_saving_type_status_code(client_logged):
     url = reverse('transactions:load_saving_type')
     response = client_logged.get(url, {'id': 1})
@@ -445,7 +533,6 @@ def test_load_saving_type_status_code(client_logged):
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
 def test_load_saving_type_closed_in_past(client_logged):
     s1 = SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1000)
@@ -457,7 +544,6 @@ def test_load_saving_type_closed_in_past(client_logged):
     assert 'S2' not in str(response.content)
 
 
-@pytest.mark.django_db
 def test_load_saving_type_for_current_user(client_logged):
     s1 = SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', user=UserFactory(username='XXX'))
@@ -467,3 +553,49 @@ def test_load_saving_type_for_current_user(client_logged):
 
     assert 'S1' not in str(response.content)
     assert 'S2' not in str(response.content)
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                      SavingChange Delete
+# ---------------------------------------------------------------------------------------
+def test_view_savings_change_delete_func():
+    view = resolve('/savings_change/delete/1/')
+
+    assert views.SavingsChangeDelete is view.func.view_class
+
+
+def test_view_savings_change_delete_200(client_logged):
+    p = SavingChangeFactory()
+
+    url = reverse('transactions:savings_change_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_savings_change_delete_load_form(client_logged):
+    p = SavingChangeFactory()
+
+    url = reverse('transactions:savings_change_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/savings_change/delete/1/"' in actual['html_form']
+
+
+def test_view_savings_change_delete(client_logged):
+    p = SavingChangeFactory()
+
+    assert models.SavingChange.objects.all().count() == 1
+    url = reverse('transactions:savings_change_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.SavingChange.objects.all().count() == 0
