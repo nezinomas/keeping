@@ -27,6 +27,11 @@ urlpatterns = [
         name='drinks_update'
     ),
     path(
+        'drinks/delete/<int:pk>/',
+        views.Delete.as_view(),
+        name='drinks_delete'
+    ),
+    path(
         'drinks/target/lists/',
         views.TargetLists.as_view(),
         name='drinks_target_lists'
