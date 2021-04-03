@@ -135,6 +135,12 @@ class Pension(models.Model):
     # managers
     objects = PensionQuerySet.as_manager()
 
+    def delete(self, *args, **kwargs):
+        self.price = 0
+        self.fee = 0
+
+        super().delete(*args, **kwargs)
+
 
 class PensionBalanceQuerySet(models.QuerySet):
     def related(self):

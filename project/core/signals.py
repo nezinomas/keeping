@@ -55,6 +55,7 @@ def post_save_saving_stats(sender, instance: object, year: int = None,
 #                                                               PensionBalance
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=Pension)
+@receiver(post_delete, sender=Pension)
 @receiver(post_save, sender=PensionWorth)
 def post_save_pension_stats(sender, instance: object, year: int = None,
                             *args, **kwargs):

@@ -135,6 +135,56 @@ def test_pension_new_post_save():
     assert round(actual['invested'], 2) == -0.01
 
 
+def test_pension_update_post_save():
+    u = PensionFactory()
+    u.price = 1
+    u.save()
+
+    actual = PensionBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+
+    assert actual['title'] == 'PensionType'
+
+    assert round(actual['incomes'], 2) == 1.0
+    assert round(actual['fees'], 2) == 1.01
+    assert round(actual['invested'], 2) == -0.01
+
+
+def test_pension_post_delete():
+    d = PensionFactory(price=15)
+    d.delete()
+
+    actual = PensionBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['title'] == 'PensionType'
+    assert round(actual[0]['incomes'], 2) == 0
+    assert round(actual[0]['fees'], 2) == 0
+    assert round(actual[0]['invested'], 2) == 0
+
+    assert Pension.objects.all().count() == 0
+
+
+def test_pension_post_delete_with_update():
+    PensionFactory(price=1)
+
+    d = PensionFactory(price=15)
+    d.delete()
+
+    actual = PensionBalance.objects.year(1999)
+
+    assert actual.count() == 1
+    assert actual[0]['title'] == 'PensionType'
+    assert round(actual[0]['incomes'], 2) == 1.0
+    assert round(actual[0]['fees'], 2) == 1.01
+    assert round(actual[0]['invested'], 2) == -0.01
+
+    assert Pension.objects.all().count() == 1
+
+
 def test_pension_new_post_save_count_queries(django_assert_max_num_queries):
     PensionTypeFactory()
 
