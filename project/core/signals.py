@@ -43,6 +43,7 @@ def post_save_account_stats(sender, instance: object, year: int = None,
 @receiver(post_save, sender=SavingClose)
 @receiver(post_delete, sender=SavingClose)
 @receiver(post_save, sender=SavingChange)
+@receiver(post_delete, sender=SavingChange)
 @receiver(post_save, sender=SavingWorth)
 def post_save_saving_stats(sender, instance: object, year: int = None,
                            *args, **kwargs):

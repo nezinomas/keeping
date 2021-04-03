@@ -332,16 +332,63 @@ def test_savings_change_summary_to(savings_change):
     assert_(expect, actual)
 
 
-def test_saving_change_post_save_saving_balance():
+def test_saving_change_new_post_save():
     SavingChangeFactory()
 
     actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 2
 
-    actual = actual[0]
+    assert actual[0]['title'] == 'Savings From'
+    assert actual[0]['invested'] == -10.25
+    assert actual[0]['fees'] == 0.25
+    assert actual[0]['incomes'] == -10.0
 
-    assert actual['title'] == 'Savings From'
-    assert actual['incomes'] == -10.0
-    assert actual['fees'] == 0.25
-    assert actual['invested'] == -10.25
+    assert actual[1]['title'] == 'Savings To'
+    assert actual[1]['invested'] == 10.0
+    assert actual[1]['fees'] == 0.0
+    assert actual[1]['incomes'] == 10.0
+
+
+def test_saving_change_update_post_save():
+    obj = SavingChangeFactory()
+
+    # update price
+    obj.price = 1
+    obj.save()
+
+    actual = SavingBalance.objects.year(1999)
+
+    assert actual.count() == 2
+
+    assert actual[0]['title'] == 'Savings From'
+    assert actual[0]['invested'] == -1.25
+    assert actual[0]['fees'] == 0.25
+    assert actual[0]['incomes'] == -1.0
+
+    assert actual[1]['title'] == 'Savings To'
+    assert actual[1]['invested'] == 1.0
+    assert actual[1]['fees'] == 0.0
+    assert actual[1]['incomes'] == 1.0
+
+
+def test_saving_change_post_delete():
+    obj = SavingChangeFactory()
+    SavingChangeFactory(price=1)
+
+    obj.delete()
+
+    actual = SavingBalance.objects.year(1999)
+    print(actual.values())
+
+    assert actual.count() == 2
+
+    assert actual[0]['title'] == 'Savings From'
+    assert actual[0]['invested'] == -1.25
+    assert actual[0]['fees'] == 0.25
+    assert actual[0]['incomes'] == -1.0
+
+    assert actual[1]['title'] == 'Savings To'
+    assert actual[1]['invested'] == 1.0
+    assert actual[1]['fees'] == 0.0
+    assert actual[1]['incomes'] == 1.0
