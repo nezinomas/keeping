@@ -230,27 +230,27 @@ def test_saving_close_update_post_save():
     obj = SavingCloseFactory()
 
     # update price
-    obj.price = 10
+    obj.price = 1
     obj.save()
 
     actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
     assert actual[0]['title'] == 'Account To'
-    assert actual[0]['incomes'] == 10.0
-    assert actual[0]['balance'] == 10.0
+    assert actual[0]['incomes'] == 1.0
+    assert actual[0]['balance'] == 1.0
 
     actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0]['invested'] == -10.0
+    assert actual[0]['invested'] == -1.0
     assert actual[0]['fees'] == 0.0
-    assert actual[0]['incomes'] == -10.0
+    assert actual[0]['incomes'] == -1.0
 
 
 def test_saving_close_post_delete():
     obj = SavingCloseFactory()
-    SavingCloseFactory(price=10)
+    SavingCloseFactory(price=1)
 
     obj.delete()
 
@@ -258,15 +258,15 @@ def test_saving_close_post_delete():
 
     assert actual.count() == 1
     assert actual[0]['title'] == 'Account To'
-    assert actual[0]['incomes'] == 10.0
-    assert actual[0]['balance'] == 10.0
+    assert actual[0]['incomes'] == 1.0
+    assert actual[0]['balance'] == 1.0
 
     actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0]['invested'] == -10.0
+    assert actual[0]['invested'] == -1.0
     assert actual[0]['fees'] == 0.0
-    assert actual[0]['incomes'] == -10.0
+    assert actual[0]['incomes'] == -1.0
 
 
 # ----------------------------------------------------------------------------
