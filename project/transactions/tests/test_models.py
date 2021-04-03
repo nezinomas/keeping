@@ -124,6 +124,72 @@ def test_transaction_summary_to(transactions):
     assert expect == actual
 
 
+def test_transaction_new_post_save():
+    TransactionFactory()
+
+    actual = AccountBalance.objects.items()
+
+    assert actual.count() == 2
+
+    assert actual[0].account.title == 'Account2'
+    assert actual[0].incomes == 200.0
+    assert actual[0].expenses == 0.0
+    assert actual[0].balance == 200.0
+    assert actual[0].delta == -200
+
+    assert actual[1].account.title == 'Account1'
+    assert actual[1].incomes == 0.0
+    assert actual[1].expenses == 200.0
+    assert actual[1].balance == -200.0
+    assert actual[1].delta == 200
+
+
+def test_transaction_update_post_save():
+    u = TransactionFactory()
+
+    u.price = 10
+    u.save()
+
+    actual = AccountBalance.objects.items()
+
+    assert actual.count() == 2
+
+    assert actual[0].account.title == 'Account2'
+    assert actual[0].incomes == 10.0
+    assert actual[0].expenses == 0.0
+    assert actual[0].balance == 10.0
+    assert actual[0].delta == -10
+
+    assert actual[1].account.title == 'Account1'
+    assert actual[1].incomes == 0.0
+    assert actual[1].expenses == 10.0
+    assert actual[1].balance == -10.0
+    assert actual[1].delta == 10
+
+
+def test_transaction_post_delete():
+    TransactionFactory(price=10)
+
+    u = TransactionFactory()
+    u.delete()
+
+    actual = AccountBalance.objects.items()
+
+    assert actual.count() == 2
+
+    assert actual[0].account.title == 'Account2'
+    assert actual[0].incomes == 10.0
+    assert actual[0].expenses == 0.0
+    assert actual[0].balance == 10.0
+    assert actual[0].delta == -10
+
+    assert actual[1].account.title == 'Account1'
+    assert actual[1].incomes == 0.0
+    assert actual[1].expenses == 10.0
+    assert actual[1].balance == -10.0
+    assert actual[1].delta == 10
+
+
 # ----------------------------------------------------------------------------
 #                                                                 Saving Close
 # ----------------------------------------------------------------------------
