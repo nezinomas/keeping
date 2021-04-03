@@ -26,6 +26,11 @@ urlpatterns = [
         name='pensions_update'
     ),
     path(
+        'pensions/delete/<int:pk>/',
+        views.Delete.as_view(),
+        name='pensions_delete'
+    ),
+    path(
         'pensions/type/',
         views.TypeLists.as_view(),
         name='pensions_type_list'

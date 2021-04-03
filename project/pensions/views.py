@@ -1,5 +1,5 @@
-from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
+from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
+                                 ListMixin, UpdateAjaxMixin)
 from . import forms, models
 
 
@@ -15,9 +15,9 @@ class Index(IndexMixin):
         return context
 
 
-#
-# Pension views
-#
+#----------------------------------------------------------------------------------------
+#                                                                           Pension views
+#----------------------------------------------------------------------------------------
 class Lists(ListMixin):
     model = models.Pension
 
@@ -32,9 +32,13 @@ class Update(UpdateAjaxMixin):
     form_class = forms.PensionForm
 
 
-#
-# PensionType views
-#
+class Delete(DeleteAjaxMixin):
+    model = models.Pension
+
+
+#----------------------------------------------------------------------------------------
+#                                                                       PensionType views
+#----------------------------------------------------------------------------------------
 class TypeLists(ListMixin):
     model = models.PensionType
 
