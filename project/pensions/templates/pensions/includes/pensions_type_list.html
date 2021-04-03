@@ -4,7 +4,7 @@
     {% url 'pensions:pensions_type_update' item.id as url_update %}
     <div class="list-group-item list-group-item-action dblclick" data-url="{{ url_update }}">
         {{ item.title }}
-        <span style="position: absolute; top: .25rem; right: 5px; display: block;"><button type="button" data-url="{{ url_update }}" class="btn btn-super-sm btn-outline-info js-create">Edit</button>
+        <span style="position: absolute; top: .25rem; right: 5px; display: block;"><a type="button" data-url="{{ url_update }}" class="js-create" title="Edit"><i class="bi bi-pencil-fill edit"></i></a>
     </div>
     {% endfor %}
 </div>
