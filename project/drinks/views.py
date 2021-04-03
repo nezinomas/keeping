@@ -3,8 +3,9 @@ from django.template.loader import render_to_string
 
 from ..core.lib.date import years
 from ..core.mixins.ajax import AjaxCustomFormMixin
-from ..core.mixins.views import (CreateAjaxMixin, DispatchAjaxMixin,
-                                 IndexMixin, ListMixin, UpdateAjaxMixin)
+from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
+                                 DispatchAjaxMixin, IndexMixin, ListMixin,
+                                 UpdateAjaxMixin)
 from . import forms, models
 from .apps import App_name
 from .lib import views_helper as H
@@ -114,6 +115,10 @@ class Summary(IndexMixin):
 class Update(UpdateAjaxMixin):
     model = models.Drink
     form_class = forms.DrinkForm
+
+
+class Delete(DeleteAjaxMixin):
+    model = models.Drink
 
 
 class TargetLists(ListMixin):

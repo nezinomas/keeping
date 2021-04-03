@@ -1,8 +1,8 @@
 from django.shortcuts import render
 
 from ..accounts.views import Lists as accounts_list
-from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
+from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
+                                 ListMixin, UpdateAjaxMixin)
 from . import forms, models
 
 
@@ -39,9 +39,9 @@ def load_saving_type(request):
     )
 
 
-#
-# Transactions between Accounts
-#
+#----------------------------------------------------------------------------------------
+#                                                           Transactions between Accounts
+#----------------------------------------------------------------------------------------
 class Lists(ListMixin):
     model = models.Transaction
 
@@ -56,9 +56,13 @@ class Update(UpdateAjaxMixin):
     form_class = forms.TransactionForm
 
 
-#
-# Savings Transactions from Savings to regular Accounts
-#
+class Delete(DeleteAjaxMixin):
+    model = models.Transaction
+
+
+#----------------------------------------------------------------------------------------
+#                                   Savings Transactions from Savings to regular Accounts
+#----------------------------------------------------------------------------------------
 class SavingsCloseLists(ListMixin):
     model = models.SavingClose
 
@@ -73,9 +77,13 @@ class SavingsCloseUpdate(UpdateAjaxMixin):
     form_class = forms.SavingCloseForm
 
 
-#
-# Savings Transactions between Savings accounts
-#
+class SavingsCloseDelete(DeleteAjaxMixin):
+    model = models.SavingClose
+
+
+#----------------------------------------------------------------------------------------
+#                                           Savings Transactions between Savings accounts
+#----------------------------------------------------------------------------------------
 class SavingsChangeLists(ListMixin):
     model = models.SavingChange
 
@@ -88,3 +96,7 @@ class SavingsChangeNew(CreateAjaxMixin):
 class SavingsChangeUpdate(UpdateAjaxMixin):
     model = models.SavingChange
     form_class = forms.SavingChangeForm
+
+
+class SavingsChangeDelete(DeleteAjaxMixin):
+    model = models.SavingChange

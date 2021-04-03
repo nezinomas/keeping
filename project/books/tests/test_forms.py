@@ -10,11 +10,11 @@ from ..forms import BookForm, BookTargetForm
 pytestmark = pytest.mark.django_db
 
 
-def test_book_init(get_user):
+def test_book_init():
     BookForm()
 
 
-def test_book_init_fields(get_user):
+def test_book_init_fields():
     form = BookForm().as_p()
 
     assert '<input type="text" name="started"' in form
@@ -26,7 +26,7 @@ def test_book_init_fields(get_user):
 
 
 @freeze_time('1000-01-01')
-def test_book_year_initial_value(get_user):
+def test_book_year_initial_value():
     UserFactory()
 
     form = BookForm().as_p()
@@ -34,7 +34,7 @@ def test_book_year_initial_value(get_user):
     assert '<input type="text" name="started" value="1999-01-01"' in form
 
 
-def test_book_valid_data(get_user):
+def test_book_valid_data():
     form = BookForm(data={
         'started': '1974-01-01',
         'ended': '1974-01-31',
@@ -53,7 +53,7 @@ def test_book_valid_data(get_user):
     assert data.user.username == 'bob'
 
 
-def test_book_blank_data(get_user):
+def test_book_blank_data():
     form = BookForm(data={})
 
     assert not form.is_valid()
@@ -64,7 +64,7 @@ def test_book_blank_data(get_user):
     assert 'title' in form.errors
 
 
-def test_book_author_too_long(get_user):
+def test_book_author_too_long():
     form = BookForm(data={
         'started': '1974-01-01',
         'ended': '1974-01-31',
@@ -77,7 +77,7 @@ def test_book_author_too_long(get_user):
     assert 'author' in form.errors
 
 
-def test_book_title_too_long(get_user):
+def test_book_title_too_long():
     form = BookForm(data={
         'started': '1974-01-01',
         'ended': '1974-01-31',
@@ -90,7 +90,7 @@ def test_book_title_too_long(get_user):
     assert 'title' in form.errors
 
 
-def test_book_author_too_short(get_user):
+def test_book_author_too_short():
     form = BookForm(data={
         'started': '1974-01-01',
         'ended': '1974-01-31',
@@ -103,7 +103,7 @@ def test_book_author_too_short(get_user):
     assert 'author' in form.errors
 
 
-def test_book_title_too_short(get_user):
+def test_book_title_too_short():
     form = BookForm(data={
         'started': '1974-01-01',
         'ended': '1974-01-31',
@@ -120,11 +120,11 @@ def test_book_title_too_short(get_user):
 # ---------------------------------------------------------------------------------------
 #                                                                            Book Target
 # ---------------------------------------------------------------------------------------
-def test_book_target_init(get_user):
+def test_book_target_init():
     BookTargetForm()
 
 
-def test_book_target_init_fields(get_user):
+def test_book_target_init_fields():
     form = BookTargetForm().as_p()
 
     assert '<input type="text" name="year"' in form
@@ -133,7 +133,7 @@ def test_book_target_init_fields(get_user):
 
 
 @freeze_time('1000-01-01')
-def test_book_target_year_initial_value(get_user):
+def test_book_target_year_initial_value():
     UserFactory()
 
     form = BookTargetForm().as_p()
@@ -141,7 +141,7 @@ def test_book_target_year_initial_value(get_user):
     assert '<input type="text" name="year" value="1999"' in form
 
 
-def test_book_target_valid_data(get_user):
+def test_book_target_valid_data():
     form = BookTargetForm(data={
         'year': 1974,
         'quantity': 1.0
@@ -156,7 +156,7 @@ def test_book_target_valid_data(get_user):
     assert data.user.username == 'bob'
 
 
-def test_book_target_year_validation(get_user):
+def test_book_target_year_validation():
     BookTargetFactory()
 
     form = BookTargetForm(data={
@@ -169,7 +169,7 @@ def test_book_target_year_validation(get_user):
     assert 'year' in form.errors
 
 
-def test_book_target_blank_data(get_user):
+def test_book_target_blank_data():
     form = BookTargetForm(data={})
 
     assert not form.is_valid()

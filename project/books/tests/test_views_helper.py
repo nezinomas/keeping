@@ -18,21 +18,21 @@ def _books():
     BookTargetFactory()
 
 
-def test_chart_readed_books_categories(fake_request, get_user):
+def test_chart_readed_books_categories(fake_request):
     actual = T.BookRenderer(fake_request).context_chart_readed_books()
     expect = [1974, 1975, 1999]
 
     assert actual['categories'] == expect
 
 
-def test_chart_readed_books_targets(fake_request, get_user):
+def test_chart_readed_books_targets(fake_request):
     actual = T.BookRenderer(fake_request).context_chart_readed_books()
     expect = [0, 20, 100]
 
     assert actual['targets'] == expect
 
 
-def test_chart_readed_books_data(fake_request, get_user):
+def test_chart_readed_books_data(fake_request):
     actual = T.BookRenderer(fake_request).context_chart_readed_books()
     expect = [
         {'y': 1, 'target': 0},

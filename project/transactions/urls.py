@@ -26,6 +26,11 @@ urlpatterns = [
         name='transactions_update'
     ),
     path(
+        'transactions/delete/<int:pk>/',
+        views.Delete.as_view(),
+        name='transactions_delete'
+    ),
+    path(
         'savings_close/new/',
         views.SavingsCloseNew.as_view(),
         name='savings_close_new'
@@ -41,6 +46,11 @@ urlpatterns = [
         name='savings_close_update'
     ),
     path(
+        'savings_close/delete/<int:pk>/',
+        views.SavingsCloseDelete.as_view(),
+        name='savings_close_delete'
+    ),
+    path(
         'savings_change/new/',
         views.SavingsChangeNew.as_view(),
         name='savings_change_new'
@@ -54,6 +64,11 @@ urlpatterns = [
         'savings_change/update/<int:pk>/',
         views.SavingsChangeUpdate.as_view(),
         name='savings_change_update'
+    ),
+    path(
+        'savings_change/delete/<int:pk>/',
+        views.SavingsChangeDelete.as_view(),
+        name='savings_change_delete'
     ),
     path(
         'ajax/load_saving_type/',

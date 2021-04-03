@@ -93,7 +93,7 @@ def test_books_index_add_button(client_logged):
     assert res[0] == 'Knygą'
 
 
-def test_books_index_add_target_button(client_logged, get_user):
+def test_books_index_add_target_button(get_user, client_logged):
     get_user.year = 1111
     get_user.save()
 
@@ -141,7 +141,7 @@ def test_books_reload_stats_func():
     assert ReloadStats is view.func.view_class
 
 
-def test_books_reload_stats_render(get_user, rf):
+def test_books_reload_stats_render(rf):
     request = rf.get('/books/reload_stats/?ajax_trigger=1')
     request.user = UserFactory.build()
 
@@ -298,7 +298,7 @@ def test_book_update_to_another_year(client_logged):
 
 
 @freeze_time('2000-03-03')
-def test_books_update_past_record(client_logged, get_user):
+def test_books_update_past_record(get_user, client_logged):
     get_user.year = 2000
     i = BookFactory(started=date(1974, 12, 12))
 
@@ -501,7 +501,7 @@ def test_target(client_logged):
     assert '<input type="text" name="year" value="1999"' in actual['html_form']
 
 
-def test_target_new(client_logged, get_user):
+def test_target_new(client_logged):
     data = {'year': 1999, 'quantity': 66}
 
     url = reverse('books:books_target_new')
@@ -528,7 +528,7 @@ def test_target_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-def test_target_update(get_user, client_logged):
+def test_target_update(client_logged):
     p = BookTargetFactory()
 
     data = {'year': 1999, 'quantity': 66}

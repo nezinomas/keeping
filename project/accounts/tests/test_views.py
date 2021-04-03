@@ -78,7 +78,7 @@ def test_account_update(client_logged):
 
 
 @pytest.mark.django_db()
-def test_account_list_view_has_all(get_user, fake_request):
+def test_account_list_view_has_all(fake_request):
     AccountFactory(title='S1')
     AccountFactory(title='S2', closed=1974)
 

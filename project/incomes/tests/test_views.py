@@ -10,6 +10,7 @@ from .. import models, views
 from ..factories import IncomeFactory, IncomeTypeFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+
 pytestmark = pytest.mark.django_db
 
 
@@ -181,7 +182,7 @@ def test_income_update(client_logged):
 
 
 @freeze_time('2000-03-03')
-def test_incomes_update_past_record(client_logged, get_user):
+def test_incomes_update_past_record(get_user, client_logged):
     get_user.year = 2000
     i = IncomeFactory(date=date(1974, 12, 12))
 
@@ -220,7 +221,7 @@ def test_incomes_index_search_form(client_logged):
 
 
 # ---------------------------------------------------------------------------------------
-#                                                                             Income Delete
+#                                                                           Income Delete
 # ---------------------------------------------------------------------------------------
 def test_view_incomes_delete_func():
     view = resolve('/incomes/delete/1/')
@@ -323,7 +324,6 @@ def test_type_update(client_logged):
     assert 'TTT' in actual['html_list']
 
 
-@pytest.mark.django_db
 def test_view_index_200(client_logged):
     response = client_logged.get('/incomes/')
 

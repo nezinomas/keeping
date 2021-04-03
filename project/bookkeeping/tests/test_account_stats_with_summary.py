@@ -10,7 +10,7 @@ from ...core.lib.summary import collect_summary_data, AccountsBalanceModels
 pytestmark = pytest.mark.django_db
 
 
-def test_account_stats_for_two_years_in_past(get_user):
+def test_account_stats_for_two_years_in_past():
     IncomeFactory(date=date(1974, 1, 1), price=5)
     IncomeFactory(date=date(1974, 1, 1), price=5)
     IncomeFactory(date=date(1999, 1, 1), price=2.5)

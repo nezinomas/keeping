@@ -38,7 +38,7 @@ def test_view_index_200(client_logged):
 
 
 @freeze_time('1999-07-01')
-def test_no_incomes(get_user, client_logged):
+def test_no_incomes(client_logged):
     ExpenseFactory(date=date(1999, 1, 1), price=1.0, expense_type=ExpenseTypeFactory(title='Darbas'))
     ExpenseFactory(date=date(1999, 1, 1), price=2.0, expense_type=ExpenseTypeFactory(title='Darbas'))
     ExpenseFactory(date=date(1999, 6, 1), price=4.0, expense_type=ExpenseTypeFactory(title='y'))
@@ -51,7 +51,7 @@ def test_no_incomes(get_user, client_logged):
 
 
 @freeze_time('1999-07-01')
-def test_no_incomes_no_data(get_user, client_logged):
+def test_no_incomes_no_data(client_logged):
     url = reverse('bookkeeping:index')
     response = client_logged.get(url)
 
@@ -59,7 +59,7 @@ def test_no_incomes_no_data(get_user, client_logged):
     assert round(response.context['save_sum'], 2) == 0
 
 
-def test_index_account_worth(get_user, client_logged):
+def test_index_account_worth(client_logged):
     AccountWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
     AccountWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
     AccountBalanceFactory()
@@ -72,7 +72,7 @@ def test_index_account_worth(get_user, client_logged):
     assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
 
 
-def test_index_account_worth_then_last_check_empty(get_user, client_logged):
+def test_index_account_worth_then_last_check_empty(client_logged):
     AccountBalanceFactory()
 
     url = reverse('bookkeeping:index')
@@ -83,7 +83,7 @@ def test_index_account_worth_then_last_check_empty(get_user, client_logged):
     assert exp['latest_check'] == None
 
 
-def test_index_savings_worth(get_user, client_logged):
+def test_index_savings_worth(client_logged):
     SavingWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
     SavingWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
     SavingBalanceFactory()
@@ -96,7 +96,7 @@ def test_index_savings_worth(get_user, client_logged):
     assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
 
 
-def test_index_pension_worth(get_user, client_logged):
+def test_index_pension_worth(client_logged):
     PensionWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
     PensionWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
     PensionBalanceFactory()

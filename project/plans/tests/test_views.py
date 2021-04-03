@@ -63,7 +63,7 @@ def test_view_plan_stats_render_to_string(client_logged):
 #                                                                IncomePlan create/update
 # ---------------------------------------------------------------------------------------
 @freeze_time('1999-1-1')
-def test_view_incomes(get_user, client_logged):
+def test_view_incomes(client_logged):
     url = reverse('plans:incomes_plan_new')
     response = client_logged.get(url, {}, **X_Req)
 
@@ -733,7 +733,7 @@ def test_copy_200(client_logged):
     assert response.status_code == 200
 
 
-def test_copy_success(get_user, client_logged):
+def test_copy_success(client_logged):
     IncomePlanFactory(year=1999)
     data = {'year_from': '1999', 'year_to': '2000', 'income': True}
 

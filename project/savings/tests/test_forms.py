@@ -27,7 +27,7 @@ def test_saving_type_init_fields():
     assert '<select name="user"' not in form
 
 
-def test_saving_type_valid_data(get_user):
+def test_saving_type_valid_data():
     form = SavingTypeForm(data={
         'title': 'Title',
         'closed': '2000',
@@ -114,12 +114,12 @@ def test_saving_type_closed_in_current_year(get_user):
 # ----------------------------------------------------------------------------
 #                                                                       Saving
 # ----------------------------------------------------------------------------
-def test_saving_init(get_user):
+def test_saving_init():
     SavingForm()
 
 
 @freeze_time('1000-01-01')
-def test_saving_year_initial_value(get_user):
+def test_saving_year_initial_value():
     UserFactory()
 
     form = SavingForm().as_p()
@@ -127,7 +127,7 @@ def test_saving_year_initial_value(get_user):
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_saving_current_user_types(get_user):
+def test_saving_current_user_types():
     u = UserFactory(username='tom')
 
     SavingTypeFactory(title='T1')  # user bob, current user
@@ -139,7 +139,7 @@ def test_saving_current_user_types(get_user):
     assert 'T2' not in form
 
 
-def test_saving_current_user_accounts(get_user):
+def test_saving_current_user_accounts():
     u = UserFactory(username='tom')
 
     AccountFactory(title='S1')  # user bob, current user
@@ -151,7 +151,7 @@ def test_saving_current_user_accounts(get_user):
     assert 'S2' not in form
 
 
-def test_saving_select_first_account(get_user):
+def test_saving_select_first_account():
     u = UserFactory(username='XXX')
     AccountFactory(title='S1', user=u)
 
@@ -163,7 +163,7 @@ def test_saving_select_first_account(get_user):
     assert expect in form
 
 
-def test_saving_valid_data(get_user):
+def test_saving_valid_data():
     a = AccountFactory()
     t = SavingTypeFactory()
 
@@ -188,7 +188,7 @@ def test_saving_valid_data(get_user):
     assert data.saving_type.title == t.title
 
 
-def test_saving_blank_data(get_user):
+def test_saving_blank_data():
     form = SavingForm(data={})
 
     assert not form.is_valid()
@@ -199,7 +199,7 @@ def test_saving_blank_data(get_user):
     assert 'saving_type' in form.errors
 
 
-def test_saving_price_null(get_user):
+def test_saving_price_null():
     a = AccountFactory()
     t = SavingTypeFactory()
 

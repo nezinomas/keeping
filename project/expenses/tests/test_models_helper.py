@@ -22,7 +22,7 @@ def test_upload_attachment():
 
 @override_storage()
 @pytest.mark.django_db
-def test_upload_attachment_on_update(get_user):
+def test_upload_attachment_on_update():
     e = ExpenseFactory()
 
     file_mock = MagicMock(spec=File, name='FileMock')

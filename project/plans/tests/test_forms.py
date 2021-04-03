@@ -18,11 +18,11 @@ pytestmark = pytest.mark.django_db
 # ----------------------------------------------------------------------------
 #                                                                  Income Form
 # ----------------------------------------------------------------------------
-def test_income_init(get_user):
+def test_income_init():
     IncomePlanForm()
 
 
-def test_income_init_fields(get_user):
+def test_income_init_fields():
     form = IncomePlanForm().as_p()
 
     assert '<input type="text" name="year"' in form
@@ -45,7 +45,7 @@ def test_income_init_fields(get_user):
 
 
 @freeze_time('1000-01-01')
-def test_income_year_initial_value(get_user):
+def test_income_year_initial_value():
     UserFactory()
 
     form = IncomePlanForm().as_p()
@@ -53,7 +53,7 @@ def test_income_year_initial_value(get_user):
     assert '<input type="text" name="year" value="1999"' in form
 
 
-def test_income_current_user_types(get_user):
+def test_income_current_user_types():
     u = UserFactory(username='tom')
 
     IncomeTypeFactory(title='T1')  # user bob, current user
@@ -65,7 +65,7 @@ def test_income_current_user_types(get_user):
     assert 'T2' not in form
 
 
-def test_income_valid_data(get_user):
+def test_income_valid_data():
     type_ = IncomeTypeFactory()
     form = IncomePlanForm({
         'year': 1999,
@@ -85,7 +85,7 @@ def test_income_valid_data(get_user):
 
 
 @freeze_time('1999-01-01')
-def test_income_blank_data(get_user):
+def test_income_blank_data():
     form = IncomePlanForm(data={})
 
     assert not form.is_valid()
@@ -95,7 +95,7 @@ def test_income_blank_data(get_user):
     assert 'income_type' in form.errors
 
 
-def test_income_unique_together_validation(get_user):
+def test_income_unique_together_validation():
     i = IncomePlanFactory()
 
     form = IncomePlanForm({
@@ -111,7 +111,7 @@ def test_income_unique_together_validation(get_user):
     }
 
 
-def test_income_unique_together_validation_more_than_one(get_user):
+def test_income_unique_together_validation_more_than_one():
     IncomePlanFactory(income_type=IncomeTypeFactory(title='First'))
 
     type_ = IncomeTypeFactory()
@@ -128,11 +128,11 @@ def test_income_unique_together_validation_more_than_one(get_user):
 # ----------------------------------------------------------------------------
 #                                                                 Expense Form
 # ----------------------------------------------------------------------------
-def test_expense_init(get_user):
+def test_expense_init():
     ExpensePlanForm()
 
 
-def test_expense_init_fields(get_user):
+def test_expense_init_fields():
     form = ExpensePlanForm().as_p()
 
     assert '<input type="text" name="year"' in form
@@ -154,7 +154,7 @@ def test_expense_init_fields(get_user):
     assert '<select name="user"' not in form
 
 @freeze_time('1000-01-01')
-def test_expense_year_initial_value(get_user):
+def test_expense_year_initial_value():
     UserFactory()
 
     form = ExpensePlanForm().as_p()
@@ -162,7 +162,7 @@ def test_expense_year_initial_value(get_user):
     assert '<input type="text" name="year" value="1999"' in form
 
 
-def test_expense_current_user_types(get_user):
+def test_expense_current_user_types():
     u = UserFactory(username='tom')
 
     ExpenseTypeFactory(title='T1')  # user bob, current user
@@ -174,7 +174,7 @@ def test_expense_current_user_types(get_user):
     assert 'T2' not in form
 
 
-def test_expense_valid_data(get_user):
+def test_expense_valid_data():
     type_ = ExpenseTypeFactory()
     form = ExpensePlanForm({
         'year': 1999,
@@ -194,7 +194,7 @@ def test_expense_valid_data(get_user):
 
 
 @freeze_time('1999-01-01')
-def test_expense_blank_data(get_user):
+def test_expense_blank_data():
     form = ExpensePlanForm(data={})
 
     assert not form.is_valid()
@@ -204,7 +204,7 @@ def test_expense_blank_data(get_user):
     assert 'expense_type' in form.errors
 
 
-def test_expense_unique_together_validation(get_user):
+def test_expense_unique_together_validation():
     i = ExpensePlanFactory()
 
     form = ExpensePlanForm({
@@ -220,7 +220,7 @@ def test_expense_unique_together_validation(get_user):
     }
 
 
-def test_expense_unique_together_validation_more_than_one(get_user):
+def test_expense_unique_together_validation_more_than_one():
     ExpensePlanFactory(expense_type=ExpenseTypeFactory(title='First'))
     t = ExpenseTypeFactory()
     form = ExpensePlanForm({
@@ -235,11 +235,11 @@ def test_expense_unique_together_validation_more_than_one(get_user):
 # ----------------------------------------------------------------------------
 #                                                                  Saving Form
 # ----------------------------------------------------------------------------
-def test_saving_init(get_user):
+def test_saving_init():
     SavingPlanForm()
 
 
-def test_saving_init_fields(get_user):
+def test_saving_init_fields():
     form = SavingPlanForm().as_p()
 
     assert '<input type="text" name="year"' in form
@@ -262,7 +262,7 @@ def test_saving_init_fields(get_user):
 
 
 @freeze_time('1000-01-01')
-def test_saving_year_initial_value(get_user):
+def test_saving_year_initial_value():
     UserFactory()
 
     form = SavingPlanForm().as_p()
@@ -270,7 +270,7 @@ def test_saving_year_initial_value(get_user):
     assert '<input type="text" name="year" value="1999"' in form
 
 
-def test_saving_current_user_types(get_user):
+def test_saving_current_user_types():
     u = UserFactory(username='tom')
 
     SavingTypeFactory(title='T1')  # user bob, current user
@@ -282,7 +282,7 @@ def test_saving_current_user_types(get_user):
     assert 'T2' not in form
 
 
-def test_saving_valid_data(get_user):
+def test_saving_valid_data():
     type_ = SavingTypeFactory()
     form = SavingPlanForm({
         'year': 1999,
@@ -302,7 +302,7 @@ def test_saving_valid_data(get_user):
 
 
 @freeze_time('1999-01-01')
-def test_saving_blank_data(get_user):
+def test_saving_blank_data():
     form = SavingPlanForm(data={})
 
     assert not form.is_valid()
@@ -312,7 +312,7 @@ def test_saving_blank_data(get_user):
     assert 'saving_type' in form.errors
 
 
-def test_saving_unique_together_validation(get_user):
+def test_saving_unique_together_validation():
     i = SavingPlanFactory()
 
     form = SavingPlanForm({
@@ -328,7 +328,7 @@ def test_saving_unique_together_validation(get_user):
     }
 
 
-def test_saving_unique_together_validation_more_than_on(get_user):
+def test_saving_unique_together_validation_more_than_on():
     SavingPlanFactory(saving_type=SavingTypeFactory(title='First'))
 
     t = SavingTypeFactory()
@@ -381,11 +381,11 @@ def test_saving_form_type_closed_in_current_year(get_user):
 # ----------------------------------------------------------------------------
 #                                                                     Day Form
 # ----------------------------------------------------------------------------
-def test_day_init(get_user):
+def test_day_init():
     DayPlanForm()
 
 
-def test_day_init_fields(get_user):
+def test_day_init_fields():
     form = DayPlanForm().as_p()
 
     assert '<input type="text" name="year"' in form
@@ -407,7 +407,7 @@ def test_day_init_fields(get_user):
 
 
 @freeze_time('1000-01-01')
-def test_day_year_initial_value(get_user):
+def test_day_year_initial_value():
     UserFactory()
 
     form = DayPlanForm().as_p()
@@ -415,7 +415,7 @@ def test_day_year_initial_value(get_user):
     assert '<input type="text" name="year" value="1999"' in form
 
 
-def test_day_valid_data(get_user):
+def test_day_valid_data():
     form = DayPlanForm({
         'year': 1999,
         'january': 15.0,
@@ -432,7 +432,7 @@ def test_day_valid_data(get_user):
 
 
 @freeze_time('1999-01-01')
-def test_day_blank_data(get_user):
+def test_day_blank_data():
     form = DayPlanForm({})
 
     assert not form.is_valid()
@@ -442,7 +442,7 @@ def test_day_blank_data(get_user):
 
 
 
-def test_day_unique_together_validation(get_user):
+def test_day_unique_together_validation():
     i = DayPlanFactory()
 
     form = DayPlanForm({
@@ -460,11 +460,11 @@ def test_day_unique_together_validation(get_user):
 # ----------------------------------------------------------------------------
 #                                                               Necessary Form
 # ----------------------------------------------------------------------------
-def test_necessary_init(get_user):
+def test_necessary_init():
     NecessaryPlanForm()
 
 
-def test_necessary_init_fields(get_user):
+def test_necessary_init_fields():
     form = NecessaryPlanForm().as_p()
 
     assert '<input type="text" name="year"' in form
@@ -487,7 +487,7 @@ def test_necessary_init_fields(get_user):
 
 
 @freeze_time('1000-01-01')
-def test_income_year_initial_value(get_user):
+def test_income_year_initial_value1():
     UserFactory()
 
     form = NecessaryPlanForm().as_p()
@@ -495,7 +495,7 @@ def test_income_year_initial_value(get_user):
     assert '<input type="text" name="year" value="1999"' in form
 
 
-def test_necessary_valid_data(get_user):
+def test_necessary_valid_data():
     form = NecessaryPlanForm({
         'year': 1999,
         'title': 'XXX',
@@ -514,7 +514,7 @@ def test_necessary_valid_data(get_user):
 
 
 @freeze_time('1999-01-01')
-def test_necessary_blank_data(get_user):
+def test_necessary_blank_data():
     form = NecessaryPlanForm({})
 
     assert not form.is_valid()
@@ -524,7 +524,7 @@ def test_necessary_blank_data(get_user):
     assert 'title' in form.errors
 
 
-def test_necessary_unique_together_validation(get_user):
+def test_necessary_unique_together_validation():
     i = NecessaryPlanFactory(title='XXX')
 
     form = NecessaryPlanForm({
@@ -540,7 +540,7 @@ def test_necessary_unique_together_validation(get_user):
     }
 
 
-def test_necessary_unique_together_validation_more_than_one(get_user):
+def test_necessary_unique_together_validation_more_than_one():
     NecessaryPlanFactory(title='First')
 
     form = NecessaryPlanForm({
@@ -596,7 +596,7 @@ def test_copy_all_checkboxes_unselected():
     }
 
 
-def test_copy_empty_from_tables(get_user):
+def test_copy_empty_from_tables():
     form = CopyPlanForm(data={
         'year_from': 1999,
         'year_to': 2000,
@@ -610,7 +610,7 @@ def test_copy_empty_from_tables(get_user):
     }
 
 
-def test_copy_to_table_have_records(get_user):
+def test_copy_to_table_have_records():
     IncomePlanFactory(year=1999)
     IncomePlanFactory(year=2000)
 
@@ -627,7 +627,7 @@ def test_copy_to_table_have_records(get_user):
     }
 
 
-def test_copy_to_table_have_records_from_empty(get_user):
+def test_copy_to_table_have_records_from_empty():
     IncomePlanFactory(year=2000)
 
     form = CopyPlanForm(data={
@@ -646,7 +646,7 @@ def test_copy_to_table_have_records_from_empty(get_user):
     }
 
 
-def test_copy_data(get_user):
+def test_copy_data():
     IncomePlanFactory(year=1999)
 
     form = CopyPlanForm(data={

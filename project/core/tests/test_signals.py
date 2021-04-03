@@ -13,7 +13,7 @@ pytestmark = pytest.mark.django_db
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_account_list_full(mck, get_user):
+def test_account_list_full(mck):
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
 
@@ -28,7 +28,7 @@ def test_account_list_full(mck, get_user):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_get_id(mck, get_user):
+def test_get_id(mck):
     instance = SimpleNamespace(
         account_id=1,
         _old_values=[2]
@@ -42,7 +42,7 @@ def test_get_id(mck, get_user):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_year_none(mck, get_user):
+def test_year_none(mck):
     obj = T.SignalBase(instance=SimpleNamespace())
 
     assert obj.year == 1999
@@ -56,7 +56,7 @@ def test_year(mck):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_get_id_dublicated(mck, get_user):
+def test_get_id_dublicated(mck):
     instance = SimpleNamespace(
         account_id=1,
         _old_values=[1]
@@ -70,7 +70,7 @@ def test_get_id_dublicated(mck, get_user):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_account_list_one(mock_init, get_user):
+def test_account_list_one(mock_init):
     a1 = AccountFactory(title='A1')
     AccountFactory(title='A2')
 
@@ -85,7 +85,7 @@ def test_account_list_one(mock_init, get_user):
 
 
 @patch('project.core.signals.SignalBase._get_stats')
-def test_account_insert(_mock, get_user):
+def test_account_insert(_mock):
     a1 = AccountFactory(title='A1')
     _mock.return_value = [
         {'title': 'A1', 'id': a1.id, 'balance': 2.0}]
@@ -105,7 +105,7 @@ def test_account_insert(_mock, get_user):
 
 
 @patch('project.core.signals.SignalBase._get_stats')
-def test_account_insert_instance_account_id_not_set(_mock, get_user):
+def test_account_insert_instance_account_id_not_set(_mock):
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
     _mock.return_value = [
@@ -131,7 +131,7 @@ def test_account_insert_instance_account_id_not_set(_mock, get_user):
 
 
 @patch('project.core.signals.SignalBase._get_stats')
-def test_account_update(_mock, get_user):
+def test_account_update(_mock):
     a1 = AccountFactory(title='A1')
     AccountBalanceFactory(account=a1)
 
@@ -159,7 +159,7 @@ def test_account_update(_mock, get_user):
 #                                                      post_save_savings_stats
 # ----------------------------------------------------------------------------
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_saving_list_full(_mock, get_user):
+def test_saving_list_full(_mock):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2')
 
@@ -175,7 +175,7 @@ def test_saving_list_full(_mock, get_user):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_saving_list_one(_mock, get_user):
+def test_saving_list_one(_mock):
     s1 = SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2')
 
@@ -191,7 +191,7 @@ def test_saving_list_one(_mock, get_user):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_saving_list_full_without_closed(_mock, get_user):
+def test_saving_list_full_without_closed(_mock):
     s1 = SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1974)
 
@@ -207,7 +207,7 @@ def test_saving_list_full_without_closed(_mock, get_user):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_saving_list_without_closed(_mock, get_user):
+def test_saving_list_without_closed(_mock):
     SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', closed=1974)
 
@@ -223,7 +223,7 @@ def test_saving_list_without_closed(_mock, get_user):
 
 
 @patch('project.core.signals.SignalBase._get_stats')
-def test_saving_insert(_mock, get_user):
+def test_saving_insert(_mock):
     s1 = SavingTypeFactory(title='S1')
     _mock.return_value = [{
         'title': 'S1',
@@ -264,7 +264,7 @@ def test_saving_insert(_mock, get_user):
 
 
 @patch('project.core.signals.SignalBase._get_stats')
-def test_saving_insert_instance_saving_id_not_set(_mock, get_user):
+def test_saving_insert_instance_saving_id_not_set(_mock):
     s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2')
     _mock.return_value = [
@@ -291,7 +291,7 @@ def test_saving_insert_instance_saving_id_not_set(_mock, get_user):
 
 
 @patch('project.core.signals.SignalBase._get_stats')
-def test_saving_update(_mock, get_user):
+def test_saving_update(_mock):
     s1 = SavingTypeFactory(title='S1')
     SavingBalanceFactory(saving_type=s1)
 

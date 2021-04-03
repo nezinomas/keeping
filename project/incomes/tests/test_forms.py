@@ -25,7 +25,7 @@ def test_income_type_init_fields():
     assert '<select name="user"' not in form
 
 
-def test_income_type_valid_data(get_user):
+def test_income_type_valid_data():
     form = IncomeTypeForm(data={
         'title': 'Title',
     })
@@ -74,12 +74,12 @@ def test_income_type_title_too_short():
 # ----------------------------------------------------------------------------
 #                                                                       Income
 # ----------------------------------------------------------------------------
-def test_income_init(get_user):
+def test_income_init():
     IncomeForm()
 
 
 @freeze_time('1000-01-01')
-def test_income_year_initial_value(get_user):
+def test_income_year_initial_value():
     UserFactory()
 
     form = IncomeForm().as_p()
@@ -87,7 +87,7 @@ def test_income_year_initial_value(get_user):
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_income_current_user_types(get_user):
+def test_income_current_user_types():
     u = UserFactory(username='tom')
 
     IncomeTypeFactory(title='T1')  # user bob, current user
@@ -99,7 +99,7 @@ def test_income_current_user_types(get_user):
     assert 'T2' not in form
 
 
-def test_income_current_user_accounts(get_user):
+def test_income_current_user_accounts():
     u = UserFactory(username='tom')
 
     AccountFactory(title='A1')  # user bob, current user
@@ -111,7 +111,7 @@ def test_income_current_user_accounts(get_user):
     assert 'A2' not in form
 
 
-def test_expense_select_first_account(get_user):
+def test_expense_select_first_account():
     u = UserFactory(username='XXX')
     AccountFactory(title='A1', user=u)
 
@@ -123,7 +123,7 @@ def test_expense_select_first_account(get_user):
     assert expect in form
 
 
-def test_income_valid_data(get_user):
+def test_income_valid_data():
     a = AccountFactory()
     t = IncomeTypeFactory()
 
@@ -146,7 +146,7 @@ def test_income_valid_data(get_user):
     assert data.income_type.title == t.title
 
 
-def test_income_blank_data(get_user):
+def test_income_blank_data():
     form = IncomeForm({})
 
     assert not form.is_valid()
@@ -157,7 +157,7 @@ def test_income_blank_data(get_user):
     assert 'income_type' in form.errors
 
 
-def test_income_price_null(get_user):
+def test_income_price_null():
     a = AccountFactory()
     t = IncomeTypeFactory()
 

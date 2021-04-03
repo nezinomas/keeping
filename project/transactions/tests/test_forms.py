@@ -15,11 +15,11 @@ pytestmark = pytest.mark.django_db
 # ----------------------------------------------------------------------------
 #                                                                  Transaction
 # ----------------------------------------------------------------------------
-def test_transaction_init(get_user):
+def test_transaction_init():
     TransactionForm()
 
 
-def test_transaction_init_fields(get_user):
+def test_transaction_init_fields():
     form = TransactionForm().as_p()
 
     assert '<input type="text" name="date"' in form
@@ -29,7 +29,7 @@ def test_transaction_init_fields(get_user):
 
 
 @freeze_time('1000-01-01')
-def test_transaction_year_initial_value(get_user):
+def test_transaction_year_initial_value():
     UserFactory()
 
     form = TransactionForm().as_p()
@@ -37,7 +37,7 @@ def test_transaction_year_initial_value(get_user):
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_transaction_current_user_accounts(get_user):
+def test_transaction_current_user_accounts():
     u = UserFactory(username='tom')
 
     AccountFactory(title='A1')  # user bob, current user
@@ -49,7 +49,7 @@ def test_transaction_current_user_accounts(get_user):
     assert 'A2' not in form
 
 
-def test_transaction_current_user_accounts_selected_parent(get_user):
+def test_transaction_current_user_accounts_selected_parent():
     u = UserFactory(username='tom')
 
     a1 = AccountFactory(title='A1')  # user bob, current user
@@ -63,7 +63,7 @@ def test_transaction_current_user_accounts_selected_parent(get_user):
     assert '<option value="1">A1</option>' not in form
 
 
-def test_transaction_valid_data(get_user):
+def test_transaction_valid_data():
     a_from = AccountFactory()
     a_to = AccountFactory(title='Account2')
 
@@ -84,7 +84,7 @@ def test_transaction_valid_data(get_user):
     assert data.to_account == a_to
 
 
-def test_transaction_blank_data(get_user):
+def test_transaction_blank_data():
     form = TransactionForm({})
 
     assert not form.is_valid()
@@ -95,7 +95,7 @@ def test_transaction_blank_data(get_user):
     assert 'price' in form.errors
 
 
-def test_transaction_price_null(get_user):
+def test_transaction_price_null():
     a_from = AccountFactory()
     a_to = AccountFactory(title='Account2')
 
@@ -114,12 +114,12 @@ def test_transaction_price_null(get_user):
 # ----------------------------------------------------------------------------
 #                                                                Saving Change
 # ----------------------------------------------------------------------------
-def test_saving_change_init(get_user):
+def test_saving_change_init():
     SavingChangeForm()
 
 
 @freeze_time('1000-01-01')
-def test_saving_change_year_initial_value(get_user):
+def test_saving_change_year_initial_value():
     UserFactory()
 
     form = SavingChangeForm().as_p()
@@ -127,7 +127,7 @@ def test_saving_change_year_initial_value(get_user):
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_saving_change_current_user(get_user):
+def test_saving_change_current_user():
     u = UserFactory(username='tom')
 
     SavingTypeFactory(title='S1')  # user bob, current user
@@ -139,7 +139,7 @@ def test_saving_change_current_user(get_user):
     assert 'S2' not in form
 
 
-def test_saving_change_current_user_accounts_selected_parent(get_user):
+def test_saving_change_current_user_accounts_selected_parent():
     u = UserFactory(username='tom')
 
     s1 = SavingTypeFactory(title='S1')  # user bob, current user
@@ -153,7 +153,7 @@ def test_saving_change_current_user_accounts_selected_parent(get_user):
     assert '<option value="1">S1</option>' not in form
 
 
-def test_saving_change_valid_data(get_user):
+def test_saving_change_valid_data():
     a_from = SavingTypeFactory()
     a_to = SavingTypeFactory(title='Savings2')
 
@@ -176,7 +176,7 @@ def test_saving_change_valid_data(get_user):
     assert data.to_account == a_to
 
 
-def test_saving_change_blank_data(get_user):
+def test_saving_change_blank_data():
     form = SavingChangeForm(data={})
 
     assert not form.is_valid()
@@ -187,7 +187,7 @@ def test_saving_change_blank_data(get_user):
     assert 'price' in form.errors
 
 
-def test_saving_change_price_null(get_user):
+def test_saving_change_price_null():
     a_from = SavingTypeFactory()
     a_to = SavingTypeFactory(title='Savings2')
 
@@ -251,12 +251,12 @@ def test_saving_change_form_type_closed_in_current_year(get_user):
 # ----------------------------------------------------------------------------
 #                                                                 Saving Close
 # ----------------------------------------------------------------------------
-def test_saving_close_init(get_user):
+def test_saving_close_init():
     SavingCloseForm()
 
 
 @freeze_time('1000-01-01')
-def test_saving_close_year_initial_value(get_user):
+def test_saving_close_year_initial_value():
     UserFactory()
 
     form = SavingCloseForm().as_p()
@@ -264,7 +264,7 @@ def test_saving_close_year_initial_value(get_user):
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_saving_close_current_user_saving_types(get_user):
+def test_saving_close_current_user_saving_types():
     u = UserFactory(username='tom')
 
     SavingTypeFactory(title='S1')  # user bob, current user
@@ -276,7 +276,7 @@ def test_saving_close_current_user_saving_types(get_user):
     assert 'S2' not in form
 
 
-def test_saving_close_current_user_accounts(get_user):
+def test_saving_close_current_user_accounts():
     u = UserFactory(username='tom')
 
     AccountFactory(title='A1')  # user bob, current user
@@ -288,7 +288,7 @@ def test_saving_close_current_user_accounts(get_user):
     assert 'A2' not in form
 
 
-def test_saving_close_valid_data(get_user):
+def test_saving_close_valid_data():
     a_from = SavingTypeFactory()
     a_to = AccountFactory(title='Account2')
 
@@ -311,7 +311,7 @@ def test_saving_close_valid_data(get_user):
     assert data.to_account == a_to
 
 
-def test_saving_close_blank_data(get_user):
+def test_saving_close_blank_data():
     form = SavingCloseForm(data={})
 
     assert not form.is_valid()
@@ -323,7 +323,7 @@ def test_saving_close_blank_data(get_user):
 
 
 
-def test_saving_close_price_null(get_user):
+def test_saving_close_price_null():
     a_from = SavingTypeFactory()
     a_to = AccountFactory(title='Account2')
 

@@ -70,7 +70,7 @@ def test_expenses_update_func():
 
 
 @freeze_time('1974-08-08')
-def test_expenses_load_new_form(client_logged, get_user):
+def test_expenses_load_new_form(get_user, client_logged):
     get_user.year = 3000
     url = reverse('expenses:expenses_new')
 
@@ -241,7 +241,7 @@ def test_expenses_update(client_logged):
 
 
 @freeze_time('2000-03-03')
-def test_expenses_update_past_record(client_logged, get_user):
+def test_expenses_update_past_record(get_user, client_logged):
     get_user.year = 2000
     e = ExpenseFactory(date=date(1974, 12, 12))
 
@@ -471,7 +471,7 @@ def test_view_reload_stats_func():
     assert expenses.reload is view.func
 
 
-def test_view_reload_stats_render(get_user, rf):
+def test_view_reload_stats_render(rf):
     request = rf.get('/expenses/reload/?ajax_trigger=1')
     request.user = UserFactory.build()
 

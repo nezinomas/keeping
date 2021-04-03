@@ -9,7 +9,7 @@ from mock import patch
 
 from ...core.tests.utils import change_profile_year
 from ...users.factories import UserFactory
-from .. import views
+from .. import models, views
 from ..factories import DrinkFactory, DrinkTargetFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -83,6 +83,52 @@ def test_update(client_logged):
 
 
 # ---------------------------------------------------------------------------------------
+#                                                                            Drink Delete
+# ---------------------------------------------------------------------------------------
+def test_view_drinks_delete_func():
+    view = resolve('/drinks/delete/1/')
+
+    assert views.Delete is view.func.view_class
+
+
+def test_view_drinks_delete_200(client_logged):
+    p = DrinkFactory()
+
+    url = reverse('drinks:drinks_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_drinks_delete_load_form(client_logged):
+    p = DrinkFactory()
+
+    url = reverse('drinks:drinks_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/drinks/delete/1/"' in actual['html_form']
+
+
+def test_view_drinks_delete(client_logged):
+    p = DrinkFactory()
+
+    assert models.Drink.objects.all().count() == 1
+    url = reverse('drinks:drinks_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.Drink.objects.all().count() == 0
+
+
+# ---------------------------------------------------------------------------------------
 #                                                                    Target Create/Update
 # ---------------------------------------------------------------------------------------
 def test_target(client_logged):
@@ -124,7 +170,7 @@ def test_target_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-def test_target_update(get_user, client_logged):
+def test_target_update(client_logged):
     p = DrinkTargetFactory()
 
     data = {'year': 1999, 'quantity': 66}
@@ -306,7 +352,7 @@ def test_reload_stats_func():
     assert views.ReloadStats is view.func.view_class
 
 
-def test_reload_stats_render(get_user, rf):
+def test_reload_stats_render(rf):
     request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
     request.user = UserFactory.build()
 
