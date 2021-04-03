@@ -18,7 +18,7 @@ X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 def test_load_saving_type_func():
     view = resolve('/ajax/load_saving_type/')
 
-    assert views.load_saving_type == view.func
+    assert views.load_saving_type is view.func
 
 
 @pytest.mark.django_db
@@ -55,25 +55,25 @@ def test_view_index_200(client_logged):
 def test_transactions_index_func():
     view = resolve('/transactions/')
 
-    assert views.Index == view.func.view_class
+    assert views.Index is view.func.view_class
 
 
 def test_transactions_lists_func():
     view = resolve('/transactions/lists/')
 
-    assert views.Lists == view.func.view_class
+    assert views.Lists is view.func.view_class
 
 
 def test_transactions_new_func():
     view = resolve('/transactions/new/')
 
-    assert views.New == view.func.view_class
+    assert views.New is view.func.view_class
 
 
 def test_transactions_update_func():
     view = resolve('/transactions/update/1/')
 
-    assert views.Update == view.func.view_class
+    assert views.Update is view.func.view_class
 
 
 @freeze_time('2000-01-01')
