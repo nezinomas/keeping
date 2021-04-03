@@ -6,7 +6,7 @@
             <a role="button" class="list-group-item list-group-item-primary list-group-item-action pr-2" data-toggle="collapse" href="#_{{ item.id }}_"
                 aria-expanded="true" >
                 {{ item.title }}
-                {% if item.necessary %}<span class="badge badge-primary"><i class="far fa-star"></i></span>{% endif %}<span style="position: absolute; top: 0; right: 30px; display: block;"><button type="button" data-url="{{ url_type_update }}" class="btn btn-sm btn-link edit js-create" title="Edit"><i class="bi bi-pencil-fill"></i></button></span>
+                {% if item.necessary %}<span class="badge badge-primary"><i class="bi bi-star"></i></span>{% endif %}<span style="position: absolute; top: 0; right: 30px; display: block;"><button type="button" data-url="{{ url_type_update }}" class="btn btn-sm btn-link edit js-create" title="Edit"><i class="bi bi-pencil-fill"></i></button></span>
             </a>
         </div>
         <div id="_{{ item.id }}_" class="panel-collapse collapse" role="tabpanel">

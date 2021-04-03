@@ -23,7 +23,7 @@
         {% if url_update %}{% url url_update item.id as url %}{% else %}{% define '' as url %}{% endif %}
         {% with item|get_obj_attr:type as name %}
         <tr data-url="{{ url }}" class="dblclick{% if name == 'Likutis' %} bg-warning{% endif %}">
-            <td class="text-left">{{ name }}{% if item.expense_type.necessary or item.saving_type or 'Būtin' in name or item.title %} <i class="far fa-star star"></i>{% endif %}</td>
+            <td class="text-left">{{ name }}{% if item.expense_type.necessary or item.saving_type or 'Būtin' in name or item.title %} <i class="bi bi-star star"></i>{% endif %}</td>
             {% cell item.january %}
             {% cell item.february %}
             {% cell item.march %}
@@ -55,6 +55,7 @@
     .star {
         color: #e83e8c;
         padding-left: .5rem;
+        font-weight: bold;
     }
 
     td span {
