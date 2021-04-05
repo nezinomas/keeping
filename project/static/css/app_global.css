@@ -99,7 +99,6 @@ tr.top-text, tr.top-text th {
     border-top: 0px!important;
 }
 
-
 .stats .br {
     border-right: 3px solid #0359b0!important;
 }
@@ -216,7 +215,7 @@ tr.top-text, tr.top-text th {
 
 .no-hover:hover {
     text-decoration: none!important;
-  }
+}
 
 .stats .no-left-border {
     border-left: 0!important;
