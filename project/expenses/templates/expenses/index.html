@@ -2,6 +2,7 @@
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
+<script type="text/javascript" src="{% static 'js/reload_stats.js' %}"></script>
 {% endblock head %}
 
 {% block content %}
@@ -27,7 +28,7 @@
             </div>
         </div>
         <div id="search_form_data" class="mt-3 mb-2">{{ search }}</div>
-        <div id="ajax-content">{{ expenses }}</div>
+        <div id="expenses_list">{{ expenses_list }}</div>
     </div>
 
     <div class="col-lg-4 px-1">
@@ -58,8 +59,8 @@
                 'month': btn_month.attr('id'),
             },
             success: function (data) {
-                var expenses_list = $(data).filter('#ajax-content');
-                $('#ajax-content').html(expenses_list);
+                var blocks = ['expenses_list'];
+                reload_stats(data, blocks);
             }
         });
     });
@@ -77,8 +78,8 @@
                 'month': btn_month.attr('id'),
             },
             success: function (data) {
-                var expenses_list = data['expenses'];
-                $('#ajax-content').html(expenses_list);
+                var blocks = ['expenses_list'];
+                reload_stats(data, blocks);
                 $('#loader').removeClass('is-active');
             },
             error: function (data) {

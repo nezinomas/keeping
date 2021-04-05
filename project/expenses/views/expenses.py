@@ -1,16 +1,17 @@
 from datetime import datetime
 
 from django.db.models import F
-from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
+from django.views.generic import TemplateView
 
 from ...core.forms import SearchForm
 from ...core.lib import search
 from ...core.mixins.ajax import AjaxCustomFormMixin
-from ...core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
-                                  ListMixin, UpdateAjaxMixin)
+from ...core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
+                                  DispatchAjaxMixin, IndexMixin, ListMixin,
+                                  UpdateAjaxMixin)
 from .. import forms, models
 from ..apps import App_name
 from ..views.expenses_type import Lists as TypeLists
@@ -23,16 +24,16 @@ def _qs_default_ordering(qs):
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = TypeLists.as_view()(self.request, as_string=True)
-        context['expenses'] = context_to_reload(self.request)
-
-        context['current_month'] = datetime.now().month
-
-        context['search'] = render_to_string(
-            template_name='core/includes/search_form.html',
-            context={'form': SearchForm(), 'url': reverse('expenses:expenses_search')},
-            request=self.request
-        )
+        context.update({
+            'categories': TypeLists.as_view()(self.request, as_string=True),
+            'current_month': datetime.now().month,
+            'search': render_to_string(
+                template_name='core/includes/search_form.html',
+                context={'form': SearchForm(), 'url': reverse('expenses:expenses_search')},
+                request=self.request
+            ),
+            **context_to_reload(self.request)
+        })
 
         return context
 
@@ -49,12 +50,12 @@ class MonthLists(IndexMixin):
 
     def get_context_data(self, **kwargs):
         month = self.kwargs.get('month')
-        print(f'mmm: {month}')
+
         context = super().get_context_data(**kwargs)
         context.update({
-            'expenses': context_to_reload(self.request, month),
             'categories': TypeLists.as_view()(self.request, as_string=True),
             'current_month': month,
+            **context_to_reload(self.request, month),
         })
 
         return context
@@ -86,12 +87,16 @@ def load_expense_name(request):
     )
 
 
-def reload(request):
-    ajax_trigger = request.GET.get('ajax_trigger')
+class ReloadExpenses(DispatchAjaxMixin, TemplateView):
+    template_name = f'{App_name}/includes/reload_expenses.html'
+    redirect_view = f'{App_name}:{App_name}_index'
 
-    if ajax_trigger:
+    def get(self, request, *args, **kwargs):
         month = request.GET.get('month')
-        return JsonResponse({'expenses': context_to_reload(request, month)})
+
+        context = context_to_reload(request, month)
+
+        return self.render_to_response(context=context)
 
 
 def context_to_reload(request, month=None):
@@ -105,13 +110,14 @@ def context_to_reload(request, month=None):
 
     qs = _qs_default_ordering(qs)
 
-    data = render_to_string(
+    data = {
+        'expenses_list': render_to_string(
         'expenses/includes/expenses_list.html', {
             'items': qs,
             'notice': f'{month} mėnesį įrašų nėra.',
         },
-        request
-    )
+        request)
+    }
     return data
 
 
