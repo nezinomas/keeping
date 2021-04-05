@@ -67,17 +67,22 @@
     $(document).on('click', '.js-filter', function () {
         $('#loader').addClass('is-active')
 
-        var url = $(this).attr('data-url');
+        var url = `{% url 'expenses:reload_expenses' %}`;
+        var btn_month = $('.btn-info');
+
         $.ajax({
             url: url,
-            type: 'get',
+            data: {
+                'ajax_trigger': '1',
+                'month': btn_month.attr('id'),
+            },
             success: function (data) {
-                var expenses_list = data;
+                var expenses_list = data['expenses'];
                 $('#ajax-content').html(expenses_list);
-                $('#loader').removeClass('is-active')
+                $('#loader').removeClass('is-active');
             },
             error: function (data) {
-                $('#loader').removeClass('is-active')
+                $('#loader').removeClass('is-active');
             }
         });
     });

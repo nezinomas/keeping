@@ -46,9 +46,24 @@
           <li class="nav-item">
             <a class="nav-link {% if '/detailed/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:detailed' %}">Detali</a>
           </li>
+
           <li class="nav-item">
-            <a class="nav-link {% if '/expenses/' in request.path %}active{% endif %}" href="{% url 'expenses:expenses_index' %}">Išlaidos</a>
+            <div class="btn-group">
+              <a class="btn btn-menu pr-1 nav-link {% if '/expenses/' in request.path %}active{% endif %}" href="{% url 'expenses:expenses_index' %}">Išlaidos</a>
+              <button type="button" class="btn btn-menu pl-0 nav-link {% if '/expenses/' in request.path %}active{% endif %} dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="sr-only">Toggle Dropdown</span>
+              </button>
+              <div class="dropdown-menu">
+                {% for m in context_months %}
+                {% with m|date:'n' as m_num %}
+                    <a class="dropdown-item btn-sm" href="{% url 'expenses:expenses_month_list' forloop.counter %}">{{ m|date:'F'|title }}</a>
+                    {% endwith %}{% endfor %}
+                    <div role="separator" class="dropdown-divider"></div>
+                    <a class="dropdown-item btn-sm" href="{% url 'expenses:expenses_month_list' 13 %}">Visi įrašai</a>
+              </div>
+            </div>
           </li>
+
           <li class="nav-item">
             <a class="nav-link {% if '/incomes/' in request.path %}active{% endif %}" href="{% url 'incomes:incomes_index' %}">Pajamos</a>
           </li>
