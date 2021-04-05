@@ -77,15 +77,22 @@ class Delete(DeleteAjaxMixin):
     model = models.Expense
 
 
-def load_expense_name(request):
-    pk = request.GET.get('expense_type')
-    objects = models.ExpenseName.objects.parent(pk).year(request.user.year)
+class Search(AjaxCustomFormMixin):
+    template_name = 'core/includes/search_form.html'
+    form_class = SearchForm
+    form_data_dict = {}
+    url = reverse_lazy('expenses:expenses_search')
 
-    return render(
-        request,
-        'core/dropdown.html',
-        {'objects': objects}
-    )
+    def form_valid(self, form, **kwargs):
+        _search = self.form_data_dict['search']
+
+        sql = search.search_expenses(_search)
+        if sql:
+            template = 'expenses/includes/expenses_list.html'
+            context = {'items': sql}
+            kwargs.update({'html': render_to_string(template, context, self.request)})
+
+        return super().form_valid(form, **kwargs)
 
 
 class ReloadExpenses(DispatchAjaxMixin, TemplateView):
@@ -98,6 +105,17 @@ class ReloadExpenses(DispatchAjaxMixin, TemplateView):
         context = context_to_reload(request, month)
 
         return self.render_to_response(context=context)
+
+
+def load_expense_name(request):
+    pk = request.GET.get('expense_type')
+    objects = models.ExpenseName.objects.parent(pk).year(request.user.year)
+
+    return render(
+        request,
+        'core/dropdown.html',
+        {'objects': objects}
+    )
 
 
 def context_to_reload(request, month=None):
@@ -120,21 +138,3 @@ def context_to_reload(request, month=None):
         request)
     }
     return data
-
-
-class Search(AjaxCustomFormMixin):
-    template_name = 'core/includes/search_form.html'
-    form_class = SearchForm
-    form_data_dict = {}
-    url = reverse_lazy('expenses:expenses_search')
-
-    def form_valid(self, form, **kwargs):
-        _search = self.form_data_dict['search']
-
-        sql = search.search_expenses(_search)
-        if sql:
-            template = 'expenses/includes/expenses_list.html'
-            context = {'items': sql}
-            kwargs.update({'html': render_to_string(template, context, self.request)})
-
-        return super().form_valid(form, **kwargs)
