@@ -38,13 +38,6 @@ class Index(IndexMixin):
         return context
 
 
-class Lists(ListMixin):
-    model = models.Expense
-
-    def get_queryset(self):
-        return _qs_default_ordering(super().get_queryset())
-
-
 class MonthLists(IndexMixin):
     model = models.Expense
 
@@ -59,6 +52,14 @@ class MonthLists(IndexMixin):
         })
 
         return context
+
+
+class Lists(ListMixin):
+    model = models.Expense
+
+    def get_queryset(self):
+        return _qs_default_ordering(super().get_queryset())
+
 
 class New(CreateAjaxMixin):
     model = models.Expense
