@@ -65,7 +65,7 @@ tr.total th {
 
 .nav-item {
     padding: 0;
-    margin: 0;
+    margin: 0.15rem;
 }
 
 .dropdown-menu a.dropdown-item {
@@ -74,7 +74,6 @@ tr.total th {
 
 .nav-link {
     padding: .15rem .45rem;
-    margin: .15rem;
 }
 
 .container-fluid>.content {
@@ -144,6 +143,11 @@ tr.top-text, tr.top-text th {
 
 .btn-sm {
   padding: .15rem .25rem;
+}
+
+.btn-menu {
+    font-size: .7rem!important;
+    color: #007bff;
 }
 
 .btn-super-sm {
