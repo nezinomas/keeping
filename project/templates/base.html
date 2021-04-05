@@ -79,9 +79,18 @@
           </li>
 
           <li class="nav-item">
-            <a class="nav-link {% if '/counts/' in request.path %}active{% endif %}"
-              href="{% url 'counts:counts_index' %}">Kiek</a>
+            <div class="btn-group">
+              <a class="btn btn-menu pr-1 nav-link {% if '/counts/' in request.path %}active{% endif %}" href="{% url 'counts:counts_index' %}">Kiek</a>
+              <button type="button" class="btn btn-menu pl-0 nav-link {% if '/counts/' in request.path %}active{% endif %} dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="sr-only">Toggle Dropdown</span>
+              </button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item btn-sm" href="{% url 'counts:counts_list' %}">Duomenys</a>
+                <a class="dropdown-item btn-sm" href="{% url 'counts:counts_history' %}">Istorija</a>
+              </div>
+            </div>
           </li>
+
           <li class="nav-item">
             <a class="nav-link {% if '/plans/' in request.path %}active{% endif %}"
               href="{% url 'plans:plans_index' %}">Planavimas</a>
