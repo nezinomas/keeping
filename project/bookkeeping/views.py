@@ -7,7 +7,6 @@ from django.template.loader import render_to_string
 from django.views.generic import CreateView
 
 from ..accounts.models import Account, AccountBalance
-from ..core.lib.date import year_month_list
 from ..core.lib.utils import sum_all
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import CreateAjaxMixin, IndexMixin, DispatchAjaxMixin
@@ -106,7 +105,6 @@ class Month(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'buttons': year_month_list(),
             **H.month_context(self.request, context),
         })
         return context

@@ -280,7 +280,7 @@ def test_expenses_index_200(client_logged):
 
     assert response.status_code == 200
 
-    assert 'expenses' in response.context
+    assert 'expenses_list' in response.context
     assert 'categories' in response.context
 
 
@@ -465,19 +465,27 @@ def test_load_expense_name_all(client_logged, _db_data):
 # ---------------------------------------------------------------------------------------
 #                                                                         realod expenses
 # ---------------------------------------------------------------------------------------
-def test_view_reload_stats_func():
+def test_view_reload_expenses_func():
     view = resolve('/expenses/reload/')
 
-    assert expenses.reload is view.func
+    assert expenses.ReloadExpenses is view.func.view_class
 
 
-def test_view_reload_stats_render(rf):
+def test_view_reload_expenses_render(rf):
     request = rf.get('/expenses/reload/?ajax_trigger=1')
     request.user = UserFactory.build()
 
-    response = expenses.reload(request)
+    response = expenses.ReloadExpenses.as_view()(request)
 
     assert response.status_code == 200
+
+
+def test_view_reload_expenses_render_ajax_trigger_not_set(client_logged):
+    url = reverse('expenses:reload_expenses')
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert expenses.Index == response.resolver_match.func.view_class
 
 
 # ---------------------------------------------------------------------------------------

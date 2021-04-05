@@ -2,7 +2,7 @@ from datetime import datetime
 
 from ..core.lib import utils
 from .lib.date import yday as Yday
-from .lib.date import years as Year
+from .lib.date import years as Year, year_month_list
 
 
 def years(context):
@@ -21,3 +21,7 @@ def yday(context):
     _yday, _ydays = Yday(_year)
 
     return {'yday': _yday, 'ydays': _ydays}
+
+
+def context_months(context):
+    return {'context_months': year_month_list()}

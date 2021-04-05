@@ -1,18 +1,19 @@
 from datetime import datetime
 
 from django.db.models import F
-from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
+from django.views.generic import TemplateView
 
 from ...core.forms import SearchForm
 from ...core.lib import search
-from ...core.lib.date import year_month_list
 from ...core.mixins.ajax import AjaxCustomFormMixin
-from ...core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
-                                  ListMixin, UpdateAjaxMixin)
+from ...core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
+                                  DispatchAjaxMixin, IndexMixin, ListMixin,
+                                  UpdateAjaxMixin)
 from .. import forms, models
+from ..apps import App_name
 from ..views.expenses_type import Lists as TypeLists
 
 
@@ -23,17 +24,16 @@ def _qs_default_ordering(qs):
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = TypeLists.as_view()(self.request, as_string=True)
-        context['expenses'] = MonthLists.as_view()(self.request, as_string=True)
-
-        context['buttons'] = year_month_list()
-        context['current_month'] = datetime.now().month
-
-        context['search'] = render_to_string(
-            template_name='core/includes/search_form.html',
-            context={'form': SearchForm(), 'url': reverse('expenses:expenses_search')},
-            request=self.request
-        )
+        context.update({
+            'categories': TypeLists.as_view()(self.request, as_string=True),
+            'current_month': datetime.now().month,
+            'search': render_to_string(
+                template_name='core/includes/search_form.html',
+                context={'form': SearchForm(), 'url': reverse('expenses:expenses_search')},
+                request=self.request
+            ),
+            **context_to_reload(self.request)
+        })
 
         return context
 
@@ -45,24 +45,18 @@ class Lists(ListMixin):
         return _qs_default_ordering(super().get_queryset())
 
 
-class MonthLists(ListMixin):
+class MonthLists(IndexMixin):
     model = models.Expense
 
-    def month(self):
+    def get_context_data(self, **kwargs):
         month = self.kwargs.get('month')
 
-        if not month or month not in range(1, 13):
-            month = datetime.now().month
-
-        return month
-
-    def get_queryset(self):
-        qs = super().get_queryset().filter(date__month=self.month())
-        return _qs_default_ordering(qs)
-
-    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['notice'] = f'{self.month()} mėnesį įrašų nėra.'
+        context.update({
+            'categories': TypeLists.as_view()(self.request, as_string=True),
+            'current_month': month,
+            **context_to_reload(self.request, month),
+        })
 
         return context
 
@@ -93,32 +87,38 @@ def load_expense_name(request):
     )
 
 
-def reload(request):
+class ReloadExpenses(DispatchAjaxMixin, TemplateView):
+    template_name = f'{App_name}/includes/reload_expenses.html'
+    redirect_view = f'{App_name}:{App_name}_index'
+
+    def get(self, request, *args, **kwargs):
+        month = request.GET.get('month')
+
+        context = context_to_reload(request, month)
+
+        return self.render_to_response(context=context)
+
+
+def context_to_reload(request, month=None):
     year = request.user.year
-    ajax_trigger = request.GET.get('ajax_trigger')
-    name = 'expenses/includes/reload.html'
+    month = int(month) if month else datetime.now().month
 
-    context = {}
+    qs = models.Expense.objects.year(year)
 
-    if ajax_trigger:
-        try:
-            month = int(request.GET.get('month'))
-        except:
-            month = datetime.now().month
+    if month in range(1, 13):
+        qs = qs.filter(date__month=month)
 
-        qs = models.Expense.objects.year(year)
-        if month in range(1, 13):
-            qs = qs.filter(date__month=month)
+    qs = _qs_default_ordering(qs)
 
-        qs = _qs_default_ordering(qs)
-
-        context['expenses_list'] = render_to_string(
-            'expenses/includes/expenses_list.html',
-            {'items': qs},
-            request
-        )
-
-        return render(request, name, context)
+    data = {
+        'expenses_list': render_to_string(
+        'expenses/includes/expenses_list.html', {
+            'items': qs,
+            'notice': f'{month} mėnesį įrašų nėra.',
+        },
+        request)
+    }
+    return data
 
 
 class Search(AjaxCustomFormMixin):
