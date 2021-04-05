@@ -1,8 +1,9 @@
 from django.urls import path
 
-from .views import expenses, expenses_type, expenses_name
+from .apps import App_name
+from .views import expenses, expenses_name, expenses_type
 
-app_name = 'expenses'
+app_name = App_name
 
 e = [
     path(
@@ -42,7 +43,7 @@ e = [
     ),
     path(
         'expenses/reload/',
-        expenses.reload,
+        expenses.ReloadExpenses.as_view(),
         name='reload_expenses'
     ),
     path(

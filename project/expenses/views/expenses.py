@@ -12,6 +12,7 @@ from ...core.mixins.ajax import AjaxCustomFormMixin
 from ...core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
                                   ListMixin, UpdateAjaxMixin)
 from .. import forms, models
+from ..apps import App_name
 from ..views.expenses_type import Lists as TypeLists
 
 
