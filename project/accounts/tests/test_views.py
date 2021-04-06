@@ -9,7 +9,7 @@ from .. import views
 from ..factories import AccountFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
-
+pytestmark = pytest.mark.django_db
 
 
 def test_view_lists_func():
@@ -30,7 +30,6 @@ def test_view_update_func():
     assert views.Update is view.func.view_class
 
 
-@pytest.mark.django_db()
 def test_save_account(client_logged):
     data = {'title': 'Title', 'order': '111'}
 
@@ -45,7 +44,6 @@ def test_save_account(client_logged):
     assert 'Title' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_accounts_save_invalid_data(client_logged):
     data = {'title': '', 'order': 'x'}
 
@@ -59,7 +57,6 @@ def test_accounts_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_account_update(client_logged):
     account = AccountFactory()
 
@@ -77,7 +74,6 @@ def test_account_update(client_logged):
     assert 'Title' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_account_list_view_has_all(fake_request):
     AccountFactory(title='S1')
     AccountFactory(title='S2', closed=1974)
@@ -101,7 +97,6 @@ def test_load_to_account_func():
     assert views.load_to_account is view.func
 
 
-@pytest.mark.django_db
 def test_load_to_account_form(client_logged):
     url = reverse('accounts:accounts_new')
 
@@ -110,7 +105,6 @@ def test_load_to_account_form(client_logged):
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
 def test_load_to_account(client_logged):
     a1 = AccountFactory(title='A1')
     AccountFactory(title='A2')
