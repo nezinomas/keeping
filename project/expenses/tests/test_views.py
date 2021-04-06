@@ -436,7 +436,7 @@ def test_expense_name_update(client_logged):
 def test_load_expenses_name_new_func():
     actual = resolve('/ajax/load_expense_name/')
 
-    assert expenses.load_expense_name is actual.func
+    assert expenses.LoadExpenseName is actual.func.view_class
 
 
 def test_load_expense_name_status_code(client_logged):

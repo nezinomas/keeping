@@ -107,15 +107,14 @@ class ReloadExpenses(DispatchAjaxMixin, TemplateView):
         return self.render_to_response(context=context)
 
 
-def load_expense_name(request):
-    pk = request.GET.get('expense_type')
-    objects = models.ExpenseName.objects.parent(pk).year(request.user.year)
+class LoadExpenseName(TemplateView):
+    template_name = 'core/dropdown.html'
 
-    return render(
-        request,
-        'core/dropdown.html',
-        {'objects': objects}
-    )
+    def get(self, request, *args, **kwargs):
+        pk = request.GET.get('expense_type')
+        objects = models.ExpenseName.objects.parent(pk).year(request.user.year)
+
+        return self.render_to_response({'objects': objects})
 
 
 def context_to_reload(request, month=None):

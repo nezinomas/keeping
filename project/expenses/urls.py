@@ -38,7 +38,7 @@ e = [
     ),
     path(
         'ajax/load_expense_name/',
-        expenses.load_expense_name,
+        expenses.LoadExpenseName.as_view(),
         name='load_expense_name'
     ),
     path(
