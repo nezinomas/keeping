@@ -131,10 +131,10 @@ def context_to_reload(request, month=None):
 
     data = {
         'expenses_list': render_to_string(
-        'expenses/includes/expenses_list.html', {
-            'items': qs,
-            'notice': f'{month} mėnesį įrašų nėra.',
-        },
-        request)
+            'expenses/includes/expenses_list.html', {
+                'items': qs,
+                'notice': f'{month} mėnesį įrašų nėra.',
+            },
+            request)
     }
     return data
