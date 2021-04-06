@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.views.generic.base import TemplateView
 
 from ..accounts.views import Lists as accounts_list
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
@@ -23,20 +24,18 @@ class Index(IndexMixin):
 
 
 # SavingType dropdown
-def load_saving_type(request):
-    _id = request.GET.get('id')
+class LoadSavingType(TemplateView):
+    template_name = 'core/dropdown.html'
 
-    objects = (
-        models.SavingType.objects
-        .items()
-        .exclude(pk=_id)
-    )
+    def get(self, request, *args, **kwargs):
+        _id = request.GET.get('id')
 
-    return render(
-        request,
-        'core/dropdown.html',
-        {'objects': objects}
-    )
+        objects = (models.SavingType
+                   .objects
+                   .items()
+                   .exclude(pk=_id))
+
+        return self.render_to_response({'objects': objects})
 
 
 #----------------------------------------------------------------------------------------

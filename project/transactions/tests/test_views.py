@@ -15,12 +15,6 @@ pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
-def test_load_saving_type_func():
-    view = resolve('/ajax/load_saving_type/')
-
-    assert views.load_saving_type is view.func
-
-
 def test_load_saving_type_200(client_logged):
     response = client_logged.get('/ajax/load_saving_type/')
 
@@ -520,10 +514,10 @@ def test_savings_change_update(client_logged):
 # ----------------------------------------------------------------------------
 #                                                             load_saving_type
 # ----------------------------------------------------------------------------
-def test_load_saving_type_new_func():
+def test_load_saving_type_func():
     view = resolve('/ajax/load_saving_type/')
 
-    assert views.load_saving_type == view.func
+    assert views.LoadSavingType is view.func.view_class
 
 
 def test_load_saving_type_status_code(client_logged):

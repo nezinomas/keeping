@@ -72,7 +72,7 @@ urlpatterns = [
     ),
     path(
         'ajax/load_saving_type/',
-        views.load_saving_type,
+        views.LoadSavingType.as_view(),
         name='load_saving_type'
     ),
 ]
