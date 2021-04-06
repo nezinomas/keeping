@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from django.db.models import F
-from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.views.generic import TemplateView
