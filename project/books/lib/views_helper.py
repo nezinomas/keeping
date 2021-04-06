@@ -6,7 +6,7 @@ from .. import models
 
 
 class BookRenderer():
-    def __init__(self, request, year = None):
+    def __init__(self, request, year=None):
         self._request = request
         self._year = year if year else self._request.user.year
 
