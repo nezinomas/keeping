@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.views.generic.base import TemplateView
 
 from ..core.mixins.views import CreateAjaxMixin, ListMixin, UpdateAjaxMixin
