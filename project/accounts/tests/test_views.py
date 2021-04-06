@@ -94,7 +94,7 @@ def test_account_list_view_has_all(fake_request):
 def test_load_to_account_func():
     view = resolve('/ajax/load_to_account/')
 
-    assert views.load_to_account is view.func
+    assert views.LoadAccount is view.func.view_class
 
 
 def test_load_to_account_form(client_logged):

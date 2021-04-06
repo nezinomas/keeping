@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.views.generic.base import TemplateView
 
 from ..core.mixins.views import CreateAjaxMixin, ListMixin, UpdateAjaxMixin
 from . import forms, models
@@ -24,11 +25,11 @@ class Update(UpdateAjaxMixin):
     def get_queryset(self):
         return models.Account.objects.related()
 
-def load_to_account(request):
-    _id = request.GET.get('id')
-    objects = models.Account.objects.items().exclude(pk=_id)
-    return render(
-        request,
-        'core/dropdown.html',
-        {'objects': objects}
-    )
+
+class LoadAccount(TemplateView):
+    template_name = 'core/dropdown.html'
+
+    def get(self, request, *args, **kwargs):
+        _id = request.GET.get('id')
+        objects = models.Account.objects.items().exclude(pk=_id)
+        return self.render_to_response({'objects': objects})
