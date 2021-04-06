@@ -30,6 +30,13 @@ class LoadAccount(TemplateView):
     template_name = 'core/dropdown.html'
 
     def get(self, request, *args, **kwargs):
-        _id = request.GET.get('id')
-        objects = models.Account.objects.items().exclude(pk=_id)
+        objects = []
+        pk = request.GET.get('id')
+
+        if pk:
+            objects = (models.Account
+                       .objects
+                       .items()
+                       .exclude(pk=pk))
+
         return self.render_to_response({'objects': objects})

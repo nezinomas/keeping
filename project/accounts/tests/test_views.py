@@ -116,3 +116,12 @@ def test_load_to_account(client_logged):
 
     assert response.status_code == 200
     assert len(response.context['objects']) == 1
+
+
+def test_load_to_account_empty_parent(client_logged):
+    url = reverse('accounts:load_to_account')
+
+    response = client_logged.get(url, {'id': ''})
+
+    assert response.status_code == 200
+    assert response.context['objects'] == []
