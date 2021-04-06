@@ -1,7 +1,8 @@
 from django.views.generic import TemplateView
 
-from ..core.mixins.views import (CreateAjaxMixin, DispatchAjaxMixin,
-                                 IndexMixin, UpdateAjaxMixin)
+from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
+                                 DispatchAjaxMixin, IndexMixin,
+                                 UpdateAjaxMixin)
 from .apps import App_name
 from .forms import CountForm as Form
 from .lib.stats import Stats
@@ -47,6 +48,10 @@ class New(UpdateLinkMixin, CreateAjaxMixin):
 class Update(UpdateLinkMixin, UpdateAjaxMixin):
     model = Counter
     form_class = Form
+
+
+class Delete(UpdateLinkMixin, DeleteAjaxMixin):
+    model = Counter
 
 
 class History(IndexMixin):

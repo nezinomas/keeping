@@ -7,23 +7,30 @@
             <th>Pastaba</th>
             <th class="text-right">Suma</th>
             <th class="text-right">Mokestis</th>
-            <th width="45rem"></th>
+            <th width="35rem" class="no-right-border"></th>
+            <th width="35rem" class="no-left-border"></th>
         </tr>
     </thead>
     <tbody>
         {% for item in items %}
         {% url 'pensions:pensions_update' item.id as url_update %}
+        {% url 'pensions:pensions_delete' item.id as url_delete %}
         <tr data-url="{{ url_update }}" class="dblclick">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ item.pension_type }}</td>
             <td class="text-left">{{ item.remark }}</td>
             <td>{{ item.price|default_if_none:'-'|intcomma }}</td>
             <td>{{ item.fee|default_if_none:'-'|intcomma }}</td>
-            <td class="text-center"><a type="button" data-url="{{ url_update }}" class="btn btn-super-sm btn-outline-info js-create">Edit</a></td>
+            <td class="text-center no-right-border">
+                <a type="button" data-url="{{ url_update }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+            </td>
+            <td class="text-center no-left-border">
+                <a type="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+            </td>
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="6" class="py-2"><b>{{ request.user.year|title }}</b> metais irašų nėra.</td>
+            <td colspan="7" class="py-2"><b>{{ request.user.year|title }}</b> metais irašų nėra.</td>
         </tr>
         {% endfor %}
     </tbody>

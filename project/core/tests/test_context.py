@@ -1,13 +1,15 @@
+from datetime import date
 from types import SimpleNamespace
 
 import pytest
 from freezegun import freeze_time
 from mock import patch
 
-from ..context import yday, years
+from ..context import context_months, yday, years
 
 
 @freeze_time('2006-01-01')
+@pytest.mark.disable_get_user_patch
 def test_years(rf):
     expect = {'years': [2007, 2006]}
     r = rf.get('/fake/')
@@ -46,3 +48,13 @@ def test_yday_anonymous_user(mck, rf):
     actual = yday(r)
 
     assert actual == {'yday': 1, 'ydays': 366}
+
+
+@freeze_time('1000-1-1')
+def test_context_months(rf):
+    r = rf.get('/fake/')
+
+    actual = context_months(r)
+
+    assert len(actual['context_months']) == 12
+    assert actual['context_months'][0] == date(1000, 1, 1)

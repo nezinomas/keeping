@@ -2,13 +2,11 @@ from datetime import date as dt
 from decimal import Decimal
 
 import factory
-from django.db.models.signals import post_save
 
 from ..users.factories import UserFactory
 from .models import Pension, PensionBalance, PensionType
 
 
-@factory.django.mute_signals(post_save)
 class PensionTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PensionType
@@ -18,7 +16,6 @@ class PensionTypeFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
 
 
-@factory.django.mute_signals(post_save)
 class PensionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Pension
@@ -30,7 +27,6 @@ class PensionFactory(factory.django.DjangoModelFactory):
     pension_type = factory.SubFactory(PensionTypeFactory)
 
 
-@factory.django.mute_signals(post_save)
 class PensionBalanceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PensionBalance

@@ -23,7 +23,7 @@ def test_account_form_has_fields():
     assert '<select name="user"' not in form
 
 
-def test_account_valid_data(get_user):
+def test_account_valid_data():
     form = AccountForm(data={
         'title': 'Title',
         'order': '1',

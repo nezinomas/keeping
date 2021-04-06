@@ -1,8 +1,9 @@
 from django.urls import path
 
-from .views import expenses, expenses_type, expenses_name
+from .apps import App_name
+from .views import expenses, expenses_name, expenses_type
 
-app_name = 'expenses'
+app_name = App_name
 
 e = [
     path(
@@ -31,13 +32,18 @@ e = [
         name='expenses_update'
     ),
     path(
+        'expenses/delete/<int:pk>/',
+        expenses.Delete.as_view(),
+        name='expenses_delete'
+    ),
+    path(
         'ajax/load_expense_name/',
-        expenses.load_expense_name,
+        expenses.LoadExpenseName.as_view(),
         name='load_expense_name'
     ),
     path(
         'expenses/reload/',
-        expenses.reload,
+        expenses.ReloadExpenses.as_view(),
         name='reload_expenses'
     ),
     path(

@@ -15,7 +15,10 @@ class UpdateLinkMixin():
         except AttributeError:
             context = {}
 
-        context.update({'url_update': f'{App_name}:{App_name}_update'})
+        context.update({
+            'url_update': f'{App_name}:{App_name}_update',
+            'url_delete': f'{App_name}:{App_name}_delete',
+        })
         return context
 
 

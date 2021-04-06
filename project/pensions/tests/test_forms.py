@@ -24,7 +24,7 @@ def test_pension_type_init_fields():
     assert '<select name="user"' not in form
 
 
-def test_pension_type_valid_data(get_user):
+def test_pension_type_valid_data():
     form = PensionTypeForm(data={
         'title': 'Title',
     })
@@ -73,11 +73,11 @@ def test_pension_type_title_too_short():
 # ----------------------------------------------------------------------------
 #                                                                      Pension
 # ----------------------------------------------------------------------------
-def test_pension_init(get_user):
+def test_pension_init():
     PensionForm()
 
 
-def test_pension_init_fields(get_user):
+def test_pension_init_fields():
     form = PensionForm().as_p()
 
     assert '<input type="text" name="date"' in form
@@ -87,7 +87,7 @@ def test_pension_init_fields(get_user):
     assert '<textarea name="remark"' in form
 
 
-def test_saving_current_user_types(get_user):
+def test_saving_current_user_types():
     u = UserFactory(username='tom')
 
     PensionTypeFactory(title='T1')  # user bob, current user
@@ -99,7 +99,7 @@ def test_saving_current_user_types(get_user):
     assert 'T2' not in form
 
 
-def test_pension_valid_data(get_user):
+def test_pension_valid_data():
     t = PensionTypeFactory()
 
     form = PensionForm(data={
@@ -121,7 +121,7 @@ def test_pension_valid_data(get_user):
     assert data.pension_type.title == t.title
 
 
-def test_pension_blank_data(get_user):
+def test_pension_blank_data():
     form = PensionForm(data={})
 
     assert not form.is_valid()
@@ -132,7 +132,7 @@ def test_pension_blank_data(get_user):
     assert 'pension_type' in form.errors
 
 
-def test_pension_price_and_fee_null(get_user):
+def test_pension_price_and_fee_null():
     t = PensionTypeFactory()
 
     form = PensionForm(data={
@@ -148,7 +148,7 @@ def test_pension_price_and_fee_null(get_user):
     assert 'fee' in form.errors
 
 
-def test_pension_price_negative(get_user):
+def test_pension_price_negative():
     t = PensionTypeFactory()
 
     form = PensionForm(data={
@@ -163,7 +163,7 @@ def test_pension_price_negative(get_user):
     assert 'price' in form.errors
 
 
-def test_pension_fee_negative(get_user):
+def test_pension_fee_negative():
     t = PensionTypeFactory()
 
     form = PensionForm(data={

@@ -160,7 +160,7 @@ def test_months_stats(_data):
 
 @pytest.mark.django_db
 @patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
-def test_months_stats_db(_data_db, get_user):
+def test_months_stats_db(_data_db):
     year = 1999
     qs = Count.objects.sum_by_day(year=year)
     actual = Stats(year=year, data=qs).months_stats()
@@ -172,7 +172,7 @@ def test_months_stats_db(_data_db, get_user):
 
 @pytest.mark.django_db
 @patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
-def test_months_stats_db_no_data(get_user):
+def test_months_stats_db_no_data():
     year = 1999
     qs = Count.objects.sum_by_day(year=year)
     actual = Stats(year=year, data=qs).months_stats()
@@ -203,7 +203,7 @@ def test_year_stats(_data, _year_stats_expect):
 
 @pytest.mark.django_db
 @patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
-def test_year_stats_db(get_user, _year_stats_expect, _data_db):
+def test_year_stats_db(_year_stats_expect, _data_db):
     year = 1999
     qs = Count.objects.sum_by_day(year=year)
     actual = Stats(year=year, data=qs).year_stats()
@@ -239,7 +239,7 @@ def test_year_totals(_data):
 
 @pytest.mark.django_db
 @patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
-def test_year_totals_queryset(get_user):
+def test_year_totals_queryset():
     CountFactory()
     qs = Count.objects.year(1999)
 
@@ -289,7 +289,7 @@ def test_year_month_days_no_year_provided():
 
 @pytest.mark.django_db
 @patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
-def test_items(get_user):
+def test_items():
     CountFactory()
     qs = Count.objects.year(1999)
 
@@ -305,7 +305,7 @@ def test_items(get_user):
 
 @pytest.mark.django_db
 @patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
-def test_items_odering(get_user):
+def test_items_odering():
     CountFactory(date=date(1999, 1, 1))
     CountFactory(date=date(1999, 12, 31))
 
@@ -319,7 +319,7 @@ def test_items_odering(get_user):
 
 @pytest.mark.django_db
 @patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
-def test_items_no_data(get_user):
+def test_items_no_data():
     qs = Count.objects.year(1999)
 
     actual = Stats(year=1999, data=qs).items()
@@ -459,7 +459,7 @@ def test_chart_calendar(_data, _chart_calendar_expect_january_with_data):
 
 @pytest.mark.django_db
 @patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
-def test_chart_calendar_db(get_user, _chart_calendar_expect_january_with_data, _data_db):
+def test_chart_calendar_db(_chart_calendar_expect_january_with_data, _data_db):
     year = 1999
     qs = Count.objects.sum_by_day(year=year)
     actual = Stats(year=year, data=qs).chart_calendar()

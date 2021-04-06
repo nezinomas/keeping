@@ -48,7 +48,7 @@ def test_drink_str():
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-def test_drink_related(get_user, _different_users):
+def test_drink_related(_different_users):
     actual = Drink.objects.related()
 
     assert len(actual) == 1
@@ -56,7 +56,7 @@ def test_drink_related(get_user, _different_users):
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-def test_drink_items(get_user, _different_users):
+def test_drink_items(_different_users):
     actual = Drink.objects.items()
 
     assert len(actual) == 1
@@ -64,7 +64,7 @@ def test_drink_items(get_user, _different_users):
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'X')
-def test_drink_items_different_counters(get_user):
+def test_drink_items_different_counters():
     DrinkFactory(counter_type='x')
     DrinkFactory(counter_type='z')
 
@@ -73,7 +73,7 @@ def test_drink_items_different_counters(get_user):
     assert len(actual) == 1
 
 
-def test_drink_items_different_counters_default_value(get_user):
+def test_drink_items_different_counters_default_value():
     DrinkFactory(counter_type='drinks')
     DrinkFactory(counter_type='z')
 
@@ -83,7 +83,7 @@ def test_drink_items_different_counters_default_value(get_user):
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-def test_drink_year(get_user, _different_users):
+def test_drink_year(_different_users):
     actual = list(Drink.objects.year(1999))
 
     assert len(actual) == 1
@@ -108,7 +108,7 @@ def test_drink_quantity_int():
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-def test_drink_order(get_user):
+def test_drink_order():
     DrinkFactory(date=date(1999, 1, 1))
     DrinkFactory(date=date(1999, 12, 1))
 
@@ -119,7 +119,7 @@ def test_drink_order(get_user):
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-def test_drink_months_consumsion(get_user, _drinks):
+def test_drink_months_consumsion(_drinks):
     actual = Drink.objects.sum_by_month(1999)
 
     # filter per_month key from return list
@@ -131,7 +131,7 @@ def test_drink_months_consumsion(get_user, _drinks):
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-def test_drink_months_quantity_sum(get_user, _drinks):
+def test_drink_months_quantity_sum(_drinks):
     actual = Drink.objects.sum_by_month(1999)
 
     # filter sum key from return list
@@ -142,7 +142,7 @@ def test_drink_months_quantity_sum(get_user, _drinks):
     assert expect == pytest.approx(actual, rel=1e-2)
 
 
-def test_drink_months_quantity_sum_no_records_for_current_year(get_user, _second_user):
+def test_drink_months_quantity_sum_no_records_for_current_year(_second_user):
     DrinkFactory(date=date(1970, 1, 1), quantity=1.0)
     DrinkFactory(date=date(2000, 1, 1), quantity=1.5)
     DrinkFactory(date=date(1999, 1, 1), quantity=1.5, counter_type=_second_user)
@@ -155,7 +155,7 @@ def test_drink_months_quantity_sum_no_records_for_current_year(get_user, _second
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-def test_drink_months_month_num(get_user, _drinks):
+def test_drink_months_month_num(_drinks):
     actual = Drink.objects.sum_by_month(1999)
 
     # filter month key from return list
@@ -167,7 +167,7 @@ def test_drink_months_month_num(get_user, _drinks):
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-def test_drink_months_month_len(get_user, _drinks):
+def test_drink_months_month_len(_drinks):
     actual = Drink.objects.sum_by_month(1999)
 
     # filter monthlen key from return list
@@ -180,7 +180,7 @@ def test_drink_months_month_len(get_user, _drinks):
 
 @freeze_time('1999-11-01')
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-def test_drink_days_sum(get_user, _second_user):
+def test_drink_days_sum(_second_user):
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
     DrinkFactory(date=date(1999, 11, 1), quantity=1.5)
     DrinkFactory(date=date(1999, 11, 1), quantity=111, counter_type=_second_user)
@@ -192,7 +192,7 @@ def test_drink_days_sum(get_user, _second_user):
 
 
 @freeze_time('1999-01-03')
-def test_drink_days_sum_no_records_for_selected_year(get_user, _second_user):
+def test_drink_days_sum_no_records_for_selected_year(_second_user):
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0, counter_type=_second_user)
     DrinkFactory(date=date(1999, 11, 1), quantity=1.5)
@@ -203,7 +203,7 @@ def test_drink_days_sum_no_records_for_selected_year(get_user, _second_user):
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-def test_drink_summary(get_user):
+def test_drink_summary():
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
     DrinkFactory(date=date(1999, 1, 2), quantity=2.0)
     DrinkFactory(date=date(2000, 1, 1), quantity=1.0)
@@ -220,7 +220,7 @@ def test_drink_summary(get_user):
     assert expect[1] == pytest.approx(actual[1], 0.001)
 
 
-def test_drink_summary_no_records(get_user):
+def test_drink_summary_no_records():
     actual = list(Drink.objects.summary())
 
     assert actual == []
@@ -245,7 +245,7 @@ def test_drink_target_str():
     assert str(actual) == '1999: 100'
 
 
-def test_drink_target_related(get_user):
+def test_drink_target_related():
     DrinkTargetFactory()
     DrinkTargetFactory(user=UserFactory(username='XXX'))
 
@@ -255,7 +255,7 @@ def test_drink_target_related(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_drink_target_items(get_user):
+def test_drink_target_items():
     DrinkTargetFactory(year=1999)
     DrinkTargetFactory(year=2000, user=UserFactory(username='XXX'))
 
@@ -265,7 +265,7 @@ def test_drink_target_items(get_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_drink_target_year(get_user):
+def test_drink_target_year():
     DrinkTargetFactory(year=1999)
     DrinkTargetFactory(year=1999, user=UserFactory(username='XXX'))
 

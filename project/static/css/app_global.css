@@ -65,7 +65,7 @@ tr.total th {
 
 .nav-item {
     padding: 0;
-    margin: 0;
+    margin: 0.15rem;
 }
 
 .dropdown-menu a.dropdown-item {
@@ -73,8 +73,7 @@ tr.total th {
 }
 
 .nav-link {
-    padding: .15rem .45rem;
-    margin: .15rem;
+    padding: .15rem .35rem;
 }
 
 .container-fluid>.content {
@@ -99,7 +98,6 @@ tr.top-text, tr.top-text th {
     background-color: white!important;
     border-top: 0px!important;
 }
-
 
 .stats .br {
     border-right: 3px solid #0359b0!important;
@@ -144,6 +142,12 @@ tr.top-text, tr.top-text th {
 
 .btn-sm {
   padding: .15rem .25rem;
+}
+
+.btn-menu {
+    font-size: .7rem!important;
+    color: #007bff;
+    padding: 0.1rem 0.25rem;
 }
 
 .btn-super-sm {
@@ -212,4 +216,22 @@ tr.top-text, tr.top-text th {
 
 .no-hover:hover {
     text-decoration: none!important;
-  }
+}
+
+.stats .no-left-border {
+    border-left: 0!important;
+}
+
+.stats .no-right-border {
+    border-right: 0!important;
+}
+
+.trash, .trash:hover {
+    color: #dc3545;
+    width: 100%;
+}
+
+.edit, .edit:hover {
+    color: green;
+    width: 100%;
+}

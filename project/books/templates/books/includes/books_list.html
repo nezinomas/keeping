@@ -1,3 +1,4 @@
+{% load static %}
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
@@ -7,12 +8,14 @@
             <th>Pastaba</th>
             <th class="text-center">Pradėta skaityti</th>
             <th class="text-center">Baigta skaityti</th>
-            <th width="45rem"></th>
+            <th width="30rem" class="no-right-border"></th>
+            <th width="25rem" class="no-left-border"></th>
         </tr>
     </thead>
     <tbody>
         {% for item in items %}
         {% url 'books:books_update' item.id as url_update %}
+        {% url 'books:books_delete' item.id as url_delete %}
         <tr data-url="{{ url_update }}" class="dblclick{% if not item.ended %} teal{% endif %}">
             <td class="text-left">{{ forloop.revcounter }}</td>
             <td class="text-left">{{ item.author }}</td>
@@ -20,11 +23,16 @@
             <td class="text-left">{{ item.remark }}</td>
             <td class="text-center">{{ item.started|date:"Y-m-d" }}</td>
             <td class="text-center">{{ item.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
-            <td class="text-center"><a type="button" data-url="{{ url_update }}" class="btn btn-super-sm btn-outline-info js-create">Edit</a></td>
+            <td class="text-center no-right-border">
+                <a type="button" data-url="{{ url_update }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+            </td>
+            <td class="text-center no-left-border">
+                <a type="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+            </td>
         </tr>
         {% empty %}
         <tr class="table-warning text-center">
-            <td colspan="7" class="py-2"><b>{{ request.user.year|title }}</b> metais irašų nėra.</td>
+            <td colspan="8" class="py-2"><b>{{ request.user.year|title }}</b> metais irašų nėra.</td>
         </tr>
         {% endfor %}
     </tbody>

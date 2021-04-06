@@ -23,7 +23,7 @@ urlpatterns = [
     ),
     path(
         'ajax/load_to_account/',
-        views.load_to_account,
+        views.LoadAccount.as_view(),
         name='load_to_account'
     )
 ]

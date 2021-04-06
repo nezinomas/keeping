@@ -4,12 +4,16 @@ import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
-from .. import views
+from .. import models, views
 from ..factories import PensionFactory, PensionTypeFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+pytestmark = pytest.mark.django_db
 
 
+# ---------------------------------------------------------------------------------------
+#                                                                                Pensions
+# ---------------------------------------------------------------------------------------
 def test_pensions_index_func():
     view = resolve('/pensions/')
 
@@ -65,7 +69,6 @@ def test_pensions_load_form(admin_client):
     assert '2000-01-01' in actual['html_form']
 
 
-@pytest.mark.django_db()
 def test_pensions_save(client_logged):
     i = PensionTypeFactory()
 
@@ -88,7 +91,6 @@ def test_pensions_save(client_logged):
     assert 'PensionType' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_pensions_save_invalid_data(client_logged):
     data = {
         'date': 'x',
@@ -106,7 +108,6 @@ def test_pensions_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_pensions_update_to_another_year(client_logged):
     income = PensionFactory()
 
@@ -130,7 +131,6 @@ def test_pensions_update_to_another_year(client_logged):
     assert '2010-12-31' not in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_pensions_update(client_logged):
     income = PensionFactory()
 
@@ -155,9 +155,55 @@ def test_pensions_update(client_logged):
     assert 'Pastaba' in actual['html_list']
 
 
-#
-# PensionType
-#
+# ---------------------------------------------------------------------------------------
+#                                                                           Pension Delete
+# ---------------------------------------------------------------------------------------
+def test_view_pensions_delete_func():
+    view = resolve('/pensions/delete/1/')
+
+    assert views.Delete is view.func.view_class
+
+
+def test_view_pensions_delete_200(client_logged):
+    p = PensionFactory()
+
+    url = reverse('pensions:pensions_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_pensions_delete_load_form(client_logged):
+    p = PensionFactory()
+
+    url = reverse('pensions:pensions_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/pensions/delete/1/"' in actual['html_form']
+
+
+def test_view_pensions_delete(client_logged):
+    p = PensionFactory()
+
+    assert models.Pension.objects.all().count() == 1
+    url = reverse('pensions:pensions_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.Pension.objects.all().count() == 0
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                             PensionType
+# ---------------------------------------------------------------------------------------
 
 @freeze_time('2000-01-01')
 def test_type_load_form(admin_client):
@@ -168,7 +214,6 @@ def test_type_load_form(admin_client):
     assert response.status_code == 200
 
 
-@pytest.mark.django_db()
 def test_type_save(client_logged):
     data = {
         'title': 'TTT',
@@ -185,7 +230,6 @@ def test_type_save(client_logged):
     assert 'TTT' in actual['html_list']
 
 
-@pytest.mark.django_db()
 def test_type_save_invalid_data(client_logged):
     data = {'title': ''}
 
@@ -199,7 +243,6 @@ def test_type_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
 def test_type_update(client_logged):
     income = PensionTypeFactory()
 

@@ -4,8 +4,9 @@ from django.urls import reverse_lazy
 from ..core.forms import SearchForm
 from ..core.lib import search
 from ..core.mixins.ajax import AjaxCustomFormMixin
-from ..core.mixins.views import (CreateAjaxMixin, DispatchAjaxMixin,
-                                 IndexMixin, ListMixin, UpdateAjaxMixin)
+from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
+                                 DispatchAjaxMixin, IndexMixin, ListMixin,
+                                 UpdateAjaxMixin)
 from . import forms, models
 from .lib import views_helper as H
 
@@ -36,6 +37,10 @@ class New(CreateAjaxMixin):
 class Update(UpdateAjaxMixin):
     model = models.Book
     form_class = forms.BookForm
+
+
+class Delete(DeleteAjaxMixin):
+    model = models.Book
 
 
 class ReloadStats(DispatchAjaxMixin, IndexMixin):

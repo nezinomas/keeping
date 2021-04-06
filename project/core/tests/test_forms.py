@@ -8,11 +8,11 @@ pytestmark = pytest.mark.django_db
 # ---------------------------------------------------------------------------------------
 #                                                                                  Search
 # ---------------------------------------------------------------------------------------
-def test_search_init(get_user):
+def test_search_init():
     SearchForm()
 
 
-def test_search_fields(get_user):
+def test_search_fields():
     form = SearchForm().as_p()
 
     assert '<input type="text" name="search"' in form

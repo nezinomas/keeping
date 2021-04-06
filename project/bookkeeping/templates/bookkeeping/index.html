@@ -20,16 +20,13 @@
 <div class="row mt-4 mb-3">
     <div class="col-lg-12">
         {% url 'bookkeeping:accounts_worth_new' as url_accounts %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="fas fa-plus"></i> Sąskaitų faktas</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create pr2" data-url="{{ url_accounts }}"><i class="bi bi-plus"></i> Sąskaitų faktas</button>
         {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Fondų faktas</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create pr-2" data-url="{{ url_expenses_new }}"><i class="bi bi-plus"></i> Fondų faktas</button>
         {% url 'bookkeeping:pensions_worth_new' as url_pensions_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions_new }}"><i class="fas fa-plus"></i> Pensijos faktas</button>
-        <a class="btn btn-sm btn-outline-secondary"
-            href="{% url 'core:regenerate_balances_current_year' year %}" data-toggle="tooltip"
-            data-placement="top" title="Bus atnaujintas šių metų balansas."><i class="fas fa-sync"> </i> Atnaujinti {{ year|safe }} balansus</a>
-        <a class="btn btn-sm btn-outline-danger" href="{% url 'core:regenerate_balances' %}" data-toggle="tooltip"
-            data-placement="top" title="Bus atnaujinti visų metų balansai."><i class="fas fa-sync"> </i> Atnaujinti balansus</a>
+        <button type="button" class="btn btn-sm btn-outline-success js-create pr-2" data-url="{{ url_pensions_new }}"><i class="bi bi-plus"></i> Pensijos faktas</button>
+        <a class="btn btn-sm btn-outline-secondary pr-2" href="{% url 'core:regenerate_balances_current_year' year %}" data-toggle="tooltip" data-placement="top" title="Bus atnaujintas šių metų balansas."><i class="bi bi-arrow-repeat"></i> Atnaujinti {{ year|safe }} balansus</a>
+        <a class="btn btn-sm btn-outline-danger pr-2" href="{% url 'core:regenerate_balances' %}" data-toggle="tooltip" data-placement="top" title="Bus atnaujinti visų metų balansai."><i class="bi bi-arrow-repeat"></i> Atnaujinti balansus</a>
     </div>
 </div>
 

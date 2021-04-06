@@ -70,7 +70,7 @@ def test_expenses_update_func():
 
 
 @freeze_time('1974-08-08')
-def test_expenses_load_new_form(client_logged, get_user):
+def test_expenses_load_new_form(get_user, client_logged):
     get_user.year = 3000
     url = reverse('expenses:expenses_new')
 
@@ -241,7 +241,7 @@ def test_expenses_update(client_logged):
 
 
 @freeze_time('2000-03-03')
-def test_expenses_update_past_record(client_logged, get_user):
+def test_expenses_update_past_record(get_user, client_logged):
     get_user.year = 2000
     e = ExpenseFactory(date=date(1974, 12, 12))
 
@@ -280,7 +280,7 @@ def test_expenses_index_200(client_logged):
 
     assert response.status_code == 200
 
-    assert 'expenses' in response.context
+    assert 'expenses_list' in response.context
     assert 'categories' in response.context
 
 
@@ -296,6 +296,52 @@ def test_expenses_index_search_form(client_logged):
 
     assert '<input type="text" name="search"' in response
     assert reverse('expenses:expenses_search') in response
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                             Expense Delete
+# ---------------------------------------------------------------------------------------
+def test_view_expenses_delete_func():
+    view = resolve('/expenses/delete/1/')
+
+    assert expenses.Delete is view.func.view_class
+
+
+def test_view_expenses_delete_200(client_logged):
+    p = ExpenseFactory()
+
+    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_expenses_delete_load_form(client_logged):
+    p = ExpenseFactory()
+
+    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual['html_form']
+    assert 'action="/expenses/delete/1/"' in actual['html_form']
+
+
+def test_view_expenses_delete(client_logged):
+    p = ExpenseFactory()
+
+    assert models.Expense.objects.all().count() == 1
+    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.Expense.objects.all().count() == 0
 
 
 # ---------------------------------------------------------------------------------------
@@ -385,12 +431,12 @@ def test_expense_name_update(client_logged):
 
 
 # ---------------------------------------------------------------------------------------
-#                                                                       load_expense_name
+#                                                                       LoadExpenseName
 # ---------------------------------------------------------------------------------------
 def test_load_expenses_name_new_func():
     actual = resolve('/ajax/load_expense_name/')
 
-    assert expenses.load_expense_name is actual.func
+    assert expenses.LoadExpenseName is actual.func.view_class
 
 
 def test_load_expense_name_status_code(client_logged):
@@ -416,22 +462,37 @@ def test_load_expense_name_all(client_logged, _db_data):
     assert response.context['objects'].count() == 2
 
 
+def test_load_expense_name_select_empty_parent(client_logged, _db_data):
+    url = reverse('expenses:load_expense_name')
+    response = client_logged.get(url, {'expense_type': ''})
+
+    assert response.context['objects'] == []
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                         realod expenses
 # ---------------------------------------------------------------------------------------
-def test_view_reload_stats_func():
+def test_view_reload_expenses_func():
     view = resolve('/expenses/reload/')
 
-    assert expenses.reload is view.func
+    assert expenses.ReloadExpenses is view.func.view_class
 
 
-def test_view_reload_stats_render(get_user, rf):
+def test_view_reload_expenses_render(rf):
     request = rf.get('/expenses/reload/?ajax_trigger=1')
     request.user = UserFactory.build()
 
-    response = expenses.reload(request)
+    response = expenses.ReloadExpenses.as_view()(request)
 
     assert response.status_code == 200
+
+
+def test_view_reload_expenses_render_ajax_trigger_not_set(client_logged):
+    url = reverse('expenses:reload_expenses')
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert expenses.Index == response.resolver_match.func.view_class
 
 
 # ---------------------------------------------------------------------------------------

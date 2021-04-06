@@ -16,11 +16,11 @@ pytestmark = pytest.mark.django_db
 # ----------------------------------------------------------------------------
 #                                                                      Expense
 # ----------------------------------------------------------------------------
-def test_expense_form_init(get_user):
+def test_expense_form_init():
     ExpenseForm(data={})
 
 
-def test_expense_init_fields(get_user):
+def test_expense_init_fields():
     form = ExpenseForm().as_p()
 
     assert '<select name="user"' not in form
@@ -41,7 +41,7 @@ def test_expense_init_fields(get_user):
 
 
 @freeze_time('1000-01-01')
-def test_expense_year_initial_value(get_user):
+def test_expense_year_initial_value():
     UserFactory()
 
     form = ExpenseForm().as_p()
@@ -49,7 +49,7 @@ def test_expense_year_initial_value(get_user):
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_expense_current_user_expense_types(get_user):
+def test_expense_current_user_expense_types():
     u = UserFactory(username='tom')
 
     ExpenseTypeFactory(title='T1')  # user bob, current user
@@ -61,7 +61,7 @@ def test_expense_current_user_expense_types(get_user):
     assert 'T2' not in form
 
 
-def test_expense_current_user_accounts(get_user):
+def test_expense_current_user_accounts():
     u = UserFactory(username='tom')
 
     AccountFactory(title='A1')  # user bob, current user
@@ -73,7 +73,7 @@ def test_expense_current_user_accounts(get_user):
     assert 'A2' not in form
 
 
-def test_expense_select_first_account(get_user):
+def test_expense_select_first_account():
     u = UserFactory(username='XXX')
     AccountFactory(title='A1', user=u)
 
@@ -85,7 +85,7 @@ def test_expense_select_first_account(get_user):
     assert expect in form
 
 
-def test_exepense_form_valid_data(get_user):
+def test_exepense_form_valid_data():
     a = AccountFactory()
     t = ExpenseTypeFactory()
     n = ExpenseNameFactory(parent=t)
@@ -114,7 +114,7 @@ def test_exepense_form_valid_data(get_user):
     assert e.quantity == 1
 
 
-def test_expenses_form_blank_data(get_user):
+def test_expenses_form_blank_data():
     form = ExpenseForm(data={})
 
     assert not form.is_valid()
@@ -139,7 +139,7 @@ def test_expenses_form_blank_data(get_user):
         ('test.js', False), ('test.xxx', False),
     ]
 )
-def test_expenses_form_filefield(filename, valid, get_user):
+def test_expenses_form_filefield(filename, valid):
     f = SimpleUploadedFile(filename, b'x')
 
     a = AccountFactory()
@@ -163,7 +163,7 @@ def test_expenses_form_filefield(filename, valid, get_user):
     assert form.is_valid() == valid
 
 
-def test_exepense_form_necessary_type_and_exception(get_user):
+def test_exepense_form_necessary_type_and_exception():
     a = AccountFactory()
     t = ExpenseTypeFactory(necessary=True)
     n = ExpenseNameFactory(parent=t)
@@ -204,7 +204,7 @@ def test_expense_type_init_fields():
 
 
 @pytest.mark.django_db
-def test_expense_type_valid_data(get_user):
+def test_expense_type_valid_data():
     form = ExpenseTypeForm(data={
         'title': 'Title',
         'necessary': True
@@ -259,11 +259,11 @@ def test_expense_type_title_too_short():
 # ----------------------------------------------------------------------------
 #                                                                 Expense Name
 # ----------------------------------------------------------------------------
-def test_expense_name_init(get_user):
+def test_expense_name_init():
     ExpenseNameForm()
 
 
-def test_expense_name_current_user_expense_types(get_user):
+def test_expense_name_current_user_expense_types():
     u = UserFactory(username='tom')
 
     ExpenseTypeFactory(title='T1') # user bob, current user
@@ -276,7 +276,7 @@ def test_expense_name_current_user_expense_types(get_user):
 
 
 @pytest.mark.django_db
-def test_expense_name_valid_data(get_user):
+def test_expense_name_valid_data():
     p = ExpenseTypeFactory()
 
     form = ExpenseNameForm(data={
@@ -294,7 +294,7 @@ def test_expense_name_valid_data(get_user):
 
 
 @pytest.mark.django_db
-def test_expense_name_blank_data(get_user):
+def test_expense_name_blank_data():
     form = ExpenseNameForm(data={})
 
     assert not form.is_valid()
@@ -304,7 +304,7 @@ def test_expense_name_blank_data(get_user):
 
 
 @pytest.mark.django_db
-def test_expense_name_title_null(get_user):
+def test_expense_name_title_null():
     p = ExpenseTypeFactory()
     form = ExpenseNameForm(data={'title': None, 'parent': p.pk})
 
@@ -314,7 +314,7 @@ def test_expense_name_title_null(get_user):
 
 
 @pytest.mark.django_db
-def test_expense_name_title_too_long(get_user):
+def test_expense_name_title_too_long():
     p = ExpenseTypeFactory()
     form = ExpenseNameForm(data={'title': 'a'*255, 'parent': p.pk})
 
@@ -324,7 +324,7 @@ def test_expense_name_title_too_long(get_user):
 
 
 @pytest.mark.django_db
-def test_expense_name_title_too_short(get_user):
+def test_expense_name_title_too_short():
     p = ExpenseTypeFactory()
     form = ExpenseNameForm(data={'title': 'x', 'parent': p.pk})
 

@@ -81,6 +81,7 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'project.core.context.years',
                 'project.core.context.yday',
+                'project.core.context.context_months',
             ],
         },
     },

@@ -1,13 +1,13 @@
 from typing import Dict, List
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from ..accounts.lib.balance import Balance as AccountStats
 from ..accounts.models import Account, AccountBalance
 from ..bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
-from ..expenses.models import Expense, ExpenseType
-from ..incomes.models import Income, IncomeType
+from ..expenses.models import Expense
+from ..incomes.models import Income
 from ..pensions.models import Pension, PensionBalance, PensionType
 from ..savings.lib.balance import Balance as SavingStats
 from ..savings.models import Saving, SavingBalance, SavingType
@@ -21,13 +21,15 @@ from .lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
 #                                                               AccountBalance
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=Income)
-@receiver(post_save, sender=IncomeType)
+@receiver(post_delete, sender=Income)
 @receiver(post_save, sender=Expense)
-@receiver(post_save, sender=ExpenseType)
+@receiver(post_delete, sender=Expense)
 @receiver(post_save, sender=Saving)
-@receiver(post_save, sender=SavingType)
+@receiver(post_delete, sender=Saving)
 @receiver(post_save, sender=Transaction)
+@receiver(post_delete, sender=Transaction)
 @receiver(post_save, sender=SavingClose)
+@receiver(post_delete, sender=SavingClose)
 @receiver(post_save, sender=AccountWorth)
 def post_save_account_stats(sender, instance: object, year: int = None,
                             *args, **kwargs):
@@ -38,9 +40,11 @@ def post_save_account_stats(sender, instance: object, year: int = None,
 #                                                               SavingBalance
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=Saving)
-@receiver(post_save, sender=SavingType)
+@receiver(post_delete, sender=Saving)
 @receiver(post_save, sender=SavingClose)
+@receiver(post_delete, sender=SavingClose)
 @receiver(post_save, sender=SavingChange)
+@receiver(post_delete, sender=SavingChange)
 @receiver(post_save, sender=SavingWorth)
 def post_save_saving_stats(sender, instance: object, year: int = None,
                            *args, **kwargs):
@@ -51,7 +55,7 @@ def post_save_saving_stats(sender, instance: object, year: int = None,
 #                                                               PensionBalance
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=Pension)
-@receiver(post_save, sender=PensionType)
+@receiver(post_delete, sender=Pension)
 @receiver(post_save, sender=PensionWorth)
 def post_save_pension_stats(sender, instance: object, year: int = None,
                             *args, **kwargs):

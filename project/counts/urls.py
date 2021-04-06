@@ -27,6 +27,11 @@ urlpatterns = [
         name=f'{App_name}_update'
     ),
     path(
+        f'{App_name}/delete/<int:pk>/',
+        views.Delete.as_view(),
+        name=f'{App_name}_delete'
+    ),
+    path(
         f'{App_name}/reload_stats/',
         views.ReloadStats.as_view(),
         name='reload_stats'

@@ -79,6 +79,7 @@ def test_view_regenerate_balances_current_year_status_200(client_logged):
 
 
 @freeze_time('2007-01-01')
+@pytest.mark.disable_get_user_patch
 @patch('project.core.views.post_save_saving_stats')
 @patch('project.core.views.post_save_account_stats')
 @patch('project.core.views.post_save_pension_stats')
