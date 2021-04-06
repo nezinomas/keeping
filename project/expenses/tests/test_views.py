@@ -431,7 +431,7 @@ def test_expense_name_update(client_logged):
 
 
 # ---------------------------------------------------------------------------------------
-#                                                                       load_expense_name
+#                                                                       LoadExpenseName
 # ---------------------------------------------------------------------------------------
 def test_load_expenses_name_new_func():
     actual = resolve('/ajax/load_expense_name/')
@@ -460,6 +460,13 @@ def test_load_expense_name_all(client_logged, _db_data):
     response = client_logged.get(url, {'expense_type': 1})
 
     assert response.context['objects'].count() == 2
+
+
+def test_load_expense_name_select_empty_parent(client_logged, _db_data):
+    url = reverse('expenses:load_expense_name')
+    response = client_logged.get(url, {'expense_type': ''})
+
+    assert response.context['objects'] == []
 
 
 # ---------------------------------------------------------------------------------------

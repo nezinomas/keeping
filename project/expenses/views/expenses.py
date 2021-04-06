@@ -110,8 +110,14 @@ class LoadExpenseName(TemplateView):
     template_name = 'core/dropdown.html'
 
     def get(self, request, *args, **kwargs):
+        objects = []
         pk = request.GET.get('expense_type')
-        objects = models.ExpenseName.objects.parent(pk).year(request.user.year)
+
+        if pk:
+            objects = (models.ExpenseName
+                       .objects
+                       .parent(pk)
+                       .year(request.user.year))
 
         return self.render_to_response({'objects': objects})
 
