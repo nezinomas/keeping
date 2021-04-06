@@ -15,20 +15,6 @@ pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
-def test_load_saving_type_200(client_logged):
-    response = client_logged.get('/ajax/load_saving_type/')
-
-    assert response.status_code == 200
-
-
-def test_load_saving_type_has_saving_type(client_logged):
-    SavingTypeFactory()
-
-    response = client_logged.get('/ajax/load_saving_type/')
-
-    assert 'Savings' in str(response.content)
-
-
 # ----------------------------------------------------------------------------
 #                                                                  Transaction
 # ----------------------------------------------------------------------------
@@ -547,6 +533,14 @@ def test_load_saving_type_for_current_user(client_logged):
 
     assert 'S1' not in str(response.content)
     assert 'S2' not in str(response.content)
+
+
+def test_load_saving_type_empty_parent_pk(client_logged):
+    url = reverse('transactions:load_saving_type')
+    response = client_logged.get(url, {'id': ''})
+
+    assert response.status_code == 200
+    assert response.context['objects'] == []
 
 
 # ---------------------------------------------------------------------------------------
