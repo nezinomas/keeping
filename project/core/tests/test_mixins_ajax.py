@@ -282,3 +282,28 @@ def test_delete_post_render_normal_request(mck_render, _request):
     response = view.post(_request)
 
     assert response == 'ok'
+
+
+@patch('project.core.mixins.ajax.AjaxDeleteMixin.get_object')
+@patch('project.core.mixins.ajax.AjaxDeleteMixin.get_context_data')
+@patch('project.core.mixins.ajax.render_to_string')
+def test_delete_list_not_rendered(mck_render, mck_context, mck_object, _ajax_request):
+    class Dummy(AjaxDeleteMixin, FormMixin):
+        list_render_output = False
+        list_template_name = 'XXX'
+        template_name = 'YYY'
+        model = Mock()
+
+    mck_render.side_effect = ['html_form']
+
+    view = setup_view(Dummy(), _ajax_request)
+    response = view.post()
+
+    assert response.status_code == 200
+    assert mck_render.call_count == 0
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert 'html_list' not in actual
+    assert actual['form_is_valid']
