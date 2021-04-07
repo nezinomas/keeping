@@ -27,9 +27,12 @@ $(function () {
                 "form_data": form_data
             },
             success: function (data) {
-                var _html = data.html
+                var _html = data.html;
+                var container = data.container;
+                container = (container ? `#${container}` : '#ajax-content');
+
                 if(_html) {
-                    $('#ajax-content').html(_html);
+                    $(container).html(_html);
                 }
                 $('#search_form_data').html(data.html_form);
 
