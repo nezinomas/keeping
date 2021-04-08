@@ -18,6 +18,9 @@ $(function () {
                 var form = $('.js-form');
                 var action = form.attr("data-action");
 
+                // load url from list table to form
+                $("#js-form").attr('action', url);
+
                 if (action == 'update') {
                     var price = document.getElementById("id_price");
                     var total_sum = document.getElementById("id_total_sum");
