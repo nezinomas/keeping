@@ -10,6 +10,8 @@
 
 
 {% block content %}
+
+{% if tab == 'index' %}
 <!-- Loader -->
 <div class="loader loader-default" id="loader"></div>
 
@@ -33,6 +35,13 @@
 <div class="row mt-2">
     <div class="col-lg-12" id="chart_readed_books">{{ chart_readed_books }}</div>
 </div>
+{% endif %}
+
+{% if tab == 'all' %}
+<div class="row mt-2">
+    <div id="book_list" class="col-lg-12">{{ book_list }}</div>
+</div>
+{% endif %}
 
 {% include 'modal.html' %}
 <script type="text/javascript" src="{% static 'js/search.js' %}"></script>
@@ -43,13 +52,15 @@
         $.ajax({
             url: url,
             data: {
-                'ajax_trigger': '1'
+                'ajax_trigger': '1',
+                'tab': '{{ tab }}',
             },
             success: function (data) {
-                var blocks = ['info_row', 'chart_readed_books'];
+                var blocks = ['info_row', 'chart_readed_books', 'book_list'];
                 reload_stats(data, blocks);
             }
         });
     });
 </script>
+
 {% endblock content %}

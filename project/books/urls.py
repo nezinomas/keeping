@@ -16,6 +16,11 @@ urlpatterns = [
         name='books_list'
     ),
     path(
+        'books/all/',
+        views.All.as_view(),
+        name='books_all'
+    ),
+    path(
         'books/new/',
         views.New.as_view(),
         name='books_new'

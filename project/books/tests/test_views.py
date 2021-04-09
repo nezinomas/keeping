@@ -1,15 +1,17 @@
 import json
 import re
 from datetime import date
+from types import SimpleNamespace
 
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
+from mock import patch
 
+from ...core.tests.utils import setup_view
 from ...users.factories import UserFactory
-from .. import models
+from .. import models, views
 from ..factories import BookFactory, BookTargetFactory
-from ..views import Delete, Index, Lists, New, ReloadStats, Search, Update
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
@@ -21,7 +23,7 @@ pytestmark = pytest.mark.django_db
 def test_view_index_func():
     view = resolve('/books/')
 
-    assert Index == view.func.view_class
+    assert views.Index == view.func.view_class
 
 
 def test_books_index_200(client_logged):
@@ -138,14 +140,15 @@ def test_books_index_search_form(client_logged):
 def test_books_reload_stats_func():
     view = resolve('/books/reload_stats/')
 
-    assert ReloadStats is view.func.view_class
+    assert views.ReloadStats is view.func.view_class
 
 
 def test_books_reload_stats_render(rf):
     request = rf.get('/books/reload_stats/?ajax_trigger=1')
     request.user = UserFactory.build()
+    request.resolver_match = SimpleNamespace(app_name='books')
 
-    response = ReloadStats.as_view()(request)
+    response = views.ReloadStats.as_view()(request)
 
     assert response.status_code == 200
 
@@ -162,7 +165,31 @@ def test_books_reload_stats_render_ajax_trigger_not_set(client_logged):
     response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
-    assert Index == response.resolver_match.func.view_class
+    assert views.Index == response.resolver_match.func.view_class
+
+
+@patch('project.books.views.BookTabMixin.get_tab', return_value='index')
+@patch('project.books.views.Lists.as_view')
+@patch('project.books.views.BookRenderer')
+def test_books_reload_tab_index(_BookRenderer, _ListView, _BookTabMixin, fake_request):
+    v = setup_view(views.ReloadStats(), fake_request)
+    v.get(fake_request)
+
+    assert _ListView.call_count == 1
+    assert _BookTabMixin.call_count == 1
+    assert _BookRenderer.call_count == 1
+
+
+@patch('project.books.views.BookTabMixin.get_tab', return_value='all')
+@patch('project.books.views.Lists.as_view')
+@patch('project.books.views.BookRenderer')
+def test_books_reload_tab_all(_BookRenderer, _ListView, _BookTabMixin, fake_request):
+    v = setup_view(views.ReloadStats(), fake_request)
+    v.get(fake_request)
+
+    assert _ListView.call_count == 1
+    assert _BookTabMixin.call_count == 1
+    assert _BookRenderer.call_count == 0
 
 
 # ----------------------------------------------------------------------------
@@ -171,7 +198,7 @@ def test_books_reload_stats_render_ajax_trigger_not_set(client_logged):
 def test_view_lists_func():
     view = resolve('/books/lists/')
 
-    assert Lists == view.func.view_class
+    assert views.Lists == view.func.view_class
 
 
 # ----------------------------------------------------------------------------
@@ -180,13 +207,13 @@ def test_view_lists_func():
 def test_view_new_func():
     view = resolve('/books/new/')
 
-    assert New == view.func.view_class
+    assert views.New == view.func.view_class
 
 
 def test_view_update_func():
     view = resolve('/books/update/1/')
 
-    assert Update == view.func.view_class
+    assert views.Update == view.func.view_class
 
 
 @freeze_time('2000-01-01')
@@ -332,7 +359,7 @@ def test_books_update_past_record(get_user, client_logged):
 def test_view_books_delete_func():
     view = resolve('/books/delete/1/')
 
-    assert Delete is view.func.view_class
+    assert views.Delete is view.func.view_class
 
 
 def test_view_books_delete_200(client_logged):
@@ -355,8 +382,9 @@ def test_view_books_delete_load_form(client_logged):
     actual = json.loads(json_str)
 
     assert response.status_code == 200
+
     assert '<form method="post"' in actual['html_form']
-    assert 'action="/books/delete/1/"' in actual['html_form']
+    assert 'Ar tikrai nori išrinti: <strong>Book Title</strong>?' in actual['html_form']
 
 
 def test_view_books_delete(client_logged):
@@ -371,6 +399,38 @@ def test_view_books_delete(client_logged):
 
     assert models.Book.objects.all().count() == 0
 
+
+# ----------------------------------------------------------------------------
+#                                                               Books All List
+# ----------------------------------------------------------------------------
+def test_books_all_func():
+    view = resolve('/books/all/')
+
+    assert views.All == view.func.view_class
+
+
+def test_books_all_200(client_logged):
+    url = reverse('books:books_all')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_books_all_list(client_logged):
+    BookFactory(started=date(2000, 1, 1), ended=date(2000, 1, 31))
+    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31))
+
+    url = reverse('books:books_all')
+    response = client_logged.get(url)
+
+    assert len(response.context['items']) == 2
+
+
+def test_books_all_whole_page(client_logged):
+    url = reverse('books:books_all')
+    response = client_logged.get(url)
+
+    assert '<head>' in response.content.decode('utf-8')
 
 
 # ---------------------------------------------------------------------------------------
@@ -387,7 +447,7 @@ def _search_form_data():
 def test_search_func():
     view = resolve('/books/search/')
 
-    assert Search is view.func.view_class
+    assert views.Search is view.func.view_class
 
 
 def test_search_get_200(client_logged):
