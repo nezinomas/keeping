@@ -16,7 +16,9 @@
         {% for item in items %}
         {% url 'books:books_update' item.id as url_update %}
         {% url 'books:books_delete' item.id as url_delete %}
-        <tr data-url="{{ url_update }}" class="dblclick{% if not item.ended %} teal{% endif %}">
+        {% ifchanged item.started|date:"Y" %}<tr>{% if not forloop.first %}<td colspan="8" class="book-spacer"></td>{% endif %}</tr>
+        {% endifchanged %}
+        <tr data-url="{{ url_update }}?tab={{ tab }}" class="dblclick{% if not item.ended %} teal{% endif %}">
             <td class="text-left">{{ forloop.revcounter }}</td>
             <td class="text-left">{{ item.author }}</td>
             <td class="text-left">„{{ item.title }}”</td>
@@ -24,10 +26,10 @@
             <td class="text-center">{{ item.started|date:"Y-m-d" }}</td>
             <td class="text-center">{{ item.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
             <td class="text-center no-right-border">
-                <a type="button" data-url="{{ url_update }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+                <a type="button" data-url="{{ url_update }}?tab={{ tab }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
             </td>
             <td class="text-center no-left-border">
-                <a type="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+                <a type="button" data-url="{{ url_delete }}?tab={{ tab }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
         {% empty %}
@@ -41,5 +43,10 @@
 <style>
     .teal {
         background-color: #8ce7c2!important;
+    }
+
+    .book-spacer {
+        background-color: rgb(218, 238, 250);
+        height: .65rem;
     }
 </style>

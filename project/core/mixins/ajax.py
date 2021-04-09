@@ -91,6 +91,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
 
 
 class AjaxDeleteMixin(GetQuerysetMixin):
+    list_render_output = True  # can turn-off render list
     list_template_name = None
     object = None
 
@@ -129,12 +130,15 @@ class AjaxDeleteMixin(GetQuerysetMixin):
 
             json_data = dict()
             json_data['form_is_valid'] = True
-            context = self.get_context_data()
 
-            json_data['html_list'] = (
-                render_to_string(
-                    self.get_list_template_name(), context, self.request)
-            )
+            if self.list_render_output:
+                context = self.get_context_data()
+                json_data['html_list'] = (
+                    render_to_string(
+                        self.get_list_template_name(), context, self.request)
+                )
+            else:
+                context = self.get_context_data(**{'no_items': True})
 
             return JsonResponse(json_data)
 
@@ -181,7 +185,9 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
             'form_is_valid': True,
             'html_form': self._render_form({'form': form}),
             'html': html,
+            **kwargs,
         }
+
         return JsonResponse(json_data)
 
     def _render_form(self, context):

@@ -109,10 +109,11 @@ def test_view_delete_load_form(client_logged):
 
     json_str = response.content
     actual = json.loads(json_str)
+    actual = actual['html_form']
 
     assert response.status_code == 200
-    assert '<form method="post"' in actual['html_form']
-    assert f'action="/{App_name}/delete/1/"' in actual['html_form']
+    assert '<form method="post"' in actual
+    assert 'Ar tikrai nori išrinti: <strong>1999-01-01: 1.0</strong>?' in actual
 
 
 def test_view_delete(client_logged):

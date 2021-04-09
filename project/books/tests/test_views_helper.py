@@ -7,6 +7,7 @@ from ..lib import views_helper as T
 
 pytestmark = pytest.mark.django_db
 
+
 @pytest.fixture(autouse=True)
 def _books():
     BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 2))

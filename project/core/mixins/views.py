@@ -63,17 +63,14 @@ class UpdateAjaxMixin(
         UpdateView):
 
     def get_context_data(self, **kwargs):
-        app = H.app_name(self)
-        model = H.model_plural_name(self)
+        # app = H.app_name(self)
+        # model = H.model_plural_name(self)
 
         context = super().get_context_data(**kwargs)
-        context['action'] = 'update'
-        context['url'] = (
-            reverse(
-                f'{app}:{model}_update',
-                kwargs={'pk': self.object.pk}
-            )
-        )
+        context.update({
+            'action': 'update',
+            # 'url': reverse(f'{app}:{model}_update', kwargs={'pk': self.object.pk}),
+        })
 
         return context
 
@@ -84,15 +81,17 @@ class DeleteAjaxMixin(
         DeleteView):
 
     def get_context_data(self, **kwargs):
-        app = H.app_name(self)
-        model = H.model_plural_name(self)
+        # app = H.app_name(self)
+        # model = H.model_plural_name(self)
         pk = self.object.pk
 
         context = super().get_context_data(**kwargs)
 
         if pk:
-            context['action'] = 'delete'
-            context['url'] = reverse(f'{app}:{model}_delete', kwargs={'pk': pk})
+            context.update({
+                'action': 'delete',
+                # 'url': reverse(f'{app}:{model}_delete', kwargs={'pk': pk}),
+            })
 
         return context
 

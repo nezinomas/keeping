@@ -75,9 +75,20 @@
             <a class="nav-link {% if '/savings/' in request.path %}active{% endif %}"
               href="{% url 'savings:savings_index' %}">Taupymas</a>
           </li>
+
           <li class="nav-item">
-            <a class="nav-link {% if '/books/' in request.path %}active{% endif %}"
-              href="{% url 'books:books_index' %}">Knygos</a>
+            <div class="btn-group">
+              <a class="btn btn-menu pr-1 nav-link {% if '/books/' in request.path %}active{% endif %}"
+                href="{% url 'books:books_index' %}">Knygos</a>
+              <button type="button"
+                class="btn btn-menu pl-0 nav-link {% if '/books/' in request.path %}active{% endif %} dropdown-toggle dropdown-toggle-split"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="sr-only">Toggle Dropdown</span>
+              </button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item btn-sm" href="{% url 'books:books_all' %}">Visos knygos</a>
+              </div>
+            </div>
           </li>
 
           <li class="nav-item">
