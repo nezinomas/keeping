@@ -2,9 +2,8 @@
 {% url 'expenses:expenses_type_update' item.id as url_type_update %}
 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
     <div class="panel panel-default mb-2">
-        <div class="panel-heading dblclick" role="tab" data-url="{{ url_type_update }}">
-            <a role="button" class="list-group-item list-group-item-primary list-group-item-action pr-2" data-toggle="collapse" href="#_{{ item.id }}_"
-                aria-expanded="true" >
+        <div class="list-group panel-heading dblclick" role="tab" data-url="{{ url_type_update }}">
+            <a role="button" class="list-group-item list-group-item-primary list-group-item-action pr-2" data-toggle="collapse" href="#_{{ item.id }}_" aria-expanded="true" >
                 {{ item.title }}
                 {% if item.necessary %}<span class="badge badge-primary"><i class="bi bi-star"></i></span>{% endif %}<span style="position: absolute; top: 0; right: 30px; display: block;"><button type="button" data-url="{{ url_type_update }}" class="btn btn-sm btn-link edit js-create" title="Edit"><i class="bi bi-pencil-fill"></i></button></span>
             </a>
