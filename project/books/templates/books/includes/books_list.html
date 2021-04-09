@@ -16,6 +16,8 @@
         {% for item in items %}
         {% url 'books:books_update' item.id as url_update %}
         {% url 'books:books_delete' item.id as url_delete %}
+        {% ifchanged item.started|date:"Y" %}<tr>{% if not forloop.first %}<td colspan="8" class="book-spacer"></td>{% endif %}</tr>
+        {% endifchanged %}
         <tr data-url="{{ url_update }}?tab={{ tab }}" class="dblclick{% if not item.ended %} teal{% endif %}">
             <td class="text-left">{{ forloop.revcounter }}</td>
             <td class="text-left">{{ item.author }}</td>
@@ -41,5 +43,10 @@
 <style>
     .teal {
         background-color: #8ce7c2!important;
+    }
+
+    .book-spacer {
+        background-color: rgb(218, 238, 250);
+        height: .65rem;
     }
 </style>
