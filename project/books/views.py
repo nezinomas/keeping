@@ -128,8 +128,8 @@ class Search(AjaxCustomFormMixin):
             template = 'books/includes/books_list.html'
             context = {'items': sql}
             kwargs.update({
+                'container': 'book_list',
                 'html': render_to_string(template, context, self.request),
-                'container': 'book_list'
             })
 
         return super().form_valid(form, **kwargs)
