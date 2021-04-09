@@ -172,10 +172,11 @@ def test_view_incomes_delete_load_form(client_logged):
 
     json_str = response.content
     actual = json.loads(json_str)
+    actual = actual['html_form']
 
     assert response.status_code == 200
-    assert '<form method="post"' in actual['html_form']
-    assert 'action="/plans/incomes/delete/1/"' in actual['html_form']
+    assert '<form method="post"' in actual
+    assert f'Ar tikrai nori išrinti: <strong>{p}</strong>?' in actual
 
 
 def test_view_incomes_delete(client_logged):
@@ -304,10 +305,12 @@ def test_view_expenses_delete_load_form(client_logged):
 
     json_str = response.content
     actual = json.loads(json_str)
+    actual = actual['html_form']
 
     assert response.status_code == 200
-    assert '<form method="post"' in actual['html_form']
-    assert 'action="/plans/expenses/delete/1/"' in actual['html_form']
+    assert '<form method="post"' in actual
+    assert f'Ar tikrai nori išrinti: <strong>{p}</strong>?' in actual
+
 
 
 def test_view_expenses_delete(client_logged):
@@ -436,10 +439,11 @@ def test_view_savings_delete_load_form(client_logged):
 
     json_str = response.content
     actual = json.loads(json_str)
+    actual = actual['html_form']
 
     assert response.status_code == 200
-    assert '<form method="post"' in actual['html_form']
-    assert 'action="/plans/savings/delete/1/"' in actual['html_form']
+    assert '<form method="post"' in actual
+    assert f'Ar tikrai nori išrinti: <strong>{p}</strong>?' in actual
 
 
 def test_view_savings_delete(client_logged):
@@ -567,10 +571,11 @@ def test_view_days_delete_load_form(client_logged):
 
     json_str = response.content
     actual = json.loads(json_str)
+    actual = actual['html_form']
 
     assert response.status_code == 200
-    assert '<form method="post"' in actual['html_form']
-    assert 'action="/plans/day/delete/1/"' in actual['html_form']
+    assert '<form method="post"' in actual
+    assert f'Ar tikrai nori išrinti: <strong>{p}</strong>?' in actual
 
 
 def test_view_days_delete(client_logged):
@@ -698,10 +703,11 @@ def test_view_necessarys_delete_load_form(client_logged):
 
     json_str = response.content
     actual = json.loads(json_str)
+    actual = actual['html_form']
 
     assert response.status_code == 200
-    assert '<form method="post"' in actual['html_form']
-    assert 'action="/plans/necessary/delete/1/"' in actual['html_form']
+    assert '<form method="post"' in actual
+    assert f'Ar tikrai nori išrinti: <strong>{ p }</strong>?' in actual
 
 
 def test_view_necessarys_delete(client_logged):

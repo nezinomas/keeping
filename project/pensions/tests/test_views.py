@@ -182,10 +182,11 @@ def test_view_pensions_delete_load_form(client_logged):
 
     json_str = response.content
     actual = json.loads(json_str)
+    actual = actual['html_form']
 
     assert response.status_code == 200
-    assert '<form method="post"' in actual['html_form']
-    assert 'action="/pensions/delete/1/"' in actual['html_form']
+    assert '<form method="post"' in actual
+    assert f'Ar tikrai nori išrinti: <strong>{p}</strong>?' in actual
 
 
 def test_view_pensions_delete(client_logged):

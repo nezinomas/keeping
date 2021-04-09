@@ -138,7 +138,8 @@ def test_expenses_save_insert_button(client_logged):
 
     assert not actual.get('html_list')
     assert 'id="submit">Insert</button>' in actual['html_form']
-    assert 'action="/expenses/new/" data-action="insert"' in actual['html_form']
+    assert 'data-action="insert"' in actual['html_form']
+    assert 'data-chained-dropdown="/ajax/load_expense_name/' in actual['html_form']
 
 
 def test_expenses_save_invalid_data(client_logged):
@@ -325,10 +326,13 @@ def test_view_expenses_delete_load_form(client_logged):
 
     json_str = response.content
     actual = json.loads(json_str)
+    actual = actual['html_form']
 
     assert response.status_code == 200
-    assert '<form method="post"' in actual['html_form']
-    assert 'action="/expenses/delete/1/"' in actual['html_form']
+    assert '<form method="post"' in actual
+    assert 'data-action="delete"' in actual
+    assert 'data-update-container="expenses_list">' in actual
+    assert 'Ar tikrai nori išrinti: <strong>1999-01-01/Expense Type/Expense Name</strong>?' in actual
 
 
 def test_view_expenses_delete(client_logged):
