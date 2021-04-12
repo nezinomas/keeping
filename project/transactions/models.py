@@ -53,11 +53,11 @@ class TransactionQuerySet(models.QuerySet):
                 tr_from_past=Sum(
                     Case(
                         When(**{'date__year__lt': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
                 tr_from_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='price'),
-                        default=0))
+                        default=Decimal(0)))
             )
             .values(
                 'tr_from_past',
@@ -84,11 +84,11 @@ class TransactionQuerySet(models.QuerySet):
                 tr_to_past=Sum(
                     Case(
                         When(**{'date__year__lt': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
                 tr_to_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='price'),
-                        default=0))
+                        default=Decimal(0)))
             )
             .values(
                 'tr_to_past',
@@ -167,11 +167,11 @@ class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
                 s_close_from_past=Sum(
                     Case(
                         When(**{'date__year__lt': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
                 s_close_from_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='price'),
-                        default=0))
+                        default=Decimal(0)))
             )
             .values(
                 's_close_from_past',
@@ -198,11 +198,11 @@ class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
                 s_close_to_past=Sum(
                     Case(
                         When(**{'date__year__lt': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
                 s_close_to_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
             )
             .values(
                 's_close_to_past',
@@ -276,19 +276,19 @@ class SavingChangeQuerySet(TransactionQuerySet):
                 s_change_from_past=Sum(
                     Case(
                         When(**{'date__year__lt': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
                 s_change_from_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
                 s_change_from_fee_past=Sum(
                     Case(
                         When(**{'date__year__lt': year}, then='fee'),
-                        default=0)),
+                        default=Decimal(0))),
                 s_change_from_fee_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='fee'),
-                        default=0))
+                        default=Decimal(0)))
             )
             .values(
                 's_change_from_past',
@@ -317,11 +317,11 @@ class SavingChangeQuerySet(TransactionQuerySet):
                 s_change_to_past=Sum(
                     Case(
                         When(**{'date__year__lt': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
                 s_change_to_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
             )
             .values(
                 's_change_to_past',

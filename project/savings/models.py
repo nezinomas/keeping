@@ -78,19 +78,19 @@ class SavingQuerySet(SumMixin, models.QuerySet):
                 s_past=Sum(
                     Case(
                         When(**{'date__year__lt': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
                 s_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
                 s_fee_past=Sum(
                     Case(
                         When(**{'date__year__lt': year}, then='fee'),
-                        default=0)),
+                        default=Decimal(0))),
                 s_fee_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='fee'),
-                        default=0))
+                        default=Decimal(0)))
             )
         )
 

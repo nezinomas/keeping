@@ -175,7 +175,9 @@ class ExpenseQuerySet(models.QuerySet):
             .annotate(sum=Sum('price'))
             .annotate(
                 exception_sum=Sum(
-                    Case(When(exception=1, then='price'), default=0.0))
+                    Case(
+                        When(exception=1, then='price'), default=Decimal(0))
+                )
             )
             .order_by('date')
             .values(
@@ -217,11 +219,11 @@ class ExpenseQuerySet(models.QuerySet):
                 e_past=Sum(
                     Case(
                         When(**{'date__year__lt': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
                 e_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='price'),
-                        default=0))
+                        default=Decimal(0)))
             )
             .values('e_past', 'e_now', title=models.F('account__title'))
         )

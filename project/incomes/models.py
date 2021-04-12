@@ -117,11 +117,11 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
                 i_past=Sum(
                     Case(
                         When(**{'date__year__lt': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
                 i_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='price'),
-                        default=0))
+                        default=Decimal(0)))
             )
             .values(
                 'i_past',
