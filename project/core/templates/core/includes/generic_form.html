@@ -1,5 +1,5 @@
 {% load crispy_forms_tags %}{% load static %}
-<form method="POST" enctype="multipart/form-data" novalidate id="js-form" class="js-form" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}" {% if chained_dropdown %}data-chained-dropdown="{{ chained_dropdown }}"{% endif %}>
+<form method="POST" enctype="multipart/form-data" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}" {% if chained_dropdown %}data-chained-dropdown="{{ chained_dropdown }}"{% endif %}>
     {% csrf_token %}
     <script type="text/javascript" src="{% static 'js/moment-with-locales-2.9.0.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'bootstrap_datepicker/js/bootstrap-datetimepicker-4.17.47.min.js' %}"></script>
