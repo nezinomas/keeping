@@ -19,7 +19,7 @@ class Expenses(LiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.browser = webdriver.Chrome('d:/web/chromedriver')
+        cls.browser = webdriver.Chrome('../chromedriver')
 
     @classmethod
     def tearDownClass(cls):
