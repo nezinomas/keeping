@@ -9,7 +9,8 @@ TEMPLATES[0]['OPTIONS']['debug'] = False
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:'
+        'NAME': ':memory:',
+        'TIMEOUT': 25,
     }
 }
 
