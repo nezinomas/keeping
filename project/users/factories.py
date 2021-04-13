@@ -13,7 +13,7 @@ class UserFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ('username',)
 
     username = 'bob'
-    password = make_password('123')
+    password = factory.LazyFunction(lambda: make_password('123'))
     email = 'bob@bob.com'
     year = 1999
     month = 12
