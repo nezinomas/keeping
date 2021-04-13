@@ -79,6 +79,75 @@ class Expenses(LiveServerTestCase):
         assert n.title in page
         assert '123,45' in page
 
+    def test_add_two_expenses(self):
+        self.browser.get('%s%s' % (self.live_server_url, '/expenses/'))
+
+        a = AccountFactory()
+        t = ExpenseTypeFactory()
+        n = ExpenseNameFactory()
+        t1 = ExpenseTypeFactory(title='Expense Type 1')
+        n1 = ExpenseNameFactory(title='Expense Name 1', parent=t1)
+
+        # click Add Expenses button
+        WebDriverWait(self.browser, 5).until(
+            EC.presence_of_element_located((By.ID, 'insert_expense'))
+        ).click()
+
+        # select ExpenseType
+        s = Select(WebDriverWait(self.browser, 5).until(
+            EC.element_to_be_clickable((By.ID, "id_expense_type"))))
+        s.select_by_value(f'{t.id}')
+
+        # select ExpenseName
+        s = Select(WebDriverWait(self.browser, 5).until(
+            EC.element_to_be_clickable((By.ID, "id_expense_name"))))
+        s.select_by_value(f'{n.id}')
+
+        # select Account
+        s = Select(WebDriverWait(self.browser, 5).until(
+            EC.element_to_be_clickable((By.ID, "id_account"))))
+        s.select_by_value(f'{a.id}')
+
+        self.browser.find_element_by_id('id_total_sum').send_keys('123.45')
+        self.browser.find_element_by_id('add_price').click()
+
+        # click Insert button
+        self.browser.find_element_by_id('submit').click()
+        sleep(.5)
+
+        # ----------------------------- Second expense
+        # select ExpenseType
+        s = Select(WebDriverWait(self.browser, 5).until(
+            EC.element_to_be_clickable((By.ID, "id_expense_type"))))
+        s.select_by_value(f'{t1.id}')
+
+        # select ExpenseName
+        s = Select(WebDriverWait(self.browser, 5).until(
+            EC.element_to_be_clickable((By.ID, "id_expense_name"))))
+        s.select_by_value(f'{n1.id}')
+
+        # select Account
+        s = Select(WebDriverWait(self.browser, 5).until(
+            EC.element_to_be_clickable((By.ID, "id_account"))))
+        s.select_by_value(f'{a.id}')
+
+        self.browser.find_element_by_id('id_total_sum').send_keys('65.78')
+        self.browser.find_element_by_id('add_price').click()
+
+        # click Insert button
+        self.browser.find_element_by_id('save_close').click()
+        sleep(.5)
+
+        page = self.browser.page_source
+
+        assert t.title in page
+        assert n.title in page
+        assert '123,45' in page
+
+        assert t1.title in page
+        assert n1.title in page
+        assert '65,78' in page
+
     def test_empty_required_fields(self):
         self.browser.get('%s%s' % (self.live_server_url, '/expenses/'))
 
