@@ -5,10 +5,10 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Case, Count, F, Sum, When
 
-from ..users.models import User
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
+from ..users.models import User
 
 
 class PensionTypeQuerySet(models.QuerySet):
@@ -76,19 +76,19 @@ class PensionQuerySet(SumMixin, models.QuerySet):
                 s_past=Sum(
                     Case(
                         When(**{'date__year__lt': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
                 s_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='price'),
-                        default=0)),
+                        default=Decimal(0))),
                 s_fee_past=Sum(
                     Case(
                         When(**{'date__year__lt': year}, then='fee'),
-                        default=0)),
+                        default=Decimal(0))),
                 s_fee_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='fee'),
-                        default=0))
+                        default=Decimal(0)))
             )
             .values(
                 's_past',

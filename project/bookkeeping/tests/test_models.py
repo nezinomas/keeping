@@ -34,6 +34,7 @@ def test_account_worth_str():
 
 def test_account_worth_related():
     u = UserFactory(username='XXX')
+
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2', user=u)
 
