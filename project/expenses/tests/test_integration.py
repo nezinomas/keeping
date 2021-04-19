@@ -2,6 +2,7 @@ from time import sleep
 
 import pytest
 from django.test import LiveServerTestCase
+from freezegun import freeze_time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -9,7 +10,7 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 
 from ...accounts.factories import AccountFactory
 from ...users.factories import UserFactory
-from ..factories import ExpenseNameFactory, ExpenseTypeFactory
+from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -174,3 +175,24 @@ class Expenses(LiveServerTestCase):
         assert e1.text == e2.text == 'Šis laukas yra privalomas.'
         assert e3.text == 'Įsitikinkite, kad reikšmė yra didesnė arba lygi 0.01.'
 
+    @freeze_time('1999-1-1')
+    def test_search(self):
+        ExpenseFactory(remark='xxxx')
+        ExpenseFactory(remark='yyyy')
+        ExpenseFactory(remark='zzzz')
+
+        self.browser.get('%s%s' % (self.live_server_url, '/expenses/'))
+
+        WebDriverWait(self.browser, 5).until(
+            EC.presence_of_element_located((By.ID, 'id_search'))
+        ).send_keys('xxxx')
+
+        self.browser.find_element_by_id('search_btn').click()
+
+        sleep(0.5)
+
+        rows = self.browser.find_elements_by_xpath("//table/tbody/tr")
+        assert len(rows) == 2 # head row + find row
+
+        cells = self.browser.find_elements_by_xpath("//table/tbody/tr[2]/td")
+        assert cells[5].text == 'xxxx'
