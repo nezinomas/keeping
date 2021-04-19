@@ -89,7 +89,10 @@ class Search(AjaxCustomFormMixin):
         if sql:
             template = 'expenses/includes/expenses_list.html'
             context = {'items': sql}
-            kwargs.update({'html': render_to_string(template, context, self.request)})
+            kwargs.update({
+                'container': 'expenses_list',
+                'html': render_to_string(template, context, self.request)
+            })
 
         return super().form_valid(form, **kwargs)
 
