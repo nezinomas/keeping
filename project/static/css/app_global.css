@@ -122,16 +122,16 @@ tr.top-text, tr.top-text th {
 .table-hover tbody tr:hover,
 .table-hover tbody tr._weekend_row:hover td,
 .table-hover tbody tr._current_day:hover td {
-    background: #f9f6cf!important;
+    --bs-table-accent-bg: #f9f6cf;
 }
 
-.table-hover tbody tr:hover td.table-danger {
+/* .table-hover tbody tr:hover td.table-danger {
     background: #eab0b7;
 }
 
 .table-hover tbody tr:hover td.table-success {
     background: #b7debb;
-}
+} */
 
 .btn-sm,
 .form-control-sm,
@@ -141,7 +141,7 @@ tr.top-text, tr.top-text th {
 }
 
 .btn-sm {
-  padding: .15rem .25rem;
+  padding: .2rem .3rem;
 }
 
 .btn-menu {
@@ -186,7 +186,7 @@ tr.top-text, tr.top-text th {
 }
 
 ._weekend_col {
-    background-color:rgb(202, 235, 204);
+    --bs-table-accent-bg:rgb(202, 235, 204);
 }
 
 ._current_day, tr._current_day > td._weekend_col {

@@ -18,7 +18,7 @@
         {% with row.date|date:'w'|weekend:'_weekend_row' as weekend_row %}
         {% with row.date|date:'d' as day_int %}
         <tr id='row-{{ day_int }}' class="{% if day|slugify == row.date|date:'j' %}_current_day{% endif %} {{ weekend_row }}">
-            <td class="text-left {{ weekend_col }} panel-heading" nowrap>
+            <td class="text-start {{ weekend_col }} panel-heading" nowrap>
                 <a class="row_click btn btn-super-sm" role="button" data-toggle="collapse" aria-expanded="true" data-url="{% url 'bookkeeping:expand_day_expenses' row.date|date:"Ymd" %}" data-id="{{ day_int }}">{{ day_int }}</a>
             </td>
             {% for cat in expense_types %}
@@ -26,14 +26,14 @@
             {% endfor %}
             {% cell row.total css_class=weekend_col|add:' bl'|add:' no-right-border' %}
             <td class="empty"></td>
-            <td class="text-left {{ weekend_col }} no-left-border">{{ sp.date|date:'l' }}</td>
+            <td class="text-start {{ weekend_col }} no-left-border">{{ sp.date|date:'l' }}</td>
             {% cell sp.day css_class=sp.day|negative %}{% cell sp.full css_class=sp.full|negative|add:' -full' %}
         </tr>{% endwith %}{% endwith %}{% endwith %}
         {% endfor %}
     </tbody>
     <tfoot>
         <tr class="total">
-            <th class="text-left">&#8721;</th>
+            <th class="text-start">&#8721;</th>
             {% for cat in expense_types %}{% cell total_row|get_item:cat tag='th' %}{% endfor %}
             {% cell total_row.total tag='th' css_class="bl no-right-border" %}
             <th class="empty"></th>
@@ -45,9 +45,13 @@
 </table>
 
 <style>
-    table.stats tr td.empty, table.stats tr th.empty {
-        background-color: white!important;
+    .stats .empty {
+        --bs-table-accent-bg: white!important;
         border: 0!important;
+    }
+
+    .stats td.td_expand_day_expenses:hover {
+        --bs-table-accent-bg: none;
     }
 
     .table-danger {

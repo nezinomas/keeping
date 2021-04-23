@@ -30,7 +30,7 @@
         <a href="{% url 'core:set_month' m_num %}" class="btn btn-sm btn-month my-1 {% if month|slugify == m_num %}btn-primary{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</a>
         {% endwith %}{% endfor %}{% endwith %}
     </div>
-    <div class="col-lg-4 px-m text-right">
+    <div class="col-lg-4 px-m text-end">
         {% url 'expenses:expenses_new' as url_expenses_new %}
         <button type="button" class="btn btn-sm btn-outline-success js-create my-1 pe-2" data-url="{{ url_expenses_new }}"> <i class="bi bi-plus"></i>Išlaidos</button>
         {% url 'incomes:incomes_new' as url_incomes_new %}
@@ -58,7 +58,6 @@
         padding-top: .35rem!important;
         padding-left: .3rem!important;
         padding-right: .3rem!important;
-        background-color: rgb(228, 227, 227);
     }
 </style>
 
