@@ -27,50 +27,67 @@
     {% block body %}
     <!-- top navidation bar -->
     <div class="container-fluid">
-      <nav class="navbar navbar-expand navbar-light bg-light">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <ul class="nav nav-pills">
+          <!-- Years Dropdown -->
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ request.user.year|title }}</a>
-            <div class="dropdown-menu">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">{{ request.user.year|title }}</a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
               {% for y in years %}
-              <a class="dropdown-item btn-sm py-1 pl-2" href="{% url 'core:set_year' y %}">{{ y|safe }}</a>
+              <li><a class="dropdown-item btn-sm py-1 px-2" href="{% url 'core:set_year' y %}">{{ y|safe }}</a></li>
               {% endfor %}
-            </div>
+            </ul>
           </li>
+          <!-- End of Years Dropdown -->
+
           <li class="nav-item">
             <a class="nav-link {% if '/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:index' %}">Bendra</a>
           </li>
+
           <li class="nav-item">
             <a class="nav-link {% if '/month/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:month' %}">Mėnuo</a>
           </li>
+
           <li class="nav-item">
-            <a class="nav-link {% if '/detailed/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:detailed' %}">Detali</a>
+            <a class="nav-link {% if '/detailed/' == request.path %}active{% endif %}"
+              href="{% url 'bookkeeping:detailed' %}">Detali</a>
           </li>
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu pr-1 nav-link {% if '/expenses/' in request.path %}active{% endif %}" href="{% url 'expenses:expenses_index' %}">Išlaidos</a>
-              <button type="button" class="btn btn-menu pl-0 nav-link {% if '/expenses/' in request.path %}active{% endif %} dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="sr-only">Toggle Dropdown</span>
+              <a class="btn btn-menu pe-1 nav-link {% if '/expenses/' in request.path %}active{% endif %}"
+                href="{% url 'expenses:expenses_index' %}">Išlaidos</a>
+              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/expenses/' in request.path %}active{% endif %}" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                <span class="visually-hidden">Toggle Dropdown</span>
               </button>
-              <div class="dropdown-menu">
+              <ul class="dropdown-menu">
                 {% for m in context_months %}
                 {% with m|date:'n' as m_num %}
-                    <a class="dropdown-item btn-sm" href="{% url 'expenses:expenses_month_list' forloop.counter %}">{{ m|date:'F'|title }}</a>
-                    {% endwith %}{% endfor %}
-                    <div role="separator" class="dropdown-divider"></div>
-                    <a class="dropdown-item btn-sm" href="{% url 'expenses:expenses_month_list' 13 %}">Visi įrašai</a>
-              </div>
+                <li>
+                  <a class="dropdown-item btn-sm py-1 px-2" href="{% url 'expenses:expenses_month_list' forloop.counter %}">{{ m|date:'F'|title }}</a>
+                </li>
+                {% endwith %}{% endfor %}
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+                <li>
+                  <a class="dropdown-item btn-sm py-1 px-2" href="{% url 'expenses:expenses_month_list' 13 %}">Visi įrašai</a>
+                </li>
+              </ul>
             </div>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link {% if '/incomes/' in request.path %}active{% endif %}" href="{% url 'incomes:incomes_index' %}">Pajamos</a>
+            <a class="nav-link {% if '/incomes/' in request.path %}active{% endif %}"
+              href="{% url 'incomes:incomes_index' %}">Pajamos</a>
           </li>
+
           <li class="nav-item">
             <a class="nav-link {% if '/transactions/' in request.path %}active{% endif %}"
               href="{% url 'transactions:transactions_index' %}">Pervedimai</a>
           </li>
+
           <li class="nav-item">
             <a class="nav-link {% if '/savings/' in request.path %}active{% endif %}"
               href="{% url 'savings:savings_index' %}">Taupymas</a>
@@ -78,42 +95,57 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu pr-1 nav-link {% if '/books/' in request.path %}active{% endif %}"
+              <a class="btn btn-menu pe-1 nav-link {% if '/books/' in request.path %}active{% endif %}"
                 href="{% url 'books:books_index' %}">Knygos</a>
               <button type="button"
-                class="btn btn-menu pl-0 nav-link {% if '/books/' in request.path %}active{% endif %} dropdown-toggle dropdown-toggle-split"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="sr-only">Toggle Dropdown</span>
+                class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/books/' in request.path %}active{% endif %}"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="visually-hidden">Toggle Dropdown</span>
               </button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item btn-sm" href="{% url 'books:books_all' %}">Visos knygos</a>
-              </div>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item btn-sm py-1 px-2" href="{% url 'books:books_all' %}">Visi įrašai</a>
+                </li>
+              </ul>
             </div>
           </li>
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu pr-1 nav-link {% if '/drinks/' in request.path %}active{% endif %}" href="{% url 'drinks:drinks_index' %}">Gėrimai</a>
-              <button type="button" class="btn btn-menu pl-0 nav-link {% if '/drinks/' in request.path %}active{% endif %} dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="sr-only">Toggle Dropdown</span>
+              <a class="btn btn-menu pe-1 nav-link {% if '/drinks/' in request.path %}active{% endif %}"
+                href="{% url 'drinks:drinks_index' %}">Gėrimai</a>
+              <button type="button"
+                class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/drinks/' in request.path %}active{% endif %}"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="visually-hidden">Toggle Dropdown</span>
               </button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item btn-sm" href="{% url 'drinks:drinks_list' %}">Duomenys</a>
-                <a class="dropdown-item btn-sm" href="{% url 'drinks:drinks_history' %}">Istorija</a>
-              </div>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item btn-sm py-1 px-2" href="{% url 'drinks:drinks_list' %}">Duomenys</a>
+                </li>
+                <li>
+                  <a class="dropdown-item btn-sm py-1 px-2" href="{% url 'drinks:drinks_history' %}">Istorija</a>
+                </li>
+              </ul>
             </div>
           </li>
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu pr-1 nav-link {% if '/counts/' in request.path %}active{% endif %}" href="{% url 'counts:counts_index' %}">Kiek</a>
-              <button type="button" class="btn btn-menu pl-0 nav-link {% if '/counts/' in request.path %}active{% endif %} dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="sr-only">Toggle Dropdown</span>
+              <a class="btn btn-menu pe-1 nav-link {% if '/counts/' in request.path %}active{% endif %}"
+                href="{% url 'counts:counts_index' %}">Kiek</a>
+              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/counts/' in request.path %}active{% endif %}"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="visually-hidden">Toggle Dropdown</span>
               </button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item btn-sm" href="{% url 'counts:counts_list' %}">Duomenys</a>
-                <a class="dropdown-item btn-sm" href="{% url 'counts:counts_history' %}">Istorija</a>
-              </div>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item btn-sm py-1 px-2" href="{% url 'counts:counts_list' %}">Duomenys</a>
+                </li>
+                <li>
+                  <a class="dropdown-item btn-sm py-1 px-2" href="{% url 'counts:counts_history' %}">Istorija</a>
+                </li>
+              </ul>
             </div>
           </li>
 
@@ -121,25 +153,21 @@
             <a class="nav-link {% if '/plans/' in request.path %}active{% endif %}"
               href="{% url 'plans:plans_index' %}">Planavimas</a>
           </li>
+
           <li class="nav-item">
             <a class="nav-link {% if '/summary/' in request.path %}active{% endif %}"
               href="{% url 'bookkeeping:summary' %}">Suvestinės</a>
           </li>
         </ul>
-        <span class="navbar-text px-1">{{ yday }} / <b>{{ ydays }}</b></span>
+        <div class="navbar-text ms-3">{{ yday }} / <b>{{ ydays }}</b></div>
 
-        <div class="collapse navbar-collapse">
-          <ul class="navbar navbar-nav ml-auto">
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true"
-                aria-expanded="false">{{ user.username }}</a>
-              <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item btn-sm pl-2" href="{% url 'users:logout' %}">Log out</a>
-              </div>
-            </li>
+        <div class="nav-item dropdown ms-auto">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
+            aria-expanded="false">{{ user.username }}</a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
+            <li><a class="dropdown-item btn-sm px-2" href="{% url 'users:logout' %}">Log out</a></li>
           </ul>
         </div>
-
       </nav>
 
       {% block content %}{% endblock content %}
