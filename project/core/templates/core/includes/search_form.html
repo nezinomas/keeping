@@ -2,10 +2,10 @@
 
 <form novalidate method="post" id="search_form" class="row d-flex gx-2 align-items-center">
     {% csrf_token %}
-    <div class="form-group col align-self-start">
+    <div class="col align-self-start">
         {{ form.search|as_crispy_field }}
     </div>
-    <div class="form-group col-auto align-self-start">
+    <div class="col-auto align-self-start">
         <input type="submit" name="search" value="Search" id="search_btn" class="btn btn-secondary btn-sm search_click text-right my-auto" data-url="{{ url }}">
     </div>
 </form>
