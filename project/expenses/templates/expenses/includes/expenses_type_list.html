@@ -1,53 +1,38 @@
+<div class="accordion" id="expenses_type_accordion">
 {% for item in items %}
 {% url 'expenses:expenses_type_update' item.id as url_type_update %}
-<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-    <div class="panel panel-default mb-2">
-        <div class="panel-heading dblclick" role="tab" data-url="{{ url_type_update }}">
-            <a role="button" class="list-group-item list-group-item-primary list-group-item-action rounded-top pe-2" data-toggle="collapse" href="#_{{ item.id }}_" aria-expanded="true" >
+    <div class="accordion-item my-2">
+        <div class="accordion-header" id="heading_{{ item.id }}">
+            <span style="position: absolute; top: .1rem; right: 30px; display: block; z-index: 99;">
+                <button type="button" data-url="{{ url_type_update }}" class="btn btn-sm edit js-create" title="Edit"><i class="bi bi-pencil-fill"></i></button>
+            </span>
+            <button class="accordion-button collapsed btn-sm rounded-top" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ item.id }}" aria-expanded="false" aria-controls="collapse_{{ item.id }}">
                 {{ item.title }}
-                {% if item.necessary %}<span class="badge badge-primary"><i class="bi bi-star"></i></span>{% endif %}<span style="position: absolute; top: 0; right: 30px; display: block;"><button type="button" data-url="{{ url_type_update }}" class="btn btn-sm btn-link edit js-create" title="Edit"><i class="bi bi-pencil-fill"></i></button></span>
-            </a>
+                {% if item.necessary %}
+                <span class="badge mx-2"><i class="bi bi-star"></i></span>{% endif %}
+            </button>
+
         </div>
-        <div id="_{{ item.id }}_" class="panel-collapse collapse" role="tabpanel">
-            {% for sub in item.expensename_set.all %}
-            {% url 'expenses:expenses_name_update' sub.id as url_name_update %}
-            <div class="list-group-item list-group-item-action dblclick" data-url="{{ url_name_update }}">{{ sub.title }}
-                {% if sub.valid_for %}<span class="badge badge-secondary">{{ sub.valid_for|safe }}</span>{% endif %}
-                <span style="position: absolute; top: 0.25rem; right: 30px; display: block;"><button type="button" data-url="{{ url_name_update }}" class="btn btn-super-sm btn-link edit js-create"><i class="bi bi-pencil-fill"></i></button>
+        <div id="collapse_{{ item.id }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ item.id }}"
+            data-bs-parent="#expenses_type_accordion">
+            <div class="accordion-body m-0 p-0">
+                {% for sub in item.expensename_set.all %}
+                {% url 'expenses:expenses_name_update' sub.id as url_name_update %}
+                <div class="list-group-item" data-url="{{ url_name_update }}">{{ sub.title }}
+                    {% if sub.valid_for %}<span class="badge badge-secondary">{{ sub.valid_for|safe }}</span>{% endif %}
+                    <span style="position: absolute; top: 0.25rem; right: 30px; display: block;"><button type="button" data-url="{{ url_name_update }}" class="btn btn-super-sm edit js-create"><i class="bi bi-pencil-fill"></i></button>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
     </div>
-</div>
 {% endfor %}
-
+</div>
 
 <style>
-    .list-group-item {
-        padding: .25rem 0 .25rem 1.25rem;
-        margin: 0;
-    }
-
-    .list-group-item.list-group-item-primary {
-        padding-left: 0.25rem;
-    }
-
     .badge {
-        font-weight: normal;
         padding: 0.25rem .25rem;
-    }
-
-    .panel-heading  a.list-group-item-action:before {
-        font-family: 'Glyphicons Halflings';
-        content: "\e114";
-        float: right;
-        transition: all 0.5s;
-    }
-
-    .panel-heading.active a.list-group-item-action:before {
-        -webkit-transform: rotate(180deg);
-        -moz-transform: rotate(180deg);
-        transform: rotate(180deg);
+        color: #004085;
     }
 </style>
 

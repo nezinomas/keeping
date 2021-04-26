@@ -20,8 +20,8 @@ table.stats tfoot {
 table.stats td, table.stats th {
     border: 1px solid #b4b4b3!important;
     vertical-align: middle!important;
-    padding-top: .09rem!important;
-    padding-bottom: .09rem!important;
+    padding-top: .12rem!important;
+    padding-bottom: .12rem!important;
     padding-left: .20rem!important;
     padding-right: .20rem!important;
 }
@@ -234,4 +234,32 @@ tr.top-text, tr.top-text th {
 .edit, .edit:hover {
     color: green;
     width: 100%;
+}
+
+.accordion-item {
+    background-color: antiquewhite;
+    border: none!important;
+}
+
+.accordion-header {
+    position: relative;
+}
+
+.accordion-button {
+    padding: 0.3rem;
+    color: #004085;
+    background-color: #9fcdff;
+    border: 1px solid rgba(0,0,0,.125);
+}
+
+.accordion-button::after {
+    padding-top: 0.15rem!important;
+    text-align: center;
+    font-family: 'Glyphicons Halflings';
+    content: "\e114";
+    background-image: none;
+}
+
+.accordion-button:not(.collapsed)::after {
+    background-image: none;
 }
