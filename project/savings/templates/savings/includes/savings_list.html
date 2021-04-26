@@ -16,7 +16,7 @@
         {% for item in items %}
         {% url 'savings:savings_update' item.id as url_update %}
         {% url 'savings:savings_delete' item.id as url_delete %}
-        {% ifchanged item.date|date:"F" %}{% if not forloop.first %}<tr class="table-active"><td colspan="8"></td></tr>{% endif %}
+        {% ifchanged item.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="8" class="table-active"></td></tr>{% endif %}
         {% endifchanged %}
         <tr data-url="{{ url_update }}" class="dblclick">
             <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
