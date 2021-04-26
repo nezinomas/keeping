@@ -188,11 +188,6 @@ tr.top-text, tr.top-text th {
     display: block!important;
 }
 
-.row-spacer {
-    height: .5rem;
-    background-color:#a5a4a4;
-}
-
 ._weekend_col {
     --bs-table-accent-bg:rgb(202, 235, 204);
 }
@@ -270,4 +265,9 @@ tr.top-text, tr.top-text th {
 
 .accordion-button:not(.collapsed)::after {
     background-image: none;
+}
+
+.table-active {
+    height: 0.5rem;
+    background-color: #e2dfdf;
 }
