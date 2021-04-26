@@ -12,7 +12,7 @@
 {% block content %}
 
 <div class="row my-3">
-    <div class="col-sm-3 text-left">
+    <div class="col-sm-3 text-start">
         <a href="{% url url_index %}" class="btn btn-sm {% if '/'|add:app_name|add:'/' == request.path %}btn-info{% else %}btn-light{% endif %}">Grafikai</a>
         <a href="{% url url_list %}" class="btn btn-sm mx-2 {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">Duomenys</a>
         <a href="{% url url_history %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">Istorija</a>
@@ -22,7 +22,7 @@
         {% if tab == 'index' or tab == 'data' %}{{ info_row }}{% endif %}
     </div>
 
-    <div class="col-sm-3 text-right">
+    <div class="col-sm-3 text-end">
         <button type="button" class="btn btn-sm btn-outline-success js-create pe-2" data-url="{% url url_new %}"><i class="bi bi-plus"></i> Pridėti</button>
     </div>
 </div>

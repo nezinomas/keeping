@@ -14,8 +14,8 @@
         {% ifchanged item.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="4" class="table-active"></td></tr>{% endif %}
         {% endifchanged %}
         <tr data-url="{{ url }}" class="dblclick">
-            <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-left">{{ item.quantity }}</td>
+            <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ item.quantity }}</td>
             <td class="text-center no-right-border">
                 <a type="button" data-url="{{ url_upd }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
             </td>
