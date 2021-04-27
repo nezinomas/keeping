@@ -1,14 +1,13 @@
-<div class="accordion" id="incomes_type_accordion">
-    <div class="accordion-item my-2">
+<div class="accordion" id="accordion">
+    <div class="accordion-item">
         <div class="accordion-header" id="heading_1">
-            <button class="accordion-button collapsed btn-sm rounded-top" type="button" data-bs-toggle="collapse"
-                data-bs-target="#collapse_1" aria-expanded="false" aria-controls="collapse_1">Pajamų rūšys</button>
+            <button class="accordion-button collapsed btn-sm rounded-top" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_1" aria-expanded="false" aria-controls="collapse_1">Pajamų rūšys</button>
         </div>
-        <div id="collapse_1" class="accordion-collapse collapse show" aria-labelledby="heading_1" data-bs-parent="#incomes_type_accordion">
-            <div class="accordion-body m-0 p-0">
+        <div id="collapse_1" class="accordion-collapse collapse show" aria-labelledby="heading_1" data-bs-parent="#accordion">
+            <div class="accordion-body">
                 {% for item in items %}
                 {% url 'incomes:incomes_type_update' item.id as url_update %}
-                <div class="list-group-item" data-url="{{ url_name_update }}">{{ item.title }}
+                <div class="list-group-item" data-url="{{ url_update }}">{{ item.title }}
                     <span style="position: absolute; top: 0.25rem; right: 5px; display: block;">
                         <button type="button" data-url="{{ url_update }}" class="btn btn-super-sm edit js-create"><i class="bi bi-pencil-fill"></i></button>
                     </span>

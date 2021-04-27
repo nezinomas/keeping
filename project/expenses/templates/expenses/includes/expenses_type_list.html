@@ -1,7 +1,7 @@
-<div class="accordion" id="expenses_type_accordion">
+<div class="accordion" id="accordion">
 {% for item in items %}
 {% url 'expenses:expenses_type_update' item.id as url_type_update %}
-    <div class="accordion-item my-2">
+    <div class="accordion-item mb-2">
         <div class="accordion-header" id="heading_{{ item.id }}">
             <span style="position: absolute; top: .1rem; right: 30px; display: block; z-index: 99;">
                 <button type="button" data-url="{{ url_type_update }}" class="btn btn-sm edit js-create" title="Edit"><i class="bi bi-pencil-fill"></i></button>
@@ -14,8 +14,8 @@
 
         </div>
         <div id="collapse_{{ item.id }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ item.id }}"
-            data-bs-parent="#expenses_type_accordion">
-            <div class="accordion-body m-0 p-0">
+            data-bs-parent="#accordion">
+            <div class="accordion-body">
                 {% for sub in item.expensename_set.all %}
                 {% url 'expenses:expenses_name_update' sub.id as url_name_update %}
                 <div class="list-group-item" data-url="{{ url_name_update }}">{{ sub.title }}
