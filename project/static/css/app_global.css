@@ -222,7 +222,7 @@ tr.top-text, tr.top-text th {
     margin: auto;
 }
 
-.no-hover:hover {
+.no-hover, .no-hover:hover {
     text-decoration: none!important;
 }
 
