@@ -200,10 +200,15 @@ tr.top-text, tr.top-text th {
     font-weight: normal;
     font-size: 0.8rem;
 }
-.info_row > h6 {
+
+.info_row > h6, .col > h6 {
     font-size: 1.5rem;
     display: inline;
     vertical-align: middle;
+}
+
+.col > h6 {
+    font-size: 1rem;
 }
 
 .info_row > span {
@@ -240,12 +245,16 @@ tr.top-text, tr.top-text th {
 }
 
 .accordion-item {
-    background-color: antiquewhite;
     border: none!important;
 }
 
 .accordion-header {
     position: relative;
+}
+
+.accordion-body {
+    padding: 0;
+    margin: 0;
 }
 
 .accordion-button {
