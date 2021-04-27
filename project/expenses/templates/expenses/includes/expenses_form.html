@@ -48,9 +48,10 @@
     function sum_prices() {
         var input_total = document.getElementById("id_price")
         var input_price = document.getElementById("id_total_sum")
-
+        var price = String(input_price.value).replaceAll(',', '.')
         var total = eval(input_total.value);
-        var price = eval(input_price.value.replace(/[^\d\-\.\+\/\*]/g, ''));
+
+        price = eval(price.replace(/[^\d\-\.\+\/\*]/g, ''));
 
         if (!price || price === Infinity) {
             price = 0;
