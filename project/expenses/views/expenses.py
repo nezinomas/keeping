@@ -140,7 +140,7 @@ def context_to_reload(request, month=None):
         'expenses_list': render_to_string(
             'expenses/includes/expenses_list.html', {
                 'items': qs,
-                'notice': f'{month} mėnesį įrašų nėra.',
+                'notice': f'<b>{month}</b> mėnesį įrašų nėra.',
             },
             request)
     }

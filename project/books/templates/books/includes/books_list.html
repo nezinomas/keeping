@@ -1,4 +1,7 @@
 {% load static %}
+
+{% if items %}
+
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
@@ -32,10 +35,6 @@
                 <a type="button" data-url="{{ url_delete }}?tab={{ tab }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
-        {% empty %}
-        <tr class="table-warning text-center">
-            <td colspan="8" class="py-2"><b>{{ request.user.year|title }}</b> metais irašų nėra.</td>
-        </tr>
         {% endfor %}
     </tbody>
 </table>
@@ -45,3 +44,11 @@
         background-color: #8ce7c2!important;
     }
 </style>
+
+{% else %}
+
+<div class="mx-auto bg-warning text-center py-2">
+    <b>{{ request.user.year|title }}</b> metais irašų nėra.
+</div>
+
+{% endif %}
