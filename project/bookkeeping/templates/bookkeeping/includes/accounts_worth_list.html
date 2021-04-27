@@ -19,7 +19,7 @@
     <tbody>
         {% for item in accounts %}
         <tr>
-            <td data-toggle="tooltip" data-html="true" data-placement="right" title="{{ item.latest_check }}" class="text-start"><div style="position:relative;">{{ item.title }}<span style="position: absolute; top: -0.5px; right: 5px; display: block;"><button type="button" data-url="{% url 'bookkeeping:accounts_worth_reset' item.account_pk %}" class="btn btn-super-sm btn-outline-info reset">Reset</button></span></div></td>
+            <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" title="{{ item.latest_check }}" class="text-start"><div style="position:relative;">{{ item.title }}<span style="position: absolute; top: -0.5px; right: 5px; display: block;"><button type="button" data-url="{% url 'bookkeeping:accounts_worth_reset' item.account_pk %}" class="btn btn-super-sm btn-outline-info reset">Reset</button></span></div></td>
             {% cell item.past width='110rem' %}
             {% cell item.incomes width='110rem' %}
             {% cell item.expenses width='110rem' %}

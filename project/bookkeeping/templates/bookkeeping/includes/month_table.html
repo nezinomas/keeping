@@ -3,8 +3,7 @@
     <thead class="thead-light">
         <tr class="top">
             <th></th>
-            {% for cat in expense_types %}<th class="text-end" data-toggle="tooltip" data-placement="bottom"
-                title="{{ cat }}">{{ cat|truncatechars:8 }}</th>{% endfor %}
+            {% for cat in expense_types %}<th class="text-end" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ cat }}">{{ cat|truncatechars:8 }}</th>{% endfor %}
             <th class="bl text-end no-right-border">Viso</th>
             <th class="empty"></th>
             <th class="no-left-border"></th>
