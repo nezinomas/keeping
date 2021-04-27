@@ -9,8 +9,8 @@
             <th>Fondas</th>
             <th>Iš sąskaitos</th>
             <th>Pastaba</th>
-            <th class="text-right">Suma</th>
-            <th class="text-right">Mokesčiai</th>
+            <th class="text-end">Suma</th>
+            <th class="text-end">Mokesčiai</th>
             <th width="35rem" class="no-right-border"></th>
             <th width="35rem" class="no-left-border"></th>
         </tr>
@@ -22,10 +22,10 @@
         {% ifchanged item.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="8" class="table-active"></td></tr>{% endif %}
         {% endifchanged %}
         <tr data-url="{{ url_update }}" class="dblclick">
-            <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-left">{{ item.saving_type }}</td>
-            <td class="text-left">{{ item.account }}</td>
-            <td class="text-left">{{ item.remark }}</td>
+            <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ item.saving_type }}</td>
+            <td class="text-start">{{ item.account }}</td>
+            <td class="text-start">{{ item.remark }}</td>
             <td>{{ item.price|intcomma }}</td>
             <td>{{ item.fee|default_if_none:'-'|intcomma }}</td>
             <td class="text-center no-right-border">

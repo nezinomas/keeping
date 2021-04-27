@@ -6,13 +6,13 @@
         </tr>
         <tr class="top">
             <th>vnt</th>
-            <th class="text-right">ml</th>
+            <th class="text-end">ml</th>
         </tr>
     </thead>
     <tfoot>
         <tr>
             {% if qty %}
-            <td class="text-left">{{ qty|floatformat:1 }}</td>
+            <td class="text-start">{{ qty|floatformat:1 }}</td>
             <td class="{{ target|compare:avg }}">{{ avg|floatformat:1 }}</td>
             {% else %}
             <td colspan="2">Nėra duomenų</td>

@@ -3,18 +3,18 @@
     <thead class="thead-light">
         <tr class="top">
             <th>Pavadinimas</th>
-            <th width="7%" class="text-right">Sausis</th>
-            <th width="7%" class="text-right">Vasaris</th>
-            <th width="7%" class="text-right">Kovas</th>
-            <th width="7%" class="text-right">Balandis</th>
-            <th width="7%" class="text-right">Gegužė</th>
-            <th width="7%" class="text-right">Birželis</th>
-            <th width="7%" class="text-right">Liepa</th>
-            <th width="7%" class="text-right">Rugpjūtis</th>
-            <th width="7%" class="text-right">Rugsėjis</th>
-            <th width="7%" class="text-right">Spalis</th>
-            <th width="7%" class="text-right">Lapkritis</th>
-            <th width="7%" class="text-right">Gruodis</th>
+            <th width="7%" class="text-end">Sausis</th>
+            <th width="7%" class="text-end">Vasaris</th>
+            <th width="7%" class="text-end">Kovas</th>
+            <th width="7%" class="text-end">Balandis</th>
+            <th width="7%" class="text-end">Gegužė</th>
+            <th width="7%" class="text-end">Birželis</th>
+            <th width="7%" class="text-end">Liepa</th>
+            <th width="7%" class="text-end">Rugpjūtis</th>
+            <th width="7%" class="text-end">Rugsėjis</th>
+            <th width="7%" class="text-end">Spalis</th>
+            <th width="7%" class="text-end">Lapkritis</th>
+            <th width="7%" class="text-end">Gruodis</th>
             <th width="60rem"></th>
         </tr>
     </thead>
@@ -23,7 +23,7 @@
         {% if url_update %}{% url url_update item.id as url %}{% else %}{% define '' as url %}{% endif %}
         {% with item|get_obj_attr:type as name %}
         <tr data-url="{{ url }}" class="dblclick{% if name == 'Likutis' %} bg-warning{% endif %}">
-            <td class="text-left">{{ name }}{% if item.expense_type.necessary or item.saving_type or 'Būtin' in name or item.title %} <i class="bi bi-star star"></i>{% endif %}</td>
+            <td class="text-start">{{ name }}{% if item.expense_type.necessary or item.saving_type or 'Būtin' in name or item.title %} <i class="bi bi-star star"></i>{% endif %}</td>
             {% cell item.january %}
             {% cell item.february %}
             {% cell item.march %}

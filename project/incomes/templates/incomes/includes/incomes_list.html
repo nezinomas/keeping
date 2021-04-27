@@ -9,7 +9,7 @@
             <th>Pajamų rūšis</th>
             <th>Sąskaita</th>
             <th>Pastaba</th>
-            <th class="text-right">Suma</th>
+            <th class="text-end">Suma</th>
             <th width="35rem" class="no-right-border"></th>
             <th width="35rem" class="no-left-border"></th>
         </tr>
@@ -21,10 +21,10 @@
         {% ifchanged item.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="7" class="table-active"></td></tr>{% endif %}
         {% endifchanged %}
         <tr data-url="{{ url_update }}" class="dblclick">
-            <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-left">{{ item.income_type }}</td>
-            <td class="text-left">{{ item.account }}</td>
-            <td class="text-left">{{ item.remark }}</td>
+            <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ item.income_type }}</td>
+            <td class="text-start">{{ item.account }}</td>
+            <td class="text-start">{{ item.remark }}</td>
             <td>{{ item.price|intcomma }}</td>
             <td class="no-right-border">
                 <a type="button" data-url="{{ url_update }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>

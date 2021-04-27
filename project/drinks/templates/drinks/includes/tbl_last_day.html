@@ -3,12 +3,12 @@
         <tr class="top-text"><th colspan="2">Paskutinį sykį gerta</th></tr>
         <tr class="top">
             <th>Data</th>
-            <th class="text-right">Dienų skaičius</th>
+            <th class="text-end">Dienų skaičius</th>
         </tr>
     </thead>
     <tfoot>
         <tr>
-            <td class="text-left">{% if date %}{{ date|date:"Y-m-d" }}{% else %}Nėra duomenų{% endif %}</td>
+            <td class="text-start">{% if date %}{{ date|date:"Y-m-d" }}{% else %}Nėra duomenų{% endif %}</td>
             <td>{{ delta }}</td>
         </tr>
     </tfoot>

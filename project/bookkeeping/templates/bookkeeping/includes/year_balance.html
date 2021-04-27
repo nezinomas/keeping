@@ -5,7 +5,7 @@
             <th colspan="5"><h1>Balansas</h1></th>
         </tr>
         <tr>
-            <th width="80rem" class="text-left">{{ year|title }}</th>
+            <th width="80rem" class="text-start">{{ year|title }}</th>
             <th>Pajamos</th>
             <th>Išlaidos</th>
             <th>Balansas</th>
@@ -15,7 +15,7 @@
     <tbody>
         {% for item in data %}
         <tr>
-            <td class="text-left">{{ item.date|date:"F"|title }}</td>
+            <td class="text-start">{{ item.date|date:"F"|title }}</td>
             {% cell item.incomes %}
             {% cell item.expenses %}
             {% cell item.balance highlight_value=True  %}
@@ -25,14 +25,14 @@
     </tbody>
     <tfoot>
         <tr>
-            <th class="text-left">Avg</th>
+            <th class="text-start">Avg</th>
             {% cell avg_row.incomes tag='th' %}
             {% cell avg_row.expenses tag='th' %}
             <th></th>
             <th><b>Metų gale</b></th>
         </tr>
         <tr class="total">
-            <th class="text-left">Viso</th>
+            <th class="text-start">Viso</th>
             {% cell total_row.incomes tag='th' %}
             {% cell total_row.expenses tag='th' %}
             {% cell total_row.balance tag='th' highlight_value=True %}

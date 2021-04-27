@@ -6,8 +6,8 @@
             <th>Data</th>
             <th>Iš sąskaitos</th>
             <th>Į sąskaitą</th>
-            <th class="text-right">Suma</th>
-            {% if fees %}<th class="text-right">Mokesčiai</th>{% endif %}
+            <th class="text-end">Suma</th>
+            {% if fees %}<th class="text-end">Mokesčiai</th>{% endif %}
             <th width="35rem" class="no-right-border"></th>
             <th width="35rem" class="no-left-border"></th>
         </tr>
@@ -19,9 +19,9 @@
         {% ifchanged item.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="6" class="table-active"></td></tr>{% endif %}
         {% endifchanged %}
         <tr data-url="{{ url_update }}" class="dblclick">
-            <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-left">{{ item.from_account }}</td>
-            <td class="text-left">{{ item.to_account }}</td>
+            <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ item.from_account }}</td>
+            <td class="text-start">{{ item.to_account }}</td>
             <td>{{ item.price }}</td>
             {% if fees %}<td>{{ item.fee }}</td>{% endif %}
             <td class="no-right-border">

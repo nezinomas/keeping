@@ -7,8 +7,8 @@
             <th>Data</th>
             <th>Pesijų fondas</th>
             <th>Pastaba</th>
-            <th class="text-right">Suma</th>
-            <th class="text-right">Mokestis</th>
+            <th class="text-end">Suma</th>
+            <th class="text-end">Mokestis</th>
             <th width="35rem" class="no-right-border"></th>
             <th width="35rem" class="no-left-border"></th>
         </tr>
@@ -18,9 +18,9 @@
         {% url 'pensions:pensions_update' item.id as url_update %}
         {% url 'pensions:pensions_delete' item.id as url_delete %}
         <tr data-url="{{ url_update }}" class="dblclick">
-            <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-left">{{ item.pension_type }}</td>
-            <td class="text-left">{{ item.remark }}</td>
+            <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ item.pension_type }}</td>
+            <td class="text-start">{{ item.remark }}</td>
             <td>{{ item.price|default_if_none:'-'|intcomma }}</td>
             <td>{{ item.fee|default_if_none:'-'|intcomma }}</td>
             <td class="text-center no-right-border">

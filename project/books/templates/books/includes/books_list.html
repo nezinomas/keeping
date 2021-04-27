@@ -22,10 +22,10 @@
         {% ifchanged item.started|date:"Y" %}{% if not forloop.first %}<tr><td colspan="8" class="table-active"></td></tr>{% endif %}
         {% endifchanged %}
         <tr data-url="{{ url_update }}?tab={{ tab }}" class="dblclick{% if not item.ended %} teal{% endif %}">
-            <td class="text-left">{{ forloop.revcounter }}</td>
-            <td class="text-left">{{ item.author }}</td>
-            <td class="text-left">„{{ item.title }}”</td>
-            <td class="text-left">{{ item.remark }}</td>
+            <td class="text-start">{{ forloop.revcounter }}</td>
+            <td class="text-start">{{ item.author }}</td>
+            <td class="text-start">„{{ item.title }}”</td>
+            <td class="text-start">{{ item.remark }}</td>
             <td class="text-center">{{ item.started|date:"Y-m-d" }}</td>
             <td class="text-center">{{ item.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
             <td class="text-center no-right-border">
