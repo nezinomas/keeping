@@ -1,4 +1,6 @@
 {% load humanize %}
+
+{% if items %}
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
@@ -28,10 +30,14 @@
                 <a type="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
-        {% empty %}
-        <tr class="table-warning text-center">
-            <td colspan="7" class="py-2"><b>{{ request.user.year|title }}</b> metais irašų nėra.</td>
-        </tr>
         {% endfor %}
     </tbody>
 </table>
+
+{% else %}
+
+<div class="mx-auto bg-warning text-center py-2">
+    <b>{{ request.user.year|title }}</b> metais įrašų nėra.
+</div>
+
+{% endif %}
