@@ -1,3 +1,5 @@
+{% if items %}
+
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
@@ -29,10 +31,14 @@
                 <a type="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
-        {% empty %}
-        <tr class="table-warning text-center">
-            <td colspan="{% if fees %}7{% else %}6{% endif %}" class="py-2"><b>{{ year|default_if_none:'xxxx'|safe }}</b> metais įrašų nėra.</td>
-        </tr>
         {% endfor %}
     </tbody>
 </table>
+
+{% else %}
+
+<div class="mx-auto bg-warning text-center py-2 mb-4">
+    <b>{{ year|default_if_none:'xxxx'|safe }}</b> metais įrašų nėra.
+</div>
+
+{% endif %}
