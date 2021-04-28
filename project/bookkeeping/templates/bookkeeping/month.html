@@ -7,7 +7,7 @@
 
 {% block content %}
 
-<div class="row my-2 px-2">
+<div class="row mt-2 px-2">
     <div class="col-lg-8 px-m table-responsive" id="month_table">
         {{ month_table }}
     </div>
@@ -22,7 +22,7 @@
     </div>
 </div>
 
-<div class="row my-2 px-2">
+<div class="row px-2">
     <div class="col-lg-8 px-m">
         {% with request.user.month as month %}
         {% for m in context_months %}
