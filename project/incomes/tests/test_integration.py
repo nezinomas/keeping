@@ -47,7 +47,7 @@ class Incomes(LiveServerTestCase):
         self.browser.get('%s%s' % (self.live_server_url, '/incomes/'))
 
         rows = self.browser.find_elements_by_xpath("//table/tbody/tr")
-        assert len(rows) == 4
+        assert len(rows) == 3
 
         WebDriverWait(self.browser, 5).until(
             EC.presence_of_element_located((By.ID, 'id_search'))
@@ -58,7 +58,7 @@ class Incomes(LiveServerTestCase):
         sleep(0.5)
 
         rows = self.browser.find_elements_by_xpath("//table/tbody/tr")
-        assert len(rows) == 2 # head row + find row
+        assert len(rows) == 1 # head row + find row
 
-        cells = self.browser.find_elements_by_xpath("//table/tbody/tr[2]/td")
+        cells = self.browser.find_elements_by_xpath("//table/tbody/tr[1]/td")
         assert cells[3].text == 'xxxx'

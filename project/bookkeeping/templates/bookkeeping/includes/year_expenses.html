@@ -7,7 +7,7 @@
             <th class="bl top"></th>
         </tr>
         <tr>
-            <th width="80rem" class="text-left">{{ year|title }}</th>
+            <th width="80rem" class="text-start">{{ year|title }}</th>
             {% for cat in categories %}<th>{{ cat }}</th>{% endfor %}
             <th class="bl">Viso</th>
         </tr>
@@ -15,7 +15,7 @@
     <tbody>
         {% for item in data  %}
         <tr>
-            <td class="text-left">{{ item.date|date:"F"|title }}</td>
+            <td class="text-start">{{ item.date|date:"F"|title }}</td>
             {% for cat in categories %}
             {% cell item|get_item:cat %}
             {% endfor %}
@@ -25,12 +25,12 @@
     </tbody>
     <tfoot>
         <tr>
-            <th class="text-left">Avg</th>
+            <th class="text-start">Avg</th>
             {% for cat in categories %}{% cell avg_row|get_item:cat tag='th' %}{% endfor %}
             {% cell avg_row.total tag='th' css_class="bl" %}
         </tr>
         <tr class="total">
-            <th class="text-left">Viso</th>
+            <th class="text-start">Viso</th>
             {% for cat in categories %}{% cell total_row|get_item:cat tag='th' %}{% endfor %}
             {% cell total_row.total tag='th' css_class="bl" %}
         </tr>

@@ -1,4 +1,7 @@
 {% load humanize %}
+
+{% if items %}
+
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
@@ -6,7 +9,7 @@
             <th>Pajamų rūšis</th>
             <th>Sąskaita</th>
             <th>Pastaba</th>
-            <th class="text-right">Suma</th>
+            <th class="text-end">Suma</th>
             <th width="35rem" class="no-right-border"></th>
             <th width="35rem" class="no-left-border"></th>
         </tr>
@@ -15,13 +18,13 @@
         {% for item in items %}
         {% url 'incomes:incomes_update' item.id as url_update %}
         {% url 'incomes:incomes_delete' item.id as url_delete %}
-        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="7" class="row-spacer"></td>{% endif %}</tr>
+        {% ifchanged item.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="7" class="table-active"></td></tr>{% endif %}
         {% endifchanged %}
         <tr data-url="{{ url_update }}" class="dblclick">
-            <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-left">{{ item.income_type }}</td>
-            <td class="text-left">{{ item.account }}</td>
-            <td class="text-left">{{ item.remark }}</td>
+            <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ item.income_type }}</td>
+            <td class="text-start">{{ item.account }}</td>
+            <td class="text-start">{{ item.remark }}</td>
             <td>{{ item.price|intcomma }}</td>
             <td class="no-right-border">
                 <a type="button" data-url="{{ url_update }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
@@ -30,10 +33,14 @@
                 <a type="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
-        {% empty %}
-        <tr class="table-warning text-center">
-            <td colspan="7" class="py-2"><b>{{ request.user.year|title }}</b> metais irašų nėra.</td>
-        </tr>
         {% endfor %}
     </tbody>
 </table>
+
+{% else %}
+
+<div class="mx-auto bg-warning text-center py-2">
+    <b>{{ request.user.year|title }}</b> metais įrašų nėra.
+</div>
+
+{% endif %}

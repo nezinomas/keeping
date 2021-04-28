@@ -1,17 +1,19 @@
 {% load humanize %}{% load colorize %}{% load static %}
-<script type="text/javascript" src="{% static 'js/sticky-table-headers.js' %}"></script>
 
+{% if items %}
+
+<script type="text/javascript" src="{% static 'js/sticky-table-headers.js' %}"></script>
 <table class="table table-hover stats sticky-table">
     <thead class="thead-light">
         <tr class="top">
             <th>Data</th>
             <th>Išlaidų rūšis</th>
             <th>Išlaidų pavadinimas</th>
-            <th class="text-right">Kiekis</th>
-            <th class="text-right">Kaina</th>
+            <th class="text-end">Kiekis</th>
+            <th class="text-end">Kaina</th>
             <th width="260rem">Pastaba</th>
-            <th width="70rem" class="text-right">Prisegtukas</th>
-            <th class="text-right">Sąskaita</th>
+            <th width="70rem" class="text-end">Prisegtukas</th>
+            <th class="text-end">Sąskaita</th>
             <th width="35rem" class="no-right-border"></th>
             <th width="25rem" class="no-left-border no-right-border"></th>
         </tr>
@@ -20,14 +22,14 @@
         {% for item in items %}
         {% url 'expenses:expenses_update' item.id as url_update %}
         {% url 'expenses:expenses_delete' item.id as url_delete %}
-        {% ifchanged item.date|date:"F" %}<tr>{% if not forloop.first %}<td colspan="10" class="row-spacer"></td>{% endif %}</tr>{% endifchanged %}
+        {% ifchanged item.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="10" class="table-active"></td></tr>{% endif %}{% endifchanged %}
         <tr data-url="{{ url_update }}" class="{{ item.expense_type.pk|bg_color }} dblclick">
-            <td class="text-left {%if item.exception %}expense-exception"{% else %}expense-ordinary"{% endif %}>{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-left">{{ item.expense_type }}</td>
-            <td class="text-left">{{ item.expense_name }}</td>
+            <td class="text-start {%if item.exception %}expense-exception"{% else %}expense-ordinary"{% endif %}>{{ item.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ item.expense_type }}</td>
+            <td class="text-start">{{ item.expense_name }}</td>
             <td>{{ item.quantity }}</td>
             <td>{{ item.price|intcomma }}</td>
-            <td class="text-left">{{ item.remark|linebreaksbr }}</td>
+            <td class="text-start">{{ item.remark|linebreaksbr }}</td>
             <td>{% if item.attachment %}<a href="{{ item.attachment.url }}" target="_blank">Žiūrėti</a>{% endif %}</td>
             <td>{{ item.account }}</td>
             <td class="no-right-border">
@@ -36,10 +38,6 @@
                 <td class="text-center no-left-border no-right-border">
                     <a type="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
                 </td>
-        </tr>
-        {% empty %}
-        <tr class="table-warning text-center">
-            <td colspan="10" class="py-2"><b>{% if notice %}{{ notice }}{% else %}{{ request.user.year|title }}</b> metais išlaidų nėra.{% endif %}</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -74,3 +72,11 @@
 </style>
 
 <script>$('.sticky-table').stickyTableHeaders();</script>
+
+{% else %}
+
+<div class="mx-auto bg-warning text-center py-2">
+    {% if notice %}{{ notice|safe }}{% else %}<b>{{ request.user.year|title }}</b> metais įrašų nėra.{% endif %}
+</div>
+
+{% endif %}

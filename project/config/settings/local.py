@@ -6,8 +6,10 @@ TEMPLATE_DEBUG = DEBUG
 
 
 # ================   project CONFIGURATION
-ALLOWED_HOSTS = ['*']
-
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+]
 
 # ================   APP CONFIGURATION
 INSTALLED_APPS += [
@@ -39,9 +41,6 @@ TEMPLATES[0]['OPTIONS']['loaders'] = [
                 'django.template.loaders.app_directories.Loader',]
 
 
-# ================   DEBUG_TOOLBAR_PANEL
-DEBUG_TOOLBAR_PATCH_SETTINGS = False
-
 INTERNAL_IPS = [
     '127.0.0.1',
     'localhost',
@@ -63,14 +62,15 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.profiling.ProfilingPanel',
 ]
 
-DEBUG_TOOLBAR_CONFIG = {
-    'INTERCEPT_REDIRECTS': False,
-}
-
 
 # ================   DUMMY CASHE
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
+}
+
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
+DEBUG_TOOLBAR_CONFIG = {
+    'INTERCEPT_REDIRECTS': False,
 }

@@ -1,9 +1,9 @@
 beautifulsoup4==4.9.3
+crispy-bootstrap5==0.3.1
 dateparser==1.0.0
 Django==3.2
 django-bootstrap-datepicker-plus==3.0.5
 django-bootstrap-datepicker-widget==0.1
-django-bootstrap4==3.0.0
 django-crequest==2018.5.11
 django-crispy-forms==1.11.2
 django-extensions==3.1.2

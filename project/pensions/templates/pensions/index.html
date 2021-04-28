@@ -11,7 +11,7 @@
 <div class="row mt-2">
     <div class="col-lg-8">
         <div class="row my-2">
-            <div class="col text-right">
+            <div class="col text-end">
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions }}"><i class="fas fa-plus"></i> Pajamas</button>
             </div>
         </div>
@@ -19,20 +19,16 @@
     </div>
     <div class="col-lg-4">
         <div class="row my-2">
-            <div class="col text-right">
+            <div class="col text-end">
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions_type_new }}"><i class="fas fa-plus"></i> Pajamų rūšį</button>
             </div>
         </div>
 
         <div class="row">
-            <div id="pension-categories" class="col-lg-12 pl-0">{{ categories }}</div>
+            <div id="pension-categories" class="col-lg-12 ps-0">{{ categories }}</div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modal-form">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content"></div>
-    </div>
-</div>
+{% include 'modal.html' %}
 {% endblock content %}

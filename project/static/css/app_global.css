@@ -85,7 +85,7 @@ tr.total th {
     text-align: left!important;
 }
 
-.top > th.text-right {
+.top > th.text-end {
     text-align: right!important;
 }
 
@@ -122,16 +122,16 @@ tr.top-text, tr.top-text th {
 .table-hover tbody tr:hover,
 .table-hover tbody tr._weekend_row:hover td,
 .table-hover tbody tr._current_day:hover td {
-    background: #f9f6cf!important;
+    --bs-table-accent-bg: #f9f6cf;
 }
 
-.table-hover tbody tr:hover td.table-danger {
+/* .table-hover tbody tr:hover td.table-danger {
     background: #eab0b7;
 }
 
 .table-hover tbody tr:hover td.table-success {
     background: #b7debb;
-}
+} */
 
 .btn-sm,
 .form-control-sm,
@@ -140,14 +140,22 @@ tr.top-text, tr.top-text th {
     font-size: .7rem!important;
 }
 
+.input-group-text {
+    padding: .425rem .75rem;
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
 .btn-sm {
-  padding: .15rem .25rem;
+  padding: .2rem .3rem;
 }
 
 .btn-menu {
     font-size: .7rem!important;
     color: #007bff;
-    padding: 0.1rem 0.25rem;
+    padding: 0.15rem 0.25rem;
 }
 
 .btn-super-sm {
@@ -180,13 +188,8 @@ tr.top-text, tr.top-text th {
     display: block!important;
 }
 
-.row-spacer {
-    height: .5rem;
-    background-color:#a5a4a4;
-}
-
 ._weekend_col {
-    background-color:rgb(202, 235, 204);
+    --bs-table-accent-bg:rgb(202, 235, 204);
 }
 
 ._current_day, tr._current_day > td._weekend_col {
@@ -197,10 +200,15 @@ tr.top-text, tr.top-text th {
     font-weight: normal;
     font-size: 0.8rem;
 }
-.info_row > h6 {
+
+.info_row > h6, .col > h6 {
     font-size: 1.5rem;
     display: inline;
     vertical-align: middle;
+}
+
+.col > h6 {
+    font-size: 1rem;
 }
 
 .info_row > span {
@@ -214,7 +222,7 @@ tr.top-text, tr.top-text th {
     margin: auto;
 }
 
-.no-hover:hover {
+.no-hover, .no-hover:hover {
     text-decoration: none!important;
 }
 
@@ -234,4 +242,41 @@ tr.top-text, tr.top-text th {
 .edit, .edit:hover {
     color: green;
     width: 100%;
+}
+
+.accordion-item {
+    border: none!important;
+}
+
+.accordion-header {
+    position: relative;
+}
+
+.accordion-body {
+    padding: 0;
+    margin: 0;
+}
+
+.accordion-button {
+    padding: 0.15rem 0.3rem;
+    color: #004085;
+    background-color: #9fcdff;
+    border: 1px solid rgba(0,0,0,.125);
+}
+
+.accordion-button::after {
+    padding-top: 0.15rem!important;
+    text-align: center;
+    font-family: 'Glyphicons Halflings';
+    content: "\e114";
+    background-image: none;
+}
+
+.accordion-button:not(.collapsed)::after {
+    background-image: none;
+}
+
+.table-active {
+    height: 0.5rem;
+    background-color: #e2dfdf;
 }

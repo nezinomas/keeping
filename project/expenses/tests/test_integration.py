@@ -192,7 +192,7 @@ class Expenses(LiveServerTestCase):
         sleep(0.5)
 
         rows = self.browser.find_elements_by_xpath("//table/tbody/tr")
-        assert len(rows) == 2 # head row + find row
+        assert len(rows) == 1 # head row + find row
 
-        cells = self.browser.find_elements_by_xpath("//table/tbody/tr[2]/td")
+        cells = self.browser.find_elements_by_xpath("//table/tbody/tr[1]/td")
         assert cells[5].text == 'xxxx'

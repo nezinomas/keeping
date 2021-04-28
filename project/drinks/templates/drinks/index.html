@@ -12,7 +12,7 @@
 {% block content %}
 
 <div class="row my-3">
-    <div class="col text-left">
+    <div class="col text-start">
         <a href="{% url 'drinks:drinks_index' %}" class="btn btn-sm {% if '/drinks/' == request.path %}btn-info{% else %}btn-light{% endif %}">Grafikai</a>
         <a href="{% url 'drinks:drinks_list' %}" class="btn btn-sm mx-2 {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">Duomenys</a>
         <a href="{% url 'drinks:drinks_history' %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">Istorija</a>
@@ -20,11 +20,11 @@
 
     <div class="col text-center" id="info_row"></div>
 
-    <div class="col text-right">
+    <div class="col text-end">
         {% url 'drinks:drinks_new' as url_drinks %}
         {% url 'drinks:drinks_target_new' as url_drinks_target %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create pr-2" data-url="{{ url_drinks }}"><i class="bi bi-plus"></i> Gertynės</button>
-        <button type="button" class="btn btn-sm btn-info js-create pr-2" data-url="{{ url_drinks_target }}"><i class="bi bi-plus"></i> Metų tikslas</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create pe-2" data-url="{{ url_drinks }}"><i class="bi bi-plus"></i> Gertynės</button>
+        <button type="button" class="btn btn-sm btn-info js-create pe-2" data-url="{{ url_drinks_target }}"><i class="bi bi-plus"></i> Metų tikslas</button>
     </div>
 </div>
 
@@ -62,7 +62,7 @@
     <div class="col-lg-6">
         <div class="row cmp">
             <div class="col-sm-3"><b>Istoriniai duomenys</b></div>
-            <div class="col-sm-9 text-right">
+            <div class="col-sm-9 text-end">
                 <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 2 %}">2 metų</button>
                 <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 3 %}">3 metų</button>
                 <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 7 %}">7 metų</button>
@@ -78,7 +78,7 @@
     <div class="col-lg-6">
         <div class="row cmp">
             <div class="col-sm-4"><b>Metų palyginimas</b></div>
-            <div class="col-sm-8 text-right" id="compare_form_data">{{ compare_form }}</div>
+            <div class="col-sm-8 text-end" id="compare_form_data">{{ compare_form }}</div>
         </div>
 
         <div class="row">

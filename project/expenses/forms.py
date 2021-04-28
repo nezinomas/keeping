@@ -79,6 +79,10 @@ class ExpenseForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+        self.fields['exception'].widget.attrs['class'] = " form-check-input"
+        self.fields['attachment'].widget.attrs['class'] = 'form-control form-control-sm'
+
+
     def clean_exception(self):
         data = self.cleaned_data
 
