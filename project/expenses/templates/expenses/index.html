@@ -12,10 +12,10 @@
 {% url 'expenses:expenses_new' as url_expense_new %}
 {% url 'expenses:expenses_type_new' as url_expenses_type_new %}
 {% url 'expenses:expenses_name_new' as url_expenses_name_new %}
-<div class="row mt-2 px-2">
-    <div class="col-lg-8 px-1">
+<div class="row gx-2">
+    <div class="col-lg-8">
         <div class="row my-2">
-            <div class="col-sm-10">
+            <div class="col-10">
             {% for m in context_months %}
                 {% with m|date:'n' as m_num %}
                 <button id="{{m_num}}" type="button" data-url="{% url 'expenses:expenses_month_list' m_num %}" class="btn btn-sm btn-month js-filter me-1 {% if current_month|slugify == m_num %}btn-info{% endif %}">{{ m|date:'F'|title }}</button>
@@ -23,30 +23,30 @@
                 {% endfor %}
                 <button id="13" type="button" data-url="{% url 'expenses:expenses_list' %}" class="btn btn-sm btn-month js-filter ms-2 {% if current_month|slugify == 13|slugify %}btn-info{% endif %}">Visi įrašai</button>
             </div>
-            <div class="col-sm-2 text-end">
-                <button type="button" id="insert_expense" class="btn btn-sm btn-outline-success pe-2 js-create" data-url="{{ url_expense_new }}"><i class="bi bi-plus"></i>Išlaidas</button>
+            <div class="col-2 text-end">
+                <button type="button" id="insert_expense" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expense_new }}"><i class="bi bi-plus"></i>Išlaidas</button>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row mb-2">
             <div id="search_form_data" class="col">{{ search }}</div>
         </div>
 
         <div class="row">
-            <div id="expenses_list" class="col mt-2">{{ expenses_list }}</div>
+            <div id="expenses_list" class="col">{{ expenses_list }}</div>
         </div>
     </div>
 
     <div class="col-lg-4">
         <div class="row my-2">
-            <div class="col-lg-12 px-2 text-end">
-                <button type="button" class="btn btn-sm btn-outline-success pe-2 js-create" data-url="{{ url_expenses_type_new }}"><i class="bi bi-plus"></i>Išlaidų rūšį</button>
-                <button type="button" class="btn btn-sm btn-outline-success pe-2 js-create" data-url="{{ url_expenses_name_new }}"><i class="bi bi-plus"></i>Išlaidų pavadinimą</button>
+            <div class="col-lg-12 text-end">
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_type_new }}"><i class="bi bi-plus"></i>Išlaidų rūšį</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_name_new }}"><i class="bi bi-plus"></i>Išlaidų pavadinimą</button>
             </div>
         </div>
 
         <div class="row">
-            <div id="ajax-content-categories" class="col-lg-12 px-2">{{ categories }}</div>
+            <div id="ajax-content-categories" class="col-lg-12">{{ categories }}</div>
         </div>
     </div>
 </div>

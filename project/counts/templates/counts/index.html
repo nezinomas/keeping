@@ -11,7 +11,7 @@
 
 {% block content %}
 
-<div class="row my-3">
+<div class="row my-2">
     <div class="col-sm-3 text-start">
         <a href="{% url url_index %}" class="btn btn-sm {% if '/'|add:app_name|add:'/' == request.path %}btn-info{% else %}btn-light{% endif %}">Grafikai</a>
         <a href="{% url url_list %}" class="btn btn-sm mx-2 {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">Duomenys</a>
@@ -23,18 +23,18 @@
     </div>
 
     <div class="col-sm-3 text-end">
-        <button type="button" class="btn btn-sm btn-outline-success js-create pe-2" data-url="{% url url_new %}"><i class="bi bi-plus"></i> Pridėti</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url url_new %}"><i class="bi bi-plus"></i> Pridėti</button>
     </div>
 </div>
 
 {% if tab == 'index' %}
-<div class="row mt-2">
+<div class="row">
     <div class="col-lg-4" id="chart_weekdays">{{ chart_weekdays }}</div>
     <div class="col-lg-4" id="chart_months">{{ chart_months }}</div>
     <div class="col-lg-4" id="chart_histogram">{{ chart_histogram }}</div>
 </div>
 
-<div class="row mt-2">
+<div class="row my-2">
     <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{{ chart_calendar_1H }}</div>
     <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{{ chart_calendar_2H }}</div>
 </div>
@@ -43,14 +43,14 @@
 
 
 {% if tab == 'data' %}
-<div class="row mt-2">
+<div class="row my-2">
     <div class="col" id="ajax-content">{{ data }}</div>
 </div>
 {% endif %}
 
 
 {% if tab == 'history' %}
-<div class="row mt-2">
+<div class="row my-2">
     <div class="col-lg-4">{{ chart_weekdays }}</div>
     <div class="col-lg-4">{{ chart_years }}</div>
     <div class="col-lg-4">{{ chart_histogram }}</div>

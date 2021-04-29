@@ -15,7 +15,7 @@
 <!-- Loader -->
 <div class="loader loader-default" id="loader"></div>
 
-<div class="row my-3">
+<div class="row my-2">
     <div class="col-2 text-start" id="search_form_data">{{ search }}</div>
 
     <div class="col text-center" id="info_row">{{ info_row }}</div>
@@ -23,22 +23,22 @@
     <div class="col-2 text-end">
         {% url 'books:books_new' as url_books %}
         {% url 'books:books_target_new' as url_books_target %}
-        <button type="button" class="btn btn-sm btn-outline-success pe-2 js-create" data-url="{{ url_books }}"><i class="bi bi-plus"></i>Knygą</button>
-        <button type="button" class="btn btn-sm btn-outline-success pe-2 js-create" data-url="{{ url_books_target }}"><i class="bi bi-plus"></i>{{ year|title }} metų tikslą</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books }}"><i class="bi bi-plus"></i>Knygą</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books_target }}"><i class="bi bi-plus"></i>{{ year|title }} metų tikslą</button>
     </div>
 </div>
 
-<div class="row mt-2">
+<div class="row">
     <div id="book_list" class="col-lg-12">{{ book_list }}</div>
 </div>
 
-<div class="row mt-2">
+<div class="row my-2">
     <div class="col-lg-12" id="chart_readed_books">{{ chart_readed_books }}</div>
 </div>
 {% endif %}
 
 {% if tab == 'all' %}
-<div class="row mt-2">
+<div class="row my-2">
     <div id="book_list" class="col-lg-12">{{ book_list }}</div>
 </div>
 {% endif %}

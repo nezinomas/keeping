@@ -11,7 +11,7 @@
 
 {% block content %}
 
-<div class="row my-3">
+<div class="row my-2">
     <div class="col text-start">
         <a href="{% url 'drinks:drinks_index' %}" class="btn btn-sm {% if '/drinks/' == request.path %}btn-info{% else %}btn-light{% endif %}">Grafikai</a>
         <a href="{% url 'drinks:drinks_list' %}" class="btn btn-sm mx-2 {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">Duomenys</a>
@@ -23,28 +23,28 @@
     <div class="col text-end">
         {% url 'drinks:drinks_new' as url_drinks %}
         {% url 'drinks:drinks_target_new' as url_drinks_target %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create pe-2" data-url="{{ url_drinks }}"><i class="bi bi-plus"></i> Gertynės</button>
-        <button type="button" class="btn btn-sm btn-info js-create pe-2" data-url="{{ url_drinks_target }}"><i class="bi bi-plus"></i> Metų tikslas</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_drinks }}"><i class="bi bi-plus"></i> Gertynės</button>
+        <button type="button" class="btn btn-sm btn-info js-create" data-url="{{ url_drinks_target }}"><i class="bi bi-plus"></i> Metų tikslas</button>
     </div>
 </div>
 
 {% if tab == 'index' %}
-<div class="row mt-2">
+<div class="row">
     <div class="col-lg-6" id="chart_consumsion">{{ chart_consumsion }}</div>
     <div class="col-lg-6" id="chart_quantity">{{ chart_quantity }}</div>
 </div>
 
-<div class="row mt-2">
+<div class="row my-2">
     <div class="col-lg-6">
-        <div class="row px-3">
-            <div id="tbl_consumsion" class="col-lg-3 col-md-3 px-1">{{ tbl_consumsion }}</div>
-            <div id="tbl_last_day" class="col-lg-4 col-md-3 px-1">{{ tbl_last_day }}</div>
-            <div id="tbl_alcohol" class="col-lg-2 col-md-3 px-1">{{ tbl_alcohol }}</div>
-            <div id="drinks-target-content" class="col-lg-3 col-md-3 px-1">{{ target_list }}</div>
+        <div class="row gx-2">
+            <div id="tbl_consumsion" class="col-lg-3 col-md-3">{{ tbl_consumsion }}</div>
+            <div id="tbl_last_day" class="col-lg-4 col-md-3">{{ tbl_last_day }}</div>
+            <div id="tbl_alcohol" class="col-lg-2 col-md-3">{{ tbl_alcohol }}</div>
+            <div id="drinks-target-content" class="col-lg-3 col-md-3">{{ target_list }}</div>
         </div>
 
-        <div class="row px-3">
-            <div class="col px-1" id="tbl_std_av">{{ tbl_std_av }}</div>
+        <div class="row">
+            <div class="col" id="tbl_std_av">{{ tbl_std_av }}</div>
         </div>
     </div>
 
@@ -53,15 +53,15 @@
     </div>
 </div>
 
-<div class="row pb-5">
+<div class="row">
     <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{{ chart_calendar_1H }}</div>
     <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{{ chart_calendar_2H }}</div>
 </div>
 
-<div class="row mt-2">
+<div class="row mt-4">
     <div class="col-lg-6">
-        <div class="row cmp">
-            <div class="col-sm-3"><b>Istoriniai duomenys</b></div>
+        <div class="row my-2">
+            <div class="col-sm-3 pt-1"><b>Istoriniai duomenys</b></div>
             <div class="col-sm-9 text-end">
                 <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 2 %}">2 metų</button>
                 <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 3 %}">3 metų</button>
@@ -71,43 +71,38 @@
         </div>
 
         <div class="row">
-            <div class="col px-1" id="historical_data"></div>
+            <div class="col" id="historical_data"></div>
         </div>
     </div>
 
     <div class="col-lg-6">
-        <div class="row cmp">
-            <div class="col-sm-4"><b>Metų palyginimas</b></div>
+        <div class="row my-2">
+            <div class="col-sm-4 pt-1"><b>Metų palyginimas</b></div>
             <div class="col-sm-8 text-end" id="compare_form_data">{{ compare_form }}</div>
         </div>
 
         <div class="row">
-            <div class="col px-1" id="compare_data"></div>
+            <div class="col" id="compare_data"></div>
         </div>
     </div>
 </div>
 {% endif %}
 
 {% if tab == 'history' %}
-<div class="row mt-2">
+<div class="row">
     <div class="col">{% include 'drinks/includes/chart_history.html' %}</div>
 </div>
 {% endif %}
 
 
 {% if tab == 'data' %}
-<div class="row mt-2">
+<div class="row">
     <div class="col" id="ajax-content">{{ data }}</div>
 </div>
 {% endif %}
 
 {% include 'modal.html' %}
-<style>
-    .cmp {
-        height: 3em;
-        font-size: .85rem;
-    }
-</style>
+
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
         var url = `{% url 'drinks:reload_stats' %}`;
