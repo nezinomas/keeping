@@ -180,20 +180,25 @@ tr.top-text, tr.top-text th {
     font-size: 0.8rem;
 }
 
-.info_row > h6, .col > h6 {
-    font-size: 1.5rem;
-    display: inline;
-    vertical-align: middle;
-}
-
 .info_row > span {
     vertical-align: middle;
     display: inline-block;
     margin-top: 0.1rem!important;
 }
 
-.col > h6 {
+.info_row > h6 {
+    font-size: 1.5rem;
+    display: inline;
+}
+
+div[class*="col"] > h6 {
     font-size: 1rem;
+}
+
+.info_row > h6, div[class*="col"] > h6 {
+    vertical-align: middle;
+    margin-bottom: 0!important;
+    padding-top: .25rem;
 }
 
 .modal-dialog.modal-650 {
