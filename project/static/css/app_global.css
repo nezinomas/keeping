@@ -10,7 +10,7 @@ table.stats h1 {
 
 table.stats {
     border-collapse: collapse;
-    font-size: .65rem;
+    font-size: .67rem;
 }
 
 table.stats tfoot {
@@ -125,27 +125,10 @@ tr.top-text, tr.top-text th {
     --bs-table-accent-bg: #f9f6cf;
 }
 
-/* .table-hover tbody tr:hover td.table-danger {
-    background: #eab0b7;
-}
-
-.table-hover tbody tr:hover td.table-success {
-    background: #b7debb;
-} */
-
 .btn-sm,
 .form-control-sm,
-.form-control,
-.input-group-text {
+.form-control {
     font-size: .7rem!important;
-}
-
-.input-group-text {
-    padding: .425rem .75rem;
-    border-top-right-radius: .25rem;
-    border-bottom-right-radius: .25rem;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
 }
 
 .btn-sm {
@@ -174,10 +157,6 @@ tr.top-text, tr.top-text th {
     margin: 0;
 }
 
-.list-group-item.list-group-item-primary {
-    padding-left: 0.25rem;
-}
-
 .bad {
     background-color: #fec2c6;
     color: #dc3545;
@@ -201,20 +180,25 @@ tr.top-text, tr.top-text th {
     font-size: 0.8rem;
 }
 
-.info_row > h6, .col > h6 {
-    font-size: 1.5rem;
-    display: inline;
-    vertical-align: middle;
-}
-
-.col > h6 {
-    font-size: 1rem;
-}
-
 .info_row > span {
     vertical-align: middle;
     display: inline-block;
     margin-top: 0.1rem!important;
+}
+
+.info_row > h6 {
+    font-size: 1.5rem;
+    display: inline;
+}
+
+div[class*="col"] > h6 {
+    font-size: 1rem;
+}
+
+.info_row > h6, div[class*="col"] > h6 {
+    vertical-align: middle;
+    margin-bottom: 0!important;
+    padding-top: .25rem;
 }
 
 .modal-dialog.modal-650 {
