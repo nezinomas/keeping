@@ -127,17 +127,8 @@ tr.top-text, tr.top-text th {
 
 .btn-sm,
 .form-control-sm,
-.form-control,
-.input-group-text {
+.form-control {
     font-size: .7rem!important;
-}
-
-.input-group-text {
-    padding: .425rem .75rem;
-    border-top-right-radius: .25rem;
-    border-bottom-right-radius: .25rem;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
 }
 
 .btn-sm {
@@ -164,10 +155,6 @@ tr.top-text, tr.top-text th {
 .list-group-item {
     padding: .25rem 0 .25rem 1.25rem;
     margin: 0;
-}
-
-.list-group-item.list-group-item-primary {
-    padding-left: 0.25rem;
 }
 
 .bad {
