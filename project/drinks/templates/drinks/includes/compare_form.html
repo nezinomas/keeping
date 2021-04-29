@@ -1,10 +1,14 @@
 {% load crispy_forms_tags %}
-<form class="filter" novalidate method="post" id="compare_form">
+<form novalidate method="post" id="compare_form" class="row d-flex px-2 gx-2 align-items-center">
     {% csrf_token %}
-    <div class="row">
-        <div class="col"></div>
-        <div class="col-sm-3 mx-1 px-0">{{ form.year1|as_crispy_field }}</div>
-        <div class="col-sm-3 mx-1 px-0">{{ form.year2|as_crispy_field }}</div>
-        <div class="col-sm-1 ms-0 ps-0"><input type="button" name="date_filter" value="Filter" class="btn btn-secondary btn-sm filter_click" data-url="{% url 'drinks:compare' %}"></div>
-    </div>
+    <div class="col"></div>
+    <div class="col-sm-3 align-self-start">{{ form.year1|as_crispy_field }}</div>
+    <div class="col-sm-3 align-self-start">{{ form.year2|as_crispy_field }}</div>
+    <div class="col-sm-1 align-self-start"><input type="button" name="date_filter" value="Filter" class="btn btn-secondary btn-sm filter_click" data-url="{% url 'drinks:compare' %}"></div>
 </form>
+
+<style>
+    #div_id_year1, #div_id_year2 {
+        margin-bottom: 0!important;
+    }
+</style>
