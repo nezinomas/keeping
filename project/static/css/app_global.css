@@ -125,14 +125,6 @@ tr.top-text, tr.top-text th {
     --bs-table-accent-bg: #f9f6cf;
 }
 
-/* .table-hover tbody tr:hover td.table-danger {
-    background: #eab0b7;
-}
-
-.table-hover tbody tr:hover td.table-success {
-    background: #b7debb;
-} */
-
 .btn-sm,
 .form-control-sm,
 .form-control,
