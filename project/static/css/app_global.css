@@ -199,14 +199,14 @@ tr.top-text, tr.top-text th {
     vertical-align: middle;
 }
 
-.col > h6 {
-    font-size: 1rem;
-}
-
 .info_row > span {
     vertical-align: middle;
     display: inline-block;
     margin-top: 0.1rem!important;
+}
+
+.col > h6 {
+    font-size: 1rem;
 }
 
 .modal-dialog.modal-650 {
