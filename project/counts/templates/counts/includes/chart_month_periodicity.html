@@ -1,14 +1,14 @@
 {% load get_item %}
 
-<div class="row mt-5 mx-2">
+<div class="row">
 {% for month in month_days %}
     {% with forloop.counter0 as parent %}
-    <div class="col-lg-4 px-0 mx-0">
+    <div class="col-lg-4">
         {% include chart_template %}
     </div>
     {% if forloop.counter|divisibleby:3 %}
     </div> <!-- row end loop -->
-    <div class="row mt-4 mx-2">
+    <div class="row">
     <!-- row start loop -->
     {% endif %}
     {% endwith %}
