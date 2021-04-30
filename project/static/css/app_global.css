@@ -63,21 +63,17 @@ tr.total th {
     padding: .1rem .5rem;
 }
 
+.dropdown-menu a.dropdown-item {
+    padding: .2rem .5rem;
+}
+
 .nav-item {
     padding: 0;
     margin: 0.15rem;
 }
 
-.dropdown-menu a.dropdown-item {
-    padding-left: .25rem;
-}
-
 .nav-link {
     padding: .15rem .35rem;
-}
-
-.container-fluid>.content {
-    padding: 0 .5rem;
 }
 
 .top > th {
@@ -152,10 +148,6 @@ tr.top-text, tr.top-text th {
     margin-bottom: -0.45rem!important;
 }
 
-.list-group-item {
-    padding: .25rem 0 .25rem 1.25rem;
-    margin: 0;
-}
 
 .bad {
     background-color: #fec2c6;
@@ -238,6 +230,12 @@ div[class*="col"] > h6 {
 
 .accordion-body {
     padding: 0;
+    margin: 0;
+}
+
+/* accordion child */
+.accordion-body > .list-group-item {
+    padding: .25rem 0 .25rem 1.25rem;
     margin: 0;
 }
 

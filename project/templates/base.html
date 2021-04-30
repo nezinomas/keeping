@@ -34,7 +34,7 @@
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">{{ request.user.year|title }}</a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
               {% for y in years %}
-              <li><a class="dropdown-item btn-sm py-1 px-2" href="{% url 'core:set_year' y %}">{{ y|safe }}</a></li>
+              <li><a class="dropdown-item btn-sm" href="{% url 'core:set_year' y %}">{{ y|safe }}</a></li>
               {% endfor %}
             </ul>
           </li>
@@ -55,7 +55,7 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu pe-1 nav-link {% if '/expenses/' in request.path %}active{% endif %}"
+              <a class="btn btn-menu nav-link {% if '/expenses/' in request.path %}active{% endif %}"
                 href="{% url 'expenses:expenses_index' %}">Išlaidos</a>
               <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/expenses/' in request.path %}active{% endif %}" data-bs-toggle="dropdown"
                 aria-expanded="false">
@@ -65,14 +65,14 @@
                 {% for m in context_months %}
                 {% with m|date:'n' as m_num %}
                 <li>
-                  <a class="dropdown-item btn-sm py-1 px-2" href="{% url 'expenses:expenses_month_list' forloop.counter %}">{{ m|date:'F'|title }}</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'expenses:expenses_month_list' forloop.counter %}">{{ m|date:'F'|title }}</a>
                 </li>
                 {% endwith %}{% endfor %}
                 <li>
                   <hr class="dropdown-divider">
                 </li>
                 <li>
-                  <a class="dropdown-item btn-sm py-1 px-2" href="{% url 'expenses:expenses_month_list' 13 %}">Visi įrašai</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'expenses:expenses_month_list' 13 %}">Visi įrašai</a>
                 </li>
               </ul>
             </div>
@@ -95,7 +95,7 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu pe-1 nav-link {% if '/books/' in request.path %}active{% endif %}"
+              <a class="btn btn-menu nav-link {% if '/books/' in request.path %}active{% endif %}"
                 href="{% url 'books:books_index' %}">Knygos</a>
               <button type="button"
                 class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/books/' in request.path %}active{% endif %}"
@@ -104,7 +104,7 @@
               </button>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item btn-sm py-1 px-2" href="{% url 'books:books_all' %}">Visi įrašai</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'books:books_all' %}">Visi įrašai</a>
                 </li>
               </ul>
             </div>
@@ -112,7 +112,7 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu pe-1 nav-link {% if '/drinks/' in request.path %}active{% endif %}"
+              <a class="btn btn-menu nav-link {% if '/drinks/' in request.path %}active{% endif %}"
                 href="{% url 'drinks:drinks_index' %}">Gėrimai</a>
               <button type="button"
                 class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/drinks/' in request.path %}active{% endif %}"
@@ -121,10 +121,10 @@
               </button>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item btn-sm py-1 px-2" href="{% url 'drinks:drinks_list' %}">Duomenys</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'drinks:drinks_list' %}">Duomenys</a>
                 </li>
                 <li>
-                  <a class="dropdown-item btn-sm py-1 px-2" href="{% url 'drinks:drinks_history' %}">Istorija</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'drinks:drinks_history' %}">Istorija</a>
                 </li>
               </ul>
             </div>
@@ -132,7 +132,7 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu pe-1 nav-link {% if '/counts/' in request.path %}active{% endif %}"
+              <a class="btn btn-menu nav-link {% if '/counts/' in request.path %}active{% endif %}"
                 href="{% url 'counts:counts_index' %}">Kiek</a>
               <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/counts/' in request.path %}active{% endif %}"
                 data-bs-toggle="dropdown" aria-expanded="false">
@@ -140,10 +140,10 @@
               </button>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item btn-sm py-1 px-2" href="{% url 'counts:counts_list' %}">Duomenys</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'counts:counts_list' %}">Duomenys</a>
                 </li>
                 <li>
-                  <a class="dropdown-item btn-sm py-1 px-2" href="{% url 'counts:counts_history' %}">Istorija</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'counts:counts_history' %}">Istorija</a>
                 </li>
               </ul>
             </div>
@@ -165,7 +165,7 @@
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
             aria-expanded="false">{{ user.username }}</a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
-            <li><a class="dropdown-item btn-sm px-2" href="{% url 'users:logout' %}">Log out</a></li>
+            <li><a class="dropdown-item btn-sm" href="{% url 'users:logout' %}">Log out</a></li>
           </ul>
         </div>
       </nav>
