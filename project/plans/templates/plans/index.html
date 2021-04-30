@@ -10,10 +10,10 @@
     <div class="col-lg-12">
         <!-- incomes plans -->
         <div class="row my-2">
-            <div class="col-lg-10">
+            <div class="col">
                 <h6>Pajamų planas</h6>
             </div>
-            <div class="col-lg-2 text-end">
+            <div class="col-3 text-end">
                 {% url 'plans:incomes_plan_new' as url_incomes_new %}
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url 'plans:copy_plans' %}"><i class="bi bi-stickies"></i> Kopijuoti planus</button>
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_new }}"><i class="bi bi-plus"></i>Įrašą</button>
@@ -25,8 +25,8 @@
 
         <!-- expenses plans -->
         <div class="row my-2">
-            <div class="col-lg-10"><h6>Išlaidų planas</h6></div>
-            <div class="col-lg-2 text-end">
+            <div class="col"><h6>Išlaidų planas</h6></div>
+            <div class="col-3 text-end">
                 {% url 'plans:expenses_plan_new' as url_expenses_new %}
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="bi bi-plus"></i>Įrašą</button>
             </div>
@@ -37,8 +37,8 @@
 
         <!-- necessary expenses plans -->
         <div class="row my-2">
-            <div class="col-lg-10"><h6>Papildomų būtinų išlaidų planas</h6></div>
-            <div class="col-lg-2 text-end">
+            <div class="col"><h6>Papildomų būtinų išlaidų planas</h6></div>
+            <div class="col-3 text-end">
                 {% url 'plans:necessarys_plan_new' as url_necessary_new %}
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_necessary_new }}"><i class="bi bi-plus"></i>Įrašą</button>
             </div>
@@ -49,10 +49,10 @@
 
         <!-- savings plans -->
         <div class="row my-2">
-            <div class="col-lg-10">
+            <div class="col">
                 <h6>Taupymo planas</h6>
             </div>
-            <div class="col-lg-2 text-end">
+            <div class="col-3 text-end">
                 {% url 'plans:savings_plan_new' as url_savings_new %}
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_new }}"><i class="bi bi-plus"></i>Įrašą</button>
             </div>
@@ -63,10 +63,10 @@
 
         <!-- day plans -->
         <div class="row my-2">
-            <div class="col-lg-10">
+            <div class="col">
                 <h6>Suma dienai</h6>
             </div>
-            <div class="col-lg-2 text-end">
+            <div class="col-3 text-end">
                 {% url 'plans:days_plan_new' as url_day_new %}
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_day_new }}"><i class="bi bi-plus"></i>Įrašą</button>
             </div>
@@ -77,8 +77,8 @@
 
         <!-- stats plans -->
         <div class="row my-2">
-            <div class="col-lg-10"><h6>Skaičiavimai</h6></div>
-            <div class="col-lg-2 text-end"></div>
+            <div class="col"><h6>Skaičiavimai</h6></div>
+            <div class="col-3 text-end"></div>
         </div>
         <div class="row">
             <div id="plans_stats" class="col-lg-12">{{ plans_stats }}</div>
