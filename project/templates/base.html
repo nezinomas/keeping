@@ -55,7 +55,7 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu pe-1 nav-link {% if '/expenses/' in request.path %}active{% endif %}"
+              <a class="btn btn-menu nav-link {% if '/expenses/' in request.path %}active{% endif %}"
                 href="{% url 'expenses:expenses_index' %}">Išlaidos</a>
               <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/expenses/' in request.path %}active{% endif %}" data-bs-toggle="dropdown"
                 aria-expanded="false">
@@ -95,7 +95,7 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu pe-1 nav-link {% if '/books/' in request.path %}active{% endif %}"
+              <a class="btn btn-menu nav-link {% if '/books/' in request.path %}active{% endif %}"
                 href="{% url 'books:books_index' %}">Knygos</a>
               <button type="button"
                 class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/books/' in request.path %}active{% endif %}"
@@ -112,7 +112,7 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu pe-1 nav-link {% if '/drinks/' in request.path %}active{% endif %}"
+              <a class="btn btn-menu nav-link {% if '/drinks/' in request.path %}active{% endif %}"
                 href="{% url 'drinks:drinks_index' %}">Gėrimai</a>
               <button type="button"
                 class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/drinks/' in request.path %}active{% endif %}"
@@ -132,7 +132,7 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu pe-1 nav-link {% if '/counts/' in request.path %}active{% endif %}"
+              <a class="btn btn-menu nav-link {% if '/counts/' in request.path %}active{% endif %}"
                 href="{% url 'counts:counts_index' %}">Kiek</a>
               <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/counts/' in request.path %}active{% endif %}"
                 data-bs-toggle="dropdown" aria-expanded="false">
