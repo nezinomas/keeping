@@ -69,7 +69,7 @@ tr.total th {
 }
 
 .dropdown-menu a.dropdown-item {
-    padding-left: .25rem;
+    padding: .2rem .5rem;
 }
 
 .nav-link {
