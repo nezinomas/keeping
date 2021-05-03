@@ -1,2 +1,17 @@
 {% load form %}
 {% generic_form title='Gėrimai' update_container='ajax-content' %}
+
+<script>
+    $(document).ready(function () {
+        document.getElementById('id_quantity').type = 'text';
+    });
+
+    var input = document.getElementById("id_quantity");
+    input.addEventListener("keyup", function (event) {
+        event.preventDefault();
+
+        var val = String(input.value).replaceAll(',', '.')
+
+        input.value = val;
+    });
+</script>
