@@ -33,10 +33,10 @@
             <td>{% if item.attachment %}<a href="{{ item.attachment.url }}" target="_blank">Žiūrėti</a>{% endif %}</td>
             <td>{{ item.account }}</td>
             <td class="no-right-border">
-                <a type="button" data-url="{{ url_update }}" class="text-center js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+                <a role="button" data-url="{{ url_update }}" class="text-center js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
                 </td>
                 <td class="text-center no-left-border no-right-border">
-                    <a type="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+                    <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
                 </td>
         </tr>
         {% endfor %}
