@@ -289,3 +289,17 @@ div[class*="col"] > h6 {
 .w8 {
     width: 8rem!important;
 }
+
+.w16 {
+    width: 16rem!important;
+}
+
+.w-edit {
+    width: 35px!important;
+    text-align: center!important;
+}
+
+.w-delete {
+    width:  25px!important;
+    text-align: center!important;
+}

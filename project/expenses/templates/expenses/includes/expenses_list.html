@@ -11,11 +11,11 @@
             <th>Išlaidų pavadinimas</th>
             <th class="text-end">Kiekis</th>
             <th class="text-end">Kaina</th>
-            <th width="260rem">Pastaba</th>
-            <th width="70rem" class="text-end">Prisegtukas</th>
+            <th class="w16">Pastaba</th>
+            <th class="text-end w5">Prisegtukas</th>
             <th class="text-end">Sąskaita</th>
-            <th width="35rem" class="no-right-border"></th>
-            <th width="25rem" class="no-left-border no-right-border"></th>
+            <th class="no-right-border"></th>
+            <th class="no-left-border no-right-border"></th>
         </tr>
     </thead>
     <tbody>
@@ -32,12 +32,12 @@
             <td class="text-start">{{ item.remark|linebreaksbr }}</td>
             <td>{% if item.attachment %}<a href="{{ item.attachment.url }}" target="_blank">Žiūrėti</a>{% endif %}</td>
             <td>{{ item.account }}</td>
-            <td class="no-right-border">
-                <a role="button" data-url="{{ url_update }}" class="text-center js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
-                </td>
-                <td class="text-center no-left-border no-right-border">
-                    <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
-                </td>
+            <td class="w-edit no-right-border">
+                <a role="button" data-url="{{ url_update }}" class="js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+            </td>
+            <td class="w-delete no-left-border no-right-border">
+                <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
