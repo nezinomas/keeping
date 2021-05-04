@@ -22,8 +22,8 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-lg-8">
+<div class="row gx-2">
+    <div class="col-lg-8 gx-0">
         {% with request.user.month as month %}
         {% for m in context_months %}
         {% with m|date:'n' as m_num %}
@@ -47,7 +47,7 @@
 
 <style>
     .btn-month {
-        width: Calc((100% / 12) - 0.18rem);
+        width: Calc((100% / 12) - 0.2rem);
     }
 
     table.stats td.td_expand_day_expenses {
