@@ -2,10 +2,33 @@
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
+
+<style>
+    .btn-month {
+        width: Calc((100% / 12) - 0.18rem);
+    }
+
+    table.stats td.td_expand_day_expenses {
+        padding-top: .35rem!important;
+        padding-left: .3rem!important;
+        padding-right: .3rem!important;
+        padding-bottom: 1rem!important;
+    }
+
+    td.td_expand_day_expenses table.stats {
+        margin-bottom: 0!important;
+    }
+
+    #info-row {
+        margin-top: 2rem;
+    }
+</style>
+
 {% endblock head %}
 
 
 {% block content %}
+
 
 <div class="row mt-2 gx-2">
     <div class="col-lg-8 table-responsive" id="month_table">
@@ -44,27 +67,6 @@
         <button class="btn btn-sm btn-info" onclick="myFunction()">Rodyti kitą grafiką</button>
     </div>
 </div>
-
-<style>
-    .btn-month {
-        width: Calc((100% / 12) - 0.18rem);
-    }
-
-    table.stats td.td_expand_day_expenses {
-        padding-top: .35rem!important;
-        padding-left: .3rem!important;
-        padding-right: .3rem!important;
-        padding-bottom: 1rem!important;
-    }
-
-    td.td_expand_day_expenses table.stats {
-        margin-bottom: 0!important;
-    }
-
-    #info-row {
-        margin-top: 2rem;
-    }
-</style>
 
 <script>
     function myFunction() {
