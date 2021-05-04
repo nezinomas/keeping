@@ -2,12 +2,6 @@ body, .tooltip {
   font-size: .7rem!important;
 }
 
-table.stats h1 {
-    font-size: .75rem;
-    padding: .15rem 0;
-    margin: 0;
-}
-
 table.stats {
     border-collapse: collapse;
     font-size: .67rem;
