@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
 {% load detailed_table %}
-{% block head %}{% endblock head %}
+{% block head %}
+<style>
+    tfoot > tr > th {
+        font-weight: bold!important;
+        color: gray;
+        background-color: aliceblue!important;
+    }
+</style>
+{% endblock head %}
 
 {% block content %}
 
