@@ -261,6 +261,15 @@ div[class*="col"] > h6 {
     text-align: left;
 }
 
+#search_btn {
+    margin: 0!important;
+    padding: .25rem .5rem;
+}
+
+#div_id_search {
+    margin-bottom: 0!important;
+}
+
 .w5 {
     width: 5rem!important;
 }
