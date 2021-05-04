@@ -23,7 +23,9 @@
         {% for title in grouped %}
         <tr>
             <td class="text-start">{{ title.grouper }}</td>
-            {% for i in months %}{% with title.list|get_sum_by_month:i as sum %}{% cell sum %}{% endwith %}</td>{% endfor %}
+            {% for i in months %}
+                {% with title.list|get_sum_by_month:i as sum %}{% cell sum %}{% endwith %}
+            {% endfor %}
             {% with total_col|get_sum_by_title:title.grouper as col_value %}
             <td>{{ col_value }}</td>{% endwith %}
         </tr>
