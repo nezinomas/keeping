@@ -1,9 +1,9 @@
 {% load static %}{% load crispy_forms_tags %}{% load form_field %}
 <form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}" autocomplete="off" tabindex="-1">
     {% csrf_token %}
-    <script type="text/javascript" src="{% static 'js/moment-with-locales-2.9.0.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'bootstrap_datepicker/js/bootstrap-datetimepicker-4.17.47.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'bootstrap_datepicker_plus/js/datepicker-widget.js' %}"></script>
+    <script src="{% static 'js/moment-with-locales-2.9.0.min.js' %}"></script>
+    <script src="{% static 'bootstrap_datepicker/js/bootstrap-datetimepicker-4.17.47.min.js' %}"></script>
+    <script src="{% static 'bootstrap_datepicker_plus/js/datepicker-widget.js' %}"></script>
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
