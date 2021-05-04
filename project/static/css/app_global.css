@@ -256,3 +256,23 @@ div[class*="col"] > h6 {
     height: 0.5rem;
     background-color: #e2dfdf;
 }
+
+.tooltip.show p {
+    text-align: left;
+}
+
+.w5 {
+    width: 5rem!important;
+}
+
+.w6 {
+    width: 6rem!important;
+}
+
+.w7 {
+    width: 7rem!important;
+}
+
+.w8 {
+    width: 8rem!important;
+}

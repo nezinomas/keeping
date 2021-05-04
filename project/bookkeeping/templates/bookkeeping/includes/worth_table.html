@@ -12,7 +12,7 @@
             <th colspan="2" class="text-center">Pirkta</th>
         </tr>
         <tr>
-            <th class="text-start" width="160rem">Fondas</th>
+            <th class="text-start">Fondas</th>
             <th>01.01 pevesta</th>
             <th>01.01 mokesčiai</th>
             <th>Pervesta</th>
@@ -29,16 +29,16 @@
         {% for item in items %}
         <tr>
             <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" title="{{ item.latest_check }}" class="text-start">{{ item.title }}</td>
-            {% cell item.past_amount width='110rem' %}
-            {% cell item.past_fee width='110rem' %}
-            {% cell item.incomes width='110rem' %}
-            {% cell item.fees width='110rem' %}
-            {% cell item.invested width='110rem' %}
-            {% cell item.market_value width='110rem' css_class='br' %}
-            {% cell item.profit_incomes_sum text_after='€' highlight_value=True width='110rem' %}
-            {% cell item.profit_incomes_proc text_after='%' highlight_value=True width='110rem' css_class='br_s' %}
-            {% cell item.profit_invested_sum text_after='€' highlight_value=True width='110rem' %}
-            {% cell item.profit_invested_proc text_after='%' highlight_value=True width='110rem' %}
+            {% cell item.past_amount css_class='w8' %}
+            {% cell item.past_fee css_class='w8' %}
+            {% cell item.incomes css_class='w8' %}
+            {% cell item.fees css_class='w8' %}
+            {% cell item.invested css_class='w8' %}
+            {% cell item.market_value css_class='br w8' %}
+            {% cell item.profit_incomes_sum text_after='€' highlight_value=True css_class='w8' %}
+            {% cell item.profit_incomes_proc text_after='%' highlight_value=True css_class='br_s w8' %}
+            {% cell item.profit_invested_sum text_after='€' highlight_value=True css_class='w8' %}
+            {% cell item.profit_invested_proc text_after='%' highlight_value=True css_class='w8' %}
         </tr>
         {% endfor %}
     </tbody>
