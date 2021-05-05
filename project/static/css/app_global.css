@@ -305,3 +305,9 @@ table.stats td.w-delete {
     text-align: center!important;
     border-left: 0!important;
 }
+
+.plans-star {
+    color: #e83e8c;
+    padding-left: .5rem;
+    font-weight: bold;
+}
