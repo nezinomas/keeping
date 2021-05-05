@@ -27,10 +27,10 @@
     {% block body %}
     <!-- top navidation bar -->
     <div class="container-fluid">
-      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light py-0">
         <ul class="nav nav-pills">
           <!-- Years Dropdown -->
-          <li class="nav-item dropdown">
+          <li class="nav-item dropdown ms-0">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">{{ request.user.year|title }}</a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
               {% for y in years %}
@@ -161,7 +161,7 @@
         </ul>
         <div class="navbar-text ms-3">{{ yday }} / <b>{{ ydays }}</b></div>
 
-        <div class="nav-item dropdown ms-auto">
+        <div class="nav-item dropdown ms-auto me-0">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
             aria-expanded="false">{{ user.username }}</a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
