@@ -2,6 +2,75 @@ body, .tooltip {
   font-size: .7rem!important;
 }
 
+div[class*="col"] > h6 {
+    font-size: 1rem;
+}
+
+
+/*
+    Top Menu
+*/
+.dropdown-menu a.dropdown-item {
+    padding: .2rem .5rem;
+}
+
+.nav-item {
+    margin: 0 .15rem;
+}
+.nav-link {
+    padding: .3rem .35rem;
+}
+
+.dropdown-toggle.dropdown-toggle-split.nav-link {
+    padding-left: 0;
+}
+
+
+/*
+    Right Menu
+*/
+.accordion-item {
+    border: none!important;
+}
+
+.accordion-header {
+    position: relative;
+}
+
+.accordion-body {
+    padding: 0;
+    margin: 0;
+}
+
+/* accordion child */
+.accordion-body > .list-group-item {
+    padding: .25rem 0 .25rem 1.25rem;
+    margin: 0;
+}
+
+.accordion-button {
+    padding: 0.15rem 0.3rem;
+    color: #004085;
+    background-color: #9fcdff;
+    border: 1px solid rgba(0,0,0,.125);
+}
+
+.accordion-button::after {
+    padding-top: 0.15rem!important;
+    text-align: center;
+    font-family: 'Glyphicons Halflings';
+    content: "\e114";
+    background-image: none;
+}
+
+.accordion-button:not(.collapsed)::after {
+    background-image: none;
+}
+
+
+/*
+    Table Stats
+*/
 table.stats h1 {
     font-size: .75rem;
     padding: .15rem 0;
@@ -59,21 +128,6 @@ tr.total th {
     font-weight: bold!important;
 }
 
-.dropdown-menu a.dropdown-item {
-    padding: .2rem .5rem;
-}
-
-.nav-item {
-    margin: 0 .15rem;
-}
-.nav-link {
-    padding: .3rem .35rem;
-}
-
-.dropdown-toggle.dropdown-toggle-split.nav-link {
-    padding-left: 0;
-}
-
 .top > th {
     background-color: lightblue !important;
     text-align: left!important;
@@ -119,6 +173,41 @@ tr.top-text, tr.top-text th {
     --bs-table-accent-bg: #f9f6cf;
 }
 
+.stats .no-left-border {
+    border-left: 0!important;
+}
+
+.stats .no-right-border {
+    border-right: 0!important;
+}
+
+.trash, .trash:hover {
+    color: #dc3545;
+    width: 100%;
+}
+
+.edit, .edit:hover {
+    color: green;
+    width: 100%;
+}
+
+._weekend_col {
+    --bs-table-accent-bg:rgb(202, 235, 204);
+}
+
+._current_day, tr._current_day > td._weekend_col {
+    background-color:#ffc107!important;
+}
+
+.table-active {
+    height: 0.5rem;
+    background-color: #e2dfdf;
+}
+
+
+/*
+    Buttons
+*/
 .btn-sm,
 .form-control-sm,
 .form-control {
@@ -145,6 +234,10 @@ tr.top-text, tr.top-text th {
     margin-bottom: -0.45rem!important;
 }
 
+
+/*
+    Various
+*/
 .bad {
     background-color: #fec2c6;
     color: #dc3545;
@@ -153,14 +246,6 @@ tr.top-text, tr.top-text th {
 /* overwrite  bootstrap  class */
 .invalid-feedback {
     display: block!important;
-}
-
-._weekend_col {
-    --bs-table-accent-bg:rgb(202, 235, 204);
-}
-
-._current_day, tr._current_day > td._weekend_col {
-    background-color:#ffc107!important;
 }
 
 .info_row {
@@ -179,10 +264,6 @@ tr.top-text, tr.top-text th {
     display: inline;
 }
 
-div[class*="col"] > h6 {
-    font-size: 1rem;
-}
-
 .info_row > h6, div[class*="col"] > h6 {
     vertical-align: middle;
     margin-bottom: 0!important;
@@ -196,65 +277,4 @@ div[class*="col"] > h6 {
 
 .no-hover, .no-hover:hover {
     text-decoration: none!important;
-}
-
-.stats .no-left-border {
-    border-left: 0!important;
-}
-
-.stats .no-right-border {
-    border-right: 0!important;
-}
-
-.trash, .trash:hover {
-    color: #dc3545;
-    width: 100%;
-}
-
-.edit, .edit:hover {
-    color: green;
-    width: 100%;
-}
-
-.accordion-item {
-    border: none!important;
-}
-
-.accordion-header {
-    position: relative;
-}
-
-.accordion-body {
-    padding: 0;
-    margin: 0;
-}
-
-/* accordion child */
-.accordion-body > .list-group-item {
-    padding: .25rem 0 .25rem 1.25rem;
-    margin: 0;
-}
-
-.accordion-button {
-    padding: 0.15rem 0.3rem;
-    color: #004085;
-    background-color: #9fcdff;
-    border: 1px solid rgba(0,0,0,.125);
-}
-
-.accordion-button::after {
-    padding-top: 0.15rem!important;
-    text-align: center;
-    font-family: 'Glyphicons Halflings';
-    content: "\e114";
-    background-image: none;
-}
-
-.accordion-button:not(.collapsed)::after {
-    background-image: none;
-}
-
-.table-active {
-    height: 0.5rem;
-    background-color: #e2dfdf;
 }
