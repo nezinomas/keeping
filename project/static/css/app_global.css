@@ -59,21 +59,19 @@ tr.total th {
     font-weight: bold!important;
 }
 
-.navbar {
-    padding: .1rem .5rem;
-}
-
 .dropdown-menu a.dropdown-item {
     padding: .2rem .5rem;
 }
 
 .nav-item {
-    padding: 0;
-    margin: 0.15rem;
+    margin: 0 .15rem;
+}
+.nav-link {
+    padding: .3rem .35rem;
 }
 
-.nav-link {
-    padding: .15rem .35rem;
+.dropdown-toggle.dropdown-toggle-split.nav-link {
+    padding-left: 0;
 }
 
 .top > th {
@@ -134,7 +132,6 @@ tr.top-text, tr.top-text th {
 .btn-menu {
     font-size: .7rem!important;
     color: #007bff;
-    padding: 0.15rem 0.25rem;
 }
 
 .btn-super-sm {
@@ -147,7 +144,6 @@ tr.top-text, tr.top-text th {
     margin-top: -0.65rem!important;
     margin-bottom: -0.45rem!important;
 }
-
 
 .bad {
     background-color: #fec2c6;
