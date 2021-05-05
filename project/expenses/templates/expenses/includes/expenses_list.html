@@ -23,7 +23,7 @@
         {% url 'expenses:expenses_delete' item.id as url_delete %}
         {% ifchanged item.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="10" class="table-active"></td></tr>{% endif %}{% endifchanged %}
         <tr data-url="{{ url_update }}" class="{{ item.expense_type.pk|bg_color }} dblclick">
-            <td class="text-start {%if item.exception %}expense-exception"{% else %}expense-ordinary"{% endif %}>{{ item.date|date:"Y-m-d" }}</td>
+            <td class="text-start {%if item.exception %}exception"{% else %}expense-ordinary"{% endif %}>{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ item.expense_type }}</td>
             <td class="text-start">{{ item.expense_name }}</td>
             <td>{{ item.quantity }}</td>
