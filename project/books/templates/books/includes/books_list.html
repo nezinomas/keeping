@@ -11,8 +11,8 @@
             <th>Pastaba</th>
             <th class="text-center">Pradėta skaityti</th>
             <th class="text-center">Baigta skaityti</th>
-            <th width="30rem" class="no-right-border"></th>
-            <th width="25rem" class="no-left-border"></th>
+            <th class="no-right-border"></th>
+            <th class="no-left-border"></th>
         </tr>
     </thead>
     <tbody>
@@ -28,10 +28,10 @@
             <td class="text-start">{{ item.remark }}</td>
             <td class="text-center">{{ item.started|date:"Y-m-d" }}</td>
             <td class="text-center">{{ item.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
-            <td class="text-center no-right-border">
+            <td class="w-edit no-right-border">
                 <a role="button" data-url="{{ url_update }}?tab={{ tab }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
             </td>
-            <td class="text-center no-left-border">
+            <td class="w-delete no-left-border">
                 <a role="button" data-url="{{ url_delete }}?tab={{ tab }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
