@@ -54,6 +54,13 @@ div[class*="col"] > h6 {
     margin: 0;
 }
 
+.accordion-body .edit-icon {
+    position: absolute;
+    top: 0.25rem;
+    right: 5px;
+    display: block;
+}
+
 .accordion-button {
     padding: 0.15rem 0.3rem;
     color: #004085;
@@ -245,6 +252,34 @@ tr.top-text, tr.top-text th {
     background-color: #e2dfdf;
 }
 
+.w3 {
+    width: 3rem!important;
+}
+
+.w5 {
+    width: 5rem!important;
+}
+
+.w6 {
+    width: 6rem!important;
+}
+
+.w7 {
+    width: 7rem!important;
+}
+
+.w7p {
+    width: 7%!important;
+}
+
+.w8 {
+    width: 8rem!important;
+}
+
+.w16 {
+    width: 16rem!important;
+}
+
 
 /*
     Buttons
@@ -290,4 +325,19 @@ tr.top-text, tr.top-text th {
 
 .no-hover, .no-hover:hover {
     text-decoration: none!important;
+}
+
+.plans-star {
+    color: #e83e8c;
+    padding-left: .5rem;
+    font-weight: bold;
+}
+
+#search_btn {
+    margin: 0!important;
+    padding: .25rem .5rem;
+}
+
+#div_id_search {
+    margin-bottom: 0!important;
 }
