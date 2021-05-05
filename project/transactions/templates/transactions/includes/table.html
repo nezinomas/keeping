@@ -23,10 +23,10 @@
             <td class="text-start">{{ item.to_account }}</td>
             <td>{{ item.price }}</td>
             {% if fees %}<td>{{ item.fee }}</td>{% endif %}
-            <td class="w-edit no-right-border">
+            <td class="w-edit">
                 <a role="button" data-url="{{ url_update }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
             </td>
-            <td class="w-delete no-left-border">
+            <td class="w-delete">
                 <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>

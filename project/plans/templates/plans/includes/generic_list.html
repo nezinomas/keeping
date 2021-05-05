@@ -36,12 +36,12 @@
             {% cell item.october %}
             {% cell item.november %}
             {% cell item.december %}
-            <td class="w-edit no-right-border">
+            <td class="w-edit">
             {% if url_delete %}
                 <a role="button" data-url="{{ url }}" class="js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
             {% endif %}
             </td>
-            <td class="w-delete no-left-border">
+            <td class="w-delete">
             {% if url_delete %}
                 <a role="button" class="js-delete trash" data-url="{% url url_delete item.id %}" title="Delete"><i class="bi bi-trash-fill"></i></a>
             {% endif %}

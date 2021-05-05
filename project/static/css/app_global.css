@@ -294,12 +294,14 @@ div[class*="col"] > h6 {
     width: 16rem!important;
 }
 
-.w-edit {
+table.stats td.w-edit {
     width: 35px!important;
     text-align: center!important;
+    border-right: 0!important;
 }
 
-.w-delete {
+table.stats td.w-delete {
     width:  25px!important;
     text-align: center!important;
+    border-left: 0!important;
 }
