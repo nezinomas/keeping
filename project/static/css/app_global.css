@@ -341,3 +341,7 @@ tr.top-text, tr.top-text th {
 #div_id_search {
     margin-bottom: 0!important;
 }
+
+.tooltip.show p {
+    text-align: left;
+}
