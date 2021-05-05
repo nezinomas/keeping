@@ -168,6 +168,11 @@ table.stats td.w-delete {
     border-left: 0!important;
 }
 
+table.stats tr > td.exception, table.stats tr > th.exception {
+    padding-left:.4rem!important;
+    border-left: 5px solid red!important;
+}
+
 tr.total th {
     font-weight: bold!important;
 }
