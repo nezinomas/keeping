@@ -13,7 +13,7 @@
         <tr data-url="{{ url_update }}" class="dblclick">
             <td style="border-left: 0!important;">{{ item.quantity }}</td>
             <td>{{ max_bottles|floatformat:0 }}</td>
-            <td width="38rem"><button type="button" data-url="{{ url_update }}" class="btn btn-super-sm btn-outline-info js-create">Edit</button></td>
+            <td class="w3"><button type="button" data-url="{{ url_update }}" class="btn btn-super-sm btn-outline-info js-create">Edit</button></td>
         </tr>
         {% empty %}
         <tr><td colspan="2">Neįvestas tikslas</td></tr>

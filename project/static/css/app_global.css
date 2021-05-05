@@ -270,6 +270,10 @@ div[class*="col"] > h6 {
     margin-bottom: 0!important;
 }
 
+.w3 {
+    width: 3rem!important;
+}
+
 .w5 {
     width: 5rem!important;
 }
