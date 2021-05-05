@@ -69,6 +69,32 @@ div[class*="col"] > h6 {
 
 
 /*
+    Info Row
+*/
+.info_row {
+    font-weight: normal;
+    font-size: 0.8rem;
+}
+
+.info_row > span {
+    vertical-align: middle;
+    display: inline-block;
+    margin-top: 0.1rem!important;
+}
+
+.info_row > h6 {
+    font-size: 1.5rem;
+    display: inline;
+}
+
+.info_row > h6, div[class*="col"] > h6 {
+    vertical-align: middle;
+    margin-bottom: 0!important;
+    padding-top: .25rem;
+}
+
+
+/*
     Table Stats
 */
 table.stats h1 {
@@ -246,28 +272,6 @@ tr.top-text, tr.top-text th {
 /* overwrite  bootstrap  class */
 .invalid-feedback {
     display: block!important;
-}
-
-.info_row {
-    font-weight: normal;
-    font-size: 0.8rem;
-}
-
-.info_row > span {
-    vertical-align: middle;
-    display: inline-block;
-    margin-top: 0.1rem!important;
-}
-
-.info_row > h6 {
-    font-size: 1.5rem;
-    display: inline;
-}
-
-.info_row > h6, div[class*="col"] > h6 {
-    vertical-align: middle;
-    margin-bottom: 0!important;
-    padding-top: .25rem;
 }
 
 .modal-dialog.modal-650 {
