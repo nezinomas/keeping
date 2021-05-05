@@ -9,7 +9,7 @@
                 {% for item in items %}
                 {% url 'accounts:accounts_update' item.id as url_update %}
                 <div class="list-group-item" data-url="{{ url_update }}">
-                    {% if item.closed %}<strike>{{ item.title }}</strike> <i>uždaryta {{ item.closed|safe }}</i>{% else %}{{ item.title }}{% endif %}
+                    {% if item.closed %}<s>{{ item.title }}</s> <i>uždaryta {{ item.closed|safe }}</i>{% else %}{{ item.title }}{% endif %}
                     <span style="position: absolute; top: 0.25rem; right: 5px; display: block;">
                         <button type="button" data-url="{{ url_update }}" class="btn btn-super-sm edit js-create"><i class="bi bi-pencil-fill"></i></button>
                     </span>
