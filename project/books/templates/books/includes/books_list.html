@@ -29,10 +29,10 @@
             <td class="text-center">{{ item.started|date:"Y-m-d" }}</td>
             <td class="text-center">{{ item.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
             <td class="text-center no-right-border">
-                <a type="button" data-url="{{ url_update }}?tab={{ tab }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+                <a role="button" data-url="{{ url_update }}?tab={{ tab }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
             </td>
             <td class="text-center no-left-border">
-                <a type="button" data-url="{{ url_delete }}?tab={{ tab }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+                <a role="button" data-url="{{ url_delete }}?tab={{ tab }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
         {% endfor %}

@@ -38,8 +38,8 @@
             {% cell item.december %}
             <td class="text-center">
             {% if url_delete %}
-                <span><a type="button" data-url="{{ url }}" class="js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a></span>
-                <span><a type="button" class="js-delete trash" data-url="{% url url_delete item.id %}" title="Delete"><i class="bi bi-trash-fill"></i></a></span>
+                <span><a role="button" data-url="{{ url }}" class="js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a></span>
+                <span><a role="button" class="js-delete trash" data-url="{% url url_delete item.id %}" title="Delete"><i class="bi bi-trash-fill"></i></a></span>
             {% endif %}</td>
         </tr>{% endwith %}
         {% empty %}

@@ -29,10 +29,10 @@
             <td>{{ item.price|intcomma }}</td>
             <td>{{ item.fee|default_if_none:'-'|intcomma }}</td>
             <td class="text-center no-right-border">
-                <a type="button" data-url="{{ url_update }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+                <a role="button" data-url="{{ url_update }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
             </td>
             <td class="text-center no-left-border">
-                <a type="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+                <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
         {% endfor %}

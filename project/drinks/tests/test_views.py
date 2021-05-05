@@ -46,7 +46,7 @@ def test_new(client_logged):
 
     assert actual['form_is_valid']
     assert '19' in actual['html_list']
-    assert '<a type="button" data-url="/drinks/update/1/"' in actual['html_list']
+    assert '<a role="button" data-url="/drinks/update/1/"' in actual['html_list']
 
 
 def test_new_invalid_data(client_logged):
@@ -79,7 +79,7 @@ def test_update(client_logged):
 
     assert actual['form_is_valid']
     assert '0,68' in actual['html_list']
-    assert f'<a type="button" data-url="/drinks/update/{p.pk}/"' in actual['html_list']
+    assert f'<a role="button" data-url="/drinks/update/{p.pk}/"' in actual['html_list']
 
 
 # ---------------------------------------------------------------------------------------
@@ -561,7 +561,7 @@ def test_list(client_logged):
     actual = response.content.decode("utf-8")
 
     assert '19,0' in actual
-    assert f'<a type="button" data-url="/drinks/update/{p.pk}/"' in actual
+    assert f'<a role="button" data-url="/drinks/update/{p.pk}/"' in actual
 
 
 # ---------------------------------------------------------------------------------------
