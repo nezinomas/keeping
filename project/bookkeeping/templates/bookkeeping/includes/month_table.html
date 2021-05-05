@@ -18,7 +18,7 @@
         {% with row.date|date:'d' as day_int %}
         <tr id='row-{{ day_int }}' class="{% if day|slugify == row.date|date:'j' %}_current_day{% endif %} {{ weekend_row }}">
             <td class="text-start {{ weekend_col }} panel-heading">
-                <a class="row_click btn btn-super-sm" role="button" data-toggle="collapse" aria-expanded="true" data-url="{% url 'bookkeeping:expand_day_expenses' row.date|date:"Ymd" %}" data-id="{{ day_int }}">{{ day_int }}</a>
+                <a class="row_click btn btn-super-sm" role="button" data-bs-toggle="collapse" aria-expanded="true" data-url="{% url 'bookkeeping:expand_day_expenses' row.date|date:"Ymd" %}" data-id="{{ day_int }}">{{ day_int }}</a>
             </td>
             {% for cat in expense_types %}
             {% cell row|get_item:cat css_class=weekend_col %}
