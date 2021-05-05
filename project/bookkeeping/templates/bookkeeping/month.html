@@ -2,10 +2,73 @@
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
+
+<style>
+    .btn-month {
+        width: Calc((100% / 12) - 0.18rem);
+    }
+
+    table.stats td.td_expand_day_expenses {
+        padding-top: .35rem!important;
+        padding-left: .3rem!important;
+        padding-right: .3rem!important;
+        padding-bottom: 1rem!important;
+    }
+
+    td.td_expand_day_expenses table.stats {
+        margin-bottom: 0!important;
+    }
+
+    #info-row {
+        margin-top: 2rem;
+    }
+
+    .stats .empty {
+        --bs-table-accent-bg: white!important;
+        border: 0!important;
+    }
+
+    .stats td.td_expand_day_expenses:hover {
+        --bs-table-accent-bg: none;
+    }
+
+    .table-danger {
+        font-weight: bold;
+    }
+
+    .table-danger.-full {
+        background-color: #fe536a;
+        font-weight: bold;
+    }
+
+    table.stats td.panel-heading {
+        padding: 0!important;
+        width: auto !important;
+        width: 2.4rem!important;
+        min-width: 2.4rem!important;
+    }
+
+    .panel-heading  a:before {
+        font-family: 'Glyphicons Halflings';
+        content: "\e114";
+        float: right;
+        transition: all 0.5s;
+        margin-left: .3rem!important;
+        color: #fe536a;
+    }
+
+    .panel-heading.active a:before {
+        -webkit-transform: rotate(180deg);
+        -moz-transform: rotate(180deg);
+        transform: rotate(180deg);
+    }
+</style>
+
 {% endblock head %}
 
 
 {% block content %}
+
 
 <div class="row mt-2 gx-2">
     <div class="col-lg-8 table-responsive" id="month_table">
@@ -44,27 +107,6 @@
         <button class="btn btn-sm btn-info" onclick="myFunction()">Rodyti kitą grafiką</button>
     </div>
 </div>
-
-<style>
-    .btn-month {
-        width: Calc((100% / 12) - 0.2rem);
-    }
-
-    table.stats td.td_expand_day_expenses {
-        padding-top: .35rem!important;
-        padding-left: .3rem!important;
-        padding-right: .3rem!important;
-        padding-bottom: 1rem!important;
-    }
-
-    td.td_expand_day_expenses table.stats {
-        margin-bottom: 0!important;
-    }
-
-    #info-row {
-        margin-top: 2rem;
-    }
-</style>
 
 <script>
     function myFunction() {

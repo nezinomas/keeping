@@ -3,6 +3,12 @@
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
+
+<style>
+    .incomes-types-col {
+        margin-top: .6rem;
+    }
+</style>
 {% endblock head %}
 
 
@@ -38,13 +44,7 @@
     </div>
 </div>
 
-<style>
-    .incomes-types-col {
-        margin-top: .6rem;
-    }
-</style>
-
 {% include 'modal.html' %}
 
-<script type="text/javascript" src="{% static 'js/search.js' %}"></script>
+<script src="{% static 'js/search.js' %}"></script>
 {% endblock content %}

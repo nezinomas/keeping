@@ -4,7 +4,7 @@
     {% if target %}
     <span>Tikslas: </span>
     <h6 class="me-3 ms-1">
-        <a type="button" role="button" data-url="{% url 'books:books_target_update' target.id %}" class="js-create no-hover">{{ target.quantity }}</a>
+        <a role="button" data-url="{% url 'books:books_target_update' target.id %}" class="js-create no-hover">{{ target.quantity }}</a>
     </h6>
     {% endif %}
 </div>

@@ -3,7 +3,7 @@
 {% url 'expenses:expenses_type_update' item.id as url_type_update %}
     <div class="accordion-item mb-2">
         <div class="accordion-header" id="heading_{{ item.id }}">
-            <span style="position: absolute; top: .1rem; right: 30px; display: block; z-index: 99;">
+            <span class="expenses-edit-icon">
                 <button type="button" data-url="{{ url_type_update }}" class="btn btn-sm edit js-create" title="Edit"><i class="bi bi-pencil-fill"></i></button>
             </span>
             <button class="accordion-button collapsed btn-sm rounded-top" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ item.id }}" aria-expanded="false" aria-controls="collapse_{{ item.id }}">
@@ -20,7 +20,7 @@
                 {% url 'expenses:expenses_name_update' sub.id as url_name_update %}
                 <div class="list-group-item" data-url="{{ url_name_update }}">{{ sub.title }}
                     {% if sub.valid_for %}<span class="badge badge-secondary">{{ sub.valid_for|safe }}</span>{% endif %}
-                    <span style="position: absolute; top: 0.25rem; right: 30px; display: block;">
+                    <span class="expenses-edit-icon">
                         <button type="button" data-url="{{ url_name_update }}" class="btn btn-super-sm edit js-create"><i class="bi bi-pencil-fill"></i></button>
                     </span>
                 </div>
@@ -30,13 +30,6 @@
     </div>
 {% endfor %}
 </div>
-
-<style>
-    .badge {
-        padding: 0.25rem .25rem;
-        color: #004085;
-    }
-</style>
 
 <script>
     $('.panel-collapse').on('show.bs.collapse', function () {

@@ -5,7 +5,13 @@
 <link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
 <script src="https://code.highcharts.com/modules/bullet.js"></script>
-<script type="text/javascript" src="{% static 'js/reload_stats.js' %}"></script>
+<script src="{% static 'js/reload_stats.js' %}"></script>
+
+<style>
+    .teal {
+        background-color: #8ce7c2 !important;
+    }
+</style>
 {% endblock head %}
 
 
@@ -44,7 +50,7 @@
 {% endif %}
 
 {% include 'modal.html' %}
-<script type="text/javascript" src="{% static 'js/search.js' %}"></script>
+<script src="{% static 'js/search.js' %}"></script>
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
         var url = `{% url 'books:reload_stats' %}`;

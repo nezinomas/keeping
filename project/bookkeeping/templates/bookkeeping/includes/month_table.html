@@ -17,7 +17,7 @@
         {% with row.date|date:'w'|weekend:'_weekend_row' as weekend_row %}
         {% with row.date|date:'d' as day_int %}
         <tr id='row-{{ day_int }}' class="{% if day|slugify == row.date|date:'j' %}_current_day{% endif %} {{ weekend_row }}">
-            <td class="text-start {{ weekend_col }} panel-heading" nowrap>
+            <td class="text-start {{ weekend_col }} panel-heading">
                 <a class="row_click btn btn-super-sm" role="button" data-toggle="collapse" aria-expanded="true" data-url="{% url 'bookkeeping:expand_day_expenses' row.date|date:"Ymd" %}" data-id="{{ day_int }}">{{ day_int }}</a>
             </td>
             {% for cat in expense_types %}
@@ -43,44 +43,3 @@
     </tfoot>
 </table>
 
-<style>
-    .stats .empty {
-        --bs-table-accent-bg: white!important;
-        border: 0!important;
-    }
-
-    .stats td.td_expand_day_expenses:hover {
-        --bs-table-accent-bg: none;
-    }
-
-    .table-danger {
-        font-weight: bold;
-    }
-
-    .table-danger.-full {
-        background-color: #fe536a;
-        font-weight: bold;
-    }
-
-    table.stats td.panel-heading {
-        padding: 0!important;
-        width: auto !important;
-        width: 2.4rem!important;
-        min-width: 2.4rem!important;
-    }
-
-    .panel-heading  a:before {
-        font-family: 'Glyphicons Halflings';
-        content: "\e114";
-        float: right;
-        transition: all 0.5s;
-        margin-left: .3rem!important;
-        color: #fe536a;
-    }
-
-    .panel-heading.active a:before {
-        -webkit-transform: rotate(180deg);
-        -moz-transform: rotate(180deg);
-        transform: rotate(180deg);
-    }
-</style>

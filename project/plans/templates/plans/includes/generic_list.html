@@ -3,19 +3,19 @@
     <thead class="thead-light">
         <tr class="top">
             <th>Pavadinimas</th>
-            <th width="7%" class="text-end">Sausis</th>
-            <th width="7%" class="text-end">Vasaris</th>
-            <th width="7%" class="text-end">Kovas</th>
-            <th width="7%" class="text-end">Balandis</th>
-            <th width="7%" class="text-end">Gegužė</th>
-            <th width="7%" class="text-end">Birželis</th>
-            <th width="7%" class="text-end">Liepa</th>
-            <th width="7%" class="text-end">Rugpjūtis</th>
-            <th width="7%" class="text-end">Rugsėjis</th>
-            <th width="7%" class="text-end">Spalis</th>
-            <th width="7%" class="text-end">Lapkritis</th>
-            <th width="7%" class="text-end">Gruodis</th>
-            <th width="60rem"></th>
+            <th class="w7p text-end">Sausis</th>
+            <th class="w7p text-end">Vasaris</th>
+            <th class="w7p text-end">Kovas</th>
+            <th class="w7p text-end">Balandis</th>
+            <th class="w7p text-end">Gegužė</th>
+            <th class="w7p text-end">Birželis</th>
+            <th class="w7p text-end">Liepa</th>
+            <th class="w7p text-end">Rugpjūtis</th>
+            <th class="w7p text-end">Rugsėjis</th>
+            <th class="w7p text-end">Spalis</th>
+            <th class="w7p text-end">Lapkritis</th>
+            <th class="w7p text-end">Gruodis</th>
+            <th colspan="2"></th>
         </tr>
     </thead>
     <tbody>
@@ -23,7 +23,7 @@
         {% if url_update %}{% url url_update item.id as url %}{% else %}{% define '' as url %}{% endif %}
         {% with item|get_obj_attr:type as name %}
         <tr data-url="{{ url }}" class="dblclick{% if name == 'Likutis' %} bg-warning{% endif %}">
-            <td class="text-start">{{ name }}{% if item.expense_type.necessary or item.saving_type or 'Būtin' in name or item.title %} <i class="bi bi-star star"></i>{% endif %}</td>
+            <td class="text-start">{{ name }}{% if item.expense_type.necessary or item.saving_type or 'Būtin' in name or item.title %} <i class="bi bi-star plans-star"></i>{% endif %}</td>
             {% cell item.january %}
             {% cell item.february %}
             {% cell item.march %}
@@ -36,11 +36,16 @@
             {% cell item.october %}
             {% cell item.november %}
             {% cell item.december %}
-            <td class="text-center">
+            <td class="w-edit">
             {% if url_delete %}
-                <span><a type="button" data-url="{{ url }}" class="js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a></span>
-                <span><a type="button" class="js-delete trash" data-url="{% url url_delete item.id %}" title="Delete"><i class="bi bi-trash-fill"></i></a></span>
-            {% endif %}</td>
+                <a role="button" data-url="{{ url }}" class="js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+            {% endif %}
+            </td>
+            <td class="w-delete">
+            {% if url_delete %}
+                <a role="button" class="js-delete trash" data-url="{% url url_delete item.id %}" title="Delete"><i class="bi bi-trash-fill"></i></a>
+            {% endif %}
+            </td>
         </tr>{% endwith %}
         {% empty %}
         <tr class="table-warning text-center">
@@ -50,17 +55,3 @@
         {% endfor %}
     </tbody>
 </table>
-
-<style>
-    .star {
-        color: #e83e8c;
-        padding-left: .5rem;
-        font-weight: bold;
-    }
-
-    td span {
-        display: block;
-        width: 50%;
-        float: left;
-    }
-</style>

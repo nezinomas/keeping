@@ -2,7 +2,59 @@
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
-<script type="text/javascript" src="{% static 'js/reload_stats.js' %}"></script>
+<script src="{% static 'js/reload_stats.js' %}"></script>
+
+<style>
+    .badge {
+        padding: 0.25rem .25rem;
+        color: #004085;
+    }
+    .drinks {
+        background-color: #d9d9d9;
+    }
+    .fees {
+        background-color: #ffdddd;
+    }
+    .food {
+        background-color: #c5d9f1;
+    }
+    .leisure {
+        background-color: #c4d79b;
+    }
+    .work {
+        background-color: #fff0c1;
+    }
+    table.stats tr > td.expense-ordinary {
+        padding-left:.55rem!important;
+    }
+    .check-input-exception {
+        margin-top: 2rem;
+    }
+    #div_sum_prices {
+        padding-left: 0;
+        margin-left: 0;
+        text-align: right;
+    }
+    label[for=attachment-clear_id] {
+        padding-top: .25rem;
+    }
+    input.form-check-input {
+        height: 1em!important;
+        padding: 0;
+        margin-top: .35rem;
+    }
+    .expenses-edit-icon {
+        position: absolute;
+        top: 0;
+        right: 30px;
+        display: block;
+        z-index: 99;
+    }
+    .accordion-body .expenses-edit-icon {
+        top: .25rem;
+    }
+</style>
+
 {% endblock head %}
 
 {% block content %}
@@ -100,5 +152,5 @@
     });
 
 </script>
-<script type="text/javascript" src="{% static 'js/search.js' %}"></script>
+<script src="{% static 'js/search.js' %}"></script>
 {% endblock content %}

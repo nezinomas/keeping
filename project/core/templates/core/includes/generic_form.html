@@ -1,13 +1,12 @@
 {% load crispy_forms_tags %}{% load static %}
 <form method="POST" enctype="multipart/form-data" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}" {% if chained_dropdown %}data-chained-dropdown="{{ chained_dropdown }}"{% endif %}>
     {% csrf_token %}
-    <script type="text/javascript" src="{% static 'js/moment-with-locales-2.9.0.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'bootstrap_datepicker/js/bootstrap-datetimepicker-4.17.47.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'bootstrap_datepicker_plus/js/datepicker-widget.js' %}"></script>
+    <script src="{% static 'js/moment-with-locales-2.9.0.min.js' %}"></script>
+    <script src="{% static 'bootstrap_datepicker/js/bootstrap-datetimepicker-4.17.47.min.js' %}"></script>
+    <script src="{% static 'bootstrap_datepicker_plus/js/datepicker-widget.js' %}"></script>
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
         {% if form.non_field_errors %}
@@ -41,14 +40,5 @@
     </div>
 </form>
 
-<style>
-    .row .form-group {
-        margin: .2rem 0;
-        padding: 0;
-    }
-    label {
-        margin: 0;
-    }
-</style>
 {% include 'core/includes/modal_form_js.html' %}
 
