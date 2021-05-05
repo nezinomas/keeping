@@ -386,6 +386,6 @@ input.form-check-input {
     background-color: #fff0c1;
 }
 
-table.stats tr > td.expense-ordinary {
+table.stats tr > .expense-ordinary {
     padding-left:.55rem!important;
 }
