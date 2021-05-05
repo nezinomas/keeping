@@ -357,6 +357,10 @@ input.form-check-input {
     display: block!important;
 }
 
+.formset-price-input {
+    padding-top: .1rem;
+}
+
 
 /*
     Expenses

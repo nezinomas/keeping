@@ -21,10 +21,9 @@
         {% endfor %}
         {% endif %}
 
-        <div class="row mb-2">
+        <div class="row gx-2">
             {% for field in form %}
-            <div class=" {% if field.name == 'price' %}col-3{% else %}col-9{% endif %}">{{ field|as_crispy_field }}
-            </div>
+            <div class=" {% if field.name == 'price' %}col-3 formset-price-input{% else %}col-9{% endif %}">{{ field|as_crispy_field }}</div>
             {% endfor %}
         </div>
         {% endfor %}
