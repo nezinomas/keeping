@@ -156,6 +156,18 @@ table.stats > thead > tr > th {
     padding-bottom: .25rem!important;
 }
 
+table.stats td.w-edit {
+    width: 35px!important;
+    text-align: center!important;
+    border-right: 0!important;
+}
+
+table.stats td.w-delete {
+    width:  25px!important;
+    text-align: center!important;
+    border-left: 0!important;
+}
+
 tr.total th {
     font-weight: bold!important;
 }
