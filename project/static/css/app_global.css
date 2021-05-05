@@ -2,6 +2,12 @@ body, .tooltip {
   font-size: .7rem!important;
 }
 
+.btn-sm,
+.form-control-sm,
+.form-control {
+    font-size: .7rem!important;
+}
+
 div[class*="col"] > h6 {
     font-size: 1rem;
 }
@@ -226,12 +232,6 @@ tr.top-text, tr.top-text th {
 /*
     Buttons
 */
-.btn-sm,
-.form-control-sm,
-.form-control {
-    font-size: .7rem!important;
-}
-
 .btn-sm {
   padding: .2rem .3rem;
 }
