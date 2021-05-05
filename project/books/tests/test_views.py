@@ -120,7 +120,7 @@ def test_books_index_target_update_link(client_logged):
     content = response.content.decode()
     link = reverse('books:books_target_update', kwargs={'pk': t.pk})
 
-    pattern = re.compile(fr'<a role="button" role="button" data-url="{ link }".*?>(\d+)<\/a>')
+    pattern = re.compile(fr'<a role="button" data-url="{ link }".*?>(\d+)<\/a>')
     res = re.findall(pattern, content)
 
     assert res[0] == '100'
