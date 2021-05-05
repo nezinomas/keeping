@@ -2,28 +2,8 @@
 {% url 'expenses:load_expense_name' as chained_url %}
 {% generic_form title='Išlaidos' update_container='expenses_list' chained_dropdown=chained_url %}
 
-<style>
-    .exception {
-        margin-top: 2rem;
-    }
-    #div_sum_prices {
-        padding-left: 0;
-        margin-left: 0;
-        text-align: right;
-    }
-    label[for=attachment-clear_id] {
-        padding-top: .25rem;
-    }
-    input.form-check-input {
-        height: 1em!important;
-        padding: 0;
-        margin-top: .35rem;
-    }
-</style>
-
-
 <script>
-    $('#div_id_exception').parents().eq(2).addClass("exception");
+    $('#div_id_exception').parents().eq(2).addClass("check-input-exception");
 
     // on escape key hide modal form
     $(document).keydown(function (event) {
