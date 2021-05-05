@@ -233,6 +233,13 @@ div[class*="col"] > h6 {
     margin: 0;
 }
 
+.accordion-body .edit-icon {
+    position: absolute;
+    top: 0.25rem;
+    right: 5px;
+    display: block;
+}
+
 .accordion-button {
     padding: 0.15rem 0.3rem;
     color: #004085;
