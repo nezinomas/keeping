@@ -85,8 +85,8 @@
     </div>
 </div>
 
-<div class="row gx-2">
-    <div class="col-lg-8 gx-0">
+<div class="row">
+    <div class="col-lg-8">
         {% with request.user.month as month %}
         {% for m in context_months %}
         {% with m|date:'n' as m_num %}
