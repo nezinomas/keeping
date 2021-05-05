@@ -181,14 +181,6 @@ tr.top-text, tr.top-text th {
     border-left: 3px solid #0359b0!important;
 }
 
-.stats .br_s {
-    border-right: 2px solid #b4b4b3!important;
-}
-
-.stats .bl_s {
-    border-left: 2px solid #b4b4b3!important;
-}
-
 .dash {
     color: #b7b7b6;
 }
