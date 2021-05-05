@@ -345,3 +345,13 @@ tr.top-text, tr.top-text th {
 .tooltip.show p {
     text-align: left;
 }
+
+/*
+    Bootstrap Hacks
+*/
+/* CheckBox input normal width */
+input.form-check-input {
+    height: 1em!important;
+    padding: 0;
+    margin-top: .35rem;
+}
