@@ -1,4 +1,4 @@
-{% load static %}{% load crispy_forms_tags %}{% load form_field %}
+{% load static %}{% load crispy_forms_tags %}
 
 <form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}" autocomplete="off" tabindex="-1">
     {% csrf_token %}
