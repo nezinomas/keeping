@@ -3,8 +3,6 @@
 {% generic_form title='Išlaidos' update_container='expenses_list' chained_dropdown=chained_url %}
 
 <script>
-    $('#div_id_exception').parents().eq(2).addClass("check-input-exception");
-
     // on escape key hide modal form
     $(document).keydown(function (event) {
         if (event.keyCode == 27) {
