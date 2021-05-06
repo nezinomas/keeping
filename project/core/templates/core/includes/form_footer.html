@@ -1,0 +1,5 @@
+    <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-primary" id="submit">{{ action|title }}</button>
+        {% if action != 'update' %}<button type="button" class="btn btn-sm btn-primary" id="save_close">Save and Close</button>{% endif %}
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+    </div>
