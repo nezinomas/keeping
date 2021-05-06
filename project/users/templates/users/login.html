@@ -1,13 +1,22 @@
 {% extends 'users/users_base.html' %}
 
+{% block head%}{{ block.super }}
+<style>
+    .container {
+        height: 100vh;
+        display: flex;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="card mt-5">
+<div class="card w-50 mx-auto my-auto">
     <div class="card-body">
         <form method="post" novalidate>
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ next }}">
             {% include 'core/includes/form.html' %}
-            <button type="submit" class="btn btn-primary btn-block">Log in</button>
+            <button type="submit" class="btn btn-primary w-100">Log in</button>
         </form>
     </div>
 </div>
