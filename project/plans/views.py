@@ -154,6 +154,7 @@ def copy_plans(request):
             data['form_is_valid'] = False
 
     context = {
+        'title': 'Planų kopijavimas',
         'form': form,
         'action': 'insert',
         'url': reverse('plans:copy_plans'),

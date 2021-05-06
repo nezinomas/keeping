@@ -346,7 +346,9 @@ tr.top-text, tr.top-text th {
     Bootstrap Hacks
 */
 /* CheckBox input normal width */
-input.form-check-input {
+input.form-check-input,
+input.form-check-input.is-invalid,
+input.form-check-input.is-invalid:checked {
     height: 1em!important;
     padding: 0;
     margin-top: .35rem;
