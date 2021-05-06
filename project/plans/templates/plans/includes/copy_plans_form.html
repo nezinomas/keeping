@@ -13,7 +13,7 @@
         {% include 'core/includes/form_errors.html' %}
 
         {% for field in form %}
-        <div class="row gx-1 align-items-center my-2">
+        <div class="row gx-1 align-items-center my-2 copy-plans">
             <div class="col-4">{{ field.label_tag }}</div>
             <div class="col-8">{{ field|as_crispy_field }}</div>
         </div>
