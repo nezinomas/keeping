@@ -29,7 +29,14 @@
             <td>{{ item.quantity }}</td>
             <td>{{ item.price|intcomma }}</td>
             <td class="text-start">{{ item.remark|linebreaksbr }}</td>
-            <td>{% if item.attachment %}<a href="{{ item.attachment.url }}" target="_blank">Žiūrėti</a>{% endif %}</td>
+            <td>{% if item.attachment %}
+                {% if not 'pdf' in item.attachment.url %}
+                <button type="button" class="btn btn-outline-primary btn-super-sm" data-bs-toggle="modal" data-bs-target="#imgModal" data-bs-url="{{ item.attachment.url }}">Nuotrauka</button>
+                {% else %}
+                <a role="button" class="btn btn-outline-primary btn-super-sm" href="{{ item.attachment.url }}" target="_blank">Pdf failas</a>
+                {% endif %}
+                {% endif %}
+            </td>
             <td>{{ item.account }}</td>
             <td class="w-edit">
                 <a role="button" data-url="{{ url_update }}" class="js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
@@ -51,3 +58,5 @@
 </div>
 
 {% endif %}
+
+{% include 'modal_images.html' %}

@@ -341,6 +341,11 @@ tr.top-text, tr.top-text th {
     text-align: left;
 }
 
+#imgModal img {
+    max-width: 770px;
+    height: auto;
+}
+
 
 /*
     Bootstrap Hacks
