@@ -341,6 +341,10 @@ tr.top-text, tr.top-text th {
     text-align: left;
 }
 
+#imgModal .modal-dialog {
+    max-width: 800px!important;
+}
+
 #imgModal img {
     max-width: 765px;
     height: auto;
