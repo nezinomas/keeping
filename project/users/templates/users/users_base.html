@@ -3,7 +3,11 @@
 {% block body %}
 
 <div class="container">
-    {% block content %}{% endblock content %}
+    <div class="row w-100 align-items-center">
+        <div class="col-12">
+            {% block content %}{% endblock content %}
+        </div>
+    </div>
 </div>
 
 {% endblock %}
