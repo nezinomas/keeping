@@ -218,7 +218,7 @@ tr.top-text, tr.top-text th {
 .table-hover tbody tr:hover,
 .table-hover tbody tr._weekend_row:hover td,
 .table-hover tbody tr._current_day:hover td {
-    --bs-table-accent-bg: #f9f6cf;
+    --bs-table-accent-bg: #f9f6cf!important;
 }
 
 .stats .no-left-border {
@@ -240,11 +240,12 @@ tr.top-text, tr.top-text th {
 }
 
 ._weekend_col {
-    background-color:rgb(202, 235, 204)!important;
+    --bs-table-accent-bg:rgb(202, 235, 204);
+
 }
 
 ._current_day, tr._current_day > td._weekend_col {
-    background-color:#ffc107!important;
+    --bs-table-accent-bg:#ffc107;
 }
 
 .table-active {
