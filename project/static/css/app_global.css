@@ -240,7 +240,7 @@ tr.top-text, tr.top-text th {
 }
 
 ._weekend_col {
-    --bs-table-accent-bg:rgb(202, 235, 204);
+    background-color:rgb(202, 235, 204)!important;
 }
 
 ._current_day, tr._current_day > td._weekend_col {
