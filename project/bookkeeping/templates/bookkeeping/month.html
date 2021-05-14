@@ -88,14 +88,14 @@
 </div>
 
 <div class="row gx-2">
-    <div class="col-lg-8 gx-0">
+    <div class="col-lg-8 gx-2">
         {% with request.user.month as month %}
         {% for m in context_months %}
         {% with m|date:'n' as m_num %}
         <a href="{% url 'core:set_month' m_num %}" class="btn btn-sm btn-month {% if month|slugify == m_num %}btn-primary{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</a>
         {% endwith %}{% endfor %}{% endwith %}
     </div>
-    <div class="col-lg-4 my-sm-2 gx-2 my-lg-0 text-end">
+    <div class="col-lg-4 my-sm-2 my-lg-0 gx-2 text-end">
         {% url 'expenses:expenses_new' as url_expenses_new %}
         <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"> <i class="bi bi-plus"></i>Išlaidos</button>
         {% url 'incomes:incomes_new' as url_incomes_new %}
