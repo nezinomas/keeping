@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import F, Max
+from django.db.models import F, Max, Q
 
 from ..accounts.models import Account
 from ..core.lib import utils
@@ -23,18 +23,23 @@ class SavingWorthQuerySet(models.QuerySet):
         )
 
     def items(self):
-        return (
+        qs = (
             self
             .related()
-            .annotate(max_date=Max('saving_type__savings_worth__date'))
-            .filter(date=F('max_date'))
-            .values(
-                title=F('saving_type__title'),
-                have=F('price'),
-                latest_check=F('date')
-            )
+            .values('saving_type')
+            .annotate(latest_date=Max('date'))
+            .order_by()
         )
 
+        q_statement = Q()
+        for pair in qs:
+            q_statement |= (Q(saving_type__exact=pair['saving_type']) & Q(date=pair['latest_date']))
+
+        return qs.filter(q_statement).values(
+                title=F('saving_type__title'),
+                have=F('price'),
+                latest_check=F('latest_date')
+            )
 
 class SavingWorth(models.Model):
     date = models.DateTimeField(auto_now_add=True)
