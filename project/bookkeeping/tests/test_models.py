@@ -61,7 +61,7 @@ def test_account_worth_latest_values(accounts_worth):
 
 def test_account_worth_queries(accounts_worth,
                                django_assert_num_queries):
-    with django_assert_num_queries(1):
+    with django_assert_num_queries(2):
         list(AccountWorth.objects.items())
 
 

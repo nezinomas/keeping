@@ -77,18 +77,23 @@ class AccountWorthQuerySet(models.QuerySet):
         )
 
     def items(self):
-        return (
-            self.related()
-            .annotate(max_date=Max('account__accounts_worth__date'))
-            .filter(date=F('max_date'))
-            .values('id')
-            # extra groupby with unique model field, because
-            # keyword 'account' conflicts with model account field
-            .values(
-                title=F('account__title'),
-                have=F('price'),
-                latest_check=F('date')
-            )
+        qs = (
+            self
+            .related()
+            .values('account')
+            .annotate(latest_date=Max('date'))
+            .order_by()
+        )
+
+        q_statement = Q()
+        for pair in qs:
+            q_statement |= (Q(account__exact=pair['account']) & Q(
+                date=pair['latest_date']))
+
+        return qs.filter(q_statement).values(
+            title=F('account__title'),
+            have=F('price'),
+            latest_check=F('latest_date')
         )
 
 
