@@ -56,6 +56,7 @@ class SavingWorth(models.Model):
 
     class Meta:
         get_latest_by = ['date']
+        ordering = ['-date']
 
     def __str__(self):
         return f'{self.date:%Y-%m-%d %H:%M} - {self.saving_type}'
