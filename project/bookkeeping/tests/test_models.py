@@ -1,4 +1,4 @@
-from datetime import datetime as dt
+from datetime import date, datetime as dt
 from decimal import Decimal
 
 import mock
@@ -101,19 +101,26 @@ def test_saving_worth_related():
 
 
 def test_saving_worth_latest_values(savings_worth):
-    actual = list(SavingWorth.objects.items())
-
+    actual = SavingWorth.objects.items()
     expect = [
-        {'title': 'Saving1', 'have': 0.15},
-        {'title': 'Saving2', 'have': 6.15},
+        {
+            'title': 'Saving1',
+            'have': Decimal('0.15'),
+            'latest_check': dt(1999, 1, 1, tzinfo = pytz.utc)
+        }, {
+            'title': 'Saving2',
+            'have': Decimal('6.15'),
+            'latest_check': dt(1999, 1, 1, tzinfo=pytz.utc)
+        },
     ]
 
-    assert_(expect, actual)
+    assert actual[0] == expect[0]
+    assert actual[1] == expect[1]
 
 
 def test_saving_worth_queries(savings_worth,
                               django_assert_num_queries):
-    with django_assert_num_queries(1):
+    with django_assert_num_queries(2):
         list(SavingWorth.objects.items())
 
 
