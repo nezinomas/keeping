@@ -133,16 +133,23 @@ class PensionWorthQuerySet(models.QuerySet):
         )
 
     def items(self):
-        return (
+        qs = (
             self
             .related()
-            .annotate(max_date=Max('pension_type__pensions_worth__date'))
-            .filter(date=F('max_date'))
-            .values(
-                title=F('pension_type__title'),
-                have=F('price'),
-                latest_check=F('date')
-            )
+            .values('pension_type')
+            .annotate(latest_date=Max('date'))
+            .order_by()
+        )
+
+        q_statement = Q()
+        for pair in qs:
+            q_statement |= (Q(pension_type__exact=pair['pension_type']) & Q(
+                date=pair['latest_date']))
+
+        return qs.filter(q_statement).values(
+            title=F('pension_type__title'),
+            have=F('price'),
+            latest_check=F('latest_date')
         )
 
 

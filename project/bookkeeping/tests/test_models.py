@@ -171,7 +171,7 @@ def test_pension_worth_latest_values(pensions_worth):
 
 def test_pension_worth_queries(pensions_worth,
                                django_assert_num_queries,):
-    with django_assert_num_queries(1):
+    with django_assert_num_queries(2):
         list(PensionWorth.objects.items())
 
 
