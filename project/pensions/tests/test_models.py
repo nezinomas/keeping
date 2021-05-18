@@ -189,7 +189,7 @@ def test_pension_new_post_save_count_queries(django_assert_max_num_queries):
 
     assert PensionBalance.objects.all().count() == 0
 
-    with django_assert_max_num_queries(12):
+    with django_assert_max_num_queries(13):
         PensionFactory()
 
 
@@ -198,7 +198,7 @@ def test_pension_update_post_save_count_queries(django_assert_max_num_queries):
 
     assert PensionBalance.objects.all().count() == 1
 
-    with django_assert_max_num_queries(10):
+    with django_assert_max_num_queries(11):
         PensionFactory()
 
 
