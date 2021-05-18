@@ -33,13 +33,21 @@ class SavingWorthQuerySet(models.QuerySet):
 
         q_statement = Q()
         for pair in qs:
-            q_statement |= (Q(saving_type__exact=pair['saving_type']) & Q(date=pair['latest_date']))
+            q_statement |= (
+                Q(saving_type__exact=pair['saving_type']) &
+                Q(date=pair['latest_date'])
+            )
 
-        return qs.filter(q_statement).values(
+        return (
+            qs
+            .filter(q_statement)
+            .values(
                 title=F('saving_type__title'),
                 have=F('price'),
                 latest_check=F('latest_date')
             )
+        )
+
 
 class SavingWorth(models.Model):
     date = models.DateTimeField(auto_now_add=True)
