@@ -64,7 +64,12 @@ class AccountBalanceQuerySet(models.QuerySet):
         return self.related()
 
     def year(self, year: int):
-        qs = self.related().filter(year=year)
+        qs = (
+            self
+            .related()
+            .filter(year=year)
+            .order_by('account__title')
+        )
 
         return qs.values(
             'pk',
