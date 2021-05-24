@@ -105,6 +105,14 @@ def average(qs):
     return arr
 
 
+def add_latest_check_key(model, arr):
+    items = model.objects.items()
+    for a in arr:
+        latest = [x['latest_check']
+                    for x in items if x.get('title') == a['title']]
+        a['latest_check'] = latest[0] if latest else None
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                             No Incomes
 # --------------------------------------------------------------------------------------
@@ -365,7 +373,7 @@ class IndexHelper():
 
     def render_accounts(self):
         # add latest_check date to accounts dictionary
-        self._add_latest_check_key(AccountWorth, self._account)
+        add_latest_check_key(AccountWorth, self._account)
 
         context = {
             'accounts': self._account,
@@ -381,7 +389,7 @@ class IndexHelper():
 
     def render_savings(self):
         # add latest_check date to savibgs dictionary
-        self._add_latest_check_key(SavingWorth, self._fund)
+        add_latest_check_key(SavingWorth, self._fund)
 
         total_row = sum_all(self._fund)
 
@@ -416,7 +424,7 @@ class IndexHelper():
 
     def render_pensions(self):
         # add latest_check date to pensions dictionary
-        self._add_latest_check_key(PensionWorth, self._pension)
+        add_latest_check_key(PensionWorth, self._pension)
 
         context = {
             'title': 'Pensija',
@@ -507,9 +515,3 @@ class IndexHelper():
             context,
             self._request
         )
-
-    def _add_latest_check_key(self, model, arr):
-        items = model.objects.items()
-        for a in arr:
-            latest = [x['latest_check'] for x in items if x.get('title') == a['title']]
-            a['latest_check'] = latest[0] if latest else None
