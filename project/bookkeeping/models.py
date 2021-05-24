@@ -99,7 +99,6 @@ class AccountWorthQuerySet(models.QuerySet):
                 have=F('price'),
                 latest_check=F('date')
             )
-            .order_by('title')
         )
 
 
