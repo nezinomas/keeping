@@ -119,8 +119,9 @@ class Balance(BalanceBase):
         df['market_value'] = df['have']
 
         # nan -> 0 and convert to numeric Decimals
-        df = df.fillna(0.0)
-        df = df.apply(to_numeric)
+        c = ['have', 'market_value']
+        df[c] = df[c].apply(to_numeric)
+        df[c] = df[c].fillna(0.0)
 
         return df
 

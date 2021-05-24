@@ -81,7 +81,8 @@ class Balance(BalanceBase):
     def _join_worth(self, df: DF, account_worth: List) -> DF:
         if account_worth:
             _worth = DF(account_worth).set_index('title')
-            _worth = _worth.apply(to_numeric)
+            _worth = _worth['have'].apply(to_numeric)
+
             df = df.join(_worth, lsuffix='have')
 
         return df
