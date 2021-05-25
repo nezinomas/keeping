@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import F, Max, Q
+from django.db.models import F, Max
 
 from ..accounts.models import Account
 from ..core.lib import utils
@@ -26,25 +26,20 @@ class SavingWorthQuerySet(models.QuerySet):
         qs = (
             self
             .related()
-            .values('saving_type')
-            .annotate(latest_date=Max('date'))
+            .values('saving_type__title')
+            .annotate(max_id=Max('id'))
             .order_by()
         )
 
-        q_statement = Q()
-        for pair in qs:
-            q_statement |= (
-                Q(saving_type__exact=pair['saving_type']) &
-                Q(date=pair['latest_date'])
-            )
+        ids = [x['max_id'] for x in qs ]
 
         return (
-            qs
-            .filter(q_statement)
+            self
+            .filter(pk__in=ids)
             .values(
                 title=F('saving_type__title'),
                 have=F('price'),
-                latest_check=F('latest_date')
+                latest_check=F('date')
             )
         )
 
@@ -89,20 +84,21 @@ class AccountWorthQuerySet(models.QuerySet):
         qs = (
             self
             .related()
-            .values('account')
-            .annotate(latest_date=Max('date'))
+            .values('account__title')
+            .annotate(max_id=Max('id'))
             .order_by()
         )
 
-        q_statement = Q()
-        for pair in qs:
-            q_statement |= (Q(account__exact=pair['account']) & Q(
-                date=pair['latest_date']))
+        ids = [x['max_id'] for x in qs]
 
-        return qs.filter(q_statement).values(
-            title=F('account__title'),
-            have=F('price'),
-            latest_check=F('latest_date')
+        return (
+            self
+            .filter(pk__in=ids)
+            .values(
+                title=F('account__title'),
+                have=F('price'),
+                latest_check=F('date')
+            )
         )
 
 
@@ -145,20 +141,21 @@ class PensionWorthQuerySet(models.QuerySet):
         qs = (
             self
             .related()
-            .values('pension_type')
-            .annotate(latest_date=Max('date'))
+            .values('pension_type__title')
+            .annotate(max_id=Max('id'))
             .order_by()
         )
 
-        q_statement = Q()
-        for pair in qs:
-            q_statement |= (Q(pension_type__exact=pair['pension_type']) & Q(
-                date=pair['latest_date']))
+        ids = [x['max_id'] for x in qs]
 
-        return qs.filter(q_statement).values(
-            title=F('pension_type__title'),
-            have=F('price'),
-            latest_check=F('latest_date')
+        return (
+            self
+            .filter(pk__in=ids)
+            .values(
+                title=F('pension_type__title'),
+                have=F('price'),
+                latest_check=F('date')
+            )
         )
 
 
