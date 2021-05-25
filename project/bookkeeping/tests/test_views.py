@@ -211,6 +211,7 @@ def test_account_worth_formset(client_logged):
     assert '<option value="1" selected>Account1</option>' in actual['html_form']
 
 
+@freeze_time('1999-9-9')
 def test_account_worth_new(client_logged):
     i = AccountFactory()
     data = {
@@ -226,10 +227,10 @@ def test_account_worth_new(client_logged):
 
     json_str = response.content
     actual = json.loads(json_str)
-
+    print(actual['html_list'].replace('\n', ''))
     assert actual['form_is_valid']
     assert '999' in actual['html_list']
-
+    assert 'data-bs-title="1999 m. rugsėjo 9 d.' in actual['html_list']
 
 def test_account_worth_invalid_data(client_logged):
     data = {
