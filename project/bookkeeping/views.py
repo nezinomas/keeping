@@ -72,6 +72,8 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
         year = self.request.user.year
         account = AccountBalance.objects.year(year)
 
+        H.add_latest_check_key(AccountWorth, account)
+
         context = super().get_context_data(**kwargs)
         context.update({
             'accounts': account,
