@@ -77,6 +77,58 @@ def test_percentage_from_incomes_saving_none():
     assert not actual
 
 
+def test_add_latest_check_key_date_found():
+    model = Mock()
+    model.objects.items.return_value = [{'title': 'x', 'latest_check': 'a'}]
+
+    actual = [{'title': 'x'}]
+
+    T.add_latest_check_key(model, actual)
+
+    assert actual == [{'title': 'x', 'latest_check': 'a'}]
+
+
+def test_add_latest_check_key_date_not_found():
+    model = Mock()
+    model.objects.items.return_value = [{'title': 'z', 'latest_check': 'a'}]
+
+    actual = [{'title': 'x'}]
+
+    T.add_latest_check_key(model, actual)
+
+    assert actual == [{'title': 'x', 'latest_check': None}]
+
+
+@freeze_time('2000-2-5')
+def test_average_current_year():
+    qs = [{'year': 2000, 'sum': Decimal('12')}]
+
+    actual = T.average(qs)
+
+    assert actual == [6.0]
+
+
+@freeze_time('2001-2-5')
+def test_average_past_year():
+    qs = [{'year': 2000, 'sum': Decimal('12')}]
+
+    actual = T.average(qs)
+
+    assert actual == [1.0]
+
+
+@freeze_time('2000-2-5')
+def test_average():
+    qs = [
+        {'year': 1999, 'sum': Decimal('12')},
+        {'year': 2000, 'sum': Decimal('12')}
+    ]
+
+    actual = T.average(qs)
+
+    assert actual == [1.0, 6.0]
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                              No Incomes
 # ---------------------------------------------------------------------------------------
@@ -135,55 +187,3 @@ def test_no_incomes_data_savings_none(_not_use, _expenses):
 
     assert avg_expenses == pytest.approx(3.69, rel=1e-2)
     assert cut_sum == pytest.approx(1.5, rel=1e-2)
-
-
-def test_add_latest_check_key_date_found():
-    model = Mock()
-    model.objects.items.return_value = [{'title': 'x', 'latest_check': 'a'}]
-
-    actual = [{'title': 'x'}]
-
-    T.add_latest_check_key(model, actual)
-
-    assert actual == [{'title': 'x', 'latest_check': 'a'}]
-
-
-def test_add_latest_check_key_date_not_found():
-    model = Mock()
-    model.objects.items.return_value = [{'title': 'z', 'latest_check': 'a'}]
-
-    actual = [{'title': 'x'}]
-
-    T.add_latest_check_key(model, actual)
-
-    assert actual == [{'title': 'x', 'latest_check': None}]
-
-
-@freeze_time('2000-2-5')
-def test_average_current_year():
-    qs = [{'year': 2000, 'sum': Decimal('12')}]
-
-    actual = T.average(qs)
-
-    assert actual == [6.0]
-
-
-@freeze_time('2001-2-5')
-def test_average_past_year():
-    qs = [{'year': 2000, 'sum': Decimal('12')}]
-
-    actual = T.average(qs)
-
-    assert actual == [1.0]
-
-
-@freeze_time('2000-2-5')
-def test_average():
-    qs = [
-        {'year': 1999, 'sum': Decimal('12')},
-        {'year': 2000, 'sum': Decimal('12')}
-    ]
-
-    actual = T.average(qs)
-
-    assert actual == [1.0, 6.0]
