@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 from freezegun import freeze_time
-from mock import patch
+from mock import Mock, patch
 
 from ..lib import views_helpers as T
 
@@ -135,3 +135,25 @@ def test_no_incomes_data_savings_none(_not_use, _expenses):
 
     assert avg_expenses == pytest.approx(3.69, rel=1e-2)
     assert cut_sum == pytest.approx(1.5, rel=1e-2)
+
+
+def test_add_latest_check_key_date_found():
+    model = Mock()
+    model.objects.items.return_value = [{'title': 'x', 'latest_check': 'a'}]
+
+    actual = [{'title': 'x'}]
+
+    T.add_latest_check_key(model, actual)
+
+    assert actual == [{'title': 'x', 'latest_check': 'a'}]
+
+
+def test_add_latest_check_key_date_not_found():
+    model = Mock()
+    model.objects.items.return_value = [{'title': 'z', 'latest_check': 'a'}]
+
+    actual = [{'title': 'x'}]
+
+    T.add_latest_check_key(model, actual)
+
+    assert actual == [{'title': 'x', 'latest_check': None}]
