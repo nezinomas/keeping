@@ -26,6 +26,15 @@ def test_expenses_types(qs):
     assert ['A', 'T'] == actual
 
 
+@patch('project.bookkeeping.lib.views_helpers.ExpenseType.objects.items')
+def test_expenses_types_args_as_list(qs):
+    qs.return_value.values_list.return_value = ['T']
+
+    actual = T.expense_types(*['X', 'A'])
+
+    assert ['A', 'T', 'X'] == actual
+
+
 def test_split_funds():
     lst = [{'title': 'AAA LX'}, {'title': 'INVL'}]
 
