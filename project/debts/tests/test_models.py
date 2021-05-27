@@ -83,3 +83,17 @@ def test_borrow_summary(borrow_fixture):
     actual = list(Borrow.objects.summary(1999).order_by('account__title'))
 
     assert expect == actual
+
+
+def test_borrow_new_post_save():
+    BorrowFactory()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 100.0
+    assert actual['balance'] == 100.0

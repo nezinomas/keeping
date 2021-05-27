@@ -7,6 +7,7 @@ from django.db.models import Case, Count, F, Sum, When
 
 from ..accounts.models import Account
 from ..core.lib import utils
+from ..core.mixins.from_db import MixinFromDbAccountId
 from ..users.models import User
 
 
@@ -60,7 +61,8 @@ class BorrowQuerySet(models.QuerySet):
             )
         )
 
-class Borrow(models.Model):
+
+class Borrow(MixinFromDbAccountId):
     date = models.DateField()
     name = models.TextField()
     price = models.DecimalField(
