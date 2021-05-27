@@ -14,22 +14,6 @@ pytestmark = pytest.mark.django_db
 
 
 #----------------------------------------------------------------------------------------
-#                                                                         pytest fixtures
-#----------------------------------------------------------------------------------------
-@pytest.fixture
-def _borrow_fixture():
-    a1 = AccountFactory(title='A1')
-    a2 = AccountFactory(title='A2')
-
-    BorrowFactory(date=dt(1999, 1, 2), price=1, account=a1)
-    BorrowFactory(date=dt(1999, 2, 3), price=2, account=a1)
-    BorrowFactory(date=dt(1999, 3, 4), price=3.1, account=a2)
-
-    BorrowFactory(date=dt(1974, 1, 2), price=4, account=a1)
-    BorrowFactory(date=dt(1974, 2, 3), price=5, account=a1)
-
-
-#----------------------------------------------------------------------------------------
 #                                                                                  Borrow
 #----------------------------------------------------------------------------------------
 def test_borrow_str():
@@ -82,7 +66,7 @@ def test_borrow_year():
     assert actual[0].price == Decimal('100')
 
 
-def test_borrow_summary(_borrow_fixture):
+def test_borrow_summary(borrow_fixture):
     expect = [{
         'id': 1,
         'title': 'A1',

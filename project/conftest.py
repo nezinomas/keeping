@@ -7,13 +7,14 @@ import pytz
 from .accounts.factories import AccountFactory
 from .bookkeeping.factories import (AccountWorthFactory, PensionWorthFactory,
                                     SavingWorthFactory)
-from .users.factories import UserFactory
+from .debts.factories import BorrowFactory
 from .expenses.factories import ExpenseFactory
 from .incomes.factories import IncomeFactory
 from .pensions.factories import PensionFactory
 from .savings.factories import SavingFactory, SavingTypeFactory
 from .transactions.factories import (SavingChangeFactory, SavingCloseFactory,
                                      TransactionFactory)
+from .users.factories import UserFactory
 
 
 @pytest.fixture()
@@ -361,3 +362,18 @@ def pensions_worth():
             price=2.15,
         )
 
+
+#----------------------------------------------------------------------------------------
+#                                                                         pytest fixtures
+#----------------------------------------------------------------------------------------
+@pytest.fixture
+def borrow_fixture():
+    a1 = AccountFactory(title='A1')
+    a2 = AccountFactory(title='A2')
+
+    BorrowFactory(date=date(1999, 1, 2), price=1, account=a1)
+    BorrowFactory(date=date(1999, 2, 3), price=2, account=a1)
+    BorrowFactory(date=date(1999, 3, 4), price=3.1, account=a2)
+
+    BorrowFactory(date=date(1974, 1, 2), price=4, account=a1)
+    BorrowFactory(date=date(1974, 2, 3), price=5, account=a1)
