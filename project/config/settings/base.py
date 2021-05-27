@@ -68,6 +68,7 @@ FORMAT_MODULE_PATH = [
     'project.config.formats',
 ]
 
+
 # ================   TEMPLATE CONFIGURATION
 TEMPLATES = [
     {
