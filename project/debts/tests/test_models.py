@@ -382,3 +382,22 @@ def test_lent_year():
     assert actual[0].name == 'N1'
     assert actual[0].date == dt(1999, 2, 3)
     assert actual[0].price == Decimal('100')
+
+
+def test_lent_summary(lent_fixture):
+    expect = [{
+        'id': 1,
+        'title': 'A1',
+        'lent_past': Decimal('9'),
+        'lent_now': Decimal('3'),
+
+    }, {
+        'id': 2,
+        'title': 'A2',
+        'lent_past': Decimal('0'),
+        'lent_now': Decimal('3.1'),
+    }]
+
+    actual = list(Lent.objects.summary(1999).order_by('account__title'))
+
+    assert expect == actual

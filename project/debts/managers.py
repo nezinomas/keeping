@@ -124,3 +124,37 @@ class LentQuerySet(models.QuerySet):
 
     def year(self, year):
         return self.related().filter(date__year=year)
+
+    def summary(self, year: int) -> List[Dict[str, Any]]:
+        '''
+        return:
+            {
+                'id': account.id,
+                'title': account.title,
+                'lent_past': Decimal(),
+                'lent_now': Decimal()
+            }
+        '''
+        return (
+            self
+            .related()
+            .annotate(cnt=Count('name'))
+            .values('cnt')
+            .order_by('cnt')
+            .annotate(
+                lent_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='price'),
+                        default=Decimal(0))),
+                lent_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='price'),
+                        default=Decimal(0)))
+            )
+            .values(
+                'lent_past',
+                'lent_now',
+                title=models.F('account__title'),
+                id=models.F('account__pk')
+            )
+        )

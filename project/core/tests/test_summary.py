@@ -27,6 +27,7 @@ columns = [
     's_change_from_fee_past', 's_change_from_fee_now',
     'borrow_past', 'borrow_now',
     'borrow_return_past', 'borrow_return_now',
+    'lent_past', 'lent_now',
 ]
 
 
@@ -335,7 +336,7 @@ def test_saving_change_qs_count(mock_models,
 
 def test_all_qs_count_for_accounts(_account_types,
                                    django_assert_max_num_queries):
-    with django_assert_max_num_queries(10):
+    with django_assert_max_num_queries(11):
         list(collect_summary_data(1999, _account_types, AccountsBalanceModels))
 
 
@@ -393,3 +394,20 @@ def test_borrow_return_for_accounts(mock_models, borrow_return_fixture):
     assert actual.at['A2', 'id'] == 2
     assert actual.at['A2', 'borrow_return_past'] == 0.0
     assert actual.at['A2', 'borrow_return_now'] == 1.6
+
+
+@patch('project.core.lib.summary.AccountsBalanceModels.models',
+       return_value={'debts.Lent'})
+def test_lent_for_accounts(mock_models, lent_fixture):
+    _account_types = {'A1': 1, 'A2': 2}
+    actual = collect_summary_data(1999, _account_types, AccountsBalanceModels)
+
+    assert actual.shape[0] == 2  # rows
+
+    assert actual.at['A1', 'id'] == 1
+    assert actual.at['A1', 'lent_past'] == 9.0
+    assert actual.at['A1', 'lent_now'] == 3.0
+
+    assert actual.at['A2', 'id'] == 2
+    assert actual.at['A2', 'lent_past'] == 0.0
+    assert actual.at['A2', 'lent_now'] == 3.1
