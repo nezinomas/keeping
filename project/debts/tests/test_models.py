@@ -7,8 +7,8 @@ import pytest
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...users.factories import UserFactory
-from ..factories import BorrowFactory
-from ..models import Borrow
+from ..factories import BorrowFactory, BorrowReturnFactory
+from ..models import Borrow, BorrowReturn
 
 pytestmark = pytest.mark.django_db
 
@@ -143,3 +143,46 @@ def test_borrow_post_delete_with_update():
     assert actual['balance'] == 1.0
 
     assert Borrow.objects.all().count() == 1
+
+
+#----------------------------------------------------------------------------------------
+#                                                                           Borrow Return
+#----------------------------------------------------------------------------------------
+def test_borrow_return_str():
+    v = BorrowReturnFactory.build()
+
+    assert str(v) == 'Grąžinau 5.0'
+
+
+def test_borrow_return_related():
+    u1 = UserFactory()
+    u2 = UserFactory(username='XXX')
+
+    b1 = BorrowFactory(name='B1', price=1, user=u1)
+    b2 = BorrowFactory(name='B2', price=2, user=u2)
+
+    BorrowReturnFactory(borrow=b1, price=1.1)
+    BorrowReturnFactory(borrow=b2, price=2.1)
+
+    actual = BorrowReturn.objects.related()
+
+    assert actual.count() == 1
+    assert str(actual[0]) == 'Grąžinau 1.1'
+
+
+def test_borrow_return_items():
+    BorrowReturnFactory()
+    BorrowReturnFactory()
+
+    actual = BorrowReturn.objects.items()
+
+    assert actual.count() == 2
+
+
+def test_borrow_return_year():
+    BorrowReturnFactory()
+    BorrowReturnFactory(date=date(1974, 1, 2))
+
+    actual = BorrowReturn.objects.year(1999)
+
+    assert actual.count() == 1

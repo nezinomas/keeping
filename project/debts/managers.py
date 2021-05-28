@@ -56,3 +56,20 @@ class BorrowQuerySet(models.QuerySet):
                 id=models.F('account__pk')
             )
         )
+
+
+class BorrowReturnQuerySet(models.QuerySet):
+    def related(self):
+        user = utils.get_user()
+        qs = (
+            self
+            .select_related('account', 'borrow')
+            .filter(borrow__user=user)
+        )
+        return qs
+
+    def items(self):
+        return self.related().all()
+
+    def year(self, year):
+        return self.related().filter(date__year=year)
