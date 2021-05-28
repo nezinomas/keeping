@@ -33,6 +33,7 @@ from .lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
 @receiver(post_delete, sender=SavingClose)
 @receiver(post_save, sender=AccountWorth)
 @receiver(post_save, sender=Borrow)
+@receiver(post_delete, sender=Borrow)
 def post_save_account_stats(sender, instance: object, year: int = None,
                             *args, **kwargs):
     SignalBase.post_save_accounts(sender, instance, year)

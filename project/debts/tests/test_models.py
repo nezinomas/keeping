@@ -97,3 +97,49 @@ def test_borrow_new_post_save():
     assert actual['title'] == 'Account1'
     assert actual['incomes'] == 100.0
     assert actual['balance'] == 100.0
+
+
+def test_borrow_update_post_save():
+    obj = BorrowFactory()
+
+    # update object
+    obj.price = 1
+    obj.save()
+
+    actual = AccountBalance.objects.year(1999)
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 1.0
+    assert actual['balance'] == 1.0
+
+
+def test_borrow_post_delete():
+    obj = BorrowFactory()
+    obj.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 0
+    assert actual['balance'] == 0
+
+
+def test_borrow_post_delete_with_update():
+    BorrowFactory(price=1)
+
+    obj = BorrowFactory()
+    obj.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 1.0
+    assert actual['balance'] == 1.0
+
+    assert Borrow.objects.all().count() == 1
