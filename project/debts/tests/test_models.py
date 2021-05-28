@@ -265,3 +265,67 @@ def test_borrow_return_delete_record_updates_borrow_tbl_error_on_save():
     actual = Borrow.objects.items()
 
     assert actual[0].returned == Decimal('30')
+
+
+def test_borrow_return_new_post_save():
+    BorrowReturnFactory()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 100.0
+    assert actual['expenses'] == 5.0
+    assert actual['balance'] == 95.0
+
+
+def test_borrow_return_update_post_save():
+    obj = BorrowReturnFactory()
+
+    # update object
+    obj.price = 1
+    obj.save()
+
+    actual = AccountBalance.objects.year(1999)
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 100.0
+    assert actual['expenses'] == 1.0
+    assert actual['balance'] == 99.0
+
+
+def test_borrow_return_post_delete():
+    obj = BorrowReturnFactory()
+    obj.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 100.0
+    assert actual['expenses'] == 0
+    assert actual['balance'] == 100.0
+
+
+def test_borrow_return_post_delete_with_update():
+    b = BorrowFactory()
+    BorrowReturnFactory(borrow=b, price=1)
+
+    obj = BorrowReturnFactory(borrow=b)
+    obj.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 100.0
+    assert actual['expenses'] == 1.0
+    assert actual['balance'] == 99.0
+
+    assert Borrow.objects.all().count() == 1

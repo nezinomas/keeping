@@ -70,7 +70,7 @@ class Balance(BalanceBase):
             - df['e_now']
             - df['s_now']
             - df['tr_from_now']
-            - df['borrow_return_past']
+            - df['borrow_return_now']
         ).abs()
 
         df['balance'] = (
