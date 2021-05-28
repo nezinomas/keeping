@@ -7,7 +7,7 @@ import pytz
 from .accounts.factories import AccountFactory
 from .bookkeeping.factories import (AccountWorthFactory, PensionWorthFactory,
                                     SavingWorthFactory)
-from .debts.factories import BorrowFactory
+from .debts.factories import BorrowFactory, BorrowReturnFactory
 from .expenses.factories import ExpenseFactory
 from .incomes.factories import IncomeFactory
 from .pensions.factories import PensionFactory
@@ -374,3 +374,16 @@ def borrow_fixture():
 
     BorrowFactory(date=date(1974, 1, 2), price=4, account=a1)
     BorrowFactory(date=date(1974, 2, 3), price=5, account=a1)
+
+
+@pytest.fixture
+def borrow_return_fixture():
+    a1 = AccountFactory(title='A1')
+    a2 = AccountFactory(title='A2')
+
+    BorrowReturnFactory(date=date(1999, 1, 2), price=0.5, account=a1)
+    BorrowReturnFactory(date=date(1999, 2, 3), price=1.5, account=a1)
+    BorrowReturnFactory(date=date(1999, 3, 4), price=1.6, account=a2)
+
+    BorrowReturnFactory(date=date(1974, 1, 2), price=3.5, account=a1)
+    BorrowReturnFactory(date=date(1974, 2, 3), price=4.5, account=a1)

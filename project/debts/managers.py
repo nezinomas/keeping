@@ -73,3 +73,37 @@ class BorrowReturnQuerySet(models.QuerySet):
 
     def year(self, year):
         return self.related().filter(date__year=year)
+
+    def summary(self, year: int) -> List[Dict[str, Any]]:
+        '''
+        return:
+            {
+                'id': account.id,
+                'title': account.title,
+                'borrow_past': Decimal(),
+                'borrow_now': Decimal()
+            }
+        '''
+        return (
+            self
+            .related()
+            .annotate(cnt=Count('date'))
+            .values('cnt')
+            .order_by('cnt')
+            .annotate(
+                borrow_return_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='price'),
+                        default=Decimal(0))),
+                borrow_return_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='price'),
+                        default=Decimal(0)))
+            )
+            .values(
+                'borrow_return_past',
+                'borrow_return_now',
+                title=models.F('account__title'),
+                id=models.F('account__pk')
+            )
+        )
