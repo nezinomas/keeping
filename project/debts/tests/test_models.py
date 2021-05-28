@@ -8,8 +8,8 @@ from mock import patch
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...users.factories import UserFactory
-from ..factories import BorrowFactory, BorrowReturnFactory
-from ..models import Borrow, BorrowReturn
+from ..factories import BorrowFactory, BorrowReturnFactory, LentFactory
+from ..models import Borrow, BorrowReturn, Lent
 
 pytestmark = pytest.mark.django_db
 
@@ -329,3 +329,56 @@ def test_borrow_return_post_delete_with_update():
     assert actual['balance'] == 99.0
 
     assert Borrow.objects.all().count() == 1
+
+
+#----------------------------------------------------------------------------------------
+#                                                                                    Lent
+#----------------------------------------------------------------------------------------
+def test_lent_str():
+    v = LentFactory.build()
+
+    assert str(v) == 'Paskolinau 100.0'
+
+
+def test_lent_related():
+    LentFactory()
+    LentFactory(user=UserFactory(username='XXX'))
+
+    actual = Lent.objects.related()
+
+    assert len(actual) == 1
+    assert str(actual[0]) == 'Paskolinau 100.0'
+
+
+def test_lent_related_and_not_closed():
+    LentFactory(name='N1', price=2, closed=False)
+    LentFactory(name='N2', price=3, closed=True)
+
+    actual = Lent.objects.related()
+
+    assert len(actual) == 1
+    assert str(actual[0]) == 'Paskolinau 2.0'
+    assert actual[0].name == 'N1'
+
+
+def test_lent_items():
+    LentFactory()
+    LentFactory(name='X1', user=UserFactory(username='XXX'))
+
+    actual = Lent.objects.items()
+
+    assert actual.count() == 1
+    assert str(actual[0]) == 'Paskolinau 100.0'
+
+
+def test_lent_year():
+    LentFactory(name='N1', date=dt(1999, 2, 3))
+    LentFactory(name='N2', date=dt(2999, 2, 3), price=2)
+
+    actual = Lent.objects.year(1999)
+
+    assert actual.count() == 1
+    assert str(actual[0]) == 'Paskolinau 100.0'
+    assert actual[0].name == 'N1'
+    assert actual[0].date == dt(1999, 2, 3)
+    assert actual[0].price == Decimal('100')

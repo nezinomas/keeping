@@ -29,3 +29,16 @@ class BorrowReturnFactory(factory.django.DjangoModelFactory):
     price = Decimal('5')
     account = factory.SubFactory(AccountFactory)
     borrow = factory.SubFactory(BorrowFactory)
+
+
+class LentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Lent
+
+    date = dt(1999, 1, 1)
+    name = 'Name'
+    price = Decimal('100')
+    returned = Decimal('25')
+    closed = False
+    account = factory.SubFactory(AccountFactory)
+    user = factory.SubFactory(UserFactory)

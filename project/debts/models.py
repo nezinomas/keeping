@@ -87,3 +87,36 @@ class BorrowReturn(MixinFromDbAccountId):
         obj = Borrow.objects.get(id=self.borrow_id)
         obj.returned -= Decimal(self.price)
         obj.save()
+
+
+class Lent(MixinFromDbAccountId):
+    date = models.DateField()
+    name = models.TextField()
+    price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))]
+    )
+    returned = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        blank=True,
+        null=True
+    )
+    closed = models.BooleanField(
+        default=False
+    )
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name='lent_to'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    objects = managers.LentQuerySet.as_manager()
+
+    def __str__(self):
+        return f'Paskolinau {round(self.price, 1)}'
