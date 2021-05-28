@@ -3,6 +3,7 @@ from datetime import date as dt
 from decimal import Decimal
 
 import pytest
+from mock import patch
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
@@ -186,3 +187,62 @@ def test_borrow_return_year():
     actual = BorrowReturn.objects.year(1999)
 
     assert actual.count() == 1
+
+
+def test_borrow_return_new_record_updates_borrow_tbl():
+    BorrowReturnFactory()
+
+    actual = Borrow.objects.items()
+
+    assert actual.count() == 1
+    assert actual[0].returned == Decimal('30')
+
+
+@patch('project.debts.models.super')
+def test_borrow_return_new_record_updates_borrow_tbl_error_on_save(mck):
+    mck.side_effect = TypeError
+
+    try:
+        BorrowReturnFactory()
+    except:
+        pass
+
+    actual = Borrow.objects.items()
+
+    assert actual[0].returned == Decimal('25')
+
+
+def test_borrow_return_delete_record_updates_borrow_tbl():
+    obj = BorrowReturnFactory()
+
+    actual = Borrow.objects.items()
+
+    assert actual.count() == 1
+    assert actual[0].returned == Decimal('30')
+
+    obj.delete()
+
+    actual = Borrow.objects.items()
+
+    assert actual.count() == 1
+    assert actual[0].returned == Decimal('25')
+
+
+def test_borrow_return_delete_record_updates_borrow_tbl_error_on_save():
+    obj = BorrowReturnFactory()
+
+    actual = Borrow.objects.items()
+
+    assert actual[0].returned == Decimal('30')
+
+    with patch('project.debts.models.super') as mck:
+        mck.side_effect = TypeError
+
+        try:
+            obj.delete()
+        except:
+            pass
+
+    actual = Borrow.objects.items()
+
+    assert actual[0].returned == Decimal('30')

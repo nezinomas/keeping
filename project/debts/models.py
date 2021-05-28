@@ -37,7 +37,6 @@ class Borrow(MixinFromDbAccountId):
         on_delete=models.CASCADE
     )
 
-    # objects = BookManager()
     objects = managers.BorrowQuerySet.as_manager()
 
     def __str__(self):
@@ -64,8 +63,27 @@ class BorrowReturn(MixinFromDbAccountId):
         on_delete=models.CASCADE
     )
 
-    # objects = BookManager()
     objects = managers.BorrowReturnQuerySet.as_manager()
 
     def __str__(self):
         return f'Grąžinau {round(self.price, 1)}'
+
+    def save(self, *args, **kwargs):
+        try:
+            super().save(*args, **kwargs)
+        except Exception as e:
+            raise e
+
+        obj = Borrow.objects.get(id=self.borrow_id)
+        obj.returned += Decimal(self.price)
+        obj.save()
+
+    def delete(self, *args, **kwargs):
+        try:
+            super().delete(*args, **kwargs)
+        except Exception as e:
+            raise e
+
+        obj = Borrow.objects.get(id=self.borrow_id)
+        obj.returned -= Decimal(self.price)
+        obj.save()

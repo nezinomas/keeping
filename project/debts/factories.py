@@ -25,13 +25,7 @@ class BorrowReturnFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.BorrowReturn
 
+    date = dt(1999, 1, 2)
     price = Decimal('5')
     account = factory.SubFactory(AccountFactory)
     borrow = factory.SubFactory(BorrowFactory)
-
-    @factory.post_generation
-    def date(self, create, extracted, **kwargs):
-        if extracted:
-            self.date = extracted
-        else:
-            self.date = dt(1999, 1, 2)
