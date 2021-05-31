@@ -509,3 +509,62 @@ def test_lent_return_year():
     actual = LentReturn.objects.year(1999)
 
     assert actual.count() == 1
+
+
+def test_lent_return_new_record_updates_lent_tbl():
+    LentReturnFactory()
+
+    actual = Lent.objects.items()
+
+    assert actual.count() == 1
+    assert actual[0].returned == Decimal('30')
+
+
+@patch('project.debts.models.super')
+def test_lent_return_new_record_updates_lent_tbl_error_on_save(mck):
+    mck.side_effect = TypeError
+
+    try:
+        LentReturnFactory()
+    except:
+        pass
+
+    actual = Lent.objects.items()
+
+    assert actual[0].returned == Decimal('25')
+
+
+def test_lent_return_delete_record_updates_lent_tbl():
+    obj = LentReturnFactory()
+
+    actual = Lent.objects.items()
+
+    assert actual.count() == 1
+    assert actual[0].returned == Decimal('30')
+
+    obj.delete()
+
+    actual = Lent.objects.items()
+
+    assert actual.count() == 1
+    assert actual[0].returned == Decimal('25')
+
+
+def test_lent_return_delete_record_updates_lent_tbl_error_on_save():
+    obj = LentReturnFactory()
+
+    actual = Lent.objects.items()
+
+    assert actual[0].returned == Decimal('30')
+
+    with patch('project.debts.models.super') as mck:
+        mck.side_effect = TypeError
+
+        try:
+            obj.delete()
+        except:
+            pass
+
+    actual = Lent.objects.items()
+
+    assert actual[0].returned == Decimal('30')

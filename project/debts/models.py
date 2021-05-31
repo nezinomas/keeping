@@ -146,3 +146,23 @@ class LentReturn(MixinFromDbAccountId):
 
     def __str__(self):
         return f'Grąžino {round(self.price, 1)}'
+
+    def save(self, *args, **kwargs):
+        try:
+            super().save(*args, **kwargs)
+        except Exception as e:
+            raise e
+
+        obj = Lent.objects.get(id=self.lent_id)
+        obj.returned += Decimal(self.price)
+        obj.save()
+
+    def delete(self, *args, **kwargs):
+        try:
+            super().delete(*args, **kwargs)
+        except Exception as e:
+            raise e
+
+        obj = Lent.objects.get(id=self.lent_id)
+        obj.returned -= Decimal(self.price)
+        obj.save()
