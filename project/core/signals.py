@@ -6,7 +6,7 @@ from django.dispatch import receiver
 from ..accounts.lib.balance import Balance as AccountStats
 from ..accounts.models import Account, AccountBalance
 from ..bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
-from ..debts.models import Borrow, BorrowReturn
+from ..debts.models import Borrow, BorrowReturn, Lent
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import Pension, PensionBalance, PensionType
@@ -36,6 +36,8 @@ from .lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
 @receiver(post_delete, sender=Borrow)
 @receiver(post_save, sender=BorrowReturn)
 @receiver(post_delete, sender=BorrowReturn)
+@receiver(post_save, sender=Lent)
+@receiver(post_delete, sender=Lent)
 def post_save_account_stats(sender, instance: object, year: int = None,
                             *args, **kwargs):
     SignalBase.post_save_accounts(sender, instance, year)

@@ -401,3 +401,67 @@ def test_lent_summary(lent_fixture):
     actual = list(Lent.objects.summary(1999).order_by('account__title'))
 
     assert expect == actual
+
+
+def test_lent_new_post_save():
+    LentFactory()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 100.0
+    assert actual['balance'] == -100.0
+
+
+def test_lent_update_post_save():
+    obj = LentFactory()
+
+    # update object
+    obj.price = 1
+    obj.save()
+
+    actual = AccountBalance.objects.year(1999)
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 1.0
+    assert actual['balance'] == -1.0
+
+
+def test_lent_post_delete():
+    obj = LentFactory()
+    obj.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 0
+    assert actual['expenses'] == 0
+    assert actual['balance'] == 0
+
+
+def test_lent_post_delete_with_update():
+    LentFactory(price=1)
+
+    obj = LentFactory()
+    obj.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 1.0
+    assert actual['balance'] == -1.0
+
+    assert Lent.objects.all().count() == 1
