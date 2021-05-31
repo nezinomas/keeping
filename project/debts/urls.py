@@ -7,4 +7,9 @@ app_name = App_name
 
 
 urlpatterns = [
+    path(
+        'debts/',
+        views.Index.as_view(),
+        name='debts_index'
+    ),
 ]
