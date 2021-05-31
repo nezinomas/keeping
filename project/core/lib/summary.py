@@ -24,6 +24,7 @@ class AccountsBalanceModels(ModelsAbstract):
             'debts.Borrow',
             'debts.BorrowReturn',
             'debts.Lent',
+            'debts.LentReturn',
         ]
 
 
@@ -118,6 +119,7 @@ def _create_columns() -> DF:
         'borrow_past', 'borrow_now',
         'borrow_return_past', 'borrow_return_now',
         'lent_past', 'lent_now',
+        'lent_return_past', 'lent_return_now',
     ])
 
     return df

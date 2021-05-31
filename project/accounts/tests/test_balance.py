@@ -21,6 +21,7 @@ def _accounts():
         'borrow_past': 0, 'borrow_now': 0,
         'borrow_return_past': 0, 'borrow_return_now': 0,
         'lent_past': 0, 'lent_now': 0,
+        'lent_return_past': 0, 'lent_return_now': 0,
     }, {
         'id': 2,
         'title': 'Account2',
@@ -33,6 +34,7 @@ def _accounts():
         'borrow_past': 0, 'borrow_now': 0,
         'borrow_return_past': 0, 'borrow_return_now': 0,
         'lent_past': 0, 'lent_now': 0,
+        'lent_return_past': 0, 'lent_return_now': 0,
     }])
 
     df.set_index('title', inplace=True)

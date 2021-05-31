@@ -7,7 +7,8 @@ import pytz
 from .accounts.factories import AccountFactory
 from .bookkeeping.factories import (AccountWorthFactory, PensionWorthFactory,
                                     SavingWorthFactory)
-from .debts.factories import BorrowFactory, BorrowReturnFactory, LentFactory
+from .debts.factories import (BorrowFactory, BorrowReturnFactory, LentFactory,
+                              LentReturnFactory)
 from .expenses.factories import ExpenseFactory
 from .incomes.factories import IncomeFactory
 from .pensions.factories import PensionFactory
@@ -400,3 +401,16 @@ def lent_fixture():
 
     LentFactory(date=date(1974, 1, 2), price=4, account=a1)
     LentFactory(date=date(1974, 2, 3), price=5, account=a1)
+
+
+@pytest.fixture
+def lent_return_fixture():
+    a1 = AccountFactory(title='A1')
+    a2 = AccountFactory(title='A2')
+
+    LentReturnFactory(date=date(1999, 1, 2), price=0.5, account=a1)
+    LentReturnFactory(date=date(1999, 2, 3), price=1.5, account=a1)
+    LentReturnFactory(date=date(1999, 3, 4), price=1.6, account=a2)
+
+    LentReturnFactory(date=date(1974, 1, 2), price=3.5, account=a1)
+    LentReturnFactory(date=date(1974, 2, 3), price=4.5, account=a1)
