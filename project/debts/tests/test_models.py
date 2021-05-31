@@ -592,3 +592,67 @@ def test_lent_return_delete_record_updates_lent_tbl_error_on_save():
     actual = Lent.objects.items()
 
     assert actual[0].returned == Decimal('30')
+
+
+def test_lent_return_new_post_save():
+    LentReturnFactory()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 5.0
+    assert actual['expenses'] == 100.0
+    assert actual['balance'] == -95.0
+
+
+def test_lent_return_update_post_save():
+    obj = LentReturnFactory()
+
+    # update object
+    obj.price = 1
+    obj.save()
+
+    actual = AccountBalance.objects.year(1999)
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 1.0
+    assert actual['expenses'] == 100.0
+    assert actual['balance'] == -99.0
+
+
+def test_lent_return_post_delete():
+    obj = LentReturnFactory()
+    obj.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 100.0
+    assert actual['balance'] == -100.0
+
+
+def test_lent_return_post_delete_with_update():
+    b = LentFactory()
+    LentReturnFactory(lent=b, price=1)
+
+    obj = LentReturnFactory(lent=b)
+    obj.delete()
+
+    actual = AccountBalance.objects.year(1999)
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 1.0
+    assert actual['expenses'] == 100.0
+    assert actual['balance'] == -99.0
+
+    assert Lent.objects.all().count() == 1
