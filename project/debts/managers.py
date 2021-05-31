@@ -158,3 +158,20 @@ class LentQuerySet(models.QuerySet):
                 id=models.F('account__pk')
             )
         )
+
+
+class LentReturnQuerySet(models.QuerySet):
+    def related(self):
+        user = utils.get_user()
+        qs = (
+            self
+            .select_related('account', 'lent')
+            .filter(lent__user=user)
+        )
+        return qs
+
+    def items(self):
+        return self.related().all()
+
+    def year(self, year):
+        return self.related().filter(date__year=year)

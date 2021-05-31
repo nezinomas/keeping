@@ -109,7 +109,7 @@ class Lent(MixinFromDbAccountId):
     account = models.ForeignKey(
         Account,
         on_delete=models.PROTECT,
-        related_name='lent_to'
+        related_name='lent_from_account'
     )
     user = models.ForeignKey(
         User,
@@ -120,3 +120,29 @@ class Lent(MixinFromDbAccountId):
 
     def __str__(self):
         return f'Paskolinau {round(self.price, 1)}'
+
+
+class LentReturn(MixinFromDbAccountId):
+    date = models.DateField(
+        default=date.today,
+        editable=False
+    )
+    price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))]
+    )
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name='lent_return_account'
+    )
+    lent = models.ForeignKey(
+        Lent,
+        on_delete=models.CASCADE
+    )
+
+    objects = managers.LentReturnQuerySet.as_manager()
+
+    def __str__(self):
+        return f'Grąžino {round(self.price, 1)}'

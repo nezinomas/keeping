@@ -42,3 +42,13 @@ class LentFactory(factory.django.DjangoModelFactory):
     closed = False
     account = factory.SubFactory(AccountFactory)
     user = factory.SubFactory(UserFactory)
+
+
+class LentReturnFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.LentReturn
+
+    date = dt(1999, 1, 2)
+    price = Decimal('5')
+    account = factory.SubFactory(AccountFactory)
+    lent = factory.SubFactory(LentFactory)

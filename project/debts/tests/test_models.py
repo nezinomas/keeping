@@ -8,8 +8,9 @@ from mock import patch
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...users.factories import UserFactory
-from ..factories import BorrowFactory, BorrowReturnFactory, LentFactory
-from ..models import Borrow, BorrowReturn, Lent
+from ..factories import (BorrowFactory, BorrowReturnFactory, LentFactory,
+                         LentReturnFactory)
+from ..models import Borrow, BorrowReturn, Lent, LentReturn
 
 pytestmark = pytest.mark.django_db
 
@@ -465,3 +466,46 @@ def test_lent_post_delete_with_update():
     assert actual['balance'] == -1.0
 
     assert Lent.objects.all().count() == 1
+
+
+#----------------------------------------------------------------------------------------
+#                                                                           Lent Return
+#----------------------------------------------------------------------------------------
+def test_lent_return_str():
+    v = LentReturnFactory.build()
+
+    assert str(v) == 'Grąžino 5.0'
+
+
+def test_lent_return_related():
+    u1 = UserFactory()
+    u2 = UserFactory(username='XXX')
+
+    b1 = LentFactory(name='B1', price=1, user=u1)
+    b2 = LentFactory(name='B2', price=2, user=u2)
+
+    LentReturnFactory(lent=b1, price=1.1)
+    LentReturnFactory(lent=b2, price=2.1)
+
+    actual = LentReturn.objects.related()
+
+    assert actual.count() == 1
+    assert str(actual[0]) == 'Grąžino 1.1'
+
+
+def test_lent_return_items():
+    LentReturnFactory()
+    LentReturnFactory()
+
+    actual = LentReturn.objects.items()
+
+    assert actual.count() == 2
+
+
+def test_lent_return_year():
+    LentReturnFactory()
+    LentReturnFactory(date=date(1974, 1, 2))
+
+    actual = LentReturn.objects.year(1999)
+
+    assert actual.count() == 1
