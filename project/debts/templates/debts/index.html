@@ -4,29 +4,69 @@
 <div class="row gx-2">
     <!-- Borrow -->
     <div class="col">
-        <h6 class="py-2">Paskolinau</h6>
-        <div id="borrow_ajax">{{ borrow }}</div>
+        <div class="row py-2">
+            <div class="col"><h6>Paskolinau</h6></div>
+            <div class="col text-end">
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url 'debts:borrows_new' %}"><i class="bi bi-plus"></i>Skolą</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col" id="borrow_ajax">{{ borrow }}</div>
+        </div>
     </div>
 
     <!-- Lent -->
     <div class="col">
-        <h6 class="py-2">Pasiskolinau</h6>
-        <div id="lent_ajax">{{ lent }}</div>
+        <div class="row py-2">
+            <div class="col">
+                <h6>Pasiskolinau</h6>
+            </div>
+            <div class="col text-end">
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url 'debts:lents_new' %}"><i class="bi bi-plus"></i>Skolą</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col" id="lent_ajax">{{ lent }}</div>
+        </div>
     </div>
 </div>
 
 <div class="row gx-2">
     <!-- Borrow Return -->
     <div class="col">
-        <h6 class="py-2">Gražino</h6>
-        <div id="borrow_return_ajax">{{ borrow_return }}</div>
+        <div class="row py-2">
+            <div class="col">
+                <h6>Gražino</h6>
+            </div>
+            <div class="col text-end">
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url 'debts:borrows_return_new' %}"><i class="bi bi-plus"></i>Sumą</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col" id="borrow_return_ajax">{{ borrow_return }}</div>
+        </div>
     </div>
 
     <!-- Lent Return -->
     <div class="col">
-        <h6 class="py-2">Gražinau</h6>
-        <div id="lent_return_ajax">{{ lent_return }}</div>
+        <div class="row py-2">
+            <div class="col">
+                <h6>Gražinau</h6>
+            </div>
+            <div class="col text-end">
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url 'debts:lents_return_new' %}"><i class="bi bi-plus"></i>Sumą</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col" id="lent_return_ajax">{{ lent_return }}</div>
+        </div>
     </div>
 </div>
+
+{% include 'modal.html' %}
 
 {% endblock content %}

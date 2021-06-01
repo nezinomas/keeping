@@ -15,21 +15,41 @@ urlpatterns = [
     path(
         'borrows/lists/',
         views.BorrowLists.as_view(),
-        name='borrow_list'
+        name='borrows_list'
+    ),
+    path(
+        'borrows/new/',
+        views.BorrowNew.as_view(),
+        name='borrows_new'
     ),
     path(
         'borrows/return/lists/',
         views.BorrowReturnLists.as_view(),
-        name='borrow_return_list'
+        name='borrows_return_list'
+    ),
+    path(
+        'borrows/return/new/',
+        views.BorrowReturnNew.as_view(),
+        name='borrows_return_new'
     ),
     path(
         'lents/lists/',
         views.LentLists.as_view(),
-        name='lent_list'
+        name='lents_list'
+    ),
+    path(
+        'lents/new/',
+        views.LentNew.as_view(),
+        name='lents_new'
     ),
     path(
         'lents/return/lists/',
         views.LentReturnLists.as_view(),
-        name='lent_return_list'
+        name='lents_return_list'
+    ),
+    path(
+        'lents/return/new/',
+        views.LentReturnNew.as_view(),
+        name='lents_return_new'
     ),
 ]
