@@ -1,3 +1,4 @@
+import re
 from datetime import date
 from decimal import Decimal
 
@@ -30,6 +31,15 @@ def test_borrow_init_fields():
 
     assert '<select name="user"' not in form
     assert '<input type="number" name="returned"' not in form
+
+
+def test_borrow_checkbox_class():
+    form = forms.BorrowForm().as_p()
+
+    pattern = re.compile(fr'<input type="checkbox" name="closed" class="(.*?)>')
+    res = re.findall(pattern, form)
+
+    assert 'form-check-input' in res[0]
 
 
 @freeze_time('1000-01-01')
@@ -225,6 +235,15 @@ def test_lent_init_fields():
 
     assert '<select name="user"' not in form
     assert '<input type="number" name="returned"' not in form
+
+
+def test_lent_checkbox_class():
+    form = forms.LentForm().as_p()
+
+    pattern = re.compile(fr'<input type="checkbox" name="closed" class="(.*?)>')
+    res = re.findall(pattern, form)
+
+    assert 'form-check-input' in res[0]
 
 
 @freeze_time('1000-01-01')

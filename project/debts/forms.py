@@ -50,6 +50,9 @@ class BorrowForm(FormForUserMixin, forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
+        self.fields['closed'].widget.attrs['class'] = " form-check-input"
+
+
 class BorrowReturnForm(forms.ModelForm):
     class Meta:
         model = models.BorrowReturn
@@ -117,6 +120,8 @@ class LentForm(FormForUserMixin, forms.ModelForm):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+        self.fields['closed'].widget.attrs['class'] = " form-check-input"
 
 
 class LentReturnForm(forms.ModelForm):
