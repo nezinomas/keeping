@@ -122,13 +122,88 @@ def test_borrow_blank_data():
 
     assert not form.is_valid()
 
-    errors = {
-        'date': ['Šis laukas yra privalomas.'],
-        'name': ['Šis laukas yra privalomas.'],
-        'price': ['Šis laukas yra privalomas.'],
-        'account': ['Šis laukas yra privalomas.'],
-    }
-    assert form.errors == errors
+    assert len(form.errors) == 4
+    assert 'date' in form.errors
+    assert 'name' in form.errors
+    assert 'price' in form.errors
+    assert 'account' in form.errors
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                      Borrow Return Form
+# ---------------------------------------------------------------------------------------
+def test_borrow_return_init():
+    forms.BorrowReturnForm()
+
+
+def test_borrow_return_init_fields():
+    form = forms.BorrowReturnForm().as_p()
+
+    assert '<select name="account"' in form
+    assert '<select name="borrow"' in form
+    assert '<input type="number" name="price"' in form
+    assert '<textarea name="remark"' in form
+
+    assert '<select name="user"' not in form
+    assert '<input type="text" name="date"' not in form
+
+
+def test_borrow_return_current_user_accounts():
+    u = UserFactory(username='tom')
+
+    AccountFactory(title='A1')  # user bob, current user
+    AccountFactory(title='A2', user=u)  # user tom
+
+    form = forms.BorrowReturnForm().as_p()
+
+    assert 'A1' in form
+    assert 'A2' not in form
+
+
+def test_borrow_return_select_first_account():
+    u = UserFactory(username='XXX')
+    AccountFactory(title='A1', user=u)
+
+    a2 = AccountFactory(title='A2')
+
+    form = forms.BorrowReturnForm().as_p()
+
+    expect = f'<option value="{a2.pk}" selected>{a2}</option>'
+    assert expect in form
+
+@freeze_time('1974-1-2')
+def test_borrow_return_valid_data():
+    a = AccountFactory()
+    b = factories.BorrowFactory()
+
+    form = forms.BorrowReturnForm(
+        data={
+            'borrow': b.pk,
+            'price': '1.1',
+            'account': a.pk,
+            'remark': 'Rm'
+        },
+    )
+
+    assert form.is_valid()
+
+    e = form.save()
+    assert e.date == date(1974, 1, 2)
+    assert e.account == a
+    assert e.borrow == b
+    assert e.price == Decimal('1.1')
+    assert e.remark == 'Rm'
+
+
+def test_borrow_return_blank_data():
+    form = forms.BorrowReturnForm(data={})
+
+    assert not form.is_valid()
+
+    assert len(form.errors) == 3
+    assert 'borrow' in form.errors
+    assert 'account' in form.errors
+    assert 'price' in form.errors
 
 
 # ---------------------------------------------------------------------------------------
@@ -242,10 +317,86 @@ def test_lent_blank_data():
 
     assert not form.is_valid()
 
-    errors = {
-        'date': ['Šis laukas yra privalomas.'],
-        'name': ['Šis laukas yra privalomas.'],
-        'price': ['Šis laukas yra privalomas.'],
-        'account': ['Šis laukas yra privalomas.'],
-    }
-    assert form.errors == errors
+    assert len(form.errors) == 4
+    assert 'date' in form.errors
+    assert 'name' in form.errors
+    assert 'price' in form.errors
+    assert 'account' in form.errors
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                        Lent Return Form
+# ---------------------------------------------------------------------------------------
+def test_lent_return_init():
+    forms.LentReturnForm()
+
+
+def test_lent_return_init_fields():
+    form = forms.LentReturnForm().as_p()
+
+    assert '<select name="account"' in form
+    assert '<select name="lent"' in form
+    assert '<input type="number" name="price"' in form
+    assert '<textarea name="remark"' in form
+
+    assert '<select name="user"' not in form
+    assert '<input type="text" name="date"' not in form
+
+
+def test_lent_return_current_user_accounts():
+    u = UserFactory(username='tom')
+
+    AccountFactory(title='A1')  # user bob, current user
+    AccountFactory(title='A2', user=u)  # user tom
+
+    form = forms.LentReturnForm().as_p()
+
+    assert 'A1' in form
+    assert 'A2' not in form
+
+
+def test_lent_return_select_first_account():
+    u = UserFactory(username='XXX')
+    AccountFactory(title='A1', user=u)
+
+    a2 = AccountFactory(title='A2')
+
+    form = forms.LentReturnForm().as_p()
+
+    expect = f'<option value="{a2.pk}" selected>{a2}</option>'
+    assert expect in form
+
+
+@freeze_time('1974-1-2')
+def test_lent_return_valid_data():
+    a = AccountFactory()
+    b = factories.LentFactory()
+
+    form = forms.LentReturnForm(
+        data={
+            'lent': b.pk,
+            'price': '1.1',
+            'account': a.pk,
+            'remark': 'Rm'
+        },
+    )
+
+    assert form.is_valid()
+
+    e = form.save()
+    assert e.date == date(1974, 1, 2)
+    assert e.account == a
+    assert e.lent == b
+    assert e.price == Decimal('1.1')
+    assert e.remark == 'Rm'
+
+
+def test_lent_return_blank_data():
+    form = forms.LentReturnForm(data={})
+
+    assert not form.is_valid()
+
+    assert len(form.errors) == 3
+    assert 'lent' in form.errors
+    assert 'account' in form.errors
+    assert 'price' in form.errors
