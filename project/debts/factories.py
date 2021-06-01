@@ -13,7 +13,7 @@ class BorrowFactory(factory.django.DjangoModelFactory):
         model = models.Borrow
 
     date = dt(1999, 1, 1)
-    name = 'Name'
+    name = factory.Faker('first_name')
     price = Decimal('100')
     returned = Decimal('25')
     closed = False
@@ -38,7 +38,7 @@ class LentFactory(factory.django.DjangoModelFactory):
         model = models.Lent
 
     date = dt(1999, 1, 1)
-    name = 'Name'
+    name = factory.Faker('first_name')
     price = Decimal('100')
     returned = Decimal('25')
     closed = False

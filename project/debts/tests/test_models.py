@@ -158,6 +158,17 @@ def test_borrow_post_delete_with_update():
     assert Borrow.objects.all().count() == 1
 
 
+@pytest.mark.xfail
+def test_borrow_unique_user():
+    BorrowFactory(name='T1', user=UserFactory())
+    BorrowFactory(name='T1', user=UserFactory())
+
+
+def test_borrow_unique_users():
+    BorrowFactory(name='T1', user=UserFactory(username='x'))
+    BorrowFactory(name='T1', user=UserFactory(username='y'))
+
+
 #----------------------------------------------------------------------------------------
 #                                                                           Borrow Return
 #----------------------------------------------------------------------------------------
@@ -496,6 +507,18 @@ def test_lent_post_delete_with_update():
     assert actual['balance'] == -1.0
 
     assert Lent.objects.all().count() == 1
+
+
+@pytest.mark.xfail
+def test_lent_unique_user():
+    LentFactory(name='T1', user=UserFactory())
+    LentFactory(name='T1', user=UserFactory())
+
+
+def test_lent_unique_users():
+    LentFactory(name='T1', user=UserFactory(username='x'))
+    LentFactory(name='T1', user=UserFactory(username='y'))
+
 
 
 #----------------------------------------------------------------------------------------

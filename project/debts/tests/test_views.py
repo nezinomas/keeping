@@ -150,7 +150,7 @@ def test_borrow_list_empty(client_logged):
 
 
 def test_borrow_list_with_data(client_logged):
-    factories.BorrowFactory()
+    f = factories.BorrowFactory()
 
     url = reverse('debts:borrows_list')
     response = client_logged.get(url)
@@ -164,7 +164,7 @@ def test_borrow_list_with_data(client_logged):
     assert 'Pastaba' in content
 
     assert '1999-01-01' in content
-    assert 'Name' in content
+    assert f.name in content
     assert '100,0' in content
     assert '25,0' in content
     assert 'Account1' in content
@@ -352,7 +352,7 @@ def test_lent_list_empty(client_logged):
 
 
 def test_lent_list_with_data(client_logged):
-    factories.LentFactory()
+    obj = factories.LentFactory()
 
     url = reverse('debts:lents_list')
     response = client_logged.get(url)
@@ -366,7 +366,7 @@ def test_lent_list_with_data(client_logged):
     assert 'Pastaba' in content
 
     assert '1999-01-01' in content
-    assert 'Name' in content
+    assert obj.name in content
     assert '100,0' in content
     assert '25,0' in content
     assert 'Account1' in content

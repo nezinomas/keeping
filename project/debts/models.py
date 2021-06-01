@@ -46,6 +46,9 @@ class Borrow(MixinFromDbAccountId):
 
     objects = managers.BorrowQuerySet.as_manager()
 
+    class Meta:
+        unique_together = ['user', 'name']
+
     def __str__(self):
         return f'Pasiskolinta {round(self.price, 0)}'
 
@@ -135,6 +138,9 @@ class Lent(MixinFromDbAccountId):
     )
 
     objects = managers.LentQuerySet.as_manager()
+
+    class Meta:
+        unique_together = ['user', 'name']
 
     def __str__(self):
         return f'Paskolinau {round(self.price, 1)}'
