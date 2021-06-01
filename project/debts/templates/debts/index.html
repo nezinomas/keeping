@@ -2,40 +2,31 @@
 
 {% block content %}
 <div class="row gx-2">
+    <!-- Borrow -->
     <div class="col">
-        <!-- Borrow -->
-        <div class="row">
-            <div class="col">
-                <h6 class="py-2">Paskolinau</h6>
-                <div id="borrow_ajax">{{ borrow }}</div>
-            </div>
-        </div>
-
-        <!-- Borrow Return -->
-        <div class="row">
-            <div class="col">
-                <h6 class="py-2">Gražino</h6>
-                <div id="borrow_return_ajax">{{ borrow_return }}</div>
-            </div>
-        </div>
+        <h6 class="py-2">Paskolinau</h6>
+        <div id="borrow_ajax">{{ borrow }}</div>
     </div>
 
+    <!-- Lent -->
     <div class="col">
-        <!-- Lent -->
-        <div class="row">
-            <div class="col">
-                <h6 class="py-2">Pasiskolinau</h6>
-                <div id="lent_ajax">{{ lent }}</div>
-            </div>
-        </div>
-
-        <!-- Lent Return -->
-        <div class="row">
-            <div class="col">
-                <h6 class="py-2">Gražinau</h6>
-                <div id="lent_return_ajax">{{ lent_return }}</div>
-            </div>
-        </div>
+        <h6 class="py-2">Pasiskolinau</h6>
+        <div id="lent_ajax">{{ lent }}</div>
     </div>
 </div>
+
+<div class="row gx-2">
+    <!-- Borrow Return -->
+    <div class="col">
+        <h6 class="py-2">Gražino</h6>
+        <div id="borrow_return_ajax">{{ borrow_return }}</div>
+    </div>
+
+    <!-- Lent Return -->
+    <div class="col">
+        <h6 class="py-2">Gražinau</h6>
+        <div id="lent_return_ajax">{{ lent_return }}</div>
+    </div>
+</div>
+
 {% endblock content %}
