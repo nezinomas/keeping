@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from django.core.validators import MinValueValidator
+from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
@@ -12,7 +12,10 @@ from . import managers
 
 class Borrow(MixinFromDbAccountId):
     date = models.DateField()
-    name = models.TextField()
+    name = models.CharField(
+        max_length=100,
+        validators=[MinLengthValidator(3)]
+    )
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
@@ -99,7 +102,10 @@ class BorrowReturn(MixinFromDbAccountId):
 
 class Lent(MixinFromDbAccountId):
     date = models.DateField()
-    name = models.TextField()
+    name = models.CharField(
+        max_length=100,
+        validators=[MinLengthValidator(3)]
+    )
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
