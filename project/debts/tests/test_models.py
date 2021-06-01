@@ -24,6 +24,17 @@ def test_borrow_str():
     assert str(v) == 'Pasiskolinta 100'
 
 
+def test_borrow_fields():
+    assert Borrow._meta.get_field('date')
+    assert Borrow._meta.get_field('name')
+    assert Borrow._meta.get_field('price')
+    assert Borrow._meta.get_field('returned')
+    assert Borrow._meta.get_field('closed')
+    assert Borrow._meta.get_field('account')
+    assert Borrow._meta.get_field('user')
+    assert Borrow._meta.get_field('remark')
+
+
 def test_borrow_related():
     BorrowFactory()
     BorrowFactory(user=UserFactory(username='XXX'))
@@ -154,6 +165,14 @@ def test_borrow_return_str():
     v = BorrowReturnFactory.build()
 
     assert str(v) == 'Grąžinau 5.0'
+
+
+def test_borrow_return_fields():
+    assert BorrowReturn._meta.get_field('date')
+    assert BorrowReturn._meta.get_field('price')
+    assert BorrowReturn._meta.get_field('account')
+    assert BorrowReturn._meta.get_field('borrow')
+    assert BorrowReturn._meta.get_field('remark')
 
 
 def test_borrow_return_related():
@@ -341,6 +360,17 @@ def test_lent_str():
     assert str(v) == 'Paskolinau 100.0'
 
 
+def test_lent_fields():
+    assert Lent._meta.get_field('date')
+    assert Lent._meta.get_field('name')
+    assert Lent._meta.get_field('price')
+    assert Lent._meta.get_field('returned')
+    assert Lent._meta.get_field('closed')
+    assert Lent._meta.get_field('account')
+    assert Lent._meta.get_field('user')
+    assert Lent._meta.get_field('remark')
+
+
 def test_lent_related():
     LentFactory()
     LentFactory(user=UserFactory(username='XXX'))
@@ -475,6 +505,13 @@ def test_lent_return_str():
     v = LentReturnFactory.build()
 
     assert str(v) == 'Grąžino 5.0'
+
+def test_lent_return_fields():
+    assert LentReturn._meta.get_field('date')
+    assert LentReturn._meta.get_field('price')
+    assert LentReturn._meta.get_field('account')
+    assert LentReturn._meta.get_field('lent')
+    assert LentReturn._meta.get_field('remark')
 
 
 def test_lent_return_related():

@@ -10,6 +10,7 @@
             <th>Pasiskolinta</th>
             <th>Gražinta</th>
             <th>Sąskaita</th>
+            <th>Pastaba</th>
             <th colspan="2"></th>
         </tr>
     </thead>
@@ -21,6 +22,7 @@
             <td class="text-start">{{ item.price|intcomma }}</td>
             <td class="text-start">{{ item.returned|intcomma }}</td>
             <td class="text-start">{{ item.account }}</td>
+            <td class="text-start">{{ item.remark }}</td>
             <td class="w-edit">
                 <a role="button" data-url="" class=" js-create edit" title="Edit">
                     <i class="bi bi-pencil-fill"></i>

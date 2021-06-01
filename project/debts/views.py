@@ -20,7 +20,6 @@ class Index(IndexMixin):
         return context
 
 
-
 class BorrowLists(ListMixin):
     model = models.Borrow
 

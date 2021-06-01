@@ -27,6 +27,10 @@ class Borrow(MixinFromDbAccountId):
     closed = models.BooleanField(
         default=False
     )
+    remark = models.TextField(
+        max_length=500,
+        blank=True
+    )
     account = models.ForeignKey(
         Account,
         on_delete=models.PROTECT,
@@ -52,6 +56,10 @@ class BorrowReturn(MixinFromDbAccountId):
         max_digits=8,
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))]
+    )
+    remark = models.TextField(
+        max_length=500,
+        blank=True
     )
     account = models.ForeignKey(
         Account,
@@ -106,6 +114,10 @@ class Lent(MixinFromDbAccountId):
     closed = models.BooleanField(
         default=False
     )
+    remark = models.TextField(
+        max_length=500,
+        blank=True
+    )
     account = models.ForeignKey(
         Account,
         on_delete=models.PROTECT,
@@ -131,6 +143,10 @@ class LentReturn(MixinFromDbAccountId):
         max_digits=8,
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))]
+    )
+    remark = models.TextField(
+        max_length=500,
+        blank=True
     )
     account = models.ForeignKey(
         Account,

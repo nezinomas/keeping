@@ -108,12 +108,14 @@ def test_borrow_list_with_data(client_logged):
     assert 'Paskolinta' in content
     assert 'Gražinta' in content
     assert 'Sąskaita' in content
+    assert 'Pastaba' in content
 
     assert '1999-01-01' in content
     assert 'Name' in content
     assert '100,0' in content
     assert '25,0' in content
     assert 'Account1' in content
+    assert 'Borrow Remark' in content
 
 
 # ---------------------------------------------------------------------------------------
@@ -150,10 +152,12 @@ def test_borrow_return_list_with_data(client_logged):
     assert 'Data' in content
     assert 'Kiek' in content
     assert 'Sąskaita' in content
+    assert 'Pastaba' in content
 
     assert '1999-01-02' in content
     assert '5,0' in content
     assert 'Account1' in content
+    assert 'Borrow Return Remark' in content
 
 
 # ---------------------------------------------------------------------------------------
@@ -192,12 +196,14 @@ def test_lent_list_with_data(client_logged):
     assert 'Pasiskolinta' in content
     assert 'Gražinta' in content
     assert 'Sąskaita' in content
+    assert 'Pastaba' in content
 
     assert '1999-01-01' in content
     assert 'Name' in content
     assert '100,0' in content
     assert '25,0' in content
     assert 'Account1' in content
+    assert 'Lent Remark' in content
 
 
 # ---------------------------------------------------------------------------------------
@@ -234,7 +240,9 @@ def test_lent_return_list_with_data(client_logged):
     assert 'Data' in content
     assert 'Kiek' in content
     assert 'Sąskaita' in content
+    assert 'Pastaba' in content
 
     assert '1999-01-02' in content
     assert '5,0' in content
     assert 'Account1' in content
+    assert 'Lent Return Remark' in content
