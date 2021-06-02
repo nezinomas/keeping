@@ -4,8 +4,8 @@ from django import forms
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
-from ..core.mixins.form_mixin import FormForUserMixin
 from .models import Income, IncomeType
 
 
@@ -49,13 +49,18 @@ class IncomeForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
-class IncomeTypeForm(FormForUserMixin, forms.ModelForm):
+class IncomeTypeForm(forms.ModelForm):
     class Meta:
         model = IncomeType
-        fields = ['title']
+        fields = ['user', 'title']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # user input
+        self.fields['user'].initial = utils.get_user()
+        self.fields['user'].disabled = True
+        self.fields['user'].widget = forms.HiddenInput()
 
         self.fields['title'].label = 'Pajamų rūšis'
 

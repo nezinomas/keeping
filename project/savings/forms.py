@@ -4,15 +4,15 @@ from django import forms
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
-from ..core.mixins.form_mixin import FormForUserMixin
 from .models import Saving, SavingType
 
 
-class SavingTypeForm(FormForUserMixin, forms.ModelForm):
+class SavingTypeForm(forms.ModelForm):
     class Meta:
         model = SavingType
-        fields = ['title', 'closed']
+        fields = ['user', 'title', 'closed']
 
         widgets = {
             'closed': YearPickerInput(
@@ -25,6 +25,11 @@ class SavingTypeForm(FormForUserMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # user input
+        self.fields['user'].initial = utils.get_user()
+        self.fields['user'].disabled = True
+        self.fields['user'].widget = forms.HiddenInput()
 
         self.fields['title'].label = 'Fondas'
         self.fields['closed'].label = 'Uždaryta'

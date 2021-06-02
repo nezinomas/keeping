@@ -12,6 +12,7 @@
         {% include 'core/includes/form_errors.html' %}
 
         {% for field in form %}
+        {% if not field.is_hidden %}
         <div class="row">
             <div class="col-4">{{ field.label_tag }}</div>
             <div class="col-8">
@@ -24,6 +25,7 @@
             {{ field|as_crispy_field }}
             {% endif %}</div>
         </div>
+        {% endif %}
         {% endfor %}
     </div>
 
