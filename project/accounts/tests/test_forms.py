@@ -49,6 +49,18 @@ def test_account_blank_data():
     assert 'order' in form.errors
 
 
+def test_account_unique_name():
+    b = AccountFactory(title='XXX')
+
+    form = AccountForm(
+        data={
+            'title': 'XXX',
+        },
+    )
+
+    assert not form.is_valid()
+
+
 def test_account_closed_in_past_incomes(get_user):
     get_user.year = 3000
 
