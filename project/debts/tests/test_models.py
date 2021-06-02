@@ -248,6 +248,15 @@ def test_borrow_return_new_record_updates_borrow_tbl():
     assert actual[0].returned == Decimal('30')
 
 
+def test_borrow_return_new_record_updates_borrow_tbl_empty_returned_field():
+    BorrowReturnFactory(borrow=BorrowFactory(returned=None))
+
+    actual = Borrow.objects.items()
+
+    assert actual.count() == 1
+    assert actual[0].returned == Decimal('5')
+
+
 @patch('project.debts.models.super')
 def test_borrow_return_new_record_updates_borrow_tbl_error_on_save(mck):
     mck.side_effect = TypeError
@@ -260,6 +269,22 @@ def test_borrow_return_new_record_updates_borrow_tbl_error_on_save(mck):
     actual = Borrow.objects.items()
 
     assert actual[0].returned == Decimal('25')
+
+
+@patch('project.debts.models.Borrow.objects.get')
+def test_borrow_return_new_record_updates_borrow_tbl_error_on_save_parent(mck):
+    mck.side_effect = TypeError
+
+    try:
+        BorrowReturnFactory()
+    except:
+        pass
+
+    actual = Borrow.objects.items()
+    assert actual[0].returned == Decimal('25')
+
+    actual = BorrowReturn.objects.all()
+    assert actual.count() == 0
 
 
 def test_borrow_return_delete_record_updates_borrow_tbl():
@@ -604,6 +629,15 @@ def test_lent_return_new_record_updates_lent_tbl():
     assert actual[0].returned == Decimal('30')
 
 
+def test_lent_return_new_record_updates_lent_tbl_empty_returned_field():
+    LentReturnFactory(lent=LentFactory(returned=None))
+
+    actual = Lent.objects.items()
+
+    assert actual.count() == 1
+    assert actual[0].returned == Decimal('5')
+
+
 @patch('project.debts.models.super')
 def test_lent_return_new_record_updates_lent_tbl_error_on_save(mck):
     mck.side_effect = TypeError
@@ -616,6 +650,22 @@ def test_lent_return_new_record_updates_lent_tbl_error_on_save(mck):
     actual = Lent.objects.items()
 
     assert actual[0].returned == Decimal('25')
+
+
+@patch('project.debts.models.Lent.objects.get')
+def test_lent_return_new_record_updates_lent_tbl_error_on_save_parent(mck):
+    mck.side_effect = TypeError
+
+    try:
+        LentReturnFactory()
+    except:
+        pass
+
+    actual = Lent.objects.items()
+    assert actual[0].returned == Decimal('25')
+
+    actual = LentReturn.objects.all()
+    assert actual.count() == 0
 
 
 def test_lent_return_delete_record_updates_lent_tbl():
