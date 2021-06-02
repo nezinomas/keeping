@@ -251,7 +251,7 @@ def test_expense_type_title_too_short():
     assert 'title' in form.errors
 
 
-def test_expense_tyoe_unique_name():
+def test_expense_type_unique_name():
     b = ExpenseTypeFactory(title='XXX')
 
     form = ExpenseTypeForm(
