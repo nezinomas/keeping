@@ -23,6 +23,11 @@ urlpatterns = [
         name='borrows_new'
     ),
     path(
+        'borrows/update/<int:pk>/',
+        views.BorrowUpdate.as_view(),
+        name='borrows_update'
+    ),
+    path(
         'borrows/return/lists/',
         views.BorrowReturnLists.as_view(),
         name='borrows_return_list'
@@ -31,6 +36,11 @@ urlpatterns = [
         'borrows/return/new/',
         views.BorrowReturnNew.as_view(),
         name='borrows_return_new'
+    ),
+    path(
+        'borrows/return/update/<int:pk>/',
+        views.BorrowReturnUpdate.as_view(),
+        name='borrows_return_update'
     ),
     path(
         'lents/lists/',
@@ -43,6 +53,11 @@ urlpatterns = [
         name='lents_new'
     ),
     path(
+        'lents/update/<int:pk>/',
+        views.LentUpdate.as_view(),
+        name='lents_update'
+    ),
+    path(
         'lents/return/lists/',
         views.LentReturnLists.as_view(),
         name='lents_return_list'
@@ -51,5 +66,10 @@ urlpatterns = [
         'lents/return/new/',
         views.LentReturnNew.as_view(),
         name='lents_return_new'
+    ),
+    path(
+        'lents/return/update/<int:pk>/',
+        views.LentReturnUpdate.as_view(),
+        name='lents_return_update'
     ),
 ]

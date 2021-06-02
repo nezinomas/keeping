@@ -228,6 +228,21 @@ def test_borrow_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
+def test_borrow_update_func():
+    view = resolve('/borrows/update/1/')
+
+    assert views.BorrowUpdate == view.func.view_class
+
+
+def test_borrow_update_200(client_logged):
+    f = factories.BorrowFactory()
+
+    url = reverse('debts:borrows_update', kwargs={'pk': f.pk})
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                           Borrow Return
 # ---------------------------------------------------------------------------------------
@@ -325,6 +340,21 @@ def test_borrow_return_save_invalid_data(client_logged):
     actual = json.loads(json_str)
 
     assert not actual['form_is_valid']
+
+
+def test_borrow_return_update_func():
+    view = resolve('/borrows/return/update/1/')
+
+    assert views.BorrowReturnUpdate == view.func.view_class
+
+
+def test_borrow_return_update_200(client_logged):
+    f = factories.BorrowReturnFactory()
+
+    url = reverse('debts:borrows_return_update', kwargs={'pk': f.pk})
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
 
 
 # ---------------------------------------------------------------------------------------
@@ -430,6 +460,21 @@ def test_lent_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
+def test_lent_update_func():
+    view = resolve('/lents/update/1/')
+
+    assert views.LentUpdate == view.func.view_class
+
+
+def test_lent_update_200(client_logged):
+    f = factories.LentFactory()
+
+    url = reverse('debts:lents_update', kwargs={'pk': f.pk})
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                             Lent Return
 # ---------------------------------------------------------------------------------------
@@ -527,3 +572,18 @@ def test_lent_return_save_invalid_data(client_logged):
     actual = json.loads(json_str)
 
     assert not actual['form_is_valid']
+
+
+def test_lent_return_update_func():
+    view = resolve('/lents/return/update/1/')
+
+    assert views.LentReturnUpdate == view.func.view_class
+
+
+def test_lent_return_update_200(client_logged):
+    f = factories.LentReturnFactory()
+
+    url = reverse('debts:lents_return_update', kwargs={'pk': f.pk})
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
