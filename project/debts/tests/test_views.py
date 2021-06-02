@@ -171,6 +171,18 @@ def test_borrow_list_with_data(client_logged):
     assert 'Borrow Remark' in content
 
 
+def test_borrow_list_edit_button(client_logged):
+    f = factories.BorrowFactory()
+
+    url = reverse('debts:borrows_list')
+    response = client_logged.get(url)
+    content = response.content.decode('utf-8')
+
+    link = reverse('debts:borrows_update', kwargs={'pk': f.pk})
+
+    assert f'<a role="button" data-url="{ link }"' in content
+
+
 def test_borrow_new_func():
     view = resolve('/borrows/new/')
 
@@ -283,6 +295,18 @@ def test_borrow_return_list_with_data(client_logged):
     assert '5,0' in content
     assert 'Account1' in content
     assert 'Borrow Return Remark' in content
+
+
+def test_borrow_return_list_edit_button(client_logged):
+    f = factories.BorrowReturnFactory()
+
+    url = reverse('debts:borrows_return_list')
+    response = client_logged.get(url)
+    content = response.content.decode('utf-8')
+
+    link = reverse('debts:borrows_return_update', kwargs={'pk': f.pk})
+
+    assert f'<a role="button" data-url="{ link }"' in content
 
 
 def test_borrow_return_new_func():
@@ -403,6 +427,18 @@ def test_lent_list_with_data(client_logged):
     assert 'Lent Remark' in content
 
 
+def test_lent_list_edit_button(client_logged):
+    f = factories.LentFactory()
+
+    url = reverse('debts:lents_list')
+    response = client_logged.get(url)
+    content = response.content.decode('utf-8')
+
+    link = reverse('debts:lents_update', kwargs={'pk': f.pk})
+
+    assert f'<a role="button" data-url="{ link }"' in content
+
+
 def test_lent_new_func():
     view = resolve('/lents/new/')
 
@@ -515,6 +551,18 @@ def test_lent_return_list_with_data(client_logged):
     assert '5,0' in content
     assert 'Account1' in content
     assert 'Lent Return Remark' in content
+
+
+def test_lent_return_list_edit_button(client_logged):
+    f = factories.LentReturnFactory()
+
+    url = reverse('debts:lents_return_list')
+    response = client_logged.get(url)
+    content = response.content.decode('utf-8')
+
+    link = reverse('debts:lents_return_update', kwargs={'pk': f.pk})
+
+    assert f'<a role="button" data-url="{ link }"' in content
 
 
 def test_lent_return_new_func():

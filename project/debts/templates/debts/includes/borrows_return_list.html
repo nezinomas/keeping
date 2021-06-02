@@ -14,20 +14,19 @@
     </thead>
     <tbody>
         {% for item in items %}
+        {% url 'debts:borrows_return_update' item.id as url_update %}
         <tr data-url="" class="dblclick">
             <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ item.price|intcomma }}</td>
             <td class="text-start">{{ item.account }}</td>
             <td class="text-start">{{ item.remark }}</td>
             <td class="w-edit">
-                <a role="button" data-url="" class=" js-create edit" title="Edit">
+                <a role="button" data-url="{{ url_update }}" class=" js-create edit" title="Edit">
                     <i class="bi bi-pencil-fill"></i>
                 </a>
             </td>
             <td class="w-delete">
-                <a role="button" data-url="" class="js-delete trash" title="Delete">
-                    <i lass="bi bi-trash-fill"></i>
-                </a>
+                <a role="button" data-url="" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
         {% endfor %}
