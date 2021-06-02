@@ -8,8 +8,8 @@ from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.lib import utils
 from ..core.lib.date import monthnames, set_year_for_form
-from ..core.mixins.form_mixin import FormForUserMixin
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
 from ..savings.models import SavingType
@@ -33,13 +33,20 @@ def common_field_transalion(self):
     self.fields['december'].label = 'Gruodis'
 
 
+def set_user_field(fields):
+    # user input
+    fields['user'].initial = utils.get_user()
+    fields['user'].disabled = True
+    fields['user'].widget = forms.HiddenInput()
+
+
 # ----------------------------------------------------------------------------
 #                                                             Income Plan Form
 # ----------------------------------------------------------------------------
-class IncomePlanForm(FormForUserMixin, forms.ModelForm):
+class IncomePlanForm(forms.ModelForm):
     class Meta:
         model = IncomePlan
-        fields = ['year', 'income_type'] + monthnames()
+        fields = ['user', 'year', 'income_type'] + monthnames()
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
@@ -49,6 +56,9 @@ class IncomePlanForm(FormForUserMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # user input
+        set_user_field(self.fields)
 
         # inital values
         self.fields['year'].initial = set_year_for_form()
@@ -63,30 +73,14 @@ class IncomePlanForm(FormForUserMixin, forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
-    def clean(self):
-        cleaned_data = super().clean()
-        year = cleaned_data.get('year')
-        income_type = cleaned_data.get('income_type')
-
-        # if update
-        if 'year' not in self.changed_data:
-            return
-
-        qs = IncomePlan.objects.year(year).filter(income_type=income_type)
-        if qs.exists():
-            _msg = f'{year} metai jau turi {income_type} planą.'
-            raise forms.ValidationError([{'__all__': _msg}])
-
-        return
-
 
 # ----------------------------------------------------------------------------
 #                                                            Expense Plan Form
 # ----------------------------------------------------------------------------
-class ExpensePlanForm(FormForUserMixin, forms.ModelForm):
+class ExpensePlanForm(forms.ModelForm):
     class Meta:
         model = ExpensePlan
-        fields = ['year', 'expense_type'] + monthnames()
+        fields = ['user', 'year', 'expense_type'] + monthnames()
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
@@ -96,6 +90,9 @@ class ExpensePlanForm(FormForUserMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # user input
+        set_user_field(self.fields)
 
         # inital values
         self.fields['year'].initial = set_year_for_form()
@@ -110,30 +107,14 @@ class ExpensePlanForm(FormForUserMixin, forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
-    def clean(self):
-        cleaned_data = super().clean()
-        year = cleaned_data.get('year')
-        expense_type = cleaned_data.get('expense_type')
-
-        # if update
-        if 'year' not in self.changed_data:
-            return
-
-        qs = ExpensePlan.objects.year(year).filter(expense_type=expense_type)
-        if qs.exists():
-            _msg = f'{year} metai jau turi {expense_type} planą.'
-            raise forms.ValidationError([{'__all__': _msg}])
-
-        return
-
 
 # ----------------------------------------------------------------------------
 #                                                              Saving Plan Form
 # ----------------------------------------------------------------------------
-class SavingPlanForm(FormForUserMixin, forms.ModelForm):
+class SavingPlanForm(forms.ModelForm):
     class Meta:
         model = SavingPlan
-        fields = ['year', 'saving_type'] + monthnames()
+        fields = ['user', 'year', 'saving_type'] + monthnames()
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
@@ -143,6 +124,9 @@ class SavingPlanForm(FormForUserMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # user input
+        set_user_field(self.fields)
 
         # overwrite ForeignKey expense_type queryset
         self.fields['saving_type'].queryset = SavingType.objects.items()
@@ -154,33 +138,19 @@ class SavingPlanForm(FormForUserMixin, forms.ModelForm):
         self.fields['saving_type'].label = 'Taupymo rūšis'
         common_field_transalion(self)
 
+
+
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
-
-    def clean(self):
-        cleaned_data = super().clean()
-        year = cleaned_data.get('year')
-        saving_type = cleaned_data.get('saving_type')
-
-        # if update
-        if 'year' not in self.changed_data:
-            return
-
-        qs = SavingPlan.objects.year(year).filter(saving_type=saving_type)
-        if qs.exists():
-            _msg = f'{year} metai jau turi {saving_type} planą.'
-            raise forms.ValidationError([{'__all__': _msg}])
-
-        return
 
 
 # ----------------------------------------------------------------------------
 #                                                                Day Plan Form
 # ----------------------------------------------------------------------------
-class DayPlanForm(FormForUserMixin, forms.ModelForm):
+class DayPlanForm(forms.ModelForm):
     class Meta:
         model = DayPlan
-        fields = ['year'] + monthnames()
+        fields = ['user', 'year'] + monthnames()
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
@@ -191,6 +161,9 @@ class DayPlanForm(FormForUserMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # user input
+        set_user_field(self.fields)
+
         # inital values
         self.fields['year'].initial = set_year_for_form()
 
@@ -200,29 +173,14 @@ class DayPlanForm(FormForUserMixin, forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
-    def clean(self):
-        cleaned_data = super().clean()
-        year = cleaned_data.get('year')
-
-        # if update
-        if 'year' not in self.changed_data:
-            return
-
-        qs = DayPlan.objects.year(year)
-        if qs.exists():
-            _msg = f'{year} metai jau turi Dienos planą.'
-            raise forms.ValidationError([{'__all__': _msg}])
-
-        return
-
 
 # ----------------------------------------------------------------------------
 #                                                          Necessary Plan Form
 # ----------------------------------------------------------------------------
-class NecessaryPlanForm(FormForUserMixin, forms.ModelForm):
+class NecessaryPlanForm(forms.ModelForm):
     class Meta:
         model = NecessaryPlan
-        fields = ['year', 'title'] + monthnames()
+        fields = ['user', 'year', 'title'] + monthnames()
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
@@ -233,6 +191,9 @@ class NecessaryPlanForm(FormForUserMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # user input
+        set_user_field(self.fields)
+
         # inital values
         self.fields['year'].initial = set_year_for_form()
 
@@ -241,22 +202,6 @@ class NecessaryPlanForm(FormForUserMixin, forms.ModelForm):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
-
-    def clean(self):
-        cleaned_data = super().clean()
-        year = cleaned_data.get('year')
-        title = cleaned_data.get('title')
-
-        # if update
-        if 'year' not in self.changed_data:
-            return
-
-        qs = NecessaryPlan.objects.year(year).filter(title=title)
-        if qs.exists():
-            _msg = f'{year} metai jau turi {title} planą.'
-            raise forms.ValidationError([{'__all__': _msg}])
-
-        return
 
 
 # ----------------------------------------------------------------------------
