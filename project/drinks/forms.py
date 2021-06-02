@@ -5,16 +5,16 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
-from ..core.mixins.form_mixin import FormForUserMixin
 from .apps import App_name
 from .models import Drink, DrinkTarget
 
 
-class DrinkForm(FormForUserMixin, forms.ModelForm):
+class DrinkForm(forms.ModelForm):
     class Meta:
         model = Drink
-        fields = ['date', 'quantity']
+        fields = ['user', 'date', 'quantity']
 
         widgets = {
             'date': DatePickerInput(
@@ -29,6 +29,11 @@ class DrinkForm(FormForUserMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # user input
+        self.fields['user'].initial = utils.get_user()
+        self.fields['user'].disabled = True
+        self.fields['user'].widget = forms.HiddenInput()
 
         # inital values
         self.fields['date'].initial = set_year_for_form()
@@ -47,10 +52,10 @@ class DrinkForm(FormForUserMixin, forms.ModelForm):
         return instance
 
 
-class DrinkTargetForm(FormForUserMixin, forms.ModelForm):
+class DrinkTargetForm(forms.ModelForm):
     class Meta:
         model = DrinkTarget
-        fields = ['year', 'quantity']
+        fields = ['user', 'year', 'quantity']
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
@@ -60,6 +65,11 @@ class DrinkTargetForm(FormForUserMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # user input
+        self.fields['user'].initial = utils.get_user()
+        self.fields['user'].disabled = True
+        self.fields['user'].widget = forms.HiddenInput()
 
         # inital values
         self.fields['year'].initial = set_year_for_form()
