@@ -26,11 +26,7 @@ class Index(IndexMixin):
         context.update({
             'categories': TypeLists.as_view()(self.request, as_string=True),
             'current_month': datetime.now().month,
-            'search': render_to_string(
-                template_name='core/includes/search_form.html',
-                context={'form': SearchForm(), 'url': reverse('expenses:expenses_search')},
-                request=self.request
-            ),
+            'search': render_search_form(self.request),
             **context_to_reload(self.request)
         })
 
@@ -47,11 +43,7 @@ class MonthLists(IndexMixin):
         context.update({
             'categories': TypeLists.as_view()(self.request, as_string=True),
             'current_month': month,
-            'search': render_to_string(
-                template_name='core/includes/search_form.html',
-                context={'form': SearchForm(), 'url': reverse('expenses:expenses_search')},
-                request=self.request
-            ),
+            'search': render_search_form(self.request),
             **context_to_reload(self.request, month),
         })
 
@@ -150,3 +142,15 @@ def context_to_reload(request, month=None):
             request)
     }
     return data
+
+
+def render_search_form(request):
+    return (
+        render_to_string(
+            template_name='core/includes/search_form.html',
+            context={
+                'form': SearchForm(),
+                'url': reverse('expenses:expenses_search')},
+            request=request
+        )
+    )
