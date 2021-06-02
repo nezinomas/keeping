@@ -47,6 +47,11 @@ class MonthLists(IndexMixin):
         context.update({
             'categories': TypeLists.as_view()(self.request, as_string=True),
             'current_month': month,
+            'search': render_to_string(
+                template_name='core/includes/search_form.html',
+                context={'form': SearchForm(), 'url': reverse('expenses:expenses_search')},
+                request=self.request
+            ),
             **context_to_reload(self.request, month),
         })
 
