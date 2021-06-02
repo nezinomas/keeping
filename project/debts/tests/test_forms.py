@@ -139,6 +139,24 @@ def test_borrow_blank_data():
     assert 'account' in form.errors
 
 
+def test_borrow_unique_name():
+    a = AccountFactory()
+    b = factories.BorrowFactory(name='XXX')
+
+    form = forms.BorrowForm(
+        data={
+            'date': '1974-01-01',
+            'name': 'XXX',
+            'price': '1.1',
+            'account': a.pk,
+            'closed': True,
+            'remark': 'Rm'
+        },
+    )
+
+    assert not form.is_valid()
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                      Borrow Return Form
 # ---------------------------------------------------------------------------------------
@@ -341,6 +359,24 @@ def test_lent_blank_data():
     assert 'name' in form.errors
     assert 'price' in form.errors
     assert 'account' in form.errors
+
+
+def test_lent_unique_name():
+    a = AccountFactory()
+    b = factories.LentFactory(name='XXX')
+
+    form = forms.LentForm(
+        data={
+            'date': '1974-01-01',
+            'name': 'XXX',
+            'price': '1.1',
+            'account': a.pk,
+            'closed': True,
+            'remark': 'Rm'
+        },
+    )
+
+    assert not form.is_valid()
 
 
 # ---------------------------------------------------------------------------------------

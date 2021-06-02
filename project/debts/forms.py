@@ -4,15 +4,15 @@ from django import forms
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
-from ..core.mixins.form_mixin import FormForUserMixin
 from . import models
 
 
-class BorrowForm(FormForUserMixin, forms.ModelForm):
+class BorrowForm(forms.ModelForm):
     class Meta:
         model = models.Borrow
-        fields = ['date', 'name', 'price', 'closed', 'account', 'remark']
+        fields = ['user', 'date', 'name', 'price', 'closed', 'account', 'remark']
 
     field_order = ['date', 'name', 'price', 'account', 'remark', 'closed']
 
@@ -31,6 +31,11 @@ class BorrowForm(FormForUserMixin, forms.ModelForm):
         # form inputs settings
         self.fields['remark'].widget.attrs['rows'] = 3
 
+        # user input
+        self.fields['user'].initial = utils.get_user()
+        self.fields['user'].disabled = True
+        self.fields['user'].widget = forms.HiddenInput()
+
         # inital values
         self.fields['account'].initial = Account.objects.items().first()
         self.fields['date'].initial = set_year_for_form()
@@ -48,7 +53,6 @@ class BorrowForm(FormForUserMixin, forms.ModelForm):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
-
 
         self.fields['closed'].widget.attrs['class'] = " form-check-input"
 
@@ -81,10 +85,11 @@ class BorrowReturnForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
-class LentForm(FormForUserMixin, forms.ModelForm):
+
+class LentForm(forms.ModelForm):
     class Meta:
         model = models.Lent
-        fields = ['date', 'name', 'price', 'closed', 'account', 'remark']
+        fields = ['user', 'date', 'name', 'price', 'closed', 'account', 'remark']
 
     field_order = ['date', 'name', 'price', 'account', 'remark', 'closed']
 
@@ -102,6 +107,11 @@ class LentForm(FormForUserMixin, forms.ModelForm):
 
         # form inputs settings
         self.fields['remark'].widget.attrs['rows'] = 3
+
+        # user input
+        self.fields['user'].initial = utils.get_user()
+        self.fields['user'].disabled = True
+        self.fields['user'].widget = forms.HiddenInput()
 
         # inital values
         self.fields['account'].initial = Account.objects.items().first()
