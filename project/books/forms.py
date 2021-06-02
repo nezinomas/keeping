@@ -3,15 +3,15 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
-from ..core.mixins.form_mixin import FormForUserMixin
 from .models import Book, BookTarget
 
 
-class BookForm(FormForUserMixin, forms.ModelForm):
+class BookForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ['started', 'ended', 'author', 'title', 'remark']
+        fields = ['user', 'started', 'ended', 'author', 'title', 'remark']
 
         widgets = {
             'started': DatePickerInput(
@@ -33,6 +33,11 @@ class BookForm(FormForUserMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # user input
+        self.fields['user'].initial = utils.get_user()
+        self.fields['user'].disabled = True
+        self.fields['user'].widget = forms.HiddenInput()
+
         # inital values
         self.fields['started'].initial = set_year_for_form()
 
@@ -46,10 +51,10 @@ class BookForm(FormForUserMixin, forms.ModelForm):
 
 
 
-class BookTargetForm(FormForUserMixin, forms.ModelForm):
+class BookTargetForm(forms.ModelForm):
     class Meta:
         model = BookTarget
-        fields = ['year', 'quantity']
+        fields = ['user', 'year', 'quantity']
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
@@ -59,6 +64,11 @@ class BookTargetForm(FormForUserMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # user input
+        self.fields['user'].initial = utils.get_user()
+        self.fields['user'].disabled = True
+        self.fields['user'].widget = forms.HiddenInput()
 
         # inital values
         self.fields['year'].initial = set_year_for_form()
