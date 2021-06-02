@@ -203,7 +203,6 @@ def test_expense_type_init_fields():
     assert '<select name="user"' not in form
 
 
-@pytest.mark.django_db
 def test_expense_type_valid_data():
     form = ExpenseTypeForm(data={
         'title': 'Title',
@@ -219,7 +218,6 @@ def test_expense_type_valid_data():
     assert data.user.username == 'bob'
 
 
-@pytest.mark.django_db
 def test_expense_type_blank_data():
     form = ExpenseTypeForm(data={})
 
@@ -229,7 +227,6 @@ def test_expense_type_blank_data():
     assert 'title' in form.errors
 
 
-@pytest.mark.django_db
 def test_expense_type_title_null():
     form = ExpenseTypeForm(data={'title': None})
 
@@ -238,7 +235,6 @@ def test_expense_type_title_null():
     assert 'title' in form.errors
 
 
-@pytest.mark.django_db
 def test_expense_type_title_too_long():
     form = ExpenseTypeForm(data={'title': 'a'*255})
 
@@ -247,13 +243,24 @@ def test_expense_type_title_too_long():
     assert 'title' in form.errors
 
 
-@pytest.mark.django_db
 def test_expense_type_title_too_short():
     form = ExpenseTypeForm(data={'title': 'aa'})
 
     assert not form.is_valid()
 
     assert 'title' in form.errors
+
+
+def test_expense_tyoe_unique_name():
+    b = ExpenseTypeFactory(title='XXX')
+
+    form = ExpenseTypeForm(
+        data={
+            'title': 'XXX',
+        },
+    )
+
+    assert not form.is_valid()
 
 
 # ----------------------------------------------------------------------------
@@ -275,7 +282,6 @@ def test_expense_name_current_user_expense_types():
     assert 'T2' not in form
 
 
-@pytest.mark.django_db
 def test_expense_name_valid_data():
     p = ExpenseTypeFactory()
 
@@ -293,7 +299,6 @@ def test_expense_name_valid_data():
     assert data.valid_for == 1999
 
 
-@pytest.mark.django_db
 def test_expense_name_blank_data():
     form = ExpenseNameForm(data={})
 
@@ -303,7 +308,6 @@ def test_expense_name_blank_data():
     assert 'parent' in form.errors
 
 
-@pytest.mark.django_db
 def test_expense_name_title_null():
     p = ExpenseTypeFactory()
     form = ExpenseNameForm(data={'title': None, 'parent': p.pk})
@@ -313,7 +317,6 @@ def test_expense_name_title_null():
     assert 'title' in form.errors
 
 
-@pytest.mark.django_db
 def test_expense_name_title_too_long():
     p = ExpenseTypeFactory()
     form = ExpenseNameForm(data={'title': 'a'*255, 'parent': p.pk})
@@ -323,7 +326,6 @@ def test_expense_name_title_too_long():
     assert 'title' in form.errors
 
 
-@pytest.mark.django_db
 def test_expense_name_title_too_short():
     p = ExpenseTypeFactory()
     form = ExpenseNameForm(data={'title': 'x', 'parent': p.pk})

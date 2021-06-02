@@ -6,7 +6,6 @@ from ..accounts.models import Account
 from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
-from ..core.mixins.form_mixin import FormForUserMixin
 from .models import Expense, ExpenseName, ExpenseType
 
 
@@ -95,13 +94,18 @@ class ExpenseForm(forms.ModelForm):
         return _exception
 
 
-class ExpenseTypeForm(FormForUserMixin, forms.ModelForm):
+class ExpenseTypeForm(forms.ModelForm):
     class Meta:
         model = ExpenseType
-        fields = ['title', 'necessary']
+        fields = ['user', 'title', 'necessary']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # user input
+        self.fields['user'].initial = utils.get_user()
+        self.fields['user'].disabled = True
+        self.fields['user'].widget = forms.HiddenInput()
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
