@@ -19,9 +19,9 @@ pytestmark = pytest.mark.django_db
 #                                                                                  Borrow
 #----------------------------------------------------------------------------------------
 def test_borrow_str():
-    v = BorrowFactory.build()
+    v = BorrowFactory.build(name='X')
 
-    assert str(v) == 'Pasiskolinta 100'
+    assert str(v) == 'X'
 
 
 def test_borrow_fields():
@@ -36,45 +36,45 @@ def test_borrow_fields():
 
 
 def test_borrow_related():
-    BorrowFactory()
+    o = BorrowFactory()
     BorrowFactory(user=UserFactory(username='XXX'))
 
     actual = Borrow.objects.related()
 
     assert len(actual) == 1
-    assert str(actual[0]) == 'Pasiskolinta 100'
+    assert str(actual[0]) == str(o)
 
 
 def test_borrow_related_and_not_closed():
-    BorrowFactory(name='N1', price=2, closed=False)
-    BorrowFactory(name='N2', price=3, closed=True)
+    o1 = BorrowFactory(name='N1', price=2, closed=False)
+    o2 = BorrowFactory(name='N2', price=3, closed=True)
 
     actual = Borrow.objects.related()
 
     assert len(actual) == 1
-    assert str(actual[0]) == 'Pasiskolinta 2'
-    assert actual[0].name == 'N1'
+    assert str(actual[0]) == str(o1)
+    assert actual[0].name == o1.name
 
 
 def test_borrow_items():
-    BorrowFactory()
+    o = BorrowFactory()
     BorrowFactory(name='X1', user=UserFactory(username='XXX'))
 
     actual = Borrow.objects.items()
 
     assert actual.count() == 1
-    assert str(actual[0]) == 'Pasiskolinta 100'
+    assert str(actual[0]) == str(o)
 
 
 def test_borrow_year():
-    BorrowFactory(name='N1', date=dt(1999, 2, 3))
+    o = BorrowFactory(name='N1', date=dt(1999, 2, 3))
     BorrowFactory(name='N2', date=dt(2999, 2, 3), price=2)
 
     actual = Borrow.objects.year(1999)
 
     assert actual.count() == 1
-    assert str(actual[0]) == 'Pasiskolinta 100'
-    assert actual[0].name == 'N1'
+    assert str(actual[0]) == str(o)
+    assert actual[0].name == o.name
     assert actual[0].date == dt(1999, 2, 3)
     assert actual[0].price == Decimal('100')
 
@@ -391,9 +391,9 @@ def test_borrow_return_post_delete_with_update():
 #                                                                                    Lent
 #----------------------------------------------------------------------------------------
 def test_lent_str():
-    v = LentFactory.build()
+    v = LentFactory.build(name='X')
 
-    assert str(v) == 'Paskolinau 100.0'
+    assert str(v) == 'X'
 
 
 def test_lent_fields():
@@ -408,45 +408,45 @@ def test_lent_fields():
 
 
 def test_lent_related():
-    LentFactory()
+    o = LentFactory()
     LentFactory(user=UserFactory(username='XXX'))
 
     actual = Lent.objects.related()
 
     assert len(actual) == 1
-    assert str(actual[0]) == 'Paskolinau 100.0'
+    assert str(actual[0]) == str(o)
 
 
 def test_lent_related_and_not_closed():
-    LentFactory(name='N1', price=2, closed=False)
+    o = LentFactory(name='N1', price=2, closed=False)
     LentFactory(name='N2', price=3, closed=True)
 
     actual = Lent.objects.related()
 
     assert len(actual) == 1
-    assert str(actual[0]) == 'Paskolinau 2.0'
-    assert actual[0].name == 'N1'
+    assert str(actual[0]) == str(o)
+    assert actual[0].name == o.name
 
 
 def test_lent_items():
-    LentFactory()
+    o = LentFactory()
     LentFactory(name='X1', user=UserFactory(username='XXX'))
 
     actual = Lent.objects.items()
 
     assert actual.count() == 1
-    assert str(actual[0]) == 'Paskolinau 100.0'
+    assert str(actual[0]) == str(o)
 
 
 def test_lent_year():
-    LentFactory(name='N1', date=dt(1999, 2, 3))
+    o = LentFactory(name='N1', date=dt(1999, 2, 3))
     LentFactory(name='N2', date=dt(2999, 2, 3), price=2)
 
     actual = Lent.objects.year(1999)
 
     assert actual.count() == 1
-    assert str(actual[0]) == 'Paskolinau 100.0'
-    assert actual[0].name == 'N1'
+    assert str(actual[0]) == str(o)
+    assert actual[0].name == o.name
     assert actual[0].date == dt(1999, 2, 3)
     assert actual[0].price == Decimal('100')
 

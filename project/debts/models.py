@@ -50,7 +50,7 @@ class Borrow(MixinFromDbAccountId):
         unique_together = ['user', 'name']
 
     def __str__(self):
-        return f'Pasiskolinta {round(self.price, 0)}'
+        return str(self.name)
 
 
 class BorrowReturn(MixinFromDbAccountId):
@@ -147,7 +147,7 @@ class Lent(MixinFromDbAccountId):
         unique_together = ['user', 'name']
 
     def __str__(self):
-        return f'Paskolinau {round(self.price, 1)}'
+        return str(self.name)
 
 
 class LentReturn(MixinFromDbAccountId):
