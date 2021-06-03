@@ -83,6 +83,7 @@ class Update(UpdateAjaxMixin):
 
 class Delete(DeleteAjaxMixin):
     model = models.Expense
+    list_render_output = False
 
 
 class Search(AjaxCustomFormMixin):

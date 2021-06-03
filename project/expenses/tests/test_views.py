@@ -124,6 +124,30 @@ def test_expenses_save(client_logged):
     assert actual.expense_name.title == 'Expense Name'
 
 
+def test_expenses_save_not_render_html_list(client_logged):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory()
+
+    data = {
+        'date': '1999-01-01',
+        'price': '1.05',
+        'quantity': 33,
+        'account': a.pk,
+        'expense_type': t.pk,
+        'expense_name': n.pk,
+    }
+
+    url = reverse('expenses:expenses_new')
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
+
+
 def test_expenses_save_insert_button(client_logged):
     a = AccountFactory()
     t = ExpenseTypeFactory()
@@ -250,6 +274,30 @@ def test_expenses_update(client_logged):
     assert actual.remark == 'Pastaba'
 
 
+def test_expenses_update_not_render_html_list(client_logged):
+    e = ExpenseFactory()
+
+    data = {
+        'price': '150',
+        'quantity': 33,
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'expense_type': 1,
+        'expense_name': 1,
+    }
+    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
+
+
 @freeze_time('2000-03-03')
 def test_expenses_update_past_record(get_user, client_logged):
     get_user.year = 2000
@@ -357,6 +405,20 @@ def test_view_expenses_delete(client_logged):
     assert response.status_code == 200
 
     assert models.Expense.objects.all().count() == 0
+
+
+def test_view_expenses_delete_not_render_html_list(client_logged):
+    p = ExpenseFactory()
+
+    assert models.Expense.objects.all().count() == 1
+    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
 
 
 # ---------------------------------------------------------------------------------------
