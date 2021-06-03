@@ -6,7 +6,7 @@ from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
 from . import forms, models
 
 
-def context_to_reload(request):
+def _context_to_reload(request):
     context = {
         'borrow': BorrowLists.as_view()(request, as_string=True),
         'lent': LentLists.as_view()(request, as_string=True),
@@ -19,7 +19,7 @@ class ReloadIndex(DispatchAjaxMixin, TemplateView):
     redirect_view = 'debts:debts_index'
 
     def get(self, request, *args, **kwargs):
-        context = context_to_reload(self.request)
+        context = _context_to_reload(self.request)
         return self.render_to_response(context=context)
 
 
@@ -29,7 +29,7 @@ class Index(IndexMixin):
         context.update({
             'borrow_return': BorrowReturnLists.as_view()(self.request, as_string=True),
             'lent_return': LentReturnLists.as_view()(self.request, as_string=True),
-            **context_to_reload(self.request)
+            **_context_to_reload(self.request)
         })
         return context
 
