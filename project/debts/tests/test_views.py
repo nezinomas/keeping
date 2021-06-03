@@ -151,7 +151,7 @@ def test_borrow_list_empty(client_logged):
 
 
 def test_borrow_list_with_data(client_logged):
-    f = factories.BorrowFactory()
+    obj = factories.BorrowFactory()
 
     url = reverse('debts:borrows_list')
     response = client_logged.get(url)
@@ -165,7 +165,7 @@ def test_borrow_list_with_data(client_logged):
     assert 'Pastaba' in content
 
     assert '1999-01-01' in content
-    assert f.name in content
+    assert obj.name in content
     assert '100,0' in content
     assert '25,0' in content
     assert 'Account1' in content
@@ -173,13 +173,25 @@ def test_borrow_list_with_data(client_logged):
 
 
 def test_borrow_list_edit_button(client_logged):
-    f = factories.BorrowFactory()
+    obj = factories.BorrowFactory()
 
     url = reverse('debts:borrows_list')
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
 
-    link = reverse('debts:borrows_update', kwargs={'pk': f.pk})
+    link = reverse('debts:borrows_update', kwargs={'pk': obj.pk})
+
+    assert f'<a role="button" data-url="{ link }"' in content
+
+
+def test_borrow_list_delete_button(client_logged):
+    obj = factories.BorrowFactory()
+
+    url = reverse('debts:borrows_list')
+    response = client_logged.get(url)
+    content = response.content.decode('utf-8')
+
+    link = reverse('debts:borrows_delete', kwargs={'pk': obj.pk})
 
     assert f'<a role="button" data-url="{ link }"' in content
 
@@ -393,13 +405,25 @@ def test_borrow_return_list_with_data(client_logged):
 
 
 def test_borrow_return_list_edit_button(client_logged):
-    f = factories.BorrowReturnFactory()
+    obj = factories.BorrowReturnFactory()
 
     url = reverse('debts:borrows_return_list')
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
 
-    link = reverse('debts:borrows_return_update', kwargs={'pk': f.pk})
+    link = reverse('debts:borrows_return_update', kwargs={'pk': obj.pk})
+
+    assert f'<a role="button" data-url="{ link }"' in content
+
+
+def test_borrow_return_list_delete_button(client_logged):
+    obj = factories.BorrowReturnFactory()
+
+    url = reverse('debts:borrows_return_list')
+    response = client_logged.get(url)
+    content = response.content.decode('utf-8')
+
+    link = reverse('debts:borrows_return_delete', kwargs={'pk': obj.pk})
 
     assert f'<a role="button" data-url="{ link }"' in content
 
@@ -468,17 +492,17 @@ def test_borrow_return_update_func():
 
 
 def test_borrow_return_update_200(client_logged):
-    f = factories.BorrowReturnFactory()
+    obj = factories.BorrowReturnFactory()
 
-    url = reverse('debts:borrows_return_update', kwargs={'pk': f.pk})
+    url = reverse('debts:borrows_return_update', kwargs={'pk': obj.pk})
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_borrow_return_load_update_form(client_logged):
-    f = factories.BorrowReturnFactory()
-    url = reverse('debts:borrows_return_update', kwargs={'pk': f.pk})
+    obj = factories.BorrowReturnFactory()
+    url = reverse('debts:borrows_return_update', kwargs={'pk': obj.pk})
 
     response = client_logged.get(url, **X_Req)
 
@@ -616,13 +640,25 @@ def test_lent_list_with_data(client_logged):
 
 
 def test_lent_list_edit_button(client_logged):
-    f = factories.LentFactory()
+    obj = factories.LentFactory()
 
     url = reverse('debts:lents_list')
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
 
-    link = reverse('debts:lents_update', kwargs={'pk': f.pk})
+    link = reverse('debts:lents_update', kwargs={'pk': obj.pk})
+
+    assert f'<a role="button" data-url="{ link }"' in content
+
+
+def test_lent_list_delete_button(client_logged):
+    obj = factories.LentFactory()
+
+    url = reverse('debts:lents_list')
+    response = client_logged.get(url)
+    content = response.content.decode('utf-8')
+
+    link = reverse('debts:lents_delete', kwargs={'pk': obj.pk})
 
     assert f'<a role="button" data-url="{ link }"' in content
 
@@ -843,6 +879,18 @@ def test_lent_return_list_edit_button(client_logged):
     content = response.content.decode('utf-8')
 
     link = reverse('debts:lents_return_update', kwargs={'pk': f.pk})
+
+    assert f'<a role="button" data-url="{ link }"' in content
+
+
+def test_lent_return_list_delete_button(client_logged):
+    obj = factories.LentReturnFactory()
+
+    url = reverse('debts:lents_return_list')
+    response = client_logged.get(url)
+    content = response.content.decode('utf-8')
+
+    link = reverse('debts:lents_return_delete', kwargs={'pk': obj.pk})
 
     assert f'<a role="button" data-url="{ link }"' in content
 

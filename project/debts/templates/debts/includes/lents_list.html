@@ -17,6 +17,7 @@
     <tbody>
         {% for item in items %}
         {% url 'debts:lents_update' item.id as url_update %}
+        {% url 'debts:lents_delete' item.id as url_delete %}
         <tr data-url="" class="dblclick">
             <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ item.name }}</td>
@@ -30,7 +31,7 @@
                 </a>
             </td>
             <td class="w-delete">
-                <a role="button" data-url="" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+                <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
         {% endfor %}
