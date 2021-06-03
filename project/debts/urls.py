@@ -8,6 +8,11 @@ app_name = App_name
 
 urlpatterns = [
     path(
+        'debts/reload/',
+        views.ReloadIndex.as_view(),
+        name='reload_index'
+    ),
+    path(
         'debts/',
         views.Index.as_view(),
         name='debts_index'

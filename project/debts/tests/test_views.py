@@ -8,11 +8,40 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
+from ...users.factories import UserFactory
 from .. import factories, models, views
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 pytestmark = pytest.mark.django_db
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                                  Reload
+# ---------------------------------------------------------------------------------------
+def test_debts_reload_func():
+    view = resolve('/debts/reload/')
+
+    assert views.ReloadIndex is view.func.view_class
+
+
+def test_reload_debts_render(rf):
+    request = rf.get('/debts/reload/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = views.ReloadIndex.as_view()(request)
+
+    assert response.status_code == 200
+    assert 'borrow' in response.context_data
+    assert 'lent' in response.context_data
+
+
+def test_reload_debts_render_ajax_trigger_not_set(client_logged):
+    url = reverse('debts:reload_index')
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert views.Index == response.resolver_match.func.view_class
 
 
 # ---------------------------------------------------------------------------------------

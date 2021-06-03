@@ -1,4 +1,9 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}{% load static %}
+
+{% block head %}
+<script src="{% static 'js/reload_stats.js' %}"></script>
+{% endblock head %}
+
 
 {% block content %}
 <div class="row gx-2">
@@ -68,5 +73,23 @@
 </div>
 
 {% include 'modal.html' %}
+
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'debts:reload_index' %}`;
+        var btn_month = $('.btn-info');
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1',
+            },
+            success: function (data) {
+                var blocks = ['borrow_ajax', 'lent_ajax'];
+                reload_stats(data, blocks);
+            }
+        });
+    });
+</script>
 
 {% endblock content %}
