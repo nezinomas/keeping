@@ -305,6 +305,51 @@ def test_borrow_update(client_logged):
     assert actual.closed
 
 
+def test_borrow_delete_func():
+    view = resolve('/borrows/delete/1/')
+
+    assert views.BorrowDelete == view.func.view_class
+
+
+def test_borrow_delete_200(client_logged):
+    f = factories.BorrowFactory()
+
+    url = reverse('debts:borrows_delete', kwargs={'pk': f.pk})
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_borrow_delete_load_form(client_logged):
+    obj = factories.BorrowFactory()
+
+    url = reverse('debts:borrows_delete', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    actual = actual['html_form']
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual
+    assert 'data-action="delete"' in actual
+    assert 'data-update-container="borrow_ajax">' in actual
+    assert f'Ar tikrai nori išrinti: <strong>{ obj }</strong>?' in actual
+
+
+def test_borrow_delete(client_logged):
+    p = factories.BorrowFactory()
+
+    assert models.Borrow.objects.all().count() == 1
+    url = reverse('debts:borrows_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.Borrow.objects.all().count() == 0
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                           Borrow Return
 # ---------------------------------------------------------------------------------------
@@ -477,6 +522,51 @@ def test_borrow_return_update(client_logged):
     assert actual.price == Decimal('150')
     assert actual.account.title == 'AAA'
     assert actual.remark == 'Pastaba'
+
+
+def test_borrow_return_delete_func():
+    view = resolve('/borrows/return/delete/1/')
+
+    assert views.BorrowReturnDelete == view.func.view_class
+
+
+def test_borrow_return_delete_200(client_logged):
+    f = factories.BorrowReturnFactory()
+
+    url = reverse('debts:borrows_return_delete', kwargs={'pk': f.pk})
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_borrow_return_delete_load_form(client_logged):
+    obj = factories.BorrowReturnFactory()
+
+    url = reverse('debts:borrows_return_delete', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    actual = actual['html_form']
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual
+    assert 'data-action="delete"' in actual
+    assert 'data-update-container="borrow_return_ajax">' in actual
+    assert f'Ar tikrai nori išrinti: <strong>{ obj }</strong>?' in actual
+
+
+def test_borrow_return_delete(client_logged):
+    p = factories.BorrowReturnFactory()
+
+    assert models.BorrowReturn.objects.all().count() == 1
+    url = reverse('debts:borrows_return_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.BorrowReturn.objects.all().count() == 0
 
 
 # ---------------------------------------------------------------------------------------
@@ -658,6 +748,51 @@ def test_lent_update(client_logged):
     assert actual.closed
 
 
+def test_lent_delete_func():
+    view = resolve('/lents/delete/1/')
+
+    assert views.LentDelete == view.func.view_class
+
+
+def test_lent_delete_200(client_logged):
+    f = factories.LentFactory()
+
+    url = reverse('debts:lents_delete', kwargs={'pk': f.pk})
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_lent_delete_load_form(client_logged):
+    obj = factories.LentFactory()
+
+    url = reverse('debts:lents_delete', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    actual = actual['html_form']
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual
+    assert 'data-action="delete"' in actual
+    assert 'data-update-container="lent_ajax">' in actual
+    assert f'Ar tikrai nori išrinti: <strong>{ obj }</strong>?' in actual
+
+
+def test_lent_delete(client_logged):
+    p = factories.LentFactory()
+
+    assert models.Lent.objects.all().count() == 1
+    url = reverse('debts:lents_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.Lent.objects.all().count() == 0
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                             Lent Return
 # ---------------------------------------------------------------------------------------
@@ -831,3 +966,47 @@ def test_lent_return_update(client_logged):
     assert actual.account.title == 'AAA'
     assert actual.remark == 'Pastaba'
 
+
+def test_lent_return_delete_func():
+    view = resolve('/lents/return/delete/1/')
+
+    assert views.LentReturnDelete == view.func.view_class
+
+
+def test_lent_return_delete_200(client_logged):
+    f = factories.LentReturnFactory()
+
+    url = reverse('debts:lents_return_delete', kwargs={'pk': f.pk})
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_lent_return_delete_load_form(client_logged):
+    obj = factories.LentReturnFactory()
+
+    url = reverse('debts:lents_return_delete', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    actual = actual['html_form']
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual
+    assert 'data-action="delete"' in actual
+    assert 'data-update-container="lent_return_ajax">' in actual
+    assert f'Ar tikrai nori išrinti: <strong>{ obj }</strong>?' in actual
+
+
+def test_lent_return_delete(client_logged):
+    p = factories.LentReturnFactory()
+
+    assert models.LentReturn.objects.all().count() == 1
+    url = reverse('debts:lents_return_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.LentReturn.objects.all().count() == 0
