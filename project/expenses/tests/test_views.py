@@ -308,7 +308,7 @@ def test_expenses_index_search_form(client_logged):
 
 
 # ---------------------------------------------------------------------------------------
-#                                                                             Expense Delete
+#                                                                          Expense Delete
 # ---------------------------------------------------------------------------------------
 def test_view_expenses_delete_func():
     view = resolve('/expenses/delete/1/')
