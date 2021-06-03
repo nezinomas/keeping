@@ -17,10 +17,6 @@ from ..apps import App_name
 from ..views.expenses_type import Lists as TypeLists
 
 
-def _qs_default_ordering(qs):
-    return qs.order_by('-date', 'expense_type', F('expense_name').asc())
-
-
 class Index(RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         return reverse(
@@ -68,7 +64,9 @@ class Lists(ListMixin):
         if month in range(1, 13):
             qs = qs.filter(date__month=month)
 
-        return _qs_default_ordering(qs)
+        qs = qs.order_by('-date', 'expense_type', F('expense_name').asc())
+
+        return qs
 
 
 class New(CreateAjaxMixin):
