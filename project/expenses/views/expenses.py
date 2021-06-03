@@ -23,7 +23,10 @@ def _qs_default_ordering(qs):
 
 class Index(RedirectView):
     def get_redirect_url(self, *args, **kwargs):
-        return reverse('expenses:expenses_month_list', kwargs={'month': datetime.now().month})
+        return reverse(
+            'expenses:expenses_month_list',
+            kwargs={'month': datetime.now().month}
+        )
 
 
 class MonthLists(ListMixin):
@@ -40,7 +43,6 @@ class MonthLists(ListMixin):
             'search': render_search_form(self.request),
             'expenses_list': Lists.as_view()(self.request, as_string=True, **{'month': month}),
         })
-
         return context
 
 
@@ -56,7 +58,6 @@ class Lists(ListMixin):
             'notice': f'<b>{month}</b> mėnesį įrašų nėra.',
         })
         return context
-
 
     def get_queryset(self):
         qs = super().get_queryset()
