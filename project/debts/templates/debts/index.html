@@ -77,7 +77,6 @@
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
         var url = `{% url 'debts:reload_index' %}`;
-        var btn_month = $('.btn-info');
 
         $.ajax({
             url: url,
