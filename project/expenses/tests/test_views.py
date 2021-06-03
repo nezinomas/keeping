@@ -286,12 +286,14 @@ def test_expenses_update_past_record(get_user, client_logged):
 
 
 def test_expenses_index_200(client_logged):
-    response = client_logged.get('/expenses/')
+    response = client_logged.get('/expenses/', follow=True)
 
     assert response.status_code == 200
 
     assert 'expenses_list' in response.context
     assert 'categories' in response.context
+    assert 'search' in response.context
+    assert 'current_month' in response.context
 
 
 def test_expenses_month_list_200(client_logged):
@@ -302,7 +304,7 @@ def test_expenses_month_list_200(client_logged):
 
 def test_expenses_index_search_form(client_logged):
     url = reverse('expenses:expenses_index')
-    response = client_logged.get(url).content.decode('utf-8')
+    response = client_logged.get(url, follow=True).content.decode('utf-8')
 
     assert '<input type="text" name="search"' in response
     assert reverse('expenses:expenses_search') in response
@@ -505,7 +507,7 @@ def test_view_reload_expenses_render_ajax_trigger_not_set(client_logged):
     response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
-    assert expenses.Index == response.resolver_match.func.view_class
+    assert expenses.MonthLists == response.resolver_match.func.view_class
 
 
 # ---------------------------------------------------------------------------------------
