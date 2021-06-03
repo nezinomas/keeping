@@ -1,6 +1,7 @@
 import json
 import re
 from datetime import date
+from decimal import Decimal
 
 import pytest
 from django.urls import resolve, reverse
@@ -255,6 +256,55 @@ def test_borrow_update_200(client_logged):
     assert response.status_code == 200
 
 
+def test_borrow_load_update_form(client_logged):
+    f = factories.BorrowFactory()
+    url = reverse('debts:borrows_update', kwargs={'pk': f.pk})
+
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert '1999-01-01' in form
+    assert '100' in form
+    assert 'Account1' in form
+    assert 'Borrow Remark' in form
+
+
+def test_borrow_update(client_logged):
+    e = factories.BorrowFactory()
+
+    data = {
+        'name': 'XXX',
+        'price': '150',
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'closed': True
+    }
+    url = reverse('debts:borrows_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    actual = models.Borrow.objects.get(pk=e.pk)
+    assert actual.name == 'XXX'
+    assert actual.date == date(1999, 12, 31)
+    assert actual.price == Decimal('150')
+    assert actual.account.title == 'Account1'
+    assert actual.remark == 'Pastaba'
+    assert actual.closed
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                           Borrow Return
 # ---------------------------------------------------------------------------------------
@@ -379,6 +429,54 @@ def test_borrow_return_update_200(client_logged):
     response = client_logged.get(url)
 
     assert response.status_code == 200
+
+
+def test_borrow_return_load_update_form(client_logged):
+    f = factories.BorrowReturnFactory()
+    url = reverse('debts:borrows_return_update', kwargs={'pk': f.pk})
+
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert '5' in form
+    assert 'Account1' in form
+    assert 'Borrow Return Remark' in form
+
+
+def test_borrow_return_update(client_logged):
+    e = factories.BorrowReturnFactory()
+    l = factories.BorrowFactory()
+    a = AccountFactory(title='AAA')
+
+    data = {
+        'price': '150',
+        'remark': 'Pastaba',
+        'account': a.pk,
+        'borrow': l.pk
+    }
+    url = reverse('debts:borrows_return_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    actual = models.BorrowReturn.objects.get(pk=e.pk)
+
+    assert actual.borrow == l
+    assert actual.date == date(1999, 1, 2)
+    assert actual.price == Decimal('150')
+    assert actual.account.title == 'AAA'
+    assert actual.remark == 'Pastaba'
 
 
 # ---------------------------------------------------------------------------------------
@@ -511,6 +609,55 @@ def test_lent_update_200(client_logged):
     assert response.status_code == 200
 
 
+def test_lent_load_update_form(client_logged):
+    f = factories.LentFactory()
+    url = reverse('debts:lents_update', kwargs={'pk': f.pk})
+
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert '1999-01-01' in form
+    assert '100' in form
+    assert 'Account1' in form
+    assert 'Lent Remark' in form
+
+
+def test_lent_update(client_logged):
+    e = factories.LentFactory()
+
+    data = {
+        'name': 'XXX',
+        'price': '150',
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'closed': True
+    }
+    url = reverse('debts:lents_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    actual = models.Lent.objects.get(pk=e.pk)
+    assert actual.name == 'XXX'
+    assert actual.date == date(1999, 12, 31)
+    assert actual.price == Decimal('150')
+    assert actual.account.title == 'Account1'
+    assert actual.remark == 'Pastaba'
+    assert actual.closed
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                             Lent Return
 # ---------------------------------------------------------------------------------------
@@ -635,3 +782,52 @@ def test_lent_return_update_200(client_logged):
     response = client_logged.get(url)
 
     assert response.status_code == 200
+
+
+def test_lent_return_load_update_form(client_logged):
+    f = factories.LentReturnFactory()
+    url = reverse('debts:lents_return_update', kwargs={'pk': f.pk})
+
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert '5' in form
+    assert 'Account1' in form
+    assert 'Lent Return Remark' in form
+
+
+def test_lent_return_update(client_logged):
+    e = factories.LentReturnFactory()
+    l = factories.LentFactory()
+    a = AccountFactory(title='AAA')
+
+    data = {
+        'price': '150',
+        'remark': 'Pastaba',
+        'account': a.pk,
+        'lent': l.pk
+    }
+    url = reverse('debts:lents_return_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    actual = models.LentReturn.objects.get(pk=e.pk)
+
+    assert actual.lent == l
+    assert actual.date == date(1999, 1, 2)
+    assert actual.price == Decimal('150')
+    assert actual.account.title == 'AAA'
+    assert actual.remark == 'Pastaba'
+
