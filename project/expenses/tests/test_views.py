@@ -1,5 +1,6 @@
 import json
 from datetime import date
+from decimal import Decimal
 
 import pytest
 from django.urls import resolve, reverse
@@ -116,7 +117,7 @@ def test_expenses_save(client_logged):
 
     actual = models.Expense.objects.get(pk=1)
     assert actual.date == date(1999, 1, 1)
-    assert pytest.approx(float(actual.price), rel=1e-2) == 1.05
+    assert actual.price == Decimal('1.05')
     assert actual.quantity == 33
     assert actual.account.title == 'Account1'
     assert actual.expense_type.title == 'Expense Type'
@@ -241,7 +242,7 @@ def test_expenses_update(client_logged):
 
     actual = models.Expense.objects.get(pk=e.pk)
     assert actual.date == date(1999, 12, 31)
-    assert float(150) == 150
+    assert actual.price == Decimal('150')
     assert actual.quantity == 33
     assert actual.account.title == 'Account1'
     assert actual.expense_type.title == 'Expense Type'
@@ -276,7 +277,7 @@ def test_expenses_update_past_record(get_user, client_logged):
 
     actual = models.Expense.objects.get(pk=e.pk)
     assert actual.date == date(1974, 12, 12)
-    assert float(150) == 150
+    assert actual.price == Decimal('150')
     assert actual.quantity == 33
     assert actual.account.title == 'Account1'
     assert actual.expense_type.title == 'Expense Type'
