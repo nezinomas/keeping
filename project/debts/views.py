@@ -6,32 +6,39 @@ from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
 from . import forms, models
 
 
-def _context_to_reload(request):
+def _borrow_context_to_reload(request):
     context = {
         'borrow': BorrowLists.as_view()(request, as_string=True),
-        'lent': LentLists.as_view()(request, as_string=True),
+        'borrow_return': BorrowReturnLists.as_view()(request, as_string=True),
     }
     return context
 
 
-class ReloadIndex(DispatchAjaxMixin, TemplateView):
-    template_name = 'debts/includes/reload_index.html'
-    redirect_view = 'debts:debts_index'
-
-    def get(self, request, *args, **kwargs):
-        context = _context_to_reload(self.request)
-        return self.render_to_response(context=context)
+def _lent_context_to_reload(request):
+    context = {
+        'lent': LentLists.as_view()(request, as_string=True),
+        'lent_return': LentReturnLists.as_view()(request, as_string=True),
+    }
+    return context
 
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'borrow_return': BorrowReturnLists.as_view()(self.request, as_string=True),
-            'lent_return': LentReturnLists.as_view()(self.request, as_string=True),
-            **_context_to_reload(self.request)
+            **_borrow_context_to_reload(self.request),
+            **_lent_context_to_reload(self.request),
         })
         return context
+
+
+class BorrowReload(DispatchAjaxMixin, TemplateView):
+    template_name = 'debts/includes/reload_index.html'
+    redirect_view = 'debts:debts_index'
+
+    def get(self, request, *args, **kwargs):
+        context = _borrow_context_to_reload(self.request)
+        return self.render_to_response(context=context)
 
 
 class BorrowLists(ListMixin):
@@ -58,6 +65,7 @@ class BorrowDelete(DeleteAjaxMixin):
 
 class BorrowReturnLists(ListMixin):
     model = models.BorrowReturn
+    template_name = 'debts/includes/borrows_return_list.html'
 
 
 class BorrowReturnNew(CreateAjaxMixin):
@@ -75,6 +83,16 @@ class BorrowReturnUpdate(UpdateAjaxMixin):
 class BorrowReturnDelete(DeleteAjaxMixin):
     model = models.BorrowReturn
     list_render_output = False
+
+
+class LentReload(DispatchAjaxMixin, TemplateView):
+    template_name = 'debts/includes/reload_index.html'
+    redirect_view = 'debts:debts_index'
+
+    def get(self, request, *args, **kwargs):
+        context = _lent_context_to_reload(self.request)
+        return self.render_to_response(context=context)
+
 
 class LentLists(ListMixin):
     model = models.Lent
@@ -100,6 +118,7 @@ class LentDelete(DeleteAjaxMixin):
 
 class LentReturnLists(ListMixin):
     model = models.LentReturn
+    template_name = 'debts/includes/lents_return_list.html'
 
 
 class LentReturnNew(CreateAjaxMixin):

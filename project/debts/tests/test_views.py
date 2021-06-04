@@ -19,25 +19,50 @@ pytestmark = pytest.mark.django_db
 # ---------------------------------------------------------------------------------------
 #                                                                                  Reload
 # ---------------------------------------------------------------------------------------
-def test_debts_reload_func():
-    view = resolve('/debts/reload/')
+def test_borrow_reload_func():
+    view = resolve('/borrows/reload/')
 
-    assert views.ReloadIndex is view.func.view_class
+    assert views.BorrowReload is view.func.view_class
 
 
-def test_reload_debts_render(rf):
-    request = rf.get('/debts/reload/?ajax_trigger=1')
+def test_borrow_reload_render(rf):
+    request = rf.get('/borrows/reload/?ajax_trigger=1')
     request.user = UserFactory.build()
 
-    response = views.ReloadIndex.as_view()(request)
+    response = views.BorrowReload.as_view()(request)
 
     assert response.status_code == 200
     assert 'borrow' in response.context_data
+    assert 'borrow_return' in response.context_data
+
+
+def test_borrow_reload_ender_ajax_trigger_not_set(client_logged):
+    url = reverse('debts:borrows_reload')
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert views.Index == response.resolver_match.func.view_class
+
+
+def test_lent_reload_func():
+    view = resolve('/lents/reload/')
+
+    assert views.LentReload is view.func.view_class
+
+
+def test_lent_reload_render(rf):
+    request = rf.get('/lents/reload/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = views.LentReload.as_view()(request)
+
+    assert response.status_code == 200
     assert 'lent' in response.context_data
+    assert 'lent_return' in response.context_data
 
 
-def test_reload_debts_render_ajax_trigger_not_set(client_logged):
-    url = reverse('debts:reload_index')
+def test_lent_reload_ender_ajax_trigger_not_set(client_logged):
+    url = reverse('debts:lents_reload')
     response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200

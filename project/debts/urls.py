@@ -8,14 +8,14 @@ app_name = App_name
 
 urlpatterns = [
     path(
-        'debts/reload/',
-        views.ReloadIndex.as_view(),
-        name='reload_index'
-    ),
-    path(
         'debts/',
         views.Index.as_view(),
         name='debts_index'
+    ),
+    path(
+        'borrows/reload/',
+        views.BorrowReload.as_view(),
+        name='borrows_reload'
     ),
     path(
         'borrows/lists/',
@@ -56,6 +56,11 @@ urlpatterns = [
         'borrows/return/delete/<int:pk>/',
         views.BorrowReturnDelete.as_view(),
         name='borrows_return_delete'
+    ),
+    path(
+        'lents/reload/',
+        views.LentReload.as_view(),
+        name='lents_reload'
     ),
     path(
         'lents/lists/',
