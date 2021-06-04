@@ -123,6 +123,7 @@ def test_borrow_valid_data():
     e = form.save()
     assert e.date == date(1974, 1, 1)
     assert e.price == Decimal('1.1')
+    assert e.returned == Decimal('0')
     assert e.account == a
     assert e.remark == 'Rm'
     assert e.closed
@@ -369,8 +370,10 @@ def test_lent_valid_data():
     assert form.is_valid()
 
     e = form.save()
+
     assert e.date == date(1974, 1, 1)
     assert e.price == Decimal('1.1')
+    assert e.returned == Decimal('0')
     assert e.account == a
     assert e.remark == 'Rm'
     assert e.closed

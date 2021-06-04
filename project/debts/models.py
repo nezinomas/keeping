@@ -24,8 +24,8 @@ class Borrow(MixinFromDbAccountId):
     returned = models.DecimalField(
         max_digits=8,
         decimal_places=2,
-        blank=True,
-        null=True
+        null=True,
+        default=0
     )
     closed = models.BooleanField(
         default=False
@@ -124,8 +124,8 @@ class Lent(MixinFromDbAccountId):
     returned = models.DecimalField(
         max_digits=8,
         decimal_places=2,
-        blank=True,
-        null=True
+        null=True,
+        default=0,
     )
     closed = models.BooleanField(
         default=False
