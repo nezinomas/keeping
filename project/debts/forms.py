@@ -65,7 +65,7 @@ class BorrowForm(forms.ModelForm):
         if not closed:
             qs = models.Borrow.objects.items().filter(name=name)
             if qs.exists():
-                self.add_error('name', 'Skoliningo vardas turi būti unikalus.')
+                self.add_error('name', 'Skolininko vardas turi būti unikalus.')
 
 
 class BorrowReturnForm(forms.ModelForm):
