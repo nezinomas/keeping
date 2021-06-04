@@ -12,7 +12,7 @@
         <div class="row py-2">
             <div class="col"><h6>Paskolinau</h6></div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url 'debts:borrows_new' %}"><i class="bi bi-plus"></i>Skolą</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create set-target" data-url="{% url 'debts:borrows_new' %}" data-target="borrow"><i class="bi bi-plus"></i>Skolą</button>
             </div>
         </div>
 
@@ -28,7 +28,7 @@
                 <h6>Pasiskolinau</h6>
             </div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url 'debts:lents_new' %}"><i class="bi bi-plus"></i>Skolą</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create set-target" data-url="{% url 'debts:lents_new' %}" data-target="lent"><i class="bi bi-plus"></i>Skolą</button>
             </div>
         </div>
 
@@ -46,7 +46,7 @@
                 <h6>Gražino</h6>
             </div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url 'debts:borrows_return_new' %}"><i class="bi bi-plus"></i>Sumą</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create set-target" data-url="{% url 'debts:borrows_return_new' %}" data-target="borrow"><i class="bi bi-plus"></i>Sumą</button>
             </div>
         </div>
 
@@ -62,7 +62,7 @@
                 <h6>Gražinau</h6>
             </div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url 'debts:lents_return_new' %}"><i class="bi bi-plus"></i>Sumą</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create set-target" data-url="{% url 'debts:lents_return_new' %}" data-target="lent"><i class="bi bi-plus"></i>Sumą</button>
             </div>
         </div>
 
@@ -75,8 +75,26 @@
 {% include 'modal.html' %}
 
 <script>
+    var setTarget = function() {
+        var target =  $(this).attr("data-target");
+        $("#modal-form").attr("data-target", target)
+    }
+    $(document).on('click', '.set-target', setTarget);
+
     $(document).on('hidden.bs.modal', '#modal-form', function () {
-        var url = `{% url 'debts:reload_index' %}`;
+        var target = $("#modal-form").attr("data-target");
+        var url = `{% url 'debts:debts_index' %}`;
+        var blocks = [];
+
+        if (target == 'borrow') {
+            url = `{% url 'debts:borrows_reload' %}`;
+            blocks.push("borrow_ajax", "borrow_return_ajax");
+        }
+
+        if (target == 'lent') {
+            url = `{% url 'debts:lents_reload' %}`;
+            blocks.push("lent_ajax", "lent_return_ajax");
+        }
 
         $.ajax({
             url: url,
@@ -84,7 +102,6 @@
                 'ajax_trigger': '1',
             },
             success: function (data) {
-                var blocks = ['borrow_ajax', 'lent_ajax'];
                 reload_stats(data, blocks);
             }
         });

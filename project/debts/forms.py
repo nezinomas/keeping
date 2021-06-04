@@ -56,6 +56,17 @@ class BorrowForm(forms.ModelForm):
 
         self.fields['closed'].widget.attrs['class'] = " form-check-input"
 
+    def clean(self):
+        cleaned_data = super().clean()
+
+        name = cleaned_data.get('name')
+        closed = cleaned_data.get('closed')
+
+        if not closed:
+            qs = models.Borrow.objects.items().filter(name=name)
+            if qs.exists():
+                self.add_error('name', 'Skoliningo vardas turi būti unikalus.')
+
 
 class BorrowReturnForm(forms.ModelForm):
     class Meta:
@@ -132,6 +143,17 @@ class LentForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
         self.fields['closed'].widget.attrs['class'] = " form-check-input"
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        name = cleaned_data.get('name')
+        closed = cleaned_data.get('closed')
+
+        if not closed:
+            qs = models.Lent.objects.items().filter(name=name)
+            if qs.exists():
+                self.add_error('name', 'Skolintojo vardas turi būti unikalus.')
 
 
 class LentReturnForm(forms.ModelForm):

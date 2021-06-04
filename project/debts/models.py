@@ -46,9 +46,6 @@ class Borrow(MixinFromDbAccountId):
 
     objects = managers.BorrowQuerySet.as_manager()
 
-    class Meta:
-        unique_together = ['user', 'name']
-
     def __str__(self):
         return str(self.name)
 
@@ -142,9 +139,6 @@ class Lent(MixinFromDbAccountId):
     )
 
     objects = managers.LentQuerySet.as_manager()
-
-    class Meta:
-        unique_together = ['user', 'name']
 
     def __str__(self):
         return str(self.name)

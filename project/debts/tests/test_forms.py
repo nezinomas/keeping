@@ -1,3 +1,4 @@
+from django.forms.models import model_to_dict
 import re
 from datetime import date
 from decimal import Decimal
@@ -131,7 +132,6 @@ def test_borrow_blank_data():
     form = forms.BorrowForm(data={})
 
     assert not form.is_valid()
-
     assert len(form.errors) == 4
     assert 'date' in form.errors
     assert 'name' in form.errors
@@ -139,22 +139,41 @@ def test_borrow_blank_data():
     assert 'account' in form.errors
 
 
+def test_borrow_same_name_for_diff_user():
+    factories.BorrowFactory(name='XXX', user=UserFactory(username='tom'))
+
+    form = forms.BorrowForm({
+        'date': '1999-01-04',
+        'name': 'XXX',
+        'account': AccountFactory(),
+        'price': '12',
+    })
+
+    assert form.is_bound
+    assert form.is_valid()
+
+
 def test_borrow_unique_name():
-    a = AccountFactory()
-    b = factories.BorrowFactory(name='XXX')
+    obj = factories.BorrowFactory(name='XXX')
 
-    form = forms.BorrowForm(
-        data={
-            'date': '1974-01-01',
-            'name': 'XXX',
-            'price': '1.1',
-            'account': a.pk,
-            'closed': True,
-            'remark': 'Rm'
-        },
-    )
+    form = forms.BorrowForm(model_to_dict(obj))
 
+    assert form.is_bound
     assert not form.is_valid()
+    assert 'name' in form.errors
+
+
+def test_borrow_unique_name_unclose_with_same_name(rf):
+    factories.BorrowFactory(name='XXX')
+
+    obj= factories.BorrowFactory(name='XXX', closed=True)
+    obj.closed = False
+
+    form = forms.BorrowForm(data=model_to_dict(obj))
+
+    assert form.is_bound
+    assert not form.is_valid()
+    assert 'name' in form.errors
 
 
 # ---------------------------------------------------------------------------------------
@@ -361,22 +380,41 @@ def test_lent_blank_data():
     assert 'account' in form.errors
 
 
+def test_lent_same_name_for_diff_user():
+    factories.LentFactory(name='XXX', user=UserFactory(username='tom'))
+
+    form = forms.LentForm({
+        'date': '1999-01-04',
+        'name': 'XXX',
+        'account': AccountFactory(),
+        'price': '12',
+    })
+
+    assert form.is_bound
+    assert form.is_valid()
+
+
 def test_lent_unique_name():
-    a = AccountFactory()
-    b = factories.LentFactory(name='XXX')
+    obj = factories.LentFactory(name='XXX')
 
-    form = forms.LentForm(
-        data={
-            'date': '1974-01-01',
-            'name': 'XXX',
-            'price': '1.1',
-            'account': a.pk,
-            'closed': True,
-            'remark': 'Rm'
-        },
-    )
+    form = forms.LentForm(model_to_dict(obj))
 
+    assert form.is_bound
     assert not form.is_valid()
+    assert 'name' in form.errors
+
+
+def test_lent_unique_name_unclose_with_same_name(rf):
+    factories.LentFactory(name='XXX')
+
+    obj = factories.LentFactory(name='XXX', closed=True)
+    obj.closed = False
+
+    form = forms.LentForm(data=model_to_dict(obj))
+
+    assert form.is_bound
+    assert not form.is_valid()
+    assert 'name' in form.errors
 
 
 # ---------------------------------------------------------------------------------------
