@@ -317,12 +317,11 @@ def test_lent_select_first_account():
 
 
 def test_lent_name_too_short():
-    a = AccountFactory()
     form = forms.LentForm(data={
         'date': '1974-01-01',
         'name': 'AA',
         'price': '1',
-        'account': a.pk,
+        'account': AccountFactory(),
     })
 
     assert not form.is_valid()
@@ -331,12 +330,11 @@ def test_lent_name_too_short():
 
 
 def test_lent_name_too_long():
-    a = AccountFactory()
     form = forms.LentForm(data={
         'date': '1974-01-01',
         'name': 'A'*101,
         'price': '1',
-        'account': a.pk,
+        'account': AccountFactory(),
     })
 
     assert not form.is_valid()
