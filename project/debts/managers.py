@@ -14,7 +14,6 @@ class BorrowQuerySet(models.QuerySet):
             self
             .select_related('user')
             .filter(user=user)
-            .filter(closed=False)
         )
 
     def items(self):
@@ -116,7 +115,6 @@ class LentQuerySet(models.QuerySet):
             self
             .select_related('user')
             .filter(user=user)
-            .filter(closed=False)
         )
 
     def items(self):
