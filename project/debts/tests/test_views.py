@@ -272,6 +272,19 @@ def test_borrow_save(client_logged):
     assert actual.price == Decimal('1.1')
 
 
+def test_borrow_save_not_render_html_list(client_logged):
+    a = AccountFactory()
+    data = {'date': '1999-01-01', 'name': 'AAA', 'price': '1.1', 'account': a.pk}
+
+    url = reverse('debts:borrows_new')
+
+    response = client_logged.post(url, data, **X_Req)
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
+
+
 def test_borrow_save_invalid_data(client_logged):
     data = {'date': 'x', 'name': 'A', 'price': '0'}
 
@@ -532,9 +545,27 @@ def test_borrow_return_save(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '1999-01-03' in actual['html_list']
-    assert 'Account1' in actual['html_list']
-    assert '1,1' in actual['html_list']
+
+    actual = models.BorrowReturn.objects.items()[0]
+    assert actual.date == date(1999, 1, 3)
+    assert actual.account.title == 'Account1'
+    assert actual.price == Decimal('1.1')
+
+
+@freeze_time('1999-1-3')
+def test_borrow_return_save_not_render_html_list(client_logged):
+    a = AccountFactory()
+    b = factories.BorrowFactory()
+
+    data = {'borrow': b.pk, 'price': '1.1', 'account': a.pk}
+
+    url = reverse('debts:borrows_return_new')
+
+    response = client_logged.post(url, data, **X_Req)
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
 
 
 def test_borrow_return_save_invalid_data(client_logged):
@@ -613,6 +644,26 @@ def test_borrow_return_update(client_logged):
     assert actual.remark == 'Pastaba'
 
 
+def test_borrow_return_update_not_render_html_list(client_logged):
+    e = factories.BorrowReturnFactory()
+    l = factories.BorrowFactory()
+    a = AccountFactory(title='AAA')
+
+    data = {
+        'price': '150',
+        'remark': 'Pastaba',
+        'account': a.pk,
+        'borrow': l.pk
+    }
+    url = reverse('debts:borrows_return_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
+
+
 def test_borrow_return_delete_func():
     view = resolve('/borrows/return/delete/1/')
 
@@ -656,6 +707,19 @@ def test_borrow_return_delete(client_logged):
     assert response.status_code == 200
 
     assert models.BorrowReturn.objects.all().count() == 0
+
+
+def test_borrow_return_delete_not_render_html_list(client_logged):
+    p = factories.BorrowReturnFactory()
+
+    assert models.BorrowReturn.objects.all().count() == 1
+    url = reverse('debts:borrows_return_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
 
 
 # ---------------------------------------------------------------------------------------
@@ -773,6 +837,19 @@ def test_lent_save(client_logged):
     assert actual.account.title == 'Account1'
     assert actual.name == 'AAA'
     assert actual.price == Decimal('1.1')
+
+
+def test_lent_save_not_render_html_list(client_logged):
+    a = AccountFactory()
+    data = {'date': '1999-01-01', 'name': 'AAA', 'price': '1.1', 'account': a.pk}
+
+    url = reverse('debts:lents_new')
+
+    response = client_logged.post(url, data, **X_Req)
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
 
 
 def test_lent_save_invalid_data(client_logged):
@@ -924,7 +1001,6 @@ def test_lent_delete_not_render_html_list(client_logged):
     url = reverse('debts:lents_delete', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, {}, **X_Req)
-
     json_str = response.content
     actual = json.loads(json_str)
 
@@ -1036,9 +1112,27 @@ def test_lent_return_save(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '1999-01-03' in actual['html_list']
-    assert 'Account1' in actual['html_list']
-    assert '1,1' in actual['html_list']
+
+    actual = models.LentReturn.objects.items()[0]
+    assert actual.date == date(1999, 1, 3)
+    assert actual.account.title == 'Account1'
+    assert actual.price == Decimal('1.1')
+
+
+@freeze_time('1999-1-3')
+def test_lent_return_save_not_render_html_list(client_logged):
+    a = AccountFactory()
+    b = factories.LentFactory()
+
+    data = {'lent': b.pk, 'price': '1.1', 'account': a.pk}
+
+    url = reverse('debts:lents_return_new')
+
+    response = client_logged.post(url, data, **X_Req)
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
 
 
 def test_lent_return_save_invalid_data(client_logged):
@@ -1117,6 +1211,26 @@ def test_lent_return_update(client_logged):
     assert actual.remark == 'Pastaba'
 
 
+def test_lent_return_update_not_render_html_list(client_logged):
+    e = factories.LentReturnFactory()
+    l = factories.LentFactory()
+    a = AccountFactory(title='AAA')
+
+    data = {
+        'price': '150',
+        'remark': 'Pastaba',
+        'account': a.pk,
+        'lent': l.pk
+    }
+    url = reverse('debts:lents_return_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
+
+
 def test_lent_return_delete_func():
     view = resolve('/lents/return/delete/1/')
 
@@ -1160,3 +1274,16 @@ def test_lent_return_delete(client_logged):
     assert response.status_code == 200
 
     assert models.LentReturn.objects.all().count() == 0
+
+
+def test_lent_return_delete_not_render_html_list(client_logged):
+    p = factories.LentReturnFactory()
+
+    assert models.LentReturn.objects.all().count() == 1
+    url = reverse('debts:lents_return_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')

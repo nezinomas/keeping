@@ -63,16 +63,18 @@ class BorrowReturnLists(ListMixin):
 class BorrowReturnNew(CreateAjaxMixin):
     model = models.BorrowReturn
     form_class = forms.BorrowReturnForm
+    list_render_output = False
 
 
 class BorrowReturnUpdate(UpdateAjaxMixin):
     model = models.BorrowReturn
     form_class = forms.BorrowReturnForm
+    list_render_output = False
 
 
 class BorrowReturnDelete(DeleteAjaxMixin):
     model = models.BorrowReturn
-
+    list_render_output = False
 
 class LentLists(ListMixin):
     model = models.Lent
@@ -103,12 +105,15 @@ class LentReturnLists(ListMixin):
 class LentReturnNew(CreateAjaxMixin):
     model = models.LentReturn
     form_class = forms.LentReturnForm
+    list_render_output = False
 
 
 class LentReturnUpdate(UpdateAjaxMixin):
     model = models.LentReturn
     form_class = forms.LentReturnForm
+    list_render_output = False
 
 
 class LentReturnDelete(DeleteAjaxMixin):
     model = models.LentReturn
+    list_render_output = False
