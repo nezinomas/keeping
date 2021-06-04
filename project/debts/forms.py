@@ -63,9 +63,14 @@ class BorrowForm(forms.ModelForm):
         closed = cleaned_data.get('closed')
 
         if not closed:
+            if name == self.instance.name:
+                return
+
             qs = models.Borrow.objects.items().filter(name=name)
             if qs.exists():
                 self.add_error('name', 'Skolininko vardas turi būti unikalus.')
+
+        return
 
 
 class BorrowReturnForm(forms.ModelForm):
@@ -152,9 +157,14 @@ class LentForm(forms.ModelForm):
         closed = cleaned_data.get('closed')
 
         if not closed:
+            if name == self.instance.name:
+                return
+
             qs = models.Lent.objects.items().filter(name=name)
             if qs.exists():
                 self.add_error('name', 'Skolintojo vardas turi būti unikalus.')
+
+        return
 
 
 class LentReturnForm(forms.ModelForm):

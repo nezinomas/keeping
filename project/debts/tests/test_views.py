@@ -390,6 +390,40 @@ def test_borrow_update(client_logged):
     assert actual.closed
 
 
+def test_borrow_update_not_closed(client_logged):
+    e = factories.BorrowFactory(name='XXX')
+
+    data = {
+        'name': 'XXX',
+        'price': '150',
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'closed': False
+    }
+    url = reverse('debts:borrows_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    actual = models.Borrow.objects.items()
+    assert actual.count() == 1
+
+    actual = actual[0]
+    assert actual.name == 'XXX'
+    assert actual.date == date(1999, 12, 31)
+    assert actual.price == Decimal('150')
+    assert actual.account.title == 'Account1'
+    assert actual.remark == 'Pastaba'
+    assert not actual.closed
+
+
 def test_borrow_update_not_render_html_list(client_logged):
     e = factories.BorrowFactory()
 
@@ -955,6 +989,37 @@ def test_lent_update(client_logged):
     assert actual.account.title == 'Account1'
     assert actual.remark == 'Pastaba'
     assert actual.closed
+
+
+def test_lent_update_not_closed(client_logged):
+    e = factories.LentFactory(name='XXX')
+
+    data = {
+        'name': 'XXX',
+        'price': '150',
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'closed': False
+    }
+    url = reverse('debts:lents_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    actual = models.Lent.objects.get(pk=e.pk)
+    assert actual.name == 'XXX'
+    assert actual.date == date(1999, 12, 31)
+    assert actual.price == Decimal('150')
+    assert actual.account.title == 'Account1'
+    assert actual.remark == 'Pastaba'
+    assert not actual.closed
 
 
 def test_lent_update_not_render_html_list(client_logged):
