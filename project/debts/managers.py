@@ -12,7 +12,7 @@ class BorrowQuerySet(models.QuerySet):
         user = utils.get_user()
         return (
             self
-            .select_related('user')
+            .select_related('account', 'user')
             .filter(user=user)
         )
 
@@ -119,7 +119,7 @@ class LentQuerySet(models.QuerySet):
         user = utils.get_user()
         return (
             self
-            .select_related('user')
+            .select_related('account', 'user')
             .filter(user=user)
         )
 

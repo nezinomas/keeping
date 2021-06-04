@@ -45,6 +45,14 @@ def test_borrow_related():
     assert str(actual[0]) == str(o)
 
 
+def test_borrow_related_queries(django_assert_num_queries):
+    BorrowFactory()
+    BorrowFactory()
+
+    with django_assert_num_queries(1):
+        a = [x.account.title for x in list(Borrow.objects.related())]
+
+
 def test_borrow_sort():
     o1 = BorrowFactory(date=date(1999, 1, 2))
     o2 = BorrowFactory(date=date(1999, 12, 13))
@@ -208,6 +216,14 @@ def test_borrow_return_related():
 
     assert actual.count() == 1
     assert str(actual[0]) == 'Grąžinau 1.1'
+
+
+def test_borrow_return_related_queries(django_assert_num_queries):
+    BorrowReturnFactory()
+    BorrowReturnFactory()
+
+    with django_assert_num_queries(1):
+        a = [x.account.title for x in list(BorrowReturn.objects.related())]
 
 
 def test_borrow_return_sort():
@@ -435,6 +451,14 @@ def test_lent_related():
     assert str(actual[0]) == str(o)
 
 
+def test_lent_related_queries(django_assert_num_queries):
+    LentFactory()
+    LentFactory()
+
+    with django_assert_num_queries(1):
+        a = [x.account.title for x in list(Lent.objects.related())]
+
+
 def test_lent_sort():
     o1 = LentFactory(date=date(1999, 1, 2))
     o2 = LentFactory(date=date(1999, 12, 13))
@@ -602,6 +626,14 @@ def test_lent_return_related():
 
     assert actual.count() == 1
     assert str(actual[0]) == 'Grąžino 1.1'
+
+
+def test_lent_return_related_queries(django_assert_num_queries):
+    LentReturnFactory()
+    LentReturnFactory()
+
+    with django_assert_num_queries(1):
+        a = [x.account.title for x in list(LentReturn.objects.related())]
 
 
 def test_lent_return_sort():
