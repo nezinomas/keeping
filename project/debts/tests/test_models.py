@@ -45,17 +45,6 @@ def test_borrow_related():
     assert str(actual[0]) == str(o)
 
 
-def test_borrow_related_and_not_closed():
-    o1 = BorrowFactory(name='N1', price=2, closed=False)
-    o2 = BorrowFactory(name='N2', price=3, closed=True)
-
-    actual = Borrow.objects.related()
-
-    assert len(actual) == 1
-    assert str(actual[0]) == str(o1)
-    assert actual[0].name == o1.name
-
-
 def test_borrow_items():
     o = BorrowFactory()
     BorrowFactory(name='X1', user=UserFactory(username='XXX'))
@@ -156,12 +145,6 @@ def test_borrow_post_delete_with_update():
     assert actual['balance'] == 1.0
 
     assert Borrow.objects.all().count() == 1
-
-
-@pytest.mark.xfail
-def test_borrow_unique_user():
-    BorrowFactory(name='T1', user=UserFactory())
-    BorrowFactory(name='T1', user=UserFactory())
 
 
 def test_borrow_unique_users():
@@ -417,17 +400,6 @@ def test_lent_related():
     assert str(actual[0]) == str(o)
 
 
-def test_lent_related_and_not_closed():
-    o = LentFactory(name='N1', price=2, closed=False)
-    LentFactory(name='N2', price=3, closed=True)
-
-    actual = Lent.objects.related()
-
-    assert len(actual) == 1
-    assert str(actual[0]) == str(o)
-    assert actual[0].name == o.name
-
-
 def test_lent_items():
     o = LentFactory()
     LentFactory(name='X1', user=UserFactory(username='XXX'))
@@ -532,12 +504,6 @@ def test_lent_post_delete_with_update():
     assert actual['balance'] == -1.0
 
     assert Lent.objects.all().count() == 1
-
-
-@pytest.mark.xfail
-def test_lent_unique_user():
-    LentFactory(name='T1', user=UserFactory())
-    LentFactory(name='T1', user=UserFactory())
 
 
 def test_lent_unique_users():
