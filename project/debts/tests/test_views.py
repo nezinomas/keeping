@@ -205,7 +205,7 @@ def test_borrow_list_empty(client_logged):
 
 
 def test_borrow_list_with_data(client_logged):
-    obj = factories.BorrowFactory()
+    obj = factories.BorrowFactory(closed=True)
 
     url = reverse('debts:borrows_list')
     response = client_logged.get(url)
@@ -217,6 +217,7 @@ def test_borrow_list_with_data(client_logged):
     assert 'Gražinta' in content
     assert 'Sąskaita' in content
     assert 'Pastaba' in content
+    assert 'Uždaryta' in content
 
     assert '1999-01-01' in content
     assert obj.name in content
@@ -224,7 +225,7 @@ def test_borrow_list_with_data(client_logged):
     assert '25,0' in content
     assert 'Account1' in content
     assert 'Borrow Remark' in content
-
+    assert '<i class="bi bi-check-circle-fill"></i>' in content
 
 def test_borrow_list_edit_button(client_logged):
     obj = factories.BorrowFactory()
@@ -811,7 +812,7 @@ def test_lent_list_empty(client_logged):
 
 
 def test_lent_list_with_data(client_logged):
-    obj = factories.LentFactory()
+    obj = factories.LentFactory(closed=True)
 
     url = reverse('debts:lents_list')
     response = client_logged.get(url)
@@ -823,6 +824,7 @@ def test_lent_list_with_data(client_logged):
     assert 'Gražinta' in content
     assert 'Sąskaita' in content
     assert 'Pastaba' in content
+    assert 'Uždaryta' in content
 
     assert '1999-01-01' in content
     assert obj.name in content
@@ -830,6 +832,7 @@ def test_lent_list_with_data(client_logged):
     assert '25,0' in content
     assert 'Account1' in content
     assert 'Lent Remark' in content
+    assert '<i class="bi bi-check-circle-fill"></i>' in content
 
 
 def test_lent_list_edit_button(client_logged):

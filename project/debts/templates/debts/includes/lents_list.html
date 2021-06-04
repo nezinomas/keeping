@@ -11,6 +11,7 @@
             <th>Gražinta</th>
             <th>Sąskaita</th>
             <th>Pastaba</th>
+            <th class="text-center">Uždaryta</th>
             <th colspan="2"></th>
         </tr>
     </thead>
@@ -25,6 +26,7 @@
             <td class="text-start">{{ item.returned|intcomma }}</td>
             <td class="text-start">{{ item.account }}</td>
             <td class="text-start">{{ item.remark }}</td>
+            <td class="text-center">{% if item.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
             <td class="w-edit">
                 <a role="button" data-url="{{ url_update }}" data-target="lent" class=" js-create set-target edit" title="Edit">
                     <i class="bi bi-pencil-fill"></i>
