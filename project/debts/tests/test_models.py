@@ -45,6 +45,16 @@ def test_borrow_related():
     assert str(actual[0]) == str(o)
 
 
+def test_borrow_sort():
+    o1 = BorrowFactory(date=date(1999, 1, 2))
+    o2 = BorrowFactory(date=date(1999, 12, 13))
+
+    actual = Borrow.objects.related()
+
+    assert actual[0].date == o2.date
+    assert actual[1].date == o1.date
+
+
 def test_borrow_items():
     o = BorrowFactory()
     BorrowFactory(name='X1', user=UserFactory(username='XXX'))
@@ -183,6 +193,16 @@ def test_borrow_return_related():
 
     assert actual.count() == 1
     assert str(actual[0]) == 'Grąžinau 1.1'
+
+
+def test_borrow_return_sort():
+    o1 = BorrowReturnFactory(date=date(1999, 1, 2))
+    o2 = BorrowReturnFactory(date=date(1999, 12, 13))
+
+    actual = BorrowReturn.objects.related()
+
+    assert actual[0].date == o2.date
+    assert actual[1].date == o1.date
 
 
 def test_borrow_return_items():
@@ -400,6 +420,16 @@ def test_lent_related():
     assert str(actual[0]) == str(o)
 
 
+def test_lent_sort():
+    o1 = LentFactory(date=date(1999, 1, 2))
+    o2 = LentFactory(date=date(1999, 12, 13))
+
+    actual = Lent.objects.related()
+
+    assert actual[0].date == o2.date
+    assert actual[1].date == o1.date
+
+
 def test_lent_items():
     o = LentFactory()
     LentFactory(name='X1', user=UserFactory(username='XXX'))
@@ -542,6 +572,16 @@ def test_lent_return_related():
 
     assert actual.count() == 1
     assert str(actual[0]) == 'Grąžino 1.1'
+
+
+def test_lent_return_sort():
+    o1 = LentReturnFactory(date=date(1999, 1, 2))
+    o2 = LentReturnFactory(date=date(1999, 12, 13))
+
+    actual = LentReturn.objects.related()
+
+    assert actual[0].date == o2.date
+    assert actual[1].date == o1.date
 
 
 def test_lent_return_items():

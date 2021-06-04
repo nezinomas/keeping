@@ -46,6 +46,9 @@ class Borrow(MixinFromDbAccountId):
 
     objects = managers.BorrowQuerySet.as_manager()
 
+    class Meta:
+        ordering = ['-date']
+
     def __str__(self):
         return str(self.name)
 
@@ -75,6 +78,9 @@ class BorrowReturn(MixinFromDbAccountId):
     )
 
     objects = managers.BorrowReturnQuerySet.as_manager()
+
+    class Meta:
+        ordering = ['-date']
 
     def __str__(self):
         return f'Grąžinau {round(self.price, 1)}'
@@ -140,6 +146,9 @@ class Lent(MixinFromDbAccountId):
 
     objects = managers.LentQuerySet.as_manager()
 
+    class Meta:
+        ordering = ['-date']
+
     def __str__(self):
         return str(self.name)
 
@@ -169,6 +178,9 @@ class LentReturn(MixinFromDbAccountId):
     )
 
     objects = managers.LentReturnQuerySet.as_manager()
+
+    class Meta:
+        ordering = ['-date']
 
     def __str__(self):
         return f'Grąžino {round(self.price, 1)}'
