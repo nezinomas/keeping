@@ -85,6 +85,7 @@ class BorrowReturnForm(forms.ModelForm):
         self.fields['account'].initial = Account.objects.items().first()
 
         # overwrite ForeignKey expense_type queryset
+        self.fields['borrow'].queryset = models.Borrow.objects.items().filter(closed=False)
         self.fields['account'].queryset = Account.objects.items()
 
         # fields labels
@@ -170,6 +171,7 @@ class LentReturnForm(forms.ModelForm):
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # inital values
+        self.fields['lent'].queryset = models.Lent.objects.items().filter(closed=False)
         self.fields['account'].initial = Account.objects.items().first()
 
         # overwrite ForeignKey expense_type queryset
