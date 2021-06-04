@@ -2,7 +2,7 @@ from decimal import Decimal
 from typing import Any, Dict, List
 
 from django.db import models
-from django.db.models import Case, Count, F, Sum, When
+from django.db.models import Case, Count, F, Sum, When, Q
 
 from ..core.lib import utils
 
@@ -20,7 +20,13 @@ class BorrowQuerySet(models.QuerySet):
         return self.related()
 
     def year(self, year):
-        return self.related().filter(date__year=year)
+        return (
+            self
+            .related()
+            .filter(
+                Q(date__year=year) | (Q(date__year__lt=year) & Q(closed=False))
+            )
+        )
 
     def summary(self, year: int) -> List[Dict[str, Any]]:
         '''
@@ -121,7 +127,13 @@ class LentQuerySet(models.QuerySet):
         return self.related()
 
     def year(self, year):
-        return self.related().filter(date__year=year)
+        return (
+            self
+            .related()
+            .filter(
+                Q(date__year=year) | (Q(date__year__lt=year) & Q(closed=False))
+            )
+        )
 
     def summary(self, year: int) -> List[Dict[str, Any]]:
         '''

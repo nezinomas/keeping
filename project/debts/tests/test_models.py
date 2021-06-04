@@ -78,6 +78,21 @@ def test_borrow_year():
     assert actual[0].price == Decimal('100')
 
 
+def test_borrow_year_and_not_closed():
+    o1 = BorrowFactory(date=date(1974, 1, 1), closed=False)
+    BorrowFactory(date=date(1974, 12, 1), closed=True)
+    o2 = BorrowFactory(date=date(1999, 1, 1), closed=False)
+    o3 = BorrowFactory(date=date(1999, 12, 1), closed=True)
+
+    actual = Borrow.objects.year(1999)
+
+    assert actual.count() == 3
+
+    assert actual[0].date == o3.date
+    assert actual[1].date == o2.date
+    assert actual[2].date == o1.date
+
+
 def test_borrow_summary(borrow_fixture):
     expect = [{
         'id': 1,
@@ -451,6 +466,21 @@ def test_lent_year():
     assert actual[0].name == o.name
     assert actual[0].date == dt(1999, 2, 3)
     assert actual[0].price == Decimal('100')
+
+
+def test_lent_year_and_not_closed():
+    o1 = LentFactory(date=date(1974, 1, 1), closed=False)
+    LentFactory(date=date(1974, 12, 1), closed=True)
+    o2 = LentFactory(date=date(1999, 1, 1), closed=False)
+    o3 = LentFactory(date=date(1999, 12, 1), closed=True)
+
+    actual = Lent.objects.year(1999)
+
+    assert actual.count() == 3
+
+    assert actual[0].date == o3.date
+    assert actual[1].date == o2.date
+    assert actual[2].date == o1.date
 
 
 def test_lent_summary(lent_fixture):
