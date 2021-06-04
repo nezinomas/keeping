@@ -235,8 +235,8 @@ def test_borrow_list_edit_button(client_logged):
 
     link = reverse('debts:borrows_update', kwargs={'pk': obj.pk})
 
-    assert f'<a role="button" data-url="{ link }"' in content
-
+    assert f'<a role="button" data-url="{ link }" data-target="borrow"' in content
+    assert 'js-create set-target' in content
 
 def test_borrow_list_delete_button(client_logged):
     obj = factories.BorrowFactory()
@@ -247,7 +247,8 @@ def test_borrow_list_delete_button(client_logged):
 
     link = reverse('debts:borrows_delete', kwargs={'pk': obj.pk})
 
-    assert f'<a role="button" data-url="{ link }"' in content
+    assert f'<a role="button" data-url="{ link }" data-target="borrow"' in content
+    assert 'js-create set-target' in content
 
 
 def test_borrow_new_func():
@@ -553,8 +554,8 @@ def test_borrow_return_list_edit_button(client_logged):
 
     link = reverse('debts:borrows_return_update', kwargs={'pk': obj.pk})
 
-    assert f'<a role="button" data-url="{ link }"' in content
-
+    assert f'<a role="button" data-url="{ link }" data-target="borrow"' in content
+    assert 'js-create set-target' in content
 
 def test_borrow_return_list_delete_button(client_logged):
     obj = factories.BorrowReturnFactory()
@@ -565,7 +566,8 @@ def test_borrow_return_list_delete_button(client_logged):
 
     link = reverse('debts:borrows_return_delete', kwargs={'pk': obj.pk})
 
-    assert f'<a role="button" data-url="{ link }"' in content
+    assert f'<a role="button" data-url="{ link }" data-target="borrow"' in content
+    assert 'js-create set-target' in content
 
 
 def test_borrow_return_new_func():
@@ -839,7 +841,8 @@ def test_lent_list_edit_button(client_logged):
 
     link = reverse('debts:lents_update', kwargs={'pk': obj.pk})
 
-    assert f'<a role="button" data-url="{ link }"' in content
+    assert f'<a role="button" data-url="{ link }" data-target="lent"' in content
+    assert 'js-create set-target' in content
 
 
 def test_lent_list_delete_button(client_logged):
@@ -851,7 +854,8 @@ def test_lent_list_delete_button(client_logged):
 
     link = reverse('debts:lents_delete', kwargs={'pk': obj.pk})
 
-    assert f'<a role="button" data-url="{ link }"' in content
+    assert f'<a role="button" data-url="{ link }" data-target="lent"' in content
+    assert 'js-create set-target' in content
 
 
 def test_lent_new_func():
@@ -1151,7 +1155,8 @@ def test_lent_return_list_edit_button(client_logged):
 
     link = reverse('debts:lents_return_update', kwargs={'pk': f.pk})
 
-    assert f'<a role="button" data-url="{ link }"' in content
+    assert f'<a role="button" data-url="{ link }" data-target="lent"' in content
+    assert 'js-create set-target' in content
 
 
 def test_lent_return_list_delete_button(client_logged):
@@ -1163,7 +1168,8 @@ def test_lent_return_list_delete_button(client_logged):
 
     link = reverse('debts:lents_return_delete', kwargs={'pk': obj.pk})
 
-    assert f'<a role="button" data-url="{ link }"' in content
+    assert f'<a role="button" data-url="{ link }" data-target="lent"' in content
+    assert 'js-create set-target' in content
 
 
 def test_lent_return_new_func():

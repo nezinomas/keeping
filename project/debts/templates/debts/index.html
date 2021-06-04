@@ -86,6 +86,7 @@
         var url = `{% url 'debts:debts_index' %}`;
         var blocks = [];
 
+
         if (target == 'borrow') {
             url = `{% url 'debts:borrows_reload' %}`;
             blocks.push("borrow_ajax", "borrow_return_ajax");
@@ -95,6 +96,8 @@
             url = `{% url 'debts:lents_reload' %}`;
             blocks.push("lent_ajax", "lent_return_ajax");
         }
+
+        alert('target:' + target + ' url:' + url + ' blocks:' + blocks)
 
         $.ajax({
             url: url,

@@ -22,12 +22,13 @@
             <td class="text-start">{{ item.account }}</td>
             <td class="text-start">{{ item.remark }}</td>
             <td class="w-edit">
-                <a role="button" data-url="{{ url_update }}" class=" js-create edit" title="Edit">
+                <a role="button" data-url="{{ url_update }}" data-target="borrow" class=" js-create set-target edit" title="Edit">
                     <i class="bi bi-pencil-fill"></i>
                 </a>
             </td>
             <td class="w-delete">
-                <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+                <a role="button" data-url="{{ url_delete }}" data-target="borrow" class="js-delete set-target trash"
+                    title="Delete"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
         {% endfor %}
