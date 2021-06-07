@@ -399,7 +399,7 @@ class IndexHelper():
             'percentage_from_incomes': (
                 percentage_from_incomes(
                     incomes=self._YearBalance.total_row.get('incomes'),
-                    savings=self._MonthExpense.total_row.get('savings'))
+                    savings=self._YearBalance.total_row.get('savings'))
             ),
             'profit_incomes_proc': (
                 percentage_from_incomes(
