@@ -295,13 +295,13 @@ class IndexHelper():
         qs_savings_close = SavingClose.objects.sum_by_month(year)
         qs_ExpenseType = Expense.objects.sum_by_month_and_type(year)
 
-        self._MonthExpense = MonthExpense(
-            year, qs_ExpenseType, **{'Taupymas': qs_savings})
+        self._MonthExpense = MonthExpense(year, qs_ExpenseType)
 
         self._YearBalance = YearBalance(
             year=year,
             incomes=qs_income,
             expenses=self._MonthExpense.total_column,
+            savings=qs_savings,
             savings_close=qs_savings_close,
             amount_start=sum_col(self._account, 'past'))
 
@@ -355,7 +355,7 @@ class IndexHelper():
         )
 
     def render_year_expenses(self):
-        _expense_types = expense_types('Taupymas')
+        _expense_types = expense_types()
 
         context = {
             'year': self._year,
@@ -399,7 +399,7 @@ class IndexHelper():
             'percentage_from_incomes': (
                 percentage_from_incomes(
                     incomes=self._YearBalance.total_row.get('incomes'),
-                    savings=self._MonthExpense.total_row.get('Taupymas'))
+                    savings=self._MonthExpense.total_row.get('savings'))
             ),
             'profit_incomes_proc': (
                 percentage_from_incomes(
