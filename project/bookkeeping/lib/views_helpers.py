@@ -346,7 +346,6 @@ class IndexHelper():
         context = {
             'e': self._YearBalance.expense_data,
             'i': self._YearBalance.income_data,
-            's': self._YearBalance.save_data,
         }
 
         return render_to_string(
