@@ -2,14 +2,17 @@
 <table class="table table-striped table-hover table-sm stats">
     <thead class="thead-light">
         <tr class="top">
-            <th colspan="6">Balansas</th>
+            <th colspan="4">Balansas</th>
+            <th colspan="2" class="bl br">Taupymas</th>
+            <th colspan="1"></th>
         </tr>
         <tr>
             <th class="text-start w5">{{ year|title }}</th>
             <th>Pajamos</th>
             <th>Išlaidos</th>
             <th>Balansas</th>
-            <th>Taupymas</th>
+            <th class="bl">Investuota</th>
+            <th class="br">Parduota</th>
             <th>Pinigų srautas</th>
         </tr>
     </thead>
@@ -20,7 +23,8 @@
             {% cell item.incomes %}
             {% cell item.expenses %}
             {% cell item.balance highlight_value=True  %}
-            {% cell item.savings  %}
+            {% cell item.savings css_class="bl" %}
+            {% cell item.savings_close css_class="br"  %}
             {% cell item.money_flow %}
         </tr>
         {% endfor %}
@@ -31,15 +35,17 @@
             {% cell avg_row.incomes tag='th' %}
             {% cell avg_row.expenses tag='th' %}
             <th></th>
-            {% cell avg_row.savings tag='th' %}
-              <th><b>Metų gale</b></th>
+            {% cell avg_row.savings tag='th' css_class="bl" %}
+            {% cell avg_row.savings_close tag='th' css_class="br" %}
+            <th><b>Metų gale</b></th>
         </tr>
         <tr class="total">
             <th class="text-start">Viso</th>
             {% cell total_row.incomes tag='th' %}
             {% cell total_row.expenses tag='th' %}
             {% cell total_row.balance tag='th' highlight_value=True %}
-            {% cell total_row.savings tag='th' %}
+            {% cell total_row.savings tag='th' css_class="bl" %}
+            {% cell total_row.savings_close tag='th' css_class="br" %}
             {% if accounts_amount_end|floatformat:2 != months_amount_end|floatformat:2 %}
                 {% cell months_amount_end tag="th" css_class='bad' text_before='!' text_after='!' %}
             {% else %}
