@@ -2,14 +2,15 @@
 <table class="table table-striped table-hover table-sm stats">
     <thead class="thead-light">
         <tr class="top">
-            <th colspan="5">Balansas</th>
+            <th colspan="6">Balansas</th>
         </tr>
         <tr>
             <th class="text-start w5">{{ year|title }}</th>
             <th>Pajamos</th>
             <th>Išlaidos</th>
             <th>Balansas</th>
-            <th>Likutis</th>
+            <th>Taupymas</th>
+            <th>Pinigų srautas</th>
         </tr>
     </thead>
     <tbody>
@@ -19,6 +20,7 @@
             {% cell item.incomes %}
             {% cell item.expenses %}
             {% cell item.balance highlight_value=True  %}
+            {% cell item.savings  %}
             {% cell item.money_flow %}
         </tr>
         {% endfor %}
@@ -29,14 +31,20 @@
             {% cell avg_row.incomes tag='th' %}
             {% cell avg_row.expenses tag='th' %}
             <th></th>
-            <th><b>Metų gale</b></th>
+            {% cell avg_row.savings tag='th' %}
+              <th><b>Metų gale</b></th>
         </tr>
         <tr class="total">
             <th class="text-start">Viso</th>
             {% cell total_row.incomes tag='th' %}
             {% cell total_row.expenses tag='th' %}
             {% cell total_row.balance tag='th' highlight_value=True %}
-            {% if accounts_amount_end|floatformat:2 != months_amount_end|floatformat:2 %}{% cell months_amount_end tag="th" css_class='bad' text_before='!' text_after='!' %}{% else %}{% cell months_amount_end tag='th' highlight_value=True %}{% endif %}
+            {% cell total_row.savings tag='th' %}
+            {% if accounts_amount_end|floatformat:2 != months_amount_end|floatformat:2 %}
+                {% cell months_amount_end tag="th" css_class='bad' text_before='!' text_after='!' %}
+            {% else %}
+                {% cell months_amount_end tag='th' highlight_value=True %}
+            {% endif %}
         </tr>
     </tfoot>
 </table>
