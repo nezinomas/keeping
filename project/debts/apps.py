@@ -1,10 +1,9 @@
 from django.apps import AppConfig
 
-App_name = 'expenses'
+App_name = 'debts'
 
-
-class ExpensesConfig(AppConfig):
-    name = 'project.expenses'
+class DebtsConfig(AppConfig):
+    name = f'project.{App_name}'
 
     def ready(self):
         from ..core.signals import accounts_post_signal

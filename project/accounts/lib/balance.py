@@ -53,6 +53,10 @@ class Balance(BalanceBase):
             - df['e_past']
             - df['s_past']
             - df['tr_from_past']
+            + df['borrow_past']
+            - df['borrow_return_past']
+            - df['lent_past']
+            + df['lent_return_past']
         )
 
         df['incomes'] = (
@@ -60,6 +64,8 @@ class Balance(BalanceBase):
             + df['i_now']
             + df['tr_to_now']
             + df['s_close_to_now']
+            + df['borrow_now']
+            + df['lent_return_now']
         )
 
         df['expenses'] = (
@@ -67,6 +73,8 @@ class Balance(BalanceBase):
             - df['e_now']
             - df['s_now']
             - df['tr_from_now']
+            - df['borrow_return_now']
+            - df['lent_now']
         ).abs()
 
         df['balance'] = (

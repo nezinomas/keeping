@@ -14,6 +14,7 @@ urlpatterns = [
     path('', include('project.books.urls')),
     path('', include('project.core.urls')),
     path('', include('project.counters.urls')),
+    path('', include('project.debts.urls')),
     path('', include('project.drinks.urls')),
     path('', include('project.expenses.urls')),
     path('', include('project.incomes.urls')),
