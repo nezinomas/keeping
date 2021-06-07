@@ -243,7 +243,7 @@ def test_income_new_post_save_count_qs(django_assert_max_num_queries):
 
     assert AccountBalance.objects.all().count() == 0
 
-    with django_assert_max_num_queries(25):
+    with django_assert_max_num_queries(22):
         IncomeFactory()
 
 
@@ -253,7 +253,7 @@ def test_income_update_post_save_count_qs(django_assert_max_num_queries):
 
     assert AccountBalance.objects.all().count() == 1
 
-    with django_assert_max_num_queries(23):
+    with django_assert_max_num_queries(20):
         IncomeFactory()
 
 

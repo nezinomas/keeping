@@ -91,7 +91,7 @@ def test_account_insert(_mock):
         {'title': 'A1', 'id': a1.id, 'balance': 2.0}]
 
     instance = SimpleNamespace(account_id=a1.id)
-    T.accounts_post_signal(sender=SimpleNamespace(), instance=instance)
+    T.post_save_account_stats(sender=SimpleNamespace(), instance=instance)
 
     actual = AccountBalance.objects.year(1999)
 
@@ -113,7 +113,7 @@ def test_account_insert_instance_account_id_not_set(_mock):
         {'title': 'A2', 'id': a2.id, 'balance': 4.0},
     ]
 
-    T.accounts_post_signal(sender=SimpleNamespace(), instance=SimpleNamespace())
+    T.post_save_account_stats(sender=SimpleNamespace(), instance=SimpleNamespace())
 
     actual = AccountBalance.objects.year(1999)
 
@@ -138,7 +138,7 @@ def test_account_update(_mock):
     _mock.return_value = [{'title': 'A1', 'id': a1.id, 'balance': 2.0}]
 
     instance = SimpleNamespace(account_id=a1.id)
-    T.accounts_post_signal(sender=SimpleNamespace(), instance=instance)
+    T.post_save_account_stats(sender=SimpleNamespace(), instance=instance)
 
     actual = AccountBalance.objects.year(1999)
 
@@ -241,7 +241,7 @@ def test_saving_insert(_mock):
     }]
 
     instance = SimpleNamespace(id=1)
-    T.savings_post_signal(sender=SimpleNamespace(), instance=instance)
+    T.post_save_saving_stats(sender=SimpleNamespace(), instance=instance)
 
     actual = SavingBalance.objects.year(1999)
 
@@ -273,7 +273,7 @@ def test_saving_insert_instance_saving_id_not_set(_mock):
     ]
 
     instance = SimpleNamespace()
-    T.savings_post_signal(sender=SimpleNamespace(), instance=instance)
+    T.post_save_saving_stats(sender=SimpleNamespace(), instance=instance)
 
     actual = SavingBalance.objects.year(1999)
 
@@ -298,7 +298,7 @@ def test_saving_update(_mock):
     _mock.return_value = [{'title': 'S1', 'id': s1.id, 'past_amount': 22.0}]
 
     instance = SimpleNamespace(saving_id=s1.id)
-    T.savings_post_signal(sender=SimpleNamespace(), instance=instance)
+    T.post_save_saving_stats(sender=SimpleNamespace(), instance=instance)
 
     actual = SavingBalance.objects.year(1999)
 

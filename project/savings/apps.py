@@ -5,5 +5,5 @@ class SavingsConfig(AppConfig):
     name = 'project.savings'
 
     def ready(self):
-        from ..core.signals import (accounts_post_signal,
-                                    savings_post_signal)
+        from ..core.signals import (post_save_account_stats,
+                                    post_save_saving_stats)

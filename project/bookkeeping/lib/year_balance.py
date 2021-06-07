@@ -2,7 +2,6 @@ from typing import Dict, List
 
 from pandas import DataFrame as DF
 from pandas import to_datetime
-
 from ...core.lib.balance_base import BalanceBase, df_months_of_year
 
 
@@ -56,12 +55,9 @@ class YearBalance(BalanceBase):
 
     @property
     def amount_end(self) -> float:
-        try:
-            val = self._balance['money_flow'].values[-1]
-        except KeyError:
-            val = 0.0
+        t = super().total_row
 
-        return val
+        return self._amount_start + t.get('balance', 0.0)
 
     @property
     def amount_balance(self) -> float:
@@ -98,10 +94,10 @@ class YearBalance(BalanceBase):
         return rtn
 
     @property
-    def money_flow(self) -> List[float]:
+    def save_data(self) -> List[float]:
         rtn = []
-        if 'money_flow' in self._balance:
-            rtn = self._balance.money_flow.tolist()
+        if 'residual' in self._balance:
+            rtn = self._balance.residual.tolist()
 
         return rtn
 
@@ -117,11 +113,10 @@ class YearBalance(BalanceBase):
         # append necessary columns
         df.loc[:, 'incomes'] = 0.0
         df.loc[:, 'expenses'] = 0.0
-        df.loc[:, 'money_flow'] = 0.0
+        df.loc[:, 'residual'] = 0.0
         df.loc[:, 'balance'] = 0.0
         df.loc[:, 'savings'] = 0.0
         df.loc[:, 'savings_close'] = 0.0
-        df.loc[:, 'money_flow'] = self._amount_start
 
         # copy incomes values, convert Decimal to float
         for d in incomes:
@@ -143,18 +138,25 @@ class YearBalance(BalanceBase):
 
         return df
 
+    def _clean_df(self, df: DF) -> DF:
+        # delete not necessary columns
+        df.drop('savings', axis=1, inplace=True)
+        df.drop('savings_close', axis=1, inplace=True)
+
+        return df
+
     def _calc(self, df: DF) -> DF:
         # calculate balance
+        df['incomes'] = df.incomes + df.savings_close
+        df['expenses'] = df.expenses + df.savings
         df['balance'] = df.incomes - df.expenses
 
-        #  calculate money_flow amount of money
+        #  calculate residual amount of money
         # for january
-        df.loc[df.index[0], 'money_flow'] = (
+        df.loc[df.index[0], 'residual'] = (
             0.0
             + self._amount_start
             + df.loc[df.index[0], 'balance']
-            + df.loc[df.index[0], 'savings_close']
-            - df.loc[df.index[0], 'savings']
         )
 
         # for february:december
@@ -162,12 +164,12 @@ class YearBalance(BalanceBase):
             idx = df.index[i]
             idx_prev = df.index[i - 1]
 
-            df.loc[idx, 'money_flow'] = (
+            df.loc[idx, 'residual'] = (
                 0.0
                 + df.loc[idx, 'balance']
-                + df.loc[idx, 'savings_close']
-                - df.loc[idx, 'savings']
-                + df.loc[idx_prev, 'money_flow']
+                + df.loc[idx_prev, 'residual']
             )
+
+        df = self._clean_df(df)
 
         return df

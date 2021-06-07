@@ -18,10 +18,6 @@ def _accounts():
         'tr_from_past': 1.25, 'tr_from_now': 4.5,
         'tr_to_past': 5.25, 'tr_to_now': 3.25,
         's_close_to_past': 0.25, 's_close_to_now': 0.25,
-        'borrow_past': 0, 'borrow_now': 0,
-        'borrow_return_past': 0, 'borrow_return_now': 0,
-        'lent_past': 0, 'lent_now': 0,
-        'lent_return_past': 0, 'lent_return_now': 0,
     }, {
         'id': 2,
         'title': 'Account2',
@@ -31,10 +27,6 @@ def _accounts():
         'tr_from_past': 5.25, 'tr_from_now': 3.25,
         'tr_to_past': 1.25, 'tr_to_now': 4.5,
         's_close_to_past': 0.0, 's_close_to_now': 0.0,
-        'borrow_past': 0, 'borrow_now': 0,
-        'borrow_return_past': 0, 'borrow_return_now': 0,
-        'lent_past': 0, 'lent_now': 0,
-        'lent_return_past': 0, 'lent_return_now': 0,
     }])
 
     df.set_index('title', inplace=True)

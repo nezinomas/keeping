@@ -122,7 +122,6 @@ INSTALLED_APPS = [
     'project.books',
     'project.core',
     'project.counters',
-    'project.debts',
     'project.drinks',
     'project.expenses',
     'project.incomes',
