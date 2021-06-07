@@ -94,7 +94,7 @@ class YearBalance(BalanceBase):
         return rtn
 
     @property
-    def save_data(self) -> List[float]:
+    def money_flow(self) -> List[float]:
         rtn = []
         if 'residual' in self._balance:
             rtn = self._balance.residual.tolist()
@@ -138,17 +138,8 @@ class YearBalance(BalanceBase):
 
         return df
 
-    def _clean_df(self, df: DF) -> DF:
-        # delete not necessary columns
-        df.drop('savings', axis=1, inplace=True)
-        df.drop('savings_close', axis=1, inplace=True)
-
-        return df
-
     def _calc(self, df: DF) -> DF:
         # calculate balance
-        df['incomes'] = df.incomes + df.savings_close
-        df['expenses'] = df.expenses + df.savings
         df['balance'] = df.incomes - df.expenses
 
         #  calculate residual amount of money
@@ -167,9 +158,9 @@ class YearBalance(BalanceBase):
             df.loc[idx, 'residual'] = (
                 0.0
                 + df.loc[idx, 'balance']
+                + df.loc[idx, 'savings_close']
+                - df.loc[idx, 'savings']
                 + df.loc[idx_prev, 'residual']
             )
-
-        df = self._clean_df(df)
 
         return df
