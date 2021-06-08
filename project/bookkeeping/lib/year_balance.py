@@ -127,55 +127,25 @@ class YearBalance(BalanceBase):
         df = df_months_of_year(year)
 
         # append necessary columns
-        df.loc[:, 'incomes'] = 0.0
-        df.loc[:, 'expenses'] = 0.0
-        df.loc[:, 'money_flow'] = 0.0
+        dict = {
+            'incomes': incomes,
+            'expenses': expenses,
+            'savings': savings,
+            'savings_close': savings_close,
+            'borrow': borrow,
+            'borrow_return': borrow_return,
+            'lent': lent,
+            'lent_return': lent_return,
+        }
+
+        for name, arr in dict.items():
+            df.loc[:, name] = 0.0
+            if arr:
+                for d in arr:
+                    df.at[to_datetime(d['date']), name] = float(d['sum'])
+
         df.loc[:, 'balance'] = 0.0
-        df.loc[:, 'savings'] = 0.0
-        df.loc[:, 'savings_close'] = 0.0
-        df.loc[:, 'borrow'] = 0.0
-        df.loc[:, 'borrow_return'] = 0.0
-        df.loc[:, 'lent'] = 0.0
-        df.loc[:, 'lent_return'] = 0.0
         df.loc[:, 'money_flow'] = self._amount_start
-
-        # copy incomes values, convert Decimal to float
-        for d in incomes:
-            df.at[to_datetime(d['date']), 'incomes'] = float(d['sum'])
-
-        # copy expenses values, convert Decimal to float
-        for d in expenses:
-            df.at[to_datetime(d['date']), 'expenses'] = float(d['sum'])
-
-        if savings:
-            # copy savings values, convert Decimal to float
-            for d in savings:
-                df.at[to_datetime(d['date']), 'savings'] = float(d['sum'])
-
-        if savings_close:
-            # copy savings values, convert Decimal to float
-            for d in savings_close:
-                df.at[to_datetime(d['date']), 'savings_close'] = float(d['sum'])
-
-        if borrow:
-            # copy savings values, convert Decimal to float
-            for d in borrow:
-                df.at[to_datetime(d['date']), 'borrow'] = float(d['sum'])
-
-        if borrow_return:
-            # copy savings values, convert Decimal to float
-            for d in borrow_return:
-                df.at[to_datetime(d['date']), 'borrow_return'] = float(d['sum'])
-
-        if lent:
-            # copy savings values, convert Decimal to float
-            for d in lent:
-                df.at[to_datetime(d['date']), 'lent'] = float(d['sum'])
-
-        if lent_return:
-            # copy savings values, convert Decimal to float
-            for d in lent_return:
-                df.at[to_datetime(d['date']), 'lent_return'] = float(d['sum'])
 
         return df
 
