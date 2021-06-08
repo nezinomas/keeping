@@ -54,6 +54,7 @@ class ExpenseNameQuerySet(models.QuerySet):
     def items(self):
         return self.related()
 
+
 class ExpenseQuerySet(models.QuerySet):
     def related(self):
         user = utils.get_user()
