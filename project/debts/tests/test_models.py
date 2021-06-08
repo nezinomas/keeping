@@ -130,8 +130,9 @@ def test_borrow_new_post_save():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 100.0
-    assert actual['balance'] == 100.0
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 100.0
+    assert actual['balance'] == -100.0
 
 
 def test_borrow_update_post_save():
@@ -146,8 +147,9 @@ def test_borrow_update_post_save():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 1.0
-    assert actual['balance'] == 1.0
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 1.0
+    assert actual['balance'] == -1.0
 
 
 def test_borrow_post_delete():
@@ -174,8 +176,9 @@ def test_borrow_post_delete_with_update():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 1.0
-    assert actual['balance'] == 1.0
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 1.0
+    assert actual['balance'] == -1.0
 
     assert Borrow.objects.all().count() == 1
 
@@ -410,9 +413,9 @@ def test_borrow_return_new_post_save():
 
     actual = actual[0]
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 100.0
-    assert actual['expenses'] == 5.0
-    assert actual['balance'] == 95.0
+    assert actual['incomes'] == 5.0
+    assert actual['expenses'] == 100.0
+    assert actual['balance'] == -95.0
 
 
 def test_borrow_return_update_post_save():
@@ -427,9 +430,9 @@ def test_borrow_return_update_post_save():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 100.0
-    assert actual['expenses'] == 1.0
-    assert actual['balance'] == 99.0
+    assert actual['incomes'] == 1.0
+    assert actual['expenses'] == 100.0
+    assert actual['balance'] == -99.0
 
 
 def test_borrow_return_post_delete():
@@ -441,9 +444,9 @@ def test_borrow_return_post_delete():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 100.0
-    assert actual['expenses'] == 0
-    assert actual['balance'] == 100.0
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 100.0
+    assert actual['balance'] == -100.0
 
 
 def test_borrow_return_post_delete_with_update():
@@ -458,9 +461,9 @@ def test_borrow_return_post_delete_with_update():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 100.0
-    assert actual['expenses'] == 1.0
-    assert actual['balance'] == 99.0
+    assert actual['incomes'] == 1.0
+    assert actual['expenses'] == 100.0
+    assert actual['balance'] == -99.0
 
     assert Borrow.objects.all().count() == 1
 
@@ -622,9 +625,9 @@ def test_lent_new_post_save():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 0.0
-    assert actual['expenses'] == 100.0
-    assert actual['balance'] == -100.0
+    assert actual['incomes'] == 100.0
+    assert actual['expenses'] == 0.0
+    assert actual['balance'] == 100.0
 
 
 def test_lent_update_post_save():
@@ -639,9 +642,9 @@ def test_lent_update_post_save():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 0.0
-    assert actual['expenses'] == 1.0
-    assert actual['balance'] == -1.0
+    assert actual['incomes'] == 1.0
+    assert actual['expenses'] == 0.0
+    assert actual['balance'] == 1.0
 
 
 def test_lent_post_delete():
@@ -669,9 +672,9 @@ def test_lent_post_delete_with_update():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 0.0
-    assert actual['expenses'] == 1.0
-    assert actual['balance'] == -1.0
+    assert actual['incomes'] == 1.0
+    assert actual['expenses'] == 0.0
+    assert actual['balance'] == 1.0
 
     assert Lent.objects.all().count() == 1
 
@@ -910,9 +913,9 @@ def test_lent_return_new_post_save():
 
     actual = actual[0]
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 5.0
-    assert actual['expenses'] == 100.0
-    assert actual['balance'] == -95.0
+    assert actual['incomes'] == 100.0
+    assert actual['expenses'] == 5.0
+    assert actual['balance'] == 95.0
 
 
 def test_lent_return_update_post_save():
@@ -927,9 +930,9 @@ def test_lent_return_update_post_save():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 1.0
-    assert actual['expenses'] == 100.0
-    assert actual['balance'] == -99.0
+    assert actual['incomes'] == 100.0
+    assert actual['expenses'] == 1.0
+    assert actual['balance'] == 99.0
 
 
 def test_lent_return_post_delete():
@@ -941,9 +944,9 @@ def test_lent_return_post_delete():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 0.0
-    assert actual['expenses'] == 100.0
-    assert actual['balance'] == -100.0
+    assert actual['incomes'] == 100.0
+    assert actual['expenses'] == 0.0
+    assert actual['balance'] == 100.0
 
 
 def test_lent_return_post_delete_with_update():
@@ -958,9 +961,9 @@ def test_lent_return_post_delete_with_update():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 1.0
-    assert actual['expenses'] == 100.0
-    assert actual['balance'] == -99.0
+    assert actual['incomes'] == 100.0
+    assert actual['expenses'] == 1.0
+    assert actual['balance'] == 99.0
 
     assert Lent.objects.all().count() == 1
 
