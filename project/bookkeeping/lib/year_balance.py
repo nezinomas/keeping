@@ -147,27 +147,31 @@ class YearBalance(BalanceBase):
         # calculate balance
         df['balance'] = df.incomes - df.expenses
 
-        #  calculate money_flow amount of money
-        # for january
-        df.loc[df.index[0], 'money_flow'] = (
-            0.0
-            + self._amount_start
-            + df.loc[df.index[0], 'balance']
-            + df.loc[df.index[0], 'savings_close']
-            - df.loc[df.index[0], 'savings']
-        )
-
-        # for february:december
-        for i in range(1, 12):
+        #  calculate money_flow
+        for i in range(0, 12):
             idx = df.index[i]
             idx_prev = df.index[i - 1]
 
-            df.loc[idx, 'money_flow'] = (
+            val = (
                 0.0
                 + df.loc[idx, 'balance']
                 + df.loc[idx, 'savings_close']
                 - df.loc[idx, 'savings']
-                + df.loc[idx_prev, 'money_flow']
             )
+
+            cell = (idx, 'money_flow')
+
+            # january
+            if i == 0:
+                df.loc[cell] = (
+                    val
+                    + self._amount_start
+                )
+            # february - december
+            else:
+                df.loc[cell] = (
+                    val
+                    + df.loc[idx_prev, 'money_flow']
+                )
 
         return df
