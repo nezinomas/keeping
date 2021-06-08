@@ -37,28 +37,6 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self.related().all()
 
-    def sum_by_month(self, year: int, month: int = None) -> List[Dict[str, Any]]:
-        '''
-        year:
-            filter data by year and return sums for every month
-        month:
-            filter data by year AND month, return sum for that month
-        return:
-            {'date': datetime.date(), 'sum': Decimal()}
-        '''
-
-        sum_annotation = 'sum'
-
-        return (
-            self
-            .related()
-            .month_sum(
-                year=year,
-                month=month,
-                sum_annotation=sum_annotation)
-            .values('date', sum_annotation)
-        )
-
     def sum_by_year(self, income_type: List[str] = None):
         qs = (
             self
