@@ -185,6 +185,50 @@ def test_borrow_unique_users():
     BorrowFactory(name='T1', user=UserFactory(username='y'))
 
 
+def test_borrow_sum_all_months():
+    BorrowFactory(date=date(1999, 1, 1), price=1)
+    BorrowFactory(date=date(1999, 1, 2), price=2)
+    BorrowFactory(date=date(1999, 2, 1), price=4)
+    BorrowFactory(date=date(1999, 2, 2), price=1)
+
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': Decimal('3')},
+        {'date': date(1999, 2, 1), 'sum': Decimal('5')},
+    ]
+
+    actual = list(Borrow.objects.sum_by_month(1999))
+
+    assert expect == actual
+
+
+def test_borrow_sum_all_months_ordering():
+    BorrowFactory(date=date(1999, 1, 1), price=1)
+    BorrowFactory(date=date(1999, 1, 2), price=2)
+    BorrowFactory(date=date(1999, 1, 2), price=2, user=UserFactory(username='T'))
+    BorrowFactory(date=date(1999, 2, 1), price=4)
+    BorrowFactory(date=date(1999, 2, 2), price=1)
+    BorrowFactory(date=date(1999, 2, 2), price=6, user=UserFactory(username='X'))
+
+    actual = list(Borrow.objects.sum_by_month(1999))
+
+    assert actual[0]['date'] == date(1999, 1, 1)
+    assert actual[1]['date'] == date(1999, 2, 1)
+
+
+def test_borrow_sum_one_month():
+    BorrowFactory(date=date(1999, 1, 1), price=1)
+    BorrowFactory(date=date(1999, 1, 2), price=2)
+
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': Decimal('3')}
+    ]
+
+    actual = list(Borrow.objects.sum_by_month(1999, 1))
+
+    assert len(expect) == 1
+    assert expect == actual
+
+
 #----------------------------------------------------------------------------------------
 #                                                                           Borrow Return
 #----------------------------------------------------------------------------------------
@@ -421,6 +465,48 @@ def test_borrow_return_post_delete_with_update():
     assert Borrow.objects.all().count() == 1
 
 
+def test_borrow_return_sum_all_months():
+    BorrowReturnFactory(date=date(1999, 1, 1), price=1)
+    BorrowReturnFactory(date=date(1999, 1, 2), price=2)
+    BorrowReturnFactory(date=date(1999, 2, 1), price=4)
+    BorrowReturnFactory(date=date(1999, 2, 2), price=1)
+
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': Decimal('3')},
+        {'date': date(1999, 2, 1), 'sum': Decimal('5')},
+    ]
+
+    actual = list(BorrowReturn.objects.sum_by_month(1999))
+
+    assert expect == actual
+
+
+def test_borrow_return_sum_all_months_ordering():
+    BorrowReturnFactory(date=date(1999, 1, 1), price=1)
+    BorrowReturnFactory(date=date(1999, 1, 2), price=2)
+    BorrowReturnFactory(date=date(1999, 2, 1), price=4)
+    BorrowReturnFactory(date=date(1999, 2, 2), price=1)
+
+    actual = list(BorrowReturn.objects.sum_by_month(1999))
+
+    assert actual[0]['date'] == date(1999, 1, 1)
+    assert actual[1]['date'] == date(1999, 2, 1)
+
+
+def test_borrow_return_sum_one_month():
+    BorrowReturnFactory(date=date(1999, 1, 1), price=1)
+    BorrowReturnFactory(date=date(1999, 1, 2), price=2)
+
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': Decimal('3')}
+    ]
+
+    actual = list(BorrowReturn.objects.sum_by_month(1999, 1))
+
+    assert len(expect) == 1
+    assert expect == actual
+
+
 #----------------------------------------------------------------------------------------
 #                                                                                    Lent
 #----------------------------------------------------------------------------------------
@@ -594,6 +680,49 @@ def test_lent_unique_users():
     LentFactory(name='T1', user=UserFactory(username='x'))
     LentFactory(name='T1', user=UserFactory(username='y'))
 
+
+def test_lent_sum_all_months():
+    LentFactory(date=date(1999, 1, 1), price=1)
+    LentFactory(date=date(1999, 1, 2), price=2)
+    LentFactory(date=date(1999, 2, 1), price=4)
+    LentFactory(date=date(1999, 2, 2), price=1)
+
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': Decimal('3')},
+        {'date': date(1999, 2, 1), 'sum': Decimal('5')},
+    ]
+
+    actual = list(Lent.objects.sum_by_month(1999))
+
+    assert expect == actual
+
+
+def test_lent_sum_all_months_ordering():
+    LentFactory(date=date(1999, 1, 1), price=1)
+    LentFactory(date=date(1999, 1, 2), price=2)
+    LentFactory(date=date(1999, 1, 2), price=2, user=UserFactory(username='T'))
+    LentFactory(date=date(1999, 2, 1), price=4)
+    LentFactory(date=date(1999, 2, 2), price=1)
+    LentFactory(date=date(1999, 2, 2), price=6, user=UserFactory(username='X'))
+
+    actual = list(Lent.objects.sum_by_month(1999))
+
+    assert actual[0]['date'] == date(1999, 1, 1)
+    assert actual[1]['date'] == date(1999, 2, 1)
+
+
+def test_lent_sum_one_month():
+    LentFactory(date=date(1999, 1, 1), price=1)
+    LentFactory(date=date(1999, 1, 2), price=2)
+
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': Decimal('3')}
+    ]
+
+    actual = list(Lent.objects.sum_by_month(1999, 1))
+
+    assert len(expect) == 1
+    assert expect == actual
 
 
 #----------------------------------------------------------------------------------------
@@ -834,3 +963,45 @@ def test_lent_return_post_delete_with_update():
     assert actual['balance'] == -99.0
 
     assert Lent.objects.all().count() == 1
+
+
+def test_lent_return_sum_all_months():
+    LentReturnFactory(date=date(1999, 1, 1), price=1)
+    LentReturnFactory(date=date(1999, 1, 2), price=2)
+    LentReturnFactory(date=date(1999, 2, 1), price=4)
+    LentReturnFactory(date=date(1999, 2, 2), price=1)
+
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': Decimal('3')},
+        {'date': date(1999, 2, 1), 'sum': Decimal('5')},
+    ]
+
+    actual = list(LentReturn.objects.sum_by_month(1999))
+
+    assert expect == actual
+
+
+def test_lent_return_sum_all_months_ordering():
+    LentReturnFactory(date=date(1999, 1, 1), price=1)
+    LentReturnFactory(date=date(1999, 1, 2), price=2)
+    LentReturnFactory(date=date(1999, 2, 1), price=4)
+    LentReturnFactory(date=date(1999, 2, 2), price=1)
+
+    actual = list(LentReturn.objects.sum_by_month(1999))
+
+    assert actual[0]['date'] == date(1999, 1, 1)
+    assert actual[1]['date'] == date(1999, 2, 1)
+
+
+def test_lent_return_sum_one_month():
+    LentReturnFactory(date=date(1999, 1, 1), price=1)
+    LentReturnFactory(date=date(1999, 1, 2), price=2)
+
+    expect = [
+        {'date': date(1999, 1, 1), 'sum': Decimal('3')}
+    ]
+
+    actual = list(LentReturn.objects.sum_by_month(1999, 1))
+
+    assert len(expect) == 1
+    assert expect == actual
