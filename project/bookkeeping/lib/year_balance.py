@@ -139,8 +139,10 @@ class YearBalance(BalanceBase):
         }
 
         for name, arr in dict.items():
+            # create column and assign 0 for all cellls
             df.loc[:, name] = 0.0
             if arr:
+                # copy values from imput arrays to df
                 for d in arr:
                     df.at[to_datetime(d['date']), name] = float(d['sum'])
 
