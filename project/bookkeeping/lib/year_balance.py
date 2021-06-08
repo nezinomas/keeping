@@ -17,15 +17,10 @@ class YearBalance(BalanceBase):
 
         '''
         year: int
-
         incomes: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-
         expenses: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-
         savings: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-
         savings_close: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-
         amount_start: year start worth amount
         '''
 
