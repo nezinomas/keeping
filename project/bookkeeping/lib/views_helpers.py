@@ -10,6 +10,7 @@ from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...core.lib.utils import sum_all, sum_col
+from ...debts.models import Borrow, BorrowReturn, Lent, LentReturn
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
 from ...pensions.models import PensionBalance
@@ -293,6 +294,10 @@ class IndexHelper():
         qs_income = Income.objects.sum_by_month(year)
         qs_savings = Saving.objects.sum_by_month(year)
         qs_savings_close = SavingClose.objects.sum_by_month(year)
+        qs_borrow = Borrow.objects.sum_by_month(year)
+        qs_borrow_return = BorrowReturn.objects.sum_by_month(year)
+        qs_lent = Lent.objects.sum_by_month(year)
+        qs_lent_return = LentReturn.objects.sum_by_month(year)
         qs_ExpenseType = Expense.objects.sum_by_month_and_type(year)
 
         self._MonthExpense = MonthExpense(year, qs_ExpenseType)
@@ -303,6 +308,10 @@ class IndexHelper():
             expenses=self._MonthExpense.total_column,
             savings=qs_savings,
             savings_close=qs_savings_close,
+            borrow=qs_borrow,
+            borrow_return=qs_borrow_return,
+            lent=qs_lent,
+            lent_return=qs_lent_return,
             amount_start=sum_col(self._account, 'past'))
 
     def render_year_balance(self):
