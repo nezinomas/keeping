@@ -80,9 +80,9 @@ def test_view_regenerate_balances_current_year_status_200(client_logged):
 
 @freeze_time('2007-01-01')
 @pytest.mark.disable_get_user_patch
-@patch('project.core.views.post_save_saving_stats')
-@patch('project.core.views.post_save_account_stats')
-@patch('project.core.views.post_save_pension_stats')
+@patch('project.core.views.savings_post_signal')
+@patch('project.core.views.accounts_post_signal')
+@patch('project.core.views.pensions_post_signal')
 def test_view_regenerate_balances_func_called(mck_pension,
                                               mck_account,
                                               mck_saving,
@@ -94,9 +94,9 @@ def test_view_regenerate_balances_func_called(mck_pension,
     assert mck_pension.call_count == 2
 
 
-@patch('project.core.views.post_save_saving_stats')
-@patch('project.core.views.post_save_account_stats')
-@patch('project.core.views.post_save_pension_stats')
+@patch('project.core.views.savings_post_signal')
+@patch('project.core.views.accounts_post_signal')
+@patch('project.core.views.pensions_post_signal')
 def test_view_regenerate_balances_current_year_func_called(mck_pension,
                                                            mck_account,
                                                            mck_saving,

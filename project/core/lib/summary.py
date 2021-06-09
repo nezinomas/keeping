@@ -20,7 +20,11 @@ class AccountsBalanceModels(ModelsAbstract):
             'expenses.Expense',
             'savings.Saving',
             'transactions.SavingClose',
-            'transactions.Transaction'
+            'transactions.Transaction',
+            'debts.Borrow',
+            'debts.BorrowReturn',
+            'debts.Lent',
+            'debts.LentReturn',
         ]
 
 
@@ -112,6 +116,10 @@ def _create_columns() -> DF:
         's_change_to_past', 's_change_to_now',
         's_change_from_past', 's_change_from_now',
         's_change_from_fee_past', 's_change_from_fee_now',
+        'borrow_past', 'borrow_now',
+        'borrow_return_past', 'borrow_return_now',
+        'lent_past', 'lent_now',
+        'lent_return_past', 'lent_return_now',
     ])
 
     return df
