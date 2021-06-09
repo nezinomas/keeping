@@ -171,8 +171,10 @@ class MonthExpense(BalanceBase, ExpenseBase):
     @property
     def total_column(self) -> Dict[str, float]:
         df = self._balance.copy()
-        df = df.reset_index()
-        df = df.rename(columns={'total': 'sum'})
-        df = df[['date', 'sum']]
+
+        if not df.empty:
+            df = df.reset_index()
+            df = df.rename(columns={'total': 'sum'})
+            df = df[['date', 'sum']]
 
         return df.to_dict('records')
