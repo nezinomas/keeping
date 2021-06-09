@@ -504,6 +504,26 @@ class IndexHelper():
         }
         return self._render_info_table(context)
 
+    def render_borrow(self):
+        qs = Borrow.objects.sum_all()
+        borrow = qs.get('borrow', 0)
+        borrow_return = qs.get('borrow_return', 0)
+        context = {
+            'title': ['Paskolinau', 'Gražino'],
+            'data': [borrow, borrow_return],
+        }
+        return self._render_info_table(context)
+
+    def render_lent(self):
+        qs = Lent.objects.sum_all()
+        lent = qs.get('lent', 0)
+        lent_return = qs.get('lent_return', 0)
+        context = {
+            'title': ['Pasiskolinau', 'Gražinau'],
+            'data': [lent, lent_return],
+        }
+        return self._render_info_table(context)
+
     def _render_info_table(self, context):
         return render_to_string(
             'bookkeeping/includes/info_table.html',

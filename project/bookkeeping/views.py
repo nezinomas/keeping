@@ -36,6 +36,8 @@ class Index(IndexMixin):
             'no_incomes': obj.render_no_incomes(),
             'averages': obj.render_averages(),
             'wealth': obj.render_wealth(),
+            'borrow': obj.render_borrow(),
+            'lent': obj.render_lent(),
             'chart_expenses': obj.render_chart_expenses(),
             'chart_balance': obj.render_chart_balance(),
         })
