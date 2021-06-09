@@ -485,8 +485,8 @@ class IndexHelper():
             + sum_col(self._fund, 'market_value')
         )
         context = {
-            'title': 'Pinigai',
-            'data': wealth_money,
+            'title': ['Pinigai'],
+            'data': [wealth_money],
         }
         return self._render_info_table(context)
 
@@ -498,22 +498,22 @@ class IndexHelper():
         wealth = wealth_money + sum_col(self._pension, 'market_value')
 
         context = {
-            'title': 'Turtas',
-            'data': wealth,
+            'title': ['Turtas'],
+            'data': [wealth],
         }
         return self._render_info_table(context)
 
     def render_avg_incomes(self):
         context = {
-            'title': 'Vidutinės pajamos',
-            'data': self._YearBalance.avg_incomes,
+            'title': ['Vidutinės pajamos'],
+            'data': [self._YearBalance.avg_incomes],
         }
         return self._render_info_table(context)
 
     def render_avg_expenses(self):
         context = {
-            'title': 'Vidutinės išlaidos',
-            'data': self._YearBalance.avg_expenses,
+            'title': ['Vidutinės išlaidos'],
+            'data': [self._YearBalance.avg_expenses],
         }
         return self._render_info_table(context)
 
