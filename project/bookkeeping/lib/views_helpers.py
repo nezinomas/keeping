@@ -491,29 +491,27 @@ class IndexHelper():
         return self._render_info_table(context)
 
     def render_wealth(self):
-        wealth_money = (
+        money = (
             self._YearBalance.amount_end
             + sum_col(self._fund, 'market_value')
         )
-        wealth = wealth_money + sum_col(self._pension, 'market_value')
+
+        wealth = (
+            self._YearBalance.amount_end
+            + sum_col(self._fund, 'market_value')
+        )
+        wealth = wealth + sum_col(self._pension, 'market_value')
 
         context = {
-            'title': ['Turtas'],
-            'data': [wealth],
+            'title': ['Pinigai', 'Turtas'],
+            'data': [money, wealth],
         }
         return self._render_info_table(context)
 
-    def render_avg_incomes(self):
+    def render_averages(self):
         context = {
-            'title': ['Vidutinės pajamos'],
-            'data': [self._YearBalance.avg_incomes],
-        }
-        return self._render_info_table(context)
-
-    def render_avg_expenses(self):
-        context = {
-            'title': ['Vidutinės išlaidos'],
-            'data': [self._YearBalance.avg_expenses],
+            'title': ['Vidutinės pajamos', 'Vidutinės išlaidos'],
+            'data': [self._YearBalance.avg_incomes, self._YearBalance.avg_expenses],
         }
         return self._render_info_table(context)
 
