@@ -1,5 +1,6 @@
 import pytest
 
+from ...debts.factories import BorrowFactory, LentFactory
 from ...incomes.factories import IncomeFactory
 from ...savings.factories import SavingFactory
 from ..lib.views_helpers import IndexHelper
@@ -24,8 +25,30 @@ def test_render_borrow_no_data(rf):
     assert '' == actual
 
 
+def test_render_borrow(rf):
+    BorrowFactory()
+    obj = IndexHelper(rf, 1999)
+    actual = obj.render_borrow()
+
+    assert 'Paskolinau' in actual
+    assert 'Gražino' in actual
+    assert '100,00' in actual
+    assert '25,00' in actual
+
+
 def test_render_lent_no_data(rf):
     obj = IndexHelper(rf, 1999)
     actual = obj.render_lent()
 
     assert '' == actual
+
+
+def test_render_lent(rf):
+    LentFactory()
+    obj = IndexHelper(rf, 1999)
+    actual = obj.render_lent()
+
+    assert 'Pasiskolinau' in actual
+    assert 'Gražinau' in actual
+    assert '100,00' in actual
+    assert '25,00' in actual
