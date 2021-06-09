@@ -4,7 +4,10 @@
         <tr class="top">
             <th colspan="4">Balansas</th>
             <th colspan="2" class="bl br">Taupymas</th>
-            <th colspan="1"></th>
+            <th colspan="4" class="bl br toggleDisplay">Skolos</th>
+            <th class="text-end">
+                <button onclick="toggleDebts()" id="toggle_debts" class="btn btn-super-sm" style="font-weight: bold; color: #0d6efd; padding-right: 0!important;">Rodyti skolas</button>
+            </th>
         </tr>
         <tr>
             <th class="text-start w5">{{ year|title }}</th>
@@ -13,6 +16,10 @@
             <th>Balansas</th>
             <th class="bl">Investuota</th>
             <th class="br">Parduota</th>
+            <th class="bl toggleDisplay">Paskolinau</th>
+            <th class="toggleDisplay">Gražino</th>
+            <th class="toggleDisplay">Pasiskolinau</th>
+            <th class="br toggleDisplay">Gražinau</th>
             <th>Pinigų srautas</th>
         </tr>
     </thead>
@@ -25,6 +32,10 @@
             {% cell item.balance highlight_value=True  %}
             {% cell item.savings css_class="bl" %}
             {% cell item.savings_close css_class="br"  %}
+            {% cell item.borrow css_class="bl toggleDisplay" %}
+            {% cell item.borrow_return css_class="toggleDisplay" %}
+            {% cell item.lent css_class="toggleDisplay" %}
+            {% cell item.lent_return css_class="br toggleDisplay" %}
             {% cell item.money_flow %}
         </tr>
         {% endfor %}
@@ -37,6 +48,10 @@
             <th></th>
             {% cell avg_row.savings tag='th' css_class="bl" %}
             {% cell avg_row.savings_close tag='th' css_class="br" %}
+            <th class="bl toggleDisplay">{{ avg_row.borrow }}</th>
+            <th class="toggleDisplay">{{ avg_row.borrow_return }}</th>
+            <th class="toggleDisplay">{{ avg_row.lent }}</th>
+            <th class="br toggleDisplay">{{ avg_row.lent_return }}</th>
             <th><b>Metų gale</b></th>
         </tr>
         <tr class="total">
@@ -46,6 +61,10 @@
             {% cell total_row.balance tag='th' highlight_value=True %}
             {% cell total_row.savings tag='th' css_class="bl" %}
             {% cell total_row.savings_close tag='th' css_class="br" %}
+            {% cell total_row.borrow tag='th' css_class="bl toggleDisplay" %}
+            {% cell total_row.borrow_return tag="th" css_class="toggleDisplay" %}
+            {% cell total_row.lent tag="th" css_class="toggleDisplay" %}
+            {% cell total_row.lent_return tag="th" css_class="br toggleDisplay" %}
             {% if accounts_amount_end|floatformat:2 != months_amount_end|floatformat:2 %}
                 {% cell months_amount_end tag="th" css_class='bad' text_before='!' text_after='!' %}
             {% else %}
@@ -54,3 +73,17 @@
         </tr>
     </tfoot>
 </table>
+
+<script>
+    function toggleDebts() {
+        $(".table .toggleDisplay").toggleClass("in");
+
+        var btn = document.getElementById('toggle_debts');
+        if (btn.textContent === 'Rodyti skolas') {
+            btn.textContent = 'Slėpti skolas'
+        }
+        else {
+            btn.textContent = 'Rodyti skolas'
+        }
+    }
+</script>

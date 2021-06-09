@@ -47,23 +47,23 @@
     <div class="col-lg-2">
         <div class="row">
             <div class="col-lg-12 col-md-3">
-                <!-- Average Incomes -->
-                <div id="avg_incomes">{{ avg_incomes }}</div>
-            </div>
-
-            <div class="col-lg-12 col-md-3">
-                <!-- Average Expenses -->
-                <div id="avg_expenses">{{ avg_expenses }}</div>
-            </div>
-
-            <div class="col-lg-12 col-md-3">
-                <!-- Money -->
-                <div id="money">{{ money }}</div>
-            </div>
-
-            <div class="col-lg-12 col-md-3">
-                <!-- Worth -->
+                <!-- Wealth -->
                 <div id="wealth">{{ wealth }}</div>
+            </div>
+
+            <div class="col-lg-12 col-md-3">
+                <!-- Average Incomes and Expenses -->
+                <div id="avg_incomes">{{ averages }}</div>
+            </div>
+
+            <div class="col-lg-12 col-md-3">
+                <!-- Debts Borrow -->
+                <div id="borrow">{{ borrow }}</div>
+            </div>
+
+            <div class="col-lg-12 col-md-3">
+                <!-- Debts Lent -->
+                <div id="lent">{{ lent }}</div>
             </div>
         </div>
     </div>
@@ -120,9 +120,6 @@
             success: function (data) {
                 var no_incomes = $(data).filter('#no_incomes');
                 $('#no_incomes').html(no_incomes);
-
-                var money = $(data).filter('#money');
-                $('#money').html(money);
 
                 var wealth = $(data).filter('#wealth');
                 $('#wealth').html(wealth);

@@ -37,6 +37,26 @@ def test_view_index_200(client_logged):
     assert response.status_code == 200
 
 
+def test_view_index_context(client_logged):
+    url = reverse('bookkeeping:index')
+    response = client_logged.get(url)
+
+    assert 'year' in response.context
+    assert 'accounts' in response.context
+    assert 'savings' in response.context
+    assert 'pensions' in response.context
+    assert 'year_balance' in response.context
+    assert 'year_balance_short' in response.context
+    assert 'year_expenses' in response.context
+    assert 'no_incomes' in response.context
+    assert 'averages' in response.context
+    assert 'wealth' in response.context
+    assert 'borrow' in response.context
+    assert 'lent' in response.context
+    assert 'chart_expenses' in response.context
+    assert 'chart_balance' in response.context
+
+
 @freeze_time('1999-07-01')
 def test_no_incomes(client_logged):
     ExpenseFactory(date=date(1999, 1, 1), price=1.0, expense_type=ExpenseTypeFactory(title='Darbas'))
