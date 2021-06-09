@@ -232,6 +232,19 @@ def test_borrow_sum_one_month():
     assert expect == actual
 
 
+def test_borrow_sum_all_not_closed():
+    BorrowFactory(date=date(1999, 1, 1), price=12, closed=True)
+    BorrowFactory(date=date(1999, 1, 1), price=1, returned=0.5)
+    BorrowFactory(date=date(1999, 1, 2), price=1, returned=0.5)
+    BorrowFactory(date=date(1974, 1, 2), price=3, returned=2)
+
+    expect = {'borrow': Decimal('5'), 'borrow_return': Decimal('3')}
+
+    actual = Borrow.objects.sum_all()
+
+    assert expect == actual
+
+
 #----------------------------------------------------------------------------------------
 #                                                                           Borrow Return
 #----------------------------------------------------------------------------------------
@@ -725,6 +738,19 @@ def test_lent_sum_one_month():
     actual = list(Lent.objects.sum_by_month(1999, 1))
 
     assert len(expect) == 1
+    assert expect == actual
+
+
+def test_lent_sum_all_not_closed():
+    LentFactory(date=date(1999, 1, 1), price=12, closed=True)
+    LentFactory(date=date(1999, 1, 1), price=1, returned=0.5)
+    LentFactory(date=date(1999, 1, 2), price=1, returned=0.5)
+    LentFactory(date=date(1974, 1, 2), price=3, returned=2)
+
+    expect = {'lent': Decimal('5'), 'lent_return': Decimal('3')}
+
+    actual = Lent.objects.sum_all()
+
     assert expect == actual
 
 

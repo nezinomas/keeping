@@ -63,6 +63,14 @@ class BorrowQuerySet(SumMixin, models.QuerySet):
             )
         )
 
+    def sum_all(self):
+        return (
+            self
+            .related()
+            .filter(closed=False)
+            .aggregate(borrow=Sum('price'), borrow_return=Sum('returned'))
+        )
+
 
 class BorrowReturnQuerySet(SumMixin, models.QuerySet):
     def related(self):
@@ -170,6 +178,13 @@ class LentQuerySet(SumMixin, models.QuerySet):
             )
         )
 
+    def sum_all(self):
+        return (
+            self
+            .related()
+            .filter(closed=False)
+            .aggregate(lent=Sum('price'), lent_return=Sum('returned'))
+        )
 
 class LentReturnQuerySet(SumMixin, models.QuerySet):
     def related(self):
