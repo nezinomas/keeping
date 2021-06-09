@@ -111,6 +111,18 @@ def test_saving_type_closed_in_current_year(get_user):
     assert 'S2' in str(form['saving_type'])
 
 
+def test_saving_type_unique_name():
+    b = SavingTypeFactory(title='XXX')
+
+    form = SavingTypeForm(
+        data={
+            'title': 'XXX',
+        },
+    )
+
+    assert not form.is_valid()
+
+
 # ----------------------------------------------------------------------------
 #                                                                       Saving
 # ----------------------------------------------------------------------------

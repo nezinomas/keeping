@@ -1,12 +1,13 @@
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from ..users.models import User
 from ..core.lib import utils
 from ..core.models import MonthAbstract
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
 from ..savings.models import SavingType
+from ..users.models import User
 
 
 class YearManager(models.Manager):
@@ -66,6 +67,12 @@ class IncomePlan(MonthAbstract):
         ordering = ['income_type']
         unique_together = ('year', 'income_type', 'user')
 
+    def validate_unique(self, exclude=None):
+        try:
+            super().validate_unique()
+        except ValidationError:
+            raise ValidationError(f'{self.year} metai jau turi {self.income_type.title} planą.')
+
 
 # ----------------------------------------------------------------------------
 #                                                                 Expense Plan
@@ -92,6 +99,12 @@ class ExpensePlan(MonthAbstract):
     class Meta:
         ordering = ['expense_type']
         unique_together = ('year', 'expense_type', 'user')
+
+    def validate_unique(self, exclude=None):
+        try:
+            super().validate_unique()
+        except ValidationError:
+            raise ValidationError(f'{self.year} metai jau turi {self.expense_type.title} planą.')
 
 
 # ----------------------------------------------------------------------------
@@ -120,6 +133,12 @@ class SavingPlan(MonthAbstract):
         ordering = ['saving_type']
         unique_together = ('year', 'saving_type', 'user')
 
+    def validate_unique(self, exclude=None):
+        try:
+            super().validate_unique()
+        except ValidationError:
+            raise ValidationError(f'{self.year} metai jau turi {self.saving_type.title} planą.')
+
 
 # ----------------------------------------------------------------------------
 #                                                                     Day Plan
@@ -142,6 +161,12 @@ class DayPlan(MonthAbstract):
     class Meta:
         ordering = ['year']
         unique_together = ('year', 'user')
+
+    def validate_unique(self, exclude=None):
+        try:
+            super().validate_unique()
+        except ValidationError:
+            raise ValidationError(f'{self.year} metai jau turi Dienos planą.')
 
 
 # ----------------------------------------------------------------------------
@@ -166,3 +191,9 @@ class NecessaryPlan(MonthAbstract):
     class Meta:
         ordering = ['year', 'title']
         unique_together = ('year', 'title', 'user')
+
+    def validate_unique(self, exclude=None):
+        try:
+            super().validate_unique()
+        except ValidationError:
+            raise ValidationError(f'{self.year} metai jau turi {self.title} planą.')

@@ -71,6 +71,18 @@ def test_income_type_title_too_short():
     assert 'title' in form.errors
 
 
+def test_income_type_unique_name():
+    b = IncomeTypeFactory(title='XXX')
+
+    form = IncomeTypeForm(
+        data={
+            'title': 'XXX',
+        },
+    )
+
+    assert not form.is_valid()
+
+
 # ----------------------------------------------------------------------------
 #                                                                       Income
 # ----------------------------------------------------------------------------

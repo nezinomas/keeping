@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 
 from ..core.helpers.helper_forms import set_field_properties
-from ..core.mixins.form_mixin import FormForUserMixin
+from ..core.lib import utils
 from .models import Pension, PensionType
 
 
@@ -60,13 +60,18 @@ class PensionForm(forms.ModelForm):
 
         return
 
-class PensionTypeForm(FormForUserMixin, forms.ModelForm):
+class PensionTypeForm(forms.ModelForm):
     class Meta:
         model = PensionType
-        fields = ['title']
+        fields = ['user', 'title']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # user input
+        self.fields['user'].initial = utils.get_user()
+        self.fields['user'].disabled = True
+        self.fields['user'].widget = forms.HiddenInput()
 
         self.fields['title'].label = 'Fondo pavadinimas'
 

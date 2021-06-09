@@ -108,13 +108,12 @@ def test_book_title_too_short():
         'started': '1974-01-01',
         'ended': '1974-01-31',
         'author': 'Author',
-        'title': 'TT',
+        'title': 'T',
     })
 
     assert not form.is_valid()
 
     assert 'title' in form.errors
-
 
 
 # ---------------------------------------------------------------------------------------

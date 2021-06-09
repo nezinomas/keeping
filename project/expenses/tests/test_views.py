@@ -1,5 +1,6 @@
 import json
 from datetime import date
+from decimal import Decimal
 
 import pytest
 from django.urls import resolve, reverse
@@ -57,6 +58,14 @@ def test_expenses_lists_month_func():
     assert expenses.MonthLists == view.func.view_class
 
 
+def test_expenses_lists_month_search_form(client_logged):
+    url = reverse('expenses:expenses_month_list', kwargs={'month': 1})
+    response = client_logged.get(url).content.decode('utf-8')
+
+    assert '<input type="text" name="search"' in response
+    assert reverse('expenses:expenses_search') in response
+
+
 def test_expenses_new_func():
     view = resolve('/expenses/new/')
 
@@ -108,11 +117,35 @@ def test_expenses_save(client_logged):
 
     actual = models.Expense.objects.get(pk=1)
     assert actual.date == date(1999, 1, 1)
-    assert pytest.approx(float(actual.price), rel=1e-2) == 1.05
+    assert actual.price == Decimal('1.05')
     assert actual.quantity == 33
     assert actual.account.title == 'Account1'
     assert actual.expense_type.title == 'Expense Type'
     assert actual.expense_name.title == 'Expense Name'
+
+
+def test_expenses_save_not_render_html_list(client_logged):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory()
+
+    data = {
+        'date': '1999-01-01',
+        'price': '1.05',
+        'quantity': 33,
+        'account': a.pk,
+        'expense_type': t.pk,
+        'expense_name': n.pk,
+    }
+
+    url = reverse('expenses:expenses_new')
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
 
 
 def test_expenses_save_insert_button(client_logged):
@@ -233,12 +266,36 @@ def test_expenses_update(client_logged):
 
     actual = models.Expense.objects.get(pk=e.pk)
     assert actual.date == date(1999, 12, 31)
-    assert float(150) == 150
+    assert actual.price == Decimal('150')
     assert actual.quantity == 33
     assert actual.account.title == 'Account1'
     assert actual.expense_type.title == 'Expense Type'
     assert actual.expense_name.title == 'Expense Name'
     assert actual.remark == 'Pastaba'
+
+
+def test_expenses_update_not_render_html_list(client_logged):
+    e = ExpenseFactory()
+
+    data = {
+        'price': '150',
+        'quantity': 33,
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'expense_type': 1,
+        'expense_name': 1,
+    }
+    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
 
 
 @freeze_time('2000-03-03')
@@ -268,7 +325,7 @@ def test_expenses_update_past_record(get_user, client_logged):
 
     actual = models.Expense.objects.get(pk=e.pk)
     assert actual.date == date(1974, 12, 12)
-    assert float(150) == 150
+    assert actual.price == Decimal('150')
     assert actual.quantity == 33
     assert actual.account.title == 'Account1'
     assert actual.expense_type.title == 'Expense Type'
@@ -277,12 +334,14 @@ def test_expenses_update_past_record(get_user, client_logged):
 
 
 def test_expenses_index_200(client_logged):
-    response = client_logged.get('/expenses/')
+    response = client_logged.get('/expenses/', follow=True)
 
     assert response.status_code == 200
 
     assert 'expenses_list' in response.context
     assert 'categories' in response.context
+    assert 'search' in response.context
+    assert 'current_month' in response.context
 
 
 def test_expenses_month_list_200(client_logged):
@@ -293,14 +352,14 @@ def test_expenses_month_list_200(client_logged):
 
 def test_expenses_index_search_form(client_logged):
     url = reverse('expenses:expenses_index')
-    response = client_logged.get(url).content.decode('utf-8')
+    response = client_logged.get(url, follow=True).content.decode('utf-8')
 
     assert '<input type="text" name="search"' in response
     assert reverse('expenses:expenses_search') in response
 
 
 # ---------------------------------------------------------------------------------------
-#                                                                             Expense Delete
+#                                                                          Expense Delete
 # ---------------------------------------------------------------------------------------
 def test_view_expenses_delete_func():
     view = resolve('/expenses/delete/1/')
@@ -346,6 +405,20 @@ def test_view_expenses_delete(client_logged):
     assert response.status_code == 200
 
     assert models.Expense.objects.all().count() == 0
+
+
+def test_view_expenses_delete_not_render_html_list(client_logged):
+    p = ExpenseFactory()
+
+    assert models.Expense.objects.all().count() == 1
+    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
 
 
 # ---------------------------------------------------------------------------------------
@@ -496,7 +569,7 @@ def test_view_reload_expenses_render_ajax_trigger_not_set(client_logged):
     response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
-    assert expenses.Index == response.resolver_match.func.view_class
+    assert expenses.MonthLists == response.resolver_match.func.view_class
 
 
 # ---------------------------------------------------------------------------------------

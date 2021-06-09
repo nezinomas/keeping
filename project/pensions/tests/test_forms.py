@@ -70,6 +70,18 @@ def test_pension_type_title_too_short():
     assert 'title' in form.errors
 
 
+def test_pensiong_type_unique_name():
+    b = PensionTypeFactory(title='XXX')
+
+    form = PensionTypeForm(
+        data={
+            'title': 'XXX',
+        },
+    )
+
+    assert not form.is_valid()
+
+
 # ----------------------------------------------------------------------------
 #                                                                      Pension
 # ----------------------------------------------------------------------------
