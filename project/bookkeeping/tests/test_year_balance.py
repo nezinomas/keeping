@@ -442,6 +442,62 @@ def test_balance_expense_data(_expenses, _expect):
     assert actual == expect
 
 
+def test_balance_borrow_data(_incomes, _borrow, _expect):
+    actual = YearBalance(
+        year=1999,
+        incomes=_incomes,
+        expenses=[],
+        borrow=_borrow,
+        amount_start=None
+    ).borrow_data
+
+    expect = [x['borrow'] for x in _expect]
+
+    assert actual == expect
+
+
+def test_balance_borrow_return_data(_incomes, _borrow_return, _expect):
+    actual = YearBalance(
+        year=1999,
+        incomes=_incomes,
+        expenses=[],
+        borrow_return=_borrow_return,
+        amount_start=None
+    ).borrow_return_data
+
+    expect = [x['borrow_return'] for x in _expect]
+
+    assert actual == expect
+
+
+def test_balance_lent_data(_incomes, _lent, _expect):
+    actual = YearBalance(
+        year=1999,
+        incomes=_incomes,
+        expenses=[],
+        lent=_lent,
+        amount_start=None
+    ).lent_data
+
+    expect = [x['lent'] for x in _expect]
+
+    assert actual == expect
+
+
+def test_balance_lent_return_data(_incomes, _lent_return, _expect):
+    actual = YearBalance(
+        year=1999,
+        incomes=_incomes,
+        expenses=[],
+        lent_return=_lent_return,
+        amount_start=None
+    ).lent_return_data
+
+    expect = [x['lent_return'] for x in _expect]
+
+    assert actual == expect
+
+
 def test_balance_money_flow(_incomes, _expenses,
                             _savings, _savings_close,
                             _borrow, _borrow_return,

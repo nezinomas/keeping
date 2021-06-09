@@ -106,6 +106,38 @@ class YearBalance(BalanceBase):
         return rtn
 
     @property
+    def borrow_data(self) -> List[float]:
+        rtn = []
+        if 'borrow' in self._balance:
+            rtn = self._balance.borrow.tolist()
+
+        return rtn
+
+    @property
+    def borrow_return_data(self) -> List[float]:
+        rtn = []
+        if 'borrow_return' in self._balance:
+            rtn = self._balance.borrow_return.tolist()
+
+        return rtn
+
+    @property
+    def lent_data(self) -> List[float]:
+        rtn = []
+        if 'lent' in self._balance:
+            rtn = self._balance.lent.tolist()
+
+        return rtn
+
+    @property
+    def lent_return_data(self) -> List[float]:
+        rtn = []
+        if 'lent_return' in self._balance:
+            rtn = self._balance.lent_return.tolist()
+
+        return rtn
+
+    @property
     def money_flow(self) -> List[float]:
         rtn = []
         if 'money_flow' in self._balance:
