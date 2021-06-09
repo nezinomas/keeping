@@ -139,7 +139,7 @@ class YearBalance(BalanceBase):
         }
 
         for name, arr in dict.items():
-            # create column and assign 0 for all cellls
+            # create column and assign 0 for all cells
             df.loc[:, name] = 0.0
             if arr:
                 # copy values from input arrays to df
