@@ -18,7 +18,7 @@ class Book(models.Model):
     )
     title = models.CharField(
         max_length=254,
-        validators=[MinLengthValidator(3)]
+        validators=[MinLengthValidator(2)]
     )
     remark = models.TextField(
         max_length=200,
