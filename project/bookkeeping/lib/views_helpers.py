@@ -479,17 +479,6 @@ class IndexHelper():
             self._request
         )
 
-    def render_money(self):
-        wealth_money = (
-            self._YearBalance.amount_end
-            + sum_col(self._fund, 'market_value')
-        )
-        context = {
-            'title': ['Pinigai'],
-            'data': [wealth_money],
-        }
-        return self._render_info_table(context)
-
     def render_wealth(self):
         money = (
             self._YearBalance.amount_end
