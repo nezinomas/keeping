@@ -13,19 +13,22 @@ class YearBalance(BalanceBase):
                  expenses: List[Dict],
                  savings: List[Dict] = None,
                  savings_close: List[Dict] = None,
+                 borrow: List[Dict] = None,
+                 borrow_return: List[Dict] = None,
+                 lent: List[Dict] = None,
+                 lent_return: List[Dict] = None,
                  amount_start: float = 0.0):
 
         '''
         year: int
-
         incomes: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-
         expenses: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-
         savings: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-
         savings_close: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-
+        borrow: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
+        borrow_return: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
+        lent: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
+        lent_return: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
         amount_start: year start worth amount
         '''
 
@@ -46,7 +49,12 @@ class YearBalance(BalanceBase):
             incomes=incomes,
             expenses=expenses,
             savings=savings,
-            savings_close=savings_close)
+            savings_close=savings_close,
+            borrow=borrow,
+            borrow_return=borrow_return,
+            lent=lent,
+            lent_return=lent_return,
+        )
 
         self._balance = self._calc(self._balance)
 
@@ -98,6 +106,38 @@ class YearBalance(BalanceBase):
         return rtn
 
     @property
+    def borrow_data(self) -> List[float]:
+        rtn = []
+        if 'borrow' in self._balance:
+            rtn = self._balance.borrow.tolist()
+
+        return rtn
+
+    @property
+    def borrow_return_data(self) -> List[float]:
+        rtn = []
+        if 'borrow_return' in self._balance:
+            rtn = self._balance.borrow_return.tolist()
+
+        return rtn
+
+    @property
+    def lent_data(self) -> List[float]:
+        rtn = []
+        if 'lent' in self._balance:
+            rtn = self._balance.lent.tolist()
+
+        return rtn
+
+    @property
+    def lent_return_data(self) -> List[float]:
+        rtn = []
+        if 'lent_return' in self._balance:
+            rtn = self._balance.lent_return.tolist()
+
+        return rtn
+
+    @property
     def money_flow(self) -> List[float]:
         rtn = []
         if 'money_flow' in self._balance:
@@ -110,36 +150,36 @@ class YearBalance(BalanceBase):
                  incomes: List[Dict],
                  expenses: List[Dict],
                  savings: List[Dict],
-                 savings_close: List[Dict]) -> DF:
+                 savings_close: List[Dict],
+                 borrow: List[Dict],
+                 borrow_return: List[Dict],
+                 lent: List[Dict],
+                 lent_return: List[Dict]) -> DF:
 
         df = df_months_of_year(year)
 
         # append necessary columns
-        df.loc[:, 'incomes'] = 0.0
-        df.loc[:, 'expenses'] = 0.0
-        df.loc[:, 'money_flow'] = 0.0
+        dict = {
+            'incomes': incomes,
+            'expenses': expenses,
+            'savings': savings,
+            'savings_close': savings_close,
+            'borrow': borrow,
+            'borrow_return': borrow_return,
+            'lent': lent,
+            'lent_return': lent_return,
+        }
+
+        for name, arr in dict.items():
+            # create column and assign 0 for all cells
+            df.loc[:, name] = 0.0
+            if arr:
+                # copy values from input arrays to df
+                for d in arr:
+                    df.at[to_datetime(d['date']), name] = float(d['sum'])
+
         df.loc[:, 'balance'] = 0.0
-        df.loc[:, 'savings'] = 0.0
-        df.loc[:, 'savings_close'] = 0.0
         df.loc[:, 'money_flow'] = self._amount_start
-
-        # copy incomes values, convert Decimal to float
-        for d in incomes:
-            df.at[to_datetime(d['date']), 'incomes'] = float(d['sum'])
-
-        # copy expenses values, convert Decimal to float
-        for d in expenses:
-            df.at[to_datetime(d['date']), 'expenses'] = float(d['sum'])
-
-        if savings:
-            # copy savings values, convert Decimal to float
-            for d in savings:
-                df.at[to_datetime(d['date']), 'savings'] = float(d['sum'])
-
-        if savings_close:
-            # copy savings values, convert Decimal to float
-            for d in savings_close:
-                df.at[to_datetime(d['date']), 'savings_close'] = float(d['sum'])
 
         return df
 
@@ -157,6 +197,10 @@ class YearBalance(BalanceBase):
                 + df.loc[idx, 'balance']
                 + df.loc[idx, 'savings_close']
                 - df.loc[idx, 'savings']
+                - df.loc[idx, 'borrow']
+                + df.loc[idx, 'borrow_return']
+                + df.loc[idx, 'lent']
+                - df.loc[idx, 'lent_return']
             )
 
             cell = (idx, 'money_flow')

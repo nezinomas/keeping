@@ -10,6 +10,7 @@ from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...core.lib.utils import sum_all, sum_col
+from ...debts.models import Borrow, BorrowReturn, Lent, LentReturn
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
 from ...pensions.models import PensionBalance
@@ -293,6 +294,10 @@ class IndexHelper():
         qs_income = Income.objects.sum_by_month(year)
         qs_savings = Saving.objects.sum_by_month(year)
         qs_savings_close = SavingClose.objects.sum_by_month(year)
+        qs_borrow = Borrow.objects.sum_by_month(year)
+        qs_borrow_return = BorrowReturn.objects.sum_by_month(year)
+        qs_lent = Lent.objects.sum_by_month(year)
+        qs_lent_return = LentReturn.objects.sum_by_month(year)
         qs_ExpenseType = Expense.objects.sum_by_month_and_type(year)
 
         self._MonthExpense = MonthExpense(year, qs_ExpenseType)
@@ -303,6 +308,10 @@ class IndexHelper():
             expenses=self._MonthExpense.total_column,
             savings=qs_savings,
             savings_close=qs_savings_close,
+            borrow=qs_borrow,
+            borrow_return=qs_borrow_return,
+            lent=qs_lent,
+            lent_return=qs_lent_return,
             amount_start=sum_col(self._account, 'past'))
 
     def render_year_balance(self):
@@ -470,43 +479,58 @@ class IndexHelper():
             self._request
         )
 
-    def render_money(self):
-        wealth_money = (
-            self._YearBalance.amount_end
-            + sum_col(self._fund, 'market_value')
-        )
-        context = {
-            'title': 'Pinigai',
-            'data': wealth_money,
-        }
-        return self._render_info_table(context)
-
     def render_wealth(self):
-        wealth_money = (
+        money = (
             self._YearBalance.amount_end
             + sum_col(self._fund, 'market_value')
         )
-        wealth = wealth_money + sum_col(self._pension, 'market_value')
+
+        wealth = (
+            self._YearBalance.amount_end
+            + sum_col(self._fund, 'market_value')
+        )
+        wealth = wealth + sum_col(self._pension, 'market_value')
 
         context = {
-            'title': 'Turtas',
-            'data': wealth,
+            'title': ['Pinigai', 'Turtas'],
+            'data': [money, wealth],
         }
         return self._render_info_table(context)
 
-    def render_avg_incomes(self):
+    def render_averages(self):
         context = {
-            'title': 'Vidutinės pajamos',
-            'data': self._YearBalance.avg_incomes,
+            'title': ['Vidutinės pajamos', 'Vidutinės išlaidos'],
+            'data': [self._YearBalance.avg_incomes, self._YearBalance.avg_expenses],
         }
         return self._render_info_table(context)
 
-    def render_avg_expenses(self):
-        context = {
-            'title': 'Vidutinės išlaidos',
-            'data': self._YearBalance.avg_expenses,
-        }
-        return self._render_info_table(context)
+    def render_borrow(self):
+        qs = Borrow.objects.sum_all()
+        borrow = qs.get('borrow', 0)
+        borrow_return = qs.get('borrow_return', 0)
+
+        if borrow:
+            context = {
+                'title': ['Paskolinau', 'Gražino'],
+                'data': [borrow, borrow_return],
+            }
+            return self._render_info_table(context)
+        else:
+            return str()
+
+    def render_lent(self):
+        qs = Lent.objects.sum_all()
+        lent = qs.get('lent', 0)
+        lent_return = qs.get('lent_return', 0)
+
+        if lent:
+            context = {
+                'title': ['Pasiskolinau', 'Gražinau'],
+                'data': [lent, lent_return],
+            }
+            return self._render_info_table(context)
+        else:
+            return str()
 
     def _render_info_table(self, context):
         return render_to_string(

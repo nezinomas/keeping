@@ -351,6 +351,14 @@ tr.top-text, tr.top-text th {
     height: auto;
 }
 
+.toggleDisplay {
+    display: none;
+}
+
+.toggleDisplay.in {
+    display: table-cell;
+}
+
 
 /*
     Bootstrap Hacks

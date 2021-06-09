@@ -34,10 +34,10 @@ class Index(IndexMixin):
             'year_balance_short': obj.render_year_balance_short(),
             'year_expenses': obj.render_year_expenses(),
             'no_incomes': obj.render_no_incomes(),
-            'avg_incomes': obj.render_avg_incomes(),
-            'avg_expenses': obj.render_avg_expenses(),
-            'money': obj.render_money(),
+            'averages': obj.render_averages(),
             'wealth': obj.render_wealth(),
+            'borrow': obj.render_borrow(),
+            'lent': obj.render_lent(),
             'chart_expenses': obj.render_chart_expenses(),
             'chart_balance': obj.render_chart_balance(),
         })
@@ -235,7 +235,6 @@ class ReloadIndex(DispatchAjaxMixin, IndexMixin):
         obj = H.IndexHelper(request, request.user.year)
         context = {
             'no_incomes': obj.render_no_incomes(),
-            'money': obj.render_money(),
             'wealth': obj.render_wealth(),
             'savings': obj.render_savings(),
         }

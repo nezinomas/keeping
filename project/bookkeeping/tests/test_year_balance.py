@@ -37,13 +37,41 @@ def _expenses():
 
 
 @pytest.fixture()
+def _borrow():
+    return [
+        {'date': date(1999, 1, 1), 'sum': Decimal('.25')},
+    ]
+
+
+@pytest.fixture()
+def _borrow_return():
+    return [
+        {'date': date(1999, 1, 1), 'sum': Decimal('.15')},
+    ]
+
+
+@pytest.fixture()
+def _lent():
+    return [
+        {'date': date(1999, 1, 1), 'sum': Decimal('1')},
+    ]
+
+
+@pytest.fixture()
+def _lent_return():
+    return [
+        {'date': date(1999, 1, 1), 'sum': Decimal('0.5')},
+    ]
+
+
+@pytest.fixture()
 def _money_flow():
     return Decimal(1)
 
 
 @pytest.fixture
 def _expect():
-    return [
+    val = [
         {
             'date': pdTime(date(1999, 1, 1)),
             'incomes': 5.5,
@@ -51,7 +79,11 @@ def _expect():
             'balance': 3.75,
             'savings': 1.0,
             'savings_close': 0.5,
-            'money_flow': 4.25
+            'borrow': 0.25,
+            'borrow_return': 0.15,
+            'lent': 1.0,
+            'lent_return': 0.5,
+            'money_flow': 4.65
         }, {
             'date': pdTime(date(1999, 2, 1)),
             'incomes': 1.25,
@@ -59,105 +91,58 @@ def _expect():
             'balance': 1.25,
             'savings': 0.0,
             'savings_close': 0.0,
-            'money_flow': 5.5
-        }, {
-            'date': pdTime(date(1999, 3, 1)),
-            'incomes': 0.0,
-            'expenses': 0.0,
-            'balance': 0.0,
-            'savings': 0.0,
-            'savings_close': 0.0,
-            'money_flow': 5.5
-        }, {
-            'date': pdTime(date(1999, 4, 1)),
-            'incomes': 0.0,
-            'expenses': 0.0,
-            'balance': 0.0,
-            'savings': 0.0,
-            'savings_close': 0.0,
-            'money_flow': 5.5
-        }, {
-            'date': pdTime(date(1999, 5, 1)),
-            'incomes': 0.0,
-            'expenses': 0.0,
-            'balance': 0.0,
-            'savings': 0.0,
-            'savings_close': 0.0,
-            'money_flow': 5.5
-        }, {
-            'date': pdTime(date(1999, 6, 1)),
-            'incomes': 0.0,
-            'expenses': 0.0,
-            'balance': 0.0,
-            'savings': 0.0,
-            'savings_close': 0.0,
-            'money_flow': 5.5
-        }, {
-            'date': pdTime(date(1999, 7, 1)),
-            'incomes': 0.0,
-            'expenses': 0.0,
-            'balance': 0.0,
-            'savings': 0.0,
-            'savings_close': 0.0,
-            'money_flow': 5.5
-        }, {
-            'date': pdTime(date(1999, 8, 1)),
-            'incomes': 0.0,
-            'expenses': 0.0,
-            'balance': 0.0,
-            'savings': 0.0,
-            'savings_close': 0.0,
-            'money_flow': 5.5
-        }, {
-            'date': pdTime(date(1999, 9, 1)),
-            'incomes': 0.0,
-            'expenses': 0.0,
-            'balance': 0.0,
-            'savings': 0.0,
-            'savings_close': 0.0,
-            'money_flow': 5.5
-        }, {
-            'date': pdTime(date(1999, 10, 1)),
-            'incomes': 0.0,
-            'expenses': 0.0,
-            'balance': 0.0,
-            'savings': 0.0,
-            'savings_close': 0.0,
-            'money_flow': 5.5
-        }, {
-            'date': pdTime(date(1999, 11, 1)),
-            'incomes': 0.0,
-            'expenses': 0.0,
-            'balance': 0.0,
-            'savings': 0.0,
-            'savings_close': 0.0,
-            'money_flow': 5.5
-        }, {
-            'date': pdTime(date(1999, 12, 1)),
-            'incomes': 0.0,
-            'expenses': 0.0,
-            'balance': 0.0,
-            'savings': 0.0,
-            'savings_close': 0.0,
-            'money_flow': 5.5
+            'borrow': 0.0,
+            'borrow_return': 0.0,
+            'lent': 0.0,
+            'lent_return': 0.0,
+            'money_flow': 5.9
         }
     ]
 
+    # same dictionaries for march - december
+    for i in range(3, 13):
+        item = {
+            'date': pdTime(date(1999, i, 1)),
+            'incomes': 0.0,
+            'expenses': 0.0,
+            'balance': 0.0,
+            'savings': 0.0,
+            'savings_close': 0.0,
+            'borrow': 0.0,
+            'borrow_return': 0.0,
+            'lent': 0.0,
+            'lent_return': 0.0,
+            'money_flow': 5.9
+        }
+        val.append(item)
 
-def test_months_balance(_incomes, _expenses, _savings, _savings_close, _money_flow, _expect):
+    return val
+
+
+def test_months_balance(_incomes, _expenses,
+                        _savings, _savings_close,
+                        _borrow, _borrow_return,
+                        _lent, _lent_return,
+                        _money_flow, _expect):
     actual = YearBalance(
         year=1999,
         incomes=_incomes,
         expenses=_expenses,
         savings=_savings,
         savings_close=_savings_close,
+        borrow=_borrow,
+        borrow_return=_borrow_return,
+        lent=_lent,
+        lent_return=_lent_return,
         amount_start=_money_flow
     ).balance
 
     assert actual == _expect
 
 
-def test_months_balance_no_savings(_incomes, _expenses, _savings_close, _money_flow, _expect):
+def test_months_balance_only_saving_close(_incomes, _expenses,
+                                          _savings_close,
+                                          _money_flow):
     actual = YearBalance(
         year=1999,
         incomes=_incomes,
@@ -166,14 +151,20 @@ def test_months_balance_no_savings(_incomes, _expenses, _savings_close, _money_f
         amount_start=_money_flow
     ).balance
 
-    for x in _expect:
-        x['savings'] = 0.0
-        x['money_flow'] += 1.0
+    assert actual[0]['savings_close'] == 0.5
+    assert actual[0]['money_flow'] == 5.25
 
-    assert actual == _expect
+    assert actual[1]['savings_close'] == 0.0
+    assert actual[1]['money_flow'] == 6.5
+
+    for i in range(3, 12):
+        assert actual[i]['savings_close'] == 0.0
+        assert actual[i]['money_flow'] == 6.5
 
 
-def test_months_balance_no_savings_close(_incomes, _expenses, _savings, _money_flow, _expect):
+def test_months_balance_only_savings(_incomes, _expenses,
+                                     _savings,
+                                     _money_flow):
     actual = YearBalance(
         year=1999,
         incomes=_incomes,
@@ -182,21 +173,120 @@ def test_months_balance_no_savings_close(_incomes, _expenses, _savings, _money_f
         amount_start=_money_flow
     ).balance
 
-    for x in _expect:
-        x['savings_close'] = 0.0
-        x['money_flow'] -= 1.0
-        x['money_flow'] += 0.5
+    assert actual[0]['savings'] == 1.0
+    assert actual[0]['money_flow'] == 3.75
 
-    assert actual == _expect
+    assert actual[1]['savings'] == 0.0
+    assert actual[1]['money_flow'] == 5.0
+
+    for i in range(3, 12):
+        assert actual[i]['savings'] == 0.0
+        assert actual[i]['money_flow'] == 5.0
 
 
-def test_months_balance_total_row(_incomes, _expenses, _savings, _savings_close, _money_flow, _expect):
+def test_months_balance_only_borrow(_incomes, _expenses,
+                                     _borrow,
+                                     _money_flow):
+    actual = YearBalance(
+        year=1999,
+        incomes=_incomes,
+        expenses=_expenses,
+        borrow=_borrow,
+        amount_start=_money_flow
+    ).balance
+
+    assert actual[0]['borrow'] == 0.25
+    assert actual[0]['money_flow'] == 4.5
+
+    assert actual[1]['borrow'] == 0.0
+    assert actual[1]['money_flow'] == 5.75
+
+    for i in range(3, 12):
+        assert actual[i]['borrow'] == 0.0
+        assert actual[i]['money_flow'] == 5.75
+
+
+def test_months_balance_only_borrow_return(_incomes, _expenses,
+                                     _borrow_return,
+                                     _money_flow):
+    actual = YearBalance(
+        year=1999,
+        incomes=_incomes,
+        expenses=_expenses,
+        borrow_return=_borrow_return,
+        amount_start=_money_flow
+    ).balance
+
+    assert actual[0]['borrow_return'] == 0.15
+    assert actual[0]['money_flow'] == 4.9
+
+    assert actual[1]['borrow_return'] == 0.0
+    assert actual[1]['money_flow'] == 6.15
+
+    for i in range(3, 12):
+        assert actual[i]['borrow_return'] == 0.0
+        assert actual[i]['money_flow'] == 6.15
+
+
+def test_months_balance_only_lent(_incomes, _expenses,
+                                     _lent,
+                                     _money_flow):
+    actual = YearBalance(
+        year=1999,
+        incomes=_incomes,
+        expenses=_expenses,
+        lent=_lent,
+        amount_start=_money_flow
+    ).balance
+
+    assert actual[0]['lent'] == 1.0
+    assert actual[0]['money_flow'] == 5.75
+
+    assert actual[1]['lent'] == 0.0
+    assert actual[1]['money_flow'] == 7.0
+
+    for i in range(3, 12):
+        assert actual[i]['lent'] == 0.0
+        assert actual[i]['money_flow'] == 7.0
+
+
+def test_months_balance_only_lent_return(_incomes, _expenses,
+                                     _lent_return,
+                                     _money_flow):
+    actual = YearBalance(
+        year=1999,
+        incomes=_incomes,
+        expenses=_expenses,
+        lent_return=_lent_return,
+        amount_start=_money_flow
+    ).balance
+
+    assert actual[0]['lent_return'] == 0.5
+    assert actual[0]['money_flow'] == 4.25
+
+    assert actual[1]['lent_return'] == 0.0
+    assert actual[1]['money_flow'] == 5.5
+
+    for i in range(3, 12):
+        assert actual[i]['lent_return'] == 0.0
+        assert actual[i]['money_flow'] == 5.5
+
+
+def test_months_balance_total_row(_incomes, _expenses,
+                                  _savings, _savings_close,
+                                  _borrow, _borrow_return,
+                                  _lent, _lent_return,
+                                  _money_flow):
     actual = YearBalance(
         year=1999,
         incomes=_incomes,
         expenses=_expenses,
         savings=_savings,
         savings_close=_savings_close,
+        borrow=_borrow,
+        borrow_return=_borrow_return,
+        lent=_lent,
+        lent_return=_lent_return,
         amount_start=_money_flow
     ).total_row
 
@@ -206,19 +296,31 @@ def test_months_balance_total_row(_incomes, _expenses, _savings, _savings_close,
         'balance': 5.0,
         'savings': 1.0,
         'savings_close': 0.5,
-        'money_flow': 64.75
+        'borrow': 0.25,
+        'borrow_return': 0.15,
+        'lent': 1.0,
+        'lent_return': 0.5,
+        'money_flow': 69.55
     }
 
     assert actual == expect
 
 
-def test_months_balance_average(_incomes, _expenses, _savings, _savings_close, _money_flow, _expect):
+def test_months_balance_average(_incomes, _expenses,
+                                _savings, _savings_close,
+                                _borrow, _borrow_return,
+                                _lent, _lent_return,
+                                _money_flow):
     actual = YearBalance(
         year=1999,
         incomes=_incomes,
         expenses=_expenses,
         savings=_savings,
         savings_close=_savings_close,
+        borrow=_borrow,
+        borrow_return=_borrow_return,
+        lent=_lent,
+        lent_return=_lent_return,
         amount_start=_money_flow
     ).average
 
@@ -228,7 +330,11 @@ def test_months_balance_average(_incomes, _expenses, _savings, _savings_close, _
         'balance': 2.5,
         'savings': 1.0,
         'savings_close': 0.5,
-        'money_flow': 5.39
+        'borrow': 0.25,
+        'borrow_return': 0.15,
+        'lent': 1.0,
+        'lent_return': 0.5,
+        'money_flow': 5.8
     }
 
     assert expect == pytest.approx(actual, rel=1e-2)
@@ -256,17 +362,25 @@ def test_amount_start_none():
     assert actual == 0.0
 
 
-def test_amount_end(_incomes, _expenses, _savings, _savings_close, _money_flow):
+def test_amount_end(_incomes, _expenses,
+                    _savings, _savings_close,
+                    _borrow, _borrow_return,
+                    _lent, _lent_return,
+                    _money_flow):
     actual = YearBalance(
         year=1999,
         incomes=_incomes,
         expenses=_expenses,
         savings=_savings,
         savings_close=_savings_close,
+        borrow=_borrow,
+        borrow_return=_borrow_return,
+        lent=_lent,
+        lent_return=_lent_return,
         amount_start=_money_flow
     ).amount_end
 
-    assert actual == 5.5
+    assert actual == 5.9
 
 
 def test_amount_end_none():
@@ -328,13 +442,77 @@ def test_balance_expense_data(_expenses, _expect):
     assert actual == expect
 
 
-def test_balance_money_flow(_incomes, _expenses, _savings, _savings_close, _money_flow, _expect):
+def test_balance_borrow_data(_incomes, _borrow, _expect):
+    actual = YearBalance(
+        year=1999,
+        incomes=_incomes,
+        expenses=[],
+        borrow=_borrow,
+        amount_start=None
+    ).borrow_data
+
+    expect = [x['borrow'] for x in _expect]
+
+    assert actual == expect
+
+
+def test_balance_borrow_return_data(_incomes, _borrow_return, _expect):
+    actual = YearBalance(
+        year=1999,
+        incomes=_incomes,
+        expenses=[],
+        borrow_return=_borrow_return,
+        amount_start=None
+    ).borrow_return_data
+
+    expect = [x['borrow_return'] for x in _expect]
+
+    assert actual == expect
+
+
+def test_balance_lent_data(_incomes, _lent, _expect):
+    actual = YearBalance(
+        year=1999,
+        incomes=_incomes,
+        expenses=[],
+        lent=_lent,
+        amount_start=None
+    ).lent_data
+
+    expect = [x['lent'] for x in _expect]
+
+    assert actual == expect
+
+
+def test_balance_lent_return_data(_incomes, _lent_return, _expect):
+    actual = YearBalance(
+        year=1999,
+        incomes=_incomes,
+        expenses=[],
+        lent_return=_lent_return,
+        amount_start=None
+    ).lent_return_data
+
+    expect = [x['lent_return'] for x in _expect]
+
+    assert actual == expect
+
+
+def test_balance_money_flow(_incomes, _expenses,
+                            _savings, _savings_close,
+                            _borrow, _borrow_return,
+                            _lent, _lent_return,
+                            _money_flow, _expect):
     actual = YearBalance(
         year=1999,
         incomes=_incomes,
         expenses=_expenses,
         savings=_savings,
         savings_close=_savings_close,
+        borrow=_borrow,
+        borrow_return=_borrow_return,
+        lent=_lent,
+        lent_return=_lent_return,
         amount_start=_money_flow
     ).money_flow
 

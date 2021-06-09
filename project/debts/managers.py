@@ -2,12 +2,13 @@ from decimal import Decimal
 from typing import Any, Dict, List
 
 from django.db import models
-from django.db.models import Case, Count, F, Sum, When, Q
+from django.db.models import Case, Count, F, Q, Sum, When
 
 from ..core.lib import utils
+from ..core.mixins.queryset_sum import SumMixin
 
 
-class BorrowQuerySet(models.QuerySet):
+class BorrowQuerySet(SumMixin, models.QuerySet):
     def related(self):
         user = utils.get_user()
         return (
@@ -62,8 +63,16 @@ class BorrowQuerySet(models.QuerySet):
             )
         )
 
+    def sum_all(self):
+        return (
+            self
+            .related()
+            .filter(closed=False)
+            .aggregate(borrow=Sum('price'), borrow_return=Sum('returned'))
+        )
 
-class BorrowReturnQuerySet(models.QuerySet):
+
+class BorrowReturnQuerySet(SumMixin, models.QuerySet):
     def related(self):
         user = utils.get_user()
         qs = (
@@ -114,7 +123,7 @@ class BorrowReturnQuerySet(models.QuerySet):
         )
 
 
-class LentQuerySet(models.QuerySet):
+class LentQuerySet(SumMixin, models.QuerySet):
     def related(self):
         user = utils.get_user()
         return (
@@ -169,8 +178,15 @@ class LentQuerySet(models.QuerySet):
             )
         )
 
+    def sum_all(self):
+        return (
+            self
+            .related()
+            .filter(closed=False)
+            .aggregate(lent=Sum('price'), lent_return=Sum('returned'))
+        )
 
-class LentReturnQuerySet(models.QuerySet):
+class LentReturnQuerySet(SumMixin, models.QuerySet):
     def related(self):
         user = utils.get_user()
         qs = (
