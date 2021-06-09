@@ -235,7 +235,6 @@ class ReloadIndex(DispatchAjaxMixin, IndexMixin):
         obj = H.IndexHelper(request, request.user.year)
         context = {
             'no_incomes': obj.render_no_incomes(),
-            'money': obj.render_money(),
             'wealth': obj.render_wealth(),
             'savings': obj.render_savings(),
         }
