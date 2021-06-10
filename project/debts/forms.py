@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from bootstrap_datepicker_plus import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
@@ -103,6 +104,17 @@ class BorrowReturnForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
+    def clean_price(self):
+        price = self.cleaned_data['price']
+        borrow = self.cleaned_data['borrow']
+        obj = models.Borrow.objects.get(pk=borrow.pk)
+
+        if price > obj.returned:
+            raise ValidationError("Gražinama suma yra didesnė nei skola!")
+
+        return price
+
+
 class LentForm(forms.ModelForm):
     class Meta:
         model = models.Lent
@@ -195,3 +207,13 @@ class LentReturnForm(forms.ModelForm):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+    def clean_price(self):
+        price = self.cleaned_data['price']
+        lent = self.cleaned_data['lent']
+        obj = models.Lent.objects.get(pk=lent.pk)
+
+        if price > obj.returned:
+            raise ValidationError("Gražinama suma yra didesnė nei skola!")
+
+        return price

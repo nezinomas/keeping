@@ -264,6 +264,22 @@ def test_borrow_return_only_not_closed():
     assert b2.name in form
 
 
+def test_borrow_return_price_higher():
+    a = AccountFactory()
+    b = factories.BorrowFactory()
+
+    form = forms.BorrowReturnForm(
+        data={
+            'borrow': b.pk,
+            'price': '76',
+            'account': a.pk,
+        },
+    )
+
+    assert not form.is_valid()
+    assert 'price' in form.errors
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                               Lent Form
 # ---------------------------------------------------------------------------------------
@@ -514,3 +530,19 @@ def test_lent_return_only_not_closed():
 
     assert b1.name not in form
     assert b2.name in form
+
+
+def test_lent_return_price_higher():
+    a = AccountFactory()
+    b = factories.LentFactory()
+
+    form = forms.LentReturnForm(
+        data={
+            'lent': b.pk,
+            'price': '76',
+            'account': a.pk,
+        },
+    )
+
+    assert not form.is_valid()
+    assert 'price' in form.errors
