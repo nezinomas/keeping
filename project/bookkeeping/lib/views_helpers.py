@@ -331,15 +331,14 @@ class IndexHelper():
 
     def render_year_balance_short(self):
         context = {
-            'amount_start': self._YearBalance.amount_start,
-            'months_amount_end': self._YearBalance.amount_end,
-            'amount_balance': self._YearBalance.amount_balance,
+            'title': ['Metų pradžioje', 'Metų pabaigoje', 'Metų balansas'],
+            'data': [
+                self._YearBalance.amount_start,
+                self._YearBalance.amount_end,
+                self._YearBalance.amount_balance,
+            ],
         }
-        return render_to_string(
-            'bookkeeping/includes/year_balance_short.html',
-            context,
-            self._request
-        )
+        return self._render_info_table(context)
 
     def render_chart_expenses(self):
         context = {
