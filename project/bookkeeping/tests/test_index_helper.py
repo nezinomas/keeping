@@ -1,3 +1,4 @@
+import re
 from datetime import date
 
 import pytest
@@ -72,3 +73,16 @@ def test_render_year_balance_short(rf):
     assert '5,00' in obj  # Metų pradžioje
     assert '70,00' in obj  # Metų pabaigoje
     assert '65,00' in obj  # Metų balansas
+
+
+def test_render_year_balance_short_highlight_balance(rf):
+    IncomeFactory(date=date(1974, 1, 1), price=5)
+    IncomeFactory(price=100)
+    ExpenseFactory(price=125)
+
+    obj = IndexHelper(rf, 1999).render_year_balance_short()
+    obj = obj.replace('\n', '').replace('\r', '')
+    obj = re.sub(r'[ ]{2,}', '', obj)
+
+    assert '<th class="table-danger">-25,00</th>' in obj
+

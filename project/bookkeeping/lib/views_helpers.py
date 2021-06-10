@@ -337,6 +337,7 @@ class IndexHelper():
                 self._YearBalance.amount_end,
                 self._YearBalance.amount_end - self._YearBalance.amount_start,
             ],
+            'highlight': [False, False, True],
         }
         return self._render_info_table(context)
 
