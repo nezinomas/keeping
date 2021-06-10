@@ -1,6 +1,9 @@
+from datetime import date
+
 import pytest
 
 from ...debts.factories import BorrowFactory, LentFactory
+from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from ...savings.factories import SavingFactory
 from ..lib.views_helpers import IndexHelper
@@ -52,3 +55,20 @@ def test_render_lent(rf):
     assert 'Gražinau' in actual
     assert '100,00' in actual
     assert '25,00' in actual
+
+
+def test_render_year_balance_short(rf):
+    IncomeFactory(date=date(1974, 1, 1), price=5)
+    IncomeFactory(price=100)
+    ExpenseFactory(price=25)
+    SavingFactory(price=10)
+
+    obj = IndexHelper(rf, 1999).render_year_balance_short()
+
+    assert 'Metų pradžioje' in obj
+    assert 'Metų pabaigoje' in obj
+    assert 'Metų balansas' in obj
+
+    assert '5,00' in obj  # Metų pradžioje
+    assert '70,00' in obj  # Metų pabaigoje
+    assert '65,00' in obj  # Metų balansas

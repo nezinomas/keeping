@@ -335,7 +335,7 @@ class IndexHelper():
             'data': [
                 self._YearBalance.amount_start,
                 self._YearBalance.amount_end,
-                self._YearBalance.amount_balance,
+                self._YearBalance.amount_end - self._YearBalance.amount_start,
             ],
         }
         return self._render_info_table(context)
