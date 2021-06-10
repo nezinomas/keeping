@@ -330,13 +330,11 @@ class IndexHelper():
         )
 
     def render_year_balance_short(self):
+        start = self._YearBalance.amount_start
+        end = self._YearBalance.amount_end
         context = {
             'title': ['Metų pradžioje', 'Metų pabaigoje', 'Metų balansas'],
-            'data': [
-                self._YearBalance.amount_start,
-                self._YearBalance.amount_end,
-                self._YearBalance.amount_end - self._YearBalance.amount_start,
-            ],
+            'data': [start, end, (end - start)],
             'highlight': [False, False, True],
         }
         return self._render_info_table(context)
