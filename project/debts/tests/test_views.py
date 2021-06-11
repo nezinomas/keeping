@@ -684,7 +684,7 @@ def test_borrow_return_update(client_logged):
     a = AccountFactory(title='AAA')
 
     data = {
-        'price': '150',
+        'price': '5',
         'remark': 'Pastaba',
         'account': a.pk,
         'borrow': l.pk
@@ -704,7 +704,7 @@ def test_borrow_return_update(client_logged):
 
     assert actual.borrow == l
     assert actual.date == date(1999, 1, 2)
-    assert actual.price == Decimal('150')
+    assert actual.price == Decimal('5')
     assert actual.account.title == 'AAA'
     assert actual.remark == 'Pastaba'
 
@@ -1288,7 +1288,7 @@ def test_lent_return_update(client_logged):
     a = AccountFactory(title='AAA')
 
     data = {
-        'price': '150',
+        'price': '5',
         'remark': 'Pastaba',
         'account': a.pk,
         'lent': l.pk
@@ -1308,7 +1308,7 @@ def test_lent_return_update(client_logged):
 
     assert actual.lent == l
     assert actual.date == date(1999, 1, 2)
-    assert actual.price == Decimal('150')
+    assert actual.price == Decimal('5')
     assert actual.account.title == 'AAA'
     assert actual.remark == 'Pastaba'
 

@@ -106,11 +106,13 @@ class BorrowReturnForm(forms.ModelForm):
 
     def clean_price(self):
         price = self.cleaned_data['price']
-        borrow = self.cleaned_data['borrow']
-        obj = models.Borrow.objects.get(pk=borrow.pk)
+        borrow = self.cleaned_data.get('borrow')
 
-        if price > obj.returned:
-            raise ValidationError("Gražinama suma yra didesnė nei skola!")
+        if borrow:
+            obj = models.Borrow.objects.get(pk=borrow.pk)
+
+            if price > obj.returned:
+                raise ValidationError("Gražinama suma yra didesnė nei skola!")
 
         return price
 
@@ -210,10 +212,12 @@ class LentReturnForm(forms.ModelForm):
 
     def clean_price(self):
         price = self.cleaned_data['price']
-        lent = self.cleaned_data['lent']
-        obj = models.Lent.objects.get(pk=lent.pk)
+        lent = self.cleaned_data.get('lent')
 
-        if price > obj.returned:
-            raise ValidationError("Gražinama suma yra didesnė nei skola!")
+        if lent:
+            obj = models.Lent.objects.get(pk=lent.pk)
+
+            if price > obj.returned:
+                raise ValidationError("Gražinama suma yra didesnė nei skola!")
 
         return price
