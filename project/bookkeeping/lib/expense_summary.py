@@ -139,7 +139,7 @@ class DayExpense(BalanceBase, ExpenseBase):
 
             rtn_categories.append(category.upper())
             rtn_data_target.append(target)
-            rtn_data_fact.append({'y': fact})
+            rtn_data_fact.append({'y': fact, 'target': target})
 
         return (rtn_categories, rtn_data_target, rtn_data_fact)
 
