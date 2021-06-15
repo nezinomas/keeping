@@ -1,11 +1,7 @@
 <div id="container-for-expenses-with-target"></div>
 <script>
-    $(function () {
-        Highcharts.SVGRenderer.prototype.symbols['c-rect'] = function (x, y, w, h) {
-            return ['M', x, y + h / 2, 'L', x + w, y + h / 2];
-        };
-
-    var chart = Highcharts.chart('container-for-expenses-with-target', {
+$(function () {
+    Highcharts.chart('container-for-expenses-with-target', {
         chart: {
             type: 'bar',
             height: '485'
@@ -51,11 +47,11 @@
             bar: {
                 grouping: false,
                 shadow: false,
-                // pointWidth: 13,
-            }
+            },
         },
         series: [{
             name: 'Planas',
+            type: 'bar',
             color: 'rgba(0,0,0,0.07)',
             data: {{ chart_targets_data_target|safe }},
             pointWidth: 19,
@@ -63,8 +59,8 @@
                 enabled: true,
                 rotation: 0,
                 color: '#000',
-                x: -2,
-                y: -13,
+                x: -3,
+                y: -15,
                 format: '{point.y:.0f}', // one decimal
                 style: {
                     fontSize: '7px',
@@ -75,9 +71,16 @@
             }
         }, {
             name: 'Faktas',
+            type: 'bullet',
             opacity: '0.7',
             data: {{ chart_targets_data_fact|safe }},
             pointWidth: 13,
+            targetOptions: {
+                borderWidth: 0,
+                height: 2,
+                color: 'black',
+                width: '200%'
+            },
             dataLabels: {
                 format: '{point.y:.0f}',
                 enabled: true,
@@ -90,17 +93,6 @@
                     fontFamily: 'Verdana, sans-serif',
                     textOutline: false,
                 },
-            },
-        }, {
-            type: 'scatter',
-            showInLegend: false,
-            enableMouseTracking: false,
-            data: {{ chart_targets_data_target|safe }},
-            marker: {
-                symbol: 'c-rect',
-                lineWidth: 2,
-                lineColor: 'grey',
-                radius: 13,
             },
         }
     ]

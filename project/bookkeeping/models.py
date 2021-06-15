@@ -2,46 +2,11 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import F, Max
 
 from ..accounts.models import Account
-from ..core.lib import utils
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
-
-
-# ----------------------------------------------------------------------------
-#                                                                  SavingWorth
-# ----------------------------------------------------------------------------
-class SavingWorthQuerySet(models.QuerySet):
-    def related(self):
-        user = utils.get_user()
-        return (
-            self
-            .select_related('saving_type')
-            .filter(saving_type__user=user)
-        )
-
-    def items(self):
-        qs = (
-            self
-            .related()
-            .values('saving_type__title')
-            .annotate(max_id=Max('id'))
-            .order_by()
-        )
-
-        ids = [x['max_id'] for x in qs ]
-
-        return (
-            self
-            .filter(pk__in=ids)
-            .values(
-                title=F('saving_type__title'),
-                have=F('price'),
-                latest_check=F('date')
-            )
-        )
+from . import managers
 
 
 class SavingWorth(models.Model):
@@ -65,41 +30,7 @@ class SavingWorth(models.Model):
         return f'{self.date:%Y-%m-%d %H:%M} - {self.saving_type}'
 
     # Managers
-    objects = SavingWorthQuerySet.as_manager()
-
-
-# ----------------------------------------------------------------------------
-#                                                                 AccountWorth
-# ----------------------------------------------------------------------------
-class AccountWorthQuerySet(models.QuerySet):
-    def related(self):
-        user = utils.get_user()
-        return (
-            self
-            .select_related('account')
-            .filter(account__user=user)
-        )
-
-    def items(self):
-        qs = (
-            self
-            .related()
-            .values('account__title')
-            .annotate(max_id=Max('id'))
-            .order_by()
-        )
-
-        ids = [x['max_id'] for x in qs]
-
-        return (
-            self
-            .filter(pk__in=ids)
-            .values(
-                title=F('account__title'),
-                have=F('price'),
-                latest_check=F('date')
-            )
-        )
+    objects = managers.SavingWorthQuerySet.as_manager()
 
 
 class AccountWorth(models.Model):
@@ -122,41 +53,7 @@ class AccountWorth(models.Model):
         return f'{self.date:%Y-%m-%d %H:%M} - {self.account}'
 
     # Managers
-    objects = AccountWorthQuerySet.as_manager()
-
-
-# ----------------------------------------------------------------------------
-#                                                                  PensionWorth
-# ----------------------------------------------------------------------------
-class PensionWorthQuerySet(models.QuerySet):
-    def related(self):
-        user = utils.get_user()
-        return (
-            self
-            .select_related('pension_type')
-            .filter(pension_type__user=user)
-        )
-
-    def items(self):
-        qs = (
-            self
-            .related()
-            .values('pension_type__title')
-            .annotate(max_id=Max('id'))
-            .order_by()
-        )
-
-        ids = [x['max_id'] for x in qs]
-
-        return (
-            self
-            .filter(pk__in=ids)
-            .values(
-                title=F('pension_type__title'),
-                have=F('price'),
-                latest_check=F('date')
-            )
-        )
+    objects = managers.AccountWorthQuerySet.as_manager()
 
 
 class PensionWorth(models.Model):
@@ -179,4 +76,4 @@ class PensionWorth(models.Model):
         return f'{self.date:%Y-%m-%d %H:%M} - {self.pension_type}'
 
     # Managers
-    objects = PensionWorthQuerySet.as_manager()
+    objects = managers.PensionWorthQuerySet.as_manager()
