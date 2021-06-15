@@ -1,4 +1,5 @@
-from datetime import date, datetime as dt
+from datetime import date
+from datetime import datetime as dt
 from decimal import Decimal
 
 import mock
@@ -7,22 +8,31 @@ import pytz
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
-from ...users.factories import UserFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...pensions.factories import PensionTypeFactory
 from ...pensions.models import PensionBalance
 from ...savings.factories import SavingTypeFactory
 from ...savings.models import SavingBalance
-from ..factories import (AccountWorthFactory, PensionWorthFactory,
-                         SavingWorthFactory)
-from ..models import AccountWorth, PensionWorth, SavingWorth
+from ...users.factories import UserFactory
+from ..factories import (AccountWorthFactory, BookkeepingFactory,
+                         PensionWorthFactory, SavingWorthFactory)
+from ..models import AccountWorth, Bookkeeping, PensionWorth, SavingWorth
 
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                 AccountWorth
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                            Bookkeeping
+# ---------------------------------------------------------------------------------------
+def test_bookkeeping_str():
+    actual = BookkeepingFactory.build()
+
+    assert str(actual) == 'bob Bookkeeping'
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                            AccountWorth
+# ---------------------------------------------------------------------------------------
 def test_account_worth_str():
     with mock.patch('django.utils.timezone.now') as mock_now:
         mock_now.return_value = dt(1999, 1, 1, 2, 3, 4, tzinfo=pytz.utc)
@@ -73,9 +83,9 @@ def test_account_worth_post_save():
     assert actual.count() == 1
 
 
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
 #                                                                  SavingWorth
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
 def test_saving_worth_str():
     with mock.patch('django.utils.timezone.now') as mock_now:
         mock_now.return_value = dt(1999, 1, 1, 2, 3, 4, tzinfo=pytz.utc)
@@ -132,9 +142,9 @@ def test_saving_worth_post_save():
     assert actual.count() == 1
 
 
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
 #                                                                 PensionWorth
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
 def test_pension_worth_str():
     with mock.patch('django.utils.timezone.now') as mock_now:
         mock_now.return_value = dt(1999, 1, 1, 2, 3, 4, tzinfo=pytz.utc)
