@@ -4,6 +4,7 @@ from decimal import Decimal
 import factory
 
 from ..accounts.factories import AccountFactory
+from ..bookkeeping.factories import BookkeepingFactory
 from ..users.factories import UserFactory
 from .models import Income, IncomeType
 

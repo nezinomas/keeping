@@ -14,7 +14,8 @@ from . import managers
 class Bookkeeping(models.Model):
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='bookkeeping'
     )
     year = models.PositiveIntegerField(
         null=True,

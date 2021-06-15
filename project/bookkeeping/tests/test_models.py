@@ -14,6 +14,7 @@ from ...pensions.models import PensionBalance
 from ...savings.factories import SavingTypeFactory
 from ...savings.models import SavingBalance
 from ...users.factories import UserFactory
+from ...users.models import User
 from ..factories import (AccountWorthFactory, BookkeepingFactory,
                          PensionWorthFactory, SavingWorthFactory)
 from ..models import AccountWorth, Bookkeeping, PensionWorth, SavingWorth
@@ -28,6 +29,23 @@ def test_bookkeeping_str():
     actual = BookkeepingFactory.build()
 
     assert str(actual) == 'bob Bookkeeping'
+
+
+def test_bookkeeping_username():
+    b = BookkeepingFactory()
+    actual = Bookkeeping.objects.get(pk=b.pk)
+
+    assert actual.user.username == 'bob'
+
+
+def test_bookkeeping_reversed():
+    u = UserFactory()
+    BookkeepingFactory()
+
+    actual = User.objects.get(pk=u.pk)
+
+    assert actual.bookkeeping.count() == 1
+    assert str(actual.bookkeeping.first()) == 'bob Bookkeeping'
 
 
 # ---------------------------------------------------------------------------------------
