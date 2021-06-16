@@ -4,6 +4,7 @@ import pytest
 from django.urls import resolve, reverse
 
 from ...core.tests.utils import setup_view
+from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
 from .. import views
 from ..factories import AccountFactory
@@ -108,7 +109,7 @@ def test_load_to_account_form(client_logged):
 def test_load_to_account(client_logged):
     a1 = AccountFactory(title='A1')
     AccountFactory(title='A2')
-    AccountFactory(title='A3', user=UserFactory(username='XXX'))
+    AccountFactory(title='A3', journal=JournalFactory(user=UserFactory(username='XXX')))
 
     url = reverse('accounts:load_to_account')
 

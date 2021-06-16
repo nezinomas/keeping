@@ -2,28 +2,28 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import F, Q
 
-from ..users.models import User
+from ..journals.models import Journal
 from ..core.lib import utils
 from ..core.models import TitleAbstract
 
 
 class AccountQuerySet(models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_journal()
         return (
             self
-            .select_related('user')
-            .filter(user=user)
+            .select_related('journal')
+            .filter(journal=journal)
         )
 
     def items(self):
-        user = utils.get_user()
+        journal = utils.get_journal()
         return (
             self
             .related()
             .filter(
                 Q(closed__isnull=True) |
-                Q(closed__gte=user.year)
+                Q(closed__gte=journal.year)
             )
         )
 
@@ -36,14 +36,14 @@ class Account(TitleAbstract):
         blank=True,
         null=True,
     )
-    user = models.ForeignKey(
-        User,
+    journal = models.ForeignKey(
+        Journal,
         on_delete=models.CASCADE,
         related_name='accounts'
     )
 
     class Meta:
-        unique_together = ['user', 'title']
+        unique_together = ['journal', 'title']
         ordering = ['order', 'title']
 
     # Managers
@@ -52,11 +52,11 @@ class Account(TitleAbstract):
 
 class AccountBalanceQuerySet(models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_journal()
         qs = (
             self
             .select_related('account')
-            .filter(account__user=user)
+            .filter(account__journal=journal)
         )
         return qs
 
