@@ -4,8 +4,7 @@ from decimal import Decimal
 import factory
 
 from ..accounts.factories import AccountFactory
-from ..bookkeeping.factories import BookkeepingFactory
-from ..users.factories import UserFactory
+from ..journals.factories import JournalFactory
 from .models import Income, IncomeType
 
 
@@ -15,7 +14,7 @@ class IncomeTypeFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ('title',)
 
     title = 'Income Type'
-    user = factory.SubFactory(UserFactory)
+    journal = factory.SubFactory(JournalFactory)
 
 
 class IncomeFactory(factory.django.DjangoModelFactory):
