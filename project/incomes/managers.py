@@ -25,7 +25,6 @@ class IncomeTypeQuerySet(models.QuerySet):
 class IncomeQuerySet(SumMixin, models.QuerySet):
     def related(self):
         journal = utils.get_journal()
-        print('-----------------ef>>>>>', journal, journal)
         qs = (
             self
             .select_related('account', 'income_type')
