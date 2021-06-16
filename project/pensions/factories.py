@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import factory
 
-from ..users.factories import UserFactory
+from ..journals.factories import JournalFactory
 from .models import Pension, PensionBalance, PensionType
 
 
@@ -13,7 +13,7 @@ class PensionTypeFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ('title',)
 
     title = 'PensionType'
-    user = factory.SubFactory(UserFactory)
+    journal = factory.SubFactory(JournalFactory)
 
 
 class PensionFactory(factory.django.DjangoModelFactory):
