@@ -1,4 +1,3 @@
-from datetime import date
 from decimal import Decimal
 
 from django.core.validators import MinValueValidator
@@ -7,31 +6,7 @@ from django.db import models
 from ..accounts.models import Account
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
-from ..users.models import User
 from . import managers
-
-
-class Bookkeeping(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='bookkeeping'
-    )
-    year = models.PositiveIntegerField(
-        null=True,
-        blank=True
-    )
-    month = models.PositiveIntegerField(
-        null=True,
-        blank=True
-    )
-    first_record = models.DateField(
-        default=date.today,
-        editable=False
-    )
-
-    def __str__(self):
-        return f'{self.user} Bookkeeping'
 
 
 class SavingWorth(models.Model):

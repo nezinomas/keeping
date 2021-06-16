@@ -126,6 +126,7 @@ INSTALLED_APPS = [
     'project.drinks',
     'project.expenses',
     'project.incomes',
+    'project.journals',
     'project.counts',
     'project.savings',
     'project.pensions',
