@@ -21,7 +21,7 @@ class TransactionQuerySet(models.QuerySet):
         return (
             self
             .select_related('from_account', 'to_account')
-            .filter(from_account__journal=journal.pk, to_account__journal=journal.pk)
+            .filter(from_account__journal=journal, to_account__journal=journal)
         )
 
     def year(self, year):

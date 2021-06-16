@@ -15,7 +15,7 @@ class IncomeTypeQuerySet(models.QuerySet):
         return (
             self
             .select_related('journal')
-            .filter(journal=journal.pk)
+            .filter(journal=journal)
         )
 
     def items(self):
@@ -25,11 +25,11 @@ class IncomeTypeQuerySet(models.QuerySet):
 class IncomeQuerySet(SumMixin, models.QuerySet):
     def related(self):
         journal = utils.get_journal()
-        print('-----------------ef>>>>>', journal, journal.pk)
+        print('-----------------ef>>>>>', journal, journal)
         qs = (
             self
             .select_related('account', 'income_type')
-            .filter(income_type__journal=journal.pk)
+            .filter(income_type__journal=journal)
         )
         return qs
 
