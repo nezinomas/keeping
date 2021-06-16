@@ -5,6 +5,7 @@ import pytest
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
+from ...journals.factories import JournalFactory
 from ...savings.factories import SavingTypeFactory
 from ...users.factories import UserFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
@@ -38,10 +39,10 @@ def test_transaction_year_initial_value():
 
 
 def test_transaction_current_user_accounts():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', user=u)  # user tom
+    AccountFactory(title='A2', journal=j)  # user X
 
     form = TransactionForm().as_p()
 
@@ -50,10 +51,10 @@ def test_transaction_current_user_accounts():
 
 
 def test_transaction_current_user_accounts_selected_parent():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     a1 = AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', user=u)  # user tom
+    AccountFactory(title='A2', journal=j)  # user X
 
     form = TransactionForm({
         'from_account': a1.pk
@@ -128,10 +129,10 @@ def test_saving_change_year_initial_value():
 
 
 def test_saving_change_current_user():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     SavingTypeFactory(title='S1')  # user bob, current user
-    SavingTypeFactory(title='S2', user=u)  # user tom
+    SavingTypeFactory(title='S2', journal=j)  # user X
 
     form = SavingChangeForm().as_p()
 
@@ -140,10 +141,10 @@ def test_saving_change_current_user():
 
 
 def test_saving_change_current_user_accounts_selected_parent():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     s1 = SavingTypeFactory(title='S1')  # user bob, current user
-    SavingTypeFactory(title='S2', user=u)  # user tom
+    SavingTypeFactory(title='S2', journal=j)  # user X
 
     form = SavingChangeForm({
         'from_account': s1.pk
@@ -203,8 +204,8 @@ def test_saving_change_price_null():
     assert 'price' in form.errors
 
 
-def test_saving_change_form_type_closed_in_past(get_user):
-    get_user.year = 3000
+def test_saving_change_form_type_closed_in_past(get_journal):
+    get_journal.year = 3000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -218,8 +219,8 @@ def test_saving_change_form_type_closed_in_past(get_user):
     assert 'S2' not in str(form['to_account'])
 
 
-def test_saving_change_form_type_closed_in_future(get_user):
-    get_user.year = 1000
+def test_saving_change_form_type_closed_in_future(get_journal):
+    get_journal.year = 1000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -233,8 +234,8 @@ def test_saving_change_form_type_closed_in_future(get_user):
     assert 'S2' in str(form['to_account'])
 
 
-def test_saving_change_form_type_closed_in_current_year(get_user):
-    get_user.year = 2000
+def test_saving_change_form_type_closed_in_current_year(get_journal):
+    get_journal.year = 2000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -265,10 +266,10 @@ def test_saving_close_year_initial_value():
 
 
 def test_saving_close_current_user_saving_types():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     SavingTypeFactory(title='S1')  # user bob, current user
-    SavingTypeFactory(title='S2', user=u)  # user tom
+    SavingTypeFactory(title='S2', journal=j)  # user X
 
     form = SavingCloseForm().as_p()
 
@@ -277,10 +278,10 @@ def test_saving_close_current_user_saving_types():
 
 
 def test_saving_close_current_user_accounts():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', user=u)  # user tom
+    AccountFactory(title='A2', journal=j)  # user X
 
     form = SavingCloseForm().as_p()
 
@@ -339,8 +340,8 @@ def test_saving_close_price_null():
     assert 'price' in form.errors
 
 
-def test_saving_close_form_type_closed_in_past(get_user):
-    get_user.year = 3000
+def test_saving_close_form_type_closed_in_past(get_journal):
+    get_journal.year = 3000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -351,8 +352,8 @@ def test_saving_close_form_type_closed_in_past(get_user):
     assert 'S2' not in str(form['from_account'])
 
 
-def test_saving_close_form_type_closed_in_future(get_user):
-    get_user.year = 1000
+def test_saving_close_form_type_closed_in_future(get_journal):
+    get_journal.year = 1000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -363,8 +364,8 @@ def test_saving_close_form_type_closed_in_future(get_user):
     assert 'S2' in str(form['from_account'])
 
 
-def test_saving_close_form_type_closed_in_current_year(get_user):
-    get_user.year = 2000
+def test_saving_close_form_type_closed_in_current_year(get_journal):
+    get_journal.year = 2000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
