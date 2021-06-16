@@ -35,7 +35,7 @@ def test_successful_login(client):
     assert response.context['user'].is_authenticated
 
 
-def test_journal_id_in_session(client):
+def test_journal_in_session(client):
     j = JournalFactory()
 
     url = reverse('users:login')
@@ -43,9 +43,11 @@ def test_journal_id_in_session(client):
 
     client.post(url, credentials, follow=True)
 
-    assert client.session.get('journal') == j.pk
-    assert client.session.get('year') == j.year
-    assert client.session.get('month') == j.month
+    actual = client.session.get('journal')
+
+    assert actual.pk == j.pk
+    assert actual.year == j.year
+    assert actual.month == j.month
 
 
 @freeze_time('2000-12-01')

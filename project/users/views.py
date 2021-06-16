@@ -20,8 +20,6 @@ class CustomLogin(auth_views.LoginView):
             journal.month = datetime.now().month
             journal.save()
 
-        self.request.session['journal'] = journal.pk
-        self.request.session['year'] = journal.year
-        self.request.session['month'] = journal.month
+        self.request.session['journal'] = journal
 
         return HttpResponseRedirect(self.get_success_url())

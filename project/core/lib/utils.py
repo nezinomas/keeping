@@ -14,7 +14,13 @@ def get_user():
 
 def get_journal():
     request = CrequestMiddleware.get_request()
-    return request.session.get('journal')
+    journal = request.session.get('journal')
+
+    if not journal:
+        user = get_user()
+        journal = user.journal.first()
+
+    return journal
 
 
 def is_ajax(request):
