@@ -5,6 +5,7 @@ import pytest
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
+from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
 from ..factories import SavingTypeFactory
 from ..forms import SavingForm, SavingTypeForm
@@ -39,7 +40,7 @@ def test_saving_type_valid_data():
 
     assert data.title == 'Title'
     assert data.closed == 2000
-    assert data.user.username == 'bob'
+    assert data.journal.user.username == 'bob'
 
 
 def test_saving_type_blank_data():
@@ -75,8 +76,8 @@ def test_saving_type_title_too_short():
     assert 'title' in form.errors
 
 
-def test_saving_type_closed_in_past(get_user):
-    get_user.year = 3000
+def test_saving_type_closed_in_past(get_journal):
+    get_journal.year = 3000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -87,8 +88,8 @@ def test_saving_type_closed_in_past(get_user):
     assert 'S2' not in str(form['saving_type'])
 
 
-def test_saving_type_closed_in_future(get_user):
-    get_user.year = 1000
+def test_saving_type_closed_in_future(get_journal):
+    get_journal.year = 1000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -99,8 +100,8 @@ def test_saving_type_closed_in_future(get_user):
     assert 'S2' in str(form['saving_type'])
 
 
-def test_saving_type_closed_in_current_year(get_user):
-    get_user.year = 2000
+def test_saving_type_closed_in_current_year(get_journal):
+    get_journal.year = 2000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -140,10 +141,10 @@ def test_saving_year_initial_value():
 
 
 def test_saving_current_user_types():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     SavingTypeFactory(title='T1')  # user bob, current user
-    SavingTypeFactory(title='T2', user=u)  # user tom
+    SavingTypeFactory(title='T2', journal=j)  # user X
 
     form = SavingForm().as_p()
 
@@ -152,10 +153,10 @@ def test_saving_current_user_types():
 
 
 def test_saving_current_user_accounts():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     AccountFactory(title='S1')  # user bob, current user
-    AccountFactory(title='S2', user=u)  # user tom
+    AccountFactory(title='S2', journal=j)  # user X
 
     form = SavingForm().as_p()
 
@@ -164,8 +165,8 @@ def test_saving_current_user_accounts():
 
 
 def test_saving_select_first_account():
-    u = UserFactory(username='XXX')
-    AccountFactory(title='S1', user=u)
+    j = JournalFactory(user=UserFactory(username='X'))
+    AccountFactory(title='S1', journal=j)
 
     s2 = AccountFactory(title='S2')
 

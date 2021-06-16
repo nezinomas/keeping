@@ -13,26 +13,26 @@ from ..core.lib import utils
 from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
-from ..users.models import User
+from ..journals.models import Journal
 
 
 class SavingTypeQuerySet(models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_journal()
         return (
             self
-            .select_related('user')
-            .filter(user=user)
+            .select_related('journal')
+            .filter(journal=journal)
         )
 
     def items(self):
-        user = utils.get_user()
+        journal = utils.get_journal()
         return (
             self
             .related()
             .filter(
                 Q(closed__isnull=True) |
-                Q(closed__gte=user.year)
+                Q(closed__gte=journal.year)
             )
         )
 
@@ -42,8 +42,8 @@ class SavingType(TitleAbstract):
         blank=True,
         null=True,
     )
-    user = models.ForeignKey(
-        User,
+    journal = models.ForeignKey(
+        Journal,
         on_delete=models.CASCADE,
         related_name='saving_types'
     )
@@ -52,18 +52,18 @@ class SavingType(TitleAbstract):
     objects = SavingTypeQuerySet.as_manager()
 
     class Meta:
-        unique_together = ['user', 'title']
+        unique_together = ['journal', 'title']
         ordering = ['title']
 
 
 
 class SavingQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_journal()
         qs = (
             self
             .select_related('account', 'saving_type')
-            .filter(saving_type__user=user)
+            .filter(saving_type__journal=journal)
         )
         return qs
 
@@ -266,11 +266,11 @@ class Saving(MixinFromDbAccountId):
 
 class SavingBalanceQuerySet(models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_journal()
         qs = (
             self
             .select_related('saving_type')
-            .filter(saving_type__user=user)
+            .filter(saving_type__journal=journal)
         )
         return qs
 
