@@ -10,16 +10,18 @@ class CustomLogin(auth_views.LoginView):
         user = form.get_user()
         login(self.request, user)
 
-        journal = user.journal.first()
+        set = False
+        if not user.year:
+            user.year = datetime.now().year
+            set = True
 
-        if not journal.year:
-            journal.year = datetime.now().year
-            journal.save()
+        if not user.month:
+            user.month = datetime.now().month
+            set = True
 
-        if not journal.month:
-            journal.month = datetime.now().month
-            journal.save()
+        if set:
+            user.save()
 
-        self.request.session['journal'] = journal
+        self.request.session['journal'] = user.journal.first()
 
         return HttpResponseRedirect(self.get_success_url())

@@ -46,23 +46,20 @@ def test_journal_in_session(client):
     actual = client.session.get('journal')
 
     assert actual.pk == j.pk
-    assert actual.year == j.year
-    assert actual.month == j.month
 
 
 @freeze_time('2000-12-01')
-def test_journal_year_month_values_fill_on_login_if_empty(client):
-    j = JournalFactory()
-    j.year = None
-    j.month = None
-    j.save()
+@pytest.mark.disable_get_user_patch
+def test_user_year_month_values_fill_on_login_if_empty(client):
+    UserFactory(year=None, month=None)
 
     url = reverse('users:login')
     credentials = {'username': 'bob', 'password': '123'}
 
-    client.post(url, credentials, follow=True)
+    response = client.post(url, credentials, follow=True)
 
-    actual = Journal.objects.related().first()
+    assert response.status_code == 200
+    assert response.context['user'].is_authenticated
 
-    assert actual.year == 2000
-    assert actual.month == 12
+    assert response.context['user'].year == 2000
+    assert response.context['user'].month == 12
