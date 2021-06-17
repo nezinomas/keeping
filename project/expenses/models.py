@@ -8,14 +8,14 @@ from django.db.models import F
 from ..accounts.models import Account
 from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.models import TitleAbstract
-from ..users.models import User
+from ..journals.models import Journal
 from .helpers.models_helper import upload_attachment
 from .managers import ExpenseNameQuerySet, ExpenseQuerySet, ExpenseTypeQuerySet
 
 
 class ExpenseType(TitleAbstract):
-    user = models.ForeignKey(
-        User,
+    journal = models.ForeignKey(
+        Journal,
         on_delete=models.CASCADE,
         related_name='expense_types'
     )
@@ -27,7 +27,7 @@ class ExpenseType(TitleAbstract):
     objects = ExpenseTypeQuerySet.as_manager()
 
     class Meta:
-        unique_together = ['user', 'title']
+        unique_together = ['journal', 'title']
         ordering = ['title']
 
 

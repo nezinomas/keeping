@@ -12,6 +12,7 @@ from override_storage import override_storage
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...expenses.factories import ExpenseFactory
+from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
 from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ..models import Expense, ExpenseName, ExpenseType
@@ -79,8 +80,10 @@ def test_expense_type_items():
 
 
 def test_expense_type_items_user():
-    ExpenseTypeFactory(title='T1', user=UserFactory())
-    ExpenseTypeFactory(title='T2', user=UserFactory(username='u2'))
+    j1 = JournalFactory()
+    j2 = JournalFactory(user=UserFactory(username='X'))
+    ExpenseTypeFactory(title='T1', journal=j1)
+    ExpenseTypeFactory(title='T2', journal=j2)
 
     actual = ExpenseType.objects.items()
 
@@ -97,7 +100,7 @@ def test_expense_type_related_qs_count(django_assert_max_num_queries):
 
 
 def test_post_save_expense_type_insert_new(expenses):
-    obj = ExpenseType(title='e1', user=UserFactory())
+    obj = ExpenseType(title='e1', journal=JournalFactory())
     obj.save()
 
     actual = AccountBalance.objects.items()
@@ -112,8 +115,10 @@ def test_expense_type_unique_user():
 
 
 def test_expense_type_unique_users():
-    ExpenseType.objects.create(title='T1', user=UserFactory(username='x'))
-    ExpenseType.objects.create(title='T1', user=UserFactory(username='y'))
+    j1 = JournalFactory(user=UserFactory(username='x'))
+    j2 = JournalFactory(user=UserFactory(username='y'))
+    ExpenseType.objects.create(title='T1', journal=j1)
+    ExpenseType.objects.create(title='T1', journal=j2)
 
 
 # ----------------------------------------------------------------------------
@@ -135,10 +140,10 @@ def test_expense_name_items():
 
 
 def test_expense_name_related_different_users():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     t1 = ExpenseTypeFactory(title='T1') # user bob
-    t2 = ExpenseTypeFactory(title='T2', user=u) # user tom
+    t2 = ExpenseTypeFactory(title='T2', journal=j) # user X
 
     ExpenseNameFactory(title='N1', parent=t1)
     ExpenseNameFactory(title='N2', parent=t2)
@@ -234,10 +239,10 @@ def test_expense_attachment_field():
 
 
 def test_expense_related():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     t1 = ExpenseTypeFactory(title='T1')  # user bob, current user
-    t2 = ExpenseTypeFactory(title='T2', user=u)  # user tom
+    t2 = ExpenseTypeFactory(title='T2', journal=j)  # user X
 
     ExpenseFactory(expense_type=t1)
     ExpenseFactory(expense_type=t2)

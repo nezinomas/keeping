@@ -13,12 +13,12 @@ from ..core.lib import utils
 
 class ExpenseTypeQuerySet(models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_journal()
         return (
             self
-            .select_related('user')
+            .select_related('journal')
             .prefetch_related('expensename_set')
-            .filter(user=user)
+            .filter(journal=journal)
         )
 
     def items(self):
@@ -27,11 +27,11 @@ class ExpenseTypeQuerySet(models.QuerySet):
 
 class ExpenseNameQuerySet(models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_journal()
         qs = (
             self
             .select_related('parent')
-            .filter(parent__user=user)
+            .filter(parent__journal=journal)
         )
         return qs
 
@@ -57,11 +57,11 @@ class ExpenseNameQuerySet(models.QuerySet):
 
 class ExpenseQuerySet(models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_journal()
         qs = (
             self
             .select_related('expense_type', 'expense_name', 'account')
-            .filter(expense_type__user=user)
+            .filter(expense_type__journal=journal)
         )
         return qs
 

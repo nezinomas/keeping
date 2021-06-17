@@ -6,6 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
+from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
 from ..factories import ExpenseNameFactory, ExpenseTypeFactory
 from ..forms import ExpenseForm, ExpenseNameForm, ExpenseTypeForm
@@ -50,10 +51,10 @@ def test_expense_year_initial_value():
 
 
 def test_expense_current_user_expense_types():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     ExpenseTypeFactory(title='T1')  # user bob, current user
-    ExpenseTypeFactory(title='T2', user=u)  # user tom
+    ExpenseTypeFactory(title='T2', journal=j)  # user X
 
     form = ExpenseForm().as_p()
 
@@ -62,10 +63,10 @@ def test_expense_current_user_expense_types():
 
 
 def test_expense_current_user_accounts():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', user=u)  # user tom
+    AccountFactory(title='A2', journal=j)  # user X
 
     form = ExpenseForm().as_p()
 
@@ -74,8 +75,8 @@ def test_expense_current_user_accounts():
 
 
 def test_expense_select_first_account():
-    u = UserFactory(username='XXX')
-    AccountFactory(title='A1', user=u)
+    j = JournalFactory(user=UserFactory(username='XXX'))
+    AccountFactory(title='A1', journal=j)
 
     a2 = AccountFactory(title='A2')
 
@@ -215,7 +216,7 @@ def test_expense_type_valid_data():
 
     assert data.title == 'Title'
     assert data.necessary
-    assert data.user.username == 'bob'
+    assert data.journal.user.username == 'bob'
 
 
 def test_expense_type_blank_data():
@@ -271,10 +272,10 @@ def test_expense_name_init():
 
 
 def test_expense_name_current_user_expense_types():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     ExpenseTypeFactory(title='T1') # user bob, current user
-    ExpenseTypeFactory(title='T2', user=u) # user tom
+    ExpenseTypeFactory(title='T2', journal=j) # user X
 
     form = ExpenseNameForm().as_p()
 
