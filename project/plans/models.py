@@ -6,8 +6,8 @@ from ..core.lib import utils
 from ..core.models import MonthAbstract
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
+from ..journals.models import Journal
 from ..savings.models import SavingType
-from ..users.models import User
 
 
 class YearManager(models.Manager):
@@ -16,8 +16,8 @@ class YearManager(models.Manager):
         self._prefetch = prefetch
 
     def related(self):
-        user = utils.get_user()
-        related = ['user']
+        journal = utils.get_journal()
+        related = ['journal']
 
         if self._prefetch:
             related.append(self._prefetch)
@@ -25,7 +25,7 @@ class YearManager(models.Manager):
         qs = (
             self
             .select_related(*related)
-            .filter(user=user)
+            .filter(journal=journal)
         )
 
         return qs
@@ -52,8 +52,8 @@ class IncomePlan(MonthAbstract):
         IncomeType,
         on_delete=models.CASCADE
     )
-    user = models.ForeignKey(
-        User,
+    journal = models.ForeignKey(
+        Journal,
         on_delete=models.CASCADE,
         related_name='income_plans'
     )
@@ -65,7 +65,7 @@ class IncomePlan(MonthAbstract):
 
     class Meta:
         ordering = ['income_type']
-        unique_together = ('year', 'income_type', 'user')
+        unique_together = ('year', 'income_type', 'journal')
 
     def validate_unique(self, exclude=None):
         try:
@@ -85,8 +85,8 @@ class ExpensePlan(MonthAbstract):
         ExpenseType,
         on_delete=models.CASCADE
     )
-    user = models.ForeignKey(
-        User,
+    journal = models.ForeignKey(
+        Journal,
         on_delete=models.CASCADE,
         related_name='expense_plans'
     )
@@ -98,7 +98,7 @@ class ExpensePlan(MonthAbstract):
 
     class Meta:
         ordering = ['expense_type']
-        unique_together = ('year', 'expense_type', 'user')
+        unique_together = ('year', 'expense_type', 'journal')
 
     def validate_unique(self, exclude=None):
         try:
@@ -118,8 +118,8 @@ class SavingPlan(MonthAbstract):
         SavingType,
         on_delete=models.CASCADE
     )
-    user = models.ForeignKey(
-        User,
+    journal = models.ForeignKey(
+        Journal,
         on_delete=models.CASCADE,
         related_name='saving_plans'
     )
@@ -131,7 +131,7 @@ class SavingPlan(MonthAbstract):
 
     class Meta:
         ordering = ['saving_type']
-        unique_together = ('year', 'saving_type', 'user')
+        unique_together = ('year', 'saving_type', 'journal')
 
     def validate_unique(self, exclude=None):
         try:
@@ -147,8 +147,8 @@ class DayPlan(MonthAbstract):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
-    user = models.ForeignKey(
-        User,
+    journal = models.ForeignKey(
+        Journal,
         on_delete=models.CASCADE,
         related_name='day_plans'
     )
@@ -160,7 +160,7 @@ class DayPlan(MonthAbstract):
 
     class Meta:
         ordering = ['year']
-        unique_together = ('year', 'user')
+        unique_together = ('year', 'journal')
 
     def validate_unique(self, exclude=None):
         try:
@@ -177,8 +177,8 @@ class NecessaryPlan(MonthAbstract):
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
     title = models.CharField(max_length=100)
-    user = models.ForeignKey(
-        User,
+    journal = models.ForeignKey(
+        Journal,
         on_delete=models.CASCADE,
         related_name='necessary_plans'
     )
@@ -190,7 +190,7 @@ class NecessaryPlan(MonthAbstract):
 
     class Meta:
         ordering = ['year', 'title']
-        unique_together = ('year', 'title', 'user')
+        unique_together = ('year', 'title', 'journal')
 
     def validate_unique(self, exclude=None):
         try:

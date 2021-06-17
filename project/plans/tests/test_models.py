@@ -1,12 +1,12 @@
 import pytest
 
-from ...users.factories import UserFactory
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
+from ...journals.factories import JournalFactory
 from ...savings.factories import SavingTypeFactory
-from ..factories import (
-    DayPlanFactory, ExpensePlanFactory, IncomePlanFactory,
-    NecessaryPlanFactory, SavingPlanFactory)
+from ...users.factories import UserFactory
+from ..factories import (DayPlanFactory, ExpensePlanFactory, IncomePlanFactory,
+                         NecessaryPlanFactory, SavingPlanFactory)
 from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
                       SavingPlan)
 
@@ -23,24 +23,26 @@ def test_income_str():
 
 
 def test_income_related():
+    j = JournalFactory(user=UserFactory(username='X'))
     IncomePlanFactory()
-    IncomePlanFactory(user=UserFactory(username='XXX'))
+    IncomePlanFactory(journal=j)
 
     actual = IncomePlan.objects.related()
 
     assert len(actual) == 1
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
 
 
 def test_income_year():
+    j = JournalFactory(user=UserFactory(username='X'))
     IncomePlanFactory()
-    IncomePlanFactory(year=1974, user=UserFactory(username='XXX'))
+    IncomePlanFactory(year=1974, journal=j)
 
     actual = list(IncomePlan.objects.year(1999))
 
     assert len(actual) == 1
     assert actual[0].year == 1999
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
 
 
 def test_income_items():
@@ -50,15 +52,16 @@ def test_income_items():
     IncomePlanFactory(income_type=t1)
     IncomePlanFactory(income_type=t2)
 
-    IncomePlanFactory(user=UserFactory(username='XXX'))
+    j = JournalFactory(user=UserFactory(username='X'))
+    IncomePlanFactory(journal=j)
 
     actual = IncomePlan.objects.items()
 
     assert len(actual) == 2
     assert str(actual[0].income_type) == 'T1'
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
     assert str(actual[1].income_type) == 'T2'
-    assert actual[1].user.username == 'bob'
+    assert actual[1].journal.user.username == 'bob'
 
 
 @pytest.mark.xfail
@@ -78,24 +81,26 @@ def test_expense_str():
 
 
 def test_expense_related():
+    j = JournalFactory(user=UserFactory(username='X'))
     ExpensePlanFactory()
-    ExpensePlanFactory(user=UserFactory(username='XXX'))
+    ExpensePlanFactory(journal=j)
 
     actual = ExpensePlan.objects.related()
 
     assert len(actual) == 1
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
 
 
 def test_expense_year():
+    j = JournalFactory(user=UserFactory(username='X'))
     ExpensePlanFactory()
-    ExpensePlanFactory(year=1974, user=UserFactory(username='XXX'))
+    ExpensePlanFactory(year=1974, journal=j)
 
     actual = list(ExpensePlan.objects.year(1999))
 
     assert len(actual) == 1
     assert actual[0].year == 1999
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
 
 
 def test_expense_items():
@@ -105,15 +110,15 @@ def test_expense_items():
     ExpensePlanFactory(expense_type=t1)
     ExpensePlanFactory(expense_type=t2)
 
-    ExpensePlanFactory(user=UserFactory(username='XXX'))
+    ExpensePlanFactory(journal=JournalFactory(user=UserFactory(username='X')))
 
     actual = ExpensePlan.objects.items()
 
     assert len(actual) == 2
     assert str(actual[0].expense_type) == 'T1'
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
     assert str(actual[1].expense_type) == 'T2'
-    assert actual[1].user.username == 'bob'
+    assert actual[1].journal.user.username == 'bob'
 
 
 @pytest.mark.xfail
@@ -134,7 +139,6 @@ def test_expense_items_query_count(django_assert_max_num_queries):
         list(ExpensePlan.objects.items())
 
 
-
 # ----------------------------------------------------------------------------
 #                                                                  Saving Plan
 # ----------------------------------------------------------------------------
@@ -145,24 +149,26 @@ def test_saving_str():
 
 
 def test_saving_related():
+    j = JournalFactory(user=UserFactory(username='X'))
     SavingPlanFactory()
-    SavingPlanFactory(user=UserFactory(username='XXX'))
+    SavingPlanFactory(journal=j)
 
     actual = SavingPlan.objects.related()
 
     assert len(actual) == 1
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
 
 
 def test_saving_year():
+    j = JournalFactory(user=UserFactory(username='X'))
     SavingPlanFactory()
-    SavingPlanFactory(year=1974, user=UserFactory(username='XXX'))
+    SavingPlanFactory(year=1974, journal=j)
 
     actual = list(SavingPlan.objects.year(1999))
 
     assert len(actual) == 1
     assert actual[0].year == 1999
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
 
 
 def test_saving_items():
@@ -172,15 +178,15 @@ def test_saving_items():
     SavingPlanFactory(saving_type=t1)
     SavingPlanFactory(saving_type=t2)
 
-    SavingPlanFactory(user=UserFactory(username='XXX'))
+    SavingPlanFactory(journal=JournalFactory(user=UserFactory(username='X')))
 
     actual = SavingPlan.objects.items()
 
     assert len(actual) == 2
     assert str(actual[0].saving_type) == 'T1'
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
     assert str(actual[1].saving_type) == 'T2'
-    assert actual[1].user.username == 'bob'
+    assert actual[1].journal.user.username == 'bob'
 
 
 @pytest.mark.xfail
@@ -200,37 +206,39 @@ def test_day_str():
 
 
 def test_day_related():
+    j = JournalFactory(user=UserFactory(username='X'))
     DayPlanFactory()
-    DayPlanFactory(user=UserFactory(username='XXX'))
+    DayPlanFactory(journal=j)
 
     actual = DayPlan.objects.related()
 
     assert len(actual) == 1
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
 
 
 def test_day_year():
     DayPlanFactory()
-    DayPlanFactory(year=1974, user=UserFactory(username='XXX'))
+    DayPlanFactory(year=1974, journal=JournalFactory(user=UserFactory(username='X')))
 
     actual = list(DayPlan.objects.year(1999))
 
     assert len(actual) == 1
     assert actual[0].year == 1999
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
 
 
 def test_day_items():
+    j = JournalFactory(user=UserFactory(username='X'))
     DayPlanFactory()
     DayPlanFactory(year=1974)
-    DayPlanFactory(year=1974, user=UserFactory(username='XXX'))
+    DayPlanFactory(year=1974, journal=j)
 
     actual = DayPlan.objects.items()
 
     assert len(actual) == 2
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
     assert actual[0].year == 1974
-    assert actual[1].user.username == 'bob'
+    assert actual[1].journal.user.username == 'bob'
     assert actual[1].year == 1999
 
 
@@ -251,37 +259,39 @@ def test_necessary_str():
 
 def test_necessary_related():
     NecessaryPlanFactory()
-    NecessaryPlanFactory(user=UserFactory(username='XXX'))
+    NecessaryPlanFactory(journal=JournalFactory(user=UserFactory(username='X')))
 
     actual = NecessaryPlan.objects.related()
 
     assert len(actual) == 1
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
 
 
 def test_necessary_year():
+    j = JournalFactory(user=UserFactory(username='X'))
     NecessaryPlanFactory()
-    NecessaryPlanFactory(year=1974, user=UserFactory(username='XXX'))
+    NecessaryPlanFactory(year=1974, journal=j)
 
     actual = list(NecessaryPlan.objects.year(1999))
 
     assert len(actual) == 1
     assert actual[0].year == 1999
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
 
 
 def test_necessary_items():
+    j = JournalFactory(user=UserFactory(username='X'))
     NecessaryPlanFactory()
     NecessaryPlanFactory(year=1974)
-    NecessaryPlanFactory(year=1974, user=UserFactory(username='XXX'))
+    NecessaryPlanFactory(year=1974, journal=j)
 
     actual = NecessaryPlan.objects.items()
 
     assert len(actual) == 2
-    assert actual[0].user.username == 'bob'
+    assert actual[0].journal.user.username == 'bob'
     assert actual[0].year == 1974
     assert actual[0].title == 'other'
-    assert actual[1].user.username == 'bob'
+    assert actual[1].journal.user.username == 'bob'
     assert actual[1].year == 1999
     assert actual[1].title == 'other'
 
