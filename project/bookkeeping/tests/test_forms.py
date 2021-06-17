@@ -3,8 +3,9 @@ from decimal import Decimal
 import pytest
 
 from ...accounts.factories import AccountFactory
-from ...users.factories import UserFactory
+from ...journals.factories import JournalFactory
 from ...pensions.factories import PensionTypeFactory
+from ...users.factories import UserFactory
 from ..factories import SavingTypeFactory
 from ..forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
 
@@ -25,10 +26,10 @@ def test_saving_worth_init_fields():
 
 
 def test_saving_worth_current_user_types():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='tom'))
 
     SavingTypeFactory(title='T1')  # user bob, current user
-    SavingTypeFactory(title='T2', user=u)  # user tom
+    SavingTypeFactory(title='T2', journal=j)  # user tom
 
     form = SavingWorthForm().as_p()
 
@@ -112,10 +113,10 @@ def test_account_worth_init_fields():
 
 
 def test_account_worth_current_user_types():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='tom'))
 
     AccountFactory(title='T1')  # user bob, current user
-    AccountFactory(title='T2', user=u)  # user tom
+    AccountFactory(title='T2', journal=j)  # user tom
 
     form = AccountWorthForm().as_p()
 
@@ -163,10 +164,10 @@ def test_pension_worth_init_fields():
 
 
 def test_pension_worth_current_user_types():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='tom'))
 
     PensionTypeFactory(title='T1')  # user bob, current user
-    PensionTypeFactory(title='T2', user=u)  # user tom
+    PensionTypeFactory(title='T2', journal=j)  # user tom
 
     form = PensionWorthForm().as_p()
 
