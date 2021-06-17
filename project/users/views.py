@@ -6,6 +6,8 @@ from django.http import HttpResponseRedirect
 
 
 class CustomLogin(auth_views.LoginView):
+    template_name = 'users/login.html'
+
     def form_valid(self, form):
         user = form.get_user()
         login(self.request, user)
