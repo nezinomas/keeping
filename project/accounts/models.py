@@ -17,13 +17,13 @@ class AccountQuerySet(models.QuerySet):
         )
 
     def items(self):
-        journal = utils.get_journal()
+        user = utils.get_user()
         return (
             self
             .related()
             .filter(
                 Q(closed__isnull=True) |
-                Q(closed__gte=journal.year)
+                Q(closed__gte=user.year)
             )
         )
 

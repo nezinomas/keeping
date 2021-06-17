@@ -30,8 +30,8 @@ def test_account_items_current_journal():
     assert actual[0].journal.user.username == 'bob'
 
 
-def test_account_closed_in_past(get_journal):
-    get_journal.year = 3000
+def test_account_closed_in_past(get_user):
+    get_user.year = 3000
     AccountFactory(title='A1')
     AccountFactory(title='A2', closed=2000)
 
