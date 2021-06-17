@@ -7,6 +7,7 @@ from mock import patch
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
+from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
 from ..factories import (BorrowFactory, BorrowReturnFactory, LentFactory,
                          LentReturnFactory)
@@ -31,13 +32,15 @@ def test_borrow_fields():
     assert Borrow._meta.get_field('returned')
     assert Borrow._meta.get_field('closed')
     assert Borrow._meta.get_field('account')
-    assert Borrow._meta.get_field('user')
+    assert Borrow._meta.get_field('journal')
     assert Borrow._meta.get_field('remark')
 
 
 def test_borrow_related():
     o = BorrowFactory()
-    BorrowFactory(user=UserFactory(username='XXX'))
+    BorrowFactory(
+        journal=JournalFactory(user=UserFactory(username='X'))
+    )
 
     actual = Borrow.objects.related()
 
@@ -65,7 +68,9 @@ def test_borrow_sort():
 
 def test_borrow_items():
     o = BorrowFactory()
-    BorrowFactory(name='X1', user=UserFactory(username='XXX'))
+    BorrowFactory(
+        name='X1',
+        journal=JournalFactory(user=UserFactory(username='X')))
 
     actual = Borrow.objects.items()
 
@@ -184,8 +189,8 @@ def test_borrow_post_delete_with_update():
 
 
 def test_borrow_unique_users():
-    BorrowFactory(name='T1', user=UserFactory(username='x'))
-    BorrowFactory(name='T1', user=UserFactory(username='y'))
+    BorrowFactory(name='T1', journal=JournalFactory(user=UserFactory(username='x')))
+    BorrowFactory(name='T1', journal=JournalFactory(user=UserFactory(username='y')))
 
 
 def test_borrow_sum_all_months():
@@ -205,12 +210,14 @@ def test_borrow_sum_all_months():
 
 
 def test_borrow_sum_all_months_ordering():
+    j1 = JournalFactory(user=UserFactory(username='X'))
+    j2 = JournalFactory(user=UserFactory(username='Y'))
     BorrowFactory(date=date(1999, 1, 1), price=1)
     BorrowFactory(date=date(1999, 1, 2), price=2)
-    BorrowFactory(date=date(1999, 1, 2), price=2, user=UserFactory(username='T'))
+    BorrowFactory(date=date(1999, 1, 2), price=2, journal=j1)
     BorrowFactory(date=date(1999, 2, 1), price=4)
     BorrowFactory(date=date(1999, 2, 2), price=1)
-    BorrowFactory(date=date(1999, 2, 2), price=6, user=UserFactory(username='X'))
+    BorrowFactory(date=date(1999, 2, 2), price=6, journal=j2)
 
     actual = list(Borrow.objects.sum_by_month(1999))
 
@@ -263,11 +270,11 @@ def test_borrow_return_fields():
 
 
 def test_borrow_return_related():
-    u1 = UserFactory()
-    u2 = UserFactory(username='XXX')
+    j1 = JournalFactory(user=UserFactory())
+    j2 = JournalFactory(user=UserFactory(username='X'))
 
-    b1 = BorrowFactory(name='B1', price=1, user=u1)
-    b2 = BorrowFactory(name='B2', price=2, user=u2)
+    b1 = BorrowFactory(name='B1', price=1, journal=j1)
+    b2 = BorrowFactory(name='B2', price=2, journal=j2)
 
     BorrowReturnFactory(borrow=b1, price=1.1)
     BorrowReturnFactory(borrow=b2, price=2.1)
@@ -539,13 +546,13 @@ def test_lent_fields():
     assert Lent._meta.get_field('returned')
     assert Lent._meta.get_field('closed')
     assert Lent._meta.get_field('account')
-    assert Lent._meta.get_field('user')
+    assert Lent._meta.get_field('journal')
     assert Lent._meta.get_field('remark')
 
 
 def test_lent_related():
     o = LentFactory()
-    LentFactory(user=UserFactory(username='XXX'))
+    LentFactory(journal=JournalFactory(user=UserFactory(username='X')))
 
     actual = Lent.objects.related()
 
@@ -573,7 +580,10 @@ def test_lent_sort():
 
 def test_lent_items():
     o = LentFactory()
-    LentFactory(name='X1', user=UserFactory(username='XXX'))
+    LentFactory(
+        name='X1',
+        journal=JournalFactory(user=UserFactory(username='X'))
+    )
 
     actual = Lent.objects.items()
 
@@ -693,8 +703,8 @@ def test_lent_post_delete_with_update():
 
 
 def test_lent_unique_users():
-    LentFactory(name='T1', user=UserFactory(username='x'))
-    LentFactory(name='T1', user=UserFactory(username='y'))
+    LentFactory(name='T1', journal=JournalFactory(user=UserFactory(username='x')))
+    LentFactory(name='T1', journal=JournalFactory(user=UserFactory(username='y')))
 
 
 def test_lent_sum_all_months():
@@ -714,12 +724,14 @@ def test_lent_sum_all_months():
 
 
 def test_lent_sum_all_months_ordering():
+    j1 = JournalFactory(user=UserFactory(username='X'))
+    j2 = JournalFactory(user=UserFactory(username='Y'))
     LentFactory(date=date(1999, 1, 1), price=1)
     LentFactory(date=date(1999, 1, 2), price=2)
-    LentFactory(date=date(1999, 1, 2), price=2, user=UserFactory(username='T'))
+    LentFactory(date=date(1999, 1, 2), price=2, journal=j1)
     LentFactory(date=date(1999, 2, 1), price=4)
     LentFactory(date=date(1999, 2, 2), price=1)
-    LentFactory(date=date(1999, 2, 2), price=6, user=UserFactory(username='X'))
+    LentFactory(date=date(1999, 2, 2), price=6, journal=j2)
 
     actual = list(Lent.objects.sum_by_month(1999))
 
@@ -771,11 +783,11 @@ def test_lent_return_fields():
 
 
 def test_lent_return_related():
-    u1 = UserFactory()
-    u2 = UserFactory(username='XXX')
+    j1 = JournalFactory()
+    j2 = JournalFactory(user=UserFactory(username='X'))
 
-    b1 = LentFactory(name='B1', price=1, user=u1)
-    b2 = LentFactory(name='B2', price=2, user=u2)
+    b1 = LentFactory(name='B1', price=1, journal=j1)
+    b2 = LentFactory(name='B2', price=2, journal=j2)
 
     LentReturnFactory(lent=b1, price=1.1)
     LentReturnFactory(lent=b2, price=2.1)

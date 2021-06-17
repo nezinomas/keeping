@@ -2,7 +2,7 @@ from decimal import Decimal
 from typing import Any, Dict, List
 
 from django.db import models
-from django.db.models import Case, Count, F, Q, Sum, When
+from django.db.models import Case, Count, Q, Sum, When
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
@@ -10,11 +10,11 @@ from ..core.mixins.queryset_sum import SumMixin
 
 class BorrowQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_journal()
         return (
             self
-            .select_related('account', 'user')
-            .filter(user=user)
+            .select_related('account', 'journal')
+            .filter(journal=journal)
         )
 
     def items(self):
@@ -74,11 +74,11 @@ class BorrowQuerySet(SumMixin, models.QuerySet):
 
 class BorrowReturnQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_journal()
         qs = (
             self
             .select_related('account', 'borrow')
-            .filter(borrow__user=user)
+            .filter(borrow__journal=journal)
         )
         return qs
 
@@ -125,11 +125,11 @@ class BorrowReturnQuerySet(SumMixin, models.QuerySet):
 
 class LentQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_journal()
         return (
             self
-            .select_related('account', 'user')
-            .filter(user=user)
+            .select_related('account', 'journal')
+            .filter(journal=journal)
         )
 
     def items(self):
@@ -188,11 +188,11 @@ class LentQuerySet(SumMixin, models.QuerySet):
 
 class LentReturnQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_journal()
         qs = (
             self
             .select_related('account', 'lent')
-            .filter(lent__user=user)
+            .filter(lent__journal=journal)
         )
         return qs
 

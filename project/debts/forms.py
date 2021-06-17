@@ -13,7 +13,7 @@ from . import models
 class BorrowForm(forms.ModelForm):
     class Meta:
         model = models.Borrow
-        fields = ['user', 'date', 'name', 'price', 'closed', 'account', 'remark']
+        fields = ['journal', 'date', 'name', 'price', 'closed', 'account', 'remark']
 
     field_order = ['date', 'name', 'price', 'account', 'remark', 'closed']
 
@@ -32,10 +32,10 @@ class BorrowForm(forms.ModelForm):
         # form inputs settings
         self.fields['remark'].widget.attrs['rows'] = 3
 
-        # user input
-        self.fields['user'].initial = utils.get_user()
-        self.fields['user'].disabled = True
-        self.fields['user'].widget = forms.HiddenInput()
+        # journal input
+        self.fields['journal'].initial = utils.get_journal()
+        self.fields['journal'].disabled = True
+        self.fields['journal'].widget = forms.HiddenInput()
 
         # inital values
         self.fields['account'].initial = Account.objects.items().first()
@@ -120,7 +120,7 @@ class BorrowReturnForm(forms.ModelForm):
 class LentForm(forms.ModelForm):
     class Meta:
         model = models.Lent
-        fields = ['user', 'date', 'name', 'price', 'closed', 'account', 'remark']
+        fields = ['journal', 'date', 'name', 'price', 'closed', 'account', 'remark']
 
     field_order = ['date', 'name', 'price', 'account', 'remark', 'closed']
 
@@ -139,10 +139,10 @@ class LentForm(forms.ModelForm):
         # form inputs settings
         self.fields['remark'].widget.attrs['rows'] = 3
 
-        # user input
-        self.fields['user'].initial = utils.get_user()
-        self.fields['user'].disabled = True
-        self.fields['user'].widget = forms.HiddenInput()
+        # journal input
+        self.fields['journal'].initial = utils.get_journal()
+        self.fields['journal'].disabled = True
+        self.fields['journal'].widget = forms.HiddenInput()
 
         # inital values
         self.fields['account'].initial = Account.objects.items().first()

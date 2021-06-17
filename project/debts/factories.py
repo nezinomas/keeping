@@ -4,7 +4,7 @@ from decimal import Decimal
 import factory
 
 from ..accounts.factories import AccountFactory
-from ..users.factories import UserFactory
+from ..journals.factories import JournalFactory
 from . import models
 
 
@@ -19,7 +19,7 @@ class BorrowFactory(factory.django.DjangoModelFactory):
     closed = False
     remark = 'Borrow Remark'
     account = factory.SubFactory(AccountFactory)
-    user = factory.SubFactory(UserFactory)
+    journal = factory.SubFactory(JournalFactory)
 
 
 class BorrowReturnFactory(factory.django.DjangoModelFactory):
@@ -44,7 +44,7 @@ class LentFactory(factory.django.DjangoModelFactory):
     closed = False
     remark = 'Lent Remark'
     account = factory.SubFactory(AccountFactory)
-    user = factory.SubFactory(UserFactory)
+    journal = factory.SubFactory(JournalFactory)
 
 
 class LentReturnFactory(factory.django.DjangoModelFactory):

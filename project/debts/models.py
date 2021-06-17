@@ -6,7 +6,7 @@ from django.db import models
 
 from ..accounts.models import Account
 from ..core.mixins.from_db import MixinFromDbAccountId
-from ..users.models import User
+from ..journals.models import Journal
 from . import managers
 
 
@@ -39,8 +39,8 @@ class Borrow(MixinFromDbAccountId):
         on_delete=models.PROTECT,
         related_name='borrow_to'
     )
-    user = models.ForeignKey(
-        User,
+    journal = models.ForeignKey(
+        Journal,
         on_delete=models.CASCADE
     )
 
@@ -139,8 +139,8 @@ class Lent(MixinFromDbAccountId):
         on_delete=models.PROTECT,
         related_name='lent_from_account'
     )
-    user = models.ForeignKey(
-        User,
+    journal = models.ForeignKey(
+        Journal,
         on_delete=models.CASCADE
     )
 

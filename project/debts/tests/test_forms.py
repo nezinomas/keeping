@@ -1,12 +1,13 @@
-from django.forms.models import model_to_dict
 import re
 from datetime import date
 from decimal import Decimal
 
 import pytest
+from django.forms.models import model_to_dict
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
+from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
 from .. import factories, forms, models
 
@@ -53,10 +54,10 @@ def test_borrow_initial_values():
 
 
 def test_borrow_current_user_accounts():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', user=u)  # user tom
+    AccountFactory(title='A2', journal=j)  # user X
 
     form = forms.BorrowForm().as_p()
 
@@ -65,8 +66,8 @@ def test_borrow_current_user_accounts():
 
 
 def test_borrow_select_first_account():
-    u = UserFactory(username='XXX')
-    AccountFactory(title='A1', user=u)
+    j = JournalFactory(user=UserFactory(username='X'))
+    AccountFactory(title='A1', journal=j)
 
     a2 = AccountFactory(title='A2')
 
@@ -140,8 +141,11 @@ def test_borrow_blank_data():
     assert 'account' in form.errors
 
 
-def test_borrow_same_name_for_diff_user():
-    factories.BorrowFactory(name='XXX', user=UserFactory(username='tom'))
+def test_borrow_same_name_for_diff_journal():
+    factories.BorrowFactory(
+        name='XXX',
+        journal=JournalFactory(user=UserFactory(username='X'))
+    )
 
     form = forms.BorrowForm({
         'date': '1999-01-04',
@@ -155,7 +159,7 @@ def test_borrow_same_name_for_diff_user():
 
 
 def test_borrow_unique_name():
-    obj = factories.BorrowFactory(name='XXX')
+    obj = factories.BorrowFactory(name='X')
 
     form = forms.BorrowForm(model_to_dict(obj))
 
@@ -165,9 +169,9 @@ def test_borrow_unique_name():
 
 
 def test_borrow_unique_name_unclose_with_same_name(rf):
-    factories.BorrowFactory(name='XXX')
+    factories.BorrowFactory(name='X')
 
-    obj= factories.BorrowFactory(name='XXX', closed=True)
+    obj= factories.BorrowFactory(name='X', closed=True)
     obj.closed = False
 
     form = forms.BorrowForm(data=model_to_dict(obj))
@@ -197,10 +201,10 @@ def test_borrow_return_init_fields():
 
 
 def test_borrow_return_current_user_accounts():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', user=u)  # user tom
+    AccountFactory(title='A2', journal=j)  # user X
 
     form = forms.BorrowReturnForm().as_p()
 
@@ -209,8 +213,8 @@ def test_borrow_return_current_user_accounts():
 
 
 def test_borrow_return_select_first_account():
-    u = UserFactory(username='XXX')
-    AccountFactory(title='A1', user=u)
+    j = JournalFactory(user=UserFactory(username='X'))
+    AccountFactory(title='A1', journal=j)
 
     a2 = AccountFactory(title='A2')
 
@@ -320,10 +324,10 @@ def test_lent_initial_values():
 
 
 def test_lent_current_user_accounts():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', user=u)  # user tom
+    AccountFactory(title='A2', journal=j)  # user X
 
     form = forms.LentForm().as_p()
 
@@ -332,8 +336,8 @@ def test_lent_current_user_accounts():
 
 
 def test_lent_select_first_account():
-    u = UserFactory(username='XXX')
-    AccountFactory(title='A1', user=u)
+    j = JournalFactory(user=UserFactory(username='X'))
+    AccountFactory(title='A1', journal=j)
 
     a2 = AccountFactory(title='A2')
 
@@ -407,8 +411,10 @@ def test_lent_blank_data():
     assert 'account' in form.errors
 
 
-def test_lent_same_name_for_diff_user():
-    factories.LentFactory(name='XXX', user=UserFactory(username='tom'))
+def test_lent_same_name_for_diff_journal():
+    factories.LentFactory(
+        name='XXX',
+        journal=JournalFactory(user=UserFactory(username='X')))
 
     form = forms.LentForm({
         'date': '1999-01-04',
@@ -422,7 +428,7 @@ def test_lent_same_name_for_diff_user():
 
 
 def test_lent_unique_name():
-    obj = factories.LentFactory(name='XXX')
+    obj = factories.LentFactory(name='X')
 
     form = forms.LentForm(model_to_dict(obj))
 
@@ -432,9 +438,9 @@ def test_lent_unique_name():
 
 
 def test_lent_unique_name_unclose_with_same_name(rf):
-    factories.LentFactory(name='XXX')
+    factories.LentFactory(name='X')
 
-    obj = factories.LentFactory(name='XXX', closed=True)
+    obj = factories.LentFactory(name='X', closed=True)
     obj.closed = False
 
     form = forms.LentForm(data=model_to_dict(obj))
@@ -464,10 +470,10 @@ def test_lent_return_init_fields():
 
 
 def test_lent_return_current_user_accounts():
-    u = UserFactory(username='tom')
+    j = JournalFactory(user=UserFactory(username='X'))
 
     AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', user=u)  # user tom
+    AccountFactory(title='A2', journal=j)  # user X
 
     form = forms.LentReturnForm().as_p()
 
@@ -476,8 +482,8 @@ def test_lent_return_current_user_accounts():
 
 
 def test_lent_return_select_first_account():
-    u = UserFactory(username='XXX')
-    AccountFactory(title='A1', user=u)
+    j = JournalFactory(user=UserFactory(username='X'))
+    AccountFactory(title='A1', journal=j)
 
     a2 = AccountFactory(title='A2')
 
