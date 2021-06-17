@@ -13,6 +13,4 @@ class JournalFactory(DjangoModelFactory):
         django_get_or_create = ('user', )
 
     user = factory.SubFactory(UserFactory)
-    year = 1999
-    month = 12
     first_record = date(1999, 1, 1)

@@ -12,14 +12,6 @@ class Journal(models.Model):
         on_delete=models.CASCADE,
         related_name='journal'
     )
-    year = models.PositiveIntegerField(
-        null=True,
-        blank=True
-    )
-    month = models.PositiveIntegerField(
-        null=True,
-        blank=True
-    )
     first_record = models.DateField(
         default=date.today,
         editable=False
