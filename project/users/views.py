@@ -45,6 +45,10 @@ class Login(auth_views.LoginView):
         return HttpResponseRedirect(self.get_success_url())
 
 
+class Logout(auth_views.LogoutView):
+    pass
+
+
 class Signup(CreateView):
     template_name = 'users/login.html'
     success_url = reverse_lazy('bookkeeping:index')
@@ -73,3 +77,36 @@ class Signup(CreateView):
             _user_settings(user)
 
         return valid
+
+
+class PasswordReset(auth_views.PasswordResetView):
+    template_name = 'users/login.html'
+    email_template_name = 'users/password_reset_email.html',
+    subject_template_name = 'users/password_reset_subject.txt'
+    success_url = reverse_lazy('users:password_reset_done')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['submit_button_text'] = 'Send password reset email'
+        context['card_title'] = 'Reset your password'
+        context['card_text'] = 'Enter your email address and system will send you a link to reset your pasword.'
+        return context
+
+
+class PasswordResetComplete(auth_views.PasswordResetCompleteView):
+    template_name = 'users/password_reset_complete.html'
+
+
+class PasswordResetDone(auth_views.PasswordResetDoneView):
+    template_name = 'users/password_reset_done.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['card_title'] = 'Reset your password'
+        context['card_text'] = 'Check your email for a link to reset your password. If it doesn\'t appear within a few minutes, check your spam folder.'
+        return context
+
+
+class PasswordResetConfirm(auth_views.PasswordResetConfirmView):
+    template_name ='users/password_reset_confirm.html'
+    success_url = reverse_lazy('users:password_reset_complete')
