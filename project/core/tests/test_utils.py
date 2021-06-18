@@ -84,6 +84,7 @@ def test_get_journal_not_found_in_session(mck_user, mck_journal):
 
 @pytest.mark.django_db
 @pytest.mark.disable_get_user_patch
+@pytest.mark.disable_get_journal_patch
 @patch('project.core.lib.utils.CrequestMiddleware')
 def test_get_journal_from_session(mck_journal):
     mck_journal.get_request.return_value = SimpleNamespace(session={'journal': 66})
