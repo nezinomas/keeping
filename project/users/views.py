@@ -30,6 +30,7 @@ class Login(auth_views.LoginView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['submit_button_text'] = 'Log In'
+        context['card_title'] = 'Log In'
         return context
 
 
@@ -52,6 +53,7 @@ class Signup(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['submit_button_text'] = 'Sign Up'
+        context['card_title'] = 'Sign Up'
         return context
 
     def form_valid(self, form):
