@@ -18,6 +18,7 @@
 <div class="card my-auto">
     <div class="card-body">
         <h3 class="card-title">{{ card_title }}</h3>
+        {% if card_text %}<p>{{ card_text }}</p>{% endif %}
         <form method="post" novalidate>
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ next }}">
