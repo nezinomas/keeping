@@ -7,7 +7,13 @@ app_name = 'users'
 
 
 urlpatterns = [
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('login/', views.CustomLogin.as_view(), name='login'),
-    path('signup/', views.Signup.as_view(), name='signup')
+    path('logout/',
+         auth_views.LogoutView.as_view(),
+         name='logout'),
+    path('login/',
+         views.Login.as_view(),
+         name='login'),
+    path('signup/',
+         views.Signup.as_view(),
+         name='signup'),
 ]

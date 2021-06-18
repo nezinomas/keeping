@@ -24,7 +24,7 @@ def _user_settings(user):
         user.save()
 
 
-class CustomLogin(auth_views.LoginView):
+class Login(auth_views.LoginView):
     template_name = 'users/login.html'
 
     def get_context_data(self, **kwargs):

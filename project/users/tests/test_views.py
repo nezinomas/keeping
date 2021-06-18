@@ -18,7 +18,7 @@ pytestmark = pytest.mark.django_db
 def test_custom_login_func():
     view = resolve('/login/')
 
-    assert views.CustomLogin == view.func.view_class
+    assert views.Login == view.func.view_class
 
 
 def test_successful_login(client):
