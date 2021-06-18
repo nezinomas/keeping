@@ -110,3 +110,18 @@ class PasswordResetDone(auth_views.PasswordResetDoneView):
 class PasswordResetConfirm(auth_views.PasswordResetConfirmView):
     template_name ='users/password_reset_confirm.html'
     success_url = reverse_lazy('users:password_reset_complete')
+
+
+class PasswordChange(auth_views.PasswordChangeView):
+    template_name = 'users/login.html'
+    success_url = reverse_lazy('users:password_change_done')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['submit_button_text'] = 'Change password'
+        context['card_title'] = 'Change password'
+        return context
+
+
+class PasswordChangeDone(auth_views.PasswordChangeDoneView):
+    template_name = 'users/password_change_done.html'

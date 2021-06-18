@@ -1,5 +1,6 @@
+from _pytest.fixtures import pytest_fixture_setup
 import pytest
-from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
+from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm, SetPasswordForm
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
 from django.urls import resolve, reverse
@@ -392,3 +393,107 @@ def test_password_reset_complete_status_code(client):
     response = client.get(url)
 
     assert response.status_code == 200
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                         Password Change
+# --------------------------------------------------------------------------------------
+def test_password_change_func():
+    view = resolve('/password_change/')
+    assert view.func.view_class is views.PasswordChange
+
+
+def test_password_change_status_code(client_logged):
+    url = reverse('users:password_change')
+    response = client_logged.get(url)
+    assert response.status_code == 200
+
+
+def test_password_change_form(client_logged):
+    url = reverse('users:password_change')
+    response = client_logged.get(url)
+
+    form = response.context.get('form')
+
+    assert isinstance(form, PasswordChangeForm)
+
+
+def test_password_change_form_inputs(client_logged):
+    url = reverse('users:password_change')
+    response = client_logged.get(url)
+
+    form = response.content.decode('utf-8')
+
+    assert form.count('<input') == 5
+    assert form.count('type="hidden" name="csrfmiddlewaretoken"') == 1
+    assert form.count('type="password"') == 3
+
+
+def test_password_change_redirect_to_login(client):
+    url = reverse('users:password_change')
+    response = client.get(url, follow=True)
+
+    assert response.resolver_match.url_name == 'login'
+
+
+@pytest.fixture
+def _change_valid_data():
+    return {
+        'old_password': '123',
+        'new_password1': 'new_password',
+        'new_password2': 'new_password',
+    }
+
+
+def test_password_change_succesful_redirect(client_logged, _change_valid_data):
+    url = reverse('users:password_change')
+    response = client_logged.post(url, _change_valid_data, follow=True)
+
+    assert response.resolver_match.url_name == 'password_change_done'
+
+
+def test_password_change_changed(client_logged, _change_valid_data):
+    url = reverse('users:password_change')
+    client_logged.post(url, _change_valid_data, follow=True)
+
+    user = User.objects.first()
+
+    assert user.check_password('new_password')
+
+
+def test_password_change_authentication(client_logged, _change_valid_data):
+    url = reverse('users:password_change')
+    client_logged.post(url, _change_valid_data, follow=True)
+
+    '''
+    Create a new request to an arbitrary page.
+    The resulting response should now have an `user` to its context,
+    after a successful sign up.
+    '''
+
+    response = client_logged.get(reverse('bookkeeping:index'))
+    user = response.context.get('user')
+    assert user.is_authenticated
+
+
+def test_password_change_invalid_status_code(client_logged):
+    url = reverse('users:password_change')
+    response = client_logged.post(url, {})
+    assert response.status_code == 200
+
+
+def test_password_change_invalid_form_error(client_logged):
+    url = reverse('users:password_change')
+    response = client_logged.post(url, {})
+    form = response.context.get('form')
+
+    assert form.errors
+
+
+def test_password_change_invalid_didnt_change_password(client_logged):
+    url = reverse('users:password_change')
+    client_logged.post(url, {})
+
+    user = User.objects.first()
+
+    assert user.check_password('123')
