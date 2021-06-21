@@ -10,7 +10,15 @@
             <input type="hidden" name="next" value="{{ next }}">
             {% include 'core/includes/form.html' %}
             <button type="submit" class="btn btn-primary btn-sm">{{ submit_button_text }}</button>
+
         </form>
     </div>
 </div>
+{% if reset_link and form.errors %}
+<div class="text-center py-2">
+    <small>
+        <a href="{% url 'users:password_reset' %}">Forgot your password?</a>
+    </small>
+</div>
+{% endif %}
 {% endblock %}

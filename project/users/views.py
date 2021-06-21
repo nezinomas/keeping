@@ -31,6 +31,7 @@ class Login(auth_views.LoginView):
         context = super().get_context_data(**kwargs)
         context['submit_button_text'] = 'Log In'
         context['card_title'] = 'Log In'
+        context['reset_link'] = True
         return context
 
 

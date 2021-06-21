@@ -1,6 +1,6 @@
-from _pytest.fixtures import pytest_fixture_setup
 import pytest
-from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm, SetPasswordForm
+from django.contrib.auth.forms import (PasswordChangeForm, PasswordResetForm,
+                                       SetPasswordForm)
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
 from django.urls import resolve, reverse
@@ -67,6 +67,30 @@ def test_user_year_month_values_fill_on_login_if_empty(client):
 
     assert response.context['user'].year == 2000
     assert response.context['user'].month == 12
+
+
+def test_user_reset_link_if_form_has_errors(client):
+    url = reverse('users:login')
+    credentials = {'username': 'xxx', 'password': 'xxx'}
+
+    response = client.post(url, credentials)
+
+    assert response.status_code == 200
+
+    form = response.context.get('form')
+    reset = reverse('users:password_reset')
+
+    print('---->', form.errors)
+    print('reset url:', reset)
+    assert f'href="{reset}"' in form
+
+
+def test_user_no_reset_link(client):
+    url = reverse('users:login')
+    response = client.get(url)
+    form = response.context.get('form')
+    reset = reverse('users:password_reset')
+    assert f'href="{reset}"' not in form
 
 
 # ---------------------------------------------------------------------------------------
