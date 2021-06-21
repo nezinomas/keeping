@@ -14,34 +14,15 @@ pytestmark = pytest.mark.django_db
 def test_journal_str():
     actual = JournalFactory.build()
 
-    assert str(actual) == 'bob Journal'
+    assert str(actual) == 'Journal'
 
 
-def test_journal_username():
-    b = JournalFactory()
-    actual = Journal.objects.get(pk=b.pk)
+@pytest.mark.disable_get_user_patch
+def test_journal_has_many_users():
+    jr = JournalFactory(title='T')
+    UserFactory(username='X', journal=jr)
+    UserFactory(username='Y', journal=jr)
 
-    assert actual.user.username == 'bob'
+    actual = Journal.objects.get(pk=jr.pk)
 
-
-def test_journal_reversed():
-    u = UserFactory()
-    JournalFactory()
-
-    actual = User.objects.get(pk=u.pk)
-
-    assert actual.journal.count() == 1
-    assert str(actual.journal.first()) == 'bob Journal'
-
-
-def test_journal_related():
-    obj = JournalFactory()
-
-    actual = Journal.objects.related()
-
-    assert str(actual[0]) == str(obj)
-
-
-def test_journal_related_queries(django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        Journal.objects.related().values()
+    assert actual.users.count() == 2

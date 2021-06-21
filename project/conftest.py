@@ -11,7 +11,6 @@ from .debts.factories import (BorrowFactory, BorrowReturnFactory, LentFactory,
                               LentReturnFactory)
 from .expenses.factories import ExpenseFactory
 from .incomes.factories import IncomeFactory
-from .journals.factories import JournalFactory
 from .pensions.factories import PensionFactory
 from .savings.factories import SavingFactory, SavingTypeFactory
 from .transactions.factories import (SavingChangeFactory, SavingCloseFactory,
@@ -43,24 +42,6 @@ def get_user(monkeypatch, request):
     monkeypatch.setattr(mock_func, lambda: user)
 
     return user
-
-
-@pytest.fixture(autouse=True)
-def get_journal(monkeypatch, request):
-    if 'disable_get_journal_patch' in request.keywords:
-        return
-
-    # if method or module marked as django_db
-    # create Journal in db, else build
-    if 'django_db' in request.keywords:
-        journal = JournalFactory()
-    else:
-        journal = JournalFactory.build()
-
-    mock_func = 'project.core.lib.utils.get_journal'
-    monkeypatch.setattr(mock_func, lambda: journal)
-
-    return journal
 
 
 @pytest.fixture()

@@ -1,16 +1,14 @@
 from datetime import date
 
-import factory
 from factory.django import DjangoModelFactory
 
-from ..users.factories import UserFactory
 from . import models
 
 
 class JournalFactory(DjangoModelFactory):
     class Meta:
         model = models.Journal
-        django_get_or_create = ('user', )
+        django_get_or_create = ('title', )
 
-    user = factory.SubFactory(UserFactory)
+    title = 'Journal'
     first_record = date(1999, 1, 1)
