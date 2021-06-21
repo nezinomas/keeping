@@ -47,7 +47,7 @@ def get_user(monkeypatch, request):
 
 @pytest.fixture(autouse=True)
 def get_journal(monkeypatch, request):
-    if 'disable_get_user_patch' in request.keywords:
+    if 'disable_get_journal_patch' in request.keywords:
         return
 
     # if method or module marked as django_db
