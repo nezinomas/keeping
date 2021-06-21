@@ -32,6 +32,7 @@ class Login(auth_views.LoginView):
         context['submit_button_text'] = 'Log In'
         context['card_title'] = 'Log In'
         context['reset_link'] = True
+        context['signup_link'] = True
         return context
 
 

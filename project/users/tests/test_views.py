@@ -77,20 +77,28 @@ def test_user_reset_link_if_form_has_errors(client):
 
     assert response.status_code == 200
 
-    form = response.context.get('form')
+    content = response.content.decode('utf-8')
     reset = reverse('users:password_reset')
 
-    print('---->', form.errors)
-    print('reset url:', reset)
-    assert f'href="{reset}"' in form
+    assert f'href="{reset}"' in content
 
 
 def test_user_no_reset_link(client):
     url = reverse('users:login')
     response = client.get(url)
-    form = response.context.get('form')
+    content = response.content.decode('utf-8')
     reset = reverse('users:password_reset')
-    assert f'href="{reset}"' not in form
+
+    assert f'href="{reset}"' not in content
+
+
+def test_user_signup_link(client):
+    url = reverse('users:login')
+    response = client.get(url)
+    content = response.content.decode('utf-8')
+    signup = reverse('users:signup')
+
+    assert f'href="{signup}"' in content
 
 
 # ---------------------------------------------------------------------------------------
@@ -116,6 +124,15 @@ def test_signup_200(client):
     response = client.get(url)
 
     assert response.status_code == 200
+
+
+def test_signup_no_link(client):
+    url = reverse('users:signup')
+    response = client.get(url)
+    content = response.content.decode('utf-8')
+    signup = reverse('users:signup')
+
+    assert f'href="{signup}"' not in content
 
 
 def test_signup_form(client):
