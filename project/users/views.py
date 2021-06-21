@@ -6,7 +6,6 @@ from django.http import HttpResponseRedirect
 from django.urls.base import reverse_lazy
 from django.views.generic import CreateView
 
-from ..journals.models import Journal
 from . import forms
 
 
@@ -42,8 +41,6 @@ class Login(auth_views.LoginView):
 
         _user_settings(user)
 
-        self.request.session['journal'] = user.journal.first()
-
         return HttpResponseRedirect(self.get_success_url())
 
 
@@ -68,14 +65,6 @@ class Signup(CreateView):
 
         if valid:
             user = self.object
-
-            # First Journal user is superuser
-            user.is_superuser = True
-
-            # Create journal
-            Journal.objects.create(user=user)
-
-            # Login the user
             login(self.request, user)
             _user_settings(user)
 

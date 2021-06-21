@@ -27,8 +27,6 @@ def test_custom_login_func():
 
 
 def test_successful_login(client):
-    UserFactory()
-
     url = reverse('users:login')
     credentials = {'username': 'bob', 'password': '123'}
 
@@ -38,22 +36,17 @@ def test_successful_login(client):
     assert response.context['user'].is_authenticated
 
 
-def test_journal_in_session(client):
-    j = JournalFactory()
-
+def test_user_journal(client):
     url = reverse('users:login')
     credentials = {'username': 'bob', 'password': '123'}
 
-    client.post(url, credentials, follow=True)
+    response = client.post(url, credentials, follow=True)
 
-    actual = client.session.get('journal')
-
-    assert actual.pk == j.pk
+    assert response.context['user'].journal.title == 'bob Journal'
 
 
 @freeze_time('2000-12-01')
 @pytest.mark.disable_get_user_patch
-@pytest.mark.disable_get_journal_patch
 def test_user_year_month_values_fill_on_login_if_empty(client):
     UserFactory(year=None, month=None)
 
@@ -173,20 +166,18 @@ def _signuped_client(client):
         'username': 'john',
         'email': 'john@dot.com',
         'password1': 'abcdef123456',
-        'password2': 'abcdef123456'
+        'password2': 'abcdef123456',
     }
 
     return client.post(url, data)
 
 
 @pytest.mark.disable_get_user_patch
-@pytest.mark.disable_get_journal_patch
 def test_signup_redirection(_signuped_client):
     assert _signuped_client.status_code == 302
 
 
 @pytest.mark.disable_get_user_patch
-@pytest.mark.disable_get_journal_patch
 def test_signup_user_creation(_signuped_client):
     users = User.objects.all()
     assert users.count() == 1
@@ -197,7 +188,6 @@ def test_signup_user_creation(_signuped_client):
 
 
 @pytest.mark.disable_get_user_patch
-@pytest.mark.disable_get_journal_patch
 def test_signup_user_authentication(client, _signuped_client):
     url = reverse('bookkeeping:index')
     response = client.get(url)
@@ -207,13 +197,12 @@ def test_signup_user_authentication(client, _signuped_client):
 
 
 @pytest.mark.disable_get_user_patch
-@pytest.mark.disable_get_journal_patch
 def test_signup_journal_creation(_signuped_client):
     journals = Journal.objects.all()
     assert journals.count() == 1
 
-    journal = journals.first()
-    assert journal.user.username == 'john'
+    journal = journals[0]
+
     assert str(journal) == 'john Journal'
 
 
@@ -235,7 +224,6 @@ def test_signup_form_errors(client):
 
 
 @pytest.mark.disable_get_user_patch
-@pytest.mark.disable_get_journal_patch
 def test_signup_dont_create_user(client):
     url = reverse('users:signup')
     client.post(url, {})

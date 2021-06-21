@@ -3,6 +3,7 @@ from datetime import datetime
 import factory
 import pytz
 from django.contrib.auth.hashers import make_password
+from project.journals.factories import JournalFactory
 
 from ..users.models import User
 
@@ -10,7 +11,7 @@ from ..users.models import User
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
-        django_get_or_create = ('username',)
+        django_get_or_create = ('username', )
 
     username = 'bob'
     password = factory.LazyFunction(lambda: make_password('123'))
@@ -18,3 +19,4 @@ class UserFactory(factory.django.DjangoModelFactory):
     year = 1999
     month = 12
     date_joined = datetime(1999, 1, 1, tzinfo=pytz.utc)
+    journal = factory.SubFactory(JournalFactory)
