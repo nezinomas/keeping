@@ -171,6 +171,7 @@
             aria-expanded="false">{{ user.username }}</a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
             <li><a class="dropdown-item btn-sm" href="{% url 'users:logout' %}">Log out</a></li>
+            <li><a class="dropdown-item btn-sm" href="{% url 'users:password_change' %}">Password change</a></li>
           </ul>
         </div>
       </nav>
