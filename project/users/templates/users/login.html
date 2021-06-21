@@ -17,6 +17,11 @@
         New to Bookkeeping? <a href="{% url 'users:signup' %}">Sign up</a>
     </div>
     {% endif %}
+    {% if login_link %}
+    <div class="card-footer text-muted text-center">
+        Already have an account? <a href="{% url 'users:login' %}">Log in</a>
+    </div>
+    {% endif %}
 </div>
 {% if reset_link and form.errors %}
 <div class="text-center py-2">

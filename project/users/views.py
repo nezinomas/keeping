@@ -60,6 +60,7 @@ class Signup(CreateView):
         context = super().get_context_data(**kwargs)
         context['submit_button_text'] = 'Sign Up'
         context['card_title'] = 'Sign Up'
+        context['login_link'] = True
         return context
 
     def form_valid(self, form):

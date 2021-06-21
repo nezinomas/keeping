@@ -134,6 +134,14 @@ def test_signup_no_link(client):
 
     assert f'href="{signup}"' not in content
 
+def test_signup_login_link(client):
+    url = reverse('users:signup')
+    response = client.get(url)
+    content = response.content.decode('utf-8')
+    login = reverse('users:login')
+
+    assert f'href="{login}"' in content
+
 
 def test_signup_form(client):
     url = reverse('users:signup')
