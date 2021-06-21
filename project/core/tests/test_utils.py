@@ -1,13 +1,9 @@
 from datetime import datetime
-from types import SimpleNamespace
 
 import pytest
-from mock import patch
 
 from ...accounts.factories import AccountBalanceFactory
 from ...accounts.models import AccountBalance
-from ...journals.factories import JournalFactory
-from ...users.factories import UserFactory
 from ..lib import utils as T
 
 
@@ -63,32 +59,3 @@ def test_sum_all_query_set():
     actual = T.sum_all(qs)
 
     assert actual['past'] == 1
-
-
-@pytest.mark.django_db
-@pytest.mark.disable_get_user_patch
-@patch('project.core.lib.utils.CrequestMiddleware')
-@patch('project.core.lib.utils.get_user')
-def test_get_journal_not_found_in_session(mck_user, mck_journal):
-    u = UserFactory()
-    j1 = JournalFactory(user=UserFactory(username='X'))
-    j2 = JournalFactory(user=u)
-
-    mck_user.return_value = u
-    mck_journal.get_request.return_value = SimpleNamespace(session={'journal': None})
-
-    actual = T.get_journal()
-
-    assert actual == j2
-
-
-@pytest.mark.django_db
-@pytest.mark.disable_get_user_patch
-@pytest.mark.disable_get_journal_patch
-@patch('project.core.lib.utils.CrequestMiddleware')
-def test_get_journal_from_session(mck_journal):
-    mck_journal.get_request.return_value = SimpleNamespace(session={'journal': 66})
-
-    actual = T.get_journal()
-
-    assert actual == 66
