@@ -18,7 +18,7 @@ from ..journals.models import Journal
 
 class SavingTypeQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         return (
             self
             .select_related('journal')
@@ -59,7 +59,7 @@ class SavingType(TitleAbstract):
 
 class SavingQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         qs = (
             self
             .select_related('account', 'saving_type')
@@ -266,7 +266,7 @@ class Saving(MixinFromDbAccountId):
 
 class SavingBalanceQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         qs = (
             self
             .select_related('saving_type')
