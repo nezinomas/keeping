@@ -17,7 +17,7 @@ from ..savings.models import SavingType
 # ----------------------------------------------------------------------------
 class TransactionQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         return (
             self
             .select_related('from_account', 'to_account')

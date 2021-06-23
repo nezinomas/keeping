@@ -527,10 +527,9 @@ def test_load_saving_type_closed_in_past(client_logged):
     assert 'S2' not in str(response.content)
 
 
-def test_load_saving_type_for_current_user(client_logged):
+def test_load_saving_type_for_current_user(client_logged, second_user):
     s1 = SavingTypeFactory(title='S1')
-    j2 = JournalFactory(user=UserFactory(username='X'))
-    SavingTypeFactory(title='S2', journal=j2)
+    SavingTypeFactory(title='S2', journal=second_user.journal)
 
     url = reverse('transactions:load_saving_type')
     response = client_logged.get(url, {'id': s1.pk})

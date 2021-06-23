@@ -5,7 +5,6 @@ import pytest
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
-from ...journals.factories import JournalFactory
 from ...savings.factories import SavingTypeFactory
 from ...users.factories import UserFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
@@ -38,11 +37,9 @@ def test_transaction_year_initial_value():
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_transaction_current_user_accounts():
-    j = JournalFactory(user=UserFactory(username='X'))
-
+def test_transaction_current_user_accounts(second_user):
     AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', journal=j)  # user X
+    AccountFactory(title='A2', journal=second_user.journal)  # user X
 
     form = TransactionForm().as_p()
 
@@ -50,11 +47,9 @@ def test_transaction_current_user_accounts():
     assert 'A2' not in form
 
 
-def test_transaction_current_user_accounts_selected_parent():
-    j = JournalFactory(user=UserFactory(username='X'))
-
+def test_transaction_current_user_accounts_selected_parent(second_user):
     a1 = AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', journal=j)  # user X
+    AccountFactory(title='A2', journal=second_user.journal)  # user X
 
     form = TransactionForm({
         'from_account': a1.pk
@@ -128,11 +123,9 @@ def test_saving_change_year_initial_value():
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_saving_change_current_user():
-    j = JournalFactory(user=UserFactory(username='X'))
-
+def test_saving_change_current_user(second_user):
     SavingTypeFactory(title='S1')  # user bob, current user
-    SavingTypeFactory(title='S2', journal=j)  # user X
+    SavingTypeFactory(title='S2', journal=second_user.journal)  # user X
 
     form = SavingChangeForm().as_p()
 
@@ -140,11 +133,9 @@ def test_saving_change_current_user():
     assert 'S2' not in form
 
 
-def test_saving_change_current_user_accounts_selected_parent():
-    j = JournalFactory(user=UserFactory(username='X'))
-
+def test_saving_change_current_user_accounts_selected_parent(second_user):
     s1 = SavingTypeFactory(title='S1')  # user bob, current user
-    SavingTypeFactory(title='S2', journal=j)  # user X
+    SavingTypeFactory(title='S2', journal=second_user.journal)  # user X
 
     form = SavingChangeForm({
         'from_account': s1.pk
@@ -265,11 +256,9 @@ def test_saving_close_year_initial_value():
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_saving_close_current_user_saving_types():
-    j = JournalFactory(user=UserFactory(username='X'))
-
+def test_saving_close_current_user_saving_types(second_user):
     SavingTypeFactory(title='S1')  # user bob, current user
-    SavingTypeFactory(title='S2', journal=j)  # user X
+    SavingTypeFactory(title='S2', journal=second_user.journal)  # user X
 
     form = SavingCloseForm().as_p()
 
@@ -277,11 +266,9 @@ def test_saving_close_current_user_saving_types():
     assert 'S2' not in form
 
 
-def test_saving_close_current_user_accounts():
-    j = JournalFactory(user=UserFactory(username='X'))
-
+def test_saving_close_current_user_accounts(second_user):
     AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', journal=j)  # user X
+    AccountFactory(title='A2', journal=second_user.journal)  # user X
 
     form = SavingCloseForm().as_p()
 
