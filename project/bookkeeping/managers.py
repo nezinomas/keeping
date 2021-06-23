@@ -6,7 +6,7 @@ from ..core.lib import utils
 
 class SavingWorthQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         return (
             self
             .select_related('saving_type')
@@ -37,7 +37,7 @@ class SavingWorthQuerySet(models.QuerySet):
 
 class AccountWorthQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         return (
             self
             .select_related('account')
@@ -68,7 +68,7 @@ class AccountWorthQuerySet(models.QuerySet):
 
 class PensionWorthQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         return (
             self
             .select_related('pension_type')

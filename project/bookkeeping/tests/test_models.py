@@ -9,12 +9,10 @@ import pytz
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
-from ...journals.factories import JournalFactory
 from ...pensions.factories import PensionTypeFactory
 from ...pensions.models import PensionBalance
 from ...savings.factories import SavingTypeFactory
 from ...savings.models import SavingBalance
-from ...users.factories import UserFactory
 from ..factories import (AccountWorthFactory, PensionWorthFactory,
                          SavingWorthFactory)
 from ..models import AccountWorth, PensionWorth, SavingWorth
@@ -34,11 +32,9 @@ def test_account_worth_str():
     assert str(model) == '1999-01-01 02:03 - Account1'
 
 
-def test_account_worth_related():
-    j = JournalFactory(user=UserFactory(username='XXX'))
-
+def test_account_worth_related(second_user):
     a1 = AccountFactory(title='A1')
-    a2 = AccountFactory(title='A2', journal=j)
+    a2 = AccountFactory(title='A2', journal=second_user.journal)
 
     AccountWorthFactory(account=a1)
     AccountWorthFactory(account=a2)
@@ -47,7 +43,7 @@ def test_account_worth_related():
 
     assert len(actual) == 1
     assert str(actual[0].account) == 'A1'
-    assert actual[0].account.journal.user.username == 'bob'
+    assert actual[0].account.journal.users.first().username == 'bob'
 
 
 def test_account_worth_latest_values(accounts_worth):
@@ -87,10 +83,9 @@ def test_saving_worth_str():
     assert str(model) == '1999-01-01 02:03 - Savings'
 
 
-def test_saving_worth_related():
-    j = JournalFactory(user=UserFactory(username='XXX'))
+def test_saving_worth_related(second_user):
     s1 = SavingTypeFactory(title='S1')
-    s2 = SavingTypeFactory(title='S2', journal=j)
+    s2 = SavingTypeFactory(title='S2', journal=second_user.journal)
 
     SavingWorthFactory(saving_type=s1)
     SavingWorthFactory(saving_type=s2)
@@ -99,7 +94,7 @@ def test_saving_worth_related():
 
     assert len(actual) == 1
     assert str(actual[0].saving_type) == 'S1'
-    assert actual[0].saving_type.journal.user.username == 'bob'
+    assert actual[0].saving_type.journal.users.first().username == 'bob'
 
 
 def test_saving_worth_latest_values(savings_worth):
@@ -146,10 +141,9 @@ def test_pension_worth_str():
     assert str(model) == '1999-01-01 02:03 - PensionType'
 
 
-def test_pension_worth_related():
-    j = JournalFactory(user=UserFactory(username='XXX'))
+def test_pension_worth_related(second_user):
     p1 = PensionTypeFactory(title='P1')
-    p2 = PensionTypeFactory(title='P2', journal=j)
+    p2 = PensionTypeFactory(title='P2', journal=second_user.journal)
 
     PensionWorthFactory(pension_type=p1)
     PensionWorthFactory(pension_type=p2)
@@ -158,7 +152,7 @@ def test_pension_worth_related():
 
     assert len(actual) == 1
     assert str(actual[0].pension_type) == 'P1'
-    assert actual[0].pension_type.journal.user.username == 'bob'
+    assert actual[0].pension_type.journal.users.first().username == 'bob'
 
 
 def test_pension_worth_latest_values(pensions_worth):
