@@ -3,8 +3,6 @@ from decimal import Decimal
 
 import pytest
 
-from ...journals.factories import JournalFactory
-from ...users.factories import UserFactory
 from ..factories import PensionTypeFactory
 from ..forms import PensionForm, PensionTypeForm
 
@@ -35,7 +33,8 @@ def test_pension_type_valid_data():
     data = form.save()
 
     assert data.title == 'Title'
-    assert data.journal.user.username == 'bob'
+    assert data.journal.title == 'bob Journal'
+    assert data.journal.users.first().username == 'bob'
 
 
 def test_pension_type_blank_data():
@@ -100,11 +99,9 @@ def test_pension_init_fields():
     assert '<textarea name="remark"' in form
 
 
-def test_saving_current_user_types():
-    j = JournalFactory(user=UserFactory(username='X'))
-
-    PensionTypeFactory(title='T1')  # user bob, current user
-    PensionTypeFactory(title='T2', journal=j)  # user X
+def test_saving_current_user_types(main_user, second_user):
+    PensionTypeFactory(title='T1', journal=main_user.journal)  # user bob, current user
+    PensionTypeFactory(title='T2', journal=second_user.journal)  # user X
 
     form = PensionForm().as_p()
 

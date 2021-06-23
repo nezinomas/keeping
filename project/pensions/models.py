@@ -13,7 +13,7 @@ from ..journals.models import Journal
 
 class PensionTypeQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         return (
             self
             .select_related('journal')
@@ -42,7 +42,7 @@ class PensionType(TitleAbstract):
 
 class PensionQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         qs = (
             self
             .select_related('pension_type')
@@ -138,7 +138,7 @@ class Pension(models.Model):
 
 class PensionBalanceQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         qs = (
             self
             .select_related('pension_type')
