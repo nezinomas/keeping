@@ -19,6 +19,26 @@ from .users.factories import UserFactory
 
 
 @pytest.fixture()
+def main_user(request):
+    if 'django_db' in request.keywords:
+        user = UserFactory()
+    else:
+        user = UserFactory.build()
+
+    return user
+
+
+@pytest.fixture()
+def second_user(request):
+    if 'django_db' in request.keywords:
+        user = UserFactory(username='X')
+    else:
+        user = UserFactory.build()
+
+    return user
+
+
+@pytest.fixture()
 def fake_request(rf):
     request = rf.get('/fake/')
     request.user = UserFactory.build()
@@ -27,21 +47,14 @@ def fake_request(rf):
 
 
 @pytest.fixture(autouse=True)
-def get_user(monkeypatch, request):
+def get_user(monkeypatch, request, main_user):
     if 'disable_get_user_patch' in request.keywords:
         return
 
-    # if method or module marked as django_db
-    # create User in db, else build
-    if 'django_db' in request.keywords:
-        user = UserFactory()
-    else:
-        user = UserFactory.build()
-
     mock_func = 'project.core.lib.utils.get_user'
-    monkeypatch.setattr(mock_func, lambda: user)
+    monkeypatch.setattr(mock_func, lambda: main_user)
 
-    return user
+    return main_user
 
 
 @pytest.fixture()
