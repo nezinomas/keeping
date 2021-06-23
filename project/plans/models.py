@@ -16,7 +16,7 @@ class YearManager(models.Manager):
         self._prefetch = prefetch
 
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         related = ['journal']
 
         if self._prefetch:

@@ -35,7 +35,7 @@ def common_field_transalion(self):
 
 def set_journal_field(fields):
     # journal input
-    fields['journal'].initial = utils.get_journal()
+    fields['journal'].initial = utils.get_user().journal
     fields['journal'].disabled = True
     fields['journal'].widget = forms.HiddenInput()
 
