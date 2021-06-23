@@ -27,8 +27,9 @@ class User(AbstractUser):
 
     def save(self, *args, **kwarg):
         # create a journal for the new user
-        if not self.pk:
+        if not hasattr(self, 'journal'):
             jr = Journal.objects.create(title=f'{self.username} Journal')
             self.journal = jr
             self.is_superuser = True
+
         return super().save(*args, **kwarg)
