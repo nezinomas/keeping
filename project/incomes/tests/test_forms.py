@@ -5,7 +5,6 @@ import pytest
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
-from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
 from ..factories import IncomeTypeFactory
 from ..forms import IncomeForm, IncomeTypeForm
@@ -36,7 +35,8 @@ def test_income_type_valid_data():
     data = form.save()
 
     assert data.title == 'Title'
-    assert data.journal.user.username == 'bob'
+    assert data.journal.title == 'bob Journal'
+    assert data.journal.users.first().username == 'bob'
 
 
 def test_income_type_blank_data():
@@ -100,11 +100,9 @@ def test_income_year_initial_value():
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_income_current_user_types():
-    j = JournalFactory(user=UserFactory(username='X'))
-
-    IncomeTypeFactory(title='T1')  # user bob, current user
-    IncomeTypeFactory(title='T2', journal=j)  # user X
+def test_income_current_user_types(main_user, second_user):
+    IncomeTypeFactory(title='T1', journal=main_user.journal)  # user bob, current user
+    IncomeTypeFactory(title='T2', journal=second_user.journal)  # user X
 
     form = IncomeForm().as_p()
 
@@ -112,11 +110,9 @@ def test_income_current_user_types():
     assert 'T2' not in form
 
 
-def test_income_current_user_accounts():
-    j = JournalFactory(user=UserFactory(username='X'))
-
-    AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', journal=j)  # user X
+def test_income_current_user_accounts(main_user, second_user):
+    AccountFactory(title='A1', journal=main_user.journal)  # user bob, current user
+    AccountFactory(title='A2', journal=second_user.journal)  # user X
 
     form = IncomeForm().as_p()
 
@@ -124,11 +120,9 @@ def test_income_current_user_accounts():
     assert 'A2' not in form
 
 
-def test_expense_select_first_account():
-    j = JournalFactory(user=UserFactory(username='XXX'))
-    AccountFactory(title='A1', journal=j)
-
-    a2 = AccountFactory(title='A2')
+def test_expense_select_first_account(main_user, second_user):
+    a2 = AccountFactory(title='A2', journal=main_user.journal)
+    AccountFactory(title='A1', journal=second_user.journal)
 
     form = IncomeForm().as_p()
 

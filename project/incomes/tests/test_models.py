@@ -5,10 +5,9 @@ import pytest
 
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import AccountBalance
-from ...users.factories import UserFactory
 from ..factories import IncomeFactory, IncomeTypeFactory
 from ..models import Income, IncomeType
-from ...journals.factories import JournalFactory
+
 pytestmark = pytest.mark.django_db
 
 
@@ -21,9 +20,9 @@ def test_income_type_str():
     assert str(i) == 'Income Type'
 
 
-def test_income_type_items_journal():
-    IncomeTypeFactory(title='T1', journal=JournalFactory())
-    IncomeTypeFactory(title='T2', journal=JournalFactory(user=UserFactory(username='XX')))
+def test_income_type_items_journal(main_user, second_user):
+    IncomeTypeFactory(title='T1', journal=main_user.journal)
+    IncomeTypeFactory(title='T2', journal=second_user.journal)
 
     actual = IncomeType.objects.items()
 
@@ -39,16 +38,14 @@ def test_income_type_items_journal_queries(django_assert_max_num_queries):
 
 
 @pytest.mark.xfail
-def test_income_type_unique_for_journal():
-    IncomeType.objects.create(title='T', journal=JournalFactory())
-    IncomeType.objects.create(title='T', journal=JournalFactory())
+def test_income_type_unique_for_journal(main_user):
+    IncomeType.objects.create(title='T', journal=main_user.journal)
+    IncomeType.objects.create(title='T', journal=main_user.journal)
 
 
-def test_income_type_unique_for_journals():
-    u1 = UserFactory(username='X')
-    u2 = UserFactory(username='Y')
-    IncomeType.objects.create(title='T', journal=JournalFactory(user=u1))
-    IncomeType.objects.create(title='T', journal=JournalFactory(user=u2))
+def test_income_type_unique_for_journals(main_user, second_user):
+    IncomeType.objects.create(title='T', journal=main_user.journal)
+    IncomeType.objects.create(title='T', journal=second_user.journal)
 
 
 # ----------------------------------------------------------------------------
@@ -60,11 +57,9 @@ def test_income_str():
     assert str(i) == '1999-01-01: Income Type'
 
 
-def test_income_related():
-    u1 = UserFactory()
-    u2 = UserFactory(username='X')
-    t1 = IncomeTypeFactory(title='T1', journal=JournalFactory(user=u1))
-    t2 = IncomeTypeFactory(title='T2', journal=JournalFactory(user=u2))
+def test_income_related(main_user, second_user):
+    t1 = IncomeTypeFactory(title='T1', journal=main_user.journal)
+    t2 = IncomeTypeFactory(title='T2', journal=second_user.journal)
 
     IncomeFactory(income_type=t1)
     IncomeFactory(income_type=t2)
