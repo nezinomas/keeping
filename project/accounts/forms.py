@@ -26,7 +26,7 @@ class AccountForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # journal input
-        self.fields['journal'].initial = utils.get_journal()
+        self.fields['journal'].initial = utils.get_user().journal
         self.fields['journal'].disabled = True
         self.fields['journal'].widget = forms.HiddenInput()
 

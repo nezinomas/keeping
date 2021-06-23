@@ -1,7 +1,6 @@
 import pytest
 
 from ...journals.factories import JournalFactory
-from ...users.factories import UserFactory
 from ..factories import AccountBalanceFactory, AccountFactory
 from ..models import Account, AccountBalance
 
@@ -17,43 +16,45 @@ def test_account_model_str():
     assert str(actual) == 'Account1'
 
 
-def test_account_items_current_journal():
-    j = JournalFactory(user=UserFactory(username='X'))
-
-    AccountFactory(title='A1')
-    AccountFactory(title='A2', journal=j)
+def test_account_items_current_journal(main_user, second_user):
+    AccountFactory(title='A1', journal=main_user.journal)
+    AccountFactory(title='A2', journal=second_user.journal)
 
     actual = Account.objects.items()
 
     assert len(actual) == 1
     assert str(actual[0]) == 'A1'
-    assert actual[0].journal.user.username == 'bob'
+    assert actual[0].journal.users.first().username == 'bob'
+    assert actual[0].journal.title == 'bob Journal'
 
 
 def test_account_closed_in_past(get_user):
     get_user.year = 3000
-    AccountFactory(title='A1')
-    AccountFactory(title='A2', closed=2000)
+
+    AccountFactory(title='A1', journal=get_user.journal)
+    AccountFactory(title='A2', journal=get_user.journal, closed=2000)
 
     actual = Account.objects.items()
 
     assert actual.count() == 1
 
 
-def test_account_closed_in_future(get_user):
-    get_user.year = 1000
-    AccountFactory(title='A1')
-    AccountFactory(title='A2', closed=2000)
+def test_account_closed_in_future(main_user):
+    main_user.year = 1000
+
+    AccountFactory(title='A1', journal=main_user.journal)
+    AccountFactory(title='A2', journal=main_user.journal, closed=2000)
 
     actual = Account.objects.items()
 
     assert actual.count() == 2
 
 
-def test_account_closed_in_current_year(get_user):
-    get_user.year = 2000
-    AccountFactory(title='A1')
-    AccountFactory(title='A2', closed=2000)
+def test_account_closed_in_current_year(main_user):
+    main_user.year = 2000
+
+    AccountFactory(title='A1', journal=main_user.journal)
+    AccountFactory(title='A2', journal=main_user.journal, closed=2000)
 
     actual = Account.objects.items()
 
@@ -68,8 +69,9 @@ def test_account_unique_for_journal():
 
 
 def test_account_unique_for_journals():
-    j1 = JournalFactory(user=UserFactory(username='x'))
-    j2 = JournalFactory(user=UserFactory(username='y'))
+    j1 = JournalFactory(title='J1')
+    j2 = JournalFactory(title='J2')
+
     Account.objects.create(title='T1', journal=j1)
     Account.objects.create(title='T1', journal=j2)
 
@@ -115,14 +117,12 @@ def test_account_balance_queries(django_assert_num_queries):
     AccountBalanceFactory(account=a2)
 
     with django_assert_num_queries(1):
-        list(AccountBalance.objects.items().values())
+        list(x.account.title for x in AccountBalance.objects.items())
 
 
-def test_account_balance_related_for_journal():
-    j = JournalFactory(user=UserFactory(username='X'))
-
-    a1 = AccountFactory(title='A1')
-    a2 = AccountFactory(title='A2', journal=j)
+def test_account_balance_related_for_journal(main_user, second_user):
+    a1 = AccountFactory(title='A1', journal=main_user.journal)
+    a2 = AccountFactory(title='A2', journal=second_user.journal)
 
     AccountBalanceFactory(account=a1)
     AccountBalanceFactory(account=a2)
@@ -131,4 +131,4 @@ def test_account_balance_related_for_journal():
 
     assert len(actual) == 1
     assert str(actual[0].account) == 'A1'
-    assert actual[0].account.journal.user.username == 'bob'
+    assert actual[0].account.journal.users.first().username == 'bob'

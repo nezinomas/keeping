@@ -2,14 +2,15 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import F, Q
 
-from ..journals.models import Journal
 from ..core.lib import utils
 from ..core.models import TitleAbstract
+from ..journals.models import Journal
 
 
 class AccountQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
+        print('AccountQuerySet =====> ', journal, journal.pk)
         return (
             self
             .select_related('journal')
@@ -52,7 +53,7 @@ class Account(TitleAbstract):
 
 class AccountBalanceQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         qs = (
             self
             .select_related('account')

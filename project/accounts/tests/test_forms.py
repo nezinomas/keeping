@@ -10,6 +10,7 @@ from ..forms import AccountForm
 
 pytestmark = pytest.mark.django_db
 
+
 def test_account_init():
     AccountForm()
 
@@ -37,7 +38,7 @@ def test_account_valid_data():
     assert data.title == 'Title'
     assert data.order == 1
     assert data.closed == 1999
-    assert data.journal.user.username == 'bob'
+    assert data.journal.users.first().username == 'bob'
 
 
 def test_account_blank_data():
