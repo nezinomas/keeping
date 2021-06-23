@@ -10,5 +10,5 @@ class JournalFactory(DjangoModelFactory):
         model = models.Journal
         django_get_or_create = ('title', )
 
-    title = 'Journal'
+    title = 'bob Journal'
     first_record = date(1999, 1, 1)
