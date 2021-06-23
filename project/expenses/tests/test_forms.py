@@ -247,7 +247,7 @@ def test_expense_type_title_too_short():
 
 
 def test_expense_type_unique_name():
-    b = ExpenseTypeFactory(title='XXX')
+    ExpenseTypeFactory(title='XXX')
 
     form = ExpenseTypeForm(
         data={
