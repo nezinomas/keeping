@@ -12,7 +12,6 @@ from override_storage import override_storage
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...expenses.factories import ExpenseFactory
-from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
 from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ..models import Expense, ExpenseName, ExpenseType
@@ -79,11 +78,9 @@ def test_expense_type_items():
     assert actual.count() == 2
 
 
-def test_expense_type_items_user():
-    j1 = JournalFactory()
-    j2 = JournalFactory(user=UserFactory(username='X'))
-    ExpenseTypeFactory(title='T1', journal=j1)
-    ExpenseTypeFactory(title='T2', journal=j2)
+def test_expense_type_items_user(second_user):
+    ExpenseTypeFactory(title='T1')
+    ExpenseTypeFactory(title='T2', journal=second_user.journal)
 
     actual = ExpenseType.objects.items()
 
@@ -99,8 +96,8 @@ def test_expense_type_related_qs_count(django_assert_max_num_queries):
         list(q.title for q in ExpenseType.objects.items())
 
 
-def test_post_save_expense_type_insert_new(expenses):
-    obj = ExpenseType(title='e1', journal=JournalFactory())
+def test_post_save_expense_type_insert_new(expenses, main_user):
+    obj = ExpenseType(title='e1', journal=main_user.journal)
     obj.save()
 
     actual = AccountBalance.objects.items()
@@ -114,11 +111,9 @@ def test_expense_type_unique_user():
     ExpenseType.objects.create(title='T1', user=UserFactory())
 
 
-def test_expense_type_unique_users():
-    j1 = JournalFactory(user=UserFactory(username='x'))
-    j2 = JournalFactory(user=UserFactory(username='y'))
-    ExpenseType.objects.create(title='T1', journal=j1)
-    ExpenseType.objects.create(title='T1', journal=j2)
+def test_expense_type_unique_users(main_user, second_user):
+    ExpenseType.objects.create(title='T1', journal=main_user.journal)
+    ExpenseType.objects.create(title='T1', journal=second_user.journal)
 
 
 # ----------------------------------------------------------------------------
@@ -139,11 +134,9 @@ def test_expense_name_items():
     assert actual.count() == 2
 
 
-def test_expense_name_related_different_users():
-    j = JournalFactory(user=UserFactory(username='X'))
-
-    t1 = ExpenseTypeFactory(title='T1') # user bob
-    t2 = ExpenseTypeFactory(title='T2', journal=j) # user X
+def test_expense_name_related_different_users(main_user, second_user):
+    t1 = ExpenseTypeFactory(title='T1', journal=main_user.journal) # user bob
+    t2 = ExpenseTypeFactory(title='T2', journal=second_user.journal) # user X
 
     ExpenseNameFactory(title='N1', parent=t1)
     ExpenseNameFactory(title='N2', parent=t2)
@@ -238,11 +231,9 @@ def test_expense_attachment_field():
     assert str(e.attachment) == os.path.join('expense-type', '1000.01_test1.jpg')
 
 
-def test_expense_related():
-    j = JournalFactory(user=UserFactory(username='X'))
-
+def test_expense_related(second_user):
     t1 = ExpenseTypeFactory(title='T1')  # user bob, current user
-    t2 = ExpenseTypeFactory(title='T2', journal=j)  # user X
+    t2 = ExpenseTypeFactory(title='T2', journal=second_user.journal)  # user X
 
     ExpenseFactory(expense_type=t1)
     ExpenseFactory(expense_type=t2)

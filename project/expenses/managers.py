@@ -13,7 +13,7 @@ from ..core.lib import utils
 
 class ExpenseTypeQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         return (
             self
             .select_related('journal')
@@ -27,7 +27,7 @@ class ExpenseTypeQuerySet(models.QuerySet):
 
 class ExpenseNameQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         qs = (
             self
             .select_related('parent')
@@ -57,7 +57,7 @@ class ExpenseNameQuerySet(models.QuerySet):
 
 class ExpenseQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         qs = (
             self
             .select_related('expense_type', 'expense_name', 'account')
