@@ -10,7 +10,6 @@ from ..journals.models import Journal
 class AccountQuerySet(models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
-        print('AccountQuerySet =====> ', journal, journal.pk)
         return (
             self
             .select_related('journal')
