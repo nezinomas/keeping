@@ -7,9 +7,8 @@ from django.forms.models import model_to_dict
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
-from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
-from .. import factories, forms, models
+from .. import factories, forms
 
 pytestmark = pytest.mark.django_db
 
@@ -53,11 +52,9 @@ def test_borrow_initial_values():
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_borrow_current_user_accounts():
-    j = JournalFactory(user=UserFactory(username='X'))
-
+def test_borrow_current_user_accounts(second_user):
     AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', journal=j)  # user X
+    AccountFactory(title='A2', journal=second_user.journal)  # user X
 
     form = forms.BorrowForm().as_p()
 
@@ -65,11 +62,9 @@ def test_borrow_current_user_accounts():
     assert 'A2' not in form
 
 
-def test_borrow_select_first_account():
-    j = JournalFactory(user=UserFactory(username='X'))
-    AccountFactory(title='A1', journal=j)
-
+def test_borrow_select_first_account(second_user):
     a2 = AccountFactory(title='A2')
+    AccountFactory(title='A1', journal=second_user.journal)
 
     form = forms.BorrowForm().as_p()
 
@@ -141,11 +136,8 @@ def test_borrow_blank_data():
     assert 'account' in form.errors
 
 
-def test_borrow_same_name_for_diff_journal():
-    factories.BorrowFactory(
-        name='XXX',
-        journal=JournalFactory(user=UserFactory(username='X'))
-    )
+def test_borrow_same_name_for_diff_journal(second_user):
+    factories.BorrowFactory(name='XXX', journal=second_user.journal)
 
     form = forms.BorrowForm({
         'date': '1999-01-04',
@@ -200,11 +192,9 @@ def test_borrow_return_init_fields():
     assert '<input type="text" name="date"' not in form
 
 
-def test_borrow_return_current_user_accounts():
-    j = JournalFactory(user=UserFactory(username='X'))
-
+def test_borrow_return_current_user_accounts(second_user):
     AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', journal=j)  # user X
+    AccountFactory(title='A2', journal=second_user.journal)  # user X
 
     form = forms.BorrowReturnForm().as_p()
 
@@ -212,9 +202,8 @@ def test_borrow_return_current_user_accounts():
     assert 'A2' not in form
 
 
-def test_borrow_return_select_first_account():
-    j = JournalFactory(user=UserFactory(username='X'))
-    AccountFactory(title='A1', journal=j)
+def test_borrow_return_select_first_account(second_user):
+    AccountFactory(title='A1', journal=second_user.journal)
 
     a2 = AccountFactory(title='A2')
 
@@ -323,11 +312,9 @@ def test_lent_initial_values():
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_lent_current_user_accounts():
-    j = JournalFactory(user=UserFactory(username='X'))
-
+def test_lent_current_user_accounts(second_user):
     AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', journal=j)  # user X
+    AccountFactory(title='A2', journal=second_user.journal)  # user X
 
     form = forms.LentForm().as_p()
 
@@ -335,9 +322,8 @@ def test_lent_current_user_accounts():
     assert 'A2' not in form
 
 
-def test_lent_select_first_account():
-    j = JournalFactory(user=UserFactory(username='X'))
-    AccountFactory(title='A1', journal=j)
+def test_lent_select_first_account(second_user):
+    AccountFactory(title='A1', journal=second_user.journal)
 
     a2 = AccountFactory(title='A2')
 
@@ -411,10 +397,8 @@ def test_lent_blank_data():
     assert 'account' in form.errors
 
 
-def test_lent_same_name_for_diff_journal():
-    factories.LentFactory(
-        name='XXX',
-        journal=JournalFactory(user=UserFactory(username='X')))
+def test_lent_same_name_for_diff_journal(second_user):
+    factories.LentFactory(name='XXX', journal=second_user.journal)
 
     form = forms.LentForm({
         'date': '1999-01-04',
@@ -469,11 +453,9 @@ def test_lent_return_init_fields():
     assert '<input type="text" name="date"' not in form
 
 
-def test_lent_return_current_user_accounts():
-    j = JournalFactory(user=UserFactory(username='X'))
-
+def test_lent_return_current_user_accounts(second_user):
     AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', journal=j)  # user X
+    AccountFactory(title='A2', journal=second_user.journal)  # user X
 
     form = forms.LentReturnForm().as_p()
 
@@ -481,9 +463,8 @@ def test_lent_return_current_user_accounts():
     assert 'A2' not in form
 
 
-def test_lent_return_select_first_account():
-    j = JournalFactory(user=UserFactory(username='X'))
-    AccountFactory(title='A1', journal=j)
+def test_lent_return_select_first_account(second_user):
+    AccountFactory(title='A1', journal=second_user.journal)
 
     a2 = AccountFactory(title='A2')
 

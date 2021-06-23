@@ -33,7 +33,7 @@ class BorrowForm(forms.ModelForm):
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # journal input
-        self.fields['journal'].initial = utils.get_journal()
+        self.fields['journal'].initial = utils.get_user().journal
         self.fields['journal'].disabled = True
         self.fields['journal'].widget = forms.HiddenInput()
 
@@ -140,7 +140,7 @@ class LentForm(forms.ModelForm):
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # journal input
-        self.fields['journal'].initial = utils.get_journal()
+        self.fields['journal'].initial = utils.get_user().journal
         self.fields['journal'].disabled = True
         self.fields['journal'].widget = forms.HiddenInput()
 

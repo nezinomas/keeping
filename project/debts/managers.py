@@ -10,7 +10,7 @@ from ..core.mixins.queryset_sum import SumMixin
 
 class BorrowQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         return (
             self
             .select_related('account', 'journal')
@@ -74,7 +74,7 @@ class BorrowQuerySet(SumMixin, models.QuerySet):
 
 class BorrowReturnQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         qs = (
             self
             .select_related('account', 'borrow')
@@ -125,7 +125,7 @@ class BorrowReturnQuerySet(SumMixin, models.QuerySet):
 
 class LentQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         return (
             self
             .select_related('account', 'journal')
@@ -188,7 +188,7 @@ class LentQuerySet(SumMixin, models.QuerySet):
 
 class LentReturnQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        journal = utils.get_journal()
+        journal = utils.get_user().journal
         qs = (
             self
             .select_related('account', 'lent')
