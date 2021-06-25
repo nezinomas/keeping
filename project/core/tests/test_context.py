@@ -23,6 +23,7 @@ def test_years(rf):
 
 
 @pytest.mark.django_db
+@pytest.mark.disable_get_user_patch
 @freeze_time('2006-01-01')
 @patch('project.core.lib.utils.get_user')
 def test_year_first_record_from_journal(mck, rf):

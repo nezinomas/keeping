@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
@@ -6,7 +8,6 @@ from mock import patch
 from .. import views
 
 
-@freeze_time('2020-01-01')
 @pytest.mark.django_db()
 @pytest.mark.parametrize(
     'year, expect',
@@ -15,12 +16,13 @@ from .. import views
         (1000, 1999),
         (3000, 1999),
     ])
-def test_set_year(year, expect, client_logged):
+@freeze_time('2020-01-01')
+def test_set_year(year, expect, get_user, client_logged):
+    get_user.journal.first_record = date(1974, 1, 1)
     url = reverse(
         'core:set_year',
         kwargs={'year': year}
     )
-
     response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
