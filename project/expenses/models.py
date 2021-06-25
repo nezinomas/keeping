@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models import F
 
 from ..accounts.models import Account
+from ..core.lib import utils
 from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
@@ -97,8 +98,18 @@ class Expense(MixinFromDbAccountId):
             models.Index(fields=['expense_name']),
         ]
 
+    # Managers
+    objects = ExpenseQuerySet.as_manager()
+
     def __str__(self):
         return f'{(self.date)}/{self.expense_type}/{self.expense_name}'
 
-    # Managers
-    objects = ExpenseQuerySet.as_manager()
+    def save(self, *args, **kwargs):
+        user = utils.get_user()
+        journal = Journal.objects.get(pk=user.journal.pk)
+
+        if journal.first_record > self.date:
+            journal.first_record = self.date
+            journal.save()
+
+        return super().save(*args, **kwargs)
