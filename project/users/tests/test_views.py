@@ -8,7 +8,6 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from freezegun import freeze_time
 
-from ...journals.factories import JournalFactory
 from ...journals.models import Journal
 from ...users.factories import UserFactory
 from ...users.models import User
