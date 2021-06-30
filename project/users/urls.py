@@ -34,4 +34,10 @@ urlpatterns = [
     path('password_change/done/',
          views.PasswordChangeDone.as_view(),
          name='password_change_done'),
+    path('invite/',
+         views.Invite.as_view(),
+         name='invite'),
+    path('invite/done/',
+         views.InviteDone.as_view(),
+         name='invite_done'),
 ]

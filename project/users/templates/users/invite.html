@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block head %}{% endblock head %}
+
+
+{% block content %}
+
+<div class="row mt-2 gx-2">
+    <div class="col">
+        {% if invite %}
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% include 'core/includes/form.html' %}
+            <button type="submit" class="btn btn-primary btn-sm">Siųsti pakvietimą</button>
+        </form>
+        {% else %}
+        baigta
+        {% endif %}
+    </div>
+</div>
+
+{% endblock content%}
