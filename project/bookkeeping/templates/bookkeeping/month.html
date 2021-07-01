@@ -132,8 +132,6 @@
     }
 </script>
 
-{% include 'modal.html' %}
-
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
         var url = `{% url 'bookkeeping:reload_month' %}`;
