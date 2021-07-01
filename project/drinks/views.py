@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 
 from ..core.lib.date import years
-from ..core.mixins.ajax import AjaxCustomFormMixin
+from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                  DispatchAjaxMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
@@ -36,7 +36,7 @@ class HistoricalData(IndexMixin):
         return JsonResponse({'html': rendered})
 
 
-class Compare(AjaxCustomFormMixin):
+class Compare(AjaxSearchMixin):
     template_name = f'{App_name}/includes/compare_form.html'
     form_class = forms.DrinkCompareForm
     form_data_dict = {}

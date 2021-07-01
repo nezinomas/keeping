@@ -8,7 +8,7 @@ from django.views.generic.base import RedirectView
 
 from ...core.forms import SearchForm
 from ...core.lib import search
-from ...core.mixins.ajax import AjaxCustomFormMixin
+from ...core.mixins.ajax import AjaxSearchMixin
 from ...core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                   DispatchAjaxMixin, ListMixin,
                                   UpdateAjaxMixin)
@@ -86,7 +86,7 @@ class Delete(DeleteAjaxMixin):
     list_render_output = False
 
 
-class Search(AjaxCustomFormMixin):
+class Search(AjaxSearchMixin):
     template_name = 'core/includes/search_form.html'
     form_class = SearchForm
     form_data_dict = {}

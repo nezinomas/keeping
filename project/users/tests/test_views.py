@@ -1,14 +1,18 @@
+import re
+from datetime import timedelta
+
 import pytest
 from django.contrib.auth.forms import (PasswordChangeForm, PasswordResetForm,
                                        SetPasswordForm)
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
+from django.core.signing import TimestampSigner
 from django.urls import resolve, reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from freezegun import freeze_time
 
-from ...journals.factories import JournalFactory
+from ...config.secrets import get_secret
 from ...journals.models import Journal
 from ...users.factories import UserFactory
 from ...users.models import User
@@ -534,3 +538,144 @@ def test_password_change_invalid_didnt_change_password(client_logged):
     user = User.objects.first()
 
     assert user.check_password('123')
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                                  Invite
+# ---------------------------------------------------------------------------------------
+def test_invite_func():
+    view = resolve('/invite/')
+    assert view.func.view_class is views.Invite
+
+
+def test_invite_user_must_be_superuser(get_user, client_logged):
+    get_user.is_superuser = False
+    get_user.save()
+
+    url = reverse('users:invite')
+
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert response.resolver_match.url_name == 'index'
+
+
+def test_invite_link_is_superuser(client_logged):
+    url = reverse('bookkeeping:index')
+
+    response = client_logged.get(url)
+    content = response.content.decode('utf-8')
+
+    link = reverse('users:invite')
+
+    assert link in content
+
+
+def test_invite_no_link_ordinary_userr(get_user, client_logged):
+    get_user.is_superuser = False
+    get_user.save()
+
+    url = reverse('bookkeeping:index')
+
+    response = client_logged.get(url)
+    content = response.content.decode('utf-8')
+
+    link = reverse('users:invite')
+
+    assert link not in content
+
+
+def test_invite_status_code(client_logged):
+    url = reverse('users:invite')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_invite_user_must_logged(client):
+    url = reverse('users:invite')
+
+    response = client.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert response.resolver_match.url_name == 'login'
+
+
+def test_invite_contains_form(client_logged):
+    url = reverse('users:invite')
+    response = client_logged.get(url)
+    form = response.context.get('form')
+
+    assert isinstance(form, forms.InviteForm)
+
+
+def test_invite_form_inputs(client_logged):
+    url = reverse('users:invite')
+    response = client_logged.get(url)
+
+    form = response.content.decode('utf-8')
+
+    assert form.count('<input') == 2
+    assert form.count('type="hidden" name="csrfmiddlewaretoken"') == 1
+    assert form.count('type="email"') == 1
+
+
+def test_invite_redirection(client_logged):
+    '''
+    A valid form submission should redirect the user to `invite_done` view
+    '''
+    user = UserFactory()
+    url = reverse('users:invite')
+    response = client_logged.post(url, {'email': user.email}, follow=True)
+
+    assert response.status_code == 200
+    assert response.resolver_match.url_name == 'invite_done'
+
+
+def test_invite_email_subject(client_logged):
+    user = UserFactory()
+    url = reverse('users:invite')
+    client_logged.post(url, {'email': user.email})
+    email = mail.outbox[0].subject
+
+    assert email == f'{user.username} invitation'
+
+
+def test_invite_crypted_link(client_logged):
+    user = UserFactory()
+    url = reverse('users:invite')
+    client_logged.post(url, {'email': user.email})
+    email = mail.outbox[0].body
+
+    token = re.findall(r'http://.*?\/([\w\-]{23,}:[\w\-]{6}:[\w\-]{43})', email)[0]
+    signer = TimestampSigner(salt=get_secret('SALT'))
+    actual = signer.unsign_object(token, max_age=timedelta(days=3))
+    expect = {'jrn': user.journal.pk, 'usr': user.pk}
+
+    assert expect == actual
+
+
+def test_invite_body(client_logged):
+    user = UserFactory()
+    url = reverse('users:invite')
+    client_logged.post(url, {'email': user.email})
+    email = mail.outbox[0].body
+
+    assert user.username in email
+    assert reverse('users:invite') in email
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                         Invite Complete
+# ---------------------------------------------------------------------------------------
+def test_invite_complete_func():
+    view = resolve('/invite/done/')
+    assert view.func.view_class is views.InviteDone
+
+
+def test_invite_complete_status_code(client):
+    url = reverse('users:invite_done')
+    response = client.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert response.resolver_match.url_name == 'login'
