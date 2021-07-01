@@ -171,7 +171,7 @@
             aria-expanded="false">{{ user.username }}</a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
             <li><a class="dropdown-item btn-sm" href="{% url 'users:logout' %}">Log out</a></li>
-            <li><a class="dropdown-item btn-sm" href="{% url 'users:password_change' %}">Password change</a></li>
+            <li><a class="dropdown-item btn-sm" href="{% url 'users:password_change' %}">Change password</a></li>
             {% if user.is_superuser %}<li><a class="dropdown-item btn-sm" href="{% url 'users:invite' %}">Sent invite link</a></li>{% endif %}
           </ul>
         </div>
