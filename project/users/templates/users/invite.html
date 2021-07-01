@@ -1,22 +1,17 @@
-{% extends 'base.html' %}
 
-{% block head %}{% endblock head %}
-
-
-{% block content %}
-
-<div class="row mt-2 gx-2">
-    <div class="col">
-        {% if invite %}
-        <form method="post" novalidate>
-            {% csrf_token %}
-            {% include 'core/includes/form.html' %}
-            <button type="submit" class="btn btn-primary btn-sm">Siųsti pakvietimą</button>
-        </form>
-        {% else %}
-        baigta
-        {% endif %}
+<form method="post" novalidate id="js-form" class="js-form" action="{% url 'users:invite' %}">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h5 class="modal-title">Invitation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
-</div>
-
-{% endblock content%}
+    <div class="modal-body">
+        {% if form %}
+        {% include 'core/includes/form.html' %}
+        <button type="submit" id="submit" class="btn btn-primary btn-sm">Sent invitation</button>
+        {% else %}
+        <p>Email sent</p>
+        {% endif %}
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+    </div>
+</form>

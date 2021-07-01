@@ -6,12 +6,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import EmailMessage
 from django.core.signing import TimestampSigner
 from django.http import HttpResponseRedirect
+from django.http.response import JsonResponse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls.base import reverse_lazy
-from django.views.generic import CreateView, FormView, TemplateView
+from django.views.generic import CreateView, TemplateView
 
 from ..config.secrets import get_secret
+from ..core.mixins.ajax import AjaxCustomFormMixin
 from . import forms
 
 
@@ -125,7 +127,7 @@ class PasswordChangeDone(auth_views.PasswordChangeDoneView):
     template_name = 'users/password_change_done.html'
 
 
-class Invite(LoginRequiredMixin, FormView):
+class Invite(AjaxCustomFormMixin):
     template_name = 'users/invite.html'
     success_url = reverse_lazy('users:invite_done')
     form_class = forms.InviteForm
@@ -138,11 +140,6 @@ class Invite(LoginRequiredMixin, FormView):
 
         return super().dispatch(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['invite'] = True
-        return context
-
     def form_valid(self, form):
         user = self.request.user
 
@@ -151,11 +148,11 @@ class Invite(LoginRequiredMixin, FormView):
             secret = signer.sign_object({'jrn': user.journal.pk, 'usr': user.pk })
             to_ = form.cleaned_data.get('email')
             from_ = user.email
-            context = {
+            mail_context = {
                 'username': user.username,
                 'link': self.request.build_absolute_uri() + secret,
             }
-            body_ = render_to_string('users/invite_email.html', context)
+            body_ = render_to_string('users/invite_email.html', mail_context)
 
             EmailMessage(
                 subject=f'{user.username} invitation',
@@ -164,7 +161,11 @@ class Invite(LoginRequiredMixin, FormView):
                 to=[to_]
             ).send()
 
-        return super().form_valid(form)
+        json_data = {
+            'html_form': self._render_form({'form': None}),
+        }
+
+        return JsonResponse(json_data)
 
 
 class InviteDone(LoginRequiredMixin, TemplateView):
