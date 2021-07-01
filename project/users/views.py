@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import EmailMessage
 from django.core.signing import TimestampSigner
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls.base import reverse_lazy
 from django.views.generic import CreateView, FormView, TemplateView
@@ -128,6 +129,14 @@ class Invite(LoginRequiredMixin, FormView):
     template_name = 'users/invite.html'
     success_url = reverse_lazy('users:invite_done')
     form_class = forms.InviteForm
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+
+        if not user.is_superuser:
+            return redirect('bookkeeping:index')
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

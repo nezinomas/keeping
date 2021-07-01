@@ -548,6 +548,18 @@ def test_invite_func():
     assert view.func.view_class is views.Invite
 
 
+def test_invite_user_must_be_superuser(get_user, client_logged):
+    get_user.is_superuser = False
+    get_user.save()
+
+    url = reverse('users:invite')
+
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert response.resolver_match.url_name == 'index'
+
+
 def test_invite_status_code(client_logged):
     url = reverse('users:invite')
     response = client_logged.get(url)
