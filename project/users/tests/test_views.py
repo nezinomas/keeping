@@ -560,6 +560,31 @@ def test_invite_user_must_be_superuser(get_user, client_logged):
     assert response.resolver_match.url_name == 'index'
 
 
+def test_invite_link_is_superuser(client_logged):
+    url = reverse('bookkeeping:index')
+
+    response = client_logged.get(url)
+    content = response.content.decode('utf-8')
+
+    link = reverse('users:invite')
+
+    assert link in content
+
+
+def test_invite_no_link_ordinary_userr(get_user, client_logged):
+    get_user.is_superuser = False
+    get_user.save()
+
+    url = reverse('bookkeeping:index')
+
+    response = client_logged.get(url)
+    content = response.content.decode('utf-8')
+
+    link = reverse('users:invite')
+
+    assert link not in content
+
+
 def test_invite_status_code(client_logged):
     url = reverse('users:invite')
     response = client_logged.get(url)
