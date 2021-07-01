@@ -146,28 +146,13 @@ class AjaxDeleteMixin(GetQuerysetMixin):
 
 
 class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
-    def post(self, request, *args, **kwargs):
-        err = {'error': 'Form is broken.'}
-        try:
-            form_data = request.POST['form_data']
-        except KeyError:
-            return JsonResponse(data=err, status=404)
-
-        try:
-            _list = json.loads(form_data)
-
-            # flatten list of dictionaries - form_data_list
-            for field in _list:
-                self.form_data_dict[field["name"]] = field["value"]
-
-        except (json.decoder.JSONDecodeError, KeyError):
-            return JsonResponse(data=err, status=500)
-
-        form = self.form_class(self.form_data_dict)
-        if form.is_valid():
-            return self.form_valid(form)
-
-        return self.form_invalid(form, **kwargs)
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        json_data = {
+            'html_form': self._render_form(context),
+            'html': None,
+        }
+        return JsonResponse(json_data)
 
     def form_invalid(self, form):
         json_data = {
@@ -187,7 +172,6 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
             'html': html,
             **kwargs,
         }
-
         return JsonResponse(json_data)
 
     def _render_form(self, context):
@@ -197,3 +181,29 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
         return (
             render_to_string(self.template_name, context, request=self.request)
         )
+
+
+class AjaxSearchMixin(AjaxCustomFormMixin):
+    def post(self, request, *args, **kwargs):
+        err = {'error': 'Form is broken.'}
+        try:
+            form_data = request.POST['form_data']
+        except KeyError:
+            return JsonResponse(data=err, status=404)
+
+        try:
+            _list = json.loads(form_data)
+
+            # flatten list of dictionaries - form_data_list
+            for field in _list:
+                self.form_data_dict[field["name"]] = field["value"]
+
+        except (json.decoder.JSONDecodeError, KeyError):
+            return JsonResponse(data=err, status=500)
+
+        form = self.form_class(self.form_data_dict)
+
+        if form.is_valid():
+            return self.form_valid(form)
+
+        return self.form_invalid(form, **kwargs)
