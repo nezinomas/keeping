@@ -129,7 +129,6 @@ class PasswordChangeDone(auth_views.PasswordChangeDoneView):
 
 class Invite(AjaxCustomFormMixin):
     template_name = 'users/invite.html'
-    success_url = reverse_lazy('users:invite_done')
     form_class = forms.InviteForm
 
     def dispatch(self, request, *args, **kwargs):
