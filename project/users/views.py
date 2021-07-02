@@ -166,7 +166,3 @@ class Invite(AjaxCustomFormMixin):
         }
 
         return JsonResponse(json_data)
-
-
-class InviteDone(LoginRequiredMixin, TemplateView):
-    template_name = 'users/invite.html'

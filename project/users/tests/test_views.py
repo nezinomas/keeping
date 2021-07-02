@@ -1,3 +1,4 @@
+import json
 import re
 from datetime import timedelta
 
@@ -613,23 +614,11 @@ def test_invite_form_inputs(client_logged):
     url = reverse('users:invite')
     response = client_logged.get(url)
 
-    form = response.content.decode('utf-8')
+    form = json.loads(response.content)['html_form']
 
     assert form.count('<input') == 2
     assert form.count('type="hidden" name="csrfmiddlewaretoken"') == 1
     assert form.count('type="email"') == 1
-
-
-def test_invite_redirection(client_logged):
-    '''
-    A valid form submission should redirect the user to `invite_done` view
-    '''
-    user = UserFactory()
-    url = reverse('users:invite')
-    response = client_logged.post(url, {'email': user.email}, follow=True)
-
-    assert response.status_code == 200
-    assert response.resolver_match.url_name == 'invite_done'
 
 
 def test_invite_email_subject(client_logged):
@@ -663,19 +652,3 @@ def test_invite_body(client_logged):
 
     assert user.username in email
     assert reverse('users:invite') in email
-
-
-# ---------------------------------------------------------------------------------------
-#                                                                         Invite Complete
-# ---------------------------------------------------------------------------------------
-def test_invite_complete_func():
-    view = resolve('/invite/done/')
-    assert view.func.view_class is views.InviteDone
-
-
-def test_invite_complete_status_code(client):
-    url = reverse('users:invite_done')
-    response = client.get(url, follow=True)
-
-    assert response.status_code == 200
-    assert response.resolver_match.url_name == 'login'
