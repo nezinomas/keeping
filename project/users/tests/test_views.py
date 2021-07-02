@@ -652,3 +652,102 @@ def test_invite_body(client_logged):
 
     assert user.username in email
     assert reverse('users:invite') in email
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                           Invite Signup
+# ---------------------------------------------------------------------------------------
+@pytest.fixture()
+def signer(get_user):
+    signer_ = TimestampSigner(salt=get_secret('SALT'))
+    token_ = signer_.sign_object({'jrn': get_user.journal.pk, 'usr': get_user.pk})
+    return (signer_, token_)
+
+
+def test_invite_signup_func():
+    view = resolve('/invite/eyJqcm4iOjExLCJ1c3IiOjExfQ:1lxk8I:0bKKcpId2m4XLVniODvpSCDQfZ_vcgHy6a6dypD15IE/')
+    assert view.func.view_class is views.InviteSignup
+
+
+def test_invite_signup_status_code(client, signer):
+    _, token = signer
+    url = reverse('users:invite_signup', kwargs={'token': token})
+    response = client.get(url)
+
+    assert response.status_code == 200
+
+
+@freeze_time('1974-1-1')
+def test_invite_signup_expired_link(client, get_user):
+    with freeze_time('1974-1-1 1:0:0'):
+        s_ = TimestampSigner(salt=get_secret('SALT'))
+        token_ = s_.sign_object(
+            {'jrn': get_user.journal.pk, 'usr': get_user.pk})
+
+    with freeze_time('1974-1-4 1:0:1'):
+        url = reverse('users:invite_signup', kwargs={'token': token_})
+        response = client.get(url)
+        content = response.content.decode('utf-8')
+
+        assert 'type="hidden" name="csrfmiddlewaretoken"' not in content
+        assert 'It seems that your invitation is no longer valid. Ask a friend to provide a new link.' in content
+
+
+def test_invite_signup_valid_link(client, signer):
+    _, token_ = signer
+
+    url = reverse('users:invite_signup', kwargs={'token': token_})
+    response = client.get(url)
+    content = response.content.decode('utf-8')
+
+    assert 'type="hidden" name="csrfmiddlewaretoken"' in content
+    assert 'It seems that your invitation is no longer valid. Ask a friend to provide a new link.' not in content
+
+
+def test_invite_signup_edited_token(client):
+    url = reverse('users:invite_signup', kwargs={'token': 'x'*23 + ':' +  'x'*5 + ':' + 'x'*43})
+    response = client.get(url)
+    content = response.content.decode('utf-8')
+
+    assert 'It seems that your invitation is no longer valid. Ask a friend to provide a new link.' in content
+
+
+@pytest.fixture
+def _invite_client(get_user, client):
+    signer_ = TimestampSigner(salt=get_secret('SALT'))
+    token_ = signer_.sign_object(
+        {'jrn': get_user.journal.pk, 'usr': get_user.pk})
+    url = reverse('users:invite_signup', kwargs={'token': token_})
+
+    data = {
+        'username': 'john',
+        'email': 'john@dot.com',
+        'password1': 'abcdef123456',
+        'password2': 'abcdef123456',
+    }
+
+    return client.post(url, data)
+
+
+def test_invite_signup_redirection(_invite_client):
+    assert _invite_client.status_code == 302
+
+
+def test_invite_signup_user_creation(_invite_client):
+    users = User.objects.all()
+    assert users.count() == 2
+
+    user = users.last()
+
+    assert not user.is_superuser
+    assert user.username == 'john'
+    assert user.journal.title == 'bob Journal'
+
+
+def test_invite_signup_journals(_invite_client):
+    journals = Journal.objects.all()
+    assert journals.count() == 1
+
+    journal = journals[0]
+
+    assert str(journal) == 'bob Journal'

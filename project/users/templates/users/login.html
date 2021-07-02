@@ -2,6 +2,7 @@
 
 {% block content %}
 <div class="card my-auto">
+{% if valid_link %}
     <div class="card-body">
         <h3 class="card-title">{{ card_title }}</h3>
         {% if card_text %}<p>{{ card_text }}</p>{% endif %}
@@ -30,4 +31,11 @@
     </small>
 </div>
 {% endif %}
+
+{% else %}
+    <div class="card-body">
+        <p class="my-auto text-center py-3">It seems that your invitation is no longer valid. Ask a friend to provide a new link.</p>
+    </div>
+{% endif %}
+
 {% endblock %}

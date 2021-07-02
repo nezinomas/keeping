@@ -1,9 +1,10 @@
-from django.urls import path
-
+from django.urls import path, register_converter
+from ..core import converters
 from . import views
 
 app_name = 'users'
 
+register_converter(converters.SignerConverter, 'token')
 
 urlpatterns = [
     path('logout/',
@@ -37,4 +38,7 @@ urlpatterns = [
     path('invite/',
          views.Invite.as_view(),
          name='invite'),
+    path('invite/<token:token>/',
+         views.InviteSignup.as_view(),
+         name='invite_signup'),
 ]

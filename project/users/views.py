@@ -1,19 +1,19 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth import login
 from django.contrib.auth import views as auth_views
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import EmailMessage
-from django.core.signing import TimestampSigner
+from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.http import HttpResponseRedirect
 from django.http.response import JsonResponse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
-from django.urls.base import reverse_lazy
-from django.views.generic import CreateView, TemplateView
+from django.urls.base import reverse, reverse_lazy
+from django.views.generic import CreateView
 
 from ..config.secrets import get_secret
 from ..core.mixins.ajax import AjaxCustomFormMixin
+from ..users.models import User
 from . import forms
 
 
@@ -40,6 +40,7 @@ class Login(auth_views.LoginView):
         context['card_title'] = 'Log In'
         context['reset_link'] = True
         context['signup_link'] = True
+        context['valid_link'] = True
         return context
 
 
@@ -66,6 +67,7 @@ class Signup(CreateView):
         context['submit_button_text'] = 'Sign Up'
         context['card_title'] = 'Sign Up'
         context['login_link'] = True
+        context['valid_link'] = True
         return context
 
     def form_valid(self, form):
@@ -90,6 +92,7 @@ class PasswordReset(auth_views.PasswordResetView):
         context['submit_button_text'] = 'Send password reset email'
         context['card_title'] = 'Reset your password'
         context['card_text'] = 'Enter your email address and system will send you a link to reset your pasword.'
+        context['valid_link'] = True
         return context
 
 
@@ -120,6 +123,8 @@ class PasswordChange(auth_views.PasswordChangeView):
         context = super().get_context_data(**kwargs)
         context['submit_button_text'] = 'Change password'
         context['card_title'] = 'Change password'
+        context['valid_link'] = True
+
         return context
 
 
@@ -165,3 +170,43 @@ class Invite(AjaxCustomFormMixin):
         }
 
         return JsonResponse(json_data)
+
+
+class InviteSignup(CreateView):
+    template_name = 'users/login.html'
+    form_class = forms.SignUpForm
+    valid_link = False
+    valid_days = 3
+
+    def dispatch(self, request, *args, **kwargs):
+        token = kwargs.get('token')
+        signer = TimestampSigner(salt=get_secret('SALT'))
+
+        try:
+            signer.unsign_object(token, max_age=timedelta(days=self.valid_days))
+            self.valid_link = True
+        except (SignatureExpired, BadSignature):
+            pass
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['submit_button_text'] = 'Sign Up'
+        context['card_title'] = 'Sign Up'
+        context['login_link'] = True
+        context['valid_link'] = self.valid_link
+        return context
+
+    def form_valid(self, form, **kwargs):
+        token = self.kwargs.get('token')
+        signer = TimestampSigner(salt=get_secret('SALT'))
+        orig = signer.unsign_object(token, max_age=timedelta(days=self.valid_days))
+        user = User.objects.get(pk=orig['usr'])
+
+        obj = form.save(commit=False)
+        obj.journal = user.journal
+        obj.save()
+
+        return HttpResponseRedirect(reverse('users:login'))
