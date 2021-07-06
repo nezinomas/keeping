@@ -13,8 +13,8 @@
     </thead>
     <tbody>
         {% for item in items %}
-        {% url url_update item.id as url_update %}
-        {% url url_delete item.id as url_delete %}
+        {% url url_update item.id as url__update %}
+        {% url url_delete item.id as url__delete %}
         {% ifchanged item.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="6" class="table-active"></td></tr>{% endif %}
         {% endifchanged %}
         <tr data-url="{{ url_update }}" class="dblclick">
@@ -24,10 +24,10 @@
             <td>{{ item.price }}</td>
             {% if fees %}<td>{{ item.fee }}</td>{% endif %}
             <td class="w-edit">
-                <a role="button" data-url="{{ url_update }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+                <a role="button" data-url="{{ url__update }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
             </td>
             <td class="w-delete">
-                <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+                <a role="button" data-url="{{ url__delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
         {% endfor %}
