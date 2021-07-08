@@ -13,9 +13,10 @@ from django.views.generic import CreateView
 
 from ..config.secrets import get_secret
 from ..core.mixins.ajax import AjaxCustomFormMixin
-from ..core.mixins.views import IndexMixin
+from ..core.mixins.views import IndexMixin, ListMixin
 from ..users.models import User
 from . import forms
+from project.users import models
 
 
 def _user_settings(user):
@@ -223,3 +224,25 @@ class SettingsIndex(IndexMixin):
             return redirect('bookkeeping:index')
 
         return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['users'] = SettingsUsers.as_view()(
+            self.request, as_string=True)
+
+        return context
+
+
+class SettingsUsers(ListMixin):
+    model = models.User
+    template_name = 'users/includes/users_lists.html'
+
+    def get_queryset(self):
+        user = self.request.user
+
+        return (
+            models.User.objects
+            .filter(journal=user.journal)
+            .exclude(pk=user.pk)
+        )

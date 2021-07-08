@@ -44,4 +44,7 @@ urlpatterns = [
      path('settings/',
           views.SettingsIndex.as_view(),
           name='settings_index'),
+     path('settings/users/',
+          views.SettingsUsers.as_view(),
+          name='settings_users'),
 ]
