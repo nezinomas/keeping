@@ -572,7 +572,7 @@ def test_invite_link_is_superuser(client_logged):
     assert link in content
 
 
-def test_invite_no_link_ordinary_userr(get_user, client_logged):
+def test_invite_no_link_ordinary_user(get_user, client_logged):
     get_user.is_superuser = False
     get_user.save()
 
