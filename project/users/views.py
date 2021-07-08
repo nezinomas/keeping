@@ -13,6 +13,7 @@ from django.views.generic import CreateView
 
 from ..config.secrets import get_secret
 from ..core.mixins.ajax import AjaxCustomFormMixin
+from ..core.mixins.views import IndexMixin
 from ..users.models import User
 from . import forms
 
@@ -210,3 +211,15 @@ class InviteSignup(CreateView):
         obj.save()
 
         return HttpResponseRedirect(reverse('users:login'))
+
+
+class SettingsIndex(IndexMixin):
+    template_name = 'users/settings_index.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+
+        if not user.is_superuser:
+            return redirect('bookkeeping:index')
+
+        return super().dispatch(request, *args, **kwargs)

@@ -173,7 +173,11 @@
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
             <li><a class="dropdown-item btn-sm" href="{% url 'users:logout' %}">Log out</a></li>
             <li><a class="dropdown-item btn-sm" href="{% url 'users:password_change' %}">Change password</a></li>
-            {% if user.is_superuser %}<li><a role="button" class="dropdown-item btn-sm js-invite" data-url="{% url 'users:invite' %}">Sent invite link</a></li>{% endif %}
+            {% if user.is_superuser %}
+            <li class="dropdown-divider"></li>
+            <li><a role="button" class="dropdown-item btn-sm" href="{% url 'users:settings_index' %}">Settings</a></li>
+            <li><a role="button" class="dropdown-item btn-sm js-invite" data-url="{% url 'users:invite' %}">Sent invite link</a></li>
+            {% endif %}
           </ul>
         </div>
       </nav>

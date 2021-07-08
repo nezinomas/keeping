@@ -41,4 +41,7 @@ urlpatterns = [
     path('invite/<token:token>/',
          views.InviteSignup.as_view(),
          name='invite_signup'),
+     path('settings/',
+          views.SettingsIndex.as_view(),
+          name='settings_index'),
 ]
