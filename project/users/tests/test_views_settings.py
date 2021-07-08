@@ -40,13 +40,13 @@ def test_settings_no_link_ordinary_user(get_user, client_logged):
     assert link not in content
 
 
-def test_index_func():
+def test_func():
     view = resolve('/settings/')
 
     assert views.SettingsIndex == view.func.view_class
 
 
-def test_index_user_must_be_superuser(get_user, client_logged):
+def test_user_must_be_superuser(get_user, client_logged):
     get_user.is_superuser = False
     get_user.save()
 
@@ -58,7 +58,7 @@ def test_index_user_must_be_superuser(get_user, client_logged):
     assert response.resolver_match.url_name == 'index'
 
 
-def test_index_status_code(client_logged):
+def test_status_code(client_logged):
     url = reverse('users:settings_index')
     response = client_logged.get(url)
 
