@@ -12,13 +12,13 @@
     </thead>
     <tbody>
         {% for item in items %}
-
+        {% url 'users:settings_users_delete' item.id as url_delete %}
         <tr>
             <td class="text-start">{{ item.username }}</td>
             <td class="text-start">{{ item.email }}</td>
-            <td class="text-center">{% if item.is_superuser %}<i class="bi bi-check-circle"></i>{% else %}<i class="bi bi-dash-circle-fill" style="color: #dc3545;"></i>{% endif %}</td>
+            <td class="text-center">{% if item.is_superuser %}<i class="bi bi-check-circle" style="color: #198754;"></i>{% else %}<i class="bi bi-dash-circle-fill" style="color: #dc3545;"></i>{% endif %}</td>
             <td class="w-delete">
-                <a role="button" data-url="" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+                <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
         {% endfor %}

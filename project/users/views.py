@@ -10,13 +10,14 @@ from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls.base import reverse, reverse_lazy
 from django.views.generic import CreateView
+from project.users import models
 
 from ..config.secrets import get_secret
+from ..core.lib import utils
 from ..core.mixins.ajax import AjaxCustomFormMixin
-from ..core.mixins.views import IndexMixin, ListMixin
+from ..core.mixins.views import DeleteAjaxMixin, IndexMixin, ListMixin
 from ..users.models import User
 from . import forms
-from project.users import models
 
 
 def _user_settings(user):
@@ -234,7 +235,18 @@ class SettingsIndex(IndexMixin):
         return context
 
 
-class SettingsUsers(ListMixin):
+class SettingsQueryMixin():
+    def get_queryset(self):
+        user = self.request.user
+
+        return (
+            models.User.objects
+            .filter(journal=user.journal)
+            .exclude(pk=user.pk)
+        )
+
+
+class SettingsUsers(SettingsQueryMixin, ListMixin):
     model = models.User
     template_name = 'users/includes/users_lists.html'
 
@@ -246,3 +258,42 @@ class SettingsUsers(ListMixin):
             .filter(journal=user.journal)
             .exclude(pk=user.pk)
         )
+
+
+class SettingsUsersDelete(SettingsQueryMixin, DeleteAjaxMixin):
+    model = models.User
+    template_name = 'users/includes/users_delete.html'
+    list_template_name = 'users/includes/users_lists.html'
+
+    def _render_warning(self, request):
+        json_data = {}
+        self.object = self.get_object()
+
+        if self.object.pk == request.user.pk:
+            rdnr = render_to_string(
+                request=request,
+                template_name='core/includes/generic_modal.html',
+                context={
+                    'title': 'Warning',
+                    'text': 'You cannot delete yourself.'
+                },
+            )
+            json_data = {
+                'form_is_valid': False,
+                'html_form': rdnr
+            }
+        return json_data
+
+    def get(self, request, *args, **kwargs):
+        json_data = self._render_warning(request)
+        if json_data:
+            return JsonResponse(json_data)
+
+        return super().get(request, *args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        json_data = self._render_warning(self.request)
+        if json_data:
+            return JsonResponse(json_data)
+
+        return super().post(*args, **kwargs)
