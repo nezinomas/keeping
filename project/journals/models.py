@@ -10,6 +10,14 @@ class Journal(TitleAbstract):
         default=date.today,
         editable=False
     )
+    not_use_expenses = models.CharField(
+        max_length=254,
+        null=True,
+        blank=True
+    )
+    not_use_savings = models.BooleanField(
+        default=False
+    )
 
     def __str__(self):
         return f'{self.title}'
