@@ -36,9 +36,9 @@ class NotUseForm(forms.Form):
     def save(self):
         journal = utils.get_user().journal
 
-        if self.cleaned_data["choices"]:
+        if self.cleaned_data.get("choices"):
             choices = list(self.cleaned_data["choices"].values_list("pk", flat=True))
             journal.not_use_expenses = json.dumps(choices)
 
-        journal.not_use_savings = self.cleaned_data['savings']
+        journal.not_use_savings = self.cleaned_data.get('savings')
         journal.save()
