@@ -87,3 +87,23 @@ def test_form_save_checked_none():
     actual = Journal.objects.first()
     assert not actual.not_use_expenses
     assert not actual.not_use_savings
+
+
+def test_form_save_unchecked_expenses(get_user):
+    e1 = ExpenseTypeFactory(title='X')
+
+    get_user.journal.not_use_expenses = json.dumps([e1.pk])
+    get_user.journal.save()
+
+    form = NotUseForm(data={
+        'savings': False,
+        'choices': {}
+    })
+
+    assert form.is_valid()
+
+    form.save()
+
+    actual = Journal.objects.first()
+    assert not actual.not_use_expenses
+    assert not actual.not_use_savings
