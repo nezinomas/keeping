@@ -50,4 +50,7 @@ urlpatterns = [
      path('settings/users/delete/<int:pk>/',
           views.SettingsUsersDelete.as_view(),
           name='settings_users_delete'),
+     path('settings/unnecessary/',
+          views.SettingsUnnecessary.as_view(),
+          name='settings_unnecessary'),
 ]

@@ -37,6 +37,14 @@ class NotUseForm(forms.Form):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+        self.fields['savings'].widget.attrs['class'] = " form-check-input"
+        self.fields['savings'].label = "Taupymas"
+
+        self.fields['choices'].label = False
+
+        self.helper.form_show_labels = True
+
+
     def save(self):
         journal = utils.get_user().journal
 

@@ -11,7 +11,33 @@
 <div class="row my-2">
     <div class="col" id="user_list">{{ users }}</div>
 
-    <div class="col">no incomes</div>
+    <div class="col" id="unnecessary_ajax">{{ unnecessary }}</div>
 </div>
 
+<script>
+    $(function () {
+        var saveForm1 = function (event) {
+            var form = $('.js-form');
+            var action = form.attr("data-action");
+            var ajax_update_container = form.attr('data-update-container')
+
+            $.ajax({
+                url: form.attr("action"),
+                data: new FormData($('.js-form')[0]), // The form with the file inputs.
+                processData: false,
+                contentType: false,
+                type: form.attr("method"),
+                dataType: 'json',
+                success: function (data) {
+                    $(`#${ajax_update_container}`).html(data.html_form);
+                }
+            });
+            return false;
+        };
+
+        /* Binding */
+        $(document).on('click', '#submit12', saveForm1);
+    });
+
+</script>
 {% endblock content %}

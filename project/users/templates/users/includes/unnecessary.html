@@ -1,0 +1,5 @@
+<form method="POST" novalidate id="js-form" class="js-form" autocomplete="off" tabindex="-1" data-update-container="unnecessary_ajax" action="{% url 'users:settings_unnecessary' %}">
+    {% csrf_token %}
+    {% include 'core/includes/form.html' %}
+    <button type="button" class="btn btn-sm btn-primary" id="submit12">Update</button>
+</form>

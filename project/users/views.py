@@ -1,3 +1,4 @@
+from django.views.generic.edit import FormView
 from datetime import datetime, timedelta
 
 from django.contrib.auth import login
@@ -16,6 +17,7 @@ from ..config.secrets import get_secret
 from ..core.lib import utils
 from ..core.mixins.ajax import AjaxCustomFormMixin
 from ..core.mixins.views import DeleteAjaxMixin, IndexMixin, ListMixin
+from ..journals.forms import NotUseForm
 from ..users.models import User
 from . import forms
 
@@ -231,6 +233,7 @@ class SettingsIndex(IndexMixin):
 
         context['users'] = SettingsUsers.as_view()(
             self.request, as_string=True)
+        context['unnecessary'] = render_to_string(template_name='users/includes/unnecessary.html', request=self.request, context={'form': NotUseForm()})
 
         return context
 
@@ -297,3 +300,18 @@ class SettingsUsersDelete(SettingsQueryMixin, DeleteAjaxMixin):
             return JsonResponse(json_data)
 
         return super().post(*args, **kwargs)
+
+
+class SettingsUnnecessary(AjaxCustomFormMixin):
+    template_name = 'users/includes/unnecessary.html'
+    form_class = NotUseForm
+
+    def form_valid(self, form, **kwargs):
+        form.save()
+        json_data = {
+            'form_is_valid': True,
+            'html_form': render_to_string(self.template_name, request=self.request, context={'form': NotUseForm()}),
+            **kwargs,
+        }
+
+        return JsonResponse(json_data)
