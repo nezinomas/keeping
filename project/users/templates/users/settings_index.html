@@ -9,9 +9,15 @@
 </div>
 
 <div class="row my-2">
-    <div class="col" id="user_list">{{ users }}</div>
+    <div class="col" id="user_list">
+        <h6 class="pb-2">Users</h6>
+        {{ users }}
+    </div>
 
-    <div class="col" id="unnecessary_ajax">{{ unnecessary }}</div>
+    <div class="col">
+        <h6 class="pb-2">Nebūtinos išlaidos</h6>
+        <div id="unnecessary_ajax">{{ unnecessary }}</div>
+    </div>
 </div>
 
 <script>
