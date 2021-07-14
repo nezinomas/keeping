@@ -1,4 +1,5 @@
 import json
+from json.decoder import JSONDecodeError
 
 from crispy_forms.helper import FormHelper
 from django import forms
@@ -24,8 +25,11 @@ class NotUseForm(forms.Form):
 
         user = utils.get_user()
         checked_expenses = []
-        if user.journal.not_use_expenses:
+
+        try:
             checked_expenses = json.loads(user.journal.not_use_expenses)
+        except (JSONDecodeError, TypeError):
+            pass
 
         self.initial['choices'] = checked_expenses
         self.initial['savings'] = user.journal.not_use_savings

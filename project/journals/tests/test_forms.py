@@ -34,6 +34,18 @@ def test_form_selected_expenses(get_user):
     assert form.count('checked') == 2
 
 
+def test_form_bad_json_for_expenses(get_user):
+    e1 = ExpenseTypeFactory(title='X')
+    e2 = ExpenseTypeFactory(title='Y')
+
+    get_user.journal.not_use_expenses = 'None'
+    get_user.journal.save()
+
+    form = NotUseForm().as_p()
+
+    assert form.count('checked') == 0
+
+
 def test_form_selected_savings(get_user):
     get_user.journal.not_use_savings = True
     get_user.journal.save()
