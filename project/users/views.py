@@ -10,9 +10,12 @@ from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls.base import reverse, reverse_lazy
 from django.views.generic import CreateView
+from project.users import models
 
 from ..config.secrets import get_secret
 from ..core.mixins.ajax import AjaxCustomFormMixin
+from ..core.mixins.views import DeleteAjaxMixin, IndexMixin, ListMixin
+from ..journals.forms import UnnecessaryForm
 from ..users.models import User
 from . import forms
 
@@ -210,3 +213,103 @@ class InviteSignup(CreateView):
         obj.save()
 
         return HttpResponseRedirect(reverse('users:login'))
+
+
+class SettingsIndex(IndexMixin):
+    template_name = 'users/settings_index.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+
+        if not user.is_superuser:
+            return redirect('bookkeeping:index')
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['users'] = SettingsUsers.as_view()(
+            self.request, as_string=True)
+        context['unnecessary'] = render_to_string(template_name='users/includes/unnecessary.html', request=self.request, context={'form': UnnecessaryForm()})
+
+        return context
+
+
+class SettingsQueryMixin():
+    def get_queryset(self):
+        user = self.request.user
+
+        return (
+            models.User.objects
+            .filter(journal=user.journal)
+            .exclude(pk=user.pk)
+        )
+
+
+class SettingsUsers(SettingsQueryMixin, ListMixin):
+    model = models.User
+    template_name = 'users/includes/users_lists.html'
+
+    def get_queryset(self):
+        user = self.request.user
+
+        return (
+            models.User.objects
+            .filter(journal=user.journal)
+            .exclude(pk=user.pk)
+        )
+
+
+class SettingsUsersDelete(SettingsQueryMixin, DeleteAjaxMixin):
+    model = models.User
+    template_name = 'users/includes/users_delete.html'
+    list_template_name = 'users/includes/users_lists.html'
+
+    def _render_warning(self, request):
+        json_data = {}
+        self.object = self.get_object()
+
+        if self.object.pk == request.user.pk:
+            rdnr = render_to_string(
+                request=request,
+                template_name='core/includes/generic_modal.html',
+                context={
+                    'title': 'Warning',
+                    'text': 'You cannot delete yourself.'
+                },
+            )
+            json_data = {
+                'form_is_valid': False,
+                'html_form': rdnr
+            }
+        return json_data
+
+    def get(self, request, *args, **kwargs):
+        json_data = self._render_warning(request)
+        if json_data:
+            return JsonResponse(json_data)
+
+        return super().get(request, *args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        json_data = self._render_warning(self.request)
+        if json_data:
+            return JsonResponse(json_data)
+
+        return super().post(*args, **kwargs)
+
+
+class SettingsUnnecessary(AjaxCustomFormMixin):
+    template_name = 'users/includes/unnecessary.html'
+    form_class = UnnecessaryForm
+
+    def form_valid(self, form, **kwargs):
+        form.save()
+        json_data = {
+            'form_is_valid': True,
+            'html_form': render_to_string(self.template_name, request=self.request, context={'form': UnnecessaryForm()}),
+            **kwargs,
+        }
+
+        return JsonResponse(json_data)
