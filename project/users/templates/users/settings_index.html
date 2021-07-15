@@ -23,7 +23,7 @@
 <script>
     $(function () {
         var saveForm1 = function (event) {
-            var form = $('.js-form');
+            var form = $('.js_unnecessary_form');
             var action = form.attr("data-action");
             var ajax_update_container = form.attr('data-update-container')
 
@@ -42,7 +42,7 @@
         };
 
         /* Binding */
-        $(document).on('click', '#submit12', saveForm1);
+        $(document).on('click', '#unnecessary_submit', saveForm1);
     });
 
 </script>
