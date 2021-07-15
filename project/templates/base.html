@@ -176,7 +176,6 @@
             {% if user.is_superuser %}
             <li class="dropdown-divider"></li>
             <li><a role="button" class="dropdown-item btn-sm" href="{% url 'users:settings_index' %}">Settings</a></li>
-            <li><a role="button" class="dropdown-item btn-sm js-invite" data-url="{% url 'users:invite' %}">Sent invite link</a></li>
             {% endif %}
           </ul>
         </div>
