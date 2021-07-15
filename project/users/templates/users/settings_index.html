@@ -25,14 +25,13 @@
 
 <script>
     $(function () {
-        var saveForm1 = function (event) {
+        var unnecesaryForm = function (event) {
             var form = $('.js_unnecessary_form');
-            var action = form.attr("data-action");
-            var ajax_update_container = form.attr('data-update-container')
+            var ajax_update_container = 'unnecessary_ajax'
 
             $.ajax({
-                url: form.attr("action"),
-                data: new FormData($('.js-form')[0]), // The form with the file inputs.
+                url: "{% url 'users:settings_unnecessary' %}",
+                data: new FormData($('.js_unnecessary_form')[0]), // The form with the file inputs.
                 processData: false,
                 contentType: false,
                 type: form.attr("method"),
@@ -45,7 +44,7 @@
         };
 
         /* Binding */
-        $(document).on('click', '#unnecessary_submit', saveForm1);
+        $(document).on('click', '#unnecessary_submit', unnecesaryForm);
     });
 
 </script>
