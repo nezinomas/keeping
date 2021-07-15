@@ -445,8 +445,8 @@ class IndexHelper():
         savings = None
         unnecessary = []
 
-        if journal.not_use_expenses:
-            arr = json.loads(journal.not_use_expenses)
+        if journal.unnecessary_expenses:
+            arr = json.loads(journal.unnecessary_expenses)
             unnecessary = list(
                 ExpenseType
                 .objects
@@ -455,7 +455,7 @@ class IndexHelper():
                 .values_list("title", flat=True)
             )
 
-        if journal.not_use_savings:
+        if journal.unnecessary_savings:
             unnecessary.append('Taupymas')
             savings = Saving.objects.last_months()
 

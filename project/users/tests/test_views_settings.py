@@ -223,5 +223,5 @@ def test_unnecessary_form_save_checked_all(client_logged):
     client_logged.post(url, data, **X_Req)
 
     actual = Journal.objects.first()
-    assert actual.not_use_expenses == '[1, 2]'
-    assert actual.not_use_savings
+    assert actual.unnecessary_expenses == '[1, 2]'
+    assert actual.unnecessary_savings

@@ -9,7 +9,7 @@ from ..core.lib import utils
 from ..expenses.models import ExpenseType
 
 
-class NotUseForm(forms.Form):
+class UnnecessaryForm(forms.Form):
     choices = forms.ModelMultipleChoiceField(
         queryset=None,
         widget=forms.CheckboxSelectMultiple,
@@ -27,12 +27,12 @@ class NotUseForm(forms.Form):
         checked_expenses = []
 
         try:
-            checked_expenses = json.loads(user.journal.not_use_expenses)
+            checked_expenses = json.loads(user.journal.unnecessary_expenses)
         except (JSONDecodeError, TypeError):
             pass
 
         self.initial['choices'] = checked_expenses
-        self.initial['savings'] = user.journal.not_use_savings
+        self.initial['savings'] = user.journal.unnecessary_savings
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -53,7 +53,7 @@ class NotUseForm(forms.Form):
             choices = list(self.cleaned_data["choices"].values_list("pk", flat=True))
             choices = json.dumps(choices)
 
-        journal.not_use_expenses = choices
-        journal.not_use_savings = self.cleaned_data.get('savings')
+        journal.unnecessary_expenses = choices
+        journal.unnecessary_savings = self.cleaned_data.get('savings')
 
         journal.save()
