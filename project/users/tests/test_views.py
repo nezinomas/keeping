@@ -576,7 +576,7 @@ def test_invite_no_link_ordinary_user(get_user, client_logged):
     get_user.is_superuser = False
     get_user.save()
 
-    url = reverse('bookkeeping:index')
+    url = reverse('users:settings_index')
 
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
