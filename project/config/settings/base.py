@@ -103,6 +103,9 @@ MIDDLEWARE = [
 ]
 
 
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+
+
 # ================   APP CONFIGURATION
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -126,6 +129,7 @@ INSTALLED_APPS = [
     'project.drinks',
     'project.expenses',
     'project.incomes',
+    'project.journals',
     'project.counts',
     'project.savings',
     'project.pensions',

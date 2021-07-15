@@ -49,11 +49,9 @@ def test_expense_year_initial_value():
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_expense_current_user_expense_types():
-    u = UserFactory(username='tom')
-
+def test_expense_current_user_expense_types(second_user):
     ExpenseTypeFactory(title='T1')  # user bob, current user
-    ExpenseTypeFactory(title='T2', user=u)  # user tom
+    ExpenseTypeFactory(title='T2', journal=second_user.journal)  # user X
 
     form = ExpenseForm().as_p()
 
@@ -61,11 +59,9 @@ def test_expense_current_user_expense_types():
     assert 'T2' not in form
 
 
-def test_expense_current_user_accounts():
-    u = UserFactory(username='tom')
-
+def test_expense_current_user_accounts(second_user):
     AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', user=u)  # user tom
+    AccountFactory(title='A2', journal=second_user.journal)  # user X
 
     form = ExpenseForm().as_p()
 
@@ -73,10 +69,8 @@ def test_expense_current_user_accounts():
     assert 'A2' not in form
 
 
-def test_expense_select_first_account():
-    u = UserFactory(username='XXX')
-    AccountFactory(title='A1', user=u)
-
+def test_expense_select_first_account(second_user):
+    AccountFactory(title='A1', journal=second_user.journal)
     a2 = AccountFactory(title='A2')
 
     form = ExpenseForm().as_p()
@@ -215,7 +209,8 @@ def test_expense_type_valid_data():
 
     assert data.title == 'Title'
     assert data.necessary
-    assert data.user.username == 'bob'
+    assert data.journal.title == 'bob Journal'
+    assert data.journal.users.first().username == 'bob'
 
 
 def test_expense_type_blank_data():
@@ -252,7 +247,7 @@ def test_expense_type_title_too_short():
 
 
 def test_expense_type_unique_name():
-    b = ExpenseTypeFactory(title='XXX')
+    ExpenseTypeFactory(title='XXX')
 
     form = ExpenseTypeForm(
         data={
@@ -270,11 +265,9 @@ def test_expense_name_init():
     ExpenseNameForm()
 
 
-def test_expense_name_current_user_expense_types():
-    u = UserFactory(username='tom')
-
+def test_expense_name_current_user_expense_types(second_user):
     ExpenseTypeFactory(title='T1') # user bob, current user
-    ExpenseTypeFactory(title='T2', user=u) # user tom
+    ExpenseTypeFactory(title='T2', journal=second_user.journal) # user X
 
     form = ExpenseNameForm().as_p()
 

@@ -4,7 +4,6 @@ import pytest
 from django.urls import resolve, reverse
 
 from ...core.tests.utils import setup_view
-from ...users.factories import UserFactory
 from .. import views
 from ..factories import AccountFactory
 
@@ -105,10 +104,10 @@ def test_load_to_account_form(client_logged):
     assert response.status_code == 200
 
 
-def test_load_to_account(client_logged):
-    a1 = AccountFactory(title='A1')
-    AccountFactory(title='A2')
-    AccountFactory(title='A3', user=UserFactory(username='XXX'))
+def test_load_to_account(client_logged, main_user, second_user):
+    a1 = AccountFactory(title='A1', journal=main_user.journal)
+    AccountFactory(title='A2', journal=main_user.journal)
+    AccountFactory(title='A3', journal=second_user.journal)
 
     url = reverse('accounts:load_to_account')
 

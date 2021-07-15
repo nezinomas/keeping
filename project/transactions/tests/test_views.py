@@ -5,6 +5,7 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
+from ...journals.factories import JournalFactory
 from ...savings.factories import SavingTypeFactory
 from ...users.factories import UserFactory
 from .. import models, views
@@ -526,9 +527,9 @@ def test_load_saving_type_closed_in_past(client_logged):
     assert 'S2' not in str(response.content)
 
 
-def test_load_saving_type_for_current_user(client_logged):
+def test_load_saving_type_for_current_user(client_logged, second_user):
     s1 = SavingTypeFactory(title='S1')
-    SavingTypeFactory(title='S2', user=UserFactory(username='XXX'))
+    SavingTypeFactory(title='S2', journal=second_user.journal)
 
     url = reverse('transactions:load_saving_type')
     response = client_logged.get(url, {'id': s1.pk})

@@ -10,7 +10,7 @@ from .models import Account
 class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
-        fields = ['user', 'title', 'closed', 'order']
+        fields = ['journal', 'title', 'closed', 'order']
         widgets = {
             'closed': YearPickerInput(
                 options={
@@ -25,10 +25,10 @@ class AccountForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # user input
-        self.fields['user'].initial = utils.get_user()
-        self.fields['user'].disabled = True
-        self.fields['user'].widget = forms.HiddenInput()
+        # journal input
+        self.fields['journal'].initial = utils.get_user().journal
+        self.fields['journal'].disabled = True
+        self.fields['journal'].widget = forms.HiddenInput()
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

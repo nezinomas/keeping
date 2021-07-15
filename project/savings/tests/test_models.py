@@ -9,7 +9,6 @@ from ...accounts.models import AccountBalance
 from ...savings.factories import (SavingBalanceFactory, SavingFactory,
                                   SavingTypeFactory)
 from ...savings.models import SavingBalance
-from ...users.factories import UserFactory
 from ..models import Saving, SavingBalance, SavingType
 
 pytestmark = pytest.mark.django_db
@@ -42,9 +41,9 @@ def test_saving_type_str():
     assert str(i) == '1999-01-01: Savings'
 
 
-def test_saving_type_items_user():
-    SavingTypeFactory(title='T1', user=UserFactory())
-    SavingTypeFactory(title='T2', user=UserFactory(username='u2'))
+def test_saving_type_items_user(main_user, second_user):
+    SavingTypeFactory(title='T1', journal=main_user.journal)
+    SavingTypeFactory(title='T2', journal=second_user.journal)
 
     actual = SavingType.objects.items()
 
@@ -91,14 +90,14 @@ def test_saving_type_items_closed_in_current_year(get_user):
 
 
 @pytest.mark.xfail
-def test_saving_type_unique_for_user():
-    SavingType.objects.create(title='T1', user=UserFactory())
-    SavingType.objects.create(title='T1', user=UserFactory())
+def test_saving_type_unique_for_journal(main_user):
+    SavingType.objects.create(title='T1', journal=main_user.journal)
+    SavingType.objects.create(title='T1', journal=main_user.journal)
 
 
-def test_saving_type_unique_for_users():
-    SavingType.objects.create(title='T1', user=UserFactory(username='x'))
-    SavingType.objects.create(title='T1', user=UserFactory(username='y'))
+def test_saving_type_unique_for_journals(main_user, second_user):
+    SavingType.objects.create(title='T1', journal=main_user.journal)
+    SavingType.objects.create(title='T1', journal=second_user.journal)
 
 
 # ----------------------------------------------------------------------------
@@ -110,11 +109,9 @@ def test_saving_str():
     assert str(actual) == 'Savings'
 
 
-def test_saving_related():
-    u1 = UserFactory()
-    u2 = UserFactory(username='XXX')
-    t1 = SavingTypeFactory(title='T1', user=u1)
-    t2 = SavingTypeFactory(title='T2', user=u2)
+def test_saving_related(main_user, second_user):
+    t1 = SavingTypeFactory(title='T1', journal=main_user.journal)
+    t2 = SavingTypeFactory(title='T2', journal=second_user.journal)
 
     SavingFactory(saving_type=t1)
     SavingFactory(saving_type=t2)
@@ -368,11 +365,9 @@ def test_saving_balance_str():
 
 
 @pytest.mark.django_db
-def test_saving_balance_related_for_user():
-    u = UserFactory(username='XXX')
-
-    s1 = SavingTypeFactory(title='S1')
-    s2 = SavingTypeFactory(title='S2', user=u)
+def test_saving_balance_related_for_user(main_user, second_user):
+    s1 = SavingTypeFactory(title='S1', journal=main_user.journal)
+    s2 = SavingTypeFactory(title='S2', journal=second_user.journal)
 
     SavingBalanceFactory(saving_type=s1)
     SavingBalanceFactory(saving_type=s2)
@@ -381,7 +376,8 @@ def test_saving_balance_related_for_user():
 
     assert len(actual) == 1
     assert str(actual[0].saving_type) == 'S1'
-    assert actual[0].saving_type.user.username == 'bob'
+    assert actual[0].saving_type.journal.title == 'bob Journal'
+    assert actual[0].saving_type.journal.users.first().username == 'bob'
 
 
 @pytest.mark.django_db

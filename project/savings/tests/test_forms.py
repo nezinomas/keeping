@@ -39,7 +39,8 @@ def test_saving_type_valid_data():
 
     assert data.title == 'Title'
     assert data.closed == 2000
-    assert data.user.username == 'bob'
+    assert data.journal.title == 'bob Journal'
+    assert data.journal.users.first().username == 'bob'
 
 
 def test_saving_type_blank_data():
@@ -139,11 +140,9 @@ def test_saving_year_initial_value():
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_saving_current_user_types():
-    u = UserFactory(username='tom')
-
-    SavingTypeFactory(title='T1')  # user bob, current user
-    SavingTypeFactory(title='T2', user=u)  # user tom
+def test_saving_current_user_types(main_user, second_user):
+    SavingTypeFactory(title='T1', journal=main_user.journal)  # user bob, current user
+    SavingTypeFactory(title='T2', journal=second_user.journal)  # user X
 
     form = SavingForm().as_p()
 
@@ -151,11 +150,9 @@ def test_saving_current_user_types():
     assert 'T2' not in form
 
 
-def test_saving_current_user_accounts():
-    u = UserFactory(username='tom')
-
-    AccountFactory(title='S1')  # user bob, current user
-    AccountFactory(title='S2', user=u)  # user tom
+def test_saving_current_user_accounts(main_user, second_user):
+    AccountFactory(title='S1', journal=main_user.journal)  # user bob, current user
+    AccountFactory(title='S2', journal=second_user.journal)  # user X
 
     form = SavingForm().as_p()
 
@@ -163,11 +160,9 @@ def test_saving_current_user_accounts():
     assert 'S2' not in form
 
 
-def test_saving_select_first_account():
-    u = UserFactory(username='XXX')
-    AccountFactory(title='S1', user=u)
-
-    s2 = AccountFactory(title='S2')
+def test_saving_select_first_account(main_user, second_user):
+    AccountFactory(title='S1', journal=second_user.journal)
+    s2 = AccountFactory(title='S2', journal=main_user.journal)
 
     form = SavingForm().as_p()
 

@@ -6,16 +6,17 @@ from django.db import models
 from django.db.models import F
 
 from ..accounts.models import Account
+from ..core.lib import utils
 from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.models import TitleAbstract
-from ..users.models import User
+from ..journals.models import Journal
 from .helpers.models_helper import upload_attachment
 from .managers import ExpenseNameQuerySet, ExpenseQuerySet, ExpenseTypeQuerySet
 
 
 class ExpenseType(TitleAbstract):
-    user = models.ForeignKey(
-        User,
+    journal = models.ForeignKey(
+        Journal,
         on_delete=models.CASCADE,
         related_name='expense_types'
     )
@@ -27,7 +28,7 @@ class ExpenseType(TitleAbstract):
     objects = ExpenseTypeQuerySet.as_manager()
 
     class Meta:
-        unique_together = ['user', 'title']
+        unique_together = ['journal', 'title']
         ordering = ['title']
 
 
@@ -97,8 +98,18 @@ class Expense(MixinFromDbAccountId):
             models.Index(fields=['expense_name']),
         ]
 
+    # Managers
+    objects = ExpenseQuerySet.as_manager()
+
     def __str__(self):
         return f'{(self.date)}/{self.expense_type}/{self.expense_name}'
 
-    # Managers
-    objects = ExpenseQuerySet.as_manager()
+    def save(self, *args, **kwargs):
+        user = utils.get_user()
+        journal = Journal.objects.get(pk=user.journal.pk)
+
+        if journal.first_record > self.date:
+            journal.first_record = self.date
+            journal.save()
+
+        return super().save(*args, **kwargs)

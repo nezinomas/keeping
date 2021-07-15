@@ -1,13 +1,12 @@
 import pytest
 from freezegun import freeze_time
 
-from ...users.factories import UserFactory
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
 from ...savings.factories import SavingTypeFactory
-from ..factories import (
-    DayPlanFactory, ExpensePlanFactory, IncomePlanFactory,
-    NecessaryPlanFactory, SavingPlanFactory)
+from ...users.factories import UserFactory
+from ..factories import (DayPlanFactory, ExpensePlanFactory, IncomePlanFactory,
+                         NecessaryPlanFactory, SavingPlanFactory)
 from ..forms import (CopyPlanForm, DayPlanForm, ExpensePlanForm,
                      IncomePlanForm, NecessaryPlanForm, SavingPlanForm)
 from ..models import IncomePlan
@@ -53,11 +52,9 @@ def test_income_year_initial_value():
     assert '<input type="text" name="year" value="1999"' in form
 
 
-def test_income_current_user_types():
-    u = UserFactory(username='tom')
-
+def test_income_current_user_types(second_user):
     IncomeTypeFactory(title='T1')  # user bob, current user
-    IncomeTypeFactory(title='T2', user=u)  # user tom
+    IncomeTypeFactory(title='T2', journal=second_user.journal)  # user X
 
     form = IncomePlanForm().as_p()
 
@@ -80,7 +77,7 @@ def test_income_valid_data():
     assert data.year == 1999
     assert data.january == 15.0
     assert str(data.income_type) == 'Income Type'
-    assert data.user.username == 'bob'
+    assert data.journal.users.first().username == 'bob'
     assert not data.february
 
 
@@ -162,11 +159,9 @@ def test_expense_year_initial_value():
     assert '<input type="text" name="year" value="1999"' in form
 
 
-def test_expense_current_user_types():
-    u = UserFactory(username='tom')
-
+def test_expense_current_user_types(second_user):
     ExpenseTypeFactory(title='T1')  # user bob, current user
-    ExpenseTypeFactory(title='T2', user=u)  # user tom
+    ExpenseTypeFactory(title='T2', journal=second_user.journal)  # user X
 
     form = ExpensePlanForm().as_p()
 
@@ -189,7 +184,7 @@ def test_expense_valid_data():
     assert data.year == 1999
     assert data.january == 15.0
     assert str(data.expense_type) == 'Expense Type'
-    assert data.user.username == 'bob'
+    assert data.journal.users.first().username == 'bob'
     assert not data.february
 
 
@@ -270,11 +265,9 @@ def test_saving_year_initial_value():
     assert '<input type="text" name="year" value="1999"' in form
 
 
-def test_saving_current_user_types():
-    u = UserFactory(username='tom')
-
+def test_saving_current_user_types(second_user):
     SavingTypeFactory(title='T1')  # user bob, current user
-    SavingTypeFactory(title='T2', user=u)  # user tom
+    SavingTypeFactory(title='T2', journal=second_user.journal)  # user X
 
     form = SavingPlanForm().as_p()
 
@@ -297,7 +290,7 @@ def test_saving_valid_data():
     assert data.year == 1999
     assert data.january == 15.0
     assert str(data.saving_type) == 'Savings'
-    assert data.user.username == 'bob'
+    assert data.journal.users.first().username == 'bob'
     assert not data.february
 
 
@@ -427,7 +420,7 @@ def test_day_valid_data():
 
     assert data.year == 1999
     assert data.january == 15.0
-    assert data.user.username == 'bob'
+    assert data.journal.users.first().username == 'bob'
     assert not data.february
 
 
@@ -509,7 +502,7 @@ def test_necessary_valid_data():
     assert data.year == 1999
     assert data.january == 15.0
     assert data.title == 'XXX'
-    assert data.user.username == 'bob'
+    assert data.journal.users.first().username == 'bob'
     assert not data.february
 
 

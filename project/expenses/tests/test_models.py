@@ -78,9 +78,9 @@ def test_expense_type_items():
     assert actual.count() == 2
 
 
-def test_expense_type_items_user():
-    ExpenseTypeFactory(title='T1', user=UserFactory())
-    ExpenseTypeFactory(title='T2', user=UserFactory(username='u2'))
+def test_expense_type_items_user(second_user):
+    ExpenseTypeFactory(title='T1')
+    ExpenseTypeFactory(title='T2', journal=second_user.journal)
 
     actual = ExpenseType.objects.items()
 
@@ -96,8 +96,8 @@ def test_expense_type_related_qs_count(django_assert_max_num_queries):
         list(q.title for q in ExpenseType.objects.items())
 
 
-def test_post_save_expense_type_insert_new(expenses):
-    obj = ExpenseType(title='e1', user=UserFactory())
+def test_post_save_expense_type_insert_new(expenses, main_user):
+    obj = ExpenseType(title='e1', journal=main_user.journal)
     obj.save()
 
     actual = AccountBalance.objects.items()
@@ -111,9 +111,9 @@ def test_expense_type_unique_user():
     ExpenseType.objects.create(title='T1', user=UserFactory())
 
 
-def test_expense_type_unique_users():
-    ExpenseType.objects.create(title='T1', user=UserFactory(username='x'))
-    ExpenseType.objects.create(title='T1', user=UserFactory(username='y'))
+def test_expense_type_unique_users(main_user, second_user):
+    ExpenseType.objects.create(title='T1', journal=main_user.journal)
+    ExpenseType.objects.create(title='T1', journal=second_user.journal)
 
 
 # ----------------------------------------------------------------------------
@@ -134,11 +134,9 @@ def test_expense_name_items():
     assert actual.count() == 2
 
 
-def test_expense_name_related_different_users():
-    u = UserFactory(username='tom')
-
-    t1 = ExpenseTypeFactory(title='T1') # user bob
-    t2 = ExpenseTypeFactory(title='T2', user=u) # user tom
+def test_expense_name_related_different_users(main_user, second_user):
+    t1 = ExpenseTypeFactory(title='T1', journal=main_user.journal) # user bob
+    t2 = ExpenseTypeFactory(title='T2', journal=second_user.journal) # user X
 
     ExpenseNameFactory(title='N1', parent=t1)
     ExpenseNameFactory(title='N2', parent=t2)
@@ -233,11 +231,9 @@ def test_expense_attachment_field():
     assert str(e.attachment) == os.path.join('expense-type', '1000.01_test1.jpg')
 
 
-def test_expense_related():
-    u = UserFactory(username='tom')
-
+def test_expense_related(second_user):
     t1 = ExpenseTypeFactory(title='T1')  # user bob, current user
-    t2 = ExpenseTypeFactory(title='T2', user=u)  # user tom
+    t2 = ExpenseTypeFactory(title='T2', journal=second_user.journal)  # user X
 
     ExpenseFactory(expense_type=t1)
     ExpenseFactory(expense_type=t2)

@@ -10,11 +10,12 @@ from ..core.mixins.queryset_sum import SumMixin
 
 class IncomeTypeQuerySet(models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_user().journal
+
         return (
             self
-            .select_related('user')
-            .filter(user=user)
+            .select_related('journal')
+            .filter(journal=journal)
         )
 
     def items(self):
@@ -23,11 +24,11 @@ class IncomeTypeQuerySet(models.QuerySet):
 
 class IncomeQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_user().journal
         qs = (
             self
             .select_related('account', 'income_type')
-            .filter(income_type__user=user)
+            .filter(income_type__journal=journal)
         )
         return qs
 

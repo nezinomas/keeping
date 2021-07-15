@@ -6,11 +6,11 @@ from ..core.lib import utils
 
 class SavingWorthQuerySet(models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_user().journal
         return (
             self
             .select_related('saving_type')
-            .filter(saving_type__user=user)
+            .filter(saving_type__journal=journal)
         )
 
     def items(self):
@@ -37,11 +37,11 @@ class SavingWorthQuerySet(models.QuerySet):
 
 class AccountWorthQuerySet(models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_user().journal
         return (
             self
             .select_related('account')
-            .filter(account__user=user)
+            .filter(account__journal=journal)
         )
 
     def items(self):
@@ -68,11 +68,11 @@ class AccountWorthQuerySet(models.QuerySet):
 
 class PensionWorthQuerySet(models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_user().journal
         return (
             self
             .select_related('pension_type')
-            .filter(pension_type__user=user)
+            .filter(pension_type__journal=journal)
         )
 
     def items(self):

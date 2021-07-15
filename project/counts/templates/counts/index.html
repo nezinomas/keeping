@@ -63,8 +63,6 @@
 </div>
 {% endif %}
 
-{% include 'modal.html' %}
-
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
         var url = `{% url url_reload %}`;

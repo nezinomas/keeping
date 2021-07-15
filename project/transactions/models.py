@@ -17,11 +17,11 @@ from ..savings.models import SavingType
 # ----------------------------------------------------------------------------
 class TransactionQuerySet(models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_user().journal
         return (
             self
             .select_related('from_account', 'to_account')
-            .filter(from_account__user=user, to_account__user=user)
+            .filter(from_account__journal=journal, to_account__journal=journal)
         )
 
     def year(self, year):
@@ -101,12 +101,12 @@ class Transaction(MixinFromDbFromAccountId):
     date = models.DateField()
     from_account = models.ForeignKey(
         Account,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name='transactions_from'
     )
     to_account = models.ForeignKey(
         Account,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name='transactions_to'
     )
     price = models.DecimalField(

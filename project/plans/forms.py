@@ -33,11 +33,11 @@ def common_field_transalion(self):
     self.fields['december'].label = 'Gruodis'
 
 
-def set_user_field(fields):
-    # user input
-    fields['user'].initial = utils.get_user()
-    fields['user'].disabled = True
-    fields['user'].widget = forms.HiddenInput()
+def set_journal_field(fields):
+    # journal input
+    fields['journal'].initial = utils.get_user().journal
+    fields['journal'].disabled = True
+    fields['journal'].widget = forms.HiddenInput()
 
 
 # ----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ def set_user_field(fields):
 class IncomePlanForm(forms.ModelForm):
     class Meta:
         model = IncomePlan
-        fields = ['user', 'year', 'income_type'] + monthnames()
+        fields = ['journal', 'year', 'income_type'] + monthnames()
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
@@ -57,8 +57,8 @@ class IncomePlanForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # user input
-        set_user_field(self.fields)
+        # journal input
+        set_journal_field(self.fields)
 
         # inital values
         self.fields['year'].initial = set_year_for_form()
@@ -80,7 +80,7 @@ class IncomePlanForm(forms.ModelForm):
 class ExpensePlanForm(forms.ModelForm):
     class Meta:
         model = ExpensePlan
-        fields = ['user', 'year', 'expense_type'] + monthnames()
+        fields = ['journal', 'year', 'expense_type'] + monthnames()
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
@@ -91,8 +91,8 @@ class ExpensePlanForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # user input
-        set_user_field(self.fields)
+        # journal input
+        set_journal_field(self.fields)
 
         # inital values
         self.fields['year'].initial = set_year_for_form()
@@ -114,7 +114,7 @@ class ExpensePlanForm(forms.ModelForm):
 class SavingPlanForm(forms.ModelForm):
     class Meta:
         model = SavingPlan
-        fields = ['user', 'year', 'saving_type'] + monthnames()
+        fields = ['journal', 'year', 'saving_type'] + monthnames()
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
@@ -125,8 +125,8 @@ class SavingPlanForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # user input
-        set_user_field(self.fields)
+        # journal input
+        set_journal_field(self.fields)
 
         # overwrite ForeignKey expense_type queryset
         self.fields['saving_type'].queryset = SavingType.objects.items()
@@ -150,7 +150,7 @@ class SavingPlanForm(forms.ModelForm):
 class DayPlanForm(forms.ModelForm):
     class Meta:
         model = DayPlan
-        fields = ['user', 'year'] + monthnames()
+        fields = ['journal', 'year'] + monthnames()
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
@@ -161,8 +161,8 @@ class DayPlanForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # user input
-        set_user_field(self.fields)
+        # journal input
+        set_journal_field(self.fields)
 
         # inital values
         self.fields['year'].initial = set_year_for_form()
@@ -180,7 +180,7 @@ class DayPlanForm(forms.ModelForm):
 class NecessaryPlanForm(forms.ModelForm):
     class Meta:
         model = NecessaryPlan
-        fields = ['user', 'year', 'title'] + monthnames()
+        fields = ['journal', 'year', 'title'] + monthnames()
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
@@ -191,8 +191,8 @@ class NecessaryPlanForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # user input
-        set_user_field(self.fields)
+        # journal input
+        set_journal_field(self.fields)
 
         # inital values
         self.fields['year'].initial = set_year_for_form()

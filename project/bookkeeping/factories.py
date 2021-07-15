@@ -1,4 +1,5 @@
 import factory
+from factory.django import DjangoModelFactory
 
 from ..accounts.factories import AccountFactory
 from ..pensions.factories import PensionTypeFactory
@@ -6,7 +7,7 @@ from ..savings.factories import SavingTypeFactory
 from . import models
 
 
-class SavingWorthFactory(factory.django.DjangoModelFactory):
+class SavingWorthFactory(DjangoModelFactory):
     class Meta:
         model = models.SavingWorth
 
@@ -19,7 +20,7 @@ class SavingWorthFactory(factory.django.DjangoModelFactory):
             self.date = extracted
 
 
-class AccountWorthFactory(factory.django.DjangoModelFactory):
+class AccountWorthFactory(DjangoModelFactory):
     class Meta:
         model = models.AccountWorth
 
@@ -32,7 +33,7 @@ class AccountWorthFactory(factory.django.DjangoModelFactory):
             self.date = extracted
 
 
-class PensionWorthFactory(factory.django.DjangoModelFactory):
+class PensionWorthFactory(DjangoModelFactory):
     class Meta:
         model = models.PensionWorth
 

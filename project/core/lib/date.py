@@ -63,7 +63,7 @@ def years() -> List[int]:
     start = now
 
     try:
-        start = utils.get_user().date_joined.year
+        start = utils.get_user().journal.first_record.year
     except AttributeError:
         pass
 

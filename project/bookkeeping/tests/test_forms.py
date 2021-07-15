@@ -3,7 +3,6 @@ from decimal import Decimal
 import pytest
 
 from ...accounts.factories import AccountFactory
-from ...users.factories import UserFactory
 from ...pensions.factories import PensionTypeFactory
 from ..factories import SavingTypeFactory
 from ..forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
@@ -24,11 +23,9 @@ def test_saving_worth_init_fields():
     assert '<select name="saving_type"' in form
 
 
-def test_saving_worth_current_user_types():
-    u = UserFactory(username='tom')
-
+def test_saving_worth_current_user_types(second_user):
     SavingTypeFactory(title='T1')  # user bob, current user
-    SavingTypeFactory(title='T2', user=u)  # user tom
+    SavingTypeFactory(title='T2', journal=second_user.journal)  # user tom
 
     form = SavingWorthForm().as_p()
 
@@ -111,11 +108,9 @@ def test_account_worth_init_fields():
     assert '<select name="account"' in form
 
 
-def test_account_worth_current_user_types():
-    u = UserFactory(username='tom')
-
+def test_account_worth_current_user_types(second_user):
     AccountFactory(title='T1')  # user bob, current user
-    AccountFactory(title='T2', user=u)  # user tom
+    AccountFactory(title='T2', journal=second_user.journal)  # user tom
 
     form = AccountWorthForm().as_p()
 
@@ -162,11 +157,9 @@ def test_pension_worth_init_fields():
     assert '<select name="pension_type"' in form
 
 
-def test_pension_worth_current_user_types():
-    u = UserFactory(username='tom')
-
+def test_pension_worth_current_user_types(second_user):
     PensionTypeFactory(title='T1')  # user bob, current user
-    PensionTypeFactory(title='T2', user=u)  # user tom
+    PensionTypeFactory(title='T2', journal=second_user.journal)  # user tom
 
     form = PensionWorthForm().as_p()
 

@@ -5,6 +5,8 @@ import pytest
 from freezegun import freeze_time
 from mock import patch
 
+from ...journals.factories import JournalFactory
+from ...users.factories import UserFactory
 from ..context import context_months, yday, years
 
 
@@ -18,6 +20,23 @@ def test_years(rf):
 
     assert len(actual['years']) == 2
     assert expect == actual
+
+
+@pytest.mark.django_db
+@pytest.mark.disable_get_user_patch
+@freeze_time('2006-01-01')
+@patch('project.core.lib.utils.get_user')
+def test_year_first_record_from_journal(mck, rf):
+    jrn = JournalFactory(first_record=date(2004, 1, 1))
+    usr = UserFactory(journal=jrn)
+    mck.return_value = usr
+
+    r = rf.get('/fake/')
+
+    actual = years(r)
+    expect = [2007, 2006, 2005, 2004]
+
+    assert expect == actual['years']
 
 
 @freeze_time('2020-6-6')

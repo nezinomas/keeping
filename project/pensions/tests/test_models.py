@@ -3,7 +3,6 @@ from decimal import Decimal
 
 import pytest
 
-from ...users.factories import UserFactory
 from ..factories import (PensionBalanceFactory, PensionFactory,
                          PensionTypeFactory)
 from ..models import Pension, PensionBalance, PensionType
@@ -20,9 +19,9 @@ def test_pension_type_str():
     assert str(p) == 'PensionType'
 
 
-def test_pension_type_items_user():
-    PensionTypeFactory(title='T1', user=UserFactory())
-    PensionTypeFactory(title='T2', user=UserFactory(username='u2'))
+def test_pension_type_items_user(main_user, second_user):
+    PensionTypeFactory(title='T1', journal=main_user.journal)
+    PensionTypeFactory(title='T2', journal=second_user.journal)
 
     actual = PensionType.objects.items()
 
@@ -31,14 +30,14 @@ def test_pension_type_items_user():
 
 
 @pytest.mark.xfail
-def test_pension_type_unique_for_user():
-    PensionType.objects.create(title='T1', user=UserFactory())
-    PensionType.objects.create(title='T1', user=UserFactory())
+def test_pension_type_unique_for_journal(main_user):
+    PensionType.objects.create(title='T1', journal=main_user.journal)
+    PensionType.objects.create(title='T1', journal=main_user.journal)
 
 
-def test_pension_type_unique_for_users():
-    PensionType.objects.create(title='T1', user=UserFactory(username='x'))
-    PensionType.objects.create(title='T1', user=UserFactory(username='y'))
+def test_pension_type_unique_for_journals(main_user, second_user):
+    PensionType.objects.create(title='T1', journal=main_user.journal)
+    PensionType.objects.create(title='T1', journal=second_user.journal)
 
 
 # ----------------------------------------------------------------------------
@@ -62,11 +61,9 @@ def test_pension_object():
     assert actual.pension_type.title == 'PensionType'
 
 
-def test_pension_related():
-    u1 = UserFactory()
-    u2 = UserFactory(username='XXX')
-    t1 = PensionTypeFactory(title='T1', user=u1)
-    t2 = PensionTypeFactory(title='T2', user=u2)
+def test_pension_related(main_user, second_user):
+    t1 = PensionTypeFactory(title='T1', journal=main_user.journal)
+    t2 = PensionTypeFactory(title='T2', journal=second_user.journal)
 
     PensionFactory(pension_type=t1)
     PensionFactory(pension_type=t2)
@@ -228,9 +225,9 @@ def test_pension_balance_str():
     assert str(actual) == 'PensionType'
 
 
-def test_pension_balance_related_for_user():
-    p1 = PensionTypeFactory(title='P1')
-    p2 = PensionTypeFactory(title='P2', user=UserFactory(username='XXX'))
+def test_pension_balance_related_for_user(main_user, second_user):
+    p1 = PensionTypeFactory(title='P1', journal=main_user.journal)
+    p2 = PensionTypeFactory(title='P2', journal=second_user.journal)
 
     PensionBalanceFactory(pension_type=p1)
     PensionBalanceFactory(pension_type=p2)
@@ -239,7 +236,8 @@ def test_pension_balance_related_for_user():
 
     assert len(actual) == 1
     assert str(actual[0].pension_type) == 'P1'
-    assert actual[0].pension_type.user.username == 'bob'
+    assert actual[0].pension_type.journal.title == 'bob Journal'
+    assert actual[0].pension_type.journal.users.first().username == 'bob'
 
 
 @pytest.mark.django_db

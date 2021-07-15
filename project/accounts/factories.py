@@ -1,16 +1,17 @@
 import factory
 
-from ..users.factories import UserFactory
+from ..journals.factories import JournalFactory
 from .models import Account, AccountBalance
 
 
 class AccountFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Account
-        django_get_or_create = ('title',)
+        django_get_or_create = ('title', )
 
+    journal = factory.SubFactory(JournalFactory)
     title = 'Account1'
-    user = factory.SubFactory(UserFactory)
+    closed = None
 
 
 class AccountBalanceFactory(factory.django.DjangoModelFactory):

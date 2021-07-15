@@ -5,7 +5,6 @@ import pytest
 
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import AccountBalance
-from ...users.factories import UserFactory
 from ..factories import IncomeFactory, IncomeTypeFactory
 from ..models import Income, IncomeType
 
@@ -21,9 +20,9 @@ def test_income_type_str():
     assert str(i) == 'Income Type'
 
 
-def test_income_type_items_user():
-    IncomeTypeFactory(title='T1', user=UserFactory())
-    IncomeTypeFactory(title='T2', user=UserFactory(username='u2'))
+def test_income_type_items_journal(main_user, second_user):
+    IncomeTypeFactory(title='T1', journal=main_user.journal)
+    IncomeTypeFactory(title='T2', journal=second_user.journal)
 
     actual = IncomeType.objects.items()
 
@@ -31,15 +30,22 @@ def test_income_type_items_user():
     assert actual[0].title == 'T1'
 
 
+def test_income_type_items_journal_queries(django_assert_max_num_queries):
+    IncomeTypeFactory()
+    with django_assert_max_num_queries(1):
+        qs = IncomeType.objects.items().values()
+
+
+
 @pytest.mark.xfail
-def test_income_type_unique_for_user():
-    IncomeType.objects.create(title='T', user=UserFactory())
-    IncomeType.objects.create(title='T', user=UserFactory())
+def test_income_type_unique_for_journal(main_user):
+    IncomeType.objects.create(title='T', journal=main_user.journal)
+    IncomeType.objects.create(title='T', journal=main_user.journal)
 
 
-def test_income_type_unique_for_users():
-    IncomeType.objects.create(title='T', user=UserFactory(username='x'))
-    IncomeType.objects.create(title='T', user=UserFactory(username='y'))
+def test_income_type_unique_for_journals(main_user, second_user):
+    IncomeType.objects.create(title='T', journal=main_user.journal)
+    IncomeType.objects.create(title='T', journal=second_user.journal)
 
 
 # ----------------------------------------------------------------------------
@@ -51,11 +57,9 @@ def test_income_str():
     assert str(i) == '1999-01-01: Income Type'
 
 
-def test_income_related():
-    u1 = UserFactory()
-    u2 = UserFactory(username='XXX')
-    t1 = IncomeTypeFactory(title='T1', user=u1)
-    t2 = IncomeTypeFactory(title='T2', user=u2)
+def test_income_related(main_user, second_user):
+    t1 = IncomeTypeFactory(title='T1', journal=main_user.journal)
+    t2 = IncomeTypeFactory(title='T2', journal=second_user.journal)
 
     IncomeFactory(income_type=t1)
     IncomeFactory(income_type=t2)
@@ -243,7 +247,7 @@ def test_income_new_post_save_count_qs(django_assert_max_num_queries):
 
     assert AccountBalance.objects.all().count() == 0
 
-    with django_assert_max_num_queries(25):
+    with django_assert_max_num_queries(27):
         IncomeFactory()
 
 
@@ -253,7 +257,7 @@ def test_income_update_post_save_count_qs(django_assert_max_num_queries):
 
     assert AccountBalance.objects.all().count() == 1
 
-    with django_assert_max_num_queries(23):
+    with django_assert_max_num_queries(25):
         IncomeFactory()
 
 

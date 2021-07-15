@@ -45,7 +45,7 @@ def test_current_day(year, month, return_past_day, expect):
 @freeze_time("2001-01-01")
 @pytest.mark.django_db
 def test_years_user_logged(get_user):
-    get_user.date_joined = datetime(1999, 1, 1, tzinfo=pytz.utc)
+    get_user.journal.first_record = datetime(1999, 1, 1, tzinfo=pytz.utc)
 
     actual = T.years()
 

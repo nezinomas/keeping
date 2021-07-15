@@ -4,7 +4,7 @@ from decimal import Decimal
 import factory
 
 from ..accounts.factories import AccountFactory
-from ..users.factories import UserFactory
+from ..journals.factories import JournalFactory
 from .models import Expense, ExpenseName, ExpenseType
 
 
@@ -13,7 +13,7 @@ class ExpenseTypeFactory(factory.django.DjangoModelFactory):
         model = ExpenseType
         django_get_or_create = ('title',)
 
-    user = factory.SubFactory(UserFactory)
+    journal = factory.SubFactory(JournalFactory)
     title = 'Expense Type'
 
 

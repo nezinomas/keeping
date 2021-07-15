@@ -63,15 +63,15 @@ class PensionForm(forms.ModelForm):
 class PensionTypeForm(forms.ModelForm):
     class Meta:
         model = PensionType
-        fields = ['user', 'title']
+        fields = ['journal', 'title']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # user input
-        self.fields['user'].initial = utils.get_user()
-        self.fields['user'].disabled = True
-        self.fields['user'].widget = forms.HiddenInput()
+        # journal input
+        self.fields['journal'].initial = utils.get_user().journal
+        self.fields['journal'].disabled = True
+        self.fields['journal'].widget = forms.HiddenInput()
 
         self.fields['title'].label = 'Fondo pavadinimas'
 

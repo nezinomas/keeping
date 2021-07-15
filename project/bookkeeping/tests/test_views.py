@@ -67,7 +67,7 @@ def test_no_incomes(client_logged):
     response = client_logged.get(url)
 
     assert round(response.context['avg_expenses'], 2) == 1.17
-    assert round(response.context['save_sum'], 2) == 0.5
+    assert round(response.context['save_sum'], 2) == 0.0
 
 
 @freeze_time('1999-07-01')

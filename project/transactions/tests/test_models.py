@@ -24,15 +24,29 @@ def test_transaction_str():
     assert str(t) == '1999-01-01 Account1->Account2: 200'
 
 
-def test_transaction_related():
-    u1 = UserFactory()
-    u2 = UserFactory(username='XXX')
+def test_transaction_related(main_user, second_user):
+    t1 = AccountFactory(title='T1', journal=main_user.journal)
+    f1 = AccountFactory(title='F1', journal=main_user.journal)
 
-    t1 = AccountFactory(title='T1', user=u1)
-    f1 = AccountFactory(title='F1', user=u1)
+    t2 = AccountFactory(title='T2', journal=second_user.journal)
+    f2 = AccountFactory(title='F2', journal=second_user.journal)
 
-    t2 = AccountFactory(title='T2', user=u2)
-    f2 = AccountFactory(title='F2', user=u2)
+    TransactionFactory(to_account=t1, from_account=f1)
+    TransactionFactory(to_account=t2, from_account=f2)
+    print(Transaction.objects.values())
+    actual = Transaction.objects.related()
+
+    assert len(actual) == 1
+    assert str(actual[0].from_account) == 'F1'
+    assert str(actual[0].to_account) == 'T1'
+
+
+def test_transaction_items(main_user, second_user):
+    t1 = AccountFactory(title='T1', journal=main_user.journal)
+    f1 = AccountFactory(title='F1', journal=main_user.journal)
+
+    t2 = AccountFactory(title='T2', journal=second_user.journal)
+    f2 = AccountFactory(title='F2', journal=second_user.journal)
 
     TransactionFactory(to_account=t1, from_account=f1)
     TransactionFactory(to_account=t2, from_account=f2)
@@ -44,28 +58,8 @@ def test_transaction_related():
     assert str(actual[0].to_account) == 'T1'
 
 
-def test_transaction_items():
-    u1 = UserFactory()
-    u2 = UserFactory(username='XXX')
-
-    t1 = AccountFactory(title='T1', user=u1)
-    f1 = AccountFactory(title='F1', user=u1)
-
-    t2 = AccountFactory(title='T2', user=u2)
-    f2 = AccountFactory(title='F2', user=u2)
-
-    TransactionFactory(to_account=t1, from_account=f1)
-    TransactionFactory(to_account=t2, from_account=f2)
-
-    actual = Transaction.objects.related()
-
-    assert len(actual) == 1
-    assert str(actual[0].from_account) == 'F1'
-    assert str(actual[0].to_account) == 'T1'
-
-
-def test_transaction_year():
-    a = AccountFactory(title='T1', user=UserFactory(username='XXX'))
+def test_transaction_year(second_user):
+    a = AccountFactory(title='T1', journal=second_user.journal)
 
     TransactionFactory(date=date(1999, 1, 1))
     TransactionFactory(date=date(2000, 1, 1))
@@ -224,15 +218,12 @@ def test_saving_close_str():
     assert str(s) == '1999-01-01 Savings From->Account To: 10'
 
 
-def test_saving_close_related():
-    u1 = UserFactory()
-    u2 = UserFactory(username='XXX')
+def test_saving_close_related(main_user, second_user):
+    a1 = AccountFactory(title='A1', journal=main_user.journal)
+    a2 = AccountFactory(title='A2', journal=second_user.journal)
 
-    a1 = AccountFactory(title='A1', user=u1)
-    a2 = AccountFactory(title='A2', user=u2)
-
-    s1 = SavingTypeFactory(title='S1', user=u1)
-    s2 = SavingTypeFactory(title='S2', user=u2)
+    s1 = SavingTypeFactory(title='S1', journal=main_user.journal)
+    s2 = SavingTypeFactory(title='S2', journal=second_user.journal)
 
     SavingCloseFactory(to_account=a1, from_account=s1)
     SavingCloseFactory(to_account=a2, from_account=s2)
@@ -392,15 +383,12 @@ def test_savings_change_str():
     assert str(s) == '1999-01-01 Savings From->Savings To: 10'
 
 
-def test_saving_change_related():
-    u1 = UserFactory()
-    u2 = UserFactory(username='XXX')
+def test_saving_change_related(main_user, second_user):
+    f1 = SavingTypeFactory(title='F1', journal=main_user.journal)
+    f2 = SavingTypeFactory(title='F2', journal=second_user.journal)
 
-    f1 = SavingTypeFactory(title='F1', user=u1)
-    f2 = SavingTypeFactory(title='F2', user=u2)
-
-    t1 = SavingTypeFactory(title='T1', user=u1)
-    t2 = SavingTypeFactory(title='T2', user=u2)
+    t1 = SavingTypeFactory(title='T1', journal=main_user.journal)
+    t2 = SavingTypeFactory(title='T2', journal=second_user.journal)
 
     SavingChangeFactory(from_account=f1, to_account=t1)
     SavingChangeFactory(from_account=f2, to_account=t2)

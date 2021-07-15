@@ -1,9 +1,24 @@
 {% extends "base.html" %}
 
+{% block head%}{{ block.super }}
+<style>
+    .container {
+        height: 100vh;
+        display: flex;
+    }
+
+    h3.card-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
 {% block body %}
 
 <div class="container">
-    <div class="row w-100 align-items-center">
+    <div class="row w-50 mx-auto align-items-center">
         <div class="col-12">
             {% block content %}{% endblock content %}
         </div>

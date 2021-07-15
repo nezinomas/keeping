@@ -12,7 +12,7 @@ from .models import Saving, SavingType
 class SavingTypeForm(forms.ModelForm):
     class Meta:
         model = SavingType
-        fields = ['user', 'title', 'closed']
+        fields = ['journal', 'title', 'closed']
 
         widgets = {
             'closed': YearPickerInput(
@@ -26,10 +26,10 @@ class SavingTypeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # user input
-        self.fields['user'].initial = utils.get_user()
-        self.fields['user'].disabled = True
-        self.fields['user'].widget = forms.HiddenInput()
+        # journal input
+        self.fields['journal'].initial = utils.get_user().journal
+        self.fields['journal'].disabled = True
+        self.fields['journal'].widget = forms.HiddenInput()
 
         self.fields['title'].label = 'Fondas'
         self.fields['closed'].label = 'Uždaryta'

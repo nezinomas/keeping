@@ -1,4 +1,5 @@
 import itertools as it
+import json
 from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Dict, List
@@ -7,6 +8,7 @@ from django.template.loader import render_to_string
 
 from ...accounts.models import AccountBalance
 from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
+from ...core.lib import utils
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...core.lib.utils import sum_all, sum_col
@@ -117,14 +119,6 @@ def add_latest_check_key(model, arr):
 # ---------------------------------------------------------------------------------------
 #                                                                             No Incomes
 # --------------------------------------------------------------------------------------
-NOT_USE = [
-    'Darbas',
-    'Laisvalaikis',
-    'Taupymas',
-    'Buitinės',
-]
-
-
 def no_incomes_data(expenses, savings=None, not_use=None):
     months = 6
     not_use = not_use if not_use else []
@@ -445,15 +439,31 @@ class IndexHelper():
         )
 
     def render_no_incomes(self):
-        pension, fund = split_funds(self._fund, 'invl')
+        journal = utils.get_user().journal
         expenses = Expense.objects.last_months()
-        savings = Saving.objects.last_months()
+        pension, fund = split_funds(self._fund, 'invl')
+        savings = None
+        unnecessary = []
+
+        if journal.unnecessary_expenses:
+            arr = json.loads(journal.unnecessary_expenses)
+            unnecessary = list(
+                ExpenseType
+                .objects
+                .related()
+                .filter(pk__in=arr)
+                .values_list("title", flat=True)
+            )
+
+        if journal.unnecessary_savings:
+            unnecessary.append('Taupymas')
+            savings = Saving.objects.last_months()
 
         avg_expenses, cut_sum = (
             no_incomes_data(
                 expenses=expenses,
                 savings=savings,
-                not_use=NOT_USE)
+                not_use=unnecessary)
         )
 
         obj = NoIncomes(
@@ -467,7 +477,7 @@ class IndexHelper():
         context = {
             'no_incomes': obj.summary,
             'save_sum': cut_sum,
-            'not_use': NOT_USE,
+            'not_use': unnecessary,
             'avg_expenses': avg_expenses,
         }
 

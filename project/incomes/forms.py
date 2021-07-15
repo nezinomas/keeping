@@ -52,15 +52,15 @@ class IncomeForm(forms.ModelForm):
 class IncomeTypeForm(forms.ModelForm):
     class Meta:
         model = IncomeType
-        fields = ['user', 'title']
+        fields = ['journal', 'title']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # user input
-        self.fields['user'].initial = utils.get_user()
-        self.fields['user'].disabled = True
-        self.fields['user'].widget = forms.HiddenInput()
+        self.fields['journal'].initial = utils.get_user().journal
+        self.fields['journal'].disabled = True
+        self.fields['journal'].widget = forms.HiddenInput()
 
         self.fields['title'].label = 'Pajamų rūšis'
 

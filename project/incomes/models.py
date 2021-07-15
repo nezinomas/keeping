@@ -1,17 +1,18 @@
 from decimal import Decimal
+
 from django.core.validators import MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
 from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.models import TitleAbstract
-from ..users.models import User
+from ..journals.models import Journal
 from .managers import IncomeQuerySet, IncomeTypeQuerySet
 
 
 class IncomeType(TitleAbstract):
-    user = models.ForeignKey(
-        User,
+    journal = models.ForeignKey(
+        Journal,
         on_delete=models.CASCADE,
         related_name='income_types'
     )
@@ -20,7 +21,7 @@ class IncomeType(TitleAbstract):
     objects = IncomeTypeQuerySet.as_manager()
 
     class Meta:
-        unique_together = ['user', 'title']
+        unique_together = ['journal', 'title']
         ordering = ['title']
 
 

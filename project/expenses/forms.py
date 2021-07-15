@@ -97,15 +97,15 @@ class ExpenseForm(forms.ModelForm):
 class ExpenseTypeForm(forms.ModelForm):
     class Meta:
         model = ExpenseType
-        fields = ['user', 'title', 'necessary']
+        fields = ['journal', 'title', 'necessary']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # user input
-        self.fields['user'].initial = utils.get_user()
-        self.fields['user'].disabled = True
-        self.fields['user'].widget = forms.HiddenInput()
+        # journal input
+        self.fields['journal'].initial = utils.get_user().journal
+        self.fields['journal'].disabled = True
+        self.fields['journal'].widget = forms.HiddenInput()
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

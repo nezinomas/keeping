@@ -8,16 +8,16 @@ from django.db.models import Case, Count, F, Sum, When
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
-from ..users.models import User
+from ..journals.models import Journal
 
 
 class PensionTypeQuerySet(models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_user().journal
         return (
             self
-            .select_related('user')
-            .filter(user=user)
+            .select_related('journal')
+            .filter(journal=journal)
         )
 
     def items(self, year: int = None):
@@ -25,8 +25,8 @@ class PensionTypeQuerySet(models.QuerySet):
 
 
 class PensionType(TitleAbstract):
-    user = models.ForeignKey(
-        User,
+    journal = models.ForeignKey(
+        Journal,
         on_delete=models.CASCADE,
         related_name='pension_types'
     )
@@ -35,18 +35,18 @@ class PensionType(TitleAbstract):
     objects = PensionTypeQuerySet.as_manager()
 
     class Meta:
-        unique_together = ['user', 'title']
+        unique_together = ['journal', 'title']
         ordering = ['title']
 
 
 
 class PensionQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_user().journal
         qs = (
             self
             .select_related('pension_type')
-            .filter(pension_type__user=user)
+            .filter(pension_type__journal=journal)
         )
         return qs
 
@@ -138,11 +138,11 @@ class Pension(models.Model):
 
 class PensionBalanceQuerySet(models.QuerySet):
     def related(self):
-        user = utils.get_user()
+        journal = utils.get_user().journal
         qs = (
             self
             .select_related('pension_type')
-            .filter(pension_type__user=user)
+            .filter(pension_type__journal=journal)
         )
         return qs
 

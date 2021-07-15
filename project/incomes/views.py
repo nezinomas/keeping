@@ -3,7 +3,7 @@ from django.urls import reverse, reverse_lazy
 
 from ..core.forms import SearchForm
 from ..core.lib import search
-from ..core.mixins.ajax import AjaxCustomFormMixin
+from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
                                  ListMixin, UpdateAjaxMixin)
 from . import forms, models
@@ -76,7 +76,7 @@ class TypeUpdate(UpdateAjaxMixin):
 #----------------------------------------------------------------------------------------
 #                                                                                 Search
 #----------------------------------------------------------------------------------------
-class Search(AjaxCustomFormMixin):
+class Search(AjaxSearchMixin):
     template_name = 'core/includes/search_form.html'
     form_class = SearchForm
     form_data_dict = {}
