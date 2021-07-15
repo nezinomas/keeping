@@ -562,7 +562,7 @@ def test_invite_user_must_be_superuser(get_user, client_logged):
 
 
 def test_invite_link_is_superuser(client_logged):
-    url = reverse('bookkeeping:index')
+    url = reverse('users:settings_index')
 
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
