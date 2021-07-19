@@ -27,13 +27,13 @@ def _db_data():
 #                                                                                 Expense
 # ---------------------------------------------------------------------------------------
 def test_expenses_index_func():
-    view = resolve('/expenses/')
+    view = resolve('/expenses/index/')
 
     assert expenses.Index == view.func.view_class
 
 
 def test_expenses_lists_func():
-    view = resolve('/expenses/lists/')
+    view = resolve('/expenses/')
 
     assert expenses.Lists == view.func.view_class
 
@@ -53,7 +53,7 @@ def test_expenses_lists_302(client):
 
 
 def test_expenses_lists_month_func():
-    view = resolve('/expenses/lists/1/')
+    view = resolve('/expenses/1/')
 
     assert expenses.MonthLists == view.func.view_class
 
@@ -334,7 +334,8 @@ def test_expenses_update_past_record(get_user, client_logged):
 
 
 def test_expenses_index_200(client_logged):
-    response = client_logged.get('/expenses/', follow=True)
+    url = reverse('expenses:expenses_index')
+    response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
 
@@ -345,7 +346,7 @@ def test_expenses_index_200(client_logged):
 
 
 def test_expenses_month_list_200(client_logged):
-    response = client_logged.get('/expenses/lists/1/')
+    response = client_logged.get('/expenses/1/')
 
     assert response.status_code == 200
 
