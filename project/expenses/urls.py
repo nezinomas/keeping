@@ -7,17 +7,17 @@ app_name = App_name
 
 e = [
     path(
-        'expenses/',
+        'expenses/index/',
         expenses.Index.as_view(),
         name='expenses_index'
     ),
     path(
-        'expenses/lists/',
+        'expenses/',
         expenses.Lists.as_view(),
         name='expenses_list'
     ),
     path(
-        'expenses/lists/<int:month>/',
+        'expenses/<int:month>/',
         expenses.MonthLists.as_view(),
         name='expenses_month_list'
     ),
