@@ -30,9 +30,9 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'filters': {
-         'require_debug_false': {
-             '()': 'django.utils.log.RequireDebugFalse'
-         }
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
      },
     'handlers': {
         # Include the default Django email handler for errors
