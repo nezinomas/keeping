@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 from django.urls import resolve, reverse
+from django.utils.translation import gettext as _
 from freezegun import freeze_time
 from mock import patch
 
@@ -384,7 +385,8 @@ def test_view_books_delete_load_form(client_logged):
     assert response.status_code == 200
 
     assert '<form method="post"' in actual['html_form']
-    assert 'Ar tikrai nori išrinti: <strong>Book Title</strong>?' in actual['html_form']
+    msg = _('Are you sure you want to delete')
+    assert f'{msg}: <strong>Book Title</strong>?' in actual['html_form']
 
 
 def test_view_books_delete(client_logged):
