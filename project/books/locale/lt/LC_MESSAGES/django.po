@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-20 09:41+0300\n"
-"PO-Revision-Date: 2021-07-20 09:41+0300\n"
+"POT-Creation-Date: 2021-07-20 15:03+0300\n"
+"PO-Revision-Date: 2021-07-20 15:04+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -40,9 +40,25 @@ msgstr "Autorius"
 msgid "Remark"
 msgstr "Pastaba"
 
+#: .\forms.py:78
+msgid "Year"
+msgstr "Metai"
+
+#: .\forms.py:79
+msgid "How many"
+msgstr "Kiek"
+
+#: .\forms.py:94
+msgid "already has a target."
+msgstr "metai jau turi tikslą."
+
 #: .\lib\views_helper.py:69
 msgid "Readed books"
 msgstr "Perskaitytos knygos"
+
+#: .\templates\books\includes\books_delete_form.html:2
+msgid "Delete book"
+msgstr "Knygos trinimas"
 
 #: .\templates\books\includes\books_form.html:2
 msgctxt "book form title"

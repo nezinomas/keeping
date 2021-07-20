@@ -75,8 +75,8 @@ class BookTargetForm(forms.ModelForm):
         # inital values
         self.fields['year'].initial = set_year_for_form()
 
-        self.fields['year'].label = 'Metai'
-        self.fields['quantity'].label = 'Kiekis ml'
+        self.fields['year'].label = _('Year')
+        self.fields['quantity'].label = _('How many')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -91,6 +91,7 @@ class BookTargetForm(forms.ModelForm):
         # if new record
         qs = BookTarget.objects.year(year)
         if qs.exists():
-            raise forms.ValidationError(f'{year} metai jau turi tikslą.')
+            msg = _("already has a target.")
+            raise forms.ValidationError(f'{year} {msg}')
 
         return year
