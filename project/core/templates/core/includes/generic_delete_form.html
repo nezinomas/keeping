@@ -1,15 +1,18 @@
+{% load i18n %}
 <form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}">
     {% csrf_token %}
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body">
-        <p class="py-0 my-4">Ar tikrai nori išrinti: <strong>{{ object }}</strong>?</p>
+        <p class="py-0 my-4">
+            {% translate 'Are you sure you want to delete' %}: <strong>{{ object }}</strong>?
+        </p>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-sm btn-danger" id="save_close">Delete</button>
-        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-sm btn-danger" id="save_close">{% translate 'Delete' %}</button>
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">{% translate 'Close' %}</button>
     </div>
 </form>
 {% include 'core/includes/modal_form_js.html' %}

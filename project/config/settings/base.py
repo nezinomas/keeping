@@ -66,6 +66,7 @@ LANGUAGES = [
 ]
 LOCALE_PATHS = (
     os.path.join(SITE_ROOT, 'books', 'locale'),
+    os.path.join(SITE_ROOT, 'core', 'locale'),
 )
 
 TIME_ZONE = 'UTC'

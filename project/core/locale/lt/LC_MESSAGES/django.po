@@ -1,0 +1,63 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-07-20 14:58+0300\n"
+"PO-Revision-Date: 2021-07-20 14:56+0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: lt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < "
+"11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? "
+"1 : n % 1 != 0 ? 2: 3);\n"
+"X-Generator: Poedit 3.0\n"
+
+#: .\mixins\views.py:55 .\templates\core\includes\form_footer.html:5
+msgid "insert"
+msgstr "įrašyti"
+
+#: .\mixins\views.py:72 .\templates\core\includes\form_footer.html:4
+msgid "update"
+msgstr "atnaujinti"
+
+#: .\templates\core\includes\form_footer.html:4
+msgid "Update and Close"
+msgstr "Atnaujinti ir uždaryti"
+
+#: .\templates\core\includes\form_footer.html:5
+msgid "Insert and Close"
+msgstr "Įrašyti ir uždaryti"
+
+#: .\templates\core\includes\form_footer.html:6
+#: .\templates\core\includes\generic_delete_form.html:6
+#: .\templates\core\includes\generic_delete_form.html:16
+#: .\templates\core\includes\generic_form.html:9
+#: .\templates\core\includes\generic_formset.html:10
+#: .\templates\core\includes\generic_modal.html:4
+#: .\templates\core\includes\generic_modal.html:10
+msgid "Close"
+msgstr "Uždaryti"
+
+#: .\templates\core\includes\generic_delete_form.html:10
+msgid "Are you sure you want to delete"
+msgstr "Ar tikrai norite ištrinti"
+
+#: .\templates\core\includes\generic_delete_form.html:15
+msgid "Delete"
+msgstr "Trinti"
+
+#: .\templates\core\includes\generic_form.html:22
+msgid "Add"
+msgstr "Pridėti"
+
+#: .\templates\core\includes\search_form.html:9
+msgid "Search"
+msgstr "Ieškoti"
