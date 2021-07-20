@@ -1,4 +1,7 @@
 import os
+
+from django.utils.translation import ugettext_lazy as _
+
 from ..secrets import get_secret
 
 
@@ -54,9 +57,15 @@ DATABASES = {
 }
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-
 # ================   GENERAL CONFIGURATION
 LANGUAGE_CODE = 'lt'
+
+LANGUAGES = [
+    ('en', _('English')),
+    ('lt', _('Lithuania')),
+]
+
+
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
