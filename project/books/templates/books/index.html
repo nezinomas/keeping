@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static %}{% load i18n %}
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
@@ -29,8 +29,8 @@
     <div class="col-3 text-end">
         {% url 'books:books_new' as url_books %}
         {% url 'books:books_target_new' as url_books_target %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books }}"><i class="bi bi-plus"></i>Knygą</button>
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books_target }}"><i class="bi bi-plus"></i>{{ year|title }} metų tikslą</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books }}"><i class="bi bi-plus"></i>{% translate 'Book' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books_target }}"><i class="bi bi-plus"></i>{{ year|title }} {% translate 'year target' %}</button>
     </div>
 </div>
 

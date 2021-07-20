@@ -1,0 +1,83 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-07-20 09:41+0300\n"
+"PO-Revision-Date: 2021-07-20 09:41+0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: lt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < "
+"11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? "
+"1 : n % 1 != 0 ? 2: 3);\n"
+"X-Generator: Poedit 3.0\n"
+
+#: .\forms.py:45 .\templates\books\includes\books_list.html:12
+msgid "Started reading"
+msgstr "Pradėta skaityti"
+
+#: .\forms.py:46 .\templates\books\includes\books_list.html:13
+msgid "Ended reading"
+msgstr "Baigta skaityti"
+
+#: .\forms.py:47 .\templates\books\includes\books_list.html:10
+msgid "Title"
+msgstr "Pavadinimas"
+
+#: .\forms.py:48 .\templates\books\includes\books_list.html:9
+msgid "Author"
+msgstr "Autorius"
+
+#: .\forms.py:49 .\templates\books\includes\books_list.html:11
+msgid "Remark"
+msgstr "Pastaba"
+
+#: .\lib\views_helper.py:69
+msgid "Readed books"
+msgstr "Perskaitytos knygos"
+
+#: .\templates\books\includes\books_form.html:2
+msgctxt "book form title"
+msgid "Book"
+msgstr "Knyga"
+
+#: .\templates\books\includes\books_list.html:31
+msgid "Edit"
+msgstr "Redaguoti"
+
+#: .\templates\books\includes\books_list.html:34
+msgid "Delete"
+msgstr "Trinti"
+
+#: .\templates\books\includes\books_list.html:44
+#, python-format
+msgid "No records in <b>%(year)s</b>."
+msgstr "<b>%(year)s</b> metais įrašų nėra."
+
+#: .\templates\books\includes\info_row.html:3
+msgid "Readed"
+msgstr "Perskaitytos"
+
+#: .\templates\books\includes\info_row.html:4
+msgid "Reading"
+msgstr "Skaitomos"
+
+#: .\templates\books\includes\info_row.html:6
+msgid "Target"
+msgstr "Tikslas"
+
+#: .\templates\books\index.html:32
+msgid "Book"
+msgstr "Knygą"
+
+#: .\templates\books\index.html:33
+msgid "year target"
+msgstr "metų tikslą"

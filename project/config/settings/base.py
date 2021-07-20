@@ -64,7 +64,9 @@ LANGUAGES = [
     ('en', _('English')),
     ('lt', _('Lithuania')),
 ]
-
+LOCALE_PATHS = (
+    os.path.join(SITE_ROOT, 'books', 'locale'),
+)
 
 TIME_ZONE = 'UTC'
 USE_I18N = True

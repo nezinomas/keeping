@@ -1,4 +1,4 @@
-{% load static %}
+{% load static %}{% load i18n %}
 
 {% if items %}
 
@@ -6,11 +6,11 @@
     <thead class="thead-light">
         <tr class="top">
             <th>Nr</th>
-            <th>Autorius</th>
-            <th>Pavadinimas</th>
-            <th>Pastaba</th>
-            <th class="text-center">Pradėta skaityti</th>
-            <th class="text-center">Baigta skaityti</th>
+            <th>{% translate 'Author' %}</th>
+            <th>{% translate 'Title' %}</th>
+            <th>{% translate 'Remark' %}</th>
+            <th class="text-center">{% translate 'Started reading' %}</th>
+            <th class="text-center">{% translate 'Ended reading' %}</th>
             <th colspan="2"></th>
         </tr>
     </thead>
@@ -28,10 +28,10 @@
             <td class="text-center">{{ item.started|date:"Y-m-d" }}</td>
             <td class="text-center">{{ item.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
             <td class="w-edit">
-                <a role="button" data-url="{{ url_update }}?tab={{ tab }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+                <a role="button" data-url="{{ url_update }}?tab={{ tab }}" class=" js-create edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></a>
             </td>
             <td class="w-delete">
-                <a role="button" data-url="{{ url_delete }}?tab={{ tab }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+                <a role="button" data-url="{{ url_delete }}?tab={{ tab }}" class="js-delete trash" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
         {% endfor %}
@@ -41,7 +41,7 @@
 {% else %}
 
 <div class="mx-auto text-center alert alert-warning py-2">
-    <b>{{ request.user.year|title }}</b> metais irašų nėra.
+    {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 </div>
 
 {% endif %}
