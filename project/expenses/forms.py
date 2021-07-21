@@ -113,6 +113,8 @@ class ExpenseTypeForm(forms.ModelForm):
         self.fields['title'].label = 'Pavadinimas'
         self.fields['necessary'].label = 'Būtina'
 
+        self.fields['necessary'].widget.attrs['class'] = " form-check-input necessary_check "
+
 
 class ExpenseNameForm(forms.ModelForm):
     class Meta:
