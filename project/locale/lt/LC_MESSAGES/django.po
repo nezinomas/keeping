@@ -125,6 +125,10 @@ msgstr "Anglų"
 msgid "Lithuania"
 msgstr "Lietuvių"
 
+#: .\project\core\mixins\ajax.py:168
+msgid "Found nothing"
+msgstr "Nieko nerasta"
+
 #: .\project\core\mixins\views.py:55
 #: .\project\core\templates\core\includes\form_footer.html:5
 msgid "insert"

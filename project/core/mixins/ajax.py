@@ -3,6 +3,7 @@ import json
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 from django.views.generic.edit import FormView
 
 from ...core.lib import utils
@@ -164,7 +165,7 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
 
     def form_valid(self, form, **kwargs):
         html = kwargs.get('html')
-        html = html if html else 'Nieko neradau'
+        html = html if html else _('Found nothing')
 
         json_data = {
             'form_is_valid': True,
