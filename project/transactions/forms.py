@@ -1,6 +1,7 @@
 from bootstrap_datepicker_plus import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
@@ -29,7 +30,7 @@ class TransactionForm(forms.ModelForm):
 
         # initial values
         self.fields['price'].widget.attrs = {'step': '0.01'}
-        self.fields['price'].label = 'Suma'
+        self.fields['price'].label = _('Amount')
         self.fields['date'].initial = set_year_for_form()
 
         # overwrite ForeignKey expense_type queryset
@@ -37,9 +38,9 @@ class TransactionForm(forms.ModelForm):
         self.fields['to_account'].queryset = Account.objects.items()
 
         # field labels
-        self.fields['date'].label = 'Data'
-        self.fields['from_account'].label = 'Iš sąskaitos'
-        self.fields['to_account'].label = 'Į sąskaitą'
+        self.fields['date'].label = _('Date')
+        self.fields['from_account'].label = _('From account')
+        self.fields['to_account'].label = _('To account')
 
         # chained dropdown
         _id = ChainedDropDown(self, 'from_account').parent_field_id
@@ -83,12 +84,13 @@ class SavingCloseForm(forms.ModelForm):
         self.fields['to_account'].queryset = Account.objects.items()
 
         # form fields labels
-        self.fields['price'].label = 'Suma'
-        self.fields['price'].help_text = 'Suma kuri lieka atskaičius mokesčius'
-        self.fields['fee'].label = 'Mokesčiai'
-        self.fields['date'].label = 'Data'
-        self.fields['from_account'].label = 'Iš sąskaitos'
-        self.fields['to_account'].label = 'Į sąskaitą'
+        self.fields['price'].label = _('Amount')
+        # 'Suma kuri lieka atskaičius mokesčius'
+        self.fields['price'].help_text = _('Amount left after fees')
+        self.fields['fee'].label = _('Fees')
+        self.fields['date'].label = _('Date')
+        self.fields['from_account'].label = _('From account')
+        self.fields['to_account'].label = _('To account')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -125,12 +127,12 @@ class SavingChangeForm(forms.ModelForm):
         self.fields['to_account'].queryset = SavingType.objects.items()
 
         # fields labels
-        self.fields['price'].label = 'Suma'
-        self.fields['price'].help_text = 'Suma kuri lieka atskaičius mokesčius'
-        self.fields['fee'].label = 'Mokesčiai'
-        self.fields['date'].label = 'Data'
-        self.fields['from_account'].label = 'Iš sąskaitos'
-        self.fields['to_account'].label = 'Į sąskaitą'
+        self.fields['price'].label = _('Amount')
+        self.fields['price'].help_text = _('Amount left after fees')
+        self.fields['fee'].label = _('Fees')
+        self.fields['date'].label = _('Date')
+        self.fields['from_account'].label = _('From account')
+        self.fields['to_account'].label = _('To account')
 
         # chained dropdown
         _id = ChainedDropDown(self, 'from_account').parent_field_id

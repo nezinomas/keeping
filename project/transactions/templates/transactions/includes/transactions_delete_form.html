@@ -1,2 +1,4 @@
 {% load form %}
-{% generic_delete_form title='Pervedimo trinimas' update_container='transactions_list' %}
+{% load i18n %}
+
+{% generic_delete_form title=_('Delete transaction') update_container='transactions_list' %}

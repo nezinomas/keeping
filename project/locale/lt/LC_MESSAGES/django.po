@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-21 16:58+0300\n"
-"PO-Revision-Date: 2021-07-21 16:59+0300\n"
+"POT-Creation-Date: 2021-07-21 17:22+0300\n"
+"PO-Revision-Date: 2021-07-21 17:22+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -108,6 +108,7 @@ msgstr "Knyga"
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:45
 #: .\project\expenses\templates\expenses\includes\expenses_type_list.html:8
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:30
+#: .\project\transactions\templates\transactions\includes\table.html:29
 msgid "Edit"
 msgstr "Redaguoti"
 
@@ -115,11 +116,13 @@ msgstr "Redaguoti"
 #: .\project\core\templates\core\includes\generic_delete_form.html:14
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:48
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:33
+#: .\project\transactions\templates\transactions\includes\table.html:32
 msgid "Delete"
 msgstr "Trinti"
 
 #: .\project\books\templates\books\includes\books_list.html:44
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:63
+#: .\project\transactions\templates\transactions\includes\table.html:42
 #, python-format
 msgid "No records in <b>%(year)s</b>."
 msgstr "<b>%(year)s</b> metais įrašų nėra."
@@ -203,6 +206,9 @@ msgstr "Ieškoti"
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:12
 #: .\project\incomes\forms.py:43
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:9
+#: .\project\transactions\forms.py:41 .\project\transactions\forms.py:91
+#: .\project\transactions\forms.py:133
+#: .\project\transactions\templates\transactions\includes\table.html:8
 msgid "Date"
 msgstr "Data"
 
@@ -293,6 +299,9 @@ msgstr "%(month)s mėnesį įrašų nėra."
 
 #: .\project\incomes\forms.py:45
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:13
+#: .\project\transactions\forms.py:33 .\project\transactions\forms.py:87
+#: .\project\transactions\forms.py:130
+#: .\project\transactions\templates\transactions\includes\table.html:11
 msgid "Amount"
 msgstr "Suma"
 
@@ -406,3 +415,65 @@ msgstr "Keisti slaptažodį"
 #: .\project\templates\base.html:179
 msgid "Settings"
 msgstr "Nustatymai"
+
+#: .\project\transactions\forms.py:42 .\project\transactions\forms.py:92
+#: .\project\transactions\forms.py:134
+#: .\project\transactions\templates\transactions\includes\table.html:9
+msgid "From account"
+msgstr "Iš sąskaitos"
+
+#: .\project\transactions\forms.py:43 .\project\transactions\forms.py:93
+#: .\project\transactions\forms.py:135
+#: .\project\transactions\templates\transactions\includes\table.html:10
+msgid "To account"
+msgstr "Į sąskaitą"
+
+#: .\project\transactions\forms.py:89 .\project\transactions\forms.py:131
+msgid "Amount left after fees"
+msgstr "Suma kuri lieka atskaičius mokesčius"
+
+#: .\project\transactions\forms.py:90 .\project\transactions\forms.py:132
+#: .\project\transactions\templates\transactions\includes\table.html:12
+msgid "Fees"
+msgstr "Mokesčiai"
+
+#: .\project\transactions\templates\transactions\includes\savings_change_delete_form.html:4
+#: .\project\transactions\templates\transactions\includes\savings_close_delete_form.html:4
+#: .\project\transactions\templates\transactions\includes\transactions_delete_form.html:4
+msgid "Delete transaction"
+msgstr "Trint pervedimą"
+
+#: .\project\transactions\templates\transactions\includes\savings_change_form.html:5
+#: .\project\transactions\templates\transactions\index.html:43
+msgid "Fund &hArr; Fund"
+msgstr "Fondas &hArr; Fondas"
+
+#: .\project\transactions\templates\transactions\includes\savings_close_form.html:4
+#: .\project\transactions\templates\transactions\index.html:29
+msgid "Fund &rArr; Account"
+msgstr "Fondas &rArr; Sąskaita"
+
+#: .\project\transactions\templates\transactions\includes\transactions_form.html:6
+msgid "Transaction"
+msgstr "Pinigų pavedimas"
+
+#: .\project\transactions\templates\transactions\index.html:15
+msgid "Account &hArr; Account"
+msgstr "Sąskaita &rArr; Sąskaita"
+
+#: .\project\transactions\templates\transactions\index.html:19
+#: .\project\transactions\templates\transactions\index.html:33
+#: .\project\transactions\templates\transactions\index.html:47
+msgctxt "record button"
+msgid "Record"
+msgstr "Įrašą"
+
+#: .\project\transactions\templates\transactions\index.html:60
+msgctxt "account button"
+msgid "Account"
+msgstr "Sąskaitą"
+
+#, fuzzy
+#~| msgid "Amount"
+#~ msgid "Ammount"
+#~ msgstr "Suma"

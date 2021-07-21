@@ -1,13 +1,15 @@
+{% load i18n %}
+
 {% if items %}
 
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
-            <th>Data</th>
-            <th>Iš sąskaitos</th>
-            <th>Į sąskaitą</th>
-            <th class="text-end">Suma</th>
-            {% if fees %}<th class="text-end">Mokesčiai</th>{% endif %}
+            <th>{% translate 'Date' %}</th>
+            <th>{% translate 'From account' %}</th>
+            <th>{% translate 'To account' %}</th>
+            <th class="text-end">{% translate 'Amount' %}</th>
+            {% if fees %}<th class="text-end">{% translate 'Fees' %}</th>{% endif %}
             <th colspan="2"></th>
         </tr>
     </thead>
@@ -24,10 +26,10 @@
             <td>{{ item.price }}</td>
             {% if fees %}<td>{{ item.fee }}</td>{% endif %}
             <td class="w-edit">
-                <a role="button" data-url="{{ url__update }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+                <a role="button" data-url="{{ url__update }}" class=" js-create edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></a>
             </td>
             <td class="w-delete">
-                <a role="button" data-url="{{ url__delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+                <a role="button" data-url="{{ url__delete }}" class="js-delete trash" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
         {% endfor %}
@@ -37,7 +39,7 @@
 {% else %}
 
 <div class="mx-auto text-center alert alert-warning py-2 mb-4">
-    <b>{{ year|default_if_none:'xxxx'|safe }}</b> metais įrašų nėra.
+    {% blocktranslate with year=year|default_if_none:'xxxx'|safe %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 </div>
 
 {% endif %}
