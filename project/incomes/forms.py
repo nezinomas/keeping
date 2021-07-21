@@ -1,6 +1,7 @@
 from bootstrap_datepicker_plus import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
@@ -39,11 +40,11 @@ class IncomeForm(forms.ModelForm):
         self.fields['income_type'].queryset = IncomeType.objects.items()
         self.fields['account'].queryset = Account.objects.items()
 
-        self.fields['date'].label = 'Data'
-        self.fields['account'].label = 'Sąskaita'
-        self.fields['price'].label = 'Suma'
-        self.fields['remark'].label = 'Pastaba'
-        self.fields['income_type'].label = 'Pajamų rūšis'
+        self.fields['date'].label = _('Date')
+        self.fields['account'].label = _('Account')
+        self.fields['price'].label = _('Amount')
+        self.fields['remark'].label = _('Remark')
+        self.fields['income_type'].label = _('Incomes type')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -62,7 +63,7 @@ class IncomeTypeForm(forms.ModelForm):
         self.fields['journal'].disabled = True
         self.fields['journal'].widget = forms.HiddenInput()
 
-        self.fields['title'].label = 'Pajamų rūšis'
+        self.fields['title'].label = _('Incomes type')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

@@ -2,13 +2,13 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-21 13:24+0300\n"
-"PO-Revision-Date: 2021-07-21 13:25+0300\n"
+"POT-Creation-Date: 2021-07-21 16:50+0300\n"
+"PO-Revision-Date: 2021-07-21 16:48+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -45,6 +45,8 @@ msgstr "Autorius"
 #: .\project\books\templates\books\includes\books_list.html:11
 #: .\project\expenses\forms.py:73
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:17
+#: .\project\incomes\forms.py:46
+#: .\project\incomes\templates\incomes\includes\incomes_list.html:12
 msgid "Remark"
 msgstr "Pastaba"
 
@@ -77,12 +79,14 @@ msgstr "Knyga"
 #: .\project\books\templates\books\includes\books_list.html:31
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:45
 #: .\project\expenses\templates\expenses\includes\expenses_type_list.html:8
+#: .\project\incomes\templates\incomes\includes\incomes_list.html:30
 msgid "Edit"
 msgstr "Redaguoti"
 
 #: .\project\books\templates\books\includes\books_list.html:34
 #: .\project\core\templates\core\includes\generic_delete_form.html:14
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:48
+#: .\project\incomes\templates\incomes\includes\incomes_list.html:33
 msgid "Delete"
 msgstr "Trinti"
 
@@ -169,6 +173,8 @@ msgstr "Ieškoti"
 
 #: .\project\expenses\forms.py:68
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:12
+#: .\project\incomes\forms.py:43
+#: .\project\incomes\templates\incomes\includes\incomes_list.html:9
 msgid "Date"
 msgstr "Data"
 
@@ -194,6 +200,8 @@ msgstr "Išimtis"
 
 #: .\project\expenses\forms.py:75
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:19
+#: .\project\incomes\forms.py:44
+#: .\project\incomes\templates\incomes\includes\incomes_list.html:11
 msgid "Account"
 msgstr "Sąskaita"
 
@@ -262,6 +270,37 @@ msgstr "Išlaidų pavadinimą"
 msgid "There are no records for month %(month)s."
 msgstr "%(month)s mėnesį įrašų nėra."
 
+#: .\project\incomes\forms.py:45
+#: .\project\incomes\templates\incomes\includes\incomes_list.html:13
+msgid "Amount"
+msgstr "Suma"
+
+#: .\project\incomes\forms.py:47 .\project\incomes\forms.py:66
+#: .\project\incomes\templates\incomes\includes\incomes_list.html:10
+#: .\project\incomes\templates\incomes\includes\incomes_type_form.html:3
+#: .\project\incomes\templates\incomes\includes\incomes_type_list.html:5
+msgid "Incomes type"
+msgstr "Pajamų rūšis"
+
+#: .\project\incomes\templates\incomes\includes\incomes_delete_form.html:4
+msgid "Delete incomes"
+msgstr "Trinti pajamas"
+
+#: .\project\incomes\templates\incomes\includes\incomes_form.html:5
+#: .\project\templates\base.html:85
+msgid "Incomes"
+msgstr "Pajamos"
+
+#: .\project\incomes\templates\incomes\index.html:28
+msgctxt "incomes button"
+msgid "Incomes"
+msgstr "Pajamas"
+
+#: .\project\incomes\templates\incomes\index.html:39
+msgctxt "income type button"
+msgid "Incomes type"
+msgstr "Pajamų rūšį"
+
 #: .\project\templates\403.html:5
 msgid "Access Denied"
 msgstr "Priėjimas negalimas"
@@ -294,10 +333,6 @@ msgstr "Detali"
 #: .\project\templates\base.html:61
 msgid "Expenses"
 msgstr "Išlaidos"
-
-#: .\project\templates\base.html:85
-msgid "Incomes"
-msgstr "Pajamos"
 
 #: .\project\templates\base.html:90
 msgid "Transactions"
