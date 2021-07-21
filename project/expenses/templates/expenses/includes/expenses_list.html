@@ -1,4 +1,7 @@
-{% load humanize %}{% load colorize %}{% load static %}
+{% load humanize %}
+{% load colorize %}
+{% load static %}
+{% load i18n %}
 
 {% if items %}
 
@@ -6,14 +9,14 @@
 <table class="table table-hover stats sticky-table">
     <thead class="thead-light">
         <tr class="top">
-            <th class="expense-ordinary">Data</th>
-            <th>Išlaidų rūšis</th>
-            <th>Išlaidų pavadinimas</th>
-            <th class="text-end">Kiekis</th>
-            <th class="text-end">Kaina</th>
-            <th class="w16">Pastaba</th>
-            <th class="text-end w5">Prisegtukas</th>
-            <th class="text-end">Sąskaita</th>
+            <th class="expense-ordinary">{% translate 'Date' %}</th>
+            <th>{% translate 'Expense type' %}</th>
+            <th>{% translate 'Expense name' %}</th>
+            <th class="text-end">{% translate 'How many' %}</th>
+            <th class="text-end">{% translate 'Price' %}</th>
+            <th class="w16">{% translate 'Remark' %}</th>
+            <th class="text-end w5">{% translate 'Attachment' %}</th>
+            <th class="text-end">{% translate 'Account' %}</th>
             <th colspan="2"></th>
         </tr>
     </thead>
@@ -39,10 +42,10 @@
             </td>
             <td>{{ item.account }}</td>
             <td class="w-edit">
-                <a role="button" data-url="{{ url_update }}" class="js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+                <a role="button" data-url="{{ url_update }}" class="js-create edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></a>
             </td>
             <td class="w-delete">
-                <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+                <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
         {% endfor %}

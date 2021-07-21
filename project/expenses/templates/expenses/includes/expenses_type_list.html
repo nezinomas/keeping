@@ -1,10 +1,11 @@
+{% load i18n %}
 <div class="accordion" id="accordion">
 {% for item in items %}
 {% url 'expenses:expenses_type_update' item.id as url_type_update %}
     <div class="accordion-item mb-2">
         <div class="accordion-header" id="heading_{{ item.id }}">
             <span class="expenses-edit-icon">
-                <button type="button" data-url="{{ url_type_update }}" class="btn btn-sm edit js-create" title="Edit"><i class="bi bi-pencil-fill"></i></button>
+                <button type="button" data-url="{{ url_type_update }}" class="btn btn-sm edit js-create" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></button>
             </span>
             <button class="accordion-button collapsed btn-sm rounded-top" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ item.id }}" aria-expanded="false" aria-controls="collapse_{{ item.id }}">
                 {{ item.title }}

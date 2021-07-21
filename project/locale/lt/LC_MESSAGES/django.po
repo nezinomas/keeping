@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-20 15:40+0300\n"
-"PO-Revision-Date: 2021-07-20 15:41+0300\n"
+"POT-Creation-Date: 2021-07-21 11:01+0300\n"
+"PO-Revision-Date: 2021-07-21 11:40+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -18,7 +18,104 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < "
 "11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? "
 "1 : n % 1 != 0 ? 2: 3);\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 2.0.7\n"
+
+#: .\project\books\forms.py:45
+#: .\project\books\templates\books\includes\books_list.html:12
+msgid "Started reading"
+msgstr "Pradėta skaityti"
+
+#: .\project\books\forms.py:46
+#: .\project\books\templates\books\includes\books_list.html:13
+msgid "Ended reading"
+msgstr "Baigta skaityti"
+
+#: .\project\books\forms.py:47
+#: .\project\books\templates\books\includes\books_list.html:10
+#: .\project\expenses\forms.py:115
+msgid "Title"
+msgstr "Pavadinimas"
+
+#: .\project\books\forms.py:48
+#: .\project\books\templates\books\includes\books_list.html:9
+msgid "Author"
+msgstr "Autorius"
+
+#: .\project\books\forms.py:49
+#: .\project\books\templates\books\includes\books_list.html:11
+#: .\project\expenses\forms.py:73
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:17
+msgid "Remark"
+msgstr "Pastaba"
+
+#: .\project\books\forms.py:78
+msgid "Year"
+msgstr "Metai"
+
+#: .\project\books\forms.py:79 .\project\expenses\forms.py:70
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:15
+msgid "How many"
+msgstr "Kiek"
+
+#: .\project\books\forms.py:94
+msgid "already has a target."
+msgstr "metai jau turi tikslą."
+
+#: .\project\books\lib\views_helper.py:69
+msgid "Readed books"
+msgstr "Perskaitytos knygos"
+
+#: .\project\books\templates\books\includes\books_delete_form.html:2
+msgid "Delete book"
+msgstr "Trinti knygą"
+
+#: .\project\books\templates\books\includes\books_form.html:2
+msgctxt "book form title"
+msgid "Book"
+msgstr "Knyga"
+
+#: .\project\books\templates\books\includes\books_list.html:31
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:45
+#: .\project\expenses\templates\expenses\includes\expenses_type_list.html:8
+msgid "Edit"
+msgstr "Redaguoti"
+
+#: .\project\books\templates\books\includes\books_list.html:34
+#: .\project\core\templates\core\includes\generic_delete_form.html:14
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:48
+msgid "Delete"
+msgstr "Trinti"
+
+#: .\project\books\templates\books\includes\books_list.html:44
+#, python-format
+msgid "No records in <b>%(year)s</b>."
+msgstr "<b>%(year)s</b> metais įrašų nėra."
+
+#: .\project\books\templates\books\includes\info_row.html:3
+msgid "Readed"
+msgstr "Perskaitytos"
+
+#: .\project\books\templates\books\includes\info_row.html:4
+msgid "Reading"
+msgstr "Skaitomos"
+
+#: .\project\books\templates\books\includes\info_row.html:6
+msgid "Target"
+msgstr "Tikslas"
+
+#: .\project\books\templates\books\index.html:32
+msgctxt "book add button"
+msgid "Book"
+msgstr "Knygą"
+
+#: .\project\books\templates\books\index.html:33
+msgid "year target"
+msgstr "metų tikslą"
+
+#: .\project\books\tests\test_views.py:388
+#: .\project\core\templates\core\includes\generic_delete_form.html:10
+msgid "Are you sure you want to delete"
+msgstr "Ar tikrai norite ištrinti"
 
 #: .\project\config\settings\base.py:83
 msgid "English"
@@ -27,6 +124,125 @@ msgstr "Anglų"
 #: .\project\config\settings\base.py:84
 msgid "Lithuania"
 msgstr "Lietuvių"
+
+#: .\project\core\mixins\views.py:55
+#: .\project\core\templates\core\includes\form_footer.html:5
+msgid "insert"
+msgstr "įrašyti"
+
+#: .\project\core\mixins\views.py:72
+#: .\project\core\templates\core\includes\form_footer.html:4
+msgid "update"
+msgstr "atnaujinti"
+
+#: .\project\core\templates\core\includes\form_footer.html:4
+msgid "Update and Close"
+msgstr "Atnaujinti ir uždaryti"
+
+#: .\project\core\templates\core\includes\form_footer.html:5
+msgid "Insert and Close"
+msgstr "Įrašyti ir uždaryti"
+
+#: .\project\core\templates\core\includes\form_footer.html:6
+#: .\project\core\templates\core\includes\generic_delete_form.html:6
+#: .\project\core\templates\core\includes\generic_delete_form.html:15
+#: .\project\core\templates\core\includes\generic_form.html:9
+#: .\project\core\templates\core\includes\generic_formset.html:10
+#: .\project\core\templates\core\includes\generic_modal.html:4
+#: .\project\core\templates\core\includes\generic_modal.html:10
+#: .\project\templates\modal_images.html:9
+msgid "Close"
+msgstr "Uždaryti"
+
+#: .\project\core\templates\core\includes\generic_form.html:22
+msgid "Add"
+msgstr "Pridėti"
+
+#: .\project\core\templates\core\includes\search_form.html:9
+msgid "Search"
+msgstr "Ieškoti"
+
+#: .\project\expenses\forms.py:68
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:12
+msgid "Date"
+msgstr "Data"
+
+#: .\project\expenses\forms.py:69
+msgid "Full price"
+msgstr "Visa kaina"
+
+#: .\project\expenses\forms.py:71 .\project\expenses\forms.py:137
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:13
+#: .\project\expenses\templates\expenses\includes\expenses_type_form.html:2
+msgid "Expense type"
+msgstr "Išlaidų rūšis"
+
+#: .\project\expenses\forms.py:72 .\project\expenses\forms.py:138
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:14
+#: .\project\expenses\templates\expenses\includes\expenses_name_form.html:2
+msgid "Expense name"
+msgstr "Išlaidų pavadinimas"
+
+#: .\project\expenses\forms.py:74
+msgid "Exception"
+msgstr "Išimtis"
+
+#: .\project\expenses\forms.py:75
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:19
+msgid "Account"
+msgstr "Sąskaita"
+
+#: .\project\expenses\forms.py:76
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:16
+msgid "Price"
+msgstr "Kaina"
+
+#: .\project\expenses\forms.py:77
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:18
+msgid "Attachment"
+msgstr "Failas"
+
+#: .\project\expenses\forms.py:93
+#, python-format
+msgid "The %(title)s is 'Necessary', so it can't be marked as 'Exeption'"
+msgstr "%(title)s yra 'Būtina', todėl ji negali būti pažymėta kaip 'Išimtis'"
+
+#: .\project\expenses\forms.py:116
+msgid "Necessary"
+msgstr "Būtina"
+
+#: .\project\expenses\forms.py:139
+msgid "Valid for"
+msgstr "Galioja"
+
+#: .\project\expenses\templates\expenses\includes\expenses_delete_form.html:2
+msgid "Delete expenses"
+msgstr "Trinti išlaidas"
+
+#: .\project\expenses\templates\expenses\includes\expenses_form.html:3
+msgctxt "expenses form title"
+msgid "Expenses"
+msgstr "Išlaidos"
+
+#: .\project\expenses\templates\expenses\index.html:39
+#: .\project\templates\base.html:77 .\project\templates\base.html:114
+msgid "All records"
+msgstr "Visi įrašai"
+
+#: .\project\expenses\templates\expenses\index.html:42
+msgctxt "expenses button"
+msgid "Expenses"
+msgstr "Išlaidas"
+
+#: .\project\expenses\templates\expenses\index.html:58
+msgctxt "expenses type button"
+msgid "Expenses type"
+msgstr "Išlaidų rūšį"
+
+#: .\project\expenses\templates\expenses\index.html:59
+msgctxt "expenses name button"
+msgid "Expenses name"
+msgstr "Išlaidų pavadinimą"
 
 #: .\project\templates\403.html:5
 msgid "Access Denied"
@@ -45,82 +261,74 @@ msgstr "Nerasta"
 msgid "Server Error"
 msgstr "Serverio Klaida"
 
-#: .\project\templates\base.html:45
+#: .\project\templates\base.html:46
 msgid "Main"
 msgstr "Bendra"
 
-#: .\project\templates\base.html:49
+#: .\project\templates\base.html:50
 msgid "Month"
 msgstr "Mėnuo"
 
-#: .\project\templates\base.html:54
+#: .\project\templates\base.html:55
 msgid "Detailed"
 msgstr "Detali"
 
-#: .\project\templates\base.html:60
+#: .\project\templates\base.html:61
 msgid "Expenses"
 msgstr "Išlaidos"
 
-#: .\project\templates\base.html:76 .\project\templates\base.html:113
-msgid "All records"
-msgstr "Visi įrašai"
-
-#: .\project\templates\base.html:84
+#: .\project\templates\base.html:85
 msgid "Incomes"
 msgstr "Pajamos"
 
-#: .\project\templates\base.html:89
+#: .\project\templates\base.html:90
 msgid "Transactions"
 msgstr "Pavedimai"
 
-#: .\project\templates\base.html:94
+#: .\project\templates\base.html:95
 msgid "Savings"
 msgstr "Taupymas"
 
-#: .\project\templates\base.html:99
+#: .\project\templates\base.html:100
 msgid "Depts"
 msgstr "Skolos"
 
-#: .\project\templates\base.html:105
+#: .\project\templates\base.html:106
 msgid "Books"
 msgstr "Knygos"
 
-#: .\project\templates\base.html:122
+#: .\project\templates\base.html:123
 msgid "Drinks"
 msgstr "Gėrimai"
 
-#: .\project\templates\base.html:130 .\project\templates\base.html:149
+#: .\project\templates\base.html:131 .\project\templates\base.html:150
 msgid "Data"
 msgstr "Duomenys"
 
-#: .\project\templates\base.html:133 .\project\templates\base.html:152
+#: .\project\templates\base.html:134 .\project\templates\base.html:153
 msgid "History"
 msgstr "Istorija"
 
-#: .\project\templates\base.html:142
+#: .\project\templates\base.html:143
 msgid "Counter"
 msgstr "Kiek"
 
-#: .\project\templates\base.html:160
+#: .\project\templates\base.html:161
 msgid "Plans"
 msgstr "Planai"
 
-#: .\project\templates\base.html:165
+#: .\project\templates\base.html:166
 msgid "Summary"
 msgstr "Suvestinės"
 
-#: .\project\templates\base.html:174
+#: .\project\templates\base.html:175
 msgid "Log out"
 msgstr "Išsiregistruoti"
 
-#: .\project\templates\base.html:175
+#: .\project\templates\base.html:176
 msgid "Change password"
 msgstr "Keisti slaptažodį"
 
-#: .\project\templates\base.html:178
+#: .\project\templates\base.html:179
 msgid "Settings"
 msgstr "Nustatymai"
-
-#: .\project\templates\modal_images.html:9
-msgid "Close"
-msgstr "Uždaryti"
