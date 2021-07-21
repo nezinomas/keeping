@@ -83,10 +83,7 @@ LANGUAGES = [
     ('en', _('English')),
     ('lt', _('Lithuania')),
 ]
-
 LOCALE_PATHS = [os.path.join(SITE_ROOT, 'locale')]
-for app in PROJECT_APPS:
-    LOCALE_PATHS.append(os.path.join(SITE_ROOT, app, 'locale'))
 
 
 TIME_ZONE = 'UTC'
