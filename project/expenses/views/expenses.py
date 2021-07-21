@@ -3,6 +3,7 @@ from datetime import datetime
 from django.db.models import F
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 
@@ -51,7 +52,7 @@ class Lists(ListMixin):
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'notice': f'<b>{month}</b> mėnesį įrašų nėra.',
+            'notice': _('There are no records for month %(month)s.') % {'month': month},
         })
         return context
 

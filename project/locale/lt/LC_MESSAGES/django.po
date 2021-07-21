@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-21 11:01+0300\n"
-"PO-Revision-Date: 2021-07-21 11:40+0300\n"
+"POT-Creation-Date: 2021-07-21 13:24+0300\n"
+"PO-Revision-Date: 2021-07-21 13:25+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < "
 "11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? "
 "1 : n % 1 != 0 ? 2: 3);\n"
-"X-Generator: Poedit 2.0.7\n"
+"X-Generator: Poedit 3.0\n"
 
 #: .\project\books\forms.py:45
 #: .\project\books\templates\books\includes\books_list.html:12
@@ -87,6 +87,7 @@ msgid "Delete"
 msgstr "Trinti"
 
 #: .\project\books\templates\books\includes\books_list.html:44
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:63
 #, python-format
 msgid "No records in <b>%(year)s</b>."
 msgstr "<b>%(year)s</b> metais įrašų nėra."
@@ -175,13 +176,13 @@ msgstr "Data"
 msgid "Full price"
 msgstr "Visa kaina"
 
-#: .\project\expenses\forms.py:71 .\project\expenses\forms.py:137
+#: .\project\expenses\forms.py:71 .\project\expenses\forms.py:139
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:13
 #: .\project\expenses\templates\expenses\includes\expenses_type_form.html:2
 msgid "Expense type"
 msgstr "Išlaidų rūšis"
 
-#: .\project\expenses\forms.py:72 .\project\expenses\forms.py:138
+#: .\project\expenses\forms.py:72 .\project\expenses\forms.py:140
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:14
 #: .\project\expenses\templates\expenses\includes\expenses_name_form.html:2
 msgid "Expense name"
@@ -215,7 +216,7 @@ msgstr "%(title)s yra 'Būtina', todėl ji negali būti pažymėta kaip 'Išimti
 msgid "Necessary"
 msgstr "Būtina"
 
-#: .\project\expenses\forms.py:139
+#: .\project\expenses\forms.py:141
 msgid "Valid for"
 msgstr "Galioja"
 
@@ -228,25 +229,38 @@ msgctxt "expenses form title"
 msgid "Expenses"
 msgstr "Išlaidos"
 
-#: .\project\expenses\templates\expenses\index.html:39
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:37
+msgid "Image"
+msgstr "Paveikslėlis"
+
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:39
+msgid "Pdf file"
+msgstr "Pdf failas"
+
+#: .\project\expenses\templates\expenses\index.html:43
 #: .\project\templates\base.html:77 .\project\templates\base.html:114
 msgid "All records"
 msgstr "Visi įrašai"
 
-#: .\project\expenses\templates\expenses\index.html:42
+#: .\project\expenses\templates\expenses\index.html:46
 msgctxt "expenses button"
 msgid "Expenses"
 msgstr "Išlaidas"
 
-#: .\project\expenses\templates\expenses\index.html:58
+#: .\project\expenses\templates\expenses\index.html:62
 msgctxt "expenses type button"
 msgid "Expenses type"
 msgstr "Išlaidų rūšį"
 
-#: .\project\expenses\templates\expenses\index.html:59
+#: .\project\expenses\templates\expenses\index.html:63
 msgctxt "expenses name button"
 msgid "Expenses name"
 msgstr "Išlaidų pavadinimą"
+
+#: .\project\expenses\views\expenses.py:55
+#, python-format
+msgid "There are no records for month %(month)s."
+msgstr "%(month)s mėnesį įrašų nėra."
 
 #: .\project\templates\403.html:5
 msgid "Access Denied"

@@ -34,9 +34,9 @@
             <td class="text-start">{{ item.remark|linebreaksbr }}</td>
             <td>{% if item.attachment %}
                 {% if not 'pdf' in item.attachment.url %}
-                <button type="button" class="btn btn-outline-primary btn-super-sm" data-bs-toggle="modal" data-bs-target="#imgModal" data-bs-url="{{ item.attachment.url }}">Nuotrauka</button>
+                <button type="button" class="btn btn-outline-primary btn-super-sm" data-bs-toggle="modal" data-bs-target="#imgModal" data-bs-url="{{ item.attachment.url }}">{% translate 'Image' %}</button>
                 {% else %}
-                <a role="button" class="btn btn-outline-primary btn-super-sm" href="{{ item.attachment.url }}" target="_blank">Pdf failas</a>
+                <a role="button" class="btn btn-outline-primary btn-super-sm" href="{{ item.attachment.url }}" target="_blank">{% translate 'Pdf file' %}</a>
                 {% endif %}
                 {% endif %}
             </td>
@@ -57,7 +57,11 @@
 {% else %}
 
 <div class="mx-auto text-center alert alert-warning py-2">
-    {% if notice %}{{ notice|safe }}{% else %}<b>{{ request.user.year|title }}</b> metais įrašų nėra.{% endif %}
+{% if notice %}
+    {{ notice|safe }}
+{% else %}
+    {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+{% endif %}
 </div>
 
 {% endif %}
