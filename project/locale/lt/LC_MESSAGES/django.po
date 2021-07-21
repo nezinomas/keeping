@@ -2,13 +2,13 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-21 16:50+0300\n"
-"PO-Revision-Date: 2021-07-21 16:48+0300\n"
+"POT-Creation-Date: 2021-07-21 16:58+0300\n"
+"PO-Revision-Date: 2021-07-21 16:59+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -19,6 +19,34 @@ msgstr ""
 "11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? "
 "1 : n % 1 != 0 ? 2: 3);\n"
 "X-Generator: Poedit 3.0\n"
+
+#: .\project\accounts\forms.py:37
+msgid "Account title"
+msgstr "Sąskaitos pavadinimas"
+
+#: .\project\accounts\forms.py:38
+msgid "Closed"
+msgstr "Uždaryta"
+
+#: .\project\accounts\forms.py:39
+msgid "Sorting"
+msgstr "Rūšiavimas"
+
+#: .\project\accounts\templates\accounts\includes\accounts_form.html:3
+#: .\project\expenses\forms.py:75
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:19
+#: .\project\incomes\forms.py:44
+#: .\project\incomes\templates\incomes\includes\incomes_list.html:11
+msgid "Account"
+msgstr "Sąskaita"
+
+#: .\project\accounts\templates\accounts\includes\accounts_list.html:6
+msgid "Accounts"
+msgstr "Sąskaitos"
+
+#: .\project\accounts\templates\accounts\includes\accounts_list.html:13
+msgid "closed"
+msgstr "uždaryta"
 
 #: .\project\books\forms.py:45
 #: .\project\books\templates\books\includes\books_list.html:12
@@ -197,13 +225,6 @@ msgstr "Išlaidų pavadinimas"
 #: .\project\expenses\forms.py:74
 msgid "Exception"
 msgstr "Išimtis"
-
-#: .\project\expenses\forms.py:75
-#: .\project\expenses\templates\expenses\includes\expenses_list.html:19
-#: .\project\incomes\forms.py:44
-#: .\project\incomes\templates\incomes\includes\incomes_list.html:11
-msgid "Account"
-msgstr "Sąskaita"
 
 #: .\project\expenses\forms.py:76
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:16
