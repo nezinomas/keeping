@@ -53,7 +53,7 @@ class RenderContext():
 
     def chart_quantity(self) -> str:
         r = render_to_string(
-            'drinks/includes/chart_quantity_per_month.html',
+            'drinks/includes/chart_quantity.html',
             {
                 'data': self._DrinkStats.quantity,
                 'Quantity': _('Quantity'),
@@ -64,7 +64,7 @@ class RenderContext():
 
     def chart_consumsion(self) -> str:
         r = render_to_string(
-            'drinks/includes/chart_consumsion_per_month.html', {
+            'drinks/includes/chart_consumption.html', {
                 'data': self._DrinkStats.consumption,
                 'target': self._target,
                 'avg': self._avg,
