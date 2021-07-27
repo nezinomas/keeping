@@ -50,7 +50,7 @@ $(function () {
             },
         },
         series: [{
-            name: 'Planas',
+            name: '{{ plan_title }}',
             type: 'bar',
             color: 'rgba(0,0,0,0.07)',
             data: {{ chart_targets_data_target|safe }},
@@ -70,7 +70,7 @@ $(function () {
                 }
             }
         }, {
-            name: 'Faktas',
+            name: '{{ fact_title }}',
             type: 'bullet',
             opacity: '0.7',
             data: {{ chart_targets_data_fact|safe }},

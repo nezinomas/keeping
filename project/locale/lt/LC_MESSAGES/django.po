@@ -2,13 +2,13 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-27 16:08+0300\n"
-"PO-Revision-Date: 2021-07-27 16:08+0300\n"
+"POT-Creation-Date: 2021-07-27 16:42+0300\n"
+"PO-Revision-Date: 2021-07-27 16:42+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -47,6 +47,55 @@ msgstr "Sąskaitos"
 #: .\project\accounts\templates\accounts\includes\accounts_list.html:13
 msgid "closed"
 msgstr "uždaryta"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:8
+msgid "Plan"
+msgstr "Planas"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:9
+msgid "Fact"
+msgstr "Faktas"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:14
+#: .\project\bookkeeping\templates\bookkeeping\month.html:111
+#: .\project\incomes\templates\incomes\includes\incomes_form.html:5
+#: .\project\templates\base.html:85
+msgid "Incomes"
+msgstr "Pajamos"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:19
+#: .\project\bookkeeping\templates\bookkeeping\month.html:109
+#: .\project\templates\base.html:61
+msgid "Expenses"
+msgstr "Išlaidos"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:24
+msgid "Money for a day"
+msgstr "Pinigai dienai"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:29
+msgid "Balance"
+msgstr "Balansas"
+
+#: .\project\bookkeeping\templates\bookkeeping\month.html:113
+#: .\project\templates\base.html:95
+msgid "Savings"
+msgstr "Taupymas"
+
+#: .\project\bookkeeping\templates\bookkeeping\month.html:115
+msgctxt "transactions button"
+msgid "Transactions"
+msgstr "Pervedimas"
+
+#: .\project\bookkeeping\templates\bookkeeping\month.html:117
+#: .\project\drinks\templates\drinks\index.html:36
+msgctxt "drinks button"
+msgid "Drinks"
+msgstr "Gėrtynės"
+
+#: .\project\bookkeeping\templates\bookkeeping\month.html:118
+msgid "Show other chart"
+msgstr "Rodyti kitą grafiką"
 
 #: .\project\books\forms.py:45
 #: .\project\books\templates\books\includes\books_list.html:12
@@ -316,7 +365,7 @@ msgstr "Vynas"
 
 #: .\project\drinks\lib\drinks_stats.py:56
 msgid "Vodka"
-msgstr "Degtunė"
+msgstr "Degtinė"
 
 #: .\project\drinks\lib\views_helper.py:73
 msgid "Limit"
@@ -421,11 +470,6 @@ msgstr "Grafikai"
 #: .\project\templates\base.html:134 .\project\templates\base.html:153
 msgid "History"
 msgstr "Istorija"
-
-#: .\project\drinks\templates\drinks\index.html:36
-msgctxt "drinks button"
-msgid "Drinks"
-msgstr "Gėrtynės"
 
 #: .\project\drinks\templates\drinks\index.html:62
 msgid "What is a standard unit of alcohol"
@@ -567,11 +611,6 @@ msgstr "Pajamų rūšis"
 msgid "Delete incomes"
 msgstr "Trinti pajamas"
 
-#: .\project\incomes\templates\incomes\includes\incomes_form.html:5
-#: .\project\templates\base.html:85
-msgid "Incomes"
-msgstr "Pajamos"
-
 #: .\project\incomes\templates\incomes\index.html:28
 msgctxt "incomes button"
 msgid "Incomes"
@@ -597,7 +636,7 @@ msgstr "Nerasta"
 
 #: .\project\templates\500.html:5
 msgid "Server Error"
-msgstr "Serverio Klaida"
+msgstr "Serverio klaida"
 
 #: .\project\templates\base.html:46
 msgid "Main"
@@ -611,17 +650,9 @@ msgstr "Mėnuo"
 msgid "Detailed"
 msgstr "Detali"
 
-#: .\project\templates\base.html:61
-msgid "Expenses"
-msgstr "Išlaidos"
-
 #: .\project\templates\base.html:90
 msgid "Transactions"
 msgstr "Pavedimai"
-
-#: .\project\templates\base.html:95
-msgid "Savings"
-msgstr "Taupymas"
 
 #: .\project\templates\base.html:100
 msgid "Depts"
@@ -711,6 +742,10 @@ msgstr "Įrašą"
 msgctxt "account button"
 msgid "Account"
 msgstr "Sąskaitą"
+
+#~ msgctxt "savings button"
+#~ msgid "Savings"
+#~ msgstr "Taupymą"
 
 #~ msgid "Target"
 #~ msgstr "Tikslas"

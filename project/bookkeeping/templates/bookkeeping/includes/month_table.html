@@ -1,14 +1,18 @@
-{% load table_cell %}{% load template_filters %}{% load cell_format %}
+{% load table_cell %}
+{% load template_filters %}
+{% load cell_format %}
+{% load i18n %}
+
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
             <th></th>
             {% for cat in expense_types %}<th class="text-end" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ cat }}">{{ cat|truncatechars:8 }}</th>{% endfor %}
-            <th class="bl text-end no-right-border">Viso</th>
+            <th class="bl text-end no-right-border">{% translate 'Total' %}</th>
             <th class="empty"></th>
             <th class="no-left-border"></th>
-            <th class="text-end">Diena</th>
-            <th class="text-end">Viso</th>
+            <th class="text-end">{% translate 'Day' %}</th>
+            <th class="text-end">{% translate 'Total' %}</th>
         </tr>
     </thead>
     <tbody>

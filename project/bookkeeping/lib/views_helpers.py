@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Dict, List
 
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 
 from ...accounts.models import AccountBalance
 from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
@@ -214,6 +215,8 @@ class MonthHelper():
             'chart_targets_categories': categories,
             'chart_targets_data_target': data_target,
             'chart_targets_data_fact': data_fact,
+            'plan_title': _('Plan'),
+            'fact_title': _('Fact'),
         }
 
         return render_to_string(
