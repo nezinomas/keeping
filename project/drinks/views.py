@@ -23,7 +23,7 @@ class ReloadStats(DispatchAjaxMixin, IndexMixin):
 
 
 class HistoricalData(IndexMixin):
-    template_name = f'{App_name}/includes/chart_consumsion_history.html'
+    template_name = f'{App_name}/includes/chart_compare.html'
 
     def get(self, request, *args, **kwargs):
         year = request.user.year + 1
@@ -50,7 +50,7 @@ class Compare(AjaxSearchMixin):
         chart_serries = H.several_years_consumption(years_data)
 
         if len(chart_serries) == 2:
-            template = f'{App_name}/includes/chart_consumsion_history.html'
+            template = f'{App_name}/includes/chart_compare.html'
             context = {
                 'serries': chart_serries,
                 'chart_container_name': 'compare_chart',
