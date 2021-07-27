@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-21 17:22+0300\n"
-"PO-Revision-Date: 2021-07-21 17:22+0300\n"
+"POT-Creation-Date: 2021-07-27 16:08+0300\n"
+"PO-Revision-Date: 2021-07-27 16:08+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -78,7 +78,7 @@ msgstr "Autorius"
 msgid "Remark"
 msgstr "Pastaba"
 
-#: .\project\books\forms.py:78
+#: .\project\books\forms.py:78 .\project\drinks\forms.py:78
 msgid "Year"
 msgstr "Metai"
 
@@ -87,7 +87,7 @@ msgstr "Metai"
 msgid "How many"
 msgstr "Kiek"
 
-#: .\project\books\forms.py:94
+#: .\project\books\forms.py:94 .\project\drinks\forms.py:94
 msgid "already has a goal."
 msgstr "metai jau turi tikslą."
 
@@ -105,6 +105,8 @@ msgid "Book"
 msgstr "Knyga"
 
 #: .\project\books\templates\books\includes\books_list.html:31
+#: .\project\drinks\templates\drinks\includes\drinks_list.html:23
+#: .\project\drinks\templates\drinks\includes\drinks_target_list.html:18
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:45
 #: .\project\expenses\templates\expenses\includes\expenses_type_list.html:8
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:30
@@ -114,6 +116,7 @@ msgstr "Redaguoti"
 
 #: .\project\books\templates\books\includes\books_list.html:34
 #: .\project\core\templates\core\includes\generic_delete_form.html:14
+#: .\project\drinks\templates\drinks\includes\drinks_list.html:26
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:48
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:33
 #: .\project\transactions\templates\transactions\includes\table.html:32
@@ -121,6 +124,7 @@ msgid "Delete"
 msgstr "Trinti"
 
 #: .\project\books\templates\books\includes\books_list.html:44
+#: .\project\drinks\templates\drinks\includes\drinks_list.html:36
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:63
 #: .\project\transactions\templates\transactions\includes\table.html:42
 #, python-format
@@ -160,6 +164,82 @@ msgstr "Anglų"
 #: .\project\config\settings\base.py:84
 msgid "Lithuania"
 msgstr "Lietuvių"
+
+#: .\project\core\lib\transalation.py:6
+msgid "January"
+msgstr "Sausis"
+
+#: .\project\core\lib\transalation.py:7
+msgid "February"
+msgstr "Vasaris"
+
+#: .\project\core\lib\transalation.py:8
+msgid "March"
+msgstr "Kovas"
+
+#: .\project\core\lib\transalation.py:9
+msgid "April"
+msgstr "Balandis"
+
+#: .\project\core\lib\transalation.py:10
+msgid "May"
+msgstr "Gegužė"
+
+#: .\project\core\lib\transalation.py:11
+msgid "June"
+msgstr "Birželis"
+
+#: .\project\core\lib\transalation.py:12
+msgid "July"
+msgstr "Liepa"
+
+#: .\project\core\lib\transalation.py:13
+msgid "August"
+msgstr "Rugpjūtis"
+
+#: .\project\core\lib\transalation.py:14
+msgid "September"
+msgstr "Rugsėjis"
+
+#: .\project\core\lib\transalation.py:15
+msgid "October"
+msgstr "Spalis"
+
+#: .\project\core\lib\transalation.py:16
+msgid "November"
+msgstr "Lapkritis"
+
+#: .\project\core\lib\transalation.py:17
+msgid "December"
+msgstr "Gruodis"
+
+#: .\project\core\lib\transalation.py:23
+msgid "Monday"
+msgstr "Pirmadienis"
+
+#: .\project\core\lib\transalation.py:24
+msgid "Tuesday"
+msgstr "Antradienis"
+
+#: .\project\core\lib\transalation.py:25
+msgid "Wednesday"
+msgstr "Trečiadienis"
+
+#: .\project\core\lib\transalation.py:26
+msgid "Thursday"
+msgstr "Ketvirtadienis"
+
+#: .\project\core\lib\transalation.py:27
+msgid "Friday"
+msgstr "Penktadienis"
+
+#: .\project\core\lib\transalation.py:28
+msgid "Saturday"
+msgstr "Šeštadienis"
+
+#: .\project\core\lib\transalation.py:29
+msgid "Sunday"
+msgstr "Sekmadienis"
 
 #: .\project\core\mixins\ajax.py:168
 msgid "Found nothing"
@@ -202,7 +282,7 @@ msgstr "Pridėti"
 msgid "Search"
 msgstr "Ieškoti"
 
-#: .\project\expenses\forms.py:68
+#: .\project\drinks\forms.py:42 .\project\expenses\forms.py:68
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:12
 #: .\project\incomes\forms.py:43
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:9
@@ -211,6 +291,177 @@ msgstr "Ieškoti"
 #: .\project\transactions\templates\transactions\includes\table.html:8
 msgid "Date"
 msgstr "Data"
+
+#: .\project\drinks\forms.py:43
+msgid "Quantity (0,5L beer bottle)"
+msgstr "Kiekis (0,5L alaus)"
+
+#: .\project\drinks\forms.py:79 .\project\drinks\lib\views_helper.py:59
+#: .\project\drinks\lib\views_helper.py:88
+#: .\project\drinks\templates\drinks\includes\drinks_list.html:9
+msgid "Quantity"
+msgstr "Kiekis"
+
+#: .\project\drinks\forms.py:134
+msgid "Must be 4 digits."
+msgstr "Turi būti 4 skaitmenys."
+
+#: .\project\drinks\lib\drinks_stats.py:54
+msgid "Beer"
+msgstr "Alus"
+
+#: .\project\drinks\lib\drinks_stats.py:55
+msgid "Wine"
+msgstr "Vynas"
+
+#: .\project\drinks\lib\drinks_stats.py:56
+msgid "Vodka"
+msgstr "Degtunė"
+
+#: .\project\drinks\lib\views_helper.py:73
+msgid "Limit"
+msgstr "Riba"
+
+#: .\project\drinks\lib\views_helper.py:74
+msgid "Alcohol consumption per day, ml"
+msgstr "Alkoholio kiekis per dieną, ml"
+
+#: .\project\drinks\lib\views_helper.py:89
+msgid "Gap"
+msgstr "Tarpas"
+
+#: .\project\drinks\templates\drinks\includes\compare_form.html:9
+msgid "Filter"
+msgstr "Filtruoti"
+
+#: .\project\drinks\templates\drinks\includes\drinks_delete_form.html:3
+msgid "Delete drinks"
+msgstr "Trinti gėrimus"
+
+#: .\project\drinks\templates\drinks\includes\drinks_form.html:4
+#: .\project\drinks\views.py:115 .\project\templates\base.html:123
+msgid "Drinks"
+msgstr "Gėrimai"
+
+#: .\project\drinks\templates\drinks\includes\drinks_list.html:8
+#: .\project\drinks\templates\drinks\index.html:27
+#: .\project\templates\base.html:131 .\project\templates\base.html:150
+msgid "Data"
+msgstr "Duomenys"
+
+#: .\project\drinks\templates\drinks\includes\drinks_target_form.html:3
+#: .\project\drinks\templates\drinks\index.html:37
+msgid "Goal for the year"
+msgstr "Tikslas metams"
+
+#: .\project\drinks\templates\drinks\includes\drinks_target_list.html:5
+msgid "Max per day"
+msgstr "Max per dieną"
+
+#: .\project\drinks\templates\drinks\includes\drinks_target_list.html:7
+msgid "ml"
+msgstr "ml"
+
+#: .\project\drinks\templates\drinks\includes\drinks_target_list.html:8
+msgid "vnt"
+msgstr "pcs"
+
+#: .\project\drinks\templates\drinks\includes\drinks_target_list.html:21
+msgid "No goal set"
+msgstr "Neįvestas tikslas"
+
+#: .\project\drinks\templates\drinks\includes\tbl_alcohol.html:7
+msgid "Litres"
+msgstr "Litrai"
+
+#: .\project\drinks\templates\drinks\includes\tbl_consumsion.html:7
+msgid "Beer (drunk)"
+msgstr "Alus (išgerta)"
+
+#: .\project\drinks\templates\drinks\includes\tbl_consumsion.html:20
+#: .\project\drinks\templates\drinks\includes\tbl_last_day.html:13
+#: .\project\drinks\templates\drinks\includes\tbl_std_av.html:25
+#: .\project\drinks\views.py:48
+msgid "No data"
+msgstr "Nėra duomenų"
+
+#: .\project\drinks\templates\drinks\includes\tbl_last_day.html:5
+msgid "Last time I had a drink"
+msgstr "Paskutinį sykį gerta"
+
+#: .\project\drinks\templates\drinks\includes\tbl_last_day.html:8
+msgid "Number of days"
+msgstr "Dienų skaičius"
+
+#: .\project\drinks\templates\drinks\includes\tbl_std_av.html:6
+msgid "Average Std Av consumption"
+msgstr "Vidutiniškai išgerta Std Av"
+
+#: .\project\drinks\templates\drinks\includes\tbl_std_av.html:9
+msgid "Total"
+msgstr "Viso"
+
+#: .\project\drinks\templates\drinks\includes\tbl_std_av.html:10
+msgid "Per day"
+msgstr "Per dieną"
+
+#: .\project\drinks\templates\drinks\includes\tbl_std_av.html:11
+msgid "Per week"
+msgstr "Per savaitę"
+
+#: .\project\drinks\templates\drinks\includes\tbl_std_av.html:12
+msgid "Per month"
+msgstr "Per mėnesį"
+
+#: .\project\drinks\templates\drinks\index.html:26
+msgid "Charts"
+msgstr "Grafikai"
+
+#: .\project\drinks\templates\drinks\index.html:28
+#: .\project\templates\base.html:134 .\project\templates\base.html:153
+msgid "History"
+msgstr "Istorija"
+
+#: .\project\drinks\templates\drinks\index.html:36
+msgctxt "drinks button"
+msgid "Drinks"
+msgstr "Gėrtynės"
+
+#: .\project\drinks\templates\drinks\index.html:62
+msgid "What is a standard unit of alcohol"
+msgstr "Kas yra standartinis alkoholio vienetas"
+
+#: .\project\drinks\templates\drinks\index.html:74
+msgid "Historical data"
+msgstr "Istoriniai duomenys"
+
+#: .\project\drinks\templates\drinks\index.html:76
+msgid "2 years"
+msgstr "2 metų"
+
+#: .\project\drinks\templates\drinks\index.html:77
+msgid "3 years"
+msgstr "3 metų"
+
+#: .\project\drinks\templates\drinks\index.html:78
+msgid "7 years"
+msgstr "7 metų"
+
+#: .\project\drinks\templates\drinks\index.html:79
+msgid "All years"
+msgstr "Visi metai"
+
+#: .\project\drinks\templates\drinks\index.html:90
+msgid "Year comparison"
+msgstr "Metų palyginimas"
+
+#: .\project\drinks\views.py:116
+msgid "Average per day, ml"
+msgstr "Vidutiniškai per dieną, ml"
+
+#: .\project\drinks\views.py:117
+msgid "Pure alcohol per year, L"
+msgstr "Per metus gryno alkoholio, L"
 
 #: .\project\expenses\forms.py:69
 msgid "Full price"
@@ -380,18 +631,6 @@ msgstr "Skolos"
 msgid "Books"
 msgstr "Knygos"
 
-#: .\project\templates\base.html:123
-msgid "Drinks"
-msgstr "Gėrimai"
-
-#: .\project\templates\base.html:131 .\project\templates\base.html:150
-msgid "Data"
-msgstr "Duomenys"
-
-#: .\project\templates\base.html:134 .\project\templates\base.html:153
-msgid "History"
-msgstr "Istorija"
-
 #: .\project\templates\base.html:143
 msgid "Counter"
 msgstr "Kiek"
@@ -472,6 +711,9 @@ msgstr "Įrašą"
 msgctxt "account button"
 msgid "Account"
 msgstr "Sąskaitą"
+
+#~ msgid "Target"
+#~ msgstr "Tikslas"
 
 #, fuzzy
 #~| msgid "Amount"

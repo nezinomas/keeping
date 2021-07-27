@@ -1,3 +1,4 @@
+{% load i18n %}
 <div id="chart_quantity_container"></div>
 <script>
     $(function () {
@@ -13,18 +14,18 @@
             lineColor: '#000',
             lineWidth: 2,
             categories: [
-                'Sausis',
-                'Vasaris',
-                'Kovas',
-                'Balandis',
-                'Gegužė',
-                'Birželis',
-                'Liepa',
-                'Rugpjūtis',
-                'Rugsėjis',
-                'Spalis',
-                'Lapkritis',
-                'Gruodis'
+                '{{ January|title }}',
+                '{{ February|title }}',
+                '{{ March|title }}',
+                '{{ April|title }}',
+                '{{ May|title }}',
+                '{{ June|title }}',
+                '{{ July|title }}',
+                '{{ August|title }}',
+                '{{ September|title }}',
+                '{{ October|title }}',
+                '{{ November|title }}',
+                '{{ December|title }}'
             ],
             labels: {
                 style: {
@@ -65,7 +66,7 @@
             }
         },
         series: [{
-            name: 'Kiekis',
+            name: '{{ Quantity }}',
             color: 'rgba(70, 171, 157,0.65)',
             borderColor: 'rgba(70, 171, 157, 1)',
             data: {{ data|safe }},

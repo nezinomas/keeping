@@ -1,9 +1,11 @@
 from datetime import datetime
-from typing import Dict, Tuple, List
+from typing import Dict, List, Tuple
 
 from django.http import HttpRequest
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 
+from ...core.lib.transalation import month_names, weekday_names
 from ...counts.lib.stats import Stats as CountStats
 from .. import models
 from .drinks_stats import DrinkStats, max_beer_bottles, std_av
@@ -52,7 +54,10 @@ class RenderContext():
     def chart_quantity(self) -> str:
         r = render_to_string(
             'drinks/includes/chart_quantity_per_month.html',
-            {'data': self._DrinkStats.quantity},
+            {
+                'data': self._DrinkStats.quantity,
+                'Quantity': _('Quantity'),
+                **month_names()},
             self._request
         )
         return r
@@ -65,10 +70,14 @@ class RenderContext():
                 'avg': self._avg,
                 'avg_label_y': self._avg_label_position(self._avg, self._target),
                 'target_label_y': self._target_label_position(self._avg, self._target),
+                'limit': _('Limit'),
+                'per_day_title': _('Alcohol consumption per day, ml'),
+                **month_names(),
             },
             self._request
         )
         return r
+
 
     def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
         rendered = render_to_string(
@@ -76,6 +85,9 @@ class RenderContext():
             {
                 'data': data,
                 'id': chart_id,
+                'quantity': _('Quantity'),
+                'gap': _('Gap'),
+                'first_weekday_letter': [x[0] for x in list(weekday_names().values())]
             },
             self._request
         )
@@ -86,7 +98,7 @@ class RenderContext():
             'drinks/includes/tbl_consumsion.html', {
                 'qty': self._qty,
                 'avg': self._avg,
-                'target': self._target
+                'target': self._target,
             },
             self._request
         )

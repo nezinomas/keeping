@@ -1,6 +1,8 @@
 from datetime import date, datetime
 from typing import Dict, List, Tuple
 
+from django.utils.translation import gettext as _
+
 from ...core.lib.date import ydays
 
 
@@ -48,10 +50,10 @@ def std_av(year: int, qty: float) -> List[Dict]:
     }
 
     arr = [
-        {'title': 'Std AV', **a},
-        {'title': 'Alus, 0.5L', **{k: _beer(v) for k, v in a.items()}},
-        {'title': 'Vynas, 1L', **{k: _wine(v) for k, v in a.items()}},
-        {'title': 'Degtinė, 1L', **{k: _vodka(v) for k, v in a.items()}},
+        {'title': 'Std Av', **a},
+        {'title': _('Beer') + ', 0.5L', **{k: _beer(v) for k, v in a.items()}},
+        {'title': _('Wine') + ', 1L', **{k: _wine(v) for k, v in a.items()}},
+        {'title': _('Vodka') + ', 1L', **{k: _vodka(v) for k, v in a.items()}},
     ]
 
     return arr

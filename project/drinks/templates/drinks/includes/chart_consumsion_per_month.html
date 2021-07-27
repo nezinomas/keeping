@@ -28,18 +28,18 @@
             gridLineWidth: 1,
             tickmarkPlacement: 'on',
             categories: [
-                'Sausis',
-                'Vasaris',
-                'Kovas',
-                'Balandis',
-                'Gegužė',
-                'Birželis',
-                'Liepa',
-                'Rugpjūtis',
-                'Rugsėjis',
-                'Spalis',
-                'Lapkritis',
-                'Gruodis'
+                '{{ January|title }}',
+                '{{ February|title }}',
+                '{{ March|title }}',
+                '{{ April|title }}',
+                '{{ May|title }}',
+                '{{ June|title }}',
+                '{{ July|title }}',
+                '{{ August|title }}',
+                '{{ September|title }}',
+                '{{ October|title }}',
+                '{{ November|title }}',
+                '{{ December|title }}'
             ],
             labels: {
                 style: {
@@ -60,7 +60,7 @@
                 width: 2,
                 value: {{ target|safe }},
                 label: {
-                    text: 'Riba: {{ target|safe }}',
+                    text: '{{ limit }}: {{ target|safe }}',
                     align: 'right',
                     x: -5,
                     y: {{ target_label_y|safe }},
@@ -105,7 +105,7 @@
         },
         series: [{
             type: 'area',
-            name: 'Alkoholio kiekis per dieną, ml',
+            name: '{{ per_day_title }}',
             showInLegend: false,
             data: {{ data|safe }},
             color: '#c0504d',

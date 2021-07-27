@@ -11,7 +11,7 @@
             marginBottom: 67,
         },
         title: {
-            text: 'Gėrimai',
+            text: '{{ chart_title }}',
         },
         legend: {
             layout: 'horizontal',
@@ -78,7 +78,7 @@
                 },
         },
         series: [{
-            name: 'Vidutiniškai per dieną, ml',
+            name: '{{ per_day }}',
             yAxis: 0,
             data: {{ drinks_data_ml|safe }},
             color: '#46ab9d',
@@ -96,7 +96,7 @@
             enableMouseTracking: false,
             fillOpacity: 0.65,
         }, {
-            name: 'Per metus gryno alkoholio, L',
+            name: '{{ per_year }}',
             yAxis: 1,
             data: {{ drinks_data_alcohol|safe }},
             color: '#d13572',
