@@ -603,7 +603,7 @@ def test_history_chart_consumsion(client_logged):
 
     content = response.content.decode("utf-8")
 
-    assert '<div id="chart_history_container"></div>' in content
+    assert '<div id="chart_summary_container"></div>' in content
 
 
 @freeze_time('1999-01-01')
