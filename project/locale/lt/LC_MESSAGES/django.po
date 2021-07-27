@@ -88,7 +88,7 @@ msgid "How many"
 msgstr "Kiek"
 
 #: .\project\books\forms.py:94
-msgid "already has a target."
+msgid "already has a goal."
 msgstr "metai jau turi tikslą."
 
 #: .\project\books\lib\views_helper.py:69
@@ -136,7 +136,7 @@ msgid "Reading"
 msgstr "Skaitomos"
 
 #: .\project\books\templates\books\includes\info_row.html:6
-msgid "Target"
+msgid "Goal"
 msgstr "Tikslas"
 
 #: .\project\books\templates\books\index.html:32
@@ -145,7 +145,7 @@ msgid "Book"
 msgstr "Knygą"
 
 #: .\project\books\templates\books\index.html:33
-msgid "year target"
+msgid "year goal"
 msgstr "metų tikslą"
 
 #: .\project\books\tests\test_views.py:388

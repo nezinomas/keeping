@@ -91,7 +91,7 @@ class BookTargetForm(forms.ModelForm):
         # if new record
         qs = BookTarget.objects.year(year)
         if qs.exists():
-            msg = _("already has a target.")
+            msg = _("already has a goal.")
             raise forms.ValidationError(f'{year} {msg}')
 
         return year

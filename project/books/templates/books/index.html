@@ -30,7 +30,7 @@
         {% url 'books:books_new' as url_books %}
         {% url 'books:books_target_new' as url_books_target %}
         <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books }}"><i class="bi bi-plus"></i>{% translate 'Book' context 'book add button' %}</button>
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books_target }}"><i class="bi bi-plus"></i>{{ year|title }} {% translate 'year target' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books_target }}"><i class="bi bi-plus"></i>{{ year|title }} {% translate 'year goal' %}</button>
     </div>
 </div>
 
