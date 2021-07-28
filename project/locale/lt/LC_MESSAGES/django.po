@@ -2,13 +2,13 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-28 09:58+0300\n"
-"PO-Revision-Date: 2021-07-28 09:58+0300\n"
+"POT-Creation-Date: 2021-07-28 12:55+0300\n"
+"PO-Revision-Date: 2021-07-28 12:51+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -25,6 +25,8 @@ msgid "Account title"
 msgstr "Sąskaitos pavadinimas"
 
 #: .\project\accounts\forms.py:38
+#: .\project\debts\templates\debts\includes\borrows_list.html:14
+#: .\project\debts\templates\debts\includes\lents_list.html:15
 msgid "Closed"
 msgstr "Uždaryta"
 
@@ -33,6 +35,12 @@ msgid "Sorting"
 msgstr "Rūšiavimas"
 
 #: .\project\accounts\templates\accounts\includes\accounts_form.html:3
+#: .\project\debts\forms.py:51 .\project\debts\forms.py:99
+#: .\project\debts\forms.py:158 .\project\debts\forms.py:206
+#: .\project\debts\templates\debts\includes\borrows_list.html:12
+#: .\project\debts\templates\debts\includes\borrows_return_list.html:11
+#: .\project\debts\templates\debts\includes\lents_list.html:13
+#: .\project\debts\templates\debts\includes\lents_return_list.html:11
 #: .\project\expenses\forms.py:75
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:19
 #: .\project\incomes\forms.py:44
@@ -113,8 +121,6 @@ msgstr "Rodyti kitą grafiką"
 
 #: .\project\bookkeeping\views.py:141
 #, python-format
-#| msgctxt "expenses type button"
-#| msgid "Expenses type"
 msgid "Expenses / %(title)s"
 msgstr "Išlaidos / %(title)s"
 
@@ -141,6 +147,12 @@ msgstr "Autorius"
 
 #: .\project\books\forms.py:49
 #: .\project\books\templates\books\includes\books_list.html:11
+#: .\project\debts\forms.py:53 .\project\debts\forms.py:102
+#: .\project\debts\forms.py:160 .\project\debts\forms.py:209
+#: .\project\debts\templates\debts\includes\borrows_list.html:13
+#: .\project\debts\templates\debts\includes\borrows_return_list.html:12
+#: .\project\debts\templates\debts\includes\lents_list.html:14
+#: .\project\debts\templates\debts\includes\lents_return_list.html:12
 #: .\project\expenses\forms.py:73
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:17
 #: .\project\incomes\forms.py:46
@@ -175,6 +187,10 @@ msgid "Book"
 msgstr "Knyga"
 
 #: .\project\books\templates\books\includes\books_list.html:31
+#: .\project\debts\templates\debts\includes\borrows_list.html:31
+#: .\project\debts\templates\debts\includes\borrows_return_list.html:26
+#: .\project\debts\templates\debts\includes\lents_list.html:32
+#: .\project\debts\templates\debts\includes\lents_return_list.html:26
 #: .\project\drinks\templates\drinks\includes\drinks_list.html:23
 #: .\project\drinks\templates\drinks\includes\drinks_target_list.html:18
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:45
@@ -186,6 +202,14 @@ msgstr "Redaguoti"
 
 #: .\project\books\templates\books\includes\books_list.html:34
 #: .\project\core\templates\core\includes\generic_delete_form.html:14
+#: .\project\debts\templates\debts\includes\borrows_delete_form.html:4
+#: .\project\debts\templates\debts\includes\borrows_list.html:36
+#: .\project\debts\templates\debts\includes\borrows_return_delete_form.html:4
+#: .\project\debts\templates\debts\includes\borrows_return_list.html:32
+#: .\project\debts\templates\debts\includes\lents_delete_form.html:4
+#: .\project\debts\templates\debts\includes\lents_list.html:38
+#: .\project\debts\templates\debts\includes\lents_return_delete_form.html:4
+#: .\project\debts\templates\debts\includes\lents_return_list.html:32
 #: .\project\drinks\templates\drinks\includes\drinks_list.html:26
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:48
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:33
@@ -194,8 +218,16 @@ msgid "Delete"
 msgstr "Trinti"
 
 #: .\project\books\templates\books\includes\books_list.html:44
+#: .\project\counts\templates\counts\includes\counts_list.html:34
+#: .\project\debts\templates\debts\includes\borrows_list.html:46
+#: .\project\debts\templates\debts\includes\borrows_return_list.html:42
+#: .\project\debts\templates\debts\includes\lents_list.html:48
+#: .\project\debts\templates\debts\includes\lents_return_list.html:42
 #: .\project\drinks\templates\drinks\includes\drinks_list.html:36
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:63
+#: .\project\incomes\templates\incomes\includes\incomes_list.html:43
+#: .\project\pensions\templates\pensions\includes\pensions_list.html:39
+#: .\project\savings\templates\savings\includes\savings_list.html:43
 #: .\project\transactions\templates\transactions\includes\table.html:42
 #, python-format
 msgid "No records in <b>%(year)s</b>."
@@ -352,6 +384,11 @@ msgstr "Pridėti"
 msgid "Search"
 msgstr "Ieškoti"
 
+#: .\project\debts\forms.py:49 .\project\debts\forms.py:156
+#: .\project\debts\templates\debts\includes\borrows_list.html:8
+#: .\project\debts\templates\debts\includes\borrows_return_list.html:9
+#: .\project\debts\templates\debts\includes\lents_list.html:9
+#: .\project\debts\templates\debts\includes\lents_return_list.html:9
 #: .\project\drinks\forms.py:42 .\project\expenses\forms.py:68
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:12
 #: .\project\incomes\forms.py:43
@@ -361,6 +398,77 @@ msgstr "Ieškoti"
 #: .\project\transactions\templates\transactions\includes\table.html:8
 msgid "Date"
 msgstr "Data"
+
+#: .\project\debts\forms.py:50 .\project\debts\forms.py:100
+#: .\project\debts\templates\debts\includes\borrows_list.html:9
+msgid "Borrower"
+msgstr "Skolininkas"
+
+#: .\project\debts\forms.py:52 .\project\debts\forms.py:101
+#: .\project\debts\forms.py:159 .\project\debts\forms.py:208
+#: .\project\debts\templates\debts\includes\borrows_list.html:10
+#: .\project\debts\templates\debts\includes\borrows_return_list.html:10
+#: .\project\debts\templates\debts\includes\lents_list.html:11
+#: .\project\debts\templates\debts\includes\lents_return_list.html:10
+msgid "Sum"
+msgstr "Suma"
+
+#: .\project\debts\forms.py:54 .\project\debts\forms.py:161
+#: .\project\debts\templates\debts\includes\borrows_list.html:11
+#: .\project\debts\templates\debts\includes\lents_list.html:12
+msgid "Returned"
+msgstr "Gražinta"
+
+#: .\project\debts\forms.py:73 .\project\debts\forms.py:180
+msgid "The name of the lender must be unique."
+msgstr "Skolintojo vardas turi būti unikalus."
+
+#: .\project\debts\forms.py:116 .\project\debts\forms.py:222
+msgid "The amount to be paid is more than the debt!"
+msgstr "Gražinama suma yra didesnė nei skola!"
+
+#: .\project\debts\forms.py:157 .\project\debts\forms.py:207
+#: .\project\debts\templates\debts\includes\lents_list.html:10
+msgid "Lender"
+msgstr "Skolintojas"
+
+#: .\project\debts\templates\debts\includes\borrows_form.html:5
+#: .\project\debts\templates\debts\index.html:15
+msgid "Borrow"
+msgstr "Paskolinta"
+
+#: .\project\debts\templates\debts\includes\borrows_return_form.html:5
+msgid "Dept repayment"
+msgstr "Skolos gražinimas"
+
+#: .\project\debts\templates\debts\includes\lents_form.html:5
+#: .\project\debts\templates\debts\index.html:30
+msgid "Lent"
+msgstr "Pasiskolinta"
+
+#: .\project\debts\templates\debts\includes\lents_return_form.html:5
+msgid "Debt repayment"
+msgstr "Skolos gražinimas"
+
+#: .\project\debts\templates\debts\index.html:17
+#: .\project\debts\templates\debts\index.html:33
+msgctxt "debt button"
+msgid "Debt"
+msgstr "Skolą"
+
+#: .\project\debts\templates\debts\index.html:48
+msgid "Returned borrow"
+msgstr "Gražino"
+
+#: .\project\debts\templates\debts\index.html:51
+#: .\project\debts\templates\debts\index.html:67
+msgctxt "sum button"
+msgid "Sum"
+msgstr "Sumą"
+
+#: .\project\debts\templates\debts\index.html:64
+msgid "Returned lent"
+msgstr "Gražinau"
 
 #: .\project\drinks\forms.py:43
 msgid "Quantity (0,5L beer bottle)"
@@ -759,6 +867,14 @@ msgstr "Įrašą"
 msgctxt "account button"
 msgid "Account"
 msgstr "Sąskaitą"
+
+#, fuzzy
+#~| msgid "Lent"
+#~ msgid "Lenter"
+#~ msgstr "Pasiskolinta"
+
+#~ msgid "Borrowed"
+#~ msgstr "Pasiskolinta"
 
 #~ msgctxt "savings button"
 #~ msgid "Savings"
