@@ -40,6 +40,6 @@
 
 {% else %}
 <div class="mx-auto text-center alert alert-warning py-2 mb-4">
-    <b>{{ request.user.year|title }}</b> metais įrašų nėra.
+    {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 </div>
 {% endif %}
