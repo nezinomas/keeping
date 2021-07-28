@@ -2,13 +2,13 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-27 16:42+0300\n"
-"PO-Revision-Date: 2021-07-27 16:42+0300\n"
+"POT-Creation-Date: 2021-07-28 09:58+0300\n"
+"PO-Revision-Date: 2021-07-28 09:58+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -48,16 +48,30 @@ msgstr "Sąskaitos"
 msgid "closed"
 msgstr "uždaryta"
 
+#: .\project\bookkeeping\lib\views_helpers.py:218
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:8
 msgid "Plan"
 msgstr "Planas"
 
+#: .\project\bookkeeping\lib\views_helpers.py:219
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:9
 msgid "Fact"
 msgstr "Faktas"
 
+#: .\project\bookkeeping\templates\bookkeeping\includes\detailed_table.html:12
+#: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:11
+#: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:15
+#: .\project\drinks\templates\drinks\includes\tbl_std_av.html:9
+msgid "Total"
+msgstr "Viso"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:14
+msgid "Day"
+msgstr "Diena"
+
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:14
 #: .\project\bookkeeping\templates\bookkeeping\month.html:111
+#: .\project\bookkeeping\views.py:130
 #: .\project\incomes\templates\incomes\includes\incomes_form.html:5
 #: .\project\templates\base.html:85
 msgid "Incomes"
@@ -78,7 +92,7 @@ msgid "Balance"
 msgstr "Balansas"
 
 #: .\project\bookkeeping\templates\bookkeeping\month.html:113
-#: .\project\templates\base.html:95
+#: .\project\bookkeeping\views.py:134 .\project\templates\base.html:95
 msgid "Savings"
 msgstr "Taupymas"
 
@@ -96,6 +110,13 @@ msgstr "Gėrtynės"
 #: .\project\bookkeeping\templates\bookkeeping\month.html:118
 msgid "Show other chart"
 msgstr "Rodyti kitą grafiką"
+
+#: .\project\bookkeeping\views.py:141
+#, python-format
+#| msgctxt "expenses type button"
+#| msgid "Expenses type"
+msgid "Expenses / %(title)s"
+msgstr "Išlaidos / %(title)s"
 
 #: .\project\books\forms.py:45
 #: .\project\books\templates\books\includes\books_list.html:12
@@ -445,10 +466,6 @@ msgstr "Dienų skaičius"
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:6
 msgid "Average Std Av consumption"
 msgstr "Vidutiniškai išgerta Std Av"
-
-#: .\project\drinks\templates\drinks\includes\tbl_std_av.html:9
-msgid "Total"
-msgstr "Viso"
 
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:10
 msgid "Per day"
