@@ -2,13 +2,13 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-28 12:55+0300\n"
-"PO-Revision-Date: 2021-07-28 12:51+0300\n"
+"POT-Creation-Date: 2021-07-28 16:41+0300\n"
+"PO-Revision-Date: 2021-07-28 16:41+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -81,12 +81,14 @@ msgstr "Diena"
 #: .\project\bookkeeping\templates\bookkeeping\month.html:111
 #: .\project\bookkeeping\views.py:130
 #: .\project\incomes\templates\incomes\includes\incomes_form.html:5
+#: .\project\plans\templates\plans\index.html:29
 #: .\project\templates\base.html:85
 msgid "Incomes"
 msgstr "Pajamos"
 
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:19
 #: .\project\bookkeeping\templates\bookkeeping\month.html:109
+#: .\project\plans\templates\plans\index.html:43
 #: .\project\templates\base.html:61
 msgid "Expenses"
 msgstr "Išlaidos"
@@ -100,7 +102,9 @@ msgid "Balance"
 msgstr "Balansas"
 
 #: .\project\bookkeeping\templates\bookkeeping\month.html:113
-#: .\project\bookkeeping\views.py:134 .\project\templates\base.html:95
+#: .\project\bookkeeping\views.py:134
+#: .\project\plans\templates\plans\index.html:68
+#: .\project\templates\base.html:95
 msgid "Savings"
 msgstr "Taupymas"
 
@@ -137,6 +141,7 @@ msgstr "Baigta skaityti"
 #: .\project\books\forms.py:47
 #: .\project\books\templates\books\includes\books_list.html:10
 #: .\project\expenses\forms.py:115
+#: .\project\plans\templates\plans\includes\generic_list.html:9
 msgid "Title"
 msgstr "Pavadinimas"
 
@@ -196,6 +201,7 @@ msgstr "Knyga"
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:45
 #: .\project\expenses\templates\expenses\includes\expenses_type_list.html:8
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:30
+#: .\project\plans\templates\plans\includes\generic_list.html:34
 #: .\project\transactions\templates\transactions\includes\table.html:29
 msgid "Edit"
 msgstr "Redaguoti"
@@ -213,6 +219,7 @@ msgstr "Redaguoti"
 #: .\project\drinks\templates\drinks\includes\drinks_list.html:26
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:48
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:33
+#: .\project\plans\templates\plans\includes\generic_list.html:39
 #: .\project\transactions\templates\transactions\includes\table.html:32
 msgid "Delete"
 msgstr "Trinti"
@@ -227,6 +234,7 @@ msgstr "Trinti"
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:63
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:43
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:39
+#: .\project\plans\templates\plans\includes\generic_list.html:46
 #: .\project\savings\templates\savings\includes\savings_list.html:43
 #: .\project\transactions\templates\transactions\includes\table.html:42
 #, python-format
@@ -372,6 +380,7 @@ msgstr "Įrašyti ir uždaryti"
 #: .\project\core\templates\core\includes\generic_formset.html:10
 #: .\project\core\templates\core\includes\generic_modal.html:4
 #: .\project\core\templates\core\includes\generic_modal.html:10
+#: .\project\plans\templates\plans\includes\copy_plans_form.html:12
 #: .\project\templates\modal_images.html:9
 msgid "Close"
 msgstr "Uždaryti"
@@ -746,6 +755,129 @@ msgctxt "income type button"
 msgid "Incomes type"
 msgstr "Pajamų rūšį"
 
+#: .\project\plans\forms.py:23
+msgid "Years"
+msgstr "Metai"
+
+#: .\project\plans\forms.py:63
+msgid "Income type"
+msgstr "Pajamų rūšis"
+
+#: .\project\plans\forms.py:131
+msgid "Saving type"
+msgstr "Taupymas"
+
+#: .\project\plans\forms.py:255
+msgid "At least one plan needs to be selected."
+msgstr "Reikia pažymėti nors vieną planą."
+
+#: .\project\plans\forms.py:269
+#, python-format
+msgid "%(year)s year already has plans."
+msgstr "%(year)s metai jau turi planus."
+
+#: .\project\plans\forms.py:311
+msgid "Copy from"
+msgstr "Kopijuoti iš"
+
+#: .\project\plans\forms.py:312
+msgid "Copy to"
+msgstr "Kopijuoti į"
+
+#: .\project\plans\forms.py:313
+#: .\project\plans\templates\plans\includes\incomes_plan_form.html:4
+msgid "Incomes plans"
+msgstr "Pajamų planai"
+
+#: .\project\plans\forms.py:314
+#: .\project\plans\templates\plans\includes\expenses_plan_form.html:4
+msgid "Expenses plans"
+msgstr "Išlaidų planai"
+
+#: .\project\plans\forms.py:315
+#: .\project\plans\templates\plans\includes\savings_plan_form.html:4
+msgid "Savings plans"
+msgstr "Taupymo planai"
+
+#: .\project\plans\forms.py:316
+#: .\project\plans\templates\plans\includes\days_plan_form.html:4
+msgid "Day plans"
+msgstr "Dienos planai"
+
+#: .\project\plans\forms.py:317
+msgid "Plans for additional necessary expenses"
+msgstr "Papildomų būtinų išlaidų planus"
+
+#: .\project\plans\lib\calc_day_sum.py:111
+msgid "Necessary expenses"
+msgstr "Būtinos išlaidos"
+
+#: .\project\plans\lib\calc_day_sum.py:112
+msgid "Remains for everyday"
+msgstr "Lieka kasdienybei"
+
+#: .\project\plans\lib\calc_day_sum.py:113
+msgid "Sum per day, max possible"
+msgstr "Suma dienai, max galima"
+
+#: .\project\plans\lib\calc_day_sum.py:114
+#: .\project\plans\templates\plans\includes\generic_list.html:18
+msgid "Residual"
+msgstr "Likutis"
+
+#: .\project\plans\models.py:76 .\project\plans\models.py:109
+#: .\project\plans\models.py:142 .\project\plans\models.py:172
+#: .\project\plans\models.py:203
+#, python-format
+msgid "%(year)s year already has %(title)s plan."
+msgstr "%(year)s metai jau turi %(title)s planą."
+
+#: .\project\plans\models.py:171
+msgctxt "plans day error"
+msgid "Day"
+msgstr "Dienos"
+
+#: .\project\plans\templates\plans\includes\days_plan_delete_form.html:4
+#: .\project\plans\templates\plans\includes\expenses_plan_delete_form.html:4
+#: .\project\plans\templates\plans\includes\incomes_plan_delete_form.html:4
+#: .\project\plans\templates\plans\includes\necessarys_plan_delete_form.html:4
+#: .\project\plans\templates\plans\includes\savings_plan_delete_form.html:4
+msgid "Delete plans"
+msgstr "Trinti planus"
+
+#: .\project\plans\templates\plans\includes\days_plan_list.html:4
+msgid "Daily"
+msgstr "Dienai"
+
+#: .\project\plans\templates\plans\includes\necessarys_plan_form.html:4
+#: .\project\plans\templates\plans\index.html:55
+msgid "Additional necessary expenses"
+msgstr "Papildomos būtinos išlaidos"
+
+#: .\project\plans\templates\plans\index.html:33
+msgid "Copy plans"
+msgstr "Kopijuoti planus"
+
+#: .\project\plans\templates\plans\index.html:34
+#: .\project\plans\templates\plans\index.html:46
+#: .\project\plans\templates\plans\index.html:58
+#: .\project\plans\templates\plans\index.html:72
+#: .\project\plans\templates\plans\index.html:86
+#: .\project\transactions\templates\transactions\index.html:19
+#: .\project\transactions\templates\transactions\index.html:33
+#: .\project\transactions\templates\transactions\index.html:47
+msgctxt "record button"
+msgid "Record"
+msgstr "Įrašą"
+
+#: .\project\plans\templates\plans\index.html:82
+msgid "Sum per day"
+msgstr "Suma dienai"
+
+#: .\project\plans\templates\plans\index.html:95
+msgid "Calculations"
+msgstr "Skaičiavimai"
+
 #: .\project\templates\403.html:5
 msgid "Access Denied"
 msgstr "Priėjimas negalimas"
@@ -856,17 +988,29 @@ msgstr "Pinigų pavedimas"
 msgid "Account &hArr; Account"
 msgstr "Sąskaita &rArr; Sąskaita"
 
-#: .\project\transactions\templates\transactions\index.html:19
-#: .\project\transactions\templates\transactions\index.html:33
-#: .\project\transactions\templates\transactions\index.html:47
-msgctxt "record button"
-msgid "Record"
-msgstr "Įrašą"
-
 #: .\project\transactions\templates\transactions\index.html:60
 msgctxt "account button"
 msgid "Account"
 msgstr "Sąskaitą"
+
+#~ msgid "%(title)s plan"
+#~ msgstr "%(title)s planas"
+
+#~ msgid "Additional necessary expenses plans"
+#~ msgstr "Papildomų būtinų išlaidų planai"
+
+#~ msgid "Delete plan"
+#~ msgstr "Trinti planus"
+
+#, fuzzy
+#~| msgid "Incomes plans"
+#~ msgid "Incomes plan"
+#~ msgstr "Pajamų planai"
+
+#, fuzzy
+#~| msgid "Delete incomes"
+#~ msgid "Delete incomes plan"
+#~ msgstr "Trinti pajamas"
 
 #, fuzzy
 #~| msgid "Lent"

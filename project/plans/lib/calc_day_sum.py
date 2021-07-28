@@ -4,6 +4,7 @@ from typing import Dict, List
 
 import pandas as pd
 from django.db.models import F
+from django.utils.translation import gettext as _
 
 from ...core.lib.date import monthlen, monthname, monthnames
 from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
@@ -107,10 +108,10 @@ class CalcDaySum():
     @property
     def plans_stats(self):
         dicts = [
-            dict({'type': 'Būtinos išlaidos'}, **self.expenses_necessary),
-            dict({'type': 'Lieka kasdienybei', **self.expenses_free}),
-            dict({'type': 'Suma dienai, max galima'}, **self.day_calced),
-            dict({'type': 'Likutis'}, **self.remains),
+            dict({'type': _('Necessary expenses')}, **self.expenses_necessary),
+            dict({'type': _('Remains for everyday'), **self.expenses_free}),
+            dict({'type': _('Sum per day, max possible')}, **self.day_calced),
+            dict({'type': _('Residual')}, **self.remains),
         ]
 
         # list of dictionaries convert to list of objects

@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 import pytest
+from django.utils.translation import activate
 
 from ..lib.calc_day_sum import CalcDaySum, CollectData
 
@@ -139,6 +140,8 @@ def test_plans_stats_list(data):
 
 
 def test_plans_stats_expenses_necessary(data):
+    activate('lt')
+
     actual = CalcDaySum(2020).plans_stats
 
     assert 'Būtinos išlaidos' == actual[0].type
@@ -147,6 +150,8 @@ def test_plans_stats_expenses_necessary(data):
 
 
 def test_plans_stats_expenses_free(data):
+    activate('lt')
+
     actual = CalcDaySum(2020).plans_stats
     assert 'Lieka kasdienybei' == actual[1].type
     assert 775.31 == round(actual[1].january, 2)
@@ -154,6 +159,8 @@ def test_plans_stats_expenses_free(data):
 
 
 def test_plans_stats_day_sum(data):
+    activate('lt')
+
     actual = CalcDaySum(2020).plans_stats
     assert 'Suma dienai' in actual[2].type
     assert 25.01 == round(actual[2].january, 2)
@@ -161,6 +168,8 @@ def test_plans_stats_day_sum(data):
 
 
 def test_plans_stats_remains(data):
+    activate('lt')
+
     actual = CalcDaySum(2020).plans_stats
     assert 'Likutis' == actual[3].type
     assert 0.31 == round(actual[3].january, 2)

@@ -1,3 +1,5 @@
+from django.utils.translation import pgettext
+from django.utils.translation import gettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -71,7 +73,7 @@ class IncomePlan(MonthAbstract):
         try:
             super().validate_unique()
         except ValidationError:
-            raise ValidationError(f'{self.year} metai jau turi {self.income_type.title} planą.')
+            raise ValidationError(_('%(year)s year already has %(title)s plan.') % ({'year': self.year, 'title': self.income_type.title}))
 
 
 # ----------------------------------------------------------------------------
@@ -104,7 +106,7 @@ class ExpensePlan(MonthAbstract):
         try:
             super().validate_unique()
         except ValidationError:
-            raise ValidationError(f'{self.year} metai jau turi {self.expense_type.title} planą.')
+            raise ValidationError(_('%(year)s year already has %(title)s plan.') % ({'year': self.year, 'title': self.expense_type.title}))
 
 
 # ----------------------------------------------------------------------------
@@ -137,7 +139,7 @@ class SavingPlan(MonthAbstract):
         try:
             super().validate_unique()
         except ValidationError:
-            raise ValidationError(f'{self.year} metai jau turi {self.saving_type.title} planą.')
+            raise ValidationError(_('%(year)s year already has %(title)s plan.') % ({'year': self.year, 'title': self.saving_type.title}))
 
 
 # ----------------------------------------------------------------------------
@@ -166,7 +168,9 @@ class DayPlan(MonthAbstract):
         try:
             super().validate_unique()
         except ValidationError:
-            raise ValidationError(f'{self.year} metai jau turi Dienos planą.')
+            title = pgettext('plans day error', 'Day')
+            raise ValidationError(_('%(year)s year already has %(title)s plan.') % ({'year': self.year, 'title': title}))
+
 
 
 # ----------------------------------------------------------------------------
@@ -196,4 +200,4 @@ class NecessaryPlan(MonthAbstract):
         try:
             super().validate_unique()
         except ValidationError:
-            raise ValidationError(f'{self.year} metai jau turi {self.title} planą.')
+            raise ValidationError(_('%(year)s year already has %(title)s plan.') % ({'year': self.year, 'title': self.title}))
