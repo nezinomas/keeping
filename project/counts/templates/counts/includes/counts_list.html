@@ -1,10 +1,12 @@
+{% load i18n %}
+
 {% if items %}
 
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
-            <th>Data</th>
-            <th>Kiekis</th>
+            <th>{% translate 'Date' %}</th>
+            <th>{% translate 'Quantity' %}</th>
             <th colspan="2"></th>
         </tr>
     </thead>
@@ -18,10 +20,10 @@
             <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ item.quantity }}</td>
             <td class="w-edit">
-                <a role="button" data-url="{{ url_upd }}" class=" js-create edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+                <a role="button" data-url="{{ url_upd }}" class=" js-create edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></a>
             </td>
             <td class="w-delete">
-                <a role="button" data-url="{{ url_dlt }}" class="js-delete trash" title="Delete"><i class="bi bi-trash-fill"></i></a>
+                <a role="button" data-url="{{ url_dlt }}" class="js-delete trash" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
         {% endfor %}
@@ -31,7 +33,7 @@
 {% else %}
 
 <div class="mx-auto text-center alert alert-warning py-2">
-    <b>{{ request.user.year|title }}</b> metais įrašų nėra.
+    {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 </div>
 
 {% endif %}

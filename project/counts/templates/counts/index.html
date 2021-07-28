@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{% load i18n %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
@@ -19,9 +19,9 @@
 
 <div class="row my-2">
     <div class="col-sm-3 text-start">
-        <a href="{% url url_index %}" class="btn btn-sm {% if '/'|add:app_name|add:'/' == request.path %}btn-info{% else %}btn-light{% endif %}">Grafikai</a>
-        <a href="{% url url_list %}" class="btn btn-sm {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">Duomenys</a>
-        <a href="{% url url_history %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">Istorija</a>
+        <a href="{% url url_index %}" class="btn btn-sm {% if '/'|add:app_name|add:'/' == request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Charts' %}</a>
+        <a href="{% url url_list %}" class="btn btn-sm {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Data' %}</a>
+        <a href="{% url url_history %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
     </div>
 
     <div class="col text-center" id="info_row">
@@ -29,7 +29,7 @@
     </div>
 
     <div class="col-sm-3 text-end">
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url url_new %}"><i class="bi bi-plus"></i> Pridėti</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url url_new %}"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
     </div>
 </div>
 

@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
@@ -62,7 +63,7 @@ class History(IndexMixin):
         context = super().get_context_data(**kwargs)
         context.update({
             'tab': 'history',
-            'chart_weekdays': r.chart_weekdays('Savaitės dienos'),
+            'chart_weekdays': r.chart_weekdays(_('Days of week')),
             'chart_years': r.chart_years(),
             'chart_histogram': r.chart_histogram(),
             **r.context_url_names()
