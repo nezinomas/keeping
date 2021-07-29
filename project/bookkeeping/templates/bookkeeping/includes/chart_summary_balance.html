@@ -1,4 +1,9 @@
+{% load i18n %}
+
+{% translate 'Incomes/Expenses' as chart_title %}
+
 <div id="container-balance-summary"></div>
+
 <script>
     Highcharts.setOptions({
         lang: {
@@ -11,7 +16,7 @@
             marginBottom: 67,
         },
         title: {
-            text: 'Pajamos/Išlaidos',
+            text: '{{ chart_title }}',
         },
         legend: {
             layout: 'horizontal',
@@ -69,8 +74,8 @@
             }
         },
         series: [
-            {'name': 'Pajamos', 'data': {{ balance_income_data|safe }}, color: '#77933c', 'type': 'area'},
-            {'name': 'Išlaidos', 'data': {{ balance_expense_data|safe }}, color: '#c0504d', 'type': 'area'},
+            {'name': '{% translate "Incomes" %}', 'data': {{ balance_income_data|safe }}, color: '#77933c', 'type': 'area'},
+            {'name': '{% translate "Expenses" %}', 'data': {{ balance_expense_data|safe }}, color: '#c0504d', 'type': 'area'},
         ]
     });
 </script>

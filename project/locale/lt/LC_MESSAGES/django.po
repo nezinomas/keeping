@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-28 17:13+0300\n"
-"PO-Revision-Date: 2021-07-28 17:13+0300\n"
+"POT-Creation-Date: 2021-07-29 10:08+0300\n"
+"PO-Revision-Date: 2021-07-29 10:09+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -66,6 +66,40 @@ msgstr "Planas"
 msgid "Fact"
 msgstr "Faktas"
 
+#: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_balance.html:3
+msgid "Incomes/Expenses"
+msgstr "Pajamos/Išlaidos"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_balance.html:77
+#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:14
+#: .\project\bookkeeping\templates\bookkeeping\month.html:111
+#: .\project\bookkeeping\views.py:130
+#: .\project\incomes\templates\incomes\includes\incomes_form.html:5
+#: .\project\plans\templates\plans\index.html:29
+#: .\project\templates\base.html:85
+msgid "Incomes"
+msgstr "Pajamos"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_balance.html:78
+#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:19
+#: .\project\bookkeeping\templates\bookkeeping\month.html:109
+#: .\project\plans\templates\plans\index.html:43
+#: .\project\templates\base.html:61
+msgid "Expenses"
+msgstr "Išlaidos"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_salary.html:16
+msgid "Salary"
+msgstr "Atlyginimas"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_salary.html:93
+msgid "Average salary"
+msgstr "Vidutinis atlyginimas"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_salary.html:98
+msgid "Average incomes"
+msgstr "Vidutinės pajamos"
+
 #: .\project\bookkeeping\templates\bookkeeping\includes\detailed_table.html:12
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:11
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:15
@@ -76,22 +110,6 @@ msgstr "Viso"
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:14
 msgid "Day"
 msgstr "Diena"
-
-#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:14
-#: .\project\bookkeeping\templates\bookkeeping\month.html:111
-#: .\project\bookkeeping\views.py:130
-#: .\project\incomes\templates\incomes\includes\incomes_form.html:5
-#: .\project\plans\templates\plans\index.html:29
-#: .\project\templates\base.html:85
-msgid "Incomes"
-msgstr "Pajamos"
-
-#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:19
-#: .\project\bookkeeping\templates\bookkeeping\month.html:109
-#: .\project\plans\templates\plans\index.html:43
-#: .\project\templates\base.html:61
-msgid "Expenses"
-msgstr "Išlaidos"
 
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:24
 msgid "Money for a day"
