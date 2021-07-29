@@ -5,7 +5,6 @@ from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
-from ...core.lib.transalation import month_names
 from ...counts.lib.stats import Stats as CountStats
 from .. import models
 from .drinks_stats import DrinkStats, max_beer_bottles, std_av
@@ -54,10 +53,7 @@ class RenderContext():
     def chart_quantity(self) -> str:
         r = render_to_string(
             'drinks/includes/chart_quantity.html',
-            {
-                'data': self._DrinkStats.quantity,
-                'Quantity': _('Quantity'),
-                **month_names()},
+            {'data': self._DrinkStats.quantity},
             self._request
         )
         return r
@@ -70,9 +66,6 @@ class RenderContext():
                 'avg': self._avg,
                 'avg_label_y': self._avg_label_position(self._avg, self._target),
                 'target_label_y': self._target_label_position(self._avg, self._target),
-                'limit': _('Limit'),
-                'per_day_title': _('Alcohol consumption per day, ml'),
-                **month_names(),
             },
             self._request
         )

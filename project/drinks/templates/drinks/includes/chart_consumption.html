@@ -1,3 +1,6 @@
+{% load i18n %}
+{% load charts %}
+
 <div id="chart_consumsion_container"></div>
 <script>
     Highcharts.setOptions({
@@ -27,20 +30,7 @@
             lineWidth: 2,
             gridLineWidth: 1,
             tickmarkPlacement: 'on',
-            categories: [
-                '{{ January|title }}',
-                '{{ February|title }}',
-                '{{ March|title }}',
-                '{{ April|title }}',
-                '{{ May|title }}',
-                '{{ June|title }}',
-                '{{ July|title }}',
-                '{{ August|title }}',
-                '{{ September|title }}',
-                '{{ October|title }}',
-                '{{ November|title }}',
-                '{{ December|title }}'
-            ],
+            categories: {% months %},
             labels: {
                 style: {
                     fontSize: '10px',
@@ -60,7 +50,7 @@
                 width: 2,
                 value: {{ target|safe }},
                 label: {
-                    text: '{{ limit }}: {{ target|safe }}',
+                    text: '{% translate "Limit" %}: {{ target|safe }}',
                     align: 'right',
                     x: -5,
                     y: {{ target_label_y|safe }},
@@ -105,14 +95,12 @@
         },
         series: [{
             type: 'area',
-            name: '{{ per_day_title }}',
+            name: '{% translate "Alcohol consumption per day, ml" %}',
             showInLegend: false,
             data: {{ data|safe }},
             color: '#c0504d',
                 dataLabels: {
                 enabled: true,
-                // rotation: -90,
-                // y: 20,
                 color: '#000',
                 align: 'left',
                 format: '{point.y:.0f}',

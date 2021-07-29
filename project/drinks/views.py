@@ -3,7 +3,6 @@ from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import years
-from ..core.lib.transalation import month_names
 from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                  DispatchAjaxMixin, IndexMixin, ListMixin,
@@ -32,7 +31,6 @@ class HistoricalData(IndexMixin):
         context = {
             'serries': chart_serries,
             'chart_container_name': 'history_chart',
-            **month_names(),
         }
         rendered = render_to_string(self.template_name, context, request)
 
@@ -54,7 +52,6 @@ class Compare(AjaxSearchMixin):
             context = {
                 'serries': chart_serries,
                 'chart_container_name': 'compare_chart',
-                **month_names(),
             }
             html = render_to_string(template, context, self.request)
 
@@ -112,9 +109,6 @@ class Summary(IndexMixin):
             'drinks_data_ml': [x['per_day'] for x in qs],
             'drinks_data_alcohol': [x['qty'] * 0.025 for x in qs],
             'drinks_cnt': len(drink_years) - 1.5,
-            'chart_title': _('Drinks'),
-            'per_day': _('Average per day, ml'),
-            'per_year': _('Pure alcohol per year, L'),
         })
         return context
 

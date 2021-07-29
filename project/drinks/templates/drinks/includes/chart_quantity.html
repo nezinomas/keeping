@@ -1,4 +1,6 @@
 {% load i18n %}
+{% load charts %}
+
 <div id="chart_quantity_container"></div>
 <script>
     $(function () {
@@ -13,20 +15,7 @@
         xAxis: {
             lineColor: '#000',
             lineWidth: 2,
-            categories: [
-                '{{ January|title }}',
-                '{{ February|title }}',
-                '{{ March|title }}',
-                '{{ April|title }}',
-                '{{ May|title }}',
-                '{{ June|title }}',
-                '{{ July|title }}',
-                '{{ August|title }}',
-                '{{ September|title }}',
-                '{{ October|title }}',
-                '{{ November|title }}',
-                '{{ December|title }}'
-            ],
+            categories: {% months %},
             labels: {
                 style: {
                     fontSize: '10px',
@@ -66,7 +55,7 @@
             }
         },
         series: [{
-            name: '{{ Quantity }}',
+            name: '{% translate "Quantity" %}',
             color: 'rgba(70, 171, 157,0.65)',
             borderColor: 'rgba(70, 171, 157, 1)',
             data: {{ data|safe }},

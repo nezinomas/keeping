@@ -1,3 +1,6 @@
+{% load i18n %}
+{% load charts %}
+
 <div id="chart_summary_container"></div>
 <script>
     Highcharts.setOptions({
@@ -11,7 +14,7 @@
             marginBottom: 67,
         },
         title: {
-            text: '{{ chart_title }}',
+            text: '{% translate "Drinks" %}',
         },
         legend: {
             layout: 'horizontal',
@@ -78,7 +81,7 @@
                 },
         },
         series: [{
-            name: '{{ per_day }}',
+            name: '{% translate "Average per day, ml" %}',
             yAxis: 0,
             data: {{ drinks_data_ml|safe }},
             color: '#46ab9d',
@@ -96,7 +99,7 @@
             enableMouseTracking: false,
             fillOpacity: 0.65,
         }, {
-            name: '{{ per_year }}',
+            name: '{% translate "Pure alcohol per year, L" %}',
             yAxis: 1,
             data: {{ drinks_data_alcohol|safe }},
             color: '#d13572',

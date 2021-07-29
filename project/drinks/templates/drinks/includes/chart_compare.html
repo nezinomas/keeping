@@ -1,3 +1,5 @@
+{% load charts %}
+
 <div id="{{ chart_container_name }}"></div>
 <script>
     Highcharts.setOptions({
@@ -27,20 +29,7 @@
             lineWidth: 2,
             gridLineWidth: 1,
             tickmarkPlacement: 'on',
-            categories: [
-                '{{ January|title }}',
-                '{{ February|title }}',
-                '{{ March|title }}',
-                '{{ April|title }}',
-                '{{ May|title }}',
-                '{{ June|title }}',
-                '{{ July|title }}',
-                '{{ August|title }}',
-                '{{ September|title }}',
-                '{{ October|title }}',
-                '{{ November|title }}',
-                '{{ December|title }}'
-            ],
+            categories: {% months %},
             labels: {
                 style: {
                     fontSize: '10px',
