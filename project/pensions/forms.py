@@ -3,6 +3,7 @@ from datetime import datetime
 from bootstrap_datepicker_plus import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.utils.translation import gettext as _
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
@@ -38,11 +39,11 @@ class PensionForm(forms.ModelForm):
         # overwrite ForeignKey saving_type queryset
         self.fields['pension_type'].queryset = PensionType.objects.items()
 
-        self.fields['date'].label = 'Data'
-        self.fields['price'].label = 'Suma'
-        self.fields['fee'].label = 'Mokestis'
-        self.fields['remark'].label = 'Pastaba'
-        self.fields['pension_type'].label = 'Fondas'
+        self.fields['date'].label = _('Date')
+        self.fields['price'].label = _('Sum')
+        self.fields['fee'].label = _('Fee')
+        self.fields['remark'].label = _('Remark')
+        self.fields['pension_type'].label = _('Fund')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -53,7 +54,7 @@ class PensionForm(forms.ModelForm):
         fee = cleaned_data.get('fee')
 
         if not price and not fee:
-            _msg = 'Laukeliai `Suma` ir `Mokestis` abu negali būti tušti.'
+            _msg = _('The `Sum` and `Fee` fields cannot both be empty.')
 
             self.add_error('price', _msg)
             self.add_error('fee', _msg)
@@ -73,7 +74,7 @@ class PensionTypeForm(forms.ModelForm):
         self.fields['journal'].disabled = True
         self.fields['journal'].widget = forms.HiddenInput()
 
-        self.fields['title'].label = 'Fondo pavadinimas'
+        self.fields['title'].label = _('Fund title')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

@@ -1,6 +1,7 @@
 from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
@@ -31,8 +32,8 @@ class SavingTypeForm(forms.ModelForm):
         self.fields['journal'].disabled = True
         self.fields['journal'].widget = forms.HiddenInput()
 
-        self.fields['title'].label = 'Fondas'
-        self.fields['closed'].label = 'Uždaryta'
+        self.fields['title'].label = _('Fund')
+        self.fields['closed'].label = _('Closed')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -70,12 +71,12 @@ class SavingForm(forms.ModelForm):
         self.fields['saving_type'].queryset = SavingType.objects.items()
         self.fields['account'].queryset = Account.objects.items()
 
-        self.fields['date'].label = 'Data'
-        self.fields['account'].label = 'Iš sąskaitos'
-        self.fields['price'].label = 'Suma'
-        self.fields['fee'].label = 'Mokesčiai'
-        self.fields['remark'].label = 'Pastaba'
-        self.fields['saving_type'].label = 'Fondas'
+        self.fields['date'].label = _('Date')
+        self.fields['account'].label = _('From account')
+        self.fields['price'].label = _('Sum')
+        self.fields['fee'].label = _('Fees')
+        self.fields['remark'].label = _('Remark')
+        self.fields['saving_type'].label = _('Fund')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

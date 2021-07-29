@@ -12,7 +12,7 @@
                 {% for item in items %}
                 {% url 'savings:savings_type_update' item.id as url_update %}
                 <div class="list-group-item" data-url="{{ url_update }}">
-                    {% if item.closed %}<s>{{ item.title }}</s> <i>uždaryta {{ item.closed|safe }}</i>{% else %}{{ item.title }}{% endif %}
+                    {% if item.closed %}<s>{{ item.title }}</s> <i>{% translate 'closed' %} {{ item.closed|safe }}</i>{% else %}{{ item.title }}{% endif %}
                     <span class="edit-icon">
                         <button type="button" data-url="{{ url_update }}" class="btn btn-super-sm edit js-create"><i class="bi bi-pencil-fill"></i></button>
                     </span>
