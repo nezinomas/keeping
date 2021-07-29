@@ -90,7 +90,7 @@ class DeleteAjaxMixin(
 
         if pk:
             context.update({
-                'action': 'delete',
+                'action': _('delete'),
                 # 'url': reverse(f'{app}:{model}_delete', kwargs={'pk': pk}),
             })
 
