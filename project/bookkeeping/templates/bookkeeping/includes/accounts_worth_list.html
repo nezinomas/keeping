@@ -1,18 +1,19 @@
 {% load table_cell %}
+{% load i18n %}
 
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
-            <th colspan="7">Sąskaitos</th>
+            <th colspan="7">{% translate 'Accounts' %}</th>
         </tr>
         <tr>
-            <th class="text-start">Sąskaita</th>
+            <th class="text-start">{% translate 'Account' %}</th>
             <th>01.01</th>
-            <th>Pajamos</th>
-            <th>Išlaidos</th>
-            <th>Likutis</th>
-            <th class="text-end bl">Turiu</th>
-            <th>Delta</th>
+            <th>{% translate 'Incomes' %}</th>
+            <th>{% translate 'Expenses' %}</th>
+            <th>{% translate 'Balance' %}</th>
+            <th class="text-end bl">{% translate 'Have' %}</th>
+            <th>{% translate 'Delta' %}</th>
 
         </tr>
     </thead>
@@ -23,7 +24,7 @@
                 <div style="position:relative;">
                     {{ item.title }}
                     <span style="position: absolute; top: -0.5px; right: 5px; display: block;">
-                        <button type="button" data-url="{% url 'bookkeeping:accounts_worth_reset' item.account_pk %}" class="btn btn-super-sm btn-outline-info reset">Reset</button>
+                        <button type="button" data-url="{% url 'bookkeeping:accounts_worth_reset' item.account_pk %}" class="btn btn-super-sm btn-outline-info reset">{% translate 'Reset' %}</button>
                     </span>
                 </div>
             </td>
@@ -38,7 +39,7 @@
     </tbody>
     <tfoot>
         <tr  class="total">
-            <th class="text-start">Viso</th>
+            <th class="text-start">{% translate 'Total' %}</th>
             {% cell total_row.past tag="th" %}
             {% cell total_row.incomes tag="th" %}
             {% cell total_row.expenses tag="th" %}

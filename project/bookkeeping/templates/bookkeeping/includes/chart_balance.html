@@ -1,3 +1,6 @@
+{% load charts %}
+{% load i18n %}
+
 <div id="container-for-balance"></div>
 <script>
     Highcharts.setOptions({
@@ -28,20 +31,7 @@
             lineWidth: 2,
             gridLineWidth: 1,
             tickmarkPlacement: 'on',
-            categories: [
-                'Sausis',
-                'Vasaris',
-                'Kovas',
-                'Balandis',
-                'Gegužė',
-                'Birželis',
-                'Liepa',
-                'Rugpjūtis',
-                'Rugsėjis',
-                'Spalis',
-                'Lapkritis',
-                'Gruodis'
-            ],
+            categories: {% months %},
             labels: {
                 style: {
                     fontSize: '10px',
@@ -83,12 +73,12 @@
         },
         series: [{
             type: 'area',
-            name: 'Pajamos',
+            name: '{% translate "Incomes" %}',
             data: {{ i }},
             color: '#77933c'
         }, {
             type: 'area',
-            name: 'Išlaidos',
+            name: '{% translate "Expenses" %}',
             data: {{ e }},
             color: '#c0504d'
         }]

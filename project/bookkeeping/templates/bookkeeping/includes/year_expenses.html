@@ -1,15 +1,17 @@
-{% load table_cell %}{% load template_filters %}
+{% load table_cell %}
+{% load template_filters %}
+{% load i18n %}
 
 <table class="table table-striped table-hover table-sm stats">
     <thead class="thead-light">
         <tr class="top">
-            <th colspan="{{ categories|length|add:1 }}">Išlaidų statistika</th>
+            <th colspan="{{ categories|length|add:1 }}">{% translate 'Expenses statistic' %}</th>
             <th class="bl top"></th>
         </tr>
         <tr>
             <th class="text-start w5">{{ year|title }}</th>
             {% for cat in categories %}<th>{{ cat }}</th>{% endfor %}
-            <th class="bl">Viso</th>
+            <th class="bl">{% translate 'Total' %}</th>
         </tr>
     </thead>
     <tbody>
@@ -30,7 +32,7 @@
             {% cell avg_row.total tag='th' css_class="bl" %}
         </tr>
         <tr class="total">
-            <th class="text-start">Viso</th>
+            <th class="text-start">{% translate 'Total' %}</th>
             {% for cat in categories %}{% cell total_row|get_item:cat tag='th' %}{% endfor %}
             {% cell total_row.total tag='th' css_class="bl" %}
         </tr>

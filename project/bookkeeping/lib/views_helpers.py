@@ -189,7 +189,7 @@ class MonthHelper():
             year=year,
             month=month,
             expenses=qs_expenses,
-            **{'Taupymas': qs_savings}
+            **{_('Savings'): qs_savings}
         )
 
         self._day_plans = CalcDaySum(year)
@@ -199,15 +199,15 @@ class MonthHelper():
             month=month,
             month_df=self._day.expenses,
             exceptions=self._day.exceptions,
-            necessary=necessary_expense_types('Taupymas'),
+            necessary=necessary_expense_types(_('Savings')),
             plan_day_sum=get_val(self._day_plans.day_input, month),
             plan_free_sum=get_val(self._day_plans.expenses_free, month),
         )
 
-        self._expenses_types = expense_types('Taupymas')
+        self._expenses_types = expense_types(_('Savings'))
 
     def render_chart_targets(self):
-        targets = self._day_plans.targets(self._month, 'Taupymas')
+        targets = self._day_plans.targets(self._month, _('Savings'))
         (categories, data_target, data_fact) = self._day.chart_targets(
             self._expenses_types, targets)
 
@@ -215,8 +215,6 @@ class MonthHelper():
             'chart_targets_categories': categories,
             'chart_targets_data_target': data_target,
             'chart_targets_data_fact': data_fact,
-            'plan_title': _('Plan'),
-            'fact_title': _('Fact'),
         }
 
         return render_to_string(
@@ -330,7 +328,7 @@ class IndexHelper():
         start = self._YearBalance.amount_start
         end = self._YearBalance.amount_end
         context = {
-            'title': ['Metų pradžioje', 'Metų pabaigoje', 'Metų balansas'],
+            'title': [_('Start of year'), _('End of year'), _('Year balance')],
             'data': [start, end, (end - start)],
             'highlight': [False, False, True],
         }
@@ -397,7 +395,7 @@ class IndexHelper():
         total_row = sum_all(self._fund)
 
         context = {
-            'title': 'Fondai',
+            'title': _('Funds'),
             'items': self._fund,
             'total_row': total_row,
             'percentage_from_incomes': (
@@ -430,7 +428,7 @@ class IndexHelper():
         add_latest_check_key(PensionWorth, self._pension)
 
         context = {
-            'title': 'Pensija',
+            'title': _('Pensions'),
             'items': self._pension,
             'total_row': sum_all(self._pension),
         }
@@ -459,7 +457,7 @@ class IndexHelper():
             )
 
         if journal.unnecessary_savings:
-            unnecessary.append('Taupymas')
+            unnecessary.append(_('Savings'))
             savings = Saving.objects.last_months()
 
         avg_expenses, cut_sum = (
@@ -503,14 +501,14 @@ class IndexHelper():
         wealth = wealth + sum_col(self._pension, 'market_value')
 
         context = {
-            'title': ['Pinigai', 'Turtas'],
+            'title': [_('Money'), _('Wealth')],
             'data': [money, wealth],
         }
         return self._render_info_table(context)
 
     def render_averages(self):
         context = {
-            'title': ['Vidutinės pajamos', 'Vidutinės išlaidos'],
+            'title': [_('Average incomes'), _('Average expenses')],
             'data': [self._YearBalance.avg_incomes, self._YearBalance.avg_expenses],
         }
         return self._render_info_table(context)
@@ -522,7 +520,7 @@ class IndexHelper():
 
         if borrow:
             context = {
-                'title': ['Paskolinau', 'Gražino'],
+                'title': [_('Borrow'), _('Borrow return')],
                 'data': [borrow, borrow_return],
             }
             return self._render_info_table(context)
@@ -536,7 +534,7 @@ class IndexHelper():
 
         if lent:
             context = {
-                'title': ['Pasiskolinau', 'Gražinau'],
+                'title': [_('Lent'), _('Lent return')],
                 'data': [lent, lent_return],
             }
             return self._render_info_table(context)

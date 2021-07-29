@@ -1,26 +1,28 @@
 {% load table_cell %}
+{% load i18n %}
+
 <table class="table table-striped table-hover table-sm stats">
     <thead class="thead-light">
         <tr class="top">
-            <th colspan="4">Balansas</th>
-            <th colspan="2" class="bl br">Taupymas</th>
-            <th colspan="4" class="bl br toggleDisplay">Skolos</th>
+            <th colspan="4">{% translate 'Balance' %}</th>
+            <th colspan="2" class="bl br">{% translate 'Savings' %}</th>
+            <th colspan="4" class="bl br toggleDisplay">{% translate 'Debts' %}</th>
             <th class="text-end text-nowrap">
-                <button onclick="toggleDebts()" id="toggle_debts" class="btn btn-super-sm" style="font-weight: bold; color: #0d6efd; padding-right: 0!important;">Rodyti skolas</button>
+                <button onclick="toggleDebts()" id="toggle_debts" class="btn btn-super-sm" style="font-weight: bold; color: #0d6efd; padding-right: 0!important;">{% translate 'Show debts' %}</button>
             </th>
         </tr>
         <tr>
             <th class="text-start w5">{{ year|title }}</th>
-            <th>Pajamos</th>
-            <th>Išlaidos</th>
-            <th>Balansas</th>
-            <th class="bl">Investuota</th>
-            <th class="br">Parduota</th>
-            <th class="bl toggleDisplay">Paskolinau</th>
-            <th class="toggleDisplay">Gražino</th>
-            <th class="toggleDisplay">Pasiskolinau</th>
-            <th class="br toggleDisplay">Gražinau</th>
-            <th class="text-nowrap">Pinigų srautas</th>
+            <th>{% translate 'Incomes' %}</th>
+            <th>{% translate 'Expenses' %}</th>
+            <th>{% translate 'Balance' %}</th>
+            <th class="bl">{% translate 'Invested' %}</th>
+            <th class="br">{% translate 'Sold' %}</th>
+            <th class="bl toggleDisplay">{% translate 'Borrow' %}</th>
+            <th class="toggleDisplay">{% translate 'Borrow return' %}</th>
+            <th class="toggleDisplay">{% translate 'Lent' %}</th>
+            <th class="br toggleDisplay">{% translate 'Lent return' %}</th>
+            <th class="text-nowrap">{% translate 'Money flow' %}</th>
         </tr>
     </thead>
     <tbody>
@@ -55,7 +57,7 @@
             <th><b>Metų gale</b></th>
         </tr>
         <tr class="total">
-            <th class="text-start">Viso</th>
+            <th class="text-start">{% translate 'Total' %}</th>
             {% cell total_row.incomes tag='th' %}
             {% cell total_row.expenses tag='th' %}
             {% cell total_row.balance tag='th' highlight_value=True %}
@@ -79,11 +81,11 @@
         $(".table .toggleDisplay").toggleClass("in");
 
         var btn = document.getElementById('toggle_debts');
-        if (btn.textContent === 'Rodyti skolas') {
-            btn.textContent = 'Slėpti skolas'
+        if (btn.textContent === '{% translate "Show debts" %}') {
+            btn.textContent = '{% translate "Hide debts" %}'
         }
         else {
-            btn.textContent = 'Rodyti skolas'
+            btn.textContent = '{% translate "Show debts" %}'
         }
     }
 </script>

@@ -27,7 +27,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <th class="text-start">Viso</th>
+            <th class="text-start">{% translate 'Total' %}</th>
             {% for i in months %}{% with total_row|get_sum_by_month:i as sum %}{% cell sum tag='th' %}{% endwith %}{% endfor %}
             <th>{{ total }}</th>
         </tr>

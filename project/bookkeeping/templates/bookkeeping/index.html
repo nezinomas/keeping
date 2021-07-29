@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load i18n %}
+
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
@@ -20,13 +22,13 @@
 <div class="row my-4">
     <div class="col-lg-12">
         {% url 'bookkeeping:accounts_worth_new' as url_accounts %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="bi bi-plus"></i> Sąskaitų faktas</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="bi bi-plus"></i> {% translate 'Accounts fact' %}</button>
         {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="bi bi-plus"></i> Fondų faktas</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="bi bi-plus"></i> {% translate 'Funds fact' %}</button>
         {% url 'bookkeeping:pensions_worth_new' as url_pensions_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions_new }}"><i class="bi bi-plus"></i> Pensijos faktas</button>
-        <a class="btn btn-sm btn-outline-secondary" href="{% url 'core:regenerate_balances_current_year' year %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Bus atnaujintas šių metų balansas."><i class="bi bi-arrow-repeat"></i> Atnaujinti {{ year|safe }} balansus</a>
-        <a class="btn btn-sm btn-outline-danger" href="{% url 'core:regenerate_balances' %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Bus atnaujinti visų metų balansai."><i class="bi bi-arrow-repeat"></i> Atnaujinti balansus</a>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions_new }}"><i class="bi bi-plus"></i> {% translate 'Pensions fact' %}</button>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'core:regenerate_balances_current_year' year %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'The balance for this year will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% blocktranslate with year=year|safe %}Update {{ year }} balance</a>.{% endblocktranslate %}
+        <a class="btn btn-sm btn-outline-danger" href="{% url 'core:regenerate_balances' %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</a>
     </div>
 </div>
 
