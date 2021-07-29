@@ -1,5 +1,5 @@
 {% load i18n %}
-<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}">
+<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ form_action }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}">
     {% csrf_token %}
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>

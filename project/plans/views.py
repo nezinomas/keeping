@@ -157,7 +157,8 @@ def copy_plans(request):
     context = {
         'title': _('Copy plans'),
         'form': form,
-        'action': _('insert'),
+        'submit_button': _('Insert'),
+        'from_action': 'insert',
         'url': reverse('plans:copy_plans'),
     }
 

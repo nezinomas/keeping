@@ -9,6 +9,7 @@ def generic_formset(context, title, update_container):
         'title': title,
         'update_container': update_container,
         'formset': context['formset'],
-        'action': context['action'],
+        'from_action': context['from_action'],
+        'submit_button': context.get('submit_button'),
         'url': context['url'],
     }

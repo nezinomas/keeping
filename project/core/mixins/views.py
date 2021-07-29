@@ -52,7 +52,8 @@ class CreateAjaxMixin(
         model = H.model_plural_name(self)
 
         context = super().get_context_data(**kwargs)
-        context['action'] = _('insert')
+        context['submit_button'] = _('Insert')
+        context['form_action'] = 'insert'
         context['url'] = reverse(f'{app}:{model}_new')
 
         return context
@@ -69,8 +70,8 @@ class UpdateAjaxMixin(
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'action': _('update'),
-            # 'url': reverse(f'{app}:{model}_update', kwargs={'pk': self.object.pk}),
+            'submit_button': _('Update'),
+            'form_action': 'update'
         })
 
         return context
@@ -90,8 +91,8 @@ class DeleteAjaxMixin(
 
         if pk:
             context.update({
-                'action': _('delete'),
-                # 'url': reverse(f'{app}:{model}_delete', kwargs={'pk': pk}),
+                'submit_button': _('Delete'),
+                'form_action': 'delete'
             })
 
         return context

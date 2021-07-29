@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-29 13:16+0300\n"
-"PO-Revision-Date: 2021-07-29 13:13+0300\n"
+"POT-Creation-Date: 2021-07-29 14:36+0300\n"
+"PO-Revision-Date: 2021-07-29 14:34+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -470,6 +470,7 @@ msgid "Edit"
 msgstr "Redaguoti"
 
 #: .\project\books\templates\books\includes\books_list.html:34
+#: .\project\core\mixins\views.py:94
 #: .\project\core\templates\core\includes\generic_delete_form.html:14
 #: .\project\counts\templates\counts\includes\counts_list.html:26
 #: .\project\debts\templates\debts\includes\borrows_delete_form.html:4
@@ -619,15 +620,13 @@ msgstr "Sekmadienis"
 msgid "Found nothing"
 msgstr "Nieko nerasta"
 
-#: .\project\core\mixins\views.py:55
-#: .\project\core\templates\core\includes\form_footer.html:5
-msgid "insert"
-msgstr "įrašyti"
+#: .\project\core\mixins\views.py:55 .\project\plans\views.py:160
+msgid "Insert"
+msgstr "Įrašyti"
 
-#: .\project\core\mixins\views.py:72
-#: .\project\core\templates\core\includes\form_footer.html:4
-msgid "update"
-msgstr "atnaujinti"
+#: .\project\core\mixins\views.py:73
+msgid "Update"
+msgstr "Atnaujinti"
 
 #: .\project\core\templates\core\includes\form_footer.html:4
 msgid "Update and Close"
@@ -1158,7 +1157,7 @@ msgstr "Dienai"
 msgid "Additional necessary expenses"
 msgstr "Papildomos būtinos išlaidos"
 
-#: .\project\plans\templates\plans\index.html:33
+#: .\project\plans\templates\plans\index.html:33 .\project\plans\views.py:158
 msgid "Copy plans"
 msgstr "Kopijuoti planus"
 
@@ -1275,6 +1274,12 @@ msgstr "Sąskaita &rArr; Sąskaita"
 msgctxt "account button"
 msgid "Account"
 msgstr "Sąskaitą"
+
+#~ msgid "update"
+#~ msgstr "atnaujinti"
+
+#~ msgid "insert"
+#~ msgstr "įrašyti"
 
 #, fuzzy
 #~| msgctxt "record button"
