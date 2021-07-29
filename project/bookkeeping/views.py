@@ -58,7 +58,7 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'title': 'Fondai',
+            'title': _('Funds'),
             'items': fund,
             'total_row': sum_all(fund),
         })
