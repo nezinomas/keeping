@@ -39,10 +39,10 @@ class RenderContext():
         data = stats.chart_calendar()
         context = {
             'chart_quantity': self.chart_quantity,
-            'chart_consumsion': self.chart_consumsion(),
+            'chart_consumption': self.chart_consumption(),
             'chart_calendar_1H': self.chart_calendar(data[0:6], '1H'),
             'chart_calendar_2H': self.chart_calendar(data[6:], '2H'),
-            'tbl_consumsion': self.tbl_consumsion(),
+            'tbl_consumption': self.tbl_consumption(),
             'tbl_last_day': self.tbl_last_day(),
             'tbl_alcohol': self.tbl_alcohol(),
             'tbl_std_av': self.tbl_std_av(),
@@ -58,7 +58,7 @@ class RenderContext():
         )
         return r
 
-    def chart_consumsion(self) -> str:
+    def chart_consumption(self) -> str:
         r = render_to_string(
             'drinks/includes/chart_consumption.html', {
                 'data': self._DrinkStats.consumption,
@@ -83,9 +83,9 @@ class RenderContext():
         )
         return rendered
 
-    def tbl_consumsion(self) -> str:
+    def tbl_consumption(self) -> str:
         r = render_to_string(
-            'drinks/includes/tbl_consumsion.html', {
+            'drinks/includes/tbl_consumption.html', {
                 'qty': self._qty,
                 'avg': self._avg,
                 'target': self._target,

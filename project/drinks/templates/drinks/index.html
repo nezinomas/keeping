@@ -40,14 +40,14 @@
 
 {% if tab == 'index' %}
 <div class="row">
-    <div class="col-lg-6" id="chart_consumsion">{{ chart_consumsion }}</div>
+    <div class="col-lg-6" id="chart_consumption">{{ chart_consumption }}</div>
     <div class="col-lg-6" id="chart_quantity">{{ chart_quantity }}</div>
 </div>
 
 <div class="row my-2">
     <div class="col-lg-6">
         <div class="row gx-2">
-            <div id="tbl_consumsion" class="col-lg-3 col-md-3">{{ tbl_consumsion }}</div>
+            <div id="tbl_consumption" class="col-lg-3 col-md-3">{{ tbl_consumption }}</div>
             <div id="tbl_last_day" class="col-lg-4 col-md-3">{{ tbl_last_day }}</div>
             <div id="tbl_alcohol" class="col-lg-2 col-md-3">{{ tbl_alcohol }}</div>
             <div id="drinks-target-content" class="col-lg-3 col-md-3">{{ target_list }}</div>
@@ -121,7 +121,7 @@
                 'ajax_trigger': '1'
             },
             success: function (data) {
-                var blocks = ['chart_consumsion', 'chart_quantity', 'tbl_consumsion', 'tbl_last_day', 'tbl_alcohol', 'tbl_std_av', 'chart_calendar_1H', 'chart_calendar_2H'];
+                var blocks = ['chart_consumption', 'chart_quantity', 'tbl_consumption', 'tbl_last_day', 'tbl_alcohol', 'tbl_std_av', 'chart_calendar_1H', 'chart_calendar_2H'];
                 reload_stats(data, blocks);
             }
         });

@@ -2,13 +2,13 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-29 14:36+0300\n"
-"PO-Revision-Date: 2021-07-29 14:34+0300\n"
+"POT-Creation-Date: 2021-07-29 15:08+0300\n"
+"PO-Revision-Date: 2021-07-29 15:08+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -885,11 +885,11 @@ msgstr "Neįvestas tikslas"
 msgid "Litres"
 msgstr "Litrai"
 
-#: .\project\drinks\templates\drinks\includes\tbl_consumsion.html:7
+#: .\project\drinks\templates\drinks\includes\tbl_consumption.html:7
 msgid "Beer (drunk)"
 msgstr "Alus (išgerta)"
 
-#: .\project\drinks\templates\drinks\includes\tbl_consumsion.html:20
+#: .\project\drinks\templates\drinks\includes\tbl_consumption.html:20
 #: .\project\drinks\templates\drinks\includes\tbl_last_day.html:13
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:25
 #: .\project\drinks\views.py:46
