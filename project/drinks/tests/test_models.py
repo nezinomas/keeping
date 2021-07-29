@@ -119,7 +119,7 @@ def test_drink_order():
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
-def test_drink_months_consumsion(_drinks):
+def test_drink_months_consumption(_drinks):
     actual = Drink.objects.sum_by_month(1999)
 
     # filter per_month key from return list

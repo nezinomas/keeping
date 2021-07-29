@@ -200,7 +200,7 @@ def test_view_saving_delete_load_form(client_logged):
     assert 'data-action="delete"' in actual
     assert 'action=""' in actual
     assert 'data-update-container="ajax-content">' in actual
-    assert 'Ar tikrai nori išrinti: <strong>1999-01-01: Savings</strong>?' in actual
+    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01: Savings</strong>?' in actual
 
 
 def test_view_saving_delete(client_logged):

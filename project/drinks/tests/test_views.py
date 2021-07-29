@@ -113,7 +113,7 @@ def test_view_drinks_delete_load_form(client_logged):
 
     assert response.status_code == 200
     assert '<form method="post"' in actual
-    assert 'Ar tikrai nori išrinti: <strong>1999-01-01: 1.0</strong>?' in actual
+    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01: 1.0</strong>?' in actual
 
 
 def test_view_drinks_delete(client_logged):
@@ -320,7 +320,7 @@ def test_compare_no_records_for_year(client_logged, _compare_form_data):
 
     actual = json.loads(response.content)
 
-    assert 'Trūksta duomenų' in actual['html']
+    assert 'Nėra duomenų' in actual['html']
 
 
 @patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
@@ -369,9 +369,9 @@ def test_reload_stats_render_ajax_trigger(client_logged):
     assert response.status_code == 200
     assert views.ReloadStats == response.resolver_match.func.view_class
 
-    assert 'chart_consumsion' in response.context
+    assert 'chart_consumption' in response.context
     assert 'chart_quantity' in response.context
-    assert 'tbl_consumsion' in response.context
+    assert 'tbl_consumption' in response.context
     assert 'tbl_last_day' in response.context
     assert 'tbl_alcohol' in response.context
     assert 'tbl_std_av' in response.context
@@ -441,8 +441,8 @@ def test_index_context(client_logged):
 
     assert 'tab' in response.context
     assert 'chart_quantity' in response.context
-    assert 'chart_consumsion' in response.context
-    assert 'tbl_consumsion' in response.context
+    assert 'chart_consumption' in response.context
+    assert 'tbl_consumption' in response.context
     assert 'tbl_last_day' in response.context
     assert 'tbl_alcohol' in response.context
     assert 'tbl_std_av' in response.context
@@ -458,13 +458,14 @@ def test_index_context_tab_value(client_logged):
     assert response.context['tab'] == 'index'
 
 
-def test_index_chart_consumsion(client_logged):
+def test_index_chart_consumption(client_logged):
     url = reverse('drinks:drinks_index')
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
+    content = content.replace('\n', '')
 
-    assert 'id="chart_consumsion"><div id="chart_consumsion_container"></div>' in content
+    assert 'id="chart_consumption"><div id="chart_consumption_container"></div>' in content
 
 
 def test_index_chart_quantity(client_logged):
@@ -472,6 +473,7 @@ def test_index_chart_quantity(client_logged):
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
+    content = content.replace('\n', '')
 
     assert 'id="chart_quantity"><div id="chart_quantity_container"></div>' in content
 
@@ -494,12 +496,12 @@ def test_index_drinked_date_empty_db(client_logged):
     assert 'Nėra duomenų' in response.context["tbl_last_day"]
 
 
-def test_index_tbl_consumsion_empty_current_year(client_logged):
+def test_index_tbl_consumption_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
     response = client_logged.get('/drinks/')
 
-    assert 'Nėra duomenų' in response.context["tbl_consumsion"]
+    assert 'Nėra duomenų' in response.context["tbl_consumption"]
 
 
 def test_index_tbl_std_av_empty_current_year(client_logged):
@@ -597,7 +599,7 @@ def test_history_context(client_logged):
     assert 'drinks_cnt' in response.context
 
 
-def test_history_chart_consumsion(client_logged):
+def test_history_chart_consumption(client_logged):
     url = reverse('drinks:drinks_history')
     response = client_logged.get(url)
 

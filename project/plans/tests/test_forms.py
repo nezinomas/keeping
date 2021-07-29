@@ -1,5 +1,4 @@
 import pytest
-from django.utils.translation import activate
 from freezegun import freeze_time
 
 from ...expenses.factories import ExpenseTypeFactory
@@ -93,8 +92,6 @@ def test_income_blank_data():
 
 
 def test_income_unique_together_validation():
-    activate('lt')
-
     i = IncomePlanFactory()
 
     form = IncomePlanForm({
@@ -202,8 +199,6 @@ def test_expense_blank_data():
 
 
 def test_expense_unique_together_validation():
-    activate('lt')
-
     i = ExpensePlanFactory()
 
     form = ExpensePlanForm({
@@ -310,8 +305,6 @@ def test_saving_blank_data():
 
 
 def test_saving_unique_together_validation():
-    activate('lt')
-
     i = SavingPlanFactory()
 
     form = SavingPlanForm({
@@ -442,8 +435,6 @@ def test_day_blank_data():
 
 
 def test_day_unique_together_validation():
-    activate('lt')
-
     i = DayPlanFactory()
 
     form = DayPlanForm({
@@ -526,8 +517,6 @@ def test_necessary_blank_data():
 
 
 def test_necessary_unique_together_validation():
-    activate('lt')
-
     i = NecessaryPlanFactory(title='XXX')
 
     form = NecessaryPlanForm({
@@ -575,8 +564,6 @@ def test_copy_have_fields():
 
 
 def test_copy_blank_data():
-    activate('lt')
-
     form = CopyPlanForm(data={})
 
     assert not form.is_valid()
@@ -589,8 +576,6 @@ def test_copy_blank_data():
 
 
 def test_copy_all_checkboxes_unselected():
-    activate('lt')
-
     form = CopyPlanForm(data={
         'year_from': 1999,
         'year_to': 2000,
@@ -618,8 +603,6 @@ def test_copy_empty_from_tables():
 
 
 def test_copy_to_table_have_records():
-    activate('lt')
-
     IncomePlanFactory(year=1999)
     IncomePlanFactory(year=2000)
 
@@ -637,8 +620,6 @@ def test_copy_to_table_have_records():
 
 
 def test_copy_to_table_have_records_from_empty():
-    activate('lt')
-
     IncomePlanFactory(year=2000)
 
     form = CopyPlanForm(data={

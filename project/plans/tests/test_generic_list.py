@@ -1,8 +1,5 @@
 import pytest
 from django.template import Context, Template
-from django.utils.translation import activate
-
-from ..templatetags.generic_list import generic_list
 
 
 def _remove_line_end(rendered):
@@ -69,8 +66,6 @@ def test_necessary_expense_3(_template):
 
 
 def test_no_object_1(_template):
-    activate('lt')
-
     items = []
     context = Context({'items': items})
 
@@ -81,8 +76,6 @@ def test_no_object_1(_template):
 
 
 def test_no_object_2(_template):
-    activate('lt')
-
     items = None
     context = Context({'items': items})
 

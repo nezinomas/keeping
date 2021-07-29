@@ -5,7 +5,6 @@ from decimal import Decimal
 
 import pytest
 from django.urls import resolve, reverse
-from django.utils.translation import activate
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
@@ -129,8 +128,6 @@ def test_debts_index_lent_return_in_ctx(client_logged):
 
 
 def test_debts_index_borrow_add_button(client_logged):
-    activate('lt')
-
     url = reverse('debts:debts_index')
     response = client_logged.get(url)
 
@@ -144,8 +141,6 @@ def test_debts_index_borrow_add_button(client_logged):
 
 
 def test_debts_index_borrow_return_add_button(client_logged):
-    activate('lt')
-
     url = reverse('debts:debts_index')
     response = client_logged.get(url)
 
@@ -159,8 +154,6 @@ def test_debts_index_borrow_return_add_button(client_logged):
 
 
 def test_debts_index_lent_add_button(client_logged):
-    activate('lt')
-
     url = reverse('debts:debts_index')
     response = client_logged.get(url)
 
@@ -174,8 +167,6 @@ def test_debts_index_lent_add_button(client_logged):
 
 
 def test_debts_index_lent_return_add_button(client_logged):
-    activate('lt')
-
     url = reverse('debts:debts_index')
     response = client_logged.get(url)
 
@@ -205,8 +196,6 @@ def test_borrow_list_200(client_logged):
 
 
 def test_borrow_list_empty(client_logged):
-    activate('lt')
-
     url = reverse('debts:borrows_list')
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
@@ -215,8 +204,6 @@ def test_borrow_list_empty(client_logged):
 
 
 def test_borrow_list_with_data(client_logged):
-    activate('lt')
-
     obj = factories.BorrowFactory(closed=True)
 
     url = reverse('debts:borrows_list')
@@ -474,8 +461,6 @@ def test_borrow_delete_200(client_logged):
 
 
 def test_borrow_delete_load_form(client_logged):
-    activate('lt')
-
     obj = factories.BorrowFactory()
 
     url = reverse('debts:borrows_delete', kwargs={'pk': obj.pk})
@@ -535,7 +520,6 @@ def test_borrow_return_list_200(client_logged):
 
 
 def test_borrow_return_list_empty(client_logged):
-    activate('lt')
     url = reverse('debts:borrows_return_list')
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
@@ -544,7 +528,6 @@ def test_borrow_return_list_empty(client_logged):
 
 
 def test_borrow_return_list_with_data(client_logged):
-    activate('lt')
     factories.BorrowReturnFactory()
 
     url = reverse('debts:borrows_return_list')
@@ -761,8 +744,6 @@ def test_borrow_return_delete_200(client_logged):
 
 
 def test_borrow_return_delete_load_form(client_logged):
-    activate('lt')
-
     obj = factories.BorrowReturnFactory()
 
     url = reverse('debts:borrows_return_delete', kwargs={'pk': obj.pk})
@@ -822,8 +803,6 @@ def test_lent_list_200(client_logged):
 
 
 def test_lent_list_empty(client_logged):
-    activate('lt')
-
     url = reverse('debts:lents_list')
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
@@ -832,8 +811,6 @@ def test_lent_list_empty(client_logged):
 
 
 def test_lent_list_with_data(client_logged):
-    activate('lt')
-
     obj = factories.LentFactory(closed=True)
 
     url = reverse('debts:lents_list')
@@ -1087,8 +1064,6 @@ def test_lent_delete_200(client_logged):
 
 
 def test_lent_delete_load_form(client_logged):
-    activate('lt')
-
     obj = factories.LentFactory()
 
     url = reverse('debts:lents_delete', kwargs={'pk': obj.pk})
@@ -1148,8 +1123,6 @@ def test_lent_return_list_200(client_logged):
 
 
 def test_lent_return_list_empty(client_logged):
-    activate('lt')
-
     url = reverse('debts:lents_return_list')
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
@@ -1375,8 +1348,6 @@ def test_lent_return_delete_200(client_logged):
 
 
 def test_lent_return_delete_load_form(client_logged):
-    activate('lt')
-
     obj = factories.LentReturnFactory()
 
     url = reverse('debts:lents_return_delete', kwargs={'pk': obj.pk})

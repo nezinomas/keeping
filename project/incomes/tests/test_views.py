@@ -240,6 +240,8 @@ def test_view_incomes_delete_200(client_logged):
 
 
 def test_view_incomes_delete_load_form(client_logged):
+    
+
     p = IncomeFactory()
 
     url = reverse('incomes:incomes_delete', kwargs={'pk': p.pk})
@@ -251,7 +253,7 @@ def test_view_incomes_delete_load_form(client_logged):
 
     assert response.status_code == 200
     assert '<form method="post"' in actual
-    assert f'Ar tikrai nori išrinti: <strong>{p}</strong>?' in actual
+    assert f'Ar tikrai norite ištrinti: <strong>{p}</strong>?' in actual
 
 
 def test_view_incomes_delete(client_logged):
@@ -429,7 +431,7 @@ def test_search_not_found(client_logged, _search_form_data):
     response = client_logged.post(url, {'form_data': form_data})
     actual = json.loads(response.content)
 
-    assert 'Nieko neradau' in actual['html']
+    assert 'Nieko nerasta' in actual['html']
 
 
 def test_search_found(client_logged, _search_form_data):

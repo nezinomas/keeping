@@ -113,7 +113,7 @@ def test_view_delete_load_form(client_logged):
 
     assert response.status_code == 200
     assert '<form method="post"' in actual
-    assert 'Ar tikrai nori išrinti: <strong>1999-01-01: 1.0</strong>?' in actual
+    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01: 1.0</strong>?' in actual
 
 
 def test_view_delete(client_logged):
@@ -129,9 +129,9 @@ def test_view_delete(client_logged):
     assert models.Count.objects.all().count() == 0
 
 
-# --------------------------------------------------------------------------------------------------
-#                                                                                        Index View
-# -------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                              Index View
+# ---------------------------------------------------------------------------------------
 def test_index_func():
     view = resolve(f'/{App_name}/')
 
@@ -156,7 +156,7 @@ def test_index_add_button(client_logged):
 
     assert len(res[0]) == 2
     assert res[0][0] == reverse(f'{App_name}:{App_name}_new')
-    assert res[0][1] == 'Pridėti'
+    assert res[0][1] == 'Įrašą'
 
 
 def test_index_links(client_logged):
@@ -185,7 +185,6 @@ def test_index_context(client_logged):
 
     assert 'chart_weekdays' in response.context
     assert 'chart_months' in response.context
-    # assert 'chart_year' in response.context
     assert 'chart_calendar_1H' in response.context
     assert 'chart_calendar_2H' in response.context
     assert 'chart_histogram' in response.context
@@ -227,18 +226,6 @@ def test_index_chart_histogram(client_logged):
     assert 'id="chart_histogram"><div id="chart_histogram_container"></div>' in content
 
 
-# Disabled chart, no need for this test
-# ToDo: delete after some time
-# def test_index_charts_of_year(client_logged):
-#     url = reverse(f'{App_name}:{App_name}_index')
-#     response = client_logged.get(url)
-
-#     content = response.content.decode("utf-8")
-
-#     for i in range(1, 13):
-#         assert f'<div id="chart_m{i}_container"></div>' in content
-
-
 @freeze_time('1999-07-18')
 @patch(f'project.{App_name}.models.CountQuerySet.App_name', 'Counter Type')
 def test_index_info_row(client_logged):
@@ -257,9 +244,9 @@ def test_index_info_row(client_logged):
         assert m.group(3) == '0,1'
 
 
-# --------------------------------------------------------------------------------------------------
-#                                                                                       Realod Stats
-# --------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                            Realod Stats
+# ---------------------------------------------------------------------------------------
 def test_reload_stats_func():
     view = resolve(f'/{App_name}/reload_stats/')
 

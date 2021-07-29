@@ -34,7 +34,7 @@ def test_render_borrow(rf):
     obj = IndexHelper(rf, 1999)
     actual = obj.render_borrow()
 
-    assert 'Paskolinau' in actual
+    assert 'Paskolinta' in actual
     assert 'Gražino' in actual
     assert '100,00' in actual
     assert '25,00' in actual
@@ -52,7 +52,7 @@ def test_render_lent(rf):
     obj = IndexHelper(rf, 1999)
     actual = obj.render_lent()
 
-    assert 'Pasiskolinau' in actual
+    assert 'Pasiskolinta' in actual
     assert 'Gražinau' in actual
     assert '100,00' in actual
     assert '25,00' in actual
@@ -85,4 +85,3 @@ def test_render_year_balance_short_highlight_balance(rf):
     obj = re.sub(r'[ ]{2,}', '', obj)
 
     assert '<th class="table-danger">-25,00</th>' in obj
-

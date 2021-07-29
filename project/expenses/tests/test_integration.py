@@ -1,3 +1,4 @@
+from datetime import datetime
 from time import sleep
 
 import pytest
@@ -39,7 +40,7 @@ class Expenses(LiveServerTestCase):
         self.browser.refresh()
 
     def test_add_one_expense_and_close_modal_form(self):
-        self.browser.get('%s%s' % (self.live_server_url, '/expenses/'))
+        self.browser.get('%s%s' % (self.live_server_url, f'/expenses/{datetime.now().month}/'))
 
         a = AccountFactory()
         t = ExpenseTypeFactory()
@@ -81,7 +82,7 @@ class Expenses(LiveServerTestCase):
         assert '123,45' in page
 
     def test_add_two_expenses(self):
-        self.browser.get('%s%s' % (self.live_server_url, '/expenses/'))
+        self.browser.get('%s%s' % (self.live_server_url, f'/expenses/{datetime.now().month}/'))
 
         a = AccountFactory()
         t = ExpenseTypeFactory()
@@ -150,7 +151,7 @@ class Expenses(LiveServerTestCase):
         assert '65,78' in page
 
     def test_empty_required_fields(self):
-        self.browser.get('%s%s' % (self.live_server_url, '/expenses/'))
+        self.browser.get('%s%s' % (self.live_server_url, '/expenses/1/'))
 
         # click Add Expenses button
         WebDriverWait(self.browser, 5).until(
@@ -181,7 +182,7 @@ class Expenses(LiveServerTestCase):
         ExpenseFactory(remark='yyyy')
         ExpenseFactory(remark='zzzz')
 
-        self.browser.get('%s%s' % (self.live_server_url, '/expenses/'))
+        self.browser.get('%s%s' % (self.live_server_url, '/expenses/1/'))
 
         WebDriverWait(self.browser, 5).until(
             EC.presence_of_element_located((By.ID, 'id_search'))

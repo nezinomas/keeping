@@ -12,6 +12,7 @@ from ..factories import CountFactory
 from ..lib.stats import Stats
 from ..models import Count
 
+
 month_days_1999 = [
     (1, 31), (2, 28), (3, 31),
     (4, 30), (5, 31), (6, 30),

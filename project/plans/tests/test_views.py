@@ -2,7 +2,6 @@ import json
 
 import pytest
 from django.urls import resolve, reverse
-from django.utils.translation import activate
 from freezegun import freeze_time
 
 from ...expenses.factories import ExpenseTypeFactory
@@ -75,8 +74,6 @@ def test_view_incomes(client_logged):
 
 
 def test_view_incomes_new(client_logged):
-    activate('lt')
-
     i = IncomeTypeFactory()
     data = {'year': '1999', 'income_type': i.pk, 'january': 999.99}
 
@@ -105,8 +102,6 @@ def test_view_incomes_new_invalid_data(client_logged):
 
 
 def test_view_incomes_update(client_logged):
-    activate('lt')
-
     p = IncomePlanFactory(year=1999)
 
     data = {'year': '1999', 'income_type': p.income_type.pk, 'january': 999.99}
@@ -169,8 +164,6 @@ def test_view_incomes_delete_200(client_logged):
 
 
 def test_view_incomes_delete_load_form(client_logged):
-    activate('lt')
-
     p = IncomePlanFactory(year=1999)
 
     url = reverse('plans:incomes_plan_delete', kwargs={'pk': p.pk})
@@ -214,8 +207,6 @@ def test_view_expenses(client_logged):
 
 
 def test_view_expenses_new(client_logged):
-    activate('lt')
-
     i = ExpenseTypeFactory()
     data = {'year': '1999', 'expense_type': i.pk, 'january': 999.99}
 
@@ -244,8 +235,6 @@ def test_view_expenses_new_invalid_data(client_logged):
 
 
 def test_view_expenses_update(client_logged):
-    activate('lt')
-
     p = ExpensePlanFactory(year=1999)
 
     data = {'year': '1999', 'expense_type': p.expense_type.pk, 'january': 999.99}
@@ -308,8 +297,6 @@ def test_view_expenses_delete_200(client_logged):
 
 
 def test_view_expenses_delete_load_form(client_logged):
-    activate('lt')
-
     p = ExpensePlanFactory(year=1999)
 
     url = reverse('plans:expenses_plan_delete', kwargs={'pk': p.pk})
@@ -354,8 +341,6 @@ def test_view_savings(client_logged):
 
 
 def test_view_savings_new(client_logged):
-    activate('lt')
-
     i = SavingTypeFactory()
     data = {'year': '1999', 'saving_type': i.pk, 'january': 999.99}
 
@@ -384,8 +369,6 @@ def test_view_savings_new_invalid_data(client_logged):
 
 
 def test_view_savings_update(client_logged):
-    activate('lt')
-
     p = SavingPlanFactory(year=1999)
 
     data = {'year': '1999', 'saving_type': p.saving_type.pk, 'january': 999.99}
@@ -448,8 +431,6 @@ def test_view_savings_delete_200(client_logged):
 
 
 def test_view_savings_delete_load_form(client_logged):
-    activate('lt')
-
     p = SavingPlanFactory(year=1999)
 
     url = reverse('plans:savings_plan_delete', kwargs={'pk': p.pk})
@@ -493,8 +474,6 @@ def test_view_days(client_logged):
 
 
 def test_view_days_new(client_logged):
-    activate('lt')
-
     data = {'year': '1999', 'january': 999.99}
 
     url = reverse('plans:days_plan_new')
@@ -522,8 +501,6 @@ def test_view_days_new_invalid_data(client_logged):
 
 
 def test_view_days_update(client_logged):
-    activate('lt')
-
     p = DayPlanFactory(year=1999)
 
     data = {'year': '1999', 'january': 999.99}
@@ -586,8 +563,6 @@ def test_view_days_delete_200(client_logged):
 
 
 def test_view_days_delete_load_form(client_logged):
-    activate('lt')
-
     p = DayPlanFactory(year=1999)
 
     url = reverse('plans:days_plan_delete', kwargs={'pk': p.pk})
@@ -631,8 +606,6 @@ def test_view_necessarys(client_logged):
 
 
 def test_view_necessarys_new(client_logged):
-    activate('lt')
-
     data = {'year': '1999', 'title': 'X', 'january': 999.99}
 
     url = reverse('plans:necessarys_plan_new')
@@ -660,8 +633,6 @@ def test_view_necessarys_new_invalid_data(client_logged):
 
 
 def test_view_necessarys_update(client_logged):
-    activate('lt')
-
     p = NecessaryPlanFactory(year=1999)
 
     data = {'year': '1999', 'title': 'X', 'january': 999.99}
@@ -724,8 +695,6 @@ def test_view_necessarys_delete_200(client_logged):
 
 
 def test_view_necessarys_delete_load_form(client_logged):
-    activate('lt')
-
     p = NecessaryPlanFactory(year=1999)
 
     url = reverse('plans:necessarys_plan_delete', kwargs={'pk': p.pk})

@@ -5,9 +5,7 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
-from ...journals.factories import JournalFactory
 from ...savings.factories import SavingTypeFactory
-from ...users.factories import UserFactory
 from .. import models, views
 from ..factories import (SavingChangeFactory, SavingCloseFactory,
                          TransactionFactory)
@@ -187,7 +185,7 @@ def test_view_transactions_delete_load_form(client_logged):
 
     assert response.status_code == 200
     assert '<form method="post"' in actual
-    assert 'Ar tikrai nori išrinti: <strong>1999-01-01 Account1-&gt;Account2: 200.00</strong>?' in actual
+    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01 Account1-&gt;Account2: 200.00</strong>?' in actual
 
 
 def test_view_transactions_delete(client_logged):
@@ -359,7 +357,7 @@ def test_view_savings_close_delete_load_form(client_logged):
 
     assert response.status_code == 200
     assert '<form method="post"' in actual
-    assert 'Ar tikrai nori išrinti: <strong>1999-01-01 Savings From-&gt;Account To: 10.00</strong>?' in actual
+    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From-&gt;Account To: 10.00</strong>?' in actual
 
 
 def test_view_savings_close_delete(client_logged):
@@ -577,7 +575,7 @@ def test_view_savings_change_delete_load_form(client_logged):
 
     assert response.status_code == 200
     assert '<form method="post"' in actual
-    assert 'Ar tikrai nori išrinti: <strong>1999-01-01 Savings From-&gt;Savings To: 10.00</strong>?' in actual
+    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From-&gt;Savings To: 10.00</strong>?' in actual
 
 
 def test_view_savings_change_delete(client_logged):

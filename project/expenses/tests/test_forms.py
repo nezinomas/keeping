@@ -178,7 +178,7 @@ def test_exepense_form_necessary_type_and_exception():
     assert not form.is_valid()
 
     assert form.errors == {
-        'exception': ['\'Expense Type\' yra pažymėta kaip \'Būtina\', todėl ji negali būti pažymėta \'Nenaudoti planuose\'']
+        'exception': ["Expense Type yra 'Būtina', todėl ji negali būti pažymėta kaip 'Išimtis'"]
     }
 
 

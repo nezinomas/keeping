@@ -124,7 +124,7 @@ def test_index_pension_worth(client_logged):
     url = reverse('bookkeeping:index')
     response = client_logged.get(url)
 
-    exp = [x['items'] for x in response.context if x.get('title') == 'Pensija'][0][0]
+    exp = [x['items'] for x in response.context if x.get('title') == 'Pensijos'][0][0]
 
     assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
 
@@ -247,7 +247,7 @@ def test_account_worth_new(client_logged):
 
     json_str = response.content
     actual = json.loads(json_str)
-    print(actual['html_list'].replace('\n', ''))
+
     assert actual['form_is_valid']
     assert '999' in actual['html_list']
     assert 'data-bs-title="1999 m. rugsėjo 9 d.' in actual['html_list']
