@@ -5,7 +5,7 @@ from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
-from ...core.lib.transalation import month_names, weekday_names
+from ...core.lib.transalation import month_names
 from ...counts.lib.stats import Stats as CountStats
 from .. import models
 from .drinks_stats import DrinkStats, max_beer_bottles, std_av
@@ -85,9 +85,6 @@ class RenderContext():
             {
                 'data': data,
                 'id': chart_id,
-                'quantity': _('Quantity'),
-                'gap': _('Gap'),
-                'first_weekday_letter': [x[0] for x in list(weekday_names().values())]
             },
             self._request
         )

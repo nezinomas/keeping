@@ -5,7 +5,6 @@ from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ...core.lib.date import weeknumber
-from ...core.lib.transalation import weekday_names
 from ..apps import App_name
 from .stats import Stats
 
@@ -96,9 +95,6 @@ class RenderContext():
             {
                 'data': data,
                 'id': chart_id,
-                'quantity': _('Quantity'),
-                'gap': _('Gap'),
-                'first_weekday_letter': [x[0] for x in list(weekday_names().values())],
             },
             self._request
         )
