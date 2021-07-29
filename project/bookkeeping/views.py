@@ -96,7 +96,7 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'title': 'Pensija',
+            'title': _('Pension'),
             'items': pension,
             'total_row': sum_all(pension),
         })

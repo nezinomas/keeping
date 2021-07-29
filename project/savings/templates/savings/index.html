@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load i18n %}
 
 {% block head %}{% endblock head %}
 
@@ -28,7 +28,7 @@
         <!-- Pensions -->
         <div class="row my-2">
             <div class="col">
-                <h6>Pensija, II pakopa</h6>
+                <h6>{% translate 'Pension' %}, {% translate 'II stage' %}</h6>
             </div>
             <div class="col text-end">
                 <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions }}"><i class="bi bi-plus"></i> Įrašą</button>

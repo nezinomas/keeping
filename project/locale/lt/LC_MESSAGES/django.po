@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-29 15:08+0300\n"
-"PO-Revision-Date: 2021-07-29 15:08+0300\n"
+"POT-Creation-Date: 2021-07-29 15:39+0300\n"
+"PO-Revision-Date: 2021-07-29 15:39+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -378,11 +378,17 @@ msgstr "Pervedimas"
 #: .\project\drinks\templates\drinks\index.html:36
 msgctxt "drinks button"
 msgid "Drinks"
-msgstr "Gėrtynės"
+msgstr "Gertynės"
 
 #: .\project\bookkeeping\templates\bookkeeping\month.html:118
 msgid "Show other chart"
 msgstr "Rodyti kitą grafiką"
+
+#: .\project\bookkeeping\views.py:99
+#: .\project\pensions\templates\pensions\includes\pensions_form.html:5
+#: .\project\savings\templates\savings\index.html:31
+msgid "Pension"
+msgstr "Pensija"
 
 #: .\project\bookkeeping\views.py:141
 #, python-format
@@ -527,7 +533,7 @@ msgstr "Knygą"
 msgid "year goal"
 msgstr "metų tikslą"
 
-#: .\project\books\tests\test_views.py:388
+#: .\project\books\tests\test_views.py:389
 #: .\project\core\templates\core\includes\generic_delete_form.html:10
 msgid "Are you sure you want to delete"
 msgstr "Ar tikrai norite ištrinti"
@@ -1168,6 +1174,10 @@ msgstr "Suma dienai"
 #: .\project\plans\templates\plans\index.html:95
 msgid "Calculations"
 msgstr "Skaičiavimai"
+
+#: .\project\savings\templates\savings\index.html:31
+msgid "II stage"
+msgstr "II pakopa"
 
 #: .\project\templates\403.html:5
 msgid "Access Denied"
