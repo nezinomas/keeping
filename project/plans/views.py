@@ -158,7 +158,7 @@ def copy_plans(request):
         'title': _('Copy plans'),
         'form': form,
         'submit_button': _('Insert'),
-        'from_action': 'insert',
+        'form_action': 'insert',
         'url': reverse('plans:copy_plans'),
     }
 
