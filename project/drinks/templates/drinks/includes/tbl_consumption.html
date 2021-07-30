@@ -1,8 +1,10 @@
 {% load cell_format %}
+{% load i18n %}
+
 <table class="table table-hover stats">
     <thead class="thead-light">
         <tr class="top-text">
-            <th colspan="2">Alus (išgerta)</th>
+            <th colspan="2">{% translate 'Beer (drunk)' %}</th>
         </tr>
         <tr class="top">
             <th>vnt</th>
@@ -15,7 +17,7 @@
             <td class="text-start">{{ qty|floatformat:1 }}</td>
             <td class="{{ target|compare:avg }}">{{ avg|floatformat:1 }}</td>
             {% else %}
-            <td colspan="2">Nėra duomenų</td>
+            <td colspan="2">{% translate 'No data' %}</td>
             {% endif %}
         </tr>
     </tfoot>

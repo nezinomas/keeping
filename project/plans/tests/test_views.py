@@ -8,9 +8,8 @@ from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
 from ...savings.factories import SavingTypeFactory
 from .. import models, views
-from ..factories import (
-    DayPlanFactory, ExpensePlanFactory, IncomePlanFactory,
-    NecessaryPlanFactory, SavingPlanFactory)
+from ..factories import (DayPlanFactory, ExpensePlanFactory, IncomePlanFactory,
+                         NecessaryPlanFactory, SavingPlanFactory)
 
 pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -176,7 +175,7 @@ def test_view_incomes_delete_load_form(client_logged):
 
     assert response.status_code == 200
     assert '<form method="post"' in actual
-    assert f'Ar tikrai nori išrinti: <strong>{p}</strong>?' in actual
+    assert f'Ar tikrai norite ištrinti: <strong>{p}</strong>?' in actual
 
 
 def test_view_incomes_delete(client_logged):
@@ -309,7 +308,7 @@ def test_view_expenses_delete_load_form(client_logged):
 
     assert response.status_code == 200
     assert '<form method="post"' in actual
-    assert f'Ar tikrai nori išrinti: <strong>{p}</strong>?' in actual
+    assert f'Ar tikrai norite ištrinti: <strong>{p}</strong>?' in actual
 
 
 
@@ -443,7 +442,7 @@ def test_view_savings_delete_load_form(client_logged):
 
     assert response.status_code == 200
     assert '<form method="post"' in actual
-    assert f'Ar tikrai nori išrinti: <strong>{p}</strong>?' in actual
+    assert f'Ar tikrai norite ištrinti: <strong>{p}</strong>?' in actual
 
 
 def test_view_savings_delete(client_logged):
@@ -575,7 +574,7 @@ def test_view_days_delete_load_form(client_logged):
 
     assert response.status_code == 200
     assert '<form method="post"' in actual
-    assert f'Ar tikrai nori išrinti: <strong>{p}</strong>?' in actual
+    assert f'Ar tikrai norite ištrinti: <strong>{p}</strong>?' in actual
 
 
 def test_view_days_delete(client_logged):
@@ -707,7 +706,7 @@ def test_view_necessarys_delete_load_form(client_logged):
 
     assert response.status_code == 200
     assert '<form method="post"' in actual
-    assert f'Ar tikrai nori išrinti: <strong>{ p }</strong>?' in actual
+    assert f'Ar tikrai norite ištrinti: <strong>{ p }</strong>?' in actual
 
 
 def test_view_necessarys_delete(client_logged):

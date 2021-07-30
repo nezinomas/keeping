@@ -147,7 +147,7 @@ def test_users_delete_load_form(get_user, client_logged):
     assert '<form method="post"' in actual
     assert 'data-action="delete"' in actual
     assert 'data-update-container="user_list">' in actual
-    assert f'Ar tikrai nori išrinti: <strong>{ u1 }</strong>?' in actual
+    assert f'Ar tikrai norite ištrinti: <strong>{ u1 }</strong>?' in actual
 
 
 def test_users_delete(get_user, client_logged):

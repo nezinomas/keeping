@@ -1,3 +1,5 @@
+{% load charts %}
+
 <div id="{{ chart_container_name }}"></div>
 <script>
     Highcharts.setOptions({
@@ -27,20 +29,7 @@
             lineWidth: 2,
             gridLineWidth: 1,
             tickmarkPlacement: 'on',
-            categories: [
-                'Sausis',
-                'Vasaris',
-                'Kovas',
-                'Balandis',
-                'Gegužė',
-                'Birželis',
-                'Liepa',
-                'Rugpjūtis',
-                'Rugsėjis',
-                'Spalis',
-                'Lapkritis',
-                'Gruodis'
-            ],
+            categories: {% months %},
             labels: {
                 style: {
                     fontSize: '10px',

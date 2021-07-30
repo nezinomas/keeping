@@ -3,6 +3,7 @@ from json.decoder import JSONDecodeError
 
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.utils.translation import gettext as _
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
@@ -38,7 +39,7 @@ class UnnecessaryForm(forms.Form):
         set_field_properties(self, self.helper)
 
         self.fields['savings'].widget.attrs['class'] = " form-check-input"
-        self.fields['savings'].label = "Taupymas"
+        self.fields['savings'].label = _('Savings')
 
         self.fields['choices'].label = False
 

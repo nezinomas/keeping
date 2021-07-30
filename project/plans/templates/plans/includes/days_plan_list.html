@@ -1,2 +1,4 @@
 {% load generic_list %}
-{% generic_list items 'plans:days_plan_update' request.user.year 'Dienai' url_delete='plans:days_plan_delete' %}
+{% load i18n %}
+
+{% generic_list items 'plans:days_plan_update' request.user.year _('Daily') url_delete='plans:days_plan_delete' %}

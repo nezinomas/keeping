@@ -1,4 +1,6 @@
-{% extends 'base.html' %}{% load static %}
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
 
 {% block head %}
 <script src="{% static 'js/reload_stats.js' %}"></script>
@@ -10,9 +12,9 @@
     <!-- Borrow -->
     <div class="col-sm-12 col-lg-6">
         <div class="row py-2">
-            <div class="col"><h6>Paskolinau</h6></div>
+            <div class="col"><h6>{% translate 'Borrow' %}</h6></div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success js-create set-target" data-url="{% url 'debts:borrows_new' %}" data-target="borrow"><i class="bi bi-plus"></i>Skolą</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create set-target" data-url="{% url 'debts:borrows_new' %}" data-target="borrow"><i class="bi bi-plus"></i>{% translate "Debt" context "debt button" %}</button>
             </div>
         </div>
 
@@ -25,10 +27,10 @@
     <div class="col-sm-12 col-lg-6">
         <div class="row py-2">
             <div class="col">
-                <h6>Pasiskolinau</h6>
+                <h6>{% translate 'Lent' %}</h6>
             </div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success js-create set-target" data-url="{% url 'debts:lents_new' %}" data-target="lent"><i class="bi bi-plus"></i>Skolą</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create set-target" data-url="{% url 'debts:lents_new' %}" data-target="lent"><i class="bi bi-plus"></i>{% translate "Debt" context "debt button" %}</button>
             </div>
         </div>
 
@@ -43,10 +45,10 @@
     <div class="col-sm-12 col-lg-6">
         <div class="row py-2">
             <div class="col">
-                <h6>Gražino</h6>
+                <h6>{% translate 'Returned borrow' %}</h6>
             </div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success js-create set-target" data-url="{% url 'debts:borrows_return_new' %}" data-target="borrow"><i class="bi bi-plus"></i>Sumą</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create set-target" data-url="{% url 'debts:borrows_return_new' %}" data-target="borrow"><i class="bi bi-plus"></i>{% translate "Sum" context "sum button" %}</button>
             </div>
         </div>
 
@@ -59,10 +61,10 @@
     <div class="col-sm-12 col-lg-6">
         <div class="row py-2">
             <div class="col">
-                <h6>Gražinau</h6>
+                <h6>{% translate 'Returned lent' %}</h6>
             </div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success js-create set-target" data-url="{% url 'debts:lents_return_new' %}" data-target="lent"><i class="bi bi-plus"></i>Sumą</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create set-target" data-url="{% url 'debts:lents_return_new' %}" data-target="lent"><i class="bi bi-plus"></i>{% translate "Sum" context "sum button" %}</button>
             </div>
         </div>
 

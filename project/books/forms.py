@@ -1,6 +1,7 @@
 from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.utils.translation import gettext as _
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
@@ -41,10 +42,11 @@ class BookForm(forms.ModelForm):
         # inital values
         self.fields['started'].initial = set_year_for_form()
 
-        self.fields['started'].label = 'Pradėta skaityti'
-        self.fields['ended'].label = 'Pabaigta skaityti'
-        self.fields['title'].label = 'Pavadinimas'
-        self.fields['author'].label = 'Autorius'
+        self.fields['started'].label = _('Started reading')
+        self.fields['ended'].label = _('Ended reading')
+        self.fields['title'].label = _('Title')
+        self.fields['author'].label = _('Author')
+        self.fields['remark'].label = _('Remark')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -73,8 +75,8 @@ class BookTargetForm(forms.ModelForm):
         # inital values
         self.fields['year'].initial = set_year_for_form()
 
-        self.fields['year'].label = 'Metai'
-        self.fields['quantity'].label = 'Kiekis ml'
+        self.fields['year'].label = _('Year')
+        self.fields['quantity'].label = _('How many')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -89,6 +91,7 @@ class BookTargetForm(forms.ModelForm):
         # if new record
         qs = BookTarget.objects.year(year)
         if qs.exists():
-            raise forms.ValidationError(f'{year} metai jau turi tikslą.')
+            msg = _("already has a goal.")
+            raise forms.ValidationError(f'{year} {msg}')
 
         return year

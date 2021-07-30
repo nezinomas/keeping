@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 
 from ..core.lib.date import years
 from ..core.mixins.ajax import AjaxSearchMixin
@@ -21,7 +22,7 @@ class ReloadStats(DispatchAjaxMixin, IndexMixin):
 
 
 class HistoricalData(IndexMixin):
-    template_name = f'{App_name}/includes/chart_consumsion_history.html'
+    template_name = f'{App_name}/includes/chart_compare.html'
 
     def get(self, request, *args, **kwargs):
         year = request.user.year + 1
@@ -29,7 +30,7 @@ class HistoricalData(IndexMixin):
         chart_serries = H.several_years_consumption(range(year - qty, year))
         context = {
             'serries': chart_serries,
-            'chart_container_name': 'history_chart'
+            'chart_container_name': 'history_chart',
         }
         rendered = render_to_string(self.template_name, context, request)
 
@@ -42,15 +43,15 @@ class Compare(AjaxSearchMixin):
     form_data_dict = {}
 
     def form_valid(self, form, **kwargs):
-        html = 'Trūksta duomenų'
+        html = _('No data')
         years_data = [self.form_data_dict['year1'], self.form_data_dict['year2']]
         chart_serries = H.several_years_consumption(years_data)
 
         if len(chart_serries) == 2:
-            template = f'{App_name}/includes/chart_consumsion_history.html'
+            template = f'{App_name}/includes/chart_compare.html'
             context = {
                 'serries': chart_serries,
-                'chart_container_name': 'compare_chart'
+                'chart_container_name': 'compare_chart',
             }
             html = render_to_string(template, context, self.request)
 

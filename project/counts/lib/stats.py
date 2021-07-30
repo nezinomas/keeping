@@ -7,7 +7,7 @@ from django.db import models
 from django.db.models import QuerySet
 
 from ...core.exceptions import MethodInvalid
-
+from ...core.lib.transalation import month_names, weekday_names
 
 class Stats():
     def __init__(self, year: int = None, data: List[Dict[date, float]] = None):
@@ -16,33 +16,11 @@ class Stats():
 
     @staticmethod
     def months() -> List[str]:
-        arr = [
-            'Sausis',
-            'Vasaris',
-            'Kovas',
-            'Balandis',
-            'Gegužė',
-            'Birželis',
-            'Liepa',
-            'Rugpjūtis',
-            'Rugsėjis',
-            'Spalis',
-            'Lapkritis',
-            'Gruodis'
-        ]
-        return arr
+        return list(month_names().values())
 
     @staticmethod
     def weekdays() -> List[str]:
-        return([
-            'Pirmadienis',
-            'Antradienis',
-            'Trečiadienis',
-            'Ketvirtadienis',
-            'Penktadienis',
-            'Šeštadienis',
-            'Sekmadienis'
-        ])
+        return list(weekday_names().values())
 
     def weekdays_stats(self) -> List[Dict[int, float]]:
         """Returns [{'weekday': int, 'count': float}]"""

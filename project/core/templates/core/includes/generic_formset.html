@@ -1,13 +1,13 @@
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags %}{% load i18n %}
 
-<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}"
+<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ form_action }}"
     autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}">
     {% csrf_token %}
     {{ formset.management_form|crispy }}
 
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body">
         {% for form in formset.forms %}

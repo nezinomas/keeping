@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 from freezegun import freeze_time
 
-from ..lib.drinks_stats import DrinkStats, std_av, max_beer_bottles
+from ..lib.drinks_stats import DrinkStats, max_beer_bottles, std_av
 
 
 @pytest.fixture
@@ -31,7 +31,7 @@ def _month_sum():
     ]
 
 
-def test_per_month_consumsion(_month_sum):
+def test_per_month_consumption(_month_sum):
     actual = DrinkStats(_month_sum).consumption
 
     assert len(actual) == 12
@@ -42,7 +42,7 @@ def test_per_month_consumsion(_month_sum):
     assert actual[9] == 160.0
 
 
-def test_per_month_consumsion_empty():
+def test_per_month_consumption_empty():
     actual = DrinkStats([]).consumption
 
     assert len(actual) == 12
@@ -51,7 +51,7 @@ def test_per_month_consumsion_empty():
     assert actual[11] == 0
 
 
-def test_per_month_consumsion_invalid_data01():
+def test_per_month_consumption_invalid_data01():
     actual = DrinkStats([{'x': 'X'}]).consumption
 
     assert len(actual) == 12
@@ -60,7 +60,7 @@ def test_per_month_consumsion_invalid_data01():
     assert actual[11] == 0
 
 
-def test_per_month_consumsion_invalid_data02():
+def test_per_month_consumption_invalid_data02():
     actual = DrinkStats([{'month': 12}]).consumption
 
     assert len(actual) == 12
@@ -100,11 +100,13 @@ def test_per_month_quantity_invalid_data():
 
 @freeze_time('2019-10-10')
 def test_std_av():
+    
+
     actual = std_av(2019, 273.5)
 
     expect = [
         {
-            'title': 'Std AV',
+            'title': 'Std Av',
             'total': 683.75,
             'per_day': 2.42,
             'per_week': 16.68,
@@ -146,7 +148,7 @@ def test_std_av_past_recods():
 
     expect = [
         {
-            'title': 'Std AV',
+            'title': 'Std Av',
             'total': 683.75,
             'per_day': 1.87,
             'per_week': 13.15,

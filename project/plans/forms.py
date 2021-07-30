@@ -6,10 +6,12 @@ from dateutil.relativedelta import relativedelta
 from django import forms
 from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils.translation import gettext as _
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
 from ..core.lib.date import monthnames, set_year_for_form
+from ..core.lib.transalation import month_names
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
 from ..savings.models import SavingType
@@ -18,19 +20,10 @@ from .models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
 
 
 def common_field_transalion(self):
-    self.fields['year'].label = 'Metai'
-    self.fields['january'].label = 'Sausis'
-    self.fields['february'].label = 'Vasaris'
-    self.fields['march'].label = 'Kovas'
-    self.fields['april'].label = 'Balandis'
-    self.fields['may'].label = 'Gegužė'
-    self.fields['june'].label = 'Birželis'
-    self.fields['july'].label = 'Liepa'
-    self.fields['august'].label = 'Rugpjūtis'
-    self.fields['september'].label = 'Rugsėjis'
-    self.fields['october'].label = 'Spalis'
-    self.fields['november'].label = 'Lapkritis'
-    self.fields['december'].label = 'Gruodis'
+    self.fields['year'].label = _('Years')
+
+    for key, val in month_names().items():
+        self.fields[key.lower()].label = val
 
 
 def set_journal_field(fields):
@@ -67,7 +60,7 @@ class IncomePlanForm(forms.ModelForm):
         self.fields['income_type'].queryset = IncomeType.objects.items()
 
         # field translation
-        self.fields['income_type'].label = 'Išlaidų rūšis'
+        self.fields['income_type'].label = _('Income type')
         common_field_transalion(self)
 
         self.helper = FormHelper()
@@ -101,7 +94,7 @@ class ExpensePlanForm(forms.ModelForm):
         self.fields['expense_type'].queryset = ExpenseType.objects.items()
 
         # field translation
-        self.fields['expense_type'].label = 'Išlaidų rūšis'
+        self.fields['expense_type'].label = ('Expense type')
         common_field_transalion(self)
 
         self.helper = FormHelper()
@@ -135,7 +128,7 @@ class SavingPlanForm(forms.ModelForm):
         self.fields['year'].initial = set_year_for_form()
 
         # field translation
-        self.fields['saving_type'].label = 'Taupymo rūšis'
+        self.fields['saving_type'].label = _('Saving type')
         common_field_transalion(self)
 
 
@@ -259,7 +252,7 @@ class CopyPlanForm(forms.Form):
 
         if not chk:
             raise forms.ValidationError(
-                "Reikia pažymėti nors vieną planą."
+                _('At least one plan needs to be selected.')
             )
 
         # copy from table must contain data
@@ -273,7 +266,8 @@ class CopyPlanForm(forms.Form):
                     self._append_error_message(msg, errors, k)
 
         # copy to table must be empty
-        msg = f'{year_to} metai jau turi planus.'
+        msg = _('%(year)s year already has plans.') % ({'year': year_to})
+
         for k, v in dict_.items():
             if v:
                 model = self._get_model(k)
@@ -314,13 +308,13 @@ class CopyPlanForm(forms.Form):
 
 
         # labels
-        self.fields['year_from'].label = 'Kopijuoti iš'
-        self.fields['year_to'].label = 'Kopijuoti į'
-        self.fields['income'].label = 'Pajamų planus'
-        self.fields['expense'].label = 'Išlaidų planus'
-        self.fields['saving'].label = 'Taupymo planus'
-        self.fields['day'].label = 'Dienos planus'
-        self.fields['necessary'].label = 'Papildomų būtinų išlaidų planus'
+        self.fields['year_from'].label = _('Copy from')
+        self.fields['year_to'].label = _('Copy to')
+        self.fields['income'].label = _('Incomes plans')
+        self.fields['expense'].label = _('Expenses plans')
+        self.fields['saving'].label = _('Savings plans')
+        self.fields['day'].label = _('Day plans')
+        self.fields['necessary'].label = _('Plans for additional necessary expenses')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

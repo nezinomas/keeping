@@ -1,2 +1,4 @@
 {% load form %}
-{% generic_form title='Dienos planas' update_container='day_list' chained_dropdown='plans_stats' %}
+{% load i18n %}
+
+{% generic_form title=_('Day plans') update_container='day_list' chained_dropdown='plans_stats' %}

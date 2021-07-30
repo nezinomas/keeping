@@ -16,6 +16,7 @@ from ..views import expenses, expenses_name, expenses_type
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
 
+
 @pytest.fixture()
 def _db_data():
     ExpenseTypeFactory.reset_sequence()
@@ -163,16 +164,15 @@ def test_expenses_save_insert_button(client_logged):
     }
 
     url = reverse('expenses:expenses_new')
-
     response = client_logged.post(url, data, **X_Req)
-
     json_str = response.content
     actual = json.loads(json_str)
-
     assert not actual.get('html_list')
-    assert 'id="submit">Insert</button>' in actual['html_form']
-    assert 'data-action="insert"' in actual['html_form']
-    assert 'data-chained-dropdown="/ajax/load_expense_name/' in actual['html_form']
+
+    actual = actual.get('html_form')
+    assert 'id="submit">Įrašyti</button>' in actual
+    assert 'data-action="insert"' in actual
+    assert 'data-chained-dropdown="/ajax/load_expense_name/' in actual
 
 
 def test_expenses_save_invalid_data(client_logged):
@@ -392,7 +392,7 @@ def test_view_expenses_delete_load_form(client_logged):
     assert '<form method="post"' in actual
     assert 'data-action="delete"' in actual
     assert 'data-update-container="expenses_list">' in actual
-    assert 'Ar tikrai nori išrinti: <strong>1999-01-01/Expense Type/Expense Name</strong>?' in actual
+    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01/Expense Type/Expense Name</strong>?' in actual
 
 
 def test_view_expenses_delete(client_logged):
@@ -668,7 +668,7 @@ def test_search_not_found(client_logged, _search_form_data):
     response = client_logged.post(url, {'form_data': form_data})
     actual = json.loads(response.content)
 
-    assert 'Nieko neradau' in actual['html']
+    assert 'Nieko nerasta' in actual['html']
 
 
 def test_search_found(client_logged, _search_form_data):

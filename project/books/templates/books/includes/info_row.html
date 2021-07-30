@@ -1,8 +1,9 @@
+{% load i18n %}
 <div class="info_row">
-    <span>Perskaitytos: </span> <h6 class="me-3 ms-1">{{ readed|floatformat:0 }}</h6>
-    <span>Skaitomos: </span> <h6 class="me-3 ms-1">{{ reading|floatformat:0 }}</h6>
+    <span>{% translate 'Readed' %}: </span> <h6 class="me-3 ms-1">{{ readed|floatformat:0 }}</h6>
+    <span>{% translate 'Reading' %}: </span> <h6 class="me-3 ms-1">{{ reading|floatformat:0 }}</h6>
     {% if target %}
-    <span>Tikslas: </span>
+    <span>{% translate 'Goal' %}: </span>
     <h6 class="me-3 ms-1">
         <a role="button" data-url="{% url 'books:books_target_update' target.id %}" class="js-create no-hover">{{ target.quantity }}</a>
     </h6>

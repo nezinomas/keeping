@@ -1,7 +1,8 @@
-from django.core.exceptions import ValidationError
 from bootstrap_datepicker_plus import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
@@ -45,12 +46,12 @@ class BorrowForm(forms.ModelForm):
         self.fields['account'].queryset = Account.objects.items()
 
         # fields labels
-        self.fields['date'].label = 'Data'
-        self.fields['name'].label = 'Skolininkas'
-        self.fields['account'].label = 'Sąskaita'
-        self.fields['price'].label = 'Suma'
-        self.fields['remark'].label = 'Pastaba'
-        self.fields['closed'].label = 'Padengta'
+        self.fields['date'].label = _('Date')
+        self.fields['name'].label = _('Borrower')
+        self.fields['account'].label = _('Account')
+        self.fields['price'].label = _('Sum')
+        self.fields['remark'].label = _('Remark')
+        self.fields['closed'].label = _('Returned')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -69,7 +70,7 @@ class BorrowForm(forms.ModelForm):
 
             qs = models.Borrow.objects.items().filter(name=name)
             if qs.exists():
-                self.add_error('name', 'Skolininko vardas turi būti unikalus.')
+                self.add_error('name', _('The name of the lender must be unique.'))
 
         return
 
@@ -95,10 +96,10 @@ class BorrowReturnForm(forms.ModelForm):
         self.fields['account'].queryset = Account.objects.items()
 
         # fields labels
-        self.fields['account'].label = 'Sąskaita'
-        self.fields['borrow'].label = 'Skolininkas'
-        self.fields['price'].label = 'Suma'
-        self.fields['remark'].label = 'Pastaba'
+        self.fields['account'].label = _('Account')
+        self.fields['borrow'].label = _('Borrower')
+        self.fields['price'].label = _('Sum')
+        self.fields['remark'].label = _('Remark')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -112,7 +113,7 @@ class BorrowReturnForm(forms.ModelForm):
             obj = models.Borrow.objects.get(pk=borrow.pk)
 
             if price > obj.returned:
-                raise ValidationError("Gražinama suma yra didesnė nei skola!")
+                raise ValidationError(_('The amount to be paid is more than the debt!'))
 
         return price
 
@@ -152,12 +153,12 @@ class LentForm(forms.ModelForm):
         self.fields['account'].queryset = Account.objects.items()
 
         # fields labels
-        self.fields['date'].label = 'Data'
-        self.fields['name'].label = 'Skolintojas'
-        self.fields['account'].label = 'Sąskaita'
-        self.fields['price'].label = 'Suma'
-        self.fields['remark'].label = 'Pastaba'
-        self.fields['closed'].label = 'Padengta'
+        self.fields['date'].label = _('Date')
+        self.fields['name'].label = _('Lender')
+        self.fields['account'].label = _('Account')
+        self.fields['price'].label = _('Sum')
+        self.fields['remark'].label = _('Remark')
+        self.fields['closed'].label = _('Returned')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -176,7 +177,7 @@ class LentForm(forms.ModelForm):
 
             qs = models.Lent.objects.items().filter(name=name)
             if qs.exists():
-                self.add_error('name', 'Skolintojo vardas turi būti unikalus.')
+                self.add_error('name', _('The name of the lender must be unique.'))
 
         return
 
@@ -202,10 +203,10 @@ class LentReturnForm(forms.ModelForm):
         self.fields['account'].queryset = Account.objects.items()
 
         # fields labels
-        self.fields['account'].label = 'Sąskaita'
-        self.fields['lent'].label = 'Skolinintojas'
-        self.fields['price'].label = 'Suma'
-        self.fields['remark'].label = 'Pastaba'
+        self.fields['account'].label = _('Account')
+        self.fields['lent'].label = _('Lender')
+        self.fields['price'].label = _('Sum')
+        self.fields['remark'].label = _('Remark')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -218,6 +219,6 @@ class LentReturnForm(forms.ModelForm):
             obj = models.Lent.objects.get(pk=lent.pk)
 
             if price > obj.returned:
-                raise ValidationError("Gražinama suma yra didesnė nei skola!")
+                raise ValidationError(_('The amount to be paid is more than the debt!'))
 
         return price

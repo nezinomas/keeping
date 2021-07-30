@@ -8,6 +8,7 @@ register = template.Library()
 def detailed_table(context, name, items, total_row, total_col, total):
     return {
         'months': context['months'],
+        'month_names': context['month_names'],
         'name': name,
         'items': items,
         'total_row': total_row,

@@ -2,9 +2,10 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render, reverse
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 
-from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin, DeleteAjaxMixin)
+from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
+                                 ListMixin, UpdateAjaxMixin)
 from . import forms, models
 from .lib.calc_day_sum import CalcDaySum
 
@@ -154,9 +155,10 @@ def copy_plans(request):
             data['form_is_valid'] = False
 
     context = {
-        'title': 'Planų kopijavimas',
+        'title': _('Copy plans'),
         'form': form,
-        'action': 'insert',
+        'submit_button': _('Insert'),
+        'form_action': 'insert',
         'url': reverse('plans:copy_plans'),
     }
 

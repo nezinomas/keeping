@@ -1,3 +1,6 @@
+{% load i18n %}
+{% load charts %}
+
 <div id="chart_quantity_container"></div>
 <script>
     $(function () {
@@ -12,20 +15,7 @@
         xAxis: {
             lineColor: '#000',
             lineWidth: 2,
-            categories: [
-                'Sausis',
-                'Vasaris',
-                'Kovas',
-                'Balandis',
-                'Gegužė',
-                'Birželis',
-                'Liepa',
-                'Rugpjūtis',
-                'Rugsėjis',
-                'Spalis',
-                'Lapkritis',
-                'Gruodis'
-            ],
+            categories: {% months %},
             labels: {
                 style: {
                     fontSize: '10px',
@@ -65,7 +55,7 @@
             }
         },
         series: [{
-            name: 'Kiekis',
+            name: '{% translate "Quantity" %}',
             color: 'rgba(70, 171, 157,0.65)',
             borderColor: 'rgba(70, 171, 157, 1)',
             data: {{ data|safe }},

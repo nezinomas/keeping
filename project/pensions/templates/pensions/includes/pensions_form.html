@@ -1,4 +1,7 @@
-{% load form %}{% load static %}
-{% generic_form title='Pensija' update_container='pension-content' %}
+{% load form %}
+{% load static %}
+{% load i18n %}
+
+{% generic_form title=_('Pension') update_container='pension-content' %}
 
 <script src="{% static 'js/alter_price.js' %}"></script>

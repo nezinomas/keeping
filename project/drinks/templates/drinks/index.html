@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{% load i18n %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
@@ -23,9 +23,9 @@
 
 <div class="row my-2">
     <div class="col text-start">
-        <a href="{% url 'drinks:drinks_index' %}" class="btn btn-sm {% if '/drinks/' == request.path %}btn-info{% else %}btn-light{% endif %}">Grafikai</a>
-        <a href="{% url 'drinks:drinks_list' %}" class="btn btn-sm {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">Duomenys</a>
-        <a href="{% url 'drinks:drinks_history' %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">Istorija</a>
+        <a href="{% url 'drinks:drinks_index' %}" class="btn btn-sm {% if '/drinks/' == request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Charts' %}</a>
+        <a href="{% url 'drinks:drinks_list' %}" class="btn btn-sm {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Data' %}</a>
+        <a href="{% url 'drinks:drinks_history' %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
     </div>
 
     <div class="col text-center" id="info_row"></div>
@@ -33,21 +33,21 @@
     <div class="col text-end">
         {% url 'drinks:drinks_new' as url_drinks %}
         {% url 'drinks:drinks_target_new' as url_drinks_target %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_drinks }}"><i class="bi bi-plus"></i> Gertynės</button>
-        <button type="button" class="btn btn-sm btn-info js-create" data-url="{{ url_drinks_target }}"><i class="bi bi-plus"></i> Metų tikslas</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_drinks }}"><i class="bi bi-plus"></i> {% translate "Drinks" context "drinks button" %}</button>
+        <button type="button" class="btn btn-sm btn-info js-create" data-url="{{ url_drinks_target }}"><i class="bi bi-plus"></i> {% translate 'Goal for the year' %}</button>
     </div>
 </div>
 
 {% if tab == 'index' %}
 <div class="row">
-    <div class="col-lg-6" id="chart_consumsion">{{ chart_consumsion }}</div>
+    <div class="col-lg-6" id="chart_consumption">{{ chart_consumption }}</div>
     <div class="col-lg-6" id="chart_quantity">{{ chart_quantity }}</div>
 </div>
 
 <div class="row my-2">
     <div class="col-lg-6">
         <div class="row gx-2">
-            <div id="tbl_consumsion" class="col-lg-3 col-md-3">{{ tbl_consumsion }}</div>
+            <div id="tbl_consumption" class="col-lg-3 col-md-3">{{ tbl_consumption }}</div>
             <div id="tbl_last_day" class="col-lg-4 col-md-3">{{ tbl_last_day }}</div>
             <div id="tbl_alcohol" class="col-lg-2 col-md-3">{{ tbl_alcohol }}</div>
             <div id="drinks-target-content" class="col-lg-3 col-md-3">{{ target_list }}</div>
@@ -59,7 +59,7 @@
     </div>
 
     <div class="col-lg-6 d-flex">
-        <div class="text-center mx-auto align-self-center"><img src="{% static 'images/drinks_info.jpg' %}" width="500" alt="Kas yra standartinis alkoholio vienetas"></div>
+        <div class="text-center mx-auto align-self-center"><img src="{% static 'images/drinks_info.jpg' %}" width="500" alt="{% translate 'What is a standard unit of alcohol' %}"></div>
     </div>
 </div>
 
@@ -71,12 +71,12 @@
 <div class="row mt-4">
     <div class="col-lg-6">
         <div class="row my-2">
-            <div class="col-sm-3 pt-1"><b>Istoriniai duomenys</b></div>
+            <div class="col-sm-3 pt-1"><b>{% translate 'Historical data' %}</b></div>
             <div class="col-sm-9 text-end">
-                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 2 %}">2 metų</button>
-                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 3 %}">3 metų</button>
-                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 7 %}">7 metų</button>
-                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' all_years %}">Visi metai</button>
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 2 %}">{% translate '2 years' %}</button>
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 3 %}">{% translate '3 years' %}</button>
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 7 %}">{% translate '7 years' %}</button>
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' all_years %}">{% translate 'All years' %}</button>
             </div>
         </div>
 
@@ -87,7 +87,7 @@
 
     <div class="col-lg-6">
         <div class="row my-2">
-            <div class="col-sm-4 pt-1"><b>Metų palyginimas</b></div>
+            <div class="col-sm-4 pt-1"><b>{% translate 'Year comparison' %}</b></div>
             <div class="col-sm-8 text-end" id="compare_form_data">{{ compare_form }}</div>
         </div>
 
@@ -100,7 +100,7 @@
 
 {% if tab == 'history' %}
 <div class="row">
-    <div class="col">{% include 'drinks/includes/chart_history.html' %}</div>
+    <div class="col">{% include 'drinks/includes/chart_summary.html' %}</div>
 </div>
 {% endif %}
 
@@ -121,7 +121,7 @@
                 'ajax_trigger': '1'
             },
             success: function (data) {
-                var blocks = ['chart_consumsion', 'chart_quantity', 'tbl_consumsion', 'tbl_last_day', 'tbl_alcohol', 'tbl_std_av', 'chart_calendar_1H', 'chart_calendar_2H'];
+                var blocks = ['chart_consumption', 'chart_quantity', 'tbl_consumption', 'tbl_last_day', 'tbl_alcohol', 'tbl_std_av', 'chart_calendar_1H', 'chart_calendar_2H'];
                 reload_stats(data, blocks);
             }
         });

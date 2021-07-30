@@ -1,12 +1,12 @@
-{% load crispy_forms_tags %}{% load static %}
-<form method="POST" enctype="multipart/form-data" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}" {% if chained_dropdown %}data-chained-dropdown="{{ chained_dropdown }}"{% endif %}>
+{% load crispy_forms_tags %}{% load static %}{% load i18n %}
+<form method="POST" enctype="multipart/form-data" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ form_action }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}" {% if chained_dropdown %}data-chained-dropdown="{{ chained_dropdown }}"{% endif %}>
     {% csrf_token %}
     <script src="{% static 'js/moment-with-locales-2.9.0.min.js' %}"></script>
     <script src="{% static 'bootstrap_datepicker/js/bootstrap-datetimepicker-4.17.47.min.js' %}"></script>
     <script src="{% static 'bootstrap_datepicker_plus/js/datepicker-widget.js' %}"></script>
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body">
         {% include 'core/includes/form_errors.html' %}
@@ -19,7 +19,7 @@
             {% if field.html_name == 'total_sum' %}
             <div class="row gx-2">
                 <div class="col">{{ field|as_crispy_field }}</div>
-                <div class="col-2" id="div_sum_prices"><button type="button" id="add_price" class="btn btn-sm btn-secondary" style="width: 100%;">Add</button></div>
+                <div class="col-2" id="div_sum_prices"><button type="button" id="add_price" class="btn btn-sm btn-secondary" style="width: 100%;">{% translate 'Add' %}</button></div>
             </div>
             {% else %}
             {{ field|as_crispy_field }}

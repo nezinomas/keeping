@@ -1,6 +1,7 @@
 from bootstrap_datepicker_plus import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.utils.translation import gettext as _
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
@@ -37,8 +38,8 @@ class CountForm(forms.ModelForm):
         self.fields['date'].initial = set_year_for_form()
         self.fields['quantity'].initial = 1
 
-        self.fields['date'].label = 'Data'
-        self.fields['quantity'].label = 'Kiek'
+        self.fields['date'].label = _('Date')
+        self.fields['quantity'].label = _('Quantity')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -49,3 +50,5 @@ class CountForm(forms.ModelForm):
         instance.save()
 
         return instance
+
+

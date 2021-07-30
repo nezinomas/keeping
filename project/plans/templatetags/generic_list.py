@@ -1,5 +1,7 @@
 from django import template
 
+from ...core.lib.transalation import month_names
+
 register = template.Library()
 
 
@@ -11,4 +13,5 @@ def generic_list(items, url_update, year, type=None, url_delete=None):
         'year': year,
         'type': type,
         'url_delete': url_delete,
+        'months': list(month_names().values()),
     }

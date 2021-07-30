@@ -1,6 +1,8 @@
 from datetime import date, datetime
 from typing import Dict, List, Tuple
 
+from django.utils.translation import gettext as _
+
 from ...core.lib.date import ydays
 
 
@@ -8,14 +10,14 @@ class DrinkStats():
     def __init__(self, arr: List[Dict]):
         _list = [0.0 for x in range(0, 12)]
 
-        self._consumsion = _list.copy()
+        self._consumption = _list.copy()
         self._quantity = _list.copy()
 
         self._calc(arr)
 
     @property
     def consumption(self) -> List[float]:
-        return self._consumsion
+        return self._consumption
 
     @property
     def quantity(self) -> List[float]:
@@ -28,7 +30,7 @@ class DrinkStats():
         for a in arr:
             idx = a.get('month', 1) - 1
 
-            self._consumsion[idx] = a.get('per_month', 0)
+            self._consumption[idx] = a.get('per_month', 0)
             self._quantity[idx] = a.get('sum', 0)
 
 
@@ -48,10 +50,10 @@ def std_av(year: int, qty: float) -> List[Dict]:
     }
 
     arr = [
-        {'title': 'Std AV', **a},
-        {'title': 'Alus, 0.5L', **{k: _beer(v) for k, v in a.items()}},
-        {'title': 'Vynas, 1L', **{k: _wine(v) for k, v in a.items()}},
-        {'title': 'Degtinė, 1L', **{k: _vodka(v) for k, v in a.items()}},
+        {'title': 'Std Av', **a},
+        {'title': _('Beer') + ', 0.5L', **{k: _beer(v) for k, v in a.items()}},
+        {'title': _('Wine') + ', 1L', **{k: _wine(v) for k, v in a.items()}},
+        {'title': _('Vodka') + ', 1L', **{k: _vodka(v) for k, v in a.items()}},
     ]
 
     return arr

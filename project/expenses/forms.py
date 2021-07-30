@@ -1,6 +1,7 @@
 from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
@@ -64,16 +65,16 @@ class ExpenseForm(forms.ModelForm):
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # field translation
-        self.fields['date'].label = 'Data'
-        self.fields['price'].label = 'Visa kaina'
-        self.fields['quantity'].label = 'Kiekis'
-        self.fields['expense_type'].label = 'Išlaidų rūšis'
-        self.fields['expense_name'].label = 'Išlaidų pavadinimas'
-        self.fields['remark'].label = 'Pastaba'
-        self.fields['exception'].label = 'Nenaudoti planuose'
-        self.fields['account'].label = 'Sąskaita'
-        self.fields['total_sum'].label = 'Kaina'
-        self.fields['attachment'].label = 'Prisegtukas'
+        self.fields['date'].label = _('Date')
+        self.fields['price'].label = _('Full price')
+        self.fields['quantity'].label = _('How many')
+        self.fields['expense_type'].label = _('Expense type')
+        self.fields['expense_name'].label = _('Expense name')
+        self.fields['remark'].label = _('Remark')
+        self.fields['exception'].label = _('Exception')
+        self.fields['account'].label = _('Account')
+        self.fields['total_sum'].label = _('Price')
+        self.fields['attachment'].label = _('Attachment')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -89,7 +90,8 @@ class ExpenseForm(forms.ModelForm):
         _expense_type = data.get('expense_type')
 
         if _exception and _expense_type.necessary:
-            raise forms.ValidationError(f'\'{_expense_type.title}\' yra pažymėta kaip \'Būtina\', todėl ji negali būti pažymėta \'Nenaudoti planuose\'')
+            msg = _("The %(title)s is 'Necessary', so it can't be marked as 'Exeption'") % {'title': _expense_type.title}
+            raise forms.ValidationError(msg)
 
         return _exception
 
@@ -110,8 +112,10 @@ class ExpenseTypeForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
-        self.fields['title'].label = 'Pavadinimas'
-        self.fields['necessary'].label = 'Būtina'
+        self.fields['title'].label = _('Title')
+        self.fields['necessary'].label = _('Necessary')
+
+        self.fields['necessary'].widget.attrs['class'] = " form-check-input necessary_check "
 
 
 class ExpenseNameForm(forms.ModelForm):
@@ -132,9 +136,9 @@ class ExpenseNameForm(forms.ModelForm):
         self.fields['parent'].queryset = ExpenseType.objects.items()
 
         # field labels
-        self.fields['parent'].label = 'Išlaidų rūšis'
-        self.fields['title'].label = 'Išlaidų pavadinimas'
-        self.fields['valid_for'].label = 'Galioja tik'
+        self.fields['parent'].label = _('Expense type')
+        self.fields['title'].label = _('Expense name')
+        self.fields['valid_for'].label = _('Valid for')
 
         # crispy forms settings
         self.helper = FormHelper()

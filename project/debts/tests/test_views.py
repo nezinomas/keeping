@@ -12,7 +12,6 @@ from ...users.factories import UserFactory
 from .. import factories, models, views
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
-
 pytestmark = pytest.mark.django_db
 
 
@@ -213,7 +212,7 @@ def test_borrow_list_with_data(client_logged):
 
     assert 'Data' in content
     assert 'Skolininkas' in content
-    assert 'Paskolinta' in content
+    assert 'Suma' in content
     assert 'Gražinta' in content
     assert 'Sąskaita' in content
     assert 'Pastaba' in content
@@ -475,7 +474,7 @@ def test_borrow_delete_load_form(client_logged):
     assert '<form method="post"' in actual
     assert 'data-action="delete"' in actual
     assert 'data-update-container="borrow_ajax">' in actual
-    assert f'Ar tikrai nori išrinti: <strong>{ obj }</strong>?' in actual
+    assert f'Ar tikrai norite ištrinti: <strong>{ obj }</strong>?' in actual
 
 
 def test_borrow_delete(client_logged):
@@ -536,7 +535,7 @@ def test_borrow_return_list_with_data(client_logged):
     content = response.content.decode('utf-8')
 
     assert 'Data' in content
-    assert 'Kiek' in content
+    assert 'Suma' in content
     assert 'Sąskaita' in content
     assert 'Pastaba' in content
 
@@ -758,7 +757,7 @@ def test_borrow_return_delete_load_form(client_logged):
     assert '<form method="post"' in actual
     assert 'data-action="delete"' in actual
     assert 'data-update-container="borrow_return_ajax">' in actual
-    assert f'Ar tikrai nori išrinti: <strong>{ obj }</strong>?' in actual
+    assert f'Ar tikrai norite ištrinti: <strong>{ obj }</strong>?' in actual
 
 
 def test_borrow_return_delete(client_logged):
@@ -820,7 +819,7 @@ def test_lent_list_with_data(client_logged):
 
     assert 'Data' in content
     assert 'Skolintojas' in content
-    assert 'Pasiskolinta' in content
+    assert 'Suma' in content
     assert 'Gražinta' in content
     assert 'Sąskaita' in content
     assert 'Pastaba' in content
@@ -1078,7 +1077,7 @@ def test_lent_delete_load_form(client_logged):
     assert '<form method="post"' in actual
     assert 'data-action="delete"' in actual
     assert 'data-update-container="lent_ajax">' in actual
-    assert f'Ar tikrai nori išrinti: <strong>{ obj }</strong>?' in actual
+    assert f'Ar tikrai norite ištrinti: <strong>{ obj }</strong>?' in actual
 
 
 def test_lent_delete(client_logged):
@@ -1139,7 +1138,7 @@ def test_lent_return_list_with_data(client_logged):
     content = response.content.decode('utf-8')
 
     assert 'Data' in content
-    assert 'Kiek' in content
+    assert 'Suma' in content
     assert 'Sąskaita' in content
     assert 'Pastaba' in content
 
@@ -1362,7 +1361,7 @@ def test_lent_return_delete_load_form(client_logged):
     assert '<form method="post"' in actual
     assert 'data-action="delete"' in actual
     assert 'data-update-container="lent_return_ajax">' in actual
-    assert f'Ar tikrai nori išrinti: <strong>{ obj }</strong>?' in actual
+    assert f'Ar tikrai norite ištrinti: <strong>{ obj }</strong>?' in actual
 
 
 def test_lent_return_delete(client_logged):

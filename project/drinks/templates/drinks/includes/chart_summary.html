@@ -1,4 +1,7 @@
-<div id="chart_history_container"></div>
+{% load i18n %}
+{% load charts %}
+
+<div id="chart_summary_container"></div>
 <script>
     Highcharts.setOptions({
         lang: {
@@ -6,12 +9,12 @@
             decimalPoint: ',',
         }
     });
-    Highcharts.chart('chart_history_container', {
+    Highcharts.chart('chart_summary_container', {
         chart: {
             marginBottom: 67,
         },
         title: {
-            text: 'Gėrimai',
+            text: '{% translate "Drinks" %}',
         },
         legend: {
             layout: 'horizontal',
@@ -78,7 +81,7 @@
                 },
         },
         series: [{
-            name: 'Vidutiniškai per dieną, ml',
+            name: '{% translate "Average per day, ml" %}',
             yAxis: 0,
             data: {{ drinks_data_ml|safe }},
             color: '#46ab9d',
@@ -96,7 +99,7 @@
             enableMouseTracking: false,
             fillOpacity: 0.65,
         }, {
-            name: 'Per metus gryno alkoholio, L',
+            name: '{% translate "Pure alcohol per year, L" %}',
             yAxis: 1,
             data: {{ drinks_data_alcohol|safe }},
             color: '#d13572',

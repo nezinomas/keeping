@@ -1,6 +1,7 @@
-{% load form %}
+{% load form %}{% load i18n %}
 {% url 'expenses:load_expense_name' as chained_url %}
-{% generic_form title='Išlaidos' update_container='expenses_list' chained_dropdown=chained_url %}
+{% translate "Expenses" context "expenses form title" as form_title %}
+{% generic_form title=form_title update_container='expenses_list' chained_dropdown=chained_url %}
 
 <script>
     // on escape key hide modal form

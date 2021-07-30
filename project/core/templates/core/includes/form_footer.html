@@ -1,5 +1,7 @@
+{% load i18n %}
     <div class="modal-footer">
-        <button type="button" class="btn btn-sm btn-primary" id="submit">{{ action|title }}</button>
-        {% if action != 'update' %}<button type="button" class="btn btn-sm btn-primary" id="save_close">Save and Close</button>{% endif %}
-        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-sm btn-primary" id="submit">{{ submit_button }}</button>
+        {% if form_action == 'update' %}<button type="button" class="btn btn-sm btn-primary" id="save_close">{% translate 'Update and Close' %}</button>{% endif %}
+        {% if form_action == 'insert' %}<button type="button" class="btn btn-sm btn-primary" id="save_close">{% translate 'Insert and Close' %}</button>{% endif %}
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">{% translate 'Close' %}</button>
     </div>

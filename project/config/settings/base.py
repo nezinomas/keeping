@@ -1,8 +1,30 @@
 import os
+
+from django.utils.translation import gettext_lazy as _
+
 from ..secrets import get_secret
 
 
 AUTH_USER_MODEL = 'users.User'
+
+PROJECT_APPS = [
+    'users',
+    'accounts',
+    'bookkeeping',
+    'books',
+    'core',
+    'counters',
+    'debts',
+    'drinks',
+    'expenses',
+    'incomes',
+    'journals',
+    'counts',
+    'savings',
+    'pensions',
+    'plans',
+    'transactions',
+]
 
 
 # ================   PATH CONFIGURATION
@@ -54,9 +76,16 @@ DATABASES = {
 }
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-
 # ================   GENERAL CONFIGURATION
 LANGUAGE_CODE = 'lt'
+
+LANGUAGES = [
+    ('en', _('English')),
+    ('lt', _('Lithuania')),
+]
+LOCALE_PATHS = [os.path.join(SITE_ROOT, 'locale')]
+
+
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
@@ -118,23 +147,10 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'crequest',
-    'project.users',
-    'project.accounts',
-    'project.bookkeeping',
-    'project.books',
-    'project.core',
-    'project.counters',
-    'project.debts',
-    'project.drinks',
-    'project.expenses',
-    'project.incomes',
-    'project.journals',
-    'project.counts',
-    'project.savings',
-    'project.pensions',
-    'project.plans',
-    'project.transactions',
 ]
+
+for app in PROJECT_APPS:
+    INSTALLED_APPS.append(f'project.{app}')
 
 
 # ================   URL CONFIGURATION

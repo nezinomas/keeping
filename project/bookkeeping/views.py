@@ -4,12 +4,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 from django.views.generic import CreateView
 
 from ..accounts.models import Account, AccountBalance
+from ..core.lib.transalation import month_names
 from ..core.lib.utils import sum_all
 from ..core.mixins.formset import FormsetMixin
-from ..core.mixins.views import CreateAjaxMixin, IndexMixin, DispatchAjaxMixin
+from ..core.mixins.views import CreateAjaxMixin, DispatchAjaxMixin, IndexMixin
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
@@ -56,7 +58,7 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'title': 'Fondai',
+            'title': _('Funds'),
             'items': fund,
             'total_row': sum_all(fund),
         })
@@ -94,7 +96,7 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'title': 'Pensija',
+            'title': _('Pension'),
             'items': pension,
             'total_row': sum_all(pension),
         })
@@ -112,6 +114,7 @@ class Month(IndexMixin):
         return context
 
 
+
 class Detailed(IndexMixin):
     template_name = 'bookkeeping/detailed.html'
 
@@ -120,21 +123,22 @@ class Detailed(IndexMixin):
 
         context = super().get_context_data(**kwargs)
         context['months'] = range(1, 13)
+        context['month_names'] = month_names()
 
         # Incomes
         qs = Income.objects.sum_by_month_and_type(year)
-        H.detailed_context(context, qs, 'Pajamos')
+        H.detailed_context(context, qs, _('Incomes'))
 
         # Savings
         qs = Saving.objects.sum_by_month_and_type(year)
-        H.detailed_context(context, qs, 'Taupymas')
+        H.detailed_context(context, qs, _('Savings'))
 
         # Expenses
         qs = [*Expense.objects.sum_by_month_and_name(year)]
         expenses_types = H.expense_types()
         for title in expenses_types:
             filtered = filter(lambda x: title in x['type_title'], qs)
-            H.detailed_context(context, [*filtered], f'Išlaidos / {title}')
+            H.detailed_context(context, [*filtered], _('Expenses / %(title)s') % ({'title': title}))
 
         return context
 

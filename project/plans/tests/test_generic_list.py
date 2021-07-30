@@ -1,8 +1,6 @@
 import pytest
 from django.template import Context, Template
 
-from ..templatetags.generic_list import generic_list
-
 
 def _remove_line_end(rendered):
     return str(rendered).replace('\n', '')
@@ -47,22 +45,6 @@ def test_necessary_expense_1(_template):
 
     actual = _template.render(context)
     expect = '<td class="text-start">TypeRowName <i class="bi bi-star plans-star"></i></td>'
-
-    assert expect in _remove_line_end(actual)
-
-
-def test_necessary_expense_2(_template):
-    items = [
-        type(
-            'O',
-            (object,),
-            dict(january=11, type='Būtinos')
-        )
-    ]
-    context = Context({'items': items})
-
-    actual = _template.render(context)
-    expect = '<td class="text-start">Būtinos <i class="bi bi-star plans-star"></i></td>'
 
     assert expect in _remove_line_end(actual)
 

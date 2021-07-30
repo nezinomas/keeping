@@ -1,5 +1,6 @@
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
 from ...core.forms import SearchForm
 from .. import models
@@ -65,7 +66,7 @@ class BookRenderer():
             'data': data,
             'targets': targets,
             'chart': 'chart_readed_books',
-            'chart_title': 'Perskaitytos knygos',
+            'chart_title': _('Readed books'),
             'chart_column_color': '70, 171, 157',
         }
         return context

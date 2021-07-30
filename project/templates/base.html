@@ -1,6 +1,7 @@
-{% load static %}
+{% load static %}{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
-<html lang="lt">
+<html lang="{{ LANGUAGE_CODE }}">
   <head>
     <meta charset="utf-8">
     <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
@@ -42,22 +43,22 @@
           <!-- End of Years Dropdown -->
 
           <li class="nav-item">
-            <a class="nav-link {% if '/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:index' %}">Bendra</a>
+            <a class="nav-link {% if '/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:index' %}">{% translate 'Main' %}</a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link {% if '/month/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:month' %}">Mėnuo</a>
+            <a class="nav-link {% if '/month/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:month' %}">{% translate 'Month' %}</a>
           </li>
 
           <li class="nav-item">
             <a class="nav-link {% if '/detailed/' == request.path %}active{% endif %}"
-              href="{% url 'bookkeeping:detailed' %}">Detali</a>
+              href="{% url 'bookkeeping:detailed' %}">{% translate 'Detailed' %}</a>
           </li>
 
           <li class="nav-item">
             <div class="btn-group">
               <a class="btn btn-menu nav-link {% if '/expenses/' in request.path %}active{% endif %}"
-                href="{% url 'expenses:expenses_index' %}">Išlaidos</a>
+                href="{% url 'expenses:expenses_index' %}">{% translate 'Expenses' %}</a>
               <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/expenses/' in request.path %}active{% endif %}" data-bs-toggle="dropdown"
                 aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
@@ -73,7 +74,7 @@
                   <hr class="dropdown-divider">
                 </li>
                 <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'expenses:expenses_month_list' 13 %}">Visi įrašai</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'expenses:expenses_month_list' 13 %}">{% translate 'All records' %}</a>
                 </li>
               </ul>
             </div>
@@ -81,28 +82,28 @@
 
           <li class="nav-item">
             <a class="nav-link {% if '/incomes/' in request.path %}active{% endif %}"
-              href="{% url 'incomes:incomes_index' %}">Pajamos</a>
+              href="{% url 'incomes:incomes_index' %}">{% translate 'Incomes' %}</a>
           </li>
 
           <li class="nav-item">
             <a class="nav-link {% if '/transactions/' in request.path %}active{% endif %}"
-              href="{% url 'transactions:transactions_index' %}">Pervedimai</a>
+              href="{% url 'transactions:transactions_index' %}">{% translate 'Transactions' %}</a>
           </li>
 
           <li class="nav-item">
             <a class="nav-link {% if '/savings/' in request.path %}active{% endif %}"
-              href="{% url 'savings:savings_index' %}">Taupymas</a>
+              href="{% url 'savings:savings_index' %}">{% translate 'Savings' %}</a>
           </li>
 
           <li class="nav-item">
             <a class="nav-link {% if '/debts/' in request.path %}active{% endif %}"
-              href="{% url 'debts:debts_index' %}">Skolos</a>
+              href="{% url 'debts:debts_index' %}">{% translate 'Depts' %}</a>
           </li>
 
           <li class="nav-item">
             <div class="btn-group">
               <a class="btn btn-menu nav-link {% if '/books/' in request.path %}active{% endif %}"
-                href="{% url 'books:books_index' %}">Knygos</a>
+                href="{% url 'books:books_index' %}">{% translate 'Books' %}</a>
               <button type="button"
                 class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/books/' in request.path %}active{% endif %}"
                 data-bs-toggle="dropdown" aria-expanded="false">
@@ -110,7 +111,7 @@
               </button>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'books:books_all' %}">Visi įrašai</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'books:books_all' %}">{% translate 'All records' %}</a>
                 </li>
               </ul>
             </div>
@@ -119,7 +120,7 @@
           <li class="nav-item">
             <div class="btn-group">
               <a class="btn btn-menu nav-link {% if '/drinks/' in request.path %}active{% endif %}"
-                href="{% url 'drinks:drinks_index' %}">Gėrimai</a>
+                href="{% url 'drinks:drinks_index' %}">{% translate 'Drinks' %}</a>
               <button type="button"
                 class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/drinks/' in request.path %}active{% endif %}"
                 data-bs-toggle="dropdown" aria-expanded="false">
@@ -127,10 +128,10 @@
               </button>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'drinks:drinks_list' %}">Duomenys</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'drinks:drinks_list' %}">{% translate 'Data' %}</a>
                 </li>
                 <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'drinks:drinks_history' %}">Istorija</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'drinks:drinks_history' %}">{% translate 'History' %}</a>
                 </li>
               </ul>
             </div>
@@ -139,17 +140,17 @@
           <li class="nav-item">
             <div class="btn-group">
               <a class="btn btn-menu nav-link {% if '/counts/' in request.path %}active{% endif %}"
-                href="{% url 'counts:counts_index' %}">Kiek</a>
+                href="{% url 'counts:counts_index' %}">{% translate 'Counter' %}</a>
               <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/counts/' in request.path %}active{% endif %}"
                 data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'counts:counts_list' %}">Duomenys</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'counts:counts_list' %}">{% translate 'Data' %}</a>
                 </li>
                 <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'counts:counts_history' %}">Istorija</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'counts:counts_history' %}">{% translate 'History' %}</a>
                 </li>
               </ul>
             </div>
@@ -157,12 +158,12 @@
 
           <li class="nav-item">
             <a class="nav-link {% if '/plans/' in request.path %}active{% endif %}"
-              href="{% url 'plans:plans_index' %}">Planavimas</a>
+              href="{% url 'plans:plans_index' %}">{% translate 'Plans' %}</a>
           </li>
 
           <li class="nav-item">
             <a class="nav-link {% if '/summary/' in request.path %}active{% endif %}"
-              href="{% url 'bookkeeping:summary' %}">Suvestinės</a>
+              href="{% url 'bookkeeping:summary' %}">{% translate 'Summary' %}</a>
           </li>
         </ul>
         <div class="navbar-text ms-3">{{ yday }} / <b>{{ ydays }}</b></div>
@@ -171,11 +172,11 @@
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
             aria-expanded="false">{{ user.username }}</a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
-            <li><a class="dropdown-item btn-sm" href="{% url 'users:logout' %}">Log out</a></li>
-            <li><a class="dropdown-item btn-sm" href="{% url 'users:password_change' %}">Change password</a></li>
+            <li><a class="dropdown-item btn-sm" href="{% url 'users:logout' %}">{% translate 'Log out' %}</a></li>
+            <li><a class="dropdown-item btn-sm" href="{% url 'users:password_change' %}">{% translate 'Change password' %}</a></li>
             {% if user.is_superuser %}
             <li class="dropdown-divider"></li>
-            <li><a role="button" class="dropdown-item btn-sm" href="{% url 'users:settings_index' %}">Settings</a></li>
+            <li><a role="button" class="dropdown-item btn-sm" href="{% url 'users:settings_index' %}">{% translate 'Settings' %}</a></li>
             {% endif %}
           </ul>
         </div>

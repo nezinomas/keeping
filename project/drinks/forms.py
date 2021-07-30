@@ -3,6 +3,7 @@ from datetime import datetime
 from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.utils.translation import gettext as _
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
@@ -38,8 +39,8 @@ class DrinkForm(forms.ModelForm):
         # inital values
         self.fields['date'].initial = set_year_for_form()
 
-        self.fields['date'].label = 'Data'
-        self.fields['quantity'].label = 'Kiekis (0,5L alaus)'
+        self.fields['date'].label = _('Date')
+        self.fields['quantity'].label = _('Quantity (0,5L beer bottle)')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -74,8 +75,8 @@ class DrinkTargetForm(forms.ModelForm):
         # inital values
         self.fields['year'].initial = set_year_for_form()
 
-        self.fields['year'].label = 'Metai'
-        self.fields['quantity'].label = 'Kiekis ml'
+        self.fields['year'].label = _('Year')
+        self.fields['quantity'].label = _('Quantity') + ' ml'
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -90,7 +91,8 @@ class DrinkTargetForm(forms.ModelForm):
         # if new record
         qs = DrinkTarget.objects.year(year)
         if qs.exists():
-            raise forms.ValidationError(f'{year} metai jau turi tikslą.')
+            msg = _('already has a goal.')
+            raise forms.ValidationError(f'{year} {msg}')
 
         return year
 
@@ -129,4 +131,4 @@ class DrinkCompareForm(forms.Form):
 
     def _validation_error(self, field):
         if len(str(abs(field))) != 4:
-            raise forms.ValidationError('Turi būti 4 skaitmenys.')
+            raise forms.ValidationError(_('Must be 4 digits.'))

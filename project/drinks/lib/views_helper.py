@@ -1,8 +1,9 @@
 from datetime import datetime
-from typing import Dict, Tuple, List
+from typing import Dict, List, Tuple
 
 from django.http import HttpRequest
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 
 from ...counts.lib.stats import Stats as CountStats
 from .. import models
@@ -38,10 +39,10 @@ class RenderContext():
         data = stats.chart_calendar()
         context = {
             'chart_quantity': self.chart_quantity,
-            'chart_consumsion': self.chart_consumsion(),
+            'chart_consumption': self.chart_consumption(),
             'chart_calendar_1H': self.chart_calendar(data[0:6], '1H'),
             'chart_calendar_2H': self.chart_calendar(data[6:], '2H'),
-            'tbl_consumsion': self.tbl_consumsion(),
+            'tbl_consumption': self.tbl_consumption(),
             'tbl_last_day': self.tbl_last_day(),
             'tbl_alcohol': self.tbl_alcohol(),
             'tbl_std_av': self.tbl_std_av(),
@@ -51,15 +52,15 @@ class RenderContext():
 
     def chart_quantity(self) -> str:
         r = render_to_string(
-            'drinks/includes/chart_quantity_per_month.html',
+            'drinks/includes/chart_quantity.html',
             {'data': self._DrinkStats.quantity},
             self._request
         )
         return r
 
-    def chart_consumsion(self) -> str:
+    def chart_consumption(self) -> str:
         r = render_to_string(
-            'drinks/includes/chart_consumsion_per_month.html', {
+            'drinks/includes/chart_consumption.html', {
                 'data': self._DrinkStats.consumption,
                 'target': self._target,
                 'avg': self._avg,
@@ -69,6 +70,7 @@ class RenderContext():
             self._request
         )
         return r
+
 
     def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
         rendered = render_to_string(
@@ -81,12 +83,12 @@ class RenderContext():
         )
         return rendered
 
-    def tbl_consumsion(self) -> str:
+    def tbl_consumption(self) -> str:
         r = render_to_string(
-            'drinks/includes/tbl_consumsion.html', {
+            'drinks/includes/tbl_consumption.html', {
                 'qty': self._qty,
                 'avg': self._avg,
-                'target': self._target
+                'target': self._target,
             },
             self._request
         )

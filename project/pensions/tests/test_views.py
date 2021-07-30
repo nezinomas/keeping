@@ -186,7 +186,7 @@ def test_view_pensions_delete_load_form(client_logged):
 
     assert response.status_code == 200
     assert '<form method="post"' in actual
-    assert f'Ar tikrai nori išrinti: <strong>{p}</strong>?' in actual
+    assert f'Ar tikrai norite ištrinti: <strong>{p}</strong>?' in actual
 
 
 def test_view_pensions_delete(client_logged):

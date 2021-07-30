@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, reverse
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 from django.views.generic import (CreateView, DeleteView, ListView,
                                   TemplateView, UpdateView)
 
@@ -51,7 +52,8 @@ class CreateAjaxMixin(
         model = H.model_plural_name(self)
 
         context = super().get_context_data(**kwargs)
-        context['action'] = 'insert'
+        context['submit_button'] = _('Insert')
+        context['form_action'] = 'insert'
         context['url'] = reverse(f'{app}:{model}_new')
 
         return context
@@ -68,8 +70,8 @@ class UpdateAjaxMixin(
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'action': 'update',
-            # 'url': reverse(f'{app}:{model}_update', kwargs={'pk': self.object.pk}),
+            'submit_button': _('Update'),
+            'form_action': 'update'
         })
 
         return context
@@ -89,8 +91,8 @@ class DeleteAjaxMixin(
 
         if pk:
             context.update({
-                'action': 'delete',
-                # 'url': reverse(f'{app}:{model}_delete', kwargs={'pk': pk}),
+                'submit_button': _('Delete'),
+                'form_action': 'delete'
             })
 
         return context

@@ -1,3 +1,5 @@
+{% load i18n %}
+
 <div id="container-salary-summary"></div>
 <script>
     Highcharts.setOptions({
@@ -11,7 +13,7 @@
             marginBottom: 67,
         },
         title: {
-            text: 'Atlyginimas',
+            text: '{% translate "Salary" %}',
         },
         legend: {
             layout: 'horizontal',
@@ -88,12 +90,12 @@
         },
         series: [
         {
-            name: 'Vidutinis atlyginimas, €',
+            name: '{% translate "Average salary" %}, €',
             data: {{ salary_data_avg|safe }},
             type: 'area',
             color: '#98bc62',
         }, {
-            name: 'Vidutinės pajamos, €',
+            name: '{% translate "Average incomes" %}, €',
             data: {{ balance_income_avg|safe }},
             type: 'line',
             color: '#2d5f2e',

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load i18n %}
 
 {% block head %}{% endblock head %}
 
@@ -15,10 +15,10 @@
         <!-- Funds -->
         <div class="row my-2">
             <div class="col">
-                <h6>Fondai</h6>
+                <h6>{% translate 'Funds' %}</h6>
             </div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings }}"><i class="bi bi-plus"></i> Įrašą</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings }}"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
             </div>
         </div>
         <div class="row">
@@ -28,10 +28,10 @@
         <!-- Pensions -->
         <div class="row my-2">
             <div class="col">
-                <h6>Pensija, II pakopa</h6>
+                <h6>{% translate 'Pension' %}, {% translate 'II stage' %}</h6>
             </div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions }}"><i class="bi bi-plus"></i> Įrašą</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions }}"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
             </div>
         </div>
         <div class="row">
@@ -43,7 +43,7 @@
         <!-- Funds Types -->
         <div class="row my-2">
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_type_new }}"><i class="bi bi-plus"></i> Fondą</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_type_new }}"><i class="bi bi-plus"></i> {% translate 'Fund' context 'fund button' %}</button>
             </div>
         </div>
         <div class="row">
@@ -54,7 +54,7 @@
         <!-- Pension Types -->
         <div class="row mt-4 mb-2">
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions_type_new }}"><i class="bi bi-plus"></i> Pensijų fondą</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions_type_new }}"><i class="bi bi-plus"></i> {% translate 'Pension' context 'pension button' %}</button>
             </div>
         </div>
         <div class="row">

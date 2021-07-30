@@ -1,3 +1,6 @@
+{% load i18n %}
+{% load chart_calendar %}
+
 <div id="clander_{{ id }}_container"></div>
 <script>
 Highcharts.chart('clander_{{ id }}_container', {
@@ -56,7 +59,7 @@ Highcharts.chart('clander_{{ id }}_container', {
 
     yAxis: {
     		type: 'category',
-        categories: ['P', 'A', 'T', 'K', 'P', 'Š', 'S'],
+        categories: {% first_letters %},
         title: null,
         reversed: true,
         lineWidth: 0,
@@ -111,8 +114,8 @@ Highcharts.chart('clander_{{ id }}_container', {
         var s = this.point.date;
         if(this.point.value >= 0.1)
         {
-        	s += '<div class="gap">Tarpas '+this.point.gap+'d.</div>';
-        	s += '<div class="qty">Kiek '+this.point.qty+'</div>';
+        	s += '<div class="gap">{% translate "Gap" %} '+this.point.gap+'d.</div>';
+        	s += '<div class="qty">{% translate "Quantity" %} '+this.point.qty+'</div>';
         }
         return s;
       }
