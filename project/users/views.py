@@ -231,7 +231,11 @@ class SettingsIndex(IndexMixin):
 
         context['users'] = SettingsUsers.as_view()(
             self.request, as_string=True)
-        context['unnecessary'] = render_to_string(template_name='users/includes/unnecessary.html', request=self.request, context={'form': UnnecessaryForm()})
+        context['unnecessary'] = render_to_string(
+            template_name='users/includes/unnecessary.html',
+            request=self.request,
+            context={'form': UnnecessaryForm()}
+        )
 
         return context
 
