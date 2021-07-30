@@ -17,6 +17,7 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.mark.webtest
+@freeze_time('1999-12-1')
 class Expenses(LiveServerTestCase):
     @classmethod
     def setUpClass(cls):
@@ -73,7 +74,7 @@ class Expenses(LiveServerTestCase):
         self.browser.find_element_by_id('save_close').click()
 
         # wait while form is closing
-        sleep(.5)
+        sleep(1)
 
         page = self.browser.page_source
 
@@ -82,7 +83,7 @@ class Expenses(LiveServerTestCase):
         assert '123,45' in page
 
     def test_add_two_expenses(self):
-        self.browser.get('%s%s' % (self.live_server_url, f'/expenses/{datetime.now().month}/'))
+        self.browser.get('%s%s' % (self.live_server_url, '/expenses/12/'))
 
         a = AccountFactory()
         t = ExpenseTypeFactory()
@@ -115,7 +116,7 @@ class Expenses(LiveServerTestCase):
 
         # click Insert button
         self.browser.find_element_by_id('submit').click()
-        sleep(.5)
+        sleep(1)
 
         # ----------------------------- Second expense
         # select ExpenseType
@@ -138,7 +139,7 @@ class Expenses(LiveServerTestCase):
 
         # click Insert button
         self.browser.find_element_by_id('save_close').click()
-        sleep(.5)
+        sleep(1)
 
         page = self.browser.page_source
 
@@ -151,7 +152,7 @@ class Expenses(LiveServerTestCase):
         assert '65,78' in page
 
     def test_empty_required_fields(self):
-        self.browser.get('%s%s' % (self.live_server_url, '/expenses/1/'))
+        self.browser.get('%s%s' % (self.live_server_url, f'/expenses/1/'))
 
         # click Add Expenses button
         WebDriverWait(self.browser, 5).until(
@@ -182,7 +183,7 @@ class Expenses(LiveServerTestCase):
         ExpenseFactory(remark='yyyy')
         ExpenseFactory(remark='zzzz')
 
-        self.browser.get('%s%s' % (self.live_server_url, '/expenses/1/'))
+        self.browser.get('%s%s' % (self.live_server_url, f'/expenses/{datetime.now().month}/'))
 
         WebDriverWait(self.browser, 5).until(
             EC.presence_of_element_located((By.ID, 'id_search'))

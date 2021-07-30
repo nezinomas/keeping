@@ -3,7 +3,6 @@ from datetime import date, datetime
 import mock
 import pytest
 import pytz
-from django.utils.translation import activate
 
 from .accounts.factories import AccountFactory
 from .bookkeeping.factories import (AccountWorthFactory, PensionWorthFactory,
@@ -17,11 +16,6 @@ from .savings.factories import SavingFactory, SavingTypeFactory
 from .transactions.factories import (SavingChangeFactory, SavingCloseFactory,
                                      TransactionFactory)
 from .users.factories import UserFactory
-
-
-@pytest.fixture(autouse=True)
-def activate_language():
-    activate('lt')
 
 
 @pytest.fixture()

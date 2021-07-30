@@ -2,6 +2,7 @@ from .base import *
 
 DEBUG = False
 
+LANGUAGE_CODE = 'lt'
 
 TEMPLATES[0]['OPTIONS']['debug'] = False
 
