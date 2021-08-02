@@ -413,13 +413,14 @@ def test_password_reset_confirm_invalid_status_code(_confirm_invalid):
     assert response.status_code == 200
 
 
-def test_password_reset_confirm_incalid_html(_confirm_invalid):
+def test_password_reset_confirm_invalid_html(_confirm_invalid):
+
     _, _, response = _confirm_invalid
     url = reverse('users:password_reset')
     content = response.content.decode('utf-8')
 
     assert f'href="{url}"' in content
-    assert 'invalid password reset link' in content
+    assert 'Prašyti naujos slaptažodžio atstatymo nuorodos' in content
 
 
 # ---------------------------------------------------------------------------------------
@@ -690,7 +691,7 @@ def test_invite_signup_expired_link(client, get_user):
         content = response.content.decode('utf-8')
 
         assert 'type="hidden" name="csrfmiddlewaretoken"' not in content
-        assert 'It seems that your invitation is no longer valid. Ask a friend to provide a new link.' in content
+        assert 'Atrodo, kad jūsų kvietimas nebegalioja. Paprašykite draugo atsiųsti naują nuorodą.' in content
 
 
 def test_invite_signup_valid_link(client, signer):
@@ -701,7 +702,7 @@ def test_invite_signup_valid_link(client, signer):
     content = response.content.decode('utf-8')
 
     assert 'type="hidden" name="csrfmiddlewaretoken"' in content
-    assert 'It seems that your invitation is no longer valid. Ask a friend to provide a new link.' not in content
+    assert 'Atrodo, kad jūsų kvietimas nebegalioja. Paprašykite draugo atsiųsti naują nuorodą.' not in content
 
 
 def test_invite_signup_edited_token(client):
@@ -709,7 +710,7 @@ def test_invite_signup_edited_token(client):
     response = client.get(url)
     content = response.content.decode('utf-8')
 
-    assert 'It seems that your invitation is no longer valid. Ask a friend to provide a new link.' in content
+    assert 'Atrodo, kad jūsų kvietimas nebegalioja. Paprašykite draugo atsiųsti naują nuorodą.' in content
 
 
 @pytest.fixture
