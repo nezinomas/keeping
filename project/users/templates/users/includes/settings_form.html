@@ -1,0 +1,5 @@
+<form method="POST" novalidate id="js_{{ form_name }}" class="js_{{ form_name }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}" action="{{ url }}">
+    {% csrf_token %}
+    {% include 'core/includes/form.html' %}
+    <button type="button" class="btn btn-sm btn-primary" data-form="{{ form_name }}" id="settings_submit">Update</button>
+</form>

@@ -1,3 +1,4 @@
+from django.conf import settings
 from datetime import datetime, timedelta
 
 from django.contrib.auth import login
@@ -9,13 +10,14 @@ from django.http.response import JsonResponse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls.base import reverse, reverse_lazy
+from django.utils.translation import activate
 from django.views.generic import CreateView
 from project.users import models
 
 from ..config.secrets import get_secret
 from ..core.mixins.ajax import AjaxCustomFormMixin
 from ..core.mixins.views import DeleteAjaxMixin, IndexMixin, ListMixin
-from ..journals.forms import UnnecessaryForm
+from ..journals.forms import SettingsForm, UnnecessaryForm
 from ..users.models import User
 from . import forms
 
@@ -53,7 +55,14 @@ class Login(auth_views.LoginView):
 
         _user_settings(user)
 
-        return HttpResponseRedirect(self.get_success_url())
+        lang = user.journal.lang
+
+        activate(lang)
+
+        response = HttpResponseRedirect(self.get_success_url())
+        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang)
+
+        return response
 
 
 class Logout(auth_views.LogoutView):
@@ -227,11 +236,14 @@ class SettingsIndex(IndexMixin):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        template_name = 'users/includes/settings_form.html'
 
-        context['users'] = SettingsUsers.as_view()(
-            self.request, as_string=True)
-        context['unnecessary'] = render_to_string(template_name='users/includes/unnecessary.html', request=self.request, context={'form': UnnecessaryForm()})
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'users':  SettingsUsers.as_view()(self.request, as_string=True),
+            'settings_unnecessary': render_unnecessary_form(self.request, template_name),
+            'settings_journal': render_journal_form(self.request, template_name),
+        })
 
         return context
 
@@ -301,15 +313,68 @@ class SettingsUsersDelete(SettingsQueryMixin, DeleteAjaxMixin):
 
 
 class SettingsUnnecessary(AjaxCustomFormMixin):
-    template_name = 'users/includes/unnecessary.html'
     form_class = UnnecessaryForm
+    template_name = 'users/includes/settings_form.html'
 
     def form_valid(self, form, **kwargs):
         form.save()
         json_data = {
             'form_is_valid': True,
-            'html_form': render_to_string(self.template_name, request=self.request, context={'form': UnnecessaryForm()}),
+            'html_form': render_unnecessary_form(self.request, self.get_template_names()),
             **kwargs,
         }
 
         return JsonResponse(json_data)
+
+
+
+class SettingsJournal(AjaxCustomFormMixin):
+    form_class = SettingsForm
+    success_url = reverse_lazy('users:settings_index')
+    template_name = 'users/includes/settings_form.html'
+
+    def form_valid(self, form, **kwargs):
+        form.save()
+        json_data = {
+            'form_is_valid': True,
+            'html_form': render_journal_form(self.request, self.get_template_names()),
+            'redirect': self.get_success_url(),
+            **kwargs,
+        }
+
+        lang = form.cleaned_data.get('lang')
+
+        activate(lang)
+
+        response = JsonResponse(json_data)
+        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang)
+
+        return response
+
+
+def render_unnecessary_form(request, template_name):
+    context = {
+        'form': UnnecessaryForm(),
+        'update_container': 'unnecessary_ajax',
+        'form_name': 'unnecessary',
+        'url': reverse('users:settings_unnecessary')
+    }
+
+    form = render_to_string(template_name=template_name,
+                            request=request,
+                            context=context)
+    return form
+
+
+def render_journal_form(request, template_name):
+    context = {
+        'form': SettingsForm(),
+        'update_container': 'journal_ajax',
+        'form_name': 'journal',
+        'url': reverse('users:settings_journal'),
+    }
+
+    form = render_to_string(template_name=template_name,
+                            request=request,
+                            context=context)
+    return form

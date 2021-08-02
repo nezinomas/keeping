@@ -53,4 +53,7 @@ urlpatterns = [
      path('settings/unnecessary/',
           views.SettingsUnnecessary.as_view(),
           name='settings_unnecessary'),
+     path('settings/journal/',
+          views.SettingsJournal.as_view(),
+          name='settings_journal'),
 ]

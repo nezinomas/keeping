@@ -83,7 +83,8 @@ def test_index_context(client_logged):
     response = client_logged.get(url)
 
     assert 'users' in response.context
-    assert 'unnecessary' in response.context
+    assert 'settings_unnecessary' in response.context
+    assert 'settings_journal' in response.context
 
 
 # ---------------------------------------------------------------------------------------
@@ -225,3 +226,34 @@ def test_unnecessary_form_save_checked_all(client_logged):
     actual = Journal.objects.first()
     assert actual.unnecessary_expenses == '[1, 2]'
     assert actual.unnecessary_savings
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                         Journal Settings
+# ---------------------------------------------------------------------------------------
+def test_journal_settings_func():
+    view = resolve('/settings/journal/')
+
+    assert views.SettingsJournal == view.func.view_class
+
+
+def test_journal_settings_status_code(client_logged):
+    url = reverse('users:settings_journal')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_journal_settings_form_save(client_logged):
+    data = {
+        'lang': 'lt',
+        'title': 'xxx'
+    }
+
+    url = reverse('users:settings_journal')
+
+    client_logged.post(url, data, **X_Req)
+
+    actual = Journal.objects.first()
+    assert actual.lang == 'lt'
+    assert actual.title == 'xxx'

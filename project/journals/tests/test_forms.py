@@ -3,9 +3,8 @@ import json
 import pytest
 
 from ...expenses.factories import ExpenseTypeFactory
-from ...journals.factories import JournalFactory
 from ...journals.models import Journal
-from ..forms import UnnecessaryForm
+from ..forms import SettingsForm, UnnecessaryForm
 
 pytestmark = pytest.mark.django_db
 
@@ -107,3 +106,78 @@ def test_form_save_unchecked_expenses(get_user):
     actual = Journal.objects.first()
     assert not actual.unnecessary_expenses
     assert not actual.unnecessary_savings
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                           Settings Form
+# ---------------------------------------------------------------------------------------
+def test_settings_form_init():
+    SettingsForm()
+
+
+def test_settings_form_fields():
+    form = SettingsForm().as_p()
+
+    assert '<select name="lang"' in form
+    assert '<input type="text" name="title"' in form
+
+
+def test_settings_form_languages():
+    form = SettingsForm().as_p()
+
+    # 2 languages so far: lt, en
+    assert form.count('<option value=') == 2
+
+
+def test_settings_form_lang_initial():
+    form = SettingsForm().as_p()
+
+    assert '<option value="en" selected>Anglų</option>' in form
+
+
+def test_settings_form_title_initial():
+    form = SettingsForm().as_p()
+
+    assert '<input type="text" name="title" value="bob Journal"' in form
+
+
+def test_settings_form_translation():
+    form = SettingsForm().as_p()
+
+    assert 'Svetainės kalba:' in form
+    assert 'Svetainės pavadinimas:' in form
+
+
+def test_settings_form_save():
+    form = SettingsForm(data={
+        'title': 'zzz',
+        'lang': 'lt'
+    })
+
+    assert form.is_valid()
+
+    form.save()
+
+    actual = Journal.objects.first()
+
+    assert actual.lang == 'lt'
+    assert actual.title == 'zzz'
+
+
+def test_settings_form_save_lang_invalid():
+    form = SettingsForm(data={
+        'title': 'zzz',
+        'lang': 'x'
+    })
+
+    assert not form.is_valid()
+
+
+@pytest.mark.parametrize('title', ['xx', 'x'*255])
+def test_settings_form_save_title_invalid(title):
+    form = SettingsForm(data={
+        'title': title,
+        'lang': 'en'
+    })
+
+    assert not form.is_valid()
