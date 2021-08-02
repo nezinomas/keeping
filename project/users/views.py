@@ -55,7 +55,14 @@ class Login(auth_views.LoginView):
 
         _user_settings(user)
 
-        return HttpResponseRedirect(self.get_success_url())
+        lang = user.journal.lang
+
+        activate(lang)
+
+        response = HttpResponseRedirect(self.get_success_url())
+        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang)
+
+        return response
 
 
 class Logout(auth_views.LogoutView):
