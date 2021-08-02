@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-30 16:13+0300\n"
-"PO-Revision-Date: 2021-07-30 16:13+0300\n"
+"POT-Creation-Date: 2021-08-02 15:07+0300\n"
+"PO-Revision-Date: 2021-08-02 15:08+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -305,7 +305,7 @@ msgstr "01.01 mokesčiai"
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:12
 #: .\project\savings\forms.py:77
 #: .\project\savings\templates\savings\includes\savings_list.html:14
-#: .\project\transactions\forms.py:90 .\project\transactions\forms.py:132
+#: .\project\transactions\forms.py:91 .\project\transactions\forms.py:133
 #: .\project\transactions\templates\transactions\includes\table.html:12
 msgid "Fees"
 msgstr "Mokesčiai"
@@ -520,6 +520,7 @@ msgstr "Redaguoti"
 #: .\project\plans\templates\plans\includes\generic_list.html:39
 #: .\project\savings\templates\savings\includes\savings_list.html:35
 #: .\project\transactions\templates\transactions\includes\table.html:32
+#: .\project\users\templates\users\includes\users_lists.html:21
 msgid "Delete"
 msgstr "Trinti"
 
@@ -568,6 +569,47 @@ msgstr "Anglų"
 #: .\project\config\settings\base.py:84
 msgid "Lithuania"
 msgstr "Lietuvių"
+
+#: .\project\core\i18n.py:3
+msgid "Your password can’t be too similar to your other personal information."
+msgstr ""
+"Jūsų slaptažodis negali būti pernelyg panašus į kitą asmeninę informaciją."
+
+#: .\project\core\i18n.py:4
+msgid "Your password can’t be a commonly used password."
+msgstr "Jūsų slaptažodis negali būti dažniausiai naudojamas slaptažodis."
+
+#: .\project\core\i18n.py:5
+msgid "Your password can’t be entirely numeric."
+msgstr "Jūsų slaptažodis negali būti vien tik skaitmenys."
+
+#: .\project\core\i18n.py:6
+msgid "The two password fields didn’t match."
+msgstr "Slaptažodžiai nesutampa."
+
+#: .\project\core\i18n.py:7
+msgid "Go to today"
+msgstr "Šiandiena"
+
+#: .\project\core\i18n.py:8
+msgid "Clear selection"
+msgstr "Išvalyti pasirinkimą"
+
+#: .\project\core\i18n.py:9
+msgid "Close the picker"
+msgstr "Uždaryti"
+
+#: .\project\core\i18n.py:10
+msgid "Select Month"
+msgstr "Pasirinkti mėnesį"
+
+#: .\project\core\i18n.py:11
+msgid "Next Month"
+msgstr "Kitas mėnuo"
+
+#: .\project\core\i18n.py:12
+msgid "Previous Month"
+msgstr "Ankstesnis mėnesis"
 
 #: .\project\core\lib\transalation.py:6
 msgid "January"
@@ -654,6 +696,7 @@ msgid "Insert"
 msgstr "Įrašyti"
 
 #: .\project\core\mixins\views.py:73
+#: .\project\users\templates\users\includes\settings_form.html:6
 msgid "Update"
 msgstr "Atnaujinti"
 
@@ -674,6 +717,8 @@ msgstr "Įrašyti ir uždaryti"
 #: .\project\core\templates\core\includes\generic_modal.html:10
 #: .\project\plans\templates\plans\includes\copy_plans_form.html:12
 #: .\project\templates\modal_images.html:9
+#: .\project\users\templates\users\invite.html:7
+#: .\project\users\templates\users\invite.html:16
 msgid "Close"
 msgstr "Uždaryti"
 
@@ -704,8 +749,8 @@ msgstr "Ieškoti"
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:8
 #: .\project\savings\forms.py:74
 #: .\project\savings\templates\savings\includes\savings_list.html:9
-#: .\project\transactions\forms.py:41 .\project\transactions\forms.py:91
-#: .\project\transactions\forms.py:133
+#: .\project\transactions\forms.py:42 .\project\transactions\forms.py:92
+#: .\project\transactions\forms.py:134
 #: .\project\transactions\templates\transactions\includes\table.html:8
 msgid "Date"
 msgstr "Data"
@@ -1070,13 +1115,13 @@ msgstr "%(month)s mėnesį įrašų nėra."
 
 #: .\project\incomes\forms.py:45
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:13
-#: .\project\transactions\forms.py:33 .\project\transactions\forms.py:87
-#: .\project\transactions\forms.py:130
+#: .\project\transactions\forms.py:34 .\project\transactions\forms.py:88
+#: .\project\transactions\forms.py:131
 #: .\project\transactions\templates\transactions\includes\table.html:11
 msgid "Amount"
 msgstr "Suma"
 
-#: .\project\incomes\forms.py:47 .\project\incomes\forms.py:66
+#: .\project\incomes\forms.py:47 .\project\incomes\forms.py:72
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:10
 #: .\project\incomes\templates\incomes\includes\incomes_type_form.html:3
 #: .\project\incomes\templates\incomes\includes\incomes_type_list.html:5
@@ -1234,8 +1279,8 @@ msgstr "Skaičiavimai"
 
 #: .\project\savings\forms.py:75
 #: .\project\savings\templates\savings\includes\savings_list.html:11
-#: .\project\transactions\forms.py:42 .\project\transactions\forms.py:92
-#: .\project\transactions\forms.py:134
+#: .\project\transactions\forms.py:43 .\project\transactions\forms.py:93
+#: .\project\transactions\forms.py:135
 #: .\project\transactions\templates\transactions\includes\table.html:9
 msgid "From account"
 msgstr "Iš sąskaitos"
@@ -1311,21 +1356,23 @@ msgstr "Suvestinės"
 msgid "Log out"
 msgstr "Išsiregistruoti"
 
-#: .\project\templates\base.html:176
+#: .\project\templates\base.html:176 .\project\users\views.py:137
+#: .\project\users\views.py:138
 msgid "Change password"
 msgstr "Keisti slaptažodį"
 
 #: .\project\templates\base.html:179
+#: .\project\users\templates\users\settings_index.html:20
 msgid "Settings"
 msgstr "Nustatymai"
 
-#: .\project\transactions\forms.py:43 .\project\transactions\forms.py:93
-#: .\project\transactions\forms.py:135
+#: .\project\transactions\forms.py:44 .\project\transactions\forms.py:94
+#: .\project\transactions\forms.py:136
 #: .\project\transactions\templates\transactions\includes\table.html:10
 msgid "To account"
 msgstr "Į sąskaitą"
 
-#: .\project\transactions\forms.py:89 .\project\transactions\forms.py:131
+#: .\project\transactions\forms.py:90 .\project\transactions\forms.py:132
 msgid "Amount left after fees"
 msgstr "Suma kuri lieka atskaičius mokesčius"
 
@@ -1357,6 +1404,183 @@ msgstr "Sąskaita &rArr; Sąskaita"
 msgctxt "account button"
 msgid "Account"
 msgstr "Sąskaitą"
+
+#: .\project\users\forms.py:21 .\project\users\forms.py:34
+#: .\project\users\templates\users\includes\users_lists.html:8
+msgid "Email"
+msgstr "El. paštas"
+
+#: .\project\users\templates\users\includes\users_delete.html:4
+msgid "Delete user"
+msgstr "Trinti vartotoją"
+
+#: .\project\users\templates\users\includes\users_lists.html:7
+msgid "User"
+msgstr "Vartototjas"
+
+#: .\project\users\templates\users\includes\users_lists.html:9
+msgid "Admin"
+msgstr "Administratorius"
+
+#: .\project\users\templates\users\includes\users_lists.html:30
+msgid "There are no additional users."
+msgstr "Nėra papildomų vartotojų."
+
+#: .\project\users\templates\users\invite.html:6
+msgid "Invitation"
+msgstr "Pakvietimas"
+
+#: .\project\users\templates\users\invite.html:12
+msgid "Sent invitation"
+msgstr "Siųsti pakvietimą"
+
+#: .\project\users\templates\users\invite.html:14
+msgid "Email sent"
+msgstr "Laiškas išsiųstas"
+
+#: .\project\users\templates\users\login.html:19
+msgid "New to this site?"
+msgstr "Naujokas šioje svetainėje?"
+
+#: .\project\users\templates\users\login.html:19 .\project\users\views.py:80
+#: .\project\users\views.py:81 .\project\users\views.py:209
+#: .\project\users\views.py:210
+msgid "Sign up"
+msgstr "Užsiregistruoti"
+
+#: .\project\users\templates\users\login.html:24
+msgid "Already have an account?"
+msgstr "Jau turite paskyrą?"
+
+#: .\project\users\templates\users\login.html:24 .\project\users\views.py:45
+#: .\project\users\views.py:46
+msgid "Log in"
+msgstr "Prisijungti"
+
+#: .\project\users\templates\users\login.html:31
+msgid "Forgot your password?"
+msgstr "Pamiršai slaptažodį?"
+
+#: .\project\users\templates\users\login.html:38
+msgid ""
+"It seems that your invitation is no longer valid. Ask a friend to provide a "
+"new link."
+msgstr ""
+"Atrodo, kad jūsų kvietimas nebegalioja. Paprašykite draugo atsiųsti naują "
+"nuorodą."
+
+#: .\project\users\templates\users\password_change_done.html:8
+msgid "Success!"
+msgstr "Sėkmė!"
+
+#: .\project\users\templates\users\password_change_done.html:8
+msgid "Your password has been changed!"
+msgstr "Jūsų slaptažodis pakeistas!"
+
+#: .\project\users\templates\users\password_change_done.html:10
+msgid "Return to home page"
+msgstr "Grįžti į pagrindinį puslapį"
+
+#: .\project\users\templates\users\password_reset_complete.html:7
+msgid "Password changed!"
+msgstr "Slaptažodis pakeistas!"
+
+#: .\project\users\templates\users\password_reset_complete.html:8
+msgid ""
+"You have successfully changed your password! You may now proceed to log in."
+msgstr "Sėkmingai pakeitėte slaptažodį! Dabar galite prisijungti."
+
+#: .\project\users\templates\users\password_reset_complete.html:9
+msgid "Return to Log in"
+msgstr "Grįžti į prisijungimo puslapį"
+
+#: .\project\users\templates\users\password_reset_confirm.html:9
+#, python-format
+msgid "Change password for <b>%(user)s</b>"
+msgstr "Keisti <b>%(user)s</b> slaptažodį"
+
+#: .\project\users\templates\users\password_reset_confirm.html:14
+msgid "Change Password"
+msgstr "Keisti slaptažodį"
+
+#: .\project\users\templates\users\password_reset_confirm.html:19
+#: .\project\users\views.py:106 .\project\users\views.py:121
+msgid "Reset your password"
+msgstr "Pakeisti slaptažodį"
+
+#: .\project\users\templates\users\password_reset_confirm.html:20
+msgid ""
+"It looks like you clicked on an invalid password reset link. Please try "
+"again."
+msgstr ""
+"Atrodo, kad spustelėjote negaliojančią slaptažodžio atstatymo nuorodą. "
+"Bandykite dar kartą."
+
+#: .\project\users\templates\users\password_reset_confirm.html:21
+msgid "Request a new password reset link"
+msgstr "Prašyti naujos slaptažodžio atstatymo nuorodos"
+
+#: .\project\users\templates\users\password_reset_done.html:9
+msgid "Return to Log In"
+msgstr "Grįžti į Prisijungimo puslapį"
+
+#: .\project\users\templates\users\settings_index.html:27
+msgid "Journal settings"
+msgstr "Svetainės nustatymai"
+
+#: .\project\users\templates\users\settings_index.html:35
+msgid "Users"
+msgstr "Vartototjai"
+
+#: .\project\users\templates\users\settings_index.html:36
+msgid "Sent invite link"
+msgstr "Siųsti pakvietimo nuorodą"
+
+#: .\project\users\templates\users\settings_index.html:43
+msgid "Unneccessary expenses"
+msgstr "Nebūtinos išlaidos"
+
+#: .\project\users\views.py:105
+msgid "Send password reset email"
+msgstr "Siųsti slaptažodžio atstatymo nuorodą"
+
+#: .\project\users\views.py:107
+msgid ""
+"Enter your email address and system will send you a link to reset your "
+"pasword."
+msgstr ""
+"Įveskite savo el. pašto adresą ir sistema atsiųs nuorodą, kad atstatytumėte "
+"slaptažodį."
+
+#: .\project\users\views.py:122
+msgid ""
+"Check your email for a link to reset your password. If it doesn't appear "
+"within a few minutes, check your spam folder."
+msgstr ""
+"Patikrinkite el. pašto dėžutę, joje turi būti laiškas su slaptažodžio "
+"atstatymo nuoroda. Jei laiško negausite per kelias minutes, patikrinkite "
+"šlamšto aplanką."
+
+#: .\project\users\views.py:291
+msgid "Warning"
+msgstr "Įspėjimas"
+
+#: .\project\users\views.py:292
+msgid "You cannot delete yourself."
+msgstr "Negalite ištrinti savęs."
+
+#, fuzzy
+#~| msgid "Log in"
+#~ msgid "Log In"
+#~ msgstr "Prisijungti"
+
+#, fuzzy
+#~| msgid "Sign up"
+#~ msgid "Sign Up"
+#~ msgstr "Užsiregistruoti"
+
+#~ msgid "Return to log in"
+#~ msgstr "Grįžti į Prisijungimo puslapį"
 
 #, fuzzy
 #~| msgctxt "record button"

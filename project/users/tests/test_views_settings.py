@@ -108,7 +108,7 @@ def test_users_no_additional_users(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode('utf-8')
 
-    assert 'There are no additional users.' in actual
+    assert 'Nėra papildomų vartotojų.' in actual
 
 
 def test_users_one_additional_user(get_user, client_logged):
@@ -181,7 +181,7 @@ def test_users_get_cant_delete_self(get_user, client_logged):
 
     assert response.status_code == 200
     assert User.objects.all().count() == 1
-    assert 'You cannot delete yourself.' in actual
+    assert 'Negalite ištrinti savęs.' in actual
 
 
 def test_users_post_cant_delete_self(get_user, client_logged):
@@ -191,7 +191,7 @@ def test_users_post_cant_delete_self(get_user, client_logged):
 
     assert response.status_code == 200
     assert User.objects.all().count() == 1
-    assert 'You cannot delete yourself.' in actual
+    assert 'Negalite ištrinti savęs.' in actual
 
 
 # ---------------------------------------------------------------------------------------

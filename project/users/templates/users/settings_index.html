@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block head %}
 <style>
@@ -16,14 +17,14 @@
 {% block content %}
 
 <div class="row mt-2 mx-0">
-    <div class="col text-center bg-light"><h6 class="pt-1 pb-2">Settings</h6></div>
+    <div class="col text-center bg-light"><h6 class="pt-1 pb-2">{% translate 'Settings' %}</h6></div>
 </div>
 
 <div class="row">
     <div class="col">
         <div class="row settings_row">
             <div class="col">
-                <h6 class="pb-2">Svetainės nustatytmai</h6>
+                <h6 class="pb-2">{% translate 'Journal settings' %}</h6>
             </div>
         </div>
         <div id="journal_ajax" class="mt-3">{{ settings_journal }}</div>
@@ -31,15 +32,15 @@
 
     <div class="col">
         <div class="row settings_row">
-            <div class="col"><h6 class="pb-2">Users</h6></div>
-            <div class="col text-end pe-0 me-2"><a role="button" class="btn btn-sm btn-primary js-invite" data-url="{% url 'users:invite' %}">Sent invite link</a></div>
+            <div class="col"><h6 class="pb-2">{% translate 'Users'%}</h6></div>
+            <div class="col text-end pe-0 me-2"><a role="button" class="btn btn-sm btn-primary js-invite" data-url="{% url 'users:invite' %}">{% translate 'Sent invite link' %}</a></div>
         </div>
         <div id="user_list" class="mt-3">{{ users }}</div>
     </div>
 
     <div class="col">
         <div class="row settings_row">
-            <div class="col"><h6 class="pb-2">Nebūtinos išlaidos</h6></div>
+            <div class="col"><h6 class="pb-2">{% translate 'Unneccessary expenses' %}</h6></div>
         </div>
         <div id="unnecessary_ajax" class="mt-3">{{ settings_unnecessary }}</div>
     </div>

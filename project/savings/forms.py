@@ -15,17 +15,14 @@ class SavingTypeForm(forms.ModelForm):
         model = SavingType
         fields = ['journal', 'title', 'closed']
 
-        widgets = {
-            'closed': YearPickerInput(
-                options={
-                    "format": "YYYY",
-                    "locale": "lt",
-                }
-            ),
-        }
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['closed'].widget = YearPickerInput(
+            options={
+                "format": "YYYY",
+                "locale": utils.get_user().journal.lang,
+            })
 
         # journal input
         self.fields['journal'].initial = utils.get_user().journal
@@ -44,19 +41,16 @@ class SavingForm(forms.ModelForm):
         model = Saving
         fields = ['date', 'price', 'fee', 'remark', 'saving_type', 'account']
 
-        widgets = {
-            'date': DatePickerInput(
-                options={
-                    "format": "YYYY-MM-DD",
-                    "locale": "lt",
-                }
-            ),
-        }
-
     field_order = ['date', 'saving_type', 'account', 'price', 'fee', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": utils.get_user().journal.lang,
+            })
 
         # form inputs settings
         self.fields['price'].widget.attrs = {'step': '0.01'}

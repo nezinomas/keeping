@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.utils.translation import gettext as _
 
 from .models import User
 
@@ -14,6 +15,10 @@ class SignUpForm(UserCreationForm):
         model = User
         fields = ('username', 'email', 'password1', 'password2')
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['email'].label = _('Email')
 
 class InviteForm(forms.Form):
     email = forms.EmailField(
@@ -22,3 +27,8 @@ class InviteForm(forms.Form):
     )
     class Meta:
         fields = ('email')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['email'].label = _('Email')

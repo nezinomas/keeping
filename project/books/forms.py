@@ -14,28 +14,28 @@ class BookForm(forms.ModelForm):
         model = Book
         fields = ['user', 'started', 'ended', 'author', 'title', 'remark']
 
-        widgets = {
-            'started': DatePickerInput(
-                options={
-                    "format": "YYYY-MM-DD",
-                    "locale": "lt",
-                }
-            ).start_of('event days'),
-            'ended': DatePickerInput(
-                options={
-                    "format": "YYYY-MM-DD",
-                    "locale": "lt",
-                }
-            ).end_of('event days'),
-        }
-
     field_order = ['started', 'ended', 'author', 'title', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        user = utils.get_user()
+        lang = user.journal.lang
+
+        self.fields['started'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": lang,
+            }).start_of('event days')
+
+        self.fields['ended'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": lang,
+            }).end_of('event days')
+
         # user input
-        self.fields['user'].initial = utils.get_user()
+        self.fields['user'].initial = user
         self.fields['user'].disabled = True
         self.fields['user'].widget = forms.HiddenInput()
 

@@ -1,2 +1,4 @@
 {% load form %}
-{% generic_delete_form title='Delete User' update_container='user_list' %}
+{% load i18n %}
+
+{% generic_delete_form title=_('Delete user') update_container='user_list' %}

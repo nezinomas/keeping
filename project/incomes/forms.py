@@ -15,19 +15,16 @@ class IncomeForm(forms.ModelForm):
         model = Income
         fields = ['date', 'price', 'remark', 'account', 'income_type']
 
-        widgets = {
-            'date': DatePickerInput(
-                options={
-                    "format": "YYYY-MM-DD",
-                    "locale": "lt",
-                }
-            ),
-        }
-
     field_order = ['date', 'income_type', 'account', 'price', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": utils.get_user().journal.lang,
+            })
 
         # form inputs settings
         self.fields['remark'].widget.attrs['rows'] = 3
