@@ -18,6 +18,11 @@ class Journal(TitleAbstract):
     unnecessary_savings = models.BooleanField(
         default=False
     )
+    lang = models.CharField(
+        max_length=2,
+        blank=False,
+        default='en'
+    )
 
     def __str__(self):
         return f'{self.title}'

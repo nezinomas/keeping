@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-29 16:32+0300\n"
-"PO-Revision-Date: 2021-07-29 16:32+0300\n"
+"POT-Creation-Date: 2021-07-30 16:13+0300\n"
+"PO-Revision-Date: 2021-07-30 16:13+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -67,7 +67,7 @@ msgstr "uždaryta"
 #: .\project\bookkeeping\lib\views_helpers.py:460
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:8
 #: .\project\bookkeeping\templates\bookkeeping\month.html:113
-#: .\project\bookkeeping\views.py:134 .\project\journals\forms.py:42
+#: .\project\bookkeeping\views.py:134 .\project\journals\forms.py:43
 #: .\project\plans\templates\plans\index.html:68
 #: .\project\savings\templates\savings\includes\savings_form.html:5
 #: .\project\templates\base.html:95
@@ -561,11 +561,6 @@ msgstr "Knygą"
 msgid "year goal"
 msgstr "metų tikslą"
 
-#: .\project\books\tests\test_views.py:389
-#: .\project\core\templates\core\includes\generic_delete_form.html:10
-msgid "Are you sure you want to delete"
-msgstr "Ar tikrai norite ištrinti"
-
 #: .\project\config\settings\base.py:83
 msgid "English"
 msgstr "Anglų"
@@ -681,6 +676,10 @@ msgstr "Įrašyti ir uždaryti"
 #: .\project\templates\modal_images.html:9
 msgid "Close"
 msgstr "Uždaryti"
+
+#: .\project\core\templates\core\includes\generic_delete_form.html:10
+msgid "Are you sure you want to delete"
+msgstr "Ar tikrai norite ištrinti"
 
 #: .\project\core\templates\core\includes\generic_form.html:22
 msgid "Add"
@@ -1097,6 +1096,14 @@ msgstr "Pajamas"
 msgctxt "income type button"
 msgid "Incomes type"
 msgstr "Pajamų rūšį"
+
+#: .\project\journals\forms.py:85
+msgid "Journal language"
+msgstr "Svetainės kalba"
+
+#: .\project\journals\forms.py:86
+msgid "Journal title"
+msgstr "Svetainės pavadinimas"
 
 #: .\project\pensions\forms.py:44
 msgid "Fee"
