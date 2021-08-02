@@ -89,6 +89,7 @@ class SettingsForm(forms.Form):
         journal = utils.get_user().journal
 
         lang = self.cleaned_data.get('lang')
+
         if lang:
             journal.lang = lang
 
