@@ -77,7 +77,7 @@ DATABASES = {
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # ================   GENERAL CONFIGURATION
-LANGUAGE_CODE = 'lt'
+LANGUAGE_CODE = 'en'
 
 LANGUAGES = [
     ('en', _('English')),
