@@ -17,14 +17,6 @@ class ExpenseForm(forms.ModelForm):
         model = Expense
         fields = ('date', 'price', 'quantity', 'expense_type',
                   'expense_name', 'remark', 'exception', 'account', 'attachment')
-        widgets = {
-            'date': DatePickerInput(
-                options={
-                    "format": "YYYY-MM-DD",
-                    "locale": "lt",
-                }
-            ),
-        }
 
     field_order = [
         'date',
@@ -41,6 +33,12 @@ class ExpenseForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": utils.get_user().journal.lang,
+            })
 
         # inital values
         self.fields['date'].initial = set_year_for_form()

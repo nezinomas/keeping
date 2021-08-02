@@ -12,22 +12,22 @@ class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
         fields = ['journal', 'title', 'closed', 'order']
-        widgets = {
-            'closed': YearPickerInput(
-                options={
-                    "format": "YYYY",
-                    "locale": "lt",
-                }
-            ),
-        }
 
     field_order = ['title', 'order', 'closed']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        journal = utils.get_user().journal
+
+        self.fields['closed'].widget = YearPickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": journal.lang,
+            })
+
         # journal input
-        self.fields['journal'].initial = utils.get_user().journal
+        self.fields['journal'].initial = journal
         self.fields['journal'].disabled = True
         self.fields['journal'].widget = forms.HiddenInput()
 

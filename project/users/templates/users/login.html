@@ -1,4 +1,5 @@
 {% extends 'users/users_base.html' %}
+{% load i18n %}
 
 {% block content %}
 <div class="card my-auto">
@@ -15,26 +16,26 @@
     </div>
     {% if signup_link %}
     <div class="card-footer text-muted text-center">
-        New to Bookkeeping? <a href="{% url 'users:signup' %}">Sign up</a>
+        {% translate 'New to this site?' %} <a href="{% url 'users:signup' %}">{% translate 'Sign up' %}</a>
     </div>
     {% endif %}
     {% if login_link %}
     <div class="card-footer text-muted text-center">
-        Already have an account? <a href="{% url 'users:login' %}">Log in</a>
+        {% translate 'Already have an account?' %} <a href="{% url 'users:login' %}">{% translate 'Log in' %}</a>
     </div>
     {% endif %}
 </div>
 {% if reset_link and form.errors %}
 <div class="text-center py-2">
     <small>
-        <a href="{% url 'users:password_reset' %}">Forgot your password?</a>
+        <a href="{% url 'users:password_reset' %}">{% translate 'Forgot your password?' %}</a>
     </small>
 </div>
 {% endif %}
 
 {% else %}
     <div class="card-body">
-        <p class="my-auto text-center py-3">It seems that your invitation is no longer valid. Ask a friend to provide a new link.</p>
+        <p class="my-auto text-center py-3">{% translate 'It seems that your invitation is no longer valid. Ask a friend to provide a new link.' %}</p>
     </div>
 {% endif %}
 

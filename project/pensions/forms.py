@@ -15,19 +15,16 @@ class PensionForm(forms.ModelForm):
         model = Pension
         fields = ['date', 'price', 'fee', 'remark', 'pension_type']
 
-        widgets = {
-            'date': DatePickerInput(
-                options={
-                    "format": "YYYY-MM-DD",
-                    "locale": "lt",
-                }
-            ),
-        }
-
     field_order = ['date', 'pension_type', 'price', 'fee', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": utils.get_user().journal.lang,
+            })
 
         # form inputs settings
         self.fields['price'].widget.attrs = {'step': '0.01'}

@@ -5,6 +5,7 @@ from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
+from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
 from .models import SavingChange, SavingClose, SavingType, Transaction
 
@@ -14,19 +15,16 @@ class TransactionForm(forms.ModelForm):
         model = Transaction
         fields = ['date', 'from_account', 'to_account', 'price']
 
-        widgets = {
-            'date': DatePickerInput(
-                options={
-                    "format": "YYYY-MM-DD",
-                    "locale": "lt",
-                }
-            ),
-        }
-
     field_order = ['date', 'from_account', 'to_account', 'price']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": utils.get_user().journal.lang,
+            })
 
         # initial values
         self.fields['price'].widget.attrs = {'step': '0.01'}
@@ -58,19 +56,16 @@ class SavingCloseForm(forms.ModelForm):
         model = SavingClose
         fields = ['date', 'from_account', 'to_account', 'price', 'fee']
 
-        widgets = {
-            'date': DatePickerInput(
-                options={
-                    "format": "YYYY-MM-DD",
-                    "locale": "lt",
-                }
-            ),
-        }
-
     field_order = ['date', 'from_account', 'to_account', 'price', 'fee']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": utils.get_user().journal.lang,
+            })
 
         # form input settings
         self.fields['price'].widget.attrs = {'step': '0.01'}
@@ -101,19 +96,16 @@ class SavingChangeForm(forms.ModelForm):
         model = SavingChange
         fields = ['date', 'from_account', 'to_account', 'price', 'fee']
 
-        widgets = {
-            'date': DatePickerInput(
-                options={
-                    "format": "YYYY-MM-DD",
-                    "locale": "lt",
-                }
-            ),
-        }
-
     field_order = ['date', 'from_account', 'to_account', 'price', 'fee']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": utils.get_user().journal.lang,
+            })
 
         # form input settings
         self.fields['price'].widget.attrs = {'step': '0.01'}

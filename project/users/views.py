@@ -1,6 +1,6 @@
-from django.conf import settings
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth import views as auth_views
 from django.core.mail import EmailMessage
@@ -11,6 +11,7 @@ from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls.base import reverse, reverse_lazy
 from django.utils.translation import activate
+from django.utils.translation import gettext as _
 from django.views.generic import CreateView
 from project.users import models
 
@@ -41,8 +42,8 @@ class Login(auth_views.LoginView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['submit_button_text'] = 'Log In'
-        context['card_title'] = 'Log In'
+        context['submit_button_text'] = _('Log in')
+        context['card_title'] = _('Log in')
         context['reset_link'] = True
         context['signup_link'] = True
         context['valid_link'] = True
@@ -76,8 +77,8 @@ class Signup(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['submit_button_text'] = 'Sign Up'
-        context['card_title'] = 'Sign Up'
+        context['submit_button_text'] = _('Sign up')
+        context['card_title'] = _('Sign up')
         context['login_link'] = True
         context['valid_link'] = True
         return context
@@ -101,9 +102,9 @@ class PasswordReset(auth_views.PasswordResetView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['submit_button_text'] = 'Send password reset email'
-        context['card_title'] = 'Reset your password'
-        context['card_text'] = 'Enter your email address and system will send you a link to reset your pasword.'
+        context['submit_button_text'] = _('Send password reset email')
+        context['card_title'] = _('Reset your password')
+        context['card_text'] = _('Enter your email address and system will send you a link to reset your pasword.')
         context['valid_link'] = True
         return context
 
@@ -117,8 +118,8 @@ class PasswordResetDone(auth_views.PasswordResetDoneView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['card_title'] = 'Reset your password'
-        context['card_text'] = 'Check your email for a link to reset your password. If it doesn\'t appear within a few minutes, check your spam folder.'
+        context['card_title'] = _('Reset your password')
+        context['card_text'] = _('Check your email for a link to reset your password. If it doesn\'t appear within a few minutes, check your spam folder.')
         return context
 
 
@@ -133,8 +134,8 @@ class PasswordChange(auth_views.PasswordChangeView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['submit_button_text'] = 'Change password'
-        context['card_title'] = 'Change password'
+        context['submit_button_text'] = _('Change password')
+        context['card_title'] = _('Change password')
         context['valid_link'] = True
 
         return context
@@ -205,8 +206,8 @@ class InviteSignup(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['submit_button_text'] = 'Sign Up'
-        context['card_title'] = 'Sign Up'
+        context['submit_button_text'] = _('Sign up')
+        context['card_title'] = _('Sign up')
         context['login_link'] = True
         context['valid_link'] = self.valid_link
         return context
@@ -287,8 +288,8 @@ class SettingsUsersDelete(SettingsQueryMixin, DeleteAjaxMixin):
                 request=request,
                 template_name='core/includes/generic_modal.html',
                 context={
-                    'title': 'Warning',
-                    'text': 'You cannot delete yourself.'
+                    'title': _('Warning'),
+                    'text': _('You cannot delete yourself.')
                 },
             )
             json_data = {
