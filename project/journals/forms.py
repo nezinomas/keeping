@@ -85,6 +85,8 @@ class SettingsForm(forms.Form):
         self.fields['lang'].label = _('Journal language')
         self.fields['title'].label = _('Journal title')
 
+        self.helper.form_show_labels = True
+
     def save(self):
         journal = utils.get_user().journal
 
