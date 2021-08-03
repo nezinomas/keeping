@@ -442,7 +442,9 @@ class IndexHelper():
     def render_no_incomes(self):
         journal = utils.get_user().journal
         expenses = Expense.objects.last_months()
-        pension, fund = split_funds(self._fund, 'invl')
+        pension = [*SavingBalance.objects.year(self._year, ["pensions"])]
+        fund = [*SavingBalance.objects.year(self._year, ["shares", "funds"])]
+
         savings = None
         unnecessary = []
 

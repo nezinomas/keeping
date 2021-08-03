@@ -218,6 +218,8 @@ class SavingBalanceQuerySet(models.QuerySet):
         if types:
             qs = qs.filter(saving_type__type__in=types)
 
+        qs = qs.order_by('saving_type__type', 'saving_type__title')
+
         return qs.values(
             'year',
             'past_amount', 'past_fee',
