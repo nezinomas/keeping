@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-03 10:07+0300\n"
-"PO-Revision-Date: 2021-08-03 10:22+0300\n"
+"POT-Creation-Date: 2021-08-03 14:47+0300\n"
+"PO-Revision-Date: 2021-08-03 14:47+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -64,7 +64,7 @@ msgstr "uždaryta"
 #: .\project\bookkeeping\lib\views_helpers.py:202
 #: .\project\bookkeeping\lib\views_helpers.py:207
 #: .\project\bookkeeping\lib\views_helpers.py:210
-#: .\project\bookkeeping\lib\views_helpers.py:460
+#: .\project\bookkeeping\lib\views_helpers.py:462
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:8
 #: .\project\bookkeeping\templates\bookkeeping\month.html:113
 #: .\project\bookkeeping\views.py:134 .\project\journals\forms.py:43
@@ -99,44 +99,44 @@ msgstr "Fondai"
 msgid "Pensions"
 msgstr "Pensijos"
 
-#: .\project\bookkeeping\lib\views_helpers.py:505
+#: .\project\bookkeeping\lib\views_helpers.py:506
 #: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:14
 msgid "Money"
 msgstr "Pinigai"
 
-#: .\project\bookkeeping\lib\views_helpers.py:505
+#: .\project\bookkeeping\lib\views_helpers.py:506
 msgid "Wealth"
 msgstr "Turtas"
 
-#: .\project\bookkeeping\lib\views_helpers.py:512
+#: .\project\bookkeeping\lib\views_helpers.py:513
 #: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_salary.html:98
 msgid "Average incomes"
 msgstr "Vidutinės pajamos"
 
-#: .\project\bookkeeping\lib\views_helpers.py:512
+#: .\project\bookkeeping\lib\views_helpers.py:513
 msgid "Average expenses"
 msgstr "Vidutinės išlaidos"
 
-#: .\project\bookkeeping\lib\views_helpers.py:524
+#: .\project\bookkeeping\lib\views_helpers.py:525
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:21
 #: .\project\debts\templates\debts\includes\borrows_form.html:5
 #: .\project\debts\templates\debts\index.html:15
 msgid "Borrow"
 msgstr "Paskolinta"
 
-#: .\project\bookkeeping\lib\views_helpers.py:524
+#: .\project\bookkeeping\lib\views_helpers.py:525
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:22
 msgid "Borrow return"
 msgstr "Gražino"
 
-#: .\project\bookkeeping\lib\views_helpers.py:538
+#: .\project\bookkeeping\lib\views_helpers.py:539
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:23
 #: .\project\debts\templates\debts\includes\lents_form.html:5
 #: .\project\debts\templates\debts\index.html:30
 msgid "Lent"
 msgstr "Pasiskolinta"
 
-#: .\project\bookkeeping\lib\views_helpers.py:538
+#: .\project\bookkeeping\lib\views_helpers.py:539
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:24
 msgid "Lent return"
 msgstr "Gražinau"
@@ -289,7 +289,7 @@ msgstr "Pirkta"
 #: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:16
 #: .\project\pensions\forms.py:43
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:9
-#: .\project\savings\forms.py:32 .\project\savings\forms.py:73
+#: .\project\savings\forms.py:32 .\project\savings\forms.py:74
 #: .\project\savings\templates\savings\includes\savings_list.html:10
 #: .\project\savings\templates\savings\includes\savings_type_form.html:4
 msgid "Fund"
@@ -305,7 +305,7 @@ msgstr "01.01 mokesčiai"
 
 #: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:20
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:12
-#: .\project\savings\forms.py:71
+#: .\project\savings\forms.py:72
 #: .\project\savings\templates\savings\includes\savings_list.html:14
 #: .\project\transactions\forms.py:85 .\project\transactions\forms.py:124
 #: .\project\transactions\templates\transactions\includes\table.html:12
@@ -326,7 +326,7 @@ msgstr "Rinkos vertė"
 #: .\project\debts\templates\debts\includes\lents_return_list.html:10
 #: .\project\pensions\forms.py:40
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:11
-#: .\project\savings\forms.py:70
+#: .\project\savings\forms.py:71
 #: .\project\savings\templates\savings\includes\savings_list.html:13
 msgid "Sum"
 msgstr "Suma"
@@ -453,7 +453,7 @@ msgstr "Autorius"
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:12
 #: .\project\pensions\forms.py:42
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:10
-#: .\project\savings\forms.py:72
+#: .\project\savings\forms.py:73
 #: .\project\savings\templates\savings\includes\savings_list.html:12
 msgid "Remark"
 msgstr "Pastaba"
@@ -749,7 +749,7 @@ msgstr "Ieškoti"
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:9
 #: .\project\pensions\forms.py:39
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:8
-#: .\project\savings\forms.py:68
+#: .\project\savings\forms.py:69
 #: .\project\savings\templates\savings\includes\savings_list.html:9
 #: .\project\transactions\forms.py:39 .\project\transactions\forms.py:86
 #: .\project\transactions\forms.py:125
@@ -1130,7 +1130,7 @@ msgstr "Suma"
 msgid "Incomes type"
 msgstr "Pajamų rūšis"
 
-#: .\project\incomes\forms.py:64
+#: .\project\incomes\forms.py:64 .\project\savings\forms.py:34
 msgid "Type"
 msgstr "Tipas"
 
@@ -1291,7 +1291,7 @@ msgstr "Suma dienai"
 msgid "Calculations"
 msgstr "Skaičiavimai"
 
-#: .\project\savings\forms.py:69
+#: .\project\savings\forms.py:70
 #: .\project\savings\templates\savings\includes\savings_list.html:11
 #: .\project\transactions\forms.py:40 .\project\transactions\forms.py:87
 #: .\project\transactions\forms.py:126
