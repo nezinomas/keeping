@@ -212,8 +212,11 @@ class SavingBalanceQuerySet(models.QuerySet):
     def items(self):
         return self.related()
 
-    def year(self, year: int):
+    def year(self, year: int, types=None):
         qs = self.related().filter(year=year)
+
+        if types:
+            qs = qs.filter(saving_type__type__in=types)
 
         return qs.values(
             'year',
