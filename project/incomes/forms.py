@@ -50,7 +50,7 @@ class IncomeForm(forms.ModelForm):
 class IncomeTypeForm(forms.ModelForm):
     class Meta:
         model = IncomeType
-        fields = ['journal', 'title']
+        fields = ['journal', 'title', 'type']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -61,6 +61,7 @@ class IncomeTypeForm(forms.ModelForm):
         self.fields['journal'].widget = forms.HiddenInput()
 
         self.fields['title'].label = _('Incomes type')
+        self.fields['type'].label = _('Type')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
