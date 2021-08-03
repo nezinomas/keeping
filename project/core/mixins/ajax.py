@@ -2,6 +2,7 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
+from django.shortcuts import reverse
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 from django.views.generic.edit import FormView
@@ -71,6 +72,16 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
     def form_invalid(self, form):
         context = self.get_context_data(**{'no_items': True})
         context['form'] = form
+
+        # if object exists, generate update url
+        # if there are errors in the form and no url
+        # impossible to submit form data
+        if self.object:
+            app = H.app_name(self)
+            model = H.model_plural_name(self)
+            url = reverse(f"{app}:{model}_update", kwargs={"pk": self.object.pk})
+
+            context['url'] = url
 
         if utils.is_ajax(self.request):
             json_data = {'form_is_valid': False}
