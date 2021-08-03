@@ -231,6 +231,7 @@ def test_type_load_form(client_logged):
 def test_type_save(client_logged):
     data = {
         'title': 'TTT',
+        'type': 'funds',
     }
 
     url = reverse('savings:savings_type_new')
@@ -246,7 +247,9 @@ def test_type_save(client_logged):
 
 def test_type_save_with_closed(client_logged):
     data = {
-        'title': 'TTT', 'closed': '2000'
+        'title': 'TTT',
+        'closed': '2000',
+        'type': 'shares',
     }
 
     url = reverse('savings:savings_type_new')
@@ -276,7 +279,10 @@ def test_type_save_invalid_data(client_logged):
 def test_type_update(client_logged):
     saving = SavingTypeFactory()
 
-    data = {'title': 'TTT'}
+    data = {
+        'title': 'TTT',
+        'type': 'funds',
+    }
     url = reverse('savings:savings_type_update', kwargs={'pk': saving.pk})
 
     response = client_logged.post(url, data, **X_Req)
@@ -293,7 +299,11 @@ def test_type_update(client_logged):
 def test_type_update_with_closed(client_logged):
     saving = SavingTypeFactory()
 
-    data = {'title': 'TTT', 'closed': '2000'}
+    data = {
+        'title': 'TTT',
+        'closed': '2000',
+        'type': 'pensions',
+    }
     url = reverse('savings:savings_type_update', kwargs={'pk': saving.pk})
 
     response = client_logged.post(url, data, **X_Req)
