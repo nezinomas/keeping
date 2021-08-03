@@ -52,7 +52,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
         )
 
         if income_type:
-            qs = qs.filter(income_type__title__in=income_type)
+            qs = qs.filter(income_type__type__in=income_type)
 
         return qs
 

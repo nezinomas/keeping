@@ -284,21 +284,42 @@ def test_income_year_sum_count_qs(django_assert_max_num_queries):
 
 
 def test_income_year_sum_filter():
-    IncomeFactory(date=date(1999, 1, 1), price=5.0, income_type=IncomeTypeFactory(title='x'))
-    IncomeFactory(date=date(1999, 1, 1), price=5.0, income_type=IncomeTypeFactory(title='x'))
-    IncomeFactory(date=date(1999, 1, 1), price=15.0, income_type=IncomeTypeFactory(title='y'))
+    IncomeFactory(
+        date=date(1999, 1, 1),
+        price=5.0,
+        income_type=IncomeTypeFactory(title='x', type='s'))
+    IncomeFactory(
+        date=date(1999, 1, 1),
+        price=5.0,
+        income_type=IncomeTypeFactory(title='xx', type='s'))
+    IncomeFactory(
+        date=date(1999, 1, 1),
+        price=15.0,
+        income_type=IncomeTypeFactory(title='xxx', type='o'))
 
-    actual = Income.objects.sum_by_year(['x'])
+    actual = Income.objects.sum_by_year(['s'])
 
     assert actual[0]['year'] == 1999
     assert actual[0]['sum'] == 10.0
 
 
 def test_income_year_sum_filter_two_types():
-    IncomeFactory(date=date(1999, 1, 1), price=5.0, income_type=IncomeTypeFactory(title='x'))
-    IncomeFactory(date=date(1999, 1, 1), price=5.0, income_type=IncomeTypeFactory(title='x'))
-    IncomeFactory(date=date(1999, 1, 1), price=15.0, income_type=IncomeTypeFactory(title='y'))
-    IncomeFactory(date=date(1999, 1, 1), price=20.0, income_type=IncomeTypeFactory(title='z'))
+    IncomeFactory(
+        date=date(1999, 1, 1),
+        price=5.0,
+        income_type=IncomeTypeFactory(title='1', type='x'))
+    IncomeFactory(
+        date=date(1999, 1, 1),
+        price=5.0,
+        income_type=IncomeTypeFactory(title='2', type='x'))
+    IncomeFactory(
+        date=date(1999, 1, 1),
+        price=15.0,
+        income_type=IncomeTypeFactory(title='3', type='y'))
+    IncomeFactory(
+        date=date(1999, 1, 1),
+        price=20.0,
+        income_type=IncomeTypeFactory(title='4', type='z'))
 
     actual = Income.objects.sum_by_year(['x', 'y'])
 
