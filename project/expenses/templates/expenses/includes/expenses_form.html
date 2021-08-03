@@ -1,6 +1,9 @@
-{% load form %}{% load i18n %}
+{% load form %}
+{% load i18n %}
+
 {% url 'expenses:load_expense_name' as chained_url %}
 {% translate "Expenses" context "expenses form title" as form_title %}
+
 {% generic_form title=form_title update_container='expenses_list' chained_dropdown=chained_url %}
 
 <script>
