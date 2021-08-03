@@ -165,7 +165,7 @@ class Summary(IndexMixin):
         })
 
         # data for salary summary
-        qs = list(Income.objects.sum_by_year(['Atlyginimas', 'Premijos']))
+        qs = list(Income.objects.sum_by_year(['salary']))
         salary_years = [x['year'] for x in qs]
 
         context.update({
