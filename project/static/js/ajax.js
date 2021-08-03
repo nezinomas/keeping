@@ -51,34 +51,32 @@ $(function () {
                     $(`#${ajax_update_container}`).html(data.html_list);
                     $("#modal-form .modal-content").html(data.html_form);
 
-                    var price = document.getElementById("id_price");
-                    if (price) {
-                        price.value = '0.00';
-                    }
+                    // if action=insert, reset form fields
+                    if(action == 'insert') {
+                        var price = document.getElementById("id_price");
+                        if (price) {
+                            price.value = '0.00';
+                        }
 
-                    var qty = document.getElementById("id_quantity");
-                    if (qty) {
-                        qty.value = 1;
-                    }
+                        var qty = document.getElementById("id_quantity");
+                        if (qty) {
+                            qty.value = 1;
+                        }
 
-                    var title = document.getElementById("id_title");
-                    if (title) {
-                        title.value = ''
-                    }
+                        var title = document.getElementById("id_title");
+                        if (title) {
+                            title.value = ''
+                        }
 
-                    var remark = document.getElementById("id_remark");
-                    if (remark) {
-                        remark.value = ''
-                    }
+                        var remark = document.getElementById("id_remark");
+                        if (remark) {
+                            remark.value = ''
+                        }
 
-                    var exception = document.getElementById("id_exception");
-                    if (exception) {
-                        exception.checked = false;
-                    }
-
-                    // on update close modal
-                    if (action == 'update' || action == 'delete') {
-                        $("#modal-form").modal("hide");
+                        var exception = document.getElementById("id_exception");
+                        if (exception) {
+                            exception.checked = false;
+                        }
                     }
 
                     // save and close

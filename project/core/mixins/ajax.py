@@ -46,6 +46,8 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
+        url = self._update_url()
+
         context = {}
         json_data = {}
 
@@ -61,6 +63,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
             context = self.get_context_data(**{'no_items': True})
 
         context['form'] = form
+        context['url'] = url
         json_data['form_is_valid'] = True
 
         if utils.is_ajax(self.request):
@@ -70,18 +73,11 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         return super().form_valid(form)
 
     def form_invalid(self, form):
+        url = self._update_url()
+
         context = self.get_context_data(**{'no_items': True})
         context['form'] = form
-
-        # if object exists, generate update url
-        # if there are errors in the form and no url
-        # impossible to submit form data
-        if self.object:
-            app = H.app_name(self)
-            model = H.model_plural_name(self)
-            url = reverse(f"{app}:{model}_update", kwargs={"pk": self.object.pk})
-
-            context['url'] = url
+        context['url'] = url
 
         if utils.is_ajax(self.request):
             json_data = {'form_is_valid': False}
@@ -100,6 +96,19 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         })
 
         return json_data
+
+    def _update_url(self):
+        url = None
+
+        # if object exists, generate update url
+        # if there are errors in the form and no url
+        # impossible to submit form data
+        if self.object:
+            app = H.app_name(self)
+            model = H.model_plural_name(self)
+            url = reverse(f"{app}:{model}_update", kwargs={"pk": self.object.pk})
+
+        return url
 
 
 class AjaxDeleteMixin(GetQuerysetMixin):

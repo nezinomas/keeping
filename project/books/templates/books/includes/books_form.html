@@ -1,3 +1,6 @@
-{% load form %}{% load i18n %}
+{% load form %}
+{% load i18n %}
+
 {% translate "Book" context "book form title" as form_title %}
+
 {% generic_form title=form_title update_container='book_list' %}
