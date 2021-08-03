@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-03 14:47+0300\n"
-"PO-Revision-Date: 2021-08-03 14:47+0300\n"
+"POT-Creation-Date: 2021-08-03 17:16+0300\n"
+"PO-Revision-Date: 2021-08-03 17:17+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -480,7 +480,7 @@ msgstr "Perskaitytos knygos"
 msgid "Delete book"
 msgstr "Trinti knygą"
 
-#: .\project\books\templates\books\includes\books_form.html:2
+#: .\project\books\templates\books\includes\books_form.html:4
 msgctxt "book form title"
 msgid "Book"
 msgstr "Knyga"
@@ -689,9 +689,13 @@ msgstr "Šeštadienis"
 msgid "Sunday"
 msgstr "Sekmadienis"
 
-#: .\project\core\mixins\ajax.py:168
+#: .\project\core\mixins\ajax.py:188
 msgid "Found nothing"
 msgstr "Nieko nerasta"
+
+#: .\project\core\mixins\ajax.py:209
+msgid "Form is broken."
+msgstr "Forma neveikia."
 
 #: .\project\core\mixins\views.py:55 .\project\plans\views.py:160
 msgid "Insert"
@@ -1077,7 +1081,7 @@ msgstr "Galioja"
 msgid "Delete expenses"
 msgstr "Trinti išlaidas"
 
-#: .\project\expenses\templates\expenses\includes\expenses_form.html:3
+#: .\project\expenses\templates\expenses\includes\expenses_form.html:5
 msgctxt "expenses form title"
 msgid "Expenses"
 msgstr "Išlaidos"

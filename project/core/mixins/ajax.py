@@ -206,7 +206,7 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
 
 class AjaxSearchMixin(AjaxCustomFormMixin):
     def post(self, request, *args, **kwargs):
-        err = {'error': 'Form is broken.'}
+        err = {'error': _('Form is broken.')}
         try:
             form_data = request.POST['form_data']
         except KeyError:
