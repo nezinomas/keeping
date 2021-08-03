@@ -22,12 +22,14 @@ def test_income_type_init_fields():
     form = IncomeTypeForm().as_p()
 
     assert '<input type="text" name="title"' in form
+    assert '<select name="type"' in form
     assert '<select name="user"' not in form
 
 
 def test_income_type_valid_data():
     form = IncomeTypeForm(data={
         'title': 'Title',
+        'type': 'salary',
     })
 
     assert form.is_valid()
@@ -35,6 +37,7 @@ def test_income_type_valid_data():
     data = form.save()
 
     assert data.title == 'Title'
+    assert data.type == 'salary'
     assert data.journal.title == 'bob Journal'
     assert data.journal.users.first().username == 'bob'
 
@@ -44,8 +47,9 @@ def test_income_type_blank_data():
 
     assert not form.is_valid()
 
-    assert len(form.errors) == 1
+    assert len(form.errors) == 2
     assert 'title' in form.errors
+    assert 'type' in form.errors
 
 
 def test_income_type_title_null():

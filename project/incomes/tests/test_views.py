@@ -284,6 +284,7 @@ def test_type_load_form(client_logged):
 def test_type_save(client_logged):
     data = {
         'title': 'TTT',
+        'type': 'salary',
     }
 
     url = reverse('incomes:incomes_type_new')
@@ -313,7 +314,7 @@ def test_type_save_invalid_data(client_logged):
 def test_type_update(client_logged):
     income = IncomeTypeFactory()
 
-    data = {'title': 'TTT'}
+    data = {'title': 'TTT', 'type': 'other'}
     url = reverse('incomes:incomes_type_update', kwargs={'pk': income.pk})
 
     response = client_logged.post(url, data, **X_Req)

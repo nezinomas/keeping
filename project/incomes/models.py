@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
 from ..accounts.models import Account
 from ..core.mixins.from_db import MixinFromDbAccountId
@@ -11,10 +12,20 @@ from .managers import IncomeQuerySet, IncomeTypeQuerySet
 
 
 class IncomeType(TitleAbstract):
+    class Types(models.TextChoices):
+        SALARY = 'salary', _('Salary')
+        DIVIDENTS = 'dividents', _('Dividents')
+        OTHER = 'other', _('Other')
+
     journal = models.ForeignKey(
         Journal,
         on_delete=models.CASCADE,
         related_name='income_types'
+    )
+    type = models.CharField(
+        max_length=12,
+        choices=Types.choices,
+        default=Types.SALARY,
     )
 
     # Managers
