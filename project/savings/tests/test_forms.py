@@ -31,6 +31,7 @@ def test_saving_type_valid_data():
     form = SavingTypeForm(data={
         'title': 'Title',
         'closed': '2000',
+        'type': 'funds',
     })
 
     assert form.is_valid()
@@ -48,8 +49,9 @@ def test_saving_type_blank_data():
 
     assert not form.is_valid()
 
-    assert len(form.errors) == 1
+    assert len(form.errors) == 2
     assert 'title' in form.errors
+    assert 'type' in form.errors
 
 
 def test_saving_type_title_null():

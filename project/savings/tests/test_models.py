@@ -435,7 +435,7 @@ def test_saving_balance_new_post_save_saving_balance():
     SavingFactory()
 
     actual = SavingBalance.objects.year(1999)
-    print(actual.values())
+
     assert actual.count() == 1
 
     actual = actual[0]
@@ -445,3 +445,33 @@ def test_saving_balance_new_post_save_saving_balance():
     assert round(actual['incomes'], 2) == 150
     assert round(actual['fees'], 2) == 5.55
     assert round(actual['invested'], 2) == 144.45
+
+
+def test_saving_balance_filter_by_one_type():
+    SavingFactory(saving_type=SavingTypeFactory(title='1', type='x'))
+    SavingFactory(saving_type=SavingTypeFactory(title='2', type='z'))
+
+    actual = SavingBalance.objects.year(1999, ['x'])
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+
+    assert actual['title'] == '1'
+
+    assert round(actual['incomes'], 2) == 150
+    assert round(actual['fees'], 2) == 5.55
+    assert round(actual['invested'], 2) == 144.45
+
+
+def test_saving_balance_filter_by_few_types():
+    SavingFactory(saving_type=SavingTypeFactory(title='1', type='x'))
+    SavingFactory(saving_type=SavingTypeFactory(title='2', type='y'))
+    SavingFactory(saving_type=SavingTypeFactory(title='3', type='z'))
+
+    actual = SavingBalance.objects.year(1999, ['x', 'y'])
+
+    assert actual.count() == 2
+
+    assert actual[0]['title'] == '1'
+    assert actual[1]['title'] == '2'

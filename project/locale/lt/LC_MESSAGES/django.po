@@ -87,7 +87,7 @@ msgid "Year balance"
 msgstr "Metų balansas"
 
 #: .\project\bookkeeping\lib\views_helpers.py:398
-#: .\project\bookkeeping\views.py:61
+#: .\project\bookkeeping\views.py:61 .\project\savings\models.py:17
 #: .\project\savings\templates\savings\includes\savings_type_list.html:7
 #: .\project\savings\templates\savings\index.html:18
 msgid "Funds"
@@ -95,47 +95,48 @@ msgstr "Fondai"
 
 #: .\project\bookkeeping\lib\views_helpers.py:431
 #: .\project\pensions\templates\pensions\includes\pensions_type_list.html:7
+#: .\project\savings\models.py:18
 msgid "Pensions"
 msgstr "Pensijos"
 
-#: .\project\bookkeeping\lib\views_helpers.py:504
+#: .\project\bookkeeping\lib\views_helpers.py:505
 #: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:14
 msgid "Money"
 msgstr "Pinigai"
 
-#: .\project\bookkeeping\lib\views_helpers.py:504
+#: .\project\bookkeeping\lib\views_helpers.py:505
 msgid "Wealth"
 msgstr "Turtas"
 
-#: .\project\bookkeeping\lib\views_helpers.py:511
+#: .\project\bookkeeping\lib\views_helpers.py:512
 #: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_salary.html:98
 msgid "Average incomes"
 msgstr "Vidutinės pajamos"
 
-#: .\project\bookkeeping\lib\views_helpers.py:511
+#: .\project\bookkeeping\lib\views_helpers.py:512
 msgid "Average expenses"
 msgstr "Vidutinės išlaidos"
 
-#: .\project\bookkeeping\lib\views_helpers.py:523
+#: .\project\bookkeeping\lib\views_helpers.py:524
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:21
 #: .\project\debts\templates\debts\includes\borrows_form.html:5
 #: .\project\debts\templates\debts\index.html:15
 msgid "Borrow"
 msgstr "Paskolinta"
 
-#: .\project\bookkeeping\lib\views_helpers.py:523
+#: .\project\bookkeeping\lib\views_helpers.py:524
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:22
 msgid "Borrow return"
 msgstr "Gražino"
 
-#: .\project\bookkeeping\lib\views_helpers.py:537
+#: .\project\bookkeeping\lib\views_helpers.py:538
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:23
 #: .\project\debts\templates\debts\includes\lents_form.html:5
 #: .\project\debts\templates\debts\index.html:30
 msgid "Lent"
 msgstr "Pasiskolinta"
 
-#: .\project\bookkeeping\lib\views_helpers.py:537
+#: .\project\bookkeeping\lib\views_helpers.py:538
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:24
 msgid "Lent return"
 msgstr "Gražinau"
@@ -1297,6 +1298,10 @@ msgstr "Skaičiavimai"
 #: .\project\transactions\templates\transactions\includes\table.html:9
 msgid "From account"
 msgstr "Iš sąskaitos"
+
+#: .\project\savings\models.py:16
+msgid "Shares"
+msgstr "Akcijos"
 
 #: .\project\savings\templates\savings\includes\savings_delete_form.html:4
 msgid "Delete savings"

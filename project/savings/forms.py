@@ -13,7 +13,7 @@ from .models import Saving, SavingType
 class SavingTypeForm(forms.ModelForm):
     class Meta:
         model = SavingType
-        fields = ['journal', 'title', 'closed']
+        fields = ['journal', 'title', 'type', 'closed']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,6 +31,7 @@ class SavingTypeForm(forms.ModelForm):
 
         self.fields['title'].label = _('Fund')
         self.fields['closed'].label = _('Closed')
+        self.fields['type'].label = _('Type')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
