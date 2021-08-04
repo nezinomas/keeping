@@ -1,6 +1,7 @@
 import pytest
 from freezegun import freeze_time
 
+from ...core.lib.transalation import month_names
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
 from ...savings.factories import SavingTypeFactory
@@ -119,6 +120,45 @@ def test_income_unique_together_validation_more_than_one():
 
     assert form.is_valid()
 
+
+def test_income_negative_number():
+    IncomePlanFactory(income_type=IncomeTypeFactory(title='First'))
+
+    type_ = IncomeTypeFactory()
+
+    data = {
+        'year': 1999,
+        'income_type': type_.pk,
+    }
+
+    # add negative numbet to earch month
+    for key, _ in month_names().items():
+        data[key.lower()] = -0.01
+
+    form = IncomePlanForm(data=data)
+
+    assert not form.is_valid()
+    assert len(form.errors) == 12
+
+
+def test_income_inputs_as_string():
+    IncomePlanFactory(income_type=IncomeTypeFactory(title='First'))
+
+    type_ = IncomeTypeFactory()
+
+    data = {
+        'year': 1999,
+        'income_type': type_.pk,
+    }
+
+    # add negative numbet to earch month
+    for key, _ in month_names().items():
+        data[key.lower()] = 'a'
+
+    form = IncomePlanForm(data=data)
+
+    assert not form.is_valid()
+    assert len(form.errors) == 12
 
 
 # ----------------------------------------------------------------------------
