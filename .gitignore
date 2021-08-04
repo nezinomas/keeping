@@ -49,7 +49,6 @@ coverage.xml
 htmlcov/
 
 # Translations
-*.mo
 *.pot
 
 # Django stuff:
