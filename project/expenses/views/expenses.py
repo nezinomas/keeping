@@ -102,7 +102,7 @@ class Search(AjaxSearchMixin):
 
     def form_valid(self, form, **kwargs):
         _search = self.form_data_dict['search']
-        context ={'items': None}
+        context = {'items': None}
         sql = search.search_expenses(_search)
 
         if sql:
