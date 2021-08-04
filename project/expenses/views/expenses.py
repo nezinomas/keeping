@@ -37,7 +37,7 @@ class MonthLists(ListMixin):
         context.update({
             'categories': TypeLists.as_view()(self.request, as_string=True),
             'current_month': month,
-            'search': render_search_form(self.request),
+            'search': Search.as_view()(self.request, as_string=True),
             'expenses_list': Lists.as_view()(self.request, as_string=True, **{'month': month}),
         })
         return context
@@ -92,18 +92,28 @@ class Search(AjaxSearchMixin):
     form_class = SearchForm
     form_data_dict = {}
     url = reverse_lazy('expenses:expenses_search')
+    update_container = 'expenses_list'
+
+    def dispatch(self, request, *args, **kwargs):
+        if 'as_string' in kwargs:
+            return self._render_form(self.get_context_data())
+
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form, **kwargs):
         _search = self.form_data_dict['search']
-
+        context ={'items': None}
         sql = search.search_expenses(_search)
+
         if sql:
-            template = 'expenses/includes/expenses_list.html'
-            context = {'items': sql}
-            kwargs.update({
-                'container': 'expenses_list',
-                'html': render_to_string(template, context, self.request)
-            })
+            context['items'] = sql
+        else:
+            context['notice'] = _('Found nothing')
+
+        template = 'expenses/includes/expenses_list.html'
+        kwargs.update({
+            'html': render_to_string(template, context, self.request),
+        })
 
         return super().form_valid(form, **kwargs)
 
@@ -135,15 +145,3 @@ class LoadExpenseName(TemplateView):
                        .year(request.user.year))
 
         return self.render_to_response({'objects': objects})
-
-
-def render_search_form(request):
-    return (
-        render_to_string(
-            template_name='core/includes/search_form.html',
-            context={
-                'form': SearchForm(),
-                'url': reverse('expenses:expenses_search')},
-            request=request
-        )
-    )

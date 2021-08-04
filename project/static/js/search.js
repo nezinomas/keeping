@@ -17,6 +17,9 @@ $(function () {
         form_data = $('#search_form').serializeArray();
         form_data = JSON.stringify(form_data);
 
+        var container = $(this).attr('data-update-container');
+        container = (container ? `#${container}` : '#ajax-content');
+
         $.ajax({
             url: url,
             type: 'POST',
@@ -27,9 +30,8 @@ $(function () {
                 "form_data": form_data
             },
             success: function (data) {
+
                 var _html = data.html;
-                var container = data.container;
-                container = (container ? `#${container}` : '#ajax-content');
 
                 if(_html) {
                     $(container).html(_html);
