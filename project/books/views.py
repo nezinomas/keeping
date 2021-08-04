@@ -1,5 +1,6 @@
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
 
 from ..core.forms import SearchForm
 from ..core.lib import search
@@ -62,7 +63,7 @@ class Index(IndexMixin):
         context = super().get_context_data(**kwargs)
         context.update({
             'year': year,
-            'search': obj.render_search_form(),
+            'search': Search.as_view()(self.request, as_string=True),
             **obj.context_to_reload(),
             **context_update(self.request, 'index'),
         })
@@ -118,19 +119,30 @@ class Search(AjaxSearchMixin):
     template_name = 'core/includes/search_form.html'
     form_class = SearchForm
     form_data_dict = {}
+    update_container = 'book_list'
     url = reverse_lazy('books:books_search')
+
+    def dispatch(self, request, *args, **kwargs):
+        if 'as_string' in kwargs:
+            return self._render_form(self.get_context_data())
+
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form, **kwargs):
         _search = self.form_data_dict['search']
-
+        context ={'items': None}
         sql = search.search_books(_search)
+
         if sql:
-            template = 'books/includes/books_list.html'
             context = {'items': sql}
-            kwargs.update({
-                'container': 'book_list',
-                'html': render_to_string(template, context, self.request),
-            })
+        else:
+            context['notice'] = _('Found nothing')
+
+        template = 'books/includes/books_list.html'
+        kwargs.update({
+            'container': 'book_list',
+            'html': render_to_string(template, context, self.request),
+        })
 
         return super().form_valid(form, **kwargs)
 
