@@ -18,6 +18,7 @@
             var year = $(`#id_${field}:text`).attr('value')
             if (year) {
                 year = year.replace(".", "");
+                year = year.replace(",", "");
 
                 $(`#id_${field}`).attr('value', year);
                 $(`#id_${field}:text`).val(year);
