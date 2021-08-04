@@ -1,5 +1,6 @@
 from django.template.loader import render_to_string
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
 
 from ..core.forms import SearchForm
 from ..core.lib import search
@@ -13,15 +14,11 @@ class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['incomes'] = Lists.as_view()(
-            self.request, as_string=True)
-        context['categories'] = TypeLists.as_view()(
-            self.request, as_string=True)
-        context['search'] = render_to_string(
-            template_name='core/includes/search_form.html',
-            context={'form': SearchForm(), 'url': reverse('incomes:incomes_search')},
-            request=self.request
-        )
+        context.update({
+            'incomes': Lists.as_view()(self.request, as_string=True),
+            'categories': TypeLists.as_view()(self.request, as_string=True),
+            'search': Search.as_view()(self.request, as_string=True)
+        })
 
         return context
 
@@ -81,14 +78,25 @@ class Search(AjaxSearchMixin):
     form_class = SearchForm
     form_data_dict = {}
     url = reverse_lazy('incomes:incomes_search')
+    update_container = 'ajax-content'
+
+    def dispatch(self, request, *args, **kwargs):
+        if 'as_string' in kwargs:
+            return self._render_form(self.get_context_data())
+
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form, **kwargs):
         _search = self.form_data_dict['search']
-
+        context = {'items': None}
         sql = search.search_incomes(_search)
+
         if sql:
-            template = 'incomes/includes/incomes_list.html'
             context = {'items': sql}
-            kwargs.update({'html': render_to_string(template, context, self.request)})
+        else:
+            context['notice'] = _('Found nothing')
+
+        template = 'incomes/includes/incomes_list.html'
+        kwargs.update({'html': render_to_string(template, context, self.request)})
 
         return super().form_valid(form, **kwargs)
