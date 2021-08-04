@@ -18,8 +18,8 @@ def plans_stats(request):
 
     if ajax_trigger:
         return render(template_name=t_name, context=c, request=request)
-    else:
-        return render_to_string(template_name=t_name, context=c, request=request)
+
+    return render_to_string(template_name=t_name, context=c, request=request)
 
 
 class Index(IndexMixin):
