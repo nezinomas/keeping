@@ -98,15 +98,15 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         return json_data
 
     def _update_url(self):
-        url = None
-
         # if object exists, generate update url
         # if there are errors in the form and no url
         # impossible to submit form data
+        app = H.app_name(self)
+        model = H.model_plural_name(self)
         if self.object:
-            app = H.app_name(self)
-            model = H.model_plural_name(self)
             url = reverse(f"{app}:{model}_update", kwargs={"pk": self.object.pk})
+        else:
+            url = reverse(f"{app}:{model}_new")
 
         return url
 
@@ -169,6 +169,7 @@ class AjaxDeleteMixin(GetQuerysetMixin):
 class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
+
         json_data = {
             'html_form': self._render_form(context),
             'html': None,
@@ -185,7 +186,6 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
 
     def form_valid(self, form, **kwargs):
         html = kwargs.get('html')
-        html = html if html else _('Found nothing')
 
         json_data = {
             'form_is_valid': True,
@@ -198,6 +198,9 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
     def _render_form(self, context):
         if hasattr(self, 'url'):
             context.update({'url': self.url})
+
+        if hasattr(self, 'update_container'):
+            context.update({'update_container': self.update_container})
 
         return (
             render_to_string(self.template_name, context, request=self.request)

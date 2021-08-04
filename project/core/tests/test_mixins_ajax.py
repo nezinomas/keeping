@@ -87,9 +87,10 @@ def test_lists_template_names(_request):
     assert actual == expect
 
 
+@patch('project.core.mixins.ajax.AjaxCreateUpdateMixin._update_url')
 @patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
 @patch('project.core.mixins.ajax.render_to_string')
-def test_form_valid_render(mck_render, mck_context, _request):
+def test_form_valid_render(mck_render, mck_context, mck_url, _request):
     class Dummy(AjaxCreateUpdateMixin, FormMixin):
         list_template_name = 'XXX'
         template_name = 'YYY'
@@ -111,9 +112,10 @@ def test_form_valid_render(mck_render, mck_context, _request):
     assert response.status_code == 302
 
 
+@patch('project.core.mixins.ajax.AjaxCreateUpdateMixin._update_url')
 @patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
 @patch('project.core.mixins.ajax.render_to_string')
-def test_form_valid_ajax_response(mck_render, mck_context, _ajax_request):
+def test_form_valid_ajax_response(mck_render, mck_context, mck_url, _ajax_request):
     class Dummy(AjaxCreateUpdateMixin, FormMixin):
         list_template_name = 'XXX'
         template_name = 'YYY'
@@ -136,9 +138,10 @@ def test_form_valid_ajax_response(mck_render, mck_context, _ajax_request):
     assert actual['html_form'] == 'html_form'
 
 
+@patch('project.core.mixins.ajax.AjaxCreateUpdateMixin._update_url')
 @patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
 @patch('project.core.mixins.ajax.render_to_string')
-def test_form_valid_ajax_response_list_not_rendered(mck_render, mck_context, _ajax_request):
+def test_form_valid_ajax_response_list_not_rendered(mck_render, mck_context, mck_url, _ajax_request):
     class Dummy(AjaxCreateUpdateMixin, FormMixin):
         list_render_output = False
         list_template_name = 'XXX'
@@ -162,8 +165,9 @@ def test_form_valid_ajax_response_list_not_rendered(mck_render, mck_context, _aj
     assert 'html_list' not in actual
 
 
+@patch('project.core.mixins.ajax.AjaxCreateUpdateMixin._update_url')
 @patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
-def test_form_invalid_render(mck_context, _request):
+def test_form_invalid_render(mck_context, mck_url, _request):
     class Dummy(AjaxCreateUpdateMixin, CreateView):
         list_template_name = 'XXX'
         template_name = 'YYY'
@@ -179,9 +183,10 @@ def test_form_invalid_render(mck_context, _request):
     assert response.status_code == 200
 
 
+@patch('project.core.mixins.ajax.AjaxCreateUpdateMixin._update_url')
 @patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_context_data')
 @patch('project.core.mixins.ajax.render_to_string')
-def test_form_invalid_ajax_response(mck_render, mck_context, _ajax_request):
+def test_form_invalid_ajax_response(mck_render, mck_context, mck_url, _ajax_request):
     class Dummy(AjaxCreateUpdateMixin, FormMixin):
         list_template_name = 'XXX'
         template_name = 'YYY'

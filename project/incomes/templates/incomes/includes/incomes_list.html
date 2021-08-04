@@ -40,7 +40,11 @@
 {% else %}
 
 <div class="mx-auto text-center alert alert-warning py-2">
+{% if notice %}
+    {{ notice|safe }}
+{% else %}
     {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+{% endif %}
 </div>
 
 {% endif %}
