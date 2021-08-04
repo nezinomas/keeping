@@ -98,15 +98,15 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         return json_data
 
     def _update_url(self):
-        url = None
-
         # if object exists, generate update url
         # if there are errors in the form and no url
         # impossible to submit form data
+        app = H.app_name(self)
+        model = H.model_plural_name(self)
         if self.object:
-            app = H.app_name(self)
-            model = H.model_plural_name(self)
             url = reverse(f"{app}:{model}_update", kwargs={"pk": self.object.pk})
+        else:
+            url = reverse(f"{app}:{model}_new")
 
         return url
 
