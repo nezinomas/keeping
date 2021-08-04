@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-04 11:47+0300\n"
-"PO-Revision-Date: 2021-08-04 11:47+0300\n"
+"POT-Creation-Date: 2021-08-04 11:58+0300\n"
+"PO-Revision-Date: 2021-08-04 11:58+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -526,7 +526,7 @@ msgstr "Redaguoti"
 msgid "Delete"
 msgstr "Trinti"
 
-#: .\project\books\templates\books\includes\books_list.html:44
+#: .\project\books\templates\books\includes\books_list.html:47
 #: .\project\counts\templates\counts\includes\counts_list.html:36
 #: .\project\debts\templates\debts\includes\borrows_list.html:46
 #: .\project\debts\templates\debts\includes\borrows_return_list.html:42
@@ -563,6 +563,11 @@ msgstr "Knygą"
 #: .\project\books\templates\books\index.html:33
 msgid "year goal"
 msgstr "metų tikslą"
+
+#: .\project\books\views.py:139 .\project\expenses\views\expenses.py:111
+#: .\project\incomes\views.py:97
+msgid "Found nothing"
+msgstr "Nieko nerasta"
 
 #: .\project\config\settings\base.py:83
 msgid "English"
@@ -689,7 +694,7 @@ msgstr "Šeštadienis"
 msgid "Sunday"
 msgstr "Sekmadienis"
 
-#: .\project\core\mixins\ajax.py:211
+#: .\project\core\mixins\ajax.py:212
 msgid "Form is broken."
 msgstr "Forma neveikia."
 
@@ -1114,10 +1119,6 @@ msgstr "Išlaidų pavadinimą"
 #, python-format
 msgid "There are no records for month %(month)s."
 msgstr "%(month)s mėnesį įrašų nėra."
-
-#: .\project\expenses\views\expenses.py:111 .\project\incomes\views.py:97
-msgid "Found nothing"
-msgstr "Nieko nerasta"
 
 #: .\project\incomes\forms.py:42
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:13
