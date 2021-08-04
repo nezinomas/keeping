@@ -37,7 +37,7 @@ class SavingType(TitleAbstract):
 
     class Meta:
         unique_together = ['journal', 'title']
-        ordering = ['title']
+        ordering = ['type', 'title']
 
 
 class Saving(MixinFromDbAccountId):
