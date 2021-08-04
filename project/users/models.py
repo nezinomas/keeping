@@ -19,6 +19,7 @@ class User(AbstractUser):
         on_delete=models.CASCADE,
         related_name='users'
     )
+    email = models.EmailField(unique=True)
 
     objects = managers.KeepingUserManager()
 
