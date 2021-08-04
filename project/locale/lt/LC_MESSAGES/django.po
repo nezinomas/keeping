@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-08-04 11:58+0300\n"
-"PO-Revision-Date: 2021-08-04 11:58+0300\n"
+"PO-Revision-Date: 2021-08-04 12:06+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -1141,7 +1141,7 @@ msgstr "Tipas"
 
 #: .\project\incomes\models.py:17
 msgid "Dividents"
-msgstr "Didentai"
+msgstr "Dividentai"
 
 #: .\project\incomes\models.py:18
 msgid "Other"
