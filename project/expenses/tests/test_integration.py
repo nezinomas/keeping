@@ -80,7 +80,7 @@ class Expenses(LiveServerTestCase):
 
         assert t.title in page
         assert n.title in page
-        assert '123,45' in page
+        assert '123.45' in page
 
     def test_add_two_expenses(self):
         self.browser.get('%s%s' % (self.live_server_url, '/expenses/12/'))
@@ -145,11 +145,11 @@ class Expenses(LiveServerTestCase):
 
         assert t.title in page
         assert n.title in page
-        assert '123,45' in page
+        assert '123.45' in page
 
         assert t1.title in page
         assert n1.title in page
-        assert '65,78' in page
+        assert '65.78' in page
 
     def test_empty_required_fields(self):
         self.browser.get('%s%s' % (self.live_server_url, f'/expenses/1/'))
@@ -174,8 +174,8 @@ class Expenses(LiveServerTestCase):
             EC.presence_of_element_located((By.ID, 'error_1_id_price'))
         )
 
-        assert e1.text == e2.text == 'Šis laukas yra privalomas.'
-        assert e3.text == 'Įsitikinkite, kad reikšmė yra didesnė arba lygi 0.01.'
+        assert e1.text == e2.text == 'This field is required.'
+        assert e3.text == 'Ensure this value is greater than or equal to 0.01.'
 
     @freeze_time('1999-1-1')
     def test_search(self):
