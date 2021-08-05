@@ -40,7 +40,7 @@
                 <button id="{{m_num}}" type="button" data-url="{% url 'expenses:expenses_month_list' m_num %}" class="btn btn-sm btn-month js-filter {% if current_month|slugify == m_num %}btn-info{% endif %}">{{ m|date:'F'|title }}</button>
                 {% endwith %}
                 {% endfor %}
-                <button id="13" type="button" data-url="{% url 'expenses:expenses_list' %}" class="btn btn-sm btn-month js-filter ms-2 {% if current_month|slugify == 13|slugify %}btn-info{% endif %}">{% translate 'All records' %}</button>
+                <button id="13" type="button" data-url="{% url 'expenses:expenses_all' %}" class="btn btn-sm btn-month js-filter ms-2 {% if not current_month %}btn-info{% endif %}">{% translate 'All records' %}</button>
             </div>
             <div class="col-auto text-end">
                 <button type="button" id="insert_expense" class="btn btn-sm btn-outline-success js-create w5" data-url="{{ url_expense_new }}"><i class="bi bi-plus"></i>{% translate "Expenses" context "expenses button" %}</button>
