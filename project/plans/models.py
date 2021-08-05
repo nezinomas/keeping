@@ -1,51 +1,17 @@
-from django.utils.translation import pgettext
-from django.utils.translation import gettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils.translation import gettext as _
+from django.utils.translation import pgettext
 
-from ..core.lib import utils
 from ..core.models import MonthAbstract
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
 from ..journals.models import Journal
 from ..savings.models import SavingType
+from . import managers
 
 
-class YearManager(models.Manager):
-    def __init__(self, prefetch=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._prefetch = prefetch
-
-    def related(self):
-        journal = utils.get_user().journal
-        related = ['journal']
-
-        if self._prefetch:
-            related.append(self._prefetch)
-
-        qs = (
-            self
-            .select_related(*related)
-            .filter(journal=journal)
-        )
-
-        return qs
-
-    def year(self, year):
-        return(
-            self
-            .related()
-            .filter(year=year)
-        )
-
-    def items(self):
-        return self.related()
-
-
-# ----------------------------------------------------------------------------
-#                                                                  Income Plan
-# ----------------------------------------------------------------------------
 class IncomePlan(MonthAbstract):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
@@ -60,7 +26,7 @@ class IncomePlan(MonthAbstract):
         related_name='income_plans'
     )
 
-    objects = YearManager('income_type')
+    objects = managers.YearManager('income_type')
 
     def __str__(self):
         return f'{self.year}/{self.income_type.title}'
@@ -76,9 +42,6 @@ class IncomePlan(MonthAbstract):
             raise ValidationError(_('%(year)s year already has %(title)s plan.') % ({'year': self.year, 'title': self.income_type.title}))
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Expense Plan
-# ----------------------------------------------------------------------------
 class ExpensePlan(MonthAbstract):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
@@ -93,7 +56,7 @@ class ExpensePlan(MonthAbstract):
         related_name='expense_plans'
     )
 
-    objects = YearManager('expense_type')
+    objects = managers.YearManager('expense_type')
 
     def __str__(self):
         return f'{self.year}/{self.expense_type.title}'
@@ -109,9 +72,6 @@ class ExpensePlan(MonthAbstract):
             raise ValidationError(_('%(year)s year already has %(title)s plan.') % ({'year': self.year, 'title': self.expense_type.title}))
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Saving Plan
-# ----------------------------------------------------------------------------
 class SavingPlan(MonthAbstract):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
@@ -126,7 +86,7 @@ class SavingPlan(MonthAbstract):
         related_name='saving_plans'
     )
 
-    objects = YearManager('saving_type')
+    objects = managers.YearManager('saving_type')
 
     def __str__(self):
         return f'{self.year}/{self.saving_type.title}'
@@ -142,9 +102,6 @@ class SavingPlan(MonthAbstract):
             raise ValidationError(_('%(year)s year already has %(title)s plan.') % ({'year': self.year, 'title': self.saving_type.title}))
 
 
-# ----------------------------------------------------------------------------
-#                                                                     Day Plan
-# ----------------------------------------------------------------------------
 class DayPlan(MonthAbstract):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
@@ -155,7 +112,7 @@ class DayPlan(MonthAbstract):
         related_name='day_plans'
     )
 
-    objects = YearManager()
+    objects = managers.YearManager()
 
     def __str__(self):
         return f'{self.year}'
@@ -172,10 +129,6 @@ class DayPlan(MonthAbstract):
             raise ValidationError(_('%(year)s year already has %(title)s plan.') % ({'year': self.year, 'title': title}))
 
 
-
-# ----------------------------------------------------------------------------
-#                                                               Necessary Plan
-# ----------------------------------------------------------------------------
 class NecessaryPlan(MonthAbstract):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
@@ -187,7 +140,7 @@ class NecessaryPlan(MonthAbstract):
         related_name='necessary_plans'
     )
 
-    objects = YearManager()
+    objects = managers.YearManager()
 
     def __str__(self):
         return f'{self.year}/{self.title}'
