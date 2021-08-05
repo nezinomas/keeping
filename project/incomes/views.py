@@ -5,8 +5,9 @@ from django.utils.translation import gettext as _
 from ..core.forms import SearchForm
 from ..core.lib import search
 from ..core.mixins.ajax import AjaxSearchMixin
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
-                                 ListMixin, UpdateAjaxMixin)
+from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
+                                 DispatchListsMixin, IndexMixin, ListMixin,
+                                 UpdateAjaxMixin)
 from . import forms, models
 
 
@@ -35,7 +36,7 @@ class GetQuerySetMixin():
         )
 
 
-class Lists(GetQuerySetMixin, ListMixin):
+class Lists(DispatchListsMixin, GetQuerySetMixin, ListMixin):
     model = models.Income
 
 
@@ -56,7 +57,7 @@ class Delete(DeleteAjaxMixin):
 #----------------------------------------------------------------------------------------
 #                                                                             Income Type
 #----------------------------------------------------------------------------------------
-class TypeLists(ListMixin):
+class TypeLists(DispatchListsMixin, ListMixin):
     model = models.IncomeType
 
 
