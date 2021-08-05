@@ -52,7 +52,7 @@ class CreateAjaxMixin(
 
     def dispatch(self, request, *args, **kwargs):
         if not utils.is_ajax(self.request):
-            return HttpResponse('.')
+            return HttpResponse(render_to_string('srsly.html'))
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -75,7 +75,7 @@ class UpdateAjaxMixin(
 
     def dispatch(self, request, *args, **kwargs):
         if not utils.is_ajax(self.request):
-            return HttpResponse('.')
+            return HttpResponse(render_to_string('srsly.html'))
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -99,7 +99,7 @@ class DeleteAjaxMixin(
 
     def dispatch(self, request, *args, **kwargs):
         if not utils.is_ajax(self.request):
-            return HttpResponse('.')
+            return HttpResponse(render_to_string('srsly.html'))
 
         return super().dispatch(request, *args, **kwargs)
 
