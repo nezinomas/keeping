@@ -10,13 +10,13 @@ class TitleAbstract(models.Model):
         abstract = True
 
     title = models.CharField(
-        max_length=254,
+        max_length=25,
         blank=False,
         validators=[MinLengthValidator(3)]
     )
     slug = models.SlugField(
         editable=False,
-        max_length=254,
+        max_length=25,
     )
 
     def save(self, *args, **kwargs):
