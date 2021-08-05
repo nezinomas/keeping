@@ -1,10 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
 from django.shortcuts import redirect, reverse
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 from django.views.generic import (CreateView, DeleteView, ListView,
                                   TemplateView, UpdateView)
 
+from ...core.lib import utils
 from . import helpers as H
 from .ajax import AjaxCreateUpdateMixin, AjaxDeleteMixin
 from .get import GetQuerysetMixin
@@ -42,10 +44,17 @@ class ListMixin(
         return [self.template_name]
 
 
+
 class CreateAjaxMixin(
         LoginRequiredMixin,
         AjaxCreateUpdateMixin,
         CreateView):
+
+    def dispatch(self, request, *args, **kwargs):
+        if not utils.is_ajax(self.request):
+            return HttpResponse('.')
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         app = H.app_name(self)
@@ -64,6 +73,12 @@ class UpdateAjaxMixin(
         AjaxCreateUpdateMixin,
         UpdateView):
 
+    def dispatch(self, request, *args, **kwargs):
+        if not utils.is_ajax(self.request):
+            return HttpResponse('.')
+
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         # app = H.app_name(self)
         # model = H.model_plural_name(self)
@@ -81,6 +96,12 @@ class DeleteAjaxMixin(
         LoginRequiredMixin,
         AjaxDeleteMixin,
         DeleteView):
+
+    def dispatch(self, request, *args, **kwargs):
+        if not utils.is_ajax(self.request):
+            return HttpResponse('.')
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         # app = H.app_name(self)
