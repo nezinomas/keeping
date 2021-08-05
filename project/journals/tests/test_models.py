@@ -24,8 +24,8 @@ def test_journal_str():
 def test_journal_has_many_users():
     jr = JournalFactory(title='T')
 
-    UserFactory(username='X', journal=jr)
-    UserFactory(username='Y', journal=jr)
+    UserFactory(username='X', email='x@x.x', journal=jr)
+    UserFactory(username='Y', email='y@y.y', journal=jr)
 
     actual = Journal.objects.get(pk=jr.pk)
 

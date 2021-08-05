@@ -10,7 +10,7 @@ from ..users.models import User
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
-        django_get_or_create = ('username', )
+        django_get_or_create = ('username',)
 
     username = 'bob'
     password = factory.LazyFunction(lambda: make_password('123'))

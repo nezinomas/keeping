@@ -22,7 +22,7 @@ def _counters():
         date=date(1999, 2, 1),
         quantity=100.0,
         counter_type='X',
-        user=UserFactory(username='XXX')
+        user=UserFactory(username='XXX', email='x@x.x')
     )
 
     # second CounterType for same user
@@ -33,7 +33,7 @@ def _counters():
 def _different_users():
     CounterFactory()
     CounterFactory(counter_type='X')
-    CounterFactory(counter_type='X', user=UserFactory(username='XXX'))
+    CounterFactory(counter_type='X', user=UserFactory(username='XXX', email='x@x.x'))
 
 
 # ----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ def test_counter_items(_different_users):
 
 @patch('project.counters.models.CounterQuerySet.App_name', 'X')
 def test_items_with_user(_different_users):
-    u = UserFactory(username='XXX')
+    u = UserFactory(username='XXX', email='x@x.x')
 
     actual = Counter.objects.items(u)
 
@@ -82,7 +82,7 @@ def test_counter_year(_different_users):
 
 @patch('project.counters.models.CounterQuerySet.App_name', 'X')
 def test_year_with_user(_different_users):
-    u = UserFactory(username='XXX')
+    u = UserFactory(username='XXX', email='x@x.x')
 
     actual = Counter.objects.year(1999, u)
 
@@ -130,7 +130,11 @@ def test_counter_months_quantity_sum_no_records_for_current_year():
     CounterFactory(date=date(2000, 1, 1), quantity=1.5)
 
     # second user
-    CounterFactory(date=date(1999, 1, 1), quantity=1.5, counter_type='xT', user=UserFactory(username='XXX'))
+    CounterFactory(
+        date=date(1999, 1, 1),
+        quantity=1.5,
+        counter_type='xT',
+        user=UserFactory(username='XXX', email='x@x.x'))
 
     actual = Counter.objects.sum_by_month(1999).values_list('qty', flat=True)
 

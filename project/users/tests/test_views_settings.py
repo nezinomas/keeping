@@ -112,8 +112,8 @@ def test_users_no_additional_users(client_logged):
 
 
 def test_users_one_additional_user(get_user, client_logged):
-    UserFactory(username='X', is_superuser=False, journal=get_user.journal)
-    UserFactory(username='Y', journal=JournalFactory(title='YY'))
+    UserFactory(username='X', email='x@x.x', is_superuser=False, journal=get_user.journal)
+    UserFactory(username='Y', email='y@y.y', journal=JournalFactory(title='YY'))
 
     url = reverse('users:settings_users')
     response = client_logged.get(url)
@@ -138,7 +138,7 @@ def test_users_delete_status_200(get_user, client_logged):
 
 
 def test_users_delete_load_form(get_user, client_logged):
-    u1 = UserFactory(username='X', journal=get_user.journal)
+    u1 = UserFactory(username='X', email='x@x.x', journal=get_user.journal)
 
     url = reverse('users:settings_users_delete', kwargs={'pk': u1.pk})
     response = client_logged.get(url, {}, **X_Req)
@@ -152,7 +152,7 @@ def test_users_delete_load_form(get_user, client_logged):
 
 
 def test_users_delete(get_user, client_logged):
-    u1 = UserFactory(username='X', journal=get_user.journal)
+    u1 = UserFactory(username='X', email='x@x.x', journal=get_user.journal)
 
     url = reverse('users:settings_users_delete', kwargs={'pk': u1.pk})
     response = client_logged.post(url, {}, **X_Req)
@@ -162,8 +162,8 @@ def test_users_delete(get_user, client_logged):
 
 
 def test_users_delete_html_list(get_user, client_logged):
-    u1 = UserFactory(username='X', journal=get_user.journal)
-    u2 = UserFactory(username='Y', journal=get_user.journal)
+    u1 = UserFactory(username='X', email='x@x.x', journal=get_user.journal)
+    u2 = UserFactory(username='Y', email='y@y.y', journal=get_user.journal)
 
     url = reverse('users:settings_users_delete', kwargs={'pk': u1.pk})
     response = client_logged.post(url, {}, **X_Req)

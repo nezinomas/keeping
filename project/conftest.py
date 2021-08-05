@@ -31,9 +31,9 @@ def main_user(request):
 @pytest.fixture()
 def second_user(request):
     if 'django_db' in request.keywords:
-        user = UserFactory(username='X')
+        user = UserFactory(username='X', email='x@x.xx')
     else:
-        user = UserFactory.build()
+        user = UserFactory.build(usernam='X', email='x@x.xx')
 
     return user
 

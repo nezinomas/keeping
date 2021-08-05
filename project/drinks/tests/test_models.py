@@ -23,13 +23,13 @@ def _drinks():
         date=date(1999, 2, 1),
         quantity=100.0,
         counter_type='Z',
-        user=UserFactory(username='XXX')
+        user=UserFactory(username='XXX', email='x@x.x')
     )
 
 
 @pytest.fixture()
 def _second_user():
-    return DrinkFactory(counter_type='Z', user=UserFactory(username='XXX'))
+    return DrinkFactory(counter_type='Z', user=UserFactory(username='XXX', email='x@x.x'))
 
 
 @pytest.fixture()
@@ -247,7 +247,7 @@ def test_drink_target_str():
 
 def test_drink_target_related():
     DrinkTargetFactory()
-    DrinkTargetFactory(user=UserFactory(username='XXX'))
+    DrinkTargetFactory(user=UserFactory(username='XXX', email='x@x.x'))
 
     actual = DrinkTarget.objects.related()
 
@@ -257,7 +257,7 @@ def test_drink_target_related():
 
 def test_drink_target_items():
     DrinkTargetFactory(year=1999)
-    DrinkTargetFactory(year=2000, user=UserFactory(username='XXX'))
+    DrinkTargetFactory(year=2000, user=UserFactory(username='XXX', email='x@x.x'))
 
     actual = DrinkTarget.objects.items()
 
@@ -267,7 +267,7 @@ def test_drink_target_items():
 
 def test_drink_target_year():
     DrinkTargetFactory(year=1999)
-    DrinkTargetFactory(year=1999, user=UserFactory(username='XXX'))
+    DrinkTargetFactory(year=1999, user=UserFactory(username='XXX', email='x@x.x'))
 
     actual = list(DrinkTarget.objects.year(1999))
 

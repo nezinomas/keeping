@@ -17,7 +17,7 @@ def test_book_str():
 
 def test_book_related():
     BookFactory()
-    BookFactory(title='B1', user=UserFactory(username='XXX'))
+    BookFactory(title='B1', user=UserFactory(username='XXX', email='x@x.x'))
 
     actual = Book.objects.related()
 
@@ -27,7 +27,7 @@ def test_book_related():
 
 def test_book_items():
     BookFactory()
-    BookFactory(title='B1', user=UserFactory(username='XXX'))
+    BookFactory(title='B1', user=UserFactory(username='XXX', email='x@x.x'))
 
     assert Book.objects.items().count() == 1
 
@@ -37,7 +37,7 @@ def test_book_year():
     b2 = BookFactory(title='x2', ended=date(1999, 1, 2))
     BookFactory(started=date(2000, 1, 1))
     BookFactory(ended=date(2000, 1, 1))
-    BookFactory(user=UserFactory(username='XXX'))
+    BookFactory(user=UserFactory(username='XXX', email='x@x.x'))
 
     actual = Book.objects.year(1999)
 
@@ -63,7 +63,7 @@ def test_book_readed_one_year():
     BookFactory()
     BookFactory(ended=date(1999, 1, 31))
     BookFactory(ended=date(1999, 12, 31))
-    BookFactory(ended=date(1999, 12, 31), user=UserFactory(username='X'))
+    BookFactory(ended=date(1999, 12, 31), user=UserFactory(username='X', email='x@x.x'))
 
     actual = list(Book.objects.readed(year=1999))
 
@@ -81,7 +81,7 @@ def test_book_readed_all_years():
     BookFactory(ended=date(1999, 1, 31))
     BookFactory(ended=date(1999, 12, 31))
     BookFactory(ended=date(1998, 1, 31))
-    BookFactory(ended=date(1998, 1, 31), user=UserFactory(username='XXX'))
+    BookFactory(ended=date(1998, 1, 31), user=UserFactory(username='XXX', email='x@x.x'))
 
     actual = list(Book.objects.readed())
 
@@ -99,7 +99,7 @@ def test_book_reading():
     BookFactory(started=date(1000, 1, 1))
     BookFactory(started=date(3000, 1, 1))
     BookFactory(ended=date(2000, 1, 31))
-    BookFactory(user=UserFactory(username='XXX'))
+    BookFactory(user=UserFactory(username='XXX', email='x@x.x'))
 
     actual = Book.objects.reading(1999)
 
@@ -118,7 +118,7 @@ def test_book_target_str():
 
 def test_book_target_related():
     BookTargetFactory()
-    BookTargetFactory(user=UserFactory(username='XXX'))
+    BookTargetFactory(user=UserFactory(username='XXX', email='x@x.x'))
 
     actual = BookTarget.objects.related()
 
@@ -128,7 +128,7 @@ def test_book_target_related():
 
 def test_book_target_items():
     BookTargetFactory(year=1999)
-    BookTargetFactory(year=2000, user=UserFactory(username='XXX'))
+    BookTargetFactory(year=2000, user=UserFactory(username='XXX', email='x@x.x'))
 
     actual = BookTarget.objects.items()
 
@@ -138,7 +138,7 @@ def test_book_target_items():
 
 def test_book_target_year():
     BookTargetFactory(year=1999)
-    BookTargetFactory(year=1999, user=UserFactory(username='XXX'))
+    BookTargetFactory(year=1999, user=UserFactory(username='XXX', email='x@x.x'))
 
     actual = list(BookTarget.objects.year(1999))
 
