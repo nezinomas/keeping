@@ -49,9 +49,13 @@ class Lists(DispatchListsMixin, ListMixin):
     def get_context_data(self, **kwargs):
         month = self.kwargs.get('month')
 
+        notice = _('There are no records for month <b>%(month)s</b>.') % {'month': month}
+        if month == '13' or not month:
+            notice = _('No records in <b>%(year)s</b>.') % {'year': self.request.user.year}
+
         context = super().get_context_data(**kwargs)
         context.update({
-            'notice': _('There are no records for month %(month)s.') % {'month': month},
+            'notice': notice,
         })
         return context
 

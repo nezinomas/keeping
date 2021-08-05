@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-04 11:58+0300\n"
-"PO-Revision-Date: 2021-08-04 12:06+0300\n"
+"POT-Creation-Date: 2021-08-05 15:05+0300\n"
+"PO-Revision-Date: 2021-08-05 15:06+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -504,7 +504,7 @@ msgid "Edit"
 msgstr "Redaguoti"
 
 #: .\project\books\templates\books\includes\books_list.html:34
-#: .\project\core\mixins\views.py:94
+#: .\project\core\mixins\views.py:114
 #: .\project\core\templates\core\includes\generic_delete_form.html:14
 #: .\project\counts\templates\counts\includes\counts_list.html:26
 #: .\project\debts\templates\debts\includes\borrows_delete_form.html:4
@@ -534,6 +534,7 @@ msgstr "Trinti"
 #: .\project\debts\templates\debts\includes\lents_return_list.html:42
 #: .\project\drinks\templates\drinks\includes\drinks_list.html:36
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:63
+#: .\project\expenses\views\expenses.py:54
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:46
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:40
 #: .\project\plans\templates\plans\includes\generic_list.html:46
@@ -564,7 +565,7 @@ msgstr "Knygą"
 msgid "year goal"
 msgstr "metų tikslą"
 
-#: .\project\books\views.py:139 .\project\expenses\views\expenses.py:111
+#: .\project\books\views.py:139 .\project\expenses\views\expenses.py:114
 #: .\project\incomes\views.py:97
 msgid "Found nothing"
 msgstr "Nieko nerasta"
@@ -698,11 +699,11 @@ msgstr "Sekmadienis"
 msgid "Form is broken."
 msgstr "Forma neveikia."
 
-#: .\project\core\mixins\views.py:55 .\project\plans\views.py:160
+#: .\project\core\mixins\views.py:63 .\project\plans\views.py:160
 msgid "Insert"
 msgstr "Įrašyti"
 
-#: .\project\core\mixins\views.py:73
+#: .\project\core\mixins\views.py:87
 #: .\project\users\templates\users\includes\settings_form.html:6
 msgid "Update"
 msgstr "Atnaujinti"
@@ -1115,10 +1116,10 @@ msgctxt "expenses name button"
 msgid "Expenses name"
 msgstr "Išlaidų pavadinimą"
 
-#: .\project\expenses\views\expenses.py:55
+#: .\project\expenses\views\expenses.py:52
 #, python-format
-msgid "There are no records for month %(month)s."
-msgstr "%(month)s mėnesį įrašų nėra."
+msgid "There are no records for month <b>%(month)s</b>."
+msgstr "<b>%(month)s</b> mėnesį įrašų nėra."
 
 #: .\project\incomes\forms.py:42
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:13
@@ -1255,14 +1256,14 @@ msgstr "Suma dienai, max galima"
 msgid "Residual"
 msgstr "Likutis"
 
-#: .\project\plans\models.py:76 .\project\plans\models.py:109
-#: .\project\plans\models.py:142 .\project\plans\models.py:172
-#: .\project\plans\models.py:203
+#: .\project\plans\models.py:42 .\project\plans\models.py:72
+#: .\project\plans\models.py:102 .\project\plans\models.py:129
+#: .\project\plans\models.py:156
 #, python-format
 msgid "%(year)s year already has %(title)s plan."
 msgstr "%(year)s metai jau turi %(title)s planą."
 
-#: .\project\plans\models.py:171
+#: .\project\plans\models.py:128
 msgctxt "plans day error"
 msgid "Day"
 msgstr "Dienos"
