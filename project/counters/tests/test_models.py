@@ -45,7 +45,7 @@ def test_counter_str():
     assert str(actual) == '1999-01-01: 1'
 
 
-@patch('project.counters.models.CounterQuerySet.App_name', 'Counter Type')
+@patch('project.counters.managers.CounterQuerySet.App_name', 'Counter Type')
 def test_counter_related(_different_users):
     actual = Counter.objects.related()
 
@@ -53,7 +53,7 @@ def test_counter_related(_different_users):
     assert actual[0].user.username == 'bob'
 
 
-@patch('project.counters.models.CounterQuerySet.App_name', 'Counter Type')
+@patch('project.counters.managers.CounterQuerySet.App_name', 'Counter Type')
 def test_counter_items(_different_users):
     actual = Counter.objects.items()
 
@@ -61,7 +61,7 @@ def test_counter_items(_different_users):
     assert actual[0].user.username == 'bob'
 
 
-@patch('project.counters.models.CounterQuerySet.App_name', 'X')
+@patch('project.counters.managers.CounterQuerySet.App_name', 'X')
 def test_items_with_user(_different_users):
     u = UserFactory(username='XXX', email='x@x.x')
 
@@ -71,7 +71,7 @@ def test_items_with_user(_different_users):
     assert actual[0].user.username == 'XXX'
 
 
-@patch('project.counters.models.CounterQuerySet.App_name', 'Counter Type')
+@patch('project.counters.managers.CounterQuerySet.App_name', 'Counter Type')
 def test_counter_year(_different_users):
     actual = list(Counter.objects.year(1999))
 
@@ -80,7 +80,7 @@ def test_counter_year(_different_users):
     assert actual[0].user.username == 'bob'
 
 
-@patch('project.counters.models.CounterQuerySet.App_name', 'X')
+@patch('project.counters.managers.CounterQuerySet.App_name', 'X')
 def test_year_with_user(_different_users):
     u = UserFactory(username='XXX', email='x@x.x')
 
@@ -105,7 +105,7 @@ def test_counter_quantity_int():
 
     assert str(p) == '1999-01-01: 5.0'
 
-@patch('project.counters.models.CounterQuerySet.App_name', 'Counter Type')
+@patch('project.counters.managers.CounterQuerySet.App_name', 'Counter Type')
 def test_counter_order():
     CounterFactory(date=date(1999, 1, 1))
     CounterFactory(date=date(1999, 12, 1))
@@ -116,7 +116,7 @@ def test_counter_order():
     assert str(actual[1]) == '1999-01-01: 1.0'
 
 
-@patch('project.counters.models.CounterQuerySet.App_name', 'Counter Type')
+@patch('project.counters.managers.CounterQuerySet.App_name', 'Counter Type')
 def test_counter_months_quantity_sum(_counters):
     actual = Counter.objects.sum_by_month(1999).values_list('qty', flat=True)
 
@@ -143,14 +143,14 @@ def test_counter_months_quantity_sum_no_records_for_current_year():
     assert expect == pytest.approx(actual, rel=1e-2)
 
 
-@patch('project.counters.models.CounterQuerySet.App_name', 'Counter Type')
+@patch('project.counters.managers.CounterQuerySet.App_name', 'Counter Type')
 def test_counter_quantity_for_one_year(_counters):
     actual = list(Counter.objects.sum_by_year(year=1999))
 
     assert actual[0]['qty'] == 5.5
 
 
-@patch('project.counters.models.CounterQuerySet.App_name', 'Counter Type')
+@patch('project.counters.managers.CounterQuerySet.App_name', 'Counter Type')
 def test_counter_quantity_for_all_years(_counters):
     CounterFactory(date=date(2020, 1, 1), quantity=10)
     CounterFactory(date=date(2020, 12, 1), quantity=5)
@@ -161,7 +161,7 @@ def test_counter_quantity_for_all_years(_counters):
     assert actual[1]['qty'] == 15
 
 
-@patch('project.counters.models.CounterQuerySet.App_name', 'Counter Type')
+@patch('project.counters.managers.CounterQuerySet.App_name', 'Counter Type')
 def test_counter_days_quantity_sum(_counters):
     actual = Counter.objects.sum_by_day(1999).values_list('qty', flat=True)
 
@@ -170,7 +170,7 @@ def test_counter_days_quantity_sum(_counters):
     assert expect == pytest.approx(actual, rel=1e-2)
 
 
-@patch('project.counters.models.CounterQuerySet.App_name', 'Counter Type')
+@patch('project.counters.managers.CounterQuerySet.App_name', 'Counter Type')
 def test_counter_days_quantity_sum_for_january(_counters):
     actual = Counter.objects.sum_by_day(1999, 1).values_list('qty', flat=True)
 
