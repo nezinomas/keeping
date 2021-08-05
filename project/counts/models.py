@@ -1,6 +1,7 @@
 from django.db import models
 
-from ..counters.models import Counter, CounterQuerySet
+from ..counters.managers import CounterQuerySet
+from ..counters.models import Counter
 from .apps import App_name as app_name
 
 
