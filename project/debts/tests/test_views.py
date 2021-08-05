@@ -197,7 +197,7 @@ def test_borrow_list_200(client_logged):
 
 def test_borrow_list_empty(client_logged):
     url = reverse('debts:borrows_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     assert '<b>1999</b> metais įrašų nėra' in content
@@ -207,7 +207,7 @@ def test_borrow_list_with_data(client_logged):
     obj = factories.BorrowFactory(closed=True)
 
     url = reverse('debts:borrows_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     assert 'Data' in content
@@ -230,7 +230,7 @@ def test_borrow_list_edit_button(client_logged):
     obj = factories.BorrowFactory()
 
     url = reverse('debts:borrows_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     link = reverse('debts:borrows_update', kwargs={'pk': obj.pk})
@@ -242,7 +242,7 @@ def test_borrow_list_delete_button(client_logged):
     obj = factories.BorrowFactory()
 
     url = reverse('debts:borrows_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     link = reverse('debts:borrows_delete', kwargs={'pk': obj.pk})
@@ -521,7 +521,7 @@ def test_borrow_return_list_200(client_logged):
 
 def test_borrow_return_list_empty(client_logged):
     url = reverse('debts:borrows_return_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     assert '<b>1999</b> metais įrašų nėra' in content
@@ -531,7 +531,7 @@ def test_borrow_return_list_with_data(client_logged):
     factories.BorrowReturnFactory()
 
     url = reverse('debts:borrows_return_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     assert 'Data' in content
@@ -549,7 +549,7 @@ def test_borrow_return_list_edit_button(client_logged):
     obj = factories.BorrowReturnFactory()
 
     url = reverse('debts:borrows_return_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     link = reverse('debts:borrows_return_update', kwargs={'pk': obj.pk})
@@ -561,7 +561,7 @@ def test_borrow_return_list_delete_button(client_logged):
     obj = factories.BorrowReturnFactory()
 
     url = reverse('debts:borrows_return_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     link = reverse('debts:borrows_return_delete', kwargs={'pk': obj.pk})
@@ -804,7 +804,7 @@ def test_lent_list_200(client_logged):
 
 def test_lent_list_empty(client_logged):
     url = reverse('debts:lents_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     assert '<b>1999</b> metais įrašų nėra' in content
@@ -814,7 +814,7 @@ def test_lent_list_with_data(client_logged):
     obj = factories.LentFactory(closed=True)
 
     url = reverse('debts:lents_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     assert 'Data' in content
@@ -838,7 +838,7 @@ def test_lent_list_edit_button(client_logged):
     obj = factories.LentFactory()
 
     url = reverse('debts:lents_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     link = reverse('debts:lents_update', kwargs={'pk': obj.pk})
@@ -851,7 +851,7 @@ def test_lent_list_delete_button(client_logged):
     obj = factories.LentFactory()
 
     url = reverse('debts:lents_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     link = reverse('debts:lents_delete', kwargs={'pk': obj.pk})
@@ -1124,7 +1124,7 @@ def test_lent_return_list_200(client_logged):
 
 def test_lent_return_list_empty(client_logged):
     url = reverse('debts:lents_return_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     assert '<b>1999</b> metais įrašų nėra' in content
@@ -1134,7 +1134,7 @@ def test_lent_return_list_with_data(client_logged):
     factories.LentReturnFactory()
 
     url = reverse('debts:lents_return_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     assert 'Data' in content
@@ -1152,7 +1152,7 @@ def test_lent_return_list_edit_button(client_logged):
     f = factories.LentReturnFactory()
 
     url = reverse('debts:lents_return_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     link = reverse('debts:lents_return_update', kwargs={'pk': f.pk})
@@ -1165,7 +1165,7 @@ def test_lent_return_list_delete_button(client_logged):
     obj = factories.LentReturnFactory()
 
     url = reverse('debts:lents_return_list')
-    response = client_logged.get(url)
+    response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     link = reverse('debts:lents_return_delete', kwargs={'pk': obj.pk})

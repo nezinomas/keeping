@@ -1,8 +1,9 @@
 from django.views.generic.base import TemplateView
 
 from ..accounts.views import Lists as accounts_list
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
-                                 ListMixin, UpdateAjaxMixin)
+from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
+                                 DispatchListsMixin, IndexMixin, ListMixin,
+                                 UpdateAjaxMixin)
 from . import forms, models
 
 
@@ -39,7 +40,7 @@ class LoadSavingType(TemplateView):
 #----------------------------------------------------------------------------------------
 #                                                           Transactions between Accounts
 #----------------------------------------------------------------------------------------
-class Lists(ListMixin):
+class Lists(DispatchListsMixin, ListMixin):
     model = models.Transaction
 
 
@@ -60,7 +61,7 @@ class Delete(DeleteAjaxMixin):
 #----------------------------------------------------------------------------------------
 #                                   Savings Transactions from Savings to regular Accounts
 #----------------------------------------------------------------------------------------
-class SavingsCloseLists(ListMixin):
+class SavingsCloseLists(DispatchListsMixin, ListMixin):
     model = models.SavingClose
 
 
@@ -81,7 +82,7 @@ class SavingsCloseDelete(DeleteAjaxMixin):
 #----------------------------------------------------------------------------------------
 #                                           Savings Transactions between Savings accounts
 #----------------------------------------------------------------------------------------
-class SavingsChangeLists(ListMixin):
+class SavingsChangeLists(DispatchListsMixin, ListMixin):
     model = models.SavingChange
 
 

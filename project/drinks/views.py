@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 from ..core.lib.date import years
 from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchAjaxMixin, IndexMixin, ListMixin,
+                                 DispatchAjaxMixin, DispatchListsMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from . import forms, models
 from .apps import App_name
@@ -122,7 +122,7 @@ class Delete(DeleteAjaxMixin):
     model = models.Drink
 
 
-class TargetLists(ListMixin):
+class TargetLists(DispatchListsMixin, ListMixin):
     model = models.DrinkTarget
 
 

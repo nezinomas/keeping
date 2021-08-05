@@ -1,5 +1,6 @@
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
-                                 ListMixin, UpdateAjaxMixin)
+from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
+                                 DispatchListsMixin, IndexMixin, ListMixin,
+                                 UpdateAjaxMixin)
 from . import forms, models
 
 
@@ -18,7 +19,7 @@ class Index(IndexMixin):
 #----------------------------------------------------------------------------------------
 #                                                                           Pension views
 #----------------------------------------------------------------------------------------
-class Lists(ListMixin):
+class Lists(DispatchListsMixin, ListMixin):
     model = models.Pension
 
 
@@ -39,7 +40,7 @@ class Delete(DeleteAjaxMixin):
 #----------------------------------------------------------------------------------------
 #                                                                       PensionType views
 #----------------------------------------------------------------------------------------
-class TypeLists(ListMixin):
+class TypeLists(DispatchListsMixin, ListMixin):
     model = models.PensionType
 
 

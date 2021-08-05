@@ -6,7 +6,7 @@ from ..core.forms import SearchForm
 from ..core.lib import search
 from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchAjaxMixin, IndexMixin, ListMixin,
+                                 DispatchAjaxMixin, DispatchListsMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from . import forms, models
 from .lib.views_helper import BookRenderer
@@ -77,7 +77,7 @@ class All(IndexMixin):
         return context
 
 
-class Lists(BookTabMixin, ListMixin):
+class Lists(DispatchListsMixin, BookTabMixin, ListMixin):
     model = models.Book
 
     def get_context_data(self, **kwargs):
@@ -150,7 +150,7 @@ class Search(AjaxSearchMixin):
 #----------------------------------------------------------------------------------------
 #                                                                            Target Views
 #----------------------------------------------------------------------------------------
-class TargetLists(ListMixin):
+class TargetLists(DispatchListsMixin, ListMixin):
     model = models.BookTarget
 
 

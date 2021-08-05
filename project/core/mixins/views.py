@@ -130,7 +130,8 @@ class DispatchAjaxMixin():
 
 class DispatchListsMixin():
     def dispatch(self, request, *args, **kwargs):
-        if 'as_string' not in kwargs and not self.request.user.is_anonymous:
-            return HttpResponse(render_to_string('srsly.html'))
+        if not utils.is_ajax(self.request):
+            if 'as_string' not in kwargs and not self.request.user.is_anonymous:
+                return HttpResponse(render_to_string('srsly.html'))
 
         return super().dispatch(request, *args, **kwargs)

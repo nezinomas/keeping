@@ -1,8 +1,8 @@
 from django.views.generic import TemplateView
 
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchAjaxMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
+                                 DispatchAjaxMixin, DispatchListsMixin,
+                                 IndexMixin, ListMixin, UpdateAjaxMixin)
 from . import forms, models
 
 
@@ -41,7 +41,7 @@ class BorrowReload(DispatchAjaxMixin, TemplateView):
         return self.render_to_response(context=context)
 
 
-class BorrowLists(ListMixin):
+class BorrowLists(DispatchListsMixin, ListMixin):
     model = models.Borrow
     template_name = 'debts/includes/borrows_list.html'
 
@@ -63,7 +63,7 @@ class BorrowDelete(DeleteAjaxMixin):
     list_render_output = False
 
 
-class BorrowReturnLists(ListMixin):
+class BorrowReturnLists(DispatchListsMixin, ListMixin):
     model = models.BorrowReturn
     template_name = 'debts/includes/borrows_return_list.html'
 
@@ -94,7 +94,7 @@ class LentReload(DispatchAjaxMixin, TemplateView):
         return self.render_to_response(context=context)
 
 
-class LentLists(ListMixin):
+class LentLists(DispatchListsMixin, ListMixin):
     model = models.Lent
     template_name = 'debts/includes/lents_list.html'
 
@@ -116,7 +116,7 @@ class LentDelete(DeleteAjaxMixin):
     list_render_output = False
 
 
-class LentReturnLists(ListMixin):
+class LentReturnLists(DispatchListsMixin, ListMixin):
     model = models.LentReturn
     template_name = 'debts/includes/lents_return_list.html'
 

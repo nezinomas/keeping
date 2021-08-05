@@ -1,8 +1,9 @@
-from ...core.mixins.views import CreateAjaxMixin, ListMixin, UpdateAjaxMixin
+from ...core.mixins.views import (CreateAjaxMixin, DispatchListsMixin,
+                                  ListMixin, UpdateAjaxMixin)
 from .. import forms, models
 
 
-class Lists(ListMixin):
+class Lists(DispatchListsMixin, ListMixin):
     model = models.ExpenseType
 
 

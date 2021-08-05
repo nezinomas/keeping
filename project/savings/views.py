@@ -1,5 +1,6 @@
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
-                                 ListMixin, UpdateAjaxMixin)
+from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
+                                 DispatchListsMixin, IndexMixin, ListMixin,
+                                 UpdateAjaxMixin)
 from ..pensions.views import Lists as PensionLists
 from ..pensions.views import TypeLists as PensionTypeLists
 from . import forms, models
@@ -28,7 +29,7 @@ class Index(IndexMixin):
 # ----------------------------------------------------------------------------
 #                                                                 Saving Views
 # ----------------------------------------------------------------------------
-class Lists(ListMixin):
+class Lists(DispatchListsMixin, ListMixin):
     model = models.Saving
 
 
@@ -49,7 +50,7 @@ class Delete(DeleteAjaxMixin):
 # ----------------------------------------------------------------------------
 #                                                            Saving Type Views
 # ----------------------------------------------------------------------------
-class TypeLists(ListMixin):
+class TypeLists(DispatchListsMixin, ListMixin):
     model = models.SavingType
 
     def get_queryset(self):

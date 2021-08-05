@@ -4,8 +4,9 @@ from django.shortcuts import render, reverse
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin, IndexMixin,
-                                 ListMixin, UpdateAjaxMixin)
+from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
+                                 DispatchListsMixin, IndexMixin, ListMixin,
+                                 UpdateAjaxMixin)
 from . import forms, models
 from .lib.calc_day_sum import CalcDaySum
 
@@ -38,7 +39,7 @@ class Index(IndexMixin):
 # ---------------------------------------------------------------------------------------
 #                                                                           Expense Plans
 # ---------------------------------------------------------------------------------------
-class ExpensesLists(ListMixin):
+class ExpensesLists(DispatchListsMixin, ListMixin):
     model = models.ExpensePlan
 
 
@@ -59,7 +60,7 @@ class ExpensesDelete(DeleteAjaxMixin):
 # ---------------------------------------------------------------------------------------
 #                                                                            Income Plans
 # ---------------------------------------------------------------------------------------
-class IncomesLists(ListMixin):
+class IncomesLists(DispatchListsMixin, ListMixin):
     model = models.IncomePlan
 
 
@@ -80,7 +81,7 @@ class IncomesDelete(DeleteAjaxMixin):
 # ---------------------------------------------------------------------------------------
 #                                                                            Saving Plans
 # ---------------------------------------------------------------------------------------
-class SavingsLists(ListMixin):
+class SavingsLists(DispatchListsMixin, ListMixin):
     model = models.SavingPlan
 
 
@@ -101,7 +102,7 @@ class SavingsDelete(DeleteAjaxMixin):
 # ---------------------------------------------------------------------------------------
 #                                                                               Day Plans
 # ---------------------------------------------------------------------------------------
-class DayLists(ListMixin):
+class DayLists(DispatchListsMixin, ListMixin):
     model = models.DayPlan
 
 
@@ -122,7 +123,7 @@ class DayDelete(DeleteAjaxMixin):
 # ---------------------------------------------------------------------------------------
 #                                                                         Necessary Plans
 # ---------------------------------------------------------------------------------------
-class NecessaryLists(ListMixin):
+class NecessaryLists(DispatchListsMixin, ListMixin):
     model = models.NecessaryPlan
 
 
