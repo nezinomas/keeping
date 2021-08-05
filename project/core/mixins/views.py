@@ -44,7 +44,6 @@ class ListMixin(
         return [self.template_name]
 
 
-
 class CreateAjaxMixin(
         LoginRequiredMixin,
         AjaxCreateUpdateMixin,
@@ -125,5 +124,13 @@ class DispatchAjaxMixin():
             request.GET['ajax_trigger']
         except KeyError:
             return redirect(reverse(self.redirect_view))
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+class DispatchListsMixin():
+    def dispatch(self, request, *args, **kwargs):
+        if 'as_string' not in kwargs and not self.request.user.is_anonymous:
+            return HttpResponse(render_to_string('srsly.html'))
 
         return super().dispatch(request, *args, **kwargs)

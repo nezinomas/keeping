@@ -11,8 +11,8 @@ from ...core.forms import SearchForm
 from ...core.lib import search
 from ...core.mixins.ajax import AjaxSearchMixin
 from ...core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                  DispatchAjaxMixin, ListMixin,
-                                  UpdateAjaxMixin)
+                                  DispatchAjaxMixin, DispatchListsMixin,
+                                  ListMixin, UpdateAjaxMixin)
 from .. import forms, models
 from ..apps import App_name
 from ..views.expenses_type import Lists as TypeLists
@@ -38,12 +38,11 @@ class MonthLists(ListMixin):
             'categories': TypeLists.as_view()(self.request, as_string=True),
             'current_month': month,
             'search': Search.as_view()(self.request, as_string=True),
-            'expenses_list': Lists.as_view()(self.request, as_string=True, **{'month': month}),
+            'expenses_list': Lists.as_view()(self.request, as_string=True, month=month),
         })
         return context
 
-
-class Lists(ListMixin):
+class Lists(DispatchListsMixin, ListMixin):
     model = models.Expense
     template_name = 'expenses/includes/expenses_list.html'
 
