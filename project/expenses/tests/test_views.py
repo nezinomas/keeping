@@ -59,6 +59,19 @@ def test_expenses_lists_month_func():
     assert expenses.MonthLists == view.func.view_class
 
 
+def test_expenses_lists_all_func():
+    view = resolve('/expenses/all/')
+
+    assert expenses.MonthLists == view.func.view_class
+
+
+def test_expenses_lists_all_200(client_logged):
+    url = reverse('expenses:expenses_all')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
 def test_expenses_lists_month_search_form(client_logged):
     url = reverse('expenses:expenses_month_list', kwargs={'month': 1})
     response = client_logged.get(url).content.decode('utf-8')
