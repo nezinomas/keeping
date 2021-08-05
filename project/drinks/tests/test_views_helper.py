@@ -10,7 +10,7 @@ from ..lib import views_helper as T
 pytestmark = pytest.mark.django_db
 
 @freezegun.freeze_time('1999-01-03')
-@patch('project.drinks.models.DrinkQuerySet.App_name', 'Counter Type')
+@patch('project.drinks.managers.DrinkQuerySet.App_name', 'Counter Type')
 def test_dry_days(fake_request):
     DrinkFactory()
 
