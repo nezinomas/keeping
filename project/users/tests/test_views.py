@@ -622,36 +622,34 @@ def test_invite_form_inputs(client_logged):
     assert form.count('type="email"') == 1
 
 
-def test_invite_email_subject(client_logged):
-    user = UserFactory()
+def test_invite_email_subject(client_logged, get_user):
     url = reverse('users:invite')
-    client_logged.post(url, {'email': user.email})
+    client_logged.post(url, {'email': 'john@test.com'})
+
     email = mail.outbox[0].subject
 
-    assert email == f'{user.username} invitation'
+    assert email == f'{get_user.username} invitation'
 
 
-def test_invite_crypted_link(client_logged):
-    user = UserFactory()
+def test_invite_crypted_link(client_logged, get_user):
     url = reverse('users:invite')
-    client_logged.post(url, {'email': user.email})
+    client_logged.post(url, {'email': 'john@test.com'})
     email = mail.outbox[0].body
 
     token = re.findall(r'http://.*?\/([\w\-]{23,}:[\w\-]{6}:[\w\-]{43})', email)[0]
     signer = TimestampSigner(salt=get_secret('SALT'))
     actual = signer.unsign_object(token, max_age=timedelta(days=3))
-    expect = {'jrn': user.journal.pk, 'usr': user.pk}
+    expect = {'jrn': get_user.journal.pk, 'usr': get_user.pk}
 
     assert expect == actual
 
 
-def test_invite_body(client_logged):
-    user = UserFactory()
+def test_invite_body(client_logged, get_user):
     url = reverse('users:invite')
-    client_logged.post(url, {'email': user.email})
+    client_logged.post(url, {'email': 'john@test.com'})
     email = mail.outbox[0].body
 
-    assert user.username in email
+    assert get_user.username in email
     assert reverse('users:invite') in email
 
 
