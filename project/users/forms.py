@@ -43,7 +43,7 @@ class InviteForm(forms.Form):
         if email == admin_email:
             raise ValidationError(_('You have entered your own Email.'))
 
-        emails = User.objects.values_list('email', flat=True)
+        emails = User.objects.exclude(email=admin_email).values_list('email', flat=True)
         if email in emails:
             raise ValidationError(_('User with this Email already exists.'))
 
