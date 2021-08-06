@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-05 15:05+0300\n"
-"PO-Revision-Date: 2021-08-05 15:06+0300\n"
+"POT-Creation-Date: 2021-08-06 09:51+0300\n"
+"PO-Revision-Date: 2021-08-06 09:52+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -566,7 +566,7 @@ msgid "year goal"
 msgstr "metų tikslą"
 
 #: .\project\books\views.py:139 .\project\expenses\views\expenses.py:114
-#: .\project\incomes\views.py:97
+#: .\project\incomes\views.py:98
 msgid "Found nothing"
 msgstr "Nieko nerasta"
 
@@ -699,7 +699,7 @@ msgstr "Sekmadienis"
 msgid "Form is broken."
 msgstr "Forma neveikia."
 
-#: .\project\core\mixins\views.py:63 .\project\plans\views.py:160
+#: .\project\core\mixins\views.py:63 .\project\plans\views.py:161
 msgid "Insert"
 msgstr "Įrašyti"
 
@@ -1285,7 +1285,7 @@ msgstr "Dienai"
 msgid "Additional necessary expenses"
 msgstr "Papildomos būtinos išlaidos"
 
-#: .\project\plans\templates\plans\index.html:33 .\project\plans\views.py:158
+#: .\project\plans\templates\plans\index.html:33 .\project\plans\views.py:159
 msgid "Copy plans"
 msgstr "Kopijuoti planus"
 
@@ -1429,10 +1429,18 @@ msgctxt "account button"
 msgid "Account"
 msgstr "Sąskaitą"
 
-#: .\project\users\forms.py:21 .\project\users\forms.py:34
+#: .\project\users\forms.py:23 .\project\users\forms.py:37
 #: .\project\users\templates\users\includes\users_lists.html:8
 msgid "Email"
 msgstr "El. paštas"
+
+#: .\project\users\forms.py:44
+msgid "You have entered your own Email."
+msgstr "Įvedėte savo Email."
+
+#: .\project\users\forms.py:48
+msgid "User with this Email already exists."
+msgstr "Vartotojas su šiuo Email jau egzistuoja."
 
 #: .\project\users\templates\users\includes\users_delete.html:4
 msgid "Delete user"

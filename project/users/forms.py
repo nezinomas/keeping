@@ -1,7 +1,9 @@
+from django.core.exceptions import ValidationError
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import gettext as _
 
+from ..core.lib import utils
 from .models import User
 
 
@@ -20,6 +22,7 @@ class SignUpForm(UserCreationForm):
 
         self.fields['email'].label = _('Email')
 
+
 class InviteForm(forms.Form):
     email = forms.EmailField(
         max_length=254,
@@ -32,3 +35,16 @@ class InviteForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         self.fields['email'].label = _('Email')
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        admin_email = utils.get_user().email
+
+        if email == admin_email:
+            raise ValidationError(_('You have entered your own Email.'))
+
+        emails = User.objects.values_list('email', flat=True)
+        if email in emails:
+            raise ValidationError(_('User with this Email already exists.'))
+
+        return email

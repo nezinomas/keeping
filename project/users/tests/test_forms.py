@@ -49,3 +49,22 @@ def test_invite_form_inputs():
     actual = list(form.fields)
 
     assert expected == actual
+
+
+def test_invite_form_same_as_admin_email():
+    form = InviteForm(data={'email': 'bob@bob.com'})
+
+    assert not form.is_valid()
+    assert 'email' in form.errors
+
+    assert form.errors['email'][0] == 'Įvedėte savo Email.'
+
+
+@pytest.mark.django_db
+def test_invite_form_email_exists(second_user):
+    form = InviteForm(data={'email': 'x@x.xx'})
+
+    assert not form.is_valid()
+    assert 'email' in form.errors
+
+    assert form.errors['email'][0] == 'Vartotojas su šiuo Email jau egzistuoja.'
