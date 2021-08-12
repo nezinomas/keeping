@@ -6,14 +6,14 @@ from mock import patch
 
 from ...users.factories import UserFactory
 from ..apps import App_name
-from ..forms import CountForm
+from ..forms import CountForm, CountTypeForm
 
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                   Form Tests
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                                   Count
+# ---------------------------------------------------------------------------------------
 def test_form_init():
     CountForm()
 
@@ -62,3 +62,37 @@ def test_form_blank_data():
     assert len(form.errors) == 2
     assert 'date' in form.errors
     assert 'quantity' in form.errors
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                              Count Type
+# ---------------------------------------------------------------------------------------
+def test_count_type_init():
+    CountTypeForm()
+
+
+def test_count_type_init_fields():
+    form = CountTypeForm().as_p()
+
+    assert '<input type="text" name="title"' in form
+    assert '<select name="user"' not in form
+
+
+def test_count_type_valid_data():
+    form = CountTypeForm(data={'title': 'XXXXX'})
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.user.username == 'bob'
+    assert data.title == 'XXXXX'
+
+
+def test_count_type_blank_data():
+    form = CountTypeForm({})
+
+    assert not form.is_valid()
+
+    assert len(form.errors) == 1
+    assert 'title' in form.errors
