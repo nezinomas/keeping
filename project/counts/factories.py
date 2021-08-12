@@ -3,7 +3,7 @@ from datetime import date
 import factory
 
 from ..users.factories import UserFactory
-from .models import Count
+from .models import Count, CountType
 
 
 class CountFactory(factory.django.DjangoModelFactory):
@@ -14,3 +14,11 @@ class CountFactory(factory.django.DjangoModelFactory):
     quantity = 1
     counter_type = 'Counter Type'
     user = factory.SubFactory(UserFactory)
+
+
+class CountTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CountType
+
+    user = factory.SubFactory(UserFactory)
+    title = 'Count Type'
