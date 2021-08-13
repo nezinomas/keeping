@@ -1,3 +1,4 @@
+from django.utils.text import slugify
 import json
 import re
 
@@ -7,16 +8,17 @@ from freezegun import freeze_time
 from mock import patch
 
 from ...users.factories import UserFactory
-from .. import models, views
+from .. import forms, views
 from ..apps import App_name
-from ..factories import CountFactory
+from ..factories import CountFactory, CountTypeFactory
+from ..models import Count, CountType
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
 
 
 # ---------------------------------------------------------------------------------------
-#                                                                      Create/Update View
+#                                                                     Count Create/Update
 # ---------------------------------------------------------------------------------------
 @freeze_time('2000-01-01')
 def test_view_new_form_initial(client_logged):
@@ -83,7 +85,7 @@ def test_view_update(client_logged):
 
 
 # ---------------------------------------------------------------------------------------
-#                                                                                  Delete
+#                                                                            Count Delete
 # ---------------------------------------------------------------------------------------
 def test_view_delete_func():
     view = resolve(f'/{App_name}/delete/1/')
@@ -119,14 +121,14 @@ def test_view_delete_load_form(client_logged):
 def test_view_delete(client_logged):
     p = CountFactory()
 
-    assert models.Count.objects.all().count() == 1
+    assert Count.objects.all().count() == 1
     url = reverse(f'{App_name}:{App_name}_delete', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, {}, **X_Req)
 
     assert response.status_code == 200
 
-    assert models.Count.objects.all().count() == 0
+    assert Count.objects.all().count() == 0
 
 
 # ---------------------------------------------------------------------------------------
@@ -385,3 +387,147 @@ def test_history_chart_years(client_logged):
     content = response.content.decode("utf-8")
 
     assert '<div id="chart_years_container"></div>' in content
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                 CountType Create/Update
+# ---------------------------------------------------------------------------------------
+def test_count_type_new_func():
+    view = resolve('/counts/type/new/')
+
+    assert views.TypeNew is view.func.view_class
+
+
+def test_count_type_update_func():
+    view = resolve('/counts/type/update/1/')
+
+    assert views.TypeUpdate is view.func.view_class
+
+
+def test_count_type_new_200(client_logged):
+    url = reverse('counts:counts_type_new')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_count_type_update_200(client_logged):
+    url = reverse('counts:counts_type_update', kwargs={'pk': 1})
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_count_type_form(client_logged):
+    url = reverse('counts:counts_type_new')
+
+    response = client_logged.get(url, {}, **X_Req)
+
+    form = response.context.get('form')
+
+    assert isinstance(form, forms.CountTypeForm)
+
+
+def test_count_type_form_fields(client_logged):
+    url = reverse('counts:counts_type_new')
+
+    response = client_logged.get(url, {}, **X_Req)
+    json_str = response.content
+    actual = json.loads(json_str)['html_form']
+
+    assert actual.count('<input') == 2
+    assert actual.count('<button') == 4
+    assert 'type="hidden" name="csrfmiddlewaretoken"' in actual
+    assert '<input type="text" name="title"' in actual
+
+
+def test_count_type_new_valid_data(client_logged):
+    data = {'title': 'XXX'}
+    url = reverse('counts:counts_type_new')
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    assert actual['form_is_valid']
+
+    actual = CountType.objects.first()
+    assert actual.title == 'XXX'
+
+
+def test_count_type_new_invalid_data(client_logged):
+    data = {'title': 'X'}
+    url = reverse('counts:counts_type_new')
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    assert not actual['form_is_valid']
+
+
+
+def test_count_type_update(client_logged):
+    obj = CountTypeFactory(title='XXX')
+    CountFactory(counter_type=slugify('XXX'))
+
+    data = {'title': 'YYY'}
+    url = reverse('counts:counts_type_update', kwargs={'pk': obj.pk})
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert CountType.objects.count() == 1
+    assert CountType.objects.first().title == 'YYY'
+    assert Count.objects.count() == 1
+    assert Count.objects.first().counter_type == 'yyy'
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                        CountType Delete
+# ---------------------------------------------------------------------------------------
+def test_count_types_delete_func():
+    view = resolve('/counts/type/delete/1/')
+
+    assert views.TypeDelete is view.func.view_class
+
+
+def test_count_type_delete_200(client_logged):
+    obj = CountTypeFactory()
+
+    url = reverse('counts:counts_type_delete', kwargs={'pk': obj.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_count_type_delete_load_form(client_logged):
+    obj = CountTypeFactory()
+
+    url = reverse('counts:counts_type_delete', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    actual = actual['html_form']
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual
+    assert 'Ar tikrai norite ištrinti: <strong>Count Type</strong>?' in actual
+
+
+def test_count_type_delete(client_logged):
+    obj = CountTypeFactory(title='XXX')
+    CountFactory(counter_type=slugify('XXX'))
+
+    url = reverse('counts:counts_type_delete', kwargs={'pk': obj.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert CountType.objects.count() == 0
+    assert Count.objects.count() == 0

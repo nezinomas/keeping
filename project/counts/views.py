@@ -6,9 +6,11 @@ from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                  UpdateAjaxMixin)
 from .apps import App_name
 from .forms import CountForm as Form
+from .forms import CountTypeForm
 from .lib.stats import Stats
 from .lib.views_helper import RenderContext, UpdateLinkMixin
 from .models import Count as Counter
+from .models import CountType
 
 
 class Index(IndexMixin):
@@ -82,3 +84,18 @@ class ReloadStats(DispatchAjaxMixin, TemplateView):
         context = r.context_to_reload(year)
 
         return self.render_to_response(context=context)
+
+
+class TypeNew(CreateAjaxMixin):
+    model = CountType
+    form_class = CountTypeForm
+
+
+class TypeUpdate(UpdateAjaxMixin):
+    model = CountType
+    form_class = CountTypeForm
+
+
+class TypeDelete(DeleteAjaxMixin):
+    model = CountType
+    form_class = CountTypeForm

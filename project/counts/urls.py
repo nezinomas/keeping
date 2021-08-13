@@ -32,6 +32,21 @@ urlpatterns = [
         name=f'{App_name}_delete'
     ),
     path(
+        f'{App_name}/type/new/',
+        views.TypeNew.as_view(),
+        name=f'{App_name}_type_new'
+    ),
+    path(
+        f'{App_name}/type/update/<int:pk>/',
+        views.TypeUpdate.as_view(),
+        name=f'{App_name}_type_update'
+    ),
+    path(
+        f'{App_name}/type/delete/<int:pk>/',
+        views.TypeDelete.as_view(),
+        name=f'{App_name}_type_delete'
+    ),
+    path(
         f'{App_name}/reload_stats/',
         views.ReloadStats.as_view(),
         name='reload_stats'
