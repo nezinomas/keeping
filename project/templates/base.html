@@ -152,6 +152,10 @@
                 <li>
                   <a class="dropdown-item btn-sm" href="{% url 'counts:counts_history' %}">{% translate 'History' %}</a>
                 </li>
+                <li class="dropdown-divider"></li>
+                <li>
+                  <button type="button" class="dropdown-item btn-sm js-create" data-url="{% url 'counts:counts_type_new' %}">{% translate 'Add count type' %}</button>
+                </li>
               </ul>
             </div>
           </li>
