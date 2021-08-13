@@ -6,6 +6,7 @@ from ..counters.managers import CounterQuerySet
 from ..counters.models import Counter
 from ..users.models import User
 from .apps import App_name as app_name
+from .managers import CountTypeQuerySet
 
 
 class CountQuerySet(CounterQuerySet, models.QuerySet):
@@ -24,6 +25,8 @@ class CountType(TitleAbstract):
         User,
         on_delete=models.CASCADE
     )
+
+    objects = CountTypeQuerySet.as_manager()
 
     class Meta:
         unique_together = ['user', 'title']
