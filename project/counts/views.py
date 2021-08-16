@@ -13,7 +13,7 @@ from .models import Count as Counter
 from .models import CountType
 
 
-class Index(IndexMixin):
+class ContextMixin():
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         qs = Counter.objects.sum_by_day(year=year)
@@ -21,10 +21,14 @@ class Index(IndexMixin):
 
         context = super().get_context_data(**kwargs)
         context.update({
-            **r.context_url_names(kwargs['count_type']),
             **r.context_to_reload(year)
         })
+
         return context
+
+
+class Index(ContextMixin, IndexMixin):
+    pass
 
 
 class Lists(IndexMixin):
@@ -38,7 +42,6 @@ class Lists(IndexMixin):
             'tab': 'data',
             'info_row': r.info_row(year),
             'data': r.list_data(),
-            **r.context_url_names(kwargs['count_type'])
         })
         return context
 
@@ -68,21 +71,17 @@ class History(IndexMixin):
             'chart_weekdays': r.chart_weekdays(_('Days of week')),
             'chart_years': r.chart_years(),
             'chart_histogram': r.chart_histogram(),
-            **r.context_url_names(kwargs['count_type'])
         })
         return context
 
 
 
-class ReloadStats(DispatchAjaxMixin, TemplateView):
+class ReloadStats(ContextMixin, DispatchAjaxMixin, TemplateView):
     template_name = 'counts/includes/reload_stats.html'
     redirect_view = reverse_lazy('counts:counts_index', kwargs={'count_type': 'counter'})
 
     def get(self, request, *args, **kwargs):
-        year = request.user.year
-        qs = Counter.objects.sum_by_day(year=year)
-        r = RenderContext(self.request, Stats(year=year, data=qs))
-        context = r.context_to_reload(year)
+        context = self.get_context_data()
 
         return self.render_to_response(context=context)
 

@@ -139,9 +139,3 @@ class RenderContext():
             'info_row': self.info_row(year),
         }
         return context
-
-    def context_url_names(self, count_type) -> Dict[str, str]:
-        context = {
-            'count_type': count_type,
-        }
-        return context
