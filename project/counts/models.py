@@ -5,12 +5,12 @@ from project.core.models import TitleAbstract
 from ..counters.managers import CounterQuerySet
 from ..counters.models import Counter
 from ..users.models import User
-from .apps import App_name as app_name
 from .managers import CountTypeQuerySet
 
 
 class CountQuerySet(CounterQuerySet, models.QuerySet):
-    App_name = app_name
+    # App_name = app_name
+    pass
 
 
 class Count(Counter):

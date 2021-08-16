@@ -1,14 +1,14 @@
+from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                  DispatchAjaxMixin, IndexMixin,
                                  UpdateAjaxMixin)
-from .apps import App_name
 from .forms import CountForm as Form
 from .forms import CountTypeForm
 from .lib.stats import Stats
-from .lib.views_helper import RenderContext, UpdateLinkMixin
+from .lib.views_helper import RenderContext
 from .models import Count as Counter
 from .models import CountType
 
@@ -21,7 +21,7 @@ class Index(IndexMixin):
 
         context = super().get_context_data(**kwargs)
         context.update({
-            **r.context_url_names(),
+            **r.context_url_names(kwargs['count_type']),
             **r.context_to_reload(year)
         })
         return context
@@ -38,22 +38,22 @@ class Lists(IndexMixin):
             'tab': 'data',
             'info_row': r.info_row(year),
             'data': r.list_data(),
-            **r.context_url_names()
+            **r.context_url_names(kwargs['count_type'])
         })
         return context
 
 
-class New(UpdateLinkMixin, CreateAjaxMixin):
+class New(CreateAjaxMixin):
     model = Counter
     form_class = Form
 
 
-class Update(UpdateLinkMixin, UpdateAjaxMixin):
+class Update(UpdateAjaxMixin):
     model = Counter
     form_class = Form
 
 
-class Delete(UpdateLinkMixin, DeleteAjaxMixin):
+class Delete(DeleteAjaxMixin):
     model = Counter
 
 
@@ -68,14 +68,15 @@ class History(IndexMixin):
             'chart_weekdays': r.chart_weekdays(_('Days of week')),
             'chart_years': r.chart_years(),
             'chart_histogram': r.chart_histogram(),
-            **r.context_url_names()
+            **r.context_url_names(kwargs['count_type'])
         })
         return context
 
 
+
 class ReloadStats(DispatchAjaxMixin, TemplateView):
-    template_name = f'{App_name}/includes/reload_stats.html'
-    redirect_view = f'{App_name}:{App_name}_index'
+    template_name = 'counts/includes/reload_stats.html'
+    redirect_view = reverse_lazy('counts:counts_index', kwargs={'count_type': 'counter'})
 
     def get(self, request, *args, **kwargs):
         year = request.user.year

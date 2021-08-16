@@ -37,8 +37,8 @@ def test_form_year_initial_value():
     assert '<input type="number" name="quantity" value="1"' in form
 
 
-@patch(f'project.{App_name}.forms.App_name', 'Counter Type')
-def test_form_valid_data():
+@patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
+def test_form_valid_data(mck):
     form = CountForm(data={
         'date': '1974-01-01',
         'quantity': 1.0
@@ -51,7 +51,7 @@ def test_form_valid_data():
     assert data.date == date(1974, 1, 1)
     assert data.quantity == 1.0
     assert data.user.username == 'bob'
-    assert data.counter_type == 'Counter Type'
+    assert data.counter_type == 'xxx'
 
 
 def test_form_blank_data():

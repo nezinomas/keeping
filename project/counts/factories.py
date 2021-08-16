@@ -12,7 +12,7 @@ class CountFactory(factory.django.DjangoModelFactory):
 
     date = date(1999, 1, 1)
     quantity = 1
-    counter_type = 'Counter Type'
+    counter_type = 'count-type'
     user = factory.SubFactory(UserFactory)
 
 

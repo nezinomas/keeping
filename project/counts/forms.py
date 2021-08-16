@@ -43,7 +43,7 @@ class CountForm(forms.ModelForm):
 
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
-        instance.counter_type = App_name
+        instance.counter_type = utils.get_request_kwargs("count_type")
         instance.save()
 
         return instance
