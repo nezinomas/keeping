@@ -30,7 +30,6 @@ class ContextMixin():
 class Index(ContextMixin, IndexMixin):
     pass
 
-
 class Lists(IndexMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year

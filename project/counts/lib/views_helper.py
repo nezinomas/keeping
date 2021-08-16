@@ -1,10 +1,13 @@
 from typing import Dict, List
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
+from ...core.lib import utils
 from ...core.lib.date import weeknumber
+from ..models import CountType
 from .stats import Stats
 
 
@@ -100,9 +103,20 @@ class RenderContext():
         )
         return rendered
 
+
     def info_row(self, year: int) -> str:
         week = weeknumber(year)
         total = self._stats.year_totals()
+
+        name = _('Not found')
+        try:
+            name = (CountType
+                    .objects
+                    .related()
+                    .get(slug=utils.get_request_kwargs('count_type')))
+        except ObjectDoesNotExist:
+            pass
+
 
         rendered = render_to_string(
             'counts/includes/info_row.html',
@@ -111,6 +125,7 @@ class RenderContext():
                 'total': total,
                 'ratio': total / week,
                 'current_gap': self._stats.current_gap(),
+                'name': name,
             },
             self._request
         )
