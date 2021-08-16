@@ -103,10 +103,18 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         # impossible to submit form data
         app = H.app_name(self)
         model = H.model_plural_name(self)
+        new_view = f"{app}:{model}_new"
+        update_view = f"{app}:{model}_update"
+
+        # tweak for url resolver for count types
+        count_type = {}
+        if self.kwargs.get('count_type'):
+            count_type['count_type'] = self.kwargs.get('count_type')
+
         if self.object:
-            url = reverse(f"{app}:{model}_update", kwargs={"pk": self.object.pk})
+            url = reverse(update_view, kwargs={"pk": self.object.pk, **count_type})
         else:
-            url = reverse(f"{app}:{model}_new")
+            url = reverse(new_view, kwargs={**count_type})
 
         return url
 
