@@ -30,4 +30,10 @@ def context_months(context):
 
 
 def context_count_types(context):
-    return {'context_count_types': list(CountType.objects.items())}
+    arr = {}
+    try:
+        arr = list(CountType.objects.items())
+    except TypeError:
+        pass
+
+    return {'context_count_types': arr}
