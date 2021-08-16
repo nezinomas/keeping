@@ -6,8 +6,8 @@ from ..core.forms import SearchForm
 from ..core.lib import search
 from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchAjaxMixin, DispatchListsMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
+                                 DispatchAjaxMixin, DispatchListsMixin,
+                                 IndexMixin, ListMixin, UpdateAjaxMixin)
 from . import forms, models
 from .lib.views_helper import BookRenderer
 
@@ -102,7 +102,7 @@ class Delete(BookListMixin, BookTabMixin, DeleteAjaxMixin):
 
 class ReloadStats(DispatchAjaxMixin, BookTabMixin, IndexMixin):
     template_name = 'books/includes/reload_stats.html'
-    redirect_view = 'books:books_index'
+    redirect_view = reverse_lazy('books:books_index')
 
     def get(self, request, *args, **kwargs):
         tab = self.get_tab()
