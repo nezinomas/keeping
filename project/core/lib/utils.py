@@ -12,6 +12,10 @@ def get_user():
     return request.user
 
 
+def get_request_kwargs(name):
+    return CrequestMiddleware.get_request().resolver_match.kwargs.get(name)
+
+
 def is_ajax(request):
     return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
 
