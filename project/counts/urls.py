@@ -56,4 +56,14 @@ urlpatterns = [
         views.History.as_view(),
         name='counts_history'
     ),
+    path(
+        'counts/redirect/<int:count_id>/',
+        views.Redirect.as_view(),
+        name='counts_redirect'
+    ),
+    path(
+        'counts/',
+        views.CountsEmpty.as_view(),
+        name='counts_empty'
+    ),
 ]

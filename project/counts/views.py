@@ -1,6 +1,7 @@
-from django.urls import reverse_lazy
+from django.core.exceptions import ObjectDoesNotExist
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
-from django.views.generic import TemplateView
+from django.views.generic import RedirectView, TemplateView
 
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                  DispatchAjaxMixin, IndexMixin,
@@ -13,6 +14,20 @@ from .models import Count as Counter
 from .models import CountType
 
 
+def get_count_object(kwargs):
+    pk = 0
+    slug = 'counter'
+
+    try:
+        obj = CountType.objects.related().get(slug=kwargs.get('count_type'))
+        pk = obj.pk
+        slug = obj.slug
+    except ObjectDoesNotExist:
+        pass
+
+    return (pk, slug)
+
+
 class ContextMixin():
     def get_context_data(self, **kwargs):
         year = self.request.user.year
@@ -20,8 +35,11 @@ class ContextMixin():
         r = RenderContext(self.request, Stats(year=year, data=qs))
 
         context = super().get_context_data(**kwargs)
+        pk, slug = get_count_object(kwargs)
         context.update({
-            **r.context_to_reload(year)
+            **r.context_to_reload(year),
+            'count_type': slug,
+            'count_id': pk,
         })
 
         return context
@@ -30,6 +48,38 @@ class ContextMixin():
 class Index(ContextMixin, IndexMixin):
     pass
 
+
+class Redirect(RedirectView):
+    def get_redirect_url(self, *args, **kwargs):
+        qs = None
+        count_id = kwargs.get('count_id')
+
+        try:
+            qs = CountType.objects.related().get(pk=count_id)
+        except ObjectDoesNotExist:
+            qs = CountType.objects.related().first()
+
+        if not qs:
+            url = reverse('counts:counts_empty')
+        else:
+            url = reverse('counts:counts_index', kwargs={'count_type': qs.slug})
+
+        return url
+
+
+class CountsEmpty(IndexMixin):
+    template_name = 'counts/counts_empty.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pk, slug = get_count_object(kwargs)
+        context.update({
+            'count_type': slug,
+            'count_id': pk,
+        })
+        return context
+
+
 class Lists(IndexMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
@@ -37,8 +87,11 @@ class Lists(IndexMixin):
         r = RenderContext(self.request, Stats(year=year, data=qs))
 
         context = super().get_context_data(**kwargs)
+        pk, slug = get_count_object(kwargs)
         context.update({
             'tab': 'data',
+            'count_type': slug,
+            'count_id': pk,
             'info_row': r.info_row(year),
             'data': r.list_data(),
         })
@@ -65,14 +118,16 @@ class History(IndexMixin):
         r = RenderContext(self.request, Stats(data=qs))
 
         context = super().get_context_data(**kwargs)
+        pk, slug = get_count_object(kwargs)
         context.update({
             'tab': 'history',
+            'count_type': slug,
+            'count_id': pk,
             'chart_weekdays': r.chart_weekdays(_('Days of week')),
             'chart_years': r.chart_years(),
             'chart_histogram': r.chart_histogram(),
         })
         return context
-
 
 
 class ReloadStats(ContextMixin, DispatchAjaxMixin, TemplateView):
@@ -81,7 +136,6 @@ class ReloadStats(ContextMixin, DispatchAjaxMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data()
-
         return self.render_to_response(context=context)
 
 

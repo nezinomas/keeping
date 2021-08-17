@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block head %}{% endblock head %}
+
+
+{% block content %}
+
+<div class="row my-2">
+    <div class="col text-center" id="info_row">
+        <div class="mx-auto text-center alert alert-warning py-2">{% translate 'You have no counters.' %}</div>
+    </div>
+</div>
+
+{% include 'counts/counts_ajax.html' %}
+
+{% endblock content %}

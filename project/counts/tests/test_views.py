@@ -529,3 +529,47 @@ def test_count_type_delete(client_logged):
 
     assert CountType.objects.count() == 0
     assert Count.objects.count() == 0
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                          Count Redirect
+# ---------------------------------------------------------------------------------------
+def test_redirect_func():
+    view = resolve('/counts/redirect/0/')
+
+    assert views.Redirect is view.func.view_class
+
+def test_redirect_no_counts(client_logged):
+    url = reverse('counts:counts_redirect', kwargs={'count_id': 0})
+    response = client_logged.get(url, follow=True)
+
+    assert response.resolver_match.func.view_class is views.CountsEmpty
+
+
+def test_redirect_count_first(client_logged):
+    CountTypeFactory(title='XXX')
+
+    url = reverse('counts:counts_redirect', kwargs={'count_id': 999})
+    response = client_logged.get(url, follow=True)
+
+    assert response.resolver_match.func.view_class is views.Index
+    assert '<h6 class="me-3">XXX</h6>' in response.content.decode('utf-8')
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                            Counts Empty
+# ---------------------------------------------------------------------------------------
+def test_empty_func():
+    view = resolve('/counts/')
+
+    assert views.CountsEmpty is view.func.view_class
+
+
+def test_empty_200(client_logged):
+    url = reverse('counts:counts_empty')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+    actual = response.content.decode('utf-8')
+    assert 'Jūs neturite skaitiklių.' in actual
