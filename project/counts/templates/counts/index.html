@@ -43,16 +43,15 @@
 
 {% if tab == 'index' %}
 <div class="row">
-    <div class="col-lg-4" id="chart_weekdays">{{ chart_weekdays }}</div>
-    <div class="col-lg-4" id="chart_months">{{ chart_months }}</div>
-    <div class="col-lg-4" id="chart_histogram">{{ chart_histogram }}</div>
+    <div class="col-lg-4" id="chart_weekdays">{% if records %}{{ chart_weekdays }}{% endif %}</div>
+    <div class="col-lg-4" id="chart_months">{% if records %}{{ chart_months }}{% endif %}</div>
+    <div class="col-lg-4" id="chart_histogram">{% if records %}{{ chart_histogram }}{% endif %}</div>
 </div>
 
 <div class="row my-2">
-    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{{ chart_calendar_1H }}</div>
-    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{{ chart_calendar_2H }}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{% if records %}{{ chart_calendar_1H }}{% endif %}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{% if records %}{{ chart_calendar_2H }}{% endif %}</div>
 </div>
-
 {% endif %}
 
 
@@ -65,9 +64,9 @@
 
 {% if tab == 'history' %}
 <div class="row my-2">
-    <div class="col-lg-4">{{ chart_weekdays }}</div>
-    <div class="col-lg-4">{{ chart_years }}</div>
-    <div class="col-lg-4">{{ chart_histogram }}</div>
+    <div class="col-lg-4">{% if records %}{{ chart_weekdays }}{% endif %}</div>
+    <div class="col-lg-4">{% if records %}{{ chart_years }}{% endif %}</div>
+    <div class="col-lg-4">{% if records %}{{ chart_histogram }}{% endif %}</div>
 </div>
 {% endif %}
 

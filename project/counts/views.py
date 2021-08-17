@@ -40,6 +40,7 @@ class ContextMixin():
             **r.context_to_reload(year),
             'count_type': slug,
             'count_id': pk,
+            'records': qs.count(),
         })
 
         return context
@@ -94,6 +95,7 @@ class Lists(IndexMixin):
             'count_id': pk,
             'info_row': r.info_row(year),
             'data': r.list_data(),
+            'records': qs.count(),
         })
         return context
 
@@ -126,6 +128,7 @@ class History(IndexMixin):
             'chart_weekdays': r.chart_weekdays(_('Days of week')),
             'chart_years': r.chart_years(),
             'chart_histogram': r.chart_histogram(),
+            'records': qs.count(),
         })
         return context
 
