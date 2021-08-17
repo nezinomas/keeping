@@ -4,6 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
+from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView
 
@@ -233,7 +234,7 @@ class AccountsWorthReset(LoginRequiredMixin, CreateView):
 
 class ReloadIndex(DispatchAjaxMixin, IndexMixin):
     template_name = 'bookkeeping/includes/reload_index.html'
-    redirect_view = 'bookkeeping:index'
+    redirect_view = reverse_lazy('bookkeeping:index')
 
     def get(self, request, *args, **kwargs):
         obj = H.IndexHelper(request, request.user.year)
@@ -247,7 +248,7 @@ class ReloadIndex(DispatchAjaxMixin, IndexMixin):
 
 class ReloadMonth(DispatchAjaxMixin, IndexMixin):
     template_name = 'bookkeeping/includes/reload_month.html'
-    redirect_view = 'bookkeeping:month'
+    redirect_view = reverse_lazy('bookkeeping:month')
 
     def get(self, request, *args, **kwargs):
         context = H.month_context(request)

@@ -7,38 +7,63 @@ app_name = App_name
 
 urlpatterns = [
     path(
-        f'{App_name}/',
+        'counts/<slug:count_type>/',
         views.Index.as_view(),
-        name=f'{App_name}_index'
+        name='counts_index'
     ),
     path(
-        f'{App_name}/lists/',
+        'counts/lists/<slug:count_type>/',
         views.Lists.as_view(),
-        name=f'{App_name}_list'
+        name='counts_list'
     ),
     path(
-        f'{App_name}/new/',
+        'counts/new/<slug:count_type>/',
         views.New.as_view(),
-        name=f'{App_name}_new'
+        name='counts_new'
     ),
     path(
-        f'{App_name}/update/<int:pk>/',
+        'counts/update/<slug:count_type>/<int:pk>/',
         views.Update.as_view(),
-        name=f'{App_name}_update'
+        name='counts_update'
     ),
     path(
-        f'{App_name}/delete/<int:pk>/',
+        'counts/delete/<slug:count_type>/<int:pk>/',
         views.Delete.as_view(),
-        name=f'{App_name}_delete'
+        name='counts_delete'
     ),
     path(
-        f'{App_name}/reload_stats/',
+        'counts/type/new/',
+        views.TypeNew.as_view(),
+        name='counts_type_new'
+    ),
+    path(
+        'counts/type/update/<int:pk>/',
+        views.TypeUpdate.as_view(),
+        name='counts_type_update'
+    ),
+    path(
+        'counts/type/delete/<int:pk>/',
+        views.TypeDelete.as_view(),
+        name='counts_type_delete'
+    ),
+    path(
+        'counts/reload_stats/<slug:count_type>/',
         views.ReloadStats.as_view(),
         name='reload_stats'
     ),
     path(
-        f'{App_name}/history/',
+        'counts/history/<slug:count_type>/',
         views.History.as_view(),
-        name=f'{App_name}_history'
+        name='counts_history'
+    ),
+    path(
+        'counts/redirect/<int:count_id>/',
+        views.Redirect.as_view(),
+        name='counts_redirect'
+    ),
+    path(
+        'counts/',
+        views.CountsEmpty.as_view(),
+        name='counts_empty'
     ),
 ]

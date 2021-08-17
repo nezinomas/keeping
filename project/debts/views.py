@@ -1,3 +1,4 @@
+from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
@@ -34,7 +35,7 @@ class Index(IndexMixin):
 
 class BorrowReload(DispatchAjaxMixin, TemplateView):
     template_name = 'debts/includes/reload_index.html'
-    redirect_view = 'debts:debts_index'
+    redirect_view = reverse_lazy('debts:debts_index')
 
     def get(self, request, *args, **kwargs):
         context = _borrow_context_to_reload(self.request)
@@ -87,7 +88,7 @@ class BorrowReturnDelete(DeleteAjaxMixin):
 
 class LentReload(DispatchAjaxMixin, TemplateView):
     template_name = 'debts/includes/reload_index.html'
-    redirect_view = 'debts:debts_index'
+    redirect_view = reverse_lazy('debts:debts_index')
 
     def get(self, request, *args, **kwargs):
         context = _lent_context_to_reload(self.request)

@@ -1,0 +1,24 @@
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'counts:reload_stats' count_type %}`;
+        var form = document.getElementById('js-form');
+        var action = form.action;
+
+        if (action.includes('type')) {
+            window.location.replace(`{% url 'counts:counts_redirect' count_id %}`);
+            return;
+        }
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1'
+            },
+            success: function (data) {
+                var blocks = ['info_row', 'chart_weekdays', 'chart_months', 'chart_year', 'chart_histogram', 'chart_calendar_1H', 'chart_calendar_2H', 'no-records'];
+                reload_stats(data, blocks);
+                $('#no-records').html('');
+            }
+        });
+    });
+</script>

@@ -7,7 +7,7 @@ from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
 from .apps import App_name
-from .models import Count
+from .models import Count, CountType
 
 
 class CountForm(forms.ModelForm):
@@ -43,9 +43,26 @@ class CountForm(forms.ModelForm):
 
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
-        instance.counter_type = App_name
+        instance.counter_type = utils.get_request_kwargs("count_type")
         instance.save()
 
         return instance
 
 
+class CountTypeForm(forms.ModelForm):
+    class Meta:
+        model = CountType
+        fields = ['user', 'title']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # user input
+        self.fields['user'].initial = utils.get_user()
+        self.fields['user'].disabled = True
+        self.fields['user'].widget = forms.HiddenInput()
+
+        self.fields['title'].label = _('Title')
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)

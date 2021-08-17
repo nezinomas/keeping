@@ -1,26 +1,14 @@
 from typing import Dict, List
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
+from ...core.lib import utils
 from ...core.lib.date import weeknumber
-from ..apps import App_name
+from ..models import CountType
 from .stats import Stats
-
-
-class UpdateLinkMixin():
-    def get_context_data(self, **kwargs):
-        try:
-            context = super().get_context_data(**kwargs)
-        except AttributeError:
-            context = {}
-
-        context.update({
-            'url_update': f'{App_name}:{App_name}_update',
-            'url_delete': f'{App_name}:{App_name}_delete',
-        })
-        return context
 
 
 class RenderContext():
@@ -30,7 +18,7 @@ class RenderContext():
 
     def chart_weekdays(self, title: str) -> str:
         rendered = render_to_string(
-            f'{App_name}/includes/chart_periodicity.html',
+            'counts/includes/chart_periodicity.html',
             {
                 'data': [x['count'] for x in self._stats.weekdays_stats()],
                 'categories': [x[:4] for x in Stats.weekdays()],
@@ -44,7 +32,7 @@ class RenderContext():
 
     def chart_months(self, title: str) -> str:
         rendered = render_to_string(
-            f'{App_name}/includes/chart_periodicity.html',
+            'counts/includes/chart_periodicity.html',
             {
                 'data': self._stats.months_stats(),
                 'categories': Stats.months(),
@@ -59,7 +47,7 @@ class RenderContext():
     def chart_years(self, title: str = _('Year')) -> str:
         year_totals = self._stats.year_totals()
         rendered = render_to_string(
-            f'{App_name}/includes/chart_periodicity.html',
+            'counts/includes/chart_periodicity.html',
             {
                 'data': list(year_totals.values()),
                 'categories': list(year_totals.keys()),
@@ -76,14 +64,14 @@ class RenderContext():
     # disabled at 2020-12-28
     # def chart_year(self) -> str:
     #     rendered = render_to_string(
-    #         f'{App_name}/includes/chart_month_periodicity.html',
+    #         'counts/includes/chart_month_periodicity.html',
     #         {
     #             'month_days': self._stats.month_days(),
     #             'month_titles': self._stats.months(),
     #             'data': self._stats.year_stats(),
     #             'chart_column_color': '113, 149, 198',
     #             'alternative_bg': [3, 4, 5, 9, 10, 11],
-    #             'chart_template': f'{App_name}/includes/chart_month.html'
+    #             'chart_template': 'counts/includes/chart_month.html'
     #         },
     #         self._request
     #     )
@@ -91,7 +79,7 @@ class RenderContext():
 
     def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
         rendered = render_to_string(
-            f'{App_name}/includes/chart_calendar.html',
+            'counts/includes/chart_calendar.html',
             {
                 'data': data,
                 'id': chart_id,
@@ -103,7 +91,7 @@ class RenderContext():
     def chart_histogram(self) -> str:
         gaps = self._stats.gaps()
         rendered = render_to_string(
-            f'{App_name}/includes/chart_periodicity.html',
+            'counts/includes/chart_periodicity.html',
             {
                 'data': list(gaps.values()),
                 'categories': [f'{x}d' for x in gaps.keys()],
@@ -115,17 +103,29 @@ class RenderContext():
         )
         return rendered
 
+
     def info_row(self, year: int) -> str:
         week = weeknumber(year)
         total = self._stats.year_totals()
 
+        name = _('Not found')
+        try:
+            name = (CountType
+                    .objects
+                    .related()
+                    .get(slug=utils.get_request_kwargs('count_type')))
+        except ObjectDoesNotExist:
+            pass
+
+
         rendered = render_to_string(
-            f'{App_name}/includes/info_row.html',
+            'counts/includes/info_row.html',
             {
                 'week': week,
                 'total': total,
                 'ratio': total / week,
                 'current_gap': self._stats.current_gap(),
+                'name': name,
             },
             self._request
         )
@@ -133,11 +133,8 @@ class RenderContext():
 
     def list_data(self) -> str:
         rendered = render_to_string(
-            f'{App_name}/includes/{App_name}_list.html',
-            {
-                'items': self._stats.items(),
-                **UpdateLinkMixin().get_context_data(),
-            },
+            'counts/includes/counts_list.html',
+            {'items': self._stats.items(),},
             self._request
         )
         return rendered
@@ -155,16 +152,5 @@ class RenderContext():
             'chart_months': self.chart_months(m_title),
             'chart_histogram': self.chart_histogram(),
             'info_row': self.info_row(year),
-        }
-        return context
-
-    def context_url_names(self) -> Dict[str, str]:
-        context = {
-            'app_name': App_name,
-            'url_new': f'{App_name}:{App_name}_new',
-            'url_index': f'{App_name}:{App_name}_index',
-            'url_list': f'{App_name}:{App_name}_list',
-            'url_history': f'{App_name}:{App_name}_history',
-            'url_reload': f'{App_name}:reload_stats',
         }
         return context

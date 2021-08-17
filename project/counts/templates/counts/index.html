@@ -19,9 +19,11 @@
 
 <div class="row my-2">
     <div class="col-sm-3 text-start">
-        <a href="{% url url_index %}" class="btn btn-sm {% if '/'|add:app_name|add:'/' == request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Charts' %}</a>
-        <a href="{% url url_list %}" class="btn btn-sm {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Data' %}</a>
-        <a href="{% url url_history %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
+        {% with view.kwargs.count_type as type %}
+        <a href="{% url 'counts:counts_index' type %}" class="btn btn-sm {% if '/'|add:'counts'|add:'/'|add:type|add:'/' == request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Charts' %}</a>
+        <a href="{% url 'counts:counts_list' type %}" class="btn btn-sm {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Data' %}</a>
+        <a href="{% url 'counts:counts_history' type %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
+        {% endwith %}
     </div>
 
     <div class="col text-center" id="info_row">
@@ -29,22 +31,29 @@
     </div>
 
     <div class="col-sm-3 text-end">
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url url_new %}"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url 'counts:counts_new' view.kwargs.count_type %}"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+        {% for type in context_count_types %}
+        {% if type.slug == view.kwargs.count_type %}
+            <button type="button" class="btn btn-sm btn-success js-create" data-url="{% url 'counts:counts_type_update' type.pk %}"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
+            <button type="button" class="btn btn-sm btn-danger js-delete" data-url="{% url 'counts:counts_type_delete' type.pk %}" id="delete_button"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
+        {% endif %}
+        {% endfor %}
     </div>
 </div>
 
 {% if tab == 'index' %}
 <div class="row">
-    <div class="col-lg-4" id="chart_weekdays">{{ chart_weekdays }}</div>
-    <div class="col-lg-4" id="chart_months">{{ chart_months }}</div>
-    <div class="col-lg-4" id="chart_histogram">{{ chart_histogram }}</div>
+    <div class="col-lg-4" id="chart_weekdays">{% if records %}{{ chart_weekdays }}{% endif %}</div>
+    <div class="col-lg-4" id="chart_months">{% if records %}{{ chart_months }}{% endif %}</div>
+    <div class="col-lg-4" id="chart_histogram">{% if records %}{{ chart_histogram }}{% endif %}</div>
 </div>
 
 <div class="row my-2">
-    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{{ chart_calendar_1H }}</div>
-    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{{ chart_calendar_2H }}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{% if records %}{{ chart_calendar_1H }}{% endif %}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{% if records %}{{ chart_calendar_2H }}{% endif %}</div>
 </div>
 
+{% if not records %}<div id="no-records">{% include 'core/no_records.html' %}</div>{% endif %}
 {% endif %}
 
 
@@ -57,27 +66,13 @@
 
 {% if tab == 'history' %}
 <div class="row my-2">
-    <div class="col-lg-4">{{ chart_weekdays }}</div>
-    <div class="col-lg-4">{{ chart_years }}</div>
-    <div class="col-lg-4">{{ chart_histogram }}</div>
+    <div class="col-lg-4">{% if records %}{{ chart_weekdays }}{% endif %}</div>
+    <div class="col-lg-4">{% if records %}{{ chart_years }}{% endif %}</div>
+    <div class="col-lg-4">{% if records %}{{ chart_histogram }}{% endif %}</div>
 </div>
+{% if not records %}<div id="no-records">{% include 'core/no_records.html' %}</div>{% endif %}
 {% endif %}
 
-<script>
-    $(document).on('hidden.bs.modal', '#modal-form', function () {
-        var url = `{% url url_reload %}`;
-
-        $.ajax({
-            url: url,
-            data: {
-                'ajax_trigger': '1'
-            },
-            success: function (data) {
-                var blocks = ['info_row', 'chart_weekdays', 'chart_months', 'chart_year', 'chart_histogram', 'chart_calendar_1H', 'chart_calendar_2H'];
-                reload_stats(data, blocks);
-            }
-        });
-    });
-</script>
+{% include 'counts/counts_ajax.html' %}
 
 {% endblock content %}

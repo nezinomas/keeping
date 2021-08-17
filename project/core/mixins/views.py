@@ -58,11 +58,18 @@ class CreateAjaxMixin(
     def get_context_data(self, **kwargs):
         app = H.app_name(self)
         model = H.model_plural_name(self)
+        view_name = f'{app}:{model}_new'
 
         context = super().get_context_data(**kwargs)
         context['submit_button'] = _('Insert')
         context['form_action'] = 'insert'
-        context['url'] = reverse(f'{app}:{model}_new')
+
+        # tweak for url resolver for count types
+        count_type = {}
+        if self.kwargs.get('count_type'):
+            count_type['count_type'] = self.kwargs.get('count_type')
+
+        context['url'] = reverse(view_name, kwargs={**count_type})
 
         return context
 
@@ -123,7 +130,7 @@ class DispatchAjaxMixin():
         try:
             request.GET['ajax_trigger']
         except KeyError:
-            return redirect(reverse(self.redirect_view))
+            return redirect(self.redirect_view)
 
         return super().dispatch(request, *args, **kwargs)
 

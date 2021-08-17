@@ -1,12 +1,13 @@
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import years
 from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchAjaxMixin, DispatchListsMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
+                                 DispatchAjaxMixin, DispatchListsMixin,
+                                 IndexMixin, ListMixin, UpdateAjaxMixin)
 from . import forms, models
 from .apps import App_name
 from .lib import views_helper as H
@@ -14,7 +15,7 @@ from .lib import views_helper as H
 
 class ReloadStats(DispatchAjaxMixin, IndexMixin):
     template_name = f'{App_name}/includes/reload_stats.html'
-    redirect_view = f'{App_name}:{App_name}_index'
+    redirect_view = reverse_lazy(f'{App_name}:{App_name}_index')
 
     def get(self, request, *args, **kwargs):
         context = H.RenderContext(request).context_to_reload()

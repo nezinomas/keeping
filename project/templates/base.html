@@ -139,18 +139,19 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu nav-link {% if '/counts/' in request.path %}active{% endif %}"
-                href="{% url 'counts:counts_index' %}">{% translate 'Counter' %}</a>
+              <a class="btn btn-menu nav-link {% if '/counts/' in request.path %}active{% endif %}" href="{% if context_count_types%}{% url 'counts:counts_index' context_count_types.0.slug %}{% else %}{% url 'counts:counts_empty' %}{% endif %}">{% translate 'Counter' %}</a>
               <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/counts/' in request.path %}active{% endif %}"
                 data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
+                  {% for count_type in context_count_types %}
+                  <li><a class="dropdown-item btn-sm" href="{% url 'counts:counts_index' count_type.slug %}">{{ count_type.title }}</a></li>
+                  {% endfor %}
+
+                <li class="dropdown-divider"></li>
                 <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'counts:counts_list' %}">{% translate 'Data' %}</a>
-                </li>
-                <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'counts:counts_history' %}">{% translate 'History' %}</a>
+                  <button type="button" class="dropdown-item btn-sm js-create" data-url="{% url 'counts:counts_type_new' %}">{% translate 'Add count type' %}</button>
                 </li>
               </ul>
             </div>

@@ -1,6 +1,7 @@
 {% load i18n %}
 
 <div class="info_row">
+    <span>{% translate 'Counter name' %}:</span> <h6 class="me-3">{{ name }}</h6>
     <span>{% translate 'Quantity' %}:</span> <h6 class="me-3">{{ total|floatformat:0 }}</h6>
     <span>{% translate 'Week' %}:</span> <h6 class="me-3">{{ week|floatformat:0 }}</h6>
     <span>{% translate 'Per week' %}:</span> <h6>{{ ratio|floatformat:1 }}</h6>

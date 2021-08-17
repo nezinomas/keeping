@@ -6,21 +6,23 @@ from django.db import models
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 from ..users.models import User
-from .apps import App_name as CounterAppName
 
 
 class CounterQuerySet(SumMixin, models.QuerySet):
-    App_name = CounterAppName
+    counter_type = None
 
     def related(self, user: User = None):
         if not user:
             user = utils.get_user()
 
+        if not self.counter_type:
+            self.counter_type = utils.get_request_kwargs('count_type')
+
         return (
             self
             .select_related('user')
             .filter(user=user)
-            .filter(counter_type__iexact=self.App_name)
+            .filter(counter_type__iexact=self.counter_type)
             .order_by('-date')
         )
 

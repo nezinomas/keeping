@@ -92,7 +92,7 @@ div[class*="col"] > h6 {
 .info_row > span {
     vertical-align: middle;
     display: inline-block;
-    margin-top: 0.1rem!important;
+    margin-top: 0.25rem!important;
 }
 
 .info_row > h6 {

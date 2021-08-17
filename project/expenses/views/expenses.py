@@ -123,7 +123,7 @@ class Search(AjaxSearchMixin):
 
 class ReloadExpenses(DispatchAjaxMixin, TemplateView):
     template_name = f'{App_name}/includes/reload_expenses.html'
-    redirect_view = f'{App_name}:{App_name}_index'
+    redirect_view = reverse_lazy(f'{App_name}:{App_name}_index')
 
     def get(self, request, *args, **kwargs):
         month = request.GET.get('month')

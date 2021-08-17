@@ -5,9 +5,10 @@ import pytest
 from freezegun import freeze_time
 from mock import patch
 
+from ...counts.factories import CountTypeFactory
 from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
-from ..context import context_months, yday, years
+from ..context import context_count_types, context_months, yday, years
 
 
 @freeze_time('2006-01-01')
@@ -77,3 +78,14 @@ def test_context_months(rf):
 
     assert len(actual['context_months']) == 12
     assert actual['context_months'][0] == date(1000, 1, 1)
+
+
+@pytest.mark.django_db
+def test_count_types(rf):
+    obj = CountTypeFactory(title='X')
+
+    r = rf.get('/fake/')
+
+    actual = context_count_types(r)
+
+    assert actual == {'context_count_types': [obj]}

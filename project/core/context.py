@@ -1,8 +1,10 @@
 from datetime import datetime
 
 from ..core.lib import utils
+from ..counts.models import CountType
 from .lib.date import yday as Yday
-from .lib.date import years as Year, year_month_list
+from .lib.date import year_month_list
+from .lib.date import years as Year
 
 
 def years(context):
@@ -25,3 +27,13 @@ def yday(context):
 
 def context_months(context):
     return {'context_months': year_month_list()}
+
+
+def context_count_types(context):
+    arr = {}
+    try:
+        arr = list(CountType.objects.items())
+    except TypeError:
+        pass
+
+    return {'context_count_types': arr}

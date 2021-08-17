@@ -12,7 +12,7 @@ from .apps import App_name as DrinksAppName
 
 
 class DrinkQuerySet(CounterQuerySet):
-    App_name = DrinksAppName
+    counter_type = DrinksAppName
 
     def sum_by_month(self, year: int, month: int = None):
         """
