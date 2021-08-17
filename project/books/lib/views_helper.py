@@ -31,16 +31,13 @@ class BookRenderer():
         return context
 
     def context_info_row(self):
-        target = None
-        for x in self._qs_targets:
-            if x.year == self._year:
-                target = x
         readed = [x.get('cnt') for x in self._qs_readed if x.get('year') == self._year]
+        target = [x for x in self._qs_targets if x.year == self._year]
 
         context = {
             'readed': readed[0] if readed else 0,
             'reading': self._qs_reading['reading'] if self._qs_reading else 0,
-            'target': target,
+            'target': target[0] if target else None,
         }
 
         return context
