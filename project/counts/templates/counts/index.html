@@ -52,6 +52,8 @@
     <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{% if records %}{{ chart_calendar_1H }}{% endif %}</div>
     <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{% if records %}{{ chart_calendar_2H }}{% endif %}</div>
 </div>
+
+{% if not records %}<div id="no-records">{% include 'core/no_records.html' %}</div>{% endif %}
 {% endif %}
 
 
@@ -68,6 +70,7 @@
     <div class="col-lg-4">{% if records %}{{ chart_years }}{% endif %}</div>
     <div class="col-lg-4">{% if records %}{{ chart_histogram }}{% endif %}</div>
 </div>
+{% if not records %}<div id="no-records">{% include 'core/no_records.html' %}</div>{% endif %}
 {% endif %}
 
 {% include 'counts/counts_ajax.html' %}
