@@ -9,7 +9,6 @@ from mock import patch
 
 from ...users.factories import UserFactory
 from .. import forms, views
-from ..apps import App_name
 from ..factories import CountFactory, CountTypeFactory
 from ..models import Count, CountType
 
@@ -202,6 +201,8 @@ def test_index_context_tab_value(client_logged):
 
 
 def test_index_chart_weekdays(client_logged):
+    CountFactory(counter_type='xxx')
+
     url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
@@ -211,6 +212,8 @@ def test_index_chart_weekdays(client_logged):
 
 
 def test_index_chart_months(client_logged):
+    CountFactory(counter_type='xxx')
+
     url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
@@ -220,6 +223,8 @@ def test_index_chart_months(client_logged):
 
 
 def test_index_chart_histogram(client_logged):
+    CountFactory(counter_type='xxx')
+
     url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
@@ -370,6 +375,8 @@ def test_history_context(client_logged):
 
 
 def test_history_chart_weekdays(client_logged):
+    CountFactory(counter_type='xxx')
+
     url = reverse('counts:counts_history', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
@@ -379,6 +386,8 @@ def test_history_chart_weekdays(client_logged):
 
 
 def test_history_chart_years(client_logged):
+    CountFactory(counter_type='xxx')
+
     url = reverse('counts:counts_history', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
