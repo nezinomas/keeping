@@ -30,12 +30,12 @@ def get_count_object(kwargs):
 
 class ContextMixin():
     def get_context_data(self, **kwargs):
+        pk, slug = get_count_object(kwargs)
         year = self.request.user.year
         qs = Counter.objects.sum_by_day(year=year)
         r = RenderContext(self.request, Stats(year=year, data=qs))
 
         context = super().get_context_data(**kwargs)
-        pk, slug = get_count_object(kwargs)
         context.update({
             **r.context_to_reload(year),
             'count_type': slug,
@@ -72,8 +72,9 @@ class CountsEmpty(IndexMixin):
     template_name = 'counts/counts_empty.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
         pk, slug = get_count_object(kwargs)
+
+        context = super().get_context_data(**kwargs)
         context.update({
             'count_type': slug,
             'count_id': pk,
@@ -83,12 +84,12 @@ class CountsEmpty(IndexMixin):
 
 class Lists(IndexMixin):
     def get_context_data(self, **kwargs):
+        pk, slug = get_count_object(kwargs)
         year = self.request.user.year
         qs = Counter.objects.year(year)
         r = RenderContext(self.request, Stats(year=year, data=qs))
 
         context = super().get_context_data(**kwargs)
-        pk, slug = get_count_object(kwargs)
         context.update({
             'tab': 'data',
             'count_type': slug,
@@ -116,11 +117,11 @@ class Delete(DeleteAjaxMixin):
 
 class History(IndexMixin):
     def get_context_data(self, **kwargs):
+        pk, slug = get_count_object(kwargs)
         qs = Counter.objects.items()
         r = RenderContext(self.request, Stats(data=qs))
 
         context = super().get_context_data(**kwargs)
-        pk, slug = get_count_object(kwargs)
         context.update({
             'tab': 'history',
             'count_type': slug,
