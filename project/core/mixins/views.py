@@ -128,7 +128,7 @@ class DeleteAjaxMixin(
 class DispatchAjaxMixin():
     def dispatch(self, request, *args, **kwargs):
         try:
-              request.GET['ajax_trigger']
+            request.GET['ajax_trigger']
         except KeyError:
             return redirect(self.redirect_view)
 

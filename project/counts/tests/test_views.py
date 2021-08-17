@@ -328,7 +328,7 @@ def test_list(client_logged):
     assert response.status_code == 200
 
     actual = response.content.decode("utf-8")
-    print('>>>>>> actual:\n', actual, '\n\n')
+
     assert '66' in actual
     assert f'<a role="button" data-url="/counts/update/count-type/{p.pk}/"' in actual
 
