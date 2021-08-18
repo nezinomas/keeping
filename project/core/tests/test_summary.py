@@ -385,7 +385,6 @@ def test_borrow_return_for_accounts(mock_models, borrow_return_fixture):
     _account_types = {'A1': 1, 'A2': 2}
     actual = collect_summary_data(1999, _account_types, AccountsBalanceModels)
 
-    print(actual)
     assert actual.shape[0] == 2  # rows
 
     assert actual.at['A1', 'id'] == 1
@@ -420,7 +419,6 @@ def test_lent_return_for_accounts(mock_models, lent_return_fixture):
     _account_types = {'A1': 1, 'A2': 2}
     actual = collect_summary_data(1999, _account_types, AccountsBalanceModels)
 
-    print(actual)
     assert actual.shape[0] == 2  # rows
 
     assert actual.at['A1', 'id'] == 1

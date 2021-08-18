@@ -230,7 +230,6 @@ def test_historical_data_ajax(client_logged):
     response = client_logged.get(url, {}, **X_Req)
 
     actual = json.loads(response.content)
-    print(actual)
 
     assert response.status_code == 200
     assert "'name': 1999" in actual['html']

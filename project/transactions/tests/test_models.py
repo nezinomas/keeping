@@ -33,7 +33,7 @@ def test_transaction_related(main_user, second_user):
 
     TransactionFactory(to_account=t1, from_account=f1)
     TransactionFactory(to_account=t2, from_account=f2)
-    print(Transaction.objects.values())
+
     actual = Transaction.objects.related()
 
     assert len(actual) == 1
@@ -479,7 +479,6 @@ def test_saving_change_post_delete():
     obj.delete()
 
     actual = SavingBalance.objects.year(1999)
-    print(actual.values())
 
     assert actual.count() == 2
 
@@ -503,7 +502,6 @@ def test_saving_change_post_delete_with_update():
     obj.delete()
 
     actual = SavingBalance.objects.year(1999)
-    print(actual.values())
 
     assert actual.count() == 2
 
