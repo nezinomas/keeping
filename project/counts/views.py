@@ -36,11 +36,11 @@ class ReloadStats(ContextMixin, DispatchAjaxMixin, TemplateView):
                                  kwargs={'count_type': 'counter'})
 
     def get(self, request, *args, **kwargs):
-        context = self.get_context_data()
+        context = self.get_context_data(**kwargs)
         context.update({
             **self.helper.context_to_reload(
                 self.get_year(),
-                **{'count_title': context['count_title']}
+                **{'count_type_object': context['count_type_object']}
             )
         })
         return self.render_to_response(context=context)
@@ -52,7 +52,7 @@ class Index(ContextMixin, IndexMixin):
         context.update({
             **self.helper.context_to_reload(
                 self.get_year(),
-                **{'count_title': context['count_title']})
+                **{'count_type_object': context['count_type_object']})
         })
 
         return context
@@ -98,8 +98,7 @@ class CountsEmpty(IndexMixin):
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'count_type': obj.slug,
-            'count_id': obj.pk,
+            'count_type_object': obj
         })
         return context
 

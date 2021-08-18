@@ -46,9 +46,7 @@ class ContextMixin():
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'count_type': obj.slug,
-            'count_id': obj.pk,
-            'count_title': obj.title,
+            'count_type_object': obj,
             'records': qs.count(),
         })
 
@@ -151,6 +149,7 @@ class RenderContext():
     def info_row(self, year: int, **kwargs) -> str:
         week = weeknumber(year)
         total = self._stats.year_totals()
+        count_type_object = kwargs.get('count_type_object')
 
         rendered = render_to_string(
             'counts/includes/info_row.html',
@@ -159,7 +158,7 @@ class RenderContext():
                 'total': total,
                 'ratio': total / week,
                 'current_gap': self._stats.current_gap(),
-                'title': kwargs.get('count_title'),
+                'title': count_type_object.title if count_type_object else None,
             },
             self._request
         )
