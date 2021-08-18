@@ -64,9 +64,10 @@ class Lists(ContextMixin, IndexMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        obj = {'count_type_object': context['count_type_object']}
         context.update({
             'tab': 'data',
-            'info_row': self.helper.info_row(self.get_year()),
+            'info_row': self.helper.info_row(self.get_year(),**obj),
             'data': self.helper.list_data(),
         })
         return context
