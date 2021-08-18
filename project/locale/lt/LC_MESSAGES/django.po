@@ -472,7 +472,7 @@ msgstr "Kiek"
 msgid "already has a goal."
 msgstr "metai jau turi tikslą."
 
-#: .\project\books\lib\views_helper.py:69
+#: .\project\books\lib\views_helper.py:72
 msgid "Readed books"
 msgstr "Perskaitytos knygos"
 
@@ -527,7 +527,7 @@ msgid "Delete"
 msgstr "Trinti"
 
 #: .\project\books\templates\books\includes\books_list.html:47
-#: .\project\counts\templates\counts\includes\counts_list.html:38
+#: .\project\core\templates\core\no_records.html:4
 #: .\project\debts\templates\debts\includes\borrows_list.html:46
 #: .\project\debts\templates\debts\includes\borrows_return_list.html:42
 #: .\project\debts\templates\debts\includes\lents_list.html:48
@@ -777,16 +777,12 @@ msgstr "Kiekis"
 msgid "Frequency of gaps, in days"
 msgstr "Tarpų dažnis, dienomis"
 
-#: .\project\counts\lib\views_helper.py:111 .\project\templates\404.html:5
-msgid "Not found"
-msgstr "Nerasta"
-
-#: .\project\counts\lib\views_helper.py:144
+#: .\project\counts\lib\views_helper.py:134
 #, python-format
 msgid "Weekdays, %(year)s year"
 msgstr "Savaitės dienos, %(year)s metai"
 
-#: .\project\counts\lib\views_helper.py:145
+#: .\project\counts\lib\views_helper.py:135
 #, python-format
 msgid "Months, %(year)s metai"
 msgstr "Mėnesiai, %(year)s metai"
@@ -872,7 +868,11 @@ msgctxt "counter button"
 msgid "Counter"
 msgstr "Skaitiklį"
 
-#: .\project\counts\views.py:126
+#: .\project\counts\views.py:28 .\project\templates\404.html:5
+msgid "Not found"
+msgstr "Nerasta"
+
+#: .\project\counts\views.py:147
 msgid "Days of week"
 msgstr "Savaitės dienos"
 
