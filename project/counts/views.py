@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
@@ -15,21 +17,17 @@ from .models import CountType
 
 
 def get_count_object(kwargs):
-    pk = 0
-    slug = 'counter'
-
     try:
         obj = (CountType
                .objects
                .related()
                .get(slug=kwargs.get('count_type'))
         )
-        pk = obj.pk
-        slug = obj.slug
-    except ObjectDoesNotExist:
-        pass
 
-    return (pk, slug)
+    except ObjectDoesNotExist:
+        obj = SimpleNamespace(pk=0, title=_('Not found'), slug='counter')
+
+    return obj
 
 
 class ContextMixin():
@@ -42,7 +40,7 @@ class ContextMixin():
         return Counter.objects.sum_by_day(year=self.get_year())
 
     def get_context_data(self, **kwargs):
-        pk, slug = get_count_object(kwargs)
+        obj = get_count_object(kwargs)
         year = self.get_year()
         qs = self.get_qs()
 
@@ -53,8 +51,9 @@ class ContextMixin():
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'count_type': slug,
-            'count_id': pk,
+            'count_type': obj.slug,
+            'count_id': obj.pk,
+            'count_title': obj.title,
             'records': qs.count(),
         })
 
@@ -65,7 +64,9 @@ class Index(ContextMixin, IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            **self.helper.context_to_reload(self.get_year())
+            **self.helper.context_to_reload(
+                self.get_year(),
+                **{'count_title': context['count_title']})
         })
 
         return context
@@ -94,12 +95,12 @@ class CountsEmpty(IndexMixin):
     template_name = 'counts/counts_empty.html'
 
     def get_context_data(self, **kwargs):
-        pk, slug = get_count_object(kwargs)
+        obj = get_count_object(kwargs)
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'count_type': slug,
-            'count_id': pk,
+            'count_type': obj.slug,
+            'count_id': obj.pk,
         })
         return context
 
@@ -158,7 +159,10 @@ class ReloadStats(ContextMixin, DispatchAjaxMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         context = self.get_context_data()
         context.update({
-            **self.helper.context_to_reload(self.get_year())
+            **self.helper.context_to_reload(
+                self.get_year(),
+                **{'count_title': context['count_title']}
+            )
         })
         return self.render_to_response(context=context)
 

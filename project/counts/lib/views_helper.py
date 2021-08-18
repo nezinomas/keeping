@@ -104,19 +104,9 @@ class RenderContext():
         return rendered
 
 
-    def info_row(self, year: int) -> str:
+    def info_row(self, year: int, **kwargs) -> str:
         week = weeknumber(year)
         total = self._stats.year_totals()
-
-        name = _('Not found')
-        try:
-            name = (CountType
-                    .objects
-                    .related()
-                    .get(slug=utils.get_request_kwargs('count_type')))
-        except ObjectDoesNotExist:
-            pass
-
 
         rendered = render_to_string(
             'counts/includes/info_row.html',
@@ -125,7 +115,7 @@ class RenderContext():
                 'total': total,
                 'ratio': total / week,
                 'current_gap': self._stats.current_gap(),
-                'name': name,
+                'title': kwargs.get('count_title'),
             },
             self._request
         )
@@ -139,7 +129,7 @@ class RenderContext():
         )
         return rendered
 
-    def context_to_reload(self, year: int) -> Dict[str, str]:
+    def context_to_reload(self, year: int, **kwargs) -> Dict[str, str]:
         calendar_data = self._stats.chart_calendar()
         w_title = _('Weekdays, %(year)s year') % ({'year': year})
         m_title = _('Months, %(year)s metai') % ({'year': year})
@@ -151,6 +141,6 @@ class RenderContext():
             'chart_weekdays': self.chart_weekdays(w_title),
             'chart_months': self.chart_months(m_title),
             'chart_histogram': self.chart_histogram(),
-            'info_row': self.info_row(year),
+            'info_row': self.info_row(year, **kwargs),
         }
         return context
