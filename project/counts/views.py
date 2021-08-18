@@ -19,7 +19,11 @@ def get_count_object(kwargs):
     slug = 'counter'
 
     try:
-        obj = CountType.objects.related().get(slug=kwargs.get('count_type'))
+        obj = (CountType
+               .objects
+               .related()
+               .get(slug=kwargs.get('count_type'))
+        )
         pk = obj.pk
         slug = obj.slug
     except ObjectDoesNotExist:
