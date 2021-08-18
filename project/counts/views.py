@@ -11,18 +11,6 @@ from .lib.views_helper import ContextMixin, get_count_object
 from .models import Count, CountType
 
 
-class Index(ContextMixin, IndexMixin):
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            **self.helper.context_to_reload(
-                self.get_year(),
-                **{'count_title': context['count_title']})
-        })
-
-        return context
-
-
 class Redirect(RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         qs = None
@@ -42,17 +30,31 @@ class Redirect(RedirectView):
         return url
 
 
-class CountsEmpty(IndexMixin):
-    template_name = 'counts/counts_empty.html'
+class ReloadStats(ContextMixin, DispatchAjaxMixin, TemplateView):
+    template_name = 'counts/includes/reload_stats.html'
+    redirect_view = reverse_lazy('counts:counts_index',
+                                 kwargs={'count_type': 'counter'})
 
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        context.update({
+            **self.helper.context_to_reload(
+                self.get_year(),
+                **{'count_title': context['count_title']}
+            )
+        })
+        return self.render_to_response(context=context)
+
+
+class Index(ContextMixin, IndexMixin):
     def get_context_data(self, **kwargs):
-        obj = get_count_object(kwargs)
-
         context = super().get_context_data(**kwargs)
         context.update({
-            'count_type': obj.slug,
-            'count_id': obj.pk,
+            **self.helper.context_to_reload(
+                self.get_year(),
+                **{'count_title': context['count_title']})
         })
+
         return context
 
 
@@ -68,20 +70,6 @@ class Lists(ContextMixin, IndexMixin):
             'data': self.helper.list_data(),
         })
         return context
-
-
-class New(CreateAjaxMixin):
-    model = Count
-    form_class = CountForm
-
-
-class Update(UpdateAjaxMixin):
-    model = Count
-    form_class = CountForm
-
-
-class Delete(DeleteAjaxMixin):
-    model = Count
 
 
 class History(ContextMixin, IndexMixin):
@@ -102,20 +90,32 @@ class History(ContextMixin, IndexMixin):
         return context
 
 
-class ReloadStats(ContextMixin, DispatchAjaxMixin, TemplateView):
-    template_name = 'counts/includes/reload_stats.html'
-    redirect_view = reverse_lazy('counts:counts_index',
-                                 kwargs={'count_type': 'counter'})
+class CountsEmpty(IndexMixin):
+    template_name = 'counts/counts_empty.html'
 
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data()
+    def get_context_data(self, **kwargs):
+        obj = get_count_object(kwargs)
+
+        context = super().get_context_data(**kwargs)
         context.update({
-            **self.helper.context_to_reload(
-                self.get_year(),
-                **{'count_title': context['count_title']}
-            )
+            'count_type': obj.slug,
+            'count_id': obj.pk,
         })
-        return self.render_to_response(context=context)
+        return context
+
+
+class New(CreateAjaxMixin):
+    model = Count
+    form_class = CountForm
+
+
+class Update(UpdateAjaxMixin):
+    model = Count
+    form_class = CountForm
+
+
+class Delete(DeleteAjaxMixin):
+    model = Count
 
 
 class TypeNew(CreateAjaxMixin):
