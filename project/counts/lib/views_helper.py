@@ -12,7 +12,7 @@ from ..models import Count, CountType
 from .stats import Stats
 
 
-def get_count_object(kwargs):
+def get_object(kwargs):
     try:
         obj = (CountType
                .objects
@@ -35,7 +35,7 @@ class ContextMixin():
         return Count.objects.sum_by_day(year=self.get_year())
 
     def get_context_data(self, **kwargs):
-        obj = get_count_object(kwargs)
+        obj = get_object(kwargs)
         year = self.get_year()
         qs = self.get_qs()
 
@@ -53,6 +53,7 @@ class ContextMixin():
         })
 
         return context
+
 
 class RenderContext():
     def __init__(self, request: HttpRequest, stats: Stats = None):

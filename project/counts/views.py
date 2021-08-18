@@ -7,7 +7,7 @@ from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                  DispatchAjaxMixin, IndexMixin,
                                  UpdateAjaxMixin)
 from .forms import CountForm, CountTypeForm
-from .lib.views_helper import ContextMixin, get_count_object
+from .lib.views_helper import ContextMixin, get_object
 from .models import Count, CountType
 
 
@@ -94,7 +94,7 @@ class CountsEmpty(IndexMixin):
     template_name = 'counts/counts_empty.html'
 
     def get_context_data(self, **kwargs):
-        obj = get_count_object(kwargs)
+        obj = get_object(kwargs)
 
         context = super().get_context_data(**kwargs)
         context.update({
