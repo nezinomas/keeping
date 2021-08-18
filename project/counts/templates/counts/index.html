@@ -75,7 +75,7 @@
 
 {% if tab == 'history' %}
 
-{% if not records %}<div id="no-records">{% include 'core/no_records.html' %}</div>{% endif %}
+{% if not records %}<div id="no-records"><div class="mx-auto text-center alert alert-warning py-2 my-4">{% translate 'Data missing.' %}</div>{% endif %}
 
 <div class="row my-2">
     <div class="col-lg-4">{% if records %}{{ chart_weekdays }}{% endif %}</div>

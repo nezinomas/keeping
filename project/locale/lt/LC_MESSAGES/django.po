@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-17 17:30+0300\n"
-"PO-Revision-Date: 2021-08-18 11:11+0300\n"
+"POT-Creation-Date: 2021-08-18 14:46+0300\n"
+"PO-Revision-Date: 2021-08-18 14:47+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -458,7 +458,7 @@ msgstr "Autorius"
 msgid "Remark"
 msgstr "Pastaba"
 
-#: .\project\books\forms.py:78 .\project\counts\lib\views_helper.py:47
+#: .\project\books\forms.py:78 .\project\counts\lib\views_helper.py:89
 #: .\project\drinks\forms.py:75
 msgid "Year"
 msgstr "Metai"
@@ -773,16 +773,20 @@ msgstr "Data"
 msgid "Quantity"
 msgstr "Kiekis"
 
-#: .\project\counts\lib\views_helper.py:99
+#: .\project\counts\lib\views_helper.py:23 .\project\templates\404.html:5
+msgid "Not found"
+msgstr "Nerasta"
+
+#: .\project\counts\lib\views_helper.py:141
 msgid "Frequency of gaps, in days"
 msgstr "Tarpų dažnis, dienomis"
 
-#: .\project\counts\lib\views_helper.py:134
+#: .\project\counts\lib\views_helper.py:177
 #, python-format
 msgid "Weekdays, %(year)s year"
 msgstr "Savaitės dienos, %(year)s metai"
 
-#: .\project\counts\lib\views_helper.py:135
+#: .\project\counts\lib\views_helper.py:178
 #, python-format
 msgid "Months, %(year)s metai"
 msgstr "Mėnesiai, %(year)s metai"
@@ -847,7 +851,12 @@ msgstr "Duomenys"
 msgid "History"
 msgstr "Istorija"
 
-#: .\project\counts\templates\counts\index.html:34
+#: .\project\counts\templates\counts\index.html:33
+#: .\project\drinks\templates\drinks\index.html:74
+msgid "Historical data"
+msgstr "Istoriniai duomenys"
+
+#: .\project\counts\templates\counts\index.html:38
 #: .\project\plans\templates\plans\index.html:34
 #: .\project\plans\templates\plans\index.html:46
 #: .\project\plans\templates\plans\index.html:58
@@ -862,17 +871,17 @@ msgctxt "record button"
 msgid "Record"
 msgstr "Įrašą"
 
-#: .\project\counts\templates\counts\index.html:37
-#: .\project\counts\templates\counts\index.html:38
+#: .\project\counts\templates\counts\index.html:41
+#: .\project\counts\templates\counts\index.html:42
 msgctxt "counter button"
 msgid "Counter"
 msgstr "Skaitiklį"
 
-#: .\project\counts\views.py:28 .\project\templates\404.html:5
-msgid "Not found"
-msgstr "Nerasta"
+#: .\project\counts\templates\counts\index.html:78
+msgid "Data missing."
+msgstr "Trūksta duomenų."
 
-#: .\project\counts\views.py:147
+#: .\project\counts\views.py:87
 msgid "Days of week"
 msgstr "Savaitės dienos"
 
@@ -1037,10 +1046,6 @@ msgstr "Per mėnesį"
 #: .\project\drinks\templates\drinks\index.html:62
 msgid "What is a standard unit of alcohol"
 msgstr "Kas yra standartinis alkoholio vienetas"
-
-#: .\project\drinks\templates\drinks\index.html:74
-msgid "Historical data"
-msgstr "Istoriniai duomenys"
 
 #: .\project\drinks\templates\drinks\index.html:76
 msgid "2 years"
