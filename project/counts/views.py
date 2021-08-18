@@ -29,15 +29,26 @@ def get_count_object(kwargs):
 
 
 class ContextMixin():
+    helper = None
+
+    def get_year(self):
+        return self.request.user.year
+
+    def get_qs(self):
+        return Counter.objects.sum_by_day(year=self.get_year())
+
     def get_context_data(self, **kwargs):
         pk, slug = get_count_object(kwargs)
-        year = self.request.user.year
-        qs = Counter.objects.sum_by_day(year=year)
-        r = RenderContext(self.request, Stats(year=year, data=qs))
+        year = self.get_year()
+        qs = self.get_qs()
+
+        self.helper = RenderContext(
+            self.request,
+            Stats(year=year, data=qs)
+        )
 
         context = super().get_context_data(**kwargs)
         context.update({
-            **r.context_to_reload(year),
             'count_type': slug,
             'count_id': pk,
             'records': qs.count(),
@@ -47,7 +58,13 @@ class ContextMixin():
 
 
 class Index(ContextMixin, IndexMixin):
-    pass
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            **self.helper.context_to_reload(self.get_year())
+        })
+
+        return context
 
 
 class Redirect(RedirectView):
@@ -63,7 +80,8 @@ class Redirect(RedirectView):
         if not qs:
             url = reverse('counts:counts_empty')
         else:
-            url = reverse('counts:counts_index', kwargs={'count_type': qs.slug})
+            url = reverse('counts:counts_index',
+                          kwargs={'count_type': qs.slug})
 
         return url
 
@@ -82,21 +100,16 @@ class CountsEmpty(IndexMixin):
         return context
 
 
-class Lists(IndexMixin):
-    def get_context_data(self, **kwargs):
-        pk, slug = get_count_object(kwargs)
-        year = self.request.user.year
-        qs = Counter.objects.year(year)
-        r = RenderContext(self.request, Stats(year=year, data=qs))
+class Lists(ContextMixin, IndexMixin):
+    def get_qs(self):
+        return Counter.objects.year(self.get_year())
 
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
             'tab': 'data',
-            'count_type': slug,
-            'count_id': pk,
-            'info_row': r.info_row(year),
-            'data': r.list_data(),
-            'records': qs.count(),
+            'info_row': self.helper.info_row(self.get_year()),
+            'data': self.helper.list_data(),
         })
         return context
 
@@ -115,31 +128,34 @@ class Delete(DeleteAjaxMixin):
     model = Counter
 
 
-class History(IndexMixin):
-    def get_context_data(self, **kwargs):
-        pk, slug = get_count_object(kwargs)
-        qs = Counter.objects.items()
-        r = RenderContext(self.request, Stats(data=qs))
+class History(ContextMixin, IndexMixin):
+    def get_qs(self):
+        return Counter.objects.items()
 
+    def get_year(self):
+        return None
+
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
             'tab': 'history',
-            'count_type': slug,
-            'count_id': pk,
-            'chart_weekdays': r.chart_weekdays(_('Days of week')),
-            'chart_years': r.chart_years(),
-            'chart_histogram': r.chart_histogram(),
-            'records': qs.count(),
+            'chart_weekdays': self.helper.chart_weekdays(_('Days of week')),
+            'chart_years': self.helper.chart_years(),
+            'chart_histogram': self.helper.chart_histogram(),
         })
         return context
 
 
 class ReloadStats(ContextMixin, DispatchAjaxMixin, TemplateView):
     template_name = 'counts/includes/reload_stats.html'
-    redirect_view = reverse_lazy('counts:counts_index', kwargs={'count_type': 'counter'})
+    redirect_view = reverse_lazy('counts:counts_index',
+                                 kwargs={'count_type': 'counter'})
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data()
+        context.update({
+            **self.helper.context_to_reload(self.get_year())
+        })
         return self.render_to_response(context=context)
 
 
