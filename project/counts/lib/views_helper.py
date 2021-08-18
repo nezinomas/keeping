@@ -1,13 +1,10 @@
 from typing import Dict, List
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
-from ...core.lib import utils
 from ...core.lib.date import weeknumber
-from ..models import CountType
 from .stats import Stats
 
 
