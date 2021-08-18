@@ -1,5 +1,3 @@
-from types import SimpleNamespace
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
@@ -8,56 +6,9 @@ from django.views.generic import RedirectView, TemplateView
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                  DispatchAjaxMixin, IndexMixin,
                                  UpdateAjaxMixin)
-from .forms import CountForm as Form
-from .forms import CountTypeForm
-from .lib.stats import Stats
-from .lib.views_helper import RenderContext
-from .models import Count as Counter
-from .models import CountType
-
-
-def get_count_object(kwargs):
-    try:
-        obj = (CountType
-               .objects
-               .related()
-               .get(slug=kwargs.get('count_type'))
-        )
-
-    except ObjectDoesNotExist:
-        obj = SimpleNamespace(pk=0, title=_('Not found'), slug='counter')
-
-    return obj
-
-
-class ContextMixin():
-    helper = None
-
-    def get_year(self):
-        return self.request.user.year
-
-    def get_qs(self):
-        return Counter.objects.sum_by_day(year=self.get_year())
-
-    def get_context_data(self, **kwargs):
-        obj = get_count_object(kwargs)
-        year = self.get_year()
-        qs = self.get_qs()
-
-        self.helper = RenderContext(
-            self.request,
-            Stats(year=year, data=qs)
-        )
-
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'count_type': obj.slug,
-            'count_id': obj.pk,
-            'count_title': obj.title,
-            'records': qs.count(),
-        })
-
-        return context
+from .forms import CountForm, CountTypeForm
+from .lib.views_helper import ContextMixin, get_count_object
+from .models import Count, CountType
 
 
 class Index(ContextMixin, IndexMixin):
@@ -107,7 +58,7 @@ class CountsEmpty(IndexMixin):
 
 class Lists(ContextMixin, IndexMixin):
     def get_qs(self):
-        return Counter.objects.year(self.get_year())
+        return Count.objects.year(self.get_year())
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -120,22 +71,22 @@ class Lists(ContextMixin, IndexMixin):
 
 
 class New(CreateAjaxMixin):
-    model = Counter
-    form_class = Form
+    model = Count
+    form_class = CountForm
 
 
 class Update(UpdateAjaxMixin):
-    model = Counter
-    form_class = Form
+    model = Count
+    form_class = CountForm
 
 
 class Delete(DeleteAjaxMixin):
-    model = Counter
+    model = Count
 
 
 class History(ContextMixin, IndexMixin):
     def get_qs(self):
-        return Counter.objects.items()
+        return Count.objects.items()
 
     def get_year(self):
         return None

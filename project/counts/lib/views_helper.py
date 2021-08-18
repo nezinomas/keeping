@@ -1,12 +1,58 @@
+from types import SimpleNamespace
 from typing import Dict, List
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ...core.lib.date import weeknumber
+from ..lib.stats import Stats
+from ..models import Count, CountType
 from .stats import Stats
 
+
+def get_count_object(kwargs):
+    try:
+        obj = (CountType
+               .objects
+               .related()
+               .get(slug=kwargs.get('count_type')))
+
+    except ObjectDoesNotExist:
+        obj = SimpleNamespace(pk=0, title=_('Not found'), slug='counter')
+
+    return obj
+
+
+class ContextMixin():
+    helper = None
+
+    def get_year(self):
+        return self.request.user.year
+
+    def get_qs(self):
+        return Count.objects.sum_by_day(year=self.get_year())
+
+    def get_context_data(self, **kwargs):
+        obj = get_count_object(kwargs)
+        year = self.get_year()
+        qs = self.get_qs()
+
+        self.helper = RenderContext(
+            self.request,
+            Stats(year=year, data=qs)
+        )
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'count_type': obj.slug,
+            'count_id': obj.pk,
+            'count_title': obj.title,
+            'records': qs.count(),
+        })
+
+        return context
 
 class RenderContext():
     def __init__(self, request: HttpRequest, stats: Stats = None):
