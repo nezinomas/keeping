@@ -32,7 +32,7 @@ def context_months(context):
 def context_count_types(context):
     arr = {}
     try:
-        arr = list(CountType.objects.items())
+        arr = CountType.objects.related().items()
     except TypeError:
         pass
 

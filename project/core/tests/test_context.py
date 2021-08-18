@@ -88,4 +88,6 @@ def test_count_types(rf):
 
     actual = context_count_types(r)
 
-    assert actual == {'context_count_types': [obj]}
+    assert 'context_count_types' in actual
+    assert len(actual['context_count_types']) == 1
+    assert actual['context_count_types'][0] == obj
