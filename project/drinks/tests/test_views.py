@@ -466,8 +466,11 @@ def test_index_context_tab_value(client_logged):
 
     assert response.context['tab'] == 'index'
 
-
+@freeze_time('1999-1-1')
+@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_index_chart_consumption(client_logged):
+    DrinkFactory()
+
     url = reverse('drinks:drinks_index')
     response = client_logged.get(url)
 
@@ -477,7 +480,11 @@ def test_index_chart_consumption(client_logged):
     assert 'id="chart_consumption"><div id="chart_consumption_container"></div>' in content
 
 
+@freeze_time('1999-1-1')
+@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_index_chart_quantity(client_logged):
+    DrinkFactory()
+
     url = reverse('drinks:drinks_index')
     response = client_logged.get(url)
 
@@ -599,6 +606,8 @@ def test_history_context_tab_value(client_logged):
 
 
 def test_history_context(client_logged):
+    DrinkFactory()
+
     url = reverse('drinks:drinks_history')
     response = client_logged.get(url)
 
@@ -608,7 +617,11 @@ def test_history_context(client_logged):
     assert 'drinks_cnt' in response.context
 
 
+@freeze_time('1999-1-1')
+@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_history_chart_consumption(client_logged):
+    DrinkFactory()
+
     url = reverse('drinks:drinks_history')
     response = client_logged.get(url)
 

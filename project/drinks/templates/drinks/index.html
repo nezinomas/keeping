@@ -38,37 +38,42 @@
     </div>
 </div>
 
+
 {% if tab == 'index' %}
+
+{% if not records %}<div id="no-records">{% include 'core/no_records.html' %}</div>{% endif %}
+
 <div class="row">
-    <div class="col-lg-6" id="chart_consumption">{{ chart_consumption }}</div>
-    <div class="col-lg-6" id="chart_quantity">{{ chart_quantity }}</div>
+    <div class="col-lg-6" id="chart_consumption">{% if records %}{{ chart_consumption }}{% endif %}</div>
+    <div class="col-lg-6" id="chart_quantity">{% if records %}{{ chart_quantity }}{% endif %}</div>
 </div>
 
 <div class="row my-2">
     <div class="col-lg-6">
         <div class="row gx-2">
-            <div id="tbl_consumption" class="col-lg-3 col-md-3">{{ tbl_consumption }}</div>
-            <div id="tbl_last_day" class="col-lg-4 col-md-3">{{ tbl_last_day }}</div>
-            <div id="tbl_alcohol" class="col-lg-2 col-md-3">{{ tbl_alcohol }}</div>
-            <div id="drinks-target-content" class="col-lg-3 col-md-3">{{ target_list }}</div>
+            <div id="tbl_consumption" class="col-lg-3 col-md-3">{% if records %}{{ tbl_consumption }}{% endif %}</div>
+            <div id="tbl_last_day" class="col-lg-4 col-md-3">{% if records %}{{ tbl_last_day }}{% endif %}</div>
+            <div id="tbl_alcohol" class="col-lg-2 col-md-3">{% if records %}{{ tbl_alcohol }}{% endif %}</div>
+            <div id="drinks-target-content" class="col-lg-3 col-md-3">{% if records %}{{ target_list }}{% endif %}</div>
         </div>
 
         <div class="row">
-            <div class="col" id="tbl_std_av">{{ tbl_std_av }}</div>
+            <div class="col" id="tbl_std_av">{% if records %}{{ tbl_std_av }}{% endif %}</div>
         </div>
     </div>
 
     <div class="col-lg-6 d-flex">
-        <div class="text-center mx-auto align-self-center"><img src="{% static 'images/drinks_info.jpg' %}" width="500" alt="{% translate 'What is a standard unit of alcohol' %}"></div>
+        <div class="text-center mx-auto align-self-center"><img src="{% static 'images/drinks_info.jpg' %}" width="500" alt="{% translate 'What is a standard unit of alcohol' %}" class="_hidden" {% if not records %}style="display: none"{% endif %}></div>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{{ chart_calendar_1H }}</div>
-    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{{ chart_calendar_2H }}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{% if records %}{{ chart_calendar_1H }}{% endif %}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{% if records %}{{ chart_calendar_2H }}{% endif %}</div>
 </div>
 
-<div class="row mt-4">
+
+<div class="row mt-4 _hidden" {% if not records %}style="display: none"{% endif %}>
     <div class="col-lg-6">
         <div class="row my-2">
             <div class="col-sm-3 pt-1"><b>{% translate 'Historical data' %}</b></div>
@@ -96,20 +101,29 @@
         </div>
     </div>
 </div>
-{% endif %}
+
+{% endif %}{# endif of tab index #}
+
 
 {% if tab == 'history' %}
-<div class="row">
+
+{% if not records %}<div id="no-records">{% include 'core/no_records.html' with two_years=True %}</div>{% endif %}
+
+<div class="row _hidden" {% if not records %}style="display: none"{% endif %}>
     <div class="col">{% include 'drinks/includes/chart_summary.html' %}</div>
 </div>
-{% endif %}
+
+{% endif %}{# endif of tab history #}
 
 
 {% if tab == 'data' %}
+
 <div class="row">
     <div class="col" id="ajax-content">{% include 'drinks/includes/drinks_list.html' %}</div>
 </div>
-{% endif %}
+
+{% endif %}{# endif of tab data #}
+
 
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
@@ -121,8 +135,23 @@
                 'ajax_trigger': '1'
             },
             success: function (data) {
-                var blocks = ['chart_consumption', 'chart_quantity', 'tbl_consumption', 'tbl_last_day', 'tbl_alcohol', 'tbl_std_av', 'chart_calendar_1H', 'chart_calendar_2H'];
-                reload_stats(data, blocks);
+
+                var blocks = [
+                    'chart_consumption',
+                    'chart_quantity',
+                    'tbl_consumption',
+                    'tbl_last_day',
+                    'tbl_alcohol',
+                    'tbl_std_av',
+                    'chart_calendar_1H',
+                    'chart_calendar_2H'
+                ];
+
+                if(data.records > 0) {
+                    $('#no-records').html('');
+                    $('._hidden').show();
+                    reload_stats(data, blocks);
+                }
             }
         });
     });
