@@ -43,6 +43,8 @@ def test_books_index_context(client_logged):
 
 
 def test_books_index_chart_year(client_logged):
+    BookFactory(ended=date(1999, 1, 1))
+
     url = reverse('books:books_index')
     response = client_logged.get(url)
 
