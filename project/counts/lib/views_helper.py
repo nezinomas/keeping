@@ -164,14 +164,6 @@ class RenderContext():
         )
         return rendered
 
-    def list_data(self) -> str:
-        rendered = render_to_string(
-            'counts/includes/counts_list.html',
-            {'items': self._stats.items(),},
-            self._request
-        )
-        return rendered
-
     def context_to_reload(self, year: int, **kwargs) -> Dict[str, str]:
         calendar_data = self._stats.chart_calendar()
         w_title = _('Weekdays, %(year)s year') % ({'year': year})

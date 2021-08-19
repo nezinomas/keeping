@@ -68,7 +68,7 @@
 {% if not records %}<div id="no-records">{% include 'core/no_records.html' %}</div>{% endif %}
 
 <div class="row my-2">
-    <div class="col" id="ajax-content">{{ data }}</div>
+    <div class="col" id="ajax-content">{% include 'counts/includes/counts_list.html' %}</div>
 </div>
 {% endif %}
 

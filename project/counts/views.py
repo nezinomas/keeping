@@ -4,7 +4,7 @@ from django.utils.translation import gettext as _
 from django.views.generic import RedirectView, TemplateView
 
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchAjaxMixin, IndexMixin,
+                                 DispatchAjaxMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from .forms import CountForm, CountTypeForm
 from .lib.views_helper import ContextMixin, get_object
@@ -58,7 +58,10 @@ class Index(ContextMixin, IndexMixin):
         return context
 
 
-class Lists(ContextMixin, IndexMixin):
+class Lists(ContextMixin, ListMixin):
+    template_name = 'counts/index.html'
+    model = Count
+
     def get_qs(self):
         return Count.objects.year(self.get_year())
 
@@ -68,7 +71,6 @@ class Lists(ContextMixin, IndexMixin):
         context.update({
             'tab': 'data',
             'info_row': self.helper.info_row(self.get_year(),**obj),
-            'data': self.helper.list_data(),
         })
         return context
 

@@ -313,7 +313,7 @@ def test_list_context(client_logged):
     url = reverse('counts:counts_list', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
-    assert 'data' in response.context
+    assert 'items' in response.context
     assert 'info_row' in response.context
     assert 'tab' in response.context
 
