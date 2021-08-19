@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.db.models import F
+from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
@@ -131,7 +132,7 @@ class ReloadExpenses(DispatchAjaxMixin, TemplateView):
             'expenses_list': Lists.as_view()(self.request, as_string=True, **{'month': month}),
         }
 
-        return self.render_to_response(context=context)
+        return JsonResponse(context)
 
 
 class LoadExpenseName(TemplateView):

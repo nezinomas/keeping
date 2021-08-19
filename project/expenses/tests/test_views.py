@@ -1,6 +1,7 @@
 import json
 from datetime import date
 from decimal import Decimal
+from django.http.response import JsonResponse
 
 import pytest
 from django.urls import resolve, reverse
@@ -569,6 +570,15 @@ def test_view_reload_expenses_func():
     assert expenses.ReloadExpenses is view.func.view_class
 
 
+def test_view_reload_return_object(rf):
+    request = rf.get('/expenses/reload/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = expenses.ReloadExpenses.as_view()(request)
+
+    assert isinstance(response, JsonResponse)
+
+
 def test_view_reload_expenses_render(rf):
     request = rf.get('/expenses/reload/?ajax_trigger=1')
     request.user = UserFactory.build()
@@ -576,6 +586,9 @@ def test_view_reload_expenses_render(rf):
     response = expenses.ReloadExpenses.as_view()(request)
 
     assert response.status_code == 200
+
+    actual = json.loads(response.content)
+    assert 'expenses_list' in actual
 
 
 def test_view_reload_expenses_render_ajax_trigger_not_set(client_logged):
