@@ -18,7 +18,15 @@
                 // delete no records message
                 $('#no-records').html('');
 
-                var blocks = ['info_row', 'chart_weekdays', 'chart_months', 'chart_year', 'chart_histogram', 'chart_calendar_1H', 'chart_calendar_2H', 'no-records'];
+                var blocks = [
+                    'info_row',
+                    'chart_weekdays',
+                    'chart_months',
+                    'chart_year',
+                    'chart_histogram',
+                    'chart_calendar_1H',
+                    'chart_calendar_2H',
+                ];
                 reload_stats(data, blocks);
             }
         });
