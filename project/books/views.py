@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
@@ -112,7 +113,7 @@ class ReloadStats(DispatchAjaxMixin, BookTabMixin, IndexMixin):
             obj = BookRenderer(request)
             context.update(**obj.context_to_reload())
 
-        return self.render_to_response(context)
+        return JsonResponse(context)
 
 
 class Search(AjaxSearchMixin):

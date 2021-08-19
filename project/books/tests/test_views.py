@@ -4,6 +4,7 @@ from datetime import date
 from types import SimpleNamespace
 
 import pytest
+from django.http import JsonResponse
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
@@ -153,6 +154,13 @@ def test_books_reload_stats_render(rf):
     assert response.status_code == 200
 
 
+def test_books_reload_stats_render_return_object(client_logged):
+    url = reverse('books:reload_stats')
+    response = client_logged.get(url, {'ajax_trigger': 1})
+
+    assert isinstance(response, JsonResponse)
+
+
 def test_books_reload_stats_render_ajax_trigger(client_logged):
     url = reverse('books:reload_stats')
     response = client_logged.get(url, {'ajax_trigger': 1})
@@ -170,8 +178,10 @@ def test_books_reload_stats_render_ajax_trigger_not_set(client_logged):
 
 @patch('project.books.views.BookTabMixin.get_tab', return_value='index')
 @patch('project.books.views.Lists.as_view')
-@patch('project.books.views.BookRenderer')
+@patch('project.books.views.BookRenderer.context_to_reload', return_value={})
 def test_books_reload_tab_index(_BookRenderer, _ListView, _BookTabMixin, fake_request):
+    _ListView.return_value.return_value = {}
+
     v = setup_view(views.ReloadStats(), fake_request)
     v.get(fake_request)
 
@@ -182,8 +192,10 @@ def test_books_reload_tab_index(_BookRenderer, _ListView, _BookTabMixin, fake_re
 
 @patch('project.books.views.BookTabMixin.get_tab', return_value='all')
 @patch('project.books.views.Lists.as_view')
-@patch('project.books.views.BookRenderer')
+@patch('project.books.views.BookRenderer', return_value={})
 def test_books_reload_tab_all(_BookRenderer, _ListView, _BookTabMixin, fake_request):
+    _ListView.return_value.return_value = {}
+
     v = setup_view(views.ReloadStats(), fake_request)
     v.get(fake_request)
 
