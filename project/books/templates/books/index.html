@@ -61,7 +61,11 @@
                 'tab': '{{ tab }}',
             },
             success: function (data) {
-                var blocks = ['info_row', 'chart_readed_books', 'book_list'];
+                var blocks = [
+                    'info_row',
+                    'chart_readed_books',
+                    'book_list'
+                ];
                 reload_stats(data, blocks);
             }
         });
