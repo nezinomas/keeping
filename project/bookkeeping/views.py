@@ -243,7 +243,7 @@ class ReloadIndex(DispatchAjaxMixin, IndexMixin):
             'wealth': obj.render_wealth(),
             'savings': obj.render_savings(),
         }
-        return self.render_to_response(context)
+        return JsonResponse(context)
 
 
 class ReloadMonth(DispatchAjaxMixin, IndexMixin):
