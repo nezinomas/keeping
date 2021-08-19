@@ -1,10 +1,11 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import RedirectView, TemplateView
 
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchAjaxMixin, IndexMixin,
+                                 DispatchAjaxMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from .forms import CountForm, CountTypeForm
 from .lib.views_helper import ContextMixin, get_object
@@ -43,7 +44,11 @@ class ReloadStats(ContextMixin, DispatchAjaxMixin, TemplateView):
                 **{'count_type_object': context['count_type_object']}
             )
         })
-        return self.render_to_response(context=context)
+        # delete Objects that is not JSON serializable
+        context.pop('view')
+        context.pop('count_type_object')
+
+        return JsonResponse(context)
 
 
 class Index(ContextMixin, IndexMixin):
@@ -58,7 +63,10 @@ class Index(ContextMixin, IndexMixin):
         return context
 
 
-class Lists(ContextMixin, IndexMixin):
+class Lists(ContextMixin, ListMixin):
+    template_name = 'counts/index.html'
+    model = Count
+
     def get_qs(self):
         return Count.objects.year(self.get_year())
 
@@ -68,7 +76,6 @@ class Lists(ContextMixin, IndexMixin):
         context.update({
             'tab': 'data',
             'info_row': self.helper.info_row(self.get_year(),**obj),
-            'data': self.helper.list_data(),
         })
         return context
 
