@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 
@@ -39,7 +40,7 @@ class BorrowReload(DispatchAjaxMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = _borrow_context_to_reload(self.request)
-        return self.render_to_response(context=context)
+        return JsonResponse(context)
 
 
 class BorrowLists(DispatchListsMixin, ListMixin):
@@ -92,7 +93,7 @@ class LentReload(DispatchAjaxMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = _lent_context_to_reload(self.request)
-        return self.render_to_response(context=context)
+        return JsonResponse(context)
 
 
 class LentLists(DispatchListsMixin, ListMixin):

@@ -2,6 +2,7 @@ import json
 import re
 from datetime import date
 from decimal import Decimal
+from django.http.response import JsonResponse
 
 import pytest
 from django.urls import resolve, reverse
@@ -31,8 +32,19 @@ def test_borrow_reload_render(rf):
     response = views.BorrowReload.as_view()(request)
 
     assert response.status_code == 200
-    assert 'borrow' in response.context_data
-    assert 'borrow_return' in response.context_data
+
+    actual = json.loads(response.content)
+    assert 'borrow' in actual
+    assert 'borrow_return' in actual
+
+
+def test_borrow_reload_return_object(rf):
+    request = rf.get('/borrows/reload/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = views.BorrowReload.as_view()(request)
+
+    assert isinstance(response, JsonResponse)
 
 
 def test_borrow_reload_ender_ajax_trigger_not_set(client_logged):
@@ -56,8 +68,19 @@ def test_lent_reload_render(rf):
     response = views.LentReload.as_view()(request)
 
     assert response.status_code == 200
-    assert 'lent' in response.context_data
-    assert 'lent_return' in response.context_data
+
+    actual = json.loads(response.content)
+    assert 'lent' in actual
+    assert 'lent_return' in actual
+
+
+def test_lent_reload_return_object(rf):
+    request = rf.get('/lents/reload/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = views.LentReload.as_view()(request)
+
+    assert isinstance(response, JsonResponse)
 
 
 def test_lent_reload_ender_ajax_trigger_not_set(client_logged):
