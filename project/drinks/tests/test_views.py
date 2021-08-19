@@ -531,7 +531,7 @@ def test_list_context(client_logged):
     url = reverse('drinks:drinks_list')
     response = client_logged.get(url)
 
-    assert 'data' in response.context
+    assert 'items' in response.context
     assert 'tab' in response.context
 
 
@@ -549,7 +549,7 @@ def test_list_empty_current_year(client_logged):
     url = reverse('drinks:drinks_list')
     response = client_logged.get(url)
 
-    assert '<b>1999</b> metais įrašų nėra.' in response.context["data"]
+    assert '<b>1999</b> metais įrašų nėra.' in response.content.decode('utf-8')
 
 
 @patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')

@@ -77,19 +77,14 @@ class Index(IndexMixin):
         return context
 
 
-class Lists(IndexMixin):
-    def get_context_data(self, **kwargs):
-        year = self.request.user.year
+class Lists(ListMixin):
+    template_name = 'drinks/index.html'
+    model = models.Drink
 
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({
-            'tab': 'data',
-            'data': render_to_string(
-                template_name=f'{App_name}/includes/drinks_list.html',
-                context={'items': models.Drink.objects.year(year)},
-                request=self.request
-            ),
-        })
+        context['tab'] = 'data'
+
         return context
 
 
