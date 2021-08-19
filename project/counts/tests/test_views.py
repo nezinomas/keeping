@@ -2,6 +2,7 @@ import json
 import re
 
 import pytest
+from django.http import JsonResponse
 from django.urls import resolve, reverse
 from django.utils.text import slugify
 from freezegun import freeze_time
@@ -269,6 +270,13 @@ def test_reload_stats_render(mck, rf):
     assert response.status_code == 200
 
 
+def test_reload_stats_jsonresponse_object(client_logged):
+    url = reverse('counts:reload_stats', kwargs={'count_type': 'xxx'})
+    response = client_logged.get(url, {'ajax_trigger': 1})
+
+    assert isinstance(response, JsonResponse)
+
+
 def test_reload_stats_render_ajax_trigger(client_logged):
     url = reverse('counts:reload_stats', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url, {'ajax_trigger': 1})
@@ -276,13 +284,15 @@ def test_reload_stats_render_ajax_trigger(client_logged):
     assert response.status_code == 200
     assert views.ReloadStats == response.resolver_match.func.view_class
 
-    assert 'info_row' in response.context
-    assert 'chart_weekdays' in response.context
-    assert 'chart_months' in response.context
-    # assert 'chart_year' in response.context
-    assert 'chart_calendar_1H' in response.context
-    assert 'chart_calendar_2H' in response.context
-    assert 'chart_histogram' in response.context
+    actual = json.loads(response.content)
+
+    assert 'info_row' in actual
+    assert 'chart_weekdays' in actual
+    assert 'chart_months' in actual
+    # assert 'chart_year' in actual
+    assert 'chart_calendar_1H' in actual
+    assert 'chart_calendar_2H' in actual
+    assert 'chart_histogram' in actual
 
 
 def test_reload_stats_render_ajax_trigger_not_set(client_logged):

@@ -1,4 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import RedirectView, TemplateView
@@ -43,7 +44,11 @@ class ReloadStats(ContextMixin, DispatchAjaxMixin, TemplateView):
                 **{'count_type_object': context['count_type_object']}
             )
         })
-        return self.render_to_response(context=context)
+        # delete Objects that is not JSON serializable
+        context.pop('view')
+        context.pop('count_type_object')
+
+        return JsonResponse(context)
 
 
 class Index(ContextMixin, IndexMixin):
