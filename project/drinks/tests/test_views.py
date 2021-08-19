@@ -3,6 +3,7 @@ import re
 from datetime import date
 
 import pytest
+from django.http import JsonResponse
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
@@ -368,12 +369,21 @@ def test_reload_stats_render_ajax_trigger(client_logged):
     assert response.status_code == 200
     assert views.ReloadStats == response.resolver_match.func.view_class
 
-    assert 'chart_consumption' in response.context
-    assert 'chart_quantity' in response.context
-    assert 'tbl_consumption' in response.context
-    assert 'tbl_last_day' in response.context
-    assert 'tbl_alcohol' in response.context
-    assert 'tbl_std_av' in response.context
+    actual = json.loads(response.content)
+
+    assert 'chart_consumption' in actual
+    assert 'chart_quantity' in actual
+    assert 'tbl_consumption' in actual
+    assert 'tbl_last_day' in actual
+    assert 'tbl_alcohol' in actual
+    assert 'tbl_std_av' in actual
+
+
+def test_reload_stats_response_type(client_logged):
+    url = reverse('drinks:reload_stats')
+    response = client_logged.get(url, {'ajax_trigger': 1})
+
+    assert isinstance(response, JsonResponse)
 
 
 def test_reload_stats_render_ajax_trigger_not_set(client_logged):

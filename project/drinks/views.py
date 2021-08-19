@@ -19,7 +19,8 @@ class ReloadStats(DispatchAjaxMixin, IndexMixin):
 
     def get(self, request, *args, **kwargs):
         context = H.RenderContext(request).context_to_reload()
-        return self.render_to_response(context)
+
+        return JsonResponse(context)
 
 
 class HistoricalData(IndexMixin):
