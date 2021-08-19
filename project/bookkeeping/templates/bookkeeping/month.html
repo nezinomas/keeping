@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load i18n %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
 <script src="https://code.highcharts.com/modules/bullet.js"></script>
+<script src="{% static 'js/reload_stats.js' %}"></script>
 
 <style>
     .btn-group .btn {
@@ -143,17 +145,13 @@
                 'ajax_trigger': '1'
             },
             success: function (data) {
-                var month_table = $(data).filter('#month_table');
-                $('#month_table').html(month_table);
-
-                var info = $(data).filter('#info');
-                $('#info').html(info);
-
-                var chart_expenses = $(data).filter('#chart_expenses');
-                $('#chart_expenses').html(chart_expenses);
-
-                var chart_targets = $(data).filter('#chart_targets');
-                $('#chart_targets').html(chart_targets);
+                var blocks = [
+                    'month_table',
+                    'info',
+                    'chart_expenses',
+                    'chart_targets'
+                ];
+                reload_stats(data, blocks);
             }
         });
     });
