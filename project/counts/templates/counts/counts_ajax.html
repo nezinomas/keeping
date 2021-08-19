@@ -15,9 +15,6 @@
                 'ajax_trigger': '1'
             },
             success: function (data) {
-                // delete no records message
-                $('#no-records').html('');
-
                 var blocks = [
                     'info_row',
                     'chart_weekdays',
@@ -27,7 +24,11 @@
                     'chart_calendar_1H',
                     'chart_calendar_2H',
                 ];
-                reload_stats(data, blocks);
+
+                if(data.records > 0) {
+                    $('#no-records').html('');
+                    reload_stats(data, blocks);
+                }
             }
         });
     });
