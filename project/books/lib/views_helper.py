@@ -27,6 +27,7 @@ class BookRenderer():
                 self.context_chart_readed_books(),
                 self._request
             ),
+            'readed': self._qs_readed.count(),
         }
         return context
 
