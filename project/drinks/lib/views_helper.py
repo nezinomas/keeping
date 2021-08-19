@@ -35,10 +35,11 @@ class RenderContext():
         self._DrinkStats = self._get_drink_stats()
 
     def context_to_reload(self) -> Dict[str, str]:
-        stats = CountStats(self._year, models.Drink.objects.sum_by_day(self._year))
+        qs = models.Drink.objects.sum_by_day(self._year)
+        stats = CountStats(self._year, qs)
         data = stats.chart_calendar()
         context = {
-            'chart_quantity': self.chart_quantity,
+            'chart_quantity': self.chart_quantity(),
             'chart_consumption': self.chart_consumption(),
             'chart_calendar_1H': self.chart_calendar(data[0:6], '1H'),
             'chart_calendar_2H': self.chart_calendar(data[6:], '2H'),
@@ -47,6 +48,7 @@ class RenderContext():
             'tbl_alcohol': self.tbl_alcohol(),
             'tbl_std_av': self.tbl_std_av(),
             'target_list': self.target_list(),
+            'records': qs.count(),
         }
         return context
 

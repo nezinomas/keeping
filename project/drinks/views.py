@@ -19,7 +19,8 @@ class ReloadStats(DispatchAjaxMixin, IndexMixin):
 
     def get(self, request, *args, **kwargs):
         context = H.RenderContext(request).context_to_reload()
-        return self.render_to_response(context)
+
+        return JsonResponse(context)
 
 
 class HistoricalData(IndexMixin):
@@ -77,19 +78,14 @@ class Index(IndexMixin):
         return context
 
 
-class Lists(IndexMixin):
-    def get_context_data(self, **kwargs):
-        year = self.request.user.year
+class Lists(ListMixin):
+    template_name = 'drinks/index.html'
+    model = models.Drink
 
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({
-            'tab': 'data',
-            'data': render_to_string(
-                template_name=f'{App_name}/includes/drinks_list.html',
-                context={'items': models.Drink.objects.year(year)},
-                request=self.request
-            ),
-        })
+        context['tab'] = 'data'
+
         return context
 
 
@@ -110,6 +106,7 @@ class Summary(IndexMixin):
             'drinks_data_ml': [x['per_day'] for x in qs],
             'drinks_data_alcohol': [x['qty'] * 0.025 for x in qs],
             'drinks_cnt': len(drink_years) - 1.5,
+            'records': len(drink_years) if len(drink_years) > 1 else 0,
         })
         return context
 

@@ -3,6 +3,7 @@ import re
 from datetime import date
 
 import pytest
+from django.http import JsonResponse
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
@@ -368,12 +369,21 @@ def test_reload_stats_render_ajax_trigger(client_logged):
     assert response.status_code == 200
     assert views.ReloadStats == response.resolver_match.func.view_class
 
-    assert 'chart_consumption' in response.context
-    assert 'chart_quantity' in response.context
-    assert 'tbl_consumption' in response.context
-    assert 'tbl_last_day' in response.context
-    assert 'tbl_alcohol' in response.context
-    assert 'tbl_std_av' in response.context
+    actual = json.loads(response.content)
+
+    assert 'chart_consumption' in actual
+    assert 'chart_quantity' in actual
+    assert 'tbl_consumption' in actual
+    assert 'tbl_last_day' in actual
+    assert 'tbl_alcohol' in actual
+    assert 'tbl_std_av' in actual
+
+
+def test_reload_stats_response_type(client_logged):
+    url = reverse('drinks:reload_stats')
+    response = client_logged.get(url, {'ajax_trigger': 1})
+
+    assert isinstance(response, JsonResponse)
 
 
 def test_reload_stats_render_ajax_trigger_not_set(client_logged):
@@ -456,8 +466,11 @@ def test_index_context_tab_value(client_logged):
 
     assert response.context['tab'] == 'index'
 
-
+@freeze_time('1999-1-1')
+@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_index_chart_consumption(client_logged):
+    DrinkFactory()
+
     url = reverse('drinks:drinks_index')
     response = client_logged.get(url)
 
@@ -467,7 +480,11 @@ def test_index_chart_consumption(client_logged):
     assert 'id="chart_consumption"><div id="chart_consumption_container"></div>' in content
 
 
+@freeze_time('1999-1-1')
+@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_index_chart_quantity(client_logged):
+    DrinkFactory()
+
     url = reverse('drinks:drinks_index')
     response = client_logged.get(url)
 
@@ -531,7 +548,7 @@ def test_list_context(client_logged):
     url = reverse('drinks:drinks_list')
     response = client_logged.get(url)
 
-    assert 'data' in response.context
+    assert 'items' in response.context
     assert 'tab' in response.context
 
 
@@ -549,7 +566,7 @@ def test_list_empty_current_year(client_logged):
     url = reverse('drinks:drinks_list')
     response = client_logged.get(url)
 
-    assert '<b>1999</b> metais įrašų nėra.' in response.context["data"]
+    assert '<b>1999</b> metais įrašų nėra.' in response.content.decode('utf-8')
 
 
 @patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
@@ -589,6 +606,8 @@ def test_history_context_tab_value(client_logged):
 
 
 def test_history_context(client_logged):
+    DrinkFactory()
+
     url = reverse('drinks:drinks_history')
     response = client_logged.get(url)
 
@@ -598,7 +617,11 @@ def test_history_context(client_logged):
     assert 'drinks_cnt' in response.context
 
 
+@freeze_time('1999-1-1')
+@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_history_chart_consumption(client_logged):
+    DrinkFactory()
+
     url = reverse('drinks:drinks_history')
     response = client_logged.get(url)
 
