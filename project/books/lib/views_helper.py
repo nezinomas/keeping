@@ -74,14 +74,3 @@ class BookRenderer():
             'chart_column_color': '70, 171, 157',
         }
         return context
-
-    def render_search_form(self):
-        context = render_to_string(
-            template_name='core/includes/search_form.html',
-            context={
-                'form': SearchForm(),
-                'url': reverse('books:books_search')
-            },
-            request=self._request)
-
-        return context
