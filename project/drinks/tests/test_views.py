@@ -8,7 +8,7 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
 
-from ...core.tests.utils import change_profile_year
+from ...core.tests.utils import change_profile_year, setup_view
 from ...users.factories import UserFactory
 from .. import models, views
 from ..factories import DrinkFactory, DrinkTargetFactory
@@ -663,3 +663,36 @@ def test_history_drinks_data_alcohol(client_logged):
     response = client_logged.get(url)
 
     assert response.context['drinks_data_alcohol'] == [0.05, 0.025]
+
+
+@freeze_time('1999-1-1')
+@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
+def test_history_categories_with_empty_year_in_between(fake_request):
+    DrinkFactory(date=date(1997, 1, 1), quantity=365)
+    DrinkFactory(date=date(1999, 1, 1), quantity=730)
+
+    class Dummy(views.Summary):
+        pass
+
+    view = setup_view(Dummy(), fake_request)
+    actual = view.get_context_data()
+
+    assert actual['drinks_categories'] == [1997, 1998, 1999]
+    assert actual['drinks_data_ml'] == [1.0, 0.0, 2.0]
+    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == [0.018, 0.0, 0.037]
+
+
+@freeze_time('1999-1-1')
+@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
+def test_history_categories_with_empty_current_year(fake_request):
+    DrinkFactory(date=date(1998, 1, 1), quantity=365)
+
+    class Dummy(views.Summary):
+        pass
+
+    view = setup_view(Dummy(), fake_request)
+    actual = view.get_context_data()
+
+    assert actual['drinks_categories'] == [1998, 1999]
+    assert actual['drinks_data_ml'] == [1.0, 0.0]
+    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == [0.018, 0.0]
