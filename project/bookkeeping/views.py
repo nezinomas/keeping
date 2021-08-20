@@ -148,21 +148,28 @@ class Summary(IndexMixin):
     template_name = 'bookkeeping/summary.html'
 
     def get_context_data(self, **kwargs):
-        offset = 1.2
         context = super().get_context_data(**kwargs)
 
         # data for balance summary
         qs_inc = Income.objects.sum_by_year()
         qs_exp = Expense.objects.sum_by_year()
+        records =qs_inc.count() + qs_exp.count()
 
-        balance_years = [x['year'] for x in qs_exp]
+        context['records'] = records
+
+        if not records:
+            return context
+
+        # generae balance_categories
+        _arr = qs_inc if qs_inc else qs_exp
+        balance_years = [x['year'] for x in _arr]
 
         context.update({
             'balance_categories': balance_years,
             'balance_income_data': [float(x['sum']) for x in qs_inc],
             'balance_income_avg': H.average(qs_inc),
             'balance_expense_data': [float(x['sum']) for x in qs_exp],
-            'balance_cnt': len(balance_years) - offset,
+            'balance_cnt': len(balance_years) - 1.2,
         })
 
         # data for salary summary
@@ -172,7 +179,6 @@ class Summary(IndexMixin):
         context.update({
             'salary_categories': salary_years,
             'salary_data_avg': H.average(qs),
-            'salary_cnt': len(salary_years) - offset,
         })
         return context
 

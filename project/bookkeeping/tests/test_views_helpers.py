@@ -5,11 +5,15 @@ import pytest
 from freezegun import freeze_time
 from mock import Mock, patch
 
+from ...core.tests.utils import setup_view
+from ...expenses.factories import ExpenseFactory
+from ...incomes.factories import IncomeFactory
 from ...pensions.factories import (PensionBalance, PensionFactory,
                                    PensionTypeFactory)
 from ...savings.factories import (SavingBalance, SavingFactory,
                                   SavingTypeFactory)
 from ..lib import views_helpers as T
+from ..views import Summary
 
 
 @patch('project.bookkeeping.lib.views_helpers.ExpenseType.objects.items')
@@ -251,3 +255,125 @@ def test_render_pensions_balances_no_generated(rf):
     actual = T.IndexHelper(rf, 1999).render_savings()
 
     assert actual == ''
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                          Summery Charts
+# ---------------------------------------------------------------------------------------
+@pytest.mark.django_db
+def test_summary_context(fake_request):
+    IncomeFactory()
+    ExpenseFactory()
+
+    class Dummy(Summary):
+        pass
+
+    view = setup_view(Dummy(), fake_request)
+    actual = view.get_context_data()
+
+    assert len(actual) == 8
+    assert 'records' in actual
+    assert 'balance_categories' in actual
+    assert 'balance_income_data' in actual
+    assert 'balance_income_avg' in actual
+    assert 'balance_expense_data' in actual
+    assert 'salary_categories' in actual
+    assert 'salary_data_avg' in actual
+
+
+@pytest.mark.django_db
+def test_summary_no_data(fake_request):
+    class Dummy(Summary):
+        pass
+
+    view = setup_view(Dummy(), fake_request)
+    actual = view.get_context_data()
+
+    assert len(actual) == 2
+    assert actual['records'] == 0
+
+
+@pytest.mark.django_db
+@freeze_time('1999-1-1')
+def test_summary_only_incomes(fake_request):
+    IncomeFactory()
+    class Dummy(Summary):
+        pass
+
+    view = setup_view(Dummy(), fake_request)
+    actual = view.get_context_data()
+
+    assert len(actual) == 8
+    assert actual['records'] == 1
+
+
+@pytest.mark.django_db
+@freeze_time('1999-1-1')
+def test_summary_only_expenses(fake_request):
+    ExpenseFactory()
+    class Dummy(Summary):
+        pass
+
+    view = setup_view(Dummy(), fake_request)
+    actual = view.get_context_data()
+
+    assert len(actual) == 8
+    assert actual['records'] == 1
+
+
+@pytest.mark.django_db
+@freeze_time('1999-1-1')
+def test_summary_incomes_and_expenses(fake_request):
+    IncomeFactory()
+    ExpenseFactory()
+    class Dummy(Summary):
+        pass
+
+    view = setup_view(Dummy(), fake_request)
+    actual = view.get_context_data()
+
+    assert len(actual) == 8
+    assert actual['records'] == 2
+
+
+@pytest.mark.django_db
+@freeze_time('1999-1-1')
+def test_summary_charts_categories_years(fake_request):
+    IncomeFactory()
+    ExpenseFactory()
+    class Dummy(Summary):
+        pass
+
+    view = setup_view(Dummy(), fake_request)
+    actual = view.get_context_data()
+
+    assert actual['balance_categories'] == [1999]
+    assert actual['salary_categories'] == [1999]
+
+
+@pytest.mark.django_db
+@freeze_time('1999-1-1')
+def test_summary_charts_balance_categories_only_incomes(fake_request):
+    IncomeFactory()
+
+    class Dummy(Summary):
+        pass
+
+    view = setup_view(Dummy(), fake_request)
+    actual = view.get_context_data()
+
+    assert actual['balance_categories'] == [1999]\
+
+
+@pytest.mark.django_db
+@freeze_time('1999-1-1')
+def test_summary_charts_balance_categories_only_expenses(fake_request):
+    ExpenseFactory()
+
+    class Dummy(Summary):
+        pass
+
+    view = setup_view(Dummy(), fake_request)
+    actual = view.get_context_data()
+
+    assert actual['balance_categories'] == [1999]
