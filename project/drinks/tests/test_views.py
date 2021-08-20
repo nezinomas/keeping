@@ -614,7 +614,6 @@ def test_history_context(client_logged):
     assert 'drinks_categories' in response.context
     assert 'drinks_data_ml' in response.context
     assert 'drinks_data_alcohol' in response.context
-    assert 'drinks_cnt' in response.context
 
 
 @freeze_time('1999-1-1')

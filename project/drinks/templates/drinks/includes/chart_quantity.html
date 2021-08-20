@@ -4,6 +4,8 @@
 <div id="chart_quantity_container"></div>
 <script>
     $(function () {
+        var categoryLabels = {% months %};
+
        Highcharts.chart('chart_quantity_container', {
         chart: {
             type: 'column',
@@ -13,9 +15,10 @@
             text: ''
         },
         xAxis: {
+            categories: categoryLabels,
+            type: 'category',
             lineColor: '#000',
             lineWidth: 2,
-            categories: {% months %},
             labels: {
                 style: {
                     fontSize: '10px',
