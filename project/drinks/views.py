@@ -105,7 +105,6 @@ class Summary(IndexMixin):
             'drinks_categories': drink_years,
             'drinks_data_ml': [x['per_day'] for x in qs],
             'drinks_data_alcohol': [x['qty'] * 0.025 for x in qs],
-            'drinks_cnt': len(drink_years) - 1.5,
             'records': len(drink_years) if len(drink_years) > 1 else 0,
         })
         return context
