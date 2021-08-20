@@ -747,3 +747,22 @@ def test_view_summary_incomes_avg(client_logged):
     response = client_logged.get(url)
 
     assert response.context['balance_income_avg'] == [2.0, 12.0]
+
+
+def test_view_summary_no_data(client_logged):
+    url = reverse('bookkeeping:summary')
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    assert 'Trūksta duomenų. Reikia bent dviejų metų duomenų.' in actual
+
+
+def test_view_summary_one_year_data(client_logged):
+    IncomeFactory()
+    ExpenseFactory()
+
+    url = reverse('bookkeeping:summary')
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    assert 'Trūksta duomenų. Reikia bent dviejų metų duomenų.' in actual

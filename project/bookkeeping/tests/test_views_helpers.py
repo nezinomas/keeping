@@ -333,7 +333,7 @@ def test_summary_incomes_and_expenses(fake_request):
     actual = view.get_context_data()
 
     assert len(actual) == 8
-    assert actual['records'] == 2
+    assert actual['records'] == 1
 
 
 @pytest.mark.django_db

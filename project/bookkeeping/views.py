@@ -153,16 +153,16 @@ class Summary(IndexMixin):
         # data for balance summary
         qs_inc = Income.objects.sum_by_year()
         qs_exp = Expense.objects.sum_by_year()
-        records =qs_inc.count() + qs_exp.count()
-
-        context['records'] = records
-
-        if not records:
-            return context
 
         # generae balance_categories
         _arr = qs_inc if qs_inc else qs_exp
         balance_years = [x['year'] for x in _arr]
+
+        records = len(balance_years)
+        context['records'] = records
+
+        if not records or records < 1:
+            return context
 
         context.update({
             'balance_categories': balance_years,
