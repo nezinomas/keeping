@@ -169,7 +169,6 @@ class Summary(IndexMixin):
             'balance_income_data': [float(x['sum']) for x in qs_inc],
             'balance_income_avg': H.average(qs_inc),
             'balance_expense_data': [float(x['sum']) for x in qs_exp],
-            'balance_cnt': len(balance_years) - 1.2,
         })
 
         # data for salary summary
