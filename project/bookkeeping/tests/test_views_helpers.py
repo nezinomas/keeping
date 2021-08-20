@@ -5,6 +5,10 @@ import pytest
 from freezegun import freeze_time
 from mock import Mock, patch
 
+from ...pensions.factories import (PensionBalance, PensionFactory,
+                                   PensionTypeFactory)
+from ...savings.factories import (SavingBalance, SavingFactory,
+                                  SavingTypeFactory)
 from ..lib import views_helpers as T
 
 
@@ -196,3 +200,54 @@ def test_no_incomes_data_savings_none(_not_use, _expenses):
 
     assert avg_expenses == pytest.approx(3.69, rel=1e-2)
     assert cut_sum == pytest.approx(1.5, rel=1e-2)
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                            Index Helper
+# ---------------------------------------------------------------------------------------
+@pytest.mark.django_db
+def test_render_savings_no_data(rf):
+    actual = T.IndexHelper(rf, 1999).render_savings()
+    assert actual == ''
+
+
+@pytest.mark.django_db
+def test_render_savings_with_data(rf):
+    SavingFactory()
+    SavingFactory(saving_type=SavingTypeFactory(title='xxx'))
+    actual = T.IndexHelper(rf, 1999).render_savings()
+
+    assert '288,90' in actual # total invested sum
+
+
+@pytest.mark.django_db
+def test_render_savings_balances_no_generated(rf):
+    SavingFactory()
+    SavingBalance.objects.all().delete()
+    actual = T.IndexHelper(rf, 1999).render_savings()
+
+    assert actual == ''
+
+
+@pytest.mark.django_db
+def test_render_pensions_no_data(rf):
+    actual = T.IndexHelper(rf, 1999).render_pensions()
+    assert actual == ''
+
+
+@pytest.mark.django_db
+def test_render_pensions_with_data(rf):
+    PensionFactory()
+    PensionFactory(pension_type=PensionTypeFactory(title='xxx'))
+    actual = T.IndexHelper(rf, 1999).render_pensions()
+
+    assert '197,98' in actual # total invested sum
+
+
+@pytest.mark.django_db
+def test_render_pensions_balances_no_generated(rf):
+    PensionFactory()
+    PensionBalance.objects.all().delete()
+    actual = T.IndexHelper(rf, 1999).render_savings()
+
+    assert actual == ''

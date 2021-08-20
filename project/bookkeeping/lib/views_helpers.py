@@ -389,10 +389,12 @@ class IndexHelper():
         )
 
     def render_savings(self):
+        total_row = sum_all(self._fund)
+        if not total_row.get('invested'):
+            return ''
+
         # add latest_check date to savibgs dictionary
         add_latest_check_key(SavingWorth, self._fund)
-
-        total_row = sum_all(self._fund)
 
         context = {
             'title': _('Funds'),
@@ -424,6 +426,10 @@ class IndexHelper():
         )
 
     def render_pensions(self):
+        total_row = sum_all(self._pension)
+        if not total_row.get('invested'):
+            return ''
+
         # add latest_check date to pensions dictionary
         add_latest_check_key(PensionWorth, self._pension)
 
