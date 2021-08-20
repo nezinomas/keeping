@@ -12,9 +12,8 @@ from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...core.tests.utils import setup_view
 from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory, IncomeTypeFactory
-from ...pensions.factories import (PensionBalanceFactory, PensionFactory,
-                                   PensionTypeFactory)
-from ...savings.factories import SavingBalanceFactory, SavingTypeFactory
+from ...pensions.factories import PensionFactory, PensionTypeFactory
+from ...savings.factories import SavingFactory, SavingTypeFactory
 from .. import models, views
 from ..factories import (AccountWorthFactory, PensionWorthFactory,
                          SavingWorthFactory)
@@ -105,7 +104,7 @@ def test_index_account_worth_then_last_check_empty(client_logged):
 
 
 def test_index_savings_worth(client_logged):
-    SavingBalanceFactory()
+    SavingFactory()
     SavingWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
     SavingWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
 
@@ -118,7 +117,7 @@ def test_index_savings_worth(client_logged):
 
 
 def test_index_pension_worth(client_logged):
-    PensionBalanceFactory()
+    PensionFactory()
     PensionWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
     PensionWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
 
