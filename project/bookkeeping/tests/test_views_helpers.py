@@ -43,15 +43,6 @@ def test_expenses_types_args_as_list(qs):
     assert ['A', 'T', 'X'] == actual
 
 
-def test_split_funds():
-    lst = [{'title': 'AAA LX'}, {'title': 'INVL'}]
-
-    a1, a2 = T.split_funds(lst, 'lx')
-
-    assert a1[0]['title'] == 'AAA LX'
-    assert a2[0]['title'] == 'INVL'
-
-
 @pytest.fixture
 def _income():
     return [

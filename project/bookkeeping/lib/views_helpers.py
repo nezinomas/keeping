@@ -2,7 +2,7 @@ import itertools as it
 import json
 from collections import Counter, defaultdict
 from datetime import datetime
-from typing import Dict, List
+from typing import List
 
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
@@ -55,19 +55,6 @@ def necessary_expense_types(*args: str) -> List[str]:
     qs.sort()
 
     return qs
-
-
-def split_funds(lst: List[Dict], key: str) -> List[Dict]:
-    trues = []
-    falses = []
-
-    for x in lst:
-        if key in x['title'].lower():
-            trues.append(x)
-        else:
-            falses.append(x)
-
-    return trues, falses
 
 
 def sum_detailed(dataset, group_by_key, sum_value_keys):
