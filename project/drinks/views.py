@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
@@ -96,15 +98,30 @@ class New(CreateAjaxMixin):
 
 class Summary(IndexMixin):
     def get_context_data(self, **kwargs):
+        drink_years = []
+        ml = []
+        alcohol = []
+
         qs = list(models.Drink.objects.summary())
-        drink_years = [x['year'] for x in qs]
+
+        if qs:
+            for year in range(qs[0]['year'], datetime.now().year+1):
+                drink_years.append(year)
+
+                item = next((x for x in qs if x['year'] == year), False)
+                if item:
+                    ml.append(item['per_day'])
+                    alcohol.append(item['qty']*0.025)
+                else:
+                    ml.append(0.0)
+                    alcohol.append(0.0)
 
         context = super().get_context_data(**kwargs)
         context.update({
             'tab': 'history',
             'drinks_categories': drink_years,
-            'drinks_data_ml': [x['per_day'] for x in qs],
-            'drinks_data_alcohol': [x['qty'] * 0.025 for x in qs],
+            'drinks_data_ml': ml,
+            'drinks_data_alcohol': alcohol,
             'records': len(drink_years) if len(drink_years) > 1 else 0,
         })
         return context
