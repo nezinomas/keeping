@@ -3,13 +3,16 @@
 
 <div id="container-for-balance"></div>
 <script>
+    $(function () {
+        var categoryLabels = {% months %};
+
     Highcharts.setOptions({
         lang: {
             thousandsSep: '.',
             decimalPoint: ',',
-            // numericSymbols: ['k', 'M', 'G', 'T', 'P', 'E']
         }
     });
+
     Highcharts.chart('container-for-balance', {
         chart: {
             marginBottom: 67,
@@ -25,13 +28,14 @@
             borderWidth: 0,
         },
         xAxis: {
-            min: 0.4,
-            max: 10.8,
+            min: 0.49,
+            max: categoryLabels.length - 1.49,
+            categories: categoryLabels,
+            type: 'category',
             lineColor: '#000',
             lineWidth: 2,
             gridLineWidth: 1,
             tickmarkPlacement: 'on',
-            categories: {% months %},
             labels: {
                 style: {
                     fontSize: '10px',
@@ -82,5 +86,6 @@
             data: {{ e }},
             color: '#c0504d'
         }]
+    });
     });
 </script>
