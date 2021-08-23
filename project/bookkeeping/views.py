@@ -247,6 +247,7 @@ class ReloadIndex(DispatchAjaxMixin, IndexMixin):
             'no_incomes': obj.render_no_incomes(),
             'wealth': obj.render_wealth(),
             'savings': obj.render_savings(),
+            'pensions': obj.render_pensions(),
         }
         return JsonResponse(context)
 
