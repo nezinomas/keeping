@@ -1,6 +1,7 @@
 from operator import itemgetter
 from typing import Dict, List, Tuple
 
+from django.utils.translation import gettext as _
 from pandas import DataFrame as DF
 from pandas import to_datetime
 
@@ -145,12 +146,13 @@ class DayExpense(BalanceBase, ExpenseBase):
 
 
 class MonthExpense(BalanceBase, ExpenseBase):
-    def __init__(self, year, expenses: List[Dict], **kwargs):
+    def __init__(self, year, expenses: List[Dict], expenses_types: List[str] = None, **kwargs):
         self._balance = df_months_of_year(year)
 
         ExpenseBase.__init__(self, self._balance, expenses, **kwargs)
 
         self._balance = self.expenses
+        self._expenses_types = expenses_types
 
     @property
     def chart_data(self) -> List[Dict[str, float]]:
@@ -161,11 +163,19 @@ class MonthExpense(BalanceBase, ExpenseBase):
             # delete total cell
             del arr['total']
 
+        if arr:
             # sort dictionary
             arr = dict(sorted(arr.items(), key=lambda x: x[1], reverse=True))
 
             # transfort arr for pie chart
             rtn = [{'name': key[:11], 'y': value} for key, value in arr.items()]
+
+        else:
+            if self._expenses_types:
+                rtn =[{'name': name[:11], 'y': 0} for name in self._expenses_types]
+            else:
+                rtn = [{'name': _('No expenses'), 'y': None}]
+
         return rtn
 
     @property

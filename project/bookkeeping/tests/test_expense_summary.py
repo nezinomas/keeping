@@ -3,6 +3,7 @@ from decimal import Decimal
 
 import pandas as pd
 import pytest
+from mock import patch, PropertyMock
 
 from ...core.lib.balance_base import df_months_of_year
 from ..lib.expense_summary import DayExpense, ExpenseBase, MonthExpense
@@ -345,3 +346,21 @@ def test_month_total_column_empty_data():
 
     assert actual
     assert len(actual) == 12
+
+
+@patch('project.bookkeeping.lib.expense_summary.BalanceBase.total_row', new_callable=PropertyMock)
+def test_month_no_data_show_expenses_types(mck):
+    mck.return_value = {'total': 0}
+
+    actual = MonthExpense(1999, [], ['xxx', 'yyy']).chart_data
+
+    assert actual == [{'name': 'xxx', 'y': 0}, {'name': 'yyy', 'y': 0}]
+
+
+@patch('project.bookkeeping.lib.expense_summary.BalanceBase.total_row', new_callable=PropertyMock)
+def test_month_no_data_no_expenses_types(mck):
+    mck.return_value = {'total': 0}
+
+    actual = MonthExpense(1999, [], []).chart_data
+
+    assert actual == [{'name': 'Išlaidų nėra', 'y': None}]
