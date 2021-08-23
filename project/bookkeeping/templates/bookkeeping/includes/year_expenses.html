@@ -10,7 +10,7 @@
         </tr>
         <tr>
             <th class="text-start w5">{{ year|title }}</th>
-            {% for cat in categories %}<th>{{ cat }}</th>{% endfor %}
+            {% for cat in categories %}<th class="text-end" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ cat }}">{{ cat|truncatechars:8 }}</th>{% endfor %}
             <th class="bl">{% translate 'Total' %}</th>
         </tr>
     </thead>
