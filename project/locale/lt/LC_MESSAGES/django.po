@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-08-23 17:08+0300\n"
-"PO-Revision-Date: 2021-08-23 17:08+0300\n"
+"PO-Revision-Date: 2021-08-24 11:55+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -1510,7 +1510,7 @@ msgstr "Laiškas išsiųstas"
 
 #: .\project\users\templates\users\login.html:19
 msgid "New to this site?"
-msgstr "Naujokas šioje svetainėje?"
+msgstr "Pirmą kartą šioje svetainėje?"
 
 #: .\project\users\templates\users\login.html:19 .\project\users\views.py:80
 #: .\project\users\views.py:81 .\project\users\views.py:209
