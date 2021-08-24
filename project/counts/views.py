@@ -1,5 +1,8 @@
+from types import SimpleNamespace
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import RedirectView, TemplateView
@@ -8,7 +11,7 @@ from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                  DispatchAjaxMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from .forms import CountForm, CountTypeForm
-from .lib.views_helper import ContextMixin, get_object
+from .lib.views_helper import ContextMixin
 from .models import Count, CountType
 
 
@@ -101,12 +104,17 @@ class History(ContextMixin, IndexMixin):
 class CountsEmpty(IndexMixin):
     template_name = 'counts/counts_empty.html'
 
-    def get_context_data(self, **kwargs):
-        obj = get_object(kwargs)
+    def dispatch(self, request, *args, **kwargs):
+        qs = CountType.objects.related()
+        if qs.exists():
+            return redirect(reverse('counts:counts_index', kwargs={'count_type': qs[0].slug}))
 
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'count_type_object': obj
+            'count_type_object': SimpleNamespace(pk=0, title=_('Not found'), slug='counter')
         })
         return context
 
