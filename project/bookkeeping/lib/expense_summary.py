@@ -174,7 +174,7 @@ class MonthExpense(BalanceBase, ExpenseBase):
             if self._expenses_types:
                 rtn =[{'name': name[:11], 'y': 0} for name in self._expenses_types]
             else:
-                rtn = [{'name': _('No expenses'), 'y': None}]
+                rtn = [{'name': _('No expenses'), 'y': 0}]
 
         return rtn
 

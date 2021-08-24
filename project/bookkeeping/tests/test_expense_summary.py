@@ -278,7 +278,7 @@ def test_month_chart_data(_ex):
 
 
 def test_month_chart_data_none():
-    expect = []
+    expect = [{'name': 'Išlaidų nėra', 'y': 0}]
 
     actual = MonthExpense(1999, None).chart_data
 
@@ -286,7 +286,7 @@ def test_month_chart_data_none():
 
 
 def test_month_chart_data_empty():
-    expect = []
+    expect = [{'name': 'Išlaidų nėra', 'y': 0}]
 
     actual = MonthExpense(1999, []).chart_data
 
@@ -363,4 +363,4 @@ def test_month_no_data_no_expenses_types(mck):
 
     actual = MonthExpense(1999, [], []).chart_data
 
-    assert actual == [{'name': 'Išlaidų nėra', 'y': None}]
+    assert actual == [{'name': 'Išlaidų nėra', 'y': 0}]
