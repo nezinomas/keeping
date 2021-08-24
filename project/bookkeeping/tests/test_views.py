@@ -630,10 +630,11 @@ def test_view_reload_index_render_ajax_trigger(client_logged):
     assert response.status_code == 200
 
     actual = json.loads(response.content)
-    assert len(actual) == 3
+    assert len(actual) == 4
     assert 'no_incomes' in actual
     assert 'wealth' in actual
     assert 'savings' in actual
+    assert 'pensions' in actual
 
 
 # ---------------------------------------------------------------------------------------
