@@ -64,9 +64,9 @@
 
     <div class="col-lg-6 d-flex">
         {% get_current_language as LANGUAGE_CODE %}
-        {% with 'images/drinks_info_'|add:LANGUAGE_CODE|add:'.jpg' as nm %}
+        {% with 'images/drinks_info_'|add:LANGUAGE_CODE|add:'.jpg' as image %}
         <div class="text-center mx-auto align-self-center">
-            <img src="{% static nm %}" width="500" alt="{% translate 'What is a standard unit of alcohol' %}" class="_hidden" {% if not records %}style="display: none"{% endif %}>
+            <img src="{% static image %}" width="500" alt="{% translate 'What is a standard unit of alcohol' %}" class="_hidden" {% if not records %}style="display: none"{% endif %}>
         </div>{% endwith %}
     </div>
 </div>
