@@ -5,8 +5,8 @@
 <table class="table table-striped table-hover table-sm stats">
     <thead class="thead-light">
         <tr class="top">
-            <th colspan="{{ categories|length|add:1 }}">{% translate 'Expenses statistic' %}</th>
-            <th class="bl top"></th>
+            <th colspan="{{ categories|length|add:1 }}" {% if not categories|length %}style="width: 90%"{% endif %}>{% translate 'Expenses statistic' %}</th>
+            <th class="bl top"></th> 
         </tr>
         <tr>
             <th class="text-start w5">{{ year|title }}</th>
