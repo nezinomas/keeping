@@ -37,9 +37,11 @@ def regenerate_balances(request):
     _years = years()
 
     for year in _years:
-        accounts_post_signal(SimpleNamespace(), year)
-        savings_post_signal(SimpleNamespace(), year)
-        pensions_post_signal(SimpleNamespace(), year)
+        dummy = SimpleNamespace()
+
+        accounts_post_signal(dummy, dummy, year)
+        savings_post_signal(dummy, dummy, year)
+        pensions_post_signal(dummy, dummy, year)
 
     return redirect(
         reverse('bookkeeping:index', kwargs={})
@@ -48,9 +50,11 @@ def regenerate_balances(request):
 
 @login_required
 def regenerate_balances_current_year(request, year):
-    accounts_post_signal(SimpleNamespace(), year)
-    savings_post_signal(SimpleNamespace(), year)
-    pensions_post_signal(SimpleNamespace(), year)
+    dummy = SimpleNamespace()
+
+    accounts_post_signal(dummy, dummy, year)
+    savings_post_signal(dummy, dummy, year)
+    pensions_post_signal(dummy, dummy, year)
 
     return redirect(
         reverse('bookkeeping:index', kwargs={})
