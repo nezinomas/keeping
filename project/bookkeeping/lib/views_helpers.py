@@ -423,24 +423,30 @@ class IndexHelper():
         return context
 
     def render_pensions(self):
-        total_row = sum_all(self._pension)
-        if not total_row.get('invested'):
-            return ''
-
-        # add latest_check date to pensions dictionary
-        add_latest_check_key(PensionWorth, self._pension)
-
-        context = {
-            'title': _('Pensions'),
-            'items': self._pension,
-            'total_row': sum_all(self._pension),
-        }
+        context = IndexHelper.pensions_context(self._pension)
 
         return render_to_string(
             'bookkeeping/includes/worth_table.html',
             context,
             self._request
         )
+
+    @staticmethod
+    def pensions_context(pensions):
+        total_row = sum_all(pensions)
+        if not total_row.get('invested'):
+            return ''
+
+        # add latest_check date to pensions dictionary
+        add_latest_check_key(PensionWorth, pensions)
+
+        context = {
+            'title': _('Pensions'),
+            'items': pensions,
+            'total_row': sum_all(pensions),
+        }
+
+        return context
 
     def render_no_incomes(self):
         journal = utils.get_user().journal

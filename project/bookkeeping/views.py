@@ -97,15 +97,15 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
     list_template_name = 'bookkeeping/includes/worth_table.html'
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        pension = PensionBalance.objects.year(year)
-
         context = super().get_context_data(**kwargs)
+
+        year = self.request.user.year
+        pensions = PensionBalance.objects.year(year)
+
         context.update({
-            'title': _('Pension'),
-            'items': pension,
-            'total_row': sum_all(pension),
+            **H.IndexHelper.pensions_context(pensions)
         })
+
         return context
 
 
