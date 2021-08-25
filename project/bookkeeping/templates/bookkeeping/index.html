@@ -22,7 +22,7 @@
 </div>
 
 <div class="row my-4">
-    <div class="col-lg-12">
+    <div class="col-md-12 col-lg-6">
         {% url 'bookkeeping:accounts_worth_new' as url_accounts %}
         <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="bi bi-plus"></i> {% translate 'Accounts fact' %}</button>
         {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
@@ -31,6 +31,18 @@
         <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions_new }}"><i class="bi bi-plus"></i> {% translate 'Pensions fact' %}</button>
         <a class="btn btn-sm btn-outline-secondary" href="{% url 'core:regenerate_balances_current_year' year %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'The balance for this year will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% blocktranslate with year=year|safe %}Update {{ year }} balance</a>.{% endblocktranslate %}
         <a class="btn btn-sm btn-outline-danger" href="{% url 'core:regenerate_balances' %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</a>
+    </div>
+    <div class="col-md-12 col-lg-6 text-lg-end mt-md-2 mt-lg-0">
+        {% url 'accounts:accounts_new' as url_accounts %}
+        {% url 'expenses:expenses_type_new' as url_expenses_type_new %}
+        {% url 'expenses:expenses_name_new' as url_expenses_name_new %}
+        {% url 'incomes:incomes_type_new' as url_incomes_type_new %}
+        {% url 'savings:savings_type_new' as url_savings_type_new %}
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="bi bi-plus"></i> {% translate 'Account' context 'account button' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_type_new }}"><i class="bi bi-plus"></i>{% translate 'Incomes type' context 'income type button' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_type_new }}"><i class="bi bi-plus"></i>{% translate "Expenses type" context "expenses type button" %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_name_new }}"><i class="bi bi-plus"></i>{% translate "Expenses name" context "expenses name button" %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_type_new }}"><i class="bi bi-plus"></i> {% translate 'Fund' context 'fund button' %}</button>
     </div>
 </div>
 
