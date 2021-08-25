@@ -263,8 +263,8 @@ class IndexHelper():
         self._year = year
 
         self._account = [*AccountBalance.objects.year(year)]
-        self._fund = [*SavingBalance.objects.year(year)]
-        self._pension = [*PensionBalance.objects.year(year)]
+        self._funds = [*SavingBalance.objects.year(year)]
+        self._pensions = [*PensionBalance.objects.year(year)]
 
         qs_income = Income.objects.sum_by_month(year)
         qs_savings = Saving.objects.sum_by_month(year)
@@ -341,7 +341,7 @@ class IndexHelper():
         )
 
     def render_savings(self):
-        funds = self._fund
+        funds = self._funds
         incomes = self._YearBalance.total_row.get('incomes')
         savings = self._YearBalance.total_row.get('savings')
         context = IndexHelper.savings_context(funds, incomes, savings)
@@ -388,7 +388,7 @@ class IndexHelper():
         return context
 
     def render_pensions(self):
-        context = IndexHelper.pensions_context(self._pension)
+        context = IndexHelper.pensions_context(self._pensions)
 
         if context:
             return render_to_string(
@@ -471,14 +471,14 @@ class IndexHelper():
     def render_wealth(self):
         money = (
             self._YearBalance.amount_end
-            + sum_col(self._fund, 'market_value')
+            + sum_col(self._funds, 'market_value')
         )
 
         wealth = (
             self._YearBalance.amount_end
-            + sum_col(self._fund, 'market_value')
+            + sum_col(self._funds, 'market_value')
         )
-        wealth = wealth + sum_col(self._pension, 'market_value')
+        wealth = wealth + sum_col(self._pensions, 'market_value')
 
         context = {
             'title': [_('Money'), _('Wealth')],
