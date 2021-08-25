@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import F
+from django.db.models import F, Sum
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
@@ -54,14 +54,19 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     list_template_name = 'bookkeeping/includes/worth_table.html'
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        fund = SavingBalance.objects.year(year)
-
         context = super().get_context_data(**kwargs)
+
+        year = self.request.user.year
+        funds = SavingBalance.objects.year(year)
+        incomes = Income.objects.year(year).aggregate(Sum('price'))
+        savings = Saving.objects.year(year).aggregate(Sum('price'))
+
         context.update({
-            'title': _('Funds'),
-            'items': fund,
-            'total_row': sum_all(fund),
+            **H.IndexHelper.savings_context(
+                funds,
+                incomes.get('price__sum', 0),
+                savings.get('price__sum', 0)
+            )
         })
         return context
 
