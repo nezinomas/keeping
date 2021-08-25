@@ -535,6 +535,7 @@ class IndexHelper():
 
         return 0
 
+
 class ExpensesHelper():
     def __init__(self, request, year):
         self._request = request
