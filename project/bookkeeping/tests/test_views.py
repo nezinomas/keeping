@@ -523,6 +523,7 @@ def test_view_pension_worth_formset(client_logged):
 
 
 def test_view_pension_worth_new(client_logged):
+    PensionFactory()
     i = PensionTypeFactory()
     data = {
         'form-TOTAL_FORMS': 1,

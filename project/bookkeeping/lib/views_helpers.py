@@ -346,18 +346,21 @@ class IndexHelper():
         savings = self._YearBalance.total_row.get('savings')
         context = IndexHelper.savings_context(funds, incomes, savings)
 
-        return render_to_string(
-            'bookkeeping/includes/worth_table.html',
-            context,
-            self._request
-        )
+        if context:
+            return render_to_string(
+                'bookkeeping/includes/worth_table.html',
+                context,
+                self._request
+            )
+
+        return ''
 
     @staticmethod
     def savings_context(funds, incomes, savings):
         total_row = sum_all(funds)
 
         if not total_row.get('invested'):
-            return ''
+            return {}
 
         # add latest_check date to savibgs dictionary
         add_latest_check_key(SavingWorth, funds)
@@ -387,17 +390,21 @@ class IndexHelper():
     def render_pensions(self):
         context = IndexHelper.pensions_context(self._pension)
 
-        return render_to_string(
-            'bookkeeping/includes/worth_table.html',
-            context,
-            self._request
-        )
+        if context:
+            return render_to_string(
+                'bookkeeping/includes/worth_table.html',
+                context=context,
+                request=self._request
+            )
+
+        return ''
 
     @staticmethod
     def pensions_context(pensions):
         total_row = sum_all(pensions)
+
         if not total_row.get('invested'):
-            return ''
+            return {}
 
         # add latest_check date to pensions dictionary
         add_latest_check_key(PensionWorth, pensions)
