@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import F
+from django.db.models import F, Sum
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
@@ -26,6 +26,7 @@ class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         obj = H.IndexHelper(self.request, year)
+        exp = H.ExpensesHelper(self.request, year)
 
         context = super().get_context_data(**kwargs)
         context.update({
@@ -35,13 +36,13 @@ class Index(IndexMixin):
             'pensions': obj.render_pensions(),
             'year_balance': obj.render_year_balance(),
             'year_balance_short': obj.render_year_balance_short(),
-            'year_expenses': obj.render_year_expenses(),
+            'year_expenses': exp.render_year_expenses(),
             'no_incomes': obj.render_no_incomes(),
             'averages': obj.render_averages(),
             'wealth': obj.render_wealth(),
             'borrow': obj.render_borrow(),
             'lent': obj.render_lent(),
-            'chart_expenses': obj.render_chart_expenses(),
+            'chart_expenses': exp.render_chart_expenses(),
             'chart_balance': obj.render_chart_balance(),
         })
         return context
@@ -51,17 +52,22 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = SavingType
     model = SavingWorth
     form_class = SavingWorthForm
-    list_render_output = False
+    list_template_name = 'bookkeeping/includes/worth_table.html'
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        fund = SavingBalance.objects.year(year)
-
         context = super().get_context_data(**kwargs)
+
+        year = self.request.user.year
+        funds = SavingBalance.objects.year(year)
+        incomes = Income.objects.year(year).aggregate(Sum('price'))
+        savings = Saving.objects.year(year).aggregate(Sum('price'))
+
         context.update({
-            'title': _('Funds'),
-            'items': fund,
-            'total_row': sum_all(fund),
+            **H.IndexHelper.savings_context(
+                funds,
+                incomes.get('price__sum', 0),
+                savings.get('price__sum', 0)
+            )
         })
         return context
 
@@ -92,15 +98,15 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
     list_template_name = 'bookkeeping/includes/worth_table.html'
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        pension = PensionBalance.objects.year(year)
-
         context = super().get_context_data(**kwargs)
+
+        year = self.request.user.year
+        pensions = PensionBalance.objects.year(year)
+
         context.update({
-            'title': _('Pension'),
-            'items': pension,
-            'total_row': sum_all(pension),
+            **H.IndexHelper.pensions_context(pensions)
         })
+
         return context
 
 
@@ -238,7 +244,7 @@ class AccountsWorthReset(LoginRequiredMixin, CreateView):
 
 
 class ReloadIndex(DispatchAjaxMixin, IndexMixin):
-    template_name = 'bookkeeping/includes/reload_index.html'
+    template_name = 'bookkeeping/index.html'
     redirect_view = reverse_lazy('bookkeeping:index')
 
     def get(self, request, *args, **kwargs):
@@ -246,8 +252,6 @@ class ReloadIndex(DispatchAjaxMixin, IndexMixin):
         context = {
             'no_incomes': obj.render_no_incomes(),
             'wealth': obj.render_wealth(),
-            'savings': obj.render_savings(),
-            'pensions': obj.render_pensions(),
         }
         return JsonResponse(context)
 

@@ -74,13 +74,6 @@ def sum_detailed(dataset, group_by_key, sum_value_keys):
     return new_dataset
 
 
-def percentage_from_incomes(incomes, savings):
-    if incomes and savings:
-        return (savings * 100) / incomes
-
-    return 0
-
-
 def average(qs):
     now = datetime.now()
     arr = []
@@ -270,8 +263,8 @@ class IndexHelper():
         self._year = year
 
         self._account = [*AccountBalance.objects.year(year)]
-        self._fund = [*SavingBalance.objects.year(year)]
-        self._pension = [*PensionBalance.objects.year(year)]
+        self._funds = [*SavingBalance.objects.year(year)]
+        self._pensions = [*PensionBalance.objects.year(year)]
 
         qs_income = Income.objects.sum_by_month(year)
         qs_savings = Saving.objects.sum_by_month(year)
@@ -280,17 +273,12 @@ class IndexHelper():
         qs_borrow_return = BorrowReturn.objects.sum_by_month(year)
         qs_lent = Lent.objects.sum_by_month(year)
         qs_lent_return = LentReturn.objects.sum_by_month(year)
-        qs_ExpenseType = Expense.objects.sum_by_month_and_type(year)
-
-        self._MonthExpense = MonthExpense(
-            year=year,
-            expenses=qs_ExpenseType,
-            expenses_types=expense_types())
+        qs_expenses = Expense.objects.sum_by_month(year)
 
         self._YearBalance = YearBalance(
             year=year,
             incomes=qs_income,
-            expenses=self._MonthExpense.total_column,
+            expenses=qs_expenses,
             savings=qs_savings,
             savings_close=qs_savings_close,
             borrow=qs_borrow,
@@ -324,16 +312,6 @@ class IndexHelper():
         }
         return self._render_info_table(context)
 
-    def render_chart_expenses(self):
-        context = {
-            'data': self._MonthExpense.chart_data
-        }
-        return render_to_string(
-            'bookkeeping/includes/chart_expenses.html',
-            context,
-            self._request
-        )
-
     def render_chart_balance(self):
         context = {
             'e': self._YearBalance.expense_data,
@@ -342,22 +320,6 @@ class IndexHelper():
 
         return render_to_string(
             'bookkeeping/includes/chart_balance.html',
-            context,
-            self._request
-        )
-
-    def render_year_expenses(self):
-        _expense_types = expense_types()
-
-        context = {
-            'year': self._year,
-            'data': self._MonthExpense.balance,
-            'categories': _expense_types,
-            'total_row': self._MonthExpense.total_row,
-            'avg_row': self._MonthExpense.average,
-        }
-        return render_to_string(
-            'bookkeeping/includes/year_expenses.html',
             context,
             self._request
         )
@@ -379,61 +341,81 @@ class IndexHelper():
         )
 
     def render_savings(self):
-        total_row = sum_all(self._fund)
+        funds = self._funds
+        incomes = self._YearBalance.total_row.get('incomes')
+        savings = self._YearBalance.total_row.get('savings')
+        context = IndexHelper.savings_context(funds, incomes, savings)
+
+        if context:
+            return render_to_string(
+                'bookkeeping/includes/worth_table.html',
+                context,
+                self._request
+            )
+
+        return ''
+
+    @staticmethod
+    def savings_context(funds, incomes, savings):
+        total_row = sum_all(funds)
+
         if not total_row.get('invested'):
-            return ''
+            return {}
 
         # add latest_check date to savibgs dictionary
-        add_latest_check_key(SavingWorth, self._fund)
+        add_latest_check_key(SavingWorth, funds)
 
         context = {
             'title': _('Funds'),
-            'items': self._fund,
+            'items': funds,
             'total_row': total_row,
             'percentage_from_incomes': (
-                percentage_from_incomes(
-                    incomes=self._YearBalance.total_row.get('incomes'),
-                    savings=self._YearBalance.total_row.get('savings'))
+                IndexHelper.percentage_from_incomes(incomes, savings)
             ),
             'profit_incomes_proc': (
-                percentage_from_incomes(
+                IndexHelper.percentage_from_incomes(
                     total_row.get('incomes'),
                     total_row.get('market_value')
                 ) - 100
             ),
             'profit_invested_proc': (
-                percentage_from_incomes(
+                IndexHelper.percentage_from_incomes(
                     total_row.get('invested'),
                     total_row.get('market_value')
                 ) - 100
             ),
         }
-
-        return render_to_string(
-            'bookkeeping/includes/worth_table.html',
-            context,
-            self._request
-        )
+        return context
 
     def render_pensions(self):
-        total_row = sum_all(self._pension)
+        context = IndexHelper.pensions_context(self._pensions)
+
+        if context:
+            return render_to_string(
+                'bookkeeping/includes/worth_table.html',
+                context=context,
+                request=self._request
+            )
+
+        return ''
+
+    @staticmethod
+    def pensions_context(pensions):
+        total_row = sum_all(pensions)
+
         if not total_row.get('invested'):
-            return ''
+            return {}
 
         # add latest_check date to pensions dictionary
-        add_latest_check_key(PensionWorth, self._pension)
+        add_latest_check_key(PensionWorth, pensions)
 
         context = {
             'title': _('Pensions'),
-            'items': self._pension,
-            'total_row': sum_all(self._pension),
+            'items': pensions,
+            'total_row': sum_all(pensions),
         }
 
-        return render_to_string(
-            'bookkeeping/includes/worth_table.html',
-            context,
-            self._request
-        )
+        return context
 
     def render_no_incomes(self):
         journal = utils.get_user().journal
@@ -489,14 +471,14 @@ class IndexHelper():
     def render_wealth(self):
         money = (
             self._YearBalance.amount_end
-            + sum_col(self._fund, 'market_value')
+            + sum_col(self._funds, 'market_value')
         )
 
         wealth = (
             self._YearBalance.amount_end
-            + sum_col(self._fund, 'market_value')
+            + sum_col(self._funds, 'market_value')
         )
-        wealth = wealth + sum_col(self._pension, 'market_value')
+        wealth = wealth + sum_col(self._pensions, 'market_value')
 
         context = {
             'title': [_('Money'), _('Wealth')],
@@ -542,6 +524,52 @@ class IndexHelper():
     def _render_info_table(self, context):
         return render_to_string(
             'bookkeeping/includes/info_table.html',
+            context,
+            self._request
+        )
+
+    @staticmethod
+    def percentage_from_incomes(incomes, savings):
+        if incomes and savings:
+            return (savings * 100) / incomes
+
+        return 0
+
+
+class ExpensesHelper():
+    def __init__(self, request, year):
+        self._request = request
+        self._year = year
+
+        qs_expenses = Expense.objects.sum_by_month_and_type(year)
+
+        self._MonthExpense = MonthExpense(
+            year=year,
+            expenses=qs_expenses,
+            expenses_types=expense_types())
+
+    def render_chart_expenses(self):
+        context = {
+            'data': self._MonthExpense.chart_data
+        }
+        return render_to_string(
+            'bookkeeping/includes/chart_expenses.html',
+            context,
+            self._request
+        )
+
+    def render_year_expenses(self):
+        _expense_types = expense_types()
+
+        context = {
+            'year': self._year,
+            'data': self._MonthExpense.balance,
+            'categories': _expense_types,
+            'total_row': self._MonthExpense.total_row,
+            'avg_row': self._MonthExpense.average,
+        }
+        return render_to_string(
+            'bookkeeping/includes/year_expenses.html',
             context,
             self._request
         )

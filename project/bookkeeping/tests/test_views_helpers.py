@@ -74,13 +74,13 @@ def test_sum_detailed_columns(_income):
 
 
 def test_percentage_from_incomes():
-    actual = T.percentage_from_incomes(10, 1.5)
+    actual = T.IndexHelper.percentage_from_incomes(10, 1.5)
 
     assert actual == 15
 
 
 def test_percentage_from_incomes_saving_none():
-    actual = T.percentage_from_incomes(10, None)
+    actual = T.IndexHelper.percentage_from_incomes(10, None)
 
     assert not actual
 
@@ -243,7 +243,7 @@ def test_render_pensions_with_data(rf):
 def test_render_pensions_balances_no_generated(rf):
     PensionFactory()
     PensionBalance.objects.all().delete()
-    actual = T.IndexHelper(rf, 1999).render_savings()
+    actual = T.IndexHelper(rf, 1999).render_pensions()
 
     assert actual == ''
 
