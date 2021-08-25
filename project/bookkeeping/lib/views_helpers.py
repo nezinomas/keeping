@@ -386,7 +386,7 @@ class IndexHelper():
     @staticmethod
     def savings_context(funds, incomes, savings):
         total_row = sum_all(funds)
-        print('static method icomes: ', incomes, ' savings: ', savings)
+
         if not total_row.get('invested'):
             return ''
 
