@@ -274,6 +274,7 @@ class IndexHelper():
         qs_lent = Lent.objects.sum_by_month(year)
         qs_lent_return = LentReturn.objects.sum_by_month(year)
         qs_ExpenseType = Expense.objects.sum_by_month_and_type(year)
+        qs_expenses = Expense.objects.sum_by_month(year)
 
         self._MonthExpense = MonthExpense(
             year=year,
@@ -283,7 +284,7 @@ class IndexHelper():
         self._YearBalance = YearBalance(
             year=year,
             incomes=qs_income,
-            expenses=self._MonthExpense.total_column,
+            expenses=qs_expenses,
             savings=qs_savings,
             savings_close=qs_savings_close,
             borrow=qs_borrow,
