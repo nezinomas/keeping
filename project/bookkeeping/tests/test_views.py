@@ -430,7 +430,7 @@ def test_view_saving_worth_new(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert not actual.get('html_list')
+    assert actual.get('html_list')
 
 
 def test_view_saving_worth_invalid_data(client_logged):
@@ -630,11 +630,9 @@ def test_view_reload_index_render_ajax_trigger(client_logged):
     assert response.status_code == 200
 
     actual = json.loads(response.content)
-    assert len(actual) == 4
+    assert len(actual) == 2
     assert 'no_incomes' in actual
     assert 'wealth' in actual
-    assert 'savings' in actual
-    assert 'pensions' in actual
 
 
 # ---------------------------------------------------------------------------------------
