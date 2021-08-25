@@ -75,6 +75,22 @@ class ExpenseQuerySet(models.QuerySet):
     def items(self):
         return self.related().all()
 
+    def sum_by_month(self, year):
+        return (
+            self
+            .related()
+            .filter(date__year=year)
+            .annotate(d=TruncMonth('date'))
+            .values('d')
+            .annotate(c=Count('id'))
+            .annotate(sum=Sum('price'))
+            .order_by('d')
+            .values(
+                'sum',
+                date=F('d'),
+            )
+        )
+
     def sum_by_month_and_type(self, year):
         return (
             self

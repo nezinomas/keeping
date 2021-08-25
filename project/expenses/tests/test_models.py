@@ -385,6 +385,20 @@ def test_expense_from_db():
     assert e1._old_values == [a1.pk]
 
 
+def test_expense_sum_by_month():
+    ExpenseFactory(date=date(1999, 2, 3), price=2.0)
+    ExpenseFactory(date=date(1999, 2, 12), price=4.0)
+    ExpenseFactory(date=date(1999, 1, 31), price=2.0)
+    ExpenseFactory(date=date(1999, 1, 13), price=1.0)
+
+    actual = Expense.objects.sum_by_month(1999)
+
+    assert list(actual) == [
+        {'sum': Decimal('3'), 'date': date(1999, 1, 1)},
+        {'sum': Decimal('6'), 'date': date(1999, 2, 1)}
+    ]
+
+
 # ----------------------------------------------------------------------------
 #                                                         Expense post signals
 # ----------------------------------------------------------------------------
