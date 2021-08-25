@@ -329,16 +329,12 @@ class IndexHelper():
         add_latest_check_key(AccountWorth, self._account)
 
         context = {
-            'accounts': self._account,
+            'items': self._account,
             'total_row': sum_all(self._account),
-            'accounts_amount_end': sum_col(self._account, 'balance'),
-            'months_amount_end': self._YearBalance.amount_end,
+            'accounts_amount': sum_col(self._account, 'balance'),
+            'months_amount': self._YearBalance.amount_end,
         }
-        return render_to_string(
-            'bookkeeping/includes/accounts_worth_list.html',
-            context,
-            self._request
-        )
+        return context
 
     def render_savings(self):
         funds = self._funds

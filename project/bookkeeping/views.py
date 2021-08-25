@@ -8,9 +8,8 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView
 
-from ..accounts.models import Account, AccountBalance
+from ..accounts.models import Account
 from ..core.lib.transalation import month_names
-from ..core.lib.utils import sum_all
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import CreateAjaxMixin, DispatchAjaxMixin, IndexMixin
 from ..expenses.models import Expense
@@ -76,18 +75,14 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = Account
     model = AccountWorth
     form_class = AccountWorthForm
+    list_template_name = 'bookkeeping/includes/accounts_worth_list.html'
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        account = AccountBalance.objects.year(year)
-
-        H.add_latest_check_key(AccountWorth, account)
+        obj = H.IndexHelper(self.request, self.request.user.year)
 
         context = super().get_context_data(**kwargs)
-        context.update({
-            'accounts': account,
-            'total_row': sum_all(account),
-        })
+        context['accounts'] = obj.render_accounts()
+
         return context
 
 
