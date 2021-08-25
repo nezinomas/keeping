@@ -51,7 +51,7 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = SavingType
     model = SavingWorth
     form_class = SavingWorthForm
-    list_render_output = False
+    list_template_name = 'bookkeeping/includes/worth_table.html'
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
@@ -238,7 +238,7 @@ class AccountsWorthReset(LoginRequiredMixin, CreateView):
 
 
 class ReloadIndex(DispatchAjaxMixin, IndexMixin):
-    template_name = 'bookkeeping/includes/reload_index.html'
+    template_name = 'bookkeeping/index.html'
     redirect_view = reverse_lazy('bookkeeping:index')
 
     def get(self, request, *args, **kwargs):
@@ -246,8 +246,6 @@ class ReloadIndex(DispatchAjaxMixin, IndexMixin):
         context = {
             'no_incomes': obj.render_no_incomes(),
             'wealth': obj.render_wealth(),
-            'savings': obj.render_savings(),
-            'pensions': obj.render_pensions(),
         }
         return JsonResponse(context)
 
