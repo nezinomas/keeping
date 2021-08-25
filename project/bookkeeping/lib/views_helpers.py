@@ -273,13 +273,7 @@ class IndexHelper():
         qs_borrow_return = BorrowReturn.objects.sum_by_month(year)
         qs_lent = Lent.objects.sum_by_month(year)
         qs_lent_return = LentReturn.objects.sum_by_month(year)
-        qs_ExpenseType = Expense.objects.sum_by_month_and_type(year)
         qs_expenses = Expense.objects.sum_by_month(year)
-
-        self._MonthExpense = MonthExpense(
-            year=year,
-            expenses=qs_ExpenseType,
-            expenses_types=expense_types())
 
         self._YearBalance = YearBalance(
             year=year,
@@ -318,16 +312,6 @@ class IndexHelper():
         }
         return self._render_info_table(context)
 
-    def render_chart_expenses(self):
-        context = {
-            'data': self._MonthExpense.chart_data
-        }
-        return render_to_string(
-            'bookkeeping/includes/chart_expenses.html',
-            context,
-            self._request
-        )
-
     def render_chart_balance(self):
         context = {
             'e': self._YearBalance.expense_data,
@@ -336,22 +320,6 @@ class IndexHelper():
 
         return render_to_string(
             'bookkeeping/includes/chart_balance.html',
-            context,
-            self._request
-        )
-
-    def render_year_expenses(self):
-        _expense_types = expense_types()
-
-        context = {
-            'year': self._year,
-            'data': self._MonthExpense.balance,
-            'categories': _expense_types,
-            'total_row': self._MonthExpense.total_row,
-            'avg_row': self._MonthExpense.average,
-        }
-        return render_to_string(
-            'bookkeeping/includes/year_expenses.html',
             context,
             self._request
         )
@@ -559,3 +527,41 @@ class IndexHelper():
             return (savings * 100) / incomes
 
         return 0
+
+class ExpensesHelper():
+    def __init__(self, request, year):
+        self._request = request
+        self._year = year
+
+        qs_expenses = Expense.objects.sum_by_month_and_type(year)
+
+        self._MonthExpense = MonthExpense(
+            year=year,
+            expenses=qs_expenses,
+            expenses_types=expense_types())
+
+    def render_chart_expenses(self):
+        context = {
+            'data': self._MonthExpense.chart_data
+        }
+        return render_to_string(
+            'bookkeeping/includes/chart_expenses.html',
+            context,
+            self._request
+        )
+
+    def render_year_expenses(self):
+        _expense_types = expense_types()
+
+        context = {
+            'year': self._year,
+            'data': self._MonthExpense.balance,
+            'categories': _expense_types,
+            'total_row': self._MonthExpense.total_row,
+            'avg_row': self._MonthExpense.average,
+        }
+        return render_to_string(
+            'bookkeeping/includes/year_expenses.html',
+            context,
+            self._request
+        )

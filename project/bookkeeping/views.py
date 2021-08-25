@@ -26,6 +26,7 @@ class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         obj = H.IndexHelper(self.request, year)
+        exp = H.ExpensesHelper(self.request, year)
 
         context = super().get_context_data(**kwargs)
         context.update({
@@ -35,13 +36,13 @@ class Index(IndexMixin):
             'pensions': obj.render_pensions(),
             'year_balance': obj.render_year_balance(),
             'year_balance_short': obj.render_year_balance_short(),
-            'year_expenses': obj.render_year_expenses(),
+            'year_expenses': exp.render_year_expenses(),
             'no_incomes': obj.render_no_incomes(),
             'averages': obj.render_averages(),
             'wealth': obj.render_wealth(),
             'borrow': obj.render_borrow(),
             'lent': obj.render_lent(),
-            'chart_expenses': obj.render_chart_expenses(),
+            'chart_expenses': exp.render_chart_expenses(),
             'chart_balance': obj.render_chart_balance(),
         })
         return context
