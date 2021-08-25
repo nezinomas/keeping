@@ -74,13 +74,6 @@ def sum_detailed(dataset, group_by_key, sum_value_keys):
     return new_dataset
 
 
-def percentage_from_incomes(incomes, savings):
-    if incomes and savings:
-        return (savings * 100) / incomes
-
-    return 0
-
-
 def average(qs):
     now = datetime.now()
     arr = []
@@ -405,16 +398,16 @@ class IndexHelper():
             'items': funds,
             'total_row': total_row,
             'percentage_from_incomes': (
-                percentage_from_incomes(incomes, savings)
+                IndexHelper.percentage_from_incomes(incomes, savings)
             ),
             'profit_incomes_proc': (
-                percentage_from_incomes(
+                IndexHelper.percentage_from_incomes(
                     total_row.get('incomes'),
                     total_row.get('market_value')
                 ) - 100
             ),
             'profit_invested_proc': (
-                percentage_from_incomes(
+                IndexHelper.percentage_from_incomes(
                     total_row.get('invested'),
                     total_row.get('market_value')
                 ) - 100
@@ -558,3 +551,10 @@ class IndexHelper():
             context,
             self._request
         )
+
+    @staticmethod
+    def percentage_from_incomes(incomes, savings):
+        if incomes and savings:
+            return (savings * 100) / incomes
+
+        return 0
