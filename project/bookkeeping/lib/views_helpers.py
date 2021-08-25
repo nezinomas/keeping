@@ -310,7 +310,7 @@ class IndexHelper():
             'data': [start, end, (end - start)],
             'highlight': [False, False, True],
         }
-        return self._render_info_table(context)
+        return context
 
     def render_chart_balance(self):
         context = {
@@ -484,14 +484,14 @@ class IndexHelper():
             'title': [_('Money'), _('Wealth')],
             'data': [money, wealth],
         }
-        return self._render_info_table(context)
+        return context
 
     def render_averages(self):
         context = {
             'title': [_('Average incomes'), _('Average expenses')],
             'data': [self._YearBalance.avg_incomes, self._YearBalance.avg_expenses],
         }
-        return self._render_info_table(context)
+        return context
 
     def render_borrow(self):
         qs = Borrow.objects.sum_all()
@@ -503,9 +503,9 @@ class IndexHelper():
                 'title': [_('Borrow'), _('Borrow return')],
                 'data': [borrow, borrow_return],
             }
-            return self._render_info_table(context)
-        else:
-            return str()
+            return context
+
+        return {}
 
     def render_lent(self):
         qs = Lent.objects.sum_all()
@@ -517,16 +517,9 @@ class IndexHelper():
                 'title': [_('Lent'), _('Lent return')],
                 'data': [lent, lent_return],
             }
-            return self._render_info_table(context)
-        else:
-            return str()
+            return context
 
-    def _render_info_table(self, context):
-        return render_to_string(
-            'bookkeeping/includes/info_table.html',
-            context,
-            self._request
-        )
+        return {}
 
     @staticmethod
     def percentage_from_incomes(incomes, savings):

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load tables %}
 {% load i18n %}
 
 
@@ -52,7 +53,7 @@
     <div class="col-lg-3">
         <div class="row">
             <div class="col-lg-12 col-md-6">
-                <div>{{ year_balance_short }}</div>
+                <div>{% info_table year_balance_short %}</div>
             </div>
             <div class="col-lg-12 col-md-6">
                 <div id="no_incomes">{{ no_incomes }}</div>
@@ -64,22 +65,22 @@
         <div class="row">
             <div class="col-lg-12 col-md-3">
                 <!-- Wealth -->
-                <div id="wealth">{{ wealth }}</div>
+                <div id="wealth">{% info_table wealth %}</div>
             </div>
 
             <div class="col-lg-12 col-md-3">
                 <!-- Average Incomes and Expenses -->
-                <div id="avg_incomes">{{ averages }}</div>
+                <div id="avg_incomes">{% info_table averages %}</div>
             </div>
 
             <div class="col-lg-12 col-md-3">
                 <!-- Debts Borrow -->
-                <div id="borrow">{{ borrow }}</div>
+                <div id="borrow">{% info_table borrow %}</div>
             </div>
 
             <div class="col-lg-12 col-md-3">
                 <!-- Debts Lent -->
-                <div id="lent">{{ lent }}</div>
+                <div id="lent">{% info_table lent %}</div>
             </div>
         </div>
     </div>
