@@ -420,8 +420,8 @@ class IndexHelper():
     def render_no_incomes(self):
         journal = utils.get_user().journal
         expenses = Expense.objects.last_months()
-        pension = [*SavingBalance.objects.year(self._year, ["pensions"])]
-        fund = [*SavingBalance.objects.year(self._year, ["shares", "funds"])]
+        pension = [x for x in self._funds if x['type'] in ['pensions']]
+        fund = [x for x in self._funds if x['type'] in ['shares', 'funds']]
 
         savings = None
         unnecessary = []
@@ -494,9 +494,8 @@ class IndexHelper():
         return context
 
     def render_borrow(self):
-        qs = Borrow.objects.sum_all()
-        borrow = qs.get('borrow', 0)
-        borrow_return = qs.get('borrow_return', 0)
+        borrow = sum(self._YearBalance.borrow_data)
+        borrow_return = sum(self._YearBalance.borrow_return_data)
 
         if borrow:
             context = {
@@ -508,9 +507,8 @@ class IndexHelper():
         return {}
 
     def render_lent(self):
-        qs = Lent.objects.sum_all()
-        lent = qs.get('lent', 0)
-        lent_return = qs.get('lent_return', 0)
+        lent = sum(self._YearBalance.lent_data)
+        lent_return = sum(self._YearBalance.lent_return_data)
 
         if lent:
             context = {
