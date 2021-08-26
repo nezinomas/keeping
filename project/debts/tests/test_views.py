@@ -706,7 +706,7 @@ def test_borrow_return_update(client_logged):
     a = AccountFactory(title='AAA')
 
     data = {
-        'price': '5',
+        'price': '10',
         'remark': 'Pastaba',
         'account': a.pk,
         'borrow': l.pk
@@ -726,9 +726,10 @@ def test_borrow_return_update(client_logged):
 
     assert actual.borrow == l
     assert actual.date == date(1999, 1, 2)
-    assert actual.price == Decimal('5')
+    assert actual.price == Decimal('10')
     assert actual.account.title == 'AAA'
     assert actual.remark == 'Pastaba'
+    assert models.Borrow.objects.items().get(pk=l.pk).returned == Decimal('30')
 
 
 def test_borrow_return_update_not_render_html_list(client_logged):
@@ -1310,7 +1311,7 @@ def test_lent_return_update(client_logged):
     a = AccountFactory(title='AAA')
 
     data = {
-        'price': '5',
+        'price': '15',
         'remark': 'Pastaba',
         'account': a.pk,
         'lent': l.pk
@@ -1333,6 +1334,7 @@ def test_lent_return_update(client_logged):
     assert actual.price == Decimal('5')
     assert actual.account.title == 'AAA'
     assert actual.remark == 'Pastaba'
+    assert models.Lent.objects.get(pk=l.pk).returned == Decimal('35')
 
 
 def test_lent_return_update_not_render_html_list(client_logged):

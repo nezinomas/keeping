@@ -86,18 +86,19 @@ class BorrowReturn(MixinFromDbAccountId):
         return f'Grąžinau {round(self.price, 1)}'
 
     def save(self, *args, **kwargs):
-        try:
-            super().save(*args, **kwargs)
-        except Exception as e:
-            raise e
+        obj = Borrow.objects.get(id=self.borrow_id)
+        obj.returned = obj.returned if obj.returned else Decimal('0')
 
-        try:
-            obj = Borrow.objects.get(id=self.borrow_id)
-            obj.returned = obj.returned if obj.returned else Decimal('0')
+        if not self.pk:
             obj.returned += Decimal(self.price)
-            obj.save()
-        except Exception:
-            self.delete()
+        else:
+            old = BorrowReturn.objects.get(pk=self.pk)
+            dif = self.price - old.price
+            obj.returned += dif
+        obj.save()
+
+        super().save(*args, **kwargs)
+
 
     def delete(self, *args, **kwargs):
         try:
@@ -186,18 +187,18 @@ class LentReturn(MixinFromDbAccountId):
         return f'Grąžino {round(self.price, 1)}'
 
     def save(self, *args, **kwargs):
-        try:
-            super().save(*args, **kwargs)
-        except Exception as e:
-            raise e
+        obj = Lent.objects.get(id=self.lent_id)
+        obj.returned = obj.returned if obj.returned else Decimal('0')
 
-        try:
-            obj = Lent.objects.get(id=self.lent_id)
-            obj.returned = obj.returned if obj.returned else Decimal('0')
+        if not self.pk:
             obj.returned += Decimal(self.price)
-            obj.save()
-        except Exception:
-            self.delete()
+        else:
+            old =LentReturn.objects.get(pk=self.pk)
+            dif = self.price - old.price
+            obj.returned += dif
+        obj.save()
+
+        super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         try:
