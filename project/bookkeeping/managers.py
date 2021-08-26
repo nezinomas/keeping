@@ -18,7 +18,7 @@ class QsMixin():
             .order_by('-latest_check')
         )
 
-        rtn = [*{frozenset(item.items()): item for item in qs}.values()]
+        rtn = [*{frozenset(x.items()): x for x in qs}.values()]
 
         return rtn
 
