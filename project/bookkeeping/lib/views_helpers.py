@@ -352,14 +352,7 @@ class IndexHelper():
         savings = self._YearBalance.total_row.get('savings')
         context = IndexHelper.savings_context(funds, incomes, savings)
 
-        if context:
-            return render_to_string(
-                'bookkeeping/includes/worth_table.html',
-                context,
-                self._request
-            )
-
-        return ''
+        return context if context else {}
 
     @staticmethod
     def savings_context(funds, incomes, savings):
@@ -396,14 +389,7 @@ class IndexHelper():
     def render_pensions(self):
         context = IndexHelper.pensions_context(self._pensions)
 
-        if context:
-            return render_to_string(
-                'bookkeeping/includes/worth_table.html',
-                context=context,
-                request=self._request
-            )
-
-        return ''
+        return context if context else {}
 
     @staticmethod
     def pensions_context(pensions):
