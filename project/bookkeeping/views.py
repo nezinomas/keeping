@@ -251,7 +251,7 @@ class ReloadIndex(DispatchAjaxMixin, IndexMixin):
 
 
 class ReloadMonth(DispatchAjaxMixin, IndexMixin):
-    template_name = 'bookkeeping/includes/reload_month.html'
+    template_name = 'bookkeeping/includes/month.html'
     redirect_view = reverse_lazy('bookkeeping:month')
 
     def get(self, request, *args, **kwargs):
