@@ -43,6 +43,7 @@ class MonthLists(ListMixin):
         })
         return context
 
+
 class Lists(DispatchListsMixin, ListMixin):
     model = models.Expense
     template_name = 'expenses/includes/expenses_list.html'
