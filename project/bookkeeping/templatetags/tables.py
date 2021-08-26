@@ -19,15 +19,15 @@ def detailed_table(context, name, items, total_row, total_col, total):
 
 @register.inclusion_tag('bookkeeping/includes/info_table.html')
 def info_table(_dict):
-    try:
-        title = _dict.get('title')
-        data = _dict.get('data')
-        highlight = _dict.get('highlight')
-    except AttributeError:
-        return {}
-
-    return {
-        'title': title,
-        'data': data,
-        'highlight': highlight,
+    rtn = {
+        'title': None,
+        'data': None,
+        'highlight': None,
     }
+    for k in rtn:
+        try:
+            rtn[k] = _dict.get(k)
+        except AttributeError:
+            continue
+
+    return rtn
