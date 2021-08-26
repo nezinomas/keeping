@@ -83,15 +83,15 @@
 
 <div class="row mt-2 gx-2">
     <div class="col-lg-8 table-responsive" id="month_table">
-        {{ month_table }}
+        {{ month_table|safe }}
     </div>
     <div class="col-lg-4">
         <div class="row">
-            <div style="display: none;" id="chart_expenses" class="col">{{ chart_expenses }}</div>
-            <div id="chart_targets" class="col">{{ chart_targets }}</div>
+            <div style="display: none;" id="chart_expenses" class="col">{{ chart_expenses|safe }}</div>
+            <div id="chart_targets" class="col">{{ chart_targets|safe }}</div>
         </div>
         <div class="row" id="info-row">
-            <div class="col" id="info">{{ info }}</div>
+            <div class="col" id="info">{{ info|safe }}</div>
         </div>
     </div>
 </div>
