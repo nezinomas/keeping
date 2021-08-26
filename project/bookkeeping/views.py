@@ -116,7 +116,6 @@ class Month(IndexMixin):
         return context
 
 
-
 class Detailed(IndexMixin):
     template_name = 'bookkeeping/detailed.html'
 
