@@ -13,7 +13,7 @@ from ...core.lib import utils
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...core.lib.utils import sum_all, sum_col
-from ...debts.models import Borrow, BorrowReturn, Lent, LentReturn
+from ...debts.models import Borrow, Lent
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
 from ...pensions.models import PensionBalance
