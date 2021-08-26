@@ -19,7 +19,7 @@ def test_percentage_from_incomes(rf):
     obj = IndexHelper(rf, 1999)
     actual = obj.render_savings()
 
-    assert 'Nuo pajamų: 20,0%' in actual
+    assert actual['percentage_from_incomes'] == 20.0
 
 
 def test_render_borrow_no_data(rf):
