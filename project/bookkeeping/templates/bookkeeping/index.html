@@ -113,9 +113,11 @@
                     'ajax_trigger': '1'
                 },
                 success: function (data) {
-                    if (data) {
-                        var accounts = $(data).filter('#accounts_worth');
-                        $('#accounts_worth').html(accounts);
+                    if(data) {
+                        var blocks = [
+                            'accounts_worth'
+                        ];
+                        reload_stats(data, blocks);
                     }
                 }
             });
