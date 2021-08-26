@@ -81,7 +81,7 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
         obj = H.IndexHelper(self.request, self.request.user.year)
 
         context = super().get_context_data(**kwargs)
-        context['accounts'] = obj.render_accounts()
+        context.update({**obj.render_accounts(to_string=False)})
 
         return context
 

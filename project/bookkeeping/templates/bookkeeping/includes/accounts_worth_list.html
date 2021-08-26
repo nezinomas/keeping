@@ -18,7 +18,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in accounts.items %}
+        {% for item in items %}
         <tr>
             <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="{{ item.latest_check }}" class="text-start">
                 <div style="position:relative;">
@@ -40,12 +40,12 @@
     <tfoot>
         <tr  class="total">
             <th class="text-start">{% translate 'Total' %}</th>
-            {% cell accounts.total_row.past tag="th" %}
-            {% cell accounts.total_row.incomes tag="th" %}
-            {% cell accounts.total_row.expenses tag="th" %}
-            {% if accounts.accounts_amount|floatformat:2 != accounts.months_amount|floatformat:2 %}{% cell accounts.total_row.balance tag="th" css_class='bad' text_before='!' text_after='!' %}{% else %}{% cell accounts.total_row.balance tag="th" %}{% endif %}
-            {% cell accounts.total_row.have tag="th" css_class='bl' %}
-            {% cell accounts.total_row.delta tag="th" %}
+            {% cell total_row.past tag="th" %}
+            {% cell total_row.incomes tag="th" %}
+            {% cell total_row.expenses tag="th" %}
+            {% if accounts_amount|floatformat:2 != months_amount|floatformat:2 %}{% cell total_row.balance tag="th" css_class='bad' text_before='!' text_after='!' %}{% else %}{% cell total_row.balance tag="th" %}{% endif %}
+            {% cell total_row.have tag="th" css_class='bl' %}
+            {% cell total_row.delta tag="th" %}
         </tr>
     </tfoot>
 </table>
