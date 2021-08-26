@@ -4,7 +4,31 @@ from django.db.models import F, Max
 from ..core.lib import utils
 
 
-class SavingWorthQuerySet(models.QuerySet):
+class QsMixin():
+    def latest_check(self, field):
+        qs = (
+            self
+            .related()
+            .values(
+                title=F(f'{field}__title'),
+                have=F('price'),
+                latest_check=F('date')
+            )
+            .annotate(latest_date=Max('date'))
+            .order_by('-latest_check')
+        )
+
+        rtn = []
+        title = []
+        for x in qs:
+            if not x['title'] in title:
+                rtn.append(x)
+                title.append(x['title'])
+
+        return rtn
+
+
+class SavingWorthQuerySet(QsMixin, models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
         return (
@@ -14,28 +38,10 @@ class SavingWorthQuerySet(models.QuerySet):
         )
 
     def items(self):
-        qs = (
-            self
-            .related()
-            .values('saving_type__title')
-            .annotate(max_id=Max('id'))
-            .order_by()
-        )
-
-        ids = [x['max_id'] for x in qs ]
-
-        return (
-            self
-            .filter(pk__in=ids)
-            .values(
-                title=F('saving_type__title'),
-                have=F('price'),
-                latest_check=F('date')
-            )
-        )
+        return self.latest_check('saving_type')
 
 
-class AccountWorthQuerySet(models.QuerySet):
+class AccountWorthQuerySet(QsMixin, models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
         return (
@@ -45,28 +51,10 @@ class AccountWorthQuerySet(models.QuerySet):
         )
 
     def items(self):
-        qs = (
-            self
-            .related()
-            .values('account__title')
-            .annotate(max_id=Max('id'))
-            .order_by()
-        )
-
-        ids = [x['max_id'] for x in qs]
-
-        return (
-            self
-            .filter(pk__in=ids)
-            .values(
-                title=F('account__title'),
-                have=F('price'),
-                latest_check=F('date')
-            )
-        )
+        return self.latest_check('account')
 
 
-class PensionWorthQuerySet(models.QuerySet):
+class PensionWorthQuerySet(QsMixin, models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
         return (
@@ -76,22 +64,4 @@ class PensionWorthQuerySet(models.QuerySet):
         )
 
     def items(self):
-        qs = (
-            self
-            .related()
-            .values('pension_type__title')
-            .annotate(max_id=Max('id'))
-            .order_by()
-        )
-
-        ids = [x['max_id'] for x in qs]
-
-        return (
-            self
-            .filter(pk__in=ids)
-            .values(
-                title=F('pension_type__title'),
-                have=F('price'),
-                latest_check=F('date')
-            )
-        )
+        return self.latest_check('pension_type')

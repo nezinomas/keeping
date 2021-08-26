@@ -203,7 +203,7 @@ def test_no_incomes_data_savings_none(_not_use, _expenses):
 @pytest.mark.django_db
 def test_render_savings_no_data(rf):
     actual = T.IndexHelper(rf, 1999).render_savings()
-    assert actual == ''
+    assert actual == {}
 
 
 @pytest.mark.django_db
@@ -212,7 +212,7 @@ def test_render_savings_with_data(rf):
     SavingFactory(saving_type=SavingTypeFactory(title='xxx'))
     actual = T.IndexHelper(rf, 1999).render_savings()
 
-    assert '288,90' in actual # total invested sum
+    assert actual['total_row']['invested'] == 288.9 # total invested sum
 
 
 @pytest.mark.django_db
@@ -221,13 +221,13 @@ def test_render_savings_balances_no_generated(rf):
     SavingBalance.objects.all().delete()
     actual = T.IndexHelper(rf, 1999).render_savings()
 
-    assert actual == ''
+    assert actual == {}
 
 
 @pytest.mark.django_db
 def test_render_pensions_no_data(rf):
     actual = T.IndexHelper(rf, 1999).render_pensions()
-    assert actual == ''
+    assert actual == {}
 
 
 @pytest.mark.django_db
@@ -236,7 +236,7 @@ def test_render_pensions_with_data(rf):
     PensionFactory(pension_type=PensionTypeFactory(title='xxx'))
     actual = T.IndexHelper(rf, 1999).render_pensions()
 
-    assert '197,98' in actual # total invested sum
+    assert actual['total_row']['invested'] == 197.98 # total invested sum
 
 
 @pytest.mark.django_db
@@ -245,7 +245,7 @@ def test_render_pensions_balances_no_generated(rf):
     PensionBalance.objects.all().delete()
     actual = T.IndexHelper(rf, 1999).render_pensions()
 
-    assert actual == ''
+    assert actual == {}
 
 
 # ---------------------------------------------------------------------------------------

@@ -41,8 +41,9 @@ class YearBalance(BalanceBase):
 
         self._amount_start = amount_start
 
-        if not incomes and not expenses:
-            return
+        # ToDo: delete after some time (commented on 2021.08.26)
+        # if not incomes and not expenses:
+        #     return
 
         self._balance = self._make_df(
             year=year,

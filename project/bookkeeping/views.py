@@ -8,9 +8,8 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView
 
-from ..accounts.models import Account, AccountBalance
+from ..accounts.models import Account
 from ..core.lib.transalation import month_names
-from ..core.lib.utils import sum_all
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import CreateAjaxMixin, DispatchAjaxMixin, IndexMixin
 from ..expenses.models import Expense
@@ -76,18 +75,14 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = Account
     model = AccountWorth
     form_class = AccountWorthForm
+    list_template_name = 'bookkeeping/includes/accounts_worth_list.html'
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        account = AccountBalance.objects.year(year)
-
-        H.add_latest_check_key(AccountWorth, account)
+        obj = H.IndexHelper(self.request, self.request.user.year)
 
         context = super().get_context_data(**kwargs)
-        context.update({
-            'accounts': account,
-            'total_row': sum_all(account),
-        })
+        context.update({**obj.render_accounts(to_string=False)})
+
         return context
 
 
@@ -119,7 +114,6 @@ class Month(IndexMixin):
             **H.month_context(self.request, context),
         })
         return context
-
 
 
 class Detailed(IndexMixin):
@@ -219,7 +213,7 @@ class ExpandDayExpenses(IndexMixin):
 class AccountsWorthReset(LoginRequiredMixin, CreateView):
     account = None
     model = Account
-    template_name = 'bookkeeping/includes/reload_index.html'
+    template_name = 'bookkeeping/includes/accounts_worth.html'
 
     def dispatch(self, request, *args, **kwargs):
         self.account = self.get_object()
@@ -238,9 +232,9 @@ class AccountsWorthReset(LoginRequiredMixin, CreateView):
         AccountWorth.objects.create(price=0, account=self.account)
 
         obj = H.IndexHelper(request, request.user.year)
-        context = {'accounts': obj.render_accounts()}
+        context = {'accounts_worth': obj.render_accounts()}
 
-        return self.render_to_response(context)
+        return JsonResponse(context)
 
 
 class ReloadIndex(DispatchAjaxMixin, IndexMixin):
@@ -251,7 +245,7 @@ class ReloadIndex(DispatchAjaxMixin, IndexMixin):
         obj = H.IndexHelper(request, request.user.year)
         context = {
             'no_incomes': obj.render_no_incomes(),
-            'wealth': obj.render_wealth(),
+            'wealth': obj.render_wealth(to_string=True),
         }
         return JsonResponse(context)
 

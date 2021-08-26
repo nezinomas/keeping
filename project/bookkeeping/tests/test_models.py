@@ -59,7 +59,7 @@ def test_account_worth_latest_values(accounts_worth):
 
 def test_account_worth_queries(accounts_worth,
                                django_assert_num_queries):
-    with django_assert_num_queries(2):
+    with django_assert_num_queries(1):
         list(AccountWorth.objects.items())
 
 
@@ -99,25 +99,19 @@ def test_saving_worth_related(second_user):
 
 def test_saving_worth_latest_values(savings_worth):
     actual = SavingWorth.objects.items()
-    expect = [
-        {
-            'title': 'Saving1',
-            'have': Decimal('0.15'),
-            'latest_check': dt(1999, 1, 1, tzinfo = pytz.utc)
-        }, {
-            'title': 'Saving2',
-            'have': Decimal('6.15'),
-            'latest_check': dt(1999, 1, 1, tzinfo=pytz.utc)
-        },
-    ]
 
-    assert actual[0] == expect[0]
-    assert actual[1] == expect[1]
+    assert actual[0]['title'] ==  'Saving1'
+    assert actual[0]['have'] == Decimal('0.15')
+    assert actual[0]['latest_check'] == dt(1999, 1, 1, tzinfo = pytz.utc)
+
+    assert actual[1]['title'] ==  'Saving2'
+    assert actual[1]['have'] == Decimal('6.15')
+    assert actual[1]['latest_check'] == dt(1999, 1, 1, tzinfo = pytz.utc)
 
 
 def test_saving_worth_queries(savings_worth,
                               django_assert_num_queries):
-    with django_assert_num_queries(2):
+    with django_assert_num_queries(1):
         list(SavingWorth.objects.items())
 
 
@@ -167,7 +161,7 @@ def test_pension_worth_latest_values(pensions_worth):
 
 def test_pension_worth_queries(pensions_worth,
                                django_assert_num_queries,):
-    with django_assert_num_queries(2):
+    with django_assert_num_queries(1):
         list(PensionWorth.objects.items())
 
 

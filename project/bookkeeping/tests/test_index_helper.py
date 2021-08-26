@@ -19,32 +19,33 @@ def test_percentage_from_incomes(rf):
     obj = IndexHelper(rf, 1999)
     actual = obj.render_savings()
 
-    assert 'Nuo pajamų: 20,0%' in actual
+    assert actual['percentage_from_incomes'] == 20.0
 
 
 def test_render_borrow_no_data(rf):
     obj = IndexHelper(rf, 1999)
     actual = obj.render_borrow()
 
-    assert '' == actual
+    assert {} == actual
 
 
 def test_render_borrow(rf):
     BorrowFactory()
+
     obj = IndexHelper(rf, 1999)
     actual = obj.render_borrow()
 
-    assert 'Paskolinta' in actual
-    assert 'Gražino' in actual
-    assert '100,00' in actual
-    assert '25,00' in actual
+    assert 'Paskolinta' in actual['title']
+    assert 'Gražino' in actual['title']
+    assert 100.0 in actual['data']
+    assert 25.0 in actual['data']
 
 
 def test_render_lent_no_data(rf):
     obj = IndexHelper(rf, 1999)
     actual = obj.render_lent()
 
-    assert '' == actual
+    assert {} == actual
 
 
 def test_render_lent(rf):
@@ -52,10 +53,10 @@ def test_render_lent(rf):
     obj = IndexHelper(rf, 1999)
     actual = obj.render_lent()
 
-    assert 'Pasiskolinta' in actual
-    assert 'Gražinau' in actual
-    assert '100,00' in actual
-    assert '25,00' in actual
+    assert 'Pasiskolinta' in actual['title']
+    assert 'Gražinau' in actual['title']
+    assert 100.0 in actual['data']
+    assert 25.0 in actual['data']
 
 
 def test_render_year_balance_short(rf):
@@ -66,13 +67,13 @@ def test_render_year_balance_short(rf):
 
     obj = IndexHelper(rf, 1999).render_year_balance_short()
 
-    assert 'Metų pradžioje' in obj
-    assert 'Metų pabaigoje' in obj
-    assert 'Metų balansas' in obj
+    assert 'Metų pradžioje' in obj['title']
+    assert 'Metų pabaigoje' in obj['title']
+    assert 'Metų balansas' in obj['title']
 
-    assert '5,00' in obj  # Metų pradžioje
-    assert '70,00' in obj  # Metų pabaigoje
-    assert '65,00' in obj  # Metų balansas
+    assert 5.0 in obj['data']  # Metų pradžioje
+    assert 70.0 in obj['data']  # Metų pabaigoje
+    assert 5.0 in obj['data']  # Metų balansas
 
 
 def test_render_year_balance_short_highlight_balance(rf):
@@ -81,7 +82,6 @@ def test_render_year_balance_short_highlight_balance(rf):
     ExpenseFactory(price=125)
 
     obj = IndexHelper(rf, 1999).render_year_balance_short()
-    obj = obj.replace('\n', '').replace('\r', '')
-    obj = re.sub(r'[ ]{2,}', '', obj)
 
-    assert '<th class="table-danger">-25,00</th>' in obj
+    assert obj['data'] == [5.0, -20.0, -25.0]
+    assert obj['highlight'] == [False, False, True]

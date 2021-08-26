@@ -82,14 +82,15 @@ def test_no_incomes_no_data(client_logged):
 def test_index_account_worth(client_logged):
     AccountBalanceFactory()
     AccountWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
-    AccountWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
+    AccountWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc), price=555)
 
     url = reverse('bookkeeping:index')
     response = client_logged.get(url)
 
-    exp = response.context['accounts'][0]
+    actual = response.context['accounts']
 
-    assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
+    assert 'data-bs-title="2222 m. vasario 2 d., 00:00"' in actual
+    assert '555,0' in actual
 
 
 def test_index_account_worth_then_last_check_empty(client_logged):
@@ -98,9 +99,10 @@ def test_index_account_worth_then_last_check_empty(client_logged):
     url = reverse('bookkeeping:index')
     response = client_logged.get(url)
 
-    exp = response.context['accounts'][0]
+    actual = response.context['accounts']
 
-    assert exp['latest_check'] == None
+    assert 'data-bs-title="None"' in actual
+    assert '0,2' in actual
 
 
 def test_index_savings_worth(client_logged):

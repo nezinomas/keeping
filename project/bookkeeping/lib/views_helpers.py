@@ -13,7 +13,7 @@ from ...core.lib import utils
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...core.lib.utils import sum_all, sum_col
-from ...debts.models import Borrow, BorrowReturn, Lent, LentReturn
+from ...debts.models import Borrow, Lent
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
 from ...pensions.models import PensionBalance
@@ -27,18 +27,20 @@ from ..lib.year_balance import YearBalance
 
 
 def expense_types(*args: str) -> List[str]:
-    qs = list(
+    qs = (
         ExpenseType
         .objects
         .items()
         .values_list('title', flat=True)
     )
 
-    list(qs.append(x) for x in args)
+    arr = []
+    [arr.append(x) for x in qs]
+    [arr.append(x) for x in args]
 
-    qs.sort()
+    arr.sort()
 
-    return qs
+    return arr
 
 
 def necessary_expense_types(*args: str) -> List[str]:
@@ -91,9 +93,9 @@ def average(qs):
 
 def add_latest_check_key(model, arr):
     items = model.objects.items()
+
     for a in arr:
-        latest = [x['latest_check']
-                    for x in items if x.get('title') == a['title']]
+        latest = [x['latest_check'] for x in items if x.get('title') == a['title']]
         a['latest_check'] = latest[0] if latest else None
 
 
@@ -267,13 +269,21 @@ class IndexHelper():
         self._pensions = [*PensionBalance.objects.year(year)]
 
         qs_income = Income.objects.sum_by_month(year)
+        qs_expenses = Expense.objects.sum_by_month(year)
         qs_savings = Saving.objects.sum_by_month(year)
         qs_savings_close = SavingClose.objects.sum_by_month(year)
         qs_borrow = Borrow.objects.sum_by_month(year)
-        qs_borrow_return = BorrowReturn.objects.sum_by_month(year)
         qs_lent = Lent.objects.sum_by_month(year)
-        qs_lent_return = LentReturn.objects.sum_by_month(year)
-        qs_expenses = Expense.objects.sum_by_month(year)
+
+        # generate debts and debts_return arrays
+        borrow, borrow_return, lent, lent_return = [], [], [], []
+        for x in qs_borrow:
+            borrow.append({'date': x['date'], 'sum': x['sum_debt']})
+            borrow_return.append({'date': x['date'], 'sum': x['sum_return']})
+
+        for x in qs_lent:
+            lent.append({'date': x['date'], 'sum': x['sum_debt']})
+            lent_return.append({'date': x['date'], 'sum': x['sum_return']})
 
         self._YearBalance = YearBalance(
             year=year,
@@ -281,10 +291,10 @@ class IndexHelper():
             expenses=qs_expenses,
             savings=qs_savings,
             savings_close=qs_savings_close,
-            borrow=qs_borrow,
-            borrow_return=qs_borrow_return,
-            lent=qs_lent,
-            lent_return=qs_lent_return,
+            borrow=borrow,
+            borrow_return=borrow_return,
+            lent=lent,
+            lent_return=lent_return,
             amount_start=sum_col(self._account, 'past'))
 
     def render_year_balance(self):
@@ -310,7 +320,7 @@ class IndexHelper():
             'data': [start, end, (end - start)],
             'highlight': [False, False, True],
         }
-        return self._render_info_table(context)
+        return context
 
     def render_chart_balance(self):
         context = {
@@ -324,21 +334,23 @@ class IndexHelper():
             self._request
         )
 
-    def render_accounts(self):
+    def render_accounts(self, to_string = True):
         # add latest_check date to accounts dictionary
         add_latest_check_key(AccountWorth, self._account)
 
         context = {
-            'accounts': self._account,
+            'items': self._account,
             'total_row': sum_all(self._account),
-            'accounts_amount_end': sum_col(self._account, 'balance'),
-            'months_amount_end': self._YearBalance.amount_end,
+            'accounts_amount': sum_col(self._account, 'balance'),
+            'months_amount': self._YearBalance.amount_end,
         }
-        return render_to_string(
-            'bookkeeping/includes/accounts_worth_list.html',
-            context,
-            self._request
-        )
+        if to_string:
+            return render_to_string(
+                'bookkeeping/includes/accounts_worth_list.html',
+                context,
+                self._request
+            )
+        return context
 
     def render_savings(self):
         funds = self._funds
@@ -346,14 +358,7 @@ class IndexHelper():
         savings = self._YearBalance.total_row.get('savings')
         context = IndexHelper.savings_context(funds, incomes, savings)
 
-        if context:
-            return render_to_string(
-                'bookkeeping/includes/worth_table.html',
-                context,
-                self._request
-            )
-
-        return ''
+        return context if context else {}
 
     @staticmethod
     def savings_context(funds, incomes, savings):
@@ -390,14 +395,7 @@ class IndexHelper():
     def render_pensions(self):
         context = IndexHelper.pensions_context(self._pensions)
 
-        if context:
-            return render_to_string(
-                'bookkeeping/includes/worth_table.html',
-                context=context,
-                request=self._request
-            )
-
-        return ''
+        return context if context else {}
 
     @staticmethod
     def pensions_context(pensions):
@@ -420,8 +418,8 @@ class IndexHelper():
     def render_no_incomes(self):
         journal = utils.get_user().journal
         expenses = Expense.objects.last_months()
-        pension = [*SavingBalance.objects.year(self._year, ["pensions"])]
-        fund = [*SavingBalance.objects.year(self._year, ["shares", "funds"])]
+        pension = [x for x in self._funds if x['type'] in ['pensions']]
+        fund = [x for x in self._funds if x['type'] in ['shares', 'funds']]
 
         savings = None
         unnecessary = []
@@ -468,7 +466,7 @@ class IndexHelper():
             self._request
         )
 
-    def render_wealth(self):
+    def render_wealth(self, to_string=False):
         money = (
             self._YearBalance.amount_end
             + sum_col(self._funds, 'market_value')
@@ -484,49 +482,45 @@ class IndexHelper():
             'title': [_('Money'), _('Wealth')],
             'data': [money, wealth],
         }
-        return self._render_info_table(context)
+
+        if to_string:
+            return render_to_string('bookkeeping/includes/info_table.html',
+                                    context, self._request)
+
+        return context
 
     def render_averages(self):
         context = {
             'title': [_('Average incomes'), _('Average expenses')],
             'data': [self._YearBalance.avg_incomes, self._YearBalance.avg_expenses],
         }
-        return self._render_info_table(context)
+        return context
 
     def render_borrow(self):
-        qs = Borrow.objects.sum_all()
-        borrow = qs.get('borrow', 0)
-        borrow_return = qs.get('borrow_return', 0)
+        borrow = sum(self._YearBalance.borrow_data)
+        borrow_return = sum(self._YearBalance.borrow_return_data)
 
         if borrow:
             context = {
                 'title': [_('Borrow'), _('Borrow return')],
                 'data': [borrow, borrow_return],
             }
-            return self._render_info_table(context)
-        else:
-            return str()
+            return context
+
+        return {}
 
     def render_lent(self):
-        qs = Lent.objects.sum_all()
-        lent = qs.get('lent', 0)
-        lent_return = qs.get('lent_return', 0)
+        lent = sum(self._YearBalance.lent_data)
+        lent_return = sum(self._YearBalance.lent_return_data)
 
         if lent:
             context = {
                 'title': [_('Lent'), _('Lent return')],
                 'data': [lent, lent_return],
             }
-            return self._render_info_table(context)
-        else:
-            return str()
+            return context
 
-    def _render_info_table(self, context):
-        return render_to_string(
-            'bookkeeping/includes/info_table.html',
-            context,
-            self._request
-        )
+        return {}
 
     @staticmethod
     def percentage_from_incomes(incomes, savings):
@@ -541,12 +535,13 @@ class ExpensesHelper():
         self._request = request
         self._year = year
 
+        self._expense_types = expense_types()
         qs_expenses = Expense.objects.sum_by_month_and_type(year)
 
         self._MonthExpense = MonthExpense(
             year=year,
             expenses=qs_expenses,
-            expenses_types=expense_types())
+            expenses_types=self._expense_types)
 
     def render_chart_expenses(self):
         context = {
@@ -559,7 +554,7 @@ class ExpensesHelper():
         )
 
     def render_year_expenses(self):
-        _expense_types = expense_types()
+        _expense_types = self._expense_types
 
         context = {
             'year': self._year,

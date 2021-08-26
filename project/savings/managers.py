@@ -226,5 +226,6 @@ class SavingBalanceQuerySet(models.QuerySet):
             'fees', 'invested', 'incomes', 'market_value',
             'profit_incomes_proc', 'profit_incomes_sum',
             'profit_invested_proc', 'profit_invested_sum',
-            title=F('saving_type__title')
+            title=F('saving_type__title'),
+            type=F('saving_type__type')
         )
