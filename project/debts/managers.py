@@ -3,12 +3,13 @@ from typing import Any, Dict, List
 
 from django.db import models
 from django.db.models import Case, Count, Q, Sum, When
+from django.db.models.functions import TruncMonth
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 
 
-class BorrowQuerySet(SumMixin, models.QuerySet):
+class BorrowQuerySet(models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
         return (
@@ -61,6 +62,22 @@ class BorrowQuerySet(SumMixin, models.QuerySet):
                 title=models.F('account__title'),
                 id=models.F('account__pk')
             )
+        )
+
+    def sum_by_month(self, year):
+        return (
+            self
+            .related()
+            .filter(closed=False)
+            .filter()
+            .filter(date__year=year)
+            .annotate(cnt=Count('id'))
+            .values('id')
+            .annotate(date=TruncMonth('date'))
+            .values('date')
+            .annotate(sum_debt=Sum('price'))
+            .annotate(sum_return=Sum('returned'))
+            .order_by('date')
         )
 
     def sum_all(self):
@@ -123,7 +140,7 @@ class BorrowReturnQuerySet(SumMixin, models.QuerySet):
         )
 
 
-class LentQuerySet(SumMixin, models.QuerySet):
+class LentQuerySet(models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
         return (
@@ -176,6 +193,22 @@ class LentQuerySet(SumMixin, models.QuerySet):
                 title=models.F('account__title'),
                 id=models.F('account__pk')
             )
+        )
+
+    def sum_by_month(self, year):
+        return (
+            self
+            .related()
+            .filter(closed=False)
+            .filter()
+            .filter(date__year=year)
+            .annotate(cnt=Count('id'))
+            .values('id')
+            .annotate(date=TruncMonth('date'))
+            .values('date')
+            .annotate(sum_debt=Sum('price'))
+            .annotate(sum_return=Sum('returned'))
+            .order_by('date')
         )
 
     def sum_all(self):
