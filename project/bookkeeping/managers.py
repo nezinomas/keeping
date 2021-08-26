@@ -18,7 +18,12 @@ class QsMixin():
             .order_by('-latest_check')
         )
 
-        rtn = [*{frozenset(x.items()): x for x in qs}.values()]
+        rtn = []
+        title = []
+        for x in qs:
+            if not x['title'] in title:
+                rtn.append(x)
+                title.append(x['title'])
 
         return rtn
 
