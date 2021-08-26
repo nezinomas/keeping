@@ -27,18 +27,20 @@ from ..lib.year_balance import YearBalance
 
 
 def expense_types(*args: str) -> List[str]:
-    qs = list(
+    qs = (
         ExpenseType
         .objects
         .items()
         .values_list('title', flat=True)
     )
 
-    list(qs.append(x) for x in args)
+    arr = []
+    [arr.append(x) for x in qs]
+    [arr.append(x) for x in args]
 
-    qs.sort()
+    arr.sort()
 
-    return qs
+    return arr
 
 
 def necessary_expense_types(*args: str) -> List[str]:
@@ -536,12 +538,13 @@ class ExpensesHelper():
         self._request = request
         self._year = year
 
+        self._expense_types = expense_types()
         qs_expenses = Expense.objects.sum_by_month_and_type(year)
 
         self._MonthExpense = MonthExpense(
             year=year,
             expenses=qs_expenses,
-            expenses_types=expense_types())
+            expenses_types=self._expense_types)
 
     def render_chart_expenses(self):
         context = {
@@ -554,7 +557,7 @@ class ExpensesHelper():
         )
 
     def render_year_expenses(self):
-        _expense_types = expense_types()
+        _expense_types = self._expense_types
 
         context = {
             'year': self._year,
