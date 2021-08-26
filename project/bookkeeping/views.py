@@ -214,7 +214,7 @@ class ExpandDayExpenses(IndexMixin):
 class AccountsWorthReset(LoginRequiredMixin, CreateView):
     account = None
     model = Account
-    template_name = 'bookkeeping/includes/reload_index.html'
+    template_name = 'bookkeeping/includes/accounts_worth.html'
 
     def dispatch(self, request, *args, **kwargs):
         self.account = self.get_object()
@@ -233,9 +233,9 @@ class AccountsWorthReset(LoginRequiredMixin, CreateView):
         AccountWorth.objects.create(price=0, account=self.account)
 
         obj = H.IndexHelper(request, request.user.year)
-        context = {'accounts': obj.render_accounts()}
+        context = {'accounts_worth': obj.render_accounts()}
 
-        return self.render_to_response(context)
+        return JsonResponse(context)
 
 
 class ReloadIndex(DispatchAjaxMixin, IndexMixin):
