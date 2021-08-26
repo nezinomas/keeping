@@ -267,13 +267,21 @@ class IndexHelper():
         self._pensions = [*PensionBalance.objects.year(year)]
 
         qs_income = Income.objects.sum_by_month(year)
+        qs_expenses = Expense.objects.sum_by_month(year)
         qs_savings = Saving.objects.sum_by_month(year)
         qs_savings_close = SavingClose.objects.sum_by_month(year)
         qs_borrow = Borrow.objects.sum_by_month(year)
-        qs_borrow_return = BorrowReturn.objects.sum_by_month(year)
         qs_lent = Lent.objects.sum_by_month(year)
-        qs_lent_return = LentReturn.objects.sum_by_month(year)
-        qs_expenses = Expense.objects.sum_by_month(year)
+
+        # generate debts and debts_return arrays
+        borrow, borrow_return, lent, lent_return = [], [], [], []
+        for x in qs_borrow:
+            borrow.append({'date': x['date'], 'sum': x['sum_debt']})
+            borrow_return.append({'date': x['date'], 'sum': x['sum_return']})
+
+        for x in qs_lent:
+            lent.append({'date': x['date'], 'sum': x['sum_debt']})
+            lent_return.append({'date': x['date'], 'sum': x['sum_return']})
 
         self._YearBalance = YearBalance(
             year=year,
@@ -281,10 +289,10 @@ class IndexHelper():
             expenses=qs_expenses,
             savings=qs_savings,
             savings_close=qs_savings_close,
-            borrow=qs_borrow,
-            borrow_return=qs_borrow_return,
-            lent=qs_lent,
-            lent_return=qs_lent_return,
+            borrow=borrow,
+            borrow_return=borrow_return,
+            lent=lent,
+            lent_return=lent_return,
             amount_start=sum_col(self._account, 'past'))
 
     def render_year_balance(self):
