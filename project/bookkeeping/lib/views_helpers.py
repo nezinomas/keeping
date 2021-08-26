@@ -466,7 +466,7 @@ class IndexHelper():
             self._request
         )
 
-    def render_wealth(self):
+    def render_wealth(self, to_string=False):
         money = (
             self._YearBalance.amount_end
             + sum_col(self._funds, 'market_value')
@@ -482,6 +482,11 @@ class IndexHelper():
             'title': [_('Money'), _('Wealth')],
             'data': [money, wealth],
         }
+
+        if to_string:
+            return render_to_string('bookkeeping/includes/info_table.html',
+                                    context, self._request)
+
         return context
 
     def render_averages(self):

@@ -245,7 +245,7 @@ class ReloadIndex(DispatchAjaxMixin, IndexMixin):
         obj = H.IndexHelper(request, request.user.year)
         context = {
             'no_incomes': obj.render_no_incomes(),
-            'wealth': render_to_string('bookkeeping/includes/info_table.html', obj.render_wealth(), self.request)
+            'wealth': obj.render_wealth(to_string=True),
         }
         return JsonResponse(context)
 
