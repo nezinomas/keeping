@@ -336,6 +336,21 @@ def test_borrow_return_new_record_updates_borrow_tbl():
     assert actual[0].returned == Decimal('30')
 
 
+def test_borrow_return_update():
+    obj = BorrowReturnFactory()
+
+    actual = Borrow.objects.items()
+    assert actual[0].returned == Decimal('30')
+
+    obj.price = Decimal('20')
+    obj.save()
+
+    assert BorrowReturn.objects.items().count() == 1
+
+    actual = Borrow.objects.items()
+    assert actual[0].returned == Decimal('45')
+
+
 def test_borrow_return_new_record_updates_borrow_tbl_empty_returned_field():
     BorrowReturnFactory(borrow=BorrowFactory(returned=None))
 
@@ -343,20 +358,6 @@ def test_borrow_return_new_record_updates_borrow_tbl_empty_returned_field():
 
     assert actual.count() == 1
     assert actual[0].returned == Decimal('5')
-
-
-@patch('project.debts.models.super')
-def test_borrow_return_new_record_updates_borrow_tbl_error_on_save(mck):
-    mck.side_effect = TypeError
-
-    try:
-        BorrowReturnFactory()
-    except:
-        pass
-
-    actual = Borrow.objects.items()
-
-    assert actual[0].returned == Decimal('25')
 
 
 @patch('project.debts.models.Borrow.objects.get')
@@ -845,6 +846,20 @@ def test_lent_return_new_record_updates_lent_tbl():
     assert actual.count() == 1
     assert actual[0].returned == Decimal('30')
 
+def test_lent_return_update():
+    obj = LentReturnFactory()
+
+    actual = Lent.objects.items()
+    assert actual[0].returned == Decimal('30')
+
+    obj.price = Decimal('20')
+    obj.save()
+
+    assert LentReturn.objects.items().count() == 1
+
+    actual = Lent.objects.items()
+    assert actual[0].returned == Decimal('45')
+
 
 def test_lent_return_new_record_updates_lent_tbl_empty_returned_field():
     LentReturnFactory(lent=LentFactory(returned=None))
@@ -853,20 +868,6 @@ def test_lent_return_new_record_updates_lent_tbl_empty_returned_field():
 
     assert actual.count() == 1
     assert actual[0].returned == Decimal('5')
-
-
-@patch('project.debts.models.super')
-def test_lent_return_new_record_updates_lent_tbl_error_on_save(mck):
-    mck.side_effect = TypeError
-
-    try:
-        LentReturnFactory()
-    except:
-        pass
-
-    actual = Lent.objects.items()
-
-    assert actual[0].returned == Decimal('25')
 
 
 @patch('project.debts.models.Lent.objects.get')

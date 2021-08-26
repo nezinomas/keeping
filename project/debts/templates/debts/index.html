@@ -19,7 +19,7 @@
         </div>
 
         <div class="row">
-            <div class="col" id="borrow_ajax">{{ borrow }}</div>
+            <div class="col" id="borrow">{{ borrow }}</div>
         </div>
     </div>
 
@@ -35,7 +35,7 @@
         </div>
 
         <div class="row">
-            <div class="col" id="lent_ajax">{{ lent }}</div>
+            <div class="col" id="lent">{{ lent }}</div>
         </div>
     </div>
 </div>
@@ -53,7 +53,7 @@
         </div>
 
         <div class="row">
-            <div class="col" id="borrow_return_ajax">{{ borrow_return }}</div>
+            <div class="col" id="borrow_return">{{ borrow_return }}</div>
         </div>
     </div>
 
@@ -69,7 +69,7 @@
         </div>
 
         <div class="row">
-            <div class="col" id="lent_return_ajax">{{ lent_return }}</div>
+            <div class="col" id="lent_return">{{ lent_return }}</div>
         </div>
     </div>
 </div>
@@ -89,12 +89,12 @@
 
         if (target == 'borrow') {
             url = `{% url 'debts:borrows_reload' %}`;
-            blocks.push("borrow_ajax", "borrow_return_ajax");
+            blocks.push("borrow", "borrow_return");
         }
 
         if (target == 'lent') {
             url = `{% url 'debts:lents_reload' %}`;
-            blocks.push("lent_ajax", "lent_return_ajax");
+            blocks.push("lent", "lent_return");
         }
 
         $.ajax({

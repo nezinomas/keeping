@@ -35,7 +35,7 @@ class Index(IndexMixin):
 
 
 class BorrowReload(DispatchAjaxMixin, TemplateView):
-    template_name = 'debts/includes/reload_index.html'
+    template_name = 'debts/index.html'
     redirect_view = reverse_lazy('debts:debts_index')
 
     def get(self, request, *args, **kwargs):
@@ -88,7 +88,7 @@ class BorrowReturnDelete(DeleteAjaxMixin):
 
 
 class LentReload(DispatchAjaxMixin, TemplateView):
-    template_name = 'debts/includes/reload_index.html'
+    template_name = 'debts/index.html'
     redirect_view = reverse_lazy('debts:debts_index')
 
     def get(self, request, *args, **kwargs):
