@@ -93,9 +93,9 @@ def average(qs):
 
 def add_latest_check_key(model, arr):
     items = model.objects.items()
+
     for a in arr:
-        latest = [x['latest_check']
-                    for x in items if x.get('title') == a['title']]
+        latest = [x['latest_check'] for x in items if x.get('title') == a['title']]
         a['latest_check'] = latest[0] if latest else None
 
 
