@@ -35,7 +35,7 @@ class Redirect(RedirectView):
 
 
 class ReloadStats(ContextMixin, DispatchAjaxMixin, TemplateView):
-    template_name = 'counts/includes/reload_stats.html'
+    template_name = 'counts/index.html'
     redirect_view = reverse_lazy('counts:counts_index',
                                  kwargs={'count_type': 'counter'})
 

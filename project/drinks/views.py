@@ -16,7 +16,7 @@ from .lib import views_helper as H
 
 
 class ReloadStats(DispatchAjaxMixin, IndexMixin):
-    template_name = f'{App_name}/includes/reload_stats.html'
+    template_name = f'{App_name}/index.html'
     redirect_view = reverse_lazy(f'{App_name}:{App_name}_index')
 
     def get(self, request, *args, **kwargs):

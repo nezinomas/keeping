@@ -102,7 +102,7 @@ class Delete(BookListMixin, BookTabMixin, DeleteAjaxMixin):
 
 
 class ReloadStats(DispatchAjaxMixin, BookTabMixin, IndexMixin):
-    template_name = 'books/includes/reload_stats.html'
+    template_name = 'books/index.html'
     redirect_view = reverse_lazy('books:books_index')
 
     def get(self, request, *args, **kwargs):
