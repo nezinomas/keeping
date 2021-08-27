@@ -75,17 +75,24 @@ class BorrowForm(forms.ModelForm):
 class BorrowReturnForm(forms.ModelForm):
     class Meta:
         model = models.BorrowReturn
-        fields = ['price', 'remark', 'account', 'borrow']
+        fields = ['date', 'price', 'remark', 'account', 'borrow']
 
-    field_order = ['borrow', 'account', 'price', 'remark']
+    field_order = ['date', 'borrow', 'account', 'price', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": utils.get_user().journal.lang,
+            })
 
         # form inputs settings
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # inital values
+        self.fields['date'].initial = set_year_for_form()
         self.fields['account'].initial = Account.objects.items().first()
 
         # overwrite ForeignKey expense_type queryset
@@ -93,6 +100,7 @@ class BorrowReturnForm(forms.ModelForm):
         self.fields['account'].queryset = Account.objects.items()
 
         # fields labels
+        self.fields['date'].label = _('Date')
         self.fields['account'].label = _('Account')
         self.fields['borrow'].label = _('Borrower')
         self.fields['price'].label = _('Sum')
@@ -179,24 +187,32 @@ class LentForm(forms.ModelForm):
 class LentReturnForm(forms.ModelForm):
     class Meta:
         model = models.LentReturn
-        fields = ['price', 'remark', 'account', 'lent']
+        fields = ['date', 'price', 'remark', 'account', 'lent']
 
-    field_order = ['lent', 'account', 'price', 'remark']
+    field_order = ['date', 'lent', 'account', 'price', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": utils.get_user().journal.lang,
+            })
 
         # form inputs settings
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # inital values
-        self.fields['lent'].queryset = models.Lent.objects.items().filter(closed=False)
+        self.fields['date'].initial = set_year_for_form()
         self.fields['account'].initial = Account.objects.items().first()
 
         # overwrite ForeignKey expense_type queryset
         self.fields['account'].queryset = Account.objects.items()
+        self.fields['lent'].queryset = models.Lent.objects.items().filter(closed=False)
 
         # fields labels
+        self.fields['date'].label = _('Date')
         self.fields['account'].label = _('Account')
         self.fields['lent'].label = _('Lender')
         self.fields['price'].label = _('Sum')
