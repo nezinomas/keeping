@@ -47,7 +47,7 @@ def test_borrow_reload_return_object(rf):
     assert isinstance(response, JsonResponse)
 
 
-def test_borrow_reload_ender_ajax_trigger_not_set(client_logged):
+def test_borrow_reload_ender_trigger_not_set(client_logged):
     url = reverse('debts:borrows_reload')
     response = client_logged.get(url, follow=True)
 
@@ -83,7 +83,7 @@ def test_lent_reload_return_object(rf):
     assert isinstance(response, JsonResponse)
 
 
-def test_lent_reload_ender_ajax_trigger_not_set(client_logged):
+def test_lent_reload_ender_trigger_not_set(client_logged):
     url = reverse('debts:lents_reload')
     response = client_logged.get(url, follow=True)
 
@@ -120,7 +120,7 @@ def test_debts_index_borrow_in_ctx(client_logged):
     content = response.content.decode('utf-8')
 
     assert 'borrow' in response.context
-    assert 'id="borrow_ajax"' in content
+    assert 'id="borrow"' in content
 
 
 def test_debts_index_borrow_return_in_ctx(client_logged):
@@ -129,7 +129,7 @@ def test_debts_index_borrow_return_in_ctx(client_logged):
     content = response.content.decode('utf-8')
 
     assert 'borrow_return' in response.context
-    assert 'id="borrow_return_ajax"' in content
+    assert 'id="borrow_return"' in content
 
 
 def test_debts_index_lent_in_ctx(client_logged):
@@ -138,7 +138,7 @@ def test_debts_index_lent_in_ctx(client_logged):
     content = response.content.decode('utf-8')
 
     assert 'lent' in response.context
-    assert 'id="lent_ajax"' in content
+    assert 'id="lent"' in content
 
 
 def test_debts_index_lent_return_in_ctx(client_logged):
@@ -147,7 +147,7 @@ def test_debts_index_lent_return_in_ctx(client_logged):
     content = response.content.decode('utf-8')
 
     assert 'lent_return' in response.context
-    assert 'id="lent_return_ajax"' in content
+    assert 'id="lent_return"' in content
 
 
 def test_debts_index_borrow_add_button(client_logged):
@@ -496,7 +496,7 @@ def test_borrow_delete_load_form(client_logged):
     assert response.status_code == 200
     assert '<form method="post"' in actual
     assert 'data-action="delete"' in actual
-    assert 'data-update-container="borrow_ajax">' in actual
+    assert 'data-update-container="borrow">' in actual
     assert f'Ar tikrai norite ištrinti: <strong>{ obj }</strong>?' in actual
 
 
@@ -780,7 +780,7 @@ def test_borrow_return_delete_load_form(client_logged):
     assert response.status_code == 200
     assert '<form method="post"' in actual
     assert 'data-action="delete"' in actual
-    assert 'data-update-container="borrow_return_ajax">' in actual
+    assert 'data-update-container="borrow_return">' in actual
     assert f'Ar tikrai norite ištrinti: <strong>{ obj }</strong>?' in actual
 
 
@@ -1100,7 +1100,7 @@ def test_lent_delete_load_form(client_logged):
     assert response.status_code == 200
     assert '<form method="post"' in actual
     assert 'data-action="delete"' in actual
-    assert 'data-update-container="lent_ajax">' in actual
+    assert 'data-update-container="lent">' in actual
     assert f'Ar tikrai norite ištrinti: <strong>{ obj }</strong>?' in actual
 
 
@@ -1331,7 +1331,7 @@ def test_lent_return_update(client_logged):
 
     assert actual.lent == l
     assert actual.date == date(1999, 1, 2)
-    assert actual.price == Decimal('5')
+    assert actual.price == Decimal('15')
     assert actual.account.title == 'AAA'
     assert actual.remark == 'Pastaba'
     assert models.Lent.objects.get(pk=l.pk).returned == Decimal('35')
@@ -1385,7 +1385,7 @@ def test_lent_return_delete_load_form(client_logged):
     assert response.status_code == 200
     assert '<form method="post"' in actual
     assert 'data-action="delete"' in actual
-    assert 'data-update-container="lent_return_ajax">' in actual
+    assert 'data-update-container="lent_return">' in actual
     assert f'Ar tikrai norite ištrinti: <strong>{ obj }</strong>?' in actual
 
 
