@@ -1,5 +1,4 @@
 import json
-import re
 from datetime import date
 from decimal import Decimal
 
@@ -223,7 +222,7 @@ def test_lent_return_update_not_render_html_list(client_logged):
     a = AccountFactory(title='AAA')
 
     data = {
-        'date': '1999-1-2',
+        'date': '1999-1-3',
         'price': '150',
         'remark': 'Pastaba',
         'account': a.pk,

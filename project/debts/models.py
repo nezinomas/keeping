@@ -92,6 +92,10 @@ class BorrowReturn(MixinFromDbAccountId):
             old = BorrowReturn.objects.get(pk=self.pk)
             dif = self.price - old.price
             obj.returned += dif
+
+        if obj.price == obj.returned:
+            obj.closed = True
+
         obj.save()
 
         super().save(*args, **kwargs)
@@ -190,6 +194,10 @@ class LentReturn(MixinFromDbAccountId):
             old =LentReturn.objects.get(pk=self.pk)
             dif = self.price - old.price
             obj.returned += dif
+
+        if obj.price == obj.returned:
+            obj.closed = True
+
         obj.save()
 
         super().save(*args, **kwargs)

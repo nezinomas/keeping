@@ -282,3 +282,12 @@ def test_borrow_return_sum_one_month():
 
     assert len(expect) == 1
     assert expect == actual
+
+
+def test_borrow_return_autoclose():
+    BorrowReturnFactory(price=75)
+
+    actual = Borrow.objects.first()
+
+    assert actual.returned == Decimal('100')
+    assert actual.closed
