@@ -16,6 +16,7 @@ def test_lent_return_str():
 
     assert str(v) == 'Grąžino 5.0'
 
+
 def test_lent_return_fields():
     assert LentReturn._meta.get_field('date')
     assert LentReturn._meta.get_field('price')
