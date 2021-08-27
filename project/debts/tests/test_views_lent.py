@@ -199,7 +199,7 @@ def test_lent_update(client_logged):
         'date': '1999-12-31',
         'remark': 'Pastaba',
         'account': 1,
-        'closed': True
+        'closed': False
     }
     url = reverse('debts:lents_update', kwargs={'pk': e.pk})
 
@@ -212,13 +212,16 @@ def test_lent_update(client_logged):
 
     assert actual['form_is_valid']
 
-    actual = models.Lent.objects.get(pk=e.pk)
+    actual = models.Lent.objects.items()
+    assert actual.count() == 1
+
+    actual = actual[0]
     assert actual.name == 'XXX'
     assert actual.date == date(1999, 12, 31)
     assert actual.price == Decimal('150')
     assert actual.account.title == 'Account1'
     assert actual.remark == 'Pastaba'
-    assert actual.closed
+    assert not actual.closed
 
 
 def test_lent_update_not_closed(client_logged):

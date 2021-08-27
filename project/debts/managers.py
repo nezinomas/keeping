@@ -19,7 +19,11 @@ class BorrowQuerySet(models.QuerySet):
         )
 
     def items(self):
-        return self.related()
+        return (
+            self
+            .related()
+            .filter(closed=False)
+        )
 
     def year(self, year):
         return (
@@ -43,6 +47,7 @@ class BorrowQuerySet(models.QuerySet):
         return (
             self
             .related()
+            .filter(closed=False)
             .annotate(cnt=Count('name'))
             .values('cnt')
             .order_by('cnt')
@@ -150,7 +155,11 @@ class LentQuerySet(models.QuerySet):
         )
 
     def items(self):
-        return self.related()
+        return (
+            self
+            .related()
+            .filter(closed=False)
+        )
 
     def year(self, year):
         return (
@@ -174,6 +183,7 @@ class LentQuerySet(models.QuerySet):
         return (
             self
             .related()
+            .filter(closed=False)
             .annotate(cnt=Count('name'))
             .values('cnt')
             .order_by('cnt')
