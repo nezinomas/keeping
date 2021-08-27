@@ -75,17 +75,24 @@ class BorrowForm(forms.ModelForm):
 class BorrowReturnForm(forms.ModelForm):
     class Meta:
         model = models.BorrowReturn
-        fields = ['price', 'remark', 'account', 'borrow']
+        fields = ['date', 'price', 'remark', 'account', 'borrow']
 
-    field_order = ['borrow', 'account', 'price', 'remark']
+    field_order = ['date', 'borrow', 'account', 'price', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": utils.get_user().journal.lang,
+            })
 
         # form inputs settings
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # inital values
+        self.fields['date'].initial = set_year_for_form()
         self.fields['account'].initial = Account.objects.items().first()
 
         # overwrite ForeignKey expense_type queryset
@@ -93,6 +100,7 @@ class BorrowReturnForm(forms.ModelForm):
         self.fields['account'].queryset = Account.objects.items()
 
         # fields labels
+        self.fields['date'].label = _('Date')
         self.fields['account'].label = _('Account')
         self.fields['borrow'].label = _('Borrower')
         self.fields['price'].label = _('Sum')
@@ -100,7 +108,6 @@ class BorrowReturnForm(forms.ModelForm):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
-
 
     def clean_price(self):
         price = self.cleaned_data['price']
@@ -113,6 +120,15 @@ class BorrowReturnForm(forms.ModelForm):
                 raise ValidationError(_('The amount to be paid is more than the debt!'))
 
         return price
+
+    def clean(self):
+        cleaned_data = super().clean()
+        date = cleaned_data.get('date')
+        borrow = cleaned_data.get('borrow')
+
+        if borrow:
+            if date < borrow.date:
+                self.add_error('date', _('The date is earlier than the date of the debt.'))
 
 
 class LentForm(forms.ModelForm):
@@ -179,24 +195,32 @@ class LentForm(forms.ModelForm):
 class LentReturnForm(forms.ModelForm):
     class Meta:
         model = models.LentReturn
-        fields = ['price', 'remark', 'account', 'lent']
+        fields = ['date', 'price', 'remark', 'account', 'lent']
 
-    field_order = ['lent', 'account', 'price', 'remark']
+    field_order = ['date', 'lent', 'account', 'price', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": utils.get_user().journal.lang,
+            })
 
         # form inputs settings
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # inital values
-        self.fields['lent'].queryset = models.Lent.objects.items().filter(closed=False)
+        self.fields['date'].initial = set_year_for_form()
         self.fields['account'].initial = Account.objects.items().first()
 
         # overwrite ForeignKey expense_type queryset
         self.fields['account'].queryset = Account.objects.items()
+        self.fields['lent'].queryset = models.Lent.objects.items().filter(closed=False)
 
         # fields labels
+        self.fields['date'].label = _('Date')
         self.fields['account'].label = _('Account')
         self.fields['lent'].label = _('Lender')
         self.fields['price'].label = _('Sum')
@@ -216,3 +240,12 @@ class LentReturnForm(forms.ModelForm):
                 raise ValidationError(_('The amount to be paid is more than the debt!'))
 
         return price
+
+    def clean(self):
+        cleaned_data = super().clean()
+        date = cleaned_data.get('date')
+        lent = cleaned_data.get('lent')
+
+        if lent:
+            if date < lent.date:
+                self.add_error('date', _('The date is earlier than the date of the debt.'))

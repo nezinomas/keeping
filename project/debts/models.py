@@ -54,10 +54,7 @@ class Borrow(MixinFromDbAccountId):
 
 
 class BorrowReturn(MixinFromDbAccountId):
-    date = models.DateField(
-        default=date.today,
-        editable=False
-    )
+    date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
@@ -155,10 +152,7 @@ class Lent(MixinFromDbAccountId):
 
 
 class LentReturn(MixinFromDbAccountId):
-    date = models.DateField(
-        default=date.today,
-        editable=False
-    )
+    date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
