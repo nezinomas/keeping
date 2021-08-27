@@ -109,7 +109,6 @@ class BorrowReturnForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
-
     def clean_price(self):
         price = self.cleaned_data['price']
         borrow = self.cleaned_data.get('borrow')
@@ -121,6 +120,15 @@ class BorrowReturnForm(forms.ModelForm):
                 raise ValidationError(_('The amount to be paid is more than the debt!'))
 
         return price
+
+    def clean(self):
+        cleaned_data = super().clean()
+        date = cleaned_data.get('date')
+        borrow = cleaned_data.get('borrow')
+
+        if borrow:
+            if date < borrow.date:
+                self.add_error('date', _('The date is earlier than the date of the debt.'))
 
 
 class LentForm(forms.ModelForm):
@@ -232,3 +240,12 @@ class LentReturnForm(forms.ModelForm):
                 raise ValidationError(_('The amount to be paid is more than the debt!'))
 
         return price
+
+    def clean(self):
+        cleaned_data = super().clean()
+        date = cleaned_data.get('date')
+        lent = cleaned_data.get('lent')
+
+        if lent:
+            if date < lent.date:
+                self.add_error('date', _('The date is earlier than the date of the debt.'))

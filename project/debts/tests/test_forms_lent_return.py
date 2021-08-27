@@ -63,7 +63,7 @@ def test_lent_return_valid_data():
 
     form = forms.LentReturnForm(
         data={
-            'date': '1974-01-02',
+            'date': '1999-12-02',
             'lent': b.pk,
             'price': '1.1',
             'account': a.pk,
@@ -74,7 +74,7 @@ def test_lent_return_valid_data():
     assert form.is_valid()
 
     e = form.save()
-    assert e.date == date(1974, 1, 2)
+    assert e.date == date(1999, 12, 2)
     assert e.account == a
     assert e.lent == b
     assert e.price == Decimal('1.1')
@@ -109,6 +109,7 @@ def test_lent_return_price_higher():
 
     form = forms.LentReturnForm(
         data={
+            'date': '1999-1-1',
             'lent': b.pk,
             'price': '76',
             'account': a.pk,
@@ -117,3 +118,20 @@ def test_lent_return_price_higher():
 
     assert not form.is_valid()
     assert 'price' in form.errors
+
+
+def test_lent_return_date_earlier():
+    a = AccountFactory()
+    b = factories.LentFactory()
+
+    form = forms.LentReturnForm(
+        data={
+            'date': '1974-01-01',
+            'lent': b.pk,
+            'price': '1',
+            'account': a.pk,
+        },
+    )
+
+    assert not form.is_valid()
+    assert 'date' in form.errors
