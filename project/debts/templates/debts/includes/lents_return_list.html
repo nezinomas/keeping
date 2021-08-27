@@ -9,8 +9,9 @@
             <th class="w5">{% translate 'Date' %}</th>
             <th class="w8">{% translate 'Lender' %}</th>
             <th class="w10">{% translate 'Sum' %}</th>
-            <th>{% translate 'Account' %}</th>
+            <th class="w10">{% translate 'Account' %}</th>
             <th>{% translate 'Remark' %}</th>
+            <th class="text-center w3">{% translate 'Closed' %}</th>
             <th colspan="2"></th>
         </tr>
     </thead>
@@ -24,6 +25,7 @@
             <td class="text-start">{{ item.price|intcomma }}</td>
             <td class="text-start">{{ item.account }}</td>
             <td class="text-start">{{ item.remark }}</td>
+            <td class="text-center">{% if item.lent.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
             <td class="w-edit">
                 {% if not item.lent.closed %}
                 <a role="button" data-url="{{ url_update }}" data-target="lent" class=" js-create set-target edit" title="{% translate 'Edit' %}">
