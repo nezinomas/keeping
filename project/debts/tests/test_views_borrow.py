@@ -57,6 +57,7 @@ def test_borrow_list_with_data(client_logged):
     assert 'Borrow Remark' in content
     assert '<i class="bi bi-check-circle-fill"></i>' in content
 
+
 def test_borrow_list_edit_button(client_logged):
     obj = factories.BorrowFactory()
 
@@ -68,6 +69,7 @@ def test_borrow_list_edit_button(client_logged):
 
     assert f'<a role="button" data-url="{ link }" data-target="borrow"' in content
     assert 'js-create set-target' in content
+
 
 def test_borrow_list_delete_button(client_logged):
     obj = factories.BorrowFactory()
@@ -197,7 +199,7 @@ def test_borrow_update(client_logged):
         'date': '1999-12-31',
         'remark': 'Pastaba',
         'account': 1,
-        'closed': True
+        'closed': False
     }
     url = reverse('debts:borrows_update', kwargs={'pk': e.pk})
 
@@ -219,7 +221,7 @@ def test_borrow_update(client_logged):
     assert actual.price == Decimal('150')
     assert actual.account.title == 'Account1'
     assert actual.remark == 'Pastaba'
-    assert actual.closed
+    assert not actual.closed
 
 
 def test_borrow_update_not_closed(client_logged):

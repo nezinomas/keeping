@@ -19,7 +19,11 @@ class BorrowQuerySet(models.QuerySet):
         )
 
     def items(self):
-        return self.related()
+        return (
+            self
+            .related()
+            .filter(closed=False)
+        )
 
     def year(self, year):
         return (
@@ -43,6 +47,7 @@ class BorrowQuerySet(models.QuerySet):
         return (
             self
             .related()
+            .filter(closed=False)
             .annotate(cnt=Count('name'))
             .values('cnt')
             .order_by('cnt')
@@ -118,6 +123,7 @@ class BorrowReturnQuerySet(SumMixin, models.QuerySet):
         return (
             self
             .related()
+            .filter(borrow__closed=False)
             .annotate(cnt=Count('date'))
             .values('cnt')
             .order_by('cnt')
@@ -150,7 +156,11 @@ class LentQuerySet(models.QuerySet):
         )
 
     def items(self):
-        return self.related()
+        return (
+            self
+            .related()
+            .filter(closed=False)
+        )
 
     def year(self, year):
         return (
@@ -174,6 +184,7 @@ class LentQuerySet(models.QuerySet):
         return (
             self
             .related()
+            .filter(closed=False)
             .annotate(cnt=Count('name'))
             .values('cnt')
             .order_by('cnt')
@@ -248,6 +259,7 @@ class LentReturnQuerySet(SumMixin, models.QuerySet):
         return (
             self
             .related()
+            .filter(lent__closed=False)
             .annotate(cnt=Count('date'))
             .values('cnt')
             .order_by('cnt')
