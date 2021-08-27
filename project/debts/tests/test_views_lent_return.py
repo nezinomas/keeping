@@ -1,5 +1,4 @@
 import json
-import re
 from datetime import date
 from decimal import Decimal
 
@@ -103,12 +102,11 @@ def test_lent_return_load_form(client_logged):
     assert response.status_code == 200
 
 
-@freeze_time('1999-1-3')
 def test_lent_return_save(client_logged):
     a = AccountFactory()
     b = factories.LentFactory()
 
-    data = {'lent': b.pk, 'price': '1.1', 'account': a.pk}
+    data = {'date': '1999-1-3', 'lent': b.pk, 'price': '1.1', 'account': a.pk}
 
     url = reverse('debts:lents_return_new')
 
@@ -125,12 +123,11 @@ def test_lent_return_save(client_logged):
     assert actual.price == Decimal('1.1')
 
 
-@freeze_time('1999-1-3')
 def test_lent_return_save_not_render_html_list(client_logged):
     a = AccountFactory()
     b = factories.LentFactory()
 
-    data = {'lent': b.pk, 'price': '1.1', 'account': a.pk}
+    data = {'date': '1999-1-3', 'lent': b.pk, 'price': '1.1', 'account': a.pk}
 
     url = reverse('debts:lents_return_new')
 
@@ -192,6 +189,7 @@ def test_lent_return_update(client_logged):
     a = AccountFactory(title='AAA')
 
     data = {
+        'date': '1999-1-2',
         'price': '15',
         'remark': 'Pastaba',
         'account': a.pk,
@@ -224,6 +222,7 @@ def test_lent_return_update_not_render_html_list(client_logged):
     a = AccountFactory(title='AAA')
 
     data = {
+        'date': '1999-1-3',
         'price': '150',
         'remark': 'Pastaba',
         'account': a.pk,

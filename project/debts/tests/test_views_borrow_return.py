@@ -64,6 +64,7 @@ def test_borrow_return_list_edit_button(client_logged):
     assert f'<a role="button" data-url="{ link }" data-target="borrow"' in content
     assert 'js-create set-target' in content
 
+
 def test_borrow_return_list_delete_button(client_logged):
     obj = factories.BorrowReturnFactory()
 
@@ -101,12 +102,11 @@ def test_borrow_return_load_form(client_logged):
     assert response.status_code == 200
 
 
-@freeze_time('1999-1-3')
 def test_borrow_return_save(client_logged):
     a = AccountFactory()
     b = factories.BorrowFactory()
 
-    data = {'borrow': b.pk, 'price': '1.1', 'account': a.pk}
+    data = {'date': '1999-1-3', 'borrow': b.pk, 'price': '1.1', 'account': a.pk}
 
     url = reverse('debts:borrows_return_new')
 
@@ -123,12 +123,11 @@ def test_borrow_return_save(client_logged):
     assert actual.price == Decimal('1.1')
 
 
-@freeze_time('1999-1-3')
 def test_borrow_return_save_not_render_html_list(client_logged):
     a = AccountFactory()
     b = factories.BorrowFactory()
 
-    data = {'borrow': b.pk, 'price': '1.1', 'account': a.pk}
+    data = {'date': '1999-1-3', 'borrow': b.pk, 'price': '1.1', 'account': a.pk}
 
     url = reverse('debts:borrows_return_new')
 
@@ -190,6 +189,7 @@ def test_borrow_return_update(client_logged):
     a = AccountFactory(title='AAA')
 
     data = {
+        'date': '1999-1-2',
         'price': '10',
         'remark': 'Pastaba',
         'account': a.pk,
@@ -222,6 +222,7 @@ def test_borrow_return_update_not_render_html_list(client_logged):
     a = AccountFactory(title='AAA')
 
     data = {
+        'date': '1999-1-3',
         'price': '150',
         'remark': 'Pastaba',
         'account': a.pk,
