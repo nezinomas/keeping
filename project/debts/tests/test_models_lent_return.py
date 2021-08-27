@@ -285,3 +285,12 @@ def test_lent_return_sum_one_month():
 
     assert len(expect) == 1
     assert expect == actual
+
+
+def test_lent_return_autoclose():
+    LentReturnFactory(price=75)
+
+    actual = Lent.objects.first()
+
+    assert actual.returned == Decimal('100')
+    assert actual.closed
