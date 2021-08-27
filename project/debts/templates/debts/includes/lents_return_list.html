@@ -25,13 +25,16 @@
             <td class="text-start">{{ item.account }}</td>
             <td class="text-start">{{ item.remark }}</td>
             <td class="w-edit">
+                {% if not item.lent.closed %}
                 <a role="button" data-url="{{ url_update }}" data-target="lent" class=" js-create set-target edit" title="{% translate 'Edit' %}">
                     <i class="bi bi-pencil-fill"></i>
-                </a>
+                </a>{% endif %}
             </td>
             <td class="w-delete">
-                <a role="button" data-url="{{ url_delete }}" data-target="lent" class="js-delete set-target trash"
-                    title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
+                {% if not item.lent.closed %}
+                <a role="button" data-url="{{ url_delete }}" data-target="lent" class="js-delete set-target trash" title="{% translate 'Delete' %}">
+                    <i class="bi bi-trash-fill"></i>
+                </a>{% endif %}
             </td>
         </tr>
         {% endfor %}
