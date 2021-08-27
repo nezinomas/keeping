@@ -123,6 +123,7 @@ class BorrowReturnQuerySet(SumMixin, models.QuerySet):
         return (
             self
             .related()
+            .filter(borrow__closed=False)
             .annotate(cnt=Count('date'))
             .values('cnt')
             .order_by('cnt')
@@ -258,6 +259,7 @@ class LentReturnQuerySet(SumMixin, models.QuerySet):
         return (
             self
             .related()
+            .filter(lent__closed=False)
             .annotate(cnt=Count('date'))
             .values('cnt')
             .order_by('cnt')
