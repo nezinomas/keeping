@@ -63,10 +63,11 @@ class BorrowForm(forms.ModelForm):
         price = cleaned_data.get('price')
 
         # can't update name
-        if name != self.instance.name:
-            qs = models.Borrow.objects.items().filter(name=name)
-            if qs.exists():
-                self.add_error('name', _('The name of the lender must be unique.'))
+        if not closed:
+            if name != self.instance.name:
+                qs = models.Borrow.objects.items().filter(name=name)
+                if qs.exists():
+                    self.add_error('name', _('The name of the lender must be unique.'))
 
         # can't close not returned debt
         _msg_cant_close = _("You can't close a debt that hasn't been returned.")
@@ -197,10 +198,11 @@ class LentForm(forms.ModelForm):
         price = cleaned_data.get('price')
 
         # can't update name
-        if name != self.instance.name:
-            qs = models.Lent.objects.items().filter(name=name)
-            if qs.exists():
-                self.add_error('name', _('The name of the lender must be unique.'))
+        if not closed:
+            if name != self.instance.name:
+                qs = models.Lent.objects.items().filter(name=name)
+                if qs.exists():
+                    self.add_error('name', _('The name of the lender must be unique.'))
 
         # can't close not returned debt
         _msg_cant_close = _(
