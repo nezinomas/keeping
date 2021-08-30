@@ -62,10 +62,8 @@ class BorrowForm(forms.ModelForm):
         closed = cleaned_data.get('closed')
         price = cleaned_data.get('price')
 
-        if not closed:
-            if name == self.instance.name:
-                return
-
+        # can't update name
+        if name != self.instance.name:
             qs = models.Borrow.objects.items().filter(name=name)
             if qs.exists():
                 self.add_error('name', _('The name of the lender must be unique.'))
@@ -198,10 +196,8 @@ class LentForm(forms.ModelForm):
         closed = cleaned_data.get('closed')
         price = cleaned_data.get('price')
 
-        if not closed:
-            if name == self.instance.name:
-                return
-
+        # can't update name
+        if name != self.instance.name:
             qs = models.Lent.objects.items().filter(name=name)
             if qs.exists():
                 self.add_error('name', _('The name of the lender must be unique.'))
