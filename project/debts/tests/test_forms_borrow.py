@@ -106,7 +106,7 @@ def test_borrow_valid_data():
             'name': 'Name',
             'price': '1.1',
             'account': a.pk,
-            'closed': True,
+            'closed': False,
             'remark': 'Rm'
         },
     )
@@ -119,7 +119,7 @@ def test_borrow_valid_data():
     assert e.returned == Decimal('0')
     assert e.account == a
     assert e.remark == 'Rm'
-    assert e.closed
+    assert not e.closed
 
 
 def test_borrow_blank_data():
@@ -168,3 +168,12 @@ def test_borrow_unique_name_unclose_with_same_name(rf):
     assert form.is_bound
     assert not form.is_valid()
     assert 'name' in form.errors
+
+
+def test_borrow_cant_close():
+    obj = factories.BorrowFactory(name='Xxx', closed=True)
+    form = forms.BorrowForm(data=model_to_dict(obj))
+
+    assert not form.is_valid()
+    assert len(form.errors) == 1
+    assert 'closed' in form.errors
