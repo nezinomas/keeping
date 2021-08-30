@@ -19,7 +19,7 @@
         {% for item in items %}
         {% url 'debts:lents_return_update' item.id as url_update %}
         {% url 'debts:lents_return_delete' item.id as url_delete %}
-        <tr data-url="" class="dblclick" {% ifchanged item.lent.name %}{% if not forloop.first %}style="border-top: 5px #c0c0c0 solid;"{% endif %}{% endifchanged %}>
+        <tr data-url="" class="dblclick" {% ifchanged item.lent.name or ifchanged item.lent.closed %}{% if not forloop.first %}style="border-top: 5px #c0c0c0 solid;"{% endif %}{% endifchanged %}>
             <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ item.lent.name }}</td>
             <td class="text-start">{{ item.price|intcomma }}</td>
