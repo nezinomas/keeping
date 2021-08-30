@@ -79,6 +79,12 @@ class BorrowForm(forms.ModelForm):
             if self.instance.returned != price:
                 self.add_error('closed', _msg_cant_close)
 
+        # can't update to smaller price
+        if self.instance.pk:
+            print(f'price: {price}, returned: {self.instance.returned}')
+            if price < self.instance.returned:
+                self.add_error('price', _("You cannot update to an amount lower than the amount already returned."))
+
         return
 
 
@@ -209,6 +215,12 @@ class LentForm(forms.ModelForm):
         if self.instance.pk and closed:
             if self.instance.returned != price:
                 self.add_error('closed', _msg_cant_close)
+
+        # can't update to smaller price
+        if self.instance.pk:
+            print(f'price: {price}, returned: {self.instance.returned}')
+            if price < self.instance.returned:
+                self.add_error('price', _("You cannot update to an amount lower than the amount already returned."))
 
         return
 

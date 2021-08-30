@@ -255,6 +255,30 @@ def test_lent_update_not_closed(client_logged):
     assert not actual.closed
 
 
+def test_lent_update_price_smaller_then_returned(client_logged):
+    e = factories.LentFactory(name='XXX')
+
+    data = {
+        'name': 'XXX',
+        'price': '5',
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'closed': False
+    }
+    url = reverse('debts:lents_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
+    assert 'Negalite atnaujinti į mažesnę sumą nei jau sugrąžinta suma.' in  actual['html_form']
+
+
 def test_lent_update_cant_close(client_logged):
     e = factories.LentFactory()
 
