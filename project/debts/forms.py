@@ -80,7 +80,6 @@ class BorrowForm(forms.ModelForm):
 
         # can't update to smaller price
         if self.instance.pk:
-            print(f'price: {price}, returned: {self.instance.returned}')
             if price < self.instance.returned:
                 self.add_error('price', _("You cannot update to an amount lower than the amount already returned."))
 
@@ -216,7 +215,6 @@ class LentForm(forms.ModelForm):
 
         # can't update to smaller price
         if self.instance.pk:
-            print(f'price: {price}, returned: {self.instance.returned}')
             if price < self.instance.returned:
                 self.add_error('price', _("You cannot update to an amount lower than the amount already returned."))
 
