@@ -34,7 +34,7 @@ def test_borrow_init_fields():
 def test_borrow_checkbox_class():
     form = forms.BorrowForm().as_p()
 
-    pattern = re.compile(fr'<input type="checkbox" name="closed" class="(.*?)>')
+    pattern = re.compile(r'<input type="checkbox" name="closed" class="(.*?)>')
     res = re.findall(pattern, form)
 
     assert 'form-check-input' in res[0]
@@ -157,7 +157,7 @@ def test_borrow_unique_name():
     assert 'name' in form.errors
 
 
-def test_borrow_unique_name_unclose_with_same_name(rf):
+def test_borrow_unique_name_unclose_with_same_name():
     factories.BorrowFactory(name='X')
 
     obj= factories.BorrowFactory(name='X', closed=True)

@@ -34,7 +34,7 @@ def test_lent_init_fields():
 def test_lent_checkbox_class():
     form = forms.LentForm().as_p()
 
-    pattern = re.compile(fr'<input type="checkbox" name="closed" class="(.*?)>')
+    pattern = re.compile(r'<input type="checkbox" name="closed" class="(.*?)>')
     res = re.findall(pattern, form)
 
     assert 'form-check-input' in res[0]
@@ -158,7 +158,7 @@ def test_lent_unique_name():
     assert 'name' in form.errors
 
 
-def test_lent_unique_name_unclose_with_same_name(rf):
+def test_lent_unique_name_unclose_with_same_name():
     factories.LentFactory(name='X')
 
     obj = factories.LentFactory(name='X', closed=True)
