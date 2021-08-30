@@ -2,13 +2,13 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-30 10:59+0300\n"
-"PO-Revision-Date: 2021-08-30 10:59+0300\n"
+"POT-Creation-Date: 2021-08-30 11:37+0300\n"
+"PO-Revision-Date: 2021-08-30 11:35+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -39,8 +39,8 @@ msgstr "Rūšiavimas"
 
 #: .\project\accounts\templates\accounts\includes\accounts_form.html:3
 #: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:10
-#: .\project\debts\forms.py:48 .\project\debts\forms.py:114
-#: .\project\debts\forms.py:178 .\project\debts\forms.py:245
+#: .\project\debts\forms.py:48 .\project\debts\forms.py:118
+#: .\project\debts\forms.py:182 .\project\debts\forms.py:253
 #: .\project\debts\templates\debts\includes\borrows_list.html:12
 #: .\project\debts\templates\debts\includes\borrows_return_list.html:12
 #: .\project\debts\templates\debts\includes\lents_list.html:13
@@ -320,8 +320,8 @@ msgstr "Rinkos vertė"
 
 #: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:24
 #: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:26
-#: .\project\debts\forms.py:49 .\project\debts\forms.py:116
-#: .\project\debts\forms.py:179 .\project\debts\forms.py:247
+#: .\project\debts\forms.py:49 .\project\debts\forms.py:120
+#: .\project\debts\forms.py:183 .\project\debts\forms.py:255
 #: .\project\debts\templates\debts\includes\borrows_list.html:10
 #: .\project\debts\templates\debts\includes\borrows_return_list.html:11
 #: .\project\debts\templates\debts\includes\lents_list.html:11
@@ -466,8 +466,8 @@ msgstr "Autorius"
 
 #: .\project\books\forms.py:49
 #: .\project\books\templates\books\includes\books_list.html:11
-#: .\project\debts\forms.py:50 .\project\debts\forms.py:117
-#: .\project\debts\forms.py:180 .\project\debts\forms.py:248
+#: .\project\debts\forms.py:50 .\project\debts\forms.py:121
+#: .\project\debts\forms.py:184 .\project\debts\forms.py:256
 #: .\project\debts\templates\debts\includes\borrows_list.html:13
 #: .\project\debts\templates\debts\includes\borrows_return_list.html:13
 #: .\project\debts\templates\debts\includes\lents_list.html:14
@@ -776,8 +776,8 @@ msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 
 #: .\project\counts\forms.py:38
 #: .\project\counts\templates\counts\includes\counts_list.html:8
-#: .\project\debts\forms.py:46 .\project\debts\forms.py:113
-#: .\project\debts\forms.py:176 .\project\debts\forms.py:244
+#: .\project\debts\forms.py:46 .\project\debts\forms.py:117
+#: .\project\debts\forms.py:180 .\project\debts\forms.py:252
 #: .\project\debts\templates\debts\includes\borrows_list.html:8
 #: .\project\debts\templates\debts\includes\borrows_return_list.html:9
 #: .\project\debts\templates\debts\includes\lents_list.html:9
@@ -915,35 +915,39 @@ msgstr "Skaitiklį"
 msgid "Days of week"
 msgstr "Savaitės dienos"
 
-#: .\project\debts\forms.py:47 .\project\debts\forms.py:115
+#: .\project\debts\forms.py:47 .\project\debts\forms.py:119
 #: .\project\debts\templates\debts\includes\borrows_list.html:9
 #: .\project\debts\templates\debts\includes\borrows_return_list.html:10
 msgid "Borrower"
 msgstr "Skolininkas"
 
-#: .\project\debts\forms.py:51 .\project\debts\forms.py:181
+#: .\project\debts\forms.py:51 .\project\debts\forms.py:185
 #: .\project\debts\templates\debts\includes\borrows_list.html:11
 #: .\project\debts\templates\debts\includes\lents_list.html:12
 msgid "Returned"
 msgstr "Gražinta"
 
-#: .\project\debts\forms.py:71 .\project\debts\forms.py:201
+#: .\project\debts\forms.py:69 .\project\debts\forms.py:203
 msgid "The name of the lender must be unique."
 msgstr "Skolintojo vardas turi būti unikalus."
 
-#: .\project\debts\forms.py:74 .\project\debts\forms.py:205
+#: .\project\debts\forms.py:72 .\project\debts\forms.py:207
 msgid "You can't close a debt that hasn't been returned."
 msgstr "Negalite uždaryti dar negražintos skolos."
 
-#: .\project\debts\forms.py:130 .\project\debts\forms.py:261
+#: .\project\debts\forms.py:84 .\project\debts\forms.py:219
+msgid "You cannot update to an amount lower than the amount already returned."
+msgstr "Negalite atnaujinti į mažesnę sumą nei jau sugrąžinta suma."
+
+#: .\project\debts\forms.py:134 .\project\debts\forms.py:269
 msgid "The amount to be paid is more than the debt!"
 msgstr "Gražinama suma yra didesnė nei skola!"
 
-#: .\project\debts\forms.py:141 .\project\debts\forms.py:272
+#: .\project\debts\forms.py:145 .\project\debts\forms.py:280
 msgid "The date is earlier than the date of the debt."
 msgstr "Pasirinkta data yra ankstesnė nei skolos data."
 
-#: .\project\debts\forms.py:177 .\project\debts\forms.py:246
+#: .\project\debts\forms.py:181 .\project\debts\forms.py:254
 #: .\project\debts\templates\debts\includes\lents_list.html:10
 #: .\project\debts\templates\debts\includes\lents_return_list.html:10
 msgid "Lender"

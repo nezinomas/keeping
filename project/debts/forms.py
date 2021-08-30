@@ -62,10 +62,8 @@ class BorrowForm(forms.ModelForm):
         closed = cleaned_data.get('closed')
         price = cleaned_data.get('price')
 
-        if not closed:
-            if name == self.instance.name:
-                return
-
+        # can't update name
+        if name != self.instance.name:
             qs = models.Borrow.objects.items().filter(name=name)
             if qs.exists():
                 self.add_error('name', _('The name of the lender must be unique.'))
@@ -78,6 +76,12 @@ class BorrowForm(forms.ModelForm):
         if self.instance.pk and closed:
             if self.instance.returned != price:
                 self.add_error('closed', _msg_cant_close)
+
+        # can't update to smaller price
+        if self.instance.pk:
+            print(f'price: {price}, returned: {self.instance.returned}')
+            if price < self.instance.returned:
+                self.add_error('price', _("You cannot update to an amount lower than the amount already returned."))
 
         return
 
@@ -192,10 +196,8 @@ class LentForm(forms.ModelForm):
         closed = cleaned_data.get('closed')
         price = cleaned_data.get('price')
 
-        if not closed:
-            if name == self.instance.name:
-                return
-
+        # can't update name
+        if name != self.instance.name:
             qs = models.Lent.objects.items().filter(name=name)
             if qs.exists():
                 self.add_error('name', _('The name of the lender must be unique.'))
@@ -209,6 +211,12 @@ class LentForm(forms.ModelForm):
         if self.instance.pk and closed:
             if self.instance.returned != price:
                 self.add_error('closed', _msg_cant_close)
+
+        # can't update to smaller price
+        if self.instance.pk:
+            print(f'price: {price}, returned: {self.instance.returned}')
+            if price < self.instance.returned:
+                self.add_error('price', _("You cannot update to an amount lower than the amount already returned."))
 
         return
 
