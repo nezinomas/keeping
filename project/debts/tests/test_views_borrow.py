@@ -246,10 +246,7 @@ def test_borrow_update_not_closed(client_logged):
 
     assert actual['form_is_valid']
 
-    actual = models.Borrow.objects.items()
-    assert actual.count() == 1
-
-    actual = actual[0]
+    actual = models.Borrow.objects.get(pk=e.pk)
     assert actual.name == 'XXX'
     assert actual.date == date(1999, 12, 31)
     assert actual.price == Decimal('150')
