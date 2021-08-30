@@ -258,6 +258,28 @@ def test_borrow_update_not_closed(client_logged):
     assert not actual.closed
 
 
+def test_borrow_update_cant_close(client_logged):
+    e = factories.BorrowFactory()
+
+    data = {
+        'name': 'XXX',
+        'price': '150',
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'closed': True
+    }
+    url = reverse('debts:borrows_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
+    assert 'Negalite uždaryti dar negražintos skolos.' in actual['html_form']
+
+
 def test_borrow_update_not_render_html_list(client_logged):
     e = factories.BorrowFactory()
 

@@ -60,6 +60,7 @@ class BorrowForm(forms.ModelForm):
 
         name = cleaned_data.get('name')
         closed = cleaned_data.get('closed')
+        price = cleaned_data.get('price')
 
         if not closed:
             if name == self.instance.name:
@@ -68,6 +69,15 @@ class BorrowForm(forms.ModelForm):
             qs = models.Borrow.objects.items().filter(name=name)
             if qs.exists():
                 self.add_error('name', _('The name of the lender must be unique.'))
+
+        # can't close not returned debt
+        _msg_cant_close = _("You can't close a debt that hasn't been returned.")
+        if not self.instance.pk and closed:
+            self.add_error('closed', _msg_cant_close)
+
+        if self.instance.pk and closed:
+            if self.instance.returned != price:
+                self.add_error('closed', _msg_cant_close)
 
         return
 
@@ -180,6 +190,7 @@ class LentForm(forms.ModelForm):
 
         name = cleaned_data.get('name')
         closed = cleaned_data.get('closed')
+        price = cleaned_data.get('price')
 
         if not closed:
             if name == self.instance.name:
@@ -188,6 +199,16 @@ class LentForm(forms.ModelForm):
             qs = models.Lent.objects.items().filter(name=name)
             if qs.exists():
                 self.add_error('name', _('The name of the lender must be unique.'))
+
+        # can't close not returned debt
+        _msg_cant_close = _(
+            "You can't close a debt that hasn't been returned.")
+        if not self.instance.pk and closed:
+            self.add_error('closed', _msg_cant_close)
+
+        if self.instance.pk and closed:
+            if self.instance.returned != price:
+                self.add_error('closed', _msg_cant_close)
 
         return
 
