@@ -16,10 +16,10 @@ urlpatterns = [
         name='set_month'),
     path(
         'set/balances/',
-        views.regenerate_balances,
+        views.RegenerateBalances.as_view(),
         name='regenerate_balances'),
     path(
         'set/balances/<int:year>/',
-        views.regenerate_balances_current_year,
+        views.RegenerateBalancesCurrentYear.as_view(),
         name='regenerate_balances_current_year'),
 ]
