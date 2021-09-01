@@ -1,3 +1,6 @@
+import functools
+import time
+
 from django.urls import reverse
 
 
@@ -50,3 +53,31 @@ def setup_view(view, request, *args, **kwargs):
     view.args = args
     view.kwargs = kwargs
     return view
+
+
+def timer(func):
+    @functools.wraps(func)
+    def wrap_func(*args, **kwargs):
+        start = time.perf_counter()
+        return_value = func(*args, **kwargs)
+        end = time.perf_counter()
+        total = end-start
+        print('Finished function: {fname!r} in {total:.4f} sec'.format(fname=func.__name__, total=total))
+        return return_value
+    return wrap_func
+
+
+class Timer:
+    def __init__(self, original_func):
+        self.original_func = original_func
+
+    def __test(self, num):
+        return num + 20
+
+    def __call__(self, *args, **kwargs):
+        start = time.perf_counter()
+        r_val = self.original_func(*args, **kwargs)
+        end = time.perf_counter()
+        total = self.__test(end-start)
+        print('Finished function form class: {fname!r} in {total:.5f} sec'.format(fname=self.original_func.__name__, total=total))
+        return r_val
