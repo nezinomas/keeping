@@ -43,7 +43,7 @@ def set_month(request, month):
 class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
     redirect_view = reverse_lazy('bookkeeping:index')
 
-    @timer
+    # @timer
     def get(self, request, *args, **kwargs):
         _years = years()
 
@@ -64,7 +64,7 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
 class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View):
     redirect_view = reverse_lazy('bookkeeping:index')
 
-    @timer
+    # @timer
     def get(self, request, *args, **kwargs):
         year = request.user.year
         dummy = SimpleNamespace()
