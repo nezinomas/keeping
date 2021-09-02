@@ -88,19 +88,19 @@ class Balance(BalanceBase):
 
     def _join_worth(self, df: DF, account_worth: List) -> DF:
         if account_worth:
-            _worth = DF(account_worth).set_index('title')
-            _worth = _worth['have'].apply(to_numeric)
+            for row in account_worth:
+                idx = row.get('title')
+                if idx in df.index:
+                    try:
+                        v = float(row['have'])
+                    except (TypeError, KeyError):
+                        v = 0.0
 
-            df = df.join(_worth, lsuffix='have')
-
+                    df.at[idx, 'have'] = v
         return df
 
     def _calc_have(self, df: DF) -> DF:
         df.loc[:, 'delta'] = df['have'] - df['balance']
-
-        # nan -> 0 and convert to numeric Decimals
-        df = df.fillna(0.0)
-        df = df.apply(to_numeric)
 
         return df
 
