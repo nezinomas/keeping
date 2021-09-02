@@ -83,13 +83,15 @@ def test_view_regenerate_balances_current_year_status_200(client_logged):
 
 @freeze_time('2007-01-01')
 @pytest.mark.disable_get_user_patch
-@patch('project.core.views.savings_post_signal')
-@patch('project.core.views.accounts_post_signal')
-@patch('project.core.views.pensions_post_signal')
-def test_view_regenerate_balances_func_called(mck_pension,
-                                              mck_account,
-                                              mck_saving,
-                                              fake_request):
+@patch('project.core.views.accounts')
+@patch('project.core.views.savings')
+@patch('project.core.views.pensions')
+@patch.object(views.SignalBase, 'accounts')
+@patch.object(views.SignalBase, 'savings')
+@patch.object(views.SignalBase, 'pensions')
+def test_view_regenerate_balances_func_called(mck_pension, mck_saving, mck_account,
+                                              mp, ms, ma, fake_request):
+    print(mck_account)
     class Dummy(views.RegenerateBalances):
         pass
 
@@ -101,13 +103,14 @@ def test_view_regenerate_balances_func_called(mck_pension,
     assert mck_pension.call_count == 2
 
 
-@patch('project.core.views.savings_post_signal')
-@patch('project.core.views.accounts_post_signal')
-@patch('project.core.views.pensions_post_signal')
-def test_view_regenerate_balances_current_year_func_called(mck_pension,
-                                                           mck_account,
-                                                           mck_saving,
-                                                           fake_request):
+@patch('project.core.views.accounts')
+@patch('project.core.views.savings')
+@patch('project.core.views.pensions')
+@patch.object(views.SignalBase, 'accounts')
+@patch.object(views.SignalBase, 'savings')
+@patch.object(views.SignalBase, 'pensions')
+def test_view_regenerate_balances_current_year_func_called(mck_pension, mck_saving, mck_account,
+                                                           mp, ms, ma, fake_request):
     class Dummy(views.RegenerateBalancesCurrentYear):
         pass
 
