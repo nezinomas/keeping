@@ -57,6 +57,7 @@ def get_sql(year, model, method_name):
 
     return qs
 
+
 def collect_summary_data(year: int,
                          types: Dict[str, int],
                          where: ModelsAbstract) -> DF:
