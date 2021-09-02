@@ -40,9 +40,12 @@ from .lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
 @receiver(post_delete, sender=Lent)
 @receiver(post_save, sender=LentReturn)
 @receiver(post_delete, sender=LentReturn)
-def accounts_post_signal(sender, instance: object, year: int = None,
-                            *args, **kwargs):
-    SignalBase.accounts(sender, instance, year)
+def accounts_post_signal(sender: object,
+                         instance: object,
+                         year: int = None,
+                         types: Dict[str, int] = None,
+                         *args, **kwargs):
+    SignalBase.accounts(sender, instance, year, types)
 
 
 # ----------------------------------------------------------------------------
@@ -55,9 +58,12 @@ def accounts_post_signal(sender, instance: object, year: int = None,
 @receiver(post_save, sender=SavingChange)
 @receiver(post_delete, sender=SavingChange)
 @receiver(post_save, sender=SavingWorth)
-def savings_post_signal(sender, instance: object, year: int = None,
-                           *args, **kwargs):
-    SignalBase.savings(sender, instance, year)
+def savings_post_signal(sender: object,
+                        instance: object,
+                        year: int = None,
+                        types: Dict[str, int] = None,
+                        *args, **kwargs):
+    SignalBase.savings(sender, instance, year, types)
 
 
 # ----------------------------------------------------------------------------
@@ -66,27 +72,40 @@ def savings_post_signal(sender, instance: object, year: int = None,
 @receiver(post_save, sender=Pension)
 @receiver(post_delete, sender=Pension)
 @receiver(post_save, sender=PensionWorth)
-def pensions_post_signal(sender, instance: object, year: int = None,
-                            *args, **kwargs):
-    SignalBase.pensions(sender, instance, year)
+def pensions_post_signal(sender: object,
+                         instance: object,
+                         year: int = None,
+                         types: Dict[str, int] = None,
+                        *args, **kwargs):
+    SignalBase.pensions(sender, instance, year, types)
 
 
 # ----------------------------------------------------------------------------
 #                                                   post_save SignalBase class
 # ----------------------------------------------------------------------------
 class SignalBase():
-    def __init__(self, instance: object, year: int = None):
+    def __init__(self,
+                 instance: object,
+                 year: int = None,
+                 types: Dict[str, int] = None):
+
         if not year:
             self.year = utils.get_user().year
         else:
             self.year = year
 
         self.instance = instance
+        self.types = types
 
         self._update_or_create()
 
     @classmethod
-    def accounts(cls, sender: object, instance: object, year: int = None):
+    def accounts(cls,
+                 sender: object,
+                 instance: object,
+                 year: int = None,
+                 types: Dict[str, int] = None):
+
         cls.field = 'account_id'
         cls.model_types = Account
         cls.model_balance = AccountBalance
@@ -95,10 +114,15 @@ class SignalBase():
         cls.summary_models = AccountsBalanceModels
         cls.sender = sender
 
-        return cls(instance, year)
+        return cls(instance, year, types)
 
     @classmethod
-    def savings(cls, sender: object, instance: object, year: int = None):
+    def savings(cls,
+                sender: object,
+                instance: object,
+                year: int = None,
+                types: Dict[str, int] = None):
+
         cls.field = 'saving_type_id'
         cls.model_types = SavingType
         cls.model_balance = SavingBalance
@@ -107,10 +131,15 @@ class SignalBase():
         cls.summary_models = SavingsBalanceModels
         cls.sender = sender
 
-        return cls(instance, year)
+        return cls(instance, year, types)
 
     @classmethod
-    def pensions(cls, sender: object, instance: object, year: int = None):
+    def pensions(cls,
+                 sender: object,
+                 instance: object,
+                 year: int = None,
+                 types: Dict[str, int] = None):
+
         cls.field = 'pension_type_id'
         cls.model_types = PensionType
         cls.model_balance = PensionBalance
@@ -119,7 +148,7 @@ class SignalBase():
         cls.summary_models = PensionsBalanceModels
         cls.sender = sender
 
-        return cls(instance, year)
+        return cls(instance, year, types)
 
     def _update_or_create(self) -> None:
         stats = self._get_stats()
@@ -168,7 +197,12 @@ class SignalBase():
         return {x['title']: x['id'] for x in qs}
 
     def _get_stats(self) -> List[Dict]:
-        account = self._get_accounts()
+        # get (account_types|savings_types|pension_types) in class if types is empty
+        if not self.types:
+            account = self._get_accounts()
+        else:
+            account = self.types
+
         worth = self._get_worth()
 
         data = collect_summary_data(
