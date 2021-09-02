@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-09-02 16:51+0300\n"
-"PO-Revision-Date: 2021-09-02 16:52+0300\n"
+"PO-Revision-Date: 2021-09-02 16:59+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -382,7 +382,7 @@ msgstr "Bus atnaujintas šių metų balansas."
 #: .\project\bookkeeping\templates\bookkeeping\index.html:34
 #, python-format
 msgid "Update %(year)s balance"
-msgstr "Atnaujinti %(year)s balansą."
+msgstr "Atnaujinti %(year)s balansą"
 
 #: .\project\bookkeeping\templates\bookkeeping\index.html:35
 msgid "Balances for all years will be updated."
