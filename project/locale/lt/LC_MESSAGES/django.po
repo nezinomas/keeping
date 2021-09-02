@@ -2,13 +2,13 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-30 11:37+0300\n"
-"PO-Revision-Date: 2021-08-30 11:35+0300\n"
+"POT-Creation-Date: 2021-09-02 16:51+0300\n"
+"PO-Revision-Date: 2021-09-02 16:52+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -363,60 +363,60 @@ msgstr "Slėpti skolas"
 msgid "Expenses statistic"
 msgstr "Išlaidų statistika"
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:28
+#: .\project\bookkeeping\templates\bookkeeping\index.html:29
 msgid "Accounts fact"
 msgstr "Sąskaitų faktas"
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:30
+#: .\project\bookkeeping\templates\bookkeeping\index.html:31
 msgid "Funds fact"
 msgstr "Fondų faktas"
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:32
+#: .\project\bookkeeping\templates\bookkeeping\index.html:33
 msgid "Pensions fact"
 msgstr "Pensijų faktas"
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:33
+#: .\project\bookkeeping\templates\bookkeeping\index.html:34
 msgid "The balance for this year will be updated."
 msgstr "Bus atnaujintas šių metų balansas."
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:33
-#, python-format
-msgid "Update %(year)s balance</a>."
-msgstr "Atnaujinti %(year)s balansą</a>."
-
 #: .\project\bookkeeping\templates\bookkeeping\index.html:34
+#, python-format
+msgid "Update %(year)s balance"
+msgstr "Atnaujinti %(year)s balansą."
+
+#: .\project\bookkeeping\templates\bookkeeping\index.html:35
 msgid "Balances for all years will be updated."
 msgstr "Bus atnaujinti visų metų balansai."
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:34
+#: .\project\bookkeeping\templates\bookkeeping\index.html:35
 msgid "Update balances"
 msgstr "Atnaujinti balansus"
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:42
+#: .\project\bookkeeping\templates\bookkeeping\index.html:43
 #: .\project\transactions\templates\transactions\index.html:60
 msgctxt "account button"
 msgid "Account"
 msgstr "Sąskaitą"
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:43
+#: .\project\bookkeeping\templates\bookkeeping\index.html:44
 #: .\project\incomes\templates\incomes\index.html:39
 msgctxt "income type button"
 msgid "Incomes type"
 msgstr "Pajamų rūšį"
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:44
+#: .\project\bookkeeping\templates\bookkeeping\index.html:45
 #: .\project\expenses\templates\expenses\index.html:62
 msgctxt "expenses type button"
 msgid "Expenses type"
 msgstr "Išlaidų rūšį"
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:45
+#: .\project\bookkeeping\templates\bookkeeping\index.html:46
 #: .\project\expenses\templates\expenses\index.html:63
 msgctxt "expenses name button"
 msgid "Expenses name"
 msgstr "Išlaidų pavadinimą"
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:46
+#: .\project\bookkeeping\templates\bookkeeping\index.html:47
 #: .\project\savings\templates\savings\index.html:46
 msgctxt "fund button"
 msgid "Fund"
@@ -927,11 +927,11 @@ msgstr "Skolininkas"
 msgid "Returned"
 msgstr "Gražinta"
 
-#: .\project\debts\forms.py:69 .\project\debts\forms.py:203
+#: .\project\debts\forms.py:70 .\project\debts\forms.py:204
 msgid "The name of the lender must be unique."
 msgstr "Skolintojo vardas turi būti unikalus."
 
-#: .\project\debts\forms.py:72 .\project\debts\forms.py:207
+#: .\project\debts\forms.py:73 .\project\debts\forms.py:208
 msgid "You can't close a debt that hasn't been returned."
 msgstr "Negalite uždaryti dar negražintos skolos."
 
