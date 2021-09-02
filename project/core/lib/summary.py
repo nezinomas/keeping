@@ -75,22 +75,22 @@ def collect_summary_data(year: int,
     for q in qs:
         for row in q:
             try:
-                idx = row['title']
+                title = row['title']
             except KeyError:
-                continue
+                break
 
             for k, v in row.items():
                 if k in ('title', 'id'):
                     continue
 
                 # copy values from qs to df
-                if idx in df.index:
+                if title in df.index:
                     try:
                         v = float(v)
                     except TypeError:
                         v = 0.0
 
-                    df.at[idx, k] = v
+                    df.at[title, k] = v
 
     return df
 
