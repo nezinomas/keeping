@@ -1,7 +1,6 @@
 from typing import List
 
 from pandas import DataFrame as DF
-from pandas import to_numeric
 
 from ...core.lib.balance_base import BalanceBase
 
