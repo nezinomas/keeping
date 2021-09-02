@@ -5,6 +5,7 @@
 
 
 {% block head %}
+<link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
 <script src="{% static 'js/reload_stats.js' %}"></script>
 {% endblock head %}
@@ -30,8 +31,8 @@
         <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="bi bi-plus"></i> {% translate 'Funds fact' %}</button>
         {% url 'bookkeeping:pensions_worth_new' as url_pensions_new %}
         <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions_new }}"><i class="bi bi-plus"></i> {% translate 'Pensions fact' %}</button>
-        <a class="btn btn-sm btn-outline-secondary" href="{% url 'core:regenerate_balances_current_year' year %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'The balance for this year will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% blocktranslate with year=year|safe %}Update {{ year }} balance</a>.{% endblocktranslate %}
-        <a class="btn btn-sm btn-outline-danger" href="{% url 'core:regenerate_balances' %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</a>
+        <button class="btn btn-sm btn-outline-secondary recalc" data-url="{% url 'core:regenerate_balances_current_year' year %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'The balance for this year will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% blocktranslate with year=year|safe %}Update {{ year }} balance</button>.{% endblocktranslate %}
+        <button class="btn btn-sm btn-outline-danger recalc" data-url="{% url 'core:regenerate_balances' %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</button>
     </div>
     <div class="col-md-12 col-lg-6 text-lg-end mt-md-2 mt-lg-0">
         {% url 'accounts:accounts_new' as url_accounts %}
@@ -97,6 +98,9 @@
     <div id="pensions_worth" class="col-lg-12">{% funds_table pensions %}</div>
 </div>
 
+<!-- Loader -->
+<div class="loader loader-default" id="loader"></div>
+
 <script>
     $(function () {
         var load_html = function () {
@@ -140,6 +144,29 @@
                     'wealth'
                 ];
                 reload_stats(data, blocks);
+            }
+        });
+    });
+
+    $(document).on('click', '.recalc', function () {
+        $('#loader').addClass('is-active')
+
+        var url = $(this).data('url');
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1',
+            },
+            success: function (data) {
+                $('#loader').removeClass('is-active');
+                if (data.redirect) {
+                    window.location.replace(data.redirect);
+                }
+            },
+            error: function (data) {
+                alert('error url:' + url)
+                $('#loader').removeClass('is-active');
             }
         });
     });

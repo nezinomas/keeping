@@ -6,6 +6,7 @@ from freezegun import freeze_time
 from mock import patch
 
 from .. import views
+from .utils import setup_view
 
 
 @pytest.mark.django_db()
@@ -52,13 +53,13 @@ def test_set_month(month, expect, client_logged):
 def test_view_regenerate_balances():
     view = resolve('/set/balances/')
 
-    assert views.regenerate_balances == view.func
+    assert views.RegenerateBalances == view.func.view_class
 
 
 def test_view_regenerate_balances_current_year():
     view = resolve('/set/balances/1999/')
 
-    assert views.regenerate_balances_current_year == view.func
+    assert views.RegenerateBalancesCurrentYear == view.func.view_class
 
 
 @pytest.mark.django_db
@@ -82,28 +83,39 @@ def test_view_regenerate_balances_current_year_status_200(client_logged):
 
 @freeze_time('2007-01-01')
 @pytest.mark.disable_get_user_patch
-@patch('project.core.views.savings_post_signal')
-@patch('project.core.views.accounts_post_signal')
-@patch('project.core.views.pensions_post_signal')
-def test_view_regenerate_balances_func_called(mck_pension,
-                                              mck_account,
-                                              mck_saving,
-                                              fake_request):
-    views.regenerate_balances(fake_request)
+@patch('project.core.views.accounts')
+@patch('project.core.views.savings')
+@patch('project.core.views.pensions')
+@patch.object(views.SignalBase, 'accounts')
+@patch.object(views.SignalBase, 'savings')
+@patch.object(views.SignalBase, 'pensions')
+def test_view_regenerate_balances_func_called(mck_pension, mck_saving, mck_account,
+                                              mp, ms, ma, fake_request):
+    print(mck_account)
+    class Dummy(views.RegenerateBalances):
+        pass
+
+    view = setup_view(Dummy(), fake_request)
+    view.get(fake_request)
 
     assert mck_account.call_count == 2
     assert mck_saving.call_count == 2
     assert mck_pension.call_count == 2
 
 
-@patch('project.core.views.savings_post_signal')
-@patch('project.core.views.accounts_post_signal')
-@patch('project.core.views.pensions_post_signal')
-def test_view_regenerate_balances_current_year_func_called(mck_pension,
-                                                           mck_account,
-                                                           mck_saving,
-                                                           fake_request):
-    views.regenerate_balances_current_year(fake_request, 1999)
+@patch('project.core.views.accounts')
+@patch('project.core.views.savings')
+@patch('project.core.views.pensions')
+@patch.object(views.SignalBase, 'accounts')
+@patch.object(views.SignalBase, 'savings')
+@patch.object(views.SignalBase, 'pensions')
+def test_view_regenerate_balances_current_year_func_called(mck_pension, mck_saving, mck_account,
+                                                           mp, ms, ma, fake_request):
+    class Dummy(views.RegenerateBalancesCurrentYear):
+        pass
+
+    view = setup_view(Dummy(), fake_request)
+    view.get(fake_request)
 
     assert mck_account.call_count == 1
     assert mck_saving.call_count == 1

@@ -1,7 +1,6 @@
-from typing import Dict, List
+from typing import Dict
 
 from pandas import DataFrame as DF
-from pandas import to_numeric
 
 from ...bookkeeping.lib.helpers import calc_percent, calc_sum
 from ...core.lib.balance_base import BalanceBase
@@ -108,20 +107,22 @@ class Balance(BalanceBase):
         return df
 
     def _calc_have(self, df: DF, worth: DF) -> DF:
+        df.loc[:, 'have'] = 0.0
+
         # join savings and worth dataframes
         if worth:
-            _worth = DF(worth).set_index('title')
-            df = df.join(_worth)
-        else:
-            df.loc[:, 'have'] = 0.0
+            for row in worth:
+                idx = row.get('title')
+                if idx in df.index:
+                    try:
+                        v = float(row['have'])
+                    except (TypeError, KeyError):
+                        v = 0.0
+
+                    df.at[idx, 'have'] = v
 
         # copy values from have to market_value
         df['market_value'] = df['have']
-
-        # nan -> 0 and convert to numeric Decimals
-        c = ['have', 'market_value']
-        df[c] = df[c].apply(to_numeric)
-        df[c] = df[c].fillna(0.0)
 
         return df
 
