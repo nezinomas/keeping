@@ -3,7 +3,7 @@ from typing import Dict
 
 from django.apps import apps
 from pandas import DataFrame as DF
-from pandas import Series, to_numeric
+from pandas import Series
 
 
 class ModelsAbstract(ABC):
@@ -46,45 +46,51 @@ class PensionsBalanceModels(ModelsAbstract):
         ]
 
 
+def get_sql(year, model, method_name):
+    qs = None
+
+    try:
+        method = getattr(model.objects, method_name)
+        qs = method(year)
+    except AttributeError:
+        pass
+
+    return qs
+
 def collect_summary_data(year: int,
                          types: Dict[str, int],
                          where: ModelsAbstract) -> DF:
-    df = _create_df(types)
 
+    qs = []
+    df = _create_df(types)
     _models = where.models()
+
     for m in _models:
         model = apps.get_model(m)
-        # try 3 methods from model.manager:
-        # a) summary(year)
-        # b) summary_from(year)
-        # c) summary_to(year)
-        for i in ['', '_from', '_to']:
+        for name in ['summary', 'summary_from', 'summary_to']:
+            q = get_sql(year, model, name)
+            if q:
+                qs.append(q)
+
+    for q in qs:
+        for row in q:
             try:
-                method = getattr(model.objects, f'summary{i}')
-                qs = method(year)
-            except AttributeError:
-                # some models may not have implemented methods:
+                idx = row['title']
+            except KeyError:
                 continue
 
-            for row in qs:
-                idx = row.get('title')
-
-                if not idx:
+            for k, v in row.items():
+                if k in ('title', 'id'):
                     continue
 
-                for k, v in row.items():
-                    if k in ('title', 'id'):
-                        continue
+                # copy values from qs to df
+                if idx in df.index:
+                    try:
+                        v = float(v)
+                    except TypeError:
+                        v = 0.0
 
-                    # copy values from qs to df
-                    if idx in df.index:
-                        df.at[idx, k] = v
-
-    # fill NaN with 0.0
-    df.fillna(0.0, inplace=True)
-
-    # convert all columns to float
-    df = df.apply(to_numeric)
+                    df.at[idx, k] = v
 
     return df
 
@@ -97,6 +103,7 @@ def _create_df(qs: Dict[str, int]) -> DF:
         df['title'] = Series([*qs.keys()])  # copy list of titles to df
         df['id'] = Series([*qs.values()])  # copy list of id to df
         df = df.set_index('title')
+        df.fillna(0.0, inplace=True)
 
     return df
 
