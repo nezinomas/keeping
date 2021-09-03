@@ -159,13 +159,11 @@
                 'ajax_trigger': '1',
             },
             success: function (data) {
-                $('#loader').removeClass('is-active');
                 if (data.redirect) {
                     window.location.replace(data.redirect);
                 }
             },
             error: function (data) {
-                alert('error url:' + url)
                 $('#loader').removeClass('is-active');
             }
         });
