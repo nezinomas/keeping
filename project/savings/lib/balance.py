@@ -113,14 +113,14 @@ class Balance(BalanceBase):
         if worth:
             df_index_list = df.index.tolist()
             for row in worth:
-                idx = row.get('title')
-                if idx in df_index_list:
+                title = row.get('title')
+                if title in df_index_list:
                     try:
-                        v = float(row['have'])
+                        val = float(row['have'])
                     except (TypeError, KeyError):
-                        v = 0.0
+                        val = 0.0
 
-                    df.at[idx, 'have'] = v
+                    df.at[title, 'have'] = val
 
         # copy values from have to market_value
         df['market_value'] = df['have']
