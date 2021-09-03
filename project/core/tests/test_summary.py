@@ -89,6 +89,7 @@ def test_model_summary_without_title(mock_get, mock_models):
     model.objects.summary_from.side_effect = AttributeError('no summary_from')
 
     mock_get.return_value = model
+
     actual = collect_summary_data(1999, {}, AccountsBalanceModels)
 
     assert isinstance(actual, pd.DataFrame)
