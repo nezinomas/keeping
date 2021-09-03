@@ -87,9 +87,10 @@ class Balance(BalanceBase):
 
     def _join_worth(self, df: DF, account_worth: List) -> DF:
         if account_worth:
+            df_index_list = df.index.tolist()
             for row in account_worth:
                 idx = row.get('title')
-                if idx in df.index:
+                if idx in df_index_list:
                     try:
                         v = float(row['have'])
                     except (TypeError, KeyError):

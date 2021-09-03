@@ -73,6 +73,8 @@ def collect_summary_data(year: int,
             if q:
                 qs.append(q)
 
+    df_index_list = df.index.tolist()
+
     for q in qs:
         for row in q:
             try:
@@ -85,7 +87,7 @@ def collect_summary_data(year: int,
                     continue
 
                 # copy values from qs to df
-                if title in df.index:
+                if title in df_index_list:
                     try:
                         v = float(v)
                     except TypeError:

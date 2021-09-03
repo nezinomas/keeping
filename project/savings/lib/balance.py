@@ -111,9 +111,10 @@ class Balance(BalanceBase):
 
         # join savings and worth dataframes
         if worth:
+            df_index_list = df.index.tolist()
             for row in worth:
                 idx = row.get('title')
-                if idx in df.index:
+                if idx in df_index_list:
                     try:
                         v = float(row['have'])
                     except (TypeError, KeyError):
