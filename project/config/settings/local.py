@@ -31,6 +31,7 @@ SHELL_PLUS_PRINT_SQL = True
 # ================   MIDDLEWARE CONFIGURATION
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'pyinstrument.middleware.ProfilerMiddleware',
 ] + MIDDLEWARE
 
 
