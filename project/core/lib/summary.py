@@ -62,8 +62,8 @@ def collect_summary_data(year: int,
                          types: Dict[str, int],
                          where: ModelsAbstract) -> DF:
 
-    qs = []
     df = _create_df(types)
+    df_index_list = df.index.tolist()
     _models = where.models()
 
     for m in _models:
@@ -71,29 +71,24 @@ def collect_summary_data(year: int,
         for name in ['summary', 'summary_from', 'summary_to']:
             q = get_sql(year, model, name)
             if q:
-                qs.append(q)
-
-    df_index_list = df.index.tolist()
-
-    for q in qs:
-        for row in q:
-            try:
-                title = row['title']
-            except KeyError:
-                break
-
-            for key, val in row.items():
-                if key in ('title', 'id'):
-                    continue
-
-                # copy values from qs to df
-                if title in df_index_list:
+                for row in q:
                     try:
-                        val = float(val)
-                    except TypeError:
-                        val = 0.0
+                        title = row['title']
+                    except KeyError:
+                        break
 
-                    df.at[title, key] = val
+                    for key, val in row.items():
+                        if key in ('title', 'id'):
+                            continue
+
+                        # copy values from qs to df
+                        if title in df_index_list:
+                            try:
+                                val = float(val)
+                            except TypeError:
+                                val = 0.0
+
+                            df.at[title, key] = val
 
     return df
 

@@ -34,6 +34,7 @@ MIDDLEWARE = [
     'pyinstrument.middleware.ProfilerMiddleware',
 ] + MIDDLEWARE
 
+# PYINSTRUMENT_PROFILE_DIR = 'profiles'
 
 # Overwriten TEMPLATE OPTION
 # disabled template cashing
