@@ -32,6 +32,7 @@ class Migration(migrations.Migration):
                 ('title', models.CharField(max_length=254, validators=[django.core.validators.MinLengthValidator(3)])),
                 ('slug', models.SlugField(editable=False, max_length=254)),
                 ('first_record', models.DateField(default=datetime.date.today, editable=False)),
+                ('lang', models.CharField(max_length=2, default='en')),
                 ('unnecessary_expenses', models.CharField(blank=True, max_length=254, null=True)),
                 ('unnecessary_savings', models.BooleanField(default=False))
             ],
