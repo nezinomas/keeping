@@ -166,11 +166,16 @@ def test_saving_update(client_logged):
 
 
 def test_savings_not_load_other_journal(client_logged, main_user, second_user):
-    it1 = SavingTypeFactory(title='xxx', journal=main_user.journal)
-    it2 = SavingTypeFactory(title='yyy', journal=second_user.journal)
+    j1 = main_user.journal
+    j2 = second_user.journal
+    a1 = AccountFactory(journal=j1, title='a1')
+    a2 = AccountFactory(journal=j2, title='a2')
 
-    SavingFactory(saving_type=it1)
-    i2 = SavingFactory(saving_type=it2, price=666)
+    it1 = SavingTypeFactory(title='xxx', journal=j1)
+    it2 = SavingTypeFactory(title='yyy', journal=j2)
+
+    SavingFactory(saving_type=it1, account=a1)
+    i2 = SavingFactory(saving_type=it2, account=a2, price=666)
 
     url = reverse('savings:savings_update', kwargs={'pk': i2.pk})
     response = client_logged.get(url, **X_Req)

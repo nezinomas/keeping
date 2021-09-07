@@ -290,11 +290,15 @@ def test_expenses_update(client_logged):
 
 
 def test_expenses_not_load_other_journal(client_logged, main_user, second_user):
-    et1 = ExpenseTypeFactory(title='xxx', journal=main_user.journal)
-    et2 = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
+    j1 = main_user.journal
+    j2 = second_user.journal
+    a1 = AccountFactory(journal = j1, title='a1')
+    a2 = AccountFactory(journal = j2, title='a2')
+    et1 = ExpenseTypeFactory(title='xxx', journal=j1)
+    et2 = ExpenseTypeFactory(title='yyy', journal=j2)
 
-    ExpenseFactory(expense_type=et1)
-    e2 = ExpenseFactory(expense_type=et2, price=666)
+    ExpenseFactory(expense_type=et1, account=a1)
+    e2 = ExpenseFactory(expense_type=et2, account=a2, price=666)
 
     url = reverse('expenses:expenses_update', kwargs={'pk': e2.pk})
     response = client_logged.get(url, **X_Req)
