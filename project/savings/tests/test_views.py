@@ -7,7 +7,7 @@ from freezegun import freeze_time
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import setup_view
 from .. import models, views
-from ..factories import SavingFactory, SavingTypeFactory
+from ..factories import Saving, SavingFactory, SavingTypeFactory
 
 pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -165,6 +165,26 @@ def test_saving_update(client_logged):
     assert 'Pastaba' in actual['html_list']
 
 
+def test_savings_not_load_other_journal(client_logged, main_user, second_user):
+    it1 = SavingTypeFactory(title='xxx', journal=main_user.journal)
+    it2 = SavingTypeFactory(title='yyy', journal=second_user.journal)
+
+    SavingFactory(saving_type=it1)
+    i2 = SavingFactory(saving_type=it2, price=666)
+
+    url = reverse('savings:savings_update', kwargs={'pk': i2.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert it2.title not in form
+    assert str(i2.price) not in form
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                           Saving Delete
 # ---------------------------------------------------------------------------------------
@@ -214,6 +234,32 @@ def test_view_saving_delete(client_logged):
     assert response.status_code == 200
 
     assert models.Saving.objects.all().count() == 0
+
+
+def test_savings_delete_other_journal_get_form(client_logged, second_user):
+    it2 = SavingTypeFactory(title='yyy', journal=second_user.journal)
+    i2 = SavingFactory(saving_type=it2, price=666)
+
+    url = reverse('savings:savings_delete', kwargs={'pk': i2.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_savings_delete_other_journal_post_form(client_logged, second_user):
+    it2 = SavingTypeFactory(title='yyy', journal=second_user.journal)
+    i2 = SavingFactory(saving_type=it2, price=666)
+
+    url = reverse('savings:savings_delete', kwargs={'pk': i2.pk})
+    client_logged.post(url, **X_Req)
+
+    assert Saving.objects.all().count() == 1
 
 
 # ----------------------------------------------------------------------------
@@ -294,6 +340,22 @@ def test_type_update(client_logged):
 
     assert actual['form_is_valid']
     assert 'TTT' in actual['html_list']
+
+
+def test_saving_type_not_load_other_journal(client_logged, main_user, second_user):
+    SavingTypeFactory(title='xxx', journal=main_user.journal)
+    obj = SavingTypeFactory(title='yyy', journal=second_user.journal)
+
+    url = reverse('savings:savings_type_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert obj.title not in form
 
 
 def test_type_update_with_closed(client_logged):
