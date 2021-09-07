@@ -1,3 +1,6 @@
+from django.core.exceptions import ObjectDoesNotExist
+
+
 class GetQuerysetMixin():
     context_object_name = 'items'
     object_list = 'objects'
@@ -18,8 +21,12 @@ class GetQuerysetMixin():
     def get_object(self):
         obj = None
         pk = self.kwargs.get('pk')
+
         if pk:
-            obj = self.model.objects.get(pk=pk)
+            try:
+                obj = self.model.objects.related().get(pk=pk)
+            except (AttributeError, ObjectDoesNotExist):
+                pass
 
         return obj
 

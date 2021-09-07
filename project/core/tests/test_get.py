@@ -1,4 +1,5 @@
 import mock
+from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic.list import MultipleObjectMixin
 
 from ..mixins.get import GetQuerysetMixin
@@ -8,6 +9,7 @@ class GetQueryset(GetQuerysetMixin, MultipleObjectMixin):
     def __init__(self, model, request, *args, **kwargs):
         self.model = model
         self.request = request
+        self.kwargs = kwargs
 
 
 @mock.patch('project.incomes.models.Income')
@@ -65,3 +67,21 @@ def test_get_context_data_changed_context_object_name(mock_obj, fake_request):
 
     assert 'X' in actual
     assert actual['X'] == 1
+
+
+def test_get_no_related(rf):
+    mck = mock.Mock()
+    mck.objects.related.side_effect = AttributeError
+
+    actual = GetQueryset(mck, rf, **{'pk': 1}).get_object()
+
+    assert not actual
+
+
+def test_get_object_does_not_exist(rf):
+    mck = mock.Mock()
+    mck.objects.related.return_value.get.side_effect = ObjectDoesNotExist
+
+    actual = GetQueryset(mck, rf, **{'pk': 1}).get_object()
+
+    assert not actual
