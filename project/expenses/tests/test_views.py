@@ -1,9 +1,9 @@
 import json
 from datetime import date
 from decimal import Decimal
-from django.http.response import JsonResponse
 
 import pytest
+from django.http.response import JsonResponse
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
@@ -11,7 +11,8 @@ from ...accounts.factories import AccountFactory
 from ...core.tests.utils import change_profile_year
 from ...users.factories import UserFactory
 from .. import models
-from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
+from ..factories import (Expense, ExpenseFactory, ExpenseNameFactory,
+                         ExpenseTypeFactory)
 from ..views import expenses, expenses_name, expenses_type
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -288,6 +289,26 @@ def test_expenses_update(client_logged):
     assert actual.remark == 'Pastaba'
 
 
+def test_expenses_not_load_other_journal(client_logged, main_user, second_user):
+    et1 = ExpenseTypeFactory(title='xxx', journal=main_user.journal)
+    et2 = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
+
+    ExpenseFactory(expense_type=et1)
+    e2 = ExpenseFactory(expense_type=et2, price=666)
+
+    url = reverse('expenses:expenses_update', kwargs={'pk': e2.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert et2.title not in form
+    assert str(e2.price) not in form
+
+
 def test_expenses_update_not_render_html_list(client_logged):
     e = ExpenseFactory()
 
@@ -436,6 +457,32 @@ def test_view_expenses_delete_not_render_html_list(client_logged):
     assert not actual.get('html_list')
 
 
+def test_expenses_delete_other_journal_get_form(client_logged, second_user):
+    it2 = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
+    i2 = ExpenseFactory(expense_type=it2, price=666)
+
+    url = reverse('expenses:expenses_delete', kwargs={'pk': i2.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_expenses_delete_other_journal_post_form(client_logged, second_user):
+    it2 = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
+    i2 = ExpenseFactory(expense_type=it2, price=666)
+
+    url = reverse('expenses:expenses_delete', kwargs={'pk': i2.pk})
+    client_logged.post(url, **X_Req)
+
+    assert Expense.objects.all().count() == 1
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                             ExpenseType
 # ---------------------------------------------------------------------------------------
@@ -449,6 +496,22 @@ def test_expenses_type_update_func():
     view = resolve('/expenses/type/update/1/')
 
     assert expenses_type.Update == view.func.view_class
+
+
+def test_expense_type_not_load_other_journal(client_logged, main_user, second_user):
+    ExpenseTypeFactory(title='xxx', journal=main_user.journal)
+    obj = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
+
+    url = reverse('expenses:expenses_type_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert obj.title not in form
 
 
 # ---------------------------------------------------------------------------------------
@@ -520,6 +583,26 @@ def test_expense_name_update(client_logged):
 
     assert actual['form_is_valid']
     assert 'TTT' in actual['html_list']
+
+
+def test_expense_name_not_load_other_journal(client_logged, main_user, second_user):
+    et1 = ExpenseTypeFactory(title='xxx', journal=main_user.journal)
+    et2 = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
+
+    ExpenseNameFactory(parent=et1)
+    obj = ExpenseNameFactory(parent=et2)
+
+    url = reverse('expenses:expenses_name_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert obj.title not in form
+    assert et2.title not in form
 
 
 # ---------------------------------------------------------------------------------------
