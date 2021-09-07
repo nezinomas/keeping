@@ -7,7 +7,7 @@ from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from .. import models, views
-from ..factories import IncomeFactory, IncomeTypeFactory
+from ..factories import Income, IncomeFactory, IncomeTypeFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
@@ -133,6 +133,26 @@ def test_incomes_load_update_form(client_logged):
     assert 'remark' in form
 
 
+def test_incomes_not_load_other_journal(client_logged, main_user, second_user):
+    it1 = IncomeTypeFactory(title='xxx', journal=main_user.journal)
+    it2 = IncomeTypeFactory(title='yyy', journal=second_user.journal)
+
+    IncomeFactory(income_type=it1)
+    i2 = IncomeFactory(income_type=it2, price=666)
+
+    url = reverse('incomes:incomes_update', kwargs={'pk': i2.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert it2.title not in form
+    assert str(i2.price) not in form
+
+
 def test_income_update_to_another_year(client_logged):
     income = IncomeFactory()
 
@@ -240,8 +260,6 @@ def test_view_incomes_delete_200(client_logged):
 
 
 def test_view_incomes_delete_load_form(client_logged):
-    
-
     p = IncomeFactory()
 
     url = reverse('incomes:incomes_delete', kwargs={'pk': p.pk})
@@ -267,6 +285,32 @@ def test_view_incomes_delete(client_logged):
     assert response.status_code == 200
 
     assert models.Income.objects.all().count() == 0
+
+
+def test_incomes_delete_other_journal_get_form(client_logged, second_user):
+    it2 = IncomeTypeFactory(title='yyy', journal=second_user.journal)
+    i2 = IncomeFactory(income_type=it2, price=666)
+
+    url = reverse('incomes:incomes_delete', kwargs={'pk': i2.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_incomes_delete_other_journal_post_form(client_logged, second_user):
+    it2 = IncomeTypeFactory(title='yyy', journal=second_user.journal)
+    i2 = IncomeFactory(income_type=it2, price=666)
+
+    url = reverse('incomes:incomes_delete', kwargs={'pk': i2.pk})
+    client_logged.post(url, **X_Req)
+
+    assert Income.objects.all().count() == 1
 
 
 # ----------------------------------------------------------------------------
@@ -326,6 +370,22 @@ def test_type_update(client_logged):
 
     assert actual['form_is_valid']
     assert 'TTT' in actual['html_list']
+
+
+def test_income_type_not_load_other_journal(client_logged, main_user, second_user):
+    IncomeTypeFactory(title='xxx', journal=main_user.journal)
+    obj = IncomeTypeFactory(title='yyy', journal=second_user.journal)
+
+    url = reverse('incomes:incomes_type_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert obj.title not in form
 
 
 def test_view_index_200(client_logged):
