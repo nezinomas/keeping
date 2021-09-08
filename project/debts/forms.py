@@ -128,7 +128,7 @@ class BorrowReturnForm(forms.ModelForm):
         borrow = self.cleaned_data.get('borrow')
 
         if borrow:
-            obj = models.Borrow.objects.get(pk=borrow.pk)
+            obj = models.Borrow.objects.related().get(pk=borrow.pk)
 
             if price > (obj.price - obj.returned):
                 raise ValidationError(_('The amount to be paid is more than the debt!'))
@@ -263,7 +263,7 @@ class LentReturnForm(forms.ModelForm):
         lent = self.cleaned_data.get('lent')
 
         if lent:
-            obj = models.Lent.objects.get(pk=lent.pk)
+            obj = models.Lent.objects.related().get(pk=lent.pk)
 
             if price > (obj.price - obj.returned):
                 raise ValidationError(_('The amount to be paid is more than the debt!'))
