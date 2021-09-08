@@ -367,6 +367,23 @@ def test_books_update_past_record(get_user, client_logged):
     assert actual.remark == 'ZZZ'
 
 
+def test_books_update_not_load_other_user(client_logged, second_user):
+    BookFactory()
+    obj = BookFactory(author='xxx', title='yyy', user=second_user)
+
+    url = reverse('books:books_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert obj.author not in form
+    assert obj.title not in form
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                             Book Delete
 # ---------------------------------------------------------------------------------------
@@ -412,6 +429,30 @@ def test_view_books_delete(client_logged):
     assert response.status_code == 200
 
     assert models.Book.objects.all().count() == 0
+
+
+def test_books_delete_other_user_get_form(client_logged, second_user):
+    obj = BookFactory(user=second_user)
+
+    url = reverse('books:books_delete', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_books_delete_other_user_post_form(client_logged, second_user):
+    obj = BookFactory(user=second_user)
+
+    url = reverse('books:books_delete', kwargs={'pk': obj.pk})
+    client_logged.post(url, **X_Req)
+
+    assert models.Book.objects.all().count() == 1
 
 
 # ----------------------------------------------------------------------------
