@@ -133,18 +133,13 @@ def test_incomes_load_update_form(client_logged):
     assert 'remark' in form
 
 
-def test_incomes_not_load_other_journal(client_logged, main_user, second_user):
-    j1 = main_user.journal
-    j2 = second_user.journal
-    a1 = AccountFactory(journal = j1, title='a1')
-    a2 = AccountFactory(journal = j2, title='a2')
-    it1 = IncomeTypeFactory(title='xxx', journal=j1)
-    it2 = IncomeTypeFactory(title='yyy', journal=j2)
+def test_incomes_not_load_other_journal(client_logged, second_user):
+    j = second_user.journal
+    a = AccountFactory(journal = j, title='a')
+    it = IncomeTypeFactory(title='yyy', journal=j)
+    obj = IncomeFactory(income_type=it, price=666, account=a)
 
-    IncomeFactory(income_type=it1, account=a1)
-    i2 = IncomeFactory(income_type=it2, price=666, account=a2)
-
-    url = reverse('incomes:incomes_update', kwargs={'pk': i2.pk})
+    url = reverse('incomes:incomes_update', kwargs={'pk': obj.pk})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -153,9 +148,8 @@ def test_incomes_not_load_other_journal(client_logged, main_user, second_user):
     actual = json.loads(json_str)
     form = actual['html_form']
 
-    assert it2.title not in form
-    assert str(i2.price) not in form
-
+    assert it.title not in form
+    assert str(obj.price) not in form
 
 
 def test_income_update_to_another_year(client_logged):
