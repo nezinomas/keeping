@@ -6,10 +6,13 @@ from freezegun import freeze_time
 
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
+from ...journals.models import Journal
 from ...savings.factories import SavingTypeFactory
 from .. import models, views
-from ..factories import (DayPlanFactory, ExpensePlanFactory, IncomePlanFactory,
-                         NecessaryPlanFactory, SavingPlanFactory)
+from ..factories import (DayPlan, DayPlanFactory, ExpensePlan,
+                         ExpensePlanFactory, IncomePlan, IncomePlanFactory,
+                         NecessaryPlan, NecessaryPlanFactory, SavingPlan,
+                         SavingPlanFactory)
 
 pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -144,6 +147,24 @@ def test_view_incomes_update_year_not_match(client_logged):
     assert response.status_code == 200
 
 
+def test_view_incomes_update_not_load_other_journal(client_logged, second_user):
+    j = second_user.journal
+    t = IncomeTypeFactory(title='yyy', journal=j)
+    obj = IncomePlanFactory(income_type=t, journal=j, january=666)
+
+    url = reverse('plans:incomes_plan_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert t.title not in form
+    assert str(obj.january) not in form
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                       IncomePlan delete
 # ---------------------------------------------------------------------------------------
@@ -189,6 +210,34 @@ def test_view_incomes_delete(client_logged):
     assert response.status_code == 200
 
     assert models.IncomePlan.objects.all().count() == 0
+
+
+def test_view_incomes_delete_other_journal_get_form(client_logged, second_user):
+    j = second_user.journal
+    t = IncomeTypeFactory(title='yyy', journal=j)
+    obj = IncomePlanFactory(income_type=t, journal=j, january=666)
+
+    url = reverse('plans:incomes_plan_delete', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_view_incomes_delete_other_journal_post_form(client_logged, second_user):
+    j = second_user.journal
+    t = IncomeTypeFactory(title='yyy', journal=j)
+    obj = IncomePlanFactory(income_type=t, journal=j, january=666)
+
+    url = reverse('plans:incomes_plan_delete', kwargs={'pk': obj.pk})
+    client_logged.post(url, **X_Req)
+
+    assert IncomePlan.objects.all().count() == 1
 
 
 # ---------------------------------------------------------------------------------------
@@ -277,6 +326,24 @@ def test_view_expenses_update_year_not_match(client_logged):
     assert response.status_code == 200
 
 
+def test_view_expenses_update_not_load_other_journal(client_logged, second_user):
+    j = second_user.journal
+    t = ExpenseTypeFactory(title='yyy', journal=j)
+    obj = ExpensePlanFactory(expense_type=t, journal=j, january=666)
+
+    url = reverse('plans:expenses_plan_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert t.title not in form
+    assert str(obj.january) not in form
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                     ExpensesPlan delete
 # ---------------------------------------------------------------------------------------
@@ -323,6 +390,34 @@ def test_view_expenses_delete(client_logged):
     assert response.status_code == 200
 
     assert models.ExpensePlan.objects.all().count() == 0
+
+
+def test_view_expenses_delete_other_journal_get_form(client_logged, second_user):
+    j = second_user.journal
+    t = ExpenseTypeFactory(title='yyy', journal=j)
+    obj = ExpensePlanFactory(expense_type=t, journal=j, january=666)
+
+    url = reverse('plans:expenses_plan_delete', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_view_expenses_delete_other_journal_post_form(client_logged, second_user):
+    j = second_user.journal
+    t = ExpenseTypeFactory(title='yyy', journal=j)
+    obj = ExpensePlanFactory(expense_type=t, journal=j, january=666)
+
+    url = reverse('plans:expenses_plan_delete', kwargs={'pk': obj.pk})
+    client_logged.post(url, **X_Req)
+
+    assert ExpensePlan.objects.all().count() == 1
 
 
 # ---------------------------------------------------------------------------------------
@@ -411,6 +506,24 @@ def test_view_savings_update_year_not_match(client_logged):
     assert response.status_code == 200
 
 
+def test_view_savings_update_not_load_other_journal(client_logged, second_user):
+    j = second_user.journal
+    t = SavingTypeFactory(title='yyy', journal=j)
+    obj = SavingPlanFactory(saving_type=t, journal=j, january=666)
+
+    url = reverse('plans:savings_plan_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert t.title not in form
+    assert str(obj.january) not in form
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                       SavingPlan delete
 # ---------------------------------------------------------------------------------------
@@ -456,6 +569,34 @@ def test_view_savings_delete(client_logged):
     assert response.status_code == 200
 
     assert models.SavingPlan.objects.all().count() == 0
+
+
+def test_view_savings_delete_other_journal_get_form(client_logged, second_user):
+    j = second_user.journal
+    t = SavingTypeFactory(title='yyy', journal=j)
+    obj = SavingPlanFactory(saving_type=t, journal=j, january=666)
+
+    url = reverse('plans:savings_plan_delete', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_view_savings_delete_other_journal_post_form(client_logged, second_user):
+    j = second_user.journal
+    t = SavingTypeFactory(title='yyy', journal=j)
+    obj = SavingPlanFactory(saving_type=t, journal=j, january=666)
+
+    url = reverse('plans:savings_plan_delete', kwargs={'pk': obj.pk})
+    client_logged.post(url, **X_Req)
+
+    assert SavingPlan.objects.all().count() == 1
 
 
 # ---------------------------------------------------------------------------------------
@@ -543,6 +684,22 @@ def test_view_days_update_year_not_match(client_logged):
     assert response.status_code == 200
 
 
+def test_view_days_update_not_load_other_journal(client_logged, second_user):
+    j = second_user.journal
+    obj = DayPlanFactory(journal=j, january=666)
+
+    url = reverse('plans:days_plan_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert str(obj.january) not in form
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                          DayPlan delete
 # ---------------------------------------------------------------------------------------
@@ -588,6 +745,32 @@ def test_view_days_delete(client_logged):
     assert response.status_code == 200
 
     assert models.DayPlan.objects.all().count() == 0
+
+
+def test_view_days_delete_other_journal_get_form(client_logged, second_user):
+    j = second_user.journal
+    obj = DayPlanFactory(journal=j, january=666)
+
+    url = reverse('plans:days_plan_delete', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_view_days_delete_other_journal_post_form(client_logged, second_user):
+    j = second_user.journal
+    obj = DayPlanFactory(journal=j, january=666)
+
+    url = reverse('plans:days_plan_delete', kwargs={'pk': obj.pk})
+    client_logged.post(url, **X_Req)
+
+    assert DayPlan.objects.all().count() == 1
 
 
 # ---------------------------------------------------------------------------------------
@@ -675,6 +858,22 @@ def test_view_necessarys_update_year_not_match(client_logged):
     assert response.status_code == 200
 
 
+def test_view_necessarys_update_not_load_other_journal(client_logged, second_user):
+    j = second_user.journal
+    obj = NecessaryPlanFactory(journal=j, january=666)
+
+    url = reverse('plans:necessarys_plan_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert str(obj.january) not in form
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                    NecessaryPlan delete
 # ---------------------------------------------------------------------------------------
@@ -720,6 +919,32 @@ def test_view_necessarys_delete(client_logged):
     assert response.status_code == 200
 
     assert models.NecessaryPlan.objects.all().count() == 0
+
+
+def test_view_necessarys_delete_other_journal_get_form(client_logged, second_user):
+    j = second_user.journal
+    obj = ExpensePlanFactory(journal=j, january=666)
+
+    url = reverse('plans:necessarys_plan_delete', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_view_necessarys_delete_other_journal_post_form(client_logged, second_user):
+    j = second_user.journal
+    obj = NecessaryPlanFactory(journal=j, january=666)
+
+    url = reverse('plans:necessarys_plan_delete', kwargs={'pk': obj.pk})
+    client_logged.post(url, **X_Req)
+
+    assert NecessaryPlan.objects.all().count() == 1
 
 
 # ---------------------------------------------------------------------------------------

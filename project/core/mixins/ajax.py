@@ -141,8 +141,15 @@ class AjaxDeleteMixin(GetQuerysetMixin):
 
         if utils.is_ajax(self.request):
             json_data = dict()
-            context = self.get_context_data(**{'no_items': True})
-            rendered = render_to_string(template_name=self.get_template_names(),
+
+            if self.object:
+                context = self.get_context_data(**{'no_items': True})
+                template_name = self.get_template_names()
+            else:
+                context = {}
+                template_name = 'empty_modal.html'
+
+            rendered = render_to_string(template_name=template_name,
                                         context=context,
                                         request=request)
 
@@ -155,7 +162,8 @@ class AjaxDeleteMixin(GetQuerysetMixin):
     def post(self, *args, **kwargs):
         if utils.is_ajax(self.request):
             self.object = self.get_object()
-            self.object.delete()
+            if self.object:
+                self.object.delete()
 
             json_data = dict()
             json_data['form_is_valid'] = True

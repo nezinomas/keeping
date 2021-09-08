@@ -73,6 +73,22 @@ def test_account_update(client_logged):
     assert 'Title' in actual['html_list']
 
 
+def test_account_not_load_other_journal(client_logged, main_user, second_user):
+    AccountFactory(title='xxx', journal=main_user.journal)
+    a2 = AccountFactory(title='yyy', journal=second_user.journal)
+
+    url = reverse('accounts:accounts_update', kwargs={'pk': a2.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert a2.title not in form
+
+
 def test_account_list_view_has_all(fake_request):
     AccountFactory(title='S1')
     AccountFactory(title='S2', closed=1974)

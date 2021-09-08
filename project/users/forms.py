@@ -41,7 +41,7 @@ class InviteForm(forms.Form):
         admin_email = utils.get_user().email
 
         if email == admin_email:
-            raise ValidationError(_('You have entered your own Email.'))
+            raise ValidationError(_('You entered your own Email.'))
 
         emails = User.objects.exclude(email=admin_email).values_list('email', flat=True)
         if email in emails:

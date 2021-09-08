@@ -112,7 +112,10 @@ class DeleteAjaxMixin(
     def get_context_data(self, **kwargs):
         # app = H.app_name(self)
         # model = H.model_plural_name(self)
-        pk = self.object.pk
+        try:
+            pk = self.object.pk
+        except AttributeError:
+            pk = None
 
         context = super().get_context_data(**kwargs)
 

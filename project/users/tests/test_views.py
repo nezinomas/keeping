@@ -19,6 +19,7 @@ from ...users.factories import UserFactory
 from ...users.models import User
 from .. import forms, views
 
+X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
 
 
@@ -750,3 +751,26 @@ def test_invite_signup_journals(_invite_client):
     journal = journals[0]
 
     assert str(journal) == 'bob Journal'
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                             Delete User
+# ---------------------------------------------------------------------------------------
+def test_user_delete_other_user_get_form(client_logged, second_user):
+    url = reverse('users:settings_users_delete', kwargs={'pk': second_user.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_user_delete_other_user_post_form(client_logged, second_user):
+    url = reverse('users:settings_users_delete', kwargs={'pk': second_user.pk})
+    client_logged.post(url, **X_Req)
+
+    assert User.objects.all().count() == 2

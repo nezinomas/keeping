@@ -312,3 +312,17 @@ def test_delete_list_not_rendered(mck_render, mck_context, mck_object, _ajax_req
 
     assert 'html_list' not in actual
     assert actual['form_is_valid']
+
+
+@patch('project.core.mixins.ajax.AjaxDeleteMixin.get_object')
+def test_delete_get_from_other_journal(mck, _ajax_request):
+    mck.return_value = None
+    class Dummy(AjaxDeleteMixin, DeletionMixin):
+        model = Mock()
+
+    view = setup_view(Dummy(), _ajax_request)
+
+    response = view.get(_request)
+    actual = response.content.decode('utf-8')
+
+    assert 'SRSLY' in actual

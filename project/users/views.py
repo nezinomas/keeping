@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth import views as auth_views
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
 from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.http import HttpResponseRedirect
@@ -212,15 +213,22 @@ class InviteSignup(CreateView):
         context['valid_link'] = self.valid_link
         return context
 
+
     def form_valid(self, form, **kwargs):
+        user = None
         token = self.kwargs.get('token')
         signer = TimestampSigner(salt=get_secret('SALT'))
         orig = signer.unsign_object(token, max_age=timedelta(days=self.valid_days))
-        user = User.objects.get(pk=orig['usr'])
 
-        obj = form.save(commit=False)
-        obj.journal = user.journal
-        obj.save()
+        try:
+            user = User.objects.related().get(pk=orig['usr'])
+        except (AttributeError, ObjectDoesNotExist):
+            pass
+
+        if user:
+            obj = form.save(commit=False)
+            obj.journal = user.journal
+            obj.save()
 
         return HttpResponseRedirect(reverse('users:login'))
 
@@ -283,19 +291,21 @@ class SettingsUsersDelete(SettingsQueryMixin, DeleteAjaxMixin):
         json_data = {}
         self.object = self.get_object()
 
-        if self.object.pk == request.user.pk:
-            rdnr = render_to_string(
-                request=request,
-                template_name='core/includes/generic_modal.html',
-                context={
-                    'title': _('Warning'),
-                    'text': _('You cannot delete yourself.')
-                },
-            )
-            json_data = {
-                'form_is_valid': False,
-                'html_form': rdnr
-            }
+        if self.object:
+            if self.object.pk == request.user.pk:
+                rdnr = render_to_string(
+                    request=request,
+                    template_name='core/includes/generic_modal.html',
+                    context={
+                        'title': _('Warning'),
+                        'text': _('You cannot delete yourself.')
+                    },
+                )
+                json_data = {
+                    'form_is_valid': False,
+                    'html_form': rdnr
+                }
+
         return json_data
 
     def get(self, request, *args, **kwargs):

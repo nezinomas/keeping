@@ -83,6 +83,25 @@ def test_update(client_logged):
     assert f'<a role="button" data-url="/drinks/update/{p.pk}/"' in actual['html_list']
 
 
+@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
+@patch('project.drinks.forms.App_name', 'Counter Type')
+def test_drinks_update_not_load_other_user(client_logged, second_user):
+    DrinkFactory()
+    obj = DrinkFactory(quantity=13, user=second_user)
+
+    url = reverse('drinks:drinks_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert str(obj.quantity) not in form
+    assert str(obj.date) not in form
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                            Drink Delete
 # ---------------------------------------------------------------------------------------
@@ -102,6 +121,7 @@ def test_view_drinks_delete_200(client_logged):
     assert response.status_code == 200
 
 
+@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_view_drinks_delete_load_form(client_logged):
     p = DrinkFactory()
 
@@ -117,6 +137,7 @@ def test_view_drinks_delete_load_form(client_logged):
     assert 'Ar tikrai norite ištrinti: <strong>1999-01-01: 1.0</strong>?' in actual
 
 
+@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_view_drinks_delete(client_logged):
     p = DrinkFactory()
 
@@ -128,6 +149,30 @@ def test_view_drinks_delete(client_logged):
     assert response.status_code == 200
 
     assert models.Drink.objects.all().count() == 0
+
+
+def test_drinks_delete_other_user_get_form(client_logged, second_user):
+    obj = DrinkFactory(user=second_user)
+
+    url = reverse('drinks:drinks_delete', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_drinks_delete_other_user_post_form(client_logged, second_user):
+    obj = DrinkFactory(user=second_user)
+
+    url = reverse('drinks:drinks_delete', kwargs={'pk': obj.pk})
+    client_logged.post(url, **X_Req)
+
+    assert models.Drink.objects.all().count() == 1
 
 
 # ---------------------------------------------------------------------------------------
@@ -187,6 +232,22 @@ def test_target_update(client_logged):
 
     assert actual['form_is_valid']
     assert '66' in actual['html_list']
+
+
+def test_target_update_not_load_other_user(client_logged, second_user):
+    DrinkTargetFactory()
+    obj = DrinkTargetFactory(quantity=666, user=second_user)
+
+    url = reverse('drinks:drinks_target_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert str(obj.quantity) not in form
 
 
 def test_target_empty_db(client_logged):

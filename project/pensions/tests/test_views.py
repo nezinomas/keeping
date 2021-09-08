@@ -5,7 +5,7 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 
 from .. import models, views
-from ..factories import PensionFactory, PensionTypeFactory
+from ..factories import Pension, PensionFactory, PensionTypeFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
@@ -155,6 +155,26 @@ def test_pensions_update(client_logged):
     assert 'Pastaba' in actual['html_list']
 
 
+def test_pensions_not_load_other_journal(client_logged, main_user, second_user):
+    it1 = PensionTypeFactory(title='xxx', journal=main_user.journal)
+    it2 = PensionTypeFactory(title='yyy', journal=second_user.journal)
+
+    PensionFactory(pension_type=it1)
+    i2 = PensionFactory(pension_type=it2, price=666)
+
+    url = reverse('pensions:pensions_update', kwargs={'pk': i2.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert it2.title not in form
+    assert str(i2.price) not in form
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                           Pension Delete
 # ---------------------------------------------------------------------------------------
@@ -200,6 +220,32 @@ def test_view_pensions_delete(client_logged):
     assert response.status_code == 200
 
     assert models.Pension.objects.all().count() == 0
+
+
+def test_pensions_delete_other_journal_get_form(client_logged, second_user):
+    it2 = PensionTypeFactory(title='yyy', journal=second_user.journal)
+    i2 = PensionFactory(pension_type=it2, price=666)
+
+    url = reverse('pensions:pensions_delete', kwargs={'pk': i2.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_pensions_delete_other_journal_post_form(client_logged, second_user):
+    it2 = PensionTypeFactory(title='yyy', journal=second_user.journal)
+    i2 = PensionFactory(pension_type=it2, price=666)
+
+    url = reverse('pensions:pensions_delete', kwargs={'pk': i2.pk})
+    client_logged.post(url, **X_Req)
+
+    assert Pension.objects.all().count() == 1
 
 
 # ---------------------------------------------------------------------------------------
@@ -259,6 +305,22 @@ def test_type_update(client_logged):
 
     assert actual['form_is_valid']
     assert 'TTT' in actual['html_list']
+
+
+def test_pension_type_not_load_other_journal(client_logged, main_user, second_user):
+    PensionTypeFactory(title='xxx', journal=main_user.journal)
+    obj = PensionTypeFactory(title='yyy', journal=second_user.journal)
+
+    url = reverse('pensions:pensions_type_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert obj.title not in form
 
 
 @pytest.mark.django_db

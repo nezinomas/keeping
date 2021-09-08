@@ -216,6 +216,30 @@ def test_borrow_return_update(client_logged):
     assert models.Borrow.objects.items().get(pk=l.pk).returned == Decimal('30')
 
 
+def test_borrow_return_update_not_load_other_journal(client_logged, main_user, second_user):
+    j1 = main_user.journal
+    j2 = second_user.journal
+    a1 = AccountFactory(journal=j1, title='a1')
+    a2 = AccountFactory(journal=j2, title='a2')
+    d1 = factories.BorrowFactory(account=a1, journal=j1)
+    d2 = factories.BorrowFactory(account=a2, journal=j2)
+
+    factories.BorrowReturnFactory(borrow=d1, account=a1)
+    obj = factories.BorrowReturnFactory(borrow=d2, account=a2, price=666)
+
+    url = reverse('debts:borrows_return_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert d2.name not in form
+    assert str(obj.price) not in form
+
+
 def test_borrow_return_update_not_render_html_list(client_logged):
     e = factories.BorrowReturnFactory()
     l = factories.BorrowFactory()
@@ -293,3 +317,29 @@ def test_borrow_return_delete_not_render_html_list(client_logged):
     actual = json.loads(json_str)
 
     assert not actual.get('html_list')
+
+
+def test_borrow_return_delete_other_journal_get_form(client_logged, second_user):
+    d = factories.BorrowFactory(journal=second_user.journal)
+    obj = factories.BorrowReturnFactory(borrow=d)
+
+    url = reverse('debts:borrows_return_delete', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_borrow_return_delete_other_journal_post_form(client_logged, second_user):
+    d = factories.BorrowFactory(journal=second_user.journal)
+    obj = factories.BorrowReturnFactory(borrow=d)
+
+    url = reverse('debts:borrows_return_delete', kwargs={'pk': obj.pk})
+    client_logged.post(url, **X_Req)
+
+    assert models.BorrowReturn.objects.all().count() == 1

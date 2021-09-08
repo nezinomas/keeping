@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-02 16:51+0300\n"
-"PO-Revision-Date: 2021-09-02 16:59+0300\n"
+"POT-Creation-Date: 2021-09-08 12:13+0300\n"
+"PO-Revision-Date: 2021-09-08 12:13+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -529,7 +529,7 @@ msgid "Edit"
 msgstr "Redaguoti"
 
 #: .\project\books\templates\books\includes\books_list.html:34
-#: .\project\core\mixins\views.py:121
+#: .\project\core\mixins\views.py:124
 #: .\project\core\templates\core\includes\generic_delete_form.html:14
 #: .\project\counts\templates\counts\includes\counts_list.html:27
 #: .\project\debts\templates\debts\includes\borrows_delete_form.html:4
@@ -719,7 +719,7 @@ msgstr "Šeštadienis"
 msgid "Sunday"
 msgstr "Sekmadienis"
 
-#: .\project\core\mixins\ajax.py:220
+#: .\project\core\mixins\ajax.py:228
 msgid "Form is broken."
 msgstr "Forma neveikia."
 
@@ -748,6 +748,7 @@ msgstr "Įrašyti ir uždaryti"
 #: .\project\core\templates\core\includes\generic_modal.html:4
 #: .\project\core\templates\core\includes\generic_modal.html:10
 #: .\project\plans\templates\plans\includes\copy_plans_form.html:12
+#: .\project\templates\empty_modal.html:4
 #: .\project\templates\modal_images.html:9
 #: .\project\users\templates\users\invite.html:7
 #: .\project\users\templates\users\invite.html:16
@@ -1495,7 +1496,7 @@ msgid "Email"
 msgstr "El. paštas"
 
 #: .\project\users\forms.py:44
-msgid "You have entered your own Email."
+msgid "You entered your own Email."
 msgstr "Įvedėte savo Email."
 
 #: .\project\users\forms.py:48
@@ -1653,11 +1654,11 @@ msgstr ""
 "atstatymo nuoroda. Jei laiško negausite per kelias minutes, patikrinkite "
 "šlamšto aplanką."
 
-#: .\project\users\views.py:291
+#: .\project\users\views.py:292
 msgid "Warning"
 msgstr "Įspėjimas"
 
-#: .\project\users\views.py:292
+#: .\project\users\views.py:293
 msgid "You cannot delete yourself."
 msgstr "Negalite ištrinti savęs."
 
