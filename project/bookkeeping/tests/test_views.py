@@ -343,7 +343,7 @@ def test_account_worth_reset_404(client_logged):
     url = reverse('bookkeeping:accounts_worth_reset', kwargs={'pk': 1})
     response = client_logged.get(url)
 
-    assert response.status_code == 404
+    assert response.status_code == 204
 
 
 def test_account_worth_reset_string_404(client_logged):
@@ -384,6 +384,30 @@ def test_account_worth_reset_no_object(client_logged):
     actual = models.AccountWorth.objects.all()
 
     assert actual.count() == 0
+
+
+def test_account_worth_reset_other_journal_account(client_logged, main_user, second_user):
+    j1 = main_user.journal
+    j2 = second_user.journal
+    a1 = AccountFactory(title='x', journal=j1)
+    a2 = AccountFactory(title='y', journal=j2)
+    AccountWorthFactory(account=a1, price=777)
+    AccountWorthFactory(account=a2, price=666)
+
+    url = reverse('bookkeeping:accounts_worth_reset', kwargs={'pk': a2.pk})
+    response = client_logged.get(url)
+
+    assert response.status_code == 204
+    assert models.AccountWorth.objects.last().price == Decimal('666')
+
+
+def test_account_worth_reset_no_worth_record(client_logged):
+    a = AccountFactory()
+
+    url = reverse('bookkeeping:accounts_worth_reset', kwargs={'pk': a.pk})
+    response = client_logged.get(url)
+
+    assert response.status_code == 204
 
 
 # ---------------------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import F, Sum
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
@@ -11,6 +12,7 @@ from django.views.generic import CreateView
 from ..accounts.models import Account
 from ..core.lib.transalation import month_names
 from ..core.mixins.formset import FormsetMixin
+from ..core.mixins.get import GetQuerysetMixin
 from ..core.mixins.views import CreateAjaxMixin, DispatchAjaxMixin, IndexMixin
 from ..expenses.models import Expense
 from ..incomes.models import Income
@@ -210,21 +212,26 @@ class ExpandDayExpenses(IndexMixin):
         return JsonResponse({'html': html})
 
 
-class AccountsWorthReset(LoginRequiredMixin, CreateView):
+class AccountsWorthReset(LoginRequiredMixin, GetQuerysetMixin, CreateView):
     account = None
     model = Account
     template_name = 'bookkeeping/includes/accounts_worth.html'
 
     def dispatch(self, request, *args, **kwargs):
         self.account = self.get_object()
-        worth = (
-            AccountWorth.objects
-            .filter(account=self.account)
-            .latest('date')
-        )
+        if self.account:
+            try:
+                worth = (
+                    AccountWorth
+                    .objects
+                    .filter(account=self.account)
+                    .latest('date')
+                )
+            except ObjectDoesNotExist:
+                worth = None
 
-        if worth.price == 0:
-            return HttpResponse(status=204)
+        if not self.account or not worth or worth.price == 0:
+            return HttpResponse(status=204) # 204 - No Content
 
         return super().dispatch(request, *args, **kwargs)
 
