@@ -120,6 +120,26 @@ def test_load_to_account_form(client_logged):
     assert response.status_code == 200
 
 
+def test_load_to_account_must_logged(client):
+    url = reverse('accounts:load_to_account')
+
+    response = client.get(url, follow=True, **X_Req)
+
+    assert response.status_code == 200
+
+    from ...users.views import Login
+    assert response.resolver_match.func.view_class is Login
+
+
+def test_load_to_account_request_ajax(client_logged):
+    a1 = AccountFactory(title='A1')
+    url = reverse('accounts:load_to_account')
+
+    response = client_logged.get(url, {'id': a1.pk})
+
+    assert 'SRSLY' in response.content.decode('utf-8')
+
+
 def test_load_to_account(client_logged, main_user, second_user):
     a1 = AccountFactory(title='A1', journal=main_user.journal)
     AccountFactory(title='A2', journal=main_user.journal)
@@ -127,7 +147,7 @@ def test_load_to_account(client_logged, main_user, second_user):
 
     url = reverse('accounts:load_to_account')
 
-    response = client_logged.get(url, {'id': a1.pk})
+    response = client_logged.get(url, {'id': a1.pk}, **X_Req)
 
     assert response.status_code == 200
     assert len(response.context['objects']) == 1
@@ -136,7 +156,7 @@ def test_load_to_account(client_logged, main_user, second_user):
 def test_load_to_account_empty_parent(client_logged):
     url = reverse('accounts:load_to_account')
 
-    response = client_logged.get(url, {'id': ''})
+    response = client_logged.get(url, {'id': ''}, **X_Req)
 
     assert response.status_code == 200
     assert response.context['objects'] == []

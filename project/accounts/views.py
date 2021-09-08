@@ -1,5 +1,9 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.views.generic.base import TemplateView
 
+from ..core.lib import utils
 from ..core.mixins.views import (CreateAjaxMixin, DispatchListsMixin,
                                  ListMixin, UpdateAjaxMixin)
 from . import forms, models
@@ -26,8 +30,14 @@ class Update(UpdateAjaxMixin):
         return models.Account.objects.related()
 
 
-class LoadAccount(TemplateView):
+class LoadAccount(LoginRequiredMixin, TemplateView):
     template_name = 'core/dropdown.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not utils.is_ajax(self.request):
+            return HttpResponse(render_to_string('srsly.html'))
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         objects = []
