@@ -81,6 +81,23 @@ def test_view_update(client_logged):
     assert f'<a role="button" data-url="/counts/update/count-type/{p.pk}/"' in actual['html_list']
 
 
+def test_view_update_not_load_other_user(client_logged, second_user):
+    CountFactory()
+    obj = CountFactory(quantity=666, user=second_user)
+
+    url = reverse('counts:counts_update', kwargs={'pk': obj.pk, 'count_type': 'count-type'})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert str(obj.quantity) not in form
+    assert str(obj.date) not in form
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                            Count Delete
 # ---------------------------------------------------------------------------------------
@@ -117,15 +134,39 @@ def test_view_delete_load_form(client_logged):
 
 def test_view_delete(client_logged):
     p = CountFactory()
-
+    print('>>>>', Count.objects.values())
     assert Count.objects.all().count() == 1
-    url = reverse('counts:counts_delete', kwargs={'pk': p.pk, 'count_type': 'counter-type'})
+    url = reverse('counts:counts_delete', kwargs={'pk': p.pk, 'count_type': 'count-type'})
 
     response = client_logged.post(url, {}, **X_Req)
 
     assert response.status_code == 200
 
     assert Count.objects.all().count() == 0
+
+
+def test_view_delete_other_user_get_form(client_logged, second_user):
+    obj = CountFactory(user=second_user)
+
+    url = reverse('counts:counts_delete', kwargs={'pk': obj.pk, 'count_type': 'count-type'})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_view_delete_other_user_post_form(client_logged, second_user):
+    obj = CountFactory(user=second_user)
+
+    url = reverse('counts:counts_delete', kwargs={'pk': obj.pk, 'count_type': 'count-type'})
+    client_logged.post(url, **X_Req)
+
+    assert Count.objects.all().count() == 1
 
 
 # ---------------------------------------------------------------------------------------
@@ -238,7 +279,7 @@ def test_index_chart_histogram(client_logged):
 def test_index_info_row(client_logged):
     CountFactory(quantity=3)
 
-    url = reverse('counts:counts_index', kwargs={'count_type': 'counter-type'})
+    url = reverse('counts:counts_index', kwargs={'count_type': 'count-type'})
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -502,6 +543,21 @@ def test_count_type_update(client_logged):
     assert Count.objects.first().counter_type == 'yyy'
 
 
+def test_count_type_update_not_load_other_user(client_logged, second_user):
+    obj = CountTypeFactory(title='xxx', user=second_user)
+
+    url = reverse('counts:counts_type_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert obj.title not in form
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                        CountType Delete
 # ---------------------------------------------------------------------------------------
@@ -548,6 +604,30 @@ def test_count_type_delete(client_logged):
 
     assert CountType.objects.count() == 0
     assert Count.objects.count() == 0
+
+
+def test_count_type_delete_other_user_get_form(client_logged, second_user):
+    obj = CountTypeFactory(user=second_user)
+
+    url = reverse('counts:counts_type_delete', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_count_type_delete_other_user_post_form(client_logged, second_user):
+    obj = CountTypeFactory(user=second_user)
+
+    url = reverse('counts:counts_type_delete', kwargs={'pk': obj.pk})
+    client_logged.post(url, **X_Req)
+
+    assert CountType.objects.all().count() == 1
 
 
 # ---------------------------------------------------------------------------------------
