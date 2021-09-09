@@ -639,7 +639,7 @@ def test_load_saving_type_func():
 
 def test_load_saving_type_status_code(client_logged):
     url = reverse('transactions:load_saving_type')
-    response = client_logged.get(url, {'id': 1})
+    response = client_logged.get(url, {'id': 1}, **X_Req)
 
     assert response.status_code == 200
 
@@ -649,7 +649,7 @@ def test_load_saving_type_closed_in_past(client_logged):
     SavingTypeFactory(title='S2', closed=1000)
 
     url = reverse('transactions:load_saving_type')
-    response = client_logged.get(url, {'id': s1.pk})
+    response = client_logged.get(url, {'id': s1.pk}, **X_Req)
 
     assert 'S1' not in str(response.content)
     assert 'S2' not in str(response.content)
@@ -660,7 +660,7 @@ def test_load_saving_type_for_current_user(client_logged, second_user):
     SavingTypeFactory(title='S2', journal=second_user.journal)
 
     url = reverse('transactions:load_saving_type')
-    response = client_logged.get(url, {'id': s1.pk})
+    response = client_logged.get(url, {'id': s1.pk}, **X_Req)
 
     assert 'S1' not in str(response.content)
     assert 'S2' not in str(response.content)
@@ -668,10 +668,30 @@ def test_load_saving_type_for_current_user(client_logged, second_user):
 
 def test_load_saving_type_empty_parent_pk(client_logged):
     url = reverse('transactions:load_saving_type')
-    response = client_logged.get(url, {'id': ''})
+    response = client_logged.get(url, {'id': ''}, **X_Req)
 
     assert response.status_code == 200
     assert response.context['objects'] == []
+
+
+def test_load_saving_type_must_logged(client):
+    url = reverse('transactions:load_saving_type')
+
+    response = client.get(url, follow=True, **X_Req)
+
+    assert response.status_code == 200
+
+    from ...users.views import Login
+    assert response.resolver_match.func.view_class is Login
+
+
+def test_load_saving_type_request_ajax(client_logged):
+    a1 = SavingTypeFactory()
+    url = reverse('transactions:load_saving_type')
+
+    response = client_logged.get(url, {'id': a1.pk})
+
+    assert 'SRSLY' in response.content.decode('utf-8')
 
 
 # ---------------------------------------------------------------------------------------

@@ -1,6 +1,10 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.views.generic.base import TemplateView
 
 from ..accounts.views import Lists as accounts_list
+from ..core.lib import utils
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                  DispatchListsMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
@@ -24,8 +28,14 @@ class Index(IndexMixin):
 
 
 # SavingType dropdown
-class LoadSavingType(TemplateView):
+class LoadSavingType(LoginRequiredMixin, TemplateView):
     template_name = 'core/dropdown.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not utils.is_ajax(self.request):
+            return HttpResponse(render_to_string('srsly.html'))
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         objects = []
