@@ -11,6 +11,7 @@ from . import forms, models
 from .lib.calc_day_sum import CalcDaySum
 
 
+@login_required
 def plans_stats(request):
     ajax_trigger = request.GET.get('ajax_trigger')
     arr = CalcDaySum(request.user.year).plans_stats
