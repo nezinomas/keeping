@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
@@ -34,7 +35,7 @@ class Index(IndexMixin):
         return context
 
 
-class BorrowReload(DispatchAjaxMixin, TemplateView):
+class BorrowReload(LoginRequiredMixin, DispatchAjaxMixin, TemplateView):
     template_name = 'debts/index.html'
     redirect_view = reverse_lazy('debts:debts_index')
 
@@ -87,7 +88,7 @@ class BorrowReturnDelete(DeleteAjaxMixin):
     list_render_output = False
 
 
-class LentReload(DispatchAjaxMixin, TemplateView):
+class LentReload(LoginRequiredMixin, DispatchAjaxMixin, TemplateView):
     template_name = 'debts/index.html'
     redirect_view = reverse_lazy('debts:debts_index')
 
