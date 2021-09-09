@@ -10,30 +10,13 @@
         </tr>
     </thead>
     <tbody>
+        {% for item in items %}
         <tr>
-            <td>{% translate 'Incomes' %}</td>
-            <td>{{ plan_incomes|floatformat:2 }}</td>
-            <td class="{{ fact_incomes|compare:plan_incomes }}">{{ fact_incomes|floatformat:2 }}</td>
+            <td>{{ item.title }}</td>
+            <td>{{ item.plan|floatformat:2 }}</td>
+            <td class="{{ item.fact|compare:item.plan }}">{{ item.fact|floatformat:2 }}</td>
         </tr>
-        <tr>
-            <td>{% translate 'Expenses' %}</td>
-            <td>{{ plan_expenses|floatformat:2 }}</td>
-            <td class="{{ plan_expenses|compare:fact_expenses }}">{{ fact_expenses|floatformat:2 }}</td>
-        </tr>
-        <tr>
-            <td>{% translate 'Savings' %}</td>
-            <td>{{ plan_savings|floatformat:2 }}</td>
-            <td class="{{ plan_savings|compare:fact_savings }}">{{ fact_savings|floatformat:2 }}</td>
-        </tr>
-        <tr>
-            <td>{% translate 'Money for a day' %}</td>
-            <td>{{ plan_per_day|floatformat:2 }}</td>
-            <td class="{{ plan_per_day|compare:fact_per_day }}">{{ fact_per_day|floatformat:2 }}</td>
-        </tr>
-        <tr>
-            <td>{% translate 'Balance' %}</td>
-            <td>{{ plan_remains|floatformat:2 }}</td>
-            <td class="{{ fact_remains|compare:plan_remains }}">{{ fact_remains|floatformat:2 }}</td>
-        </tr>
+        {% endfor %}
+
     </tbody>
 </table>

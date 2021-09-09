@@ -230,17 +230,28 @@ class MonthHelper():
         plan_remains = get_val(self._day_plans.remains, self._month)
 
         context = {
-            'plan_per_day': plan_day_sum,
-            'plan_incomes': plan_incomes,
-            'plan_savings': plan_savings,
-            'plan_expenses': plan_expenses,
-            'plan_remains': plan_remains,
-            'fact_per_day': self._spending.avg_per_day,
-            'fact_incomes': fact_incomes,
-            'fact_savings': fact_savings,
-            'fact_expenses': fact_expenses,
-            'fact_remains': fact_incomes - fact_expenses - fact_savings,
-        }
+            'items': [{
+                    'title': _('Incomes'),
+                    'plan': plan_incomes,
+                    'fact': fact_incomes,
+                }, {
+                    'title': _('Expenses'),
+                    'plan': plan_expenses,
+                    'fact': fact_expenses,
+                }, {
+                    'title': _('Savings'),
+                    'plan': plan_savings,
+                    'fact': fact_savings,
+                }, {
+                    'title': _('Money for a day'),
+                    'plan': plan_day_sum,
+                    'fact': self._spending.avg_per_day,
+                }, {
+                    'title': _('Balance'),
+                    'plan': plan_remains,
+                    'fact': fact_incomes - fact_expenses - fact_savings,
+                },
+        ]}
 
         return render_to_string(
             template_name='bookkeeping/includes/spending_info.html',
