@@ -629,23 +629,43 @@ def test_load_expense_name_isnull_count(client_logged, _db_data):
     change_profile_year(client_logged)
 
     url = reverse('expenses:load_expense_name')
-    response = client_logged.get(url, {'expense_type': 1})
+    response = client_logged.get(url, {'expense_type': 1}, **X_Req)
 
     assert response.context['objects'].count() == 1
 
 
 def test_load_expense_name_all(client_logged, _db_data):
     url = reverse('expenses:load_expense_name')
-    response = client_logged.get(url, {'expense_type': 1})
+    response = client_logged.get(url, {'expense_type': 1}, **X_Req)
 
     assert response.context['objects'].count() == 2
 
 
 def test_load_expense_name_select_empty_parent(client_logged, _db_data):
     url = reverse('expenses:load_expense_name')
-    response = client_logged.get(url, {'expense_type': ''})
+    response = client_logged.get(url, {'expense_type': ''}, **X_Req)
 
     assert response.context['objects'] == []
+
+
+def test_load_expense_name_must_logged(client):
+    url = reverse('expenses:load_expense_name')
+
+    response = client.get(url, follow=True, **X_Req)
+
+    assert response.status_code == 200
+
+    from ...users.views import Login
+    assert response.resolver_match.func.view_class is Login
+
+
+def test_load_expense_name_request_ajax(client_logged):
+    a1 = ExpenseNameFactory()
+    url = reverse('expenses:load_expense_name')
+
+    response = client_logged.get(url, {'id': a1.parent.pk})
+
+    assert 'SRSLY' in response.content.decode('utf-8')
 
 
 # ---------------------------------------------------------------------------------------

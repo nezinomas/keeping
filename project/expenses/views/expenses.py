@@ -1,7 +1,8 @@
 from datetime import datetime
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
@@ -9,7 +10,7 @@ from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 
 from ...core.forms import SearchForm
-from ...core.lib import search
+from ...core.lib import search, utils
 from ...core.mixins.ajax import AjaxSearchMixin
 from ...core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                   DispatchAjaxMixin, DispatchListsMixin,
@@ -136,8 +137,14 @@ class ReloadExpenses(DispatchAjaxMixin, TemplateView):
         return JsonResponse(context)
 
 
-class LoadExpenseName(TemplateView):
+class LoadExpenseName(LoginRequiredMixin, TemplateView):
     template_name = 'core/dropdown.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not utils.is_ajax(self.request):
+            return HttpResponse(render_to_string('srsly.html'))
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         objects = []
