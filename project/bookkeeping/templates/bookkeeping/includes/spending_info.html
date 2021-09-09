@@ -16,14 +16,14 @@
             <td class="{{ fact_incomes|compare:plan_incomes }}">{{ fact_incomes|floatformat:2 }}</td>
         </tr>
         <tr>
-            <td>{% translate 'Savings' %}</td>
-            <td>{{ plan_savings|floatformat:2 }}</td>
-            <td class="{{ plan_savings|compare:fact_savings }}">{{ fact_savings|floatformat:2 }}</td>
-        </tr>
-        <tr>
             <td>{% translate 'Expenses' %}</td>
             <td>{{ plan_expenses|floatformat:2 }}</td>
             <td class="{{ plan_expenses|compare:fact_expenses }}">{{ fact_expenses|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <td>{% translate 'Savings' %}</td>
+            <td>{{ plan_savings|floatformat:2 }}</td>
+            <td class="{{ plan_savings|compare:fact_savings }}">{{ fact_savings|floatformat:2 }}</td>
         </tr>
         <tr>
             <td>{% translate 'Money for a day' %}</td>
