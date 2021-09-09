@@ -124,7 +124,7 @@ class Search(AjaxSearchMixin):
         return super().form_valid(form, **kwargs)
 
 
-class ReloadExpenses(DispatchAjaxMixin, TemplateView):
+class ReloadExpenses(LoginRequiredMixin, DispatchAjaxMixin, TemplateView):
     template_name = f'{App_name}/index.html'
     redirect_view = reverse_lazy(f'{App_name}:{App_name}_index')
 
