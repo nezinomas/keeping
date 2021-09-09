@@ -218,16 +218,18 @@ class MonthHelper():
 
     def render_info(self):
         fact_incomes = Income.objects.sum_by_month(self._year, self._month)
+        fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
         fact_savings = self._day.total_row.get(_('Savings'))
         fact_savings = fact_savings if fact_savings else 0.0
         fact_expenses = self._day.total_row.get('total') - fact_savings
-        fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
+        fact_per_day = self._spending.avg_per_day
+        fact_balance = fact_incomes - fact_expenses - fact_savings
 
         plan_incomes = get_val(self._day_plans.incomes, self._month)
         plan_savings = get_val(self._day_plans.savings, self._month)
         plan_expenses = plan_incomes - plan_savings
-        plan_day_sum = get_val(self._day_plans.day_input, self._month)
-        plan_remains = get_val(self._day_plans.remains, self._month)
+        plan_per_day = get_val(self._day_plans.day_input, self._month)
+        plan_balance = get_val(self._day_plans.remains, self._month)
 
         context = {
             'items': [{
@@ -244,12 +246,12 @@ class MonthHelper():
                     'fact': fact_savings,
                 }, {
                     'title': _('Money for a day'),
-                    'plan': plan_day_sum,
-                    'fact': self._spending.avg_per_day,
+                    'plan': plan_per_day,
+                    'fact': fact_per_day,
                 }, {
                     'title': _('Balance'),
-                    'plan': plan_remains,
-                    'fact': fact_incomes - fact_expenses - fact_savings,
+                    'plan': plan_balance,
+                    'fact': fact_balance,
                 },
         ]}
 
