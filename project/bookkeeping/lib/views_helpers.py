@@ -236,22 +236,27 @@ class MonthHelper():
                     'title': _('Incomes'),
                     'plan': plan_incomes,
                     'fact': fact_incomes,
+                    'delta': fact_incomes - plan_incomes,
                 }, {
                     'title': _('Expenses'),
                     'plan': plan_expenses,
                     'fact': fact_expenses,
+                    'delta': plan_expenses - fact_expenses,
                 }, {
                     'title': _('Savings'),
                     'plan': plan_savings,
                     'fact': fact_savings,
+                    'delta': plan_savings - fact_savings,
                 }, {
                     'title': _('Money for a day'),
                     'plan': plan_per_day,
                     'fact': fact_per_day,
+                    'delta': plan_per_day - fact_per_day,
                 }, {
                     'title': _('Balance'),
                     'plan': plan_balance,
                     'fact': fact_balance,
+                    'delta': plan_balance - fact_balance,
                 },
         ]}
 
