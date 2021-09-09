@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.shortcuts import redirect
@@ -34,7 +35,7 @@ class Redirect(RedirectView):
         return url
 
 
-class ReloadStats(ContextMixin, DispatchAjaxMixin, TemplateView):
+class ReloadStats(LoginRequiredMixin, ContextMixin, DispatchAjaxMixin, TemplateView):
     template_name = 'counts/index.html'
     redirect_view = reverse_lazy('counts:counts_index',
                                  kwargs={'count_type': 'counter'})
