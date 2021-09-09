@@ -256,7 +256,7 @@ class MonthHelper():
                     'title': _('Balance'),
                     'plan': plan_balance,
                     'fact': fact_balance,
-                    'delta': plan_balance - fact_balance,
+                    'delta': fact_balance - plan_balance,
                 },
         ]}
 
