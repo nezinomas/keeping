@@ -88,7 +88,7 @@ class Expense(MixinFromDbAccountId):
     attachment = models.FileField(
         blank=True,
         upload_to=upload_attachment,
-        validators=[FileExtensionValidator(['txt', 'pdf', 'jpg', 'xls', 'xlsx', 'doc', 'docx'])],
+        validators=[FileExtensionValidator(['pdf', 'jpg', 'gif'])],
     )
 
     class Meta:
