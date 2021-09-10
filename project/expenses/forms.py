@@ -1,6 +1,7 @@
 from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
@@ -92,6 +93,16 @@ class ExpenseForm(forms.ModelForm):
             raise forms.ValidationError(msg)
 
         return _exception
+
+    def clean_attachment(self):
+        image = self.cleaned_data.get('attachment', False)
+
+        if image:
+            if image.size > 4*1024*1024:
+                raise ValidationError(_("Image file too large ( > 4Mb )"))
+            return image
+
+        raise ValidationError(_("Couldn't read uploaded image"))
 
 
 class ExpenseTypeForm(forms.ModelForm):
