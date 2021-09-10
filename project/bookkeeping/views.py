@@ -196,7 +196,8 @@ class ExpandDayExpenses(IndexMixin):
             dt = datetime(1970, 1, 1)
 
         items = (
-            Expense.objects
+            Expense
+            .objects
             .items()
             .filter(date=dt)
             .order_by('expense_type', F('expense_name').asc(), 'price')

@@ -44,7 +44,8 @@ class LoadAccount(LoginRequiredMixin, TemplateView):
         pk = request.GET.get('id')
 
         if pk:
-            objects = (models.Account
+            objects = (models
+                       .Account
                        .objects
                        .items()
                        .exclude(pk=pk))

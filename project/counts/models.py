@@ -39,20 +39,28 @@ class CountType(TitleAbstract):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.__original_title = self.title
+
+        if self.pk:
+            self.__original_title = self.title
 
     def save(self, *args, **kwargs):
-        if self.title != self.__original_title:
-            (Count
-            .objects
-            .filter(counter_type=slugify(self.__original_title))
-            .update(counter_type=slugify(self.title)))
+        if self.pk:
+            if self.title != self.__original_title:
+                (Count
+                 .objects
+                 .related()
+                 .filter(counter_type=slugify(self.__original_title))
+                 .update(counter_type=slugify(self.title)))
 
         super().save(*args, **kwargs)
 
         self.__original_title = self.title
 
     def delete(self, *args, **kwargs):
-        Count.objects.filter(counter_type=slugify(self.title)).delete()
+        (Count
+         .objects
+         .related()
+         .filter(counter_type=slugify(self.title))
+         .delete())
 
         super().delete(*args, **kwargs)

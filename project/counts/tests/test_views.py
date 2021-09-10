@@ -522,8 +522,8 @@ def test_count_type_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-
-def test_count_type_update(client_logged):
+@patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
+def test_count_type_update(mck, client_logged):
     obj = CountTypeFactory(title='XXX')
     CountFactory(counter_type=slugify('XXX'))
 
@@ -592,7 +592,8 @@ def test_count_type_delete_load_form(client_logged):
     assert 'Ar tikrai norite ištrinti: <strong>Count Type</strong>?' in actual
 
 
-def test_count_type_delete(client_logged):
+@patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
+def test_count_type_delete(mck, client_logged):
     obj = CountTypeFactory(title='XXX')
     CountFactory(counter_type=slugify('XXX'))
 

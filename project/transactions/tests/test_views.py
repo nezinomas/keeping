@@ -558,6 +558,26 @@ def test_savings_change_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
+def test_savings_change_not_show_other_journal_types(client_logged, second_user):
+    a_from = SavingTypeFactory()
+    SavingTypeFactory(title='XXX', journal=second_user.journal)
+
+    data={
+        'date': '1999-01-01',
+        'from_account': a_from.pk,
+    }
+
+    url = reverse('transactions:savings_change_new')
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
+    assert 'XXX' not in actual['html_form']
+
+
 def test_savings_change_update_to_another_year(client_logged):
     tr = SavingChangeFactory()
 

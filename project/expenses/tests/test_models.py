@@ -221,14 +221,15 @@ def test_expense_fields_types():
 
 
 @override_storage()
-@freeze_time('1000-1-2')
-def test_expense_attachment_field():
+@freeze_time("1000-1-1")
+def test_expense_attachment_field(get_user):
     file_mock = mock.MagicMock(spec=File, name='FileMock')
     file_mock.name = 'test1.jpg'
 
     e = ExpenseFactory(attachment=file_mock)
+    pk = str(get_user.journal.pk)
 
-    assert str(e.attachment) == os.path.join('expense-type', '1000.01_test1.jpg')
+    assert str(e.attachment) == os.path.join(pk, 'expense-type', '1000.01_test1.jpg')
 
 
 def test_expense_related(second_user):
