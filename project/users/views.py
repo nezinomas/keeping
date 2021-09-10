@@ -262,8 +262,10 @@ class SettingsQueryMixin():
         user = self.request.user
 
         return (
-            models.User.objects
-            .filter(journal=user.journal)
+            models
+            .User
+            .objects
+            .related()
             .exclude(pk=user.pk)
         )
 
@@ -271,15 +273,6 @@ class SettingsQueryMixin():
 class SettingsUsers(SettingsQueryMixin, ListMixin):
     model = models.User
     template_name = 'users/includes/users_lists.html'
-
-    def get_queryset(self):
-        user = self.request.user
-
-        return (
-            models.User.objects
-            .filter(journal=user.journal)
-            .exclude(pk=user.pk)
-        )
 
 
 class SettingsUsersDelete(SettingsQueryMixin, DeleteAjaxMixin):
