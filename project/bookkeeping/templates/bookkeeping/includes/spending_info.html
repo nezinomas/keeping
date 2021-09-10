@@ -17,7 +17,7 @@
             <td>{{ item.title }}</td>
             <td>{{ item.plan|floatformat:2 }}</td>
             <td class="{% if item.title == _('Incomes') or item.title == _('Balance') %}{{ item.fact|compare:item.plan }}{% else %}{{ item.plan|compare:item.fact }}{% endif %}">{{ item.fact|floatformat:2 }}</td>
-            <td>{{ item.delta|floatformat:2 }}</td>
+            {% cell item.delta highlight_value=True %}
         </tr>
         {% endfor %}
 
