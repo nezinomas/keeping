@@ -42,7 +42,11 @@ class LoadSavingType(LoginRequiredMixin, TemplateView):
         pk = request.GET.get('id')
 
         if pk:
-            objects = models.SavingType.objects.items().exclude(pk=pk)
+            objects = (models
+                       .SavingType
+                       .objects
+                       .items()
+                       .exclude(pk=pk))
 
         return self.render_to_response({'objects': objects})
 

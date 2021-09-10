@@ -130,7 +130,10 @@ class SavingChangeForm(forms.ModelForm):
         _id = ChainedDropDown(self, 'from_account').parent_field_id
         if _id:
             self.fields['to_account'].queryset = (
-                SavingType.objects.exclude(pk=_id)
+                SavingType
+                .objects
+                .related()
+                .exclude(pk=_id)
             )
 
         self.helper = FormHelper()
