@@ -10,4 +10,5 @@ def upload_attachment(instance, filename):
 
     f = f'{now.year}.{now.strftime("%m")}_{filename}'
 
-    return os.path.join(instance.expense_type.slug, f)
+    journal = str(instance.expense_type.journal.pk)
+    return os.path.join(journal, instance.expense_type.slug, f)
