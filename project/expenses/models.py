@@ -85,10 +85,9 @@ class Expense(MixinFromDbAccountId):
         on_delete=models.CASCADE,
         related_name='expenses'
     )
-    attachment = models.FileField(
+    attachment = models.ImageField(
         blank=True,
         upload_to=upload_attachment,
-        validators=[FileExtensionValidator(['pdf', 'jpg', 'gif'])],
     )
 
     class Meta:
