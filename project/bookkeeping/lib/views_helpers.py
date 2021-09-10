@@ -231,38 +231,36 @@ class MonthHelper():
         plan_per_day = get_val(self._day_plans.day_input, self._month)
         plan_balance = get_val(self._day_plans.remains, self._month)
 
-        context = {
-            'items': [{
-                    'title': _('Incomes'),
-                    'plan': plan_incomes,
-                    'fact': fact_incomes,
-                    'delta': fact_incomes - plan_incomes,
-                }, {
-                    'title': _('Expenses'),
-                    'plan': plan_expenses,
-                    'fact': fact_expenses,
-                    'delta': plan_expenses - fact_expenses,
-                }, {
-                    'title': _('Savings'),
-                    'plan': plan_savings,
-                    'fact': fact_savings,
-                    'delta': plan_savings - fact_savings,
-                }, {
-                    'title': _('Money for a day'),
-                    'plan': plan_per_day,
-                    'fact': fact_per_day,
-                    'delta': plan_per_day - fact_per_day,
-                }, {
-                    'title': _('Balance'),
-                    'plan': plan_balance,
-                    'fact': fact_balance,
-                    'delta': fact_balance - plan_balance,
-                },
-        ]}
+        items = [{
+                'title': _('Incomes'),
+                'plan': plan_incomes,
+                'fact': fact_incomes,
+                'delta': fact_incomes - plan_incomes,
+            }, {
+                'title': _('Expenses'),
+                'plan': plan_expenses,
+                'fact': fact_expenses,
+                'delta': plan_expenses - fact_expenses,
+            }, {
+                'title': _('Savings'),
+                'plan': plan_savings,
+                'fact': fact_savings,
+                'delta': plan_savings - fact_savings,
+            }, {
+                'title': _('Money for a day'),
+                'plan': plan_per_day,
+                'fact': fact_per_day,
+                'delta': plan_per_day - fact_per_day,
+            }, {
+                'title': _('Balance'),
+                'plan': plan_balance,
+                'fact': fact_balance,
+                'delta': fact_balance - plan_balance,
+            },]
 
         return render_to_string(
             template_name='bookkeeping/includes/spending_info.html',
-            context=context,
+            context={'items': items},
             request=self._request
         )
 
