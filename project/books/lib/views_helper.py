@@ -1,8 +1,6 @@
 from django.template.loader import render_to_string
-from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from ...core.forms import SearchForm
 from .. import models
 
 
