@@ -100,9 +100,9 @@ class ExpenseForm(forms.ModelForm):
         if image:
             if image.size > 4*1024*1024:
                 raise ValidationError(_("Image file too large ( > 4Mb )"))
-            return image
 
-        raise ValidationError(_("Couldn't read uploaded image"))
+        return image
+
 
 
 class ExpenseTypeForm(forms.ModelForm):
