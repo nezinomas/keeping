@@ -8,7 +8,7 @@ from ..savings.factories import SavingTypeFactory
 from .models import SavingChange, SavingClose, Transaction
 
 
-class TransactionFactory(factory.DjangoModelFactory):
+class TransactionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Transaction
 
@@ -18,7 +18,7 @@ class TransactionFactory(factory.DjangoModelFactory):
     from_account = factory.SubFactory(AccountFactory)
 
 
-class SavingChangeFactory(factory.DjangoModelFactory):
+class SavingChangeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SavingChange
 
@@ -29,7 +29,7 @@ class SavingChangeFactory(factory.DjangoModelFactory):
     from_account = factory.SubFactory(SavingTypeFactory, title='Savings From')
 
 
-class SavingCloseFactory(factory.DjangoModelFactory):
+class SavingCloseFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SavingClose
 

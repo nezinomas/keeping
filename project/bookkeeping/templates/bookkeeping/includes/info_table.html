@@ -1,0 +1,22 @@
+{% if data %}
+{% load table_cell %}
+{% load get_item %}
+
+<table class="table table-striped table-hover table-sm stats">
+    <thead>
+        <tr class="top">
+            {% for t in title %}
+            <th class="text-end text-nowrap" style="width: calc(100%/{{ title|length }});">
+                {{ t }}
+            </th>{% endfor %}
+        </tr>
+    </thead>
+    <tfoot>
+        <tr>
+            {% for d in data %}
+            {% cell d tag='th' highlight_value=highlight|get_list_val:forloop.counter0 %}
+            {% endfor %}
+        </tr>
+    </tfoot>
+</table>
+{% endif %}

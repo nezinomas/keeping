@@ -1,50 +1,35 @@
 from decimal import Decimal
-from typing import Any, Dict, List
 
-from django.core.validators import MinLengthValidator, MinValueValidator
+from django.core.validators import (FileExtensionValidator, MinLengthValidator,
+                                    MinValueValidator)
 from django.db import models
-from django.db.models import Case, Count, F, Q, Sum, When
+from django.db.models import F
 
 from ..accounts.models import Account
-from ..core.mixins.queryset_sum import SumMixin
+from ..core.lib import utils
+from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.models import TitleAbstract
-
-
-class ExpenseTypeQuerySet(models.QuerySet):
-    def _related(self):
-        return self.prefetch_related('expensename_set')
-
-    def items(self):
-        return self._related()
+from ..journals.models import Journal
+from .helpers.models_helper import upload_attachment
+from .managers import ExpenseNameQuerySet, ExpenseQuerySet, ExpenseTypeQuerySet
 
 
 class ExpenseType(TitleAbstract):
+    journal = models.ForeignKey(
+        Journal,
+        on_delete=models.CASCADE,
+        related_name='expense_types'
+    )
     necessary = models.BooleanField(
         default=False
     )
 
-    class Meta:
-        ordering = ['title']
-
     # Managers
     objects = ExpenseTypeQuerySet.as_manager()
 
-
-class ExpenseNameQuerySet(models.QuerySet):
-    def _related(self):
-        return self.select_related('parent')
-
-    def year(self, year):
-        return self._related().filter(
-            Q(valid_for__isnull=True) |
-            Q(valid_for=year)
-        )
-
-    def parent(self, parent_id):
-        return self._related().filter(parent_id=parent_id)
-
-    def items(self):
-        return self._related().all()
+    class Meta:
+        unique_together = ['journal', 'title']
+        ordering = ['title']
 
 
 class ExpenseName(TitleAbstract):
@@ -70,90 +55,7 @@ class ExpenseName(TitleAbstract):
     objects = ExpenseNameQuerySet.as_manager()
 
 
-class ExpenseQuerySet(SumMixin, models.QuerySet):
-    def _related(self):
-        return self.select_related('expense_type', 'expense_name', 'account')
-
-    def year(self, year):
-        return self._related().filter(date__year=year)
-
-    def items(self):
-        return self._related().all()
-
-    def month_expense(self, year, month=None):
-        summed_name = 'sum'
-
-        return (
-            super()
-            .sum_by_month(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values('date', summed_name)
-        )
-
-    def month_expense_type(self, year, month=None):
-        summed_name = 'sum'
-
-        return (
-            super()
-            .sum_by_month(
-                year=year, month=month,
-                summed_name=summed_name, groupby='expense_type')
-            .values('date', summed_name, title=F('expense_type__title'))
-        )
-
-    def month_exceptions(self, year, month=None):
-        summed_name = 'sum'
-
-        return (
-            super()
-            .filter(exception=True)
-            .sum_by_day(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values(summed_name, 'date', title=F('expense_type__title'))
-        )
-
-    def day_expense_type(self, year, month):
-        summed_name = 'sum'
-
-        return (
-            super()
-            .sum_by_day(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values('date', summed_name, title=F('expense_type__title'))
-        )
-
-    def summary(self, year: int) -> List[Dict[str, Any]]:
-        '''
-        return:
-            {
-                'title': account.title,
-                'e_past': Decimal(),
-                'e_now': Decimal()
-            }
-        '''
-        return (
-            self
-            .annotate(cnt=Count('expense_type'))
-            .values('cnt')
-            .order_by('cnt')
-            .annotate(
-                e_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='price'),
-                        default=0)),
-                e_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='price'),
-                        default=0))
-            )
-            .values('e_past', 'e_now', title=models.F('account__title'))
-        )
-
-
-class Expense(models.Model):
+class Expense(MixinFromDbAccountId):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
@@ -183,16 +85,30 @@ class Expense(models.Model):
         on_delete=models.CASCADE,
         related_name='expenses'
     )
+    attachment = models.ImageField(
+        blank=True,
+        upload_to=upload_attachment,
+    )
 
     class Meta:
-        ordering = ['-date', 'expense_type', F('expense_name').asc(), 'price']
         indexes = [
-            models.Index(fields=['account', 'expense_type']),
+            models.Index(fields=['date']),
             models.Index(fields=['expense_type']),
+            models.Index(fields=['expense_name']),
         ]
+
+    # Managers
+    objects = ExpenseQuerySet.as_manager()
 
     def __str__(self):
         return f'{(self.date)}/{self.expense_type}/{self.expense_name}'
 
-    # Managers
-    objects = ExpenseQuerySet.as_manager()
+    def save(self, *args, **kwargs):
+        user = utils.get_user()
+        journal = Journal.objects.get(pk=user.journal.pk)
+
+        if journal.first_record > self.date:
+            journal.first_record = self.date
+            journal.save()
+
+        return super().save(*args, **kwargs)

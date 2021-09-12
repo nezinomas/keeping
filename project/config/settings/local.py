@@ -6,13 +6,21 @@ TEMPLATE_DEBUG = DEBUG
 
 
 # ================   project CONFIGURATION
-ALLOWED_HOSTS = ['*']
-
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+]
 
 # ================   APP CONFIGURATION
 INSTALLED_APPS += [
     'debug_toolbar',
     'django_extensions',
+]
+
+
+STATIC_ROOT = None
+STATICFILES_DIRS = [
+    os.path.join(SITE_ROOT, 'static'),
 ]
 
 
@@ -23,12 +31,23 @@ SHELL_PLUS_PRINT_SQL = True
 # ================   MIDDLEWARE CONFIGURATION
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'pyinstrument.middleware.ProfilerMiddleware',
 ] + MIDDLEWARE
 
+# PYINSTRUMENT_PROFILE_DIR = 'profiles'
 
-# ================   DEBUG_TOOLBAR_PANEL
-DEBUG_TOOLBAR_PATCH_SETTINGS = False
-INTERNAL_IPS = ['127.0.0.1', 'localhost']
+# Overwriten TEMPLATE OPTION
+# disabled template cashing
+TEMPLATES[0]['OPTIONS']['loaders'] = [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',]
+
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+    'localhost',
+]
+
 DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.versions.VersionsPanel',
     'debug_toolbar.panels.timer.TimerPanel',
@@ -52,3 +71,10 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
 }
+
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
+DEBUG_TOOLBAR_CONFIG = {
+    'INTERCEPT_REDIRECTS': False,
+}
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

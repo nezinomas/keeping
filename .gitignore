@@ -23,6 +23,7 @@ lib64/
 parts/
 sdist/
 var/
+profiles/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -49,7 +50,6 @@ coverage.xml
 htmlcov/
 
 # Translations
-*.mo
 *.pot
 
 # Django stuff:

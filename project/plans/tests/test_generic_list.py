@@ -1,8 +1,6 @@
 import pytest
 from django.template import Context, Template
 
-from ..templatetags.generic_list import generic_list
-
 
 def _remove_line_end(rendered):
     return str(rendered).replace('\n', '')
@@ -23,7 +21,7 @@ def test_has_type(_template):
 
     actual = _template.render(context)
 
-    assert '<td class="text-left">TypeRowName</td>' in actual
+    assert '<td class="text-start">TypeRowName</td>' in actual
 
 
 def test_no_type(_template):
@@ -32,7 +30,7 @@ def test_no_type(_template):
 
     actual = _template.render(context)
 
-    assert '<td class="text-left">type</td>' in actual
+    assert '<td class="text-start">type</td>' in actual
 
 
 def test_necessary_expense_1(_template):
@@ -46,23 +44,7 @@ def test_necessary_expense_1(_template):
     context = Context({'items': items})
 
     actual = _template.render(context)
-    expect = '<td class="text-left">TypeRowName <i class="far fa-star star"></i></td>'
-
-    assert expect in _remove_line_end(actual)
-
-
-def test_necessary_expense_2(_template):
-    items = [
-        type(
-            'O',
-            (object,),
-            dict(january=11, type='Būtinos')
-        )
-    ]
-    context = Context({'items': items})
-
-    actual = _template.render(context)
-    expect = '<td class="text-left">Būtinos <i class="far fa-star star"></i></td>'
+    expect = '<td class="text-start">TypeRowName <i class="bi bi-star plans-star"></i></td>'
 
     assert expect in _remove_line_end(actual)
 
@@ -78,7 +60,7 @@ def test_necessary_expense_3(_template):
     context = Context({'items': items})
 
     actual = _template.render(context)
-    expect = '<td class="text-left">type <i class="far fa-star star"></i></td>'
+    expect = '<td class="text-start">type <i class="bi bi-star plans-star"></i></td>'
 
     assert expect in _remove_line_end(actual)
 

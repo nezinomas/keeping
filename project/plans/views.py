@@ -1,22 +1,27 @@
-from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import render, reverse
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 
-from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
+from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
+                                 DispatchListsMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from . import forms, models
 from .lib.calc_day_sum import CalcDaySum
 
 
+@login_required
 def plans_stats(request):
     ajax_trigger = request.GET.get('ajax_trigger')
-    arr = CalcDaySum(request.user.profile.year).plans_stats
+    arr = CalcDaySum(request.user.year).plans_stats
     t_name = 'plans/includes/plans_stats.html'
     c = {'items': arr}
 
     if ajax_trigger:
         return render(template_name=t_name, context=c, request=request)
-    else:
-        return render_to_string(template_name=t_name, context=c, request=request)
+
+    return render_to_string(template_name=t_name, context=c, request=request)
 
 
 class Index(IndexMixin):
@@ -32,10 +37,10 @@ class Index(IndexMixin):
         return context
 
 
-#
-# Expense Plan views
-#
-class ExpensesLists(ListMixin):
+# ---------------------------------------------------------------------------------------
+#                                                                           Expense Plans
+# ---------------------------------------------------------------------------------------
+class ExpensesLists(DispatchListsMixin, ListMixin):
     model = models.ExpensePlan
 
 
@@ -49,10 +54,14 @@ class ExpensesUpdate(UpdateAjaxMixin):
     form_class = forms.ExpensePlanForm
 
 
-#
-# Income Plan views
-#
-class IncomesLists(ListMixin):
+class ExpensesDelete(DeleteAjaxMixin):
+    model = models.ExpensePlan
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                            Income Plans
+# ---------------------------------------------------------------------------------------
+class IncomesLists(DispatchListsMixin, ListMixin):
     model = models.IncomePlan
 
 
@@ -66,10 +75,14 @@ class IncomesUpdate(UpdateAjaxMixin):
     form_class = forms.IncomePlanForm
 
 
-#
-# Saving Plan views
-#
-class SavingsLists(ListMixin):
+class IncomesDelete(DeleteAjaxMixin):
+    model = models.IncomePlan
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                            Saving Plans
+# ---------------------------------------------------------------------------------------
+class SavingsLists(DispatchListsMixin, ListMixin):
     model = models.SavingPlan
 
 
@@ -83,10 +96,14 @@ class SavingsUpdate(UpdateAjaxMixin):
     form_class = forms.SavingPlanForm
 
 
-#
-# Day Plan views
-#
-class DayLists(ListMixin):
+class SavingsDelete(DeleteAjaxMixin):
+    model = models.SavingPlan
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                               Day Plans
+# ---------------------------------------------------------------------------------------
+class DayLists(DispatchListsMixin, ListMixin):
     model = models.DayPlan
 
 
@@ -100,10 +117,14 @@ class DayUpdate(UpdateAjaxMixin):
     form_class = forms.DayPlanForm
 
 
-#
-# Necessary Plan views
-#
-class NecessaryLists(ListMixin):
+class DayDelete(DeleteAjaxMixin):
+    model = models.DayPlan
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                         Necessary Plans
+# ---------------------------------------------------------------------------------------
+class NecessaryLists(DispatchListsMixin, ListMixin):
     model = models.NecessaryPlan
 
 
@@ -115,3 +136,38 @@ class NecessaryNew(CreateAjaxMixin):
 class NecessaryUpdate(UpdateAjaxMixin):
     model = models.NecessaryPlan
     form_class = forms.NecessaryPlanForm
+
+
+class NecessaryDelete(DeleteAjaxMixin):
+    model = models.NecessaryPlan
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                              Copy Plans
+# ---------------------------------------------------------------------------------------
+@login_required
+def copy_plans(request):
+    data = {}
+    form = forms.CopyPlanForm(data=(request.POST or None))
+    if request.method == 'POST':
+        if form.is_valid():
+            data['form_is_valid'] = True
+            form.save()
+        else:
+            data['form_is_valid'] = False
+
+    context = {
+        'title': _('Copy plans'),
+        'form': form,
+        'submit_button': _('Insert'),
+        'form_action': 'insert',
+        'url': reverse('plans:copy_plans'),
+    }
+
+    data['html_form'] = render_to_string(
+        template_name='plans/includes/copy_plans_form.html',
+        context=context,
+        request=request
+    )
+
+    return JsonResponse(data)

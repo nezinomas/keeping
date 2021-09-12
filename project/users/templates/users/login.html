@@ -1,0 +1,42 @@
+{% extends 'users/users_base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="card my-auto">
+{% if valid_link %}
+    <div class="card-body">
+        <h3 class="card-title">{{ card_title }}</h3>
+        {% if card_text %}<p>{{ card_text }}</p>{% endif %}
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next }}">
+            {% include 'core/includes/form.html' %}
+            <button type="submit" class="btn btn-primary btn-sm">{{ submit_button_text }}</button>
+        </form>
+    </div>
+    {% if signup_link %}
+    <div class="card-footer text-muted text-center">
+        {% translate 'New to this site?' %} <a href="{% url 'users:signup' %}">{% translate 'Sign up' %}</a>
+    </div>
+    {% endif %}
+    {% if login_link %}
+    <div class="card-footer text-muted text-center">
+        {% translate 'Already have an account?' %} <a href="{% url 'users:login' %}">{% translate 'Log in' %}</a>
+    </div>
+    {% endif %}
+</div>
+{% if reset_link and form.errors %}
+<div class="text-center py-2">
+    <small>
+        <a href="{% url 'users:password_reset' %}">{% translate 'Forgot your password?' %}</a>
+    </small>
+</div>
+{% endif %}
+
+{% else %}
+    <div class="card-body">
+        <p class="my-auto text-center py-3">{% translate 'It seems that your invitation is no longer valid. Ask a friend to provide a new link.' %}</p>
+    </div>
+{% endif %}
+
+{% endblock %}

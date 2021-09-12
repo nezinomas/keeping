@@ -1,7 +1,12 @@
-from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.views.generic.base import TemplateView
 
 from ..accounts.views import Lists as accounts_list
-from ..core.mixins.views import (CreateAjaxMixin, IndexMixin, ListMixin,
+from ..core.lib import utils
+from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
+                                 DispatchListsMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
 from . import forms, models
 
@@ -23,20 +28,33 @@ class Index(IndexMixin):
 
 
 # SavingType dropdown
-def load_saving_type(request):
-    id = request.GET.get('id')
-    objects = models.SavingType.objects.exclude(pk=id)
-    return render(
-        request,
-        'core/dropdown.html',
-        {'objects': objects}
-    )
+class LoadSavingType(LoginRequiredMixin, TemplateView):
+    template_name = 'core/dropdown.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not utils.is_ajax(self.request):
+            return HttpResponse(render_to_string('srsly.html'))
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        objects = []
+        pk = request.GET.get('id')
+
+        if pk:
+            objects = (models
+                       .SavingType
+                       .objects
+                       .items()
+                       .exclude(pk=pk))
+
+        return self.render_to_response({'objects': objects})
 
 
-#
-# Transactions between Accounts
-#
-class Lists(ListMixin):
+#----------------------------------------------------------------------------------------
+#                                                           Transactions between Accounts
+#----------------------------------------------------------------------------------------
+class Lists(DispatchListsMixin, ListMixin):
     model = models.Transaction
 
 
@@ -50,10 +68,14 @@ class Update(UpdateAjaxMixin):
     form_class = forms.TransactionForm
 
 
-#
-# Savings Transactions from Savings to regular Accounts
-#
-class SavingsCloseLists(ListMixin):
+class Delete(DeleteAjaxMixin):
+    model = models.Transaction
+
+
+#----------------------------------------------------------------------------------------
+#                                   Savings Transactions from Savings to regular Accounts
+#----------------------------------------------------------------------------------------
+class SavingsCloseLists(DispatchListsMixin, ListMixin):
     model = models.SavingClose
 
 
@@ -67,10 +89,14 @@ class SavingsCloseUpdate(UpdateAjaxMixin):
     form_class = forms.SavingCloseForm
 
 
-#
-# Savings Transactions between Savings accounts
-#
-class SavingsChangeLists(ListMixin):
+class SavingsCloseDelete(DeleteAjaxMixin):
+    model = models.SavingClose
+
+
+#----------------------------------------------------------------------------------------
+#                                           Savings Transactions between Savings accounts
+#----------------------------------------------------------------------------------------
+class SavingsChangeLists(DispatchListsMixin, ListMixin):
     model = models.SavingChange
 
 
@@ -82,3 +108,7 @@ class SavingsChangeNew(CreateAjaxMixin):
 class SavingsChangeUpdate(UpdateAjaxMixin):
     model = models.SavingChange
     form_class = forms.SavingChangeForm
+
+
+class SavingsChangeDelete(DeleteAjaxMixin):
+    model = models.SavingChange

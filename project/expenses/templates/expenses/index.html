@@ -1,43 +1,121 @@
 {% extends 'base.html' %}
-
+{% load static %}{% load i18n %}
 
 {% block head %}
+<link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
+<script src="{% static 'js/reload_stats.js' %}"></script>
+
+<style>
+    .expenses-edit-icon {
+        position: absolute;
+        top: 0;
+        right: 30px;
+        display: block;
+        z-index: 99;
+    }
+    .accordion-body .expenses-edit-icon {
+        top: .25rem;
+    }
+
+    .form-check-input.necessary_check {
+        margin-left: 0;
+    }
+</style>
 
 {% endblock head %}
 
-
 {% block content %}
+<!-- Loader -->
+<div class="loader loader-default" id="loader"></div>
 
 {% url 'expenses:expenses_new' as url_expense_new %}
 {% url 'expenses:expenses_type_new' as url_expenses_type_new %}
 {% url 'expenses:expenses_name_new' as url_expenses_name_new %}
-<div class="row mt-2">
+<div class="row gx-2">
     <div class="col-lg-8">
         <div class="row my-2">
-            <div class="col text-right">
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expense_new }}"><i class="fas fa-plus"></i> Išlaidas</button>
+            <div class="col">
+            {% for m in context_months %}
+                {% with m|date:'n' as m_num %}
+                <button id="{{m_num}}" type="button" data-url="{% url 'expenses:expenses_month_list' m_num %}" class="btn btn-sm btn-month js-filter {% if current_month|slugify == m_num %}btn-info{% endif %}">{{ m|date:'F'|title }}</button>
+                {% endwith %}
+                {% endfor %}
+                <button id="13" type="button" data-url="{% url 'expenses:expenses_all' %}" class="btn btn-sm btn-month js-filter ms-2 {% if not current_month %}btn-info{% endif %}">{% translate 'All records' %}</button>
+            </div>
+            <div class="col-auto text-end">
+                <button type="button" id="insert_expense" class="btn btn-sm btn-outline-success js-create w5" data-url="{{ url_expense_new }}"><i class="bi bi-plus"></i>{% translate "Expenses" context "expenses button" %}</button>
             </div>
         </div>
-        <div id="ajax-content" class="dblclick">{{ expenses }}</div>
+
+        <div class="row mb-2">
+            <div id="search_form_data" class="col">{{ search }}</div>
+        </div>
+
+        <div class="row">
+            <div id="expenses_list" class="col">{{ expenses_list }}</div>
+        </div>
     </div>
 
     <div class="col-lg-4">
         <div class="row my-2">
-            <div class="col-lg-12 text-right">
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_type_new }}"><i class="fas fa-plus"></i> Išlaidų rūšį</button>
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_name_new }}"><i class="fas fa-plus"></i> Išlaidų pavadinimą</button>
+            <div class="col-lg-12 text-end">
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_type_new }}"><i class="bi bi-plus"></i>{% translate "Expenses type" context "expenses type button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_name_new }}"><i class="bi bi-plus"></i>{% translate "Expenses name" context "expenses name button" %}</button>
             </div>
         </div>
 
         <div class="row">
-            <div id="ajax-content-categories" class="col-lg-12 pl-0 dblclick">{{ categories }}</div>
+            <div id="ajax-content-categories" class="col-lg-12">{{ categories }}</div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modal-form">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content"></div>
-    </div>
-</div>
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'expenses:reload_expenses' %}`;
+        var btn_month = $('.btn-info');
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1',
+                'month': btn_month.attr('id'),
+            },
+            success: function (data) {
+                var blocks = ['expenses_list'];
+                reload_stats(data, blocks);
+            }
+        });
+    });
+
+    $(document).on('click', '.js-filter', function () {
+        $('#loader').addClass('is-active')
+
+        var url = `{% url 'expenses:reload_expenses' %}`;
+        var btn_month = $('.btn-info');
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1',
+                'month': btn_month.attr('id'),
+            },
+            success: function (data) {
+                var blocks = ['expenses_list'];
+                reload_stats(data, blocks);
+                $('#loader').removeClass('is-active');
+            },
+            error: function (data) {
+                $('#loader').removeClass('is-active');
+            }
+        });
+    });
+
+    $('.btn-month').on('click', function () {
+        $('.btn-month').removeClass('btn-info');
+        $(this).addClass('btn-info');
+    });
+
+</script>
+<script src="{% static 'js/search.js' %}"></script>
 {% endblock content %}

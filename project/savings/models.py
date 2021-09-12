@@ -1,146 +1,46 @@
 from decimal import Decimal
-from typing import Any, Dict, List
 
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import Case, Count, F, Sum, When
+from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
-from ..core.mixins.queryset_balance import QuerySetBalanceMixin
-from ..core.mixins.queryset_sum import SumMixin
+from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.models import TitleAbstract
-
-
-class SavingTypeQuerySet(QuerySetBalanceMixin, models.QuerySet):
-    pass
+from ..journals.models import Journal
+from . import managers
 
 
 class SavingType(TitleAbstract):
-    class Meta:
-        ordering = ['title']
+    class Types(models.TextChoices):
+        SHARES = 'shares', _('Shares')
+        FUNDS = 'funds', _('Funds')
+        PENSIONS = 'pensions', _('Pensions')
+
+    closed = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+    )
+    journal = models.ForeignKey(
+        Journal,
+        on_delete=models.CASCADE,
+        related_name='saving_types'
+    )
+    type = models.CharField(
+        max_length=12,
+        choices=Types.choices,
+        default=Types.FUNDS,
+    )
 
     # Managers
-    objects = SavingTypeQuerySet.as_manager()
+    objects = managers.SavingTypeQuerySet.as_manager()
+
+    class Meta:
+        unique_together = ['journal', 'title']
+        ordering = ['type', 'title']
 
 
-class SavingQuerySet(SumMixin, models.QuerySet):
-    def _related(self):
-        return self.select_related('account', 'saving_type')
-
-    def year(self, year):
-        return self._related().filter(date__year=year)
-
-    def items(self):
-        return self._related()
-
-    def month_saving(self, year, month=None):
-        summed_name = 'sum'
-
-        return (
-            super()
-            .sum_by_month(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values('date', summed_name)
-        )
-
-    def month_saving_type(self, year, month=None):
-        summed_name = 'sum'
-
-        return (
-            super()
-            .sum_by_month(
-                year=year, month=month,
-                summed_name=summed_name, groupby='saving_type')
-            .values('date', summed_name, title=F('saving_type__title'))
-        )
-
-    def day_saving_type(self, year, month):
-        summed_name = 'sum'
-
-        return (
-            super()
-            .sum_by_day(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values(summed_name, 'date', title=F('saving_type__title'))
-        )
-
-    def day_saving(self, year, month):
-        summed_name = 'sum'
-
-        return (
-            super()
-            .sum_by_day(
-                year=year, month=month,
-                summed_name=summed_name)
-            .values(summed_name, 'date')
-        )
-
-    def summary_from(self, year: int) -> List[Dict[str, Any]]:
-        '''
-        return:
-            {
-                'title': account.title,
-                's_past': Decimal(),
-                's_now': Decimal()
-            }
-        '''
-        return (
-            self
-            .annotate(cnt=Count('saving_type'))
-            .values('cnt')
-            .order_by('cnt')
-            .annotate(
-                s_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='price'),
-                        default=0)),
-                s_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='price'),
-                        default=0))
-            )
-            .values('s_past', 's_now', title=models.F('account__title'))
-        )
-
-    def summary_to(self, year: int) -> List[Dict[str, Any]]:
-        '''
-        return:
-            {
-                'title': account.title,
-                's_past': Decimal(),
-                's_now': Decimal()
-            }
-        '''
-        return (
-            self
-            .annotate(cnt=Count('saving_type'))
-            .values('cnt')
-            .order_by('cnt')
-            .annotate(
-                s_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='price'),
-                        default=0)),
-                s_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='price'),
-                        default=0)),
-                s_fee_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='fee'),
-                        default=0)),
-                s_fee_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='fee'),
-                        default=0))
-            )
-            .values('s_past', 's_now', 's_fee_past', 's_fee_now', title=models.F('saving_type__title'))
-        )
-
-
-class Saving(models.Model):
+class Saving(MixinFromDbAccountId):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
@@ -178,4 +78,31 @@ class Saving(models.Model):
         return f'{self.date}: {self.saving_type}'
 
     # Managers
-    objects = SavingQuerySet.as_manager()
+    objects = managers.SavingQuerySet.as_manager()
+
+
+class SavingBalance(models.Model):
+    saving_type = models.ForeignKey(
+        SavingType,
+        on_delete=models.CASCADE,
+        related_name='savings_balance'
+    )
+    year = models.PositiveIntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)]
+    )
+    past_amount = models.FloatField(default=0.0)
+    past_fee = models.FloatField(default=0.0)
+    fees = models.FloatField(default=0.0)
+    invested = models.FloatField(default=0.0)
+    incomes = models.FloatField(default=0.0)
+    market_value = models.FloatField(default=0.0)
+    profit_incomes_proc = models.FloatField(default=0.0)
+    profit_incomes_sum = models.FloatField(default=0.0)
+    profit_invested_proc = models.FloatField(default=0.0)
+    profit_invested_sum = models.FloatField(default=0.0)
+
+    # Managers
+    objects = managers.SavingBalanceQuerySet.as_manager()
+
+    def __str__(self):
+        return f'{self.saving_type.title}'

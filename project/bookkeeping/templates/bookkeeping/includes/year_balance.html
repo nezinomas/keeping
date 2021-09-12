@@ -1,0 +1,91 @@
+{% load table_cell %}
+{% load i18n %}
+
+<table class="table table-striped table-hover table-sm stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th colspan="4">{% translate 'Balance' %}</th>
+            <th colspan="2" class="bl br">{% translate 'Savings' %}</th>
+            <th colspan="4" class="bl br toggleDisplay">{% translate 'Debts' %}</th>
+            <th class="text-end text-nowrap">
+                <button onclick="toggleDebts()" id="toggle_debts" class="btn btn-super-sm" style="font-weight: bold; color: #0d6efd; padding-right: 0!important;">{% translate 'Show debts' %}</button>
+            </th>
+        </tr>
+        <tr>
+            <th class="text-start w5">{{ year|title }}</th>
+            <th>{% translate 'Incomes' %}</th>
+            <th>{% translate 'Expenses' %}</th>
+            <th>{% translate 'Balance' %}</th>
+            <th class="bl">{% translate 'Invested' %}</th>
+            <th class="br">{% translate 'Sold' %}</th>
+            <th class="bl toggleDisplay">{% translate 'Borrow' %}</th>
+            <th class="toggleDisplay">{% translate 'Borrow return' %}</th>
+            <th class="toggleDisplay">{% translate 'Lent' %}</th>
+            <th class="br toggleDisplay">{% translate 'Lent return' %}</th>
+            <th class="text-nowrap">{% translate 'Money flow' %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in data %}
+        <tr>
+            <td class="text-start">{{ item.date|date:"F"|title }}</td>
+            {% cell item.incomes %}
+            {% cell item.expenses %}
+            {% cell item.balance highlight_value=True  %}
+            {% cell item.savings css_class="bl" %}
+            {% cell item.savings_close css_class="br"  %}
+            {% cell item.borrow css_class="bl toggleDisplay" %}
+            {% cell item.borrow_return css_class="toggleDisplay" %}
+            {% cell item.lent css_class="toggleDisplay" %}
+            {% cell item.lent_return css_class="br toggleDisplay" %}
+            {% cell item.money_flow %}
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th class="text-start">Avg</th>
+            {% cell avg_row.incomes tag='th' %}
+            {% cell avg_row.expenses tag='th' %}
+            <th></th>
+            {% cell avg_row.savings tag='th' css_class="bl" %}
+            {% cell avg_row.savings_close tag='th' css_class="br" %}
+            <th class="bl toggleDisplay">{{ avg_row.borrow }}</th>
+            <th class="toggleDisplay">{{ avg_row.borrow_return }}</th>
+            <th class="toggleDisplay">{{ avg_row.lent }}</th>
+            <th class="br toggleDisplay">{{ avg_row.lent_return }}</th>
+            <th><b>Metų gale</b></th>
+        </tr>
+        <tr class="total">
+            <th class="text-start">{% translate 'Total' %}</th>
+            {% cell total_row.incomes tag='th' %}
+            {% cell total_row.expenses tag='th' %}
+            {% cell total_row.balance tag='th' highlight_value=True %}
+            {% cell total_row.savings tag='th' css_class="bl" %}
+            {% cell total_row.savings_close tag='th' css_class="br" %}
+            {% cell total_row.borrow tag='th' css_class="bl toggleDisplay" %}
+            {% cell total_row.borrow_return tag="th" css_class="toggleDisplay" %}
+            {% cell total_row.lent tag="th" css_class="toggleDisplay" %}
+            {% cell total_row.lent_return tag="th" css_class="br toggleDisplay" %}
+            {% if accounts_amount_end|floatformat:2 != months_amount_end|floatformat:2 %}
+                {% cell months_amount_end tag="th" css_class='bad' text_before='!' text_after='!' %}
+            {% else %}
+                {% cell months_amount_end tag='th' highlight_value=True %}
+            {% endif %}
+        </tr>
+    </tfoot>
+</table>
+
+<script>
+    function toggleDebts() {
+        $(".table .toggleDisplay").toggleClass("in");
+
+        var btn = document.getElementById('toggle_debts');
+        if (btn.textContent === '{% translate "Show debts" %}') {
+            btn.textContent = '{% translate "Hide debts" %}'
+        }
+        else {
+            btn.textContent = '{% translate "Show debts" %}'
+        }
+    }
+</script>

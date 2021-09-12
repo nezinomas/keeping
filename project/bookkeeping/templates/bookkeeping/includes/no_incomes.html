@@ -1,0 +1,25 @@
+{% load i18n %}
+
+<table class="table table-striped table-hover table-sm stats">
+    <thead>
+        <tr class="top">
+            <th data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" title="<p>{% translate 'Unnecessary expenses that can be avoided' %}:<br />{% for i in not_use %}- {{ i }}<br />{% endfor %}</p>" class="text-start exception">{{ save_sum|floatformat:0 }}</th>
+            <th class="text-end">€ + F</th>
+            <th class="text-end">€ + F + P</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in no_incomes %}
+        <tr>
+            <td>{% if item.label == 'money' %}{% translate 'Money' %}, € {% endif %}{% if item.label == 'no_cut' %}{% translate 'No change in spending, month' %}{% endif %}{% if item.label == 'cut' %}{% translate 'After spending cuts, month' %}{% endif %}</td>
+            <td>{{ item.money_fund|floatformat:1 }}</td>
+            <td>{{ item.money_fund_pension|floatformat:1 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p>
+    <b>€</b> - {% translate 'money in accounts' %}<br />
+    <b>F</b> - {% translate 'Funds/Stocks' %}<br />
+    <b>P</b> - {% translate 'Pension funds' %}
+</p>

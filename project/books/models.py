@@ -1,13 +1,9 @@
+from django.core.validators import (MaxValueValidator, MinLengthValidator,
+                                    MinValueValidator)
 from django.db import models
-from django.core.validators import MinLengthValidator
 
-
-class BooksQuerySet(models.QuerySet):
-    def year(self, year):
-        return self.filter(started__year=year)
-
-    def items(self):
-        return self.all()
+from ..users.models import User
+from .managers import BooksQuerySet, BookTargetQuerySet
 
 
 class Book(models.Model):
@@ -22,7 +18,16 @@ class Book(models.Model):
     )
     title = models.CharField(
         max_length=254,
-        validators=[MinLengthValidator(3)]
+        validators=[MinLengthValidator(2)]
+    )
+    remark = models.TextField(
+        max_length=200,
+        blank=True
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='books'
     )
 
     # objects = BookManager()
@@ -33,3 +38,24 @@ class Book(models.Model):
 
     def __str__(self):
         return str(self.title)
+
+
+class BookTarget(models.Model):
+    year = models.PositiveIntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)],
+    )
+    quantity = models.PositiveIntegerField()
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='book_targets'
+    )
+
+    objects = BookTargetQuerySet.as_manager()
+
+    def __str__(self):
+        return f'{self.year}: {self.quantity}'
+
+    class Meta:
+        ordering = ['-year']
+        unique_together = ['year', 'user']

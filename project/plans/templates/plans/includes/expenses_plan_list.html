@@ -1,4 +1,4 @@
 {% load generic_list %}
 
 {% load generic_list %}
-{% generic_list items 'plans:expenses_plan_update' request.user.profile.year 'expense_type' %}
+{% generic_list items 'plans:expenses_plan_update' request.user.year 'expense_type' url_delete='plans:expenses_plan_delete' %}

@@ -1,3 +1,7 @@
 {% load form %}
-{% generic_form title='Pajamos' update_container='ajax-content' %}
+{% load static %}
+{% load i18n %}
 
+{% generic_form title=_('Incomes') update_container='ajax-content' %}
+
+<script src="{% static 'js/alter_price.js' %}"></script>

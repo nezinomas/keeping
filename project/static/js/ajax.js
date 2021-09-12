@@ -1,7 +1,7 @@
 $(function () {
 
     var loadForm = function(url) {
-        if (url == undefined) {
+        if (url == undefined || !url) {
             return;
         }
 
@@ -18,6 +18,9 @@ $(function () {
                 var form = $('.js-form');
                 var action = form.attr("data-action");
 
+                // load url from list table to form
+                $("#js-form").attr('action', url);
+
                 if (action == 'update') {
                     var price = document.getElementById("id_price");
                     var total_sum = document.getElementById("id_total_sum");
@@ -27,18 +30,6 @@ $(function () {
                     }
                 }
             },
-            // code comment on 2019.09.17
-            // Todo delete after some time
-            // same as in project/core/mixins/ajax.py::76
-
-            // complete: function (data) {
-            //     var json = data.responseJSON
-            //     if (json) {
-            //         for (var i = 0; i < json.js.length; i++) {
-            //             $.getScript(data.responseJSON.js[i]);
-            //         }
-            //     }
-            // }
         });
     };
 
@@ -46,34 +37,46 @@ $(function () {
         var form = $('.js-form');
         var action = form.attr("data-action");
         var ajax_update_container = form.attr('data-update-container')
+
         $.ajax({
             url: form.attr("action"),
-            data: form.serialize(),
+            data: new FormData($('.js-form')[0]), // The form with the file inputs.
+            processData: false,
+            contentType: false,
             type: form.attr("method"),
             dataType: 'json',
             success: function (data) {
                 if (data.form_is_valid) {
 
-                    for (var key in data.extra) {
-                        $(`#${key}`).html(data.extra[key])
-                    }
-
                     $(`#${ajax_update_container}`).html(data.html_list);
                     $("#modal-form .modal-content").html(data.html_form);
 
-                    var price = document.getElementById("id_price");
-                    if (price) {
-                        price.value = '0.00';
-                    }
+                    // if action=insert, reset form fields
+                    if(action == 'insert') {
+                        var price = document.getElementById("id_price");
+                        if (price) {
+                            price.value = '0.00';
+                        }
 
-                    var title = document.getElementById("id_title");
-                    if (title) {
-                        title.value = ''
-                    }
+                        var qty = document.getElementById("id_quantity");
+                        if (qty) {
+                            qty.value = 1;
+                        }
 
-                    // on update close modal
-                    if (action == 'update') {
-                        $("#modal-form").modal("hide");
+                        var title = document.getElementById("id_title");
+                        if (title) {
+                            title.value = ''
+                        }
+
+                        var remark = document.getElementById("id_remark");
+                        if (remark) {
+                            remark.value = ''
+                        }
+
+                        var exception = document.getElementById("id_exception");
+                        if (exception) {
+                            exception.checked = false;
+                        }
                     }
 
                     // save and close
@@ -101,10 +104,10 @@ $(function () {
 
 
     /* Binding */
-    $('.dblclick').on('dblclick', 'tr', loadFormDblClc);
-    $('.dblclick').on('dblclick', 'div', loadFormDblClc);
+    $(document).on('dblclick', '.dblclick', loadFormDblClc);
 
-    $(".js-create").click(loadFormClc);
+    $(document).on('click', '.js-create', loadFormClc);
+    $(document).on('click', '.js-delete', loadFormClc);
 
     $('#modal-form').on('click', "#submit", {save_close: false}, saveForm)
     $('#modal-form').on('click', "#save_close", {save_close: true}, saveForm)

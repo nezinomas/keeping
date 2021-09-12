@@ -1,12 +1,13 @@
-from datetime import datetime
-
 from bootstrap_datepicker_plus import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.utils.translation import gettext as _
 
-from ..core.helpers.helper_forms import set_field_properties, ChainedDropDown
-from .models import Transaction, SavingClose, SavingChange, SavingType
 from ..accounts.models import Account
+from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
+from ..core.lib import utils
+from ..core.lib.date import set_year_for_form
+from .models import SavingChange, SavingClose, SavingType, Transaction
 
 
 class TransactionForm(forms.ModelForm):
@@ -14,36 +15,36 @@ class TransactionForm(forms.ModelForm):
         model = Transaction
         fields = ['date', 'from_account', 'to_account', 'price']
 
-        widgets = {
-            'date': DatePickerInput(
-                options={
-                    "format": "YYYY-MM-DD",
-                    "locale": "lt",
-                }
-            ),
-        }
-
     field_order = ['date', 'from_account', 'to_account', 'price']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['price'].initial = '0.01'
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": utils.get_user().journal.lang,
+            })
+
+        # initial values
         self.fields['price'].widget.attrs = {'step': '0.01'}
-        self.fields['price'].label = 'Suma'
+        self.fields['price'].label = _('Amount')
+        self.fields['date'].initial = set_year_for_form()
 
-        self.fields['date'].initial = datetime.now()
-        self.fields['date'].label = 'Data'
+        # overwrite ForeignKey expense_type queryset
+        self.fields['from_account'].queryset = Account.objects.items()
+        self.fields['to_account'].queryset = Account.objects.items()
 
-        self.fields['from_account'].label = 'Iš sąskaitos'
-
-        self.fields['to_account'].label = 'Į sąskaitą'
+        # field labels
+        self.fields['date'].label = _('Date')
+        self.fields['from_account'].label = _('From account')
+        self.fields['to_account'].label = _('To account')
 
         # chained dropdown
-        id = ChainedDropDown(self, 'from_account').parent_field_id
-        if id:
+        _id = ChainedDropDown(self, 'from_account').parent_field_id
+        if _id:
             self.fields['to_account'].queryset = (
-                Account.objects.exclude(pk=id)
+                Account.objects.items().exclude(pk=_id)
             )
 
         self.helper = FormHelper()
@@ -55,35 +56,36 @@ class SavingCloseForm(forms.ModelForm):
         model = SavingClose
         fields = ['date', 'from_account', 'to_account', 'price', 'fee']
 
-        widgets = {
-            'date': DatePickerInput(
-                options={
-                    "format": "YYYY-MM-DD",
-                    "locale": "lt",
-                }
-            ),
-        }
-
     field_order = ['date', 'from_account', 'to_account', 'price', 'fee']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['price'].initial = '0.01'
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": utils.get_user().journal.lang,
+            })
+
+        # form input settings
         self.fields['price'].widget.attrs = {'step': '0.01'}
-        self.fields['price'].label = 'Suma'
-        self.fields['price'].help_text = 'Suma kuri lieka atskaičius mokesčius'
-
-        self.fields['fee'].initial = '0.00'
         self.fields['fee'].widget.attrs = {'step': '0.01'}
-        self.fields['fee'].label = 'Mokesčiai'
 
-        self.fields['date'].initial = datetime.now()
-        self.fields['date'].label = 'Data'
+        # form initial values
+        self.fields['date'].initial = set_year_for_form()
 
-        self.fields['from_account'].label = 'Iš sąskaitos'
+        # overwrite ForeignKey expense_type queryset
+        self.fields['from_account'].queryset = SavingType.objects.items()
+        self.fields['to_account'].queryset = Account.objects.items()
 
-        self.fields['to_account'].label = 'Į sąskaitą'
+        # form fields labels
+        self.fields['price'].label = _('Amount')
+        # 'Suma kuri lieka atskaičius mokesčius'
+        self.fields['price'].help_text = _('Amount left after fees')
+        self.fields['fee'].label = _('Fees')
+        self.fields['date'].label = _('Date')
+        self.fields['from_account'].label = _('From account')
+        self.fields['to_account'].label = _('To account')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -94,41 +96,44 @@ class SavingChangeForm(forms.ModelForm):
         model = SavingChange
         fields = ['date', 'from_account', 'to_account', 'price', 'fee']
 
-        widgets = {
-            'date': DatePickerInput(
-                options={
-                    "format": "YYYY-MM-DD",
-                    "locale": "lt",
-                }
-            ),
-        }
-
     field_order = ['date', 'from_account', 'to_account', 'price', 'fee']
 
-    def __init__(self, year=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['price'].initial = '0.01'
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": utils.get_user().journal.lang,
+            })
+
+        # form input settings
         self.fields['price'].widget.attrs = {'step': '0.01'}
-        self.fields['price'].label = 'Suma'
-        self.fields['price'].help_text = 'Suma kuri lieka atskaičius mokesčius'
-
-        self.fields['fee'].initial = '0.00'
         self.fields['fee'].widget.attrs = {'step': '0.01'}
-        self.fields['fee'].label = 'Mokesčiai'
 
-        self.fields['date'].initial = datetime.now()
-        self.fields['date'].label = 'Data'
+        # initial values
+        self.fields['date'].initial = set_year_for_form()
 
-        self.fields['from_account'].label = 'Iš sąskaitos'
+        # overwrite ForeignKey expense_type queryset
+        self.fields['from_account'].queryset = SavingType.objects.items()
+        self.fields['to_account'].queryset = SavingType.objects.items()
 
-        self.fields['to_account'].label = 'Į sąskaitą'
+        # fields labels
+        self.fields['price'].label = _('Amount')
+        self.fields['price'].help_text = _('Amount left after fees')
+        self.fields['fee'].label = _('Fees')
+        self.fields['date'].label = _('Date')
+        self.fields['from_account'].label = _('From account')
+        self.fields['to_account'].label = _('To account')
 
         # chained dropdown
-        id = ChainedDropDown(self, 'from_account').parent_field_id
-        if id:
+        _id = ChainedDropDown(self, 'from_account').parent_field_id
+        if _id:
             self.fields['to_account'].queryset = (
-                SavingType.objects.exclude(pk=id)
+                SavingType
+                .objects
+                .related()
+                .exclude(pk=_id)
             )
 
         self.helper = FormHelper()

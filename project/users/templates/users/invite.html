@@ -1,0 +1,18 @@
+{% load i18n %}
+
+<form method="post" novalidate id="js-form" class="js-form" action="{% url 'users:invite' %}">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h5 class="modal-title">{% translate 'Invitation' %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
+    </div>
+    <div class="modal-body">
+        {% if form %}
+        {% include 'core/includes/form.html' %}
+        <button type="submit" id="submit" class="btn btn-primary btn-sm">{% translate 'Sent invitation' %}</button>
+        {% else %}
+        <p>{% translate 'Email sent' %}</p>
+        {% endif %}
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">{% translate 'Close' %}</button>
+    </div>
+</form>

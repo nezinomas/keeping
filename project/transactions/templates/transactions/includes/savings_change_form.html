@@ -1,6 +1,8 @@
 {% load form %}
+{% load i18n %}
+
 {% url 'transactions:load_saving_type' as url_chained %}
-{% generic_form title='Fondas &hArr; Fondas' update_container='savings_change_list' chained_dropdown=url_chained %}
+{% generic_form title=_('Fund &hArr; Fund') update_container='savings_change_list' chained_dropdown=url_chained %}
 
 <script>
     $("#id_from_account").change(function () {

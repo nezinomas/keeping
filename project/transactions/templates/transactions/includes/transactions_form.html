@@ -1,6 +1,9 @@
 {% load form %}
+{% load static %}
+{% load i18n %}
+
 {% url 'accounts:load_to_account' as url_chained %}
-{% generic_form title='Pinigų pervedimas' update_container='transactions_list' chained_dropdown=url_chained %}
+{% generic_form title=_('Transaction') update_container='transactions_list' chained_dropdown=url_chained %}
 
 <script>
     $("#id_from_account").change(function () {
@@ -18,3 +21,5 @@
         });
     });
 </script>
+
+<script src="{% static 'js/alter_price.js' %}"></script>

@@ -1,7 +1,115 @@
-body {
+body, .tooltip {
   font-size: .7rem!important;
 }
 
+.btn-sm,
+.form-control-sm,
+.form-control {
+    font-size: .7rem!important;
+}
+
+div[class*="col"] > h6 {
+    font-size: 1rem;
+}
+
+
+/*
+    Top Menu
+*/
+.dropdown-menu a.dropdown-item {
+    padding: .2rem .5rem;
+}
+
+.nav-item {
+    margin: 0 .15rem;
+}
+.nav-link {
+    padding: .2rem .35rem;
+}
+
+.dropdown-toggle.dropdown-toggle-split.nav-link {
+    padding-left: 0;
+}
+
+
+/*
+    Right Menu
+*/
+.accordion-item {
+    border: none!important;
+}
+
+.accordion-header {
+    position: relative;
+}
+
+.accordion-body {
+    padding: 0;
+    margin: 0;
+}
+
+/* accordion child */
+.accordion-body > .list-group-item {
+    padding: .25rem 0 .25rem 1.25rem;
+    margin: 0;
+}
+
+.accordion-body .edit-icon {
+    position: absolute;
+    top: 0.25rem;
+    right: 5px;
+    display: block;
+}
+
+.accordion-button {
+    padding: 0.15rem 0.3rem;
+    color: #004085;
+    background-color: #9fcdff;
+    border: 1px solid rgba(0,0,0,.125);
+}
+
+.accordion-button::after {
+    padding-top: 0.15rem!important;
+    text-align: center;
+    font-family: 'Glyphicons Halflings';
+    content: "\e114";
+    background-image: none;
+}
+
+.accordion-button:not(.collapsed)::after {
+    background-image: none;
+}
+
+
+/*
+    Info Row
+*/
+.info_row {
+    font-weight: normal;
+    font-size: 0.8rem;
+}
+
+.info_row > span {
+    vertical-align: middle;
+    display: inline-block;
+    margin-top: 0.25rem!important;
+}
+
+.info_row > h6 {
+    font-size: 1.5rem;
+    display: inline;
+}
+
+.info_row > h6, div[class*="col"] > h6 {
+    vertical-align: middle;
+    margin-bottom: 0!important;
+    padding-top: .25rem;
+}
+
+
+/*
+    Table Stats
+*/
 table.stats h1 {
     font-size: .75rem;
     padding: .15rem 0;
@@ -10,7 +118,7 @@ table.stats h1 {
 
 table.stats {
     border-collapse: collapse;
-    font-size: .65rem;
+    font-size: .67rem;
 }
 
 table.stats tfoot {
@@ -19,7 +127,6 @@ table.stats tfoot {
 
 table.stats td, table.stats th {
     border: 1px solid #b4b4b3!important;
-    /* border-right: 1px solid #b7b7b6!important; */
     vertical-align: middle!important;
     padding-top: .09rem!important;
     padding-bottom: .09rem!important;
@@ -43,8 +150,8 @@ table.stats td, table.stats th {
     text-align: right;
 }
 
-table.stats > tfoot > tr {
-    border-top: double #0359b0;
+table.stats > tfoot > tr > th {
+    border-top: double #0359b0!important;
 }
 
 table.stats > tfoot > tr > th {
@@ -56,30 +163,25 @@ table.stats > thead > tr > th {
     padding-bottom: .25rem!important;
 }
 
+table.stats td.w-edit {
+    width: 35px!important;
+    text-align: center!important;
+    border-right: 0!important;
+}
+
+table.stats td.w-delete {
+    width:  25px!important;
+    text-align: center!important;
+    border-left: 0!important;
+}
+
+table.stats tr > td.exception, table.stats tr > th.exception {
+    padding-left:.4rem!important;
+    border-left: 5px solid red!important;
+}
+
 tr.total th {
     font-weight: bold!important;
-}
-
-.navbar {
-    padding: .1rem .5rem;
-}
-
-.nav-item {
-    padding: 0;
-    margin: 0;
-}
-
-.dropdown-menu a.dropdown-item {
-    padding-left: .25rem;
-}
-
-.nav-link {
-    padding: .15rem .5rem;
-    margin: .15rem;
-}
-
-.container-fluid>.content {
-    padding: 0 .5rem;
 }
 
 .top > th {
@@ -87,7 +189,7 @@ tr.total th {
     text-align: left!important;
 }
 
-.top > th.text-right {
+.top > th.text-end {
     text-align: right!important;
 }
 
@@ -101,7 +203,6 @@ tr.top-text, tr.top-text th {
     border-top: 0px!important;
 }
 
-
 .stats .br {
     border-right: 3px solid #0359b0!important;
 }
@@ -110,53 +211,209 @@ tr.top-text, tr.top-text th {
     border-left: 3px solid #0359b0!important;
 }
 
-.stats .br_s {
-    border-right: 2px solid #b4b4b3!important;
-}
-
-.stats .bl_s {
-    border-left: 2px solid #b4b4b3!important;
-}
-
 .dash {
     color: #b7b7b6;
 }
 
-.table-hover tbody tr:hover {
-    background: #f9f6cf;
+.table-hover tbody tr:hover,
+.table-hover tbody tr._weekend_row:hover td,
+.table-hover tbody tr._current_day:hover td {
+    --bs-table-accent-bg: #f9f6cf!important;
 }
 
-.table-hover tbody tr:hover td.table-danger {
-    background: #eab0b7;
+.stats .no-left-border {
+    border-left: 0!important;
 }
 
-.table-hover tbody tr:hover td.table-success {
-    background: #b7debb;
+.stats .no-right-border {
+    border-right: 0!important;
 }
 
-.btn-sm, .form-control-sm {
-    font-size: .7rem;
+.trash, .trash:hover {
+    color: #dc3545;
+    width: 100%;
 }
 
+.edit, .edit:hover {
+    color: green;
+    width: 100%;
+}
+
+._weekend_col {
+    --bs-table-accent-bg:rgb(202, 235, 204);
+
+}
+
+._current_day, tr._current_day > td._weekend_col {
+    --bs-table-accent-bg:#ffc107!important;
+}
+
+.table-active {
+    height: 0.5rem;
+    background-color: #e2dfdf;
+}
+
+.w3 {
+    width: 3rem!important;
+}
+
+.w5 {
+    width: 5rem!important;
+}
+
+.w6 {
+    width: 6rem!important;
+}
+
+.w7 {
+    width: 7rem!important;
+}
+
+.w7p {
+    width: 7%!important;
+}
+
+.w8 {
+    width: 8rem!important;
+}
+
+.w10 {
+    width: 10rem!important;
+}
+
+.w16 {
+    width: 16rem!important;
+}
+
+
+/*
+    Buttons
+*/
 .btn-sm {
-  padding: .15rem .25rem;
+  padding: .2rem .3rem;
 }
 
-.list-group-item {
-    padding: .25rem 0 .25rem 1.25rem;
-    margin: 0;
+.btn-menu {
+    font-size: .7rem!important;
+    color: #007bff;
 }
 
-.list-group-item.list-group-item-primary {
-    padding-left: 0.25rem;
+.btn-super-sm {
+    font-size: .65rem;
+    line-height: 0.25rem!important;
+    padding-top: 0.25rem!important;
+    padding-bottom: 0.25rem!important;
+    padding-left: 0.25rem!important;
+    padding-right: 0.25rem!important;
+    margin-top: -0.65rem!important;
+    margin-bottom: -0.45rem!important;
 }
 
+
+/*
+    Various
+*/
 .bad {
     background-color: #fec2c6;
     color: #dc3545;
 }
 
+.modal-dialog.modal-650 {
+    max-width: 650px!important;
+    margin: auto;
+}
+
+.no-hover, .no-hover:hover {
+    text-decoration: none!important;
+}
+
+.plans-star {
+    color: #e83e8c;
+    padding-left: .5rem;
+    font-weight: bold;
+}
+
+#search_btn {
+    margin: 0!important;
+    padding: .25rem .5rem;
+}
+
+#div_id_search {
+    margin-bottom: 0!important;
+}
+
+.tooltip.show p {
+    text-align: left;
+}
+
+#imgModal .modal-dialog {
+    max-width: 800px!important;
+}
+
+#imgModal img {
+    max-width: 765px;
+    height: auto;
+}
+
+.toggleDisplay {
+    display: none;
+}
+
+.toggleDisplay.in {
+    display: table-cell;
+}
+
+
+/*
+    Bootstrap Hacks
+*/
+/* CheckBox input normal width */
+input.form-check-input,
+input.form-check-input.is-invalid,
+input.form-check-input.is-invalid:checked {
+    height: 1em!important;
+    padding: 0;
+    margin-top: .35rem;
+}
+
 /* overwrite  bootstrap  class */
 .invalid-feedback {
     display: block!important;
+}
+
+.formset-price-input {
+    padding-top: .1rem;
+}
+
+
+/*
+    Expenses
+*/
+.badge {
+    padding: 0.25rem .25rem;
+    color: #004085;
+}
+
+.drinks {
+    background-color: #d9d9d9;
+}
+
+.fees {
+    background-color: #ffdddd;
+}
+
+.food {
+    background-color: #c5d9f1;
+}
+
+.leisure {
+    background-color: #c4d79b;
+}
+
+.work {
+    background-color: #fff0c1;
+}
+
+table.stats tr > .expense-ordinary {
+    padding-left:.55rem!important;
 }

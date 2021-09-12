@@ -1,27 +1,172 @@
 from datetime import date
 
 import pytest
+from django.core.validators import ValidationError
 
-from ..factories import BookFactory
-from ..models import Book
+from ...users.factories import UserFactory
+from ..factories import BookFactory, BookTargetFactory
+from ..models import Book, BookTarget
+
+pytestmark = pytest.mark.django_db
 
 
 def test_book_str():
     book = BookFactory.build()
 
-    assert 'Book Title' == str(book)
+    assert str(book) == 'Book Title'
+
+def test_book_related():
+    BookFactory()
+    BookFactory(title='B1', user=UserFactory(username='XXX', email='x@x.x'))
+
+    actual = Book.objects.related()
+
+    assert len(actual) == 1
+    assert actual[0].title == 'Book Title'
 
 
-@pytest.mark.django_db
 def test_book_items():
     BookFactory()
+    BookFactory(title='B1', user=UserFactory(username='XXX', email='x@x.x'))
 
-    assert 1 == Book.objects.items().count()
+    assert Book.objects.items().count() == 1
 
 
-@pytest.mark.django_db
 def test_book_year():
-    BookFactory()
+    b1 = BookFactory(title='x1')
+    b2 = BookFactory(title='x2', ended=date(1999, 1, 2))
     BookFactory(started=date(2000, 1, 1))
+    BookFactory(ended=date(2000, 1, 1))
+    BookFactory(user=UserFactory(username='XXX', email='x@x.x'))
 
-    assert 1 == Book.objects.year(1999).count()
+    actual = Book.objects.year(1999)
+
+    assert actual.count() == 2
+    assert actual[0] == b1
+    assert actual[1] == b2
+
+
+def test_book_fields():
+    BookFactory(ended=date(1999, 1, 31))
+
+    actual = list(Book.objects.items())[0]
+
+    assert actual.author == 'Author'
+    assert actual.title == 'Book Title'
+    assert actual.remark == 'Remark'
+
+    assert date(1999, 1, 1) == actual.started
+    assert date(1999, 1, 31) == actual.ended
+
+
+def test_book_readed_one_year():
+    BookFactory()
+    BookFactory(ended=date(1999, 1, 31))
+    BookFactory(ended=date(1999, 12, 31))
+    BookFactory(ended=date(1999, 12, 31), user=UserFactory(username='X', email='x@x.x'))
+
+    actual = list(Book.objects.readed(year=1999))
+
+    assert actual == [{'year': 1999, 'cnt': 2}]
+
+
+def test_book_readed_one_year_no_data():
+    actual = list(Book.objects.readed(year=1999))
+
+    assert actual == []
+
+
+def test_book_readed_all_years():
+    BookFactory()
+    BookFactory(ended=date(1999, 1, 31))
+    BookFactory(ended=date(1999, 12, 31))
+    BookFactory(ended=date(1998, 1, 31))
+    BookFactory(ended=date(1998, 1, 31), user=UserFactory(username='XXX', email='x@x.x'))
+
+    actual = list(Book.objects.readed())
+
+    assert actual == [{'year': 1998, 'cnt': 1}, {'year': 1999, 'cnt': 2}]
+
+
+def test_book_readed_all_years_no_data():
+    actual = list(Book.objects.readed())
+
+    assert actual == []
+
+
+def test_book_reading():
+    BookFactory()
+    BookFactory(started=date(1000, 1, 1))
+    BookFactory(started=date(3000, 1, 1))
+    BookFactory(ended=date(2000, 1, 31))
+    BookFactory(user=UserFactory(username='XXX', email='x@x.x'))
+
+    actual = Book.objects.reading(1999)
+
+    assert actual == {'reading': 2}
+
+
+
+# ----------------------------------------------------------------------------
+#                                                                 Book Target
+# ----------------------------------------------------------------------------
+def test_book_target_str():
+    actual = BookTargetFactory.build()
+
+    assert str(actual) == '1999: 100'
+
+
+def test_book_target_related():
+    BookTargetFactory()
+    BookTargetFactory(user=UserFactory(username='XXX', email='x@x.x'))
+
+    actual = BookTarget.objects.related()
+
+    assert len(actual) == 1
+    assert actual[0].user.username == 'bob'
+
+
+def test_book_target_items():
+    BookTargetFactory(year=1999)
+    BookTargetFactory(year=2000, user=UserFactory(username='XXX', email='x@x.x'))
+
+    actual = BookTarget.objects.items()
+
+    assert len(actual) == 1
+    assert actual[0].user.username == 'bob'
+
+
+def test_book_target_year():
+    BookTargetFactory(year=1999)
+    BookTargetFactory(year=1999, user=UserFactory(username='XXX', email='x@x.x'))
+
+    actual = list(BookTarget.objects.year(1999))
+
+    assert len(actual) == 1
+    assert actual[0].year == 1999
+    assert actual[0].user.username == 'bob'
+
+
+def test_book_target_year_positive():
+    actual = BookTargetFactory.build(year=-2000)
+
+    try:
+        actual.full_clean()
+    except ValidationError as e:
+        assert 'year' in e.message_dict
+
+
+@pytest.mark.xfail(raises=Exception)
+def test_book_target_year_unique():
+    BookTargetFactory(year=1999)
+    BookTargetFactory(year=1999)
+
+
+def test_book_target_ordering():
+    BookTargetFactory(year=1970)
+    BookTargetFactory(year=1999)
+
+    actual = list(BookTarget.objects.all())
+
+    assert str(actual[0]) == '1999: 100'
+    assert str(actual[1]) == '1970: 100'

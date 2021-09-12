@@ -1,40 +1,48 @@
+{% load charts %}
+{% load i18n %}
+
 <div id="container-for-balance"></div>
 <script>
+    $(function () {
+        var categoryLabels = {% months %};
+
     Highcharts.setOptions({
         lang: {
             thousandsSep: '.',
             decimalPoint: ',',
-            // numericSymbols: ['k', 'M', 'G', 'T', 'P', 'E']
         }
     });
+
     Highcharts.chart('container-for-balance', {
+        chart: {
+            marginBottom: 67,
+        },
         title: {
-            text: ''
+            text: '',
         },
         legend: {
             layout: 'horizontal',
-            align: 'center',
+            align: 'right',
             verticalAlign: 'top',
             floating: true,
-            borderWidth: 1,
+            borderWidth: 0,
         },
         xAxis: {
-            min: 0.4,
-            max: 10.8,
-            categories: [
-                'Sausis',
-                'Vasaris',
-                'Kovas',
-                'Balandis',
-                'Gegužė',
-                'Birželis',
-                'Liepa',
-                'Rugpjūtis',
-                'Rugsėjis',
-                'Spalis',
-                'Lapkritis',
-                'Gruodis'
-            ]
+            min: 0.49,
+            max: categoryLabels.length - 1.49,
+            categories: categoryLabels,
+            type: 'category',
+            lineColor: '#000',
+            lineWidth: 2,
+            gridLineWidth: 1,
+            tickmarkPlacement: 'on',
+            labels: {
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+                rotation: -45,
+            },
         },
         yAxis: {
             labels: {
@@ -42,39 +50,42 @@
                     if (this.value >= 100) return Highcharts.numberFormat(this.value / 1000, 1) + "k";
                     return Highcharts.numberFormat(this.value, 0);
                 },
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                },
             },
             title: {
-                text: 'Suma, €'
-            }
+                text: ''
+            },
         },
         tooltip: {
-            shared: true,
-            pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br/>'
+            split: true,
+            pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br/>',
+                style: {
+                    fontSize: '13px',
+                    fontFamily: 'Calibri, Verdana',
+                },
         },
         credits: {
             enabled: false
         },
         plotOptions: {
-            areaspline: {
+            area: {
                 fillOpacity: 0.5
             }
         },
         series: [{
-            type: 'areaspline',
-            name: 'Pajamos',
+            type: 'area',
+            name: '{% translate "Incomes" %}',
             data: {{ i }},
             color: '#77933c'
         }, {
-            type: 'areaspline',
-            name: 'Išlaidos',
+            type: 'area',
+            name: '{% translate "Expenses" %}',
             data: {{ e }},
             color: '#c0504d'
-        }, {
-            type: 'spline',
-            name: 'Taupymas',
-            data: {{ s }},
-            color: '#ffc000',
-            visible: false,
         }]
+    });
     });
 </script>

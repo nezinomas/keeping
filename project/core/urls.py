@@ -1,10 +1,25 @@
 from django.urls import path
 from . import views
+from .apps import App_name
 
-app_name = 'core'
+app_name = App_name
+
 
 urlpatterns = [
-    path('core/', views.index, name='core_index'),
-    path('set/year/<int:year>/<str:view_name>/', views.set_year, name='set_year'),
-    path('set/month/<int:month>/<str:view_name>/', views.set_month, name='set_month'),
+    path(
+        'year/<int:year>/',
+        views.set_year,
+        name='set_year'),
+    path(
+        'month/<int:month>/',
+        views.set_month,
+        name='set_month'),
+    path(
+        'set/balances/',
+        views.RegenerateBalances.as_view(),
+        name='regenerate_balances'),
+    path(
+        'set/balances/<int:year>/',
+        views.RegenerateBalancesCurrentYear.as_view(),
+        name='regenerate_balances_current_year'),
 ]

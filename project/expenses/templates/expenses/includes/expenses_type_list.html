@@ -1,28 +1,43 @@
+{% load i18n %}
+<div class="accordion" id="accordion">
 {% for item in items %}
 {% url 'expenses:expenses_type_update' item.id as url_type_update %}
-<div class="list-group mb-2">
-    <div class="list-group-item list-group-item-action list-group-item-primary" data-url="{{ url_type_update }}">
-        {{ item.title }}
-        {% if item.necessary %}<span class="badge badge-primary"><i class="far fa-star"></i></span>{% endif %}
+    <div class="accordion-item mb-2">
+        <div class="accordion-header" id="heading_{{ item.id }}">
+            <span class="expenses-edit-icon">
+                <button type="button" data-url="{{ url_type_update }}" class="btn btn-sm edit js-create" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></button>
+            </span>
+            <button class="accordion-button collapsed btn-sm rounded-top" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ item.id }}" aria-expanded="false" aria-controls="collapse_{{ item.id }}">
+                {{ item.title }}
+                {% if item.necessary %}
+                <span class="badge mx-2"><i class="bi bi-star"></i></span>{% endif %}
+            </button>
+
+        </div>
+        <div id="collapse_{{ item.id }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ item.id }}"
+            data-bs-parent="#accordion">
+            <div class="accordion-body">
+                {% for sub in item.expensename_set.all %}
+                {% url 'expenses:expenses_name_update' sub.id as url_name_update %}
+                <div class="list-group-item" data-url="{{ url_name_update }}">{{ sub.title }}
+                    {% if sub.valid_for %}<span class="badge badge-secondary">{{ sub.valid_for|safe }}</span>{% endif %}
+                    <span class="expenses-edit-icon">
+                        <button type="button" data-url="{{ url_name_update }}" class="btn btn-super-sm edit js-create"><i class="bi bi-pencil-fill"></i></button>
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
-    {% for sub in item.expensename_set.all %}
-    {% url 'expenses:expenses_name_update' sub.id as url_name_update %}
-    <div class="list-group-item list-group-item-action" data-url="{{ url_name_update }}">{{ sub.title }} {% if sub.valid_for %}<span class="badge badge-secondary">{{ sub.valid_for }}</span>{% endif %}</div>
-    {% endfor %}
-</div>
 {% endfor %}
+</div>
 
-<style>
-    .list-group-item {
-        padding: .25rem 0 .25rem 1.25rem;
-        margin: 0;
-    }
+<script>
+    $('.panel-collapse').on('show.bs.collapse', function () {
+        $(this).siblings('.panel-heading').addClass('active');
+    });
 
-    .list-group-item.list-group-item-primary {
-        padding-left: 0.25rem;
-    }
-
-    .badge {
-        font-weight: normal;
-    }
-</style>
+    $('.panel-collapse').on('hide.bs.collapse', function () {
+        $(this).siblings('.panel-heading').removeClass('active');
+    });
+</script>

@@ -1,30 +1,75 @@
 {% extends 'base.html' %}
-
+{% load static %}{% load i18n %}
 
 {% block head %}
+<link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
+<script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script src="https://code.highcharts.com/modules/bullet.js"></script>
+<script src="{% static 'js/reload_stats.js' %}"></script>
 
+<style>
+    .teal {
+        background-color: #8ce7c2 !important;
+    }
+</style>
 {% endblock head %}
 
 
 {% block content %}
 
-{% url 'books:books_new' as url_books %}
-<div class="row mt-2">
-    <div class="col-lg-12">
-        <div class="row mt-2">
-            <div class="col text-right">
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books }}"><i class="fas fa-plus"></i> Knygą</button>
-            </div>
-        </div>
-        <div class="row mt-2">
-            <div id="ajax-content" class="col-lg-12 dblclick">{% include 'books/includes/books_list.html' %}</div>
-        </div>
+{% if tab == 'index' %}
+<!-- Loader -->
+<div class="loader loader-default" id="loader"></div>
+
+<div class="row my-2">
+    <div class="col-3 text-start" id="search_form_data">{{ search }}</div>
+
+    <div class="col text-center" id="info_row">{{ info_row }}</div>
+
+    <div class="col-3 text-end">
+        {% url 'books:books_new' as url_books %}
+        {% url 'books:books_target_new' as url_books_target %}
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books }}"><i class="bi bi-plus"></i>{% translate 'Book' context 'book add button' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_books_target }}"><i class="bi bi-plus"></i>{{ year|title }} {% translate 'year goal' %}</button>
     </div>
 </div>
 
-<div class="modal fade" id="modal-form">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content"></div>
-    </div>
+<div class="row">
+    <div id="book_list" class="col-lg-12">{{ book_list }}</div>
 </div>
+
+<div class="row my-2">
+    <div class="col-lg-12" id="chart_readed_books">{% if readed %}{{ chart_readed_books }}{% endif %}</div>
+</div>
+{% endif %}
+
+{% if tab == 'all' %}
+<div class="row my-2">
+    <div id="book_list" class="col-lg-12">{{ book_list }}</div>
+</div>
+{% endif %}
+
+<script src="{% static 'js/search.js' %}"></script>
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'books:reload_stats' %}`;
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1',
+                'tab': '{{ tab }}',
+            },
+            success: function (data) {
+                var blocks = [
+                    'info_row',
+                    'chart_readed_books',
+                    'book_list'
+                ];
+                reload_stats(data, blocks);
+            }
+        });
+    });
+</script>
+
 {% endblock content %}

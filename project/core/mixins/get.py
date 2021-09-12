@@ -1,34 +1,40 @@
+from django.core.exceptions import ObjectDoesNotExist
+
+
 class GetQuerysetMixin():
     context_object_name = 'items'
-    object_list = 'itms'
-    month = False
+    object_list = 'objects'
 
     def get_queryset(self):
-        year = self.request.user.profile.year
-        month = self.request.user.profile.month
+        year = self.request.user.year
+
         try:
-            if self.month:
-                qs = self.model.objects.month(year, month)
-            else:
-                qs = self.model.objects.year(year)
-        except Exception as e1:
+            qs = self.model.objects.year(year)
+        except AttributeError:
             try:
                 qs = self.model.objects.items()
-            except Exception as e2:
-                qs = self.model.objects.all()
+            except AttributeError:
+                qs = {}
 
         return qs
 
+    def get_object(self):
+        obj = None
+        pk = self.kwargs.get('pk')
+
+        if pk:
+            try:
+                obj = self.model.objects.related().get(pk=pk)
+            except (AttributeError, ObjectDoesNotExist):
+                pass
+
+        return obj
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context[self.context_object_name] = self.get_queryset()
+
+        no_items = kwargs.get('no_items')
+        if not no_items:
+            context[self.context_object_name] = self.get_queryset()
 
         return context
-
-
-class GetFormKwargsMixin():
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['year'] = self.request.user.profile.year
-
-        return kwargs

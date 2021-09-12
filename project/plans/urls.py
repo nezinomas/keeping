@@ -1,8 +1,9 @@
 from django.urls import path
 
 from . import views
+from .apps import App_name
 
-app_name = 'plans'
+app_name = App_name
 
 urlpatterns = [
     path(
@@ -10,9 +11,9 @@ urlpatterns = [
         views.Index.as_view(),
         name='plans_index'
     ),
-    #
-    # expenses plan
-    #
+    #------------------------------------------------------------------------------------
+    #                                                                       expenses plan
+    #------------------------------------------------------------------------------------
     path(
         'plans/expenses/',
         views.ExpensesLists.as_view(),
@@ -28,9 +29,14 @@ urlpatterns = [
         views.ExpensesUpdate.as_view(),
         name='expenses_plan_update'
     ),
-    #
-    # income plans
-    #
+    path(
+        'plans/expenses/delete/<int:pk>/',
+        views.ExpensesDelete.as_view(),
+        name='expenses_plan_delete'
+    ),
+    #------------------------------------------------------------------------------------
+    #                                                                         income plan
+    #------------------------------------------------------------------------------------
     path(
         'plans/incomes/',
         views.IncomesLists.as_view(),
@@ -46,9 +52,14 @@ urlpatterns = [
         views.IncomesUpdate.as_view(),
         name='incomes_plan_update'
     ),
-    #
-    # saving plan
-    #
+    path(
+        'plans/incomes/delete/<int:pk>/',
+        views.IncomesDelete.as_view(),
+        name='incomes_plan_delete'
+    ),
+    #------------------------------------------------------------------------------------
+    #                                                                         saving plan
+    #------------------------------------------------------------------------------------
     path(
         'plans/savings/',
         views.SavingsLists.as_view(),
@@ -64,9 +75,14 @@ urlpatterns = [
         views.SavingsUpdate.as_view(),
         name='savings_plan_update'
     ),
-    #
-    # day plan
-    #
+    path(
+        'plans/savings/delete/<int:pk>/',
+        views.SavingsDelete.as_view(),
+        name='savings_plan_delete'
+    ),
+    #------------------------------------------------------------------------------------
+    #                                                                            day plan
+    #------------------------------------------------------------------------------------
     path(
         'plans/day/',
         views.DayLists.as_view(),
@@ -82,9 +98,14 @@ urlpatterns = [
         views.DayUpdate.as_view(),
         name='days_plan_update'
     ),
-    #
-    # necessary plan
-    #
+    path(
+        'plans/day/delete/<int:pk>/',
+        views.DayDelete.as_view(),
+        name='days_plan_delete'
+    ),
+    #------------------------------------------------------------------------------------
+    #                                                                      necessary plan
+    #------------------------------------------------------------------------------------
     path(
         'plans/necessary/',
         views.NecessaryLists.as_view(),
@@ -104,5 +125,18 @@ urlpatterns = [
         'plans/reload_plan_stats/',
         views.plans_stats,
         name='reload_plan_stats'
-    )
+    ),
+    path(
+        'plans/necessary/delete/<int:pk>/',
+        views.NecessaryDelete.as_view(),
+        name='necessarys_plan_delete'
+    ),
+    #------------------------------------------------------------------------------------
+    #                                                                          copy plans
+    #------------------------------------------------------------------------------------
+    path(
+        'plans/copy/',
+        views.copy_plans,
+        name='copy_plans'
+    ),
 ]

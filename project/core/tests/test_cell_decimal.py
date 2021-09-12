@@ -2,7 +2,6 @@ import pytest
 from django.template import Context, Template
 
 from ...core.tests.utils import _remove_line_end
-from ..templatetags.table_cell import cell
 
 
 @pytest.fixture()
@@ -36,7 +35,11 @@ def test_cell_positive_and_negative_pos(_template_positive_and_negative):
     context = Context({'value': '0,5'})
 
     actual = _template_positive_and_negative.render(context)
+    actual = actual.replace('\n', '')
+
     expect = '<td class="table-success">0,5</td>'
+
+    assert actual == expect
 
 
 def test_cell_intcomma(_template):

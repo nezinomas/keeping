@@ -1,16 +1,15 @@
 import json
-from datetime import date, datetime
-from decimal import Decimal
 
-import pandas as pd
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
-from .. import views
-from ..factories import SavingFactory, SavingTypeFactory
+from ...core.tests.utils import setup_view
+from .. import models, views
+from ..factories import Saving, SavingFactory, SavingTypeFactory
 
+pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
@@ -57,20 +56,19 @@ def test_types_update_func():
 
 
 @freeze_time('2000-01-01')
-def test_saving_load_form(admin_client):
+def test_saving_load_form(client_logged):
     url = reverse('savings:savings_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
-    assert '2000-01-01' in actual['html_form']
+    assert response.status_code == 200
+    assert '1999-01-01' in actual['html_form']
 
 
-@pytest.mark.django_db()
-def test_saving_save(client, login):
+def test_saving_save(client_logged):
     a = AccountFactory()
     i = SavingTypeFactory()
 
@@ -84,7 +82,7 @@ def test_saving_save(client, login):
 
     url = reverse('savings:savings_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -97,8 +95,7 @@ def test_saving_save(client, login):
     assert 'Savings' in actual['html_list']
 
 
-@pytest.mark.django_db()
-def test_saving_save_invalid_data(client, login):
+def test_saving_save_invalid_data(client_logged):
     data = {
         'date': 'x',
         'price': 'x',
@@ -109,7 +106,7 @@ def test_saving_save_invalid_data(client, login):
 
     url = reverse('savings:savings_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -117,22 +114,22 @@ def test_saving_save_invalid_data(client, login):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
-def test_saving_update_to_another_year(client, login):
+def test_saving_update_to_another_year(client_logged):
     saving = SavingFactory()
 
-    data = {'price': '150',
-            'date': '2010-12-31',
-            'remark': 'Pastaba',
-            'fee': '25',
-            'account': 1,
-            'saving_type': 1
+    data = {
+        'price': '150',
+        'date': '2010-12-31',
+        'remark': 'Pastaba',
+        'fee': '25',
+        'account': 1,
+        'saving_type': 1
     }
     url = reverse('savings:savings_update', kwargs={'pk': saving.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -141,8 +138,7 @@ def test_saving_update_to_another_year(client, login):
     assert '2010-12-31' not in actual['html_list']
 
 
-@pytest.mark.django_db()
-def test_saving_update(client, login):
+def test_saving_update(client_logged):
     saving = SavingFactory()
 
     data = {
@@ -155,9 +151,9 @@ def test_saving_update(client, login):
     }
     url = reverse('savings:savings_update', kwargs={'pk': saving.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -169,31 +165,129 @@ def test_saving_update(client, login):
     assert 'Pastaba' in actual['html_list']
 
 
-#
-# SavingType
-#
+def test_savings_not_load_other_journal(client_logged, main_user, second_user):
+    j1 = main_user.journal
+    j2 = second_user.journal
+    a1 = AccountFactory(journal=j1, title='a1')
+    a2 = AccountFactory(journal=j2, title='a2')
 
-@freeze_time('2000-01-01')
-def test_type_load_form(admin_client):
-    url = reverse('savings:savings_type_new')
+    it1 = SavingTypeFactory(title='xxx', journal=j1)
+    it2 = SavingTypeFactory(title='yyy', journal=j2)
 
-    response = admin_client.get(url, {}, **X_Req)
+    SavingFactory(saving_type=it1, account=a1)
+    i2 = SavingFactory(saving_type=it2, account=a2, price=666)
+
+    url = reverse('savings:savings_update', kwargs={'pk': i2.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert it2.title not in form
+    assert str(i2.price) not in form
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                           Saving Delete
+# ---------------------------------------------------------------------------------------
+def test_view_saving_delete_func():
+    view = resolve('/savings/delete/1/')
+
+    assert views.Delete is view.func.view_class
+
+
+def test_view_saving_delete_200(client_logged):
+    p = SavingFactory()
+
+    url = reverse('savings:savings_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_saving_delete_load_form(client_logged):
+    p = SavingFactory()
+
+    url = reverse('savings:savings_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
 
-    assert 200 == response.status_code
+    actual = actual['html_form']
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual
+    assert 'data-action="delete"' in actual
+    assert 'action=""' in actual
+    assert 'data-update-container="ajax-content">' in actual
+    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01: Savings</strong>?' in actual
 
 
-@pytest.mark.django_db()
-def test_type_save(client, login):
+def test_view_saving_delete(client_logged):
+    p = SavingFactory()
+
+    assert models.Saving.objects.all().count() == 1
+    url = reverse('savings:savings_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.Saving.objects.all().count() == 0
+
+
+def test_savings_delete_other_journal_get_form(client_logged, second_user):
+    it2 = SavingTypeFactory(title='yyy', journal=second_user.journal)
+    i2 = SavingFactory(saving_type=it2, price=666)
+
+    url = reverse('savings:savings_delete', kwargs={'pk': i2.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_savings_delete_other_journal_post_form(client_logged, second_user):
+    it2 = SavingTypeFactory(title='yyy', journal=second_user.journal)
+    i2 = SavingFactory(saving_type=it2, price=666)
+
+    url = reverse('savings:savings_delete', kwargs={'pk': i2.pk})
+    client_logged.post(url, **X_Req)
+
+    assert Saving.objects.all().count() == 1
+
+
+# ----------------------------------------------------------------------------
+#                                                                  Saving Type
+# ----------------------------------------------------------------------------
+@freeze_time('2000-01-01')
+def test_type_load_form(client_logged):
+    url = reverse('savings:savings_type_new')
+
+    response = client_logged.get(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+
+def test_type_save(client_logged):
     data = {
         'title': 'TTT',
+        'type': 'funds',
     }
 
     url = reverse('savings:savings_type_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -202,13 +296,30 @@ def test_type_save(client, login):
     assert 'TTT' in actual['html_list']
 
 
-@pytest.mark.django_db()
-def test_type_save_invalid_data(client, login):
+def test_type_save_with_closed(client_logged):
+    data = {
+        'title': 'TTT',
+        'closed': '2000',
+        'type': 'shares',
+    }
+
+    url = reverse('savings:savings_type_new')
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert 'TTT' in actual['html_list']
+
+
+def test_type_save_invalid_data(client_logged):
     data = {'title': ''}
 
     url = reverse('savings:savings_type_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -216,16 +327,55 @@ def test_type_save_invalid_data(client, login):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
-def test_type_update(client, login):
+def test_type_update(client_logged):
     saving = SavingTypeFactory()
 
-    data = {'title': 'TTT'}
+    data = {
+        'title': 'TTT',
+        'type': 'funds',
+    }
     url = reverse('savings:savings_type_update', kwargs={'pk': saving.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert 'TTT' in actual['html_list']
+
+
+def test_saving_type_not_load_other_journal(client_logged, main_user, second_user):
+    SavingTypeFactory(title='xxx', journal=main_user.journal)
+    obj = SavingTypeFactory(title='yyy', journal=second_user.journal)
+
+    url = reverse('savings:savings_type_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert obj.title not in form
+
+
+def test_type_update_with_closed(client_logged):
+    saving = SavingTypeFactory()
+
+    data = {
+        'title': 'TTT',
+        'closed': '2000',
+        'type': 'pensions',
+    }
+    url = reverse('savings:savings_type_update', kwargs={'pk': saving.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -235,10 +385,25 @@ def test_type_update(client, login):
 
 
 @pytest.mark.django_db
-def test_view_index_200(login, client):
-    response = client.get('/savings/')
+def test_view_index_200(client_logged):
+    response = client_logged.get('/savings/')
 
     assert response.status_code == 200
 
     assert 'savings' in response.context
     assert 'categories' in response.context
+
+
+@pytest.mark.django_db
+def test_type_list_view_has_all(fake_request):
+    SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2', closed=1974)
+
+    view = setup_view(views.TypeLists(), fake_request)
+
+    ctx = view.get_context_data()
+    actual = [str(x) for x in ctx['items']]
+
+    assert len(actual) == 2
+    assert 'S1' in actual
+    assert 'S2' in actual

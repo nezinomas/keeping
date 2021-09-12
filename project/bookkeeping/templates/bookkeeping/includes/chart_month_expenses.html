@@ -56,7 +56,7 @@ Highcharts.chart('container-for-month-expenses', {
      },
     series: [
         {
-            data: {{ chart_expenses|safe }},
+            data: {{ expenses|safe }},
             dataLabels: {
                 enabled: true,
                 rotation: 0,

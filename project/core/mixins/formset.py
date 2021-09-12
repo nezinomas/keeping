@@ -1,4 +1,7 @@
 from django.forms.models import modelformset_factory
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+from ...core.lib import utils
 
 
 class FormsetMixin():
@@ -14,24 +17,26 @@ class FormsetMixin():
             return _list
 
         model = self._get_type_model()
-        _objects = model.objects.all()
+        _objects = model.objects.items()
         for _object in _objects:
-            _list.append({'price': None, foreign_key[0]: _object})
+            _list.append({'price': 0, foreign_key[0]: _object})
 
         return _list
 
     def _get_type_model(self):
         if not self.type_model:
             return self.model
-        else:
-            return self.type_model
+
+        return self.type_model
 
     def _get_formset(self, post=None):
+        form = self.get_form_class()
+        # year = self.request.user.year
         _formset = (
             modelformset_factory(
                 extra=0,
-                form=self.get_form_class(),
-                model=self.model,
+                form=form,
+                model=self.model
             )
         )
 
@@ -49,11 +54,29 @@ class FormsetMixin():
 
     def post(self, request, *args, **kwargs):
         formset = self._get_formset(request.POST or None)
-
         if formset.is_valid():
-            return self.form_valid(formset)
-        else:
-            return self.form_invalid(formset)
+            data = dict()
+
+            # if from has price and price > 0 save that form
+            for form in formset:
+                price = form.cleaned_data.get('price')
+
+                if float(price) > 0:
+                    form.save()
+
+            context = self.get_context_data()
+
+            data['form_is_valid'] = True
+            if self.list_render_output:
+                data['html_list'] = (
+                    render_to_string(
+                        self.get_list_template_name(), context, self.request)
+                )
+
+            if utils.is_ajax(self.request):
+                return JsonResponse(data)
+
+        return super().form_invalid(formset)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

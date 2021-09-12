@@ -4,18 +4,20 @@ from decimal import Decimal
 import factory
 
 from ..accounts.factories import AccountFactory
+from ..journals.factories import JournalFactory
 from .models import Expense, ExpenseName, ExpenseType
 
 
-class ExpenseTypeFactory(factory.DjangoModelFactory):
+class ExpenseTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExpenseType
         django_get_or_create = ('title',)
 
+    journal = factory.SubFactory(JournalFactory)
     title = 'Expense Type'
 
 
-class ExpenseNameFactory(factory.DjangoModelFactory):
+class ExpenseNameFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExpenseName
         django_get_or_create = ('title', 'parent',)
@@ -24,7 +26,7 @@ class ExpenseNameFactory(factory.DjangoModelFactory):
     parent = factory.SubFactory(ExpenseTypeFactory)
 
 
-class ExpenseFactory(factory.DjangoModelFactory):
+class ExpenseFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Expense
 

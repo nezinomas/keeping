@@ -17,12 +17,10 @@ def test_no_incomes_summary(_avg_type_expenses):
 
     actual = T(
         money=3.0, fund=4.0, pension=1.0,
-        avg_expenses=5.0, avg_type_expenses=_avg_type_expenses,
-        not_use=['E1', 'E2']
+        avg_expenses=5.0, cut_sum=3.0,
     )
 
     assert expect == actual.summary
-    assert 3.0 == actual.save_sum
 
 
 def test_no_incomes_summary_no_used_list(_avg_type_expenses):
@@ -34,12 +32,10 @@ def test_no_incomes_summary_no_used_list(_avg_type_expenses):
 
     actual = T(
         money=3.0, fund=4.0, pension=1.0,
-        avg_expenses=5.0, avg_type_expenses=_avg_type_expenses,
-        not_use=None
+        avg_expenses=5.0, cut_sum=None
     )
 
     assert expect == actual.summary
-    assert actual.save_sum is None
 
 
 def test_no_incomes_summary_no_used_no_keys_in_avg_type_expenses(_avg_type_expenses):
@@ -51,12 +47,10 @@ def test_no_incomes_summary_no_used_no_keys_in_avg_type_expenses(_avg_type_expen
 
     actual = T(
         money=3.0, fund=4.0, pension=1.0,
-        avg_expenses=5.0, avg_type_expenses=_avg_type_expenses,
-        not_use=['x', 'y']
+        avg_expenses=5.0, cut_sum=None
     )
 
     assert expect == actual.summary
-    assert actual.save_sum is None
 
 
 def test_no_incomes_summary_expenses_zero(_avg_type_expenses):
@@ -68,12 +62,10 @@ def test_no_incomes_summary_expenses_zero(_avg_type_expenses):
 
     actual = T(
         money=3.0, fund=4.0, pension=1.0,
-        avg_expenses=0, avg_type_expenses=_avg_type_expenses,
-        not_use=None
+        avg_expenses=0, cut_sum=None
     )
 
     assert expect == actual.summary
-    assert actual.save_sum is None
 
 
 def test_no_incomes_summary_avg_type_expenses_none():
@@ -85,8 +77,7 @@ def test_no_incomes_summary_avg_type_expenses_none():
 
     actual = T(
         money=3.0, fund=4.0, pension=1.0,
-        avg_expenses=0, avg_type_expenses=None,
-        not_use=['x']
+        avg_expenses=0, cut_sum=None
     )
 
     assert expect == actual.summary

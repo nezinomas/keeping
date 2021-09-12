@@ -1,0 +1,77 @@
+{% load get_item %}
+<div id="chart_m{{ forloop.counter }}_container"></div>
+<script>
+    $(function () {
+       Highcharts.chart('chart_m{{ forloop.counter }}_container', {
+        chart: {
+            type: 'column',
+            height: '140px',
+            backgroundColor: {% if parent in alternative_bg %}'#fafafa'{% else %}'#ffffff'{% endif %},
+        },
+        title: {
+            text: '{{ month_titles|get_list_val:parent }}',
+            style: {
+                fontSize: '14px',
+                fontFamily: 'Calibri, Verdana',
+            },
+        },
+        xAxis: {
+            lineColor: '#000',
+            lineWidth: 2,
+            categories: {{ month_days|get_list_val:parent }},
+            crosshair: true,
+            labels: {
+                useHTML: true,
+                style: {
+                    fontSize: '9px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+                rotation: 0,
+            }
+        },
+        yAxis: {
+            title: {
+                text: ''
+            },
+            labels: {
+                enabled: false,
+            },
+            max: 1.1,
+            gridLineWidth: 0,
+        },
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            shared: true,
+            headerFormat: '',
+            style: {
+                fontSize: '12px',
+                fontFamily: 'Calibri, Verdana',
+            },
+            formatter: function () {
+                if (this.y) {
+                    var rtn = '';
+                    rtn += 'Kiek: <b>' + this.y + '</b><br><br>';
+                    rtn += 'Tarpas: <b>' + this.points[0].point.gap + '</b>';
+                    return rtn;
+                }
+                else { return false; }
+            },
+        },
+        plotOptions: {
+            bar: {
+                grouping: false,
+                shadow: false,
+            }
+        },
+        series: [{
+            name: 'Kiekis',
+            data: {{ data|get_list_val:parent|safe }},
+            color: 'rgba({{ chart_column_color }}, 0.65)',
+            borderColor: 'rgba({{ chart_column_color }}, 1)',
+            pointPadding: -0.15,
+        }]
+    });
+});
+</script>

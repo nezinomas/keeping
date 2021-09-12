@@ -1,66 +1,36 @@
-{% load crispy_forms_tags %}{% load static %}
-<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ action }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}" {% if chained_dropdown %}data-chained-dropdown="{{ chained_dropdown }}"{% endif %}>
+{% load crispy_forms_tags %}{% load static %}{% load i18n %}
+<form method="POST" enctype="multipart/form-data" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ form_action }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}" {% if chained_dropdown %}data-chained-dropdown="{{ chained_dropdown }}"{% endif %}>
     {% csrf_token %}
-    <script type="text/javascript" src="{% static 'js/moment-with-locales-2.9.0.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'bootstrap_datepicker/js/bootstrap-datetimepicker-4.17.47.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'bootstrap_datepicker_plus/js/datepicker-widget.js' %}"></script>
+    <script src="{% static 'js/moment-with-locales-2.9.0.min.js' %}"></script>
+    <script src="{% static 'bootstrap_datepicker/js/bootstrap-datetimepicker-4.17.47.min.js' %}"></script>
+    <script src="{% static 'bootstrap_datepicker_plus/js/datepicker-widget.js' %}"></script>
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body">
-        {% if form.non_field_errors %}
-        {% for error in form.non_field_errors %}
-        <div class="alert alert-danger">
-            <strong>{{ error|escape }}</strong>
-        </div>
-        {% endfor %}
-        {% endif %}
+        {% include 'core/includes/form_errors.html' %}
 
         {% for field in form %}
-        <div class="row align-items-center">
-            <div class="col-sm-4">{{ field.label_tag }}</div>
-            <div class="col-sm-8">{{ field|as_crispy_field }}</div>
+        {% if not field.is_hidden %}
+        <div class="row">
+            <div class="col-4">{{ field.label_tag }}</div>
+            <div class="col-8">
+            {% if field.html_name == 'total_sum' %}
+            <div class="row gx-2">
+                <div class="col">{{ field|as_crispy_field }}</div>
+                <div class="col-2" id="div_sum_prices"><button type="button" id="add_price" class="btn btn-sm btn-secondary" style="width: 100%;">{% translate 'Add' %}</button></div>
+            </div>
+            {% else %}
+            {{ field|as_crispy_field }}
+            {% endif %}</div>
         </div>
+        {% endif %}
         {% endfor %}
     </div>
 
-    <div class="modal-footer">
-        <button type="button" class="btn btn-sm btn-primary" id="submit">{{ action|title }}</button>
-        {% if action != 'update' %}<button type="button" class="btn btn-sm btn-primary" id="save_close">Save and Close</button>{% endif %}
-        <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
-    </div>
+    {% include 'core/includes/form_footer.html' %}
 </form>
 
-<style>
-    .row .form-group {
-        margin: .2rem 0;
-        padding: 0;
-    }
-    label {
-        margin: 0;
-    }
-</style>
-<script>
-    $(document).keydown(function (event) {
-        if (event.keyCode == 27) {
-            $('#modal-form').modal("hide");
-        }
-    });
-
-    $(document).on('submit', '.js-form', function (e) {
-        e.preventDefault();
-    });
-
-    // replace dot in year field
-    $(document).ready(function () {
-        var year = $("#id_year:text").attr('value')
-        year = year.replace(".", "");
-
-        $("#id_year").attr('value', year);
-        $("#id_year:text").val(year);
-    });
-</script>
+{% include 'core/includes/modal_form_js.html' %}
 

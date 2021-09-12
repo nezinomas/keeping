@@ -1,0 +1,11 @@
+{% load i18n %}
+
+<div class="mx-auto text-center alert alert-warning py-2 my-4">
+{% if data_missing %}
+    {% translate 'Data missing.' %}
+{% elif two_years %}
+    {% translate 'Missing data. At least two years of data are needed.' %}
+{% else %}
+    {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+{% endif %}
+</div>

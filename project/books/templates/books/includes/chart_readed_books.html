@@ -1,0 +1,92 @@
+<div id="{{ chart }}_container"></div>
+<script>
+    $(function () {
+       Highcharts.chart('{{ chart }}_container', {
+        chart: {
+            type: 'bullet'
+        },
+        title: {
+            text: '{{ chart_title|safe }}',
+            style: {
+                fontSize: '16px',
+                fontFamily: 'Calibri, Verdana',
+            },
+        },
+        xAxis: {
+            lineColor: '#000',
+            lineWidth: 2,
+            categories: {{ categories|safe }},
+            labels: {
+                useHTML: true,
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+                rotation: -45,
+            }
+        },
+        yAxis: {
+            title: {
+                text: ''
+            },
+            labels: {
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                }
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            enabled: false,
+        },
+        plotOptions: {
+            series: {
+                enableMouseTracking: false,
+                targetOptions: {
+                    borderWidth: 0,
+                    height:2,
+                    color: 'green',
+                    width: '110%'
+                }
+            },
+        },
+        series: [{
+            data: {{ data|safe }},
+            color: 'rgba({{ chart_column_color }}, 0.65)',
+            borderColor: 'rgba({{ chart_column_color }}, 1)',
+            dataLabels: [{
+                enabled: true,
+                color: 'rgba({{ chart_column_color }}, 1)',
+                style: {
+                    fontSize: '7px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Verdana, sans-serif',
+                    textOutline: false
+                }
+            }]
+        }, {
+            type: 'column',
+            borderWidth: 0,
+            data: {{ targets|safe }},
+            color: 'rgba(0,0,0,0)',
+            dataLabels: [{
+                enabled: true,
+                color: 'green',
+                align: 'left',
+                x: -23,
+                y: -11.5,
+                verticalAlign: 'top',
+                style: {
+                    fontSize: '7px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Verdana, sans-serif',
+                    textOutline: false
+                }
+            }]
+        }]
+    });
+});
+</script>

@@ -1,7 +1,4 @@
-from django.shortcuts import reverse
-
-
-def format_plural(verbose_name):
+def format_plural(verbose_name: str) -> str:
     plural = verbose_name + 's'
 
     if ' ' in verbose_name:
@@ -13,26 +10,16 @@ def format_plural(verbose_name):
     return plural
 
 
-def template_name(self: object, name: str) -> str:
-    app_name = self.request.resolver_match.app_name
-    plural = format_plural(self.model._meta.verbose_name)
-
-    return f'{app_name}/includes/{plural}_{name}.html'
+def app_name(obj: object) -> str:
+    return obj.request.resolver_match.app_name
 
 
-def update_context(self, context, action):
-    plural = format_plural(self.model._meta.verbose_name)
-    app_name = self.request.resolver_match.app_name
+def model_plural_name(obj: object) -> str:
+    return format_plural(obj.model._meta.verbose_name)
 
-    if action is 'update':
-        context['action'] = 'update'
-        context['url'] = (
-            reverse(
-                f'{app_name}:{plural}_update',
-                kwargs={'pk': self.object.pk}
-            )
-        )
 
-    if action is 'create':
-        context['action'] = 'insert'
-        context['url'] = reverse(f'{app_name}:{plural}_new')
+def template_name(obj: object, name: str) -> str:
+    app = app_name(obj)
+    model = model_plural_name(obj)
+
+    return f'{app}/includes/{model}_{name}.html'

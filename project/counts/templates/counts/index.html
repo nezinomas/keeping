@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block head %}
+<script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="{% static 'js/reload_stats.js' %}"></script>
+
+<style>
+    .btn-light {
+        background-color: rgb(239, 239, 239) !important;
+    }
+</style>
+{% endblock head %}
+
+
+{% block content %}
+
+<div class="row my-2">
+    <div class="col-sm-3 text-start">
+        {% with view.kwargs.count_type as type %}
+        <a href="{% url 'counts:counts_index' type %}" class="btn btn-sm {% if '/'|add:'counts'|add:'/'|add:type|add:'/' == request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Charts' %}</a>
+        <a href="{% url 'counts:counts_list' type %}" class="btn btn-sm {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Data' %}</a>
+        <a href="{% url 'counts:counts_history' type %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
+        {% endwith %}
+    </div>
+
+    <div class="col text-center" id="info_row">
+        {% if tab == 'index' or tab == 'data' %}
+            {{ info_row }}
+        {% else %}
+            <div class="info_row"><h6>{% translate 'Historical data' %}</h6></div>
+        {% endif %}
+    </div>
+
+    <div class="col-sm-3 text-end">
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url 'counts:counts_new' view.kwargs.count_type %}"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+        {% for type in context_count_types %}
+        {% if type.slug == view.kwargs.count_type %}
+            <button type="button" class="btn btn-sm btn-success js-create" data-url="{% url 'counts:counts_type_update' type.pk %}"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
+            <button type="button" class="btn btn-sm btn-danger js-delete" data-url="{% url 'counts:counts_type_delete' type.pk %}" id="delete_button"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+{% if tab == 'index' %}
+
+{% if not records %}<div id="no-records"><div class="row my-2"><div class="col">{% include 'core/no_records.html' %}</div></div></div>{% endif %}
+
+<div class="row my-2">
+    <div class="col-lg-4" id="chart_weekdays">{% if records %}{{ chart_weekdays }}{% endif %}</div>
+    <div class="col-lg-4" id="chart_months">{% if records %}{{ chart_months }}{% endif %}</div>
+    <div class="col-lg-4" id="chart_histogram">{% if records %}{{ chart_histogram }}{% endif %}</div>
+</div>
+
+<div class="row my-2">
+    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{% if records %}{{ chart_calendar_1H }}{% endif %}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{% if records %}{{ chart_calendar_2H }}{% endif %}</div>
+</div>
+
+{% endif %}
+
+
+{% if tab == 'data' %}
+
+<div class="row my-2">
+    <div class="col" id="ajax-content">{% include 'counts/includes/counts_list.html' %}</div>
+</div>
+{% endif %}
+
+
+{% if tab == 'history' %}
+
+{% if not records %}<div id="no-records"><div class="row my-2"><div class="col">{% include 'core/no_records.html' with data_missing=True %}</div></div></div>{% endif %}
+
+<div class="row my-2">
+    <div class="col-lg-4">{% if records %}{{ chart_weekdays }}{% endif %}</div>
+    <div class="col-lg-4">{% if records %}{{ chart_years }}{% endif %}</div>
+    <div class="col-lg-4">{% if records %}{{ chart_histogram }}{% endif %}</div>
+</div>
+{% endif %}
+
+{% include 'counts/counts_ajax.html' %}
+
+{% endblock content %}

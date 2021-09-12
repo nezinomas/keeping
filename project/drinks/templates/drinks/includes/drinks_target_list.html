@@ -1,18 +1,24 @@
+{% load i18n %}
+
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
-        <tr class="top-text"><th colspan="2">Dienos riba</th></tr>
+        <tr class="top-text"><th colspan="3">{% translate 'Max per day' %}</th></tr>
         <tr class="top">
-            <th class="text-right">Max per dieną</th>
+            <th class="text-end">{% translate 'ml' %}</th>
+            <th class="text-end">{% translate 'vnt' %}</th>
+            <th class="text-end"></th>
         </tr>
     </thead>
     <tfoot>
         {% for item in items %}
         {% url 'drinks:drinks_target_update' item.id as url_update %}
-        <tr data-url="{{ url_update }}">
+        <tr data-url="{{ url_update }}" class="dblclick">
             <td>{{ item.quantity }}</td>
+            <td>{{ max_bottles|floatformat:0 }}</td>
+            <td class="w3"><button type="button" data-url="{{ url_update }}" class="btn btn-super-sm btn-outline-info js-create">{% translate 'Edit' %}</button></td>
         </tr>
         {% empty %}
-        <tr><td>Neįvestas tikslas</td></tr>
+        <tr><td colspan="2">{% translate 'No goal set' %}</td></tr>
         {% endfor %}
-    </tbody>
+    </tfoot>
 </table>

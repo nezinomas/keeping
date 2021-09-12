@@ -1,93 +1,249 @@
+import json
+
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
+from django.shortcuts import reverse
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
+from django.views.generic.edit import FormView
 
-from .get import GetFormKwargsMixin, GetQuerysetMixin
-from .helpers import template_name
+from ...core.lib import utils
+from . import helpers as H
+from .get import GetQuerysetMixin
 
 
-class AjaxCreateUpdateMixin(GetQuerysetMixin, GetFormKwargsMixin):
+class AjaxCreateUpdateMixin(GetQuerysetMixin):
+    list_template_name = None
+    list_render_output = True  # can turn-off render list
+    object = None
+
+    def get_template_names(self):
+        if self.template_name is None:
+            return [H.template_name(self, 'form')]
+
+        return [self.template_name]
+
+    def get_list_template_name(self):
+        if not self.list_template_name:
+            return H.template_name(self, 'list')
+
+        return self.list_template_name
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        if utils.is_ajax(self.request):
+            context = self.get_context_data(**{'no_items': True}) # calls GetQuerysetMixin get_context_data
+            json_data = self._render_form(context=context)
+
+            return JsonResponse(json_data)
+
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.form_class(request.POST, request.FILES)
+
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        url = self._update_url()
+
+        context = {}
+        json_data = {}
+
+        form.save()
+
+        if self.list_render_output:
+            context = self.get_context_data()
+            json_data['html_list'] = (
+                render_to_string(
+                    self.get_list_template_name(), context, self.request)
+            )
+        else:
+            context = self.get_context_data(**{'no_items': True})
+
+        context['form'] = form
+        context['url'] = url
+        json_data['form_is_valid'] = True
+
+        if utils.is_ajax(self.request):
+            json_data = self._render_form(context, json_data)
+            return JsonResponse(json_data)
+
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        url = self._update_url()
+
+        context = self.get_context_data(**{'no_items': True})
+        context['form'] = form
+        context['url'] = url
+
+        if utils.is_ajax(self.request):
+            json_data = {'form_is_valid': False}
+            json_data = self._render_form(context, json_data)
+            return JsonResponse(json_data)
+
+        return super().form_invalid(form)
+
+    def _render_form(self, context, json_data=None):
+        json_data = json_data if json_data else {}
+        json_data.update({
+            'html_form' : render_to_string(
+                template_name=self.get_template_names(),
+                context=context,
+                request=self.request)
+        })
+
+        return json_data
+
+    def _update_url(self):
+        # if object exists, generate update url
+        # if there are errors in the form and no url
+        # impossible to submit form data
+        app = H.app_name(self)
+        model = H.model_plural_name(self)
+        new_view = f"{app}:{model}_new"
+        update_view = f"{app}:{model}_update"
+
+        # tweak for url resolver for count types
+        count_type = {}
+        if self.kwargs.get('count_type'):
+            count_type['count_type'] = self.kwargs.get('count_type')
+
+        if self.object:
+            url = reverse(update_view, kwargs={"pk": self.object.pk, **count_type})
+        else:
+            url = reverse(new_view, kwargs={**count_type})
+
+        return url
+
+
+class AjaxDeleteMixin(GetQuerysetMixin):
+    list_render_output = True  # can turn-off render list
     list_template_name = None
     object = None
 
     def get_template_names(self):
         if self.template_name is None:
-            return [template_name(self, 'form')]
-        else:
-            return [self.template_name]
+            return [H.template_name(self, 'delete_form')]
+
+        return [self.template_name]
+
+    def get_list_template_name(self):
+        if not self.list_template_name:
+            return H.template_name(self, 'list')
+
+        return self.list_template_name
 
     def get(self, request, *args, **kwargs):
-        if 'pk' in self.kwargs:
+        self.object = self.get_object()
+
+        if utils.is_ajax(self.request):
+            json_data = dict()
+
+            if self.object:
+                context = self.get_context_data(**{'no_items': True})
+                template_name = self.get_template_names()
+            else:
+                context = {}
+                template_name = 'empty_modal.html'
+
+            rendered = render_to_string(template_name=template_name,
+                                        context=context,
+                                        request=request)
+
+            json_data['html_form'] = rendered
+
+            return JsonResponse(json_data)
+
+        return super().get(request, *args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        if utils.is_ajax(self.request):
             self.object = self.get_object()
+            if self.object:
+                self.object.delete()
 
-        if request.is_ajax():
-            data = dict()
-            context = self.get_context_data()
-            self._render_form(data, context)
+            json_data = dict()
+            json_data['form_is_valid'] = True
 
-            return JsonResponse(data)
-        else:
-            return super().get(request, *args, **kwargs)
+            if self.list_render_output:
+                context = self.get_context_data()
+                json_data['html_list'] = (
+                    render_to_string(
+                        self.get_list_template_name(), context, self.request)
+                )
+            else:
+                context = self.get_context_data(**{'no_items': True})
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
+            return JsonResponse(json_data)
 
-    def form_valid(self, form):
-        data = dict()
+        return self.delete(*args, **kwargs)
 
-        if form.is_valid():
-            form.save()
 
-            context = self.get_context_data()
-            context['form'] = form
+class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
 
-            data['form_is_valid'] = True
-            data['html_list'] = (
-                render_to_string(
-                    self._get_list_template_name(), context, self.request)
-            )
-
-        self._render_form(data, context)
-
-        if self.request.is_ajax():
-            return JsonResponse(data)
-        else:
-            return super().form_valid(form)
+        json_data = {
+            'html_form': self._render_form(context),
+            'html': None,
+        }
+        return JsonResponse(json_data)
 
     def form_invalid(self, form):
-        context = self.get_context_data()
+        json_data = {
+            'form_is_valid': False,
+            'html_form': self._render_form({'form': form}),
+            'html': None,
+        }
+        return JsonResponse(json_data)
 
-        context['form'] = form
-        data = {'form_is_valid': False}
+    def form_valid(self, form, **kwargs):
+        html = kwargs.get('html')
 
-        if self.request.is_ajax():
-            self._render_form(data, context)
-            return JsonResponse(data)
-        else:
-            return super().form_invalid(form)
+        json_data = {
+            'form_is_valid': True,
+            'html_form': self._render_form({'form': form}),
+            'html': html,
+            **kwargs,
+        }
+        return JsonResponse(json_data)
 
-    def _render_form(self, data, context):
-        data['html_form'] = (
-            render_to_string(self.get_template_names(),
-                             context, request=self.request)
+    def _render_form(self, context):
+        if hasattr(self, 'url'):
+            context.update({'url': self.url})
+
+        if hasattr(self, 'update_container'):
+            context.update({'update_container': self.update_container})
+
+        return (
+            render_to_string(self.template_name, context, request=self.request)
         )
 
-        #  comment code which extracts js files from form.media._js
-        #  and append to data['js'] dictionary
-        #  then ajax.js loads these files with jquery function $.getScript()
-        #  ToDo: delete after some time
-        #  code commented on 2019.09.17
 
-        # form = self.get_form()
-        # js_url = []
+class AjaxSearchMixin(AjaxCustomFormMixin):
+    def post(self, request, *args, **kwargs):
+        err = {'error': _('Form is broken.')}
+        try:
+            form_data = request.POST['form_data']
+        except KeyError:
+            return JsonResponse(data=err, status=404)
 
-        # for js in form.media._js:  # for all the scripts used by the form
-        #     js_url.append(form.media.absolute_path(js))
+        try:
+            _list = json.loads(form_data)
 
-        # data['js'] = js_url
+            # flatten list of dictionaries - form_data_list
+            for field in _list:
+                self.form_data_dict[field["name"]] = field["value"]
 
-    def _get_list_template_name(self):
-        if not self.list_template_name:
-            return template_name(self, 'list')
-        else:
-            return self.list_template_name
+        except (json.decoder.JSONDecodeError, KeyError):
+            return JsonResponse(data=err, status=500)
+
+        form = self.form_class(self.form_data_dict)
+
+        if form.is_valid():
+            return self.form_valid(form)
+
+        return self.form_invalid(form, **kwargs)

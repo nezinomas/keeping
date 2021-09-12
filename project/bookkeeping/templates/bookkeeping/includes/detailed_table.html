@@ -1,0 +1,35 @@
+{% load table_cell %}
+{% load get_item %}
+{% load i18n %}
+
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th>{{ name }}</th>
+            {% for name in month_names %}
+            <th class="text-end w7p">{{ name }}</th>
+            {% endfor %}
+            <th class="text-end w7p">{% translate 'Total' %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% regroup items by title as grouped %}
+        {% for title in grouped %}
+        <tr>
+            <td class="text-start">{{ title.grouper }}</td>
+            {% for i in months %}
+                {% with title.list|get_sum_by_month:i as sum %}{% cell sum %}{% endwith %}
+            {% endfor %}
+            {% with total_col|get_sum_by_title:title.grouper as col_value %}
+            <td>{{ col_value }}</td>{% endwith %}
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th class="text-start">{% translate 'Total' %}</th>
+            {% for i in months %}{% with total_row|get_sum_by_month:i as sum %}{% cell sum tag='th' %}{% endwith %}{% endfor %}
+            <th>{{ total }}</th>
+        </tr>
+    </tfoot>
+</table>

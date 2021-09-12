@@ -1,0 +1,25 @@
+{% load i18n %}
+<div class="modal fade" id="imgModal" tabindex="-1" aria-labelledby="imgModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="dspl text-center"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var imgModal = document.getElementById('imgModal');
+
+    imgModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var modalBodyInput = imgModal.querySelector('.modal-body .dspl');
+        var url = button.getAttribute('data-bs-url');
+
+        modalBodyInput.innerHTML = `<img src="${url}" />`;
+    })
+</script>

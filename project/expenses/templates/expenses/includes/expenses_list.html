@@ -1,58 +1,69 @@
 {% load humanize %}
-<table class="table table-hover stats">
+{% load colorize %}
+{% load static %}
+{% load i18n %}
+
+{% if items %}
+
+<script src="{% static 'js/sticky-table-headers.js' %}"></script>
+<table class="table table-hover stats sticky-table">
     <thead class="thead-light">
         <tr class="top">
-            <th>Data</th>
-            <th>Išlaidų rūšis</th>
-            <th>Išlaidų pavadinimas</th>
-            <th class="text-right">Kiekis</th>
-            <th class="text-right">Kaina</th>
-            <th class="text-right">Sąskaita</th>
+            <th class="expense-ordinary">{% translate 'Date' %}</th>
+            <th>{% translate 'Expense type' %}</th>
+            <th>{% translate 'Expense name' %}</th>
+            <th class="text-end">{% translate 'How many' %}</th>
+            <th class="text-end">{% translate 'Price' %}</th>
+            <th class="w16">{% translate 'Remark' %}</th>
+            <th class="text-end w5">{% translate 'Attachment' %}</th>
+            <th class="text-end">{% translate 'Account' %}</th>
+            <th colspan="2"></th>
         </tr>
     </thead>
     <tbody>
         {% for item in items %}
         {% url 'expenses:expenses_update' item.id as url_update %}
-        <tr data-url="{{ url_update }}" class="{% if item.expense_type.pk == 11 or item.expenses_type.pk == 12 or item.expenses_type.pk == 8 %}fees{% endif %}{% if item.expense_type.pk == 2 %}drinks{% endif %}{% if item.expense_type.pk == 1 %}food{% endif %}{% if item.expense_type.pk == 3 %}leisure{% endif %}{% if item.expense_type.pk == 9 %}work{% endif %}">
-            <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-left">{{ item.expense_type }}</td>
-            <td class="text-left">{{ item.expense_name }}</td>
+        {% url 'expenses:expenses_delete' item.id as url_delete %}
+        {% ifchanged item.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="10" class="table-active"></td></tr>{% endif %}{% endifchanged %}
+        <tr data-url="{{ url_update }}" class="{{ item.expense_type.pk|bg_color }} dblclick">
+            <td class="text-start {%if item.exception %}exception{% else %}expense-ordinary{% endif %}">{{ item.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ item.expense_type }}</td>
+            <td class="text-start">{{ item.expense_name }}</td>
             <td>{{ item.quantity }}</td>
-            <td {% if item.remark %}data-toggle="tooltip" data-html="true" data-placement="right" title="{{ item.remark|linebreaks}}" style="border-right: 5px solid lightgreen!important;"{% endif %}>{{ item.price|intcomma }}</td>
-            <td {% if item.exception %} style="border-right: 5px solid red!important;"{% endif %}>{{ item.account }}</td>
-        </tr>
-        {% empty %}
-        <tr class="table-warning text-center">
-            <td colspan="6" class="py-2"><b>{{ request.user.profile.year|title }}</b> metais išlaidų nėra.</td>
+            <td>{{ item.price|intcomma }}</td>
+            <td class="text-start">{{ item.remark|linebreaksbr }}</td>
+            <td>{% if item.attachment %}
+                {% if not 'pdf' in item.attachment.url %}
+                <button type="button" class="btn btn-outline-primary btn-super-sm" data-bs-toggle="modal" data-bs-target="#imgModal" data-bs-url="{{ item.attachment.url }}">{% translate 'Image' %}</button>
+                {% else %}
+                <a role="button" class="btn btn-outline-primary btn-super-sm" href="{{ item.attachment.url }}" target="_blank">{% translate 'Pdf file' %}</a>
+                {% endif %}
+                {% endif %}
+            </td>
+            <td>{{ item.account }}</td>
+            <td class="w-edit">
+                <a role="button" data-url="{{ url_update }}" class="js-create edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></a>
+            </td>
+            <td class="w-delete">
+                <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<script crossorigin="anonymous" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<script>$('.sticky-table').stickyTableHeaders();</script>
 
-<style>
-    .tooltip.show p {
-        text-align: left;
-    }
-    .drinks {
-        background-color: #d9d9d9;
-    }
-    .fees {
-        background-color: #ffdddd;
-    }
-    .food {
-        background-color: #c5d9f1;
-    }
-    .leisure {
-        background-color: #c4d79b;
-    }
-    .work {
-        background-color: #fff0c1;
-    }
-</style>
-<script>
-    $(document).ready(function () {
-        $('[data-toggle="tooltip"]').tooltip();
-    });
-</script>
+{% else %}
+
+<div class="mx-auto text-center alert alert-warning py-2">
+{% if notice %}
+    {{ notice|safe }}
+{% else %}
+    {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+{% endif %}
+</div>
+
+{% endif %}
+
+{% include 'modal_images.html' %}

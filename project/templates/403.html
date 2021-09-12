@@ -1,7 +1,8 @@
+{% load i18n %}
 <!DOCTYPE html>{% load static %}
 <html lang="en-US">
 <head>
-<title>Not Found</title>
+<title>{% translate 'Access Denied' %}</title>
 
 <meta charset="UTF-8" />
 
@@ -10,7 +11,7 @@
 </head>
 <body>
     <section id="error-page" class="error-403">
-        <a id="back_button" href="{% url 'bookkeeping:index' %}">Back to homepage</a>
+        <a id="back_button" href="{% url 'bookkeeping:index' %}">{% translate 'Back to homepage' %}</a>
         <div id="error-message">ERROR #403</div>
     </section>
 </body>

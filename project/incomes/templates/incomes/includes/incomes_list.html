@@ -1,28 +1,50 @@
 {% load humanize %}
+{% load i18n %}
+
+{% if items %}
+
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
-            <th>Data</th>
-            <th>Pajamų rūšis</th>
-            <th>Sąskaita</th>
-            <th>Pastaba</th>
-            <th class="text-right">Suma</th>
-        </tr>
+            <th>{% translate 'Date' %}</th>
+            <th>{% translate 'Incomes type' %}</th>
+            <th>{% translate 'Account' %}</th>
+            <th>{% translate 'Remark' %}</th>
+            <th class="text-end">{% translate 'Amount' %}</th>
+            <th colspan="2"></th>
+         </tr>
     </thead>
     <tbody>
         {% for item in items %}
         {% url 'incomes:incomes_update' item.id as url_update %}
-        <tr data-url="{{ url_update }}">
-            <td class="text-left">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-left">{{ item.income_type }}</td>
-            <td class="text-left">{{ item.account }}</td>
-            <td class="text-left">{{ item.remark }}</td>
+        {% url 'incomes:incomes_delete' item.id as url_delete %}
+        {% ifchanged item.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="7" class="table-active"></td></tr>{% endif %}
+        {% endifchanged %}
+        <tr data-url="{{ url_update }}" class="dblclick">
+            <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ item.income_type }}</td>
+            <td class="text-start">{{ item.account }}</td>
+            <td class="text-start">{{ item.remark }}</td>
             <td>{{ item.price|intcomma }}</td>
-        </tr>
-        {% empty %}
-        <tr class="table-warning text-center">
-            <td colspan="5" class="py-2"><b>{{ request.user.profile.year|title }}</b> metais irašų nėra.</td>
+            <td class="w-edit">
+                <a role="button" data-url="{{ url_update }}" class=" js-create edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></a>
+            </td>
+            <td class="w-delete">
+                <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+{% else %}
+
+<div class="mx-auto text-center alert alert-warning py-2">
+{% if notice %}
+    {{ notice|safe }}
+{% else %}
+    {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+{% endif %}
+</div>
+
+{% endif %}

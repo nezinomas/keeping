@@ -1,0 +1,63 @@
+{% if items %}
+{% load table_cell %}
+{% load i18n %}
+
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th colspan="4" rowspan="2">{{ title }}</th>
+            <th colspan="3" rowspan="2" class="br text-end">{% if percentage_from_incomes %} {% translate 'From incomes' %}: {{ percentage_from_incomes|floatformat:1 }}%{% endif %}</th>
+            <th colspan="4" class="text-center">{% translate 'Profit' %}/{% translate 'Loss' %}</th>
+        </tr>
+        <tr class="top">
+            <th colspan="2" class="text-center br_s">{% translate 'Transferred' %}</th>
+            <th colspan="2" class="text-center">{% translate 'Purchased' %}</th>
+        </tr>
+        <tr>
+            <th class="text-start">{% translate 'Fund' %}</th>
+            <th>{% translate '01.01 transferred' %}</th>
+            <th>{% translate '01.01 fees' %}</th>
+            <th>{% translate 'Transferred' %}</th>
+            <th>{% translate 'Fees' %}</th>
+            <th>{% translate 'Purchased' %}</th>
+            <th class="br">{% translate 'Market value' %}</th>
+            <th>{% translate 'Sum' %}</th>
+            <th class="br_s">%</th>
+            <th>{% translate 'Sum' %}</th>
+            <th>%</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr>
+            <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" title="{{ item.latest_check }}" class="text-start">{{ item.title }}</td>
+            {% cell item.past_amount css_class='w8' %}
+            {% cell item.past_fee css_class='w8' %}
+            {% cell item.incomes css_class='w8' %}
+            {% cell item.fees css_class='w8' %}
+            {% cell item.invested css_class='w8' %}
+            {% cell item.market_value css_class='br w8' %}
+            {% cell item.profit_incomes_sum text_after='€' highlight_value=True css_class='w8' %}
+            {% cell item.profit_incomes_proc text_after='%' highlight_value=True css_class='br_s w8' %}
+            {% cell item.profit_invested_sum text_after='€' highlight_value=True css_class='w8' %}
+            {% cell item.profit_invested_proc text_after='%' highlight_value=True css_class='w8' %}
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr class="total">
+            <th class="text-start">{% translate 'Total' %}</th>
+            {% cell total_row.past_amount tag='th' %}
+            {% cell total_row.past_fee tag='th' %}
+            {% cell total_row.incomes tag='th' %}
+            {% cell total_row.fees tag='th' %}
+            {% cell total_row.invested tag='th' %}
+            {% cell total_row.market_value tag='th' css_class='br' %}
+            {% cell total_row.profit_incomes_sum text_after='€' highlight_value=True tag='th' %}
+            {% cell profit_incomes_proc text_after='%' highlight_value=True css_class='br_s' tag='th' %}
+            {% cell total_row.profit_invested_sum text_after='€' highlight_value=True tag='th' %}
+            {% cell profit_invested_proc text_after='%' highlight_value=True tag='th' %}
+        </tr>
+    </tfoot>
+</table>
+{% endif %}

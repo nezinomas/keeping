@@ -1,38 +1,85 @@
 import json
+from datetime import date
+from decimal import Decimal
 
 import pytest
+from django.http.response import JsonResponse
 from django.urls import resolve, reverse
+from freezegun import freeze_time
 
+from ...accounts.factories import AccountFactory
 from ...core.tests.utils import change_profile_year
-from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
-from ..models import ExpenseName
+from ...users.factories import UserFactory
+from .. import models
+from ..factories import (Expense, ExpenseFactory, ExpenseNameFactory,
+                         ExpenseTypeFactory)
 from ..views import expenses, expenses_name, expenses_type
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture()
-def db_data():
+def _db_data():
     ExpenseTypeFactory.reset_sequence()
     ExpenseNameFactory(title='F')
     ExpenseNameFactory(title='S', valid_for=1999)
 
 
-#
-# =============================================================
-#                                                      Expense
-# =============================================================
-#
+# ---------------------------------------------------------------------------------------
+#                                                                                 Expense
+# ---------------------------------------------------------------------------------------
 def test_expenses_index_func():
-    view = resolve('/expenses/')
+    view = resolve('/expenses/index/')
 
     assert expenses.Index == view.func.view_class
 
 
 def test_expenses_lists_func():
-    view = resolve('/expenses/lists/')
+    view = resolve('/expenses/')
 
     assert expenses.Lists == view.func.view_class
+
+
+def test_expenses_lists_200(client_logged):
+    url = reverse('expenses:expenses_list')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_expenses_lists_302(client):
+    url = reverse('expenses:expenses_list')
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
+def test_expenses_lists_month_func():
+    view = resolve('/expenses/1/')
+
+    assert expenses.MonthLists == view.func.view_class
+
+
+def test_expenses_lists_all_func():
+    view = resolve('/expenses/all/')
+
+    assert expenses.MonthLists == view.func.view_class
+
+
+def test_expenses_lists_all_200(client_logged):
+    url = reverse('expenses:expenses_all')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_expenses_lists_month_search_form(client_logged):
+    url = reverse('expenses:expenses_month_list', kwargs={'month': 1})
+    response = client_logged.get(url).content.decode('utf-8')
+
+    assert '<input type="text" name="search"' in response
+    assert reverse('expenses:expenses_search') in response
 
 
 def test_expenses_new_func():
@@ -47,21 +94,402 @@ def test_expenses_update_func():
     assert expenses.Update == view.func.view_class
 
 
-@pytest.mark.django_db
-def test_expenses_index_200(login, client):
-    response = client.get('/expenses/')
+@freeze_time('1974-08-08')
+def test_expenses_load_new_form(get_user, client_logged):
+    get_user.year = 3000
+    url = reverse('expenses:expenses_new')
+
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert response.status_code == 200
+    assert '3000-08-08' in actual['html_form']
+
+
+def test_expenses_save(client_logged):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory()
+
+    data = {
+        'date': '1999-01-01',
+        'price': '1.05',
+        'quantity': 33,
+        'account': a.pk,
+        'expense_type': t.pk,
+        'expense_name': n.pk,
+    }
+
+    url = reverse('expenses:expenses_new')
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    actual = models.Expense.objects.get(pk=1)
+    assert actual.date == date(1999, 1, 1)
+    assert actual.price == Decimal('1.05')
+    assert actual.quantity == 33
+    assert actual.account.title == 'Account1'
+    assert actual.expense_type.title == 'Expense Type'
+    assert actual.expense_name.title == 'Expense Name'
+
+
+def test_expenses_save_not_render_html_list(client_logged):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory()
+
+    data = {
+        'date': '1999-01-01',
+        'price': '1.05',
+        'quantity': 33,
+        'account': a.pk,
+        'expense_type': t.pk,
+        'expense_name': n.pk,
+    }
+
+    url = reverse('expenses:expenses_new')
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
+
+
+def test_expenses_save_insert_button(client_logged):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory()
+
+    data = {
+        'date': '1999-01-01',
+        'price': '1.05',
+        'quantity': 33,
+        'account': a.pk,
+        'expense_type': t.pk,
+        'expense_name': n.pk,
+    }
+
+    url = reverse('expenses:expenses_new')
+    response = client_logged.post(url, data, **X_Req)
+    json_str = response.content
+    actual = json.loads(json_str)
+    assert not actual.get('html_list')
+
+    actual = actual.get('html_form')
+    assert 'id="submit">Įrašyti</button>' in actual
+    assert 'data-action="insert"' in actual
+    assert 'data-chained-dropdown="/ajax/load_expense_name/' in actual
+
+
+def test_expenses_save_invalid_data(client_logged):
+    data = {
+        'date': 'x',
+        'price': 'x',
+        'quantity': 0,
+        'account': 'x',
+        'expense_type': 'x',
+    }
+
+    url = reverse('expenses:expenses_new')
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
+
+
+def test_expenses_load_update_form(client_logged):
+    e = ExpenseFactory()
+    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+
+    response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
 
-    assert 'expenses' in response.context
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert '1999-01-01' in form
+    assert '1.12' in form
+    assert '13' in form
+    assert 'Expense Type' in form
+    assert 'Expense Name' in form
+    assert 'Remark' in form
+
+
+def test_expenses_update_to_another_year(client_logged):
+    e = ExpenseFactory()
+
+    data = {
+        'price': '150',
+        'quantity': 13,
+        'date': '2010-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'expense_type': 1,
+        'expense_name': 1,
+    }
+    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    assert actual['form_is_valid']
+
+    actual = models.Expense.objects.get(pk=e.pk)
+    assert actual.date == date(2010, 12, 31)
+    assert actual.quantity == 13
+
+
+def test_expenses_update(client_logged):
+    e = ExpenseFactory()
+
+    data = {
+        'price': '150',
+        'quantity': 33,
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'expense_type': 1,
+        'expense_name': 1,
+    }
+    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    actual = models.Expense.objects.get(pk=e.pk)
+    assert actual.date == date(1999, 12, 31)
+    assert actual.price == Decimal('150')
+    assert actual.quantity == 33
+    assert actual.account.title == 'Account1'
+    assert actual.expense_type.title == 'Expense Type'
+    assert actual.expense_name.title == 'Expense Name'
+    assert actual.remark == 'Pastaba'
+
+
+def test_expenses_not_load_other_journal(client_logged, main_user, second_user):
+    j1 = main_user.journal
+    j2 = second_user.journal
+    a1 = AccountFactory(journal = j1, title='a1')
+    a2 = AccountFactory(journal = j2, title='a2')
+    et1 = ExpenseTypeFactory(title='xxx', journal=j1)
+    et2 = ExpenseTypeFactory(title='yyy', journal=j2)
+
+    ExpenseFactory(expense_type=et1, account=a1)
+    e2 = ExpenseFactory(expense_type=et2, account=a2, price=666)
+
+    url = reverse('expenses:expenses_update', kwargs={'pk': e2.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert et2.title not in form
+    assert str(e2.price) not in form
+
+
+def test_expenses_update_not_render_html_list(client_logged):
+    e = ExpenseFactory()
+
+    data = {
+        'price': '150',
+        'quantity': 33,
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'expense_type': 1,
+        'expense_name': 1,
+    }
+    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
+
+
+@freeze_time('2000-03-03')
+def test_expenses_update_past_record(get_user, client_logged):
+    get_user.year = 2000
+    e = ExpenseFactory(date=date(1974, 12, 12))
+
+    data = {
+        'price': '150',
+        'quantity': 33,
+        'date': '1974-12-12',
+        'remark': 'Pastaba',
+        'account': 1,
+        'expense_type': 1,
+        'expense_name': 1,
+    }
+    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+
+    actual = models.Expense.objects.get(pk=e.pk)
+    assert actual.date == date(1974, 12, 12)
+    assert actual.price == Decimal('150')
+    assert actual.quantity == 33
+    assert actual.account.title == 'Account1'
+    assert actual.expense_type.title == 'Expense Type'
+    assert actual.expense_name.title == 'Expense Name'
+    assert actual.remark == 'Pastaba'
+
+
+def test_expenses_index_200(client_logged):
+    url = reverse('expenses:expenses_index')
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+
+    assert 'expenses_list' in response.context
     assert 'categories' in response.context
+    assert 'search' in response.context
+    assert 'current_month' in response.context
 
 
-#
-# =============================================================
-#                                                   ExpenseType
-# =============================================================
-#
+def test_expenses_month_list_200(client_logged):
+    response = client_logged.get('/expenses/1/')
+
+    assert response.status_code == 200
+
+
+def test_expenses_index_search_form(client_logged):
+    url = reverse('expenses:expenses_index')
+    response = client_logged.get(url, follow=True).content.decode('utf-8')
+
+    assert '<input type="text" name="search"' in response
+    assert reverse('expenses:expenses_search') in response
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                          Expense Delete
+# ---------------------------------------------------------------------------------------
+def test_view_expenses_delete_func():
+    view = resolve('/expenses/delete/1/')
+
+    assert expenses.Delete is view.func.view_class
+
+
+def test_view_expenses_delete_200(client_logged):
+    p = ExpenseFactory()
+
+    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_expenses_delete_load_form(client_logged):
+    p = ExpenseFactory()
+
+    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    actual = actual['html_form']
+
+    assert response.status_code == 200
+    assert '<form method="post"' in actual
+    assert 'data-action="delete"' in actual
+    assert 'data-update-container="expenses_list">' in actual
+    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01/Expense Type/Expense Name</strong>?' in actual
+
+
+def test_view_expenses_delete(client_logged):
+    p = ExpenseFactory()
+
+    assert models.Expense.objects.all().count() == 1
+    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert models.Expense.objects.all().count() == 0
+
+
+def test_view_expenses_delete_not_render_html_list(client_logged):
+    p = ExpenseFactory()
+
+    assert models.Expense.objects.all().count() == 1
+    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual.get('html_list')
+
+
+def test_expenses_delete_other_journal_get_form(client_logged, second_user):
+    it2 = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
+    i2 = ExpenseFactory(expense_type=it2, price=666)
+
+    url = reverse('expenses:expenses_delete', kwargs={'pk': i2.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert 'SRSLY' in form
+
+
+def test_expenses_delete_other_journal_post_form(client_logged, second_user):
+    it2 = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
+    i2 = ExpenseFactory(expense_type=it2, price=666)
+
+    url = reverse('expenses:expenses_delete', kwargs={'pk': i2.pk})
+    client_logged.post(url, **X_Req)
+
+    assert Expense.objects.all().count() == 1
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                             ExpenseType
+# ---------------------------------------------------------------------------------------
 def test_expenses_type_new_func():
     view = resolve('/expenses/type/new/')
 
@@ -74,11 +502,25 @@ def test_expenses_type_update_func():
     assert expenses_type.Update == view.func.view_class
 
 
-#
-# =============================================================
-#                                                   ExpenseName
-# =============================================================
-#
+def test_expense_type_not_load_other_journal(client_logged, main_user, second_user):
+    ExpenseTypeFactory(title='xxx', journal=main_user.journal)
+    obj = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
+
+    url = reverse('expenses:expenses_type_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert obj.title not in form
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                             ExpenseName
+# ---------------------------------------------------------------------------------------
 def test_expenses_name_new_func():
     view = resolve('/expenses/name/new/')
 
@@ -91,8 +533,7 @@ def test_expenses_name_update_func():
     assert expenses_name.Update == view.func.view_class
 
 
-@pytest.mark.django_db
-def test_expense_name_save_data(login, client):
+def test_expense_name_save_data(client_logged):
     url = reverse('expenses:expenses_name_new')
     p = ExpenseTypeFactory()
 
@@ -100,12 +541,9 @@ def test_expense_name_save_data(login, client):
         'title': 'TTT', 'parent': p.pk
     }
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     templates = [t.name for t in response.templates]
     template = 'expenses/includes/expenses_type_list.html'
@@ -114,8 +552,7 @@ def test_expense_name_save_data(login, client):
     assert template in templates
 
 
-@pytest.mark.django_db()
-def test_expense_name_save_invalid_data(client, login):
+def test_expense_name_save_invalid_data(client_logged):
     data = {
         'title': 'x',
         'parent': 0
@@ -123,7 +560,7 @@ def test_expense_name_save_invalid_data(client, login):
 
     url = reverse('expenses:expenses_name_new')
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -131,8 +568,7 @@ def test_expense_name_save_invalid_data(client, login):
     assert not actual['form_is_valid']
 
 
-@pytest.mark.django_db()
-def test_expense_name_update(client, login):
+def test_expense_name_update(client_logged):
     e = ExpenseNameFactory()
 
     data = {
@@ -142,9 +578,9 @@ def test_expense_name_update(client, login):
     }
     url = reverse('expenses:expenses_name_update', kwargs={'pk': e.pk})
 
-    response = client.post(url, data, **X_Req)
+    response = client_logged.post(url, data, **X_Req)
 
-    assert 200 == response.status_code
+    assert response.status_code == 200
 
     json_str = response.content
     actual = json.loads(json_str)
@@ -153,38 +589,229 @@ def test_expense_name_update(client, login):
     assert 'TTT' in actual['html_list']
 
 
-#
-# =============================================================
-#                                             load_expense_name
-# =============================================================
-#
+def test_expense_name_not_load_other_journal(client_logged, main_user, second_user):
+    et1 = ExpenseTypeFactory(title='xxx', journal=main_user.journal)
+    et2 = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
+
+    ExpenseNameFactory(parent=et1)
+    obj = ExpenseNameFactory(parent=et2)
+
+    url = reverse('expenses:expenses_name_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+    form = actual['html_form']
+
+    assert obj.title not in form
+    assert et2.title not in form
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                       LoadExpenseName
+# ---------------------------------------------------------------------------------------
 def test_load_expenses_name_new_func():
-    view = resolve('/ajax/load_expense_name/')
+    actual = resolve('/ajax/load_expense_name/')
 
-    assert expenses.load_expense_name == view.func
+    assert expenses.LoadExpenseName is actual.func.view_class
 
 
-@pytest.mark.django_db
-def test_load_expense_name_status_code(client, login):
+def test_load_expense_name_status_code(client_logged):
     url = reverse('expenses:load_expense_name')
-    response = client.get(url, {'expense_type': 1})
+    response = client_logged.get(url, {'expense_type': 1})
 
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
-def test_load_expense_name_isnull_count(client, login, db_data):
-    change_profile_year(client)
+def test_load_expense_name_isnull_count(client_logged, _db_data):
+    change_profile_year(client_logged)
 
     url = reverse('expenses:load_expense_name')
-    response = client.get(url, {'expense_type': 1})
+    response = client_logged.get(url, {'expense_type': 1}, **X_Req)
 
-    assert 1 == response.context['objects'].count()
+    assert response.context['objects'].count() == 1
 
 
-@pytest.mark.django_db
-def test_load_expense_name_all(client, login, db_data):
+def test_load_expense_name_all(client_logged, _db_data):
     url = reverse('expenses:load_expense_name')
-    response = client.get(url, {'expense_type': 1})
+    response = client_logged.get(url, {'expense_type': 1}, **X_Req)
 
-    assert 2 == response.context['objects'].count()
+    assert response.context['objects'].count() == 2
+
+
+def test_load_expense_name_select_empty_parent(client_logged, _db_data):
+    url = reverse('expenses:load_expense_name')
+    response = client_logged.get(url, {'expense_type': ''}, **X_Req)
+
+    assert response.context['objects'] == []
+
+
+def test_load_expense_name_must_logged(client):
+    url = reverse('expenses:load_expense_name')
+
+    response = client.get(url, follow=True, **X_Req)
+
+    assert response.status_code == 200
+
+    from ...users.views import Login
+    assert response.resolver_match.func.view_class is Login
+
+
+def test_load_expense_name_request_ajax(client_logged):
+    a1 = ExpenseNameFactory()
+    url = reverse('expenses:load_expense_name')
+
+    response = client_logged.get(url, {'id': a1.parent.pk})
+
+    assert 'SRSLY' in response.content.decode('utf-8')
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                         realod expenses
+# ---------------------------------------------------------------------------------------
+def test_view_reload_expenses_func():
+    view = resolve('/expenses/reload/')
+
+    assert expenses.ReloadExpenses is view.func.view_class
+
+
+def test_view_reload_return_object(rf):
+    request = rf.get('/expenses/reload/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = expenses.ReloadExpenses.as_view()(request)
+
+    assert isinstance(response, JsonResponse)
+
+
+def test_view_reload_expenses_render(rf):
+    request = rf.get('/expenses/reload/?ajax_trigger=1')
+    request.user = UserFactory.build()
+
+    response = expenses.ReloadExpenses.as_view()(request)
+
+    assert response.status_code == 200
+
+    actual = json.loads(response.content)
+    assert 'expenses_list' in actual
+
+
+def test_view_reload_expenses_render_ajax_trigger_not_set(client_logged):
+    url = reverse('expenses:reload_expenses')
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert expenses.MonthLists == response.resolver_match.func.view_class
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                         Expenses Search
+# ---------------------------------------------------------------------------------------
+@pytest.fixture()
+def _search_form_data():
+    return ([
+        {"name":"csrfmiddlewaretoken", "value":"xxx"},
+        {"name":"search", "value":"1999 type"},
+    ])
+
+
+def test_search_func():
+    view = resolve('/expenses/search/')
+
+    assert expenses.Search == view.func.view_class
+
+
+def test_search_get_200(client_logged):
+    url = reverse('expenses:expenses_search')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_search_get_302(client):
+    url = reverse('expenses:expenses_search')
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
+def test_search_post_200(client_logged, _search_form_data):
+    form_data = json.dumps(_search_form_data)
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    assert response.status_code == 200
+
+
+def test_search_post_404(client_logged):
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url)
+
+    assert response.status_code == 404
+
+
+def test_search_post_500(client_logged):
+    form_data = json.dumps([{'x': 'y'}])
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    assert response.status_code == 500
+
+
+def test_search_bad_json_data(client_logged):
+    form_data = "{'x': 'y'}"
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    assert response.status_code == 500
+
+
+def test_search_form_is_not_valid(client_logged, _search_form_data):
+    _search_form_data[1]['value'] = '@#$%^&*xxxx'  # search
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    actual = json.loads(response.content)
+
+    assert not actual['form_is_valid']
+
+
+def test_search_form_is_valid(client_logged, _search_form_data):
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+
+    actual = json.loads(response.content)
+
+    assert actual['form_is_valid']
+
+
+def test_search_not_found(client_logged, _search_form_data):
+    ExpenseFactory()
+
+    _search_form_data[1]['value'] = 'xxxx'
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+    actual = json.loads(response.content)
+
+    assert 'Nieko nerasta' in actual['html']
+
+
+def test_search_found(client_logged, _search_form_data):
+    ExpenseFactory()
+
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+    actual = json.loads(response.content)
+
+    assert '1999-01-01' in actual['html']
+    assert 'Remark' in actual['html']

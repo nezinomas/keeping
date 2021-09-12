@@ -1,15 +1,12 @@
 import pytest
 from django.template import Context, Template
 
-from ..templatetags.table import table
-from ...core.factories import UserFactory
-
 
 @pytest.fixture
 def _template():
     template = Template(
         '{% load table %}'
-        '{% table "transactions:transactions_update" %}'
+        '{% table "transactions:transactions_update" "transactions:transactions_delete" %}'
     )
     return template
 
@@ -22,11 +19,8 @@ def test_no_request_in_context(_template):
     assert '<b>xxxx</b> metais įrašų nėra.' in actual
 
 
-def test_request_in_context(_template, rf):
-    request = rf.get('/fake/')
-    request.user = UserFactory.build()
-
-    ctx = Context({'request': request, 'items': []})
+def test_request_in_context(_template, fake_request):
+    ctx = Context({'request': fake_request, 'items': []})
 
     actual = _template.render(ctx)
 

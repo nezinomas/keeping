@@ -1,5 +1,31 @@
 import os
+
+from django.utils.translation import gettext_lazy as _
+
 from ..secrets import get_secret
+
+
+AUTH_USER_MODEL = 'users.User'
+
+PROJECT_APPS = [
+    'users',
+    'accounts',
+    'bookkeeping',
+    'books',
+    'core',
+    'counters',
+    'debts',
+    'drinks',
+    'expenses',
+    'incomes',
+    'journals',
+    'counts',
+    'savings',
+    'pensions',
+    'plans',
+    'transactions',
+]
+
 
 # ================   PATH CONFIGURATION
 # ..\root_catalog\project_catalog\config
@@ -13,7 +39,7 @@ PROJECT_ROOT = os.path.dirname(SITE_ROOT)
 # ================   SITE CONFIGURATION
 LOGOUT_REDIRECT_URL = 'bookkeeping:index'
 LOGIN_REDIRECT_URL = 'bookkeeping:index'
-LOGIN_URL = 'auths:login'
+LOGIN_URL = 'users:login'
 
 
 # ================   MEDIA CONFIGURATION
@@ -48,10 +74,18 @@ DATABASES = {
         },
     }
 }
-
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # ================   GENERAL CONFIGURATION
-LANGUAGE_CODE = 'lt'
+LANGUAGE_CODE = 'en'
+
+LANGUAGES = [
+    ('en', _('English')),
+    ('lt', _('Lithuania')),
+]
+LOCALE_PATHS = [os.path.join(SITE_ROOT, 'locale')]
+
+
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
@@ -63,12 +97,12 @@ FORMAT_MODULE_PATH = [
     'project.config.formats',
 ]
 
+
 # ================   TEMPLATE CONFIGURATION
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(SITE_ROOT, 'templates')],
-        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -76,6 +110,10 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.static',
+                'project.core.context.years',
+                'project.core.context.yday',
+                'project.core.context.context_months',
+                'project.core.context.context_count_types',
             ],
         },
     },
@@ -87,38 +125,34 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'crequest.middleware.CrequestMiddleware',
 ]
+
+
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
 
 # ================   APP CONFIGURATION
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    # 'django.contrib.staticfiles',
+    'django.contrib.staticfiles',
     'django.contrib.humanize',
     'bootstrap_datepicker_plus',
-    'widget_tweaks',
     'crispy_forms',
-    'bootstrap4',
-    'project.auths',
-    'project.accounts',
-    'project.bookkeeping',
-    'project.books',
-    'project.core',
-    'project.drinks',
-    'project.expenses',
-    'project.incomes',
-    'project.savings',
-    'project.plans',
-    'project.transactions',
+    'crispy_bootstrap5',
+    'crequest',
 ]
+
+for app in PROJECT_APPS:
+    INSTALLED_APPS.append(f'project.{app}')
 
 
 # ================   URL CONFIGURATION
@@ -147,4 +181,5 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # ================   CRISPY FORMS
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"

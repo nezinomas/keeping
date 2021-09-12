@@ -1,53 +1,133 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{% load i18n %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="{% static 'js/reload_stats.js' %}"></script>
+
+<style>
+    tr.bor {
+        border-top: double #ffc000;
+        border-bottom: double #ffc000;
+    }
+    #div_id_year1, #div_id_year2 {
+        margin-bottom: 0!important;
+    }
+</style>
 {% endblock head %}
 
 
 {% block content %}
 
-{% url 'drinks:drinks_new' as url_drinks %}
-{% url 'drinks:drinks_target_new' as url_drinks_target %}
-<div class="row mt-2">
+<div class="row my-2">
+    <div class="col text-start">
+        <a href="{% url 'drinks:drinks_index' %}" class="btn btn-sm {% if '/drinks/' == request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Charts' %}</a>
+        <a href="{% url 'drinks:drinks_list' %}" class="btn btn-sm {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Data' %}</a>
+        <a href="{% url 'drinks:drinks_history' %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
+    </div>
+
+    <div class="col text-center" id="info_row"></div>
+
+    <div class="col text-end">
+        {% url 'drinks:drinks_new' as url_drinks %}
+        {% url 'drinks:drinks_target_new' as url_drinks_target %}
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_drinks }}"><i class="bi bi-plus"></i> {% translate "Drinks" context "drinks button" %}</button>
+        <button type="button" class="btn btn-sm btn-info js-create" data-url="{{ url_drinks_target }}"><i class="bi bi-plus"></i> {% translate 'Goal for the year' %}</button>
+    </div>
+</div>
+
+
+{% if tab == 'index' %}
+
+{% if not records %}<div id="no-records">{% include 'core/no_records.html' %}</div>{% endif %}
+
+<div class="row">
+    <div class="col-lg-6" id="chart_consumption">{% if records %}{{ chart_consumption }}{% endif %}</div>
+    <div class="col-lg-6" id="chart_quantity">{% if records %}{{ chart_quantity }}{% endif %}</div>
+</div>
+
+<div class="row my-2">
     <div class="col-lg-6">
+        <div class="row gx-2">
+            <div id="tbl_consumption" class="col-lg-3 col-md-3">{% if records %}{{ tbl_consumption }}{% endif %}</div>
+            <div id="tbl_last_day" class="col-lg-4 col-md-3">{% if records %}{{ tbl_last_day }}{% endif %}</div>
+            <div id="tbl_alcohol" class="col-lg-2 col-md-3">{% if records %}{{ tbl_alcohol }}{% endif %}</div>
+            <div id="drinks-target-content" class="col-lg-3 col-md-3">{% if records %}{{ target_list }}{% endif %}</div>
+        </div>
+
         <div class="row">
-            <!-- target table -->
-            <div class="col-lg-12">
-                <!-- consumsion chart -->
-                <div class="mb-3" id="chart_consumsion">{{ chart_consumsion }}</div>
-
-                <div class="row">
-                    <div id="tbl_consumsion" class="col-lg-3 pr-0">{{ tbl_consumsion }}</div>
-                    <div id="tbl_last_day" class="col-lg-4 px-0 pl-2">{{ tbl_last_day }}</div>
-                    <div id="tbl_alcohol" class="col-lg-2 px-0 pl-2">{{ tbl_alcohol }}</div>
-                    <div id="drinks-target-content" class="col-lg-3 pl-2 dblclick">{{ target_list }}</div>
-                </div>
-
-                <div class="row">
-                    <div id="tbl_std_av" class="col-lg-12">{{ tbl_std_av }}</div>
-                </div>
-
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_drinks_target }}"><i class="fas fa-plus"></i> Metų tikslą</button>
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_drinks }}"><i class="fas fa-plus"></i> Įrašą</button>
-            </div>
+            <div class="col" id="tbl_std_av">{% if records %}{{ tbl_std_av }}{% endif %}</div>
         </div>
     </div>
 
-    <div class="col-lg-4">
-        <div class="mb-5" id="chart_quantity">{{ chart_quantity }}</div>
-        <div class="text-center pl-5"><img src="{% static 'images/drinks_info.jpg' %}" width="100%"></div>
+    <div class="col-lg-6 d-flex">
+        {% get_current_language as LANGUAGE_CODE %}
+        {% with 'images/drinks_info_'|add:LANGUAGE_CODE|add:'.jpg' as image %}
+        <div class="text-center mx-auto align-self-center">
+            <img src="{% static image %}" width="500" alt="{% translate 'What is a standard unit of alcohol' %}" class="_hidden" {% if not records %}style="display: none"{% endif %}>
+        </div>{% endwith %}
     </div>
-
-    <div class="col-lg-2">
-        <div id="ajax-content" class="dblclick">{{ drinks_list }}</div>
-    </div>
-
 </div>
 
-{% include 'modal.html' %}
+<div class="row">
+    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{% if records %}{{ chart_calendar_1H }}{% endif %}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{% if records %}{{ chart_calendar_2H }}{% endif %}</div>
+</div>
+
+
+<div class="row mt-4 _hidden" {% if not records %}style="display: none"{% endif %}>
+    <div class="col-lg-6">
+        <div class="row my-2">
+            <div class="col-sm-3 pt-1"><b>{% translate 'Historical data' %}</b></div>
+            <div class="col-sm-9 text-end">
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 2 %}">{% translate '2 years' %}</button>
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 3 %}">{% translate '3 years' %}</button>
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 7 %}">{% translate '7 years' %}</button>
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' all_years %}">{% translate 'All years' %}</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col" id="historical_data"></div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="row my-2">
+            <div class="col-sm-4 pt-1"><b>{% translate 'Year comparison' %}</b></div>
+            <div class="col-sm-8 text-end" id="compare_form_data">{{ compare_form }}</div>
+        </div>
+
+        <div class="row">
+            <div class="col" id="compare_data"></div>
+        </div>
+    </div>
+</div>
+
+{% endif %}{# endif of tab index #}
+
+
+{% if tab == 'history' %}
+
+{% if not records %}<div id="no-records">{% include 'core/no_records.html' with two_years=True %}</div>{% endif %}
+
+<div class="row _hidden" {% if not records %}style="display: none"{% endif %}>
+    <div class="col">{% include 'drinks/includes/chart_summary.html' %}</div>
+</div>
+
+{% endif %}{# endif of tab history #}
+
+
+{% if tab == 'data' %}
+
+<div class="row">
+    <div class="col" id="ajax-content">{% include 'drinks/includes/drinks_list.html' %}</div>
+</div>
+
+{% endif %}{# endif of tab data #}
+
 
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
@@ -59,26 +139,91 @@
                 'ajax_trigger': '1'
             },
             success: function (data) {
-                var chart_consumsion = $(data).filter('#chart_consumsion');
-                $('#chart_consumsion').html(chart_consumsion);
 
-                var chart_quantity = $(data).filter('#chart_quantity');
-                $('#chart_quantity').html(chart_quantity);
+                var blocks = [
+                    'chart_consumption',
+                    'chart_quantity',
+                    'tbl_consumption',
+                    'tbl_last_day',
+                    'tbl_alcohol',
+                    'tbl_std_av',
+                    'chart_calendar_1H',
+                    'chart_calendar_2H'
+                ];
 
-                var tbl_consumsion = $(data).filter('#tbl_consumsion');
-                $('#tbl_consumsion').html(tbl_consumsion);
-
-                var tbl_last_day = $(data).filter('#tbl_last_day');
-                $('#tbl_last_day').html(tbl_last_day);
-
-                var tbl_alcohol = $(data).filter('#tbl_alcohol');
-                $('#tbl_alcohol').html(tbl_alcohol);
-
-                var tbl_std_av = $(data).filter('#tbl_std_av');
-                $('#tbl_std_av').html(tbl_std_av);
+                if(data.records > 0) {
+                    $('#no-records').html('');
+                    $('._hidden').show();
+                    reload_stats(data, blocks);
+                }
             }
         });
     });
+
+    $(function () {
+        var load_html = function () {
+            var btn = $(this);
+            var url = btn.data('url');
+
+            if (url == undefined) {
+                return;
+            }
+
+            $.ajax({
+                url: url,
+                type: 'get',
+                dataType: 'json',
+                success: function (data) {
+                    $('#historical_data').append(data['html']);
+                },
+                error: function (xhr, status, error) {
+                    alert(`err: ${error}\n\nstatus: ${status}`)
+                }
+            });
+        };
+
+        $(document).on('click', '.btn_click', load_html);
+    });
+
+    $(function () {
+        var load_compare = function () {
+            var btn = $(this);
+            var url = btn.data('url');
+
+            if (url == undefined) {
+                return;
+            }
+
+            // This prevents the form from submitting
+            event.preventDefault();
+
+            // Capture form input
+            csrfmiddlewaretoken = $("#compare_form").find("input[name='csrfmiddlewaretoken']" ).val();
+            form_data = $('#compare_form').serializeArray();
+            form_data = JSON.stringify(form_data);
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                dataType: 'json',
+                type:"POST",
+                data : {
+                    "csrfmiddlewaretoken" : csrfmiddlewaretoken,
+                    "form_data" : form_data
+                },
+                success: function (data) {
+                    $('#compare_data').html(data.html);
+                    $('#compare_form_data').html(data.html_form);
+                },
+                error: function (xhr, status, error) {
+                    alert(`${error}\n\n${xhr.responseJSON.error}`)
+                }
+            });
+        };
+
+        $(document).on('click', '.filter_click', load_compare);
+    });
 </script>
+
 
 {% endblock content %}

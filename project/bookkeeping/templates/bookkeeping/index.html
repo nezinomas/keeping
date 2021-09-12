@@ -1,152 +1,172 @@
 {% extends 'base.html' %}
-{% load table_cell %}
+{% load static %}
+{% load tables %}
+{% load i18n %}
+
 
 {% block head %}
+<link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script src="{% static 'js/reload_stats.js' %}"></script>
 {% endblock head %}
 
 
 {% block content %}
 
-<div class="row my-2 border-bottom border-primary">
-    <div class="col-lg-4 pr-3">
-        {% include 'bookkeeping/includes/months_balance.html' %}
-    </div>
-
-    <div class="col-lg-8 pl-3">
-        {% include 'bookkeeping/includes/months_expense_type.html' %}
-    </div>
+<div class="row gx-2 my-2 border-bottom border-primary">
+    <div class="col-lg-5 table-responsive">{{ year_balance }}</div>
+    <div class="col-lg-7 table-responsive">{{ year_expenses }}</div>
 </div>
 
-<div class="row my-2 border-bottom border-primary">
-    <div class="col-lg-5">
-        {% include 'bookkeeping/includes/chart_expenses.html' %}
-    </div>
-
-    <div class="col-lg-7">
-        {% include 'bookkeeping/includes/chart_balance.html' %}
-    </div>
+<div class="row gx-2 my-2 border-bottom border-primary">
+    <div class="col-lg-5">{{ chart_expenses }}</div>
+    <div class="col-lg-7">{{ chart_balance }}</div>
 </div>
 
-<div class="row mt-4 mb-3">
-    <div class="col-lg-12">
+<div class="row my-4">
+    <div class="col-md-12 col-lg-6">
         {% url 'bookkeeping:accounts_worth_new' as url_accounts %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="fas fa-plus"></i> Įrašyti sąskaitose esančias sumas</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="bi bi-plus"></i> {% translate 'Accounts fact' %}</button>
         {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="fas fa-plus"></i> Įrašyti fondų rinkos vertes</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="bi bi-plus"></i> {% translate 'Funds fact' %}</button>
+        {% url 'bookkeeping:pensions_worth_new' as url_pensions_new %}
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions_new }}"><i class="bi bi-plus"></i> {% translate 'Pensions fact' %}</button>
+        <button class="btn btn-sm btn-outline-secondary recalc" data-url="{% url 'core:regenerate_balances_current_year' year %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'The balance for this year will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% blocktranslate with year=year|safe %}Update {{ year }} balance{% endblocktranslate %}</button>
+        <button class="btn btn-sm btn-outline-danger recalc" data-url="{% url 'core:regenerate_balances' %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</button>
+    </div>
+    <div class="col-md-12 col-lg-6 text-lg-end mt-md-2 mt-lg-0">
+        {% url 'accounts:accounts_new' as url_accounts %}
+        {% url 'expenses:expenses_type_new' as url_expenses_type_new %}
+        {% url 'expenses:expenses_name_new' as url_expenses_name_new %}
+        {% url 'incomes:incomes_type_new' as url_incomes_type_new %}
+        {% url 'savings:savings_type_new' as url_savings_type_new %}
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_accounts }}"><i class="bi bi-plus"></i> {% translate 'Account' context 'account button' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_type_new }}"><i class="bi bi-plus"></i>{% translate 'Incomes type' context 'income type button' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_type_new }}"><i class="bi bi-plus"></i>{% translate "Expenses type" context "expenses type button" %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_name_new }}"><i class="bi bi-plus"></i>{% translate "Expenses name" context "expenses name button" %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_type_new }}"><i class="bi bi-plus"></i> {% translate 'Fund' context 'fund button' %}</button>
     </div>
 </div>
 
 <!-- accounts stats -->
-<div class="row mt-2">
-    <div id="accounts_worth" class="col-md-7 pr-2">{{ accounts }}</div>
-    <div class="col-md-3 pl-2">
-        <table class="table table-striped table-hover table-sm stats">
-            <thead>
-                <tr class="top">
-                    <th class="text-right">Metų pradžioje</th>
-                    <th class="text-right">Metų pabaigoje</th>
-                    <th class="text-right">Metų balansas</th>
-                </tr>
-            </thead>
-            <tfoot>
-                <tr>
-                    {% cell amount_start tag='th' %}
-                    {% cell months_amount_end tag='th' %}
-                    {% cell amount_balance tag='th' highlight_value=True %}
-                </tr>
-            </tfoot>
-        </table>
-
-        <table class="table table-striped table-hover table-sm stats">
-            <thead>
-                <tr class="top">
-                    <th data-toggle="tooltip" data-html="true" data-placement="right" title="<p>Nebūtinos išlaidos, kurių galima atsisakyti:<br />- Darbas<br />- Laisvalaikis<br />- Paskolos<br />- Taupymas<br />- Transportas" style="border-left: 5px solid red!important;" class="text-left">{{ save_sum|floatformat:0 }}</th>
-                    <th class="text-right">€ + F</th>
-                    <th class="text-right">€ + F + P</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in no_incomes %}
-                <tr>
-                    <td>{% if item.label == 'money' %}Pinigai, € {% endif %}{% if item.label == 'no_cut' %}Nekeičiant išlaidų, mėn{% endif %}{% if item.label == 'cut' %}Sumažinus išlaidas, mėn{% endif %}</td>
-                    <td>{{ item.money_fund|floatformat:0 }}</td>
-                    <td>{{ item.money_fund_pension|floatformat:0 }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <p>
-            <b>€</b> - sąskaitose esantys pinigai<br />
-            <b>F</b> - Fondai<br />
-            <b>P</b> - Pensijų fondai
-        </p>
+<div class="row gx-2">
+    <div id="accounts_worth" class="col-lg-7">{{ accounts|safe }}</div>
+    <div class="col-lg-3">
+        <div class="row">
+            <div class="col-lg-12 col-md-6">
+                <div>{% info_table year_balance_short %}</div>
+            </div>
+            <div class="col-lg-12 col-md-6">
+                <div id="no_incomes">{{ no_incomes|safe }}</div>
+            </div>
+        </div>
     </div>
 
-    <div class="col-md-2">
-        <!-- Average Incomes -->
-        <table class="table table-striped table-hover table-sm stats">
-            <thead>
-                <tr class="top"><th class="text-right">Vidutinė pajamos</th></tr>
-            </thead>
-            <tfoot>
-                <tr>{% cell avg_incomes tag='th' %}</tr>
-            </tfoot>
-        </table>
+    <div class="col-lg-2">
+        <div class="row">
+            <div class="col-lg-12 col-md-3">
+                <!-- Wealth -->
+                <div id="wealth">{% info_table wealth %}</div>
+            </div>
 
-        <!-- Average Expenses -->
-        <table class="table table-striped table-hover table-sm stats">
-            <thead>
-                <tr class="top"><th class="text-right">Vidutinė išlaidos</th></tr>
-            </thead>
-            <tfoot>
-                <tr>{% cell avg_expenses tag='th' %}</tr>
-            </tfoot>
-        </table>
+            <div class="col-lg-12 col-md-3">
+                <!-- Average Incomes and Expenses -->
+                <div id="avg_incomes">{% info_table averages %}</div>
+            </div>
 
-        <!-- Money -->
-        <table class="table table-striped table-hover table-sm stats">
-            <thead>
-                <tr class="top"><th class="text-right">Pinigai</th></tr>
-            </thead>
-            <tfoot>
-                <tr>{% cell amount_start tag='th' %}</tr>
-            </tfoot>
-        </table>
+            <div class="col-lg-12 col-md-3">
+                <!-- Debts Borrow -->
+                <div id="borrow">{% info_table borrow %}</div>
+            </div>
 
-        <!-- Worth -->
-        <table class="table table-striped table-hover table-sm stats">
-            <thead>
-                <tr class="top"><th class="text-right">Turtas</th></tr>
-            </thead>
-            <tfoot>
-                <tr>{% cell amount_start|add:total_market tag='th' %}</tr>
-            </tfoot>
-        </table>
+            <div class="col-lg-12 col-md-3">
+                <!-- Debts Lent -->
+                <div id="lent">{% info_table lent %}</div>
+            </div>
+        </div>
     </div>
 </div>
 
 
 <!-- savings -->
-<div class="row mt-5">
-    <div id="saving_worth" class="col-lg-8">{{ savings }}</div>
+<div class="row mt-3">
+    <div id="savings_worth" class="col-lg-12">{% funds_table savings %}</div>
 </div>
 
-
-<div class="modal fade" id="modal-form">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content"></div>
-    </div>
+<!-- pensions -->
+<div class="row mt-3">
+    <div id="pensions_worth" class="col-lg-12">{% funds_table pensions %}</div>
 </div>
 
-<style>
-    .tooltip.show p {
-        text-align: left;
-    }
-</style>
+<!-- Loader -->
+<div class="loader loader-default" id="loader"></div>
+
 <script>
-    $(document).ready(function () {
-        $('[data-toggle="tooltip"]').tooltip();
+    $(function () {
+        var load_html = function () {
+            var btn = $(this);
+            var url = btn.data('url');
+
+            if (url == undefined || !url) {
+                return;
+            }
+
+            $.ajax({
+                url: url,
+                data: {
+                    'ajax_trigger': '1'
+                },
+                success: function (data) {
+                    if(data) {
+                        var blocks = [
+                            'accounts_worth'
+                        ];
+                        reload_stats(data, blocks);
+                    }
+                }
+            });
+        };
+
+        $(document).on('click', '.reset', load_html);
+    });
+
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'bookkeeping:reload_index' %}`;
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1'
+            },
+            success: function (data) {
+                var blocks = [
+                    'no_incomes',
+                    'wealth'
+                ];
+                reload_stats(data, blocks);
+            }
+        });
+    });
+
+    $(document).on('click', '.recalc', function () {
+        $('#loader').addClass('is-active')
+
+        var url = $(this).data('url');
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1',
+            },
+            success: function (data) {
+                if (data.redirect) {
+                    window.location.replace(data.redirect);
+                }
+            },
+            error: function (data) {
+                $('#loader').removeClass('is-active');
+            }
+        });
     });
 </script>
 {% endblock content %}
