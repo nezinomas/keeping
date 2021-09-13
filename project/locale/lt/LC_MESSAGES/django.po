@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-10 16:21+0300\n"
-"PO-Revision-Date: 2021-09-10 16:21+0300\n"
+"POT-Creation-Date: 2021-09-13 09:08+0300\n"
+"PO-Revision-Date: 2021-09-13 09:08+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -125,6 +125,7 @@ msgid "Start of year"
 msgstr "Metų pradžioje"
 
 #: .\project\bookkeeping\lib\views_helpers.py:339
+#: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:57
 msgid "End of year"
 msgstr "Metų pabaigoje"
 
@@ -604,7 +605,7 @@ msgid "English"
 msgstr "Anglų"
 
 #: .\project\config\settings\base.py:84
-msgid "Lithuania"
+msgid "Lithuanian"
 msgstr "Lietuvių"
 
 #: .\project\core\i18n.py:3
@@ -1156,10 +1157,6 @@ msgstr "%(title)s yra 'Būtina', todėl ji negali būti pažymėta kaip 'Išimti
 msgid "Image file too large ( > 4Mb )"
 msgstr "Per didelis vaizdo failas ( > 4Mb)"
 
-#: .\project\expenses\forms.py:105
-msgid "Couldn't read uploaded image"
-msgstr "Nepavyko perskaityti įkelto vaizdo"
-
 #: .\project\expenses\forms.py:125
 msgid "Necessary"
 msgstr "Būtina"
@@ -1225,7 +1222,7 @@ msgstr "Atlyginimas"
 
 #: .\project\incomes\models.py:17
 msgid "Dividents"
-msgstr "Dividentai"
+msgstr "Dividendai"
 
 #: .\project\incomes\models.py:18
 msgid "Other"
@@ -1537,7 +1534,7 @@ msgid "Invitation"
 msgstr "Pakvietimas"
 
 #: .\project\users\templates\users\invite.html:12
-msgid "Sent invitation"
+msgid "Send invitation"
 msgstr "Siųsti pakvietimą"
 
 #: .\project\users\templates\users\invite.html:14
@@ -1639,7 +1636,7 @@ msgid "Users"
 msgstr "Vartotojai"
 
 #: .\project\users\templates\users\settings_index.html:36
-msgid "Sent invite link"
+msgid "Send invite link"
 msgstr "Siųsti pakvietimo nuorodą"
 
 #: .\project\users\templates\users\settings_index.html:43
@@ -1674,6 +1671,9 @@ msgstr "Įspėjimas"
 #: .\project\users\views.py:294
 msgid "You cannot delete yourself."
 msgstr "Negalite ištrinti savęs."
+
+#~ msgid "Couldn't read uploaded image"
+#~ msgstr "Nepavyko perskaityti įkelto vaizdo"
 
 #~ msgid "Not Found"
 #~ msgstr "Nerasta"
