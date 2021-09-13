@@ -81,7 +81,7 @@ LANGUAGE_CODE = 'en'
 
 LANGUAGES = [
     ('en', _('English')),
-    ('lt', _('Lithuania')),
+    ('lt', _('Lithuanian')),
 ]
 LOCALE_PATHS = [os.path.join(SITE_ROOT, 'locale')]
 
