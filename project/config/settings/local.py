@@ -11,6 +11,9 @@ ALLOWED_HOSTS = [
     'localhost',
 ]
 
+INTERNAL_IPS = ('127.0.0.1', )
+
+
 # ================   APP CONFIGURATION
 INSTALLED_APPS += [
     'debug_toolbar',
@@ -22,9 +25,6 @@ STATIC_ROOT = None
 STATICFILES_DIRS = [
     os.path.join(SITE_ROOT, 'static'),
 ]
-STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-)
 
 # print SQL queries in shell_plus
 SHELL_PLUS_PRINT_SQL = True
@@ -66,11 +66,12 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.redirects.RedirectsPanel',
     'debug_toolbar.panels.profiling.ProfilingPanel',
 ]
-DEBUG_TOOLBAR_PATCH_SETTINGS = False
 DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
+    'SHOW_TOOLBAR_CALLBACK': lambda request: True,
+    'SHOW_TEMPLATE_CONTEXT': True,
+    'INSERT_BEFORE': '</head>'
 }
-
 
 # ================   DUMMY CASHE
 CACHES = {
