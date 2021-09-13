@@ -1222,7 +1222,7 @@ msgstr "Atlyginimas"
 
 #: .\project\incomes\models.py:17
 msgid "Dividents"
-msgstr "Dividentai"
+msgstr "Dividendai"
 
 #: .\project\incomes\models.py:18
 msgid "Other"
