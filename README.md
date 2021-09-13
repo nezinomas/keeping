@@ -2,17 +2,17 @@
 
 Setting up development:
 
-1. clone the repo
+1. Clone the repo
 ```
 git clone https://github.com/nezinomas/keeping.git
 ```
 
-2. create `_config_secrets.json`
+2. Create `_config_secrets.json`
 ```
 cp _config_secrets.json.TEMPLATE _config_secrets.json
 ```
 
-3. create `_config_db.cnf` and
+3. Create `_config_db.cnf` and
 ```
 cp _config_db.cnf.TEMPLATE _config_db.cnf
 ```
