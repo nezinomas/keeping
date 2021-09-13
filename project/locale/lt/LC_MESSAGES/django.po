@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-13 09:06+0300\n"
-"PO-Revision-Date: 2021-09-13 09:06+0300\n"
+"POT-Creation-Date: 2021-09-13 09:08+0300\n"
+"PO-Revision-Date: 2021-09-13 09:08+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -1534,7 +1534,7 @@ msgid "Invitation"
 msgstr "Pakvietimas"
 
 #: .\project\users\templates\users\invite.html:12
-msgid "Sent invitation"
+msgid "Send invitation"
 msgstr "Siųsti pakvietimą"
 
 #: .\project\users\templates\users\invite.html:14
@@ -1636,7 +1636,7 @@ msgid "Users"
 msgstr "Vartotojai"
 
 #: .\project\users\templates\users\settings_index.html:36
-msgid "Sent invite link"
+msgid "Send invite link"
 msgstr "Siųsti pakvietimo nuorodą"
 
 #: .\project\users\templates\users\settings_index.html:43
