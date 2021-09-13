@@ -22,7 +22,9 @@ STATIC_ROOT = None
 STATICFILES_DIRS = [
     os.path.join(SITE_ROOT, 'static'),
 ]
-
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
 
 # print SQL queries in shell_plus
 SHELL_PLUS_PRINT_SQL = True
@@ -50,6 +52,7 @@ INTERNAL_IPS = [
 
 DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.versions.VersionsPanel',
+    'ddt_request_history.panels.request_history.RequestHistoryPanel',
     'debug_toolbar.panels.timer.TimerPanel',
     'debug_toolbar.panels.settings.SettingsPanel',
     'debug_toolbar.panels.headers.HeadersPanel',
@@ -63,6 +66,10 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.redirects.RedirectsPanel',
     'debug_toolbar.panels.profiling.ProfilingPanel',
 ]
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
+DEBUG_TOOLBAR_CONFIG = {
+    'INTERCEPT_REDIRECTS': False,
+}
 
 
 # ================   DUMMY CASHE
@@ -70,11 +77,6 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
-}
-
-DEBUG_TOOLBAR_PATCH_SETTINGS = False
-DEBUG_TOOLBAR_CONFIG = {
-    'INTERCEPT_REDIRECTS': False,
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
