@@ -12,6 +12,11 @@ from ..forms import ExpenseForm, ExpenseNameForm, ExpenseTypeForm
 
 pytestmark = pytest.mark.django_db
 
+small_gif = (
+    b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
+    b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
+    b'\x02\x4c\x01\x00\x3b'
+)
 
 # ----------------------------------------------------------------------------
 #                                                                      Expense
@@ -125,17 +130,20 @@ def test_expenses_form_blank_data():
 
 
 @pytest.mark.parametrize(
-    'filename, valid',
+    'file, ext, valid',
     [
-        ('test.jpg', True), ('test.pdf', True), ('test.xls', True),
-        ('test.xlsx', True), ('test.doc', True), ('test.docx', True),
-        ('test.txt', True),
-        ('test.js', False), ('test.xxx', False),
+        (small_gif, 'gif', True),
+        (small_gif, 'jpeg', True),
+        (small_gif, 'png', True),
+        (b'x', 'pdf', False),
+        (b'x', 'txt', False),
+        (b'x', 'doc', False),
+        (b'x', 'xls', False),
+        (b'x', 'pdf', False),
     ]
 )
-def test_expenses_form_filefield(filename, valid):
-    f = SimpleUploadedFile(filename, b'x')
-
+def test_expenses_form_filefield(file, ext, valid):
+    f = SimpleUploadedFile(f'x.{ext}', file, content_type=f'image/{ext}')
     a = AccountFactory()
     t = ExpenseTypeFactory()
     n = ExpenseNameFactory(parent=t)
