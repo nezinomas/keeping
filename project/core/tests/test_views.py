@@ -5,6 +5,9 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
 
+from ...accounts.factories import AccountFactory
+from ...pensions.factories import PensionFactory
+from ...savings.factories import SavingFactory
 from .. import views
 from .utils import setup_view
 
@@ -124,3 +127,27 @@ def test_view_regenerate_balances_current_year_func_called(mck_pension,
     assert mck_account.call_count == 1
     assert mck_saving.call_count == 1
     assert mck_pension.call_count == 1
+
+
+def test_accounts_method():
+    obj = AccountFactory()
+
+    actual = views.accounts()
+
+    assert actual == {'Account1': obj.pk}
+
+
+def test_savings_method():
+    obj = SavingFactory()
+
+    actual = views.savings()
+
+    assert actual == {'Savings': obj.pk}
+
+
+def test_pensions_method():
+    obj = PensionFactory()
+
+    actual = views.pensions()
+
+    assert actual == {'PensionType': obj.pk}
