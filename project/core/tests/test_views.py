@@ -5,12 +5,15 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
 
-from ...accounts.factories import AccountFactory
-from ...pensions.factories import PensionFactory
-from ...savings.factories import SavingFactory
+from ...accounts.factories import AccountBalance, AccountFactory
+from ...expenses.factories import ExpenseFactory
+from ...incomes.factories import IncomeFactory
+from ...pensions.factories import PensionBalance, PensionFactory
+from ...savings.factories import SavingBalance, SavingFactory
 from .. import views
 from .utils import setup_view
 
+X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
 
 
@@ -85,6 +88,64 @@ def test_view_regenerate_balances_current_year_status_200(client_logged):
     assert response.status_code == 200
 
 
+@freeze_time('1999-01-01')
+def test_view_regenerate_balances_current_year(client_logged):
+    ExpenseFactory()
+    IncomeFactory()
+    SavingFactory()
+    PensionFactory()
+
+    AccountBalance.objects.all().delete()
+    SavingBalance.objects.all().delete()
+    PensionBalance.objects.all().delete()
+
+    assert AccountBalance.objects.all().count() == 0
+    assert SavingBalance.objects.all().count() == 0
+    assert PensionBalance.objects.all().count() == 0
+
+    url = reverse(
+        'core:regenerate_balances_current_year',
+        kwargs={'year': 1999}
+    )
+
+    client_logged.get(url, {'ajax_trigger': 1}, follow=True, **X_Req)
+
+    assert AccountBalance.objects.all().count() == 1
+    assert SavingBalance.objects.all().count() == 1
+    assert PensionBalance.objects.all().count() == 1
+
+
+@freeze_time('1999-01-01')
+def test_view_regenerate_balances_all_year(client_logged, get_user):
+    ExpenseFactory()
+    ExpenseFactory(date=date(1998, 1, 1))
+
+    IncomeFactory()
+    IncomeFactory(date=date(1998, 1, 1))
+
+    SavingFactory()
+    PensionFactory()
+
+    get_user.journal.first_record = date(1998, 1, 1)
+    get_user.journal.save()
+
+    AccountBalance.objects.all().delete()
+    SavingBalance.objects.all().delete()
+    PensionBalance.objects.all().delete()
+
+    assert AccountBalance.objects.all().count() == 0
+    assert SavingBalance.objects.all().count() == 0
+    assert PensionBalance.objects.all().count() == 0
+
+    url = reverse('core:regenerate_balances')
+
+    client_logged.get(url, {'ajax_trigger': 1}, follow=True, **X_Req)
+
+    assert AccountBalance.objects.all().count() == 3
+    assert SavingBalance.objects.all().count() == 3
+    assert PensionBalance.objects.all().count() == 3
+
+
 @freeze_time('2007-01-01')
 @pytest.mark.disable_get_user_patch
 @patch('project.core.views.accounts')
@@ -98,7 +159,7 @@ def test_view_regenerate_balances_func_called(mck_pension,
                                               mck_account,
                                               mp, ms, ma,
                                               fake_request):
-    print(mck_account)
+
     class Dummy(views.RegenerateBalances):
         pass
 
