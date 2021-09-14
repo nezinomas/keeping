@@ -89,8 +89,11 @@ def test_view_regenerate_balances_current_year_status_200(client_logged):
 @patch.object(views.SignalBase, 'accounts')
 @patch.object(views.SignalBase, 'savings')
 @patch.object(views.SignalBase, 'pensions')
-def test_view_regenerate_balances_func_called(mck_pension, mck_saving, mck_account,
-                                              mp, ms, ma, fake_request):
+def test_view_regenerate_balances_func_called(mck_pension,
+                                              mck_saving,
+                                              mck_account,
+                                              mp, ms, ma,
+                                              fake_request):
     print(mck_account)
     class Dummy(views.RegenerateBalances):
         pass
@@ -109,8 +112,11 @@ def test_view_regenerate_balances_func_called(mck_pension, mck_saving, mck_accou
 @patch.object(views.SignalBase, 'accounts')
 @patch.object(views.SignalBase, 'savings')
 @patch.object(views.SignalBase, 'pensions')
-def test_view_regenerate_balances_current_year_func_called(mck_pension, mck_saving, mck_account,
-                                                           mp, ms, ma, fake_request):
+def test_view_regenerate_balances_current_year_func_called(mck_pension,
+                                                           mck_saving,
+                                                           mck_account,
+                                                           mp, ms, ma,
+                                                           fake_request):
     class Dummy(views.RegenerateBalancesCurrentYear):
         pass
 
