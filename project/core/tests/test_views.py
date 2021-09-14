@@ -53,6 +53,9 @@ def test_set_month(month, expect, client_logged):
     assert response.wsgi_request.user.month == expect
 
 
+# ---------------------------------------------------------------------------------------
+#                                                                     Regenerate Balances
+# ---------------------------------------------------------------------------------------
 def test_view_regenerate_balances():
     view = resolve('/set/balances/')
 
@@ -129,6 +132,9 @@ def test_view_regenerate_balances_current_year_func_called(mck_pension,
     assert mck_pension.call_count == 1
 
 
+# ---------------------------------------------------------------------------------------
+#                                                                                 Methods
+# ---------------------------------------------------------------------------------------
 def test_accounts_method():
     obj = AccountFactory()
 
