@@ -56,13 +56,13 @@ def test_set_month(month, expect, client_logged):
 # ---------------------------------------------------------------------------------------
 #                                                                     Regenerate Balances
 # ---------------------------------------------------------------------------------------
-def test_view_regenerate_balances():
+def test_view_regenerate_balances_func():
     view = resolve('/set/balances/')
 
     assert views.RegenerateBalances == view.func.view_class
 
 
-def test_view_regenerate_balances_current_year():
+def test_view_regenerate_balances_current_year_func():
     view = resolve('/set/balances/1999/')
 
     assert views.RegenerateBalancesCurrentYear == view.func.view_class
