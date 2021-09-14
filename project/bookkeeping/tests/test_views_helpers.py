@@ -16,6 +16,8 @@ from ...savings.factories import (SavingBalance, SavingFactory,
 from ..lib import views_helpers as T
 from ..views import Summary
 
+pytestmark = pytest.mark.django_db
+
 
 @patch('project.bookkeeping.lib.views_helpers.ExpenseType.objects.items')
 def test_expenses_types_no_args(qs):
@@ -201,13 +203,11 @@ def test_no_incomes_data_savings_none(_not_use, _expenses):
 # ---------------------------------------------------------------------------------------
 #                                                                            Index Helper
 # ---------------------------------------------------------------------------------------
-@pytest.mark.django_db
 def test_render_savings_no_data(rf):
     actual = T.IndexHelper(rf, 1999).render_savings()
     assert actual == {}
 
 
-@pytest.mark.django_db
 def test_render_savings_with_data(rf):
     SavingFactory()
     SavingFactory(saving_type=SavingTypeFactory(title='xxx'))
@@ -216,7 +216,6 @@ def test_render_savings_with_data(rf):
     assert actual['total_row']['invested'] == 288.9 # total invested sum
 
 
-@pytest.mark.django_db
 def test_render_savings_balances_no_generated(rf):
     SavingFactory()
     SavingBalance.objects.all().delete()
@@ -225,13 +224,11 @@ def test_render_savings_balances_no_generated(rf):
     assert actual == {}
 
 
-@pytest.mark.django_db
 def test_render_pensions_no_data(rf):
     actual = T.IndexHelper(rf, 1999).render_pensions()
     assert actual == {}
 
 
-@pytest.mark.django_db
 def test_render_pensions_with_data(rf):
     PensionFactory()
     PensionFactory(pension_type=PensionTypeFactory(title='xxx'))
@@ -240,7 +237,6 @@ def test_render_pensions_with_data(rf):
     assert actual['total_row']['invested'] == 197.98 # total invested sum
 
 
-@pytest.mark.django_db
 def test_render_pensions_balances_no_generated(rf):
     PensionFactory()
     PensionBalance.objects.all().delete()
@@ -249,7 +245,6 @@ def test_render_pensions_balances_no_generated(rf):
     assert actual == {}
 
 
-@pytest.mark.django_db
 def test_render_no_incomes_not_necessary(rf, get_user):
     SavingTypeFactory()
     e1 = ExpenseTypeFactory(title='XXX')
@@ -267,7 +262,6 @@ def test_render_no_incomes_not_necessary(rf, get_user):
 # ---------------------------------------------------------------------------------------
 #                                                                          Summery Charts
 # ---------------------------------------------------------------------------------------
-@pytest.mark.django_db
 def test_summary_context(fake_request):
     IncomeFactory()
     ExpenseFactory()
@@ -288,7 +282,6 @@ def test_summary_context(fake_request):
     assert 'salary_data_avg' in actual
 
 
-@pytest.mark.django_db
 def test_summary_no_data(fake_request):
     class Dummy(Summary):
         pass
@@ -300,7 +293,6 @@ def test_summary_no_data(fake_request):
     assert actual['records'] == 0
 
 
-@pytest.mark.django_db
 @freeze_time('1999-1-1')
 def test_summary_only_incomes(fake_request):
     IncomeFactory()
@@ -314,7 +306,6 @@ def test_summary_only_incomes(fake_request):
     assert actual['records'] == 1
 
 
-@pytest.mark.django_db
 @freeze_time('1999-1-1')
 def test_summary_only_expenses(fake_request):
     ExpenseFactory()
@@ -328,7 +319,6 @@ def test_summary_only_expenses(fake_request):
     assert actual['records'] == 1
 
 
-@pytest.mark.django_db
 @freeze_time('1999-1-1')
 def test_summary_incomes_and_expenses(fake_request):
     IncomeFactory()
@@ -343,7 +333,6 @@ def test_summary_incomes_and_expenses(fake_request):
     assert actual['records'] == 1
 
 
-@pytest.mark.django_db
 @freeze_time('1999-1-1')
 def test_summary_charts_categories_years(fake_request):
     IncomeFactory()
@@ -358,7 +347,6 @@ def test_summary_charts_categories_years(fake_request):
     assert actual['salary_categories'] == [1999]
 
 
-@pytest.mark.django_db
 @freeze_time('1999-1-1')
 def test_summary_charts_balance_categories_only_incomes(fake_request):
     IncomeFactory()
@@ -372,7 +360,6 @@ def test_summary_charts_balance_categories_only_incomes(fake_request):
     assert actual['balance_categories'] == [1999]\
 
 
-@pytest.mark.django_db
 @freeze_time('1999-1-1')
 def test_summary_charts_balance_categories_only_expenses(fake_request):
     ExpenseFactory()
