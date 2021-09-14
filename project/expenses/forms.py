@@ -104,7 +104,6 @@ class ExpenseForm(forms.ModelForm):
         return image
 
 
-
 class ExpenseTypeForm(forms.ModelForm):
     class Meta:
         model = ExpenseType
