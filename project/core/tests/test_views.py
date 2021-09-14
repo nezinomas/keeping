@@ -8,8 +8,9 @@ from mock import patch
 from .. import views
 from .utils import setup_view
 
+pytestmark = pytest.mark.django_db
 
-@pytest.mark.django_db()
+
 @pytest.mark.parametrize(
     'year, expect',
     [
@@ -30,7 +31,6 @@ def test_set_year(year, expect, get_user, client_logged):
     assert response.wsgi_request.user.year == expect
 
 
-@pytest.mark.django_db()
 @pytest.mark.parametrize(
     'month, expect',
     [
@@ -62,7 +62,6 @@ def test_view_regenerate_balances_current_year():
     assert views.RegenerateBalancesCurrentYear == view.func.view_class
 
 
-@pytest.mark.django_db
 def test_view_regenerate_balances_status_200(client_logged):
     url = reverse('core:regenerate_balances')
     response = client_logged.get(url, follow=True)
@@ -70,7 +69,6 @@ def test_view_regenerate_balances_status_200(client_logged):
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
 def test_view_regenerate_balances_current_year_status_200(client_logged):
     url = reverse(
         'core:regenerate_balances_current_year',
