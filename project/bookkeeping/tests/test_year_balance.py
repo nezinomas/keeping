@@ -383,6 +383,17 @@ def test_amount_end(_incomes, _expenses,
     assert actual == 5.9
 
 
+def test_amount_end_no_money_flow(_incomes, _expenses):
+    actual = YearBalance(
+        year=1999,
+        incomes=_incomes,
+        expenses=_expenses
+    )
+    del actual._balance['money_flow']
+
+    assert actual.amount_end == 0.0
+
+
 def test_amount_end_none():
     actual = YearBalance(
         year=1999,
