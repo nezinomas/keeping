@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from decimal import Decimal
 
@@ -6,7 +7,7 @@ from freezegun import freeze_time
 from mock import Mock, patch
 
 from ...core.tests.utils import setup_view
-from ...expenses.factories import ExpenseFactory
+from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory
 from ...pensions.factories import (PensionBalance, PensionFactory,
                                    PensionTypeFactory)
@@ -246,6 +247,21 @@ def test_render_pensions_balances_no_generated(rf):
     actual = T.IndexHelper(rf, 1999).render_pensions()
 
     assert actual == {}
+
+
+@pytest.mark.django_db
+def test_render_no_incomes_not_necessary(rf, get_user):
+    SavingTypeFactory()
+    e1 = ExpenseTypeFactory(title='XXX')
+    e2 = ExpenseTypeFactory(title='YYY')
+
+    get_user.journal.unnecessary_savings = True
+    get_user.journal.unnecessary_expenses = json.dumps([e1.pk, e2.pk])
+    get_user.save()
+
+    actual = T.IndexHelper(rf, 1999).render_no_incomes()
+
+    assert 'Nebūtinos išlaidos, kurių galima atsisakyti:<br />- XXX<br />- YYY<br />- Taupymas' in actual
 
 
 # ---------------------------------------------------------------------------------------
