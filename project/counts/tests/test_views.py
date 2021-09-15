@@ -522,10 +522,12 @@ def test_count_type_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
-def test_count_type_update(mck, client_logged):
+def test_count_type_update(client_logged):
     obj = CountTypeFactory(title='XXX')
     CountFactory(counter_type=slugify('XXX'))
+
+    assert Count.objects.count() == 1
+    assert Count.objects.first().counter_type == 'xxx'
 
     data = {'title': 'YYY'}
     url = reverse('counts:counts_type_update', kwargs={'pk': obj.pk})
@@ -539,6 +541,7 @@ def test_count_type_update(mck, client_logged):
     assert actual['form_is_valid']
     assert CountType.objects.count() == 1
     assert CountType.objects.first().title == 'YYY'
+
     assert Count.objects.count() == 1
     assert Count.objects.first().counter_type == 'yyy'
 
