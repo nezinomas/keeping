@@ -1,4 +1,5 @@
 import pytest
+from django.utils.text import slugify
 from mock import patch
 
 from ..factories import CountFactory, CountTypeFactory
@@ -83,3 +84,20 @@ def test_count_type_not_delete_other_user_count(mck, main_user, second_user):
     assert Count.objects.count() == 1
     assert Count.objects.first().counter_type == 'x1'
     assert Count.objects.first().user == second_user
+
+
+def test_count_type_update():
+    obj = CountTypeFactory(title='XXX')
+    CountFactory(counter_type=slugify('XXX'))
+
+    assert Count.objects.count() == 1
+    assert Count.objects.first().counter_type == 'xxx'
+
+    obj.title = 'YYY'
+    obj.save()
+
+    assert CountType.objects.count() == 1
+    assert CountType.objects.first().title == 'YYY'
+
+    assert Count.objects.count() == 1
+    assert Count.objects.first().counter_type == 'yyy'

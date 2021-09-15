@@ -11,9 +11,12 @@ from ..users.models import User
 class CounterQuerySet(SumMixin, models.QuerySet):
     counter_type = None
 
-    def related(self, user: User = None):
+    def related(self, user: User = None, counter_type = None):
         if not user:
             user = utils.get_user()
+
+        # set counter_type then editing counter title
+        self.counter_type = counter_type if counter_type else self.counter_type
 
         if not self.counter_type:
             self.counter_type = utils.get_request_kwargs('count_type')
