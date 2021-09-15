@@ -50,7 +50,7 @@ def test_lent_return_sort():
     o1 = LentReturnFactory(date=dt(1999, 1, 2))
     o2 = LentReturnFactory(date=dt(1999, 12, 13))
 
-    actual = [*LentReturn.objects.related()]
+    actual = LentReturn.objects.related()
 
     assert actual[0].date == o2.date
     assert actual[1].date == o1.date

@@ -119,6 +119,42 @@ def test_account_stats_worth_empty(_accounts):
     assert_(expect, actual)
 
 
+@pytest.mark.parametrize(
+    'worth',
+    [
+        {'title': 'Account1', 'have': 0},
+        {'title': 'Account1', 'have': 'x'},
+        {'title': 'Account1', 'have': ''},
+        {'title': 'Account1', 'have1': 'x'},
+    ]
+)
+def test_account_stats_worth_with_invalid_data(worth, _accounts):
+    expect = [{
+        'id': 1,
+        'title': 'Account1',
+        'past': 5.75,
+        'incomes': 6.75,
+        'expenses': 8.5,
+        'balance': 4.0,
+        'have': 0.0,
+        'delta': -4.0
+    }, {
+        'id': 2,
+        'title': 'Account2',
+        'past': -2.0,
+        'incomes': 8.0,
+        'expenses': 6.75,
+        'balance': -0.75,
+        'have': 0.0,
+        'delta': 0.75
+    }]
+
+    actual = T(
+        _accounts, [worth]).balance
+
+    assert_(expect, actual)
+
+
 def test_account_stats_worth_None(_accounts):
     expect = [{
         'id': 1,

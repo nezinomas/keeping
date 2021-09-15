@@ -93,7 +93,7 @@ class Balance(BalanceBase):
                 if title in df_index_list:
                     try:
                         val = float(row['have'])
-                    except (TypeError, KeyError):
+                    except (ValueError, TypeError, KeyError):
                         val = 0.0
 
                     df.at[title, 'have'] = val

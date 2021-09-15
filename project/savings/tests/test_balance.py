@@ -185,6 +185,39 @@ def test_saving_stats_worth_empty(_savings):
     my_assert(expect, actual)
 
 
+@pytest.mark.parametrize(
+    'worth',
+    [
+        {'title': 'Saving1', 'have': 0},
+        {'title': 'Saving1', 'have': 'x'},
+        {'title': 'Saving1', 'have': ''},
+        {'title': 'Saving1', 'haveX': 'x'},
+    ]
+)
+def test_saving_stats_worth_invalid_have(worth, _savings):
+    expect = [{
+        'id': 1,
+        'title': 'Saving1',
+        'market_value': 0.0,
+        'profit_incomes_proc': 0.0,
+        'profit_incomes_sum': 0.0,
+        'profit_invested_proc': 0.0,
+        'profit_invested_sum': 0.0,
+    }, {
+        'id': 2,
+        'title': 'Saving2',
+        'market_value': 0.0,
+        'profit_incomes_proc': 0.0,
+        'profit_incomes_sum': 0.0,
+        'profit_invested_proc': 0.0,
+        'profit_invested_sum': 0.0,
+    }]
+
+    actual = T(_savings, [worth]).balance
+
+    my_assert(expect, actual)
+
+
 def test_saving_stats_worth_None(_savings):
     expect = [{
         'id': 1,
