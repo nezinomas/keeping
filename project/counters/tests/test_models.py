@@ -5,6 +5,7 @@ from mock import patch
 
 from ...users.factories import UserFactory
 from ..factories import CounterFactory
+from ..managers import CounterQuerySet
 from ..models import Counter
 
 pytestmark = pytest.mark.django_db
@@ -51,6 +52,43 @@ def test_counter_related(_different_users):
 
     assert len(actual) == 1
     assert actual[0].user.username == 'bob'
+
+
+def test_counter_related_from_argument():
+    CounterFactory(counter_type='xxx')
+    CounterFactory(counter_type='yyy')
+
+    actual = Counter.objects.related(counter_type='xxx')
+
+    assert actual.count() == 1
+    assert actual[0].counter_type == 'xxx'
+
+
+@patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
+def test_counter_related_from_kwargs(mck):
+    CounterFactory(counter_type='xxx')
+    CounterFactory(counter_type='yyy')
+
+    actual = Counter.objects.related()
+    assert actual.count() == 1
+    assert actual[0].counter_type == 'xxx'
+
+
+def test_counter_related_from_manager(get_user):
+    class DummyQ(CounterQuerySet):
+        counter_type = 'xxx'
+
+    class DummyM(Counter):
+        objects = DummyQ.as_manager()
+        class Meta:
+            proxy = True
+
+    DummyM.objects.create(counter_type='xxx', quantity=1, date=date(1999, 1, 1), user=get_user)
+    DummyM.objects.create(counter_type='yyy', quantity=1, date=date(1999, 1, 1), user=get_user)
+
+    actual = DummyM.objects.related()
+    assert actual.count() == 1
+    assert actual[0].counter_type == 'xxx'
 
 
 @patch('project.counters.managers.CounterQuerySet.counter_type', 'Counter Type')

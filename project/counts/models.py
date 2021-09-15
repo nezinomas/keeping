@@ -48,7 +48,7 @@ class CountType(TitleAbstract):
             if self.title != self.__original_title:
                 (Count
                  .objects
-                 .related()
+                 .related(counter_type=self.__original_title)
                  .filter(counter_type=slugify(self.__original_title))
                  .update(counter_type=slugify(self.title)))
 
