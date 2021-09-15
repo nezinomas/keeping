@@ -47,13 +47,13 @@ def test_lent_return_related_queries(django_assert_num_queries):
 
 
 def test_lent_return_sort():
-    o1 = LentReturnFactory(date=dt(1999, 1, 2))
-    o2 = LentReturnFactory(date=dt(1999, 12, 13))
+    LentReturnFactory(date=dt(1999, 1, 2))
+    LentReturnFactory(date=dt(1999, 12, 13))
 
     actual = LentReturn.objects.related()
+    dates = [x.date for x in actual]
 
-    assert actual[0].date == o2.date
-    assert actual[1].date == o1.date
+    assert dates == [dt(1999, 12, 13), dt(1999, 1, 2)]
 
 
 def test_lent_return_items():

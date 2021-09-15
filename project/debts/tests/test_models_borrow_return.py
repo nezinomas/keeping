@@ -47,13 +47,13 @@ def test_borrow_return_related_queries(django_assert_num_queries):
 
 
 def test_borrow_return_sort():
-    o1 = BorrowReturnFactory(date=dt(1999, 1, 2))
-    o2 = BorrowReturnFactory(date=dt(1999, 12, 13))
+    BorrowReturnFactory(date=dt(1999, 1, 2))
+    BorrowReturnFactory(date=dt(1999, 12, 13))
 
-    actual = BorrowReturn.objects.related()
+    actual = BorrowReturn.objects.items()
+    dates = [x.date for x in actual]
 
-    assert actual[0].date == o2.date
-    assert actual[1].date == o1.date
+    assert dates == [dt(1999, 12, 13), dt(1999, 1, 2)]
 
 
 def test_borrow_return_items():
