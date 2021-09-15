@@ -50,7 +50,7 @@ def test_borrow_return_sort():
     o1 = BorrowReturnFactory(date=dt(1999, 1, 2))
     o2 = BorrowReturnFactory(date=dt(1999, 12, 13))
 
-    actual = [*BorrowReturn.objects.related()]
+    actual = BorrowReturn.objects.related()
 
     assert actual[0].date == o2.date
     assert actual[1].date == o1.date

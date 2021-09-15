@@ -7,6 +7,11 @@ app_name = App_name
 
 urlpatterns = [
     path(
+        'counts/',
+        views.CountsEmpty.as_view(),
+        name='counts_empty'
+    ),
+    path(
         'counts/<slug:count_type>/',
         views.Index.as_view(),
         name='counts_index'
@@ -60,10 +65,5 @@ urlpatterns = [
         'counts/redirect/<int:count_id>/',
         views.Redirect.as_view(),
         name='counts_redirect'
-    ),
-    path(
-        'counts/',
-        views.CountsEmpty.as_view(),
-        name='counts_empty'
     ),
 ]

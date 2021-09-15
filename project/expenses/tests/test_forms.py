@@ -1,9 +1,12 @@
 from datetime import date
 from decimal import Decimal
+from io import BytesIO
 
+import mock
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from freezegun import freeze_time
+from PIL import Image
 
 from ...accounts.factories import AccountFactory
 from ...users.factories import UserFactory
@@ -163,6 +166,37 @@ def test_expenses_form_filefield(file, ext, valid):
     )
 
     assert form.is_valid() == valid
+
+
+def test_exepense_form_attachment_too_big():
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(parent=t)
+
+    def f():
+        bts = BytesIO()
+        sz = 1200
+        img = Image.new("RGB", (sz, sz))
+        img.save(bts, 'bmp')
+        return SimpleUploadedFile("test.bmp", bts.getvalue(), content_type='image/bmp')
+
+    form = ExpenseForm(
+        data={
+            'date': '1999-01-01',
+            'price': 1.12,
+            'quantity': 1,
+            'expense_type': t.pk,
+            'expense_name': n.pk,
+            'account': a.pk,
+            'remark': None,
+            'exception': None
+        },
+        files={'attachment': f()}
+    )
+
+    assert not form.is_valid()
+    assert 'attachment' in form.errors
+    assert form.errors['attachment'] == ['Per didelis vaizdo failas ( > 4Mb)']
 
 
 def test_exepense_form_necessary_type_and_exception():

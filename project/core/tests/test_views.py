@@ -5,11 +5,18 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
 
+from ...accounts.factories import AccountBalance, AccountFactory
+from ...expenses.factories import ExpenseFactory
+from ...incomes.factories import IncomeFactory
+from ...pensions.factories import PensionBalance, PensionFactory
+from ...savings.factories import SavingBalance, SavingFactory
 from .. import views
 from .utils import setup_view
 
+X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+pytestmark = pytest.mark.django_db
 
-@pytest.mark.django_db()
+
 @pytest.mark.parametrize(
     'year, expect',
     [
@@ -30,7 +37,6 @@ def test_set_year(year, expect, get_user, client_logged):
     assert response.wsgi_request.user.year == expect
 
 
-@pytest.mark.django_db()
 @pytest.mark.parametrize(
     'month, expect',
     [
@@ -50,19 +56,21 @@ def test_set_month(month, expect, client_logged):
     assert response.wsgi_request.user.month == expect
 
 
-def test_view_regenerate_balances():
+# ---------------------------------------------------------------------------------------
+#                                                                     Regenerate Balances
+# ---------------------------------------------------------------------------------------
+def test_view_regenerate_balances_func():
     view = resolve('/set/balances/')
 
     assert views.RegenerateBalances == view.func.view_class
 
 
-def test_view_regenerate_balances_current_year():
+def test_view_regenerate_balances_current_year_func():
     view = resolve('/set/balances/1999/')
 
     assert views.RegenerateBalancesCurrentYear == view.func.view_class
 
 
-@pytest.mark.django_db
 def test_view_regenerate_balances_status_200(client_logged):
     url = reverse('core:regenerate_balances')
     response = client_logged.get(url, follow=True)
@@ -70,7 +78,6 @@ def test_view_regenerate_balances_status_200(client_logged):
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
 def test_view_regenerate_balances_current_year_status_200(client_logged):
     url = reverse(
         'core:regenerate_balances_current_year',
@@ -81,6 +88,64 @@ def test_view_regenerate_balances_current_year_status_200(client_logged):
     assert response.status_code == 200
 
 
+@freeze_time('1999-01-01')
+def test_view_regenerate_balances_current_year(client_logged):
+    ExpenseFactory()
+    IncomeFactory()
+    SavingFactory()
+    PensionFactory()
+
+    AccountBalance.objects.all().delete()
+    SavingBalance.objects.all().delete()
+    PensionBalance.objects.all().delete()
+
+    assert AccountBalance.objects.all().count() == 0
+    assert SavingBalance.objects.all().count() == 0
+    assert PensionBalance.objects.all().count() == 0
+
+    url = reverse(
+        'core:regenerate_balances_current_year',
+        kwargs={'year': 1999}
+    )
+
+    client_logged.get(url, {'ajax_trigger': 1}, follow=True, **X_Req)
+
+    assert AccountBalance.objects.all().count() == 1
+    assert SavingBalance.objects.all().count() == 1
+    assert PensionBalance.objects.all().count() == 1
+
+
+@freeze_time('1999-01-01')
+def test_view_regenerate_balances_all_year(client_logged, get_user):
+    ExpenseFactory()
+    ExpenseFactory(date=date(1998, 1, 1))
+
+    IncomeFactory()
+    IncomeFactory(date=date(1998, 1, 1))
+
+    SavingFactory()
+    PensionFactory()
+
+    get_user.journal.first_record = date(1998, 1, 1)
+    get_user.journal.save()
+
+    AccountBalance.objects.all().delete()
+    SavingBalance.objects.all().delete()
+    PensionBalance.objects.all().delete()
+
+    assert AccountBalance.objects.all().count() == 0
+    assert SavingBalance.objects.all().count() == 0
+    assert PensionBalance.objects.all().count() == 0
+
+    url = reverse('core:regenerate_balances')
+
+    client_logged.get(url, {'ajax_trigger': 1}, follow=True, **X_Req)
+
+    assert AccountBalance.objects.all().count() == 3
+    assert SavingBalance.objects.all().count() == 3
+    assert PensionBalance.objects.all().count() == 3
+
+
 @freeze_time('2007-01-01')
 @pytest.mark.disable_get_user_patch
 @patch('project.core.views.accounts')
@@ -89,9 +154,12 @@ def test_view_regenerate_balances_current_year_status_200(client_logged):
 @patch.object(views.SignalBase, 'accounts')
 @patch.object(views.SignalBase, 'savings')
 @patch.object(views.SignalBase, 'pensions')
-def test_view_regenerate_balances_func_called(mck_pension, mck_saving, mck_account,
-                                              mp, ms, ma, fake_request):
-    print(mck_account)
+def test_view_regenerate_balances_func_called(mck_pension,
+                                              mck_saving,
+                                              mck_account,
+                                              mp, ms, ma,
+                                              fake_request):
+
     class Dummy(views.RegenerateBalances):
         pass
 
@@ -109,8 +177,11 @@ def test_view_regenerate_balances_func_called(mck_pension, mck_saving, mck_accou
 @patch.object(views.SignalBase, 'accounts')
 @patch.object(views.SignalBase, 'savings')
 @patch.object(views.SignalBase, 'pensions')
-def test_view_regenerate_balances_current_year_func_called(mck_pension, mck_saving, mck_account,
-                                                           mp, ms, ma, fake_request):
+def test_view_regenerate_balances_current_year_func_called(mck_pension,
+                                                           mck_saving,
+                                                           mck_account,
+                                                           mp, ms, ma,
+                                                           fake_request):
     class Dummy(views.RegenerateBalancesCurrentYear):
         pass
 
@@ -120,3 +191,30 @@ def test_view_regenerate_balances_current_year_func_called(mck_pension, mck_savi
     assert mck_account.call_count == 1
     assert mck_saving.call_count == 1
     assert mck_pension.call_count == 1
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                                 Methods
+# ---------------------------------------------------------------------------------------
+def test_accounts_method():
+    obj = AccountFactory()
+
+    actual = views.accounts()
+
+    assert actual == {'Account1': obj.pk}
+
+
+def test_savings_method():
+    obj = SavingFactory()
+
+    actual = views.savings()
+
+    assert actual == {'Savings': obj.pk}
+
+
+def test_pensions_method():
+    obj = PensionFactory()
+
+    actual = views.pensions()
+
+    assert actual == {'PensionType': obj.pk}

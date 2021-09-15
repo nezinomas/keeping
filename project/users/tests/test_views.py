@@ -1,6 +1,8 @@
+from django.core.exceptions import ObjectDoesNotExist
 import json
 import re
 from datetime import timedelta
+from mock.mock import PropertyMock
 
 import pytest
 from django.contrib.auth.forms import (PasswordChangeForm, PasswordResetForm,
@@ -12,6 +14,7 @@ from django.urls import resolve, reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from freezegun import freeze_time
+from mock import patch
 
 from ...config.secrets import get_secret
 from ...journals.models import Journal
@@ -731,6 +734,46 @@ def _invite_client(get_user, client):
 
 def test_invite_signup_redirection(_invite_client):
     assert _invite_client.status_code == 302
+
+
+@patch('project.users.views.User')
+def test_invite_signup_broken_user(mck, client, get_user):
+    mck.objects.related.side_effect = AttributeError
+
+    signer_ = TimestampSigner(salt=get_secret('SALT'))
+    token_ = signer_.sign_object({'jrn': get_user.journal.pk, 'usr': get_user.pk})
+    url = reverse('users:invite_signup', kwargs={'token': token_})
+
+    data = {
+        'username': 'john',
+        'email': 'john@dot.com',
+        'password1': 'abcdef123456',
+        'password2': 'abcdef123456',
+    }
+
+    client.post(url, data)
+
+    assert User.objects.all().count() == 1
+
+
+@patch('project.users.views.User')
+def test_invite_signup_broken_user_no_object(mck, client, get_user):
+    mck.objects.related.return_value.get.side_effect = ObjectDoesNotExist
+
+    signer_ = TimestampSigner(salt=get_secret('SALT'))
+    token_ = signer_.sign_object({'jrn': get_user.journal.pk, 'usr': get_user.pk})
+    url = reverse('users:invite_signup', kwargs={'token': token_})
+
+    data = {
+        'username': 'john',
+        'email': 'john@dot.com',
+        'password1': 'abcdef123456',
+        'password2': 'abcdef123456',
+    }
+
+    client.post(url, data)
+
+    assert User.objects.all().count() == 1
 
 
 def test_invite_signup_user_creation(_invite_client):
