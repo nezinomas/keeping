@@ -673,3 +673,12 @@ def test_empty_200(client_logged):
 
     actual = response.content.decode('utf-8')
     assert 'Jūs neturite skaitiklių.' in actual
+
+
+def test_empty_redirect(client_logged):
+    CountTypeFactory(title='XXX')
+
+    url = reverse('counts:counts_empty')
+    response = client_logged.get(url, follow=True)
+
+    assert 'xxx' in response.request['PATH_INFO']
