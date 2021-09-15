@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 from django.views.generic import CreateView
-from django.views.generic.edit import FormMixin, DeletionMixin
+from django.views.generic.edit import FormMixin, DeletionMixin, BaseUpdateView
 from mock import Mock, patch
 
 from ..mixins.ajax import AjaxCreateUpdateMixin, AjaxDeleteMixin
@@ -208,6 +208,21 @@ def test_form_invalid_ajax_response(mck_render, mck_context, mck_url, _ajax_requ
     assert actual['html_form'] == 'html_form'
 
 
+@patch('project.core.mixins.ajax.AjaxCreateUpdateMixin.get_object')
+@patch('django.views.generic.edit.BaseUpdateView.get', return_value='ok')
+def test_get_render_normal_request(mck_object, mck_super_get, _request):
+    class Dummy(AjaxCreateUpdateMixin, BaseUpdateView):
+        list_template_name = 'XXX'
+        template_name = 'YYY'
+        model = Mock()
+
+    view = setup_view(Dummy(), _request)
+
+    response = view.get(_request)
+
+    assert response == 'ok'
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                              AjaxDelete
 # ---------------------------------------------------------------------------------------
@@ -285,6 +300,21 @@ def test_delete_post_render_normal_request_delete(mck_render, _request):
     view = setup_view(Dummy(), _request)
 
     response = view.post(_request)
+
+    assert response == 'ok'
+
+
+@patch('project.core.mixins.ajax.AjaxDeleteMixin.get_object')
+@patch('django.views.generic.edit.BaseUpdateView.get', return_value='ok')
+def test_delete_get_normal_request(mck_object, mck_get, _request):
+    class Dummy(AjaxDeleteMixin, BaseUpdateView):
+        list_template_name = 'XXX'
+        template_name = 'YYY'
+        model = Mock()
+
+    view = setup_view(Dummy(), _request)
+
+    response = view.get(_request)
 
     assert response == 'ok'
 
