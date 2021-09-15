@@ -270,7 +270,7 @@ def test_delete_lists_template_names(_request):
 
 
 @patch('project.core.mixins.ajax.render_to_string')
-def test_delete_post_render_normal_request(mck_render, _request):
+def test_delete_post_render_normal_request_delete(mck_render, _request):
     class Dummy(AjaxDeleteMixin, DeletionMixin):
         list_template_name = 'XXX'
         template_name = 'YYY'
