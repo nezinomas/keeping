@@ -69,7 +69,7 @@ class IncomeForm(forms.ModelForm):
                 year_msg = year_user + diff
                 self.add_error(
                     'date',
-                    _('Year cannot be larger than %(year)s') % ({'year': year_msg })
+                    _('Year cannot be greater than %(year)s') % ({'year': year_msg })
                 )
 
         return dt
