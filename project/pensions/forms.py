@@ -7,6 +7,7 @@ from django.utils.translation import gettext as _
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
+from ..core.lib.date import years
 from .models import Pension, PensionType
 
 
@@ -57,6 +58,22 @@ class PensionForm(forms.ModelForm):
             self.add_error('fee', _msg)
 
         return
+
+    def clean_date(self):
+        dt = self.cleaned_data['date']
+
+        if dt:
+            year_instance = dt.year
+            years_ = years()
+
+            if year_instance not in years_:
+                self.add_error(
+                    'date',
+                    _('Year must be between %(year1)s and %(year2)s')
+                    % ({'year1':  years_[0], 'year2': years_[-1]})
+                )
+
+        return dt
 
 class PensionTypeForm(forms.ModelForm):
     class Meta:
