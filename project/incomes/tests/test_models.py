@@ -335,11 +335,7 @@ def test_income_year_sum_filter_count_qs(django_assert_max_num_queries):
         list([x['year'] for x in Income.objects.sum_by_year(['x'])])
 
 
-def test_income_updates_journal_first_record(get_user):
-    jr = get_user.journal
-    jr.first_record = date(1999, 1, 1)
-    jr.save()
-
+def test_income_updates_journal_first_record():
     assert Journal.objects.first().first_record == date(1999, 1, 1)
 
     IncomeFactory(date=date(1974, 2, 2))

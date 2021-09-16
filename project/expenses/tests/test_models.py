@@ -401,11 +401,7 @@ def test_expense_sum_by_month():
     ]
 
 
-def test_expense_updates_journal_first_record(get_user):
-    jr = get_user.journal
-    jr.first_record = date(1999, 1, 1)
-    jr.save()
-
+def test_expense_updates_journal_first_record():
     assert Journal.objects.first().first_record == date(1999, 1, 1)
 
     ExpenseFactory(date=date(1974, 2, 2))

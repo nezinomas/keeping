@@ -22,6 +22,10 @@ from .users.factories import UserFactory
 def main_user(request):
     if 'django_db' in request.keywords:
         user = UserFactory()
+
+        jr = user.journal
+        jr.first_record = date(1999, 1, 1)
+        jr.save()
     else:
         user = UserFactory.build()
 
@@ -32,6 +36,10 @@ def main_user(request):
 def second_user(request):
     if 'django_db' in request.keywords:
         user = UserFactory(username='X', email='x@x.xx')
+
+        jr = user.journal
+        jr.first_record = date(1999, 1, 1)
+        jr.save()
     else:
         user = UserFactory.build(username='X', email='x@x.xx')
 
@@ -53,6 +61,10 @@ def get_user(monkeypatch, request):
 
     if 'django_db' in request.keywords:
         user = UserFactory()
+
+        jr = user.journal
+        jr.first_record = date(1999, 1, 1)
+        jr.save()
     else:
         user = UserFactory.build()
 
