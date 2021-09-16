@@ -46,6 +46,23 @@ class IncomeForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+    def clean_date(self):
+        dt = self.cleaned_data['date']
+
+        if dt:
+            year_user = utils.get_user().year
+            year_instance = dt.year
+
+            diff = 3
+            if (year_user - year_instance) > diff:
+                year_msg = year_user - diff
+                self.add_error(
+                    'date',
+                    _('Year cannot be less than %(year)s') % ({'year': year_msg })
+                )
+
+        return dt
+
 
 class IncomeTypeForm(forms.ModelForm):
     class Meta:
