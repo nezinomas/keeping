@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-13 09:08+0300\n"
-"PO-Revision-Date: 2021-09-13 09:08+0300\n"
+"POT-Creation-Date: 2021-09-16 16:23+0300\n"
+"PO-Revision-Date: 2021-09-16 16:23+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -45,9 +45,9 @@ msgstr "Rūšiavimas"
 #: .\project\debts\templates\debts\includes\borrows_return_list.html:12
 #: .\project\debts\templates\debts\includes\lents_list.html:13
 #: .\project\debts\templates\debts\includes\lents_return_list.html:12
-#: .\project\expenses\forms.py:74
+#: .\project\expenses\forms.py:76
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:19
-#: .\project\incomes\forms.py:41
+#: .\project\incomes\forms.py:43
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:11
 msgid "Account"
 msgstr "Sąskaita"
@@ -460,7 +460,7 @@ msgstr "Baigta skaityti"
 
 #: .\project\books\forms.py:47
 #: .\project\books\templates\books\includes\books_list.html:10
-#: .\project\counts\forms.py:65 .\project\expenses\forms.py:124
+#: .\project\counts\forms.py:65 .\project\expenses\forms.py:151
 #: .\project\plans\templates\plans\includes\generic_list.html:9
 msgid "Title"
 msgstr "Pavadinimas"
@@ -478,9 +478,9 @@ msgstr "Autorius"
 #: .\project\debts\templates\debts\includes\borrows_return_list.html:13
 #: .\project\debts\templates\debts\includes\lents_list.html:14
 #: .\project\debts\templates\debts\includes\lents_return_list.html:13
-#: .\project\expenses\forms.py:72
+#: .\project\expenses\forms.py:74
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:17
-#: .\project\incomes\forms.py:43
+#: .\project\incomes\forms.py:45
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:12
 #: .\project\pensions\forms.py:42
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:10
@@ -494,7 +494,7 @@ msgstr "Pastaba"
 msgid "Year"
 msgstr "Metai"
 
-#: .\project\books\forms.py:79 .\project\expenses\forms.py:69
+#: .\project\books\forms.py:79 .\project\expenses\forms.py:71
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:15
 msgid "How many"
 msgstr "Kiek"
@@ -789,9 +789,9 @@ msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 #: .\project\debts\templates\debts\includes\borrows_return_list.html:9
 #: .\project\debts\templates\debts\includes\lents_list.html:9
 #: .\project\debts\templates\debts\includes\lents_return_list.html:9
-#: .\project\drinks\forms.py:39 .\project\expenses\forms.py:67
+#: .\project\drinks\forms.py:39 .\project\expenses\forms.py:69
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:12
-#: .\project\incomes\forms.py:40
+#: .\project\incomes\forms.py:42
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:9
 #: .\project\pensions\forms.py:39
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:8
@@ -1118,50 +1118,60 @@ msgstr "Visi metai"
 msgid "Year comparison"
 msgstr "Metų palyginimas"
 
-#: .\project\expenses\forms.py:68
+#: .\project\expenses\forms.py:70
 msgid "Full price"
 msgstr "Visa kaina"
 
-#: .\project\expenses\forms.py:70 .\project\expenses\forms.py:148
+#: .\project\expenses\forms.py:72 .\project\expenses\forms.py:175
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:13
 #: .\project\expenses\templates\expenses\includes\expenses_type_form.html:2
 msgid "Expense type"
 msgstr "Išlaidų rūšis"
 
-#: .\project\expenses\forms.py:71 .\project\expenses\forms.py:149
+#: .\project\expenses\forms.py:73 .\project\expenses\forms.py:176
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:14
 #: .\project\expenses\templates\expenses\includes\expenses_name_form.html:2
 msgid "Expense name"
 msgstr "Išlaidų pavadinimas"
 
-#: .\project\expenses\forms.py:73
+#: .\project\expenses\forms.py:75
 msgid "Exception"
 msgstr "Išimtis"
 
-#: .\project\expenses\forms.py:75
+#: .\project\expenses\forms.py:77
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:16
 msgid "Price"
 msgstr "Kaina"
 
-#: .\project\expenses\forms.py:76
+#: .\project\expenses\forms.py:78
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:18
 msgid "Attachment"
 msgstr "Failas"
 
-#: .\project\expenses\forms.py:92
+#: .\project\expenses\forms.py:94
 #, python-format
 msgid "The %(title)s is 'Necessary', so it can't be marked as 'Exeption'"
 msgstr "%(title)s yra 'Būtina', todėl ji negali būti pažymėta kaip 'Išimtis'"
 
-#: .\project\expenses\forms.py:102
+#: .\project\expenses\forms.py:104
 msgid "Image file too large ( > 4Mb )"
 msgstr "Per didelis vaizdo failas ( > 4Mb)"
 
-#: .\project\expenses\forms.py:125
+#: .\project\expenses\forms.py:121 .\project\incomes\forms.py:64
+#, python-format
+msgid "Year cannot be less than %(year)s"
+msgstr "Metai negali būti mažesni nei %(year)s"
+
+#: .\project\expenses\forms.py:129 .\project\incomes\forms.py:72
+#, python-format
+msgid "Year cannot be greater than %(year)s"
+msgstr "Metai negali būti didesni nei %(year)s"
+
+#: .\project\expenses\forms.py:152
 msgid "Necessary"
 msgstr "Būtina"
 
-#: .\project\expenses\forms.py:150
+#: .\project\expenses\forms.py:177
 msgid "Valid for"
 msgstr "Galioja"
 
@@ -1197,7 +1207,7 @@ msgstr "Išlaidas"
 msgid "There are no records for month <b>%(month)s</b>."
 msgstr "<b>%(month)s</b> mėnesį įrašų nėra."
 
-#: .\project\incomes\forms.py:42
+#: .\project\incomes\forms.py:44
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:13
 #: .\project\transactions\forms.py:31 .\project\transactions\forms.py:82
 #: .\project\transactions\forms.py:122
@@ -1205,26 +1215,26 @@ msgstr "<b>%(month)s</b> mėnesį įrašų nėra."
 msgid "Amount"
 msgstr "Suma"
 
-#: .\project\incomes\forms.py:44 .\project\incomes\forms.py:63
+#: .\project\incomes\forms.py:46 .\project\incomes\forms.py:91
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:10
 #: .\project\incomes\templates\incomes\includes\incomes_type_form.html:3
 #: .\project\incomes\templates\incomes\includes\incomes_type_list.html:5
 msgid "Incomes type"
 msgstr "Pajamų rūšis"
 
-#: .\project\incomes\forms.py:64 .\project\savings\forms.py:34
+#: .\project\incomes\forms.py:92 .\project\savings\forms.py:34
 msgid "Type"
 msgstr "Tipas"
 
-#: .\project\incomes\models.py:16
+#: .\project\incomes\models.py:17
 msgid "Salary"
 msgstr "Atlyginimas"
 
-#: .\project\incomes\models.py:17
+#: .\project\incomes\models.py:18
 msgid "Dividents"
 msgstr "Dividendai"
 
-#: .\project\incomes\models.py:18
+#: .\project\incomes\models.py:19
 msgid "Other"
 msgstr "Kita"
 
