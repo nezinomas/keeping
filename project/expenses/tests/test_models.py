@@ -12,6 +12,7 @@ from override_storage import override_storage
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...expenses.factories import ExpenseFactory
+from ...journals.models import Journal
 from ...users.factories import UserFactory
 from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ..models import Expense, ExpenseName, ExpenseType
@@ -398,6 +399,18 @@ def test_expense_sum_by_month():
         {'sum': Decimal('3'), 'date': date(1999, 1, 1)},
         {'sum': Decimal('6'), 'date': date(1999, 2, 1)}
     ]
+
+
+def test_expense_updates_journal_first_record(get_user):
+    jr = get_user.journal
+    jr.first_record = date(1999, 1, 1)
+    jr.save()
+
+    assert Journal.objects.first().first_record == date(1999, 1, 1)
+
+    ExpenseFactory(date=date(1974, 2, 2))
+
+    assert Journal.objects.first().first_record == date(1974, 2, 2)
 
 
 # ----------------------------------------------------------------------------
