@@ -103,6 +103,23 @@ class ExpenseForm(forms.ModelForm):
 
         return image
 
+    def clean_date(self):
+        dt = self.cleaned_data['date']
+
+        if dt:
+            year_user = utils.get_user().year
+            year_instance = dt.year
+
+            diff = 3
+            if (year_user - year_instance) > diff:
+                year_msg = year_user - diff
+                self.add_error(
+                    'date',
+                    _('Year cannot be less than %(year)s') % (
+                        {'year': year_msg})
+                )
+
+        return dt
 
 class ExpenseTypeForm(forms.ModelForm):
     class Meta:
