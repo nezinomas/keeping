@@ -80,6 +80,27 @@ def test_transaction_valid_data():
     assert data.to_account == a_to
 
 
+@freeze_time('1999-2-2')
+@pytest.mark.parametrize(
+    'year',
+    [1998, 2001]
+)
+def test_transaction_invalid_date(year):
+    a_from = AccountFactory()
+    a_to = AccountFactory(title='Account2')
+
+    form = TransactionForm(data={
+        'date': f'{year}-01-01',
+        'from_account': a_from.pk,
+        'to_account': a_to.pk,
+        'price': '1.0'
+    })
+
+    assert not form.is_valid()
+    assert 'date' in form.errors
+    assert 'Metai turi būti tarp 1999 ir 2000' in form.errors['date']
+
+
 def test_transaction_blank_data():
     form = TransactionForm({})
 
@@ -166,6 +187,28 @@ def test_saving_change_valid_data():
     assert data.fee == Decimal(0.25)
     assert data.from_account == a_from
     assert data.to_account == a_to
+
+
+@freeze_time('1999-2-2')
+@pytest.mark.parametrize(
+    'year',
+    [1998, 2001]
+)
+def test_saving_change_invalid_date(year):
+    a_from = SavingTypeFactory()
+    a_to = SavingTypeFactory(title='Savings2')
+
+    form = SavingChangeForm(data={
+        'date': f'{year}-01-01',
+        'from_account': a_from.pk,
+        'to_account': a_to.pk,
+        'price': '1.0',
+        'fee': '0.25'
+    })
+
+    assert not form.is_valid()
+    assert 'date' in form.errors
+    assert 'Metai turi būti tarp 1999 ir 2000' in form.errors['date']
 
 
 def test_saving_change_blank_data():
@@ -297,6 +340,28 @@ def test_saving_close_valid_data():
     assert data.fee == Decimal(0.25)
     assert data.from_account == a_from
     assert data.to_account == a_to
+
+
+@freeze_time('1999-2-2')
+@pytest.mark.parametrize(
+    'year',
+    [1998, 2001]
+)
+def test_saving_close_in_valid_date(year):
+    a_from = SavingTypeFactory()
+    a_to = AccountFactory(title='Account2')
+
+    form = SavingCloseForm(data={
+        'date': f'{year}-01-01',
+        'from_account': a_from.pk,
+        'to_account': a_to.pk,
+        'price': '1.0',
+        'fee': '0.25'
+    })
+
+    assert not form.is_valid()
+    assert 'date' in form.errors
+    assert 'Metai turi būti tarp 1999 ir 2000' in form.errors['date']
 
 
 def test_saving_close_blank_data():
