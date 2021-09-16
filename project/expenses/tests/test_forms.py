@@ -140,6 +140,30 @@ def test_exepense_insert_only_three_years_to_past():
     assert 'Metai negali būti mažesni nei 1996' in form.errors['date']
 
 
+@freeze_time('1999-1-1')
+def test_exepense_insert_only_one_year_to_futur():
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(parent=t)
+
+    form = ExpenseForm(
+        data={
+            'date': '2001-01-01',
+            'price': 1.12,
+            'quantity': 1,
+            'expense_type': t.pk,
+            'expense_name': n.pk,
+            'account': a.pk,
+            'remark': None,
+            'exception': None
+        },
+    )
+
+    assert not form.is_valid()
+    assert 'date' in form.errors
+    assert 'Metai negali būti didesni nei 2000' in form.errors['date']
+
+
 def test_expenses_form_blank_data():
     form = ExpenseForm(data={})
 
