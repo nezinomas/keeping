@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
+from ..core.lib import utils
 from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
@@ -68,3 +69,13 @@ class Income(MixinFromDbAccountId):
 
     # managers
     objects = IncomeQuerySet.as_manager()
+
+    def save(self, *args, **kwargs):
+        user = utils.get_user()
+        journal = Journal.objects.get(pk=user.journal.pk)
+
+        if journal.first_record > self.date:
+            journal.first_record = self.date
+            journal.save()
+
+        return super().save(*args, **kwargs)
