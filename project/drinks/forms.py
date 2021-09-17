@@ -8,11 +8,12 @@ from django.utils.translation import gettext as _
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
+from ..core.mixins.forms import YearBetweenMixin
 from .apps import App_name
 from .models import Drink, DrinkTarget
 
 
-class DrinkForm(forms.ModelForm):
+class DrinkForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Drink
         fields = ['user', 'date', 'quantity']
