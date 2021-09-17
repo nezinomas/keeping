@@ -46,16 +46,6 @@ def test_lent_return_related_queries(django_assert_num_queries):
         a = [x.account.title for x in list(LentReturn.objects.related())]
 
 
-def test_lent_return_sort():
-    LentReturnFactory(date=dt(1999, 1, 2))
-    LentReturnFactory(date=dt(1999, 12, 13))
-
-    actual = LentReturn.objects.related()
-    dates = [x.date for x in actual]
-
-    assert dates == [dt(1999, 12, 13), dt(1999, 1, 2)]
-
-
 def test_lent_return_items():
     LentReturnFactory()
     LentReturnFactory()
