@@ -74,6 +74,31 @@ class BookForm(forms.ModelForm):
 
         return dt
 
+    def clean_ended(self):
+        dt = self.cleaned_data['ended']
+
+        if dt:
+            if dt > datetime.now().date():
+                self.add_error(
+                    'ended',
+                    _('Date cannot be in the future')
+                )
+
+        return dt
+
+    def clean(self):
+        cleaned = super().clean()
+
+        started = cleaned.get('started')
+        ended = cleaned.get('ended')
+
+        if ended:
+            if ended < started:
+                self.add_error(
+                    'ended',
+                    _('Ended reading cannot precede started reading')
+                )
+
 
 class BookTargetForm(forms.ModelForm):
     class Meta:

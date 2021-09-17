@@ -83,6 +83,35 @@ def test_book_invalid_start_date():
     assert 'Data negali būti ateityje' in form.errors['started']
 
 
+@freeze_time('2000-2-2')
+def test_book_invalid_end_date():
+    form = BookForm(data={
+        'started': '1999-1-1',
+        'ended': '2000-2-3',
+        'author': 'Author',
+        'title': 'Title',
+    })
+
+    assert not form.is_valid()
+    assert 'ended' in form.errors
+    assert 'Data negali būti ateityje' in form.errors['ended']
+
+
+@freeze_time('2000-2-2')
+def test_book_end_date_earlier_than_start_date():
+    form = BookForm(data={
+        'started': '1999-1-2',
+        'ended': '1999-1-1',
+        'author': 'Author',
+        'title': 'Title',
+    })
+
+    assert not form.is_valid()
+    assert 'ended' in form.errors
+    assert 'Baigta skaityti negali būti anksčiau nei pradėta skaityti' in form.errors[
+        'ended']
+
+
 def test_book_blank_data():
     form = BookForm(data={})
 
