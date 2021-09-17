@@ -8,10 +8,11 @@ from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
+from ..core.mixins.forms import YearBetweenMixin
 from . import models
 
 
-class BorrowForm(forms.ModelForm):
+class BorrowForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = models.Borrow
         fields = ['journal', 'date', 'name', 'price', 'closed', 'account', 'remark']
@@ -86,7 +87,7 @@ class BorrowForm(forms.ModelForm):
         return
 
 
-class BorrowReturnForm(forms.ModelForm):
+class BorrowReturnForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = models.BorrowReturn
         fields = ['date', 'price', 'remark', 'account', 'borrow']
@@ -145,7 +146,7 @@ class BorrowReturnForm(forms.ModelForm):
                 self.add_error('date', _('The date is earlier than the date of the debt.'))
 
 
-class LentForm(forms.ModelForm):
+class LentForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = models.Lent
         fields = ['journal', 'date', 'name', 'price', 'closed', 'account', 'remark']
@@ -221,7 +222,7 @@ class LentForm(forms.ModelForm):
         return
 
 
-class LentReturnForm(forms.ModelForm):
+class LentReturnForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = models.LentReturn
         fields = ['date', 'price', 'remark', 'account', 'lent']

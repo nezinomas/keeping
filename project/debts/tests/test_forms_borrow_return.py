@@ -81,6 +81,30 @@ def test_borrow_return_valid_data():
     assert e.remark == 'Rm'
 
 
+@freeze_time('1999-2-2')
+@pytest.mark.parametrize(
+    'year',
+    [1998, 2001]
+)
+def test_borrow_return_invalid_date(year):
+    a = AccountFactory()
+    b = factories.BorrowFactory()
+
+    form = forms.BorrowReturnForm(
+        data={
+            'date': f'{year}-12-02',
+            'borrow': b.pk,
+            'price': '1.1',
+            'account': a.pk,
+            'remark': 'Rm'
+        },
+    )
+
+    assert not form.is_valid()
+    assert 'date' in form.errors
+    assert 'Metai turi būti tarp 1999 ir 2000' in form.errors['date']
+
+
 def test_borrow_return_blank_data():
     form = forms.BorrowReturnForm(data={})
 
