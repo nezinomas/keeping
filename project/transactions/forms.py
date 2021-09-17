@@ -7,10 +7,11 @@ from ..accounts.models import Account
 from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
+from ..core.mixins.forms import YearBetweenMixin
 from .models import SavingChange, SavingClose, SavingType, Transaction
 
 
-class TransactionForm(forms.ModelForm):
+class TransactionForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Transaction
         fields = ['date', 'from_account', 'to_account', 'price']
@@ -51,7 +52,7 @@ class TransactionForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
-class SavingCloseForm(forms.ModelForm):
+class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = SavingClose
         fields = ['date', 'from_account', 'to_account', 'price', 'fee']
@@ -91,7 +92,7 @@ class SavingCloseForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
-class SavingChangeForm(forms.ModelForm):
+class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = SavingChange
         fields = ['date', 'from_account', 'to_account', 'price', 'fee']

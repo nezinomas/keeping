@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
 
 from ..factories import PensionTypeFactory
 from ..forms import PensionForm, PensionTypeForm
@@ -71,7 +72,7 @@ def test_pension_type_title_too_short():
 
 
 def test_pensiong_type_unique_name():
-    b = PensionTypeFactory(title='XXX')
+    PensionTypeFactory(title='XXX')
 
     form = PensionTypeForm(
         data={
@@ -129,6 +130,27 @@ def test_pension_valid_data():
     assert data.fee == Decimal(0.0)
     assert data.remark == 'remark'
     assert data.pension_type.title == t.title
+
+
+@freeze_time('1999-2-2')
+@pytest.mark.parametrize(
+    'year',
+    [1998, 2001]
+)
+def test_pension_invalid_date(year):
+    t = PensionTypeFactory()
+
+    form = PensionForm(data={
+        'date': f'{year}-01-01',
+        'price': '1.0',
+        'fee': '0.0',
+        'remark': 'remark',
+        'pension_type': t.pk
+    })
+
+    assert not form.is_valid()
+    assert 'date' in form.errors
+    assert 'Metai turi būti tarp 1999 ir 2000' in form.errors['date']
 
 
 def test_pension_blank_data():

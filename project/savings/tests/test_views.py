@@ -68,6 +68,7 @@ def test_saving_load_form(client_logged):
     assert '1999-01-01' in actual['html_form']
 
 
+@freeze_time('1999-1-1')
 def test_saving_save(client_logged):
     a = AccountFactory()
     i = SavingTypeFactory()
@@ -114,6 +115,7 @@ def test_saving_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
+@freeze_time('2011-1-1')
 def test_saving_update_to_another_year(client_logged):
     saving = SavingFactory()
 
@@ -138,6 +140,7 @@ def test_saving_update_to_another_year(client_logged):
     assert '2010-12-31' not in actual['html_list']
 
 
+@freeze_time('1999-12-31')
 def test_saving_update(client_logged):
     saving = SavingFactory()
 

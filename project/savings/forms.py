@@ -7,6 +7,7 @@ from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
+from ..core.mixins.forms import YearBetweenMixin
 from .models import Saving, SavingType
 
 
@@ -37,7 +38,7 @@ class SavingTypeForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
 
-class SavingForm(forms.ModelForm):
+class SavingForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Saving
         fields = ['date', 'price', 'fee', 'remark', 'saving_type', 'account']

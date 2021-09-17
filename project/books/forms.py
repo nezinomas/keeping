@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
@@ -5,7 +7,7 @@ from django.utils.translation import gettext as _
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
-from ..core.lib.date import set_year_for_form
+from ..core.lib.date import set_year_for_form, years
 from .models import Book, BookTarget
 
 
@@ -51,6 +53,51 @@ class BookForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+    def clean_started(self):
+        dt = self.cleaned_data['started']
+
+        if dt:
+            year_instance = dt.year
+            years_ = years()[:-1]
+            if year_instance not in years_:
+                self.add_error(
+                    'started',
+                    _('Year must be between %(year1)s and %(year2)s')
+                    % ({'year1':  years_[0], 'year2': years_[-1]})
+                )
+
+            if dt > datetime.now().date():
+                self.add_error(
+                    'started',
+                    _('Date cannot be in the future')
+                )
+
+        return dt
+
+    def clean_ended(self):
+        dt = self.cleaned_data['ended']
+
+        if dt:
+            if dt > datetime.now().date():
+                self.add_error(
+                    'ended',
+                    _('Date cannot be in the future')
+                )
+
+        return dt
+
+    def clean(self):
+        cleaned = super().clean()
+
+        started = cleaned.get('started')
+        ended = cleaned.get('ended')
+
+        if ended:
+            if ended < started:
+                self.add_error(
+                    'ended',
+                    _('Ended reading cannot precede started reading')
+                )
 
 
 class BookTargetForm(forms.ModelForm):

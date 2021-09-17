@@ -345,7 +345,7 @@ def test_expenses_update_past_record(get_user, client_logged):
     data = {
         'price': '150',
         'quantity': 33,
-        'date': '1974-12-12',
+        'date': '1998-12-12',
         'remark': 'Pastaba',
         'account': 1,
         'expense_type': 1,
@@ -363,7 +363,7 @@ def test_expenses_update_past_record(get_user, client_logged):
     assert actual['form_is_valid']
 
     actual = models.Expense.objects.get(pk=e.pk)
-    assert actual.date == date(1974, 12, 12)
+    assert actual.date == date(1998, 12, 12)
     assert actual.price == Decimal('150')
     assert actual.quantity == 33
     assert actual.account.title == 'Account1'

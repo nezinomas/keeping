@@ -7,10 +7,11 @@ from django.utils.translation import gettext as _
 
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
+from ..core.mixins.forms import YearBetweenMixin
 from .models import Pension, PensionType
 
 
-class PensionForm(forms.ModelForm):
+class PensionForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Pension
         fields = ['date', 'price', 'fee', 'remark', 'pension_type']
@@ -57,6 +58,7 @@ class PensionForm(forms.ModelForm):
             self.add_error('fee', _msg)
 
         return
+
 
 class PensionTypeForm(forms.ModelForm):
     class Meta:

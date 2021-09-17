@@ -5,6 +5,7 @@ import pytest
 
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import AccountBalance
+from ...journals.models import Journal
 from ..factories import IncomeFactory, IncomeTypeFactory
 from ..models import Income, IncomeType
 
@@ -332,3 +333,11 @@ def test_income_year_sum_filter_count_qs(django_assert_max_num_queries):
 
     with django_assert_max_num_queries(1):
         list([x['year'] for x in Income.objects.sum_by_year(['x'])])
+
+
+def test_income_updates_journal_first_record():
+    assert Journal.objects.first().first_record == date(1999, 1, 1)
+
+    IncomeFactory(date=date(1974, 2, 2))
+
+    assert Journal.objects.first().first_record == date(1974, 2, 2)
