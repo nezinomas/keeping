@@ -39,7 +39,7 @@ def test_drink_year_initial_value():
 @patch('project.drinks.forms.App_name', 'Counter Type')
 def test_drink_valid_data():
     form = DrinkForm(data={
-        'date': '1974-01-01',
+        'date': '1999-01-01',
         'quantity': 1.0
     })
 
@@ -47,10 +47,27 @@ def test_drink_valid_data():
 
     data = form.save()
 
-    assert data.date == date(1974, 1, 1)
+    assert data.date == date(1999, 1, 1)
     assert data.quantity == 1.0
     assert data.user.username == 'bob'
     assert data.counter_type == 'Counter Type'
+
+
+@patch('project.drinks.forms.App_name', 'Counter Type')
+@freeze_time('1999-2-2')
+@pytest.mark.parametrize(
+    'year',
+    [1998, 2001]
+)
+def test_drink_invalid_date(year):
+    form = DrinkForm(data={
+        'date': f'{year}-01-01',
+        'quantity': 1.0
+    })
+
+    assert not form.is_valid()
+    assert 'date' in form.errors
+    assert 'Metai turi būti tarp 1999 ir 2000' in form.errors['date']
 
 
 def test_drink_blank_data():

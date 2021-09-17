@@ -102,7 +102,7 @@ def test_borrow_valid_data():
 
     form = forms.BorrowForm(
         data={
-            'date': '1974-01-01',
+            'date': '1999-01-01',
             'name': 'Name',
             'price': '1.1',
             'account': a.pk,
@@ -114,12 +114,36 @@ def test_borrow_valid_data():
     assert form.is_valid()
 
     e = form.save()
-    assert e.date == date(1974, 1, 1)
+    assert e.date == date(1999, 1, 1)
     assert e.price == Decimal('1.1')
     assert e.returned == Decimal('0')
     assert e.account == a
     assert e.remark == 'Rm'
     assert not e.closed
+
+
+@freeze_time('1999-2-2')
+@pytest.mark.parametrize(
+    'year',
+    [1998, 2001]
+)
+def test_borrow_invalid_date(year):
+    a = AccountFactory()
+
+    form = forms.BorrowForm(
+        data={
+            'date': f'{year}-01-01',
+            'name': 'Name',
+            'price': '1.1',
+            'account': a.pk,
+            'closed': False,
+            'remark': 'Rm'
+        },
+    )
+
+    assert not form.is_valid()
+    assert 'date' in form.errors
+    assert 'Metai turi būti tarp 1999 ir 2000' in form.errors['date']
 
 
 def test_borrow_blank_data():

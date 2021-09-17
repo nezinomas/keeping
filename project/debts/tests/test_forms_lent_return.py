@@ -81,6 +81,30 @@ def test_lent_return_valid_data():
     assert e.remark == 'Rm'
 
 
+@freeze_time('1999-2-2')
+@pytest.mark.parametrize(
+    'year',
+    [1998, 2001]
+)
+def test_lent_return_invalid_date(year):
+    a = AccountFactory()
+    b = factories.LentFactory()
+
+    form = forms.LentReturnForm(
+        data={
+            'date': f'{year}-12-02',
+            'lent': b.pk,
+            'price': '1.1',
+            'account': a.pk,
+            'remark': 'Rm'
+        },
+    )
+
+    assert not form.is_valid()
+    assert 'date' in form.errors
+    assert 'Metai turi būti tarp 1999 ir 2000' in form.errors['date']
+
+
 def test_lent_return_blank_data():
     form = forms.LentReturnForm(data={})
 

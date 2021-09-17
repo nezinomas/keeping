@@ -207,7 +207,7 @@ def test_incomes_update_past_record(get_user, client_logged):
 
     data = {
         'price': '150',
-        'date': '1974-12-12',
+        'date': '1997-12-12',
         'remark': 'Pastaba',
         'account': 1,
         'income_type': 1,
@@ -224,7 +224,7 @@ def test_incomes_update_past_record(get_user, client_logged):
     assert actual['form_is_valid']
 
     actual = models.Income.objects.get(pk=i.pk)
-    assert actual.date == date(1974, 12, 12)
+    assert actual.date == date(1997, 12, 12)
     assert float(150) == 150
     assert actual.account.title == 'Account1'
     assert actual.income_type.title == 'Income Type'

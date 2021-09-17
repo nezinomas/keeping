@@ -40,7 +40,7 @@ def test_form_year_initial_value():
 @patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
 def test_form_valid_data(mck):
     form = CountForm(data={
-        'date': '1974-01-01',
+        'date': '1999-01-01',
         'quantity': 1.0
     })
 
@@ -48,10 +48,27 @@ def test_form_valid_data(mck):
 
     data = form.save()
 
-    assert data.date == date(1974, 1, 1)
+    assert data.date == date(1999, 1, 1)
     assert data.quantity == 1.0
     assert data.user.username == 'bob'
     assert data.counter_type == 'xxx'
+
+
+@patch('project.core.lib.utils.get_request_kwargs', 'xxx')
+@freeze_time('1999-2-2')
+@pytest.mark.parametrize(
+    'year',
+    [1998, 2001]
+)
+def test_form_invalid_date(year):
+    form = CountForm(data={
+        'date': f'{year}-01-01',
+        'quantity': 1.0
+    })
+
+    assert not form.is_valid()
+    assert 'date' in form.errors
+    assert 'Metai turi būti tarp 1999 ir 2000' in form.errors['date']
 
 
 def test_form_blank_data():

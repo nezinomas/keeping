@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
@@ -102,6 +104,32 @@ class ExpenseForm(forms.ModelForm):
                 raise ValidationError(_("Image file too large ( > 4Mb )"))
 
         return image
+
+    def clean_date(self):
+        dt = self.cleaned_data['date']
+
+        if dt:
+            year_user = utils.get_user().year
+            year_instance = dt.year
+            year_now = datetime.now().year
+
+            diff = 3
+            if (year_user - year_instance) > diff:
+                year_msg = year_user - diff
+                self.add_error(
+                    'date',
+                    _('Year cannot be less than %(year)s') % ({'year': year_msg})
+                )
+
+            diff = 1
+            if (year_instance - year_now) > diff:
+                year_msg = year_user + diff
+                self.add_error(
+                    'date',
+                    _('Year cannot be greater than %(year)s') % ({'year': year_msg})
+                )
+
+        return dt
 
 
 class ExpenseTypeForm(forms.ModelForm):
