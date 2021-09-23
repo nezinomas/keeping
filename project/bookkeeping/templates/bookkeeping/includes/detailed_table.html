@@ -7,7 +7,7 @@
         <tr class="top">
             <th>{{ name }}</th>
             {% for name in month_names %}
-            <th class="text-end w7p">{{ name }}</th>
+            <th class="text-end w7p">{% translate name %}</th>
             {% endfor %}
             <th class="text-end w7p">{% translate 'Total' %}</th>
         </tr>
