@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-17 10:42+0300\n"
-"PO-Revision-Date: 2021-09-17 10:43+0300\n"
+"POT-Creation-Date: 2021-09-30 12:15+0300\n"
+"PO-Revision-Date: 2021-09-30 12:15+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -1065,8 +1065,9 @@ msgid "ml"
 msgstr "ml"
 
 #: .\project\drinks\templates\drinks\includes\drinks_target_list.html:8
-msgid "vnt"
-msgstr "pcs"
+#: .\project\drinks\templates\drinks\includes\tbl_consumption.html:10
+msgid "pcs"
+msgstr "vnt"
 
 #: .\project\drinks\templates\drinks\includes\drinks_target_list.html:21
 msgid "No goal set"
@@ -1694,6 +1695,9 @@ msgstr "Įspėjimas"
 #: .\project\users\views.py:294
 msgid "You cannot delete yourself."
 msgstr "Negalite ištrinti savęs."
+
+#~ msgid "vnt"
+#~ msgstr "pcs"
 
 #~ msgid "Couldn't read uploaded image"
 #~ msgstr "Nepavyko perskaityti įkelto vaizdo"
