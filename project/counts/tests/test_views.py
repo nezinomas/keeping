@@ -190,6 +190,13 @@ def test_index_200(client_logged):
     assert response.status_code == 200
 
 
+def test_index_not_load_drinks(client_logged):
+    url = reverse('counts:counts_index', kwargs={'count_type': 'drinks'})
+    response = client_logged.get(url, follow=True)
+
+    assert views.CountsEmpty == response.resolver_match.func.view_class
+
+
 def test_index_add_button(client_logged):
     url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
