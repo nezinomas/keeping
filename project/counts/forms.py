@@ -41,6 +41,16 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+    def clean(self):
+        counter_type = utils.get_request_kwargs("count_type")
+        qs = CountType.objects.related().filter(slug=counter_type)
+
+        if not qs.exists():
+            self.add_error(
+                '__all__',
+                _('There is no such counter')
+            )
+
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
         instance.counter_type = utils.get_request_kwargs("count_type")

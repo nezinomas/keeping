@@ -81,6 +81,19 @@ def test_form_blank_data():
     assert 'quantity' in form.errors
 
 
+@patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
+def test_form_counter_not_exist(mck):
+    form = CountForm(data={
+        'date': '1999-01-01',
+        'quantity': 1.0
+    })
+
+    assert not form.is_valid()
+    assert len(form.errors) == 1
+    assert '__all__' in form.errors
+    assert 'Nėra tokio skaitiklio' in form.errors['__all__']
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                              Count Type
 # ---------------------------------------------------------------------------------------
