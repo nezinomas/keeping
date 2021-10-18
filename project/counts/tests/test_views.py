@@ -197,6 +197,13 @@ def test_index_not_load_drinks(client_logged):
     assert views.CountsEmpty == response.resolver_match.func.view_class
 
 
+def test_index_not_exists_count_type(client_logged):
+    url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
+    response = client_logged.get(url, follow=True)
+
+    assert views.CountsEmpty == response.resolver_match.func.view_class
+
+
 def test_index_add_button(client_logged):
     url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
