@@ -134,7 +134,7 @@ def test_view_delete_load_form(client_logged):
 
 def test_view_delete(client_logged):
     p = CountFactory()
-    print('>>>>', Count.objects.values())
+
     assert Count.objects.all().count() == 1
     url = reverse('counts:counts_delete', kwargs={'pk': p.pk, 'count_type': 'count-type'})
 
