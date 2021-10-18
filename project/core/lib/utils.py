@@ -13,7 +13,13 @@ def get_user():
 
 
 def get_request_kwargs(name):
-    return CrequestMiddleware.get_request().resolver_match.kwargs.get(name)
+    request = None
+    try:
+        request = CrequestMiddleware.get_request().resolver_match.kwargs.get(name)
+    except:
+        pass
+
+    return request
 
 
 def is_ajax(request):
