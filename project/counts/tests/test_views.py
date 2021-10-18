@@ -36,6 +36,8 @@ def test_view_new_form_initial(client_logged):
 
 
 def test_view_new(client_logged):
+    CountTypeFactory()
+
     data = {'date': '1999-01-01', 'quantity': 68}
 
     url = reverse('counts:counts_new', kwargs={'count_type': 'count-type'})
@@ -64,6 +66,7 @@ def test_view_new_invalid_data(client_logged):
 
 
 def test_view_update(client_logged):
+    CountTypeFactory()
     p = CountFactory()
 
     data = {'date': '1999-01-01', 'quantity': 68}
@@ -134,7 +137,7 @@ def test_view_delete_load_form(client_logged):
 
 def test_view_delete(client_logged):
     p = CountFactory()
-    print('>>>>', Count.objects.values())
+
     assert Count.objects.all().count() == 1
     url = reverse('counts:counts_delete', kwargs={'pk': p.pk, 'count_type': 'count-type'})
 
@@ -185,6 +188,13 @@ def test_index_200(client_logged):
     response = client_logged.get(url)
 
     assert response.status_code == 200
+
+
+def test_index_not_load_drinks(client_logged):
+    url = reverse('counts:counts_index', kwargs={'count_type': 'drinks'})
+    response = client_logged.get(url, follow=True)
+
+    assert views.CountsEmpty == response.resolver_match.func.view_class
 
 
 def test_index_add_button(client_logged):

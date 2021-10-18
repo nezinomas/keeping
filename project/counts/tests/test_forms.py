@@ -5,7 +5,7 @@ from freezegun import freeze_time
 from mock import patch
 
 from ...users.factories import UserFactory
-from ..apps import App_name
+from ..factories import CountTypeFactory
 from ..forms import CountForm, CountTypeForm
 
 pytestmark = pytest.mark.django_db
@@ -39,6 +39,8 @@ def test_form_year_initial_value():
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
 def test_form_valid_data(mck):
+    CountTypeFactory(title='xxx')
+
     form = CountForm(data={
         'date': '1999-01-01',
         'quantity': 1.0
@@ -54,13 +56,15 @@ def test_form_valid_data(mck):
     assert data.counter_type == 'xxx'
 
 
-@patch('project.core.lib.utils.get_request_kwargs', 'xxx')
+@patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
 @freeze_time('1999-2-2')
 @pytest.mark.parametrize(
     'year',
     [1998, 2001]
 )
-def test_form_invalid_date(year):
+def test_form_invalid_date(mck, year):
+    CountTypeFactory(title='xxx')
+
     form = CountForm(data={
         'date': f'{year}-01-01',
         'quantity': 1.0
@@ -76,9 +80,23 @@ def test_form_blank_data():
 
     assert not form.is_valid()
 
-    assert len(form.errors) == 2
+    assert len(form.errors) == 3
+    assert '__all__' in form.errors
     assert 'date' in form.errors
     assert 'quantity' in form.errors
+
+
+@patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
+def test_form_counter_not_exist(mck):
+    form = CountForm(data={
+        'date': '1999-01-01',
+        'quantity': 1.0
+    })
+
+    assert not form.is_valid()
+    assert len(form.errors) == 1
+    assert '__all__' in form.errors
+    assert 'Nėra tokio skaitiklio' in form.errors['__all__']
 
 
 # ---------------------------------------------------------------------------------------

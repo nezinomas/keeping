@@ -46,16 +46,6 @@ def test_borrow_return_related_queries(django_assert_num_queries):
         a = [x.account.title for x in list(BorrowReturn.objects.related())]
 
 
-def test_borrow_return_sort():
-    BorrowReturnFactory(date=dt(1999, 1, 2))
-    BorrowReturnFactory(date=dt(1999, 12, 13))
-
-    actual = BorrowReturn.objects.items()
-    dates = [x.date for x in actual]
-
-    assert dates == [dt(1999, 12, 13), dt(1999, 1, 2)]
-
-
 def test_borrow_return_items():
     BorrowReturnFactory()
     BorrowReturnFactory()
