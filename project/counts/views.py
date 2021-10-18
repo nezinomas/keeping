@@ -56,6 +56,18 @@ class ReloadStats(LoginRequiredMixin, ContextMixin, DispatchAjaxMixin, TemplateV
 
 
 class Index(ContextMixin, IndexMixin):
+    def dispatch(self, request, *args, **kwargs):
+        count_type = None
+        try:
+            count_type = request.resolver_match.kwargs["count_type"]
+        except KeyError:
+            pass
+
+        if count_type and count_type == 'drinks':
+            return redirect(reverse('counts:counts_empty'))
+
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
@@ -106,7 +118,7 @@ class CountsEmpty(IndexMixin):
     template_name = 'counts/counts_empty.html'
 
     def dispatch(self, request, *args, **kwargs):
-        qs = CountType.objects.related()
+        qs = CountType.objects.related().exclude(slug='drinks')
         if qs.exists():
             return redirect(reverse('counts:counts_index', kwargs={'count_type': qs[0].slug}))
 
