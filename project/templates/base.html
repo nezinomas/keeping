@@ -165,6 +165,45 @@
             <a class="nav-link {% if '/summary/' in request.path %}active{% endif %}"
               href="{% url 'bookkeeping:summary' %}">{% translate 'Summary' %}</a>
           </li>
+
+          <li class="nav-item">
+            <div class="btn-group">
+              <button type="button" class="btn btn-menu dropdown-toggle nav-link" data-bs-toggle="dropdown" aria-expanded="false">{% translate 'Add' %}</button>
+              <ul class="dropdown-menu">
+                <li>
+                  <button class="dropdown-item btn-sm js-create" data-url="{% url 'incomes:incomes_new' %}">{% translate 'Incomes' context 'incomes button' %}</button>
+                </li>
+                <li>
+                  <button class="dropdown-item btn-sm js-create" data-url="{% url 'expenses:expenses_new' %}">{% translate "Expenses" context "expenses button" %}</button>
+                </li>
+                <li>
+                  <button class="dropdown-item btn-sm js-create" data-url="{% url 'transactions:transactions_new' %}">{% translate 'Transactions' context "transactions button" %}</button>
+                </li>
+                <li>
+                  <button class="dropdown-item btn-sm js-create" data-url="{% url 'savings:savings_new' %}">{% translate 'Savings' context "savings button" %}</button>
+                </li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+                <li>
+                  <button class="dropdown-item btn-sm js-create" data-url="{% url 'accounts:accounts_new' %}">{% translate 'Account' context 'account button' %}</button>
+                </li>
+                <li>
+                  <button class="dropdown-item btn-sm js-create" data-url="{% url 'incomes:incomes_type_new' %}">{% translate 'Incomes type' context 'income type button' %}</button>
+                </li>
+                <li>
+                  <button class="dropdown-item btn-sm js-create" data-url="{% url 'expenses:expenses_type_new' %}">{% translate "Expenses type" context "expenses type button" %}</button>
+                </li>
+                <li>
+                  <button class="dropdown-item btn-sm js-create" data-url="{% url 'expenses:expenses_name_new' %}">{% translate "Expenses name" context "expenses name button" %}</button>
+                </li>
+                <li>
+                  <button class="dropdown-item btn-sm js-create" data-url="{% url 'savings:savings_type_new' %}">{% translate 'Fund' context 'fund button' %}</button>
+                </li>
+              </ul>
+            </div>
+          </li>
+
         </ul>
 
         <div class="navbar-text ms-3">{{ yday }} / <b>{{ ydays }}</b></div>
