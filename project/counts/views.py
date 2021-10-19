@@ -66,6 +66,11 @@ class Index(ContextMixin, IndexMixin):
         if count_type and count_type == 'drinks':
             return redirect(reverse('counts:counts_empty'))
 
+        if count_type:
+            qs = CountType.objects.related().filter(slug=count_type)
+            if not qs.exists():
+                return redirect(reverse('counts:counts_empty'))
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):

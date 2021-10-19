@@ -59,8 +59,7 @@ class CountType(TitleAbstract):
     def delete(self, *args, **kwargs):
         (Count
          .objects
-         .related()
-         .filter(counter_type=slugify(self.title))
+         .related(counter_type=slugify(self.title))
          .delete())
 
         super().delete(*args, **kwargs)

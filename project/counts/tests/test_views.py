@@ -197,7 +197,16 @@ def test_index_not_load_drinks(client_logged):
     assert views.CountsEmpty == response.resolver_match.func.view_class
 
 
+def test_index_not_exists_count_type(client_logged):
+    url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
+    response = client_logged.get(url, follow=True)
+
+    assert views.CountsEmpty == response.resolver_match.func.view_class
+
+
 def test_index_add_button(client_logged):
+    CountTypeFactory(title='Xxx')
+
     url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
@@ -212,6 +221,8 @@ def test_index_add_button(client_logged):
 
 
 def test_index_links(client_logged):
+    CountTypeFactory(title='Xxx')
+
     url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
 
     response = client_logged.get(url)
@@ -233,6 +244,8 @@ def test_index_links(client_logged):
 
 
 def test_index_context(client_logged):
+    CountTypeFactory(title='Xxx')
+
     url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
@@ -246,6 +259,8 @@ def test_index_context(client_logged):
 
 
 def test_index_context_tab_value(client_logged):
+    CountTypeFactory(title='Xxx')
+
     url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
@@ -253,6 +268,7 @@ def test_index_context_tab_value(client_logged):
 
 
 def test_index_chart_weekdays(client_logged):
+    CountTypeFactory(title='Xxx')
     CountFactory(counter_type='xxx')
 
     url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
@@ -264,6 +280,7 @@ def test_index_chart_weekdays(client_logged):
 
 
 def test_index_chart_months(client_logged):
+    CountTypeFactory(title='Xxx')
     CountFactory(counter_type='xxx')
 
     url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
@@ -275,6 +292,7 @@ def test_index_chart_months(client_logged):
 
 
 def test_index_chart_histogram(client_logged):
+    CountTypeFactory(title='Xxx')
     CountFactory(counter_type='xxx')
 
     url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
@@ -347,6 +365,8 @@ def test_reload_stats_render_ajax_trigger(client_logged):
 
 
 def test_reload_stats_render_ajax_trigger_not_set(client_logged):
+    CountTypeFactory(title='Xxx')
+
     url = reverse('counts:reload_stats', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url, follow=True)
 
@@ -607,6 +627,20 @@ def test_count_type_delete_load_form(client_logged):
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
 def test_count_type_delete(mck, client_logged):
+    obj = CountTypeFactory(title='XXX')
+    CountFactory(counter_type=slugify('XXX'))
+
+    url = reverse('counts:counts_type_delete', kwargs={'pk': obj.pk})
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    assert response.status_code == 200
+
+    assert CountType.objects.count() == 0
+    assert Count.objects.count() == 0
+
+
+def test_count_type_delete_no_patch(client_logged):
     obj = CountTypeFactory(title='XXX')
     CountFactory(counter_type=slugify('XXX'))
 
