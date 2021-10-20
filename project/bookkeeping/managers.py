@@ -6,26 +6,31 @@ from ..core.lib import utils
 
 class QsMixin():
     def latest_check(self, field):
-        qs = (
+        qs = [*(
             self
             .related()
+            .values(f'{field}_id')
+            .annotate(latest_date=Max('date'))
+            .order_by('-latest_date')
+        )]
+
+        dates = []
+        field_id = []
+        for x in qs:
+            dates.append(x['latest_date'])
+            field_id.append(x[f'{field}_id'])
+
+        qs = (
+            self
+            .filter(**{'date__in': dates, f'{field}_id__in': field_id})
             .values(
                 title=F(f'{field}__title'),
                 have=F('price'),
                 latest_check=F('date')
             )
-            .annotate(latest_date=Max('date'))
-            .order_by('-latest_check')
         )
 
-        rtn = []
-        title = []
-        for x in qs:
-            if not x['title'] in title:
-                rtn.append(x)
-                title.append(x['title'])
-
-        return rtn
+        return qs
 
 
 class SavingWorthQuerySet(QsMixin, models.QuerySet):
