@@ -58,8 +58,7 @@
             <div class="btn-group">
               <a class="btn btn-menu nav-link {% if '/expenses/' in request.path %}active{% endif %}"
                 href="{% url 'expenses:expenses_index' %}">{% translate 'Expenses' %}</a>
-              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/expenses/' in request.path %}active{% endif %}" data-bs-toggle="dropdown"
-                aria-expanded="false">
+              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/expenses/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
@@ -80,32 +79,25 @@
           </li>
 
           <li class="nav-item">
-            <a class="nav-link {% if '/incomes/' in request.path %}active{% endif %}"
-              href="{% url 'incomes:incomes_index' %}">{% translate 'Incomes' %}</a>
+            <a class="nav-link {% if '/incomes/' in request.path %}active{% endif %}" href="{% url 'incomes:incomes_index' %}">{% translate 'Incomes' %}</a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link {% if '/transactions/' in request.path %}active{% endif %}"
-              href="{% url 'transactions:transactions_index' %}">{% translate 'Transactions' %}</a>
+            <a class="nav-link {% if '/transactions/' in request.path %}active{% endif %}" href="{% url 'transactions:transactions_index' %}">{% translate 'Transactions' %}</a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link {% if '/savings/' in request.path %}active{% endif %}"
-              href="{% url 'savings:savings_index' %}">{% translate 'Savings' %}</a>
+            <a class="nav-link {% if '/savings/' in request.path %}active{% endif %}" href="{% url 'savings:savings_index' %}">{% translate 'Savings' %}</a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link {% if '/debts/' in request.path %}active{% endif %}"
-              href="{% url 'debts:debts_index' %}">{% translate 'Depts' %}</a>
+            <a class="nav-link {% if '/debts/' in request.path %}active{% endif %}" href="{% url 'debts:debts_index' %}">{% translate 'Depts' %}</a>
           </li>
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu nav-link {% if '/books/' in request.path %}active{% endif %}"
-                href="{% url 'books:books_index' %}">{% translate 'Books' %}</a>
-              <button type="button"
-                class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/books/' in request.path %}active{% endif %}"
-                data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="btn btn-menu nav-link {% if '/books/' in request.path %}active{% endif %}" href="{% url 'books:books_index' %}">{% translate 'Books' %}</a>
+              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/books/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
@@ -118,11 +110,8 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu nav-link {% if '/drinks/' in request.path %}active{% endif %}"
-                href="{% url 'drinks:drinks_index' %}">{% translate 'Drinks' %}</a>
-              <button type="button"
-                class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/drinks/' in request.path %}active{% endif %}"
-                data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="btn btn-menu nav-link {% if '/drinks/' in request.path %}active{% endif %}" href="{% url 'drinks:drinks_index' %}">{% translate 'Drinks' %}</a>
+              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/drinks/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
@@ -139,8 +128,7 @@
           <li class="nav-item">
             <div class="btn-group">
               <a class="btn btn-menu nav-link {% if '/counts/' in request.path %}active{% endif %}" href="{% url 'counts:counts_empty' %}">{% translate 'Counter' %}</a>
-              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/counts/' in request.path %}active{% endif %}"
-                data-bs-toggle="dropdown" aria-expanded="false">
+              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/counts/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
@@ -157,13 +145,11 @@
           </li>
 
           <li class="nav-item">
-            <a class="nav-link {% if '/plans/' in request.path %}active{% endif %}"
-              href="{% url 'plans:plans_index' %}">{% translate 'Plans' %}</a>
+            <a class="nav-link {% if '/plans/' in request.path %}active{% endif %}" href="{% url 'plans:plans_index' %}">{% translate 'Plans' %}</a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link {% if '/summary/' in request.path %}active{% endif %}"
-              href="{% url 'bookkeeping:summary' %}">{% translate 'Summary' %}</a>
+            <a class="nav-link {% if '/summary/' in request.path %}active{% endif %}" href="{% url 'bookkeeping:summary' %}">{% translate 'Summary' %}</a>
           </li>
 
           <li class="nav-item">
@@ -209,8 +195,7 @@
         <div class="navbar-text ms-3">{{ yday }} / <b>{{ ydays }}</b></div>
 
         <div class="nav-item dropdown ms-auto me-0">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
-            aria-expanded="false">{{ user.username }}</a>
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">{{ user.username }}</a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
             <li><a class="dropdown-item btn-sm" href="{% url 'users:logout' %}">{% translate 'Log out' %}</a></li>
             <li><a class="dropdown-item btn-sm" href="{% url 'users:password_change' %}">{% translate 'Change password' %}</a></li>
