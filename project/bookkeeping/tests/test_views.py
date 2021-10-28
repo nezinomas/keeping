@@ -820,6 +820,7 @@ def test_view_summery_savings_context(client_logged):
     assert 'funds' in response.context
     assert 'shares' in response.context
     assert 'pensions' in response.context
+    assert 'pensions2' in response.context
     assert 'all' in response.context
 
     assert response.context['funds'] == {'categories': [1999], 'invested': [111.0], 'profit': [0.0]}
@@ -833,6 +834,7 @@ def test_view_summery_savings_context_no_records(client_logged):
     assert 'funds' not in response.context
     assert 'shares' not in response.context
     assert 'pensions' not in response.context
+    assert 'pensions2' not in response.context
     assert 'all' not in response.context
 
     assert response.context['records'] == 0
