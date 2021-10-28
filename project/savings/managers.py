@@ -229,3 +229,21 @@ class SavingBalanceQuerySet(models.QuerySet):
             title=F('saving_type__title'),
             type=F('saving_type__type')
         )
+
+    def sum_by_type(self):
+        return (
+            self
+            .related()
+            .annotate(cnt=Count('saving_type'))
+            .values('saving_type__type')
+            .annotate(y=F('year'))
+            .values('y')
+            .annotate(c=Count('id'))
+            .annotate(invested=Sum('incomes'), profit=Sum('profit_incomes_sum'))
+            .order_by('year')
+            .values(
+                'year',
+                'invested',
+                'profit',
+                type=F('saving_type__type'))
+        )
