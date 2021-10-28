@@ -87,7 +87,7 @@
         series: [
         {
             name: '{% translate "Profit" %}',
-            data: {{ items.profit }},
+            data: {{ items.profit|safe }},
             color: 'rgba(84,130,53,0.5)',
             borderColor: '#548235',
             borderWidth: '0.5',
