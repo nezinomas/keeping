@@ -475,3 +475,54 @@ def test_saving_balance_filter_by_few_types():
 
     assert actual[0]['title'] == '1'
     assert actual[1]['title'] == '2'
+
+
+@freeze_time('1999-1-1')
+def test_sum_by_type_funds():
+    f = SavingTypeFactory(title='F', type='funds')
+
+    SavingFactory(saving_type=f, price=1)
+    SavingFactory(saving_type=f, price=10)
+
+    actual = list(SavingBalance.objects.sum_by_type())
+
+    assert actual == [{'year': 1999, 'invested': 11.0, 'profit': 0.0, 'type': 'funds'}]
+
+
+@freeze_time('1999-1-1')
+def test_sum_by_type_shares():
+    f = SavingTypeFactory(title='F', type='shares')
+
+    SavingFactory(saving_type=f, price=1)
+    SavingFactory(saving_type=f, price=10)
+
+    actual = list(SavingBalance.objects.sum_by_type())
+
+    assert actual == [{'year': 1999, 'invested': 11.0, 'profit': 0.0, 'type': 'shares'}]
+
+
+@freeze_time('1999-1-1')
+def test_sum_by_type_pensions():
+    f = SavingTypeFactory(title='F', type='pensions')
+
+    SavingFactory(saving_type=f, price=1)
+    SavingFactory(saving_type=f, price=10)
+
+    actual = list(SavingBalance.objects.sum_by_type())
+
+    assert actual == [{'year': 1999, 'invested': 11.0, 'profit': 0.0, 'type': 'pensions'}]
+
+
+@freeze_time('1999-1-1')
+def test_sum_by_year():
+    f = SavingTypeFactory(title='F', type='funds')
+    p = SavingTypeFactory(title='P', type='pensions')
+    s = SavingTypeFactory(title='S', type='shares')
+
+    SavingFactory(saving_type=f, price=1)
+    SavingFactory(saving_type=p, price=2)
+    SavingFactory(saving_type=s, price=4)
+
+    actual = list(SavingBalance.objects.sum_by_year())
+
+    assert actual == [{'year': 1999, 'invested': 7.0, 'profit': 0.0}]

@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
 
 from ..factories import (PensionBalanceFactory, PensionFactory,
                          PensionTypeFactory)
@@ -260,3 +261,13 @@ def test_pension_balance_queries(django_assert_num_queries):
 
     with django_assert_num_queries(1):
         list(PensionBalance.objects.items().values())
+
+
+@freeze_time('1999-1-1')
+def test_sum_by_year():
+    PensionFactory(price=1)
+    PensionFactory(price=2)
+
+    actual = list(PensionBalance.objects.sum_by_year())
+
+    assert actual == [{'year': 1999, 'invested': 3.0, 'profit': 0.0}]
