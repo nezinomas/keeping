@@ -51,6 +51,11 @@ urlpatterns = [
         name='summary'
     ),
     path(
+        'summary/savings/',
+        views.SummarySavings.as_view(),
+        name='summary_savings'
+    ),
+    path(
         'month/',
         views.Month.as_view(),
         name='month'
