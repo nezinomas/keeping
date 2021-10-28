@@ -168,7 +168,7 @@ class SignalBase():
             )
 
     def _get_worth(self) -> List[Dict]:
-        return self.model_worth.objects.items()
+        return self.model_worth.objects.items(year=self.year)
 
     def _get_id(self) -> List[int]:
         account_id = []

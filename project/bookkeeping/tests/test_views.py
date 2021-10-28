@@ -79,17 +79,17 @@ def test_no_incomes_no_data(client_logged):
     assert round(response.context['save_sum'], 2) == 0
 
 
+@freeze_time('1999-1-1')
 def test_index_account_worth(client_logged):
     AccountBalanceFactory()
     AccountWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
-    AccountWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc), price=555)
+    AccountWorthFactory(date=datetime(1999, 2, 2, tzinfo=pytz.utc), price=555)
 
     url = reverse('bookkeeping:index')
     response = client_logged.get(url)
 
     actual = response.context['accounts']
-
-    assert 'data-bs-title="2222 m. vasario 2 d., 00:00"' in actual
+    assert 'data-bs-title="1999 m. vasario 2 d., 00:00"' in actual
     assert '555,0' in actual
 
 
@@ -547,7 +547,7 @@ def test_view_pension_worth_formset(client_logged):
     assert 'Pensijų vertė' in actual['html_form']
     assert '<option value="1" selected>PensionType</option>' in actual['html_form']
 
-
+@freeze_time('1999-2-3')
 def test_view_pension_worth_new(client_logged):
     PensionFactory()
     i = PensionTypeFactory()
