@@ -22,6 +22,13 @@
     </div>
 </div>
 
+<div class="row my-2">
+    <div class="col">
+        {% include 'bookkeeping/includes/chart_summary_savings.html' with items=all title=_('Funds')|add:',
+        '|add:_('Shares')|add:', '|add:_('Pensions')|add:' III' %}
+    </div>
+</div>
+
 {% else %}
 {% include 'core/no_records.html' with two_years=True %}
 {% endif %}

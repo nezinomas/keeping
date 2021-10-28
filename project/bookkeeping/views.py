@@ -219,6 +219,7 @@ class SummarySavings(IndexMixin):
         context['funds'] = chart_data(qs.filter(type='funds'))
         context['shares'] = chart_data(qs.filter(type='shares'))
         context['pensions'] = chart_data(qs.filter(type='pensions'))
+        context['all'] = chart_data(SavingBalance.objects.sum_by_year())
 
         return context
 
