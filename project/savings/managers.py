@@ -238,7 +238,6 @@ class SavingBalanceQuerySet(models.QuerySet):
             .values('saving_type__type')
             .annotate(y=F('year'))
             .values('y')
-            .annotate(c=Count('id'))
             .annotate(invested=Sum('incomes'), profit=Sum('profit_incomes_sum'))
             .order_by('year')
             .values(
