@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<div id="container-{{ name }}-summary"></div>
+<div id="container-{{ title }}-summary"></div>
 
 <script>
     $(function () {
@@ -12,7 +12,7 @@
             decimalPoint: ',',
         }
     });
-    Highcharts.chart('container-{{ name }}-summary', {
+    Highcharts.chart('container-{{ title }}-summary', {
         chart: {
             type: 'column',
             spacingRight: 25,
