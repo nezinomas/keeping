@@ -112,3 +112,18 @@ class PensionBalanceQuerySet(models.QuerySet):
             'profit_invested_sum',
             title=F('pension_type__title')
         )
+
+    def sum_by_year(self):
+        return (
+            self
+            .related()
+            .annotate(y=F('year'))
+            .values('y')
+            .annotate(invested=Sum('incomes'), profit=Sum('profit_incomes_sum'))
+            .order_by('year')
+            .values(
+                'year',
+                'invested',
+                'profit'
+            )
+        )

@@ -5,10 +5,17 @@ from ..core.lib import utils
 
 
 class QsMixin():
-    def latest_check(self, field):
+    def year_filter(self, year, field='date'):
+        if year:
+            return self.filter(**{f'{field}__year': year})
+
+        return self
+
+    def latest_check(self, field, year=None):
         qs = [*(
             self
             .related()
+            .year_filter(year)
             .values(f'{field}_id')
             .annotate(latest_date=Max('date'))
             .order_by('-latest_date')
@@ -42,8 +49,8 @@ class SavingWorthQuerySet(QsMixin, models.QuerySet):
             .filter(saving_type__journal=journal)
         )
 
-    def items(self):
-        return self.latest_check('saving_type')
+    def items(self, year=None):
+        return self.latest_check(field='saving_type', year=year)
 
 
 class AccountWorthQuerySet(QsMixin, models.QuerySet):
@@ -55,8 +62,8 @@ class AccountWorthQuerySet(QsMixin, models.QuerySet):
             .filter(account__journal=journal)
         )
 
-    def items(self):
-        return self.latest_check('account')
+    def items(self, year=None):
+        return self.latest_check(field='account', year=year)
 
 
 class PensionWorthQuerySet(QsMixin, models.QuerySet):
@@ -68,5 +75,5 @@ class PensionWorthQuerySet(QsMixin, models.QuerySet):
             .filter(pension_type__journal=journal)
         )
 
-    def items(self):
-        return self.latest_check('pension_type')
+    def items(self, year=None):
+        return self.latest_check(field='pension_type', year=year)

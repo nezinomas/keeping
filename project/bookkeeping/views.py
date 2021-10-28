@@ -184,6 +184,47 @@ class Summary(IndexMixin):
         return context
 
 
+class SummarySavings(IndexMixin):
+    template_name = 'bookkeeping/summary_savings.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        qs = SavingBalance.objects.sum_by_type()
+
+        records = qs.count()
+        context['records'] = records
+
+        if not records or records < 1:
+            return context
+
+        def chart_data(qs):
+            items = {'categories': [], 'invested': [], 'profit': []}
+
+            for x in qs:
+                _y = x['year']
+                _i = x['invested']
+                _p = x['profit']
+
+                if _y > datetime.now().year:
+                    continue
+
+                if _i or _p:
+                    items['categories'].append(_y)
+                    items['invested'].append(_i)
+                    items['profit'].append(_p)
+
+            return items
+
+        context['funds'] = chart_data(qs.filter(type='funds'))
+        context['shares'] = chart_data(qs.filter(type='shares'))
+        context['pensions'] = chart_data(qs.filter(type='pensions'))
+        context['pensions2'] = chart_data(PensionBalance.objects.sum_by_year())
+        context['all'] = chart_data(SavingBalance.objects.sum_by_year())
+
+        return context
+
+
 class ExpandDayExpenses(IndexMixin):
     def get(self, request, *args, **kwargs):
         try:

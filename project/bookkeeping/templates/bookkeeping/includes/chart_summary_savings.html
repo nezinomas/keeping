@@ -1,0 +1,130 @@
+{% load i18n %}
+
+<div id="container-{{ title|slugify }}-summary"></div>
+
+<script>
+    $(function () {
+        var categoryLabels = {{ items.categories|safe }};
+
+    Highcharts.setOptions({
+        lang: {
+            thousandsSep: '.',
+            decimalPoint: ',',
+        }
+    });
+    Highcharts.chart('container-{{ title|slugify }}-summary', {
+        chart: {
+            type: 'column',
+            spacingRight: 25,
+        },
+        title: {
+            text: '{{ title }}',
+            style: {
+                fontSize: '16px',
+                fontFamily: 'Calibri, Verdana',
+                fontWeight: 'bold',
+            },
+        },
+        xAxis: {
+            categories: categoryLabels,
+            lineColor: '#000',
+            lineWidth: 2,
+            labels: {
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+            },
+        },
+        yAxis: {
+            title: {
+                text: ''
+            },
+            labels: {
+                enabled: true,
+                formatter: function () {
+                    if (this.value >= 100) return Highcharts.numberFormat(this.value / 1000, 1) + "k";
+                    return Highcharts.numberFormat(this.value, 0);
+                },
+                style: {
+                    fontSize: '10px',
+                    fontFamily: 'Calibri, Verdana',
+                },
+            },
+            stackLabels: {
+                enabled: true,
+                style: {
+                    fontWeight: 'bold',
+                    textOutline: false,
+                },
+                formatter: function () {
+                    return `${Highcharts.numberFormat(this.total, 0)}`
+                },
+                verticalAlign: 'top'
+            }
+        },
+        legend: {
+            layout: 'horizontal',
+            align: 'right',
+            verticalAlign: 'top',
+            floating: true,
+            borderWidth: 0,
+            x: -10,
+            y: -5,
+        },
+        tooltip: {
+            pointFormat: '{point.y:,.0f}',
+            formatter: function () {
+                return '<b>' + this.x + '</b><br/>' +
+                    `${this.series.name}: ${Highcharts.numberFormat(this.point.y, 0)}€<br/>` +
+                    `Total: ${Highcharts.numberFormat(this.point.stackTotal, 0)}€`;
+            }
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal',
+            },
+        },
+        series: [
+        {
+            name: '{% translate "Profit" %}',
+            data: {{ items.profit|safe }},
+            color: 'rgba(84,130,53,0.5)',
+            borderColor: '#548235',
+            borderWidth: '0.5',
+            dataLabels: {
+                enabled: true,
+                verticalAlign: 'top',
+                y: -4,
+                formatter: function () {
+                    return `${Highcharts.numberFormat(this.y, 0)}`
+                },
+                style: {
+                    fontWeight: 'bold',
+                    textOutline: false,
+                    color: '#548235'
+                },
+            }
+        }, {
+            name: '{% translate "Invested" %}',
+            data: {{ items.invested|safe }},
+            color: 'rgba(222,176,40,0.5)',
+            borderColor: '#bf8f00',
+            borderWidth: '0.5',
+            dataLabels: {
+                enabled: true,
+                verticalAlign: 'top',
+                y: -4,
+                formatter: function () {
+                    return `${Highcharts.numberFormat(this.y, 0)}`
+                },
+                style: {
+                    fontWeight: 'bold',
+                    textOutline: false,
+                    color: '#bf8f00'
+                },
+            }
+        }]
+    });
+    });
+</script>
