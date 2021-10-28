@@ -792,3 +792,19 @@ def test_view_summary_one_year_data(client_logged):
     actual = response.content.decode('utf-8')
 
     assert 'Trūksta duomenų. Reikia bent dviejų metų duomenų.' in actual
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                         Savings Summary
+# ---------------------------------------------------------------------------------------
+def test_view_summary_savings_func():
+    view = resolve('/summary/savings/')
+
+    assert views.SummarySavings == view.func.view_class
+
+
+def test_view_summary_savings_200(client_logged):
+    url = reverse('bookkeeping:summary_savings')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
