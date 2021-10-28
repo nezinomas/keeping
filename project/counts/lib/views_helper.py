@@ -167,7 +167,7 @@ class RenderContext():
     def context_to_reload(self, year: int, **kwargs) -> Dict[str, str]:
         calendar_data = self._stats.chart_calendar()
         w_title = _('Weekdays, %(year)s year') % ({'year': year})
-        m_title = _('Months, %(year)s metai') % ({'year': year})
+        m_title = _('Months, %(year)s year') % ({'year': year})
 
         context = {
             'tab': 'index',
