@@ -59,7 +59,7 @@
                 formatter: function () {
                     var sum = 0;
                     var serries = this.axis.series;
-                    for (i in serries) {
+                    for (i in [1,2]) {
                         sum += serries[i].yData[this.x];
                     }
                     if (this.isNegative) {
@@ -86,7 +86,7 @@
             formatter: function () {
                 var sum = 0;
                 var series = this.series.chart.series;
-                for (i in series) {
+                for (i in [1,2]) {
                     sum += series[i].yData[this.point.x];
                 }
                 return '<b>' + this.x + '</b><br/>' +
