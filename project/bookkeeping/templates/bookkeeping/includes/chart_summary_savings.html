@@ -139,6 +139,16 @@
                 },
             }
         }]
-    });
-    });
+    }, function (chartObj) {
+            var series = chartObj.series[0];
+            $.each(series.data, function (i, point) {
+                 if (point.negative) {
+                    var c = '#c0504d';
+                    point.color = c; // + tooltip border color
+                    point.graphic.css({stroke: c, color: 'rgba(192,80,77,0.5)'})
+                    point.dataLabel.css({ color: c });
+                }
+            });
+        });
+});
 </script>
