@@ -35,7 +35,7 @@ class ContextMixin():
         return Count.objects.sum_by_day(year=self.get_year())
 
     def get_context_data(self, **kwargs):
-        obj = get_object(kwargs)
+        obj = get_object(self.kwargs)
         year = self.get_year()
         qs = self.get_qs()
 
