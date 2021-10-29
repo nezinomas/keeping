@@ -1,4 +1,6 @@
 {% load get_item %}
+% load i18n %}
+
 <div id="chart_m{{ forloop.counter }}_container"></div>
 <script>
     $(function () {
@@ -52,8 +54,8 @@
             formatter: function () {
                 if (this.y) {
                     var rtn = '';
-                    rtn += 'Kiek: <b>' + this.y + '</b><br><br>';
-                    rtn += 'Tarpas: <b>' + this.points[0].point.gap + '</b>';
+                    rtn += '{% translate "How many" %}: <b>' + this.y + '</b><br><br>';
+                    rtn += '{% translate "Gap" %}: <b>' + this.points[0].point.gap + '</b>';
                     return rtn;
                 }
                 else { return false; }
@@ -66,7 +68,7 @@
             }
         },
         series: [{
-            name: 'Kiekis',
+            name: '{% translate "Quantity" %}',
             data: {{ data|get_list_val:parent|safe }},
             color: 'rgba({{ chart_column_color }}, 0.65)',
             borderColor: 'rgba({{ chart_column_color }}, 1)',

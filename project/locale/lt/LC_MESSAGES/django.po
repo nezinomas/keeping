@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-28 15:34+0300\n"
-"PO-Revision-Date: 2021-10-28 15:34+0300\n"
+"POT-Creation-Date: 2021-10-28 16:26+0300\n"
+"PO-Revision-Date: 2021-10-28 16:26+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -132,7 +132,7 @@ msgstr "Metų balansas"
 
 #: .\project\bookkeeping\lib\views_helpers.py:394
 #: .\project\bookkeeping\templates\bookkeeping\summary_savings.html:12
-#: .\project\bookkeeping\templates\bookkeeping\summary_savings.html:27
+#: .\project\bookkeeping\templates\bookkeeping\summary_savings.html:30
 #: .\project\savings\models.py:17
 #: .\project\savings\templates\savings\includes\savings_type_list.html:7
 #: .\project\savings\templates\savings\index.html:18
@@ -141,7 +141,8 @@ msgstr "Fondai"
 
 #: .\project\bookkeeping\lib\views_helpers.py:431
 #: .\project\bookkeeping\templates\bookkeeping\summary_savings.html:21
-#: .\project\bookkeeping\templates\bookkeeping\summary_savings.html:27
+#: .\project\bookkeeping\templates\bookkeeping\summary_savings.html:24
+#: .\project\bookkeeping\templates\bookkeeping\summary_savings.html:30
 #: .\project\pensions\templates\pensions\includes\pensions_type_list.html:7
 #: .\project\savings\models.py:18
 msgid "Pensions"
@@ -237,12 +238,12 @@ msgstr "Pajamos/Išlaidos"
 msgid "Average salary"
 msgstr "Vidutinis atlyginimas"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_savings.html:89
+#: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_savings.html:90
 #: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:10
 msgid "Profit"
 msgstr "Pelnas"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_savings.html:108
+#: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_savings.html:109
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:19
 msgid "Invested"
 msgstr "Investuota"
@@ -438,7 +439,7 @@ msgid "Show other chart"
 msgstr "Rodyti kitą grafiką"
 
 #: .\project\bookkeeping\templates\bookkeeping\summary_savings.html:15
-#: .\project\bookkeeping\templates\bookkeeping\summary_savings.html:27
+#: .\project\bookkeeping\templates\bookkeeping\summary_savings.html:30
 #: .\project\savings\models.py:16
 msgid "Shares"
 msgstr "Akcijos"
@@ -507,7 +508,9 @@ msgstr "Baigta skaityti negali būti anksčiau nei pradėta skaityti"
 msgid "Year"
 msgstr "Metai"
 
-#: .\project\books\forms.py:126 .\project\expenses\forms.py:71
+#: .\project\books\forms.py:126
+#: .\project\counts\templates\counts\includes\chart_month.html:57
+#: .\project\expenses\forms.py:71
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:15
 msgid "How many"
 msgstr "Kiek"
@@ -819,6 +822,7 @@ msgstr "Data"
 
 #: .\project\counts\forms.py:39
 #: .\project\counts\templates\counts\includes\chart_calendar.html:118
+#: .\project\counts\templates\counts\includes\chart_month.html:71
 #: .\project\counts\templates\counts\includes\counts_list.html:9
 #: .\project\counts\templates\counts\includes\info_row.html:5
 #: .\project\drinks\forms.py:77
@@ -847,7 +851,7 @@ msgstr "Savaitės dienos, %(year)s metai"
 
 #: .\project\counts\lib\views_helper.py:170
 #, python-format
-msgid "Months, %(year)s metai"
+msgid "Months, %(year)s year"
 msgstr "Mėnesiai, %(year)s metai"
 
 #: .\project\counts\templates\counts\counts_empty.html:11
@@ -855,6 +859,7 @@ msgid "You have no counters."
 msgstr "Jūs neturite skaitiklių."
 
 #: .\project\counts\templates\counts\includes\chart_calendar.html:117
+#: .\project\counts\templates\counts\includes\chart_month.html:58
 msgid "Gap"
 msgstr "Tarpas"
 

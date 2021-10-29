@@ -35,7 +35,7 @@ class ContextMixin():
         return Count.objects.sum_by_day(year=self.get_year())
 
     def get_context_data(self, **kwargs):
-        obj = get_object(kwargs)
+        obj = get_object(self.kwargs)
         year = self.get_year()
         qs = self.get_qs()
 
@@ -167,7 +167,7 @@ class RenderContext():
     def context_to_reload(self, year: int, **kwargs) -> Dict[str, str]:
         calendar_data = self._stats.chart_calendar()
         w_title = _('Weekdays, %(year)s year') % ({'year': year})
-        m_title = _('Months, %(year)s metai') % ({'year': year})
+        m_title = _('Months, %(year)s year') % ({'year': year})
 
         context = {
             'tab': 'index',
