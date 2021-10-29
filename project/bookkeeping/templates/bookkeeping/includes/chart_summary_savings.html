@@ -94,7 +94,7 @@
                 }
                 return '<b>' + this.x + '</b><br/>' +
                     `${this.series.name}: ${Highcharts.numberFormat(this.point.y, 0)}€<br/>` +
-                    `Total: ${Highcharts.numberFormat(sum, 0)}€`;
+                    `{% translate "Total" %}: ${Highcharts.numberFormat(sum, 0)}€`;
             }
         },
         plotOptions: {
