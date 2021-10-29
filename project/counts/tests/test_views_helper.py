@@ -130,7 +130,9 @@ def test_context_mixin_context(mck, _rf):
         pass
 
     view = setup_view(Dummy(), _rf)
-    ctx = view.get_context_data(**{'count_type': obj.slug})
+    view.kwargs['count_type'] = obj.slug
+
+    ctx = view.get_context_data()
 
     assert ctx['count_type_object'].pk == obj.pk
     assert ctx['count_type_object'].slug == obj.slug
