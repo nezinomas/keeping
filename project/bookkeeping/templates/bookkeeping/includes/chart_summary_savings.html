@@ -58,7 +58,17 @@
                     textOutline: false,
                 },
                 formatter: function () {
-                    return `${Highcharts.numberFormat(this.total, 0)}`
+                    var sum = 0;
+                    var serries = this.axis.series;
+                    for (i in serries) {
+                        sum += serries[i].yData[this.x];
+                    }
+                    if (this.isNegative) {
+                        return '';
+                    } else {
+                        return `${Highcharts.numberFormat(sum, 0)}`
+
+                    }
                 },
                 verticalAlign: 'top'
             }
@@ -75,9 +85,17 @@
         tooltip: {
             pointFormat: '{point.y:,.0f}',
             formatter: function () {
+                var sum = 0;
+                var series = this.series.chart.series;
+                console.log(series);
+                for (i in series) {
+                    console.log(series[i])
+                    console.log(this.point.x)
+                    sum += series[i].yData[this.point.x];
+                }
                 return '<b>' + this.x + '</b><br/>' +
                     `${this.series.name}: ${Highcharts.numberFormat(this.point.y, 0)}€<br/>` +
-                    `Total: ${Highcharts.numberFormat(this.point.stackTotal, 0)}€`;
+                    `Total: ${Highcharts.numberFormat(sum, 0)}€`;
             }
         },
         plotOptions: {
