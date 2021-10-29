@@ -86,10 +86,7 @@
             formatter: function () {
                 var sum = 0;
                 var series = this.series.chart.series;
-                console.log(series);
                 for (i in series) {
-                    console.log(series[i])
-                    console.log(this.point.x)
                     sum += series[i].yData[this.point.x];
                 }
                 return '<b>' + this.x + '</b><br/>' +
