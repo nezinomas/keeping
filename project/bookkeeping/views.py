@@ -20,6 +20,7 @@ from ..pensions.models import PensionBalance, PensionType
 from ..savings.models import Saving, SavingBalance, SavingType
 from .forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
 from .lib import views_helpers as H
+from .lib.summary_view_helper import chart_data
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 
@@ -197,24 +198,6 @@ class SummarySavings(IndexMixin):
 
         if not records or records < 1:
             return context
-
-        def chart_data(qs):
-            items = {'categories': [], 'invested': [], 'profit': []}
-
-            for x in qs:
-                _y = x['year']
-                _i = x['invested']
-                _p = x['profit']
-
-                if _y > datetime.now().year:
-                    continue
-
-                if _i or _p:
-                    items['categories'].append(_y)
-                    items['invested'].append(_i)
-                    items['profit'].append(_p)
-
-            return items
 
         context['funds'] = chart_data(qs.filter(type='funds'))
         context['shares'] = chart_data(qs.filter(type='shares'))
