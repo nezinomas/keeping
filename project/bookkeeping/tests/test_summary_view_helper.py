@@ -50,6 +50,18 @@ def test_chart_data_5(_a):
     assert actual == {'categories': [2000, 2001], 'invested': [1.0, 2.0], 'profit': [0.1, 0.2]}
 
 
+def test_chart_data_6():
+    actual = H.chart_data([])
+
+    assert actual == {'categories': [], 'invested': [], 'profit': []}
+
+
+def test_chart_data_7():
+    actual = H.chart_data('x')
+
+    assert actual == {'categories': [], 'invested': [], 'profit': []}
+
+
 @freeze_time('2000-1-1')
 def test_chart_data_4(_a, _b):
     actual = H.chart_data(_a, _b)

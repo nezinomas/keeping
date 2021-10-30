@@ -1,40 +1,34 @@
 from datetime import datetime
 
+from django.db.models.query import QuerySet
+
 
 def chart_data(*args):
-    cnt = 0
-    if args:
-        cnt = len(args[0])
-
-    items = {'categories': cnt * [0], 'invested': cnt * [0], 'profit': cnt * [0]}
+    items = {'categories': [], 'invested': [], 'profit': []}
 
     for arr in args:
-        if not arr:
+        if isinstance(arr, QuerySet):
+            arr = list(arr)
+
+        if not arr or not isinstance(arr, list):
             continue
 
-        for i in range(0, cnt):
-            items['categories'][i] = arr[i]['year']
-            items['invested'][i] += arr[i]['invested']
-            items['profit'][i] += arr[i]['profit']
+        for i in range(0, len(args[0])):
+            _y = arr[i]['year']
+            _i= arr[i]['invested']
+            _p = arr[i]['profit']
 
-    rm = []
-    for i in range(0, cnt):
-        _y = items['categories'][i]
-        _i = items['invested'][i]
-        _p = items['profit'][i]
+            if _y > datetime.now().year:
+                continue
 
-        if not _i and not _p:
-            rm.append(i)
-
-        if _y > datetime.now().year:
-            rm.append(i)
-
-    rm = list(set(rm)) # remove dublicate values
-    rm.sort(reverse=True) # sort desc
-
-    for i in rm:
-        items['categories'].pop(i)
-        items['invested'].pop(i)
-        items['profit'].pop(i)
+            if _i or _p:
+                if _y not in items['categories']:
+                    items['categories'].append(_y)
+                    items['invested'].append(_i)
+                    items['profit'].append(_p)
+                else:
+                    ix = items['categories'].index(_y)  # category index
+                    items['invested'][ix] += _i
+                    items['profit'][ix] += _p
 
     return items
