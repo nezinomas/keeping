@@ -9,6 +9,9 @@ def chart_data(*args):
     items = {'categories': cnt * [0], 'invested': cnt * [0], 'profit': cnt * [0]}
 
     for arr in args:
+        if not arr:
+            continue
+
         for i in range(0, cnt):
             items['categories'][i] = arr[i]['year']
             items['invested'][i] += arr[i]['invested']
