@@ -206,7 +206,7 @@ class SummarySavings(IndexMixin):
         context['funds'] = chart_data(funds)
         context['shares'] = chart_data(shares)
         context['funds_shares'] = chart_data(funds, shares)
-        context['pensions'] = chart_data(pensions3)
+        context['pensions3'] = chart_data(pensions3)
         context['pensions2'] = chart_data(PensionBalance.objects.sum_by_year())
         context['all'] = chart_data(SavingBalance.objects.sum_by_year())
 
