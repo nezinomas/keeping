@@ -199,9 +199,14 @@ class SummarySavings(IndexMixin):
         if not records or records < 1:
             return context
 
-        context['funds'] = chart_data(qs.filter(type='funds'))
-        context['shares'] = chart_data(qs.filter(type='shares'))
-        context['pensions'] = chart_data(qs.filter(type='pensions'))
+        funds = qs.filter(type='funds')
+        shares = qs.filter(type='shares')
+        pensions3 = qs.filter(type='pensions')
+
+        context['funds'] = chart_data(funds)
+        context['shares'] = chart_data(shares)
+        context['funds_shares'] = chart_data(funds, shares)
+        context['pensions'] = chart_data(pensions3)
         context['pensions2'] = chart_data(PensionBalance.objects.sum_by_year())
         context['all'] = chart_data(SavingBalance.objects.sum_by_year())
 
