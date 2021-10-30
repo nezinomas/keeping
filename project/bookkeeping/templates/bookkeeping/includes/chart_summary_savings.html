@@ -15,7 +15,6 @@
     Highcharts.chart('container-{{ title|slugify }}-summary', {
         chart: {
             type: 'column',
-            spacingRight: 25,
         },
         title: {
             text: '{{ title }}',
@@ -58,7 +57,16 @@
                     textOutline: false,
                 },
                 formatter: function () {
-                    return `${Highcharts.numberFormat(this.total, 0)}`
+                    var sum = 0;
+                    var serries = this.axis.series;
+                    for (i in [1,2]) {
+                        sum += serries[i].yData[this.x];
+                    }
+                    if (this.isNegative) {
+                        return '';
+                    } else {
+                        return `${Highcharts.numberFormat(sum, 0)}`
+                    }
                 },
                 verticalAlign: 'top'
             }
@@ -75,9 +83,14 @@
         tooltip: {
             pointFormat: '{point.y:,.0f}',
             formatter: function () {
+                var sum = 0;
+                var series = this.series.chart.series;
+                for (i in [1,2]) {
+                    sum += series[i].yData[this.point.x];
+                }
                 return '<b>' + this.x + '</b><br/>' +
                     `${this.series.name}: ${Highcharts.numberFormat(this.point.y, 0)}€<br/>` +
-                    `Total: ${Highcharts.numberFormat(this.point.stackTotal, 0)}€`;
+                    `{% translate "Total" %}: ${Highcharts.numberFormat(sum, 0)}€`;
             }
         },
         plotOptions: {
@@ -94,8 +107,8 @@
             borderWidth: '0.5',
             dataLabels: {
                 enabled: true,
-                verticalAlign: 'top',
-                y: -4,
+                // verticalAlign: 'top',
+                // y: -4,
                 formatter: function () {
                     return `${Highcharts.numberFormat(this.y, 0)}`
                 },
@@ -113,8 +126,8 @@
             borderWidth: '0.5',
             dataLabels: {
                 enabled: true,
-                verticalAlign: 'top',
-                y: -4,
+                // verticalAlign: 'top',
+                // y: -4,
                 formatter: function () {
                     return `${Highcharts.numberFormat(this.y, 0)}`
                 },
@@ -125,6 +138,16 @@
                 },
             }
         }]
-    });
-    });
+    }, function (chartObj) {
+            var series = chartObj.series[0];
+            $.each(series.data, function (i, point) {
+                 if (point.negative) {
+                    var c = '#c0504d';
+                    point.color = c; // + tooltip border color
+                    point.graphic.css({stroke: c, color: 'rgba(192,80,77,0.5)'})
+                    point.dataLabel.css({ color: c });
+                }
+            });
+        });
+});
 </script>
