@@ -4,7 +4,7 @@ from django.db.models.query import QuerySet
 
 
 def chart_data(*args):
-    items = {'categories': [], 'invested': [], 'profit': []}
+    items = {'categories': [], 'invested': [], 'profit': [], 'total': []}
 
     for arr in args:
         if isinstance(arr, QuerySet):
@@ -17,6 +17,7 @@ def chart_data(*args):
             _y = arr[i]['year']
             _i= arr[i]['invested']
             _p = arr[i]['profit']
+            _t = _i + _p
 
             if _y > datetime.now().year:
                 continue
@@ -26,9 +27,11 @@ def chart_data(*args):
                     items['categories'].append(_y)
                     items['invested'].append(_i)
                     items['profit'].append(_p)
+                    items['total'].append(_t)
                 else:
                     ix = items['categories'].index(_y)  # category index
                     items['invested'][ix] += _i
                     items['profit'][ix] += _p
+                    items['total'][ix] += _t
 
     return items

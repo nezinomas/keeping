@@ -28,45 +28,45 @@ def _b():
 def test_chart_data_1(_a):
     actual = H.chart_data(_a)
 
-    assert actual == {'categories': [2000, 2001], 'invested': [1.0, 2.0], 'profit': [0.1, 0.2]}
+    assert actual == {'categories': [2000, 2001], 'invested': [1.0, 2.0], 'profit': [0.1, 0.2], 'total': [1.1, 2.2]}
 
 
 @freeze_time('2000-1-1')
 def test_chart_data_2(_a):
     actual = H.chart_data(_a)
 
-    assert actual == {'categories': [2000], 'invested': [1.0], 'profit': [0.1]}
+    assert actual == {'categories': [2000], 'invested': [1.0], 'profit': [0.1], 'total': [1.1]}
 
 
 def test_chart_data_3(_a, _b):
     actual = H.chart_data(_a, _b)
 
-    assert actual == {'categories': [2000, 2001], 'invested': [5.0, 7.0], 'profit': [0.5, 0.7]}
+    assert actual == {'categories': [2000, 2001], 'invested': [5.0, 7.0], 'profit': [0.5, 0.7], 'total': [5.5, 7.7]}
 
 
 def test_chart_data_5(_a):
     actual = H.chart_data(_a, [])
 
-    assert actual == {'categories': [2000, 2001], 'invested': [1.0, 2.0], 'profit': [0.1, 0.2]}
+    assert actual == {'categories': [2000, 2001], 'invested': [1.0, 2.0], 'profit': [0.1, 0.2], 'total': [1.1, 2.2]}
 
 
 def test_chart_data_6():
     actual = H.chart_data([])
 
-    assert actual == {'categories': [], 'invested': [], 'profit': []}
+    assert actual == {'categories': [], 'invested': [], 'profit': [], 'total': []}
 
 
 def test_chart_data_7():
     actual = H.chart_data('x')
 
-    assert actual == {'categories': [], 'invested': [], 'profit': []}
+    assert actual == {'categories': [], 'invested': [], 'profit': [], 'total': []}
 
 
 @freeze_time('2000-1-1')
 def test_chart_data_4(_a, _b):
     actual = H.chart_data(_a, _b)
 
-    assert actual == {'categories': [2000], 'invested': [5.0], 'profit': [0.5]}
+    assert actual == {'categories': [2000], 'invested': [5.0], 'profit': [0.5], 'total': [5.5]}
 
 
 @pytest.mark.django_db
@@ -78,4 +78,4 @@ def test_chart_data_db1():
     qs = SavingBalance.objects.sum_by_type()
     actual = H.chart_data(qs.filter(type='funds'))
 
-    assert actual == {'categories': [2000, 2001], 'invested': [1.0, 2.0], 'profit': [0.1, 0.2]}
+    assert actual == {'categories': [2000, 2001], 'invested': [1.0, 2.0], 'profit': [0.1, 0.2], 'total': [1.1, 2.2]}
