@@ -25,6 +25,24 @@
                 fontWeight: 'bold',
             },
         },
+        annotations: [{
+            draggable: '',
+            labelOptions: {
+                // verticalAlign: 'top',
+            },
+            labels: [
+                {% for i in items.total %}
+                {
+                    point: {
+                        xAxis: 0,
+                        yAxis: 0,
+                        x: {{ forloop.counter0 }},
+                        y: '{{ i|stringformat:"f" }}'
+                    },
+                    text: '{{ i|floatformat:0}}'
+                },{% endfor %}
+            ]
+        }],
         xAxis: {
             categories: categoryLabels,
             lineColor: '#000',
@@ -37,6 +55,7 @@
             },
         },
         yAxis: {
+            max: {{ items.max|safe }},
             title: {
                 text: ''
             },
@@ -52,24 +71,24 @@
                 },
             },
             stackLabels: {
-                enabled: true,
-                style: {
-                    fontWeight: 'bold',
-                    textOutline: false,
-                },
-                formatter: function () {
-                    var sum = 0;
-                    var serries = this.axis.series;
-                    for (i in [1,2]) {
-                        sum += serries[i].yData[this.x];
-                    }
-                    if (this.isNegative) {
-                        return '';
-                    } else {
-                        return `${Highcharts.numberFormat(sum, 0)}`
-                    }
-                },
-                verticalAlign: 'top'
+                enabled: false,
+                // style: {
+                //     fontWeight: 'bold',
+                //     textOutline: false,
+                // },
+                // formatter: function () {
+                //     var sum = 0;
+                //     var serries = this.axis.series;
+                //     for (i in [1,2]) {
+                //         sum += serries[i].yData[this.x];
+                //     }
+                //     if (this.isNegative) {
+                //         return '';
+                //     } else {
+                //         return `${Highcharts.numberFormat(sum, 0)}`
+                //     }
+                // },
+                // verticalAlign: 'top'
             }
         },
         legend: {
@@ -108,10 +127,12 @@
             borderWidth: '0.5',
             dataLabels: {
                 enabled: true,
-                // verticalAlign: 'top',
-                // y: -4,
                 formatter: function () {
-                    return `${Highcharts.numberFormat(this.y, 0)}`
+                    if (this.y == 0) {
+                        return '';
+                    } else {
+                        return `${Highcharts.numberFormat(this.y, 0)}`;
+                    }
                 },
                 style: {
                     fontWeight: 'bold',
@@ -127,8 +148,7 @@
             borderWidth: '0.5',
             dataLabels: {
                 enabled: true,
-                // verticalAlign: 'top',
-                // y: -4,
+                verticalAlign: 'top',
                 formatter: function () {
                     return `${Highcharts.numberFormat(this.y, 0)}`
                 },
@@ -141,6 +161,7 @@
         }]
     }, function (chartObj) {
             var series = chartObj.series[0];
+
             $.each(series.data, function (i, point) {
                  if (point.negative) {
                     var c = '#c0504d';
