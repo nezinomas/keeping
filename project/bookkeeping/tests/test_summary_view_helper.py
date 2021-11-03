@@ -52,7 +52,6 @@ def test_chart_data_3(_a, _b):
     assert actual['profit'] == [0.5, 0.7]
     assert actual['total'] == [5.5, 7.7]
 
-
 def test_chart_data_5(_a):
     actual = H.chart_data(_a, [])
 
@@ -88,6 +87,18 @@ def test_chart_data_4(_a, _b):
     assert actual['invested'] == [5.0]
     assert actual['profit'] == [0.5]
     assert actual['total'] == [5.5]
+
+
+def test_chart_data_max_value(_a, _b):
+    actual = H.chart_data(_a, _b)
+
+    assert actual['max'] == 7.7
+
+
+def test_chart_data_max_value_empty():
+    actual = H.chart_data([])
+
+    assert actual['max'] == 0
 
 
 @pytest.mark.django_db

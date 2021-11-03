@@ -4,7 +4,7 @@ from django.db.models.query import QuerySet
 
 
 def chart_data(*args):
-    items = {'categories': [], 'invested': [], 'profit': [], 'total': []}
+    items = {'categories': [], 'invested': [], 'profit': [], 'total': [], 'max': 0}
 
     for arr in args:
         if isinstance(arr, QuerySet):
@@ -33,5 +33,9 @@ def chart_data(*args):
                     items['invested'][ix] += _i
                     items['profit'][ix] += _p
                     items['total'][ix] += _t
+
+    # max value
+    if items['profit'] or items['invested']:
+        items['max'] = (max(items['profit']) + max(items['invested']))
 
     return items
