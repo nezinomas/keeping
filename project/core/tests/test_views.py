@@ -11,7 +11,7 @@ from ...accounts.factories import AccountBalance, AccountFactory
 from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from ...pensions.factories import PensionBalance, PensionFactory
-from ...savings.factories import SavingBalance, SavingFactory
+from ...savings.factories import SavingBalance, SavingFactory, SavingTypeFactory
 from .. import views
 from .utils import setup_view
 
@@ -206,17 +206,35 @@ def test_view_regenerate_balances_current_year_func_called(mck_pension,
 def test_accounts_method():
     obj = AccountFactory()
 
-    actual = views.accounts(year=1999)
+    actual = views.accounts()
 
-    assert actual == {'Account1': obj.pk}
+    assert actual == {'closed': {}, 'Account1': obj.pk}
+
+
+def test_accounts_method_with_closed():
+    obj1 = AccountFactory()
+    obj2 = AccountFactory(title='XXX', closed=66)
+
+    actual = views.accounts()
+
+    assert actual == {'closed': {'XXX': 66}, 'Account1': obj1.pk, 'XXX': obj2.pk}
 
 
 def test_savings_method():
-    obj = SavingFactory()
+    obj = SavingTypeFactory()
 
-    actual = views.savings(year=1999)
+    actual = views.savings()
 
-    assert actual == {'Savings': obj.pk}
+    assert actual == {'closed': dict(), 'Savings': obj.pk}
+
+
+def test_savings_method_with_closed():
+    obj1 = SavingFactory()
+    obj2 = SavingTypeFactory(title='x', closed=66)
+
+    actual = views.savings()
+
+    assert actual == {'closed': {'x': 66}, 'Savings': obj1.pk, 'x': obj2.pk}
 
 
 def test_pensions_method():
@@ -225,3 +243,27 @@ def test_pensions_method():
     actual = views.pensions()
 
     assert actual == {'PensionType': obj.pk}
+
+
+def test_filter_types_1():
+    arr = {'s1': 1, 's2': 2, 'closed': {'s1': 99}}
+
+    actual = views.filter_types(arr, 99)
+
+    assert actual == {'s2': 2}
+
+
+def test_filter_types_2():
+    arr = {'s1': 1, 's2': 2, 'closed': {}}
+
+    actual = views.filter_types(arr, 99)
+
+    assert actual == {'s1': 1, 's2': 2}
+
+
+def test_filter_types_preserve_orginal_arr():
+    arr = {'s1': 1, 's2': 2, 'closed': {'s1': 99}}
+
+    views.filter_types(arr, 99)
+
+    assert arr == {'s1': 1, 's2': 2, 'closed': {'s1': 99}}
