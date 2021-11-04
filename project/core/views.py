@@ -1,3 +1,4 @@
+from datetime import datetime
 from types import SimpleNamespace
 
 from django.contrib.auth.decorators import login_required
@@ -60,6 +61,9 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
         PensionBalance.objects.filter(pension_type__journal=journal).delete()
 
         for year in _years:
+            if year > datetime.now().year:
+                continue
+
             SignalBase.accounts(dummy, dummy, year, _accounts)
             SignalBase.savings(dummy, dummy, year, _savings)
             SignalBase.pensions(dummy, dummy, year, _pensions)
