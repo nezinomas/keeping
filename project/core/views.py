@@ -93,12 +93,12 @@ class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View)
 
 
 def accounts():
-    qs = Account.objects.items().values('id', 'title')
+    qs = Account.objects.related().values('id', 'title')
     return {x['title']: x['id'] for x in qs}
 
 
 def savings():
-    qs = SavingType.objects.items().values('id', 'title')
+    qs = SavingType.objects.related().values('id', 'title')
     return {x['title']: x['id'] for x in qs}
 
 
