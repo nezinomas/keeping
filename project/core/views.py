@@ -7,10 +7,10 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import View
 
-from ..accounts.models import Account
+from ..accounts.models import Account, AccountBalance
 from ..core.signals import SignalBase
-from ..pensions.models import PensionType
-from ..savings.models import SavingType
+from ..pensions.models import PensionBalance, PensionType
+from ..savings.models import SavingBalance, SavingType
 from .lib.date import years
 from .mixins.views import DispatchAjaxMixin
 from .tests.utils import timer
@@ -45,6 +45,7 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
 
     # @timer
     def get(self, request, *args, **kwargs):
+        journal = request.user.journal
         _years = years()
 
         dummy = SimpleNamespace()
@@ -52,6 +53,11 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
         _accounts = accounts()
         _savings = savings()
         _pensions = pensions()
+
+        # clean balance tables
+        AccountBalance.objects.filter(account__journal=journal).delete()
+        SavingBalance.objects.filter(saving_type__journal=journal).delete()
+        PensionBalance.objects.filter(pension_type__journal=journal).delete()
 
         for year in _years:
             SignalBase.accounts(dummy, dummy, year, _accounts)
@@ -67,7 +73,13 @@ class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View)
     # @timer
     def get(self, request, *args, **kwargs):
         year = request.user.year
+        journal = request.user.journal
         dummy = SimpleNamespace()
+
+        # clean balance tables
+        AccountBalance.objects.filter(account__journal=journal, year=year).delete()
+        SavingBalance.objects.filter(saving_type__journal=journal, year=year).delete()
+        PensionBalance.objects.filter(pension_type__journal=journal, year=year).delete()
 
         SignalBase.accounts(dummy, dummy, year, accounts())
         SignalBase.savings(dummy, dummy, year, savings())
