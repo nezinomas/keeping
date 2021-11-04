@@ -27,11 +27,16 @@ class AccountQuerySet(models.QuerySet):
 
 class AccountBalanceQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_user().journal
+        user = utils.get_user()
+        journal = user.journal
         qs = (
             self
             .select_related('account')
             .filter(account__journal=journal)
+            .filter(
+                Q(account__closed__isnull=True) |
+                Q(account__closed__gte=user.year)
+            )
         )
         return qs
 
