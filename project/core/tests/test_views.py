@@ -246,9 +246,9 @@ def test_pensions_method():
 
 
 def test_filter_types_1():
-    arr = {'s1': 1, 's2': 2, 'closed': {'s1': 99}}
+    arr = {'s1': 1, 's2': 2, 'closed': {'s1': 66}}
 
-    actual = views.filter_types(arr, 99)
+    actual = views.filter_types(arr, 67)
 
     assert actual == {'s2': 2}
 
@@ -256,7 +256,7 @@ def test_filter_types_1():
 def test_filter_types_2():
     arr = {'s1': 1, 's2': 2, 'closed': {}}
 
-    actual = views.filter_types(arr, 99)
+    actual = views.filter_types(arr, 67)
 
     assert actual == {'s1': 1, 's2': 2}
 
@@ -267,3 +267,41 @@ def test_filter_types_preserve_orginal_arr():
     views.filter_types(arr, 99)
 
     assert arr == {'s1': 1, 's2': 2, 'closed': {'s1': 99}}
+
+
+def test_filter_real_values_1():
+    arr = {
+        'closed': {'SEB Gyvybės kaupiamasis': 2019},
+        'SEB Asia ex. Japan Fund': 5,
+        'SEB Concept Biotechnology': 4,
+        'SEB Gyvybės kaupiamasis': 7,
+        'SEB Nordic Equity Fund': 6,
+        'SEB Strategy Growth': 3,
+        'INVL Extremo': 2,
+        'Apple': 10,
+        'MicroSoft': 8,
+        'Tesla': 9
+    }
+
+    actual = views.filter_types(arr, 2020)
+
+    assert 'SEB Gyvybės kaupiamasis' not in actual
+
+
+def test_filter_real_values_2():
+    arr = {
+        'closed': {'SEB Gyvybės kaupiamasis': 2019},
+        'SEB Asia ex. Japan Fund': 5,
+        'SEB Concept Biotechnology': 4,
+        'SEB Gyvybės kaupiamasis': 7,
+        'SEB Nordic Equity Fund': 6,
+        'SEB Strategy Growth': 3,
+        'INVL Extremo': 2,
+        'Apple': 10,
+        'MicroSoft': 8,
+        'Tesla': 9
+    }
+
+    actual = views.filter_types(arr, 2019)
+
+    assert 'SEB Gyvybės kaupiamasis' in actual
