@@ -142,7 +142,11 @@ class Detailed(IndexMixin):
         expenses_types = H.expense_types()
         for title in expenses_types:
             filtered = filter(lambda x: title in x['type_title'], qs)
-            H.detailed_context(context, [*filtered], _('Expenses / %(title)s') % ({'title': title}))
+            H.detailed_context(
+                context=context,
+                data=[*filtered],
+                name=_('Expenses / %(title)s') % ({'title': title})
+            )
 
         return context
 
