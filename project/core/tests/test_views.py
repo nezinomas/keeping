@@ -5,6 +5,8 @@ from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
 
+from project.journals.factories import JournalFactory
+
 from ...accounts.factories import AccountBalance, AccountFactory
 from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
@@ -141,13 +143,12 @@ def test_view_regenerate_balances_all_year(client_logged, get_user):
 
     client_logged.get(url, {'ajax_trigger': 1}, follow=True, **X_Req)
 
-    assert AccountBalance.objects.all().count() == 3
-    assert SavingBalance.objects.all().count() == 3
-    assert PensionBalance.objects.all().count() == 3
+    assert AccountBalance.objects.all().count() == 2
+    assert SavingBalance.objects.all().count() == 2
+    assert PensionBalance.objects.all().count() == 2
 
 
 @freeze_time('2007-01-01')
-@pytest.mark.disable_get_user_patch
 @patch('project.core.views.accounts')
 @patch('project.core.views.savings')
 @patch('project.core.views.pensions')
@@ -158,7 +159,11 @@ def test_view_regenerate_balances_func_called(mck_pension,
                                               mck_saving,
                                               mck_account,
                                               mp, ms, ma,
+                                              get_user,
                                               fake_request):
+
+    fake_request.user = get_user
+    fake_request.user.journal.first_record = date(2006, 1, 1)
 
     class Dummy(views.RegenerateBalances):
         pass
@@ -182,6 +187,8 @@ def test_view_regenerate_balances_current_year_func_called(mck_pension,
                                                            mck_account,
                                                            mp, ms, ma,
                                                            fake_request):
+    fake_request.user.journal = JournalFactory()
+
     class Dummy(views.RegenerateBalancesCurrentYear):
         pass
 
