@@ -47,13 +47,12 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
     # @timer
     def get(self, request, *args, **kwargs):
         journal = request.user.journal
-        _years = years()
-
         dummy = SimpleNamespace()
 
+        _years = years()
+        _pensions = pensions()
         _accounts = accounts()
         _savings = savings()
-        _pensions = pensions()
 
         # clean balance tables
         AccountBalance.objects.filter(account__journal=journal).delete()
@@ -64,8 +63,8 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
             if year > datetime.now().year:
                 continue
 
-            SignalBase.accounts(dummy, dummy, year, _accounts)
-            SignalBase.savings(dummy, dummy, year, _savings)
+            SignalBase.accounts(dummy, dummy, year, filter_types(_accounts, year))
+            SignalBase.savings(dummy, dummy, year, filter_types(_savings, year))
             SignalBase.pensions(dummy, dummy, year, _pensions)
 
         return JsonResponse({'redirect': self.redirect_view})
@@ -85,23 +84,46 @@ class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View)
         SavingBalance.objects.filter(saving_type__journal=journal, year=year).delete()
         PensionBalance.objects.filter(pension_type__journal=journal, year=year).delete()
 
-        SignalBase.accounts(dummy, dummy, year, accounts())
-        SignalBase.savings(dummy, dummy, year, savings())
+        SignalBase.accounts(dummy, dummy, year, filter_types(accounts(), year))
+        SignalBase.savings(dummy, dummy, year, filter_types(savings(), year))
         SignalBase.pensions(dummy, dummy, year, pensions())
 
         return JsonResponse({'redirect': self.redirect_view})
 
 
 def accounts():
-    qs = Account.objects.related().values('id', 'title')
-    return {x['title']: x['id'] for x in qs}
+    qs = Account.objects.related().values('id', 'title', 'closed')
+
+    return _make_arr(qs)
 
 
 def savings():
-    qs = SavingType.objects.related().values('id', 'title')
-    return {x['title']: x['id'] for x in qs}
+    qs = SavingType.objects.related().values('id', 'title', 'closed')
+
+    return _make_arr(qs)
 
 
 def pensions():
     qs = PensionType.objects.items().values('id', 'title')
     return {x['title']: x['id'] for x in qs}
+
+
+def filter_types(arr, year):
+    arr = arr.copy()
+    closed = arr.pop('closed')
+
+    for _type, _year in closed.items():
+        if _year and year > _year:
+            arr.pop(_type)
+
+    return arr
+
+
+def _make_arr(qs):
+    rtn = {'closed': {}}
+    for x in qs:
+        rtn[x['title']] = x['id']
+        if x.get('closed'):
+            rtn['closed'] = {x['title']: x['closed']}
+
+    return rtn

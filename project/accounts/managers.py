@@ -13,14 +13,17 @@ class AccountQuerySet(models.QuerySet):
             .filter(journal=journal)
         )
 
-    def items(self):
-        user = utils.get_user()
+    def items(self, year=None):
+        if year:
+            _year = year
+        else:
+            _year = utils.get_user().year
         return (
             self
             .related()
             .filter(
                 Q(closed__isnull=True) |
-                Q(closed__gte=user.year)
+                Q(closed__gte=_year)
             )
         )
 
@@ -33,10 +36,6 @@ class AccountBalanceQuerySet(models.QuerySet):
             self
             .select_related('account')
             .filter(account__journal=journal)
-            .filter(
-                Q(account__closed__isnull=True) |
-                Q(account__closed__gte=user.year)
-            )
         )
         return qs
 
@@ -46,7 +45,7 @@ class AccountBalanceQuerySet(models.QuerySet):
     def year(self, year: int):
         qs = (
             self
-            .related()
+            .items()
             .filter(year=year)
             .order_by('account__title')
         )
