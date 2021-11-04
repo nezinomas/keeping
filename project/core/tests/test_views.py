@@ -206,7 +206,7 @@ def test_view_regenerate_balances_current_year_func_called(mck_pension,
 def test_accounts_method():
     obj = AccountFactory()
 
-    actual = views.accounts()
+    actual = views.accounts(year=1999)
 
     assert actual == {'Account1': obj.pk}
 
@@ -214,7 +214,7 @@ def test_accounts_method():
 def test_savings_method():
     obj = SavingFactory()
 
-    actual = views.savings()
+    actual = views.savings(year=1999)
 
     assert actual == {'Savings': obj.pk}
 

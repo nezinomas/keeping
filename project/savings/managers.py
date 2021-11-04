@@ -20,14 +20,18 @@ class SavingTypeQuerySet(models.QuerySet):
             .filter(journal=journal)
         )
 
-    def items(self):
-        user = utils.get_user()
+    def items(self, year=None):
+        if year:
+            _year = year
+        else:
+            _year = utils.get_user().year
+
         return (
             self
             .related()
             .filter(
                 Q(closed__isnull=True) |
-                Q(closed__gte=user.year)
+                Q(closed__gte=_year)
             )
         )
 
@@ -207,10 +211,6 @@ class SavingBalanceQuerySet(models.QuerySet):
             self
             .select_related('saving_type')
             .filter(saving_type__journal=journal)
-            .filter(
-                Q(saving_type__closed__isnull=True) |
-                Q(saving_type__closed__gte=user.year)
-            )
         )
         return qs
 
@@ -218,7 +218,7 @@ class SavingBalanceQuerySet(models.QuerySet):
         return self.related()
 
     def year(self, year: int, types=None):
-        qs = self.related().filter(year=year)
+        qs = self.items().filter(year=year)
 
         if types:
             qs = qs.filter(saving_type__type__in=types)

@@ -44,16 +44,12 @@ def set_month(request, month):
 class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
     redirect_view = reverse_lazy('bookkeeping:index')
 
-    # @timer
+    @timer
     def get(self, request, *args, **kwargs):
         journal = request.user.journal
         _years = years()
-
-        dummy = SimpleNamespace()
-
-        _accounts = accounts()
-        _savings = savings()
         _pensions = pensions()
+        dummy = SimpleNamespace()
 
         # clean balance tables
         AccountBalance.objects.filter(account__journal=journal).delete()
@@ -63,6 +59,9 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
         for year in _years:
             if year > datetime.now().year:
                 continue
+
+            _accounts = accounts(year)
+            _savings = savings(year)
 
             SignalBase.accounts(dummy, dummy, year, _accounts)
             SignalBase.savings(dummy, dummy, year, _savings)
@@ -85,20 +84,20 @@ class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View)
         SavingBalance.objects.filter(saving_type__journal=journal, year=year).delete()
         PensionBalance.objects.filter(pension_type__journal=journal, year=year).delete()
 
-        SignalBase.accounts(dummy, dummy, year, accounts())
-        SignalBase.savings(dummy, dummy, year, savings())
+        SignalBase.accounts(dummy, dummy, year, accounts(year))
+        SignalBase.savings(dummy, dummy, year, savings(year))
         SignalBase.pensions(dummy, dummy, year, pensions())
 
         return JsonResponse({'redirect': self.redirect_view})
 
 
-def accounts():
-    qs = Account.objects.related().values('id', 'title')
+def accounts(year):
+    qs = Account.objects.items(year=year).values('id', 'title')
     return {x['title']: x['id'] for x in qs}
 
 
-def savings():
-    qs = SavingType.objects.related().values('id', 'title')
+def savings(year):
+    qs = SavingType.objects.items(year=year).values('id', 'title')
     return {x['title']: x['id'] for x in qs}
 
 
