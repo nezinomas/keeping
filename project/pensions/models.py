@@ -1,15 +1,12 @@
 from decimal import Decimal
-from typing import Any, Dict, List
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import Case, Count, F, Sum, When
 
-from ..core.lib import utils
-from ..core.mixins.queryset_sum import SumMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from . import managers
+
 
 class PensionType(TitleAbstract):
     journal = models.ForeignKey(
