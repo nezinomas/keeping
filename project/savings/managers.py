@@ -201,11 +201,16 @@ class SavingQuerySet(SumMixin, models.QuerySet):
 
 class SavingBalanceQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_user().journal
+        user = utils.get_user()
+        journal = user.journal
         qs = (
             self
             .select_related('saving_type')
             .filter(saving_type__journal=journal)
+            .filter(
+                Q(saving_type__closed__isnull=True) |
+                Q(saving_type__closed__gte=user.year)
+            )
         )
         return qs
 

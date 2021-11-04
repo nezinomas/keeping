@@ -1,3 +1,4 @@
+from datetime import datetime
 from types import SimpleNamespace
 
 from django.contrib.auth.decorators import login_required
@@ -7,10 +8,10 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import View
 
-from ..accounts.models import Account
+from ..accounts.models import Account, AccountBalance
 from ..core.signals import SignalBase
-from ..pensions.models import PensionType
-from ..savings.models import SavingType
+from ..pensions.models import PensionBalance, PensionType
+from ..savings.models import SavingBalance, SavingType
 from .lib.date import years
 from .mixins.views import DispatchAjaxMixin
 from .tests.utils import timer
@@ -45,6 +46,7 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
 
     # @timer
     def get(self, request, *args, **kwargs):
+        journal = request.user.journal
         _years = years()
 
         dummy = SimpleNamespace()
@@ -53,7 +55,15 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
         _savings = savings()
         _pensions = pensions()
 
+        # clean balance tables
+        AccountBalance.objects.filter(account__journal=journal).delete()
+        SavingBalance.objects.filter(saving_type__journal=journal).delete()
+        PensionBalance.objects.filter(pension_type__journal=journal).delete()
+
         for year in _years:
+            if year > datetime.now().year:
+                continue
+
             SignalBase.accounts(dummy, dummy, year, _accounts)
             SignalBase.savings(dummy, dummy, year, _savings)
             SignalBase.pensions(dummy, dummy, year, _pensions)
@@ -67,7 +77,13 @@ class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View)
     # @timer
     def get(self, request, *args, **kwargs):
         year = request.user.year
+        journal = request.user.journal
         dummy = SimpleNamespace()
+
+        # clean balance tables
+        AccountBalance.objects.filter(account__journal=journal, year=year).delete()
+        SavingBalance.objects.filter(saving_type__journal=journal, year=year).delete()
+        PensionBalance.objects.filter(pension_type__journal=journal, year=year).delete()
 
         SignalBase.accounts(dummy, dummy, year, accounts())
         SignalBase.savings(dummy, dummy, year, savings())
@@ -77,12 +93,12 @@ class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View)
 
 
 def accounts():
-    qs = Account.objects.items().values('id', 'title')
+    qs = Account.objects.related().values('id', 'title')
     return {x['title']: x['id'] for x in qs}
 
 
 def savings():
-    qs = SavingType.objects.items().values('id', 'title')
+    qs = SavingType.objects.related().values('id', 'title')
     return {x['title']: x['id'] for x in qs}
 
 
