@@ -44,7 +44,7 @@ def set_month(request, month):
 class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
     redirect_view = reverse_lazy('bookkeeping:index')
 
-    @timer
+    # @timer
     def get(self, request, *args, **kwargs):
         journal = request.user.journal
         dummy = SimpleNamespace()
@@ -109,7 +109,6 @@ def pensions():
 
 
 def filter_types(arr, year):
-    print(f'kas ateina pas filter_types: {arr} year: {year}')
     arr = arr.copy()
     closed = arr.pop('closed')
 
@@ -119,13 +118,12 @@ def filter_types(arr, year):
 
     return arr
 
+
 def _make_arr(qs):
-    print(f'come arr: {[*qs]}')
     rtn = {'closed': {}}
     for x in qs:
         rtn[x['title']] = x['id']
         if x.get('closed'):
             rtn['closed'] = {x['title']: x['closed']}
 
-    print(f'filtered-> {rtn}')
     return rtn
