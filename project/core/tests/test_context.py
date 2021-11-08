@@ -78,16 +78,3 @@ def test_context_months(rf):
 
     assert len(actual['context_months']) == 12
     assert actual['context_months'][0] == date(1000, 1, 1)
-
-
-@pytest.mark.django_db
-def test_count_types(rf):
-    obj = CountTypeFactory(title='X')
-
-    r = rf.get('/fake/')
-
-    actual = context_count_types(r)
-
-    assert 'context_count_types' in actual
-    assert len(actual['context_count_types']) == 1
-    assert actual['context_count_types'][0] == obj

@@ -33,16 +33,6 @@ def context_months(context):
     return {'context_months': year_month_list()}
 
 
-def context_count_types(context):
-    arr = {}
-    try:
-        arr = CountType.objects.related().items()
-    except TypeError:
-        pass
-
-    return {'context_count_types': arr}
-
-
 def context_counts_menu(context):
     menu = None
     file = path.join(settings.MEDIA_ROOT, str(context.user.journal.pk), 'menu.html')
