@@ -8,7 +8,7 @@ from mock import patch
 from ...counts.factories import CountTypeFactory
 from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
-from ..context import context_count_types, context_months, yday, years
+from ..context import context_months, yday, years
 
 
 @freeze_time('2006-01-01')
