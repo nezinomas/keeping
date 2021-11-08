@@ -1,14 +1,12 @@
 import tempfile
-from django.test import override_settings
-from os import path
 
 import pytest
-from django.conf import settings
-from ..factories import CountTypeFactory
+from django.test import override_settings
 from django.urls import reverse
 
+from ..factories import CountTypeFactory
+
 pytestmark = pytest.mark.django_db
-Template = path.join(settings.SITE_ROOT, 'counts/templates/counts/includes/menu.html')
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
