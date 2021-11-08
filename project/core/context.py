@@ -1,4 +1,8 @@
 from datetime import datetime
+from os import path
+
+from django.conf import settings
+from django.utils.safestring import mark_safe
 
 from ..core.lib import utils
 from ..counts.models import CountType
@@ -37,3 +41,15 @@ def context_count_types(context):
         pass
 
     return {'context_count_types': arr}
+
+
+def context_counts_menu(context):
+    menu = None
+    file = path.join(settings.MEDIA_ROOT, str(context.user.journal.pk), 'menu.html')
+
+    if path.exists(file):
+        menu = ''
+        with open(file) as f:
+            menu = f.read()
+
+    return {'counts_menu': mark_safe(menu) }
