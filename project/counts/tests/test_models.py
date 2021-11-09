@@ -1,12 +1,14 @@
+import os
 import tempfile
-
+import shutil
 import pytest
+from django.conf import settings
 from django.test import override_settings
 from django.utils.text import slugify
 from mock import patch
 
 from ..factories import CountFactory, CountTypeFactory
-from ..models import Count, CountType
+from ..models import Count, CountType, _generate_counts_menu
 
 pytestmark = pytest.mark.django_db
 
@@ -111,3 +113,28 @@ def test_count_type_update():
 
     assert Count.objects.count() == 1
     assert Count.objects.first().counter_type == 'yyy'
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                           generate menu
+# ---------------------------------------------------------------------------------------
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+@patch('project.counts.models.render_to_string')
+@patch('builtins.open')
+def test_menu_create_journal_id_folder(open_mock, render_mock, get_user):
+    journal_pk = str(get_user.journal.pk)
+    folder = os.path.join(settings.MEDIA_ROOT, journal_pk)
+
+    # delete journal_pk folder
+    if os.path.isdir(folder):
+        shutil.rmtree(folder)
+
+    assert not os.path.isdir(folder)
+
+    CountTypeFactory()
+
+    assert os.path.isdir(folder)
+    assert render_mock.call_count == 1
+    assert open_mock.call_count == 1
+
+    shutil.rmtree(folder)
