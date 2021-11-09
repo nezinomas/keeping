@@ -80,10 +80,12 @@ def _generate_counts_menu():
     qs = CountType.objects.related().items()
 
     if qs:
-        file = os.path.join(settings.MEDIA_ROOT, str(journal.pk), 'menu.html')
+        journal_pk = str(journal.pk)
+        folder = os.path.join(settings.MEDIA_ROOT, journal_pk)
+        file = os.path.join(folder, 'menu.html')
 
-        if not os.path.exists(file):
-            os.mkdir(os.path.join(settings.MEDIA_ROOT, str(journal.pk)))
+        if not os.path.isdir(folder):
+            os.mkdir(folder)
 
         template = 'counts/includes/menu.html'
         content = render_to_string(
