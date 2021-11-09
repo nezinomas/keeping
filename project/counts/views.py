@@ -16,7 +16,7 @@ from .lib.views_helper import ContextMixin
 from .models import Count, CountType
 
 
-class Redirect(RedirectView):
+class Redirect(LoginRequiredMixin, RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         qs = None
         count_id = kwargs.get('count_id')
@@ -57,7 +57,11 @@ class ReloadStats(LoginRequiredMixin, ContextMixin, DispatchAjaxMixin, TemplateV
 
 class Index(ContextMixin, IndexMixin):
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+
         count_type = None
+
         try:
             count_type = request.resolver_match.kwargs["count_type"]
         except KeyError:
@@ -123,6 +127,9 @@ class CountsEmpty(IndexMixin):
     template_name = 'counts/counts_empty.html'
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+
         qs = CountType.objects.related().exclude(slug='drinks')
         if qs.exists():
             return redirect(reverse('counts:counts_index', kwargs={'count_type': qs[0].slug}))
