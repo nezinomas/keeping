@@ -60,12 +60,7 @@ class Index(ContextMixin, IndexMixin):
         if not request.user.is_authenticated:
             return super().dispatch(request, *args, **kwargs)
 
-        count_type = None
-
-        try:
-            count_type = request.resolver_match.kwargs["count_type"]
-        except KeyError:
-            pass
+        count_type = request.resolver_match.kwargs.get("count_type")
 
         if count_type and count_type == 'drinks':
             return redirect(reverse('counts:counts_empty'))
