@@ -1,4 +1,7 @@
+import tempfile
+
 import pytest
+from django.test import override_settings
 from django.utils.text import slugify
 from mock import patch
 
@@ -25,17 +28,20 @@ def test_count_type_str():
     assert str(obj) == 'Count Type'
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @pytest.mark.xfail
 def test_count_type_unique_for_user(main_user):
     CountType.objects.create(title='T', user=main_user)
     CountType.objects.create(title='T', user=main_user)
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_unique_for_users(main_user, second_user):
     CountType.objects.create(title='T', user=main_user)
     CountType.objects.create(title='T', user=second_user)
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_related(main_user, second_user):
     CountTypeFactory(title='X1', user=main_user)
     CountTypeFactory(title='X2', user=second_user)
@@ -46,6 +52,7 @@ def test_count_type_related(main_user, second_user):
     assert actual[0].title == 'X1'
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_items(main_user, second_user):
     CountTypeFactory(title='X1', user=main_user)
     CountTypeFactory(title='X2', user=second_user)
@@ -56,6 +63,7 @@ def test_count_type_items(main_user, second_user):
     assert actual[0].title == 'X1'
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @patch('project.core.lib.utils.get_request_kwargs', return_value='x1')
 def test_count_type_not_update_other_user_count(mck, main_user, second_user):
     u1 = CountTypeFactory(title='X1', user=main_user)
@@ -71,6 +79,7 @@ def test_count_type_not_update_other_user_count(mck, main_user, second_user):
     assert Count.objects.get(pk=obj2.pk).counter_type == 'x1'
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @patch('project.core.lib.utils.get_request_kwargs', return_value='x1')
 def test_count_type_not_delete_other_user_count(mck, main_user, second_user):
     u1 = CountTypeFactory(title='X1', user=main_user)
@@ -86,6 +95,7 @@ def test_count_type_not_delete_other_user_count(mck, main_user, second_user):
     assert Count.objects.first().user == second_user
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_update():
     obj = CountTypeFactory(title='XXX')
     CountFactory(counter_type=slugify('XXX'))

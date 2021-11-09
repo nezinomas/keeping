@@ -1,4 +1,8 @@
 from datetime import datetime
+from os import path
+
+from django.conf import settings
+from django.utils.safestring import mark_safe
 
 from ..core.lib import utils
 from ..counts.models import CountType
@@ -29,11 +33,18 @@ def context_months(context):
     return {'context_months': year_month_list()}
 
 
-def context_count_types(context):
-    arr = {}
+def context_counts_menu(context):
+    menu = ''
+    file = None
+
     try:
-        arr = CountType.objects.related().items()
-    except TypeError:
+        journal_pk = context.user.journal.pk
+        file = path.join(settings.MEDIA_ROOT, str(journal_pk), 'menu.html')
+    except AttributeError:
         pass
 
-    return {'context_count_types': arr}
+    if file and path.exists(file):
+        with open(file) as f:
+            menu = f.read()
+
+    return {'counts_menu': mark_safe(menu) }

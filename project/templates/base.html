@@ -132,9 +132,8 @@
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
-                  {% for count_type in context_count_types %}
-                  <li><a class="dropdown-item btn-sm" href="{% url 'counts:counts_index' count_type.slug %}">{{ count_type.title }}</a></li>
-                  {% endfor %}
+
+                {% if counts_menu %}{{ counts_menu }}{% endif %}
 
                 <li class="dropdown-divider"></li>
                 <li>

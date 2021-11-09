@@ -9,6 +9,7 @@ from freezegun import freeze_time
 from mock import patch
 
 from ...core.tests.utils import change_profile_year, setup_view
+from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
 from .. import models, views
 from ..factories import DrinkFactory, DrinkTargetFactory
@@ -417,6 +418,7 @@ def test_reload_stats_func():
 def test_reload_stats_render(rf):
     request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
     request.user = UserFactory.build()
+    request.user.journal = JournalFactory.build()
 
     response = views.ReloadStats.as_view()(request)
 
