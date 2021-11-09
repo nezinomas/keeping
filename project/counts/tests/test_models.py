@@ -1,6 +1,7 @@
 import os
-import tempfile
 import shutil
+import tempfile
+
 import pytest
 from django.conf import settings
 from django.test import override_settings
@@ -8,7 +9,7 @@ from django.utils.text import slugify
 from mock import patch
 
 from ..factories import CountFactory, CountTypeFactory
-from ..models import Count, CountType, _generate_counts_menu
+from ..models import Count, CountType
 
 pytestmark = pytest.mark.django_db
 
