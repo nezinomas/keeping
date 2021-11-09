@@ -93,6 +93,7 @@ class Balance(BalanceBase):
             + df['s_change_to_now']
             - df['s_change_from_now']
             - df['s_close_from_now']
+            - df['s_change_from_fee_now']
         )
 
         df['fees'] = (
