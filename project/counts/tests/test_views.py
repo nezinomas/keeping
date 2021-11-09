@@ -12,6 +12,7 @@ from mock import patch
 
 from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
+from ...users.views import Login
 from .. import forms, views
 from ..factories import CountFactory, CountTypeFactory
 from ..models import Count, CountType
@@ -215,6 +216,14 @@ def test_index_not_exists_count_type(client_logged):
     response = client_logged.get(url, follow=True)
 
     assert views.CountsEmpty == response.resolver_match.func.view_class
+
+
+@pytest.mark.disable_get_user_patch
+def test_index_user_not_logged(client):
+    url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
+    response = client.get(url, follow=True)
+
+    assert response.resolver_match.func.view_class is Login
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -766,3 +775,11 @@ def test_empty_redirect(client_logged):
     response = client_logged.get(url, follow=True)
 
     assert 'xxx' in response.request['PATH_INFO']
+
+
+@pytest.mark.disable_get_user_patch
+def test_empty_user_not_logged(client):
+    url = reverse('counts:counts_empty')
+    response = client.get(url, follow=True)
+
+    assert response.resolver_match.func.view_class is Login

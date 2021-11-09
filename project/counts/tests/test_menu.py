@@ -19,6 +19,7 @@ def test_menu_count_type_add(client_logged):
     content = response.content.decode()
 
     url = reverse("counts:counts_index", kwargs={"count_type": obj.slug})
+
     assert f'href="{url}">{obj.title}</a></li>' in content
 
 
@@ -34,6 +35,7 @@ def test_menu_count_type_add_two(client_logged):
 
     url1 = reverse("counts:counts_index", kwargs={"count_type": obj1.slug})
     url2 = reverse("counts:counts_index", kwargs={"count_type": obj2.slug})
+
     assert f'href="{url1}">{obj1.title}</a></li>' in content
     assert f'href="{url2}">{obj2.title}</a></li>' in content
 
@@ -50,6 +52,7 @@ def test_menu_count_type_delete(client_logged):
 
     url1 = reverse("counts:counts_index", kwargs={"count_type": obj1.slug})
     url2 = reverse("counts:counts_index", kwargs={"count_type": obj2.slug})
+
     assert f'href="{url1}">{obj1.title}</a></li>' in content
     assert f'href="{url2}">{obj2.title}</a></li>' in content
 
