@@ -1,7 +1,9 @@
+import tempfile
 from datetime import date
 from types import SimpleNamespace
 
 import pytest
+from django.test import override_settings
 from django.views.generic import TemplateView
 from mock import patch
 
@@ -30,6 +32,7 @@ def test_get_object_no_object():
     assert obj.title == 'Nerasta'
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_get_object():
     obj = CountTypeFactory(title='Xxx')
 
@@ -119,6 +122,7 @@ def test_context_mixin_context_no_data(mck, _rf):
     assert ctx['records'] == 0
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @patch('project.core.lib.utils.get_request_kwargs')
 def test_context_mixin_context(mck, _rf):
     obj = CountTypeFactory(title='Xxx')

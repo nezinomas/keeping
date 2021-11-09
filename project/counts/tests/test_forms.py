@@ -1,6 +1,8 @@
+import tempfile
 from datetime import date
 
 import pytest
+from django.test import override_settings
 from freezegun import freeze_time
 from mock import patch
 
@@ -37,6 +39,7 @@ def test_form_year_initial_value():
     assert '<input type="number" name="quantity" value="1"' in form
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
 def test_form_valid_data(mck):
     CountTypeFactory(title='xxx')
@@ -56,6 +59,7 @@ def test_form_valid_data(mck):
     assert data.counter_type == 'xxx'
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
 @freeze_time('1999-2-2')
 @pytest.mark.parametrize(
@@ -113,6 +117,7 @@ def test_count_type_init_fields():
     assert '<select name="user"' not in form
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_valid_data():
     form = CountTypeForm(data={'title': 'XXXXX'})
 
