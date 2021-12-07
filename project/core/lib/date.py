@@ -55,7 +55,7 @@ def monthlen(year: int, month_name: str) -> int:
 
     month = datetime.strptime(month_name, "%B").month
 
-    return calendar.monthlen(year, month)
+    return calendar.monthrange(year, month)[1]
 
 
 def years() -> List[int]:
