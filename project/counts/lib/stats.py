@@ -188,7 +188,7 @@ class Stats():
 
         arr = []
         for i in range(1, 13):
-            month_len = calendar.monthlen(self._year, i)
+            month_len = calendar.monthrange(self._year, i)[1]
             items = []
             for day in range(0, month_len):
                 items.append(day + 1)
@@ -264,7 +264,7 @@ class Stats():
     def _empty_list(self):
         arr = []
         for i in range(1, 13):
-            month_len = calendar.monthlen(self._year, i)
+            month_len = calendar.monthrange(self._year, i)[1]
             items = []
             for _ in range(0, month_len):
                 items.append({'y': 0, 'gap': 0})
