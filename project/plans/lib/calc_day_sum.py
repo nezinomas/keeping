@@ -140,10 +140,20 @@ class CalcDaySum():
         return CollectData(self._year)
 
     def _sum(self, arr: List, row_name: str, necessary: int = -1):
-        df = pd.DataFrame(arr, dtype=float)
+        df = pd.DataFrame(arr)
 
         if df.empty:
             return
+
+        # drop non numeric columns
+        _drop = ['necessary', 'title']
+        _cols = df.columns
+        for x in _drop:
+            if x in _cols:
+                _cols.drop(x)
+
+        # convert to_numeric january-december columns decimal values
+        df[_cols] = df[_cols].apply(pd.to_numeric, errors='ignore')
 
         if necessary >= 0:
             # filter expensy_type by necessary/ordinary

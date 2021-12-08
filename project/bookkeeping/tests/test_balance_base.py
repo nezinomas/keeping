@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import numpy as np
 import pandas as pd
 import pytest
 from freezegun import freeze_time
@@ -43,7 +44,7 @@ def test_balance_then_before_was_called_total_row(df, expected):
 data_average = [
     (pd.DataFrame({'t': [1.1, 2.2]}), {'t': 1.65}),
     (pd.DataFrame({'t': [0.0, 1.1, 0, 2.2]}), {'t': 1.65}),
-    (pd.DataFrame({'t': [0.0, pd.NaT]}), {}),
+    (pd.DataFrame({'t': pd.Series([0.0, np.nan], dtype='float64')}), {'t': 0.0}),
     (pd.DataFrame(), {}),
     (None, {}),
     (pd.DataFrame({'t1': [1.1, 2.2], 't2': [0, 0]}), {'t1': 1.65, 't2': 0.0}),

@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pandas as pd
 import pytest
-from mock import patch, PropertyMock
+from mock import PropertyMock, patch
 
 from ...core.lib.balance_base import df_months_of_year
 from ..lib.expense_summary import DayExpense, ExpenseBase, MonthExpense
@@ -65,7 +65,7 @@ def test_base_exceptions(_ex):
     actual = ExpenseBase(df, _ex).exceptions
 
     assert isinstance(actual, pd.DataFrame)
-    assert actual.at['1999-01-01', 'sum'] == 1.0
+    assert actual.loc['1999-1-1', 'sum'] == 1.0
 
 
 def test_base_expenses(_ex):
@@ -75,11 +75,11 @@ def test_base_expenses(_ex):
 
     assert isinstance(actual, pd.DataFrame)
 
-    assert actual.at['1999-01-01', 'T1'] == 0.25
-    assert actual.at['1999-01-01', 'T2'] == 0.5
+    assert actual.loc['1999-01-01', 'T1'] == 0.25
+    assert actual.loc['1999-01-01', 'T2'] == 0.5
 
-    assert actual.at['1999-12-01', 'T1'] == 0.75
-    assert actual.at['1999-12-01', 'T2'] == 0.35
+    assert actual.loc['1999-12-01', 'T1'] == 0.75
+    assert actual.loc['1999-12-01', 'T2'] == 0.35
 
 
 # ----------------------------------------------------------------------------
@@ -98,7 +98,12 @@ def test_day_balance_lenght_none_expenses():
 
 
 def test_day_balance_january(_ex):
-    expect = {'date': date(1999, 1, 1), 'T1': 0.25, 'T2': 0.5, 'total': 0.75}
+    expect = {
+        'date': pd.Timestamp(1999, 1, 1),
+        'T1': 0.25,
+        'T2': 0.5,
+        'total': 0.75
+    }
 
     actual = DayExpense(year=1999, month=1, expenses=_ex[:2]).balance
 
@@ -107,7 +112,7 @@ def test_day_balance_january(_ex):
 
 def test_day_with_savings(_ex, _savings):
     expect = {
-        'date': date(1999, 1, 1),
+        'date': pd.Timestamp(1999, 1, 1),
         'T1': 0.25,
         'T2': 0.5,
         'X': 0.5,
@@ -122,7 +127,11 @@ def test_day_with_savings(_ex, _savings):
 
 
 def test_day_with_only_savings(_savings):
-    expect = {'date': date(1999, 1, 1), 'X': 0.5, 'total': 0.5}
+    expect = {
+        'date': pd.Timestamp(1999, 1, 1),
+        'X': 0.5,
+        'total': 0.5
+    }
 
     actual = DayExpense(
         year=1999,
@@ -231,18 +240,18 @@ def test_day_chart_target_data_target_empty(_ex):
 # ----------------------------------------------------------------------------
 def test_month_balance(_ex):
     expect = [
-        {'date': date(1999, 1, 1), 'T1': 0.25, 'T2': 0.5, 'total': 0.75},
-        {'date': date(1999, 2, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
-        {'date': date(1999, 3, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
-        {'date': date(1999, 4, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
-        {'date': date(1999, 5, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
-        {'date': date(1999, 6, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
-        {'date': date(1999, 7, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
-        {'date': date(1999, 8, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
-        {'date': date(1999, 9, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
-        {'date': date(1999, 10, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
-        {'date': date(1999, 11, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
-        {'date': date(1999, 12, 1), 'T1': 0.75, 'T2': 0.35, 'total': 1.1},
+        {'date': pd.Timestamp(1999, 1, 1), 'T1': 0.25, 'T2': 0.5, 'total': 0.75},
+        {'date': pd.Timestamp(1999, 2, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
+        {'date': pd.Timestamp(1999, 3, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
+        {'date': pd.Timestamp(1999, 4, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
+        {'date': pd.Timestamp(1999, 5, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
+        {'date': pd.Timestamp(1999, 6, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
+        {'date': pd.Timestamp(1999, 7, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
+        {'date': pd.Timestamp(1999, 8, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
+        {'date': pd.Timestamp(1999, 9, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
+        {'date': pd.Timestamp(1999, 10, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
+        {'date': pd.Timestamp(1999, 11, 1), 'T1': 0.0, 'T2': 0.0, 'total': 0.0},
+        {'date': pd.Timestamp(1999, 12, 1), 'T1': 0.75, 'T2': 0.35, 'total': 1.1},
     ]
 
     actual = MonthExpense(1999, _ex).balance
@@ -295,11 +304,12 @@ def test_month_chart_data_empty():
 
 def test_month_with_savings(_ex, _savings):
     expect = {
-        'date': date(1999, 1, 1),
+        'date': pd.Timestamp(1999, 1, 1),
         'T1': 0.25,
         'T2': 0.5,
         'X': 0.5,
-        'total': 1.25}
+        'total': 1.25
+    }
 
     actual = MonthExpense(
         year=1999,
@@ -310,7 +320,7 @@ def test_month_with_savings(_ex, _savings):
 
 
 def test_month_with_only_savings(_savings):
-    expect = {'date': date(1999, 1, 1), 'X': 0.5, 'total': 0.5}
+    expect = {'date': pd.Timestamp(1999, 1, 1), 'X': 0.5, 'total': 0.5}
 
     actual = MonthExpense(
         year=1999,
@@ -322,18 +332,18 @@ def test_month_with_only_savings(_savings):
 
 def test_month_total_column(_ex):
     expect = [
-        {'date': date(1999, 1, 1), 'sum': 0.75},
-        {'date': date(1999, 2, 1), 'sum': 0.0},
-        {'date': date(1999, 3, 1), 'sum': 0.0},
-        {'date': date(1999, 4, 1), 'sum': 0.0},
-        {'date': date(1999, 5, 1), 'sum': 0.0},
-        {'date': date(1999, 6, 1), 'sum': 0.0},
-        {'date': date(1999, 7, 1), 'sum': 0.0},
-        {'date': date(1999, 8, 1), 'sum': 0.0},
-        {'date': date(1999, 9, 1), 'sum': 0.0},
-        {'date': date(1999, 10, 1), 'sum': 0.0},
-        {'date': date(1999, 11, 1), 'sum': 0.0},
-        {'date': date(1999, 12, 1), 'sum': 1.1},
+        {'date': pd.Timestamp(1999, 1, 1), 'sum': 0.75},
+        {'date': pd.Timestamp(1999, 2, 1), 'sum': 0.0},
+        {'date': pd.Timestamp(1999, 3, 1), 'sum': 0.0},
+        {'date': pd.Timestamp(1999, 4, 1), 'sum': 0.0},
+        {'date': pd.Timestamp(1999, 5, 1), 'sum': 0.0},
+        {'date': pd.Timestamp(1999, 6, 1), 'sum': 0.0},
+        {'date': pd.Timestamp(1999, 7, 1), 'sum': 0.0},
+        {'date': pd.Timestamp(1999, 8, 1), 'sum': 0.0},
+        {'date': pd.Timestamp(1999, 9, 1), 'sum': 0.0},
+        {'date': pd.Timestamp(1999, 10, 1), 'sum': 0.0},
+        {'date': pd.Timestamp(1999, 11, 1), 'sum': 0.0},
+        {'date': pd.Timestamp(1999, 12, 1), 'sum': 1.1},
     ]
 
     actual = MonthExpense(1999, _ex).total_column
