@@ -21,14 +21,27 @@ def data(monkeypatch):
     ]
 
     obj._expenses = [
-        {'january': Decimal(10.01), 'february': Decimal(10.01),
-            'necessary': False, 'title': 'T1'},
-        {'january': Decimal(20.02), 'february': Decimal(20.02),
-            'necessary': True, 'title': 'T2'},
-        {'january': Decimal(30.03), 'february': Decimal(30.03),
-            'necessary': False, 'title': 'T3'},
-        {'january': Decimal(40.04), 'february': Decimal(40.04),
-            'necessary': True, 'title': 'T4'},
+        {
+            'january': Decimal(10.01),
+            'february': Decimal(10.01),
+            'necessary': False,
+            'title': 'T1'
+        }, {
+            'january': Decimal(20.02),
+            'february': Decimal(20.02),
+            'necessary': True,
+            'title': 'T2'
+        }, {
+            'january': Decimal(30.03),
+            'february': Decimal(30.03),
+            'necessary': False,
+            'title': 'T3'
+        }, {
+            'january': Decimal(40.04),
+            'february': Decimal(40.04),
+            'necessary': True,
+            'title': 'T4'
+        }
     ]
 
     obj._savings = [
@@ -74,6 +87,7 @@ def test_incomes(data):
 
     assert 900.03 == round(actual['january'], 2)
     assert 0.0 == actual['december']
+    # assert 0
 
 
 def test_incomes_no_data(data_empty):

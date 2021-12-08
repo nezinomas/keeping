@@ -2,12 +2,12 @@ import calendar
 import json
 from datetime import date
 
+import pandas as pd
 import pytest
 from freezegun import freeze_time
 from mock import patch
 
 from ...core.exceptions import MethodInvalid
-from ..apps import App_name
 from ..factories import CountFactory
 from ..lib.stats import Stats
 from ..models import Count
@@ -56,7 +56,7 @@ def _data_db():
 def _year_stats_expect_empty():
     arr = []
     for i in range(1, 13):
-        monthlen = calendar.monthlen(1999, i)
+        monthlen = calendar.monthrange(1999, i)[1]
         items = []
         for _ in range(0, monthlen):
             items.append({'y': 0, 'gap': 0})
@@ -301,7 +301,7 @@ def test_items(mck):
     actual = actual[0]
 
     assert actual['quantity'] == 1
-    assert actual['date'] == date(1999, 1, 1)
+    assert actual['date'] == pd.Timestamp(1999, 1, 1)
 
 
 @pytest.mark.django_db
@@ -314,8 +314,8 @@ def test_items_odering(mck):
 
     actual = Stats(year=1999, data=qs).items()
 
-    assert actual[0]['date'] == date(1999, 12, 31)
-    assert actual[1]['date'] == date(1999, 1, 1)
+    assert actual[0]['date'] == pd.Timestamp(1999, 12, 31)
+    assert actual[1]['date'] == pd.Timestamp(1999, 1, 1)
 
 
 @pytest.mark.django_db

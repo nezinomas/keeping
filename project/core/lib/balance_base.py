@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Dict, List
 
+import numpy as np
 import pandas as pd
 from pandas import DataFrame as DF
 
@@ -78,7 +79,7 @@ class BalanceBase():
         # replace 0.0 to None
         # average will be calculated only for months with non zero values
         arr = self._balance.copy()
-        arr.replace(0.0, pd.NaT, inplace=True)
+        arr.replace(0.0, np.nan, inplace=True)
 
         # calculate average
         arr = arr.mean(skipna=True, numeric_only=True)
