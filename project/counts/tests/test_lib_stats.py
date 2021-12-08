@@ -56,7 +56,7 @@ def _data_db():
 def _year_stats_expect_empty():
     arr = []
     for i in range(1, 13):
-        monthlen = calendar.monthlen(1999, i)
+        monthlen = calendar.monthrange(1999, i)[1]
         items = []
         for _ in range(0, monthlen):
             items.append({'y': 0, 'gap': 0})
