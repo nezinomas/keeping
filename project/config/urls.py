@@ -4,7 +4,6 @@ from django.urls import include, path
 from django.views.defaults import (page_not_found, permission_denied,
                                    server_error)
 
-
 urlpatterns = [
     path('', include('project.users.urls')),
     path('', include('project.accounts.urls')),
@@ -44,10 +43,14 @@ urlpatterns += [
 
 
 if settings.DEBUG:
-    import debug_toolbar
+    import mimetypes
 
-    urlpatterns += static.static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static.static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns = [
-        path('__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
+    import debug_toolbar
+    from django.conf.urls.static import static
+
+    mimetypes.add_type("application/javascript", ".js", True)
+
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    urlpatterns = [path('__debug__/', include(debug_toolbar.urls)), ] + urlpatterns

@@ -31,7 +31,7 @@ SHELL_PLUS_PRINT_SQL = True
 # ================   MIDDLEWARE CONFIGURATION
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'pyinstrument.middleware.ProfilerMiddleware',
+    # 'pyinstrument.middleware.ProfilerMiddleware',
 ] + MIDDLEWARE
 
 # PYINSTRUMENT_PROFILE_DIR = 'profiles'
@@ -43,10 +43,7 @@ TEMPLATES[0]['OPTIONS']['loaders'] = [
                 'django.template.loaders.app_directories.Loader',]
 
 
-INTERNAL_IPS = [
-    '127.0.0.1',
-    'localhost',
-]
+INTERNAL_IPS = ('127.0.0.1', 'localhost', )
 
 DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.versions.VersionsPanel',
@@ -63,12 +60,16 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.redirects.RedirectsPanel',
     'debug_toolbar.panels.profiling.ProfilingPanel',
 ]
+
+
 DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TEMPLATE_CONTEXT': True,
     'INTERCEPT_REDIRECTS': False,
     'SHOW_TOOLBAR_CALLBACK': lambda request: True,
     'SHOW_TEMPLATE_CONTEXT': True,
-    'INSERT_BEFORE': '</head>'
+    # 'INSERT_BEFORE': '</head>',
 }
+
 
 # ================   DUMMY CASHE
 CACHES = {
