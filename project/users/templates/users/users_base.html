@@ -2,9 +2,10 @@
 
 {% block head%}{{ block.super }}
 <style>
-    .container {
+    .container-fluid {
         height: 100vh;
         display: flex;
+        padding: 0 2rem;
     }
 
     h3.card-title {
@@ -17,9 +18,9 @@
 
 {% block body %}
 
-<div class="container">
-    <div class="row w-50 mx-auto align-items-center">
-        <div class="col-12">
+<div class="container-fluid">
+    <div class="row w-100 my-auto align-items-center">
+        <div class="col-sm-12 col-lg-6 mx-auto">
             {% block content %}{% endblock content %}
         </div>
     </div>
