@@ -327,9 +327,9 @@ class IndexHelper():
             'months_amount_end': self._YearBalance.amount_end,
         }
         return render_to_string(
-            'bookkeeping/includes/year_balance.html',
-            context,
-            self._request
+            template_name='bookkeeping/includes/year_balance.html',
+            context=context,
+            request=self._request
         )
 
     def render_year_balance_short(self):
@@ -349,9 +349,9 @@ class IndexHelper():
         }
 
         return render_to_string(
-            'bookkeeping/includes/chart_balance.html',
-            context,
-            self._request
+            template_name='bookkeeping/includes/chart_balance.html',
+            context=context,
+            request=self._request
         )
 
     def render_accounts(self, to_string = True):
@@ -366,9 +366,9 @@ class IndexHelper():
         }
         if to_string:
             return render_to_string(
-                'bookkeeping/includes/accounts_worth_list.html',
-                context,
-                self._request
+                template_name='bookkeeping/includes/accounts_worth_list.html',
+                context=context,
+                request=self._request
             )
         return context
 
@@ -481,9 +481,9 @@ class IndexHelper():
         }
 
         return render_to_string(
-            'bookkeeping/includes/no_incomes.html',
-            context,
-            self._request
+            template_name='bookkeeping/includes/no_incomes.html',
+            context=context,
+            request=self._request
         )
 
     def render_wealth(self, to_string=False):
@@ -504,8 +504,11 @@ class IndexHelper():
         }
 
         if to_string:
-            return render_to_string('bookkeeping/includes/info_table.html',
-                                    context, self._request)
+            return render_to_string(
+                template_name='bookkeeping/includes/info_table.html',
+                context=context,
+                request=self._request
+            )
 
         return context
 
@@ -568,9 +571,9 @@ class ExpensesHelper():
             'data': self._MonthExpense.chart_data
         }
         return render_to_string(
-            'bookkeeping/includes/chart_expenses.html',
-            context,
-            self._request
+            template_name='bookkeeping/includes/chart_expenses.html',
+            context=context,
+            request=self._request
         )
 
     def render_year_expenses(self):
@@ -584,7 +587,7 @@ class ExpensesHelper():
             'avg_row': self._MonthExpense.average,
         }
         return render_to_string(
-            'bookkeeping/includes/year_expenses.html',
-            context,
-            self._request
+            template_name='bookkeeping/includes/year_expenses.html',
+            context=context,
+            request=self._request
         )
