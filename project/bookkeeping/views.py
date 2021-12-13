@@ -238,7 +238,7 @@ class ExpandDayExpenses(IndexMixin):
 
         context = {
             'items': items,
-            'notice': f'{dt:%F} dieną įrašų nėra',
+            'notice': _('No records on day %(day)s') % ({'day': f'{dt:%F}'}),
         }
         template = 'bookkeeping/includes/expand_day_expenses.html'
         html = render_to_string(template, context, request)
