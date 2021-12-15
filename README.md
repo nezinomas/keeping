@@ -50,7 +50,7 @@ python manage.py migrate
 mkdir media; chmod -R 755 media
 ```
 
-9. Tell the project to use that folder in `base.py` (around line 45):
+9. Tell the project to use that folder in `base.py` (around line 50):
 ```
 # ================   MEDIA CONFIGURATION
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media/')
