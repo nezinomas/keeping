@@ -5,8 +5,6 @@ __pycache__/
 # my folders
 media/
 .idea/
-_config_db.cnf
-_config_secrets.json
 project.pyproj*
 *.p
 
@@ -27,7 +25,9 @@ profiles/
 *.egg-info/
 .installed.cfg
 *.egg
-*.env
+.env
+.db
+*___TEMPLATE
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
