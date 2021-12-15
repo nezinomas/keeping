@@ -37,7 +37,7 @@ PROJECT_ROOT = os.path.dirname(SITE_ROOT)
 
 # Take environment variables from .env file
 env = environ.Env()
-environ.Env.read_env(os.path.join(PROJECT_ROOT, '_config_secrets.env'))
+environ.Env.read_env(os.path.join(PROJECT_ROOT, '.env'))
 
 
 # ================   SITE CONFIGURATION

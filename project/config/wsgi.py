@@ -8,7 +8,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 
 # Take environment variables from .env file
 env = environ.Env()
-environ.Env.read_env(os.path.join(BASE_DIR, '_config_secrets.env'))
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 os.environ["DJANGO_SETTINGS_MODULE"] = env("DJANGO_SETTINGS_MODULE")
