@@ -1,6 +1,0 @@
-# my.cnf
-[client]
-database = keeping
-user = root
-password = demonas341
-default-character-set = utf8
