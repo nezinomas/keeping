@@ -1,8 +1,7 @@
 import os
 
+import environ
 from django.utils.translation import gettext_lazy as _
-
-from ..secrets import get_secret
 
 
 AUTH_USER_MODEL = 'users.User'
@@ -36,6 +35,11 @@ SITE_ROOT = os.path.dirname(BASE_DIR)
 PROJECT_ROOT = os.path.dirname(SITE_ROOT)
 
 
+# Take environment variables from .env file
+env = environ.Env()
+environ.Env.read_env(os.path.join(PROJECT_ROOT, '_config_secrets.env'))
+
+
 # ================   SITE CONFIGURATION
 LOGOUT_REDIRECT_URL = 'bookkeeping:index'
 LOGIN_REDIRECT_URL = 'bookkeeping:index'
@@ -58,7 +62,7 @@ TEMPLATE_DEBUG = DEBUG
 
 
 # ================   SECRET CONFIGURATION
-SECRET_KEY = get_secret("SECRET_KEY")
+SECRET_KEY = env('SECRET_KEY')
 
 
 # ================   SITE CONFIGURATION
@@ -183,3 +187,5 @@ AUTH_PASSWORD_VALIDATORS = [
 # ================   CRISPY FORMS
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+SALT = env('SALT')
