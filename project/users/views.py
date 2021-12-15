@@ -16,7 +16,6 @@ from django.utils.translation import gettext as _
 from django.views.generic import CreateView
 from project.users import models
 
-from ..config.secrets import get_secret
 from ..core.mixins.ajax import AjaxCustomFormMixin
 from ..core.mixins.views import DeleteAjaxMixin, IndexMixin, ListMixin
 from ..journals.forms import SettingsForm, UnnecessaryForm
@@ -162,7 +161,7 @@ class Invite(AjaxCustomFormMixin):
         user = self.request.user
 
         if form.is_valid():
-            signer = TimestampSigner(salt=get_secret('SALT'))
+            signer = TimestampSigner(salt=settings.SALT)
             secret = signer.sign_object({'jrn': user.journal.pk, 'usr': user.pk })
             to_ = form.cleaned_data.get('email')
             from_ = user.email
@@ -194,7 +193,7 @@ class InviteSignup(CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         token = kwargs.get('token')
-        signer = TimestampSigner(salt=get_secret('SALT'))
+        signer = TimestampSigner(salt=settings.SALT)
 
         try:
             signer.unsign_object(token, max_age=timedelta(days=self.valid_days))
@@ -217,7 +216,7 @@ class InviteSignup(CreateView):
     def form_valid(self, form, **kwargs):
         user = None
         token = self.kwargs.get('token')
-        signer = TimestampSigner(salt=get_secret('SALT'))
+        signer = TimestampSigner(salt=settings.SALT)
         orig = signer.unsign_object(token, max_age=timedelta(days=self.valid_days))
 
         try:
