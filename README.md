@@ -7,17 +7,17 @@ Setting up development:
 git clone https://github.com/nezinomas/keeping.git
 ```
 
-2. Create `_config_secrets.json`
+2. Create `.env`
 ```
-cp _config_secrets.json.TEMPLATE _config_secrets.json
-```
-
-3. Create `_config_db.cnf` and
-```
-cp _config_db.cnf.TEMPLATE _config_db.cnf
+cp .env___TEMPLATE .env
 ```
 
-4. Define database connection parameters in `_config_db.cnf`:
+3. Create `.db` and
+```
+cp .db___TEMPLATE .db
+```
+
+4. Define database connection parameters in `.db`:
 ```
 # my.cnf
 [client]
