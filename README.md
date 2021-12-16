@@ -16,7 +16,7 @@ cp .env___TEMPLATE .env
 ```
 SECRET_KEY=django_secrect_key
 SALT=some_password_for_additional_security
-DJANGO_SETTINGS_MODULE=project.config.settings.local
+DJANGO_SETTINGS_MODULE=project.config.settings.develop
 ```
 
 4. Create `.db`
