@@ -131,22 +131,20 @@ class Search(AjaxSearchMixin):
 
     def form_valid(self, form, **kwargs):
         _search = self.form_data_dict['search']
-        context = {'items': None}
+        context = {'items': None, 'tab': 'index' }
         sql = search.search_books(_search)
 
         if sql:
-            context = {'items': sql}
+            context['items'] = sql
         else:
             context['notice'] = _('Found nothing')
 
         template = 'books/includes/books_list.html'
-        kwargs.update({
-            'container': 'book_list',
-            'html': render_to_string(template, context, self.request),
-        })
+        html = render_to_string(template, context, self.request)
+
+        kwargs.update({'container': 'book_list', 'html': html})
 
         return super().form_valid(form, **kwargs)
-
 
 #----------------------------------------------------------------------------------------
 #                                                                            Target Views
