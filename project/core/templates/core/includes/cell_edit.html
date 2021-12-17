@@ -1,0 +1,7 @@
+{% load i18n %}
+
+<td class="w-edit">
+    {% if url %}
+    <a role="button" data-url="{{ url }}" {% if target %}data-target="{{ target }}"{% endif %} class="js-create {% if target %}set-target{% endif %}edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></a>
+    {% endif %}
+</td>

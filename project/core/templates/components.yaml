@@ -1,0 +1,4 @@
+components:
+    delete_cell: "core/includes/cell_delete.html"
+    edit_cell: "core/includes/cell_edit.html"
+

@@ -1,0 +1,7 @@
+{% load i18n %}
+
+<td class="w-delete">
+    {% if url %}
+    <a role="button" data-url="{{ url }}" {% if target %}data-target="{{ target }}"{% endif %} class="js-delete {% if target %}set-target{% endif %}trash" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
+    {% endif %}
+</td>
