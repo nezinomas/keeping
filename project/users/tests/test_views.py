@@ -1,14 +1,14 @@
-from django.core.exceptions import ObjectDoesNotExist
 import json
 import re
 from datetime import timedelta
-from mock.mock import PropertyMock
 
 import pytest
+from django.conf import settings
 from django.contrib.auth.forms import (PasswordChangeForm, PasswordResetForm,
                                        SetPasswordForm)
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.signing import TimestampSigner
 from django.urls import resolve, reverse
 from django.utils.encoding import force_bytes
@@ -16,7 +16,6 @@ from django.utils.http import urlsafe_base64_encode
 from freezegun import freeze_time
 from mock import patch
 
-from ...config.secrets import get_secret
 from ...journals.models import Journal
 from ...users.factories import UserFactory
 from ...users.models import User
@@ -641,7 +640,7 @@ def test_invite_crypted_link(client_logged, get_user):
     email = mail.outbox[0].body
 
     token = re.findall(r'http://.*?\/([\w\-]{23,}:[\w\-]{6}:[\w\-]{43})', email)[0]
-    signer = TimestampSigner(salt=get_secret('SALT'))
+    signer = TimestampSigner(salt=settings.SALT)
     actual = signer.unsign_object(token, max_age=timedelta(days=3))
     expect = {'jrn': get_user.journal.pk, 'usr': get_user.pk}
 
@@ -662,7 +661,7 @@ def test_invite_body(client_logged, get_user):
 # ---------------------------------------------------------------------------------------
 @pytest.fixture()
 def signer(get_user):
-    signer_ = TimestampSigner(salt=get_secret('SALT'))
+    signer_ = TimestampSigner(salt=settings.SALT)
     token_ = signer_.sign_object({'jrn': get_user.journal.pk, 'usr': get_user.pk})
     return (signer_, token_)
 
@@ -683,7 +682,7 @@ def test_invite_signup_status_code(client, signer):
 @freeze_time('1974-1-1')
 def test_invite_signup_expired_link(client, get_user):
     with freeze_time('1974-1-1 1:0:0'):
-        s_ = TimestampSigner(salt=get_secret('SALT'))
+        s_ = TimestampSigner(salt=settings.SALT)
         token_ = s_.sign_object(
             {'jrn': get_user.journal.pk, 'usr': get_user.pk})
 
@@ -717,7 +716,7 @@ def test_invite_signup_edited_token(client):
 
 @pytest.fixture
 def _invite_client(get_user, client):
-    signer_ = TimestampSigner(salt=get_secret('SALT'))
+    signer_ = TimestampSigner(salt=settings.SALT)
     token_ = signer_.sign_object(
         {'jrn': get_user.journal.pk, 'usr': get_user.pk})
     url = reverse('users:invite_signup', kwargs={'token': token_})
@@ -740,7 +739,7 @@ def test_invite_signup_redirection(_invite_client):
 def test_invite_signup_broken_user(mck, client, get_user):
     mck.objects.related.side_effect = AttributeError
 
-    signer_ = TimestampSigner(salt=get_secret('SALT'))
+    signer_ = TimestampSigner(salt=settings.SALT)
     token_ = signer_.sign_object({'jrn': get_user.journal.pk, 'usr': get_user.pk})
     url = reverse('users:invite_signup', kwargs={'token': token_})
 
@@ -760,7 +759,7 @@ def test_invite_signup_broken_user(mck, client, get_user):
 def test_invite_signup_broken_user_no_object(mck, client, get_user):
     mck.objects.related.return_value.get.side_effect = ObjectDoesNotExist
 
-    signer_ = TimestampSigner(salt=get_secret('SALT'))
+    signer_ = TimestampSigner(salt=settings.SALT)
     token_ = signer_.sign_object({'jrn': get_user.journal.pk, 'usr': get_user.pk})
     url = reverse('users:invite_signup', kwargs={'token': token_})
 

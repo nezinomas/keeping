@@ -2,10 +2,20 @@
 import os
 import sys
 
-from project.config.secrets import *
+import environ
+
 
 if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", get_secret("DJANGO_SETTINGS_MODULE"))
+    # Set the project base directory
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    # Take environment variables from .env file
+    environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+    # set settings file develop/productions/test
+    env = environ.Env()
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", env("DJANGO_SETTINGS_MODULE"))
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
