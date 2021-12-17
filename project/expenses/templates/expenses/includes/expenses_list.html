@@ -2,6 +2,7 @@
 {% load colorize %}
 {% load static %}
 {% load i18n %}
+{% load slippers %}
 
 {% if items %}
 
@@ -41,12 +42,8 @@
                 {% endif %}
             </td>
             <td>{{ item.account }}</td>
-            <td class="w-edit">
-                <a role="button" data-url="{{ url_update }}" class="js-create edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></a>
-            </td>
-            <td class="w-delete">
-                <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
-            </td>
+            {% edit_cell url=url_update %}
+            {% delete_cell url=url_delete %}
         </tr>
         {% endfor %}
     </tbody>

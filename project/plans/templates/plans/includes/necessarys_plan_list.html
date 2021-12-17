@@ -1,2 +1,2 @@
 {% load generic_list %}
-{% generic_list items 'plans:necessarys_plan_update' request.user.year 'title' url_delete='plans:necessarys_plan_delete' %}
+{% generic_list year=request.user.year items=items type='title' update='plans:necessarys_plan_update'  delete='plans:necessarys_plan_delete' %}

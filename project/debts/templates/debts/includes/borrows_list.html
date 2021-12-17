@@ -1,5 +1,6 @@
 {% load humanize %}
 {% load i18n %}
+{% load slippers %}
 
 {% if items %}
 <table class="table table-striped table-hover stats">
@@ -27,14 +28,8 @@
             <td class="text-start">{{ item.account }}</td>
             <td class="text-start">{{ item.remark }}</td>
             <td class="text-center">{% if item.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
-            <td class="w-edit">
-                <a role="button" data-url="{{ url_update }}" data-target="borrow" class=" js-create set-target edit" title="{% translate 'Edit' %}">
-                    <i class="bi bi-pencil-fill"></i>
-                </a>
-            </td>
-            <td class="w-delete">
-                <a role="button" data-url="{{ url_delete }}" data-target="borrow" class="js-delete set-target trash" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
-            </td>
+            {% edit_cell url=url_update target="borrow" %}
+            {% delete_cell url=url_delete target="borrow" %}
         </tr>
         {% endfor %}
     </tbody>

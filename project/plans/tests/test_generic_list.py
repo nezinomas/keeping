@@ -10,7 +10,7 @@ def _remove_line_end(rendered):
 def _template():
     template_to_render = Template(
         '{% load generic_list %}'
-        '{% generic_list items "url_update" 2019 "type" %}'
+        '{% generic_list year=2019 items=items type="type" update=url_update %}'
     )
     return template_to_render
 

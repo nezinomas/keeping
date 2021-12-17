@@ -6,12 +6,12 @@ register = template.Library()
 
 
 @register.inclusion_tag('plans/includes/generic_list.html')
-def generic_list(items, url_update, year, type=None, url_delete=None):
+def generic_list(year, items, type=None, update=None, delete=None):
     return {
-        'items': items,
-        'url_update': url_update,
         'year': year,
+        'items': items,
         'type': type,
-        'url_delete': url_delete,
+        'update': update,
+        'delete': delete,
         'months': list(month_names().values()),
     }
