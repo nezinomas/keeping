@@ -1,4 +1,4 @@
-from bootstrap_datepicker_plus import DatePickerInput, YearPickerInput
+from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
