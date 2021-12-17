@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from bootstrap_datepicker_plus import YearPickerInput
+from bootstrap_datepicker_plus.widgets import YearPickerInput
 from crispy_forms.helper import FormHelper
 from dateutil.relativedelta import relativedelta
 from django import forms

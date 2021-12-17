@@ -107,7 +107,7 @@ class DayExpense(BalanceBase, ExpenseBase):
         # sort List[Dict] by y
         rtn = sorted(rtn, key=itemgetter('y'), reverse=True)
 
-        # and to List[Dict] colors
+        # add to List[Dict] colors
         for key, arr in enumerate(rtn):
             rtn[key]['color'] = CHART[key]
 
