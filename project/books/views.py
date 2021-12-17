@@ -87,7 +87,7 @@ class Lists(DispatchListsMixin, BookTabMixin, ListMixin):
         return context
 
 
-class New(CreateAjaxMixin):
+class New(BookListMixin, BookTabMixin, CreateAjaxMixin):
     model = models.Book
     form_class = forms.BookForm
 
