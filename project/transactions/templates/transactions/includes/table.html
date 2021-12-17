@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load slippers %}
 
 {% if items %}
 
@@ -25,12 +26,8 @@
             <td class="text-start">{{ item.to_account }}</td>
             <td>{{ item.price }}</td>
             {% if fees %}<td>{{ item.fee }}</td>{% endif %}
-            <td class="w-edit">
-                <a role="button" data-url="{{ url__update }}" class=" js-create edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></a>
-            </td>
-            <td class="w-delete">
-                <a role="button" data-url="{{ url__delete }}" class="js-delete trash" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
-            </td>
+            {% edit_cell url=url__update %}
+            {% delete_cell url=url__delete %}
         </tr>
         {% endfor %}
     </tbody>

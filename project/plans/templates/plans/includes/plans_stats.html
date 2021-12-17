@@ -1,2 +1,2 @@
 {% load generic_list %}
-{% generic_list items '' request.user.year 'type' %}
+{% generic_list year=request.user.year items=items type='type' %}

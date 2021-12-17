@@ -2,6 +2,7 @@
 {% load define_action %}
 {% load table_cell %}
 {% load i18n %}
+{% load slippers %}
 
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
@@ -13,7 +14,9 @@
     </thead>
     <tbody>
         {% for item in items %}
-        {% if url_update %}{% url url_update item.id as url %}{% else %}{% define '' as url %}{% endif %}
+
+        {% if update %}{% url update item.id as url_update %}{% endif %}
+        {% if delete %}{% url delete item.id as url_delete %}{% endif %}
         {% with item|get_obj_attr:type as name %}
         <tr data-url="{{ url }}" class="dblclick{% if name == _('Residual') %} bg-warning{% endif %}">
             <td class="text-start">{{ name }}{% if item.expense_type.necessary or item.saving_type or item.title %} <i class="bi bi-star plans-star"></i>{% endif %}</td>
@@ -29,16 +32,8 @@
             {% cell item.october %}
             {% cell item.november %}
             {% cell item.december %}
-            <td class="w-edit">
-            {% if url_delete %}
-                <a role="button" data-url="{{ url }}" class="js-create edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></a>
-            {% endif %}
-            </td>
-            <td class="w-delete">
-            {% if url_delete %}
-                <a role="button" class="js-delete trash" data-url="{% url url_delete item.id %}" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
-            {% endif %}
-            </td>
+            {% edit_cell url=url_update %}
+            {% delete_cell url=url_delete %}
         </tr>{% endwith %}
         {% empty %}
         <tr class="table-warning text-center">
