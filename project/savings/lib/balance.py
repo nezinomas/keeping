@@ -97,11 +97,10 @@ class Balance(BalanceBase):
             0.0
             + df['s_fee_now']
             + df['past_fee']
-            + df['s_change_from_fee_now']
-            + df['s_close_from_fee_now']
             + df['s_change_from_now']
-            + df['s_close_from_now']
             + df['s_change_from_fee_now']
+            + df['s_close_from_now']
+            + df['s_close_from_fee_now']
         )
 
         df['invested'] = df['incomes'] - df['fees']
