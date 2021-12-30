@@ -127,11 +127,21 @@ class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
                 s_close_from_now=Sum(
                     Case(
                         When(**{'date__year': year}, then='price'),
+                        default=Decimal(0))),
+                s_close_from_fee_past=Sum(
+                    Case(
+                        When(**{'date__year__lt': year}, then='fee'),
+                        default=Decimal(0))),
+                s_close_from_fee_now=Sum(
+                    Case(
+                        When(**{'date__year': year}, then='fee'),
                         default=Decimal(0)))
             )
             .values(
                 's_close_from_past',
                 's_close_from_now',
+                's_close_from_fee_past',
+                's_close_from_fee_now',
                 title=models.F('from_account__title'))
         )
 
