@@ -305,3 +305,22 @@ def test_filter_real_values_2():
     actual = views.filter_types(arr, 2019)
 
     assert 'SEB Gyvybės kaupiamasis' in actual
+
+
+def test_make_arr_1():
+    _arr = [
+        {'id': 1, 'title': 'X', 'closed': None},
+        {'id': 2, 'title': 'Y', 'closed': 2000},
+        {'id': 3, 'title': 'Z', 'closed': 2001},
+    ]
+
+    actual = views._make_arr(_arr)
+
+    expect = {
+        'closed': {'Y': 2000, 'Z': 2001},
+        'X': 1,
+        'Y': 2,
+        'Z': 3
+    }
+
+    assert actual == expect
