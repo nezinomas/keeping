@@ -259,8 +259,10 @@ def test_saving_close_month_sum_query_count(django_assert_max_num_queries):
 def test_saving_close_summary_from(savings_close):
     expect = [{
         'title': 'Saving1',
-        's_close_from_past': 0.25,
-        's_close_from_now': 0.25,
+        's_close_from_past': Decimal('0.25'),
+        's_close_from_now': Decimal('0.25'),
+        's_close_from_fee_now': Decimal('0.05'),
+        's_close_from_fee_past': Decimal('0.05'),
     }]
 
     actual = list(
@@ -303,9 +305,9 @@ def test_saving_close_new_post_save():
     actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0]['invested'] == -10.0
-    assert actual[0]['fees'] == 0
-    assert actual[0]['incomes'] == -10.0
+    assert actual[0]['invested'] == -10.25
+    assert actual[0]['fees'] == 10.25
+    assert actual[0]['incomes'] == 0.0
 
 
 def test_saving_close_update_post_save():
@@ -325,9 +327,9 @@ def test_saving_close_update_post_save():
     actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0]['invested'] == -1.0
-    assert actual[0]['fees'] == 0.0
-    assert actual[0]['incomes'] == -1.0
+    assert actual[0]['invested'] == -1.25
+    assert actual[0]['fees'] == 1.25
+    assert actual[0]['incomes'] == 0.0
 
 
 def test_saving_close_post_delete():
@@ -367,9 +369,9 @@ def test_saving_close_post_delete_with_update():
     actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0]['invested'] == -1.0
-    assert actual[0]['fees'] == 0.0
-    assert actual[0]['incomes'] == -1.0
+    assert actual[0]['invested'] == -1.25
+    assert actual[0]['fees'] == 1.25
+    assert actual[0]['incomes'] == 0.0
 
     assert SavingClose.objects.all().count() == 1
 
