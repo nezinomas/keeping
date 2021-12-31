@@ -113,7 +113,7 @@ def filter_types(arr, year):
     closed = arr.pop('closed')
 
     for _type, _year in closed.items():
-        if _year and year > _year:
+        if _year and year >= _year:
             arr.pop(_type)
 
     return arr

@@ -266,7 +266,7 @@ def test_filter_types_when_update_year_equal_closed():
 
     actual = views.filter_types(arr, 66)
 
-    assert actual == {'x': 1, 'y': 2}
+    assert actual == {'y': 2}
 
 
 def test_filter_types_2():
@@ -320,7 +320,7 @@ def test_filter_real_values_2():
 
     actual = views.filter_types(arr, 2019)
 
-    assert 'SEB Gyvybės kaupiamasis' in actual
+    assert 'SEB Gyvybės kaupiamasis' not in actual
 
 
 def test_make_arr_1():
