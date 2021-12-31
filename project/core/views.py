@@ -121,9 +121,11 @@ def filter_types(arr, year):
 
 def _make_arr(qs):
     rtn = {'closed': {}}
+
     for x in qs:
         rtn[x['title']] = x['id']
+
         if x.get('closed'):
-            rtn['closed'] = {x['title']: x['closed']}
+            rtn['closed'].update({x['title']: x['closed']})
 
     return rtn

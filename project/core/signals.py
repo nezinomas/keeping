@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+from django.db.models import Q
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
@@ -191,6 +192,12 @@ class SignalBase():
         account_id = self._get_id()
         if account_id:
             qs = qs.filter(id__in=account_id)
+
+        if getattr(self.model_types, 'closed', False):
+            qs = qs.filter(
+                Q(closed__isnull=True) |
+                Q(closed__gte= self.year)
+            )
 
         qs = qs.values('id', 'title')
 

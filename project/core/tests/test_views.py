@@ -246,27 +246,43 @@ def test_pensions_method():
 
 
 def test_filter_types_1():
-    arr = {'s1': 1, 's2': 2, 'closed': {'s1': 66}}
+    arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
 
     actual = views.filter_types(arr, 67)
 
-    assert actual == {'s2': 2}
+    assert actual == {'y': 2}
+
+
+def test_filter_types_when_update_year_in_past():
+    arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
+
+    actual = views.filter_types(arr, 65)
+
+    assert actual == {'x': 1, 'y': 2}
+
+
+def test_filter_types_when_update_year_equal_closed():
+    arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
+
+    actual = views.filter_types(arr, 66)
+
+    assert actual == {'x': 1, 'y': 2}
 
 
 def test_filter_types_2():
-    arr = {'s1': 1, 's2': 2, 'closed': {}}
+    arr = {'x': 1, 'y': 2, 'closed': {}}
 
     actual = views.filter_types(arr, 67)
 
-    assert actual == {'s1': 1, 's2': 2}
+    assert actual == {'x': 1, 'y': 2}
 
 
 def test_filter_types_preserve_orginal_arr():
-    arr = {'s1': 1, 's2': 2, 'closed': {'s1': 99}}
+    arr = {'x': 1, 'y': 2, 'closed': {'x': 99}}
 
     views.filter_types(arr, 99)
 
-    assert arr == {'s1': 1, 's2': 2, 'closed': {'s1': 99}}
+    assert arr == {'x': 1, 'y': 2, 'closed': {'x': 99}}
 
 
 def test_filter_real_values_1():
@@ -305,3 +321,22 @@ def test_filter_real_values_2():
     actual = views.filter_types(arr, 2019)
 
     assert 'SEB Gyvybės kaupiamasis' in actual
+
+
+def test_make_arr_1():
+    _arr = [
+        {'id': 1, 'title': 'X', 'closed': None},
+        {'id': 2, 'title': 'Y', 'closed': 2000},
+        {'id': 3, 'title': 'Z', 'closed': 2001},
+    ]
+
+    actual = views._make_arr(_arr)
+
+    expect = {
+        'closed': {'Y': 2000, 'Z': 2001},
+        'X': 1,
+        'Y': 2,
+        'Z': 3
+    }
+
+    assert actual == expect
