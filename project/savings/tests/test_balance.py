@@ -7,6 +7,37 @@ from ...core.tests.utils import equal_list_of_dictionaries as my_assert
 from ..lib.balance import Balance as T
 
 
+def _make_df(arr):
+    d = {
+        'id': 1,
+        'title': 'x',
+        's_past': 0.0,
+        's_now': 0.0,
+        's_fee_past': 0.0,
+        's_fee_now': 0.0,
+        's_close_to_past': 0.0,
+        's_close_to_now': 0.0,
+        's_close_from_past': 0.0,
+        's_close_from_now': 0.0,
+        's_close_from_fee_past': 0.0,
+        's_close_from_fee_now': 0.0,
+        's_change_to_past': 0.0,
+        's_change_to_now': 0.0,
+        's_change_from_past': 0.0,
+        's_change_from_now': 0.0,
+        's_change_from_fee_past': 0.0,
+        's_change_from_fee_now': 0.0,
+    }
+
+    for k, v in arr.items():
+        d[k] = v
+
+    df = pd.DataFrame([d])
+    df.set_index('title', inplace=True)
+
+    return df
+
+
 @pytest.fixture()
 def _savings():
     df = pd.DataFrame([{
@@ -280,3 +311,32 @@ def test_savings_total_market_none_values():
     actual = T(None, None).total_market
 
     assert actual == 0
+
+
+def test_close_saving_no_profit():
+    arr = {
+        's_now': 15,
+        's_fee_now': 2,
+        's_close_from_now': 5,
+        's_close_from_fee_now': 40,
+    }
+
+    actual = T(_make_df(arr), None).balance[0]
+
+    assert actual['incomes'] == 15.0
+    assert actual['fees'] == 42.0
+    assert actual['invested'] == 0.0
+
+
+def test_close_saving_with_profit():
+    arr = {
+        's_now': 15,
+        's_fee_now': 2,
+        's_close_from_now': 32,
+    }
+
+    actual = T(_make_df(arr), None).balance[0]
+
+    assert actual['incomes'] == 15.0
+    assert actual['fees'] == 2.0
+    assert actual['invested'] == 0.0

@@ -110,6 +110,9 @@ class Balance(BalanceBase):
             - df['fees']
         )
 
+        # invested sum cannot be negated
+        df['invested'] = df['invested'].mask(df['invested'] < 0, 0.0)
+
         return df
 
     def _calc_have(self, df: DF, worth: DF) -> DF:
