@@ -196,7 +196,7 @@ class SignalBase():
         if getattr(self.model_types, 'closed', False):
             qs = qs.filter(
                 Q(closed__isnull=True) |
-                Q(closed__gte= self.year)
+                Q(closed__gte=self.year)
             )
 
         qs = qs.values('id', 'title')
