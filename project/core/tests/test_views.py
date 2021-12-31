@@ -253,7 +253,7 @@ def test_filter_types_1():
     assert actual == {'s2': 2}
 
 
-def test_filter_types_then_update_year_in_past():
+def test_filter_types_when_update_year_in_past():
     arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
 
     actual = views.filter_types(arr, 65)
@@ -261,7 +261,7 @@ def test_filter_types_then_update_year_in_past():
     assert actual == {'x': 1, 'y': 2}
 
 
-def test_filter_types_then_update_year_equal_closed():
+def test_filter_types_when_update_year_equal_closed():
     arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
 
     actual = views.filter_types(arr, 66)
