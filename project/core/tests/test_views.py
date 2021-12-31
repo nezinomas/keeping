@@ -246,11 +246,11 @@ def test_pensions_method():
 
 
 def test_filter_types_1():
-    arr = {'s1': 1, 's2': 2, 'closed': {'s1': 66}}
+    arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
 
     actual = views.filter_types(arr, 67)
 
-    assert actual == {'s2': 2}
+    assert actual == {'y': 2}
 
 
 def test_filter_types_when_update_year_in_past():
@@ -270,19 +270,19 @@ def test_filter_types_when_update_year_equal_closed():
 
 
 def test_filter_types_2():
-    arr = {'s1': 1, 's2': 2, 'closed': {}}
+    arr = {'x': 1, 'y': 2, 'closed': {}}
 
     actual = views.filter_types(arr, 67)
 
-    assert actual == {'s1': 1, 's2': 2}
+    assert actual == {'x': 1, 'y': 2}
 
 
 def test_filter_types_preserve_orginal_arr():
-    arr = {'s1': 1, 's2': 2, 'closed': {'s1': 99}}
+    arr = {'x': 1, 'y': 2, 'closed': {'x': 99}}
 
     views.filter_types(arr, 99)
 
-    assert arr == {'s1': 1, 's2': 2, 'closed': {'s1': 99}}
+    assert arr == {'x': 1, 'y': 2, 'closed': {'x': 99}}
 
 
 def test_filter_real_values_1():
