@@ -14,12 +14,12 @@ pytestmark = pytest.mark.django_db
 
 def test_percentage_from_incomes(rf):
     IncomeFactory(price=10)
-    SavingFactory(price=2)
+    SavingFactory(price=20)
 
     obj = IndexHelper(rf, 1999)
     actual = obj.render_savings()
 
-    assert actual['percentage_from_incomes'] == 20.0
+    assert actual['percentage_from_incomes'] == 200.0
 
 
 def test_render_borrow_no_data(rf):
