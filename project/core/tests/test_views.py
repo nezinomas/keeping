@@ -253,6 +253,14 @@ def test_filter_types_1():
     assert actual == {'y': 2}
 
 
+def test_filter_types_when_update_year_in_future_leave_current():
+    arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
+
+    actual = views.filter_types(arr, 67, True)
+
+    assert actual == {'y': 2}
+
+
 def test_filter_types_when_update_year_in_past():
     arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
 
@@ -265,6 +273,14 @@ def test_filter_types_when_update_year_equal_closed():
     arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
 
     actual = views.filter_types(arr, 66)
+
+    assert actual == {'y': 2}
+
+
+def test_filter_types_when_update_year_equal_closed_leave_year():
+    arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
+
+    actual = views.filter_types(arr, 66, True)
 
     assert actual == {'x': 1, 'y': 2}
 
@@ -320,7 +336,7 @@ def test_filter_real_values_2():
 
     actual = views.filter_types(arr, 2019)
 
-    assert 'SEB Gyvybės kaupiamasis' in actual
+    assert 'SEB Gyvybės kaupiamasis' not in actual
 
 
 def test_make_arr_1():

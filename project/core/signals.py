@@ -85,6 +85,8 @@ def pensions_post_signal(sender: object,
 #                                                   post_save SignalBase class
 # ----------------------------------------------------------------------------
 class SignalBase():
+    field = None
+
     def __init__(self,
                  instance: object,
                  year: int = None,
@@ -187,17 +189,26 @@ class SignalBase():
         return account_id
 
     def _get_accounts(self) -> Dict[str, int]:
-        qs = self.model_types.objects.items(year=self.year)
+
+        if self.field == 'saving_type_id':
+            qs = (
+                self.model_types
+                .objects
+                .related()
+                .filter(
+                    Q(closed__isnull=True) | Q(closed__gt=self.year))
+            )
+        else:
+            qs = (
+                self.model_types
+                .objects
+                .items(year=self.year)
+            )
 
         account_id = self._get_id()
+
         if account_id:
             qs = qs.filter(id__in=account_id)
-
-        if getattr(self.model_types, 'closed', False):
-            qs = qs.filter(
-                Q(closed__isnull=True) |
-                Q(closed__gte= self.year)
-            )
 
         qs = qs.values('id', 'title')
 

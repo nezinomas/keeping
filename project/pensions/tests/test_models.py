@@ -129,7 +129,7 @@ def test_pension_new_post_save():
 
     assert round(actual['incomes'], 2) == 1.0
     assert round(actual['fees'], 2) == 1.01
-    assert round(actual['invested'], 2) == -0.01
+    assert round(actual['invested'], 2) == 0.0
 
 
 def test_pension_update_post_save():
@@ -147,7 +147,7 @@ def test_pension_update_post_save():
 
     assert round(actual['incomes'], 2) == 1.0
     assert round(actual['fees'], 2) == 1.01
-    assert round(actual['invested'], 2) == -0.01
+    assert round(actual['invested'], 2) == 0.0
 
 
 def test_pension_post_delete():
@@ -177,7 +177,7 @@ def test_pension_post_delete_with_update():
     assert actual[0]['title'] == 'PensionType'
     assert round(actual[0]['incomes'], 2) == 1.0
     assert round(actual[0]['fees'], 2) == 1.01
-    assert round(actual[0]['invested'], 2) == -0.01
+    assert round(actual[0]['invested'], 2) == 0.0
 
     assert Pension.objects.all().count() == 1
 
