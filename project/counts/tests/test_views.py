@@ -1,6 +1,7 @@
 import json
 import re
 import tempfile
+from datetime import date
 
 import pytest
 from django.http import JsonResponse
@@ -94,7 +95,7 @@ def test_view_update(client_logged):
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_view_update_not_load_other_user(client_logged, second_user):
     CountFactory()
-    obj = CountFactory(quantity=666, user=second_user)
+    obj = CountFactory(date=date(1998, 12, 12), quantity=666, user=second_user)
 
     url = reverse('counts:counts_update', kwargs={'pk': obj.pk, 'count_type': 'count-type'})
     response = client_logged.get(url, **X_Req)

@@ -88,7 +88,7 @@ def test_update(client_logged):
 @patch('project.drinks.forms.App_name', 'Counter Type')
 def test_drinks_update_not_load_other_user(client_logged, second_user):
     DrinkFactory()
-    obj = DrinkFactory(quantity=0.666, user=second_user)
+    obj = DrinkFactory(date=date(1111, 1, 1), quantity=0.666, user=second_user)
 
     url = reverse('drinks:drinks_update', kwargs={'pk': obj.pk})
     response = client_logged.get(url, **X_Req)
