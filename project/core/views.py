@@ -63,7 +63,7 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
             if year > datetime.now().year:
                 continue
 
-            SignalBase.accounts(dummy, dummy, year, filter_types(_accounts, year))
+            SignalBase.accounts(dummy, dummy, year, filter_types(_accounts, year, True))
             SignalBase.savings(dummy, dummy, year, filter_types(_savings, year))
             SignalBase.pensions(dummy, dummy, year, _pensions)
 
