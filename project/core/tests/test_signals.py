@@ -28,6 +28,70 @@ def test_account_list_full(mck):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
+def test_account_list_no_field(mck):
+    a1 = AccountFactory(title='A1', closed=1000)
+    a2 = AccountFactory(title='A2', closed=1111)
+
+    obj = T.SignalBase(instance=None)
+    obj.model_types = Account
+    obj.field = None
+
+    func = 'project.core.signals.SignalBase._get_id'
+    with patch(func, return_value=None):
+        actual = obj._get_accounts()
+
+        assert {'A1': a1.id, 'A2': a2.id} == actual
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_account_list_filter_closed(mck):
+    AccountFactory(title='A1', closed=1000)
+    AccountFactory(title='A2', closed=1111)
+
+    obj = T.SignalBase(instance=None)
+    obj.model_types = Account
+    obj.field = 'account_id'
+
+    func = 'project.core.signals.SignalBase._get_id'
+    with patch(func, return_value=None):
+        actual = obj._get_accounts()
+
+        assert {} == actual
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_account_list_filter_closed_leave_current(mck):
+    a1 = AccountFactory(title='A1', closed=1000)
+    a2 = AccountFactory(title='A2', closed=1999)
+
+    obj = T.SignalBase(instance=None)
+    obj.model_types = Account
+    obj.field = 'account_id'
+
+    func = 'project.core.signals.SignalBase._get_id'
+    with patch(func, return_value=None):
+        actual = obj._get_accounts()
+
+        assert {'A2': a2.id} == actual
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_saving_list_filter_closed_not_leave_current(mck):
+    SavingTypeFactory(title='A1', closed=1000)
+    SavingTypeFactory(title='A2', closed=1999)
+
+    obj = T.SignalBase(instance=None)
+    obj.model_types = SavingType
+    obj.field = 'saving_type_id'
+
+    func = 'project.core.signals.SignalBase._get_id'
+    with patch(func, return_value=None):
+        actual = obj._get_accounts()
+
+        assert {} == actual
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
 def test_get_id(mck):
     instance = SimpleNamespace(
         account_id=1,
@@ -213,6 +277,7 @@ def test_saving_list_without_closed(_mock):
 
     obj = T.SignalBase(instance=None)
     obj.model_types = SavingType
+    obj.field = 'saving_type_id'
     obj.year = 1999
 
     func = 'project.core.signals.SignalBase._get_id'

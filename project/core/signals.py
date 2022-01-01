@@ -189,7 +189,10 @@ class SignalBase():
         return account_id
 
     def _get_accounts(self) -> Dict[str, int]:
-        qs = self.model_types.objects.items(year=self.year)
+        # qs = self.model_types.objects.items(year=self.year)
+        # items method automatically filters closed type
+        # but in signals i need custom closed types filtering
+        qs = self.model_types.objects.related()
 
         account_id = self._get_id()
         if account_id:
