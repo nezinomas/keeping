@@ -85,6 +85,8 @@ def pensions_post_signal(sender: object,
 #                                                   post_save SignalBase class
 # ----------------------------------------------------------------------------
 class SignalBase():
+    field = None
+
     def __init__(self,
                  instance: object,
                  year: int = None,
@@ -193,11 +195,25 @@ class SignalBase():
         if account_id:
             qs = qs.filter(id__in=account_id)
 
+        # filter closed [accounts, savings, pensions]
         if getattr(self.model_types, 'closed', False):
-            qs = qs.filter(
-                Q(closed__isnull=True) |
-                Q(closed__gt=self.year)
-            )
+            while(True):
+                if not self.field:
+                    break
+
+                # if [account] leave current year
+                if self.field == 'account_id':
+                    qs = qs.filter(
+                        Q(closed__isnull=True) |
+                        Q(closed__gte=self.year)
+                    )
+                else:  # if [savings, pensions] filter and current year
+                    qs = qs.filter(
+                        Q(closed__isnull=True) |
+                        Q(closed__gt=self.year)
+                    )
+
+                break
 
         qs = qs.values('id', 'title')
 

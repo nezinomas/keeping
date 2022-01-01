@@ -84,7 +84,7 @@ class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View)
         SavingBalance.objects.filter(saving_type__journal=journal, year=year).delete()
         PensionBalance.objects.filter(pension_type__journal=journal, year=year).delete()
 
-        SignalBase.accounts(dummy, dummy, year, filter_types(accounts(), year))
+        SignalBase.accounts(dummy, dummy, year, filter_types(accounts(), year, True))
         SignalBase.savings(dummy, dummy, year, filter_types(savings(), year))
         SignalBase.pensions(dummy, dummy, year, pensions())
 
@@ -108,13 +108,21 @@ def pensions():
     return {x['title']: x['id'] for x in qs}
 
 
-def filter_types(arr, year):
+def filter_types(arr, year, leave_current_year = False):
     arr = arr.copy()
     closed = arr.pop('closed')
 
     for _type, _year in closed.items():
-        if _year and year >= _year:
-            arr.pop(_type)
+        if _year:
+            if leave_current_year:
+                # leave current year
+                if year > _year:
+                    arr.pop(_type)
+            else:
+                # remove current year
+                if year >= _year:
+                    arr.pop(_type)
+
 
     return arr
 
