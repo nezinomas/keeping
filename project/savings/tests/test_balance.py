@@ -7,6 +7,37 @@ from ...core.tests.utils import equal_list_of_dictionaries as my_assert
 from ..lib.balance import Balance as T
 
 
+def _make_df(arr):
+    d = {
+        'id': 1,
+        'title': 'x',
+        's_past': 0.0,
+        's_now': 0.0,
+        's_fee_past': 0.0,
+        's_fee_now': 0.0,
+        's_close_to_past': 0.0,
+        's_close_to_now': 0.0,
+        's_close_from_past': 0.0,
+        's_close_from_now': 0.0,
+        's_close_from_fee_past': 0.0,
+        's_close_from_fee_now': 0.0,
+        's_change_to_past': 0.0,
+        's_change_to_now': 0.0,
+        's_change_from_past': 0.0,
+        's_change_from_now': 0.0,
+        's_change_from_fee_past': 0.0,
+        's_change_from_fee_now': 0.0,
+    }
+
+    for k, v in arr.items():
+        d[k] = v
+
+    df = pd.DataFrame([d])
+    df.set_index('title', inplace=True)
+
+    return df
+
+
 @pytest.fixture()
 def _savings():
     df = pd.DataFrame([{
@@ -80,9 +111,9 @@ def test_saving_only(_savings):
         'title': 'Saving1',
         'past_amount': -1.25,
         'past_fee': 0.4,
-        'incomes': 0.95,
-        'fees': 1.2,
-        'invested': -0.25,
+        'incomes': 2.25,
+        'fees': 0.95,
+        'invested': 0.0,
         'market_value': 0.0,
     }, {
         'id': 2,
@@ -106,9 +137,9 @@ def test_saving_when_worth_filled_partially(_savings):
         'title': 'Saving1',
         'past_amount': -1.25,
         'past_fee': 0.4,
-        'incomes': 0.95,
-        'fees': 1.2,
-        'invested': -0.25,
+        'incomes': 2.25,
+        'fees': 0.95,
+        'invested': 0.0,
         'market_value': 0.0,
         'profit_incomes_proc': 0.0,
         'profit_incomes_sum': 0.0,
@@ -139,13 +170,13 @@ def test_savings_worth(_savings, _savings_worth):
     expect = [{
         'id': 1,
         'title': 'Saving1',
-        'incomes': 0.95,
-        'invested': -0.25,
+        'incomes': 2.25,
+        'invested': 0.0,
         'market_value': 0.15,
-        'profit_incomes_proc': -84.21,
-        'profit_incomes_sum': -0.80,
-        'profit_invested_proc': -160.0,
-        'profit_invested_sum': 0.4,
+        'profit_incomes_proc': -93.33,
+        'profit_incomes_sum': -2.1,
+        'profit_invested_proc': 0.0,
+        'profit_invested_sum': 0.15,
     }, {
         'id': 2,
         'title': 'Saving2',
@@ -248,14 +279,14 @@ def test_saving_total_row(_savings, _savings_worth):
     expect = {
         'past_amount': 1.25,
         'past_fee': 0.4,
-        'incomes': 6.95,
-        'fees': 1.45,
-        'invested': 5.5,
+        'incomes': 8.25,
+        'fees': 1.2,
+        'invested': 5.75,
         'market_value': 6.3,
-        'profit_incomes_proc': -9.35,
-        'profit_incomes_sum': -0.65,
-        'profit_invested_proc': 14.54,
-        'profit_invested_sum': 0.8,
+        'profit_incomes_proc': -23.64,
+        'profit_incomes_sum': -1.95,
+        'profit_invested_proc': 9.56,
+        'profit_invested_sum': 0.55,
     }
 
     actual = T(_savings, _savings_worth).total_row
@@ -280,3 +311,32 @@ def test_savings_total_market_none_values():
     actual = T(None, None).total_market
 
     assert actual == 0
+
+
+def test_close_saving_no_profit():
+    arr = {
+        's_now': 15,
+        's_fee_now': 2,
+        's_close_from_now': 5,
+        's_close_from_fee_now': 40,
+    }
+
+    actual = T(_make_df(arr), None).balance[0]
+
+    assert actual['incomes'] == 15.0
+    assert actual['fees'] == 42.0
+    assert actual['invested'] == 0.0
+
+
+def test_close_saving_with_profit():
+    arr = {
+        's_now': 15,
+        's_fee_now': 2,
+        's_close_from_now': 32,
+    }
+
+    actual = T(_make_df(arr), None).balance[0]
+
+    assert actual['incomes'] == 15.0
+    assert actual['fees'] == 2.0
+    assert actual['invested'] == 0.0

@@ -84,27 +84,34 @@ class Balance(BalanceBase):
             0.0
             + df['s_fee_past']
             + df['s_change_from_fee_past']
+            + df['s_close_from_fee_past']
         )
 
         df['incomes'] = (
             0.0
-            + df['s_now']
             + df['past_amount']
+            + df['s_now']
             + df['s_change_to_now']
-            - df['s_change_from_now']
-            - df['s_change_from_fee_now']
         )
 
         df['fees'] = (
             0.0
-            + df['s_fee_now']
             + df['past_fee']
-            + df['s_close_from_now']
+            + df['s_fee_now']
             + df['s_close_from_fee_now']
             + df['s_change_from_fee_now']
         )
 
-        df['invested'] = df['incomes'] - df['fees']
+        df['invested'] = (
+            0.0
+            + df['incomes']
+            - df['fees']
+            - df['s_close_from_now']
+            - df['s_change_from_now']
+        )
+
+        # invested sum cannot be negated
+        df['invested'] = df['invested'].mask(df['invested'] < 0, 0.0)
 
         return df
 
