@@ -40,6 +40,22 @@ def test_account_list_no_field(mck):
     with patch(func, return_value=None):
         actual = obj._get_accounts()
 
+        assert {} == actual
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_account_list_no_field_no_closed(mck):
+    a1 = AccountFactory(title='A1')
+    a2 = AccountFactory(title='A2')
+
+    obj = T.SignalBase(instance=None)
+    obj.model_types = Account
+    obj.field = None
+
+    func = 'project.core.signals.SignalBase._get_id'
+    with patch(func, return_value=None):
+        actual = obj._get_accounts()
+
         assert {'A1': a1.id, 'A2': a2.id} == actual
 
 
