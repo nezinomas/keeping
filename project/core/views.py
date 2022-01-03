@@ -114,13 +114,18 @@ def filter_types(arr, year, leave_current_year = False):
 
     for _type, _year in closed.items():
         if _year:
+            _remove = False
             if leave_current_year:
                 # leave current year
                 if year > _year:
-                    arr.pop(_type)
+                    _remove = True
             else:
                 # remove current year
                 if year >= _year:
+                    _remove = True
+
+            if _remove:
+                if _type in arr:
                     arr.pop(_type)
 
 
