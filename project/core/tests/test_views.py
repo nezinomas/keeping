@@ -1,17 +1,19 @@
-from datetime import date
+from datetime import date, datetime
 
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
-
+from project.accounts.models import Account
 from project.journals.factories import JournalFactory
 
 from ...accounts.factories import AccountBalance, AccountFactory
 from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
-from ...pensions.factories import PensionBalance, PensionFactory
-from ...savings.factories import SavingBalance, SavingFactory, SavingTypeFactory
+from ...pensions.factories import (PensionBalance, PensionFactory,
+                                   PensionTypeFactory)
+from ...savings.factories import (SavingBalance, SavingFactory,
+                                  SavingTypeFactory)
 from .. import views
 from .utils import setup_view
 
@@ -206,153 +208,52 @@ def test_view_regenerate_balances_current_year_func_called(mck_pension,
 def test_accounts_method():
     obj = AccountFactory()
 
-    actual = views.accounts()
+    actual = views.accounts(6)
 
-    assert actual == {'closed': {}, 'Account1': obj.pk}
+    assert actual == {'Account1': obj.pk}
 
 
 def test_accounts_method_with_closed():
     obj1 = AccountFactory()
     obj2 = AccountFactory(title='XXX', closed=66)
 
-    actual = views.accounts()
+    actual = views.accounts(66)
 
-    assert actual == {'closed': {'XXX': 66}, 'Account1': obj1.pk, 'XXX': obj2.pk}
+    assert actual == {obj1.title: obj1.pk, obj2.title: obj2.pk}
 
 
 def test_savings_method():
     obj = SavingTypeFactory()
 
-    actual = views.savings()
+    actual = views.savings(1999)
 
-    assert actual == {'closed': dict(), 'Savings': obj.pk}
+    assert actual == {'Savings': obj.pk}
 
 
 def test_savings_method_with_closed():
     obj1 = SavingFactory()
     obj2 = SavingTypeFactory(title='x', closed=66)
 
-    actual = views.savings()
+    actual = views.savings(66)
 
-    assert actual == {'closed': {'x': 66}, 'Savings': obj1.pk, 'x': obj2.pk}
+    assert actual == {obj1.saving_type.title: obj1.pk}
 
 
 def test_pensions_method():
     obj = PensionFactory()
 
-    actual = views.pensions()
+    actual = views.pensions(1999)
 
-    assert actual == {'PensionType': obj.pk}
-
-
-def test_filter_types_1():
-    arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
-
-    actual = views.filter_types(arr, 67)
-
-    assert actual == {'y': 2}
-
-
-def test_filter_types_when_update_year_in_future_leave_current():
-    arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
-
-    actual = views.filter_types(arr, 67, True)
-
-    assert actual == {'y': 2}
-
-
-def test_filter_types_when_update_year_in_past():
-    arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
-
-    actual = views.filter_types(arr, 65)
-
-    assert actual == {'x': 1, 'y': 2}
-
-
-def test_filter_types_when_update_year_equal_closed():
-    arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
-
-    actual = views.filter_types(arr, 66)
-
-    assert actual == {'y': 2}
-
-
-def test_filter_types_when_update_year_equal_closed_leave_year():
-    arr = {'x': 1, 'y': 2, 'closed': {'x': 66}}
-
-    actual = views.filter_types(arr, 66, True)
-
-    assert actual == {'x': 1, 'y': 2}
-
-
-def test_filter_types_2():
-    arr = {'x': 1, 'y': 2, 'closed': {}}
-
-    actual = views.filter_types(arr, 67)
-
-    assert actual == {'x': 1, 'y': 2}
-
-
-def test_filter_types_preserve_orginal_arr():
-    arr = {'x': 1, 'y': 2, 'closed': {'x': 99}}
-
-    views.filter_types(arr, 99)
-
-    assert arr == {'x': 1, 'y': 2, 'closed': {'x': 99}}
-
-
-def test_filter_real_values_1():
-    arr = {
-        'closed': {'SEB Gyvybės kaupiamasis': 2019},
-        'SEB Asia ex. Japan Fund': 5,
-        'SEB Concept Biotechnology': 4,
-        'SEB Gyvybės kaupiamasis': 7,
-        'SEB Nordic Equity Fund': 6,
-        'SEB Strategy Growth': 3,
-        'INVL Extremo': 2,
-        'Apple': 10,
-        'MicroSoft': 8,
-        'Tesla': 9
-    }
-
-    actual = views.filter_types(arr, 2020)
-
-    assert 'SEB Gyvybės kaupiamasis' not in actual
-
-
-def test_filter_real_values_2():
-    arr = {
-        'closed': {'SEB Gyvybės kaupiamasis': 2019},
-        'SEB Asia ex. Japan Fund': 5,
-        'SEB Concept Biotechnology': 4,
-        'SEB Gyvybės kaupiamasis': 7,
-        'SEB Nordic Equity Fund': 6,
-        'SEB Strategy Growth': 3,
-        'INVL Extremo': 2,
-        'Apple': 10,
-        'MicroSoft': 8,
-        'Tesla': 9
-    }
-
-    actual = views.filter_types(arr, 2019)
-
-    assert 'SEB Gyvybės kaupiamasis' not in actual
+    assert actual == {obj.pension_type.title: obj.pk}
 
 
 def test_make_arr_1():
     _arr = [
-        {'id': 1, 'title': 'X', 'closed': None},
-        {'id': 2, 'title': 'Y', 'closed': 2000},
-        {'id': 3, 'title': 'Z', 'closed': 2001},
+        {'id': 1, 'title': 'X'},
+        {'id': 2, 'title': 'Y'},
     ]
 
     actual = views._make_arr(_arr)
 
-    expect = {
-        'closed': {'Y': 2000, 'Z': 2001},
-        'X': 1,
-        'Y': 2,
-        'Z': 3
-    }
-
-    assert actual == expect
+    assert actual['X'] == 1
+    assert actual['Y'] == 2

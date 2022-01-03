@@ -189,7 +189,6 @@ class SignalBase():
         return account_id
 
     def _get_accounts(self) -> Dict[str, int]:
-
         if self.field == 'saving_type_id':
             qs = (
                 self.model_types
@@ -204,6 +203,9 @@ class SignalBase():
                 .objects
                 .items(year=self.year)
             )
+
+        # filter created type from future
+        qs = qs.filter(created__year__lte=self.year)
 
         account_id = self._get_id()
 

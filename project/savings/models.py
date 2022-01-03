@@ -17,6 +17,9 @@ class SavingType(TitleAbstract):
         FUNDS = 'funds', _('Funds')
         PENSIONS = 'pensions', _('Pensions')
 
+    created = models.DateTimeField(
+        auto_now_add=True
+    )
     closed = models.PositiveIntegerField(
         blank=True,
         null=True,

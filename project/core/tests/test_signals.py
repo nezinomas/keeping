@@ -1,8 +1,9 @@
+from datetime import datetime
 from types import SimpleNamespace
 
 import pytest
 from mock import patch
-
+from freezegun import freeze_time
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import Account, AccountBalance
 from ...savings.factories import SavingBalanceFactory, SavingTypeFactory
@@ -97,6 +98,23 @@ def test_saving_list_filter_closed_not_leave_current(mck):
     SavingTypeFactory(title='A2', closed=1999)
 
     obj = T.SignalBase(instance=None)
+    obj.model_types = SavingType
+    obj.field = 'saving_type_id'
+
+    func = 'project.core.signals.SignalBase._get_id'
+    with patch(func, return_value=None):
+        actual = obj._get_accounts()
+
+        assert {} == actual
+
+
+@freeze_time('1-1-1')
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_saving_list_filter_created_in_future(mck):
+    SavingTypeFactory(title='A1')
+    SavingTypeFactory(title='A2')
+
+    obj = T.SignalBase(instance=None, year=1)
     obj.model_types = SavingType
     obj.field = 'saving_type_id'
 
