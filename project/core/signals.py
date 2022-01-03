@@ -22,6 +22,7 @@ from .lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
 # ----------------------------------------------------------------------------
 #                                                               AccountBalance
 # ----------------------------------------------------------------------------
+@receiver(post_save, sender=Account)
 @receiver(post_save, sender=Income)
 @receiver(post_delete, sender=Income)
 @receiver(post_save, sender=Expense)
@@ -59,6 +60,7 @@ def accounts_post_signal(sender: object,
 @receiver(post_save, sender=SavingChange)
 @receiver(post_delete, sender=SavingChange)
 @receiver(post_save, sender=SavingWorth)
+@receiver(post_save, sender=SavingType)
 def savings_post_signal(sender: object,
                         instance: object,
                         year: int = None,
@@ -73,6 +75,7 @@ def savings_post_signal(sender: object,
 @receiver(post_save, sender=Pension)
 @receiver(post_delete, sender=Pension)
 @receiver(post_save, sender=PensionWorth)
+@receiver(post_save, sender=PensionType)
 def pensions_post_signal(sender: object,
                          instance: object,
                          year: int = None,
