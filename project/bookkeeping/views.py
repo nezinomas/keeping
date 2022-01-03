@@ -131,20 +131,26 @@ class Detailed(IndexMixin):
 
         # Incomes
         qs = Income.objects.sum_by_month_and_type(year)
-        H.detailed_context(context, qs, _('Incomes'))
+        if qs.exists():
+            H.detailed_context(context, qs, _('Incomes'))
 
         # Savings
         qs = Saving.objects.sum_by_month_and_type(year)
-        H.detailed_context(context, qs, _('Savings'))
+        if qs.exists():
+            H.detailed_context(context, qs, _('Savings'))
 
         # Expenses
         qs = [*Expense.objects.sum_by_month_and_name(year)]
         expenses_types = H.expense_types()
         for title in expenses_types:
-            filtered = filter(lambda x: title in x['type_title'], qs)
+            filtered = [*filter(lambda x: title in x['type_title'], qs)]
+
+            if not filtered:
+                continue
+
             H.detailed_context(
                 context=context,
-                data=[*filtered],
+                data=filtered,
                 name=_('Expenses / %(title)s') % ({'title': title})
             )
 
