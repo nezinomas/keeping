@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.http.response import JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -50,9 +51,6 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
         dummy = SimpleNamespace()
 
         _years = years()
-        _pensions = pensions()
-        _accounts = accounts()
-        _savings = savings()
 
         # clean balance tables
         AccountBalance.objects.filter(account__journal=journal).delete()
@@ -60,12 +58,31 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
         PensionBalance.objects.filter(pension_type__journal=journal).delete()
 
         for year in _years:
+            _pensions = pensions(year)
+            _accounts = accounts(year)
+            _savings = savings(year)
+
             if year > datetime.now().year:
                 continue
 
-            SignalBase.accounts(dummy, dummy, year, filter_types(_accounts, year, True))
-            SignalBase.savings(dummy, dummy, year, filter_types(_savings, year))
-            SignalBase.pensions(dummy, dummy, year, _pensions)
+            SignalBase.accounts(
+                sender=dummy,
+                instance=dummy,
+                year=year,
+                types=_accounts
+            )
+            SignalBase.savings(
+                sender=dummy,
+                instance=dummy,
+                year=year,
+                types=_savings
+            )
+            SignalBase.pensions(
+                sender=dummy,
+                instance=dummy,
+                year=year,
+                types=_pensions
+            )
 
         return JsonResponse({'redirect': self.redirect_view})
 
@@ -84,61 +101,67 @@ class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View)
         SavingBalance.objects.filter(saving_type__journal=journal, year=year).delete()
         PensionBalance.objects.filter(pension_type__journal=journal, year=year).delete()
 
-        SignalBase.accounts(dummy, dummy, year, filter_types(accounts(), year, True))
-        SignalBase.savings(dummy, dummy, year, filter_types(savings(), year))
-        SignalBase.pensions(dummy, dummy, year, pensions())
+        SignalBase.accounts(
+            sender=dummy,
+            instance=dummy,
+            year=year,
+            types=accounts(year)
+        )
+        SignalBase.savings(
+            sender=dummy,
+            instance=dummy,
+            year=year,
+            types=savings(year)
+        )
+        SignalBase.pensions(
+            sender=dummy,
+            instance=dummy,
+            year=year,
+            types=pensions(year)
+        )
 
         return JsonResponse({'redirect': self.redirect_view})
 
 
-def accounts():
-    qs = Account.objects.related().values('id', 'title', 'closed')
-
+def accounts(year):
+    qs = (
+        Account
+        .objects
+        .items(year)
+        .filter(created__year__lte=year)
+        .values('id', 'title')
+    )
     return _make_arr(qs)
 
 
-def savings():
-    qs = SavingType.objects.related().values('id', 'title', 'closed')
-
+def savings(year):
+    qs = (
+        SavingType
+        .objects
+        .related()
+        .filter(
+            Q(closed__isnull=True) | Q(closed__gt=year))
+        .filter(created__year__lte=year)
+        .values('id', 'title')
+    )
     return _make_arr(qs)
 
 
-def pensions():
-    qs = PensionType.objects.items().values('id', 'title')
-    return {x['title']: x['id'] for x in qs}
-
-
-def filter_types(arr, year, leave_current_year = False):
-    arr = arr.copy()
-    closed = arr.pop('closed')
-
-    for _type, _year in closed.items():
-        if _year:
-            _remove = False
-            if leave_current_year:
-                # leave current year
-                if year > _year:
-                    _remove = True
-            else:
-                # remove current year
-                if year >= _year:
-                    _remove = True
-
-            if _remove:
-                if _type in arr:
-                    arr.pop(_type)
-
-
-    return arr
+def pensions(year):
+    qs = (
+        PensionType
+        .objects
+        .items()
+        .filter(created__year__lte=year)
+        .values('id', 'title')
+    )
+    return _make_arr(qs)
 
 
 def _make_arr(qs):
-    rtn = {'closed': {}}
+    rtn = {}
 
     for x in qs:
         rtn[x['title']] = x['id']
-
-        if x.get('closed'):
-            rtn['closed'].update({x['title']: x['closed']})
 
     return rtn

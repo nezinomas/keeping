@@ -1,7 +1,10 @@
 from datetime import date as dt
+from datetime import datetime
 from decimal import Decimal
 
 import factory
+import pytz
+from django.db import models
 
 from ..accounts.factories import AccountFactory
 from ..journals.factories import JournalFactory
@@ -16,6 +19,20 @@ class SavingTypeFactory(factory.django.DjangoModelFactory):
     title = 'Savings'
     journal = factory.SubFactory(JournalFactory)
 
+    @classmethod
+    def _create(cls, target_class, *args, **kwargs):
+        created = kwargs.pop('created', None)
+
+        obj = super()._create(target_class, *args, **kwargs)
+
+        if created is not None:
+            obj.created = created
+        else:
+            obj.created = datetime(1, 1, 1, tzinfo=pytz.utc)
+
+        models.Model.save(obj)
+
+        return obj
 
 class SavingFactory(factory.django.DjangoModelFactory):
     class Meta:
