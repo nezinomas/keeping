@@ -28,7 +28,7 @@ class SavingTypeFactory(factory.django.DjangoModelFactory):
         if created is not None:
             obj.created = created
         else:
-            obj.created = datetime(1, 1, 1, tzinfo=pytz.utc)
+            obj.created = datetime(2, 2, 2, tzinfo=pytz.utc)
 
         models.Model.save(obj)
 
