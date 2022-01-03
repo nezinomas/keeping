@@ -14,6 +14,9 @@ class PensionType(TitleAbstract):
         on_delete=models.CASCADE,
         related_name='pension_types'
     )
+    created = models.DateTimeField(
+        auto_now_add=True
+    )
 
     # Managers
     objects = managers.PensionTypeQuerySet.as_manager()

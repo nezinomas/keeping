@@ -10,6 +10,9 @@ class Account(TitleAbstract):
     order = models.PositiveIntegerField(
         default=10
     )
+    created = models.DateTimeField(
+        auto_now_add=True
+    )
     closed = models.PositiveIntegerField(
         blank=True,
         null=True,
