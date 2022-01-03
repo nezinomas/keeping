@@ -350,8 +350,6 @@ def accounts_worth():
         )
 
 
-
-
 @pytest.fixture()
 def savings_worth():
     with mock.patch('django.utils.timezone.now') as mock_now:
@@ -373,7 +371,6 @@ def savings_worth():
             price=6.15,
             saving_type=SavingTypeFactory(title='Saving2')
         )
-
 
 
 @pytest.fixture()
