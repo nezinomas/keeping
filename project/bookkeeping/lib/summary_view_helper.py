@@ -13,7 +13,8 @@ def chart_data(*args):
         if not arr or not isinstance(arr, list):
             continue
 
-        for i in range(0, len(args[0])):
+        cnt = len(arr)
+        for i in range(0, cnt):
             _y = arr[i]['year']
             _i= arr[i]['invested']
             _p = arr[i]['profit']
