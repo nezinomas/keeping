@@ -20,7 +20,7 @@
     <tbody>
         {% for item in items %}
         <tr>
-            <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="{{ item.latest_check }}" class="text-start">
+            <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="{{ item.latest_check|default:_('Not specified') }}" class="text-start">
                 <div style="position:relative;">
                     {{ item.title }}
                     <span style="position: absolute; top: -0.5px; right: 5px; display: block;">
