@@ -339,7 +339,7 @@ def accounts_worth():
         mock_now.return_value = datetime(1999, 1, 1, tzinfo=pytz.utc)
 
         AccountWorthFactory(
-            date=datetime(1999, 1, 1, tzinfo=pytz.utc),
+            date=datetime(1999, 1, 2, tzinfo=pytz.utc),
             price=3.25,
             account=AccountFactory(title='Account1')
         )
@@ -364,10 +364,12 @@ def savings_worth():
         mock_now.return_value = datetime(1999, 1, 1, tzinfo=pytz.utc)
 
         SavingWorthFactory(
+            date=datetime(1999, 1, 2, tzinfo=pytz.utc),
             price=0.15,
             saving_type=SavingTypeFactory(title='Saving1')
         )
         SavingWorthFactory(
+            date=datetime(1999, 1, 1, tzinfo=pytz.utc),
             price=6.15,
             saving_type=SavingTypeFactory(title='Saving2')
         )

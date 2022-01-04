@@ -48,6 +48,7 @@ class AccountWorth(models.Model):
 
     class Meta:
         get_latest_by = ['date']
+        ordering = ['-date']
 
     def __str__(self):
         return f'{self.date:%Y-%m-%d %H:%M} - {self.account}'
@@ -70,6 +71,7 @@ class PensionWorth(models.Model):
     )
 
     class Meta:
+        ordering = ['-date']
         get_latest_by = ['date']
 
     def __str__(self):
