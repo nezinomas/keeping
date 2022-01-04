@@ -1,35 +1,32 @@
+from functools import reduce
+from operator import and_, or_
+
 from django.db import models
-from django.db.models import F, Max
+from django.db.models import F, Max, Q
 
 from ..core.lib import utils
 
 
 class QsMixin():
-    def year_filter(self, year, field='date'):
-        if year:
-            return self.filter(**{f'{field}__year': year})
-
-        return self
-
     def latest_check(self, field, year=None):
         qs = [*(
             self
             .related()
-            .year_filter(year)
             .values(f'{field}_id')
             .annotate(latest_date=Max('date'))
             .order_by('-latest_date')
         )]
 
-        dates = []
-        field_id = []
+        items = []
         for x in qs:
-            dates.append(x['latest_date'])
-            field_id.append(x[f'{field}_id'])
+            items.append(
+                Q(date=x['latest_date'])
+                & Q(**{f'{field}_id': x[f'{field}_id']})
+            )
 
         qs = (
             self
-            .filter(**{'date__in': dates, f'{field}_id__in': field_id})
+            .filter(reduce(or_, items))
             .values(
                 title=F(f'{field}__title'),
                 have=F('price'),
