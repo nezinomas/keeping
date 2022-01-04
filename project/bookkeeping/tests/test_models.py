@@ -50,11 +50,12 @@ def test_account_worth_latest_values(accounts_worth):
     actual = list(AccountWorth.objects.items())
 
     expect = [
-        {'title': 'Account1', 'have': 3.25},
-        {'title': 'Account2', 'have': 8.0},
+        {'title': 'Account1', 'have': Decimal('3.25')},
+        {'title': 'Account2', 'have': Decimal('8.00')},
     ]
 
     assert_(expect, actual)
+
 
 
 def test_account_worth_queries(accounts_worth,
@@ -102,7 +103,7 @@ def test_saving_worth_latest_values(savings_worth):
 
     assert actual[0]['title'] ==  'Saving1'
     assert actual[0]['have'] == Decimal('0.15')
-    assert actual[0]['latest_check'] == dt(1999, 1, 1, tzinfo = pytz.utc)
+    assert actual[0]['latest_check'] == dt(1999, 1, 2, tzinfo = pytz.utc)
 
     assert actual[1]['title'] ==  'Saving2'
     assert actual[1]['have'] == Decimal('6.15')

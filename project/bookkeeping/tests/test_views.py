@@ -101,7 +101,7 @@ def test_index_account_worth_then_last_check_empty(client_logged):
 
     actual = response.context['accounts']
 
-    assert 'data-bs-title="None"' in actual
+    assert 'data-bs-title="Nenurodyta"' in actual
     assert '0,2' in actual
 
 
@@ -368,7 +368,7 @@ def test_account_worth_reset(client_logged):
     url = reverse('bookkeeping:accounts_worth_reset', kwargs={'pk': a.account.pk})
     client_logged.get(url)
 
-    actual = models.AccountWorth.objects.last()
+    actual = models.AccountWorth.objects.latest('id')
 
     assert actual.price == Decimal(0.0)
 
@@ -398,7 +398,7 @@ def test_account_worth_reset_other_journal_account(client_logged, main_user, sec
     response = client_logged.get(url)
 
     assert response.status_code == 204
-    assert models.AccountWorth.objects.last().price == Decimal('666')
+    assert models.AccountWorth.objects.latest('id').price == Decimal('666')
 
 
 def test_account_worth_reset_no_worth_record(client_logged):

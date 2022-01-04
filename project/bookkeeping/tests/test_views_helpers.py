@@ -94,7 +94,7 @@ def test_add_latest_check_key_date_found():
 
     actual = [{'title': 'x'}]
 
-    T.add_latest_check_key(model, actual)
+    T.add_latest_check_key(model, actual,666)
 
     assert actual == [{'title': 'x', 'latest_check': 'a'}]
 
@@ -105,7 +105,7 @@ def test_add_latest_check_key_date_not_found():
 
     actual = [{'title': 'x'}]
 
-    T.add_latest_check_key(model, actual)
+    T.add_latest_check_key(model, actual, 666)
 
     assert actual == [{'title': 'x', 'latest_check': None}]
 
