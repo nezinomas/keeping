@@ -24,6 +24,9 @@ class QsMixin():
                 & Q(**{f'{field}_id': x[f'{field}_id']})
             )
 
+        if not items:
+            return None
+
         qs = (
             self
             .filter(reduce(or_, items))
