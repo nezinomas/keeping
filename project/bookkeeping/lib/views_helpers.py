@@ -91,8 +91,8 @@ def average(qs):
     return arr
 
 
-def add_latest_check_key(model, arr):
-    items = model.objects.items()
+def add_latest_check_key(model, arr, year):
+    items = model.objects.items(year)
 
     if items:
         for a in arr:
@@ -357,7 +357,7 @@ class IndexHelper():
 
     def render_accounts(self, to_string = True):
         # add latest_check date to accounts dictionary
-        add_latest_check_key(AccountWorth, self._account)
+        add_latest_check_key(AccountWorth, self._account, self._year)
 
         context = {
             'items': self._account,
@@ -377,19 +377,19 @@ class IndexHelper():
         funds = self._funds
         incomes = self._YearBalance.total_row.get('incomes')
         savings = self._YearBalance.total_row.get('savings')
-        context = IndexHelper.savings_context(funds, incomes, savings)
+        context = IndexHelper.savings_context(funds, incomes, savings, self._year)
 
         return context if context else {}
 
     @staticmethod
-    def savings_context(funds, incomes, savings):
+    def savings_context(funds, incomes, savings, year):
         total_row = sum_all(funds)
 
         if not total_row.get('invested'):
             return {}
 
         # add latest_check date to savibgs dictionary
-        add_latest_check_key(SavingWorth, funds)
+        add_latest_check_key(SavingWorth, funds, year)
 
         context = {
             'title': _('Funds'),
@@ -414,19 +414,19 @@ class IndexHelper():
         return context
 
     def render_pensions(self):
-        context = IndexHelper.pensions_context(self._pensions)
+        context = IndexHelper.pensions_context(self._pensions, self._year)
 
         return context if context else {}
 
     @staticmethod
-    def pensions_context(pensions):
+    def pensions_context(pensions, year):
         total_row = sum_all(pensions)
 
         if not total_row.get('invested'):
             return {}
 
         # add latest_check date to pensions dictionary
-        add_latest_check_key(PensionWorth, pensions)
+        add_latest_check_key(PensionWorth, pensions, year)
 
         context = {
             'title': _('Pensions'),

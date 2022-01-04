@@ -68,7 +68,8 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
             **H.IndexHelper.savings_context(
                 funds,
                 incomes.get('price__sum', 0),
-                savings.get('price__sum', 0)
+                savings.get('price__sum', 0),
+                year
             )
         })
         return context
@@ -102,7 +103,7 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
         pensions = PensionBalance.objects.year(year)
 
         context.update({
-            **H.IndexHelper.pensions_context(pensions)
+            **H.IndexHelper.pensions_context(pensions, year)
         })
 
         return context

@@ -41,6 +41,16 @@ class QsMixin():
 
 
 class SavingWorthQuerySet(QsMixin, models.QuerySet):
+    def filter_created_and_closed(self, year):
+        if year:
+            return self.filter(
+                Q(saving_type__closed__isnull=True) |
+                Q(saving_type__closed__gte=year) &
+                Q(saving_type__created__year__lte=year)
+            )
+
+        return self
+
     def related(self):
         journal = utils.get_user().journal
         return (
@@ -50,10 +60,24 @@ class SavingWorthQuerySet(QsMixin, models.QuerySet):
         )
 
     def items(self, year=None):
-        return self.latest_check(field='saving_type', year=year)
+        return (
+            self
+            .filter_created_and_closed(year)
+            .latest_check(field='saving_type', year=year)
+        )
 
 
 class AccountWorthQuerySet(QsMixin, models.QuerySet):
+    def filter_created_and_closed(self, year):
+        if year:
+            return self.filter(
+                Q(account__closed__isnull=True) |
+                Q(account__closed__gte=year) &
+                Q(account__created__year__lte=year)
+            )
+
+        return self
+
     def related(self):
         journal = utils.get_user().journal
         return (
@@ -63,10 +87,22 @@ class AccountWorthQuerySet(QsMixin, models.QuerySet):
         )
 
     def items(self, year=None):
-        return self.latest_check(field='account', year=year)
+        return (
+            self
+            .filter_created_and_closed(year)
+            .latest_check(field='account', year=year)
+        )
 
 
 class PensionWorthQuerySet(QsMixin, models.QuerySet):
+    def filter_created(self, year):
+        if year:
+            return self.filter(
+                Q(pension_type__created__year__lte=year)
+            )
+
+        return self
+
     def related(self):
         journal = utils.get_user().journal
         return (
@@ -76,4 +112,8 @@ class PensionWorthQuerySet(QsMixin, models.QuerySet):
         )
 
     def items(self, year=None):
-        return self.latest_check(field='pension_type', year=year)
+        return (
+            self
+            .filter_created(year)
+            .latest_check(field='pension_type', year=year)
+        )
