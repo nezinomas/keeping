@@ -369,8 +369,8 @@ def test_saving_balance_related_for_user(main_user, second_user):
     s1 = SavingTypeFactory(title='S1', journal=main_user.journal)
     s2 = SavingTypeFactory(title='S2', journal=second_user.journal)
 
-    SavingBalanceFactory(saving_type=s1)
-    SavingBalanceFactory(saving_type=s2)
+    SavingFactory(saving_type=s1)
+    SavingFactory(saving_type=s2)
 
     actual = SavingBalance.objects.related()
 
@@ -403,20 +403,7 @@ def test_saving_balance_items_queries(django_assert_num_queries):
 
 
 def test_saving_balance_new_post_save_account_balace():
-    a1 = AccountFactory()
-    AccountFactory(title='a2')
-
-    s1 = SavingTypeFactory()
-
-    obj = Saving(
-        date=date(1999, 1, 1),
-        price=Decimal(1),
-        fee=Decimal(0.5),
-        account=a1,
-        saving_type=s1
-    )
-
-    obj.save()
+    SavingFactory()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -427,8 +414,8 @@ def test_saving_balance_new_post_save_account_balace():
     assert actual['title'] == 'Account1'
     assert actual['past'] == 0.0
     assert actual['incomes'] == 0.0
-    assert actual['expenses'] == 1.0
-    assert actual['balance'] == -1.0
+    assert actual['expenses'] == 150.0
+    assert actual['balance'] == -150.0
 
 
 def test_saving_balance_new_post_save_saving_balance():

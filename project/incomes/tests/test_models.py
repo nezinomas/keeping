@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 import pytest
@@ -243,23 +243,38 @@ def test_income_post_delete_with_update():
 
 
 def test_income_new_post_save_count_qs(django_assert_max_num_queries):
-    AccountFactory()
-    IncomeTypeFactory()
+    a = AccountFactory()
+    t = IncomeTypeFactory()
 
-    assert AccountBalance.objects.all().count() == 0
-
-    with django_assert_max_num_queries(27):
-        IncomeFactory()
-
-
-def test_income_update_post_save_count_qs(django_assert_max_num_queries):
-    IncomeTypeFactory()
-    AccountBalanceFactory()
+    with django_assert_max_num_queries(20):
+        Income.objects.create(
+            date = date(2000, 1, 1),
+            price = Decimal('2'),
+            account = a,
+            income_type = t
+        )
 
     assert AccountBalance.objects.all().count() == 1
 
-    with django_assert_max_num_queries(25):
-        IncomeFactory()
+
+def test_income_update_post_save_count_qs(django_assert_max_num_queries):
+    a = AccountFactory()
+    t = IncomeTypeFactory()
+    obj = Income.objects.create(
+        date=date(1999, 1, 1),
+        price=Decimal('2'),
+        account=a,
+        income_type=t
+    )
+
+    assert AccountBalance.objects.all().count() == 1
+
+    with django_assert_max_num_queries(20):
+        obj.price = Decimal('6')
+        obj.save()
+
+    assert AccountBalance.objects.all().count() == 1
+    assert AccountBalance.objects.last().incomes == Decimal('6')
 
 
 def test_income_years_sum():

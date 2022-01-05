@@ -1,11 +1,15 @@
+from datetime import datetime
+
 import factory
+import pytz
+from django.db.models import Model
 from factory.django import DjangoModelFactory
 
 from ..accounts.factories import AccountFactory
 from ..pensions.factories import PensionTypeFactory
 from ..savings.factories import SavingTypeFactory
 from . import models
-
+from django.utils import timezone
 
 class SavingWorthFactory(DjangoModelFactory):
     class Meta:
@@ -14,11 +18,20 @@ class SavingWorthFactory(DjangoModelFactory):
     saving_type = factory.SubFactory(SavingTypeFactory)
     price = 0.5
 
-    @factory.post_generation
-    def date(self, create, extracted, **kwargs):
-        if extracted:
-            self.date = extracted
+    @classmethod
+    def _create(cls, target_class, *args, **kwargs):
+        _date = kwargs.pop('date', None)
 
+        obj = super()._create(target_class, *args, **kwargs)
+
+        if _date is not None:
+            obj.date = _date
+        else:
+            obj.date = timezone.now()
+
+        Model.save(obj)
+
+        return obj
 
 class AccountWorthFactory(DjangoModelFactory):
     class Meta:

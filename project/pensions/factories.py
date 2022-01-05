@@ -5,6 +5,7 @@ from decimal import Decimal
 import factory
 import pytz
 from django.db import models
+from django.db.models import signals
 
 from ..journals.factories import JournalFactory
 from .models import Pension, PensionBalance, PensionType
@@ -44,6 +45,7 @@ class PensionFactory(factory.django.DjangoModelFactory):
     pension_type = factory.SubFactory(PensionTypeFactory)
 
 
+@factory.django.mute_signals(signals.post_save)
 class PensionBalanceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PensionBalance

@@ -81,7 +81,6 @@ def test_no_incomes_no_data(client_logged):
 
 @freeze_time('1999-1-1')
 def test_index_account_worth(client_logged):
-    AccountBalanceFactory()
     AccountWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
     AccountWorthFactory(date=datetime(1999, 2, 2, tzinfo=pytz.utc), price=555)
 
@@ -106,29 +105,28 @@ def test_index_account_worth_then_last_check_empty(client_logged):
 
 
 def test_index_savings_worth(client_logged):
-    SavingFactory()
     SavingWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
-    SavingWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
+    SavingWorthFactory(date=datetime(1998, 2, 2, tzinfo=pytz.utc))
 
     url = reverse('bookkeeping:index')
     response = client_logged.get(url)
 
     exp = [x['items'] for x in response.context if x.get('title') == 'Fondai'][0][0]
 
-    assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
+    assert exp['latest_check'] == datetime(1998, 2, 2, tzinfo=pytz.utc)
 
 
 def test_index_pension_worth(client_logged):
     PensionFactory()
     PensionWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
-    PensionWorthFactory(date=datetime(2222, 2, 2, tzinfo=pytz.utc))
+    PensionWorthFactory(date=datetime(1998, 2, 2, tzinfo=pytz.utc))
 
     url = reverse('bookkeeping:index')
     response = client_logged.get(url)
 
     exp = [x['items'] for x in response.context if x.get('title') == 'Pensijos'][0][0]
 
-    assert exp['latest_check'] == datetime(2222, 2, 2, tzinfo=pytz.utc)
+    assert exp['latest_check'] == datetime(1998, 2, 2, tzinfo=pytz.utc)
 
 
 # ---------------------------------------------------------------------------------------

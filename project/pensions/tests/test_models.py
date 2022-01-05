@@ -183,21 +183,34 @@ def test_pension_post_delete_with_update():
 
 
 def test_pension_new_post_save_count_queries(django_assert_max_num_queries):
-    PensionTypeFactory()
-
-    assert PensionBalance.objects.all().count() == 0
-
-    with django_assert_max_num_queries(13):
-        PensionFactory()
-
-
-def test_pension_update_post_save_count_queries(django_assert_max_num_queries):
-    PensionBalanceFactory()
+    t = PensionTypeFactory()
 
     assert PensionBalance.objects.all().count() == 1
 
-    with django_assert_max_num_queries(11):
-        PensionFactory()
+    with django_assert_max_num_queries(8):
+        Pension.objects.create(
+            date = date(1999, 1, 1),
+            price = Decimal('1'),
+            pension_type =t
+        )
+
+
+def test_pension_update_post_save_count_queries(django_assert_max_num_queries):
+    t = PensionTypeFactory()
+    obj = Pension.objects.create(
+        date=date(1999, 1, 1),
+        price=Decimal('1'),
+        pension_type=t
+    )
+
+    assert PensionBalance.objects.all().count() == 1
+
+    with django_assert_max_num_queries(8):
+        obj.price = Decimal('2')
+        obj.save()
+
+    actual = PensionBalance.objects.last()
+    assert actual.incomes == Decimal('2')
 
 
 # ----------------------------------------------------------------------------
@@ -230,8 +243,8 @@ def test_pension_balance_related_for_user(main_user, second_user):
     p1 = PensionTypeFactory(title='P1', journal=main_user.journal)
     p2 = PensionTypeFactory(title='P2', journal=second_user.journal)
 
-    PensionBalanceFactory(pension_type=p1)
-    PensionBalanceFactory(pension_type=p2)
+    PensionFactory(pension_type=p1)
+    PensionFactory(pension_type=p2)
 
     actual = PensionBalance.objects.related()
 

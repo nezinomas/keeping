@@ -1,10 +1,10 @@
-from datetime import date
 from datetime import datetime as dt
 from decimal import Decimal
 
 import mock
 import pytest
 import pytz
+from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
@@ -75,11 +75,9 @@ def test_account_worth_post_save():
 # ---------------------------------------------------------------------------------------
 #                                                                  SavingWorth
 # ---------------------------------------------------------------------------------------
+@freeze_time('1999-1-1 2:3:4')
 def test_saving_worth_str():
-    with mock.patch('django.utils.timezone.now') as mock_now:
-        mock_now.return_value = dt(1999, 1, 1, 2, 3, 4, tzinfo=pytz.utc)
-
-        model = SavingWorthFactory()
+    model = SavingWorthFactory()
 
     assert str(model) == '1999-01-01 02:03 - Savings'
 
