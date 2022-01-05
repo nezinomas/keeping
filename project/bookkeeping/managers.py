@@ -8,10 +8,16 @@ from ..core.lib import utils
 
 
 class QsMixin():
+    def filter_by_year(self, year):
+        if year:
+            return self.filter(**{'date__year__gte': (year - 1), 'date__year__lte': year})
+        return self
+
     def latest_check(self, field, year=None):
         qs = [*(
             self
             .related()
+            .filter_by_year(year)
             .values(f'{field}_id')
             .annotate(latest_date=Max('date'))
             .order_by('-latest_date')
