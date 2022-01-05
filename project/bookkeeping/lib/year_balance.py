@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict, List
 
 from pandas import DataFrame as DF
@@ -40,7 +41,7 @@ class YearBalance(BalanceBase):
             amount_start = 0.0
 
         self._amount_start = amount_start
-
+        self._year = year
         # ToDo: delete after some time (commented on 2021.08.26)
         # if not incomes and not expenses:
         #     return
@@ -86,8 +87,22 @@ class YearBalance(BalanceBase):
 
     @property
     def avg_expenses(self) -> float:
-        avg = super().average
+        _year = datetime.now().year
+        _month = datetime.now().month
 
+        # if  now().year == user.profile.year
+        # calculate average till current month
+        if self._year == _year:
+            avg = 0.0
+            arr = super().balance
+
+            for x in range(0, _month):
+                avg += arr[x]['expenses']
+
+            return avg / _month
+
+        # else return default average from super()
+        avg = super().average
         return avg.get('expenses', 0.0)
 
     @property

@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
 from pandas import Timestamp as pdTime
 
 from ..lib.year_balance import YearBalance
@@ -574,3 +575,39 @@ def test_avg_expenses_none():
     ).avg_expenses
 
     assert actual == 0.0
+
+
+@freeze_time('1999-2-1')
+def test_avg_expenses_current_year():
+    expenses = [
+        {'date': date(1999, 1, 1), 'sum': Decimal('1')},
+        {'date': date(1999, 2, 1), 'sum': Decimal('2')},
+        {'date': date(1999, 3, 1), 'sum': Decimal('3')},
+    ]
+
+    actual = YearBalance(
+        year=1999,
+        incomes=None,
+        expenses=expenses,
+        amount_start=None
+    ).avg_expenses
+
+    assert actual == 1.5
+
+
+@freeze_time('2000-2-1')
+def test_avg_expenses_not_current_year():
+    expenses = [
+        {'date': date(1999, 1, 1), 'sum': Decimal('1')},
+        {'date': date(1999, 2, 1), 'sum': Decimal('2')},
+        {'date': date(1999, 3, 1), 'sum': Decimal('3')},
+    ]
+
+    actual = YearBalance(
+        year=1999,
+        incomes=None,
+        expenses=expenses,
+        amount_start=None
+    ).avg_expenses
+
+    assert actual == 2.0
