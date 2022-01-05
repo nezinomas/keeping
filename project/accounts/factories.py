@@ -3,6 +3,7 @@ from datetime import datetime
 import factory
 import pytz
 from django.db import models
+from django.db.models import signals
 
 from ..journals.factories import JournalFactory
 from .models import Account, AccountBalance
@@ -33,10 +34,10 @@ class AccountFactory(factory.django.DjangoModelFactory):
         return obj
 
 
+@factory.django.mute_signals(signals.post_save)
 class AccountBalanceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AccountBalance
-        # django_get_or_create = ('account',)
 
     account = factory.SubFactory(AccountFactory)
 

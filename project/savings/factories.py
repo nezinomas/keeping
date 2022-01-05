@@ -5,6 +5,7 @@ from decimal import Decimal
 import factory
 import pytz
 from django.db import models
+from django.db.models import signals
 
 from ..accounts.factories import AccountFactory
 from ..journals.factories import JournalFactory
@@ -34,6 +35,7 @@ class SavingTypeFactory(factory.django.DjangoModelFactory):
 
         return obj
 
+
 class SavingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Saving
@@ -46,6 +48,7 @@ class SavingFactory(factory.django.DjangoModelFactory):
     account = factory.SubFactory(AccountFactory)
 
 
+@factory.django.mute_signals(signals.post_save)
 class SavingBalanceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SavingBalance
