@@ -385,7 +385,7 @@ class IndexHelper():
     def savings_context(funds, incomes, savings, year):
         total_row = sum_all(funds)
 
-        if not total_row.get('invested'):
+        if not funds:
             return {}
 
         # add latest_check date to savibgs dictionary
@@ -422,7 +422,7 @@ class IndexHelper():
     def pensions_context(pensions, year):
         total_row = sum_all(pensions)
 
-        if not total_row.get('invested'):
+        if not pensions:
             return {}
 
         # add latest_check date to pensions dictionary
