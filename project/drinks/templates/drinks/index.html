@@ -41,8 +41,6 @@
 
 {% if tab == 'index' %}
 
-{% if not records %}<div id="no-records">{% include 'core/no_records.html' %}</div>{% endif %}
-
 <div class="row">
     <div class="col-lg-6" id="chart_consumption">{% if records %}{{ chart_consumption }}{% endif %}</div>
     <div class="col-lg-6" id="chart_quantity">{% if records %}{{ chart_quantity }}{% endif %}</div>
@@ -51,10 +49,10 @@
 <div class="row my-2">
     <div class="col-lg-6">
         <div class="row gx-2">
-            <div id="tbl_consumption" class="col-lg-3 col-md-3">{% if records %}{{ tbl_consumption }}{% endif %}</div>
-            <div id="tbl_last_day" class="col-lg-4 col-md-3">{% if records %}{{ tbl_last_day }}{% endif %}</div>
-            <div id="tbl_alcohol" class="col-lg-2 col-md-3">{% if records %}{{ tbl_alcohol }}{% endif %}</div>
-            <div id="drinks-target-content" class="col-lg-3 col-md-3">{% if records %}{{ target_list }}{% endif %}</div>
+            {% if records %}<div id="tbl_consumption" class="col-lg-3 col-md-3">{{ tbl_consumption }}</div>{% endif %}
+            <div id="tbl_last_day" class="col-lg-4 col-md-3">{{ tbl_last_day }}</div>
+            {% if records %}<div id="tbl_alcohol" class="col-lg-2 col-md-3">{{ tbl_alcohol }}</div>{% endif %}
+            <div id="drinks-target-content" class="col-lg-3 col-md-3">{{ target_list }}</div>
         </div>
 
         <div class="row">
@@ -66,18 +64,18 @@
         {% get_current_language as LANGUAGE_CODE %}
         {% with 'images/drinks_info_'|add:LANGUAGE_CODE|add:'.jpg' as image %}
         <div class="text-center mx-auto align-self-center">
-            <img src="{% static image %}" width="500" alt="{% translate 'What is a standard unit of alcohol' %}" class="_hidden" {% if not records %}style="display: none"{% endif %}>
+            <img src="{% static image %}" width="500" alt="{% translate 'What is a standard unit of alcohol' %}">
         </div>{% endwith %}
     </div>
 </div>
 
 <div class="row">
-    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{% if records %}{{ chart_calendar_1H }}{% endif %}</div>
-    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{% if records %}{{ chart_calendar_2H }}{% endif %}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{{ chart_calendar_1H }}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{{ chart_calendar_2H }}</div>
 </div>
 
 
-<div class="row mt-4 _hidden" {% if not records %}style="display: none"{% endif %}>
+<div class="row mt-4">
     <div class="col-lg-6">
         <div class="row my-2">
             <div class="col-sm-3 pt-1"><b>{% translate 'Historical data' %}</b></div>
