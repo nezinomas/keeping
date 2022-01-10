@@ -336,9 +336,10 @@ def test_index_chart_histogram(client_logged):
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @freeze_time('1999-07-18')
 def test_index_info_row(client_logged):
-    CountFactory(quantity=3)
+    t = CountTypeFactory()
+    CountFactory(quantity=3, counter_type=t.slug)
 
-    url = reverse('counts:counts_index', kwargs={'count_type': 'count-type'})
+    url = reverse('counts:counts_index', kwargs={'count_type': t.slug})
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -349,6 +350,20 @@ def test_index_info_row(client_logged):
         assert m.group(1) == 3
         assert m.group(2) == 28
         assert m.group(3) == '0,1'
+
+
+@freeze_time('1999-1-1')
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_index_info_row_latest_form_past(client_logged):
+    t = CountTypeFactory()
+    CountFactory(date=date(1998, 1, 1), counter_type=t.slug)
+    CountFactory(date=date(1999, 1, 2), counter_type=t.slug)
+
+    url = reverse('counts:counts_index', kwargs={'count_type': t.slug})
+    response = client_logged.get(url)
+    context = response.context
+
+    assert "'1999-01-02', 1.0, 366.0]" in context['chart_calendar_1H']
 
 
 # ---------------------------------------------------------------------------------------

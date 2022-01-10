@@ -34,8 +34,6 @@ def test_new_200(client_logged):
     assert '<input type="text" name="date" value="1999-01-01"' in actual['html_form']
 
 
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
-@patch('project.drinks.forms.App_name', 'Counter Type')
 def test_new(client_logged):
     data = {'date': '1999-01-01', 'quantity': 19}
 
@@ -64,8 +62,6 @@ def test_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
-@patch('project.drinks.forms.App_name', 'Counter Type')
 def test_update(client_logged):
     p = DrinkFactory()
 
@@ -84,7 +80,6 @@ def test_update(client_logged):
     assert f'<a role="button" data-url="/drinks/update/{p.pk}/"' in actual['html_list']
 
 
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 @patch('project.drinks.forms.App_name', 'Counter Type')
 def test_drinks_update_not_load_other_user(client_logged, second_user):
     DrinkFactory()
@@ -122,7 +117,6 @@ def test_view_drinks_delete_200(client_logged):
     assert response.status_code == 200
 
 
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_view_drinks_delete_load_form(client_logged):
     p = DrinkFactory()
 
@@ -138,7 +132,6 @@ def test_view_drinks_delete_load_form(client_logged):
     assert 'Ar tikrai norite ištrinti: <strong>1999-01-01: 1.0</strong>?' in actual
 
 
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_view_drinks_delete(client_logged):
     p = DrinkFactory()
 
@@ -285,7 +278,6 @@ def test_historical_data_302(client):
     assert response.status_code == 302
 
 
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_historical_data_ajax(client_logged):
     DrinkFactory()
 
@@ -385,7 +377,6 @@ def test_compare_no_records_for_year(client_logged, _compare_form_data):
     assert 'Nėra duomenų' in actual['html']
 
 
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_compare_chart_data(client_logged, _compare_form_data):
     DrinkFactory()
     DrinkFactory(date=date(2020, 1, 1), quantity=10)
@@ -530,7 +521,6 @@ def test_index_context_tab_value(client_logged):
     assert response.context['tab'] == 'index'
 
 @freeze_time('1999-1-1')
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_index_chart_consumption(client_logged):
     DrinkFactory()
 
@@ -544,7 +534,6 @@ def test_index_chart_consumption(client_logged):
 
 
 @freeze_time('1999-1-1')
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_index_chart_quantity(client_logged):
     DrinkFactory()
 
@@ -557,7 +546,6 @@ def test_index_chart_quantity(client_logged):
     assert 'id="chart_quantity"><div id="chart_quantity_container"></div>' in content
 
 
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_index_drinked_date(client_logged):
     DrinkFactory(date=date(1999, 1, 2))
     DrinkFactory(date=date(1998, 1, 2))
@@ -591,6 +579,17 @@ def test_index_tbl_std_av_empty_current_year(client_logged):
     assert 'Nėra duomenų' in response.context["tbl_std_av"]
 
 
+@freeze_time('1999-1-1')
+def test_index_first_record_with_gap_from_previous_year(client_logged):
+    DrinkFactory(date=date(1999, 1, 2))
+    DrinkFactory(date=date(1998, 1, 1))
+
+    response = client_logged.get('/drinks/')
+    context = response.context
+
+    assert "'1999-01-02', 1.0, 366.0]" in context['chart_calendar_1H']
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                                   Lists
 # ---------------------------------------------------------------------------------------
@@ -622,7 +621,6 @@ def test_list_context_tab_value(client_logged):
     assert response.context['tab'] == 'data'
 
 
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_list_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
@@ -632,7 +630,6 @@ def test_list_empty_current_year(client_logged):
     assert '<b>1999</b> metais įrašų nėra.' in response.content.decode('utf-8')
 
 
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_list(client_logged):
     p = DrinkFactory(quantity=19)
     response = client_logged.get(reverse('drinks:drinks_list'))
@@ -680,7 +677,6 @@ def test_history_context(client_logged):
 
 
 @freeze_time('1999-1-1')
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_history_chart_consumption(client_logged):
     DrinkFactory()
 
@@ -693,7 +689,6 @@ def test_history_chart_consumption(client_logged):
 
 
 @freeze_time('1999-01-01')
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_history_drinks_years(client_logged):
     DrinkFactory()
     DrinkFactory(date=date(1998, 1, 1))
@@ -705,7 +700,6 @@ def test_history_drinks_years(client_logged):
 
 
 @freeze_time('1999-01-01')
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_history_drinks_data_ml(client_logged):
     DrinkFactory(quantity=1)
     DrinkFactory(date=date(1998, 1, 1), quantity=2)
@@ -717,7 +711,6 @@ def test_history_drinks_data_ml(client_logged):
 
 
 @freeze_time('1999-01-01')
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_history_drinks_data_alcohol(client_logged):
     DrinkFactory(quantity=1)
     DrinkFactory(date=date(1998, 1, 1), quantity=2)
@@ -729,7 +722,6 @@ def test_history_drinks_data_alcohol(client_logged):
 
 
 @freeze_time('1999-1-1')
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_history_categories_with_empty_year_in_between(fake_request):
     DrinkFactory(date=date(1997, 1, 1), quantity=365)
     DrinkFactory(date=date(1999, 1, 1), quantity=730)
@@ -746,7 +738,6 @@ def test_history_categories_with_empty_year_in_between(fake_request):
 
 
 @freeze_time('1999-1-1')
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_history_categories_with_empty_current_year(fake_request):
     DrinkFactory(date=date(1998, 1, 1), quantity=365)
 

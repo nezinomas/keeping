@@ -43,6 +43,7 @@ def _data():
 
 @pytest.fixture()
 def _data_db():
+    CountFactory(date=date(1998, 1, 1), quantity=1.0)
     CountFactory(date=date(1999, 12, 3), quantity=1.0)
     CountFactory(date=date(1999, 2, 1), quantity=1.0)
     CountFactory(date=date(1999, 2, 1), quantity=1.0)
@@ -336,6 +337,14 @@ def test_gaps_for_current_year(_data):
     assert json.dumps(actual) == json.dumps({1: 1, 7: 2, 17: 1, 304: 1})
 
 
+def test_gaps_for_current_year_with_latest(_data):
+    _data.append({'date': date(1999, 2, 2), 'qty': 1.0})
+
+    actual = Stats(year=1999, data=_data, past_latest=date(1998, 1, 1)).gaps()
+
+    assert json.dumps(actual) == json.dumps({1: 1, 7: 1, 17: 1, 304: 1, 372: 1})
+
+
 def test_gaps_for_all_years(_data):
     actual = Stats(data=_data).gaps()
 
@@ -359,6 +368,12 @@ def test_current_gap_no_data_current_year():
 def test_current_gap_no_year_provided():
     Stats(data=[]).current_gap()
 
+
+@freeze_time('1999-1-9')
+def test_current_gap(_data):
+    actual = Stats(year=1999, data=_data).current_gap()
+
+    assert actual == -328
 
 @freeze_time('1999-1-9')
 def test_current_gap(_data):

@@ -2,15 +2,15 @@ from datetime import date
 
 import freezegun
 import pytest
-from mock import patch
 
 from ..factories import DrinkFactory
 from ..lib import views_helper as T
+from ..models import Drink
 
 pytestmark = pytest.mark.django_db
 
+
 @freezegun.freeze_time('1999-01-03')
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'Counter Type')
 def test_dry_days(fake_request):
     DrinkFactory()
 
@@ -20,8 +20,6 @@ def test_dry_days(fake_request):
 
 
 def test_dry_days_no_records(fake_request):
-    DrinkFactory()
-
     actual = T.RenderContext(fake_request)._dry_days()
 
     assert actual == {}

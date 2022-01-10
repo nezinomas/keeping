@@ -36,7 +36,22 @@ class RenderContext():
 
     def context_to_reload(self) -> Dict[str, str]:
         qs = models.Drink.objects.sum_by_day(self._year)
-        stats = CountStats(self._year, qs)
+        past_latest_record = None
+
+        try:
+            qs_past = (
+                models
+                .Drink
+                .objects
+                .related()
+                .filter(date__year=(self._year - 1))
+                .latest()
+            )
+            past_latest_record = qs_past.date
+        except models.Drink.DoesNotExist:
+            pass
+
+        stats = CountStats(year=self._year, data=qs, past_latest=past_latest_record)
         data = stats.chart_calendar()
         context = {
             'chart_quantity': self.chart_quantity(),
