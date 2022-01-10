@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
@@ -96,6 +98,16 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
 
 
         self.fields['close'].widget.attrs['class'] = " form-check-input"
+
+    def save(self):
+        close = self.cleaned_data.get('close')
+
+        if close:
+            obj = SavingType.objects.get(pk=self.instance.from_account.pk)
+            obj.closed = datetime.now().year
+            obj.save()
+
+        return super().save()
 
 
 class SavingChangeForm(YearBetweenMixin, forms.ModelForm):

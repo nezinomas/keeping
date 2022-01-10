@@ -6,6 +6,7 @@ from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...savings.factories import SavingTypeFactory
+from ...savings.models import SavingType
 from ...users.factories import UserFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
 
@@ -436,3 +437,26 @@ def test_saving_close_form_type_closed_in_current_year(get_user):
 
     assert 'S1' in str(form['from_account'])
     assert 'S2' in str(form['from_account'])
+
+
+@freeze_time('1999-1-1')
+def test_saving_close_save_and_close_saving_account():
+    a_from = SavingTypeFactory()
+    a_to = AccountFactory(title='Account2')
+
+    form = SavingCloseForm(data={
+        'date': '1999-01-01',
+        'from_account': a_from.pk,
+        'to_account': a_to.pk,
+        'price': '1.0',
+        'fee': '0.25',
+        'close': True,
+    })
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    actual = SavingType.objects.get(title=a_from.title)
+
+    assert actual.closed == 1999
