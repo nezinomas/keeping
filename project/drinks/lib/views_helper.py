@@ -44,7 +44,7 @@ class RenderContext():
                 .Drink
                 .objects
                 .related()
-                .filter(date__year=(self._year - 1))
+                .filter(date__year__lt=self._year)
                 .latest()
             )
             past_latest_record = qs_past.date
