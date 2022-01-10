@@ -12,7 +12,7 @@ class DrinkFactory(factory.django.DjangoModelFactory):
 
     date = date(1999, 1, 1)
     quantity = 1
-    counter_type = 'Counter Type'
+    counter_type = 'drinks'
     user = factory.SubFactory(UserFactory)
 
 
