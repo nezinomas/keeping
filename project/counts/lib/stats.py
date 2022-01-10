@@ -10,8 +10,9 @@ from ...core.exceptions import MethodInvalid
 from ...core.lib.transalation import month_names, weekday_names
 
 class Stats():
-    def __init__(self, year: int = None, data: List[Dict[date, float]] = None):
+    def __init__(self, year: int = None, data: List[Dict[date, float]] = None, past_latest: date = None):
         self._year = year
+        self.past_latest = past_latest
         self._df = self._prepare_df(data)
 
     @staticmethod
@@ -277,10 +278,13 @@ class Stats():
         df['duration'] = df['date'].diff().dt.days
         first_record_date = df['date'].iloc[0]
 
-        # repair time gap for first year record
-        first_date = pd.to_datetime(f'{first_record_date.year}-01-01')
-        first_duration = (first_record_date - first_date).days
+        if self.past_latest:
+            first_date = pd.to_datetime(self.past_latest)
+        else:
+            first_date = pd.to_datetime(f'{first_record_date.year}-01-01')
 
+        # repair time gap for first year record
+        first_duration = (first_record_date - first_date).days
         df.loc[df.index[0], 'duration'] = first_duration
 
         df['duration'] = df['duration'].astype(int)
