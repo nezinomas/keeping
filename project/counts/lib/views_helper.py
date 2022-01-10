@@ -37,11 +37,24 @@ class ContextMixin():
     def get_context_data(self, **kwargs):
         obj = get_object(self.kwargs)
         year = self.get_year()
+        past_last_record = None
         qs = self.get_qs()
+        if year:
+            try:
+                qs_past = (
+                    Count
+                    .objects
+                    .related()
+                    .filter(date__year=(self.get_year() - 1))
+                    .latest()
+                )
+                past_last_record = qs_past.date
+            except Count.DoesNotExist:
+                pass
 
         self.helper = RenderContext(
             self.request,
-            Stats(year=year, data=qs)
+            Stats(year=year, data=qs, past_latest=past_last_record)
         )
 
         context = super().get_context_data(**kwargs)
