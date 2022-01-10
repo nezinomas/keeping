@@ -176,6 +176,14 @@ class RenderContext():
         except models.Drink.DoesNotExist:
             pass
 
+        # if current year has no record
+        # try get latest record
+        if not qs:
+            try:
+                qs = models.Drink.objects.related().latest()
+            except models.Drink.DoesNotExist:
+                pass
+
         if qs:
             latest = qs.date
             delta = (datetime.now().date() - latest).days
