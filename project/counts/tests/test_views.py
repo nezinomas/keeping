@@ -336,9 +336,10 @@ def test_index_chart_histogram(client_logged):
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @freeze_time('1999-07-18')
 def test_index_info_row(client_logged):
-    CountFactory(quantity=3)
+    t = CountTypeFactory()
+    CountFactory(quantity=3, counter_type=t.slug)
 
-    url = reverse('counts:counts_index', kwargs={'count_type': 'count-type'})
+    url = reverse('counts:counts_index', kwargs={'count_type': t.slug})
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
