@@ -297,6 +297,7 @@ def test_saving_close_fields():
     assert '<select name="from_account"' in form
     assert '<input type="number" name="price"' in form
     assert '<input type="number" name="fee"' in form
+    assert '<input type="checkbox" name="close"' in form
 
 
 @freeze_time('1000-01-01')

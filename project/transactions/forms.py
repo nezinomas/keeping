@@ -53,11 +53,13 @@ class TransactionForm(YearBetweenMixin, forms.ModelForm):
 
 
 class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
+    close = forms.BooleanField(required=False)
+
     class Meta:
         model = SavingClose
-        fields = ['date', 'from_account', 'to_account', 'price', 'fee']
+        fields = ['date', 'from_account', 'to_account', 'price', 'fee', 'close']
 
-    field_order = ['date', 'from_account', 'to_account', 'price', 'fee']
+    field_order = ['date', 'from_account', 'to_account', 'price', 'fee', 'close']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -87,9 +89,13 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
         self.fields['date'].label = _('Date')
         self.fields['from_account'].label = _('From account')
         self.fields['to_account'].label = _('To account')
+        self.fields['close'].label = _('Close saving')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+
+        self.fields['close'].widget.attrs['class'] = " form-check-input"
 
 
 class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
