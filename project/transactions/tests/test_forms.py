@@ -289,6 +289,15 @@ def test_saving_change_form_type_closed_in_current_year(get_user):
 def test_saving_close_init():
     SavingCloseForm()
 
+def test_saving_close_fields():
+    form = SavingCloseForm().as_p()
+    print(f'... \n{form=}\n')
+    assert '<input type="text" name="date"' in form
+    assert '<select name="to_account"' in form
+    assert '<select name="from_account"' in form
+    assert '<input type="number" name="price"' in form
+    assert '<input type="number" name="fee"' in form
+
 
 @freeze_time('1000-01-01')
 def test_saving_close_year_initial_value():
