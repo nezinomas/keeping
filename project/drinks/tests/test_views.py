@@ -579,6 +579,17 @@ def test_index_tbl_std_av_empty_current_year(client_logged):
     assert 'Nėra duomenų' in response.context["tbl_std_av"]
 
 
+@freeze_time('1999-1-1')
+def test_index_first_record_with_gap_from_previous_year(client_logged):
+    DrinkFactory(date=date(1999, 1, 2))
+    DrinkFactory(date=date(1998, 1, 1))
+
+    response = client_logged.get('/drinks/')
+    context = response.context
+
+    assert "'1999-01-02', 1.0, 366.0]" in context['chart_calendar_1H']
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                                   Lists
 # ---------------------------------------------------------------------------------------
