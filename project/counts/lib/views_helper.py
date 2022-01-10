@@ -45,7 +45,7 @@ class ContextMixin():
                     Count
                     .objects
                     .related()
-                    .filter(date__year=(self.get_year() - 1))
+                    .filter(date__year__lt=self.get_year())
                     .latest()
                 )
                 past_last_record = qs_past.date

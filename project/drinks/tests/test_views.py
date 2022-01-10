@@ -589,6 +589,16 @@ def test_index_first_record_with_gap_from_previous_year(client_logged):
 
     assert "'1999-01-02', 1.0, 366.0]" in context['chart_calendar_1H']
 
+@freeze_time('1999-1-1')
+def test_index_no_data_dry_days(client_logged):
+    DrinkFactory(date=date(1998, 1, 1))
+
+    response = client_logged.get('/drinks/')
+    context = response.context
+
+    assert "1998-01-01" in context['tbl_last_day']
+    assert "365" in context['tbl_last_day']
+
 
 # ---------------------------------------------------------------------------------------
 #                                                                                   Lists
