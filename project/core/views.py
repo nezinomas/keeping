@@ -9,10 +9,10 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import View
 
-from ..accounts.models import Account, AccountBalance
+from ..accounts.models import AccountBalance
 from ..core.signals import SignalBase
-from ..pensions.models import PensionBalance, PensionType
-from ..savings.models import SavingBalance, SavingType
+from ..pensions.models import PensionBalance
+from ..savings.models import SavingBalance
 from .lib.date import years
 from .mixins.views import DispatchAjaxMixin
 from .tests.utils import timer
