@@ -45,17 +45,9 @@ def set_month(request, month):
 class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
     redirect_view = reverse_lazy('bookkeeping:index')
 
-    # @timer
+    @timer
     def get(self, request, *args, **kwargs):
-        journal = request.user.journal
-        dummy = SimpleNamespace()
-
         _years = years()
-
-        # clean balance tables
-        AccountBalance.objects.filter(account__journal=journal).delete()
-        SavingBalance.objects.filter(saving_type__journal=journal).delete()
-        PensionBalance.objects.filter(pension_type__journal=journal).delete()
 
         for year in _years:
             _pensions = pensions(year)
@@ -66,22 +58,22 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
                 continue
 
             SignalBase.accounts(
-                sender=dummy,
-                instance=dummy,
+                sender=None,
+                instance=None,
                 year=year,
-                types=_accounts
+                all_id=_accounts
             )
             SignalBase.savings(
-                sender=dummy,
-                instance=dummy,
+                sender=None,
+                instance=None,
                 year=year,
-                types=_savings
+                all_id=_savings
             )
             SignalBase.pensions(
-                sender=dummy,
-                instance=dummy,
+                sender=None,
+                instance=None,
                 year=year,
-                types=_pensions
+                all_id=_pensions
             )
 
         return JsonResponse({'redirect': self.redirect_view})
@@ -90,34 +82,27 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
 class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View):
     redirect_view = reverse_lazy('bookkeeping:index')
 
-    # @timer
+    @timer
     def get(self, request, *args, **kwargs):
         year = request.user.year
-        journal = request.user.journal
-        dummy = SimpleNamespace()
-
-        # clean balance tables
-        AccountBalance.objects.filter(account__journal=journal, year=year).delete()
-        SavingBalance.objects.filter(saving_type__journal=journal, year=year).delete()
-        PensionBalance.objects.filter(pension_type__journal=journal, year=year).delete()
 
         SignalBase.accounts(
-            sender=dummy,
-            instance=dummy,
+            sender=None,
+            instance=None,
             year=year,
-            types=accounts(year)
+            all_id=accounts(year)
         )
         SignalBase.savings(
-            sender=dummy,
-            instance=dummy,
+            sender=None,
+            instance=None,
             year=year,
-            types=savings(year)
+            all_id=savings(year)
         )
         SignalBase.pensions(
-            sender=dummy,
-            instance=dummy,
+            sender=None,
+            instance=None,
             year=year,
-            types=pensions(year)
+            all_id=pensions(year)
         )
 
         return JsonResponse({'redirect': self.redirect_view})
@@ -125,43 +110,32 @@ class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View)
 
 def accounts(year):
     qs = (
-        Account
+        AccountBalance
         .objects
-        .items(year)
-        .filter(created__year__lte=year)
-        .values('id', 'title')
+        .related()
+        .filter(year=year)
+        .values_list('account_id', flat=True)
     )
-    return _make_arr(qs)
+    return list(qs)
 
 
 def savings(year):
     qs = (
-        SavingType
+        SavingBalance
         .objects
         .related()
-        .filter(
-            Q(closed__isnull=True) | Q(closed__gt=year))
-        .filter(created__year__lte=year)
-        .values('id', 'title')
+        .filter(year=year)
+        .values_list('saving_type_id', flat=True)
     )
-    return _make_arr(qs)
+    return list(qs)
 
 
 def pensions(year):
     qs = (
-        PensionType
+        PensionBalance
         .objects
-        .items()
-        .filter(created__year__lte=year)
-        .values('id', 'title')
+        .related()
+        .filter(year=year)
+        .values_list('pension_type_id', flat=True)
     )
-    return _make_arr(qs)
-
-
-def _make_arr(qs):
-    rtn = {}
-
-    for x in qs:
-        rtn[x['title']] = x['id']
-
-    return rtn
+    return list(qs)

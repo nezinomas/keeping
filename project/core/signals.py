@@ -89,12 +89,12 @@ def pensions_post_signal(sender: object,
 # ----------------------------------------------------------------------------
 class SignalBase():
     field = None
-    all_id = None
 
     def __init__(self,
                  instance: object,
                  year: int = None,
-                 types: Dict[str, int] = None):
+                 types: Dict[str, int] = None,
+                 all_id: List[int] = None):
 
         if not year:
             self.year = utils.get_user().year
@@ -103,6 +103,7 @@ class SignalBase():
 
         self.instance = instance
         self.types = types
+        self.all_id = all_id
 
         self._update_or_create()
 
@@ -111,7 +112,8 @@ class SignalBase():
                  sender: object,
                  instance: object,
                  year: int = None,
-                 types: Dict[str, int] = None):
+                 types: Dict[str, int] = None,
+                 all_id: List[int] = None):
 
         cls.field = 'account_id'
         cls.model_types = Account
@@ -121,14 +123,15 @@ class SignalBase():
         cls.summary_models = AccountsBalanceModels
         cls.sender = sender
 
-        return cls(instance, year, types)
+        return cls(instance, year, types, all_id)
 
     @classmethod
     def savings(cls,
                 sender: object,
                 instance: object,
                 year: int = None,
-                types: Dict[str, int] = None):
+                types: Dict[str, int] = None,
+                all_id: List[int] = None):
 
         cls.field = 'saving_type_id'
         cls.model_types = SavingType
@@ -138,14 +141,15 @@ class SignalBase():
         cls.summary_models = SavingsBalanceModels
         cls.sender = sender
 
-        return cls(instance, year, types)
+        return cls(instance, year, types, all_id)
 
     @classmethod
     def pensions(cls,
                  sender: object,
                  instance: object,
                  year: int = None,
-                 types: Dict[str, int] = None):
+                 types: Dict[str, int] = None,
+                 all_id: List[int] = None):
 
         cls.field = 'pension_type_id'
         cls.model_types = PensionType
@@ -155,10 +159,11 @@ class SignalBase():
         cls.summary_models = PensionsBalanceModels
         cls.sender = sender
 
-        return cls(instance, year, types)
+        return cls(instance, year, types, all_id)
 
     def _update_or_create(self) -> None:
-        self.all_id = self._get_id()
+        if not self.all_id:
+            self.all_id = self._get_id()
 
         # copy by value all_id list
         arr = list(self.all_id)
@@ -260,8 +265,10 @@ class SignalBase():
         # filter created type from future
         qs = qs.filter(created__year__lte=self.year)
 
-        if self.all_id:
-            qs = qs.filter(id__in=self.all_id)
+        # filter types only then exist sender and isntance
+        if self.sender and self.instance:
+            if self.all_id:
+                qs = qs.filter(id__in=self.all_id)
 
         qs = qs.values('id', 'title')
 
