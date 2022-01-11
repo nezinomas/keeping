@@ -209,6 +209,19 @@ def test_transaction_post_delete_with_update():
     assert Transaction.objects.all().count() == 1
 
 
+def test_transactions_from_db_classmethod():
+    _from = AccountFactory(title='X')
+    _to = AccountFactory(title='Y')
+
+    TransactionFactory(from_account=_from, to_account=_to)
+
+    obj = Transaction.objects.last()
+
+    expect = {'account_id': [_from.pk, _to.pk]}
+
+    assert obj._old_values == expect
+
+
 # ----------------------------------------------------------------------------
 #                                                                 Saving Close
 # ----------------------------------------------------------------------------
@@ -376,6 +389,19 @@ def test_saving_close_post_delete_with_update():
     assert SavingClose.objects.all().count() == 1
 
 
+def test_saving_close_from_db_classmethod():
+    _from = SavingTypeFactory(title='X')
+    _to = AccountFactory(title='Y')
+
+    SavingCloseFactory(from_account=_from, to_account=_to)
+
+    obj = SavingClose.objects.last()
+
+    expect = {'account_id': [_to.pk], 'saving_type_id': [_from.pk]}
+
+    assert obj._old_values == expect
+
+
 # ----------------------------------------------------------------------------
 #                                                                 Saving Change
 # ----------------------------------------------------------------------------
@@ -518,3 +544,16 @@ def test_saving_change_post_delete_with_update():
     assert actual[1]['incomes'] == 1.0
 
     assert SavingChange.objects.all().count() == 1
+
+
+def test_saving_change_from_db_classmethod():
+    _from = SavingTypeFactory(title='X')
+    _to = SavingTypeFactory(title='Y')
+
+    SavingChangeFactory(from_account=_from, to_account=_to)
+
+    obj = SavingChange.objects.last()
+
+    expect = {'saving_type_id': [_from.pk, _to.pk]}
+    print(f'{expect=} == { obj._old_values=}')
+    assert obj._old_values == expect

@@ -384,7 +384,7 @@ def test_expense_from_db():
 
     e1 = Expense.objects.get(pk=e.pk)
 
-    assert e1._old_values == [a1.pk]
+    assert e1._old_values == {'account_id': [a1.pk]}
 
 
 def test_expense_sum_by_month():
