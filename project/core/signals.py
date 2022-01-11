@@ -158,6 +158,8 @@ class SignalBase():
 
     def _update_or_create(self) -> None:
         stats = self._get_stats()
+        if not stats:
+            return
 
         for row in stats:
             # get id
@@ -245,6 +247,9 @@ class SignalBase():
             account = self._get_accounts()
         else:
             account = self.types
+
+        if not account:
+            return None
 
         worth = self._get_worth()
 
