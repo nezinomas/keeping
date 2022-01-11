@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 from freezegun import freeze_time
-from mock import patch
+from mock import PropertyMock, patch
 
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import Account, AccountBalance
@@ -130,9 +130,10 @@ def test_saving_list_filter_created_in_future(mck):
 def test_get_id(mck):
     instance = SimpleNamespace(
         account_id=1,
-        _old_values=[2]
+        _old_values={'account_id': [2]}
     )
     obj = T.SignalBase(instance=instance)
+    obj.sender = SimpleNamespace()
     obj.field = 'account_id'
 
     actual = obj._get_id()
@@ -161,7 +162,7 @@ def test_get_id_dublicated(mck):
 
     instance = SimpleNamespace(
         account_id=1,
-        _old_values=[1]
+        _old_values={'account_id': [1]}
     )
     obj = T.SignalBase(instance=instance)
     obj.field = 'account_id'
@@ -180,8 +181,8 @@ def test_account_list_one(mock_init):
     obj = T.SignalBase(instance=None)
     obj.model_types = Account
 
-    func = 'project.core.signals.SignalBase._get_id'
-    with patch(func, return_value=[a1.id]):
+    func = 'project.core.signals.SignalBase.all_id'
+    with patch(func, new_callable=PropertyMock, return_value=[a1.id]):
         actual = obj._get_accounts()
 
         assert {'A1': a1.id} == actual
@@ -367,8 +368,8 @@ def test_saving_list_one(_mock):
     obj.model_types = SavingType
     obj.year = 1999
 
-    func = 'project.core.signals.SignalBase._get_id'
-    with patch(func, return_value=[s1.id]):
+    func = 'project.core.signals.SignalBase.all_id'
+    with patch(func, new_callable=PropertyMock, return_value=[s1.id]):
         actual = obj._get_accounts()
 
         assert {'S1': s1.id} == actual
@@ -400,8 +401,8 @@ def test_saving_list_without_closed(_mock):
     obj.field = 'saving_type_id'
     obj.year = 1999
 
-    func = 'project.core.signals.SignalBase._get_id'
-    with patch(func, return_value=[s2.id]):
+    func = 'project.core.signals.SignalBase.all_id'
+    with patch(func, new_callable=PropertyMock, return_value=[s2.id]):
         actual = obj._get_accounts()
 
         assert {} == actual

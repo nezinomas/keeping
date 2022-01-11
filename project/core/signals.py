@@ -89,6 +89,7 @@ def pensions_post_signal(sender: object,
 # ----------------------------------------------------------------------------
 class SignalBase():
     field = None
+    all_id = None
 
     def __init__(self,
                  instance: object,
@@ -157,23 +158,41 @@ class SignalBase():
         return cls(instance, year, types)
 
     def _update_or_create(self) -> None:
+        self.all_id = self._get_id()
+
+        # copy by value all_id list
+        arr = list(self.all_id)
+
         stats = self._get_stats()
-        if not stats:
-            return
+        if stats:
+            for row in stats:
+                # get id
+                _id = row['id']
 
-        for row in stats:
-            # get id
-            _id = row['id']
+                # remove from arr _id
+                if _id in arr:
+                    arr.remove(_id)
 
-            # delete dictionary keys
-            del row['id']
-            del row['title']
+                # delete dictionary keys
+                del row['id']
+                del row['title']
 
-            self.model_balance.objects.update_or_create(
-                year=self.year,
-                **{self.field: _id},
-                defaults={k: v for k, v in row.items()}
+                self.model_balance.objects.update_or_create(
+                    year=self.year,
+                    **{self.field: _id},
+                    defaults={k: v for k, v in row.items()}
+                )
+
+        if arr:
+            # if not empty arr, delete from balances rows
+            q = (
+                self.model_balance
+                .objects
+                .related()
+                .filter(**{'year': self.year, f'{self.field}__in': arr})
+                .delete()
             )
+
 
     def _get_worth(self) -> List[Dict]:
         return self.model_worth.objects.items(year=self.year)
@@ -193,13 +212,15 @@ class SignalBase():
                 'saving_type_id': ['from_account_id', 'to_account_id']
             }
         }
-        field_list += f.get(self.sender, {}).get(self.field, [])
+        try:
+            field_list += f.get(self.sender, {}).get(self.field, [])
+        except TypeError:
+            pass
 
         return field_list
 
     def _get_id(self) -> List[int]:
         account_id = []
-
         field_list = self._get_field_list()
 
         for name in field_list:
@@ -207,9 +228,16 @@ class SignalBase():
             if _id:
                 account_id.append(_id)
 
+        if not account_id:
+            try:
+                account_id.append(self.instance.pk)
+            except AttributeError:
+                pass
+
         # list of original, before change, account_id values
         if hasattr(self.instance, '_old_values'):
-            account_id = list(set(account_id + self.instance._old_values))
+            _old_values = self.instance._old_values.get(self.field, [])
+            account_id = list(set(account_id + _old_values))
 
         return account_id
 
@@ -232,10 +260,8 @@ class SignalBase():
         # filter created type from future
         qs = qs.filter(created__year__lte=self.year)
 
-        account_id = self._get_id()
-
-        if account_id:
-            qs = qs.filter(id__in=account_id)
+        if self.all_id:
+            qs = qs.filter(id__in=self.all_id)
 
         qs = qs.values('id', 'title')
 
