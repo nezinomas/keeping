@@ -1,13 +1,14 @@
-from datetime import datetime
 from types import SimpleNamespace
 
 import pytest
-from mock import patch
 from freezegun import freeze_time
+from mock import PropertyMock, patch
+
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import Account, AccountBalance
 from ...savings.factories import SavingBalanceFactory, SavingTypeFactory
 from ...savings.models import SavingBalance, SavingType
+from ...transactions.models import SavingChange, SavingClose, Transaction
 from .. import signals as T
 
 pytestmark = pytest.mark.django_db
@@ -129,9 +130,10 @@ def test_saving_list_filter_created_in_future(mck):
 def test_get_id(mck):
     instance = SimpleNamespace(
         account_id=1,
-        _old_values=[2]
+        _old_values={'account_id': [2]}
     )
     obj = T.SignalBase(instance=instance)
+    obj.sender = SimpleNamespace()
     obj.field = 'account_id'
 
     actual = obj._get_id()
@@ -155,12 +157,16 @@ def test_year(mck):
 
 @patch('project.core.signals.SignalBase._update_or_create')
 def test_get_id_dublicated(mck):
+    class Dummy:
+        pass
+
     instance = SimpleNamespace(
         account_id=1,
-        _old_values=[1]
+        _old_values={'account_id': [1]}
     )
     obj = T.SignalBase(instance=instance)
     obj.field = 'account_id'
+    obj.sender = Dummy()
 
     actual = obj._get_id()
 
@@ -175,8 +181,8 @@ def test_account_list_one(mock_init):
     obj = T.SignalBase(instance=None)
     obj.model_types = Account
 
-    func = 'project.core.signals.SignalBase._get_id'
-    with patch(func, return_value=[a1.id]):
+    func = 'project.core.signals.SignalBase.all_id'
+    with patch(func, new_callable=PropertyMock, return_value=[a1.id]):
         actual = obj._get_accounts()
 
         assert {'A1': a1.id} == actual
@@ -211,7 +217,8 @@ def test_account_insert_instance_account_id_not_set(_mock):
         {'title': 'A2', 'id': a2.id, 'balance': 4.0},
     ]
 
-    T.accounts_post_signal(sender=SimpleNamespace(), instance=SimpleNamespace())
+    T.accounts_post_signal(sender=SimpleNamespace(),
+                           instance=SimpleNamespace())
 
     actual = AccountBalance.objects.year(1999)
 
@@ -253,6 +260,86 @@ def test_account_update(_mock):
     assert actual['delta'] == -1.05
 
 
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_fields_no_sender(_mck):
+    class Dummy():
+        pass
+
+    obj = T.SignalBase(SimpleNamespace())
+    obj.sender = Dummy()
+    obj.field = '_field_'
+
+    actual = obj._get_field_list()
+
+    assert actual == ['_field_']
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_fields_accounts_sender_transactions(_mck):
+    obj = T.SignalBase(SimpleNamespace())
+    obj.sender = Transaction
+    obj.field = 'account_id'
+
+    actual = obj._get_field_list()
+
+    assert actual == ['account_id', 'from_account_id', 'to_account_id']
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_fields_accounts_sender_saving_close(_mck):
+    obj = T.SignalBase(SimpleNamespace())
+    obj.sender = SavingClose
+    obj.field = 'account_id'
+
+    actual = obj._get_field_list()
+
+    assert actual == ['account_id', 'to_account_id']
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_fields_accounts_sender_saving_change(_mck):
+    obj = T.SignalBase(SimpleNamespace())
+    obj.sender = SavingChange
+    obj.field = 'account_id'
+
+    actual = obj._get_field_list()
+
+    assert actual == ['account_id']
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_fields_savings_sender_transactions(_mck):
+    obj = T.SignalBase(SimpleNamespace())
+    obj.sender = Transaction
+    obj.field = 'saving_type_id'
+
+    actual = obj._get_field_list()
+
+    assert actual == ['saving_type_id']
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_fields_savings_sender_saving_close(_mck):
+    obj = T.SignalBase(SimpleNamespace())
+    obj.sender = SavingClose
+    obj.field = 'saving_type_id'
+
+    actual = obj._get_field_list()
+
+    assert actual == ['saving_type_id', 'from_account_id']
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_fields_savings_sender_saving_change(_mck):
+    obj = T.SignalBase(SimpleNamespace())
+    obj.sender = SavingChange
+    obj.field = 'saving_type_id'
+
+    actual = obj._get_field_list()
+
+    assert actual == ['saving_type_id', 'from_account_id', 'to_account_id']
+
+
 # ----------------------------------------------------------------------------
 #                                                      post_save_savings_stats
 # ----------------------------------------------------------------------------
@@ -281,8 +368,8 @@ def test_saving_list_one(_mock):
     obj.model_types = SavingType
     obj.year = 1999
 
-    func = 'project.core.signals.SignalBase._get_id'
-    with patch(func, return_value=[s1.id]):
+    func = 'project.core.signals.SignalBase.all_id'
+    with patch(func, new_callable=PropertyMock, return_value=[s1.id]):
         actual = obj._get_accounts()
 
         assert {'S1': s1.id} == actual
@@ -314,8 +401,8 @@ def test_saving_list_without_closed(_mock):
     obj.field = 'saving_type_id'
     obj.year = 1999
 
-    func = 'project.core.signals.SignalBase._get_id'
-    with patch(func, return_value=[s2.id]):
+    func = 'project.core.signals.SignalBase.all_id'
+    with patch(func, new_callable=PropertyMock, return_value=[s2.id]):
         actual = obj._get_accounts()
 
         assert {} == actual

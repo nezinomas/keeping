@@ -4,12 +4,11 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
-from ..core.mixins.from_db import MixinFromDbFromAccountId
 from ..savings.models import SavingType
 from . import managers
 
 
-class Transaction(MixinFromDbFromAccountId):
+class Transaction(models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         Account,
@@ -42,8 +41,19 @@ class Transaction(MixinFromDbFromAccountId):
 
     objects = managers.TransactionQuerySet.as_manager()
 
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        zipped = dict(zip(field_names, values))
+        instance = super().from_db(db, field_names, values)
 
-class SavingClose(MixinFromDbFromAccountId):
+        instance._old_values = {
+            'account_id': [zipped.get('from_account_id')] + [zipped.get('to_account_id')]
+        }
+
+        return instance
+
+
+class SavingClose(models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         SavingType,
@@ -82,8 +92,19 @@ class SavingClose(MixinFromDbFromAccountId):
 
     objects = managers.SavingCloseQuerySet.as_manager()
 
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        zipped = dict(zip(field_names, values))
+        instance = super().from_db(db, field_names, values)
 
-class SavingChange(MixinFromDbFromAccountId):
+        instance._old_values = {
+            'account_id': [zipped.get('to_account_id')],
+            'saving_type_id': [zipped.get('from_account_id')]
+        }
+        return instance
+
+
+class SavingChange(models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         SavingType,
@@ -121,3 +142,14 @@ class SavingChange(MixinFromDbFromAccountId):
         )
 
     objects = managers.SavingChangeQuerySet.as_manager()
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        zipped = dict(zip(field_names, values))
+        instance = super().from_db(db, field_names, values)
+
+        instance._old_values = {
+            'saving_type_id': [zipped.get('from_account_id')] + [zipped.get('to_account_id')]
+        }
+
+        return instance

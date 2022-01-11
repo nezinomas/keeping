@@ -6,7 +6,7 @@ from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...savings.factories import SavingTypeFactory
-from ...savings.models import SavingType
+from ...savings.models import SavingBalance, SavingType
 from ...users.factories import UserFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
 
@@ -460,3 +460,4 @@ def test_saving_close_save_and_close_saving_account():
     actual = SavingType.objects.get(title=a_from.title)
 
     assert actual.closed == 1999
+    assert SavingBalance.objects.all().count() == 0
