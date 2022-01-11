@@ -1,13 +1,14 @@
-from datetime import datetime
 from types import SimpleNamespace
 
 import pytest
-from mock import patch
 from freezegun import freeze_time
+from mock import patch
+
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import Account, AccountBalance
 from ...savings.factories import SavingBalanceFactory, SavingTypeFactory
 from ...savings.models import SavingBalance, SavingType
+from ...transactions.models import SavingChange, SavingClose, Transaction
 from .. import signals as T
 
 pytestmark = pytest.mark.django_db
@@ -155,12 +156,16 @@ def test_year(mck):
 
 @patch('project.core.signals.SignalBase._update_or_create')
 def test_get_id_dublicated(mck):
+    class Dummy:
+        pass
+
     instance = SimpleNamespace(
         account_id=1,
         _old_values=[1]
     )
     obj = T.SignalBase(instance=instance)
     obj.field = 'account_id'
+    obj.sender = Dummy()
 
     actual = obj._get_id()
 
@@ -211,7 +216,8 @@ def test_account_insert_instance_account_id_not_set(_mock):
         {'title': 'A2', 'id': a2.id, 'balance': 4.0},
     ]
 
-    T.accounts_post_signal(sender=SimpleNamespace(), instance=SimpleNamespace())
+    T.accounts_post_signal(sender=SimpleNamespace(),
+                           instance=SimpleNamespace())
 
     actual = AccountBalance.objects.year(1999)
 
@@ -251,6 +257,86 @@ def test_account_update(_mock):
     assert actual['expenses'] == 6.5
     assert actual['have'] == 0.20
     assert actual['delta'] == -1.05
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_fields_no_sender(_mck):
+    class Dummy():
+        pass
+
+    obj = T.SignalBase(SimpleNamespace())
+    obj.sender = Dummy()
+    obj.field = '_field_'
+
+    actual = obj._get_field_list()
+
+    assert actual == ['_field_']
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_fields_accounts_sender_transactions(_mck):
+    obj = T.SignalBase(SimpleNamespace())
+    obj.sender = Transaction
+    obj.field = 'account_id'
+
+    actual = obj._get_field_list()
+
+    assert actual == ['account_id', 'from_account_id', 'to_account_id']
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_fields_accounts_sender_saving_close(_mck):
+    obj = T.SignalBase(SimpleNamespace())
+    obj.sender = SavingClose
+    obj.field = 'account_id'
+
+    actual = obj._get_field_list()
+
+    assert actual == ['account_id', 'to_account_id']
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_fields_accounts_sender_saving_change(_mck):
+    obj = T.SignalBase(SimpleNamespace())
+    obj.sender = SavingChange
+    obj.field = 'account_id'
+
+    actual = obj._get_field_list()
+
+    assert actual == ['account_id']
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_fields_savings_sender_transactions(_mck):
+    obj = T.SignalBase(SimpleNamespace())
+    obj.sender = Transaction
+    obj.field = 'saving_type_id'
+
+    actual = obj._get_field_list()
+
+    assert actual == ['saving_type_id']
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_fields_savings_sender_saving_close(_mck):
+    obj = T.SignalBase(SimpleNamespace())
+    obj.sender = SavingClose
+    obj.field = 'saving_type_id'
+
+    actual = obj._get_field_list()
+
+    assert actual == ['saving_type_id', 'from_account_id']
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_get_fields_savings_sender_saving_change(_mck):
+    obj = T.SignalBase(SimpleNamespace())
+    obj.sender = SavingChange
+    obj.field = 'saving_type_id'
+
+    actual = obj._get_field_list()
+
+    assert actual == ['saving_type_id', 'from_account_id', 'to_account_id']
 
 
 # ----------------------------------------------------------------------------

@@ -176,9 +176,29 @@ class SignalBase():
     def _get_worth(self) -> List[Dict]:
         return self.model_worth.objects.items(year=self.year)
 
+    def _get_field_list(self) -> List:
+        field_list = [self.field]
+
+        f = {
+            Transaction: {
+                'account_id': ['from_account_id', 'to_account_id']
+            },
+            SavingClose: {
+                'account_id': ['to_account_id'],
+                'saving_type_id': ['from_account_id']
+            },
+            SavingChange: {
+                'saving_type_id': ['from_account_id', 'to_account_id']
+            }
+        }
+        field_list += f.get(self.sender, {}).get(self.field, [])
+
+        return field_list
+
     def _get_id(self) -> List[int]:
         account_id = []
-        field_list = [self.field, 'from_account_id', 'to_account_id']
+
+        field_list = self._get_field_list()
 
         for name in field_list:
             _id = getattr(self.instance, name, None)
