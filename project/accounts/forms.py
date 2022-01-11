@@ -22,7 +22,7 @@ class AccountForm(forms.ModelForm):
 
         self.fields['closed'].widget = YearPickerInput(
             options={
-                "format": "YYYY-MM-DD",
+                "format": "YYYY",
                 "locale": journal.lang,
             })
 
