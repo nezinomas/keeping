@@ -350,6 +350,29 @@ def test_type_update(client_logged):
     assert 'TTT' in actual['html_list']
 
 
+def test_type_update_return_list_with_closed(client_logged):
+    SavingTypeFactory(title='YYY', closed='1111')
+    saving = SavingTypeFactory(title='XXX')
+
+    data = {
+        'title': 'TTT',
+        'type': 'funds',
+    }
+    url = reverse('savings:savings_type_update', kwargs={'pk': saving.pk})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    assert response.status_code == 200
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert 'TTT' in actual['html_list']
+    assert 'YYY' in actual['html_list']
+    assert 'XXX' not in actual['html_list']
+
+
 def test_saving_type_not_load_other_journal(client_logged, main_user, second_user):
     SavingTypeFactory(title='xxx', journal=main_user.journal)
     obj = SavingTypeFactory(title='yyy', journal=second_user.journal)
