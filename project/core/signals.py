@@ -200,7 +200,6 @@ class SignalBase():
                 .delete()
             )
 
-
     def _get_worth(self) -> List[Dict]:
         return self.model_worth.objects.items(year=self.year)
 
