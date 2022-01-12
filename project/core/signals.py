@@ -88,6 +88,7 @@ def pensions_post_signal(sender: object,
 #                                                   post_save SignalBase class
 # ----------------------------------------------------------------------------
 class SignalBase():
+    all_id = None
     field = None
 
     def __init__(self,
