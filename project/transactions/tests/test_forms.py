@@ -386,7 +386,6 @@ def test_saving_close_blank_data():
     assert 'price' in form.errors
 
 
-
 def test_saving_close_price_null():
     a_from = SavingTypeFactory()
     a_to = AccountFactory(title='Account2')
