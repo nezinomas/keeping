@@ -26,6 +26,9 @@ def transaction_accouts_hooks():
 
 
 class OldValuesMixin(models.Model):
+    class Meta:
+        abstract = True
+
     @classmethod
     def from_db(cls, db, field_names, values):
         zipped = dict(zip(field_names, values))
