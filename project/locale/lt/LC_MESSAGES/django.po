@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-04 15:56+0200\n"
-"PO-Revision-Date: 2022-01-04 15:56+0200\n"
+"POT-Creation-Date: 2022-01-12 14:14+0200\n"
+"PO-Revision-Date: 2022-01-12 14:14+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -329,7 +329,7 @@ msgstr "01.01 mokesčiai"
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:13
 #: .\project\savings\forms.py:73
 #: .\project\savings\templates\savings\includes\savings_list.html:15
-#: .\project\transactions\forms.py:86 .\project\transactions\forms.py:125
+#: .\project\transactions\forms.py:90 .\project\transactions\forms.py:144
 #: .\project\transactions\templates\transactions\includes\table.html:13
 msgid "Fees"
 msgstr "Mokesčiai"
@@ -515,7 +515,7 @@ msgstr "Data negali būti ateityje"
 msgid "Ended reading cannot precede started reading"
 msgstr "Baigta skaityti negali būti anksčiau nei pradėta skaityti"
 
-#: .\project\books\forms.py:125 .\project\counts\lib\views_helper.py:89
+#: .\project\books\forms.py:125 .\project\counts\lib\views_helper.py:102
 #: .\project\drinks\forms.py:76
 msgid "Year"
 msgstr "Metai"
@@ -802,8 +802,8 @@ msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:9
 #: .\project\savings\forms.py:70
 #: .\project\savings\templates\savings\includes\savings_list.html:10
-#: .\project\transactions\forms.py:40 .\project\transactions\forms.py:87
-#: .\project\transactions\forms.py:126
+#: .\project\transactions\forms.py:42 .\project\transactions\forms.py:91
+#: .\project\transactions\forms.py:145
 #: .\project\transactions\templates\transactions\includes\table.html:9
 msgid "Date"
 msgstr "Data"
@@ -828,16 +828,16 @@ msgstr "Nėra tokio skaitiklio"
 msgid "Not found"
 msgstr "Nerasta"
 
-#: .\project\counts\lib\views_helper.py:141
+#: .\project\counts\lib\views_helper.py:154
 msgid "Frequency of gaps, in days"
 msgstr "Tarpų dažnis, dienomis"
 
-#: .\project\counts\lib\views_helper.py:169
+#: .\project\counts\lib\views_helper.py:182
 #, python-format
 msgid "Weekdays, %(year)s year"
 msgstr "Savaitės dienos, %(year)s metai"
 
-#: .\project\counts\lib\views_helper.py:170
+#: .\project\counts\lib\views_helper.py:183
 #, python-format
 msgid "Months, %(year)s year"
 msgstr "Mėnesiai, %(year)s metai"
@@ -904,7 +904,7 @@ msgid "History"
 msgstr "Istorija"
 
 #: .\project\counts\templates\counts\index.html:33
-#: .\project\drinks\templates\drinks\index.html:83
+#: .\project\drinks\templates\drinks\index.html:81
 msgid "Historical data"
 msgstr "Istoriniai duomenys"
 
@@ -1106,27 +1106,27 @@ msgstr "Per dieną"
 msgid "Per month"
 msgstr "Per mėnesį"
 
-#: .\project\drinks\templates\drinks\index.html:69
+#: .\project\drinks\templates\drinks\index.html:67
 msgid "What is a standard unit of alcohol"
 msgstr "Kas yra standartinis alkoholio vienetas"
 
-#: .\project\drinks\templates\drinks\index.html:85
+#: .\project\drinks\templates\drinks\index.html:83
 msgid "2 years"
 msgstr "2 metų"
 
-#: .\project\drinks\templates\drinks\index.html:86
+#: .\project\drinks\templates\drinks\index.html:84
 msgid "3 years"
 msgstr "3 metų"
 
-#: .\project\drinks\templates\drinks\index.html:87
+#: .\project\drinks\templates\drinks\index.html:85
 msgid "7 years"
 msgstr "7 metų"
 
-#: .\project\drinks\templates\drinks\index.html:88
+#: .\project\drinks\templates\drinks\index.html:86
 msgid "All years"
 msgstr "Visi metai"
 
-#: .\project\drinks\templates\drinks\index.html:99
+#: .\project\drinks\templates\drinks\index.html:97
 msgid "Year comparison"
 msgstr "Metų palyginimas"
 
@@ -1228,8 +1228,8 @@ msgstr "<b>%(month)s</b> mėnesį įrašų nėra."
 
 #: .\project\incomes\forms.py:44
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:14
-#: .\project\transactions\forms.py:32 .\project\transactions\forms.py:83
-#: .\project\transactions\forms.py:123
+#: .\project\transactions\forms.py:34 .\project\transactions\forms.py:87
+#: .\project\transactions\forms.py:142
 #: .\project\transactions\templates\transactions\includes\table.html:12
 msgid "Amount"
 msgstr "Suma"
@@ -1410,8 +1410,8 @@ msgstr "Skaičiavimai"
 
 #: .\project\savings\forms.py:71
 #: .\project\savings\templates\savings\includes\savings_list.html:12
-#: .\project\transactions\forms.py:41 .\project\transactions\forms.py:88
-#: .\project\transactions\forms.py:127
+#: .\project\transactions\forms.py:43 .\project\transactions\forms.py:92
+#: .\project\transactions\forms.py:146
 #: .\project\transactions\templates\transactions\includes\table.html:10
 msgid "From account"
 msgstr "Iš sąskaitos"
@@ -1504,13 +1504,13 @@ msgstr "Keisti slaptažodį"
 msgid "Settings"
 msgstr "Nustatymai"
 
-#: .\project\transactions\forms.py:42 .\project\transactions\forms.py:89
-#: .\project\transactions\forms.py:128
+#: .\project\transactions\forms.py:44 .\project\transactions\forms.py:93
+#: .\project\transactions\forms.py:147
 #: .\project\transactions\templates\transactions\includes\table.html:11
 msgid "To account"
 msgstr "Į sąskaitą"
 
-#: .\project\transactions\forms.py:85 .\project\transactions\forms.py:124
+#: .\project\transactions\forms.py:89 .\project\transactions\forms.py:143
 msgid "Amount left after fees"
 msgstr "Suma kuri lieka atskaičius mokesčius"
 
@@ -1709,6 +1709,16 @@ msgstr "Įspėjimas"
 #: .\project\users\views.py:293
 msgid "You cannot delete yourself."
 msgstr "Negalite ištrinti savęs."
+
+#, fuzzy
+#~| msgid "From account"
+#~ msgid "Close 'From account'"
+#~ msgstr "Iš sąskaitos"
+
+#, fuzzy
+#~| msgid "Delete savings"
+#~ msgid "Close saving"
+#~ msgstr "Trinti fondus"
 
 #~ msgid "vnt"
 #~ msgstr "pcs"

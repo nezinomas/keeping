@@ -91,7 +91,7 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
         self.fields['date'].label = _('Date')
         self.fields['from_account'].label = _('From account')
         self.fields['to_account'].label = _('To account')
-        self.fields['close'].label = _('Close saving')
+        self.fields['close'].label = f"{_('Close')}  {_('From account')}"
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -145,7 +145,7 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
         self.fields['date'].label = _('Date')
         self.fields['from_account'].label = _('From account')
         self.fields['to_account'].label = _('To account')
-        self.fields['close'].label = _('Close \'From account\'')
+        self.fields['close'].label = f"{_('Close')}  {_('From account')}"
 
         # chained dropdown
         _id = ChainedDropDown(self, 'from_account').parent_field_id
