@@ -36,4 +36,4 @@ def test_upload_attachment_on_update(get_user):
 
     e.save()
 
-    assert e.attachment.name == os.path.join(str(get_user.journal.pk), 'expense-type', '1999.01_x.jpg')
+    assert e.attachment.name == f'{get_user.journal.pk}/expense-type/1999.01_x.jpg'

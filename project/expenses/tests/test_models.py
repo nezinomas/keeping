@@ -1,4 +1,3 @@
-import os
 from datetime import date
 from decimal import Decimal
 
@@ -230,7 +229,7 @@ def test_expense_attachment_field(get_user):
     e = ExpenseFactory(attachment=file_mock)
     pk = str(get_user.journal.pk)
 
-    assert str(e.attachment) == os.path.join(pk, 'expense-type', '1000.01_test1.jpg')
+    assert str(e.attachment) == f'{pk}/expense-type/1000.01_test1.jpg'
 
 
 def test_expense_related(second_user):
