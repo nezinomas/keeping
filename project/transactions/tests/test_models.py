@@ -555,5 +555,5 @@ def test_saving_change_from_db_classmethod():
     obj = SavingChange.objects.last()
 
     expect = {'saving_type_id': [_from.pk, _to.pk]}
-    print(f'{expect=} == { obj._old_values=}')
+
     assert obj._old_values == expect
