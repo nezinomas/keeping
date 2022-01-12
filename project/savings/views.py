@@ -65,3 +65,6 @@ class TypeNew(CreateAjaxMixin):
 class TypeUpdate(UpdateAjaxMixin):
     model = models.SavingType
     form_class = forms.SavingTypeForm
+
+    def get_queryset(self):
+        return models.SavingType.objects.related()
