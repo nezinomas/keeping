@@ -1,3 +1,4 @@
+from datetime import date
 from types import SimpleNamespace
 
 import pytest
@@ -6,7 +7,8 @@ from mock import PropertyMock, patch
 
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import Account, AccountBalance
-from ...savings.factories import SavingBalanceFactory, SavingTypeFactory
+from ...savings.factories import (SavingBalanceFactory, SavingFactory,
+                                  SavingTypeFactory)
 from ...savings.models import SavingBalance, SavingType
 from ...transactions.models import SavingChange, SavingClose, Transaction
 from .. import signals as T
@@ -526,3 +528,23 @@ def test_saving_update(_mock):
 
     assert actual['title'] == 'S1'
     assert actual['past_amount'] == 22.0
+
+
+@freeze_time('1999-1-1')
+def test_saving_stats_with_types_from_outside():
+    s = SavingTypeFactory(title='xxx')
+    s1 = SavingFactory(date=date(1999, 1, 1), saving_type=s)
+
+    T.savings_post_signal(sender=None, instance=None, types={s.title: s1.pk})
+
+    actual = SavingBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    actual = list(actual)[0]
+
+    assert actual['title'] == s.title
+    assert actual['year'] == 1999
+    assert actual['incomes'] == 150.0
+    assert actual['invested'] == 144.45
+    assert actual['fees'] == 5.55
