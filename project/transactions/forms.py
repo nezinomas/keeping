@@ -3,6 +3,7 @@ from datetime import datetime
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
@@ -55,7 +56,10 @@ class TransactionForm(YearBetweenMixin, forms.ModelForm):
 
 
 class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
-    close = forms.BooleanField(required=False)
+    close = forms.BooleanField(
+        required=False,
+        label=mark_safe(f"{_('Close')}  <b>{_('From account')}</b>")
+    )
 
     class Meta:
         model = SavingClose
@@ -91,7 +95,6 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
         self.fields['date'].label = _('Date')
         self.fields['from_account'].label = _('From account')
         self.fields['to_account'].label = _('To account')
-        self.fields['close'].label = f"{_('Close')}  {_('From account')}"
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -110,7 +113,10 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
 
 
 class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
-    close = forms.BooleanField(required=False)
+    close = forms.BooleanField(
+        required=False,
+        label=mark_safe(f"{_('Close')}  <b>{_('From account')}</b>")
+    )
 
     class Meta:
         model = SavingChange
@@ -145,7 +151,6 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
         self.fields['date'].label = _('Date')
         self.fields['from_account'].label = _('From account')
         self.fields['to_account'].label = _('To account')
-        self.fields['close'].label = f"{_('Close')}  {_('From account')}"
 
         # chained dropdown
         _id = ChainedDropDown(self, 'from_account').parent_field_id
