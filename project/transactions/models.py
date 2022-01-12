@@ -4,11 +4,41 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
+
 from ..savings.models import SavingType
 from . import managers
 
 
-class Transaction(models.Model):
+def transaction_accouts_hooks():
+    arr = {
+        Transaction: {
+            'account_id': ['from_account_id', 'to_account_id']
+        },
+        SavingClose: {
+            'account_id': ['to_account_id'],
+            'saving_type_id': ['from_account_id']
+        },
+        SavingChange: {
+            'saving_type_id': ['from_account_id', 'to_account_id']
+        }
+    }
+    return arr
+
+
+class OldValuesMixin(models.Model):
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        zipped = dict(zip(field_names, values))
+        instance = super().from_db(db, field_names, values)
+
+        instance._old_values = {
+            key: [zipped.get(x) for x in val] for key, val in transaction_accouts_hooks()[cls].items()
+        }
+
+        return instance
+
+
+class Transaction(OldValuesMixin):
     date = models.DateField()
     from_account = models.ForeignKey(
         Account,
@@ -41,19 +71,8 @@ class Transaction(models.Model):
 
     objects = managers.TransactionQuerySet.as_manager()
 
-    @classmethod
-    def from_db(cls, db, field_names, values):
-        zipped = dict(zip(field_names, values))
-        instance = super().from_db(db, field_names, values)
 
-        instance._old_values = {
-            'account_id': [zipped.get('from_account_id')] + [zipped.get('to_account_id')]
-        }
-
-        return instance
-
-
-class SavingClose(models.Model):
+class SavingClose(OldValuesMixin):
     date = models.DateField()
     from_account = models.ForeignKey(
         SavingType,
@@ -92,19 +111,8 @@ class SavingClose(models.Model):
 
     objects = managers.SavingCloseQuerySet.as_manager()
 
-    @classmethod
-    def from_db(cls, db, field_names, values):
-        zipped = dict(zip(field_names, values))
-        instance = super().from_db(db, field_names, values)
 
-        instance._old_values = {
-            'account_id': [zipped.get('to_account_id')],
-            'saving_type_id': [zipped.get('from_account_id')]
-        }
-        return instance
-
-
-class SavingChange(models.Model):
+class SavingChange(OldValuesMixin):
     date = models.DateField()
     from_account = models.ForeignKey(
         SavingType,
@@ -142,14 +150,3 @@ class SavingChange(models.Model):
         )
 
     objects = managers.SavingChangeQuerySet.as_manager()
-
-    @classmethod
-    def from_db(cls, db, field_names, values):
-        zipped = dict(zip(field_names, values))
-        instance = super().from_db(db, field_names, values)
-
-        instance._old_values = {
-            'saving_type_id': [zipped.get('from_account_id')] + [zipped.get('to_account_id')]
-        }
-
-        return instance
