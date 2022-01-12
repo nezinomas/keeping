@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-12 14:24+0200\n"
-"PO-Revision-Date: 2022-01-12 14:14+0200\n"
+"POT-Creation-Date: 2022-01-12 14:48+0200\n"
+"PO-Revision-Date: 2022-01-12 14:25+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -329,7 +329,7 @@ msgstr "01.01 mokesčiai"
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:13
 #: .\project\savings\forms.py:73
 #: .\project\savings\templates\savings\includes\savings_list.html:15
-#: .\project\transactions\forms.py:94 .\project\transactions\forms.py:150
+#: .\project\transactions\forms.py:91 .\project\transactions\forms.py:145
 #: .\project\transactions\templates\transactions\includes\table.html:13
 msgid "Fees"
 msgstr "Mokesčiai"
@@ -802,8 +802,8 @@ msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:9
 #: .\project\savings\forms.py:70
 #: .\project\savings\templates\savings\includes\savings_list.html:10
-#: .\project\transactions\forms.py:43 .\project\transactions\forms.py:95
-#: .\project\transactions\forms.py:151
+#: .\project\transactions\forms.py:43 .\project\transactions\forms.py:92
+#: .\project\transactions\forms.py:146
 #: .\project\transactions\templates\transactions\includes\table.html:9
 msgid "Date"
 msgstr "Data"
@@ -1228,8 +1228,8 @@ msgstr "<b>%(month)s</b> mėnesį įrašų nėra."
 
 #: .\project\incomes\forms.py:44
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:14
-#: .\project\transactions\forms.py:35 .\project\transactions\forms.py:91
-#: .\project\transactions\forms.py:148
+#: .\project\transactions\forms.py:35 .\project\transactions\forms.py:88
+#: .\project\transactions\forms.py:143
 #: .\project\transactions\templates\transactions\includes\table.html:12
 msgid "Amount"
 msgstr "Suma"
@@ -1410,8 +1410,8 @@ msgstr "Skaičiavimai"
 
 #: .\project\savings\forms.py:71
 #: .\project\savings\templates\savings\includes\savings_list.html:12
-#: .\project\transactions\forms.py:44 .\project\transactions\forms.py:96
-#: .\project\transactions\forms.py:152
+#: .\project\transactions\forms.py:44 .\project\transactions\forms.py:93
+#: .\project\transactions\forms.py:147
 #: .\project\transactions\templates\transactions\includes\table.html:10
 msgid "From account"
 msgstr "Iš sąskaitos"
@@ -1504,13 +1504,13 @@ msgstr "Keisti slaptažodį"
 msgid "Settings"
 msgstr "Nustatymai"
 
-#: .\project\transactions\forms.py:45 .\project\transactions\forms.py:97
-#: .\project\transactions\forms.py:153
+#: .\project\transactions\forms.py:45 .\project\transactions\forms.py:94
+#: .\project\transactions\forms.py:148
 #: .\project\transactions\templates\transactions\includes\table.html:11
 msgid "To account"
 msgstr "Į sąskaitą"
 
-#: .\project\transactions\forms.py:93 .\project\transactions\forms.py:149
+#: .\project\transactions\forms.py:90 .\project\transactions\forms.py:144
 msgid "Amount left after fees"
 msgstr "Suma kuri lieka atskaičius mokesčius"
 
