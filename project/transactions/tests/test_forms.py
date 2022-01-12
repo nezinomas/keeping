@@ -136,6 +136,17 @@ def test_saving_change_init():
     SavingChangeForm()
 
 
+def test_saving_change_fields():
+    form = SavingChangeForm().as_p()
+
+    assert '<input type="text" name="date"' in form
+    assert '<select name="to_account"' in form
+    assert '<select name="from_account"' in form
+    assert '<input type="number" name="price"' in form
+    assert '<input type="number" name="fee"' in form
+    assert '<input type="checkbox" name="close"' in form
+
+
 @freeze_time('1000-01-01')
 def test_saving_change_year_initial_value():
     UserFactory()
@@ -284,6 +295,34 @@ def test_saving_change_form_type_closed_in_current_year(get_user):
     assert 'S2' in str(form['to_account'])
 
 
+@freeze_time('1999-1-1')
+def test_saving_change_save_and_close_from_account():
+    a_from = SavingTypeFactory(title='From')
+    a_to = SavingTypeFactory(title='To')
+
+    form = SavingChangeForm(data={
+        'date': '1999-01-01',
+        'from_account': a_from.pk,
+        'to_account': a_to.pk,
+        'price': '1.0',
+        'fee': '0.25',
+        'close': True,
+    })
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    actual = SavingType.objects.get(title=a_from.title)
+
+    assert actual.closed == 1999
+
+    assert SavingBalance.objects.all().count() == 1
+
+    actual = SavingBalance.objects.last()
+    assert  actual.saving_type_id == a_to.pk
+
+
 # ----------------------------------------------------------------------------
 #                                                                 Saving Close
 # ----------------------------------------------------------------------------
@@ -292,7 +331,7 @@ def test_saving_close_init():
 
 def test_saving_close_fields():
     form = SavingCloseForm().as_p()
-    print(f'... \n{form=}\n')
+
     assert '<input type="text" name="date"' in form
     assert '<select name="to_account"' in form
     assert '<select name="from_account"' in form
@@ -384,7 +423,6 @@ def test_saving_close_blank_data():
     assert 'from_account' in form.errors
     assert 'to_account' in form.errors
     assert 'price' in form.errors
-
 
 
 def test_saving_close_price_null():

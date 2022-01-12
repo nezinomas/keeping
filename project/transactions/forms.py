@@ -96,7 +96,6 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
-
         self.fields['close'].widget.attrs['class'] = " form-check-input"
 
     def save(self):
@@ -111,11 +110,13 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
 
 
 class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
+    close = forms.BooleanField(required=False)
+
     class Meta:
         model = SavingChange
-        fields = ['date', 'from_account', 'to_account', 'price', 'fee']
+        fields = ['date', 'from_account', 'to_account', 'price', 'fee', 'close']
 
-    field_order = ['date', 'from_account', 'to_account', 'price', 'fee']
+    field_order = ['date', 'from_account', 'to_account', 'price', 'fee', 'close']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -144,6 +145,7 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
         self.fields['date'].label = _('Date')
         self.fields['from_account'].label = _('From account')
         self.fields['to_account'].label = _('To account')
+        self.fields['close'].label = _('Close \'From account\'')
 
         # chained dropdown
         _id = ChainedDropDown(self, 'from_account').parent_field_id
@@ -157,3 +159,15 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+        self.fields['close'].widget.attrs['class'] = " form-check-input"
+
+    def save(self):
+        close = self.cleaned_data.get('close')
+
+        if close:
+            obj = SavingType.objects.get(pk=self.instance.from_account.pk)
+            obj.closed = datetime.now().year
+            obj.save()
+
+        return super().save()
