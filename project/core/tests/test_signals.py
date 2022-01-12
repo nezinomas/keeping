@@ -1,3 +1,4 @@
+from datetime import date
 from types import SimpleNamespace
 
 import pytest
@@ -6,7 +7,8 @@ from mock import PropertyMock, patch
 
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import Account, AccountBalance
-from ...savings.factories import SavingBalanceFactory, SavingTypeFactory
+from ...savings.factories import (SavingBalanceFactory, SavingFactory,
+                                  SavingTypeFactory)
 from ...savings.models import SavingBalance, SavingType
 from ...transactions.models import SavingChange, SavingClose, Transaction
 from .. import signals as T
@@ -178,7 +180,8 @@ def test_account_list_one(mock_init):
     a1 = AccountFactory(title='A1')
     AccountFactory(title='A2')
 
-    obj = T.SignalBase(instance=None)
+    obj = T.SignalBase(instance=a1)
+    obj.sender = Account
     obj.model_types = Account
 
     func = 'project.core.signals.SignalBase.all_id'
@@ -186,6 +189,20 @@ def test_account_list_one(mock_init):
         actual = obj._get_accounts()
 
         assert {'A1': a1.id} == actual
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_account_list_one_all_id_from_outside(mock_init):
+    a1 = AccountFactory(title='A1')
+    AccountFactory(title='A2')
+
+    obj = T.SignalBase(instance=a1, all_id=[a1.id])
+    obj.sender = Account
+    obj.model_types = Account
+
+    actual = obj._get_accounts()
+
+    assert {'A1': a1.id} == actual
 
 
 @patch('project.core.signals.SignalBase._get_stats')
@@ -364,7 +381,8 @@ def test_saving_list_one(_mock):
     s1 = SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2')
 
-    obj = T.SignalBase(instance=None)
+    obj = T.SignalBase(instance=s1)
+    obj.sender = SavingType
     obj.model_types = SavingType
     obj.year = 1999
 
@@ -373,6 +391,21 @@ def test_saving_list_one(_mock):
         actual = obj._get_accounts()
 
         assert {'S1': s1.id} == actual
+
+
+@patch('project.core.signals.SignalBase._update_or_create')
+def test_saving_list_one_from_outside(_mock):
+    s1 = SavingTypeFactory(title='S1')
+    SavingTypeFactory(title='S2')
+
+    obj = T.SignalBase(instance=s1, all_id=[s1.id])
+    obj.sender = SavingType
+    obj.model_types = SavingType
+    obj.year = 1999
+
+    actual = obj._get_accounts()
+
+    assert {'S1': s1.id} == actual
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
@@ -396,7 +429,8 @@ def test_saving_list_without_closed(_mock):
     SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', closed=1974)
 
-    obj = T.SignalBase(instance=None)
+    obj = T.SignalBase(instance=s2)
+    obj.sender = SavingType
     obj.model_types = SavingType
     obj.field = 'saving_type_id'
     obj.year = 1999
@@ -494,3 +528,23 @@ def test_saving_update(_mock):
 
     assert actual['title'] == 'S1'
     assert actual['past_amount'] == 22.0
+
+
+@freeze_time('1999-1-1')
+def test_saving_stats_with_types_from_outside():
+    s = SavingTypeFactory(title='xxx')
+    s1 = SavingFactory(date=date(1999, 1, 1), saving_type=s)
+
+    T.savings_post_signal(sender=None, instance=None, types={s.title: s1.pk})
+
+    actual = SavingBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    actual = list(actual)[0]
+
+    assert actual['title'] == s.title
+    assert actual['year'] == 1999
+    assert actual['incomes'] == 150.0
+    assert actual['invested'] == 144.45
+    assert actual['fees'] == 5.55
