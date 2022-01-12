@@ -56,10 +56,7 @@ class TransactionForm(YearBetweenMixin, forms.ModelForm):
 
 
 class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
-    close = forms.BooleanField(
-        required=False,
-        label=mark_safe(f"{_('Close')}  <b>{_('From account')}</b>")
-    )
+    close = forms.BooleanField(required=False)
 
     class Meta:
         model = SavingClose
@@ -95,6 +92,7 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
         self.fields['date'].label = _('Date')
         self.fields['from_account'].label = _('From account')
         self.fields['to_account'].label = _('To account')
+        self.fields['close'].label = mark_safe(f"{_('Close')} <b>{_('From account')}</b>")
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -113,10 +111,7 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
 
 
 class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
-    close = forms.BooleanField(
-        required=False,
-        label=mark_safe(f"{_('Close')}  <b>{_('From account')}</b>")
-    )
+    close = forms.BooleanField(required=False)
 
     class Meta:
         model = SavingChange
@@ -151,6 +146,7 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
         self.fields['date'].label = _('Date')
         self.fields['from_account'].label = _('From account')
         self.fields['to_account'].label = _('To account')
+        self.fields['close'].label = mark_safe(f"{_('Close')} <b>{_('From account')}</b>")
 
         # chained dropdown
         _id = ChainedDropDown(self, 'from_account').parent_field_id
