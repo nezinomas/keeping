@@ -34,8 +34,9 @@ class OldValuesMixin(models.Model):
         zipped = dict(zip(field_names, values))
         instance = super().from_db(db, field_names, values)
 
+        hooks = transaction_accouts_hooks()[cls]
         instance._old_values = {
-            key: [zipped.get(x) for x in val] for key, val in transaction_accouts_hooks()[cls].items()
+            key: [zipped.get(x) for x in val] for key, val in hooks.items()
         }
 
         return instance
