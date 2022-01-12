@@ -292,7 +292,7 @@ def test_saving_close_init():
 
 def test_saving_close_fields():
     form = SavingCloseForm().as_p()
-    print(f'... \n{form=}\n')
+
     assert '<input type="text" name="date"' in form
     assert '<select name="to_account"' in form
     assert '<select name="from_account"' in form
