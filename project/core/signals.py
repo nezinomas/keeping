@@ -13,7 +13,8 @@ from ..incomes.models import Income
 from ..pensions.models import Pension, PensionBalance, PensionType
 from ..savings.lib.balance import Balance as SavingStats
 from ..savings.models import Saving, SavingBalance, SavingType
-from ..transactions.models import SavingChange, SavingClose, Transaction
+from ..transactions.models import (SavingChange, SavingClose, Transaction,
+                                   transaction_accouts_hooks)
 from .lib import utils
 from .lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
                           SavingsBalanceModels, collect_summary_data)
@@ -206,20 +207,12 @@ class SignalBase():
     def _get_field_list(self) -> List:
         field_list = [self.field]
 
-        f = {
-            Transaction: {
-                'account_id': ['from_account_id', 'to_account_id']
-            },
-            SavingClose: {
-                'account_id': ['to_account_id'],
-                'saving_type_id': ['from_account_id']
-            },
-            SavingChange: {
-                'saving_type_id': ['from_account_id', 'to_account_id']
-            }
-        }
         try:
-            field_list += f.get(self.sender, {}).get(self.field, [])
+            field_list += (
+                transaction_accouts_hooks()
+                .get(self.sender, {})
+                .get(self.field, [])
+            )
         except TypeError:
             pass
 
