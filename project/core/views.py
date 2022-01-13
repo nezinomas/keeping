@@ -1,18 +1,13 @@
 from datetime import datetime
-from types import SimpleNamespace
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
 from django.http.response import JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import View
 
-from ..accounts.models import AccountBalance
 from ..core.signals import SignalBase
-from ..pensions.models import PensionBalance
-from ..savings.models import SavingBalance
 from .lib.date import years
 from .mixins.views import DispatchAjaxMixin
 from .tests.utils import timer
@@ -50,30 +45,23 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
         _years = years()
 
         for year in _years:
-            _pensions = pensions(year)
-            _accounts = accounts(year)
-            _savings = savings(year)
-
             if year > datetime.now().year:
                 continue
 
             SignalBase.accounts(
                 sender=None,
                 instance=None,
-                year=year,
-                all_id=_accounts
+                year=year
             )
             SignalBase.savings(
                 sender=None,
                 instance=None,
-                year=year,
-                all_id=_savings
+                year=year
             )
             SignalBase.pensions(
                 sender=None,
                 instance=None,
-                year=year,
-                all_id=_pensions
+                year=year
             )
 
         return JsonResponse({'redirect': self.redirect_view})
@@ -89,53 +77,17 @@ class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View)
         SignalBase.accounts(
             sender=None,
             instance=None,
-            year=year,
-            all_id=accounts(year)
+            year=year
         )
         SignalBase.savings(
             sender=None,
             instance=None,
-            year=year,
-            all_id=savings(year)
+            year=year
         )
         SignalBase.pensions(
             sender=None,
             instance=None,
-            year=year,
-            all_id=pensions(year)
+            year=year
         )
 
         return JsonResponse({'redirect': self.redirect_view})
-
-
-def accounts(year):
-    qs = (
-        AccountBalance
-        .objects
-        .related()
-        .filter(year=year)
-        .values_list('account_id', flat=True)
-    )
-    return list(qs)
-
-
-def savings(year):
-    qs = (
-        SavingBalance
-        .objects
-        .related()
-        .filter(year=year)
-        .values_list('saving_type_id', flat=True)
-    )
-    return list(qs)
-
-
-def pensions(year):
-    qs = (
-        PensionBalance
-        .objects
-        .related()
-        .filter(year=year)
-        .values_list('pension_type_id', flat=True)
-    )
-    return list(qs)
