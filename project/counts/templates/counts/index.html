@@ -69,16 +69,7 @@
 {% endif %}
 
 
-{% if tab == 'history' %}
-
-{% if not records %}<div id="no-records"><div class="row my-2"><div class="col">{% include 'core/no_records.html' with data_missing=True %}</div></div></div>{% endif %}
-
-<div class="row my-2">
-    <div class="col-lg-4">{% if records %}{{ chart_weekdays }}{% endif %}</div>
-    <div class="col-lg-4">{% if records %}{{ chart_years }}{% endif %}</div>
-    <div class="col-lg-4">{% if records %}{{ chart_histogram }}{% endif %}</div>
-</div>
-{% endif %}
+{% if tab == 'history' %}{% include 'counts/includes/tab_history.html' %}{% endif %}
 
 {% include 'counts/counts_ajax.html' %}
 
