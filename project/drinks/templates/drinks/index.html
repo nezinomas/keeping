@@ -42,15 +42,7 @@
 {% if tab == 'index' %}{% include 'drinks/includes/tab_index.html' %}{% endif %}
 
 
-{% if tab == 'history' %}
-
-{% if not records %}<div id="no-records">{% include 'core/no_records.html' with two_years=True %}</div>{% endif %}
-
-<div class="row _hidden" {% if not records %}style="display: none"{% endif %}>
-    <div class="col">{% include 'drinks/includes/chart_summary.html' %}</div>
-</div>
-
-{% endif %}{# endif of tab history #}
+{% if tab == 'history' %}{% include 'drinks/includes/tab_history.html' %}{% endif %}
 
 
 {% if tab == 'data' %}
