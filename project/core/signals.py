@@ -200,9 +200,6 @@ class SignalBase():
                 .delete()
             )
 
-    def _get_worth(self) -> List[Dict]:
-        return self.model_worth.objects.items(year=self.year)
-
     def _get_field_list(self) -> List:
         field_list = [self.field]
 
@@ -271,6 +268,9 @@ class SignalBase():
         qs = qs.values('id', 'title')
 
         return {x['title']: x['id'] for x in qs}
+
+    def _get_worth(self) -> List[Dict]:
+        return self.model_worth.objects.items(year=self.year)
 
     def _get_stats(self) -> List[Dict]:
         # get (account_types|savings_types|pension_types) in class if types is empty
