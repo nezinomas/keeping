@@ -69,7 +69,7 @@ def collect_summary_data(year: int,
     for m in _models:
         model = apps.get_model(m)
         for name in ['summary', 'summary_from', 'summary_to']:
-            q = get_sql(year, model, name)
+            q = get_sql(year=year, model=model, method_name=name)
             if q:
                 for row in q:
                     try:
