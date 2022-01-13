@@ -1,19 +1,16 @@
-from datetime import date, datetime
+from datetime import date
 
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
-from project.accounts.models import Account
 from project.journals.factories import JournalFactory
 
-from ...accounts.factories import AccountBalance, AccountFactory
+from ...accounts.factories import AccountBalance
 from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
-from ...pensions.factories import (PensionBalance, PensionFactory,
-                                   PensionTypeFactory)
-from ...savings.factories import (SavingBalance, SavingFactory,
-                                  SavingTypeFactory)
+from ...pensions.factories import PensionBalance, PensionFactory
+from ...savings.factories import SavingBalance, SavingFactory
 from .. import views
 from .utils import setup_view
 
