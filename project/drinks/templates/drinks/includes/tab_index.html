@@ -67,3 +67,34 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'drinks:reload_stats' %}`;
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1'
+            },
+            success: function (data) {
+                var blocks = [
+                    'chart_consumption',
+                    'chart_quantity',
+                    'tbl_consumption',
+                    'tbl_last_day',
+                    'tbl_alcohol',
+                    'tbl_std_av',
+                    'chart_calendar_1H',
+                    'chart_calendar_2H'
+                ];
+
+                if (data.records > 0) {
+                    $('#no-records').html('');
+                    $('._hidden').show();
+                    reload_stats(data, blocks);
+                }
+            }
+        });
+    });
+</script>
