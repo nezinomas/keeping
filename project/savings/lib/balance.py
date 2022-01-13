@@ -110,7 +110,7 @@ class Balance(BalanceBase):
             - df['s_change_from_now']
         )
 
-        # invested sum cannot be negated
+        # invested sum cannot be negative
         df['invested'] = df['invested'].mask(df['invested'] < 0, 0.0)
 
         return df
