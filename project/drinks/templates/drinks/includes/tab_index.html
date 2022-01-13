@@ -40,14 +40,10 @@
         <div class="row my-2">
             <div class="col-sm-3 pt-1"><b>{% translate 'Historical data' %}</b></div>
             <div class="col-sm-9 text-end">
-                <button type="button" class="btn btn-sm btn-info btn_click"
-                    data-url="{% url 'drinks:historical_data' 2 %}">{% translate '2 years' %}</button>
-                <button type="button" class="btn btn-sm btn-info btn_click"
-                    data-url="{% url 'drinks:historical_data' 3 %}">{% translate '3 years' %}</button>
-                <button type="button" class="btn btn-sm btn-info btn_click"
-                    data-url="{% url 'drinks:historical_data' 7 %}">{% translate '7 years' %}</button>
-                <button type="button" class="btn btn-sm btn-info btn_click"
-                    data-url="{% url 'drinks:historical_data' all_years %}">{% translate 'All years' %}</button>
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 2 %}">{% translate '2 years' %}</button>
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 3 %}">{% translate '3 years' %}</button>
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 7 %}">{% translate '7 years' %}</button>
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' all_years %}">{% translate 'All years' %}</button>
             </div>
         </div>
 
