@@ -45,14 +45,7 @@
 
 {% if tab == 'index' %}{% include 'counts/includes/tab_index.html' %}{% endif %}
 
-
-{% if tab == 'data' %}
-
-<div class="row my-2">
-    <div class="col" id="ajax-content">{% include 'counts/includes/counts_list.html' %}</div>
-</div>
-{% endif %}
-
+{% if tab == 'data' %}{% include 'counts/includes/tab_data.html' %}{% endif %}
 
 {% if tab == 'history' %}{% include 'counts/includes/tab_history.html' %}{% endif %}
 
