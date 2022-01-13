@@ -70,25 +70,28 @@ def collect_summary_data(year: int,
         model = apps.get_model(m)
         for name in ['summary', 'summary_from', 'summary_to']:
             q = get_sql(year=year, model=model, method_name=name)
-            if q:
-                for row in q:
-                    try:
-                        title = row['title']
-                    except KeyError:
-                        break
 
-                    for key, val in row.items():
-                        if key in ('title', 'id'):
-                            continue
+            if not q:
+                continue
 
-                        # copy values from qs to df
-                        if title in df_index_list:
-                            try:
-                                val = float(val)
-                            except TypeError:
-                                val = 0.0
+            for row in q:
+                try:
+                    title = row['title']
+                except KeyError:
+                    break
 
-                            df.at[title, key] = val
+                for key, val in row.items():
+                    if key in ('title', 'id'):
+                        continue
+
+                    # copy values from qs to df
+                    if title in df_index_list:
+                        try:
+                            val = float(val)
+                        except TypeError:
+                            val = 0.0
+
+                        df.at[title, key] = val
 
     return df
 
