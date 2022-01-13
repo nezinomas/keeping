@@ -219,6 +219,10 @@ class SignalBase():
 
     def _get_id(self) -> List[int]:
         account_id = []
+        # if no instance return empty list
+        if not self.instance:
+            return account_id
+
         field_list = self._get_field_list()
 
         for name in field_list:
