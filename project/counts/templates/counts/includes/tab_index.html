@@ -1,0 +1,14 @@
+{% if not records %}<div id="no-records"><div class="row my-2"><div class="col">{% include 'core/no_records.html' %}</div></div></div>{% endif %}
+
+<div class="row my-2">
+    <div class="col-lg-4" id="chart_weekdays">{% if records %}{{ chart_weekdays }}{% endif %}</div>
+    <div class="col-lg-4" id="chart_months">{% if records %}{{ chart_months }}{% endif %}</div>
+    <div class="col-lg-4" id="chart_histogram">{% if records %}{{ chart_histogram }}{% endif %}</div>
+</div>
+
+<div class="row my-2">
+    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{% if records %}{{ chart_calendar_1H }}{% endif %}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{% if records %}{{ chart_calendar_2H }}{% endif %}</div>
+</div>
+
+{% include 'counts/counts_ajax.html' %}

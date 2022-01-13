@@ -1,0 +1,158 @@
+{% load i18n %}
+{% load static %}
+
+<div class="row">
+    <div class="col-lg-6" id="chart_consumption">{% if records %}{{ chart_consumption }}{% endif %}</div>
+    <div class="col-lg-6" id="chart_quantity">{% if records %}{{ chart_quantity }}{% endif %}</div>
+</div>
+
+<div class="row my-2">
+    <div class="col-lg-6">
+        <div class="row gx-2">
+            {% if records %}<div id="tbl_consumption" class="col-lg-3 col-md-3">{{ tbl_consumption }}</div>{% endif %}
+            <div id="tbl_last_day" class="col-lg-4 col-md-3">{{ tbl_last_day }}</div>
+            {% if records %}<div id="tbl_alcohol" class="col-lg-2 col-md-3">{{ tbl_alcohol }}</div>{% endif %}
+            <div id="drinks-target-content" class="col-lg-3 col-md-3">{{ target_list }}</div>
+        </div>
+
+        <div class="row">
+            <div class="col" id="tbl_std_av">{% if records %}{{ tbl_std_av }}{% endif %}</div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 d-flex">
+        {% get_current_language as LANGUAGE_CODE %}
+        {% with 'images/drinks_info_'|add:LANGUAGE_CODE|add:'.jpg' as image %}
+        <div class="text-center mx-auto align-self-center">
+            <img src="{% static image %}" width="500" alt="{% translate 'What is a standard unit of alcohol' %}">
+        </div>{% endwith %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{{ chart_calendar_1H }}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{{ chart_calendar_2H }}</div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="row my-2">
+            <div class="col-sm-3 pt-1"><b>{% translate 'Historical data' %}</b></div>
+            <div class="col-sm-9 text-end">
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 2 %}">{% translate '2 years' %}</button>
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 3 %}">{% translate '3 years' %}</button>
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' 7 %}">{% translate '7 years' %}</button>
+                <button type="button" class="btn btn-sm btn-info btn_click" data-url="{% url 'drinks:historical_data' all_years %}">{% translate 'All years' %}</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col" id="historical_data"></div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="row my-2">
+            <div class="col-sm-4 pt-1"><b>{% translate 'Year comparison' %}</b></div>
+            <div class="col-sm-8 text-end" id="compare_form_data">{{ compare_form }}</div>
+        </div>
+
+        <div class="row">
+            <div class="col" id="compare_data"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        var url = `{% url 'drinks:reload_stats' %}`;
+
+        $.ajax({
+            url: url,
+            data: {
+                'ajax_trigger': '1'
+            },
+            success: function (data) {
+                var blocks = [
+                    'chart_consumption',
+                    'chart_quantity',
+                    'tbl_consumption',
+                    'tbl_last_day',
+                    'tbl_alcohol',
+                    'tbl_std_av',
+                    'chart_calendar_1H',
+                    'chart_calendar_2H'
+                ];
+
+                if (data.records > 0) {
+                    $('#no-records').html('');
+                    $('._hidden').show();
+                    reload_stats(data, blocks);
+                }
+            }
+        });
+    });
+
+    $(function () {
+        var load_historical_data = function () {
+            var btn = $(this);
+            var url = btn.data('url');
+
+            if (url == undefined) {
+                return;
+            }
+
+            $.ajax({
+                url: url,
+                type: 'get',
+                dataType: 'json',
+                success: function (data) {
+                    $('#historical_data').append(data['html']);
+                },
+                error: function (xhr, status, error) {
+                    alert(`err: ${error}\n\nstatus: ${status}`)
+                }
+            });
+        };
+        $(document).on('click', '.btn_click', load_historical_data);
+    });
+
+    $(function () {
+        var load_compare = function () {
+            var btn = $(this);
+            var url = btn.data('url');
+
+            if (url == undefined) {
+                return;
+            }
+
+            // This prevents the form from submitting
+            event.preventDefault();
+
+            // Capture form input
+            csrfmiddlewaretoken = $("#compare_form").find("input[name='csrfmiddlewaretoken']" ).val();
+            form_data = $('#compare_form').serializeArray();
+            form_data = JSON.stringify(form_data);
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                dataType: 'json',
+                type:"POST",
+                data : {
+                    "csrfmiddlewaretoken" : csrfmiddlewaretoken,
+                    "form_data" : form_data
+                },
+                success: function (data) {
+                    $('#compare_data').html(data.html);
+                    $('#compare_form_data').html(data.html_form);
+                },
+                error: function (xhr, status, error) {
+                    alert(`${error}\n\n${xhr.responseJSON.error}`)
+                }
+            });
+        };
+
+        $(document).on('click', '.filter_click', load_compare);
+    });
+</script>
