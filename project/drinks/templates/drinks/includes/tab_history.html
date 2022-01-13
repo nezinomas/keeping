@@ -4,3 +4,13 @@
 <div class="row _hidden" {% if not records %}style="display: none"{% endif %}>
     <div class="col">{% include 'drinks/includes/chart_summary.html' %}</div>
 </div>
+
+<script>
+    $(document).on('hidden.bs.modal', '#modal-form', function () {
+        $.ajax({
+            success: function (data) {
+                window.location.href = '{% url 'drinks:drinks_history' %}';
+            },
+        });
+    });
+</script>
