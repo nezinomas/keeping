@@ -49,31 +49,6 @@
 
 <script>
     $(function () {
-        var load_html = function () {
-            var btn = $(this);
-            var url = btn.data('url');
-
-            if (url == undefined) {
-                return;
-            }
-
-            $.ajax({
-                url: url,
-                type: 'get',
-                dataType: 'json',
-                success: function (data) {
-                    $('#historical_data').append(data['html']);
-                },
-                error: function (xhr, status, error) {
-                    alert(`err: ${error}\n\nstatus: ${status}`)
-                }
-            });
-        };
-
-        $(document).on('click', '.btn_click', load_html);
-    });
-
-    $(function () {
         var load_compare = function () {
             var btn = $(this);
             var url = btn.data('url');
