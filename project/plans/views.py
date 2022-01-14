@@ -156,7 +156,7 @@ class CopyPlans(AjaxCustomFormMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['submit_button'] =  _('Insert')
+
         context['form_action'] = 'insert'
         context['title'] = _('Copy plans')
 
