@@ -193,11 +193,15 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
         return JsonResponse(json_data)
 
     def form_invalid(self, form):
+        context = self.get_context_data()
+        context['form'] = form
+
         json_data = {
             'form_is_valid': False,
-            'html_form': self._render_form({'form': form}),
+            'html_form': self._render_form(context),
             'html': None,
         }
+
         return JsonResponse(json_data)
 
     def form_valid(self, form, **kwargs):
