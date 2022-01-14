@@ -953,7 +953,7 @@ def test_view_necessarys_delete_other_journal_post_form(client_logged, second_us
 def test_copy_func():
     view = resolve('/plans/copy/')
 
-    assert views.copy_plans is view.func
+    assert views.CopyPlans is view.func.view_class
 
 
 @pytest.mark.django_db

@@ -1,9 +1,12 @@
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.shortcuts import render, reverse
+from django.http import HttpResponse
+from django.shortcuts import render
 from django.template.loader import render_to_string
+from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
+from ..core.lib import utils
+from ..core.mixins.ajax import AjaxCustomFormMixin
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                  DispatchListsMixin, IndexMixin, ListMixin,
                                  UpdateAjaxMixin)
@@ -145,29 +148,31 @@ class NecessaryDelete(DeleteAjaxMixin):
 # ---------------------------------------------------------------------------------------
 #                                                                              Copy Plans
 # ---------------------------------------------------------------------------------------
-@login_required
-def copy_plans(request):
-    data = {}
-    form = forms.CopyPlanForm(data=(request.POST or None))
-    if request.method == 'POST':
+class CopyPlans(AjaxCustomFormMixin):
+    form_class = forms.CopyPlanForm
+    template_name = 'plans/includes/copy_plans_form.html'
+    url = reverse_lazy('plans:copy_plans')
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['submit_button'] =  _('Insert')
+        context['form_action'] = 'insert'
+        context['title'] = _('Copy plans')
+
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        if not utils.is_ajax(self.request):
+            return HttpResponse(render_to_string('srsly.html'))
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(data=(request.POST or None))
+
         if form.is_valid():
-            data['form_is_valid'] = True
             form.save()
-        else:
-            data['form_is_valid'] = False
+            return super().form_valid(form)
 
-    context = {
-        'title': _('Copy plans'),
-        'form': form,
-        'submit_button': _('Insert'),
-        'form_action': 'insert',
-        'url': reverse('plans:copy_plans'),
-    }
-
-    data['html_form'] = render_to_string(
-        template_name='plans/includes/copy_plans_form.html',
-        context=context,
-        request=request
-    )
-
-    return JsonResponse(data)
+        return self.form_invalid(form)
