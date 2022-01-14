@@ -153,7 +153,6 @@ class CopyPlans(AjaxCustomFormMixin):
     template_name = 'plans/includes/copy_plans_form.html'
     url = reverse_lazy('plans:copy_plans')
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
