@@ -113,7 +113,13 @@
                 'ajax_trigger': '1'
             },
             success: function (data) {
-                $(`#${update_id}`).html(data);
+                if (update_id === 'plans_copy') {
+                    window.location.href = '{% url 'plans:plans_index' %}'
+                    return
+                }
+                else {
+                    $(`#${update_id}`).html(data);
+                }
             }
         });
     });

@@ -993,3 +993,14 @@ def test_copy_fails(client_logged):
     actual = json.loads(json_str)
 
     assert not actual['form_is_valid']
+
+
+def test_copy_has_data_chained_dropdown(client_logged):
+    url = reverse('plans:copy_plans')
+
+    response = client_logged.post(url, {}, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert 'data-chained-dropdown="plans_copy"' in actual['html_form']
