@@ -136,7 +136,7 @@ urlpatterns = [
     #------------------------------------------------------------------------------------
     path(
         'plans/copy/',
-        views.copy_plans,
+        views.CopyPlans.as_view(),
         name='copy_plans'
     ),
 ]
