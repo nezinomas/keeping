@@ -105,7 +105,7 @@ class SignalBase():
 
         self.instance = instance
         self.types = types
-        self.all_id = all_id
+        self.all_id = self._get_id() if not all_id else all_id
 
         self._update_or_create()
 
@@ -164,9 +164,6 @@ class SignalBase():
         return cls(instance, year, types, all_id)
 
     def _update_or_create(self) -> None:
-        if not self.all_id:
-            self.all_id = self._get_id()
-
         # copy by value all_id list
         arr = list(self.all_id)
 
