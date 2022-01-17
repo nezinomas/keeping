@@ -168,17 +168,30 @@ class ExpenseQuerySet(models.QuerySet):
             .values('year', 'sum')
         )
 
-    def sum_by_year_type(self):
+    def filter_types(self, arr: List[int] = None):
+        if arr:
+            return self.filter(expense_type__in=arr)
+
+        return self
+
+    def sum_by_year_type(self, expense_type: List[int] = None):
+        expense_type = expense_type if expense_type else []
+
         return (
             self
             .related()
             .annotate(cnt=Count('expense_type'))
-            .values(title=F('expense_type__title'))
+            .values('expense_type')
+            .filter_types(expense_type)
             .annotate(date=TruncYear('date'))
             .annotate(year=ExtractYear(F('date')))
             .annotate(sum=Sum('price'))
             .order_by('year')
-            .values('year', 'sum', 'title')
+            .values(
+                'year',
+                'sum',
+                title=F('expense_type__title')
+            )
         )
 
     def summary(self, year: int) -> List[Dict[str, Any]]:
