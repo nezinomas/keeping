@@ -50,7 +50,7 @@ def accounts_post_signal(sender: object,
                          all_id: List[int] = None,
                          *args,
                          **kwargs):
-    SignalBase.accounts(sender, instance, year, types)
+    SignalBase.accounts(sender, instance, year, types, all_id)
 
 
 # ----------------------------------------------------------------------------
@@ -71,7 +71,7 @@ def savings_post_signal(sender: object,
                         all_id: List[int] = None,
                         *args,
                         **kwargs):
-    SignalBase.savings(sender, instance, year, types)
+    SignalBase.savings(sender, instance, year, types, all_id)
 
 
 # ----------------------------------------------------------------------------
@@ -88,7 +88,7 @@ def pensions_post_signal(sender: object,
                          all_id: List[int] = None,
                         *args,
                         **kwargs):
-    SignalBase.pensions(sender, instance, year, types)
+    SignalBase.pensions(sender, instance, year, types, all_id)
 
 
 # ----------------------------------------------------------------------------
