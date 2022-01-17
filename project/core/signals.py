@@ -47,6 +47,7 @@ def accounts_post_signal(sender: object,
                          instance: object,
                          year: int = None,
                          types: Dict[str, int] = None,
+                         all_id: List[int] = None,
                          *args, **kwargs):
     SignalBase.accounts(sender, instance, year, types)
 
@@ -66,6 +67,7 @@ def savings_post_signal(sender: object,
                         instance: object,
                         year: int = None,
                         types: Dict[str, int] = None,
+                        all_id: List[int] = None,
                         *args, **kwargs):
     SignalBase.savings(sender, instance, year, types)
 
@@ -81,6 +83,7 @@ def pensions_post_signal(sender: object,
                          instance: object,
                          year: int = None,
                          types: Dict[str, int] = None,
+                         all_id: List[int] = None,
                         *args, **kwargs):
     SignalBase.pensions(sender, instance, year, types)
 
