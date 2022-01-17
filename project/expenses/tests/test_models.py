@@ -473,3 +473,19 @@ def test_expense_post_delete_with_update():
     assert actual[0]['balance'] == -1.0
 
     assert Expense.objects.all().count() == 1
+
+
+def test_expense_sum_by_year_type():
+    ExpenseFactory(date=date(1111, 1, 1), price=1)
+    ExpenseFactory(date=date(1999, 1, 1), price=2)
+    ExpenseFactory(date=date(1111, 1, 1), price=4)
+    ExpenseFactory(date=date(1999, 1, 1), price=10)
+
+    actual = Expense.objects.sum_by_year_type()
+
+    assert actual[0]['year'] == 1111
+    assert actual[0]['title'] == 'Expense Type'
+    assert actual[0]['sum'] == Decimal('5')
+    assert actual[1]['year'] == 1999
+    assert actual[1]['title'] == 'Expense Type'
+    assert actual[1]['sum'] == Decimal('12')

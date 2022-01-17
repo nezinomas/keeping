@@ -168,6 +168,19 @@ class ExpenseQuerySet(models.QuerySet):
             .values('year', 'sum')
         )
 
+    def sum_by_year_type(self):
+        return (
+            self
+            .related()
+            .annotate(cnt=Count('expense_type'))
+            .values(title=F('expense_type__title'))
+            .annotate(date=TruncYear('date'))
+            .annotate(year=ExtractYear(F('date')))
+            .annotate(sum=Sum('price'))
+            .order_by('year')
+            .values('year', 'sum', 'title')
+        )
+
     def summary(self, year: int) -> List[Dict[str, Any]]:
         '''
         return:
