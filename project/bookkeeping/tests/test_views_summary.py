@@ -9,7 +9,6 @@ from ...incomes.factories import IncomeFactory, IncomeTypeFactory
 from .. import views
 
 pytestmark = pytest.mark.django_db
-X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
 # ---------------------------------------------------------------------------------------

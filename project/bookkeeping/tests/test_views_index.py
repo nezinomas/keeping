@@ -13,7 +13,6 @@ from ..factories import (AccountWorthFactory, PensionWorthFactory,
                          SavingWorthFactory)
 
 pytestmark = pytest.mark.django_db
-X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
 # ---------------------------------------------------------------------------------------

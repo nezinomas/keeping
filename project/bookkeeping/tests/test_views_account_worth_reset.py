@@ -8,7 +8,6 @@ from .. import models, views
 from ..factories import AccountWorthFactory
 
 pytestmark = pytest.mark.django_db
-X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
 # ---------------------------------------------------------------------------------------
