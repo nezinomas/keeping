@@ -1,6 +1,6 @@
 {% load crispy_forms_tags %}{% load i18n %}
 
-<form novalidate method="post" id="search_form" class="row d-flex gx-1 align-items-center">
+<form novalidate method="post" id="search_form">
     {% csrf_token %}
     {% include 'core/includes/form_errors.html' %}
     <div class="col align-self-start">
