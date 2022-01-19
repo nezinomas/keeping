@@ -8,6 +8,6 @@
         {{ form.names|as_crispy_field }}
     </div>
     <div class="col-auto align-self-start">
-        <input type="submit" name="search" value="{% translate 'Search' %}" id="search_btn" class="btn btn-secondary btn-sm search_click text-center w5" data-url="{{ url }}" data-update-container="{{ update_container }}">
+        <input type="submit" name="search" value="{% translate 'Search' %}" id="search_btn" class="btn btn-secondary btn-sm search_click text-center w5" data-url="{{ url }}" data-update-container="chart" data-update-container2="table">
     </div>
 </form>
