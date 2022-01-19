@@ -16,7 +16,8 @@ def test_form_init():
 def test_form_fields():
     form = SummaryExpensesForm().as_p()
 
-    assert '<select name="expenses"' in form
+    assert '<select name="types"' in form
+    assert '<input type="hidden" name="names"' in form
 
 
 def test_form_load():
@@ -26,4 +27,11 @@ def test_form_load():
     form = SummaryExpensesForm().as_p()
 
     assert f'<option value="{t.pk}">Expense Type</option>' in form
-    assert f'<option value="{t.pk}:{n.pk}">    Expense Name</option>' in form
+    assert f'<option value="{t.pk}:{n.pk}">Expense Name</option>' in form
+
+
+def test_form_empty_error():
+    form = SummaryExpensesForm(data={'types':[], 'names':[]})
+
+    assert not form.is_valid()
+    assert form.errors['__all__'] == ['Reikia pasirinkti bent vieną kategoriją.']

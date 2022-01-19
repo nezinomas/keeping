@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as _
 from crispy_forms.helper import FormHelper
 from django import forms
 
@@ -63,8 +64,13 @@ class PensionWorthForm(forms.ModelForm):
 
 
 class SummaryExpensesForm(forms.Form):
-    expenses = forms.MultipleChoiceField(
-        required=True
+    types = forms.MultipleChoiceField(
+        required=False
+    )
+    names = forms.CharField(
+        widget=forms.HiddenInput(),
+        disabled=True,
+        required=False,
     )
 
     def __init__(self, *args, **kwargs):
@@ -75,10 +81,22 @@ class SummaryExpensesForm(forms.Form):
             choices.append((_type.id, _type.title))
 
             for _name in _type.expensename_set.all():
-                choices.append((f'{_type.id}:{_name.id}', f'    {_name.title}'))
+                choices.append(
+                    (f'{_type.id}:{_name.id}', _name.title))
 
-        self.fields['expenses'].choices = choices
-        self.fields['expenses'].label = None
+        self.fields['types'].choices = choices
+        self.fields['types'].label = None
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        _types = cleaned_data.get('types')
+        _names = cleaned_data.get('names')
+
+        if not _types and not _names:
+            raise forms.ValidationError(
+                _('At least one category needs to be selected.')
+            )
+        return cleaned_data
