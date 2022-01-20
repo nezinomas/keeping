@@ -20,7 +20,7 @@ from ..pensions.models import PensionBalance, PensionType
 from ..savings.models import Saving, SavingBalance, SavingType
 from .forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
 from .lib import views_helpers as H
-from .lib.summary_view_helper import chart_data
+from .lib import summary_view_helper as SH
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 
@@ -214,12 +214,12 @@ class SummarySavings(IndexMixin):
         shares = qs.filter(type='shares')
         pensions3 = qs.filter(type='pensions')
 
-        context['funds'] = chart_data(funds)
-        context['shares'] = chart_data(shares)
-        context['funds_shares'] = chart_data(funds, shares)
-        context['pensions3'] = chart_data(pensions3)
-        context['pensions2'] = chart_data(PensionBalance.objects.sum_by_year())
-        context['all'] = chart_data(funds, shares, pensions3)
+        context['funds'] = SH.chart_data(funds)
+        context['shares'] = SH.chart_data(shares)
+        context['funds_shares'] = SH.chart_data(funds, shares)
+        context['pensions3'] = SH.chart_data(pensions3)
+        context['pensions2'] = SH.chart_data(PensionBalance.objects.sum_by_year())
+        context['all'] = SH.chart_data(funds, shares, pensions3)
 
         return context
 
