@@ -82,13 +82,15 @@ class ExpenseCompareHelper():
                  remove_empty_columns: bool = None):
 
         self._years = years
-
         self._serries_data = []
+
+        if not self._years:
+            return
 
         self._serries_data += self._make_serries_data(types)
         self._serries_data += self._make_serries_data(names)
 
-        if remove_empty_columns:
+        if remove_empty_columns and self._serries_data:
             self._remove_empty_columns()
 
     @property

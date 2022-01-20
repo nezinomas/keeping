@@ -283,3 +283,23 @@ def test_compare_serries_data_remove_empty_columns():
         {'name': 'X', 'data': [1.0, 3.0]},
         {'name': 'Y', 'data': [2.0, 4.0]},
     ]
+
+
+def test_compare_serries_data_remove_empty_columns_no_data():
+    obj = H.ExpenseCompareHelper(
+        years=[1, 2],
+        remove_empty_columns = True
+    )
+
+    assert obj.categories == [1, 2]
+    assert obj.serries_data == []
+
+
+def test_compare_serries_data_remove_empty_columns_no_data_all():
+    obj = H.ExpenseCompareHelper(
+        years=[],
+        remove_empty_columns = True
+    )
+
+    assert obj.categories == []
+    assert obj.serries_data == []
