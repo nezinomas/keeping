@@ -212,7 +212,8 @@ class ExpenseQuerySet(models.QuerySet):
             .values(
                 'year',
                 'sum',
-                title=F('expense_name__title')
+                title=F('expense_name__title'),
+                root=F('expense_name__parent__title')
             )
         )
 
