@@ -270,7 +270,8 @@ class SummaryExpensesData(AjaxSearchMixin):
         obj = SH.ExpenseCompareHelper(
             years=years()[:-1],
             types=_types_qs,
-            names=_names_qs
+            names=_names_qs,
+            remove_empty_columns=True
         )
 
         if obj.serries_data:
