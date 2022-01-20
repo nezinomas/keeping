@@ -52,6 +52,7 @@ def test_chart_data_3(_a, _b):
     assert actual['profit'] == [0.5, 0.7]
     assert actual['total'] == [5.5, 7.7]
 
+
 def test_chart_data_5(_a):
     actual = H.chart_data(_a, [])
 
