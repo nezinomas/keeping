@@ -1,5 +1,5 @@
 from datetime import date
-
+from decimal import Decimal
 import pytest
 from freezegun import freeze_time
 
@@ -7,6 +7,9 @@ from ...savings.factories import SavingBalance, SavingBalanceFactory
 from ..lib import summary_view_helper as H
 
 
+# ---------------------------------------------------------------------------------------
+#                                                                               fixtures
+# ---------------------------------------------------------------------------------------
 @pytest.fixture
 def _a():
     return ([
@@ -23,6 +26,31 @@ def _b():
         {'year': 2000, 'invested': 4.0, 'profit': 0.4},
         {'year': 2001, 'invested': 5.0, 'profit': 0.5},
     ])
+
+
+@pytest.fixture
+def types():
+    return [
+        {'year': 2000, 'sum': Decimal('5'), 'title': 'X'},
+        {'year': 2000, 'sum': Decimal('2'), 'title': 'Y'},
+        {'year': 2001, 'sum': Decimal('12'), 'title': 'Y'},
+        {'year': 2002, 'sum': Decimal('15'), 'title': 'X'},
+    ]
+
+
+@pytest.fixture
+def names():
+    return [
+        {'year': 2000, 'sum': Decimal('5'), 'title': 'A', 'root': 'X'},
+        {'year': 2000, 'sum': Decimal('2'), 'title': 'B', 'root': 'Y'},
+        {'year': 2001, 'sum': Decimal('12'), 'title': 'B', 'root': 'Y'},
+        {'year': 2002, 'sum': Decimal('15'), 'title': 'A', 'root': 'X'},
+    ]
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                               fixtures
+# ---------------------------------------------------------------------------------------
 
 
 def test_chart_data_1(_a):
@@ -134,3 +162,99 @@ def test_make_form_data_dict_extended(rf):
 
     assert actual['types'] == [1, 2]
     assert actual['names'] == '6,7'
+
+
+def test_compare_categories():
+    obj = H.ExpenseCompareHelper(years=[1, 2])
+
+    actual = obj.categories
+
+    assert actual == [1, 2]
+
+
+def test_compare_serries_data_types(types):
+    obj = H.ExpenseCompareHelper(
+        years=[2000, 2001, 2002],
+        types=types
+    )
+
+    actual = obj.serries_data
+    expect = [
+        {'name': 'X', 'data': [5.0, 0.0, 15.0]},
+        {'name': 'Y', 'data': [2.0, 12.0, 0.0]},
+    ]
+
+    assert actual == expect
+
+def test_compare_serries_data_types_year_out_of_range(types):
+    types.append({'year': 2003, 'sum': Decimal('25'), 'title': 'XXX'})
+
+    obj = H.ExpenseCompareHelper(
+        years=[2000, 2001, 2002],
+        types=types
+    )
+
+    actual = obj.serries_data
+    expect = [
+        {'name': 'X', 'data': [5.0, 0.0, 15.0]},
+        {'name': 'Y', 'data': [2.0, 12.0, 0.0]},
+    ]
+    assert actual == expect
+
+
+def test_compare_serries_data_types_no_data():
+    obj = H.ExpenseCompareHelper(
+        years=[2000, 2001, 2002]
+    )
+
+    actual = obj.serries_data
+
+    assert actual == []
+
+
+def test_compare_serries_data_names(names):
+    obj = H.ExpenseCompareHelper(
+        years=[2000, 2001, 2002],
+        names=names
+    )
+
+    actual = obj.serries_data
+    expect = [
+        {'name': 'X/A', 'data': [5.0, 0.0, 15.0]},
+        {'name': 'Y/B', 'data': [2.0, 12.0, 0.0]},
+    ]
+
+    assert actual == expect
+
+
+def test_compare_serries_data_names_year_out_of_range(names):
+    names.append({'year': 2003, 'sum': Decimal('25'), 'title': 'XXX'})
+
+    obj = H.ExpenseCompareHelper(
+        years=[2000, 2001, 2002],
+        names=names
+    )
+
+    actual = obj.serries_data
+    expect = [
+        {'name': 'X/A', 'data': [5.0, 0.0, 15.0]},
+        {'name': 'Y/B', 'data': [2.0, 12.0, 0.0]},
+    ]
+    assert actual == expect
+
+
+def test_compare_serries_data_full(types, names):
+    obj = H.ExpenseCompareHelper(
+        years=[2000, 2001, 2002],
+        types=types,
+        names=names
+    )
+
+    actual = obj.serries_data
+    expect = [
+        {'name': 'X', 'data': [5.0, 0.0, 15.0]},
+        {'name': 'Y', 'data': [2.0, 12.0, 0.0]},
+        {'name': 'X/A', 'data': [5.0, 0.0, 15.0]},
+        {'name': 'Y/B', 'data': [2.0, 12.0, 0.0]},
+    ]
+    assert actual == expect

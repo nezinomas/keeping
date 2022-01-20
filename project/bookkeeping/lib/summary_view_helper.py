@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from typing import Dict, List
 
 from django.db.models.query import QuerySet
 
@@ -71,3 +72,57 @@ def make_form_data_dict(form_data):
     _form_data_dict['names'] = ','.join(_names)
 
     return _form_data_dict
+
+class ExpenseCompareHelper():
+    def __init__(self, years: List, types: List[Dict] = None, names: List[Dict] = None):
+        self._years = years
+
+        self._serries_data = []
+
+        self._serries_data += self._make_serries_data(types)
+        self._serries_data += self._make_serries_data(names)
+
+    @property
+    def categories(self) -> List:
+        return self._years
+
+    @property
+    def serries_data(self) -> List[Dict]:
+        return self._serries_data
+
+    def _make_serries_data(self, data):
+        _items = []
+
+        if not data:
+            return _items
+
+        _titles = []
+        _titles_hooks = {}
+        _years_hooks = {v: k for k, v in enumerate(self._years)}
+
+        for i in data:
+            _title = i['title']
+
+            _root = i.get('root')
+            if _root:
+                _title = f'{_root}/{_title}'
+
+            _sum = float(i['sum'])
+            _year = i['year']
+            _year_index = _years_hooks.get(_year)
+
+            if _year_index is None:
+                continue
+
+            if _title not in _titles:
+                _titles.append(_title)
+                _items.append({
+                    'name': _title,
+                    'data': [0.0] * len(self._years)
+                })
+                _titles_hooks = {v: k for k, v in enumerate(_titles)}
+
+            _title_index = _titles_hooks[_title]
+            _items[_title_index]['data'][_year_index] = _sum
+
+        return _items
