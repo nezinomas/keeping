@@ -69,7 +69,6 @@ class SummaryExpensesForm(forms.Form):
     )
     names = forms.CharField(
         widget=forms.HiddenInput(),
-        disabled=True,
         required=False,
     )
 
@@ -81,8 +80,7 @@ class SummaryExpensesForm(forms.Form):
             choices.append((_type.id, _type.title))
 
             for _name in _type.expensename_set.all():
-                choices.append(
-                    (f'{_type.id}:{_name.id}', _name.title))
+                choices.append((f'{_type.id}:{_name.id}', _name.title))
 
         self.fields['types'].choices = choices
         self.fields['types'].label = None
