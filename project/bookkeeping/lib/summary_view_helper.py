@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from typing import Dict, List
 
+import numpy as np
 from django.db.models.query import QuerySet
 
 
@@ -74,13 +75,21 @@ def make_form_data_dict(form_data):
     return _form_data_dict
 
 class ExpenseCompareHelper():
-    def __init__(self, years: List, types: List[Dict] = None, names: List[Dict] = None):
+    def __init__(self,
+                 years: List,
+                 types: List[Dict] = None,
+                 names: List[Dict] = None,
+                 remove_empty_columns: bool = None):
+
         self._years = years
 
         self._serries_data = []
 
         self._serries_data += self._make_serries_data(types)
         self._serries_data += self._make_serries_data(names)
+
+        if remove_empty_columns:
+            self._remove_empty_columns()
 
     @property
     def categories(self) -> List:
@@ -126,3 +135,18 @@ class ExpenseCompareHelper():
             _items[_title_index]['data'][_year_index] = _sum
 
         return _items
+
+    def _remove_empty_columns(self):
+        _matrix = np.array([x['data'] for x in self._serries_data])
+        _idx = np.argwhere(np.all(_matrix[..., :] == 0, axis=0))
+        _clean = np.delete(_matrix, _idx, axis=1).tolist()
+
+        # year list
+        # flatten and reverse indexes
+        _idx = _idx.flatten().tolist()[::-1]
+        for _i in _idx:
+            del self._years[_i]
+
+        # clean serries data
+        for _i, _list in enumerate(_clean):
+            self._serries_data[_i]['data'] = _list

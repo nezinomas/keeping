@@ -258,3 +258,28 @@ def test_compare_serries_data_full(types, names):
         {'name': 'Y/B', 'data': [2.0, 12.0, 0.0]},
     ]
     assert actual == expect
+
+
+def test_compare_serries_data_remove_empty_columns():
+    types = [
+        {'year': 1, 'sum': Decimal('1'), 'title': 'X'},
+        {'year': 1, 'sum': Decimal('2'), 'title': 'Y'},
+        {'year': 2, 'sum': Decimal('0'), 'title': 'X'},
+        {'year': 2, 'sum': Decimal('0'), 'title': 'Y'},
+        {'year': 3, 'sum': Decimal('3'), 'title': 'X'},
+        {'year': 3, 'sum': Decimal('4'), 'title': 'Y'},
+        {'year': 4, 'sum': Decimal('0'), 'title': 'X'},
+        {'year': 4, 'sum': Decimal('0'), 'title': 'Y'},
+    ]
+
+    obj = H.ExpenseCompareHelper(
+        years=[1, 2, 3, 4],
+        types=types,
+        remove_empty_columns = True
+    )
+
+    assert obj.categories == [1, 3]
+    assert obj.serries_data == [
+        {'name': 'X', 'data': [1.0, 3.0]},
+        {'name': 'Y', 'data': [2.0, 4.0]},
+    ]
