@@ -115,3 +115,22 @@ def test_chart_data_db1():
     assert actual['invested'] == [1.0, 2.0]
     assert actual['profit'] == [0.1, 0.2]
     assert actual['total'] == [1.1, 2.2]
+
+
+def test_make_form_data_dict(rf):
+    form_data = '[{"name": "csrf", "value":"xxx"},{"name":"types","value":"1"},{"name":"types","value":"6:6"}]'
+
+    actual = H.make_form_data_dict(form_data)
+
+    assert actual['types'] == [1]
+    assert actual['names'] == '6'
+    assert actual['csrf'] == 'xxx'
+
+
+def test_make_form_data_dict_extended(rf):
+    form_data = '[{"name":"types","value":"1"},{"name":"types","value":"6:6"},{"name":"types","value":"2"},{"name":"types","value":"1:7"}]'
+
+    actual = H.make_form_data_dict(form_data)
+
+    assert actual['types'] == [1, 2]
+    assert actual['names'] == '6,7'

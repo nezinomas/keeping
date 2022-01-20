@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from django.db.models.query import QuerySet
@@ -40,3 +41,33 @@ def chart_data(*args):
         items['max'] = (max(items['profit']) + max(items['invested']))
 
     return items
+
+
+def make_form_data_dict(form_data):
+    _types = []
+    _names = []
+    _form_data_dict = {}
+    _list = json.loads(form_data)
+
+    # flatten list of dictionaries - form_data_list
+    for field in _list:
+        _field_name = field.get('name')
+        _field_val = field.get('value')
+
+        # expense type
+        if _field_name == 'types' and not ':' in _field_val:
+            _types.append(int(_field_val))
+            continue
+
+        # expense name
+        if _field_name == 'types' and ':' in _field_val:
+            _names.append(_field_val.split(':')[-1])
+            continue
+
+        # all other fields e.g. csrfmiddlewaretoke
+        _form_data_dict[_field_name] = _field_val
+
+    _form_data_dict['types'] = _types
+    _form_data_dict['names'] = ','.join(_names)
+
+    return _form_data_dict
