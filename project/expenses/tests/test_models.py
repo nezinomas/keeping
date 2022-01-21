@@ -473,3 +473,87 @@ def test_expense_post_delete_with_update():
     assert actual[0]['balance'] == -1.0
 
     assert Expense.objects.all().count() == 1
+
+
+def test_expense_sum_by_year_type():
+    ExpenseFactory(date=date(1111, 1, 1), price=1)
+    ExpenseFactory(date=date(1999, 1, 1), price=2)
+    ExpenseFactory(date=date(1111, 1, 1), price=4)
+    ExpenseFactory(date=date(1999, 1, 1), price=10)
+
+    actual = Expense.objects.sum_by_year_type()
+
+    assert actual[0]['year'] == 1111
+    assert actual[0]['title'] == 'Expense Type'
+    assert actual[0]['sum'] == Decimal('5')
+    assert actual[1]['year'] == 1999
+    assert actual[1]['title'] == 'Expense Type'
+    assert actual[1]['sum'] == Decimal('12')
+
+
+def test_expense_sum_by_year_type_filtering():
+    t1 = ExpenseTypeFactory(title='X')
+    t2 = ExpenseTypeFactory(title='Y')
+
+    ExpenseFactory(expense_type=t1, date=date(1111, 1, 1), price=1)
+    ExpenseFactory(expense_type=t1, date=date(1999, 1, 1), price=2)
+    ExpenseFactory(expense_type=t1, date=date(1111, 1, 1), price=4)
+    ExpenseFactory(expense_type=t1, date=date(1999, 1, 1), price=10)
+
+    ExpenseFactory(expense_type=t2, date=date(1111, 1, 1), price=1.1)
+    ExpenseFactory(expense_type=t2, date=date(1999, 1, 1), price=2.1)
+    ExpenseFactory(expense_type=t2, date=date(1111, 1, 1), price=4.1)
+    ExpenseFactory(expense_type=t2, date=date(1999, 1, 1), price=10.1)
+
+    actual = Expense.objects.sum_by_year_type(expense_type=[t1.pk])
+
+    assert actual[0]['year'] == 1111
+    assert actual[0]['title'] == 'X'
+    assert actual[0]['sum'] == Decimal('5')
+    assert actual[1]['year'] == 1999
+    assert actual[1]['title'] == 'X'
+    assert actual[1]['sum'] == Decimal('12')
+
+
+def test_expense_sum_by_year_name():
+    ExpenseFactory(date=date(1111, 1, 1), price=1)
+    ExpenseFactory(date=date(1999, 1, 1), price=2)
+    ExpenseFactory(date=date(1111, 1, 1), price=4)
+    ExpenseFactory(date=date(1999, 1, 1), price=10)
+
+    actual = Expense.objects.sum_by_year_name()
+
+    assert actual[0]['year'] == 1111
+    assert actual[0]['title'] == 'Expense Name'
+    assert actual[0]['root'] == 'Expense Type'
+    assert actual[0]['sum'] == Decimal('5')
+    assert actual[1]['year'] == 1999
+    assert actual[1]['title'] == 'Expense Name'
+    assert actual[1]['root'] == 'Expense Type'
+    assert actual[1]['sum'] == Decimal('12')
+
+
+def test_expense_sum_by_year_name_filtering():
+    t1 = ExpenseNameFactory(title='X')
+    t2 = ExpenseNameFactory(title='Y')
+
+    ExpenseFactory(expense_name=t1, date=date(1111, 1, 1), price=1)
+    ExpenseFactory(expense_name=t1, date=date(1999, 1, 1), price=2)
+    ExpenseFactory(expense_name=t1, date=date(1111, 1, 1), price=4)
+    ExpenseFactory(expense_name=t1, date=date(1999, 1, 1), price=10)
+
+    ExpenseFactory(expense_name=t2, date=date(1111, 1, 1), price=1.1)
+    ExpenseFactory(expense_name=t2, date=date(1999, 1, 1), price=2.1)
+    ExpenseFactory(expense_name=t2, date=date(1111, 1, 1), price=4.1)
+    ExpenseFactory(expense_name=t2, date=date(1999, 1, 1), price=10.1)
+
+    actual = Expense.objects.sum_by_year_name(expense_name=[t1.pk])
+
+    assert actual[0]['year'] == 1111
+    assert actual[0]['title'] == 'X'
+    assert actual[0]['root'] == 'Expense Type'
+    assert actual[0]['sum'] == Decimal('5')
+    assert actual[1]['year'] == 1999
+    assert actual[1]['title'] == 'X'
+    assert actual[1]['root'] == 'Expense Type'
+    assert actual[1]['sum'] == Decimal('12')

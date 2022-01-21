@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-12 14:48+0200\n"
-"PO-Revision-Date: 2022-01-12 14:25+0200\n"
+"POT-Creation-Date: 2022-01-19 10:06+0200\n"
+"PO-Revision-Date: 2022-01-19 10:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -62,6 +62,10 @@ msgstr "Sąskaitos"
 msgid "closed"
 msgstr "uždaryta"
 
+#: .\project\bookkeeping\forms.py:101
+msgid "At least one category needs to be selected."
+msgstr "Reikia pasirinkti bent vieną kategoriją."
+
 #: .\project\bookkeeping\lib\expense_summary.py:177
 msgid "No expenses"
 msgstr "Išlaidų nėra"
@@ -74,7 +78,7 @@ msgstr "Išlaidų nėra"
 #: .\project\bookkeeping\lib\views_helpers.py:246
 #: .\project\bookkeeping\lib\views_helpers.py:459
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:8
-#: .\project\bookkeeping\views.py:141 .\project\journals\forms.py:43
+#: .\project\bookkeeping\views.py:145 .\project\journals\forms.py:43
 #: .\project\plans\templates\plans\index.html:68
 #: .\project\savings\templates\savings\includes\savings_form.html:5
 #: .\project\templates\base.html:90 .\project\templates\base.html:161
@@ -88,7 +92,7 @@ msgstr "Taupymas"
 #: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_incomes.html:20
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:20
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:16
-#: .\project\bookkeeping\views.py:136
+#: .\project\bookkeeping\views.py:140
 #: .\project\incomes\templates\incomes\includes\incomes_form.html:5
 #: .\project\plans\templates\plans\index.html:29
 #: .\project\templates\base.html:82 .\project\templates\base.html:158
@@ -290,6 +294,11 @@ msgstr "Pensijų vertė"
 msgid "Worth of savings"
 msgstr "Fondų vertė"
 
+#: .\project\bookkeeping\templates\bookkeeping\includes\summary_expenses_form.html:10
+#: .\project\core\templates\core\includes\search_form.html:9
+msgid "Search"
+msgstr "Ieškoti"
+
 #: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:9
 msgid "From incomes"
 msgstr "Nuo pajamų"
@@ -451,12 +460,12 @@ msgstr "Rodyti kitą grafiką"
 msgid "Shares"
 msgstr "Akcijos"
 
-#: .\project\bookkeeping\views.py:155
+#: .\project\bookkeeping\views.py:159
 #, python-format
 msgid "Expenses / %(title)s"
 msgstr "Išlaidos / %(title)s"
 
-#: .\project\bookkeeping\views.py:248
+#: .\project\bookkeeping\views.py:320
 #, python-format
 msgid "No records on day %(day)s"
 msgstr "%(day)s dieną įrašų nėra"
@@ -712,11 +721,11 @@ msgstr "Šeštadienis"
 msgid "Sunday"
 msgstr "Sekmadienis"
 
-#: .\project\core\mixins\ajax.py:228
+#: .\project\core\mixins\ajax.py:239
 msgid "Form is broken."
 msgstr "Forma neveikia."
 
-#: .\project\core\mixins\views.py:64 .\project\plans\views.py:162
+#: .\project\core\mixins\views.py:64
 msgid "Insert"
 msgstr "Įrašyti"
 
@@ -773,10 +782,6 @@ msgstr "Ar tikrai norite ištrinti"
 #: .\project\templates\base.html:169
 msgid "Add"
 msgstr "Pridėti"
-
-#: .\project\core\templates\core\includes\search_form.html:9
-msgid "Search"
-msgstr "Ieškoti"
 
 #: .\project\core\templates\core\no_records.html:5
 msgid "Data missing."
@@ -904,7 +909,7 @@ msgid "History"
 msgstr "Istorija"
 
 #: .\project\counts\templates\counts\index.html:33
-#: .\project\drinks\templates\drinks\index.html:81
+#: .\project\drinks\templates\drinks\includes\tab_index.html:40
 msgid "Historical data"
 msgstr "Istoriniai duomenys"
 
@@ -1071,6 +1076,30 @@ msgstr "vnt"
 msgid "No goal set"
 msgstr "Neįvestas tikslas"
 
+#: .\project\drinks\templates\drinks\includes\tab_index.html:27
+msgid "What is a standard unit of alcohol"
+msgstr "Kas yra standartinis alkoholio vienetas"
+
+#: .\project\drinks\templates\drinks\includes\tab_index.html:42
+msgid "2 years"
+msgstr "2 metų"
+
+#: .\project\drinks\templates\drinks\includes\tab_index.html:43
+msgid "3 years"
+msgstr "3 metų"
+
+#: .\project\drinks\templates\drinks\includes\tab_index.html:44
+msgid "7 years"
+msgstr "7 metų"
+
+#: .\project\drinks\templates\drinks\includes\tab_index.html:45
+msgid "All years"
+msgstr "Visi metai"
+
+#: .\project\drinks\templates\drinks\includes\tab_index.html:56
+msgid "Year comparison"
+msgstr "Metų palyginimas"
+
 #: .\project\drinks\templates\drinks\includes\tbl_alcohol.html:7
 msgid "Litres"
 msgstr "Litrai"
@@ -1105,30 +1134,6 @@ msgstr "Per dieną"
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:12
 msgid "Per month"
 msgstr "Per mėnesį"
-
-#: .\project\drinks\templates\drinks\index.html:67
-msgid "What is a standard unit of alcohol"
-msgstr "Kas yra standartinis alkoholio vienetas"
-
-#: .\project\drinks\templates\drinks\index.html:83
-msgid "2 years"
-msgstr "2 metų"
-
-#: .\project\drinks\templates\drinks\index.html:84
-msgid "3 years"
-msgstr "3 metų"
-
-#: .\project\drinks\templates\drinks\index.html:85
-msgid "7 years"
-msgstr "7 metų"
-
-#: .\project\drinks\templates\drinks\index.html:86
-msgid "All years"
-msgstr "Visi metai"
-
-#: .\project\drinks\templates\drinks\index.html:97
-msgid "Year comparison"
-msgstr "Metų palyginimas"
 
 #: .\project\expenses\forms.py:70
 msgid "Full price"

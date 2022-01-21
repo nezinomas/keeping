@@ -228,20 +228,23 @@ class AjaxCustomFormMixin(LoginRequiredMixin, FormView):
 
 
 class AjaxSearchMixin(AjaxCustomFormMixin):
+    def make_form_data_dict(self):
+        _list = json.loads(self.form_data)
+
+        # flatten list of dictionaries - form_data_list
+        for field in _list:
+            self.form_data_dict[field["name"]] = field["value"]
+
     def post(self, request, *args, **kwargs):
         err = {'error': _('Form is broken.')}
+
         try:
-            form_data = request.POST['form_data']
+            self.form_data = request.POST['form_data']
         except KeyError:
             return JsonResponse(data=err, status=404)
 
         try:
-            _list = json.loads(form_data)
-
-            # flatten list of dictionaries - form_data_list
-            for field in _list:
-                self.form_data_dict[field["name"]] = field["value"]
-
+            self.make_form_data_dict()
         except (json.decoder.JSONDecodeError, KeyError):
             return JsonResponse(data=err, status=500)
 

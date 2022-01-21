@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}{% load i18n %}
+
+{% block head %}
+<script src="https://code.highcharts.com/highcharts.src.js"></script>
+<style>
+    .spacer {
+        padding-left: 1.5rem;
+    }
+    .root {
+        font-weight: bold;
+    }
+    #id_types {
+        height: 90vh;
+    }
+    #div_id_types {
+        margin-bottom: .25rem!important;
+    }
+    #search_btn {
+        padding-top: 0.15rem!important;
+        padding-bottom: 0.15rem!important;
+    }
+</style>
+{% endblock head %}
+
+{% block content %}
+<!-- Loader -->
+<div class="loader loader-default" id="loader"></div>
+
+<div class="row">
+    <div id="search_form_data" class="col-2 gy-2">{{ form }}</div>
+
+    <div class="col-10">
+        <div class="row">
+            <div class="col-12" id="chart"></div>
+        </div>
+        <div class="row mt-5">
+            <div class="col-12 table-responsive" id="table"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function options_class() {
+        $('#id_types option').addClass(function () {
+            if(this.value.includes(':')) {
+                return 'spacer';
+            } else {
+                return 'root';
+            }
+        });
+    };
+
+    $(document).ready(options_class);
+    $(document).ajaxComplete(options_class);
+</script>
+
+<script src="{% static 'js/search.js' %}"></script>
+{% endblock content %}

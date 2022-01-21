@@ -56,9 +56,9 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu nav-link {% if '/expenses/' in request.path %}active{% endif %}"
+              <a class="btn btn-menu nav-link {% if request.resolver_match.url_name == 'expenses_month_list' or request.resolver_match.url_name == 'expenses_all' %}active{% endif %}"
                 href="{% url 'expenses:expenses_index' %}">{% translate 'Expenses' %}</a>
-              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/expenses/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
+              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if request.resolver_match.url_name == 'expenses_month_list' or request.resolver_match.url_name == 'expenses_all' %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
@@ -159,6 +159,9 @@
                 </li>
                 <li>
                   <a class="dropdown-item btn-sm" href="{% url 'bookkeeping:summary_savings' %}">{% translate 'Savings' %}</a>
+                </li>
+                <li>
+                  <a class="dropdown-item btn-sm" href="{% url 'bookkeeping:summary_expenses' %}">{% translate 'Expenses' %}</a>
                 </li>
               </ul>
             </div>
