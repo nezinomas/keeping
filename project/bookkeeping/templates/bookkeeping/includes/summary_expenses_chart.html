@@ -5,7 +5,13 @@ Highcharts.setOptions({ lang: { decimalPoint: ',', thousandsSep: '.' } });
 
 Highcharts.chart('container', {
     chart: {
-        type: 'column'
+        type: 'column',
+        zoomType: 'x',
+        panning: {
+            enabled: true,
+            type: 'x'
+        },
+        panKey: 'shift'
     },
     title: {
         text: ''
