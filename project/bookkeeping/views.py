@@ -275,20 +275,20 @@ class SummaryExpensesData(AjaxSearchMixin):
         )
 
         if obj.serries_data:
-            template = 'bookkeeping/includes/summary_expenses_chart.html'
             context = {
                 'categories': obj.categories,
                 'data': obj.serries_data
             }
 
-
             kwargs.update({
-                'html': render_to_string(template, context, self.request),
+                'html': render_to_string(
+                    'bookkeeping/includes/summary_expenses_chart.html',
+                    context,
+                    self.request),
                 'html2': render_to_string(
                     'bookkeeping/includes/summary_expenses_table.html',
                     context,
-                    self.request
-                ),
+                    self.request),
             })
 
         return super().form_valid(form, **kwargs)
