@@ -304,3 +304,39 @@ def test_compare_serries_data_remove_empty_columns_no_data_all():
 
     assert obj.categories == []
     assert obj.serries_data == []
+
+
+def test_compare_serries_total_column(types):
+    obj = H.ExpenseCompareHelper(
+        years=[2000, 2001, 2002],
+        types=types
+    )
+
+    actual = obj.total_col
+    expect = {'X': 20.0, 'Y': 14.0}
+
+    assert actual == expect
+
+
+
+def test_compare_serries_total_row(types):
+    obj = H.ExpenseCompareHelper(
+        years=[2000, 2001, 2002],
+        types=types
+    )
+
+    actual = obj.total_row
+    expect = [7.0, 12.0, 15.0]
+
+    assert actual == expect
+
+
+def test_compare_serries_total(types):
+    obj = H.ExpenseCompareHelper(
+        years=[2000, 2001, 2002],
+        types=types
+    )
+
+    actual = obj.total
+
+    assert actual == 34.0

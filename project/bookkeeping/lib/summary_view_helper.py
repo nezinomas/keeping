@@ -93,6 +93,8 @@ class ExpenseCompareHelper():
         if remove_empty_columns and self._serries_data:
             self._remove_empty_columns()
 
+        self._calc_totals()
+
     @property
     def categories(self) -> List:
         return self._years
@@ -100,6 +102,18 @@ class ExpenseCompareHelper():
     @property
     def serries_data(self) -> List[Dict]:
         return self._serries_data
+
+    @property
+    def total_col(self) -> Dict:
+        return self._total_col
+
+    @property
+    def total_row(self) -> List:
+        return self._total_row
+
+    @property
+    def total(self) -> float:
+        return self._total
 
     def _make_serries_data(self, data):
         _items = []
@@ -152,3 +166,20 @@ class ExpenseCompareHelper():
         # clean serries data
         for _i, _list in enumerate(_clean):
             self._serries_data[_i]['data'] = _list
+
+    def _calc_totals(self):
+        self._total = 0.0
+        self._total_col = {}
+        self._total_row = []
+
+        if self._serries_data:
+            _matrix = np.array([x['data'] for x in self._serries_data])
+            _col = _matrix.sum(axis=1)
+            _row = _matrix.sum(axis=0)
+
+            for _i, _v in enumerate(_col):
+                self._total_col[self._serries_data[_i]['name']] = _v
+
+            self._total_row = _row.tolist()
+
+            self._total = _row.sum()

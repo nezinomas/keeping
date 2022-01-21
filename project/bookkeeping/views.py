@@ -277,7 +277,10 @@ class SummaryExpensesData(AjaxSearchMixin):
         if obj.serries_data:
             context = {
                 'categories': obj.categories,
-                'data': obj.serries_data
+                'data': obj.serries_data,
+                'total_col': obj.total_col,
+                'total_row': obj.total_row,
+                'total': obj.total
             }
 
             kwargs.update({
