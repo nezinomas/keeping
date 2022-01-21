@@ -1,0 +1,23 @@
+{% load table_cell %}
+{% load i18n %}
+
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th class="text-start">{% translate 'Expense' %}</th>
+            {% for year in categories %}
+            <th class="text-end">{{ year|title }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td class="text-start">{{ row.name }}</td>
+            {% for i in row.data %}
+            {% cell i %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

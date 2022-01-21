@@ -281,8 +281,14 @@ class SummaryExpensesData(AjaxSearchMixin):
                 'data': obj.serries_data
             }
 
+
             kwargs.update({
                 'html': render_to_string(template, context, self.request),
+                'html2': render_to_string(
+                    'bookkeeping/includes/summary_expenses_table.html',
+                    context,
+                    self.request
+                ),
             })
 
         return super().form_valid(form, **kwargs)
