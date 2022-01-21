@@ -186,6 +186,7 @@ def test_compare_serries_data_types(types):
 
     assert actual == expect
 
+
 def test_compare_serries_data_types_year_out_of_range(types):
     types.append({'year': 2003, 'sum': Decimal('25'), 'title': 'XXX'})
 
