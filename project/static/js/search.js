@@ -18,7 +18,10 @@ $(function () {
         form_data = JSON.stringify(form_data);
 
         var container = $(this).attr('data-update-container');
+        var container2 = $(this).attr('data-update-container2');
+
         container = (container ? `#${container}` : '#ajax-content');
+        container2 = (container2 ? `#${container2}` : '#ajax-content2');
 
         $.ajax({
             url: url,
@@ -32,10 +35,16 @@ $(function () {
             success: function (data) {
 
                 var _html = data.html;
+                var _html2 = data.html2;
 
                 if(_html) {
                     $(container).html(_html);
                 }
+
+                if(_html2) {
+                    $(container2).html(_html2);
+                }
+
                 $('#search_form_data').html(data.html_form);
 
                 $('#loader').removeClass('is-active')

@@ -56,6 +56,16 @@ urlpatterns = [
         name='summary_savings'
     ),
     path(
+        'summary/expenses/',
+        views.SummaryExpenses.as_view(),
+        name='summary_expenses'
+    ),
+    path(
+        'summary/expenses/data/',
+        views.SummaryExpensesData.as_view(),
+        name='summary_expenses_data'
+    ),
+    path(
         'month/',
         views.Month.as_view(),
         name='month'

@@ -1,0 +1,35 @@
+{% load table_cell %}
+{% load template_filters %}
+{% load i18n %}
+
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th class="text-start">{% translate 'Expense' %}</th>
+            {% for year in categories %}
+            <th class="text-end">{{ year|title }}</th>
+            {% endfor %}
+            <th class="text-end">{% translate 'Total' %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td class="text-start">{{ row.name }}</td>
+            {% for i in row.data %}
+            {% cell i %}
+            {% endfor %}
+            {% cell total_col|get_item:row.name%}
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th class="text-start">{% translate 'Total' %}</th>
+            {% for x in total_row %}
+            {% cell x tag='th' %}
+            {% endfor %}
+            <th>{{ total|floatformat:2 }}</th>
+        </tr>
+    </tfoot>
+</table>

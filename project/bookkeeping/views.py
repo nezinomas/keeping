@@ -10,7 +10,9 @@ from django.utils.translation import gettext as _
 from django.views.generic import CreateView
 
 from ..accounts.models import Account
+from ..core.lib.date import years
 from ..core.lib.transalation import month_names
+from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.get import GetQuerysetMixin
 from ..core.mixins.views import CreateAjaxMixin, DispatchAjaxMixin, IndexMixin
@@ -18,9 +20,10 @@ from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
 from ..savings.models import Saving, SavingBalance, SavingType
-from .forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
+from .forms import (AccountWorthForm, PensionWorthForm, SavingWorthForm,
+                    SummaryExpensesForm)
+from .lib import summary_view_helper as SH
 from .lib import views_helpers as H
-from .lib.summary_view_helper import chart_data
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 
@@ -214,14 +217,84 @@ class SummarySavings(IndexMixin):
         shares = qs.filter(type='shares')
         pensions3 = qs.filter(type='pensions')
 
-        context['funds'] = chart_data(funds)
-        context['shares'] = chart_data(shares)
-        context['funds_shares'] = chart_data(funds, shares)
-        context['pensions3'] = chart_data(pensions3)
-        context['pensions2'] = chart_data(PensionBalance.objects.sum_by_year())
-        context['all'] = chart_data(funds, shares, pensions3)
+        context['funds'] = SH.chart_data(funds)
+        context['shares'] = SH.chart_data(shares)
+        context['funds_shares'] = SH.chart_data(funds, shares)
+        context['pensions3'] = SH.chart_data(pensions3)
+        context['pensions2'] = SH.chart_data(PensionBalance.objects.sum_by_year())
+        context['all'] = SH.chart_data(funds, shares, pensions3)
 
         return context
+
+
+class SummaryExpenses(IndexMixin):
+    template_name = 'bookkeeping/summary_expenses.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'form': SummaryExpensesData.as_view()(self.request, as_string=True)
+        })
+
+        return context
+
+
+class SummaryExpensesData(AjaxSearchMixin):
+    url = reverse_lazy('bookkeeping:summary_expenses_data')
+    template_name = 'bookkeeping/includes/summary_expenses_form.html'
+    form_class = SummaryExpensesForm
+    form_data_dict = {}
+
+    def dispatch(self, request, *args, **kwargs):
+        if 'as_string' in kwargs:
+            return self._render_form(self.get_context_data())
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def make_form_data_dict(self):
+        self.form_data_dict = SH.make_form_data_dict(self.form_data)
+
+    def form_valid(self, form, **kwargs):
+        _types = self.form_data_dict['types']
+        _names = self.form_data_dict['names']
+        _types_qs = None
+        _names_qs = None
+
+        if _types:
+            _types_qs = Expense.objects.sum_by_year_type(_types)
+
+        if _names:
+            _list = _names.split(',')
+            _names_qs = Expense.objects.sum_by_year_name(_list)
+
+        obj = SH.ExpenseCompareHelper(
+            years=years()[:-1],
+            types=_types_qs,
+            names=_names_qs,
+            remove_empty_columns=True
+        )
+
+        if obj.serries_data:
+            context = {
+                'categories': obj.categories,
+                'data': obj.serries_data,
+                'total_col': obj.total_col,
+                'total_row': obj.total_row,
+                'total': obj.total
+            }
+
+            kwargs.update({
+                'html': render_to_string(
+                    'bookkeeping/includes/summary_expenses_chart.html',
+                    context,
+                    self.request),
+                'html2': render_to_string(
+                    'bookkeeping/includes/summary_expenses_table.html',
+                    context,
+                    self.request),
+            })
+
+        return super().form_valid(form, **kwargs)
 
 
 class ExpandDayExpenses(IndexMixin):
