@@ -60,6 +60,20 @@ def test_data_200(client_logged):
     assert response.status_code == 200
 
 
+def test_data_not_logged(client):
+    url = reverse('bookkeeping:summary_expenses_data')
+    response = client.get(url, {}, **X_Req)
+
+    assert response.status_code == 302
+
+
+def test_data_not_ajax(client_logged):
+    url = reverse('bookkeeping:summary_expenses_data')
+    response = client_logged.get(url)
+
+    assert 'SRSLY' in response.content.decode('utf-8')
+
+
 def test_make_form_data_dict(rf):
     class Dummy(views.SummaryExpensesData):
         form_data = '[{"name": "csrf", "value":"xxx"},{"name":"types","value":"1"},{"name":"types","value":"6:6"}]'
