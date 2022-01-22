@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 from django.views.generic import CreateView
 
 from ..accounts.models import Account
+from ..core.lib import utils
 from ..core.lib.date import years
 from ..core.lib.transalation import month_names
 from ..core.mixins.ajax import AjaxSearchMixin
@@ -248,6 +249,9 @@ class SummaryExpensesData(AjaxSearchMixin):
     def dispatch(self, request, *args, **kwargs):
         if 'as_string' in kwargs:
             return self._render_form(self.get_context_data())
+
+        if not utils.is_ajax(self.request):
+            return HttpResponse(render_to_string('srsly.html'))
 
         return super().dispatch(request, *args, **kwargs)
 

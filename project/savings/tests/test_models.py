@@ -51,6 +51,26 @@ def test_saving_type_items_user(main_user, second_user):
     assert actual[0].title == 'T1'
 
 
+def test_saving_type_items_filter_closed_in_future():
+    SavingTypeFactory(title='T1', closed=1998)
+    SavingTypeFactory(title='T2', closed=2000)
+
+    actual = SavingType.objects.items(year=1999)
+
+    assert actual.count() == 1
+    assert actual[0].title == 'T2'
+
+
+def test_saving_type_items_filter_closed_in_future_year_from_get_user():
+    SavingTypeFactory(title='T1', closed=1998)
+    SavingTypeFactory(title='T2', closed=2000)
+
+    actual = SavingType.objects.items()
+
+    assert actual.count() == 1
+    assert actual[0].title == 'T2'
+
+
 def test_saving_type_day_sum_empty_month(savings):
     expect = []
 
