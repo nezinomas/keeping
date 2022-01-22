@@ -133,5 +133,6 @@ def test_data_return_json_no_data(client_logged):
     json_str = response.content
     actual = json.loads(json_str)
 
+    assert actual['form_is_valid'] is False
     assert not actual.get('html')
     assert not actual.get('html2')
