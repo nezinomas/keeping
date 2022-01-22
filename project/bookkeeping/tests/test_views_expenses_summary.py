@@ -1,9 +1,10 @@
 import pytest
 from django.urls import resolve, reverse
 
+from ...core.tests.utils import setup_view
 from ...expenses.factories import ExpenseNameFactory, ExpenseTypeFactory
 from .. import views
-from ...core.tests.utils import setup_view
+
 pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
