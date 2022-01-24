@@ -1,14 +1,14 @@
 from decimal import Decimal
 
-from django.core.validators import (FileExtensionValidator, MinLengthValidator,
-                                    MinValueValidator)
+from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Q
 
-from ..accounts.models import Account
+from ..accounts.models import Account, AccountBalance
 from ..core.lib import utils
 from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.models import TitleAbstract
+from ..core.signals import SignalBase
 from ..journals.models import Journal
 from .helpers.models_helper import upload_attachment
 from .managers import ExpenseNameQuerySet, ExpenseQuerySet, ExpenseTypeQuerySet
@@ -100,10 +100,21 @@ class Expense(MixinFromDbAccountId):
     # Managers
     objects = ExpenseQuerySet.as_manager()
 
+    original_price = 0.0
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.pk:
+            self.original_price = self.price
+
     def __str__(self):
         return f'{(self.date)}/{self.expense_type}/{self.expense_name}'
 
     def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        # update first journal record
         user = utils.get_user()
         journal = Journal.objects.get(pk=user.journal.pk)
 
@@ -111,4 +122,33 @@ class Expense(MixinFromDbAccountId):
             journal.first_record = self.date
             journal.save()
 
-        return super().save(*args, **kwargs)
+        try:
+            _qs = AccountBalance.objects.get(Q(year=self.date.year) & Q(account_id=self.account.pk))
+
+            _price = float(self.price)
+            _original_price = float(self.original_price)
+
+            _qs.expenses = _qs.expenses - _original_price + _price
+            _qs.balance = _qs.balance + _original_price - _price
+            _qs.delta = _qs.have - _qs.balance
+
+            _qs.save()
+
+        except AccountBalance.DoesNotExist:
+            SignalBase.accounts(sender=Expense, instance=None)
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+
+        try:
+            _qs = AccountBalance.objects.get(Q(year=self.date.year) & Q(account_id=self.account.pk))
+            _price = float(self.price)
+
+            _qs.expenses = _qs.expenses - _price
+            _qs.balance = _qs.balance + _price
+            _qs.delta = _qs.have - _qs.balance
+
+            _qs.save()
+
+        except AccountBalance.DoesNotExist:
+            SignalBase.accounts(sender=Expense, instance=None)
