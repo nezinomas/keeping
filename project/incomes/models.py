@@ -101,7 +101,7 @@ class Income(MixinFromDbAccountId):
 
             _qs.incomes = _qs.incomes - _original_price + _price
             _qs.balance = _qs.balance - _original_price + _price
-            _qs.delta = _qs.delta + _original_price - _price
+            _qs.delta = _qs.have - _qs.balance
 
             _qs.save()
 
@@ -121,7 +121,7 @@ class Income(MixinFromDbAccountId):
 
             _qs.incomes = _qs.incomes - _price
             _qs.balance = _qs.balance - _price
-            _qs.delta = _qs.delta + _price
+            _qs.delta = _qs.have - _qs.balance
 
             _qs.save()
 
