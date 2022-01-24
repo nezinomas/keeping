@@ -8,7 +8,7 @@ from ..accounts.lib.balance import Balance as AccountStats
 from ..accounts.models import Account, AccountBalance
 from ..bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ..debts.models import Borrow, BorrowReturn, Lent, LentReturn
-from ..expenses.models import Expense
+# from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import Pension, PensionBalance, PensionType
 from ..savings.lib.balance import Balance as SavingStats
@@ -26,8 +26,8 @@ from .lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
 @receiver(post_save, sender=Account)
 @receiver(post_save, sender=Income)
 @receiver(post_delete, sender=Income)
-@receiver(post_save, sender=Expense)
-@receiver(post_delete, sender=Expense)
+# @receiver(post_save, sender=Expense)
+# @receiver(post_delete, sender=Expense)
 @receiver(post_save, sender=Saving)
 @receiver(post_delete, sender=Saving)
 @receiver(post_save, sender=Transaction)
