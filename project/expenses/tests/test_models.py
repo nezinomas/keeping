@@ -586,6 +586,44 @@ def test_expense_post_delete():
     assert actual[0].account_id == a.pk
 
 
+def test_expense_post_delete_empty_account_balance_table():
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory()
+
+    # past data
+    ExpenseFactory(date=date(1974, 1, 1), price=5)
+
+    obj = Expense.objects.create(
+        date=date(1999, 1, 1),
+        price=1,
+        quantity=1,
+        account=a,
+        expense_type=t,
+        expense_name=n
+    )
+
+    AccountBalance.objects.all().delete()
+
+    # check before delete
+    actual = AccountBalance.objects.all()
+
+    assert actual.count() == 0
+
+    # delete Expense object
+    obj.delete()
+
+    actual = AccountBalance.objects.all()
+
+    assert actual.count() == 1
+    assert actual[0].past == Decimal('-5')
+    assert actual[0].incomes == Decimal('0')
+    assert actual[0].expenses == Decimal('0')
+    assert actual[0].balance == Decimal('-5')
+    assert actual[0].delta == Decimal('5')
+    assert actual[0].account_id == a.pk
+
+
 def test_expense_sum_by_year_type():
     ExpenseFactory(date=date(1111, 1, 1), price=1)
     ExpenseFactory(date=date(1999, 1, 1), price=2)
