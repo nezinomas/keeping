@@ -13,6 +13,7 @@ from ..core.models import TitleAbstract
 from ..core.signals import SignalBase
 from ..journals.models import Journal
 from .managers import IncomeQuerySet, IncomeTypeQuerySet
+from ..core.mixins.balance import AccountBalanceMixin
 
 
 class IncomeType(TitleAbstract):
@@ -90,42 +91,20 @@ class Income(MixinFromDbAccountId):
             journal.first_record = self.date
             journal.save()
 
-        try:
-            _qs = (
-                AccountBalance
-                .objects
-                .get(Q(year=self.date.year) & Q(account_id=self.account.pk))
-            )
-
-            _price = float(self.price)
-            _original_price = float(self.original_price)
-
-            _qs.incomes = _qs.incomes - _original_price + _price
-            _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
-            _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
-
-            _qs.save()
-
-        except AccountBalance.DoesNotExist:
-            SignalBase.accounts(sender=Income, instance=None)
+        AccountBalanceMixin(sender=Income,
+                            field='incomes',
+                            caller='save',
+                            year=self.date.year,
+                            account_pk=self.account.pk,
+                            price=self.price,
+                            original_price=self.original_price)
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
 
-        try:
-            _qs = (
-                AccountBalance
-                .objects
-                .get(Q(year=self.date.year) & Q(account_id=self.account.pk))
-            )
-
-            _price = float(self.price)
-
-            _qs.incomes = _qs.incomes - _price
-            _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
-            _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
-
-            _qs.save()
-
-        except AccountBalance.DoesNotExist:
-            SignalBase.accounts(sender=Income, instance=None)
+        AccountBalanceMixin(sender=Income,
+                            field='incomes',
+                            caller='delete',
+                            year=self.date.year,
+                            account_pk=self.account.pk,
+                            price=self.price)

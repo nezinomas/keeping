@@ -2,14 +2,13 @@ from decimal import Decimal
 
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
-from django.db.models import F, Q
+from django.db.models import F
 
-from ..accounts.models import Account, AccountBalance
-from ..bookkeeping.lib import helpers as calc
+from ..accounts.models import Account
 from ..core.lib import utils
+from ..core.mixins.balance import AccountBalanceMixin
 from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.models import TitleAbstract
-from ..core.signals import SignalBase
 from ..journals.models import Journal
 from .helpers.models_helper import upload_attachment
 from .managers import ExpenseNameQuerySet, ExpenseQuerySet, ExpenseTypeQuerySet
@@ -123,42 +122,21 @@ class Expense(MixinFromDbAccountId):
             journal.first_record = self.date
             journal.save()
 
-        try:
-            _qs = (
-                AccountBalance
-                .objects
-                .get(Q(year=self.date.year) & Q(account_id=self.account.pk))
-            )
-
-            _price = float(self.price)
-            _original_price = float(self.original_price)
-
-            _qs.expenses = _qs.expenses - _original_price + _price
-            _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
-            _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
-
-            _qs.save()
-
-        except AccountBalance.DoesNotExist:
-            SignalBase.accounts(sender=Expense, instance=None)
+        AccountBalanceMixin(sender=Expense,
+                            field='expenses',
+                            caller='save',
+                            year=self.date.year,
+                            account_pk=self.account.pk,
+                            price=self.price,
+                            original_price=self.original_price)
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
 
-        try:
-            _qs = (
-                AccountBalance
-                .objects
-                .get(Q(year=self.date.year) & Q(account_id=self.account.pk))
-            )
+        AccountBalanceMixin(sender=Expense,
+                            field='expenses',
+                            caller='delete',
+                            year=self.date.year,
+                            account_pk=self.account.pk,
+                            price=self.price)
 
-            _price = float(self.price)
-
-            _qs.expenses = _qs.expenses - _price
-            _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
-            _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
-
-            _qs.save()
-
-        except AccountBalance.DoesNotExist:
-            SignalBase.accounts(sender=Expense, instance=None)
