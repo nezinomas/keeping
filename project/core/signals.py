@@ -80,6 +80,6 @@ def pensions_post_signal(sender: object,
                          year: int = None,
                          types: Dict[str, int] = None,
                          all_id: List[int] = None,
-                        *args,
-                        **kwargs):
+                         *args,
+                         **kwargs):
     SignalBase.pensions(sender, instance, year, types, all_id)
