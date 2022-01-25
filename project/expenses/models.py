@@ -133,7 +133,7 @@ class Expense(MixinFromDbAccountId):
             _original_price = float(self.original_price)
 
             _qs.expenses = _qs.expenses - _original_price + _price
-            _qs.balance = _qs.balance + _original_price - _price
+            _qs.balance = _qs.past + _qs.incomes - _qs.expenses
             _qs.delta = _qs.have - _qs.balance
 
             _qs.save()
@@ -154,7 +154,7 @@ class Expense(MixinFromDbAccountId):
             _price = float(self.price)
 
             _qs.expenses = _qs.expenses - _price
-            _qs.balance = _qs.balance + _price
+            _qs.balance = _qs.past + _qs.incomes - _qs.expenses
             _qs.delta = _qs.have - _qs.balance
 
             _qs.save()

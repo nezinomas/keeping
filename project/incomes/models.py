@@ -100,7 +100,7 @@ class Income(MixinFromDbAccountId):
             _original_price = float(self.original_price)
 
             _qs.incomes = _qs.incomes - _original_price + _price
-            _qs.balance = _qs.balance - _original_price + _price
+            _qs.balance = _qs.past + _qs.incomes - _qs.expenses
             _qs.delta = _qs.have - _qs.balance
 
             _qs.save()
@@ -121,7 +121,7 @@ class Income(MixinFromDbAccountId):
             _price = float(self.price)
 
             _qs.incomes = _qs.incomes - _price
-            _qs.balance = _qs.balance - _price
+            _qs.balance = _qs.past + _qs.incomes - _qs.expenses
             _qs.delta = _qs.have - _qs.balance
 
             _qs.save()
