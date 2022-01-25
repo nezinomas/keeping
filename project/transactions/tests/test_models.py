@@ -139,26 +139,35 @@ def test_transaction_new_post_save():
 
 
 def test_transaction_update_post_save():
-    u = TransactionFactory()
+    a_from = AccountFactory(title='From')
+    a_to = AccountFactory(title='To')
 
-    u.price = 10
-    u.save()
+    obj = TransactionFactory(date=date(1999, 1, 1),
+                            from_account=a_from,
+                            to_account=a_to,
+                            price=100)
+
+    obj_update = Transaction.objects.get(pk=obj.pk)
+    obj_update.price = 10
+    obj_update.save()
 
     actual = AccountBalance.objects.items()
 
     assert actual.count() == 2
 
-    assert actual[0].account.title == 'Account2'
-    assert actual[0].incomes == 10.0
-    assert actual[0].expenses == 0.0
-    assert actual[0].balance == 10.0
-    assert actual[0].delta == -10
+    actual = AccountBalance.objects.get(account_id=a_to.pk)
+    assert actual.account.title == 'To'
+    assert actual.incomes == 10.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 10.0
+    assert actual.delta == -10
 
-    assert actual[1].account.title == 'Account1'
-    assert actual[1].incomes == 0.0
-    assert actual[1].expenses == 10.0
-    assert actual[1].balance == -10.0
-    assert actual[1].delta == 10
+    actual = AccountBalance.objects.get(account_id=a_from.pk)
+    assert actual.account.title == 'From'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 10.0
+    assert actual.balance == -10.0
+    assert actual.delta == 10
 
 
 def test_transaction_post_delete():
