@@ -1,9 +1,11 @@
+from decimal import Decimal
+
 from django.db.models import Q
 
 from ...accounts.models import AccountBalance
 from ...bookkeeping.lib import helpers as calc
 from ...core.signals import SignalBase
-from decimal import Decimal
+
 
 class AccountBalanceMixin():
     def __init__(self,
