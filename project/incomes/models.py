@@ -124,7 +124,6 @@ class Income(MixinFromDbAccountId):
             _qs.incomes = _qs.incomes - _price
             _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
             _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
-            _qs.delta = _qs.have - _qs.balance
 
             _qs.save()
 
