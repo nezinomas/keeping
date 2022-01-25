@@ -11,7 +11,7 @@ class AccountBalanceMixin():
     def __init__(self,
                  sender: object,
                  caller: str,
-                 field: str,
+                 field_name: str,
                  year: int,
                  account_pk: int,
                  price: Decimal,
@@ -27,7 +27,7 @@ class AccountBalanceMixin():
                 .get(Q(year=year) & Q(account_id=account_pk))
             )
 
-            _field = getattr(_qs, field)
+            _field = getattr(_qs, field_name)
 
             if caller == 'save':
                 _field = _field - original_price + price
@@ -35,7 +35,7 @@ class AccountBalanceMixin():
             if caller == 'delete':
                 _field = _field - price
 
-            setattr(_qs, field, _field)
+            setattr(_qs, field_name, _field)
 
             _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
             _qs.delta = calc.calc_delta([_qs.have, _qs.balance])

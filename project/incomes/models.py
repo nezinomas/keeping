@@ -92,7 +92,7 @@ class Income(MixinFromDbAccountId):
             journal.save()
 
         AccountBalanceMixin(sender=Income,
-                            field='incomes',
+                            field_name='incomes',
                             caller='save',
                             year=self.date.year,
                             account_pk=self.account.pk,
@@ -103,7 +103,7 @@ class Income(MixinFromDbAccountId):
         super().delete(*args, **kwargs)
 
         AccountBalanceMixin(sender=Income,
-                            field='incomes',
+                            field_name='incomes',
                             caller='delete',
                             year=self.date.year,
                             account_pk=self.account.pk,
