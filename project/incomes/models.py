@@ -117,6 +117,7 @@ class Income(MixinFromDbAccountId):
                 .objects
                 .get(Q(year=self.date.year) & Q(account_id=self.account.pk))
             )
+
             _price = float(self.price)
 
             _qs.incomes = _qs.incomes - _price

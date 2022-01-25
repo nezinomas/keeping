@@ -123,7 +123,11 @@ class Expense(MixinFromDbAccountId):
             journal.save()
 
         try:
-            _qs = AccountBalance.objects.get(Q(year=self.date.year) & Q(account_id=self.account.pk))
+            _qs = (
+                AccountBalance
+                .objects
+                .get(Q(year=self.date.year) & Q(account_id=self.account.pk))
+            )
 
             _price = float(self.price)
             _original_price = float(self.original_price)
@@ -141,7 +145,12 @@ class Expense(MixinFromDbAccountId):
         super().delete(*args, **kwargs)
 
         try:
-            _qs = AccountBalance.objects.get(Q(year=self.date.year) & Q(account_id=self.account.pk))
+            _qs = (
+                AccountBalance
+                .objects
+                .get(Q(year=self.date.year) & Q(account_id=self.account.pk))
+            )
+
             _price = float(self.price)
 
             _qs.expenses = _qs.expenses - _price
