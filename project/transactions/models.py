@@ -4,25 +4,10 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
-
+from ..core.signals_base import SignalBase
 from ..savings.models import SavingType
 from . import managers
-
-
-def transaction_accouts_hooks():
-    arr = {
-        Transaction: {
-            'account_id': ['from_account_id', 'to_account_id']
-        },
-        SavingClose: {
-            'account_id': ['to_account_id'],
-            'saving_type_id': ['from_account_id']
-        },
-        SavingChange: {
-            'saving_type_id': ['from_account_id', 'to_account_id']
-        }
-    }
-    return arr
+from .models_hooks import transaction_accouts_hooks
 
 
 class OldValuesMixin(models.Model):
@@ -34,7 +19,7 @@ class OldValuesMixin(models.Model):
         zipped = dict(zip(field_names, values))
         instance = super().from_db(db, field_names, values)
 
-        hooks = transaction_accouts_hooks()[cls]
+        hooks = transaction_accouts_hooks()[cls.__name__]
         instance._old_values = {
             key: [zipped.get(x) for x in val] for key, val in hooks.items()
         }

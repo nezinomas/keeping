@@ -7,7 +7,7 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import View
 
-from ..core.signals import SignalBase
+from ..core.signals_base import SignalBase
 from .lib.date import years
 from .mixins.views import DispatchAjaxMixin
 from .tests.utils import timer
