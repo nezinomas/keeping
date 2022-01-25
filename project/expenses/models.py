@@ -139,4 +139,3 @@ class Expense(MixinFromDbAccountId):
                             year=self.date.year,
                             account_pk=self.account.pk,
                             price=self.price)
-
