@@ -26,6 +26,7 @@ class AccountBalanceMixin():
                 .objects
                 .get(Q(year=year) & Q(account_id=account_pk))
             )
+
             _field = getattr(_qs, field)
 
             if caller == 'save':
