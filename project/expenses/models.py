@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import F, Q
 
 from ..accounts.models import Account, AccountBalance
+from ..bookkeeping.lib import helpers as calc
 from ..core.lib import utils
 from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.models import TitleAbstract
@@ -133,8 +134,8 @@ class Expense(MixinFromDbAccountId):
             _original_price = float(self.original_price)
 
             _qs.expenses = _qs.expenses - _original_price + _price
-            _qs.balance = _qs.past + _qs.incomes - _qs.expenses
-            _qs.delta = _qs.have - _qs.balance
+            _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
+            _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
 
             _qs.save()
 
@@ -154,8 +155,8 @@ class Expense(MixinFromDbAccountId):
             _price = float(self.price)
 
             _qs.expenses = _qs.expenses - _price
-            _qs.balance = _qs.past + _qs.incomes - _qs.expenses
-            _qs.delta = _qs.have - _qs.balance
+            _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
+            _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
 
             _qs.save()
 

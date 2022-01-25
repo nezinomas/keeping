@@ -2,7 +2,7 @@ from typing import Dict
 
 from pandas import DataFrame as DF
 
-from ...bookkeeping.lib.helpers import calc_percent, calc_sum
+from ...bookkeeping.lib import helpers as calc
 from ...core.lib.balance_base import BalanceBase
 
 
@@ -49,10 +49,10 @@ class Balance(BalanceBase):
         arr = arr.sum()
 
         arr['profit_incomes_proc'] = (
-            calc_percent(arr[['market_value', 'incomes']])
+            calc.calc_percent(arr[['market_value', 'incomes']])
         )
         arr['profit_invested_proc'] = (
-            calc_percent(arr[['market_value', 'invested']])
+            calc.calc_percent(arr[['market_value', 'invested']])
         )
 
         val = arr.to_dict()
@@ -140,23 +140,23 @@ class Balance(BalanceBase):
         # calculate percent of profit/loss
         df['profit_incomes_proc'] = (
             df[['market_value', 'incomes']]
-            .apply(calc_percent, axis=1)
+            .apply(calc.calc_percent, axis=1)
         )
 
         df['profit_invested_proc'] = (
             df[['market_value', 'invested']]
-            .apply(calc_percent, axis=1)
+            .apply(calc.calc_percent, axis=1)
         )
 
         # calculate sum of profit/loss
         df['profit_incomes_sum'] = (
             df[['market_value', 'incomes']]
-            .apply(calc_sum, axis=1)
+            .apply(calc.calc_sum, axis=1)
         )
 
         df['profit_invested_sum'] = (
             df[['market_value', 'invested']]
-            .apply(calc_sum, axis=1)
+            .apply(calc.calc_sum, axis=1)
         )
         return df
 

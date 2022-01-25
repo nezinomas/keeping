@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account, AccountBalance
+from ..bookkeeping.lib import helpers as calc
 from ..core.lib import utils
 from ..core.mixins.from_db import MixinFromDbAccountId
 from ..core.models import TitleAbstract
@@ -100,8 +101,8 @@ class Income(MixinFromDbAccountId):
             _original_price = float(self.original_price)
 
             _qs.incomes = _qs.incomes - _original_price + _price
-            _qs.balance = _qs.past + _qs.incomes - _qs.expenses
-            _qs.delta = _qs.have - _qs.balance
+            _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
+            _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
 
             _qs.save()
 
@@ -121,7 +122,8 @@ class Income(MixinFromDbAccountId):
             _price = float(self.price)
 
             _qs.incomes = _qs.incomes - _price
-            _qs.balance = _qs.past + _qs.incomes - _qs.expenses
+            _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
+            _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
             _qs.delta = _qs.have - _qs.balance
 
             _qs.save()

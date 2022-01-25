@@ -2,6 +2,7 @@ from typing import List
 
 from pandas import DataFrame as DF
 
+from ...bookkeeping.lib import helpers as calc
 from ...core.lib.balance_base import BalanceBase
 
 
@@ -77,10 +78,7 @@ class Balance(BalanceBase):
         ).abs()
 
         df['balance'] = (
-            0
-            + df['past']
-            + df['incomes']
-            - df['expenses']
+            df[['past', 'incomes', 'expenses']].apply(calc.calc_balance, axis=1)
         )
 
         return df
@@ -100,7 +98,9 @@ class Balance(BalanceBase):
         return df
 
     def _calc_have(self, df: DF) -> DF:
-        df.loc[:, 'delta'] = df['have'] - df['balance']
+        df.loc[:, 'delta'] = (
+            df[['have', 'balance']].apply(calc.calc_delta, axis=1)
+        )
 
         return df
 
