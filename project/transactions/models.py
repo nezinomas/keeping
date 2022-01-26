@@ -72,7 +72,9 @@ class Transaction(OldValuesMixin):
         super().save(*args, **kwargs)
 
         AccountBalanceMixin(sender=Transaction,
-                            fields={'incomes':self.to_account.pk, 'expenses': self.from_account.pk},
+                            fields={
+                                'incomes':self.to_account.pk,
+                                'expenses': self.from_account.pk},
                             caller='save',
                             year=self.date.year,
                             price=self.price,
@@ -83,7 +85,9 @@ class Transaction(OldValuesMixin):
         super().delete(*args, **kwargs)
 
         AccountBalanceMixin(sender=Transaction,
-                            fields={'incomes':self.to_account.pk, 'expenses': self.from_account.pk},
+                            fields={
+                                'incomes':self.to_account.pk,
+                                'expenses': self.from_account.pk},
                             caller='delete',
                             year=self.date.year,
                             price=self.price)
