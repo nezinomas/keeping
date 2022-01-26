@@ -27,6 +27,12 @@ def test_drink_init_fields():
     assert '<input type="text" name="counter_type"' not in form
 
 
+def test_drink_help_text():
+    form = DrinkForm().as_p()
+
+    assert f'Įvedus daugiau nei 20, kiekis bus konvertuotas į mL.' in form
+
+
 @freeze_time('1000-01-01')
 def test_drink_year_initial_value():
     UserFactory()
