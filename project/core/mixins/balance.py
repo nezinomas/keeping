@@ -34,12 +34,12 @@ class AccountBalanceMixin():
 
             _field = getattr(_qs, field_name)
             if caller == 'save':
-                _field = _field - original_price + price
+                _field_value = _field_value - original_price + price
 
             if caller == 'delete':
-                _field = _field - price
+                _field_value = _field_value - price
 
-            setattr(_qs, field_name, _field)
+            setattr(_qs, field_name, _field_value)
 
             _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
             _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
