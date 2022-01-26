@@ -123,10 +123,9 @@ class Expense(MixinFromDbAccountId):
             journal.save()
 
         AccountBalanceMixin(sender=Expense,
-                            field_name='expenses',
+                            fields={'expenses': self.account.pk},
                             caller='save',
                             year=self.date.year,
-                            account_pk=self.account.pk,
                             price=self.price,
                             original_price=self.original_price)
 
@@ -134,8 +133,7 @@ class Expense(MixinFromDbAccountId):
         super().delete(*args, **kwargs)
 
         AccountBalanceMixin(sender=Expense,
-                            field_name='expenses',
+                            fields={'expenses': self.account.pk},
                             caller='delete',
                             year=self.date.year,
-                            account_pk=self.account.pk,
                             price=self.price)
