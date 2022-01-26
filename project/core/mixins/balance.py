@@ -20,22 +20,22 @@ class AccountBalanceMixin():
         price = float(price)
         original_price = float(original_price)
 
-        for field_name, account_pk in fields.items():
+        for _field_name, _account_pk in fields.items():
             try:
                 _qs = (
                     AccountBalance
                     .objects
-                    .get(Q(year=year) & Q(account_id=account_pk))
+                    .get(Q(year=year) & Q(account_id=_account_pk))
                 )
 
             except AccountBalance.DoesNotExist:
                 SignalBase.accounts(sender=sender, instance=None)
                 return
 
-            _field_value = getattr(_qs, field_name)
+            _field_value = getattr(_qs, _field_name)
             _field_value = self._calc_field(caller, _field_value, original_price, price)
 
-            setattr(_qs, field_name, _field_value)
+            setattr(_qs, _field_name, _field_value)
 
             _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
             _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
