@@ -33,11 +33,7 @@ class AccountBalanceMixin():
                 return
 
             _field_value = getattr(_qs, field_name)
-            if caller == 'save':
-                _field_value = _field_value - original_price + price
-
-            if caller == 'delete':
-                _field_value = _field_value - price
+            _field_value = self._calc_field(caller, _field_value, original_price, price)
 
             setattr(_qs, field_name, _field_value)
 
@@ -45,3 +41,10 @@ class AccountBalanceMixin():
             _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
 
             _qs.save()
+
+    def _calc_field(self, /, caller, field_value, original_price, price):
+        _switch = {
+            'save': field_value - original_price + price,
+            'delete': field_value - price
+        }
+        return _switch.get(caller, field_value)
