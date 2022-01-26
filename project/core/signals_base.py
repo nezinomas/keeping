@@ -5,7 +5,7 @@ from django.db.models import Q
 from ..accounts.lib.balance import Balance as AccountStats
 from ..accounts.models import Account, AccountBalance
 from ..bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
-from ..pensions.models import Pension, PensionBalance, PensionType
+from ..pensions.models import PensionBalance, PensionType
 from ..savings.lib.balance import Balance as SavingStats
 from ..savings.models import SavingBalance, SavingType
 from ..transactions.models_hooks import transaction_accouts_hooks

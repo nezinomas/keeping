@@ -6,11 +6,9 @@ from django.dispatch import receiver
 from ..accounts.models import Account
 from ..bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ..debts.models import Borrow, BorrowReturn, Lent, LentReturn
-# from ..expenses.models import Expense
-# from ..incomes.models import Income
 from ..pensions.models import Pension, PensionType
 from ..savings.models import Saving, SavingType
-from ..transactions.models import SavingChange, SavingClose, Transaction
+from ..transactions.models import SavingChange, SavingClose
 from .signals_base import SignalBase
 
 
