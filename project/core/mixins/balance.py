@@ -32,7 +32,7 @@ class AccountBalanceMixin():
                 SignalBase.accounts(sender=sender, instance=None)
                 return
 
-            _field = getattr(_qs, field_name)
+            _field_value = getattr(_qs, field_name)
             if caller == 'save':
                 _field_value = _field_value - original_price + price
 
