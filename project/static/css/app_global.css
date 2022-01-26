@@ -212,7 +212,7 @@ tr.top-text, tr.top-text th {
 }
 
 .dash {
-    color: #b7b7b6;
+    color: #b7b7b6!important;
 }
 
 .table-hover tbody tr:hover,
