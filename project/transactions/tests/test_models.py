@@ -5,6 +5,8 @@ import pytest
 
 from ...accounts.factories import AccountBalance, AccountFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
+from ...expenses.factories import ExpenseFactory
+from ...incomes.factories import IncomeFactory
 from ...savings.factories import SavingTypeFactory
 from ...savings.models import SavingBalance
 from ...users.factories import UserFactory
@@ -168,6 +170,75 @@ def test_transaction_update_post_save():
     assert actual.expenses == 10.0
     assert actual.balance == -10.0
     assert actual.delta == 10
+
+
+def test_transaction_post_save_first_record():
+    a_from = AccountFactory(title='From')
+    a_to = AccountFactory(title='To')
+
+    # past records
+    IncomeFactory(account=a_from, date=date(1998, 1, 1), price=6)
+    ExpenseFactory(account=a_from, date=date(1998, 1, 1), price=5)
+
+    IncomeFactory(account=a_to, date=date(1998, 1, 1), price=5)
+    ExpenseFactory(account=a_to, date=date(1998, 1, 1), price=3)
+
+    # truncate AccountBalace
+    AccountBalance.objects.all().delete()
+
+    TransactionFactory(date=date(1999, 1, 1),
+                       from_account=a_from,
+                       to_account=a_to,
+                       price=1)
+
+    actual = AccountBalance.objects.get(account_id=a_to.pk)
+    assert actual.account.title == 'To'
+    assert actual.past == 2.0
+    assert actual.incomes == 1.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 3.0
+    assert actual.delta == -3.0
+
+    actual = AccountBalance.objects.get(account_id=a_from.pk)
+    assert actual.account.title == 'From'
+    assert actual.past == 1.0
+    assert actual.incomes == 0.0
+    assert actual.expenses == 1.0
+    assert actual.balance == 0.0
+    assert actual.delta == 0.0
+
+
+def test_transaction_post_save_new():
+    a_from = AccountFactory(title='From')
+    a_to = AccountFactory(title='To')
+
+    # past records
+    IncomeFactory(account=a_from, date=date(1998, 1, 1), price=6)
+    ExpenseFactory(account=a_from, date=date(1998, 1, 1), price=5)
+
+    IncomeFactory(account=a_to, date=date(1998, 1, 1), price=5)
+    ExpenseFactory(account=a_to, date=date(1998, 1, 1), price=3)
+
+    TransactionFactory(date=date(1999, 1, 1),
+                       from_account=a_from,
+                       to_account=a_to,
+                       price=1)
+
+    actual = AccountBalance.objects.get(account_id=a_to.pk)
+    assert actual.account.title == 'To'
+    assert actual.past == 2.0
+    assert actual.incomes == 1.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 3.0
+    assert actual.delta == -3.0
+
+    actual = AccountBalance.objects.get(account_id=a_from.pk)
+    assert actual.account.title == 'From'
+    assert actual.past == 1.0
+    assert actual.incomes == 0.0
+    assert actual.expenses == 1.0
+    assert actual.balance == 0.0
+    assert actual.delta == 0.0
 
 
 def test_transaction_post_delete():
