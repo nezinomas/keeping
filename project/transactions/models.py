@@ -27,7 +27,7 @@ class OldValuesMixin(models.Model):
         return instance
 
 
-class Transaction(AccountBalanceMixin ,OldValuesMixin):
+class Transaction(AccountBalanceMixin, OldValuesMixin):
     date = models.DateField()
     from_account = models.ForeignKey(
         Account,
