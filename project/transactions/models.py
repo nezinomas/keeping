@@ -64,7 +64,6 @@ class Transaction(AccountBalanceMixin, OldValuesMixin):
         super().save(*args, **kwargs)
 
         self.update_accountbalance_table(
-            sender=Transaction,
             fields={
                 'incomes':self.to_account.pk,
                 'expenses': self.from_account.pk},
@@ -76,7 +75,6 @@ class Transaction(AccountBalanceMixin, OldValuesMixin):
         super().delete(*args, **kwargs)
 
         self.update_accountbalance_table(
-            sender=Transaction,
             fields={
                 'incomes':self.to_account.pk,
                 'expenses': self.from_account.pk},

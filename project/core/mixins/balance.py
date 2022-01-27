@@ -18,13 +18,9 @@ class AccountBalanceMixin():
             self.original_price = self.price
 
     def update_accountbalance_table(self,
-                 sender: object,
                  caller: str,
                  fields: Dict,
                  year: int):
-
-        price = float(self.price)
-        original_price = float(self.original_price)
 
         for _field_name, _account_pk in fields.items():
             try:
@@ -35,11 +31,11 @@ class AccountBalanceMixin():
                 )
 
             except AccountBalance.DoesNotExist:
-                SignalBase.accounts(sender=sender, instance=None)
+                SignalBase.accounts(sender=type(self), instance=None)
                 return
 
             _field_value = getattr(_qs, _field_name)
-            _field_value = self._calc_field(caller, _field_value, original_price, price)
+            _field_value = self._calc_field(caller, _field_value)
 
             setattr(_qs, _field_name, _field_value)
 
@@ -48,7 +44,10 @@ class AccountBalanceMixin():
 
             _qs.save()
 
-    def _calc_field(self, /, caller, field_value, original_price, price):
+    def _calc_field(self, /, caller, field_value):
+        price = float(self.price)
+        original_price = float(self.original_price)
+
         _switch = {
             'save': field_value - original_price + price,
             'delete': field_value - price

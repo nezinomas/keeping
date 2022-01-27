@@ -115,7 +115,6 @@ class Expense(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
             journal.save()
 
         self.update_accountbalance_table(
-            sender=Expense,
             fields={'expenses': self.account.pk},
             caller='save',
             year=self.date.year)
@@ -124,7 +123,6 @@ class Expense(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
         super().delete(*args, **kwargs)
 
         self.update_accountbalance_table(
-            sender=Expense,
             fields={'expenses': self.account.pk},
             caller='delete',
             year=self.date.year)

@@ -82,15 +82,15 @@ class Income(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
             journal.first_record = self.date
             journal.save()
 
-        self.update_accountbalance_table(sender=Income,
-                            fields={'incomes': self.account.pk},
-                            caller='save',
-                            year=self.date.year)
+        self.update_accountbalance_table(
+            fields={'incomes': self.account.pk},
+            caller='save',
+            year=self.date.year)
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
 
-        self.update_accountbalance_table(sender=Income,
-                            fields={'incomes': self.account.pk},
-                            caller='delete',
-                            year=self.date.year)
+        self.update_accountbalance_table(
+            fields={'incomes': self.account.pk},
+            caller='delete',
+            year=self.date.year)
