@@ -12,6 +12,7 @@ class AccountBalanceMixin():
     hooks = {
         'Income': {'incomes': 'account'},
         'Expense': {'expenses': 'account'},
+        'Borrow': {'expenses': 'account'},
         'Transaction': {
             'incomes': 'to_account',
             'expenses': 'from_account'},

@@ -5,12 +5,13 @@ from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
+from ..core.mixins.balance import AccountBalanceMixin
 from ..core.mixins.from_db import FromDbAccountIdMixin
 from ..journals.models import Journal
 from . import managers
 
 
-class Borrow(FromDbAccountIdMixin, models.Model):
+class Borrow(AccountBalanceMixin ,FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     name = models.CharField(
         max_length=100,
