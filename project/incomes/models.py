@@ -72,6 +72,8 @@ class Income(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
     # managers
     objects = IncomeQuerySet.as_manager()
 
+    fields = {'incomes': 'account'}
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
@@ -82,15 +84,9 @@ class Income(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
             journal.first_record = self.date
             journal.save()
 
-        self.update_accountbalance_table(
-            fields={'incomes': self.account.pk},
-            caller='save'
-        )
+        self.update_accountbalance_table(caller='save')
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
 
-        self.update_accountbalance_table(
-            fields={'incomes': self.account.pk},
-            caller='delete'
-        )
+        self.update_accountbalance_table(caller='delete')

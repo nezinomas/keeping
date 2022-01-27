@@ -17,15 +17,16 @@ class AccountBalanceMixin():
         if self.pk:
             self.original_price = self.price
 
-    def update_accountbalance_table(self, caller: str, fields: Dict):
+    def update_accountbalance_table(self, caller: str, fields: Dict = {}):
         year = self.date.year
 
-        for _field_name, _account_pk in fields.items():
+        for _field_name, _account_fk in self.fields.items():
+            _pk = getattr(self, _account_fk)
             try:
                 _qs = (
                     AccountBalance
                     .objects
-                    .get(Q(year=year) & Q(account_id=_account_pk))
+                    .get(Q(year=year) & Q(account_id=_pk))
                 )
 
             except AccountBalance.DoesNotExist:

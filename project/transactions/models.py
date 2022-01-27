@@ -60,26 +60,20 @@ class Transaction(AccountBalanceMixin, OldValuesMixin):
 
     objects = managers.TransactionQuerySet.as_manager()
 
+    fields = {
+        'incomes': 'to_account',
+        'expenses': 'from_account'
+    }
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
-        self.update_accountbalance_table(
-            fields={
-                'incomes':self.to_account.pk,
-                'expenses': self.from_account.pk},
-            caller='save'
-        )
-
+        self.update_accountbalance_table(caller='save')
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
 
-        self.update_accountbalance_table(
-            fields={
-                'incomes':self.to_account.pk,
-                'expenses': self.from_account.pk},
-            caller='delete'
-        )
+        self.update_accountbalance_table(caller='delete')
 
 
 class SavingClose(OldValuesMixin):

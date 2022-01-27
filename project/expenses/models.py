@@ -100,6 +100,8 @@ class Expense(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
     # Managers
     objects = ExpenseQuerySet.as_manager()
 
+    fields={'expenses': 'account'}
+
     def __str__(self):
         return f'{(self.date)}/{self.expense_type}/{self.expense_name}'
 
@@ -114,15 +116,9 @@ class Expense(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
             journal.first_record = self.date
             journal.save()
 
-        self.update_accountbalance_table(
-            fields={'expenses': self.account.pk},
-            caller='save'
-        )
+        self.update_accountbalance_table(caller='save')
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
 
-        self.update_accountbalance_table(
-            fields={'expenses': self.account.pk},
-            caller='delete'
-        )
+        self.update_accountbalance_table(caller='delete')
