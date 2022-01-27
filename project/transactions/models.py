@@ -10,7 +10,7 @@ from . import managers
 from .models_hooks import transaction_accouts_hooks
 
 
-class OldValuesMixin(models.Model):
+class OldValuesMixin():
     class Meta:
         abstract = True
 
@@ -27,7 +27,7 @@ class OldValuesMixin(models.Model):
         return instance
 
 
-class Transaction(AccountBalanceMixin, OldValuesMixin):
+class Transaction(AccountBalanceMixin, OldValuesMixin, models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         Account,
@@ -61,7 +61,7 @@ class Transaction(AccountBalanceMixin, OldValuesMixin):
     objects = managers.TransactionQuerySet.as_manager()
 
 
-class SavingClose(OldValuesMixin):
+class SavingClose(OldValuesMixin, models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         SavingType,
@@ -101,7 +101,7 @@ class SavingClose(OldValuesMixin):
     objects = managers.SavingCloseQuerySet.as_manager()
 
 
-class SavingChange(OldValuesMixin):
+class SavingChange(OldValuesMixin, models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         SavingType,
