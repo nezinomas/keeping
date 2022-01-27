@@ -16,14 +16,8 @@ from .signals_base import SignalBase
 #                                                               AccountBalance
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=Account)
-# @receiver(post_save, sender=Income)
-# @receiver(post_delete, sender=Income)
-# @receiver(post_save, sender=Expense)
-# @receiver(post_delete, sender=Expense)
 @receiver(post_save, sender=Saving)
 @receiver(post_delete, sender=Saving)
-# @receiver(post_save, sender=Transaction)
-# @receiver(post_delete, sender=Transaction)
 @receiver(post_save, sender=SavingClose)
 @receiver(post_delete, sender=SavingClose)
 @receiver(post_save, sender=AccountWorth)
