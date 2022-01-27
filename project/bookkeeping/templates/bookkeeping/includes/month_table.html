@@ -3,7 +3,7 @@
 {% load cell_format %}
 {% load i18n %}
 
-<table class="table table-striped table-hover stats">
+<table class="table table-borderless table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
             <th></th>
@@ -20,6 +20,7 @@
         {% with row.date|date:'w'|weekend:'_weekend_col' as weekend_col %}
         {% with row.date|date:'w'|weekend:'_weekend_row' as weekend_row %}
         {% with row.date|date:'d' as day_int %}
+
         <tr id="row-{{ day_int }}" class="{% if day|slugify == row.date|date:'j' %}_current_day{% endif %} {{ weekend_row }}">
             <td class="text-start {{ weekend_col }} panel-heading">
                 <a class="row_click btn btn-super-sm" role="button" data-bs-toggle="collapse" aria-expanded="true" data-url="{% url 'bookkeeping:expand_day_expenses' row.date|date:"Ymd" %}" data-id="{{ day_int }}">{{ day_int }}</a>
