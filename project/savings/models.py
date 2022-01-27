@@ -5,7 +5,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
-from ..core.mixins.from_db import MixinFromDbAccountId
+from ..core.mixins.from_db import FromDbAccountIdMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from . import managers
@@ -43,7 +43,7 @@ class SavingType(TitleAbstract):
         ordering = ['type', 'title']
 
 
-class Saving(MixinFromDbAccountId):
+class Saving(FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,

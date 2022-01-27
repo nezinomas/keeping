@@ -5,12 +5,12 @@ from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
-from ..core.mixins.from_db import MixinFromDbAccountId
+from ..core.mixins.from_db import FromDbAccountIdMixin
 from ..journals.models import Journal
 from . import managers
 
 
-class Borrow(MixinFromDbAccountId):
+class Borrow(FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     name = models.CharField(
         max_length=100,
@@ -53,7 +53,7 @@ class Borrow(MixinFromDbAccountId):
         return str(self.name)
 
 
-class BorrowReturn(MixinFromDbAccountId):
+class BorrowReturn(FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
@@ -112,7 +112,7 @@ class BorrowReturn(MixinFromDbAccountId):
         obj.save()
 
 
-class Lent(MixinFromDbAccountId):
+class Lent(FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     name = models.CharField(
         max_length=100,
@@ -155,7 +155,7 @@ class Lent(MixinFromDbAccountId):
         return str(self.name)
 
 
-class LentReturn(MixinFromDbAccountId):
+class LentReturn(FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,

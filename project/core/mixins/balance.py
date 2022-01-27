@@ -9,7 +9,15 @@ from ...core.signals_base import SignalBase
 
 
 class AccountBalanceMixin():
-    def __init__(self,
+    original_price = 0.0
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.pk:
+            self.original_price = self.price
+
+    def update_accountbalance_table(self,
                  sender: object,
                  caller: str,
                  fields: Dict,

@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
 from ..core.lib import utils
-from ..core.mixins.from_db import MixinFromDbAccountId
+from ..core.mixins.from_db import FromDbAccountIdMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from .managers import IncomeQuerySet, IncomeTypeQuerySet
@@ -39,7 +39,7 @@ class IncomeType(TitleAbstract):
         ordering = ['title']
 
 
-class Income(MixinFromDbAccountId):
+class Income(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
@@ -72,13 +72,6 @@ class Income(MixinFromDbAccountId):
     # managers
     objects = IncomeQuerySet.as_manager()
 
-    original_price = 0.0
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if self.pk:
-            self.original_price = self.price
-
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
@@ -89,7 +82,7 @@ class Income(MixinFromDbAccountId):
             journal.first_record = self.date
             journal.save()
 
-        AccountBalanceMixin(sender=Income,
+        self.update_accountbalance_table(sender=Income,
                             fields={'incomes': self.account.pk},
                             caller='save',
                             year=self.date.year,
@@ -99,7 +92,7 @@ class Income(MixinFromDbAccountId):
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
 
-        AccountBalanceMixin(sender=Income,
+        self.update_accountbalance_table(sender=Income,
                             fields={'incomes': self.account.pk},
                             caller='delete',
                             year=self.date.year,
