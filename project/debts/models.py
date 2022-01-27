@@ -11,7 +11,7 @@ from ..journals.models import Journal
 from . import managers
 
 
-class Borrow(AccountBalanceMixin ,FromDbAccountIdMixin, models.Model):
+class Borrow(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     name = models.CharField(
         max_length=100,
