@@ -116,13 +116,13 @@ class Expense(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
 
         self.update_accountbalance_table(
             fields={'expenses': self.account.pk},
-            caller='save',
-            year=self.date.year)
+            caller='save'
+        )
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
 
         self.update_accountbalance_table(
             fields={'expenses': self.account.pk},
-            caller='delete',
-            year=self.date.year)
+            caller='delete'
+        )

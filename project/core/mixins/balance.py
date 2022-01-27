@@ -17,10 +17,8 @@ class AccountBalanceMixin():
         if self.pk:
             self.original_price = self.price
 
-    def update_accountbalance_table(self,
-                 caller: str,
-                 fields: Dict,
-                 year: int):
+    def update_accountbalance_table(self, caller: str, fields: Dict):
+        year = self.date.year
 
         for _field_name, _account_pk in fields.items():
             try:

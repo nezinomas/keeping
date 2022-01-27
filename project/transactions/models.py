@@ -67,8 +67,8 @@ class Transaction(AccountBalanceMixin, OldValuesMixin):
             fields={
                 'incomes':self.to_account.pk,
                 'expenses': self.from_account.pk},
-            caller='save',
-            year=self.date.year)
+            caller='save'
+        )
 
 
     def delete(self, *args, **kwargs):
@@ -78,8 +78,8 @@ class Transaction(AccountBalanceMixin, OldValuesMixin):
             fields={
                 'incomes':self.to_account.pk,
                 'expenses': self.from_account.pk},
-            caller='delete',
-            year=self.date.year)
+            caller='delete'
+        )
 
 
 class SavingClose(OldValuesMixin):
