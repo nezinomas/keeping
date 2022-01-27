@@ -126,7 +126,10 @@ table.stats tfoot {
 }
 
 table.stats td, table.stats th {
-    border: 1px solid #b4b4b3!important;
+    border-width: 1px!important;
+    border-style: solid!important;
+    border-color: #b4b4b3!important;
+    border-collapse: collapse!important;
     vertical-align: middle!important;
     padding-top: .09rem!important;
     padding-bottom: .09rem!important;
@@ -240,12 +243,11 @@ tr.top-text, tr.top-text th {
 }
 
 ._weekend_col {
-    --bs-table-accent-bg:rgb(202, 235, 204);
-
+    --bs-table-accent-bg:rgb(202, 235, 204)!important;
 }
 
 ._current_day, tr._current_day > td._weekend_col {
-    --bs-table-accent-bg:#ffc107!important;
+    background-color:#ffc107!important;
 }
 
 .table-active {
