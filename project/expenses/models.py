@@ -100,8 +100,6 @@ class Expense(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
     # Managers
     objects = ExpenseQuerySet.as_manager()
 
-    fields={'expenses': 'account'}
-
     def __str__(self):
         return f'{(self.date)}/{self.expense_type}/{self.expense_name}'
 

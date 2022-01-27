@@ -8,6 +8,15 @@ from ...core.signals_base import SignalBase
 class AccountBalanceMixin():
     original_price = 0.0
 
+    # {model_name: {accountbalce_table_field: model_field}}
+    hooks = {
+        'Income': {'incomes': 'account'},
+        'Expense': {'expenses': 'account'},
+        'Transaction': {
+            'incomes': 'to_account',
+            'expenses': 'from_account'},
+    }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -25,16 +34,17 @@ class AccountBalanceMixin():
         self.update_accountbalance_table('delete')
 
     def update_accountbalance_table(self, caller: str):
-        year = self.date.year
+        _year = self.date.year
+        _hook = self.hooks.get(type(self).__name__)
 
-        for _field_name, _account_fk in self.fields.items():
+        for _field_name, _account_fk in _hook.items():
             _pk = getattr(self, _account_fk)
 
             try:
                 _qs = (
                     AccountBalance
                     .objects
-                    .get(Q(year=year) & Q(account_id=_pk))
+                    .get(Q(year=_year) & Q(account_id=_pk))
                 )
 
             except AccountBalance.DoesNotExist:

@@ -60,11 +60,6 @@ class Transaction(AccountBalanceMixin, OldValuesMixin):
 
     objects = managers.TransactionQuerySet.as_manager()
 
-    fields = {
-        'incomes': 'to_account',
-        'expenses': 'from_account'
-    }
-
 
 class SavingClose(OldValuesMixin):
     date = models.DateField()

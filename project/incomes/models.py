@@ -72,8 +72,6 @@ class Income(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
     # managers
     objects = IncomeQuerySet.as_manager()
 
-    fields = {'incomes': 'account'}
-
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
