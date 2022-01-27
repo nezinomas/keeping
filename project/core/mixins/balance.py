@@ -21,12 +21,10 @@ class AccountBalanceMixin():
                  sender: object,
                  caller: str,
                  fields: Dict,
-                 year: int,
-                 price: Decimal,
-                 original_price: Decimal  = 0.0):
+                 year: int):
 
-        price = float(price)
-        original_price = float(original_price)
+        price = float(self.price)
+        original_price = float(self.original_price)
 
         for _field_name, _account_pk in fields.items():
             try:

@@ -69,9 +69,7 @@ class Transaction(AccountBalanceMixin, OldValuesMixin):
                 'incomes':self.to_account.pk,
                 'expenses': self.from_account.pk},
             caller='save',
-            year=self.date.year,
-            price=self.price,
-            original_price=self.original_price)
+            year=self.date.year)
 
 
     def delete(self, *args, **kwargs):
@@ -83,8 +81,7 @@ class Transaction(AccountBalanceMixin, OldValuesMixin):
                 'incomes':self.to_account.pk,
                 'expenses': self.from_account.pk},
             caller='delete',
-            year=self.date.year,
-            price=self.price)
+            year=self.date.year)
 
 
 class SavingClose(OldValuesMixin):
