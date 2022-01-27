@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class MixinFromDbAccountId(models.Model):
+class FromDbAccountIdMixin(models.Model):
     class Meta:
         abstract = True
 

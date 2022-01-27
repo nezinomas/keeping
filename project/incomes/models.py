@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
 from ..core.lib import utils
-from ..core.mixins.from_db import MixinFromDbAccountId
+from ..core.mixins.from_db import FromDbAccountIdMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from .managers import IncomeQuerySet, IncomeTypeQuerySet
@@ -39,7 +39,7 @@ class IncomeType(TitleAbstract):
         ordering = ['title']
 
 
-class Income(AccountBalanceMixin, MixinFromDbAccountId):
+class Income(AccountBalanceMixin, FromDbAccountIdMixin):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
