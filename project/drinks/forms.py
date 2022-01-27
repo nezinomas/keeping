@@ -17,8 +17,6 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Drink
         fields = ['user', 'date', 'quantity']
-        help_texts = {'quantity': _(
-            'If you enter more than %(cnt)s, the quantity will be converted to mL.') % {'cnt': MAX_BOTTLES}}
 
     field_order = ['date', 'quantity']
 
@@ -41,6 +39,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 
         self.fields['date'].label = _('Date')
         self.fields['quantity'].label = _('Quantity (0,5L beer bottle)')
+        self.fields['quantity'].help_text = _('If you enter more than %(cnt)s, the quantity will be converted to mL.') % {'cnt': MAX_BOTTLES}
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
