@@ -29,9 +29,17 @@
         margin-bottom: 0!important;
     }
 
-    .stats .empty {
+    .table tr > td.empty, .table tr > th.empty {
         --bs-table-accent-bg: white!important;
-        border: 0!important;
+        border-width: 0!important;
+    }
+
+    .table.stats .top > th {
+        border-bottom: 2px solid black!important;
+    }
+
+    .table.stats .top > th.empty {
+        border-bottom: 0!important;
     }
 
     .stats td.td_expand_day_expenses:hover {
