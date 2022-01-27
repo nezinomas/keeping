@@ -113,7 +113,7 @@ class BorrowReturn(FromDbAccountIdMixin, models.Model):
         obj.save()
 
 
-class Lent(FromDbAccountIdMixin, models.Model):
+class Lent(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     name = models.CharField(
         max_length=100,

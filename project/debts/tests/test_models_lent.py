@@ -3,7 +3,9 @@ from decimal import Decimal
 
 import pytest
 
-from ...accounts.models import AccountBalance
+from ...accounts.factories import AccountBalance, AccountFactory
+from ...incomes.factories import IncomeFactory
+from ...journals.factories import JournalFactory
 from ..factories import LentFactory
 from ..models import Lent
 
@@ -131,8 +133,9 @@ def test_lent_update_post_save():
     obj = LentFactory()
 
     # update object
-    obj.price = 1
-    obj.save()
+    obj_update = Lent.objects.get(pk=obj.pk)
+    obj_update.price = 1
+    obj_update.save()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -142,6 +145,35 @@ def test_lent_update_post_save():
     assert actual['incomes'] == 1.0
     assert actual['expenses'] == 0.0
     assert actual['balance'] == 1.0
+
+
+def test_borrow_post_save_first_record():
+    a = AccountFactory()
+    j = JournalFactory()
+
+    # past records
+    IncomeFactory(date=dt(1998, 1, 1), price=5)
+
+    AccountBalance.objects.all().delete()
+
+    Lent.objects.create(
+        date=dt(1999, 1, 1),
+        price=1,
+        account=a,
+        journal=j
+    )
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['past'] == 5.0
+    assert actual['incomes'] == 1.0
+    assert actual['expenses'] == 0.0
+    assert actual['balance'] == 6.0
 
 
 def test_lent_post_delete():

@@ -11,6 +11,7 @@ class AccountBalanceMixin():
     # {model_name: {accountbalce_table_field: model_field}}
     hooks = {
         'Income': {'incomes': 'account'},
+        'Lent': {'incomes': 'account'},
         'Expense': {'expenses': 'account'},
         'Borrow': {'expenses': 'account'},
         'Transaction': {
