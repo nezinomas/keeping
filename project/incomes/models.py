@@ -84,9 +84,3 @@ class Income(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
             journal.first_record = self.date
             journal.save()
 
-        self.update_accountbalance_table(caller='save')
-
-    def delete(self, *args, **kwargs):
-        super().delete(*args, **kwargs)
-
-        self.update_accountbalance_table(caller='delete')

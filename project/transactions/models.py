@@ -65,16 +65,6 @@ class Transaction(AccountBalanceMixin, OldValuesMixin):
         'expenses': 'from_account'
     }
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        self.update_accountbalance_table(caller='save')
-
-    def delete(self, *args, **kwargs):
-        super().delete(*args, **kwargs)
-
-        self.update_accountbalance_table(caller='delete')
-
 
 class SavingClose(OldValuesMixin):
     date = models.DateField()

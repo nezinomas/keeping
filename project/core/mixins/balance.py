@@ -1,6 +1,3 @@
-from decimal import Decimal
-from typing import Dict
-
 from django.db.models import Q
 
 from ...accounts.models import AccountBalance
@@ -17,11 +14,22 @@ class AccountBalanceMixin():
         if self.pk:
             self.original_price = self.price
 
-    def update_accountbalance_table(self, caller: str, fields: Dict = {}):
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        self.update_accountbalance_table('save')
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+
+        self.update_accountbalance_table('delete')
+
+    def update_accountbalance_table(self, caller: str):
         year = self.date.year
 
         for _field_name, _account_fk in self.fields.items():
             _pk = getattr(self, _account_fk)
+
             try:
                 _qs = (
                     AccountBalance
