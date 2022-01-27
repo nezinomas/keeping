@@ -43,7 +43,7 @@ class SavingType(TitleAbstract):
         ordering = ['type', 'title']
 
 
-class Saving(FromDbAccountIdMixin):
+class Saving(FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,

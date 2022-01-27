@@ -39,7 +39,7 @@ class IncomeType(TitleAbstract):
         ordering = ['title']
 
 
-class Income(AccountBalanceMixin, FromDbAccountIdMixin):
+class Income(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,

@@ -10,7 +10,7 @@ from ..journals.models import Journal
 from . import managers
 
 
-class Borrow(FromDbAccountIdMixin):
+class Borrow(FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     name = models.CharField(
         max_length=100,
@@ -53,7 +53,7 @@ class Borrow(FromDbAccountIdMixin):
         return str(self.name)
 
 
-class BorrowReturn(FromDbAccountIdMixin):
+class BorrowReturn(FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
@@ -112,7 +112,7 @@ class BorrowReturn(FromDbAccountIdMixin):
         obj.save()
 
 
-class Lent(FromDbAccountIdMixin):
+class Lent(FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     name = models.CharField(
         max_length=100,
@@ -155,7 +155,7 @@ class Lent(FromDbAccountIdMixin):
         return str(self.name)
 
 
-class LentReturn(FromDbAccountIdMixin):
+class LentReturn(FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,

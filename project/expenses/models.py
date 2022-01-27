@@ -55,7 +55,7 @@ class ExpenseName(TitleAbstract):
     objects = ExpenseNameQuerySet.as_manager()
 
 
-class Expense(AccountBalanceMixin, FromDbAccountIdMixin):
+class Expense(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
