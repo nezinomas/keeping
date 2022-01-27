@@ -27,7 +27,7 @@ class OldValuesMixin(models.Model):
         return instance
 
 
-class Transaction(OldValuesMixin):
+class Transaction(AccountBalanceMixin ,OldValuesMixin):
     date = models.DateField()
     from_account = models.ForeignKey(
         Account,
@@ -60,37 +60,31 @@ class Transaction(OldValuesMixin):
 
     objects = managers.TransactionQuerySet.as_manager()
 
-    original_price = 0.0
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if self.pk:
-            self.original_price = self.price
-
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
-        AccountBalanceMixin(sender=Transaction,
-                            fields={
-                                'incomes':self.to_account.pk,
-                                'expenses': self.from_account.pk},
-                            caller='save',
-                            year=self.date.year,
-                            price=self.price,
-                            original_price=self.original_price)
+        self.update_accountbalance_table(
+            sender=Transaction,
+            fields={
+                'incomes':self.to_account.pk,
+                'expenses': self.from_account.pk},
+            caller='save',
+            year=self.date.year,
+            price=self.price,
+            original_price=self.original_price)
 
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
 
-        AccountBalanceMixin(sender=Transaction,
-                            fields={
-                                'incomes':self.to_account.pk,
-                                'expenses': self.from_account.pk},
-                            caller='delete',
-                            year=self.date.year,
-                            price=self.price)
+        self.update_accountbalance_table(
+            sender=Transaction,
+            fields={
+                'incomes':self.to_account.pk,
+                'expenses': self.from_account.pk},
+            caller='delete',
+            year=self.date.year,
+            price=self.price)
 
 
 class SavingClose(OldValuesMixin):

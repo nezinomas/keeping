@@ -55,7 +55,7 @@ class ExpenseName(TitleAbstract):
     objects = ExpenseNameQuerySet.as_manager()
 
 
-class Expense(MixinFromDbAccountId):
+class Expense(AccountBalanceMixin, MixinFromDbAccountId):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
@@ -100,14 +100,6 @@ class Expense(MixinFromDbAccountId):
     # Managers
     objects = ExpenseQuerySet.as_manager()
 
-    original_price = 0.0
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if self.pk:
-            self.original_price = self.price
-
     def __str__(self):
         return f'{(self.date)}/{self.expense_type}/{self.expense_name}'
 
@@ -122,18 +114,20 @@ class Expense(MixinFromDbAccountId):
             journal.first_record = self.date
             journal.save()
 
-        AccountBalanceMixin(sender=Expense,
-                            fields={'expenses': self.account.pk},
-                            caller='save',
-                            year=self.date.year,
-                            price=self.price,
-                            original_price=self.original_price)
+        self.update_accountbalance_table(
+            sender=Expense,
+            fields={'expenses': self.account.pk},
+            caller='save',
+            year=self.date.year,
+            price=self.price,
+            original_price=self.original_price)
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
 
-        AccountBalanceMixin(sender=Expense,
-                            fields={'expenses': self.account.pk},
-                            caller='delete',
-                            year=self.date.year,
-                            price=self.price)
+        self.update_accountbalance_table(
+            sender=Expense,
+            fields={'expenses': self.account.pk},
+            caller='delete',
+            year=self.date.year,
+            price=self.price)
