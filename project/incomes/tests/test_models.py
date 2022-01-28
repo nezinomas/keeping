@@ -196,11 +196,12 @@ def test_income_update_post_save():
     a = AccountFactory()
     i = IncomeTypeFactory()
 
-    obj = Income(date=date(1999, 1, 1), price=5, account=a, income_type=i)
+    obj = IncomeFactory(price=5)
 
     # update price
-    obj.price = 1
-    obj.save()
+    obj_update = Income.objects.get(pk=obj.pk)
+    obj_update.price = 1
+    obj_update.save()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -231,16 +232,18 @@ def test_income_post_delete():
 def test_income_post_delete_with_update():
     IncomeFactory(price=1)
 
-    obj = IncomeFactory()
+    obj = IncomeFactory(price=5)
+    actual = AccountBalance.objects.last()
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 6.0
+    assert actual.balance == 6.0
+
     obj.delete()
 
-    actual = AccountBalance.objects.year(1999)
-
-    assert actual.count() == 1
-
-    assert actual[0]['title'] == 'Account1'
-    assert actual[0]['incomes'] == 1.0
-    assert actual[0]['balance'] == 1.0
+    actual = AccountBalance.objects.last()
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 1.0
+    assert actual.balance == 1.0
 
     assert Income.objects.all().count() == 1
 
