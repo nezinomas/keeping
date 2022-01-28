@@ -4,7 +4,9 @@ from decimal import Decimal
 import pytest
 from mock import patch
 
+from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
+from ...incomes.factories import IncomeFactory
 from ..factories import LentFactory, LentReturnFactory
 from ..models import Lent, LentReturn
 
@@ -95,6 +97,7 @@ def test_lent_return_new_record_updates_lent_tbl():
 
     assert actual.count() == 1
     assert actual[0].returned == Decimal('30')
+
 
 def test_lent_return_update():
     obj = LentReturnFactory()
@@ -190,8 +193,9 @@ def test_lent_return_update_post_save():
     obj = LentReturnFactory()
 
     # update object
-    obj.price = 1
-    obj.save()
+    obj_update = LentReturn.objects.get(pk=obj.pk)
+    obj_update.price = 1
+    obj_update.save()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -203,37 +207,65 @@ def test_lent_return_update_post_save():
     assert actual['balance'] == 99.0
 
 
+def test_lent_return_post_save_first_record():
+    a = AccountFactory()
+    l = LentFactory(price=5)
+
+    IncomeFactory(date=dt(1998, 1, 1), price=1)
+
+    # truncate AccountBalance table
+    AccountBalance.objects.all().delete()
+
+    LentReturn.objects.create(date=dt(1999, 1, 1), account=a, lent=l, price=2)
+
+    actual = AccountBalance.objects.items()
+    assert actual.count() == 1
+    actual = AccountBalance.objects.last()
+
+    assert actual.past == 1.0
+    assert actual.incomes == 5.0
+    assert actual.expenses == 2.0
+    assert actual.balance == 4.0
+    assert actual.delta == -4.0
+
+
 def test_lent_return_post_delete():
     obj = LentReturnFactory()
-    obj.delete()
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalance.objects.last()
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 100.0
+    assert actual.expenses == 5.0
+    assert actual.balance == 95.0
 
-    actual = actual[0]
+    LentReturn.objects.get(pk=obj.pk).delete()
 
-    assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 100.0
-    assert actual['expenses'] == 0.0
-    assert actual['balance'] == 100.0
+    actual = AccountBalance.objects.last()
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 100.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 100.0
 
 
 def test_lent_return_post_delete_with_updt():
     b = LentFactory()
     LentReturnFactory(lent=b, price=1)
 
-    obj = LentReturnFactory(lent=b)
-    obj.delete()
+    obj = LentReturnFactory(lent=b, price=2)
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalance.objects.last()
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 100.0
+    assert actual.expenses == 3.0
+    assert actual.balance == 97.0
 
-    actual = actual[0]
+    LentReturn.objects.get(pk=obj.pk).delete()
 
-    assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 100.0
-    assert actual['expenses'] == 1.0
-    assert actual['balance'] == 99.0
-
-    assert Lent.objects.all().count() == 1
+    actual = AccountBalance.objects.last()
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 100.0
+    assert actual.expenses == 1.0
+    assert actual.balance == 99.0
 
 
 def test_lent_return_sum_all_months():

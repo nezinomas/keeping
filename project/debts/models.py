@@ -156,7 +156,7 @@ class Lent(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
         return str(self.name)
 
 
-class LentReturn(FromDbAccountIdMixin, models.Model):
+class LentReturn(AccountBalanceMixin ,FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
