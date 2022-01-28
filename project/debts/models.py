@@ -54,7 +54,7 @@ class Borrow(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
         return str(self.name)
 
 
-class BorrowReturn(FromDbAccountIdMixin, models.Model):
+class BorrowReturn(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,

@@ -15,6 +15,7 @@ class AccountBalanceMixin():
         'Lent': {'incomes': 'account'},
         'LentReturn': {'expenses': 'account'},
         'Borrow': {'expenses': 'account'},
+        'BorrowReturn': {'incomes': 'account'},
         'Transaction': {
             'incomes': 'to_account',
             'expenses': 'from_account'},

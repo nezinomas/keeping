@@ -4,7 +4,9 @@ from decimal import Decimal
 import pytest
 from mock import patch
 
+from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
+from ...incomes.factories import IncomeFactory
 from ..factories import BorrowFactory, BorrowReturnFactory
 from ..models import Borrow, BorrowReturn
 
@@ -78,7 +80,12 @@ def test_borrow_return_summary(borrow_return_fixture):
         'borrow_return_now': Decimal('1.6'),
     }]
 
-    actual = list(BorrowReturn.objects.summary(1999).order_by('account__title'))
+    actual = list(
+        BorrowReturn
+        .objects
+        .summary(1999)
+        .order_by('account__title')
+    )
 
     assert expect == actual
 
@@ -186,8 +193,9 @@ def test_borrow_return_update_post_save():
     obj = BorrowReturnFactory()
 
     # update object
-    obj.price = 1
-    obj.save()
+    obj_update = BorrowReturn.objects.get(pk=obj.pk)
+    obj_update.price = 1
+    obj_update.save()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -199,18 +207,44 @@ def test_borrow_return_update_post_save():
     assert actual['balance'] == -99.0
 
 
+def test_borrow_return_post_save_first_record():
+    a = AccountFactory()
+    l = BorrowFactory(price=2)
+
+    IncomeFactory(date=dt(1998, 1, 1), price=5)
+
+    # truncate AccountBalance table
+    AccountBalance.objects.all().delete()
+
+    BorrowReturn.objects.create(date=dt(1999, 1, 1), account=a, borrow=l, price=1)
+
+    actual = AccountBalance.objects.items()
+    assert actual.count() == 1
+    actual = AccountBalance.objects.last()
+
+    assert actual.past == 5.0
+    assert actual.incomes == 1.0
+    assert actual.expenses == 2.0
+    assert actual.balance == 4.0
+    assert actual.delta == -4.0
+
+
 def test_borrow_return_post_delete():
     obj = BorrowReturnFactory()
-    obj.delete()
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalance.objects.last()
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 5.0
+    assert actual.expenses == 100.0
+    assert actual.balance == -95.0
 
-    actual = actual[0]
+    BorrowReturn.objects.get(pk=obj.pk).delete()
 
-    assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 0.0
-    assert actual['expenses'] == 100.0
-    assert actual['balance'] == -100.0
+    actual = AccountBalance.objects.last()
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 100.0
+    assert actual.balance == -100.0
 
 
 def test_borrow_return_post_delete_with_updt():
@@ -218,18 +252,20 @@ def test_borrow_return_post_delete_with_updt():
     BorrowReturnFactory(borrow=b, price=1)
 
     obj = BorrowReturnFactory(borrow=b)
-    obj.delete()
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalance.objects.last()
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 6.0
+    assert actual.expenses == 100.0
+    assert actual.balance == -94.0
 
-    actual = actual[0]
+    BorrowReturn.objects.get(pk=obj.pk).delete()
 
-    assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 1.0
-    assert actual['expenses'] == 100.0
-    assert actual['balance'] == -99.0
-
-    assert Borrow.objects.all().count() == 1
+    actual = AccountBalance.objects.last()
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 1.0
+    assert actual.expenses == 100.0
+    assert actual.balance == -99.0
 
 
 def test_borrow_return_sum_all_months():

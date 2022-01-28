@@ -5,7 +5,6 @@ from django.dispatch import receiver
 
 from ..accounts.models import Account
 from ..bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
-from ..debts.models import BorrowReturn
 from ..pensions.models import Pension, PensionType
 from ..savings.models import Saving, SavingType
 from ..transactions.models import SavingChange, SavingClose
@@ -21,8 +20,6 @@ from .signals_base import SignalBase
 @receiver(post_save, sender=SavingClose)
 @receiver(post_delete, sender=SavingClose)
 @receiver(post_save, sender=AccountWorth)
-@receiver(post_save, sender=BorrowReturn)
-@receiver(post_delete, sender=BorrowReturn)
 def accounts_post_signal(sender: object,
                          instance: object,
                          year: int = None,
