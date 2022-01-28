@@ -219,6 +219,7 @@ tr.top-text, tr.top-text th {
 }
 
 .table-hover tbody tr:hover,
+.table-hover tbody tr:hover td,
 .table-hover tbody tr._weekend_row:hover td,
 .table-hover tbody tr._current_day:hover td {
     --bs-table-accent-bg: #f9f6cf!important;
