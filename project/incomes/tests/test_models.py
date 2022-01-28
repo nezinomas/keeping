@@ -193,9 +193,6 @@ def test_income_new_post_save():
 
 
 def test_income_update_post_save():
-    a = AccountFactory()
-    i = IncomeTypeFactory()
-
     obj = IncomeFactory(price=5)
 
     # update price
