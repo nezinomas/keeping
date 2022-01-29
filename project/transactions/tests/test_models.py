@@ -241,6 +241,158 @@ def test_transaction_post_save_new():
     assert actual.delta == 0.0
 
 
+def test_transaction_post_save_update_with_nothing_changed():
+    a_from = AccountFactory(title='From')
+    a_to = AccountFactory(title='To')
+
+    obj = TransactionFactory(from_account=a_from, to_account=a_to, price=5)
+
+    obj_update = Transaction.objects.get(pk=obj.pk)
+    obj_update.save()
+
+    actual = AccountBalance.objects.get(account_id=a_to.pk)
+    assert actual.account.title == 'To'
+    assert actual.incomes == 5.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 5.0
+
+
+    actual = AccountBalance.objects.get(account_id=a_from.pk)
+    assert actual.account.title == 'From'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 5.0
+    assert actual.balance == -5.0
+
+
+
+def test_transaction_post_save_change_from_account():
+    a_from = AccountFactory(title='From')
+    a_from_new = AccountFactory(title='From-New')
+    a_to = AccountFactory(title='To')
+
+    obj = TransactionFactory(from_account=a_from, to_account=a_to, price=5)
+    actual = AccountBalance.objects.get(account_id=a_from.pk)
+    assert actual.account.title == 'From'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 5.0
+    assert actual.balance == -5.0
+
+    obj_update = Transaction.objects.get(pk=obj.pk)
+    obj_update.from_account = a_from_new
+    obj_update.save()
+
+    actual = AccountBalance.objects.get(account_id=a_to.pk)
+    assert actual.account.title == 'To'
+    assert actual.incomes == 5.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 5.0
+
+    actual = AccountBalance.objects.get(account_id=a_from.pk)
+    assert actual.account.title == 'From'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 0.0
+
+    actual = AccountBalance.objects.get(account_id=a_from_new.pk)
+    assert actual.account.title == 'From-New'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 5.0
+    assert actual.balance == -5.0
+
+
+def test_transaction_post_save_change_to_account():
+    a_from = AccountFactory(title='From')
+    a_to = AccountFactory(title='To')
+    a_to_new = AccountFactory(title='To-New')
+
+    obj = TransactionFactory(from_account=a_from, to_account=a_to, price=5)
+
+    actual = AccountBalance.objects.get(account_id=a_to.pk)
+    assert actual.account.title == 'To'
+    assert actual.incomes == 5.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 5.0
+
+    obj_update = Transaction.objects.get(pk=obj.pk)
+    obj_update.to_account = a_to_new
+    obj_update.save()
+
+    actual = AccountBalance.objects.get(account_id=a_to.pk)
+    assert actual.account.title == 'To'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 0.0
+
+    actual = AccountBalance.objects.get(account_id=a_to_new.pk)
+    assert actual.account.title == 'To-New'
+    assert actual.incomes == 5.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 5.0
+
+    actual = AccountBalance.objects.get(account_id=a_from.pk)
+    assert actual.account.title == 'From'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 5.0
+    assert actual.balance == -5.0
+
+
+def test_transaction_post_save_change_from_and_to_account():
+    a_from = AccountFactory(title='From')
+    a_from_new = AccountFactory(title='From-New')
+    a_to = AccountFactory(title='To')
+    a_to_new = AccountFactory(title='To-New')
+
+    obj = TransactionFactory(from_account=a_from, to_account=a_to, price=5)
+
+    # from_account
+    actual = AccountBalance.objects.get(account_id=a_from.pk)
+    assert actual.account.title == 'From'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 5.0
+    assert actual.balance == -5.0
+
+    # to_account
+    actual = AccountBalance.objects.get(account_id=a_to.pk)
+    assert actual.account.title == 'To'
+    assert actual.incomes == 5.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 5.0
+
+    # update from and to
+    obj_update = Transaction.objects.get(pk=obj.pk)
+    obj_update.to_account = a_to_new
+    obj_update.from_account = a_from_new
+    obj_update.save()
+
+    # to_account old
+    actual = AccountBalance.objects.get(account_id=a_to.pk)
+    assert actual.account.title == 'To'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 0.0
+
+    # to_account new
+    actual = AccountBalance.objects.get(account_id=a_to_new.pk)
+    assert actual.account.title == 'To-New'
+    assert actual.incomes == 5.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 5.0
+
+    # from_account old
+    actual = AccountBalance.objects.get(account_id=a_from.pk)
+    assert actual.account.title == 'From'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 0.0
+
+    # from_account new
+    actual = AccountBalance.objects.get(account_id=a_from_new.pk)
+    assert actual.account.title == 'From-New'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 5.0
+    assert actual.balance == -5.0
+
+
 def test_transaction_post_delete():
     obj = TransactionFactory()
 
