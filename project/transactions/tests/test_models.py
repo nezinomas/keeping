@@ -264,7 +264,6 @@ def test_transaction_post_save_update_with_nothing_changed():
     assert actual.balance == -5.0
 
 
-
 def test_transaction_post_save_change_from_account():
     a_from = AccountFactory(title='From')
     a_from_new = AccountFactory(title='From-New')
