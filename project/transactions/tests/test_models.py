@@ -9,7 +9,6 @@ from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from ...savings.factories import SavingTypeFactory
 from ...savings.models import SavingBalance
-from ...users.factories import UserFactory
 from ..factories import (SavingChangeFactory, SavingCloseFactory,
                          TransactionFactory)
 from ..models import SavingChange, SavingClose, Transaction
