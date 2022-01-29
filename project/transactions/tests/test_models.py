@@ -242,8 +242,9 @@ def test_transaction_post_save_new():
 
 
 def test_transaction_post_delete():
-    u = TransactionFactory()
-    u.delete()
+    obj = TransactionFactory()
+
+    Transaction.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.items()
 
@@ -267,8 +268,8 @@ def test_transaction_post_delete():
 def test_transaction_post_delete_with_update():
     TransactionFactory(price=10)
 
-    u = TransactionFactory()
-    u.delete()
+    obj = TransactionFactory()
+    Transaction.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.items()
 

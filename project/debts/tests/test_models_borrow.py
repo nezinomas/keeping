@@ -176,9 +176,59 @@ def test_borrow_post_save_first_record():
     assert actual['balance'] == 4.0
 
 
+def test_borrow_post_save_update_with_nothing_changed():
+    obj = BorrowFactory(price=5)
+
+    # update price
+    obj_update = Borrow.objects.get(pk=obj.pk)
+    obj_update.save()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 5.0
+    assert actual['balance'] == -5.0
+
+
+def test_borrow_post_save_change_account():
+    account_old = AccountFactory()
+    account_new = AccountFactory(title='XXX')
+
+    obj = BorrowFactory(price=5, account=account_old)
+
+    actual = AccountBalance.objects.get(account_id=account_old.pk)
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 5.0
+    assert actual.balance == -5.0
+
+    # update price
+    obj_new = Borrow.objects.get(account_id=obj.pk)
+    obj_new.account = account_new
+    obj_new.save()
+
+    actual = AccountBalance.objects.get(account_id=account_old.pk)
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 0.0
+
+    actual = AccountBalance.objects.get(account_id=account_new.pk)
+    assert actual.account.title == 'XXX'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 5.0
+    assert actual.balance == -5.0
+
+
 def test_borrow_post_delete():
     obj = BorrowFactory()
-    obj.delete()
+
+    Borrow.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -193,7 +243,7 @@ def test_borrow_post_delete_with_updt():
     BorrowFactory(price=1)
 
     obj = BorrowFactory()
-    obj.delete()
+    Borrow.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.year(1999)
 

@@ -211,9 +211,54 @@ def test_income_update_post_save():
     assert actual['balance'] == 1.0
 
 
+def test_income_post_save_update_with_nothing_changed():
+    obj = IncomeFactory(price=5)
+
+    # update price
+    obj_update = Income.objects.get(pk=obj.pk)
+    obj_update.save()
+
+    actual = AccountBalance.objects.year(1999)
+
+    assert actual.count() == 1
+
+    actual = actual[0]
+
+    assert actual['title'] == 'Account1'
+    assert actual['incomes'] == 5.0
+    assert actual['balance'] == 5.0
+
+
+def test_income_post_save_change_account():
+    account_old = AccountFactory()
+    account_new = AccountFactory(title='XXX')
+
+    obj = IncomeFactory(price=5, account=account_old)
+
+    actual = AccountBalance.objects.get(account_id=account_old.pk)
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 5.0
+    assert actual.balance == 5.0
+
+    # update price
+    obj_new = Income.objects.get(account_id=obj.pk)
+    obj_new.account = account_new
+    obj_new.save()
+
+    actual = AccountBalance.objects.get(account_id=account_old.pk)
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 0.0
+    assert actual.balance == 0.0
+
+    actual = AccountBalance.objects.get(account_id=account_new.pk)
+    assert actual.account.title == 'XXX'
+    assert actual.incomes == 5.0
+    assert actual.balance == 5.0
+
+
 def test_income_post_delete():
     obj = IncomeFactory()
-    obj.delete()
+    Income.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -235,7 +280,7 @@ def test_income_post_delete_with_update():
     assert actual.incomes == 6.0
     assert actual.balance == 6.0
 
-    obj.delete()
+    Income.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.last()
     assert actual.account.title == 'Account1'
@@ -249,7 +294,7 @@ def test_income_post_save_update_account_balance_count_qs(django_assert_max_num_
     a = AccountFactory()
     t = IncomeTypeFactory()
 
-    with django_assert_max_num_queries(4):
+    with django_assert_max_num_queries(5):
         Income.objects.create(
             date = date(1999, 1, 1),
             price = Decimal('2'),
@@ -273,24 +318,15 @@ def test_income_post_save_new_account_balance_count_qs(django_assert_max_num_que
 
 
 def test_income_update_post_save_count_qs(django_assert_max_num_queries):
-    a = AccountFactory()
-    t = IncomeTypeFactory()
+    obj = IncomeFactory(date=date(1999, 1, 1), price=2)
 
-    obj = Income.objects.create(
-        date=date(1999, 1, 1),
-        price=Decimal('2'),
-        account=a,
-        income_type=t
-    )
-    print(f'1{AccountBalance.objects.values()}')
     assert AccountBalance.objects.all().count() == 1
 
     obj_update = Income.objects.get(pk=obj.pk)
-    with django_assert_max_num_queries(5):
+    with django_assert_max_num_queries(6):
         obj_update.price = Decimal('6')
         obj_update.save()
 
-    print(f'2{AccountBalance.objects.values()}')
     assert AccountBalance.objects.all().count() == 1
     assert AccountBalance.objects.last().incomes == Decimal('6')
     assert AccountBalance.objects.last().balance == Decimal('6')
@@ -348,18 +384,8 @@ def test_income_post_save_update_balance_row():
 
 
 def test_income_post_delete_new_signal():
-    a = AccountFactory()
-    i = IncomeTypeFactory()
-
-    # past data
     IncomeFactory(date=date(1974, 1, 1), price=5)
-
-    obj = Income.objects.create(
-        date=date(1999, 1, 1),
-        price=1,
-        account=a,
-        income_type=i
-    )
+    obj = IncomeFactory(date=date(1999, 1, 1), price=1)
 
     # check before delete
     actual = AccountBalance.objects.all()
@@ -370,10 +396,10 @@ def test_income_post_delete_new_signal():
     assert actual[0].expenses == Decimal('0')
     assert actual[0].balance == Decimal('6')
     assert actual[0].delta == Decimal('-6')
-    assert actual[0].account_id == a.pk
+    assert actual[0].account_id == obj.account.pk
 
     # delete Income object
-    obj.delete()
+    Income.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.all()
 
@@ -383,22 +409,12 @@ def test_income_post_delete_new_signal():
     assert actual[0].expenses == Decimal('0')
     assert actual[0].balance == Decimal('5')
     assert actual[0].delta == Decimal('-5')
-    assert actual[0].account_id == a.pk
+    assert actual[0].account_id == obj.account.pk
 
 
 def test_income_post_delete_empty_account_balance_table():
-    a = AccountFactory()
-    i = IncomeTypeFactory()
-
-    # past data
     IncomeFactory(date=date(1974, 1, 1), price=5)
-
-    obj = Income.objects.create(
-        date=date(1999, 1, 1),
-        price=1,
-        account=a,
-        income_type=i
-    )
+    obj = IncomeFactory(date=date(1999, 1, 1), price=1)
 
     AccountBalance.objects.all().delete()
 
@@ -408,7 +424,7 @@ def test_income_post_delete_empty_account_balance_table():
     assert actual.count() == 0
 
     # delete Income object
-    obj.delete()
+    Income.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.all()
 
@@ -418,7 +434,7 @@ def test_income_post_delete_empty_account_balance_table():
     assert actual[0].expenses == Decimal('0')
     assert actual[0].balance == Decimal('5')
     assert actual[0].delta == Decimal('-5')
-    assert actual[0].account_id == a.pk
+    assert actual[0].account_id == obj.account.pk
 
 
 def test_income_years_sum():
