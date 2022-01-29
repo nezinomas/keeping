@@ -247,8 +247,8 @@ tr.top-text, tr.top-text th {
     --bs-table-accent-bg:rgb(202, 235, 204)!important;
 }
 
-._current_day, tr._current_day > td._weekend_col {
-    background-color:#ffc107!important;
+tr._current_day > td, tr._current_day > td._weekend_col {
+    --bs-table-accent-bg:#ffc107!important;
 }
 
 .table-active {
