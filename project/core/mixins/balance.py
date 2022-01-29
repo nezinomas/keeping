@@ -5,6 +5,13 @@ from ...bookkeeping.lib import helpers as calc
 from ...core.signals_base import SignalBase
 
 
+def _getattr(obj, name, default=None):
+    try:
+        return getattr(obj, name)
+    except AttributeError:
+        return default
+
+
 class AccountBalanceMixin():
     original_price = 0.0
     old_values = {}
@@ -27,20 +34,12 @@ class AccountBalanceMixin():
 
         if self.pk:
             self.original_price = self.price
-            try:
-                self.old_values['account'] = getattr(self, 'account_id')
-            except AttributeError:
-                pass
 
-            try:
-                self.old_values['to_account'] = getattr(self, 'to_account_id')
-            except AttributeError:
-                pass
-
-            try:
-                self.old_values['from_account'] = getattr(self, 'from_account_id')
-            except AttributeError:
-                pass
+            self.old_values.update({
+                'account': _getattr(self, 'account_id', None),
+                'to_account': _getattr(self, 'to_account_id', None),
+                'from_account': _getattr(self, 'from_account_id', None),
+            })
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
