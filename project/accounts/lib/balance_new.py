@@ -11,6 +11,19 @@ class BalanceNew(BalanceBase):
     _columns = ['past', 'incomes', 'expenses', 'balance', 'have', 'delta']
 
     def __init__(self, year=None, data=None):
+        """
+        Args:
+            year (int, optional):  Defaults to None.
+            data (List[Dict]], optional): Defaults to None.
+
+            data format:
+            [{'id': int, 'year': int, 'field_name': Decimal}]
+
+            id == account_id
+
+            field_name == incomes/expenses/have
+        """
+
         self._balance = DF()
         self._year = year
 
