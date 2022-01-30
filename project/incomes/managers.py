@@ -90,6 +90,17 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             )
         )
 
+    def summary_new(self):
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'account__title')
+            .annotate(incomes=Sum('price'))
+            .values('year', 'incomes', id=F('account__pk'))
+            .order_by('year', 'account')
+        )
+
     def sum_by_month_and_type(self, year):
         return (
             self

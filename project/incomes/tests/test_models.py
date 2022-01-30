@@ -123,6 +123,7 @@ def test_incomes_income_sum_query_count(django_assert_max_num_queries):
         qs = Income.objects.sum_by_month(1999)
         list([x['date'] for x in qs])
 
+
 def test_summary(incomes):
     expect = [{
         'id': 1,
@@ -140,6 +141,15 @@ def test_summary(incomes):
     actual = list(Income.objects.summary(1999).order_by('account__title'))
 
     assert expect == actual
+
+
+def test_summary_new(incomes):
+    qs = Income.objects.summary_new()
+
+    assert qs[0] == {'year': 1970, 'incomes': Decimal('5.25'), 'id': 1}
+    assert qs[1] == {'year': 1970, 'incomes': Decimal('4.5'), 'id': 2}
+    assert qs[2] == {'year': 1999, 'incomes': Decimal('3.25'), 'id': 1}
+    assert qs[3] == {'year': 1999, 'incomes': Decimal('3.5'), 'id': 2}
 
 
 def test_income_month_type_sum():
