@@ -143,8 +143,8 @@ def test_summary(incomes):
     assert expect == actual
 
 
-def test_summary_new(incomes):
-    qs = Income.objects.summary_new()
+def test_balance(incomes):
+    qs = Income.objects.balance()
 
     assert qs[0] == {'year': 1970, 'incomes': Decimal('5.25'), 'id': 1}
     assert qs[1] == {'year': 1970, 'incomes': Decimal('4.5'), 'id': 2}

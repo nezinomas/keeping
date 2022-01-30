@@ -90,7 +90,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             )
         )
 
-    def summary_new(self):
+    def balance(self):
         return (
             self
             .related()
