@@ -3,8 +3,8 @@ from typing import Dict, List
 from django.db.models import Q
 
 from ..accounts.lib.balance import Balance as AccountStats
-from ..accounts.models import Account, AccountBalance
-from ..bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
+from ..accounts import models as account_models
+from ..bookkeeping import models as worth_models
 from ..pensions.models import PensionBalance, PensionType
 from ..savings.lib.balance import Balance as SavingStats
 from ..savings.models import SavingBalance, SavingType
@@ -44,9 +44,9 @@ class SignalBase():
                  all_id: List[int] = None):
 
         cls.field = 'account_id'
-        cls.model_types = Account
-        cls.model_balance = AccountBalance
-        cls.model_worth = AccountWorth
+        cls.model_types = account_models.Account
+        cls.model_balance = account_models.AccountBalance
+        cls.model_worth = worth_models.AccountWorth
         cls.class_stats = AccountStats
         cls.summary_models = AccountsBalanceModels
         cls.sender = sender
@@ -64,7 +64,7 @@ class SignalBase():
         cls.field = 'saving_type_id'
         cls.model_types = SavingType
         cls.model_balance = SavingBalance
-        cls.model_worth = SavingWorth
+        cls.model_worth = worth_models.SavingWorth
         cls.class_stats = SavingStats
         cls.summary_models = SavingsBalanceModels
         cls.sender = sender
@@ -82,7 +82,7 @@ class SignalBase():
         cls.field = 'pension_type_id'
         cls.model_types = PensionType
         cls.model_balance = PensionBalance
-        cls.model_worth = PensionWorth
+        cls.model_worth = worth_models.PensionWorth
         cls.class_stats = SavingStats  # using same savings Balance class
         cls.summary_models = PensionsBalanceModels
         cls.sender = sender
