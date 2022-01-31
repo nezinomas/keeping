@@ -218,11 +218,16 @@ tr.top-text, tr.top-text th {
     color: #b7b7b6!important;
 }
 
-.table-hover tbody tr:hover,
-.table-hover tbody tr:hover td,
-.table-hover tbody tr._weekend_row:hover td,
-.table-hover tbody tr._current_day:hover td {
+tr:hover td,
+tr._weekend_row:hover td,
+tr._current_day:hover td {
     --bs-table-accent-bg: #f9f6cf!important;
+}
+
+tr.tr_expand_day_expenses:hover,
+tr.tr_expand_day_expenses:hover td
+ {
+    --bs-table-accent-bg: transparent!important;
 }
 
 .stats .no-left-border {
