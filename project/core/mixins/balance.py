@@ -27,6 +27,7 @@ class AccountBalanceMixin():
         'Transaction': {
             'incomes': 'to_account',
             'expenses': 'from_account'},
+        'AccountWorth': {'have': 'account'}
     }
 
     def __init__(self, *args, **kwargs):

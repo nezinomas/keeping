@@ -65,11 +65,16 @@ def test_account_worth_queries(accounts_worth,
 
 
 def test_account_worth_post_save():
-    AccountWorthFactory()
+    AccountWorthFactory(date=dt(1999, 1, 1))
 
     actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
+    assert actual[0]['incomes'] == 0.0
+    assert actual[0]['expenses'] == 0.0
+    assert actual[0]['balance'] == 0.0
+    assert actual[0]['have'] == 0.5
+    assert actual[0]['delta'] == 0.5
 
 
 # ---------------------------------------------------------------------------------------
