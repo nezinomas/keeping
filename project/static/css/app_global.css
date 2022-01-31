@@ -126,9 +126,9 @@ table.stats tfoot {
 }
 
 table.stats td, table.stats th {
-    border-width: 1px!important;
+    border-width: 0.5px!important;
     border-style: solid!important;
-    border-color: #b4b4b3!important;
+    border-color: #cacac9!important;
     border-collapse: collapse!important;
     vertical-align: middle!important;
     padding-top: .09rem!important;
