@@ -82,7 +82,7 @@ def test_index_account_worth(client_logged):
     actual = response.context['accounts']
     assert 'data-bs-title="1999 m. vasario 2 d., 00:00"' in actual
     assert '555,0' in actual
-    assert 0
+
 
 def test_index_account_worth_then_last_check_empty(client_logged):
     AccountBalanceFactory()
