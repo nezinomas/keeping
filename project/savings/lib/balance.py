@@ -92,6 +92,8 @@ class Balance(BalanceBase):
             + df['past_amount']
             + df['s_now']
             + df['s_change_to_now']
+            - df['s_change_from_now']
+            - df['s_close_from_now']
         )
 
         df['fees'] = (
@@ -106,8 +108,6 @@ class Balance(BalanceBase):
             0.0
             + df['incomes']
             - df['fees']
-            - df['s_close_from_now']
-            - df['s_change_from_now']
         )
 
         # invested sum cannot be negative
