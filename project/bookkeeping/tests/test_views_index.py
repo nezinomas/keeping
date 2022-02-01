@@ -5,7 +5,7 @@ import pytz
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
-from ...accounts.factories import AccountBalanceFactory
+from ...accounts.factories import AccountBalanceFactory, AccountBalance
 from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...pensions.factories import PensionFactory
 from .. import views
@@ -72,7 +72,6 @@ def test_no_incomes_no_data(client_logged):
     assert round(response.context['save_sum'], 2) == 0
 
 
-@freeze_time('1999-1-1')
 def test_index_account_worth(client_logged):
     AccountWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
     AccountWorthFactory(date=datetime(1999, 2, 2, tzinfo=pytz.utc), price=555)
@@ -83,7 +82,7 @@ def test_index_account_worth(client_logged):
     actual = response.context['accounts']
     assert 'data-bs-title="1999 m. vasario 2 d., 00:00"' in actual
     assert '555,0' in actual
-
+    assert 0
 
 def test_index_account_worth_then_last_check_empty(client_logged):
     AccountBalanceFactory()
