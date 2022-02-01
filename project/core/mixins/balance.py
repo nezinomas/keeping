@@ -93,7 +93,7 @@ class AccountBalanceMixin():
             )
 
         except AccountBalance.DoesNotExist as e:
-            SignalBase.accounts(sender=type(self), instance=None)
+            SignalBase.accounts(sender=type(self), instance=None, year=_year)
             raise e
 
         _balance_tbl_field_value = getattr(_qs, balance_tbl_field_name)

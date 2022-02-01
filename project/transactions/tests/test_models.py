@@ -2,6 +2,9 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
+
+from project.journals.factories import JournalFactory
 
 from ...accounts.factories import AccountBalance, AccountFactory
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
@@ -207,23 +210,26 @@ def test_transaction_post_save_first_record():
     assert actual.delta == 0.0
 
 
-def test_transaction_post_save_new():
+def test_transaction_post_save_new(get_user):
+    # ToDo: after refactore signals, remove get_user
+    get_user.year = 1998
+
     a_from = AccountFactory(title='From')
     a_to = AccountFactory(title='To')
 
     # past records
-    IncomeFactory(account=a_from, date=date(1998, 1, 1), price=6)
-    ExpenseFactory(account=a_from, date=date(1998, 1, 1), price=5)
+    IncomeFactory(date=date(1998, 1, 1), account=a_from, price=6)
+    ExpenseFactory(date=date(1998, 1, 1), account=a_from, price=5)
 
-    IncomeFactory(account=a_to, date=date(1998, 1, 1), price=5)
-    ExpenseFactory(account=a_to, date=date(1998, 1, 1), price=3)
+    IncomeFactory(date=date(1998, 1, 1), account=a_to, price=5)
+    ExpenseFactory(date=date(1998, 1, 1), account=a_to, price=3)
 
     TransactionFactory(date=date(1999, 1, 1),
                        from_account=a_from,
                        to_account=a_to,
                        price=1)
 
-    actual = AccountBalance.objects.get(account_id=a_to.pk)
+    actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
     assert actual.account.title == 'To'
     assert actual.past == 2.0
     assert actual.incomes == 1.0
@@ -231,7 +237,7 @@ def test_transaction_post_save_new():
     assert actual.balance == 3.0
     assert actual.delta == -3.0
 
-    actual = AccountBalance.objects.get(account_id=a_from.pk)
+    actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
     assert actual.account.title == 'From'
     assert actual.past == 1.0
     assert actual.incomes == 0.0
