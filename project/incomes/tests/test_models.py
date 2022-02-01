@@ -304,13 +304,16 @@ def test_income_post_save_update_account_balance_count_qs(django_assert_max_num_
     a = AccountFactory()
     t = IncomeTypeFactory()
 
-    with django_assert_max_num_queries(5):
+    IncomeFactory()
+
+    with django_assert_max_num_queries(4):
         Income.objects.create(
             date = date(1999, 1, 1),
             price = Decimal('2'),
             account = a,
             income_type = t
         )
+
 
 def test_income_post_save_new_account_balance_count_qs(django_assert_max_num_queries):
     a = AccountFactory()
