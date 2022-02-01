@@ -1,13 +1,10 @@
 from typing import Dict, List
 
+from django.apps import apps
 from django.db.models import Q
 
 from ..accounts.lib.balance import Balance as AccountStats
-from ..accounts import models as account_models
-from ..bookkeeping import models as worth_models
-from ..pensions.models import PensionBalance, PensionType
 from ..savings.lib.balance import Balance as SavingStats
-from ..savings.models import SavingBalance, SavingType
 from ..transactions.models_hooks import transaction_accouts_hooks
 from .lib import utils
 from .lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
@@ -44,9 +41,9 @@ class SignalBase():
                  all_id: List[int] = None):
 
         cls.field = 'account_id'
-        cls.model_types = account_models.Account
-        cls.model_balance = account_models.AccountBalance
-        cls.model_worth = worth_models.AccountWorth
+        cls.model_types = apps.get_model('accounts.Account')
+        cls.model_balance = apps.get_model('accounts.AccountBalance')
+        cls.model_worth = apps.get_model('bookkeeping.AccountWorth')
         cls.class_stats = AccountStats
         cls.summary_models = AccountsBalanceModels
         cls.sender = sender
@@ -62,9 +59,9 @@ class SignalBase():
                 all_id: List[int] = None):
 
         cls.field = 'saving_type_id'
-        cls.model_types = SavingType
-        cls.model_balance = SavingBalance
-        cls.model_worth = worth_models.SavingWorth
+        cls.model_types = apps.get_model('savings.SavingType')
+        cls.model_balance = apps.get_model('savings.SavingBalance')
+        cls.model_worth = apps.get_model('bookkeeping.SavingWorth')
         cls.class_stats = SavingStats
         cls.summary_models = SavingsBalanceModels
         cls.sender = sender
@@ -80,9 +77,9 @@ class SignalBase():
                  all_id: List[int] = None):
 
         cls.field = 'pension_type_id'
-        cls.model_types = PensionType
-        cls.model_balance = PensionBalance
-        cls.model_worth = worth_models.PensionWorth
+        cls.model_types = apps.get_model('pensions.PensionType')
+        cls.model_balance = apps.get_model('pensions.PensionBalance')
+        cls.model_worth = apps.get_model('bookkeeping.PensionWorth')
         cls.class_stats = SavingStats  # using same savings Balance class
         cls.summary_models = PensionsBalanceModels
         cls.sender = sender
@@ -94,6 +91,7 @@ class SignalBase():
         arr = list(self.all_id)
 
         stats = self._get_stats()
+
         if stats:
             for row in stats:
                 # get id
