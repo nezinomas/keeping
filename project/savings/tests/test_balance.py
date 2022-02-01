@@ -3,7 +3,6 @@ from decimal import Decimal
 import pandas as pd
 import pytest
 
-from ...core.tests.utils import equal_list_of_dictionaries as my_assert
 from ..lib.balance import Balance as T
 
 
@@ -106,116 +105,101 @@ def test_none_savings_stats_total_row():
 
 
 def test_saving_only(_savings):
-    expect = [{
-        'id': 1,
-        'title': 'Saving1',
-        'past_amount': -1.25,
-        'past_fee': 0.4,
-        'incomes': 2.25,
-        'fees': 0.95,
-        'invested': 0.0,
-        'market_value': 0.0,
-    }, {
-        'id': 2,
-        'title': 'Saving2',
-        'past_amount': 2.5,
-        'past_fee': 0.0,
-        'incomes': 6.0,
-        'fees': 0.25,
-        'invested': 5.75,
-        'market_value': 0.0,
-    }]
-
     actual = T(_savings, []).balance
 
-    my_assert(expect, actual)
+    assert actual[0]['id'] == 1
+    assert actual[0]['title'] == 'Saving1'
+    assert actual[0]['past_amount'] == -1.25
+    assert actual[0]['past_fee'] == 0.4
+    assert actual[0]['incomes'] == 0.75
+    assert round(actual[0]['fees'], 2) == 0.95
+    assert actual[0]['invested'] == 0.0
+    assert actual[0]['market_value'] == 0.0
+
+    assert actual[1]['id'] == 2
+    assert actual[1]['title'] == 'Saving2'
+    assert actual[1]['past_amount'] == 2.5
+    assert actual[1]['past_fee'] == 0.0
+    assert actual[1]['incomes'] == 6.0
+    assert actual[1]['fees'] == 0.25
+    assert actual[1]['invested'] == 5.75
+    assert actual[1]['market_value'] == 0.0
 
 
 def test_saving_when_worth_filled_partially(_savings):
-    expect = [{
-        'id': 1,
-        'title': 'Saving1',
-        'past_amount': -1.25,
-        'past_fee': 0.4,
-        'incomes': 2.25,
-        'fees': 0.95,
-        'invested': 0.0,
-        'market_value': 0.0,
-        'profit_incomes_proc': 0.0,
-        'profit_incomes_sum': 0.0,
-        'profit_invested_proc': 0.0,
-        'profit_invested_sum': 0.0,
-    }, {
-        'id': 2,
-        'title': 'Saving2',
-        'past_amount': 2.5,
-        'past_fee': 0.0,
-        'incomes': 6.0,
-        'fees': 0.25,
-        'invested': 5.75,
-        'market_value': 0.0,
-        'profit_incomes_proc': 0.0,
-        'profit_incomes_sum': 0.0,
-        'profit_invested_proc': 0.0,
-        'profit_invested_sum': 0.0,
-    }]
     worth = [{'title': 'Saving1', 'have': Decimal(0)}]
 
     actual = T(_savings, worth).balance
 
-    my_assert(expect, actual)
+    assert actual[0]['id'] == 1
+    assert actual[0]['title'] == 'Saving1'
+    assert actual[0]['past_amount'] == -1.25
+    assert actual[0]['past_fee'] == 0.4
+    assert actual[0]['incomes'] == 0.75
+    assert round(actual[0]['fees'], 2) == 0.95
+    assert actual[0]['invested'] == 0.0
+    assert actual[0]['market_value'] == 0.0
+    assert actual[0]['profit_incomes_proc'] == 0.0
+    assert actual[0]['profit_incomes_sum'] == 0.0
+    assert actual[0]['profit_invested_proc'] == 0.0
+    assert actual[0]['profit_invested_sum'] == 0.0
+
+    assert actual[1]['id'] == 2
+    assert actual[1]['title'] == 'Saving2'
+    assert actual[1]['past_amount'] == 2.5
+    assert actual[1]['past_fee'] == 0.0
+    assert actual[1]['incomes'] == 6.0
+    assert actual[1]['fees'] == 0.25
+    assert actual[1]['invested'] == 5.75
+    assert actual[1]['market_value'] == 0.0
+    assert actual[1]['profit_incomes_proc'] == 0.0
+    assert actual[1]['profit_incomes_sum'] == 0.0
+    assert actual[1]['profit_invested_proc'] == 0.0
+    assert actual[1]['profit_invested_sum'] == 0.0
 
 
 def test_savings_worth(_savings, _savings_worth):
-    expect = [{
-        'id': 1,
-        'title': 'Saving1',
-        'incomes': 2.25,
-        'invested': 0.0,
-        'market_value': 0.15,
-        'profit_incomes_proc': -93.33,
-        'profit_incomes_sum': -2.1,
-        'profit_invested_proc': 0.0,
-        'profit_invested_sum': 0.15,
-    }, {
-        'id': 2,
-        'title': 'Saving2',
-        'incomes': 6.0,
-        'invested': 5.75,
-        'market_value': 6.15,
-        'profit_incomes_proc': 2.5,
-        'profit_incomes_sum': 0.15,
-        'profit_invested_proc': 6.96,
-        'profit_invested_sum': 0.4,
-    }]
-
     actual = T(_savings, _savings_worth).balance
 
-    my_assert(expect, actual)
+    assert actual[0]['id'] == 1
+    assert actual[0]['title'] == 'Saving1'
+    assert actual[0]['incomes'] == 0.75
+    assert actual[0]['invested'] == 0.0
+    assert actual[0]['market_value'] == 0.15
+    assert actual[0]['profit_incomes_proc'] == -80.0
+    assert actual[0]['profit_incomes_sum'] == -0.6
+    assert actual[0]['profit_invested_proc'] == 0.0
+    assert actual[0]['profit_invested_sum'] == 0.15
+
+    assert actual[1]['id'] == 2
+    assert actual[1]['title'] == 'Saving2'
+    assert actual[1]['incomes'] == 6.0
+    assert actual[1]['invested'] == 5.75
+    assert actual[1]['market_value'] == 6.15
+    assert actual[1]['profit_incomes_proc'] == 2.5
+    assert round(actual[1]['profit_incomes_sum'], 2) == 0.15
+    assert round(actual[1]['profit_invested_proc'], 2) == 6.96
+    assert round(actual[1]['profit_invested_sum'], 2) == 0.4
 
 
 def test_saving_stats_worth_empty(_savings):
-    expect = [{
-        'id': 1,
-        'title': 'Saving1',
-        'market_value': 0.0,
-        'profit_incomes_proc': 0.0,
-        'profit_incomes_sum': 0.0,
-        'profit_invested_proc': 0.0,
-        'profit_invested_sum': 0.0,
-    }, {
-        'id': 2,
-        'title': 'Saving2',
-        'market_value': 0.0,
-        'profit_incomes_proc': 0.0,
-        'profit_incomes_sum': 0.0,
-        'profit_invested_proc': 0.0,
-        'profit_invested_sum': 0.0,
-    }]
-
     actual = T(_savings, []).balance
 
-    my_assert(expect, actual)
+    assert actual[0]['id'] == 1
+    assert actual[0]['title'] == 'Saving1'
+    assert actual[0]['market_value'] == 0.0
+    assert actual[0]['profit_incomes_proc'] == 0.0
+    assert actual[0]['profit_incomes_sum'] == 0.0
+    assert actual[0]['profit_invested_proc'] == 0.0
+    assert actual[0]['profit_invested_sum'] == 0.0
+
+    assert actual[1]['id'] == 2
+    assert actual[1]['title'] == 'Saving2'
+    assert actual[1]['market_value'] == 0.0
+    assert actual[1]['profit_incomes_proc'] == 0.0
+    assert actual[1]['profit_incomes_sum'] == 0.0
+    assert actual[1]['profit_invested_proc'] == 0.0
+    assert actual[1]['profit_invested_sum'] == 0.0
 
 
 @pytest.mark.parametrize(
@@ -228,71 +212,58 @@ def test_saving_stats_worth_empty(_savings):
     ]
 )
 def test_saving_stats_worth_invalid_have(worth, _savings):
-    expect = [{
-        'id': 1,
-        'title': 'Saving1',
-        'market_value': 0.0,
-        'profit_incomes_proc': 0.0,
-        'profit_incomes_sum': 0.0,
-        'profit_invested_proc': 0.0,
-        'profit_invested_sum': 0.0,
-    }, {
-        'id': 2,
-        'title': 'Saving2',
-        'market_value': 0.0,
-        'profit_incomes_proc': 0.0,
-        'profit_incomes_sum': 0.0,
-        'profit_invested_proc': 0.0,
-        'profit_invested_sum': 0.0,
-    }]
-
     actual = T(_savings, [worth]).balance
 
-    my_assert(expect, actual)
+    assert actual[0]['id'] == 1
+    assert actual[0]['title'] == 'Saving1'
+    assert actual[0]['market_value'] == 0.0
+    assert actual[0]['profit_incomes_proc'] == 0.0
+    assert actual[0]['profit_incomes_sum'] == 0.0
+    assert actual[0]['profit_invested_proc'] == 0.0
+    assert actual[0]['profit_invested_sum'] == 0.0
+
+    assert actual[1]['id'] == 2
+    assert actual[1]['title'] == 'Saving2'
+    assert actual[1]['market_value'] == 0.0
+    assert actual[1]['profit_incomes_proc'] == 0.0
+    assert actual[1]['profit_incomes_sum'] == 0.0
+    assert actual[1]['profit_invested_proc'] == 0.0
+    assert actual[1]['profit_invested_sum'] == 0.0
 
 
 def test_saving_stats_worth_None(_savings):
-    expect = [{
-        'id': 1,
-        'title': 'Saving1',
-        'market_value': 0.0,
-        'profit_incomes_proc': 0.0,
-        'profit_incomes_sum': 0.0,
-        'profit_invested_proc': 0.0,
-        'profit_invested_sum': 0.0,
-    }, {
-        'id': 2,
-        'title': 'Saving2',
-        'market_value': 0.0,
-        'profit_incomes_proc': 0.0,
-        'profit_incomes_sum': 0.0,
-        'profit_invested_proc': 0.0,
-        'profit_invested_sum': 0.0,
-    }]
-
     actual = T(_savings, None).balance
 
-    my_assert(expect, actual)
+    assert actual[0]['id'] == 1
+    assert actual[0]['title'] == 'Saving1'
+    assert actual[0]['market_value'] == 0.0
+    assert actual[0]['profit_incomes_proc'] == 0.0
+    assert actual[0]['profit_incomes_sum'] == 0.0
+    assert actual[0]['profit_invested_proc'] == 0.0
+    assert actual[0]['profit_invested_sum'] == 0.0
+
+    assert actual[1]['id'] == 2
+    assert actual[1]['title'] == 'Saving2'
+    assert actual[1]['market_value'] == 0.0
+    assert actual[1]['profit_incomes_proc'] == 0.0
+    assert actual[1]['profit_incomes_sum'] == 0.0
+    assert actual[1]['profit_invested_proc'] == 0.0
+    assert actual[1]['profit_invested_sum'] == 0.0
 
 
 def test_saving_total_row(_savings, _savings_worth):
-    expect = {
-        'past_amount': 1.25,
-        'past_fee': 0.4,
-        'incomes': 8.25,
-        'fees': 1.2,
-        'invested': 5.75,
-        'market_value': 6.3,
-        'profit_incomes_proc': -23.64,
-        'profit_incomes_sum': -1.95,
-        'profit_invested_proc': 9.56,
-        'profit_invested_sum': 0.55,
-    }
-
     actual = T(_savings, _savings_worth).total_row
 
-    for k, v in expect.items():
-        assert v == pytest.approx(actual[k], rel=1e-2)
+    assert round(actual['past_amount'], 2) == 1.25
+    assert round(actual['past_fee'], 2) == 0.4
+    assert round(actual['incomes'], 2) == 6.75
+    assert round(actual['fees'], 2) == 1.2
+    assert round(actual['invested'], 2) == 5.75
+    assert round(actual['market_value'], 2) == 6.3
+    assert round(actual['profit_incomes_proc'], 2) == -6.67
+    assert round(actual['profit_incomes_sum'], 2) == -0.45
+    assert round(actual['profit_invested_proc'], 2) == 9.57
+    assert round(actual['profit_invested_sum'], 2) == 0.55
 
 
 def test_savings_total_market(_savings, _savings_worth):
@@ -323,7 +294,7 @@ def test_close_saving_no_profit():
 
     actual = T(_make_df(arr), None).balance[0]
 
-    assert actual['incomes'] == 15.0
+    assert actual['incomes'] == 10.0
     assert actual['fees'] == 42.0
     assert actual['invested'] == 0.0
 
@@ -337,6 +308,6 @@ def test_close_saving_with_profit():
 
     actual = T(_make_df(arr), None).balance[0]
 
-    assert actual['incomes'] == 15.0
+    assert actual['incomes'] == -17.0
     assert actual['fees'] == 2.0
     assert actual['invested'] == 0.0
