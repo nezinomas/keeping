@@ -1,6 +1,7 @@
+from django.apps import apps
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
-from ...accounts.models import AccountBalance
 from ...bookkeeping.lib import helpers as calc
 from ...core.signals_base import SignalBase
 
@@ -27,6 +28,7 @@ class AccountBalanceMixin():
         'Transaction': {
             'incomes': 'to_account',
             'expenses': 'from_account'},
+        'Saving': {'expenses': 'account'},
         'SavingClose': {'incomes': 'to_account'},
         'AccountWorth': {'have': 'account'}
     }
@@ -67,13 +69,13 @@ class AccountBalanceMixin():
                 try:
                     caller = caller if caller else 'delete'
                     self._update_balance_tbl(caller, _balance_tbl_field_name, _account.pk)
-                except AccountBalance.DoesNotExist:
+                except ObjectDoesNotExist:
                     return
             else:
                 try:
                     self._update_balance_tbl('new', _balance_tbl_field_name ,_account.pk)
                     self._update_balance_tbl('delete', _balance_tbl_field_name, _old_account_id)
-                except AccountBalance.DoesNotExist:
+                except ObjectDoesNotExist:
                     return
 
     def _calc_field(self, /, caller, field_value):
@@ -91,12 +93,12 @@ class AccountBalanceMixin():
         _year = self.date.year
         try:
             _qs = (
-                AccountBalance
+                apps.get_model('accounts.AccountBalance')
                 .objects
                 .get(Q(year=_year) & Q(account_id=pk))
             )
 
-        except AccountBalance.DoesNotExist as e:
+        except ObjectDoesNotExist as e:
             SignalBase.accounts(sender=type(self), instance=None, year=_year)
             raise e
 
