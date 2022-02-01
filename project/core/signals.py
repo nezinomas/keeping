@@ -15,8 +15,6 @@ from .signals_base import SignalBase
 #                                                               AccountBalance
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=Account)
-@receiver(post_save, sender=Saving)
-@receiver(post_delete, sender=Saving)
 def accounts_post_signal(sender: object,
                          instance: object,
                          year: int = None,
