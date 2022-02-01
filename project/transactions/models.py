@@ -61,7 +61,7 @@ class Transaction(AccountBalanceMixin, OldValuesMixin, models.Model):
     objects = managers.TransactionQuerySet.as_manager()
 
 
-class SavingClose(OldValuesMixin, models.Model):
+class SavingClose(AccountBalanceMixin, OldValuesMixin, models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         SavingType,

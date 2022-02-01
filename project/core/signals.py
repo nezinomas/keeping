@@ -17,8 +17,6 @@ from .signals_base import SignalBase
 @receiver(post_save, sender=Account)
 @receiver(post_save, sender=Saving)
 @receiver(post_delete, sender=Saving)
-@receiver(post_save, sender=SavingClose)
-@receiver(post_delete, sender=SavingClose)
 def accounts_post_signal(sender: object,
                          instance: object,
                          year: int = None,

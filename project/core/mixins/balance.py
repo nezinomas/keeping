@@ -27,6 +27,7 @@ class AccountBalanceMixin():
         'Transaction': {
             'incomes': 'to_account',
             'expenses': 'from_account'},
+        'SavingClose': {'incomes': 'to_account'},
         'AccountWorth': {'have': 'account'}
     }
 
@@ -54,6 +55,9 @@ class AccountBalanceMixin():
 
     def update_accountbalance_table(self, caller: str = None):
         _hook = self.hooks.get(type(self).__name__)
+
+        if not _hook:
+            return
 
         for _balance_tbl_field_name, _account_name in _hook.items():
             _account = getattr(self, _account_name)

@@ -604,20 +604,14 @@ def test_saving_close_post_save_first_record():
 
     SavingCloseFactory(to_account=_to, from_account=_from, price=1)
 
-    actual = SavingBalance.objects.year(1999)
-    assert actual.count() == 1
-
-    actual = AccountBalance.objects.year(1999)
-    assert actual.count() == 1
-
-    actual = AccountBalance.objects.get(account_id=_to.pk)
+    actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
     assert actual.account.title == 'To'
     assert actual.past == 1.0
     assert actual.incomes == 1.0
     assert actual.expenses == 0.0
     assert actual.balance == 2.0
 
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk)
+    actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
     assert actual.saving_type.title == 'From'
     assert actual.past_amount == 4.0
     assert actual.past_fee == 0.25
