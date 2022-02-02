@@ -70,7 +70,7 @@ def test_balance_only_incomes(incomes1, incomes2):
 
     # Account1
     assert actual[0]['year'] == 1970
-    assert actual[0]['id'] == 1
+    assert actual[0]['account_id'] == 1
     assert actual[0]['past'] == 0.0
     assert actual[0]['incomes'] == 2.0
     assert actual[0]['expenses'] == 0.0
@@ -79,7 +79,7 @@ def test_balance_only_incomes(incomes1, incomes2):
     assert actual[0]['delta'] == -2.0
 
     assert actual[1]['year'] == 1999
-    assert actual[1]['id'] == 1
+    assert actual[1]['account_id'] == 1
     assert actual[1]['past'] == 2.0
     assert actual[1]['incomes'] == 4.0
     assert actual[1]['expenses'] == 0.0
@@ -89,7 +89,7 @@ def test_balance_only_incomes(incomes1, incomes2):
 
     # Account2
     assert actual[2]['year'] == 1970
-    assert actual[2]['id'] == 2
+    assert actual[2]['account_id'] == 2
     assert actual[2]['past'] == 0.0
     assert actual[2]['incomes'] == 3.0
     assert actual[2]['expenses'] == 0.0
@@ -98,7 +98,7 @@ def test_balance_only_incomes(incomes1, incomes2):
     assert actual[2]['delta'] == -3.0
 
     assert actual[3]['year'] == 1999
-    assert actual[3]['id'] == 2
+    assert actual[3]['account_id'] == 2
     assert actual[3]['past'] == 3.0
     assert actual[3]['incomes'] == 5.0
     assert actual[3]['expenses'] == 0.0
@@ -112,7 +112,7 @@ def test_balance_incomes_expenses(incomes1, incomes2, expenses):
 
     # Account1
     assert actual[0]['year'] == 1970
-    assert actual[0]['id'] == 1
+    assert actual[0]['account_id'] == 1
     assert actual[0]['past'] == 0.0
     assert actual[0]['incomes'] == 2.0
     assert actual[0]['expenses'] == 2.0
@@ -121,7 +121,7 @@ def test_balance_incomes_expenses(incomes1, incomes2, expenses):
     assert actual[0]['delta'] == 0.0
 
     assert actual[1]['year'] == 1999
-    assert actual[1]['id'] == 1
+    assert actual[1]['account_id'] == 1
     assert actual[1]['past'] == 0.0
     assert actual[1]['incomes'] == 4.0
     assert actual[1]['expenses'] == 2.0
@@ -131,7 +131,7 @@ def test_balance_incomes_expenses(incomes1, incomes2, expenses):
 
     # Account2
     assert actual[2]['year'] == 1970
-    assert actual[2]['id'] == 2
+    assert actual[2]['account_id'] == 2
     assert actual[2]['past'] == 0.0
     assert actual[2]['incomes'] == 3.0
     assert actual[2]['expenses'] == 2.0
@@ -140,7 +140,7 @@ def test_balance_incomes_expenses(incomes1, incomes2, expenses):
     assert actual[2]['delta'] == -1.0
 
     assert actual[3]['year'] == 1999
-    assert actual[3]['id'] == 2
+    assert actual[3]['account_id'] == 2
     assert actual[3]['past'] == 1.0
     assert actual[3]['incomes'] == 5.0
     assert actual[3]['expenses'] == 2.0
@@ -154,7 +154,7 @@ def test_balance_incomes_expenses_have(incomes1, incomes2, expenses, have):
 
     # Account1
     assert actual[0]['year'] == 1970
-    assert actual[0]['id'] == 1
+    assert actual[0]['account_id'] == 1
     assert actual[0]['past'] == 0.0
     assert actual[0]['incomes'] == 2.0
     assert actual[0]['expenses'] == 2.0
@@ -163,7 +163,7 @@ def test_balance_incomes_expenses_have(incomes1, incomes2, expenses, have):
     assert actual[0]['delta'] == 5.0
 
     assert actual[1]['year'] == 1999
-    assert actual[1]['id'] == 1
+    assert actual[1]['account_id'] == 1
     assert actual[1]['past'] == 0.0
     assert actual[1]['incomes'] == 4.0
     assert actual[1]['expenses'] == 2.0
@@ -173,7 +173,7 @@ def test_balance_incomes_expenses_have(incomes1, incomes2, expenses, have):
 
     # Account2
     assert actual[2]['year'] == 1970
-    assert actual[2]['id'] == 2
+    assert actual[2]['account_id'] == 2
     assert actual[2]['past'] == 0.0
     assert actual[2]['incomes'] == 3.0
     assert actual[2]['expenses'] == 2.0
@@ -182,7 +182,7 @@ def test_balance_incomes_expenses_have(incomes1, incomes2, expenses, have):
     assert actual[2]['delta'] == 9.0
 
     assert actual[3]['year'] == 1999
-    assert actual[3]['id'] == 2
+    assert actual[3]['account_id'] == 2
     assert actual[3]['past'] == 1.0
     assert actual[3]['incomes'] == 5.0
     assert actual[3]['expenses'] == 2.0

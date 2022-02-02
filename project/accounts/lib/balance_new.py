@@ -119,7 +119,7 @@ class BalanceNew(BalanceBase):
             _df =  df.loc[account_id, :].copy()
 
             # new column with account_id value
-            _df['id'] = account_id
+            _df['account_id'] = account_id
 
             # calc balance without past
             _df['balance'] = _df['incomes'] - _df['expenses']
