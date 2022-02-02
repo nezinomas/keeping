@@ -241,3 +241,10 @@ def test_balance_end_with_year(incomes1, incomes2, expenses, have):
     actual = T(year=1970, data=[incomes1, incomes2, expenses, expenses, have]).balance_end
 
     assert actual == 1.0
+
+
+def test_balance_year_account_id_link(incomes1):
+    actual = T(data=[incomes1, [{'id': 3, 'year': 1970, 'x': 4}]]).year_account_link
+
+    assert actual[1970] == [1, 2, 3]
+    assert actual[1999] == [1, 2]

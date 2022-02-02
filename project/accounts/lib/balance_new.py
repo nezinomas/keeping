@@ -31,9 +31,27 @@ class BalanceNew(BalanceBase):
             return
 
         df = self._create_df(data)
-        df = self._calc_balance(df)
+
+        self._idx = df.index.to_list()
 
         self._balance = df
+
+    @property
+    def year_account_link(self):
+        rtn = {}
+
+        if not self._idx:
+            return rtn
+
+        for r in self._idx:
+            _year = r[1]
+            _id = r[0]
+            if not rtn.get(_year):
+                rtn[_year] = []
+
+            rtn[_year].append(_id)
+
+        return rtn
 
     @property
     def total_row(self):
