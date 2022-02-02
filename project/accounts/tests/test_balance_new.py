@@ -47,6 +47,18 @@ def have():
     ]
 
 
+def test_balance_columns(incomes1):
+    actual = T(data=[incomes1])._balance.columns
+
+    assert 'past' in actual
+    assert 'incomes' in actual
+    assert 'expenses' in actual
+    assert 'balance' in actual
+    assert 'have' in actual
+    assert 'delta' in actual
+    assert 'account_id' in actual
+
+
 def test_balance_no_data():
     actual = T().balance
 

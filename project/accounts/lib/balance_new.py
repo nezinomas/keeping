@@ -31,8 +31,7 @@ class BalanceNew(BalanceBase):
             return
 
         df = self._create_df(data)
-
-        self._idx = df.index.to_list()
+        df = self._calc_balance(df)
 
         self._balance = df
 
@@ -40,10 +39,15 @@ class BalanceNew(BalanceBase):
     def year_account_link(self):
         rtn = {}
 
-        if not self._idx:
+        if self._balance.empty:
             return rtn
 
-        for r in self._idx:
+        df = self._balance.copy()
+        df.reset_index(inplace=True)
+        df.set_index(['account_id', 'year'], inplace=True)
+
+        idx = df.index.to_list()
+        for r in idx:
             _id = r[0]
             _year = r[1]
 
