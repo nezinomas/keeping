@@ -4,7 +4,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
-from ..core.mixins.balance import AccountBalanceMixin
+from ..core.mixins.account_balance import AccountBalanceMixin
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from . import managers

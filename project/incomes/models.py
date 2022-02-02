@@ -11,7 +11,7 @@ from ..core.mixins.from_db import FromDbAccountIdMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from .managers import IncomeQuerySet, IncomeTypeQuerySet
-from ..core.mixins.balance import AccountBalanceMixin
+from ..core.mixins.account_balance import AccountBalanceMixin
 
 
 class IncomeType(TitleAbstract):

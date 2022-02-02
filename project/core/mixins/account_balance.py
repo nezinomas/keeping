@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
 from ...bookkeeping.lib import helpers as calc
-from ...core.signals_base import SignalBase
+from ..signals_base import SignalBase
 
 
 def _getattr(obj, name, default=None):

@@ -5,7 +5,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
-from ..core.mixins.balance import AccountBalanceMixin
+from ..core.mixins.account_balance import AccountBalanceMixin
 from ..core.mixins.from_db import FromDbAccountIdMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
