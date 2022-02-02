@@ -44,8 +44,9 @@ class BalanceNew(BalanceBase):
             return rtn
 
         for r in self._idx:
-            _year = r[1]
             _id = r[0]
+            _year = r[1]
+
             if not rtn.get(_year):
                 rtn[_year] = []
 
