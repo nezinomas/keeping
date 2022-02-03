@@ -723,7 +723,7 @@ def test_expense_sum_by_year_name_filtering():
 
 
 def test_balance(expenses):
-    actual = Expense.objects.balance_expenses()
+    actual = Expense.objects.expenses()
 
     assert actual[0]['year'] == 1970
     assert actual[0]['id'] == 1

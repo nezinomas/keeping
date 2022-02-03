@@ -90,7 +90,7 @@ class TransactionQuerySet(models.QuerySet):
                 title=models.F('to_account__title'))
         )
 
-    def balance_incomes(self):
+    def incomes(self):
         return (
             self
             .related()
@@ -101,7 +101,7 @@ class TransactionQuerySet(models.QuerySet):
             .order_by('year', 'id')
         )
 
-    def balance_expenses(self):
+    def expenses(self):
         return (
             self
             .related()

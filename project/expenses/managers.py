@@ -264,7 +264,7 @@ class ExpenseQuerySet(models.QuerySet):
 
         return qs
 
-    def balance_expenses(self):
+    def expenses(self):
         return (
             self
             .related()

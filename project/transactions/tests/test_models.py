@@ -461,7 +461,7 @@ def test_transactions_from_db_classmethod():
 
 
 def test_transaction_balance_incomes(transactions):
-    actual = Transaction.objects.balance_incomes()
+    actual = Transaction.objects.incomes()
 
     # 1974
     assert actual[0]['year'] == 1970
@@ -483,7 +483,7 @@ def test_transaction_balance_incomes(transactions):
 
 
 def test_transaction_balance_expenses(transactions):
-    actual = Transaction.objects.balance_expenses()
+    actual = Transaction.objects.expenses()
 
     # 1974
     assert actual[0]['year'] == 1970

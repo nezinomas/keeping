@@ -144,7 +144,7 @@ def test_summary(incomes):
 
 
 def test_balance(incomes):
-    qs = Income.objects.balance_incomes()
+    qs = Income.objects.incomes()
 
     assert qs[0] == {'year': 1970, 'incomes': Decimal('5.25'), 'id': 1}
     assert qs[1] == {'year': 1970, 'incomes': Decimal('4.5'), 'id': 2}
