@@ -184,32 +184,32 @@ def transactions():
     TransactionFactory(
         date=date(1999, 1, 1),
         price=2.25,
-        to_account=AccountFactory(title='Account2'),
-        from_account=AccountFactory(title='Account1')
+        from_account=AccountFactory(title='Account1'),
+        to_account=AccountFactory(title='Account2')
     )
     TransactionFactory(
         date=date(1999, 1, 1),
         price=2.25,
-        to_account=AccountFactory(title='Account2'),
-        from_account=AccountFactory(title='Account1')
+        from_account=AccountFactory(title='Account1'),
+        to_account=AccountFactory(title='Account2')
     )
     TransactionFactory(
         date=date(1999, 1, 1),
         price=3.25,
-        to_account=AccountFactory(title='Account1'),
-        from_account=AccountFactory(title='Account2')
+        from_account=AccountFactory(title='Account2'),
+        to_account=AccountFactory(title='Account1')
     )
     TransactionFactory(
         date=date(1970, 1, 1),
         price=1.25,
-        to_account=AccountFactory(title='Account2'),
-        from_account=AccountFactory(title='Account1')
+        from_account=AccountFactory(title='Account1'),
+        to_account=AccountFactory(title='Account2')
     )
     TransactionFactory(
         date=date(1970, 1, 1),
         price=5.25,
-        to_account=AccountFactory(title='Account1'),
-        from_account=AccountFactory(title='Account2')
+        from_account=AccountFactory(title='Account2'),
+        to_account=AccountFactory(title='Account1')
     )
 
 
