@@ -6,7 +6,7 @@ from ...bookkeeping.lib import helpers as calc
 from ..signals_base import SignalBase
 
 '''
-{app.model_name: {accountbalce_table_field: model_field}}
+{app.model_name: {accountbalance_table_field: model_field}}
 
 model must have same methods as account_balance_table_field
 
