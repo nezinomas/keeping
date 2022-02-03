@@ -720,3 +720,23 @@ def test_expense_sum_by_year_name_filtering():
     assert actual[1]['title'] == 'X'
     assert actual[1]['root'] == 'Expense Type'
     assert actual[1]['sum'] == Decimal('12')
+
+
+def test_balance(expenses):
+    actual = Expense.objects.balance()
+
+    assert actual[0]['year'] == 1970
+    assert actual[0]['id'] == 1
+    assert actual[0]['expenses'] == 2.5
+
+    assert actual[1]['year'] == 1970
+    assert actual[1]['id'] == 2
+    assert actual[1]['expenses'] == 2.25
+
+    assert actual[2]['year'] == 1999
+    assert actual[2]['id'] == 1
+    assert actual[2]['expenses'] == 0.5
+
+    assert actual[3]['year'] == 1999
+    assert actual[3]['id'] == 2
+    assert actual[3]['expenses'] == 1.25

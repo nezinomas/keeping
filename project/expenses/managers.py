@@ -263,3 +263,14 @@ class ExpenseQuerySet(models.QuerySet):
         )
 
         return qs
+
+    def balance(self):
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'account__title')
+            .annotate(expenses=Sum('price'))
+            .values('year', 'expenses', id=F('account__pk'))
+            .order_by('year', 'account')
+        )
