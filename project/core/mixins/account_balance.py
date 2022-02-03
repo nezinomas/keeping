@@ -5,6 +5,46 @@ from django.db.models import Q
 from ...bookkeeping.lib import helpers as calc
 from ..signals_base import SignalBase
 
+'''
+{app.model_name: {accountbalce_table_field: model_field}}
+
+model must have same methods as account_balance_table_field
+
+'''
+
+HOOKS = {
+    'incomes.Income': {
+        'incomes': 'account',
+    },
+    'expenses.Expense': {
+        'expenses': 'account',
+    },
+    'debts.Lent': {
+        'incomes': 'account',
+    },
+    'debts.LentReturn': {
+        'expenses': 'account',
+    },
+    'debts.Borrow': {
+        'expenses': 'account',
+    },
+    'debts.BorrowReturn': {
+        'incomes': 'account',
+    },
+    'transactions.Transaction': {
+        'incomes': 'to_account',
+        'expenses': 'from_account',
+    },
+    'savings.Saving': {
+        'expenses': 'account',
+    },
+    'transactions.SavingClose': {
+        'incomes': 'to_account',
+    },
+    'bookkeeping.AccountWorth': {
+        'have': 'account',
+    }
+}
 
 def _getattr(obj, name, default=None):
     try:
@@ -16,41 +56,6 @@ def _getattr(obj, name, default=None):
 class AccountBalanceMixin():
     original_price = 0.0
     old_values = {}
-
-    # {model_name: {accountbalce_table_field: model_field}}
-    hooks = {
-        'incomes.Income': {
-            'incomes': 'account',
-        },
-        'expenses.Expense': {
-            'expenses': 'account',
-        },
-        'debts.Lent': {
-            'incomes': 'account',
-        },
-        'debts.LentReturn': {
-            'expenses': 'account',
-        },
-        'debts.Borrow': {
-            'expenses': 'account',
-        },
-        'debts.BorrowReturn': {
-            'incomes': 'account',
-        },
-        'transactions.Transaction': {
-            'incomes': 'to_account',
-            'expenses': 'from_account',
-        },
-        'savings.Saving': {
-            'expenses': 'account',
-        },
-        'transactions.SavingClose': {
-            'incomes': 'to_account',
-        },
-        'bookkeeping.AccountWorth': {
-            'have': 'account',
-        }
-    }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -75,7 +80,9 @@ class AccountBalanceMixin():
         self.update_accountbalance_table()
 
     def update_accountbalance_table(self, caller: str = None):
-        _hook = self.hooks.get(type(self).__name__)
+        _arr = self.__class__.__module__.split('.') # [0]=project [1]=app
+        _name = f'{_arr[1]}.{type(self).__name__}' # = app.Model
+        _hook = HOOKS.get(_name)
 
         if not _hook:
             return
