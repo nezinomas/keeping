@@ -19,35 +19,35 @@ class AccountBalanceMixin():
 
     # {model_name: {accountbalce_table_field: model_field}}
     hooks = {
-        'Income': {
+        'incomes.Income': {
             'incomes': 'account',
         },
-        'Expense': {
+        'expenses.Expense': {
             'expenses': 'account',
         },
-        'Lent': {
+        'debts.Lent': {
             'incomes': 'account',
         },
-        'LentReturn': {
+        'debts.LentReturn': {
             'expenses': 'account',
         },
-        'Borrow': {
+        'debts.Borrow': {
             'expenses': 'account',
         },
-        'BorrowReturn': {
+        'debts.BorrowReturn': {
             'incomes': 'account',
         },
-        'Transaction': {
+        'transactions.Transaction': {
             'incomes': 'to_account',
             'expenses': 'from_account',
         },
-        'Saving': {
+        'savings.Saving': {
             'expenses': 'account',
         },
-        'SavingClose': {
+        'transactions.SavingClose': {
             'incomes': 'to_account',
         },
-        'AccountWorth': {
+        'bookkeeping.AccountWorth': {
             'have': 'account',
         }
     }
