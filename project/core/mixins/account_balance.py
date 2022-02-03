@@ -2,6 +2,7 @@ from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
+from ...accounts.lib.balance_new import BalanceNew
 from ...bookkeeping.lib import helpers as calc
 from ..signals_base import SignalBase
 
@@ -125,7 +126,12 @@ class AccountBalanceMixin():
             )
 
         except ObjectDoesNotExist as e:
+            print('\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nUPDATE ACCOUNT CLASS CALLED\n')
+            '''
             SignalBase.accounts(sender=type(self), instance=None, year=_year)
+            '''
+            UpdateAccountBalanceTable()
+            # '''
             raise e
 
         _balance_tbl_field_value = getattr(_qs, balance_tbl_field_name)
@@ -137,3 +143,98 @@ class AccountBalanceMixin():
         _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
 
         _qs.save()
+
+
+class UpdateAccountBalanceTable():
+    def __init__(self):
+        self._accounts = self._accounts_()
+        print(f'{self._accounts=}\n\n')
+        self._calc()
+
+    def _accounts_(self):
+        a = apps.get_model('accounts.Account').objects.items()
+        return {obj.id: obj for obj in a}
+
+    def _calc(self):
+        _data = []
+        _models = list(HOOKS.keys())
+
+        for _model_name in _models:
+            try:
+                model = apps.get_model(_model_name)
+            except LookupError:
+                continue
+
+            for _method, _ in HOOKS[_model_name].items():
+                try:
+                    _method = getattr(model.objects, _method)
+                    _qs = _method()
+                    if _qs:
+                        _data.append(_qs)
+
+                except AttributeError:
+                    pass
+
+        if not _data:
+            return
+
+        _balance_model = apps.get_model('accounts.AccountBalance')
+        _balance = BalanceNew(data=_data)
+        _link = {}
+        _df = _balance.balance_df
+        print(f'\n@ calculated balance\n{_df}\n')
+
+        _update = []
+        _create = []
+        _delete = []
+
+        _items = _balance_model.objects.items()
+        print(f'\nbalance table items\n{_items.values()}')
+        if not _items.exists():
+            _dicts = _balance.balance
+            for _dict in _dicts:
+                _id = _dict['account_id']
+                del _dict['account_id']
+
+                _create.append(_balance_model(account=self._accounts.get(_id), **_dict))
+        else:
+            _link = _balance.year_account_link
+            print(f'links on load: {_link=}\n')
+            for _row in _items:
+                print(f'{_row=}')
+                try:
+                    _df_row = _df.loc[(_row.year, _row.account_id)].to_dict()
+                    _update.append(
+                        _balance_model(
+                            pk=_row.pk,
+                            year=_row.year,
+                            account=self._accounts.get(_row.account_id),
+                            **_df_row)
+                    )
+                    _update.append(_row)
+                    # remove id in link
+                    _link.get(_row.year).remove(_row.account_id)
+                except KeyError:
+                    _delete.append(_row.pk)
+
+        # if in year:account_id link dict left some id, create records
+        print(f'links final: {_link=}\n')
+        for _year, _arr in _link.items():
+            for x in _arr:
+                _df_row = _df.loc[(_year, x)].to_dict()
+                # print(f'----------------->{_year=} {x=} {_df_row}')
+                _create.append(_balance_model(year=_year, account=self._accounts.get(x), **_df_row))
+
+
+        if _create:
+            print('\n\n------------------- create event\n', _create)
+            _balance_model.objects.bulk_create(_create)
+            print(f'{_balance_model.objects.values()}')
+
+        if _update:
+            print(f'\n\n------------------- update event\n{_update}')
+            _balance_model.objects.bulk_update(_update, ['past', 'incomes', 'expenses', 'balance', 'have', 'delta'])
+
+        if _delete:
+            print(f'\n\n------------------- delete event\n{_delete=}')
+            _balance_model.objects.related().filter(pk__in=_delete).delete()
