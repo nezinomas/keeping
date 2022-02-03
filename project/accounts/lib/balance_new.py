@@ -59,6 +59,18 @@ class BalanceNew(BalanceBase):
         return rtn
 
     @property
+    def balance_df(self):
+        if self._balance.empty:
+            return self._balance
+
+        df = self._balance.copy()
+
+        df.reset_index(inplace=True)
+        df.set_index(['year', 'account_id'], inplace=True)
+
+        return df
+
+    @property
     def total_row(self):
         if self._balance.empty:
             return {}
@@ -88,7 +100,7 @@ class BalanceNew(BalanceBase):
             except KeyError:
                 continue
 
-            # convert NaN to float64
+            # convert Decimal to float64
             _columns = _df.columns.to_list()
             _df[_columns] = _df[_columns].apply(pd.to_numeric)
 
@@ -98,6 +110,9 @@ class BalanceNew(BalanceBase):
             return
 
         df = reduce(lambda a, b: a.add(b, fill_value=0), _arr)
+
+        # fill NaN with 0.0
+        df.fillna(0, inplace=True)
 
         # create columns if not exists
         _columns = df.columns.to_list()
