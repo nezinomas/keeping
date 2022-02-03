@@ -2,7 +2,8 @@ from decimal import Decimal
 from typing import Any, Dict, List
 
 from django.db import models
-from django.db.models import Case, Count, Sum, When
+from django.db.models import Case, Count, F, Sum, When
+from django.db.models.functions import ExtractYear
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
@@ -89,6 +90,27 @@ class TransactionQuerySet(models.QuerySet):
                 title=models.F('to_account__title'))
         )
 
+    def balance_incomes(self):
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'to_account__title')
+            .annotate(incomes=Sum('price'))
+            .values('year', 'incomes', id=F('to_account__pk'))
+            .order_by('year', 'id')
+        )
+
+    def balance_expenses(self):
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'from_account__title')
+            .annotate(expenses=Sum('price'))
+            .values('year', 'expenses', id=F('from_account__pk'))
+            .order_by('year', 'id')
+        )
 
 class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
     def sum_by_month(self, year, month=None):

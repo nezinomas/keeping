@@ -3,6 +3,7 @@ from decimal import Decimal
 
 import pytest
 from freezegun import freeze_time
+from project.accounts.models import Account
 
 from project.journals.factories import JournalFactory
 
@@ -457,6 +458,50 @@ def test_transactions_from_db_classmethod():
     expect = {'account_id': [_from.pk, _to.pk]}
 
     assert obj._old_values == expect
+
+
+def test_transaction_balance_incomes(transactions):
+    actual = Transaction.objects.balance_incomes()
+
+    # 1974
+    assert actual[0]['year'] == 1970
+    assert actual[0]['incomes'] == 5.25
+    assert actual[0]['id'] == 1
+
+    assert actual[1]['year'] == 1970
+    assert actual[1]['incomes'] == 1.25
+    assert actual[1]['id'] == 2
+
+    # 1999
+    assert actual[2]['year'] == 1999
+    assert actual[2]['incomes'] == 3.25
+    assert actual[2]['id'] == 1
+
+    assert actual[3]['year'] == 1999
+    assert actual[3]['incomes'] == 4.5
+    assert actual[3]['id'] == 2
+
+
+def test_transaction_balance_expenses(transactions):
+    actual = Transaction.objects.balance_expenses()
+
+    # 1974
+    assert actual[0]['year'] == 1970
+    assert actual[0]['expenses'] == 1.25
+    assert actual[0]['id'] == 1
+
+    assert actual[1]['year'] == 1970
+    assert actual[1]['expenses'] == 5.25
+    assert actual[1]['id'] == 2
+
+    # 1999
+    assert actual[2]['year'] == 1999
+    assert actual[2]['expenses'] == 4.5
+    assert actual[2]['id'] == 1
+
+    assert actual[3]['year'] == 1999
+    assert actual[3]['expenses'] == 3.25
+    assert actual[3]['id'] == 2
 
 
 # ----------------------------------------------------------------------------
