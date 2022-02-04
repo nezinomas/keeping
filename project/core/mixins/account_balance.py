@@ -95,12 +95,16 @@ class AccountBalanceMixin():
             if not _old_account_id or _old_account_id == _account.pk:
                 try:
                     caller = caller if caller else 'delete'
+                    print(
+                        f'\n\n>>> {caller=} {_hook}  {_account.pk=} {_old_account_id=}')
                     self._update_balance_tbl(caller, _balance_tbl_field_name, _account.pk)
                 except ObjectDoesNotExist:
                     return
             else:
                 try:
+                    print(f'\n\n>>> caller: {_hook} new {_account.pk=}')
                     self._update_balance_tbl('new', _balance_tbl_field_name ,_account.pk)
+                    print(f'\n\n>>> caller: {_hook} delete {_old_account_id=}')
                     self._update_balance_tbl('delete', _balance_tbl_field_name, _old_account_id)
                 except ObjectDoesNotExist:
                     return
@@ -126,7 +130,7 @@ class AccountBalanceMixin():
             )
 
         except ObjectDoesNotExist as e:
-            print('\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nUPDATE ACCOUNT CLASS CALLED\n')
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nUPDATE ACCOUNT CLASS CALLED\n')
             '''
             SignalBase.accounts(sender=type(self), instance=None, year=_year)
             '''
