@@ -198,6 +198,16 @@ class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
                 title=models.F('to_account__title'))
         )
 
+    def incomes(self):
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'to_account__title')
+            .annotate(incomes=Sum('price'))
+            .values('year', 'incomes', id=F('to_account__pk'))
+            .order_by('year', 'id')
+        )
 
 class SavingChangeQuerySet(TransactionQuerySet):
     def summary_from(self, year: int) -> List[Dict[str, Any]]:
