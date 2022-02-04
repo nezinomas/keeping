@@ -1,15 +1,13 @@
-from datetime import datetime
-
 import factory
-import pytz
 from django.db.models import Model
+from django.utils import timezone
 from factory.django import DjangoModelFactory
 
 from ..accounts.factories import AccountFactory
 from ..pensions.factories import PensionTypeFactory
 from ..savings.factories import SavingTypeFactory
 from . import models
-from django.utils import timezone
+
 
 class SavingWorthFactory(DjangoModelFactory):
     class Meta:
