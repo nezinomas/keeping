@@ -212,11 +212,13 @@ def test_lent_post_save_change_account():
     obj_new.account = account_new
     obj_new.save()
 
-    actual = AccountBalance.objects.get(account_id=account_old.pk)
-    assert actual.account.title == 'Account1'
-    assert actual.incomes == 0.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 0.0
+    fail = False
+    try:
+        actual = AccountBalance.objects.get(account_id=account_old.pk)
+    except AccountBalance.DoesNotExist:
+        fail = True
+
+    assert fail
 
     actual = AccountBalance.objects.get(account_id=account_new.pk)
     assert actual.account.title == 'XXX'
@@ -306,3 +308,36 @@ def test_lent_sum_all_not_closed():
     actual = Lent.objects.sum_all()
 
     assert expect == actual
+
+
+def test_lent_expenses():
+    a1 = AccountFactory(title='A1')
+    a2 = AccountFactory(title='A2')
+
+    LentFactory(date=dt(1970, 1, 1), account=a1, price=1)
+    LentFactory(date=dt(1970, 1, 1), account=a1, price=2)
+    LentFactory(date=dt(1970, 1, 1), account=a2, price=3)
+    LentFactory(date=dt(1970, 1, 1), account=a2, price=4)
+
+    LentFactory(date=dt(1999, 1, 1), account=a1, price=10)
+    LentFactory(date=dt(1999, 1, 1), account=a1, price=20)
+    LentFactory(date=dt(1999, 1, 1), account=a2, price=30)
+    LentFactory(date=dt(1999, 1, 1), account=a2, price=40)
+
+    actual = Lent.objects.incomes()
+
+    assert actual[0]['year'] == 1970
+    assert actual[0]['id'] == 1
+    assert actual[0]['incomes'] == 3
+
+    assert actual[1]['year'] == 1970
+    assert actual[1]['id'] == 2
+    assert actual[1]['incomes'] == 7
+
+    assert actual[2]['year'] == 1999
+    assert actual[2]['id'] == 1
+    assert actual[2]['incomes'] == 30
+
+    assert actual[3]['year'] == 1999
+    assert actual[3]['id'] == 2
+    assert actual[3]['incomes'] == 70

@@ -241,6 +241,18 @@ class LentQuerySet(models.QuerySet):
             .aggregate(lent=Sum('price'), lent_return=Sum('returned'))
         )
 
+    def incomes(self):
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'account__title')
+            .annotate(incomes=Sum('price'))
+            .values('year', 'incomes', id=F('account__pk'))
+            .order_by('year', 'account')
+        )
+
+
 class LentReturnQuerySet(SumMixin, models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
