@@ -451,12 +451,13 @@ def test_saving_post_save_update_changed_account():
     obj_update.account = _a_new
     obj_update.save()
 
-    actual = AccountBalance.objects.get(account_id=_a.pk, year=1999)
-    assert actual.account.title == 'A'
-    assert actual.past == 0.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 0.0
+    fail = False
+    try:
+        actual = AccountBalance.objects.get(account_id=_a.pk, year=1999)
+    except AccountBalance.DoesNotExist:
+        fail = True
+
+    assert fail
 
     actual = AccountBalance.objects.get(account_id=_a_new.pk, year=1999)
     assert actual.account.title == 'A-New'
@@ -502,12 +503,13 @@ def test_saving_post_save_update_changed_account_and_saving_type():
     obj_update.account = _a_new
     obj_update.save()
 
-    actual = AccountBalance.objects.get(account_id=_a.pk, year=1999)
-    assert actual.account.title == 'A'
-    assert actual.past == 0.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 0.0
+    fail = False
+    try:
+        actual = AccountBalance.objects.get(account_id=_a.pk, year=1999)
+    except AccountBalance.DoesNotExist:
+        fail = True
+
+    assert fail
 
     actual = AccountBalance.objects.get(account_id=_a_new.pk, year=1999)
     assert actual.account.title == 'A-New'
