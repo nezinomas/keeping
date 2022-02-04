@@ -208,7 +208,6 @@ def test_borrow_return_update_post_save():
 
 
 def test_borrow_return_post_save_first_record():
-    a = AccountFactory()
     l = BorrowFactory(price=2)
 
     IncomeFactory(date=dt(1998, 1, 1), price=5)
@@ -216,17 +215,23 @@ def test_borrow_return_post_save_first_record():
     # truncate AccountBalance table
     AccountBalance.objects.all().delete()
 
-    BorrowReturn.objects.create(date=dt(1999, 1, 1), account=a, borrow=l, price=1)
+    BorrowReturnFactory(date=dt(1999, 1, 1), borrow=l, price=1)
 
     actual = AccountBalance.objects.items()
-    assert actual.count() == 1
-    actual = AccountBalance.objects.last()
 
-    assert actual.past == 5.0
-    assert actual.incomes == 1.0
-    assert actual.expenses == 2.0
-    assert actual.balance == 4.0
-    assert actual.delta == -4.0
+    assert actual[0].year == 1998
+    assert actual[0].past == 0.0
+    assert actual[0].incomes == 5.0
+    assert actual[0].expenses == 0.0
+    assert actual[0].balance == 5.0
+    assert actual[0].delta == -5.0
+
+    assert actual[1].year == 1999
+    assert actual[1].past == 5.0
+    assert actual[1].incomes == 1.0
+    assert actual[1].expenses == 2.0
+    assert actual[1].balance == 4.0
+    assert actual[1].delta == -4.0
 
 
 def test_borrow_return_post_delete():
@@ -317,3 +322,36 @@ def test_borrow_return_autoclose():
 
     assert actual.returned == Decimal('100')
     assert actual.closed
+
+
+def test_borrow_return_incomes():
+    a1 = AccountFactory(title='A1')
+    a2 = AccountFactory(title='A2')
+
+    BorrowReturnFactory(date=dt(1970, 1, 1), account=a1, price=1)
+    BorrowReturnFactory(date=dt(1970, 1, 1), account=a1, price=2)
+    BorrowReturnFactory(date=dt(1970, 1, 1), account=a2, price=3)
+    BorrowReturnFactory(date=dt(1970, 1, 1), account=a2, price=4)
+
+    BorrowReturnFactory(date=dt(1999, 1, 1), account=a1, price=10)
+    BorrowReturnFactory(date=dt(1999, 1, 1), account=a1, price=20)
+    BorrowReturnFactory(date=dt(1999, 1, 1), account=a2, price=30)
+    BorrowReturnFactory(date=dt(1999, 1, 1), account=a2, price=40)
+
+    actual = BorrowReturn.objects.incomes()
+
+    assert actual[0]['year'] == 1970
+    assert actual[0]['id'] == 1
+    assert actual[0]['incomes'] == 3
+
+    assert actual[1]['year'] == 1970
+    assert actual[1]['id'] == 2
+    assert actual[1]['incomes'] == 7
+
+    assert actual[2]['year'] == 1999
+    assert actual[2]['id'] == 1
+    assert actual[2]['incomes'] == 30
+
+    assert actual[3]['year'] == 1999
+    assert actual[3]['id'] == 2
+    assert actual[3]['incomes'] == 70

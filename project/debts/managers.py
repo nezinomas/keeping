@@ -2,8 +2,8 @@ from decimal import Decimal
 from typing import Any, Dict, List
 
 from django.db import models
-from django.db.models import Case, Count, Q, Sum, When
-from django.db.models.functions import TruncMonth
+from django.db.models import Case, Count, F, Q, Sum, When
+from django.db.models.functions import ExtractYear, TruncMonth
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
@@ -154,6 +154,17 @@ class BorrowReturnQuerySet(SumMixin, models.QuerySet):
                 title=models.F('account__title'),
                 id=models.F('account__pk')
             )
+        )
+
+    def incomes(self):
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'account__title')
+            .annotate(incomes=Sum('price'))
+            .values('year', 'incomes', id=F('account__pk'))
+            .order_by('year', 'account')
         )
 
 
