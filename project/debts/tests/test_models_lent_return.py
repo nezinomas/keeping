@@ -208,7 +208,6 @@ def test_lent_return_update_post_save():
 
 
 def test_lent_return_post_save_first_record():
-    a = AccountFactory()
     l = LentFactory(price=5)
 
     IncomeFactory(date=dt(1998, 1, 1), price=1)
@@ -216,17 +215,23 @@ def test_lent_return_post_save_first_record():
     # truncate AccountBalance table
     AccountBalance.objects.all().delete()
 
-    LentReturn.objects.create(date=dt(1999, 1, 1), account=a, lent=l, price=2)
+    LentReturnFactory(date=dt(1999, 1, 1), lent=l, price=2)
 
     actual = AccountBalance.objects.items()
-    assert actual.count() == 1
-    actual = AccountBalance.objects.last()
 
-    assert actual.past == 1.0
-    assert actual.incomes == 5.0
-    assert actual.expenses == 2.0
-    assert actual.balance == 4.0
-    assert actual.delta == -4.0
+    assert actual[0].year == 1998
+    assert actual[0].past == 0.0
+    assert actual[0].incomes == 1.0
+    assert actual[0].expenses == 0.0
+    assert actual[0].balance == 1.0
+    assert actual[0].delta == -1.0
+
+    assert actual[1].year == 1999
+    assert actual[1].past == 1.0
+    assert actual[1].incomes == 5.0
+    assert actual[1].expenses == 2.0
+    assert actual[1].balance == 4.0
+    assert actual[1].delta == -4.0
 
 
 def test_lent_return_post_delete():
@@ -317,3 +322,36 @@ def test_lent_return_autoclose():
 
     assert actual.returned == Decimal('100')
     assert actual.closed
+
+
+def test_lent_return_expenses():
+    a1 = AccountFactory(title='A1')
+    a2 = AccountFactory(title='A2')
+
+    LentReturnFactory(date=dt(1970, 1, 1), account=a1, price=1)
+    LentReturnFactory(date=dt(1970, 1, 1), account=a1, price=2)
+    LentReturnFactory(date=dt(1970, 1, 1), account=a2, price=3)
+    LentReturnFactory(date=dt(1970, 1, 1), account=a2, price=4)
+
+    LentReturnFactory(date=dt(1999, 1, 1), account=a1, price=10)
+    LentReturnFactory(date=dt(1999, 1, 1), account=a1, price=20)
+    LentReturnFactory(date=dt(1999, 1, 1), account=a2, price=30)
+    LentReturnFactory(date=dt(1999, 1, 1), account=a2, price=40)
+
+    actual = LentReturn.objects.expenses()
+
+    assert actual[0]['year'] == 1970
+    assert actual[0]['id'] == 1
+    assert actual[0]['expenses'] == 3
+
+    assert actual[1]['year'] == 1970
+    assert actual[1]['id'] == 2
+    assert actual[1]['expenses'] == 7
+
+    assert actual[2]['year'] == 1999
+    assert actual[2]['id'] == 1
+    assert actual[2]['expenses'] == 30
+
+    assert actual[3]['year'] == 1999
+    assert actual[3]['id'] == 2
+    assert actual[3]['expenses'] == 70
