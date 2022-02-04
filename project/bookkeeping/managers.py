@@ -1,8 +1,9 @@
 from functools import reduce
-from operator import and_, or_
+from operator import or_
 
 from django.db import models
-from django.db.models import F, Max, Q
+from django.db.models import Count, F, Max, Q
+from django.db.models.functions import ExtractYear
 
 from ..core.lib import utils
 
@@ -44,6 +45,42 @@ class QsMixin():
         )
 
         return qs
+
+    def latest_have(self, field):
+        qs = [*(
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', f'{field}_id')
+            .annotate(latest_date=Max('date'))
+            .order_by('year')
+        )]
+
+        items = []
+        for x in qs:
+            items.append(
+                Q(date=x['latest_date'])
+                & Q(**{f'{field}_id': x[f'{field}_id']})
+            )
+
+        if not items:
+            return None
+
+        qs = (
+            self
+            .filter(reduce(or_, items))
+            .annotate(c=Count('id'))
+            .values('c')
+            .annotate(year=ExtractYear(F('date')))
+            .values(
+                'year',
+                id=F(f'{field}__id'),
+                have=F('price'),
+            )
+        )
+
+        return qs
+
 
 
 class SavingWorthQuerySet(QsMixin, models.QuerySet):
@@ -97,6 +134,12 @@ class AccountWorthQuerySet(QsMixin, models.QuerySet):
             self
             .filter_created_and_closed(year)
             .latest_check(field='account', year=year)
+        )
+
+    def have(self):
+        return (
+            self
+            .latest_have(field='account')
         )
 
 

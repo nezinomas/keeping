@@ -77,6 +77,23 @@ def test_account_worth_post_save():
     assert actual[0]['delta'] == 0.5
 
 
+def test_account_worth_have():
+    AccountWorthFactory(date=dt(1970, 1, 1), price=1)
+    AccountWorthFactory(date=dt(1970, 12, 31), price=2)
+    AccountWorthFactory(date=dt(2000, 1, 1), price=3)
+    AccountWorthFactory(date=dt(2000, 12, 31), price=4)
+
+    actual = AccountWorth.objects.have()
+
+    assert actual[0]['year'] == 1970
+    assert actual[0]['id'] == 1
+    assert actual[0]['have'] == 2
+
+    assert actual[1]['year'] == 2000
+    assert actual[1]['id'] == 1
+    assert actual[1]['have'] == 4
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                  SavingWorth
 # ---------------------------------------------------------------------------------------
