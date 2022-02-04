@@ -704,7 +704,7 @@ def test_expense_sum_by_year_name_filtering():
     assert actual[1]['sum'] == Decimal('12')
 
 
-def test_balance(expenses):
+def test_expenses(expenses):
     actual = Expense.objects.expenses()
 
     assert actual[0]['year'] == 1970
