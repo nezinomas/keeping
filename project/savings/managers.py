@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 from dateutil.relativedelta import relativedelta
 from django.db import models
 from django.db.models import Case, Count, F, Q, Sum, When
-from django.db.models.functions import TruncMonth
+from django.db.models.functions import ExtractYear, TruncMonth
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
@@ -202,6 +202,16 @@ class SavingQuerySet(SumMixin, models.QuerySet):
 
         return qs
 
+    def expenses(self):
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'account__title')
+            .annotate(expenses=Sum('price'))
+            .values('year', 'expenses', id=F('account__pk'))
+            .order_by('year', 'id')
+        )
 
 class SavingBalanceQuerySet(models.QuerySet):
     def related(self):
