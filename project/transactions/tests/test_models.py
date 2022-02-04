@@ -809,12 +809,12 @@ def test_saving_close_post_save_changed_to():
     obj_update.to_account = _to_new
     obj_update.save()
 
-    actual = AccountBalance.objects.get(account_id=_to.pk)
-    assert actual.account.title == 'To'
-    assert actual.past == 0.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 0.0
+    fail = False
+    try:
+        actual = AccountBalance.objects.get(account_id=_to.pk)
+    except AccountBalance.DoesNotExist:
+        fail = True
+    assert fail
 
     actual = AccountBalance.objects.get(account_id=_to_new.pk)
     assert actual.account.title == 'To-New'
@@ -861,12 +861,13 @@ def test_saving_close_post_save_changed_from_and_to():
     obj_update.from_account = _from_new
     obj_update.save()
 
-    actual = AccountBalance.objects.get(account_id=_to.pk)
-    assert actual.account.title == 'To'
-    assert actual.past == 0.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 0.0
+    fail = False
+    try:
+        actual = AccountBalance.objects.get(account_id=_to.pk)
+    except AccountBalance.DoesNotExist:
+        fail = True
+
+    assert fail
 
     actual = AccountBalance.objects.get(account_id=_to_new.pk)
     assert actual.account.title == 'To-New'
