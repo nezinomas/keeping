@@ -310,7 +310,7 @@ def test_lent_sum_all_not_closed():
     assert expect == actual
 
 
-def test_lent_expenses():
+def test_lent_incomes():
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
 
