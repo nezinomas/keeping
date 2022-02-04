@@ -82,7 +82,6 @@ class QsMixin():
         return qs
 
 
-
 class SavingWorthQuerySet(QsMixin, models.QuerySet):
     def filter_created_and_closed(self, year):
         if year:
