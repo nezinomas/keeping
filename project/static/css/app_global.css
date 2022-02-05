@@ -126,7 +126,10 @@ table.stats tfoot {
 }
 
 table.stats td, table.stats th {
-    border: 1px solid #b4b4b3!important;
+    border-width: 0.5px!important;
+    border-style: solid!important;
+    border-color: #cacac9!important;
+    border-collapse: collapse!important;
     vertical-align: middle!important;
     padding-top: .09rem!important;
     padding-bottom: .09rem!important;
@@ -212,13 +215,19 @@ tr.top-text, tr.top-text th {
 }
 
 .dash {
-    color: #b7b7b6;
+    color: #b7b7b6!important;
 }
 
-.table-hover tbody tr:hover,
-.table-hover tbody tr._weekend_row:hover td,
-.table-hover tbody tr._current_day:hover td {
+tr:hover td,
+tr._weekend_row:hover td,
+tr._current_day:hover td {
     --bs-table-accent-bg: #f9f6cf!important;
+}
+
+tr.tr_expand_day_expenses:hover,
+tr.tr_expand_day_expenses:hover td
+ {
+    --bs-table-accent-bg: transparent!important;
 }
 
 .stats .no-left-border {
@@ -240,11 +249,10 @@ tr.top-text, tr.top-text th {
 }
 
 ._weekend_col {
-    --bs-table-accent-bg:rgb(202, 235, 204);
-
+    --bs-table-accent-bg:rgb(202, 235, 204)!important;
 }
 
-._current_day, tr._current_day > td._weekend_col {
+tr._current_day > td, tr._current_day > td._weekend_col {
     --bs-table-accent-bg:#ffc107!important;
 }
 

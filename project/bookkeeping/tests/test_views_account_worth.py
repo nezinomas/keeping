@@ -7,6 +7,7 @@ from freezegun import freeze_time
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import setup_view
 from .. import views
+from ..models import AccountWorth
 
 pytestmark = pytest.mark.django_db
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -60,7 +61,40 @@ def test_account_worth_new(client_logged):
 
     assert actual['form_is_valid']
     assert '999' in actual['html_list']
-    assert 'data-bs-title="1999 m. rugsėjo 9 d.' in actual['html_list']
+    assert '-title="1999 m. rugsėjo 9 d.' in actual['html_list']
+
+    actual = AccountWorth.objects.last()
+    assert actual.date.year == 1999
+    assert actual.date.month == 9
+    assert actual.date.day == 9
+
+
+def test_account_worth_new_with_date(client_logged):
+    i = AccountFactory()
+    data = {
+        'date': '1999-9-9',
+        'form-TOTAL_FORMS': 1,
+        'form-INITIAL_FORMS': 0,
+        'form-0-price': '999',
+        'form-0-account': i.pk
+    }
+
+    url = reverse('bookkeeping:accounts_worth_new')
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert actual['form_is_valid']
+    assert '999' in actual['html_list']
+    assert '-title="1999 m. rugsėjo 9 d.' in actual['html_list']
+
+    actual = AccountWorth.objects.last()
+    assert actual.date.year == 1999
+    assert actual.date.month == 9
+    assert actual.date.day == 9
+
 
 def test_account_worth_invalid_data(client_logged):
     data = {

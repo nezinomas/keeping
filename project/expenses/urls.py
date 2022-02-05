@@ -5,7 +5,8 @@ from .views import expenses, expenses_name, expenses_type
 
 app_name = App_name
 
-e = [
+
+urlpatterns = [
     path(
         'expenses/index/',
         expenses.Index.as_view(),
@@ -55,10 +56,7 @@ e = [
         'expenses/search/',
         expenses.Search.as_view(),
         name='expenses_search'
-    )
-]
-
-e_type = [
+    ),
     path(
         'expenses/type/new/',
         expenses_type.New.as_view(),
@@ -69,9 +67,6 @@ e_type = [
         expenses_type.Update.as_view(),
         name='expenses_type_update'
     ),
-]
-
-e_name = [
     path(
         'expenses/name/new/',
         expenses_name.New.as_view(),
@@ -83,8 +78,3 @@ e_name = [
         name='expenses_name_update'
     ),
 ]
-
-urlpatterns = []
-urlpatterns += e
-urlpatterns += e_type
-urlpatterns += e_name

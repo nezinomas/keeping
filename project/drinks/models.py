@@ -5,6 +5,7 @@ from ..counters.models import Counter
 from ..users.models import User
 from . import managers
 
+MAX_BOTTLES = 20
 
 class Drink(Counter):
     objects = managers.DrinkQuerySet.as_manager()
@@ -13,7 +14,7 @@ class Drink(Counter):
         proxy = True
 
     def save(self, *args, **kwargs):
-        if self.quantity > 20:
+        if self.quantity > MAX_BOTTLES:
             self.quantity = round(self.quantity / 500, 2)
 
         super().save(*args, **kwargs)

@@ -6,6 +6,7 @@ from django.db.models import F, Sum
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView
 
@@ -21,8 +22,8 @@ from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
 from ..savings.models import Saving, SavingBalance, SavingType
-from .forms import (AccountWorthForm, PensionWorthForm, SavingWorthForm,
-                    SummaryExpensesForm)
+from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
+                    SavingWorthForm, SummaryExpensesForm)
 from .lib import summary_view_helper as SH
 from .lib import views_helpers as H
 from .models import AccountWorth, PensionWorth, SavingWorth
@@ -58,6 +59,7 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = SavingType
     model = SavingWorth
     form_class = SavingWorthForm
+    shared_form_class = DateForm
     list_template_name = 'bookkeeping/includes/worth_table.html'
 
     def get_context_data(self, **kwargs):
@@ -83,6 +85,7 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = Account
     model = AccountWorth
     form_class = AccountWorthForm
+    shared_form_class = DateForm
     list_template_name = 'bookkeeping/includes/accounts_worth_list.html'
 
     def get_context_data(self, **kwargs):
@@ -98,6 +101,7 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = PensionType
     model = PensionWorth
     form_class = PensionWorthForm
+    shared_form_class = DateForm
     list_template_name = 'bookkeeping/includes/worth_table.html'
 
     def get_context_data(self, **kwargs):
@@ -354,7 +358,11 @@ class AccountsWorthReset(LoginRequiredMixin, GetQuerysetMixin, CreateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        AccountWorth.objects.create(price=0, account=self.account)
+        AccountWorth.objects.create(
+            price=0,
+            account=self.account,
+            date=timezone.now()
+        )
 
         obj = H.IndexHelper(request, request.user.year)
         context = {'accounts_worth': obj.render_accounts()}

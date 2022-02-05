@@ -11,7 +11,7 @@ from . import managers
 
 
 class SavingWorth(models.Model):
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField()
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
@@ -35,7 +35,7 @@ class SavingWorth(models.Model):
 
 
 class AccountWorth(AccountBalanceMixin, models.Model):
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField()
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
@@ -59,7 +59,7 @@ class AccountWorth(AccountBalanceMixin, models.Model):
 
 
 class PensionWorth(models.Model):
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField()
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,

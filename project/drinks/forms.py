@@ -10,7 +10,7 @@ from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.forms import YearBetweenMixin
 from .apps import App_name
-from .models import Drink, DrinkTarget
+from .models import MAX_BOTTLES, Drink, DrinkTarget
 
 
 class DrinkForm(YearBetweenMixin, forms.ModelForm):
@@ -39,6 +39,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 
         self.fields['date'].label = _('Date')
         self.fields['quantity'].label = _('Quantity (0,5L beer bottle)')
+        self.fields['quantity'].help_text = _('If you enter more than %(cnt)s, the quantity will be converted to mL.') % {'cnt': MAX_BOTTLES}
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

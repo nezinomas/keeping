@@ -5,7 +5,6 @@ from django.conf import settings
 from django.utils.safestring import mark_safe
 
 from ..core.lib import utils
-from ..counts.models import CountType
 from .lib.date import yday as Yday
 from .lib.date import year_month_list
 from .lib.date import years as Year

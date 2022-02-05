@@ -1,8 +1,11 @@
-{% load crispy_forms_tags %}{% load i18n %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+
 
 <form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ form_action }}"
     autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}">
     {% csrf_token %}
+    {% include 'core/includes/form_date_scripts.html' %}
     {{ formset.management_form|crispy }}
 
     <div class="modal-header">
@@ -10,6 +13,9 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body">
+
+        {% for field in shared_form %}{{ field|as_crispy_field }}{% endfor %}
+
         {% for form in formset.forms %}
         {% include 'core/includes/form_errors.html' %}
 
