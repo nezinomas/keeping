@@ -1,3 +1,4 @@
+from datetime import date
 from datetime import datetime as dt
 from decimal import Decimal
 
@@ -9,6 +10,7 @@ from freezegun import freeze_time
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...core.tests.utils import equal_list_of_dictionaries as assert_
+from ...incomes.factories import IncomeFactory
 from ...pensions.factories import PensionTypeFactory
 from ...pensions.models import PensionBalance
 from ...savings.factories import SavingTypeFactory
@@ -77,7 +79,10 @@ def test_account_worth_post_save():
     assert actual[0]['delta'] == 0.5
 
 
+@freeze_time('2000-1-1')
 def test_account_worth_have():
+    IncomeFactory(date=date(1970, 1, 1))
+    IncomeFactory(date=date(2000, 1, 1))
     AccountWorthFactory(date=dt(1970, 1, 1), price=1)
     AccountWorthFactory(date=dt(1970, 12, 31), price=2)
     AccountWorthFactory(date=dt(2000, 1, 1), price=3)
@@ -92,7 +97,7 @@ def test_account_worth_have():
     assert actual[1]['year'] == 2000
     assert actual[1]['id'] == 1
     assert actual[1]['have'] == 4
-
+    assert 0
 
 # ---------------------------------------------------------------------------------------
 #                                                                  SavingWorth

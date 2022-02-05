@@ -72,12 +72,12 @@ class AccountBalanceMixin():
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-
+        print(f'\n\n## save method {self.price=} {self.date=}')
         self.update_accountbalance_table('update')
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
-
+        print('\n\n## delete method')
         self.update_accountbalance_table()
 
     def update_accountbalance_table(self, caller: str = None):
@@ -96,15 +96,15 @@ class AccountBalanceMixin():
                 try:
                     caller = caller if caller else 'delete'
                     print(
-                        f'\n\n>>> {caller=} {_hook}  {_account.pk=} {_old_account_id=}')
+                        f'\n\n>>>{i=} {caller=} {_hook=} {_balance_tbl_field_name=} {_account_name=} {_account.pk=} {_old_account_id=}')
                     self._update_balance_tbl(caller, _balance_tbl_field_name, _account.pk)
                 except ObjectDoesNotExist:
                     return
             else:
                 try:
-                    print(f'\n\n>>> caller: {_hook} new {_account.pk=}')
+                    print(f'\n\n>>> caller: {_hook=} new {_account.pk=}')
                     self._update_balance_tbl('new', _balance_tbl_field_name ,_account.pk)
-                    print(f'\n\n>>> caller: {_hook} delete {_old_account_id=}')
+                    print(f'\n\n>>> caller: {_hook=} delete {_old_account_id=}')
                     self._update_balance_tbl('delete', _balance_tbl_field_name, _old_account_id)
                 except ObjectDoesNotExist:
                     return
@@ -130,14 +130,14 @@ class AccountBalanceMixin():
             )
 
         except ObjectDoesNotExist as e:
-            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nUPDATE ACCOUNT CLASS CALLED\n')
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nquery failed -> UPDATE ACCOUNT CLASS CALLED\n')
             '''
             SignalBase.accounts(sender=type(self), instance=None, year=_year)
             '''
             UpdateAccountBalanceTable()
             # '''
             raise e
-
+        print(f'\n\nquery before save:\n{_qs.year=}\n{_qs.past=}\n{_qs.incomes=}\n{_qs.expenses=}\n{_qs.have=}')
         _balance_tbl_field_value = getattr(_qs, balance_tbl_field_name)
         _balance_tbl_field_value = self._calc_field(caller, _balance_tbl_field_value)
 
@@ -146,6 +146,7 @@ class AccountBalanceMixin():
         _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
         _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
 
+        print(f'\n\nquery after save:\n{_qs.year=}\n{_qs.past=}\n{_qs.incomes=}\n{_qs.expenses=}\n{_qs.have=}')
         _qs.save()
 
 
