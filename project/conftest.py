@@ -321,75 +321,53 @@ def pensions():
 
 @pytest.fixture()
 def accounts_worth():
-    with mock.patch('django.utils.timezone.now') as mock_now:
-        mock_now.return_value = datetime(1970, 1, 1, tzinfo=pytz.utc)
+    AccountWorthFactory(
+        date=datetime(1970, 1, 1, tzinfo=pytz.utc),
+        price=10,
+        account=AccountFactory(title='Account1')
+    )
+    AccountWorthFactory(
+        date=datetime(1970, 1, 1, tzinfo=pytz.utc),
+        price=20,
+        account=AccountFactory(title='Account2')
+    )
 
-        AccountWorthFactory(
-            date=datetime(1970, 1, 1, tzinfo=pytz.utc),
-            price=10,
-            account=AccountFactory(title='Account1')
-        )
-        AccountWorthFactory(
-            date=datetime(1970, 1, 1, tzinfo=pytz.utc),
-            price=20,
-            account=AccountFactory(title='Account2')
-        )
-
-    with mock.patch('django.utils.timezone.now') as mock_now:
-        mock_now.return_value = datetime(1999, 1, 1, tzinfo=pytz.utc)
-
-        AccountWorthFactory(
-            date=datetime(1999, 1, 2, tzinfo=pytz.utc),
-            price=3.25,
-            account=AccountFactory(title='Account1')
-        )
-        AccountWorthFactory(
-            date=datetime(1999, 1, 1, tzinfo=pytz.utc),
-            price=8.0,
-            account=AccountFactory(title='Account2')
-        )
+    AccountWorthFactory(
+        date=datetime(1999, 1, 2, tzinfo=pytz.utc),
+        price=3.25,
+        account=AccountFactory(title='Account1')
+    )
+    AccountWorthFactory(
+        date=datetime(1999, 1, 1, tzinfo=pytz.utc),
+        price=8.0,
+        account=AccountFactory(title='Account2')
+    )
 
 
 @pytest.fixture()
 def savings_worth():
-    with mock.patch('django.utils.timezone.now') as mock_now:
-        mock_now.return_value = datetime(1970, 1, 1, tzinfo=pytz.utc)
+    SavingWorthFactory(
+        date=datetime(1970, 1, 1, tzinfo=pytz.utc),
+        price=10,
+        saving_type=SavingTypeFactory(title='Saving1')
+    )
 
-        SavingWorthFactory(
-            price=10,
-            saving_type=SavingTypeFactory(title='Saving1')
-        )
-
-    with mock.patch('django.utils.timezone.now') as mock_now:
-        mock_now.return_value = datetime(1999, 1, 1, tzinfo=pytz.utc)
-
-        SavingWorthFactory(
-            date=datetime(1999, 1, 2, tzinfo=pytz.utc),
-            price=0.15,
-            saving_type=SavingTypeFactory(title='Saving1')
-        )
-        SavingWorthFactory(
-            date=datetime(1999, 1, 1, tzinfo=pytz.utc),
-            price=6.15,
-            saving_type=SavingTypeFactory(title='Saving2')
-        )
+    SavingWorthFactory(
+        date=datetime(1999, 1, 2, tzinfo=pytz.utc),
+        price=0.15,
+        saving_type=SavingTypeFactory(title='Saving1')
+    )
+    SavingWorthFactory(
+        date=datetime(1999, 1, 1, tzinfo=pytz.utc),
+        price=6.15,
+        saving_type=SavingTypeFactory(title='Saving2')
+    )
 
 
 @pytest.fixture()
 def pensions_worth():
-    with mock.patch('django.utils.timezone.now') as mock_now:
-        mock_now.return_value = datetime(1974, 1, 1, tzinfo=pytz.utc)
-
-        PensionWorthFactory(
-            price=6,
-        )
-
-    with mock.patch('django.utils.timezone.now') as mock_now:
-        mock_now.return_value = datetime(1999, 1, 1, tzinfo=pytz.utc)
-
-        PensionWorthFactory(
-            price=2.15,
-        )
+    PensionWorthFactory(date=datetime(1974, 1, 1, tzinfo=pytz.utc), price=6)
+    PensionWorthFactory(price=2.15)
 
 
 @pytest.fixture
