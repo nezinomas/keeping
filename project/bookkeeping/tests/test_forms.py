@@ -44,8 +44,16 @@ def test_date_form_invalid_data():
     form = DateForm(data={
         'date': 'xxx',
     })
-
+    print(f'........... {form.errors}')
     assert not form.is_valid()
+    assert 0
+
+def test_date_form_valid_with_no_date():
+    form = DateForm(data={
+        'date': None,
+    })
+
+    assert form.is_valid()
 
 
 # ---------------------------------------------------------------------------------------
