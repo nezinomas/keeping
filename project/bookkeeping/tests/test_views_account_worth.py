@@ -62,6 +62,7 @@ def test_account_worth_new(client_logged):
     assert '999' in actual['html_list']
     assert 'data-bs-title="1999 m. rugsėjo 9 d.' in actual['html_list']
 
+
 def test_account_worth_invalid_data(client_logged):
     data = {
         'form-TOTAL_FORMS': 1,
