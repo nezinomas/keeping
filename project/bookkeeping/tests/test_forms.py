@@ -1,13 +1,51 @@
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...pensions.factories import PensionTypeFactory
 from ..factories import SavingTypeFactory
-from ..forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
+from ..forms import (AccountWorthForm, DateForm, PensionWorthForm,
+                     SavingWorthForm)
 
 pytestmark = pytest.mark.django_db
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                               Date Form
+# ---------------------------------------------------------------------------------------
+def test_date_form_init():
+    DateForm()
+
+
+def test_date_form_fields():
+    form =  DateForm().as_p()
+
+    assert '<input type="text" name="date"' in form
+
+
+@freeze_time('1000-01-01')
+def test_date_form_initial_value():
+    form = DateForm().as_p()
+
+    assert '<input type="text" name="date" value="1000-01-01"' in form
+
+
+def test_date_form_valid_data():
+    form = DateForm(data={
+        'date': '1999-01-01',
+    })
+
+    assert form.is_valid()
+
+
+def test_date_form_invalid_data():
+    form = DateForm(data={
+        'date': 'xxx',
+    })
+
+    assert not form.is_valid()
 
 
 # ---------------------------------------------------------------------------------------

@@ -1,13 +1,42 @@
-from django.utils.translation import gettext as _
+from datetime import datetime
+
+from bootstrap_datepicker_plus.widgets import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
+from ..core.lib import utils
 from ..expenses.models import ExpenseType
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from .models import AccountWorth, PensionWorth, SavingWorth
+
+
+class DateForm(forms.Form):
+    date = forms.DateTimeField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        user = utils.get_user()
+        lang = user.journal.lang
+
+        self.fields['date'].widget = DatePickerInput(
+            options={
+                "format": "YYYY-MM-DD",
+                "locale": lang,
+            })
+
+        # inital values
+        self.fields['date'].initial = datetime.now()
+
+        # label
+        self.fields['date'].label = _('Date')
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
 
 
 class SavingWorthForm(forms.ModelForm):
