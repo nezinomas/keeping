@@ -24,12 +24,9 @@ pytestmark = pytest.mark.django_db
 #                                                                            AccountWorth
 # ---------------------------------------------------------------------------------------
 def test_account_worth_str():
-    with mock.patch('django.utils.timezone.now') as mock_now:
-        mock_now.return_value = dt(1999, 1, 1, 2, 3, 4, tzinfo=pytz.utc)
+    actual = AccountWorthFactory()
 
-        model = AccountWorthFactory()
-
-    assert str(model) == '1999-01-01 02:03 - Account1'
+    assert str(actual) == '1999-01-01 02:03 - Account1'
 
 
 def test_account_worth_related(second_user):
@@ -75,7 +72,6 @@ def test_account_worth_post_save():
 # ---------------------------------------------------------------------------------------
 #                                                                  SavingWorth
 # ---------------------------------------------------------------------------------------
-@freeze_time('1999-1-1 2:3:4')
 def test_saving_worth_str():
     model = SavingWorthFactory()
 
@@ -126,10 +122,7 @@ def test_saving_worth_post_save():
 #                                                                 PensionWorth
 # ---------------------------------------------------------------------------------------
 def test_pension_worth_str():
-    with mock.patch('django.utils.timezone.now') as mock_now:
-        mock_now.return_value = dt(1999, 1, 1, 2, 3, 4, tzinfo=pytz.utc)
-
-        model = PensionWorthFactory()
+    model = PensionWorthFactory()
 
     assert str(model) == '1999-01-01 02:03 - PensionType'
 

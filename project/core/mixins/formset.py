@@ -1,6 +1,7 @@
 from django.forms.models import modelformset_factory
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+
 from ...core.lib import utils
 
 
@@ -52,16 +53,28 @@ class FormsetMixin():
 
         return _formset
 
+    def _get_shared_form(self, post=None):
+        form = None
+
+        if self.shared_form_class:
+            form = self.shared_form_class(post)
+
+        return form
+
     def post(self, request, *args, **kwargs):
         formset = self._get_formset(request.POST or None)
-        if formset.is_valid():
-            data = dict()
+        shared_form = self._get_shared_form(request.POST or None)
 
-            # if from has price and price > 0 save that form
+        if formset.is_valid() and (shared_form and shared_form.is_valid()):
+            data = {}
+            date = shared_form.cleaned_data.get('date')
+
             for form in formset:
                 price = form.cleaned_data.get('price')
 
+                # if from has price and price > 0 save that form
                 if float(price) > 0:
+                    form.instance.date = date
                     form.save()
 
             context = self.get_context_data()
@@ -80,7 +93,7 @@ class FormsetMixin():
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['formset'] = self._get_formset(
-            self.request.POST or None)
+        context['formset'] = self._get_formset(self.request.POST or None)
+        context['shared_form'] = self._get_shared_form(self.request.POST or None)
 
         return context

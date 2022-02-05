@@ -1,18 +1,64 @@
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...pensions.factories import PensionTypeFactory
 from ..factories import SavingTypeFactory
-from ..forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
+from ..forms import (AccountWorthForm, DateForm, PensionWorthForm,
+                     SavingWorthForm)
 
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Saving Worth
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                               Date Form
+# ---------------------------------------------------------------------------------------
+def test_date_form_init():
+    DateForm()
+
+
+def test_date_form_fields():
+    form =  DateForm().as_p()
+
+    assert '<input type="text" name="date"' in form
+
+
+@freeze_time('1000-01-01')
+def test_date_form_initial_value():
+    form = DateForm().as_p()
+
+    assert '<input type="text" name="date" value="1000-01-01"' in form
+
+
+def test_date_form_valid_data():
+    form = DateForm(data={
+        'date': '1999-01-01',
+    })
+
+    assert form.is_valid()
+
+
+def test_date_form_invalid_data():
+    form = DateForm(data={
+        'date': 'xxx',
+    })
+
+    assert not form.is_valid()
+
+
+def test_date_form_valid_with_no_date():
+    form = DateForm(data={
+        'date': None,
+    })
+
+    assert form.is_valid()
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                            Saving Worth
+# ---------------------------------------------------------------------------------------
 def test_saving_worth_init():
     SavingWorthForm()
 
@@ -94,9 +140,9 @@ def test_saving_form_type_closed_in_current_year(get_user):
     assert 'S2' in str(form['saving_type'])
 
 
-# ----------------------------------------------------------------------------
-#                                                                Account Worth
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                           Account Worth
+# ---------------------------------------------------------------------------------------
 def test_account_worth_init():
     AccountWorthForm()
 
@@ -143,9 +189,9 @@ def test_account_worth_blank_data():
     assert 'account' in form.errors
 
 
-# ----------------------------------------------------------------------------
-#                                                                Pension Worth
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+#                                                                           Pension Worth
+# ---------------------------------------------------------------------------------------
 def test_pension_worth_init():
     PensionWorthForm()
 
