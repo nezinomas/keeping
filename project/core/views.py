@@ -9,16 +9,12 @@ from django.views.generic import View
 
 from ..core.signals_base import SignalBase
 from .lib.date import years
+from .mixins.account_balance import UpdateAccountBalanceTable
 from .mixins.views import DispatchAjaxMixin
 from .tests.utils import timer
 
 
 def signals(year):
-    SignalBase.accounts(
-        sender=None,
-        instance=None,
-        year=year
-    )
     SignalBase.savings(
         sender=None,
         instance=None,
@@ -58,8 +54,10 @@ def set_month(request, month):
 class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
     redirect_view = reverse_lazy('bookkeeping:index')
 
-    # @timer
+    @timer
     def get(self, request, *args, **kwargs):
+        UpdateAccountBalanceTable()
+
         _years = years()
 
         for year in _years:
@@ -74,8 +72,10 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
 class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View):
     redirect_view = reverse_lazy('bookkeeping:index')
 
-    # @timer
+    @timer
     def get(self, request, *args, **kwargs):
+        UpdateAccountBalanceTable()
+
         signals(request.user.year)
 
         return JsonResponse({'redirect': self.redirect_view})

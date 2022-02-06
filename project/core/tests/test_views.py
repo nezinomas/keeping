@@ -148,12 +148,10 @@ def test_view_regenerate_balances_all_year(client_logged, get_user):
 
 
 @freeze_time('2007-01-01')
-@patch.object(views.SignalBase, 'accounts')
 @patch.object(views.SignalBase, 'savings')
 @patch.object(views.SignalBase, 'pensions')
 def test_view_regenerate_balances_func_called(mck_pension,
                                               mck_saving,
-                                              mck_account,
                                               get_user,
                                               fake_request):
 
@@ -166,17 +164,14 @@ def test_view_regenerate_balances_func_called(mck_pension,
     view = setup_view(Dummy(), fake_request)
     view.get(fake_request)
 
-    assert mck_account.call_count == 2
     assert mck_saving.call_count == 2
     assert mck_pension.call_count == 2
 
 
-@patch.object(views.SignalBase, 'accounts')
 @patch.object(views.SignalBase, 'savings')
 @patch.object(views.SignalBase, 'pensions')
 def test_view_regenerate_balances_current_year_func_called(mck_pension,
                                                            mck_saving,
-                                                           mck_account,
                                                            fake_request):
     fake_request.user.journal = JournalFactory()
 
@@ -186,6 +181,5 @@ def test_view_regenerate_balances_current_year_func_called(mck_pension,
     view = setup_view(Dummy(), fake_request)
     view.get(fake_request)
 
-    assert mck_account.call_count == 1
     assert mck_saving.call_count == 1
     assert mck_pension.call_count == 1
