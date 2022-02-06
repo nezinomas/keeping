@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 
-from ..lib.balance_new import Balance as T
+from ..lib.balance import Balance as T
 
 
 @pytest.fixture()

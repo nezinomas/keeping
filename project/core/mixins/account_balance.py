@@ -2,7 +2,7 @@ from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
-from ...accounts.lib.balance_new import Balance
+from ...accounts.lib.balance import Balance
 from ...bookkeeping.lib import helpers as calc
 
 
