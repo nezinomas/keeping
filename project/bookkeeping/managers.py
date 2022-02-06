@@ -82,38 +82,6 @@ class QsMixin():
         return qs
 
 
-class SavingWorthQuerySet(QsMixin, models.QuerySet):
-    def filter_created_and_closed(self, year):
-        if year:
-            return self.filter(
-                Q(saving_type__closed__isnull=True) |
-                Q(saving_type__closed__gte=year) &
-                Q(saving_type__created__year__lte=year)
-            )
-
-        return self
-
-    def related(self):
-        journal = utils.get_user().journal
-        return (
-            self
-            .select_related('saving_type')
-            .filter(saving_type__journal=journal)
-        )
-
-    def items(self, year=None):
-        return (
-            self
-            .filter_created_and_closed(year)
-            .latest_check(field='saving_type', year=year)
-        )
-
-    def have(self):
-        return (
-            self
-            .latest_have(field='saving_type')
-        )
-
 class AccountWorthQuerySet(QsMixin, models.QuerySet):
     def filter_created_and_closed(self, year):
         if year:
@@ -144,6 +112,39 @@ class AccountWorthQuerySet(QsMixin, models.QuerySet):
         return (
             self
             .latest_have(field='account')
+        )
+
+
+class SavingWorthQuerySet(QsMixin, models.QuerySet):
+    def filter_created_and_closed(self, year):
+        if year:
+            return self.filter(
+                Q(saving_type__closed__isnull=True) |
+                Q(saving_type__closed__gte=year) &
+                Q(saving_type__created__year__lte=year)
+            )
+
+        return self
+
+    def related(self):
+        journal = utils.get_user().journal
+        return (
+            self
+            .select_related('saving_type')
+            .filter(saving_type__journal=journal)
+        )
+
+    def items(self, year=None):
+        return (
+            self
+            .filter_created_and_closed(year)
+            .latest_check(field='saving_type', year=year)
+        )
+
+    def have(self):
+        return (
+            self
+            .latest_have(field='saving_type')
         )
 
 
