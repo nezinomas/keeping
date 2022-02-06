@@ -4,7 +4,6 @@ from django.db.models import Q
 
 from ...accounts.lib.balance_new import BalanceNew
 from ...bookkeeping.lib import helpers as calc
-from ..signals_base import SignalBase
 
 '''
 {app.model_name: {accountbalance_table_field: model_field}}
