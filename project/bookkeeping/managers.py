@@ -108,6 +108,11 @@ class SavingWorthQuerySet(QsMixin, models.QuerySet):
             .latest_check(field='saving_type', year=year)
         )
 
+    def have(self):
+        return (
+            self
+            .latest_have(field='saving_type')
+        )
 
 class AccountWorthQuerySet(QsMixin, models.QuerySet):
     def filter_created_and_closed(self, year):
@@ -164,4 +169,10 @@ class PensionWorthQuerySet(QsMixin, models.QuerySet):
             self
             .filter_created(year)
             .latest_check(field='pension_type', year=year)
+        )
+
+    def have(self):
+        return (
+            self
+            .latest_have(field='pension_type')
         )
