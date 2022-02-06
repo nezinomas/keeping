@@ -7,11 +7,20 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import View
 
+from ..accounts.lib.balance import Balance as AccountBalance
 from ..core.signals_base import SignalBase
-from .lib.date import years
 from .lib.balance_table_update import UpdatetBalanceTable
+from .lib.date import years
+from .mixins.account_balance import HOOKS as AccountHooks
 from .mixins.views import DispatchAjaxMixin
 from .tests.utils import timer
+
+update_accounts_kwargs = {
+    'category_table': 'accounts.Account',
+    'balance_table': 'accounts.AccountBalance',
+    'balance_object': AccountBalance,
+    'hooks': AccountHooks
+}
 
 
 def signals(year):
@@ -56,7 +65,7 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
 
     @timer
     def get(self, request, *args, **kwargs):
-        UpdatetBalanceTable()
+        UpdatetBalanceTable(**update_accounts_kwargs)
 
         _years = years()
 
@@ -74,7 +83,7 @@ class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View)
 
     @timer
     def get(self, request, *args, **kwargs):
-        UpdatetBalanceTable()
+        UpdatetBalanceTable(**update_accounts_kwargs)
 
         signals(request.user.year)
 
