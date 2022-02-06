@@ -7,6 +7,7 @@ from freezegun import freeze_time
 
 from ...accounts.factories import AccountBalanceFactory, AccountBalance
 from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
+from ...incomes.factories import IncomeFactory
 from ...pensions.factories import PensionFactory
 from .. import views
 from ..factories import (AccountWorthFactory, PensionWorthFactory,
@@ -80,7 +81,7 @@ def test_index_account_worth(client_logged):
     response = client_logged.get(url)
 
     actual = response.context['accounts']
-    assert 'data-bs-title="1999 m. vasario 2 d., 00:00"' in actual
+    assert 'title="1999 m. vasario 2 d., 00:00"' in actual
     assert '555,0' in actual
 
 
