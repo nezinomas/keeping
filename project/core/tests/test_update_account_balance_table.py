@@ -6,7 +6,7 @@ from ...accounts.factories import (AccountBalance, AccountBalanceFactory,
                                    AccountFactory)
 from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
-from ..mixins.account_balance import UpdatetBalanceTable as T
+from ..lib.balance_table_update import UpdatetBalanceTable as T
 from ...accounts.lib.balance import Balance
 pytestmark = pytest.mark.django_db
 

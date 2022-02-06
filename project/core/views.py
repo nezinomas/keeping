@@ -9,7 +9,7 @@ from django.views.generic import View
 
 from ..core.signals_base import SignalBase
 from .lib.date import years
-from .mixins.account_balance import UpdatetBalanceTable
+from .lib.balance_table_update import UpdatetBalanceTable
 from .mixins.views import DispatchAjaxMixin
 from .tests.utils import timer
 
