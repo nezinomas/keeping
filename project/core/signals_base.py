@@ -3,12 +3,11 @@ from typing import Dict, List
 from django.apps import apps
 from django.db.models import Q
 
-from ..accounts.lib.balance import Balance as AccountStats
 from ..savings.lib.balance import Balance as SavingStats
 from ..transactions.models_hooks import transaction_accouts_hooks
 from .lib import utils
-from .lib.summary import (AccountsBalanceModels, PensionsBalanceModels,
-                          SavingsBalanceModels, collect_summary_data)
+from .lib.summary import (PensionsBalanceModels, SavingsBalanceModels,
+                          collect_summary_data)
 
 
 class SignalBase():
@@ -31,24 +30,6 @@ class SignalBase():
         self.all_id = self._get_id() if not all_id else all_id
 
         self._update_or_create()
-
-    @classmethod
-    def accounts(cls,
-                 sender: object,
-                 instance: object,
-                 year: int = None,
-                 types: Dict[str, int] = None,
-                 all_id: List[int] = None):
-
-        cls.field = 'account_id'
-        cls.model_types = apps.get_model('accounts.Account')
-        cls.model_balance = apps.get_model('accounts.AccountBalance')
-        cls.model_worth = apps.get_model('bookkeeping.AccountWorth')
-        cls.class_stats = AccountStats
-        cls.summary_models = AccountsBalanceModels
-        cls.sender = sender
-
-        return cls(instance, year, types, all_id)
 
     @classmethod
     def savings(cls,

@@ -127,12 +127,9 @@ class AccountBalanceMixin():
 
         except ObjectDoesNotExist as e:
             print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nquery failed -> UPDATE ACCOUNT CLASS CALLED\n')
-            '''
-            SignalBase.accounts(sender=type(self), instance=None, year=_year)
-            '''
             UpdateAccountBalanceTable()
-            # '''
             raise e
+
         print(f'\n\nquery before save:\n{_qs.year=}\n{_qs.past=}\n{_qs.incomes=}\n{_qs.expenses=}\n{_qs.have=}')
         _balance_tbl_field_value = getattr(_qs, balance_tbl_field_name)
         _balance_tbl_field_value = self._calc_field(caller, _balance_tbl_field_value)
@@ -185,7 +182,6 @@ class UpdateAccountBalanceTable():
 
         _balance_model = apps.get_model('accounts.AccountBalance')
         _balance = BalanceNew(data=_data)
-        _link = {}
         _df = _balance.balance_df
 
         _update = []

@@ -220,33 +220,6 @@ def test_get_fields_no_sender(_mck):
 
 
 @patch('project.core.signals.SignalBase._update_or_create')
-def test_get_fields_accounts_sender_transactions(_mck):
-    obj = T.SignalBase.accounts(sender=Transaction, instance=SimpleNamespace())
-
-    actual = obj._get_field_list()
-
-    assert actual == ['account_id', 'from_account_id', 'to_account_id']
-
-
-@patch('project.core.signals.SignalBase._update_or_create')
-def test_get_fields_accounts_sender_saving_close(_mck):
-    obj = T.SignalBase.accounts(sender=SavingClose, instance=SimpleNamespace())
-
-    actual = obj._get_field_list()
-
-    assert actual == ['account_id', 'to_account_id']
-
-
-@patch('project.core.signals.SignalBase._update_or_create')
-def test_get_fields_accounts_sender_saving_change(_mck):
-    obj = T.SignalBase.accounts(sender=SavingChange, instance=SimpleNamespace())
-
-    actual = obj._get_field_list()
-
-    assert actual == ['account_id']
-
-
-@patch('project.core.signals.SignalBase._update_or_create')
 def test_get_fields_savings_sender_transactions(_mck):
     obj = T.SignalBase.savings(sender=Transaction, instance=SimpleNamespace())
 
