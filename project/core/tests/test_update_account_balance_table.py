@@ -4,10 +4,11 @@ import pytest
 
 from ...accounts.factories import (AccountBalance, AccountBalanceFactory,
                                    AccountFactory)
+from ...accounts.lib.balance import Balance
 from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from ..lib.balance_table_update import UpdatetBalanceTable as T
-from ...accounts.lib.balance import Balance
+
 pytestmark = pytest.mark.django_db
 
 
