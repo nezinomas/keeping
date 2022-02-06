@@ -191,6 +191,7 @@ class UpdateAccountBalanceTable():
         _update = []
         _create = []
         _delete = []
+        _link = {}
 
         _items = _balance_model.objects.items()
         if not _items.exists():
@@ -220,6 +221,13 @@ class UpdateAccountBalanceTable():
 
                 # remove id in link
                 _link.get(_row.year).remove(_row.account_id)
+
+        # if in _link {year: [account_id]} left some id, create records
+        for _year, _arr in _link.items():
+            for _id in _arr:
+                _df_row = _df.loc[(_year, _id)].to_dict()
+                _obj = _balance_model(year=_year, account=self._accounts.get(_id), **_df_row)
+                _create.append(_obj)
 
         if _create:
             _balance_model.objects.bulk_create(_create)
