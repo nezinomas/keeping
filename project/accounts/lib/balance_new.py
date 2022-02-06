@@ -7,7 +7,7 @@ from ...bookkeeping.lib import helpers as calc
 from ...core.lib.balance_base import BalanceBase
 
 
-class BalanceNew(BalanceBase):
+class Balance(BalanceBase):
     _columns = ['past', 'incomes', 'expenses', 'balance', 'have', 'delta']
 
     def __init__(self, year=None, data=None):

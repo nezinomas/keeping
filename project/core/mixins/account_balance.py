@@ -2,7 +2,7 @@ from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
-from ...accounts.lib.balance_new import BalanceNew
+from ...accounts.lib.balance_new import Balance
 from ...bookkeeping.lib import helpers as calc
 
 
@@ -181,7 +181,7 @@ class UpdateAccountBalanceTable():
             return
 
         _balance_model = apps.get_model('accounts.AccountBalance')
-        _balance = BalanceNew(data=_data)
+        _balance = Balance(data=_data)
         _df = _balance.balance_df
 
         _update = []
