@@ -156,7 +156,7 @@ class UpdateAccountBalanceTable():
         a = apps.get_model('accounts.Account').objects.related()
         return {obj.id: obj for obj in a}
 
-    def _calc(self):
+    def _get_data(self):
         _data = []
         _models = list(HOOKS.keys())
 
@@ -175,6 +175,10 @@ class UpdateAccountBalanceTable():
 
                 except AttributeError:
                     pass
+        return _data
+
+    def _calc(self):
+        _data = self._get_data()
 
         if not _data:
             return
