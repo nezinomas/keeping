@@ -1,4 +1,3 @@
-from datetime import date
 from decimal import Decimal
 
 from django.core.validators import MinLengthValidator, MinValueValidator
@@ -6,12 +5,11 @@ from django.db import models
 
 from ..accounts.models import Account
 from ..core.mixins.account_balance import AccountBalanceMixin
-from ..core.mixins.from_db import FromDbAccountIdMixin
 from ..journals.models import Journal
 from . import managers
 
 
-class Borrow(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
+class Borrow(AccountBalanceMixin, models.Model):
     date = models.DateField()
     name = models.CharField(
         max_length=100,
@@ -54,7 +52,7 @@ class Borrow(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
         return str(self.name)
 
 
-class BorrowReturn(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
+class BorrowReturn(AccountBalanceMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
@@ -113,7 +111,7 @@ class BorrowReturn(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
         obj.save()
 
 
-class Lent(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
+class Lent(AccountBalanceMixin, models.Model):
     date = models.DateField()
     name = models.CharField(
         max_length=100,
@@ -156,7 +154,7 @@ class Lent(AccountBalanceMixin, FromDbAccountIdMixin, models.Model):
         return str(self.name)
 
 
-class LentReturn(AccountBalanceMixin ,FromDbAccountIdMixin, models.Model):
+class LentReturn(AccountBalanceMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
