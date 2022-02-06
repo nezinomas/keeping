@@ -1,15 +1,13 @@
 from datetime import date
 
 import pytest
-from project.accounts.models import Account
 
 from ...accounts.factories import (AccountBalance, AccountBalanceFactory,
                                    AccountFactory)
-from ...bookkeeping.factories import AccountWorthFactory
 from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from ..mixins.account_balance import UpdateAccountBalanceTable as T
-
+from ...accounts.lib.balance import Balance
 pytestmark = pytest.mark.django_db
 
 
@@ -18,7 +16,12 @@ def test_income_create():
 
     AccountBalance.objects.all().delete()
 
-    T()
+    T(
+        category_table='accounts.Account',
+        balance_table='accounts.AccountBalance',
+        balance_object=Balance,
+        hooks={'incomes.Income': {'incomes': 'account'}}
+    )
 
     actual = AccountBalance.objects.all()
 
@@ -41,7 +44,12 @@ def test_income_update():
     model.incomes = 0
     model.save()
 
-    T()
+    T(
+        category_table='accounts.Account',
+        balance_table='accounts.AccountBalance',
+        balance_object=Balance,
+        hooks={'incomes.Income': {'incomes': 'account'}}
+    )
 
     actual = AccountBalance.objects.all()
     assert actual.count() == 1
@@ -62,7 +70,12 @@ def test_income_delete():
     AccountBalanceFactory(account=AccountFactory(title='X'))
     assert AccountBalance.objects.count() == 2
 
-    T()
+    T(
+        category_table='accounts.Account',
+        balance_table='accounts.AccountBalance',
+        balance_object=Balance,
+        hooks={'incomes.Income': {'incomes': 'account'}}
+    )
 
     actual = AccountBalance.objects.all()
 
@@ -83,7 +96,12 @@ def test_income_create_update():
 
     AccountBalance.objects.get(pk=obj1.pk).delete()
 
-    T()
+    T(
+        category_table='accounts.Account',
+        balance_table='accounts.AccountBalance',
+        balance_object=Balance,
+        hooks={'incomes.Income': {'incomes': 'account'}}
+    )
 
     actual = AccountBalance.objects.all()
     assert actual.count() == 2
@@ -105,13 +123,52 @@ def test_income_create_update():
     assert actual.delta == -4.0
 
 
+def test_income_create_queries(django_assert_num_queries):
+    IncomeFactory(account=AccountFactory(title='X'))
+    IncomeFactory(account=AccountFactory(title='Y'))
+    IncomeFactory(account=AccountFactory(title='Z'))
+
+    AccountBalance.objects.all().delete()
+
+    with django_assert_num_queries(4):
+        T(
+            category_table='accounts.Account',
+            balance_table='accounts.AccountBalance',
+            balance_object=Balance,
+            hooks={'incomes.Income': {'incomes': 'account'}}
+        )
+
+
+def test_income_create_update_queries(django_assert_num_queries):
+    IncomeFactory(price=2)
+    obj = IncomeFactory(date=date(1998, 1, 1), price=4)
+
+    AccountBalance.objects.get(pk=obj.pk).delete()
+
+    with django_assert_num_queries(6):
+        T(
+            category_table='accounts.Account',
+            balance_table='accounts.AccountBalance',
+            balance_object=Balance,
+            hooks={'incomes.Income': {'incomes': 'account'}}
+        )
+
+
 def test_income_expense_create():
     inc = IncomeFactory(price=2)
     exp = ExpenseFactory(price=1)
 
     AccountBalance.objects.all().delete()
 
-    T()
+    T(
+        category_table='accounts.Account',
+        balance_table='accounts.AccountBalance',
+        balance_object=Balance,
+        hooks={
+            'incomes.Income': {'incomes': 'account'},
+            'expenses.Expense': {'expenses': 'account'},
+        }
+    )
 
     actual = AccountBalance.objects.all()
 
@@ -133,7 +190,12 @@ def test_income_obsolete_rows_must_be_deleted():
     # obsolete records
     AccountBalanceFactory(account=AccountFactory(title='X'), year=1974)
 
-    T()
+    T(
+        category_table='accounts.Account',
+        balance_table='accounts.AccountBalance',
+        balance_object=Balance,
+        hooks={'incomes.Income': {'incomes': 'account'}}
+    )
 
     actual = AccountBalance.objects.all()
 
@@ -158,7 +220,12 @@ def test_income_with_closed_account():
     AccountBalanceFactory(year=1998)
     AccountBalanceFactory(year=2000)
 
-    T()
+    T(
+        category_table='accounts.Account',
+        balance_table='accounts.AccountBalance',
+        balance_object=Balance,
+        hooks={'incomes.Income': {'incomes': 'account'}}
+    )
 
     actual = AccountBalance.objects.all()
 

@@ -127,35 +127,45 @@ class AccountBalanceMixin():
 
         except ObjectDoesNotExist as e:
             print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nquery failed -> UPDATE ACCOUNT CLASS CALLED\n')
-            UpdateAccountBalanceTable()
+            UpdateAccountBalanceTable(category_table='accounts.Account',
+                                      balance_table='accounts.AccountBalance',
+                                      balance_object=Balance,
+                                      hooks=HOOKS)
             raise e
 
-        print(f'\n\nquery before save:\n{_qs.year=}\n{_qs.past=}\n{_qs.incomes=}\n{_qs.expenses=}\n{_qs.have=}')
+        print(
+            f'\n\nquery before save:\n{_qs.year=}\n{_qs.past=}\n{_qs.incomes=}\n{_qs.expenses=}\n{_qs.have=}')
         _balance_tbl_field_value = getattr(_qs, balance_tbl_field_name)
-        _balance_tbl_field_value = self._calc_field(caller, _balance_tbl_field_value)
+        _balance_tbl_field_value = self._calc_field(
+            caller, _balance_tbl_field_value)
 
         setattr(_qs, balance_tbl_field_name, _balance_tbl_field_value)
 
         _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
         _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
 
-        print(f'\n\nquery after save:\n{_qs.year=}\n{_qs.past=}\n{_qs.incomes=}\n{_qs.expenses=}\n{_qs.have=}')
+        print(
+            f'\n\nquery after save:\n{_qs.year=}\n{_qs.past=}\n{_qs.incomes=}\n{_qs.expenses=}\n{_qs.have=}')
         _qs.save()
 
 
 class UpdateAccountBalanceTable():
-    def __init__(self):
-        self._accounts = self._get_accounts()
+    def __init__(self, category_table, balance_table, balance_object, hooks):
+        self._balance_model = apps.get_model(balance_table)
+        self._hooks = hooks
+        self._balance_object = balance_object
+
+        self._accounts = self._get_accounts(category_table)
 
         self._calc()
 
-    def _get_accounts(self):
-        a = apps.get_model('accounts.Account').objects.related()
+    def _get_accounts(self, category_table):
+        a = apps.get_model(category_table).objects.related()
         return {obj.id: obj for obj in a}
 
     def _get_data(self):
         _data = []
-        _models = list(HOOKS.keys())
+        _models = list(self._hooks.keys())
 
         for _model_name in _models:
             try:
@@ -163,7 +173,7 @@ class UpdateAccountBalanceTable():
             except LookupError:
                 continue
 
-            for _method, _ in HOOKS[_model_name].items():
+            for _method, _ in self._hooks[_model_name].items():
                 try:
                     _method = getattr(model.objects, _method)
                     _qs = _method()
@@ -180,8 +190,7 @@ class UpdateAccountBalanceTable():
         if not _data:
             return
 
-        _balance_model = apps.get_model('accounts.AccountBalance')
-        _balance = Balance(data=_data)
+        _balance = self._balance_object(data=_data)
         _df = _balance.balance_df
 
         _update = []
@@ -189,14 +198,18 @@ class UpdateAccountBalanceTable():
         _delete = []
         _link = {}
 
-        _items = _balance_model.objects.items()
+        _items = self._balance_model.objects.items()
         if not _items.exists():
             _dicts = _balance.balance
-            for _dict in _dicts:
-                _id = _dict['account_id']
-                del _dict['account_id']
 
-                _create.append(_balance_model(account=self._accounts.get(_id), **_dict))
+            # get name. it must be account_id|saving_type_id|pension_type_id
+            if _dicts:
+                for x in _dicts[0].keys():
+                    _key_name = x if '_id' in x else None
+
+            for _dict in _dicts:
+                _id = _dict[_key_name]
+                _create.append(self._balance_model(account=self._accounts.get(_id), **_dict))
         else:
             _link = _balance.year_account_link
 
@@ -207,7 +220,7 @@ class UpdateAccountBalanceTable():
                     _delete.append(_row.pk)
                     continue
 
-                _obj = _balance_model(
+                _obj = self._balance_model(
                     pk=_row.pk,
                     year=_row.year,
                     account=self._accounts.get(_row.account_id),
@@ -222,14 +235,14 @@ class UpdateAccountBalanceTable():
         for _year, _arr in _link.items():
             for _id in _arr:
                 _df_row = _df.loc[(_year, _id)].to_dict()
-                _obj = _balance_model(year=_year, account=self._accounts.get(_id), **_df_row)
+                _obj = self._balance_model(year=_year, account=self._accounts.get(_id), **_df_row)
                 _create.append(_obj)
 
         if _create:
-            _balance_model.objects.bulk_create(_create)
+            self._balance_model.objects.bulk_create(_create)
 
         if _update:
-            _balance_model.objects.bulk_update(_update, ['past', 'incomes', 'expenses', 'balance', 'have', 'delta'])
+            self._balance_model.objects.bulk_update(_update, _df.columns.values.tolist())
 
         if _delete:
-            _balance_model.objects.related().filter(pk__in=_delete).delete()
+            self._balance_model.objects.related().filter(pk__in=_delete).delete()
