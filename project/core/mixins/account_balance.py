@@ -96,7 +96,7 @@ class AccountBalanceMixin():
                 try:
                     caller = caller if caller else 'delete'
                     print(
-                        f'\n\n>>>{i=} {caller=} {_hook=} {_balance_tbl_field_name=} {_account_name=} {_account.pk=} {_old_account_id=}')
+                        f'\n\n>>>{caller=} {_hook=} {_balance_tbl_field_name=} {_account_name=} {_account.pk=} {_old_account_id=}')
                     self._update_balance_tbl(caller, _balance_tbl_field_name, _account.pk)
                 except ObjectDoesNotExist:
                     return
