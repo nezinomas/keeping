@@ -9,7 +9,7 @@ from django.views.generic import View
 
 from ..core.signals_base import SignalBase
 from .lib.date import years
-from .mixins.account_balance import UpdateAccountBalanceTable
+from .mixins.account_balance import UpdatetBalanceTable
 from .mixins.views import DispatchAjaxMixin
 from .tests.utils import timer
 
@@ -56,7 +56,7 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
 
     @timer
     def get(self, request, *args, **kwargs):
-        UpdateAccountBalanceTable()
+        UpdatetBalanceTable()
 
         _years = years()
 
@@ -74,7 +74,7 @@ class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View)
 
     @timer
     def get(self, request, *args, **kwargs):
-        UpdateAccountBalanceTable()
+        UpdatetBalanceTable()
 
         signals(request.user.year)
 

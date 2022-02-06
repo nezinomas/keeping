@@ -127,7 +127,7 @@ class AccountBalanceMixin():
 
         except ObjectDoesNotExist as e:
             print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nquery failed -> UPDATE ACCOUNT CLASS CALLED\n')
-            UpdateAccountBalanceTable(category_table='accounts.Account',
+            UpdatetBalanceTable(category_table='accounts.Account',
                                       balance_table='accounts.AccountBalance',
                                       balance_object=Balance,
                                       hooks=HOOKS)
@@ -149,7 +149,7 @@ class AccountBalanceMixin():
         _qs.save()
 
 
-class UpdateAccountBalanceTable():
+class UpdatetBalanceTable():
     def __init__(self, category_table, balance_table, balance_object, hooks):
         self._balance_model = apps.get_model(balance_table)
         self._hooks = hooks
