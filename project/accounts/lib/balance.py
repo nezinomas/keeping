@@ -8,32 +8,16 @@ from ...core.lib.balance_base import BalanceBase
 
 
 class Balance(BalanceBase):
-    _columns = ['past', 'incomes', 'expenses', 'balance', 'have', 'delta']
-
-    def __init__(self, year=None, data=None):
-        """
-        Args:
-            year (int, optional):  Defaults to None.
-            data (List[Dict]], optional): Defaults to None.
-
-            data format:
-            [{'id': int, 'year': int, 'field_name': Decimal}]
-
-            id == account_id
-
-            field_name == incomes/expenses/have
-        """
-
+    def __init__(self, year=None):
         self._balance = DF()
         self._year = year
 
-        if not data:
-            return
+    @classmethod
+    def accounts(cls, year=None):
+        cls.id_field = 'account_id'
+        cls.columns = ['past', 'incomes', 'expenses', 'balance', 'have', 'delta']
 
-        df = self._create_df(data)
-        df = self._calc_balance(df)
-
-        self._balance = df
+        return cls(year)
 
     @property
     def year_account_link(self):
@@ -44,7 +28,7 @@ class Balance(BalanceBase):
 
         df = self._balance.copy()
         df.reset_index(inplace=True)
-        df.set_index(['account_id', 'year'], inplace=True)
+        df.set_index([self.id_field, 'year'], inplace=True)
 
         idx = df.index.to_list()
         for r in idx:
@@ -66,8 +50,9 @@ class Balance(BalanceBase):
         df = self._balance.copy()
 
         df.reset_index(inplace=True)
-        df.set_index(['year', 'account_id'], inplace=True)
+        df.set_index(['year', self.id_field], inplace=True)
         df.sort_index(inplace=True)
+
         return df
 
     @property
@@ -88,6 +73,31 @@ class Balance(BalanceBase):
     @property
     def balance_end(self) -> float:
         return self.total_row.get('balance', 0.0)
+
+    def create_balance(self, data):
+        """
+        Args:
+            data (List[Dict]], optional): Defaults to None.
+
+            data format:
+            [{'id': int, 'year': int, 'field_name': Decimal}]
+
+            id == account_id
+
+            field_name == incomes/expenses/have
+        """
+
+        if not data:
+            return
+
+        df = self._create_df(data)
+
+        if self.id_field == 'account_id':
+            df = self._calc_balance(df)
+        else:
+            pass
+
+        self._balance = df
 
     def _create_df(self, data):
         _arr = []
@@ -116,7 +126,7 @@ class Balance(BalanceBase):
 
         # create columns if not exists
         _columns = df.columns.to_list()
-        diff = list(set(self._columns) - set(_columns))
+        diff = list(set(self.columns) - set(_columns))
 
         if diff:
             for _column_name in diff:

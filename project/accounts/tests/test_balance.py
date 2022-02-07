@@ -48,7 +48,10 @@ def have():
 
 
 def test_balance_columns(incomes1):
-    actual = T(data=[incomes1])._balance.columns
+    obj = T().accounts()
+    obj.create_balance(data=[incomes1])
+
+    actual = obj._balance.columns
 
     assert 'past' in actual
     assert 'incomes' in actual
@@ -60,25 +63,31 @@ def test_balance_columns(incomes1):
 
 
 def test_balance_no_data():
-    actual = T().balance
+    obj = T().accounts()
+    actual = obj.balance
 
     assert actual == []
 
 
 def test_balance_empty_data():
-    actual = T(data=[]).balance
+    obj = T().accounts()
+    actual = obj.balance
 
     assert actual == []
 
 
 def test_balance_wrong_data():
-    actual = T(data=[[{'x':'x'}]]).balance
+    obj = T().accounts()
+    obj.create_balance(data=[[{'x':'x'}]])
+    actual = obj.balance
 
     assert actual == []
 
 
 def test_balance_only_incomes(incomes1, incomes2):
-    actual = T(data=[incomes1, incomes2]).balance
+    obj = T().accounts()
+    obj.create_balance(data=[incomes1, incomes2])
+    actual = obj.balance
 
     # Account1
     assert actual[0]['year'] == 1970
@@ -120,7 +129,10 @@ def test_balance_only_incomes(incomes1, incomes2):
 
 
 def test_balance_incomes_expenses(incomes1, incomes2, expenses):
-    actual = T(data=[incomes1, incomes2, expenses, expenses]).balance
+    obj = T().accounts()
+    obj.create_balance(data=[incomes1, incomes2, expenses, expenses])
+
+    actual = obj.balance
 
     # Account1
     assert actual[0]['year'] == 1970
@@ -162,7 +174,9 @@ def test_balance_incomes_expenses(incomes1, incomes2, expenses):
 
 
 def test_balance_incomes_expenses_have(incomes1, incomes2, expenses, have):
-    actual = T(data=[incomes1, incomes2, expenses, expenses, have]).balance
+    obj = T().accounts()
+    obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])
+    actual = obj.balance
 
     # Account1
     assert actual[0]['year'] == 1970
@@ -204,7 +218,9 @@ def test_balance_incomes_expenses_have(incomes1, incomes2, expenses, have):
 
 
 def test_total_row_no_year(incomes1, incomes2, expenses, have):
-    actual = T(data=[incomes1, incomes2, expenses, expenses, have]).total_row
+    obj = T().accounts()
+    obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])
+    actual = obj.total_row
 
     assert actual['past'] == 1.0
     assert actual['incomes'] == 9.0
@@ -215,7 +231,9 @@ def test_total_row_no_year(incomes1, incomes2, expenses, have):
 
 
 def test_total_row_with_year(incomes1, incomes2, expenses, have):
-    actual = T(year=1970, data=[incomes1, incomes2, expenses, expenses, have]).total_row
+    obj = T().accounts(year=1970)
+    obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])
+    actual = obj.total_row
 
     assert actual['past'] == 0.0
     assert actual['incomes'] == 5.0
@@ -226,37 +244,49 @@ def test_total_row_with_year(incomes1, incomes2, expenses, have):
 
 
 def test_total_row_no_data():
-    actual = T(data=[]).total_row
+    obj = T().accounts()
+    obj.create_balance(data=[])
+    actual = obj.total_row
 
     assert actual == {}
 
 
 def test_balance_start_no_year(incomes1, incomes2, expenses, have):
-    actual = T(data=[incomes1, incomes2, expenses, expenses, have]).balance_start
+    obj = T().accounts()
+    obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])
+    actual = obj.balance_start
 
     assert actual == 1.0
 
 
 def test_balance_start_with_year(incomes1, incomes2, expenses, have):
-    actual = T(year=1970, data=[incomes1, incomes2, expenses, expenses, have]).balance_start
+    obj = T().accounts(year=1970)
+    obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])
+    actual = obj.balance_start
 
     assert actual == 0.0
 
 
 def test_balance_end_no_year(incomes1, incomes2, expenses, have):
-    actual = T(data=[incomes1, incomes2, expenses, expenses, have]).balance_end
+    obj = T().accounts()
+    obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])
+    actual = obj.balance_end
 
     assert actual == 6.0
 
 
 def test_balance_end_with_year(incomes1, incomes2, expenses, have):
-    actual = T(year=1970, data=[incomes1, incomes2, expenses, expenses, have]).balance_end
+    obj = T().accounts(year=1970)
+    obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])
+    actual = obj.balance_end
 
     assert actual == 1.0
 
 
 def test_balance_year_account_id_link(incomes1):
-    actual = T(data=[incomes1, [{'id': 3, 'year': 1970, 'x': 4}]]).year_account_link
+    obj = T().accounts()
+    obj.create_balance(data=[incomes1, [{'id': 3, 'year': 1970, 'x': 4}]])
+    actual = obj.year_account_link
 
     assert actual[1970] == [1, 2, 3]
     assert actual[1999] == [1, 2]

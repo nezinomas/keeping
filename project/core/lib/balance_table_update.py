@@ -42,7 +42,9 @@ class UpdatetBalanceTable():
         if not _data:
             return
 
-        _balance = self._balance_object(data=_data)
+        _balance = self._balance_object.accounts()
+        _balance.create_balance(data=_data)
+
         _df = _balance.balance_df
 
         _update = []
