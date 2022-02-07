@@ -93,7 +93,7 @@ class Balance(BalanceBase):
         df = self._create_df(data)
 
         if self.id_field == 'account_id':
-            df = self._calc_balance(df)
+            df = self._calc_account_balance(df)
         else:
             pass
 
@@ -134,7 +134,7 @@ class Balance(BalanceBase):
 
         return df
 
-    def _calc_balance(self, df):
+    def _calc_account_balance(self, df):
         if not isinstance(df, DF):
             return {}
 
