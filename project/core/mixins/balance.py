@@ -51,7 +51,7 @@ def _getattr(obj, name, default=None):
         return default
 
 
-class UpdateBalanceTable():
+class UpdateTable():
     original_price = 0.0
     old_values = {}
 
@@ -148,5 +148,5 @@ class UpdateAccountBalanceTableFields():
         _qs.save()
 
 
-class AccountBalanceMixin(UpdateBalanceTable, UpdateAccountBalanceTableFields):
+class AccountBalanceMixin(UpdateTable, UpdateAccountBalanceTableFields):
     pass
