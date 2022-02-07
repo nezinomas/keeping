@@ -7,7 +7,7 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import View
 
-from ..accounts.lib.balance import Balance as AccountBalance
+from ..core.lib.balance import Balance
 from ..core.signals_base import SignalBase
 from .lib.balance_table_update import UpdatetBalanceTable
 from .lib.date import years
@@ -18,7 +18,7 @@ from .tests.utils import timer
 update_accounts_kwargs = {
     'category_table': 'accounts.Account',
     'balance_table': 'accounts.AccountBalance',
-    'balance_object': AccountBalance,
+    'balance_object': Balance.accounts(),
     'hooks': AccountHooks
 }
 

@@ -42,10 +42,9 @@ class UpdatetBalanceTable():
         if not _data:
             return
 
-        _balance = self._balance_object.accounts()
-        _balance.create_balance(data=_data)
+        self._balance_object.create_balance(data=_data)
 
-        _df = _balance.balance_df
+        _df = self._balance_object.balance_df
 
         _update = []
         _create = []
@@ -54,7 +53,7 @@ class UpdatetBalanceTable():
 
         _items = self._balance_model.objects.items()
         if not _items.exists():
-            _dicts = _balance.balance
+            _dicts = self._balance_object.balance
 
             # get name. it must be account_id|saving_type_id|pension_type_id
             if _dicts:
@@ -65,7 +64,7 @@ class UpdatetBalanceTable():
                 _id = _dict[_key_name]
                 _create.append(self._balance_model(account=self._accounts.get(_id), **_dict))
         else:
-            _link = _balance.year_account_link
+            _link = self._balance_object.year_account_link
 
             for _row in _items:
                 try:
