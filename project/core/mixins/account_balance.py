@@ -105,7 +105,8 @@ class UpdateBalanceTable():
                 except ObjectDoesNotExist:
                     return
 
-class CalcAccountBalanceTableFields():
+
+class UpdateAccountBalanceTableFields():
     def _calc_field(self, /, caller, field_value):
         price = float(self.price)
         original_price = float(self.original_price)
@@ -134,20 +135,18 @@ class CalcAccountBalanceTableFields():
                                 hooks=HOOKS)
             raise e
 
-        print(
-            f'\n\nquery before save:\n{_qs.year=}\n{_qs.past=}\n{_qs.incomes=}\n{_qs.expenses=}\n{_qs.have=}')
+        print(f'\n\nquery before save:\n{_qs.year=}\n{_qs.past=}\n{_qs.incomes=}\n{_qs.expenses=}\n{_qs.have=}')
         _balance_tbl_field_value = getattr(_qs, balance_tbl_field_name)
-        _balance_tbl_field_value = self._calc_field(
-            caller, _balance_tbl_field_value)
+        _balance_tbl_field_value = self._calc_field(caller, _balance_tbl_field_value)
 
         setattr(_qs, balance_tbl_field_name, _balance_tbl_field_value)
 
         _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
         _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
 
-        print(
-            f'\n\nquery after save:\n{_qs.year=}\n{_qs.past=}\n{_qs.incomes=}\n{_qs.expenses=}\n{_qs.have=}')
+        print(f'\n\nquery after save:\n{_qs.year=}\n{_qs.past=}\n{_qs.incomes=}\n{_qs.expenses=}\n{_qs.have=}')
         _qs.save()
 
-class AccountBalanceMixin(UpdateBalanceTable, CalcAccountBalanceTableFields):
+
+class AccountBalanceMixin(UpdateBalanceTable, UpdateAccountBalanceTableFields):
     pass
