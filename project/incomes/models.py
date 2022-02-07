@@ -9,7 +9,7 @@ from ..core.lib import utils
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from .managers import IncomeQuerySet, IncomeTypeQuerySet
-from ..core.mixins.account_balance import AccountBalanceMixin
+from ..core.mixins.balance import AccountBalanceMixin
 
 
 class IncomeType(TitleAbstract):

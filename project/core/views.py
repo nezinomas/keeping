@@ -11,7 +11,7 @@ from ..accounts.lib.balance import Balance as AccountBalance
 from ..core.signals_base import SignalBase
 from .lib.balance_table_update import UpdatetBalanceTable
 from .lib.date import years
-from .mixins.account_balance import HOOKS as AccountHooks
+from .mixins.balance import HOOKS as AccountHooks
 from .mixins.views import DispatchAjaxMixin
 from .tests.utils import timer
 

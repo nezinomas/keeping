@@ -6,7 +6,7 @@ from django.db.models import F
 
 from ..accounts.models import Account
 from ..core.lib import utils
-from ..core.mixins.account_balance import AccountBalanceMixin
+from ..core.mixins.balance import AccountBalanceMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from .helpers.models_helper import upload_attachment
