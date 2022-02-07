@@ -96,7 +96,7 @@ class CalcAccountBalanceTableFields():
         _qs.save()
 
 
-class AccountBalanceMixin(CalcAccountBalanceTableFields):
+class UpdateBalanceTable():
     original_price = 0.0
     old_values = {}
 
@@ -123,8 +123,8 @@ class AccountBalanceMixin(CalcAccountBalanceTableFields):
         self.update_accountbalance_table()
 
     def update_accountbalance_table(self, caller: str = None):
-        _arr = self.__class__.__module__.split('.') # [0]=project [1]=app
-        _name = f'{_arr[1]}.{type(self).__name__}' # = app.Model
+        _arr = self.__class__.__module__.split('.')  # [0]=project [1]=app
+        _name = f'{_arr[1]}.{type(self).__name__}'  # = app.Model
         _hook = HOOKS.get(_name)
 
         if not _hook:
@@ -137,16 +137,19 @@ class AccountBalanceMixin(CalcAccountBalanceTableFields):
             if not _old_account_id or _old_account_id == _account.pk:
                 try:
                     caller = caller if caller else 'delete'
-                    print(
-                        f'\n\n>>>{caller=} {_hook=} {_balance_tbl_field_name=} {_account_name=} {_account.pk=} {_old_account_id=}')
+                    print(f'\n\n>>>{caller=} {_hook=} {_balance_tbl_field_name=} {_account_name=} {_account.pk=} {_old_account_id=}')
                     self.update_balance_tbl(caller, _balance_tbl_field_name, _account.pk)
                 except ObjectDoesNotExist:
                     return
             else:
                 try:
                     print(f'\n\n>>> caller: {_hook=} new {_account.pk=}')
-                    self.update_balance_tbl('new', _balance_tbl_field_name ,_account.pk)
+                    self.update_balance_tbl('new', _balance_tbl_field_name, _account.pk)
                     print(f'\n\n>>> caller: {_hook=} delete {_old_account_id=}')
                     self.update_balance_tbl('delete', _balance_tbl_field_name, _old_account_id)
                 except ObjectDoesNotExist:
                     return
+
+
+class AccountBalanceMixin(UpdateBalanceTable, CalcAccountBalanceTableFields):
+    pass
