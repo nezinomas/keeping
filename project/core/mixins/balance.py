@@ -69,12 +69,12 @@ class UpdateTable():
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        print(f'\n\n## save method {self.price=} {self.date=}')
+
         self.update_accountbalance_table('update')
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
-        print('\n\n## delete method')
+
         self.update_accountbalance_table()
 
     def update_accountbalance_table(self, caller: str = None):
