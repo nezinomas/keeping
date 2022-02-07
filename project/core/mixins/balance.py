@@ -2,7 +2,7 @@ from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
-from ...accounts.lib.balance import Balance
+from ...core.lib.balance import Balance
 from ...bookkeeping.lib import helpers as calc
 from ..lib.balance_table_update import UpdatetBalanceTable
 
@@ -131,7 +131,7 @@ class UpdateAccountBalanceTableFields():
             print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nquery failed -> UPDATE ACCOUNT CLASS CALLED\n')
             UpdatetBalanceTable(category_table='accounts.Account',
                                 balance_table='accounts.AccountBalance',
-                                balance_object=Balance,
+                                balance_object=Balance.accounts(),
                                 hooks=HOOKS)
             raise e
 

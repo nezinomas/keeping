@@ -4,7 +4,7 @@ import pytest
 
 from ...accounts.factories import (AccountBalance, AccountBalanceFactory,
                                    AccountFactory)
-from ...accounts.lib.balance import Balance
+from ...core.lib.balance import Balance
 from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from ..lib.balance_table_update import UpdatetBalanceTable as T
@@ -20,7 +20,7 @@ def test_income_create():
     T(
         category_table='accounts.Account',
         balance_table='accounts.AccountBalance',
-        balance_object=Balance,
+        balance_object=Balance.accounts(),
         hooks={'incomes.Income': {'incomes': 'account'}}
     )
 
@@ -48,7 +48,7 @@ def test_income_update():
     T(
         category_table='accounts.Account',
         balance_table='accounts.AccountBalance',
-        balance_object=Balance,
+        balance_object=Balance.accounts(),
         hooks={'incomes.Income': {'incomes': 'account'}}
     )
 
@@ -74,7 +74,7 @@ def test_income_delete():
     T(
         category_table='accounts.Account',
         balance_table='accounts.AccountBalance',
-        balance_object=Balance,
+        balance_object=Balance.accounts(),
         hooks={'incomes.Income': {'incomes': 'account'}}
     )
 
@@ -100,7 +100,7 @@ def test_income_create_update():
     T(
         category_table='accounts.Account',
         balance_table='accounts.AccountBalance',
-        balance_object=Balance,
+        balance_object=Balance.accounts(),
         hooks={'incomes.Income': {'incomes': 'account'}}
     )
 
@@ -135,7 +135,7 @@ def test_income_create_queries(django_assert_num_queries):
         T(
             category_table='accounts.Account',
             balance_table='accounts.AccountBalance',
-            balance_object=Balance,
+            balance_object=Balance.accounts(),
             hooks={'incomes.Income': {'incomes': 'account'}}
         )
 
@@ -150,7 +150,7 @@ def test_income_create_update_queries(django_assert_num_queries):
         T(
             category_table='accounts.Account',
             balance_table='accounts.AccountBalance',
-            balance_object=Balance,
+            balance_object=Balance.accounts(),
             hooks={'incomes.Income': {'incomes': 'account'}}
         )
 
@@ -164,7 +164,7 @@ def test_income_expense_create():
     T(
         category_table='accounts.Account',
         balance_table='accounts.AccountBalance',
-        balance_object=Balance,
+        balance_object=Balance.accounts(),
         hooks={
             'incomes.Income': {'incomes': 'account'},
             'expenses.Expense': {'expenses': 'account'},
@@ -194,7 +194,7 @@ def test_income_obsolete_rows_must_be_deleted():
     T(
         category_table='accounts.Account',
         balance_table='accounts.AccountBalance',
-        balance_object=Balance,
+        balance_object=Balance.accounts(),
         hooks={'incomes.Income': {'incomes': 'account'}}
     )
 
@@ -224,7 +224,7 @@ def test_income_with_closed_account():
     T(
         category_table='accounts.Account',
         balance_table='accounts.AccountBalance',
-        balance_object=Balance,
+        balance_object=Balance.accounts(),
         hooks={'incomes.Income': {'incomes': 'account'}}
     )
 
