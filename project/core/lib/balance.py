@@ -140,6 +140,11 @@ class Balance(BalanceBase):
 
         _arr = []
 
+        # sum fee and expenses
+        if 'fee' in df.columns.to_list():
+            df['expenses'] = df['expenses'] + df['fee']
+            df.drop('fee', axis=1, inplace=True)  # delete fee column
+
         # account_id list from df index.level[0]
         idx = df.index.unique(level=0).to_list()
 
