@@ -7,43 +7,6 @@ from ...bookkeeping.lib import helpers as calc
 from ..lib.balance_table_update import UpdatetBalanceTable
 
 
-# {app.model_name: {accountbalance_table_field: model_field}}
-# model must have same methods as account_balance_table_field
-# i.e. Incomes.objects.incomes()
-HOOKS = {
-    'incomes.Income': {
-        'incomes': 'account',
-    },
-    'expenses.Expense': {
-        'expenses': 'account',
-    },
-    'debts.Lent': {
-        'incomes': 'account',
-    },
-    'debts.LentReturn': {
-        'expenses': 'account',
-    },
-    'debts.Borrow': {
-        'expenses': 'account',
-    },
-    'debts.BorrowReturn': {
-        'incomes': 'account',
-    },
-    'transactions.Transaction': {
-        'incomes': 'to_account',
-        'expenses': 'from_account',
-    },
-    'savings.Saving': {
-        'expenses': 'account',
-    },
-    'transactions.SavingClose': {
-        'incomes': 'to_account',
-    },
-    'bookkeeping.AccountWorth': {
-        'have': 'account',
-    }
-}
-
 def _getattr(obj, name, default=None):
     try:
         return getattr(obj, name)
@@ -127,10 +90,7 @@ class UpdateTable():
 
         except ObjectDoesNotExist as e:
             print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nquery failed -> UPDATE ACCOUNT CLASS CALLED\n')
-            UpdatetBalanceTable(category_table=self.category_table,
-                                balance_table=self.balance_table,
-                                balance_object=self.balance_object,
-                                hooks=self.hooks)
+            self.full_balance_table_update()
             raise e
 
         print(f'\n\nquery before save:\n{_qs.year=}\n{_qs.past=}\n{_qs.incomes=}\n{_qs.expenses=}\n{_qs.have=}')
@@ -145,9 +105,51 @@ class UpdateTable():
         print(f'\n\nquery after save:\n{_qs.year=}\n{_qs.past=}\n{_qs.incomes=}\n{_qs.expenses=}\n{_qs.have=}')
         _qs.save()
 
+    def full_balance_table_update(self):
+        UpdatetBalanceTable(category_table=self.category_table,
+                            balance_table=self.balance_table,
+                            balance_object=self.balance_object,
+                            hooks=self.hooks)
+
 
 class AccountBalanceMixin(UpdateTable):
     category_table = 'accounts.Account'
     balance_table = 'accounts.AccountBalance'
     balance_object = Balance.accounts()
-    hooks = HOOKS
+
+    # {app.model_name: {accountbalance_table_field: model_field}}
+    # model must have same methods as account_balance_table_field
+    # i.e. Incomes.objects.incomes()
+    hooks = {
+        'incomes.Income': {
+            'incomes': 'account',
+        },
+        'expenses.Expense': {
+            'expenses': 'account',
+        },
+        'debts.Lent': {
+            'incomes': 'account',
+        },
+        'debts.LentReturn': {
+            'expenses': 'account',
+        },
+        'debts.Borrow': {
+            'expenses': 'account',
+        },
+        'debts.BorrowReturn': {
+            'incomes': 'account',
+        },
+        'transactions.Transaction': {
+            'incomes': 'to_account',
+            'expenses': 'from_account',
+        },
+        'savings.Saving': {
+            'expenses': 'account',
+        },
+        'transactions.SavingClose': {
+            'incomes': 'to_account',
+        },
+        'bookkeeping.AccountWorth': {
+            'have': 'account',
+        }
+    }
