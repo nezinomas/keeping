@@ -80,7 +80,7 @@ class UpdateTable():
     def update_accountbalance_table(self, caller: str = None):
         _arr = self.__class__.__module__.split('.')  # [0]=project [1]=app
         _name = f'{_arr[1]}.{type(self).__name__}'  # = app.Model
-        _hook = HOOKS.get(_name)
+        _hook = self.hooks.get(_name)
 
         if not _hook:
             return
@@ -105,8 +105,6 @@ class UpdateTable():
                 except ObjectDoesNotExist:
                     return
 
-
-class UpdateAccountBalanceTableFields():
     def _calc_field(self, /, caller, field_value):
         price = float(self.price)
         original_price = float(self.original_price)
@@ -122,17 +120,17 @@ class UpdateAccountBalanceTableFields():
         _year = self.date.year
         try:
             _qs = (
-                apps.get_model('accounts.AccountBalance')
+                apps.get_model(self.balance_table)
                 .objects
                 .get(Q(year=_year) & Q(account_id=pk))
             )
 
         except ObjectDoesNotExist as e:
             print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nquery failed -> UPDATE ACCOUNT CLASS CALLED\n')
-            UpdatetBalanceTable(category_table='accounts.Account',
-                                balance_table='accounts.AccountBalance',
-                                balance_object=Balance.accounts(),
-                                hooks=HOOKS)
+            UpdatetBalanceTable(category_table=self.category_table,
+                                balance_table=self.balance_table,
+                                balance_object=self.balance_object,
+                                hooks=self.hooks)
             raise e
 
         print(f'\n\nquery before save:\n{_qs.year=}\n{_qs.past=}\n{_qs.incomes=}\n{_qs.expenses=}\n{_qs.have=}')
@@ -148,5 +146,8 @@ class UpdateAccountBalanceTableFields():
         _qs.save()
 
 
-class AccountBalanceMixin(UpdateTable, UpdateAccountBalanceTableFields):
-    pass
+class AccountBalanceMixin(UpdateTable):
+    category_table = 'accounts.Account'
+    balance_table = 'accounts.AccountBalance'
+    balance_object = Balance.accounts()
+    hooks = HOOKS
