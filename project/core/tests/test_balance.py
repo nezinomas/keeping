@@ -183,62 +183,6 @@ def test_account_balance_incomes_expenses(incomes1, incomes2, expenses):
     assert actual[3]['delta'] == -4.0
 
 
-def test_account_balance_incomes_expenses_with_fee(incomes1, incomes2):
-    expenses = [
-        {'year': 1970, 'expenses': Decimal('1'), 'fees': Decimal('0.25'), 'id': 1},
-        {'year': 1970, 'expenses': Decimal('1'), 'fees': Decimal('0.25'),  'id': 2},
-        {'year': 1999, 'expenses': Decimal('1'), 'fees': Decimal('0.25'),  'id': 1},
-        {'year': 1999, 'expenses': Decimal('1'), 'fees': Decimal('0.25'),  'id': 2},
-    ]
-
-    obj = T().accounts()
-    obj.create_balance(data=[incomes1, incomes2, expenses, expenses])
-
-    actual = obj.balance
-
-    # assert where is no fee column
-    keys = actual[0].keys()
-    assert 'fees' not in keys
-
-    # Account1
-    assert actual[0]['year'] == 1970
-    assert actual[0]['account_id'] == 1
-    assert actual[0]['past'] == 0.0
-    assert actual[0]['incomes'] == 2.0
-    assert actual[0]['expenses'] == 2.5
-    assert actual[0]['balance'] == -0.5
-    assert actual[0]['have'] == 0.0
-    assert actual[0]['delta'] == 0.5
-
-    assert actual[1]['year'] == 1999
-    assert actual[1]['account_id'] == 1
-    assert actual[1]['past'] == -0.5
-    assert actual[1]['incomes'] == 4.0
-    assert actual[1]['expenses'] == 2.5
-    assert actual[1]['balance'] == 1.0
-    assert actual[1]['have'] == 0.0
-    assert actual[1]['delta'] == -1.0
-
-    # Account2
-    assert actual[2]['year'] == 1970
-    assert actual[2]['account_id'] == 2
-    assert actual[2]['past'] == 0.0
-    assert actual[2]['incomes'] == 3.0
-    assert actual[2]['expenses'] == 2.5
-    assert actual[2]['balance'] == 0.5
-    assert actual[2]['have'] == 0.0
-    assert actual[2]['delta'] == -0.5
-
-    assert actual[3]['year'] == 1999
-    assert actual[3]['account_id'] == 2
-    assert actual[3]['past'] == 0.5
-    assert actual[3]['incomes'] == 5.0
-    assert actual[3]['expenses'] == 2.5
-    assert actual[3]['balance'] == 3.0
-    assert actual[3]['have'] == 0.0
-    assert actual[3]['delta'] == -3.0
-
-
 def test_account_balance_incomes_expenses_have(incomes1, incomes2, expenses, have):
     obj = T().accounts()
     obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])

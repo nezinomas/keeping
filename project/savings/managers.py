@@ -208,10 +208,11 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .related()
             .annotate(year=ExtractYear(F('date')))
             .values('year', 'account__title')
-            .annotate(expenses=Sum('price'), fees=Sum('fee'))
-            .values('year', 'expenses', 'fees', id=F('account__pk'))
+            .annotate(expenses=Sum('price'))
+            .values('year', 'expenses', id=F('account__pk'))
             .order_by('year', 'id')
         )
+
 
 class SavingBalanceQuerySet(models.QuerySet):
     def related(self):
