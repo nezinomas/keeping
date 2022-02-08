@@ -15,7 +15,32 @@ class Balance(BalanceBase):
     @classmethod
     def accounts(cls, year=None):
         cls.id_field = 'account_id'
-        cls.columns = ['past', 'incomes', 'expenses', 'balance', 'have', 'delta']
+        cls.columns = [
+            'past',
+            'incomes',
+            'expenses',
+            'balance',
+            'have',
+            'delta'
+        ]
+
+        return cls(year)
+
+    @classmethod
+    def savings(cls, year=None):
+        cls.id_field = 'saving_type_id'
+        cls.columns = [
+            'past_amount',
+            'past_fee',
+            'fees',
+            'invested',
+            'incomes',
+            'market_value',
+            'profit_incomes_proc',
+            'profit_incomes_sum',
+            'profit_invested_proc',
+            'profit_invested_sum'
+        ]
 
         return cls(year)
 
@@ -51,7 +76,6 @@ class Balance(BalanceBase):
 
         df.reset_index(inplace=True)
         df.set_index(['year', self.id_field], inplace=True)
-        df.sort_index(inplace=True)
 
         return df
 
@@ -63,8 +87,18 @@ class Balance(BalanceBase):
         year = self._balance.index.max() if not self._year else self._year
 
         arr = self._balance.loc[year]
+        arr = arr.sum()
 
-        return arr.sum().to_dict()
+        # update values for saving/pension
+        if not self.id_field == 'account_id':
+            arr['profit_incomes_proc'] = (
+                calc.calc_percent(arr[['market_value', 'incomes']])
+            )
+            arr['profit_invested_proc'] = (
+                calc.calc_percent(arr[['market_value', 'invested']])
+            )
+
+        return arr.to_dict()
 
     @property
     def balance_start(self) -> float:
@@ -73,6 +107,12 @@ class Balance(BalanceBase):
     @property
     def balance_end(self) -> float:
         return self.total_row.get('balance', 0.0)
+
+    @property
+    def total_market(self) -> float:
+        t = self.total_row
+
+        return t.get('market_value', 0.0)
 
     def create_balance(self, data):
         """
@@ -93,9 +133,11 @@ class Balance(BalanceBase):
         df = self._create_df(data)
 
         if self.id_field == 'account_id':
+            # balance for accounts
             df = self._calc_account_balance(df)
         else:
-            pass
+            # balance for savings/pensions
+            df = self._calc_saving_balance(df)
 
         self._balance = df
 
@@ -138,16 +180,17 @@ class Balance(BalanceBase):
         if not isinstance(df, DF):
             return {}
 
+        df.sort_index(inplace=True)
+
         _arr = []
 
         # sum fee and expenses
-        if 'fee' in df.columns.to_list():
-            df['expenses'] = df['expenses'] + df['fee']
-            df.drop('fee', axis=1, inplace=True)  # delete fee column
+        if 'fees' in df.columns.to_list():
+            df['expenses'] = df['expenses'] + df['fees']
+            df.drop('fees', axis=1, inplace=True)  # delete fee column
 
         # account_id list from df index.level[0]
         idx = df.index.unique(level=0).to_list()
-
         for account_id in idx:
             # filter df by account_id
             _df =  df.loc[account_id, :].copy()
@@ -170,5 +213,73 @@ class Balance(BalanceBase):
             _arr.append(_df)
 
         df = reduce(lambda a, b: a.append(b), _arr)
+
+        return df
+
+    def _calc_saving_balance(self, df):
+        if not isinstance(df, DF):
+            return {}
+
+        df.sort_index(inplace=True)
+
+        _arr = []
+
+        # if no expenses column create it
+        if not 'expenses' in df.columns.to_list():
+            df['expenses'] = 0.0
+
+        if not 'have' in df.columns.to_list():
+            df['have'] = 0.0
+
+        # account_id list from df index.level[0]
+        idx = df.index.unique(level=0).to_list()
+        for account_id in idx:
+            # filter df by account_id
+            _df =  df.loc[account_id, :].copy()
+
+            # new column with account_id value
+            _df[self.id_field] = account_id
+
+            # calculate incomes
+            _df['incomes'] = _df['incomes'] - _df['expenses']
+
+            # # get past values
+            # shift free and incomes values down one row
+            _df['past_amount'] = _df.incomes.shift(periods=1, fill_value=0.0)
+            _df['past_fee'] = _df.fees.shift(periods=1, fill_value=0.0)
+
+            # recalclate incomes and fees with past
+            _df['incomes'] = _df['past_amount'] + _df['incomes']
+            _df['fees'] = _df['past_fee'] + _df['fees']
+
+            _df['invested'] = _df['incomes'] - _df['fees']
+
+            # invested sum cannot be negative
+            _df['invested'] = _df['invested'].mask(_df['invested'] < 0, 0.0)
+
+            # copy values from have to market_value
+            _df['market_value'] = _df['have']
+
+            # # calc profit/loss sum and %
+            _df['profit_incomes_sum'] = _df['market_value'] - _df['incomes']
+            _df['profit_invested_sum'] = _df['market_value'] - _df['invested']
+
+            _df['profit_incomes_proc'] = (
+                _df[['market_value', 'incomes']]
+                .apply(calc.calc_percent, axis=1)
+            )
+
+            _df['profit_invested_proc'] = (
+                _df[['market_value', 'invested']]
+                .apply(calc.calc_percent, axis=1)
+            )
+
+
+            _arr.append(_df)
+
+        df = reduce(lambda a, b: a.append(b), _arr)
+
+        # delete expenses column
+        df.drop(['expenses', 'have'], axis=1, inplace=True)
 
         return df
