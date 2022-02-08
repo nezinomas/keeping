@@ -580,6 +580,30 @@ def test_saving_post_delete_with_update():
     assert Saving.objects.all().count() == 1
 
 
+def test_savings_incomes(savings):
+    actual = Saving.objects.incomes()
+
+    assert actual[0]['year'] == 1970
+    assert actual[0]['id'] == 1
+    assert actual[0]['incomes'] == 1.25
+    assert actual[0]['fees'] == 0.25
+
+    assert actual[1]['year'] == 1970
+    assert actual[1]['id'] == 2
+    assert actual[1]['incomes'] == 0.25
+    assert actual[1]['fees'] == 0.0
+
+    assert actual[2]['year'] == 1999
+    assert actual[2]['id'] == 1
+    assert actual[2]['incomes'] == 3.5
+    assert actual[2]['fees'] == 0.5
+
+    assert actual[3]['year'] == 1999
+    assert actual[3]['id'] == 2
+    assert actual[3]['incomes'] == 2.25
+    assert actual[3]['fees'] == 0.25
+
+
 def test_savings_expenses(savings):
     actual = Saving.objects.expenses()
 

@@ -202,6 +202,17 @@ class SavingQuerySet(SumMixin, models.QuerySet):
 
         return qs
 
+    def incomes(self):
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'account__title')
+            .annotate(incomes=Sum('price'), fees=Sum('fee'))
+            .values('year', 'incomes', 'fees', id=F('account__pk'))
+            .order_by('year', 'id')
+        )
+
     def expenses(self):
         return (
             self
