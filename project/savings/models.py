@@ -3,9 +3,8 @@ from decimal import Decimal
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
+from ..core.mixins.old_values import OldValuesMixin
 from ..accounts.models import Account
-from ..core.mixins.balance import AccountBalanceMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from . import managers
@@ -43,7 +42,7 @@ class SavingType(TitleAbstract):
         ordering = ['type', 'title']
 
 
-class Saving(AccountBalanceMixin, models.Model):
+class Saving(OldValuesMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,

@@ -469,19 +469,6 @@ def test_transaction_post_delete_with_update():
     assert Transaction.objects.all().count() == 1
 
 
-def test_transactions_from_db_classmethod():
-    _from = AccountFactory(title='X')
-    _to = AccountFactory(title='Y')
-
-    TransactionFactory(from_account=_from, to_account=_to)
-
-    obj = Transaction.objects.last()
-
-    expect = {'account_id': [_from.pk, _to.pk]}
-
-    assert obj._old_values == expect
-
-
 def test_transaction_balance_incomes(transactions):
     actual = Transaction.objects.incomes()
 
@@ -693,9 +680,6 @@ def test_saving_close_post_save_new():
 
     SavingCloseFactory(to_account=_to, from_account=_from, price=1)
 
-    actual = SavingBalance.objects.year(1999)
-    assert actual.count() == 1
-
     actual = AccountBalance.objects.year(1999)
     assert actual.count() == 1
 
@@ -705,6 +689,9 @@ def test_saving_close_post_save_new():
     assert actual.incomes == 1.0
     assert actual.expenses == 0.0
     assert actual.balance == 1.0
+
+    actual = SavingBalance.objects.year(1999)
+    assert actual.count() == 1
 
     actual = SavingBalance.objects.get(saving_type_id=_from.pk)
     assert actual.saving_type.title == 'From'

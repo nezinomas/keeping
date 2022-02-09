@@ -4,30 +4,12 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
-from ..core.mixins.balance import AccountBalanceMixin
+from ..core.mixins.old_values import OldValuesMixin
 from ..savings.models import SavingType
 from . import managers
-from .models_hooks import transaction_accouts_hooks
 
 
-class OldValuesMixin():
-    class Meta:
-        abstract = True
-
-    @classmethod
-    def from_db(cls, db, field_names, values):
-        zipped = dict(zip(field_names, values))
-        instance = super().from_db(db, field_names, values)
-
-        hooks = transaction_accouts_hooks()[cls.__name__]
-        instance._old_values = {
-            key: [zipped.get(x) for x in val] for key, val in hooks.items()
-        }
-
-        return instance
-
-
-class Transaction(AccountBalanceMixin, OldValuesMixin, models.Model):
+class Transaction(OldValuesMixin, models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         Account,
@@ -61,7 +43,7 @@ class Transaction(AccountBalanceMixin, OldValuesMixin, models.Model):
     objects = managers.TransactionQuerySet.as_manager()
 
 
-class SavingClose(AccountBalanceMixin, OldValuesMixin, models.Model):
+class SavingClose(OldValuesMixin, models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         SavingType,

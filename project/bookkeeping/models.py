@@ -4,7 +4,6 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
-from ..core.mixins.balance import AccountBalanceMixin
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from . import managers
@@ -34,7 +33,7 @@ class SavingWorth(models.Model):
     objects = managers.SavingWorthQuerySet.as_manager()
 
 
-class AccountWorth(AccountBalanceMixin, models.Model):
+class AccountWorth(models.Model):
     date = models.DateTimeField()
     price = models.DecimalField(
         max_digits=8,

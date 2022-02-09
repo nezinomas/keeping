@@ -4,12 +4,12 @@ from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
-from ..core.mixins.balance import AccountBalanceMixin
+from ..core.mixins.old_values import OldValuesMixin
 from ..journals.models import Journal
 from . import managers
 
 
-class Borrow(AccountBalanceMixin, models.Model):
+class Borrow(OldValuesMixin, models.Model):
     date = models.DateField()
     name = models.CharField(
         max_length=100,
@@ -52,7 +52,7 @@ class Borrow(AccountBalanceMixin, models.Model):
         return str(self.name)
 
 
-class BorrowReturn(AccountBalanceMixin, models.Model):
+class BorrowReturn(OldValuesMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
@@ -111,7 +111,7 @@ class BorrowReturn(AccountBalanceMixin, models.Model):
         obj.save()
 
 
-class Lent(AccountBalanceMixin, models.Model):
+class Lent(OldValuesMixin, models.Model):
     date = models.DateField()
     name = models.CharField(
         max_length=100,
@@ -154,7 +154,7 @@ class Lent(AccountBalanceMixin, models.Model):
         return str(self.name)
 
 
-class LentReturn(AccountBalanceMixin, models.Model):
+class LentReturn(OldValuesMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,

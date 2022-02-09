@@ -6,7 +6,7 @@ from django.db.models import F
 
 from ..accounts.models import Account
 from ..core.lib import utils
-from ..core.mixins.balance import AccountBalanceMixin
+from ..core.mixins.old_values import OldValuesMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from .helpers.models_helper import upload_attachment
@@ -54,7 +54,7 @@ class ExpenseName(TitleAbstract):
     objects = ExpenseNameQuerySet.as_manager()
 
 
-class Expense(AccountBalanceMixin, models.Model):
+class Expense(OldValuesMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
