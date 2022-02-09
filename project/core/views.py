@@ -8,9 +8,7 @@ from django.urls import reverse_lazy
 from django.views.generic import View
 
 from ..core.signals_base import SignalBase
-from .lib.balance_table_update import UpdatetBalanceTable
 from .lib.date import years
-from .mixins.balance import AccountBalanceMixin
 from .mixins.views import DispatchAjaxMixin
 from .tests.utils import timer
 
@@ -57,8 +55,7 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
 
     @timer
     def get(self, request, *args, **kwargs):
-        obj = AccountBalanceMixin()
-        obj.full_balance_table_update()
+        # obj.full_balance_table_update()
 
         _years = years()
 
@@ -76,8 +73,7 @@ class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View)
 
     @timer
     def get(self, request, *args, **kwargs):
-        obj = AccountBalanceMixin()
-        obj.full_balance_table_update()
+        # obj.full_balance_table_update()
 
         signals(request.user.year)
 
