@@ -5,4 +5,4 @@ class PensionsConfig(AppConfig):
     name = 'project.pensions'
 
     def ready(self):
-        from ..core.signals import pensions_post_signal
+        from ..core.signals import pensions_post_delete, pensions_post_save

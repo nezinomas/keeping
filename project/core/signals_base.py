@@ -1,195 +1,194 @@
-from typing import Dict, List
+from dataclasses import dataclass
+from typing import Dict
 
 from django.apps import apps
-from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Model, Q
 
-from ..savings.lib.balance import Balance as SavingStats
-from ..transactions.models_hooks import transaction_accouts_hooks
-from .lib import utils
-from .lib.summary import (PensionsBalanceModels, SavingsBalanceModels,
-                          collect_summary_data)
+from ..bookkeeping.lib import helpers as calc
+from ..core.lib.balance_table_update import UpdatetBalanceTable
+from .conf import Conf
 
 
 class SignalBase():
-    all_id = None
-    field = None
+    def __init__(self, conf: Conf):
+        self._conf = conf
 
-    def __init__(self,
-                 instance: object,
-                 year: int = None,
-                 types: Dict[str, int] = None,
-                 all_id: List[int] = None):
-
-        if not year:
-            self.year = utils.get_user().year
-        else:
-            self.year = year
-
-        self.instance = instance
-        self.types = types
-        self.all_id = self._get_id() if not all_id else all_id
-
-        self._update_or_create()
+        self._update()
 
     @classmethod
-    def savings(cls,
-                sender: object,
-                instance: object,
-                year: int = None,
-                types: Dict[str, int] = None,
-                all_id: List[int] = None):
+    def accounts(cls, sender: object, instance: object, created: bool, signal: str):
+        _hooks = {
+            'incomes.Income': {
+                'incomes': 'account',
+            },
+            'expenses.Expense': {
+                'expenses': 'account',
+            },
+            'debts.Lent': {
+                'incomes': 'account',
+            },
+            'debts.LentReturn': {
+                'expenses': 'account',
+            },
+            'debts.Borrow': {
+                'expenses': 'account',
+            },
+            'debts.BorrowReturn': {
+                'incomes': 'account',
+            },
+            'transactions.Transaction': {
+                'incomes': 'to_account',
+                'expenses': 'from_account',
+            },
+            'savings.Saving': {
+                'expenses': 'account',
+            },
+            'transactions.SavingClose': {
+                'incomes': 'to_account',
+            },
+            'bookkeeping.AccountWorth': {
+                'have': 'account',
+            }
+        }
 
-        cls.field = 'saving_type_id'
-        cls.model_types = apps.get_model('savings.SavingType')
-        cls.model_balance = apps.get_model('savings.SavingBalance')
-        cls.model_worth = apps.get_model('bookkeeping.SavingWorth')
-        cls.class_stats = SavingStats
-        cls.summary_models = SavingsBalanceModels
-        cls.sender = sender
-
-        return cls(instance, year, types, all_id)
-
-    @classmethod
-    def pensions(cls,
-                 sender: object,
-                 instance: object,
-                 year: int = None,
-                 types: Dict[str, int] = None,
-                 all_id: List[int] = None):
-
-        cls.field = 'pension_type_id'
-        cls.model_types = apps.get_model('pensions.PensionType')
-        cls.model_balance = apps.get_model('pensions.PensionBalance')
-        cls.model_worth = apps.get_model('bookkeeping.PensionWorth')
-        cls.class_stats = SavingStats  # using same savings Balance class
-        cls.summary_models = PensionsBalanceModels
-        cls.sender = sender
-
-        return cls(instance, year, types, all_id)
-
-    def _update_or_create(self) -> None:
-        # copy by value all_id list
-        arr = list(self.all_id)
-
-        stats = self._get_stats()
-
-        if stats:
-            for row in stats:
-                # get id
-                _id = row['id']
-
-                # remove from arr _id
-                if _id in arr:
-                    arr.remove(_id)
-
-                # delete dictionary keys
-                del row['id']
-                del row['title']
-
-                self.model_balance.objects.update_or_create(
-                    year=self.year,
-                    **{self.field: _id},
-                    defaults={k: v for k, v in row.items()}
-                )
-
-        if arr:
-            # if not empty arr, delete from balances rows
-            q = (
-                self.model_balance
-                .objects
-                .related()
-                .filter(**{'year': self.year, f'{self.field}__in': arr})
-                .delete()
-            )
-
-    def _get_field_list(self) -> List:
-        field_list = [self.field]
-
-        try:
-            field_list += (
-                transaction_accouts_hooks()
-                .get(self.sender.__name__, {})
-                .get(self.field, [])
-            )
-        except (TypeError, AttributeError):
-            pass
-
-        return field_list
-
-    def _get_id(self) -> List[int]:
-        account_id = []
-
-        # if no instance return empty list
-        if not self.instance:
-            return account_id
-
-        field_list = self._get_field_list()
-
-        for name in field_list:
-            _id = getattr(self.instance, name, None)
-            if _id:
-                account_id.append(_id)
-
-        if not account_id:
-            try:
-                account_id.append(self.instance.pk)
-            except AttributeError:
-                pass
-
-        # list of original, before change, account_id values
-        if hasattr(self.instance, '_old_values'):
-            _old_values = self.instance._old_values.get(self.field, [])
-            account_id = list(set(account_id + _old_values))
-
-        return account_id
-
-    def _get_accounts(self) -> Dict[str, int]:
-        if self.field == 'saving_type_id':
-            qs = (
-                self.model_types
-                .objects
-                .related()
-                .filter(
-                    Q(closed__isnull=True) | Q(closed__gt=self.year))
-            )
-        else:
-            qs = (
-                self.model_types
-                .objects
-                .items(year=self.year)
-            )
-
-        # filter created type from future
-        qs = qs.filter(created__year__lte=self.year)
-
-        # filter types only then exist sender and isntance
-        if self.sender and self.instance:
-            if self.all_id:
-                qs = qs.filter(id__in=self.all_id)
-
-        qs = qs.values('id', 'title')
-
-        return {x['title']: x['id'] for x in qs}
-
-    def _get_worth(self) -> List[Dict]:
-        return self.model_worth.objects.items(year=self.year)
-
-    def _get_stats(self) -> List[Dict]:
-        # get (account_types|savings_types|pension_types) in class if types is empty
-        if not self.types:
-            account = self._get_accounts()
-        else:
-            account = self.types
-
-        if not account:
-            return None
-
-        worth = self._get_worth()
-
-        data = collect_summary_data(
-            year=self.year,
-            types=account,
-            where=self.summary_models
+        _conf = Conf(
+            balance_class_method='accounts',
+            balance_model_fk_field='account_id',
+            created=created,
+            signal=signal,
+            tbl_categories=apps.get_model('accounts.Account'),
+            tbl_balance=apps.get_model('accounts.AccountBalance'),
+            sender=sender,
+            instance=instance,
+            hooks=_hooks
         )
+        return cls(conf=_conf)
 
-        return self.class_stats(data, worth).balance
+    @classmethod
+    def savings(cls, sender: object, instance: object, created: bool, signal: str):
+        _hooks = {
+            'savings.Saving': {
+                'incomes': 'saving_type',
+            },
+            'transactions.SavingClose': {
+                'expenses': 'from_account',
+            },
+        }
+
+        _conf = Conf(
+            balance_class_method='savings',
+            balance_model_fk_field='saving_type_id',
+            created=created,
+            signal=signal,
+            tbl_categories=apps.get_model('savings.SavingType'),
+            tbl_balance=apps.get_model('savings.SavingBalance'),
+            sender=sender,
+            instance=instance,
+            hooks=_hooks
+        )
+        return cls(conf=_conf)
+
+    @classmethod
+    def pensions(cls, sender: object, instance: object, created: bool, signal: str):
+        _hooks = {
+            'pensions.Pension': {
+                'incomes': 'pension_type',
+            },
+        }
+
+        _conf = Conf(
+            balance_class_method='savings', #balance object same for pensions and savings
+            balance_model_fk_field='pension_type_id',
+            created=created,
+            signal=signal,
+            tbl_categories=apps.get_model('pensions.PensionType'),
+            tbl_balance=apps.get_model('pensions.PensionBalance'),
+            sender=sender,
+            instance=instance,
+            hooks=_hooks
+        )
+        return cls(conf=_conf)
+
+    def _update(self):
+        _hook = self._conf.get_hook()
+        if not _hook:
+            return
+
+        for _balance_tbl_field_name, _account_name in _hook.items():
+            _account = getattr(self._conf.instance, _account_name)
+            _old_account_id = self._conf.instance.old_values.get(_account_name)
+
+            # new
+            if self._conf.created:
+                try:
+                    print('<<< try new')
+                    self._tbl_balance_field_update('new', _balance_tbl_field_name, _account.pk)
+                except ObjectDoesNotExist:
+                    return
+                continue
+
+            # delete
+            if self._conf.signal == 'delete':
+                try:
+                    print('<<< try delete')
+                    self._tbl_balance_field_update('delete', _balance_tbl_field_name, _account.pk)
+                except ObjectDoesNotExist:
+                    return
+                continue
+
+            # update
+            if _old_account_id == _account.pk:
+                # account not changed
+                try:
+                    print('<<< try update account not changed')
+                    self._tbl_balance_field_update('update', _balance_tbl_field_name, _account.pk)
+                except ObjectDoesNotExist:
+                    return
+            else:
+                # account changed
+                try:
+                    print('<<< try update account changed')
+                    self._tbl_balance_field_update('new', _balance_tbl_field_name, _account.pk)
+                    self._tbl_balance_field_update('delete', _balance_tbl_field_name, _old_account_id)
+                except ObjectDoesNotExist:
+                    return
+
+    def _calc_field(self, /, caller, field_value):
+            price = float(self._conf.instance.price)
+            original_price = float(self._conf.get_old_values('price', 0.0))
+
+            _switch = {
+                'new': field_value + price,
+                'update': field_value - original_price + price,
+                'delete': field_value - original_price
+            }
+            return _switch.get(caller, field_value)
+
+    def _tbl_balance_field_update(self, caller, balance_tbl_field_name, pk):
+        _year = self._conf.instance.date.year
+        try:
+            _qs = (
+                self._conf.tbl_balance
+                .objects
+                .get(Q(year=_year) & Q(**{self._conf.balance_model_fk_field: pk}))
+            )
+
+        except ObjectDoesNotExist as e:
+            print(f'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nquery failed -> UPDATE ACCOUNT CLASS CALLED\n')
+            UpdatetBalanceTable(self._conf)
+            raise e
+
+        print(f'query before changes\n{_qs.__dict__=}')
+
+        _balance_tbl_field_value = getattr(_qs, balance_tbl_field_name)
+        _balance_tbl_field_value = self._calc_field(caller, _balance_tbl_field_value)
+
+        setattr(_qs, balance_tbl_field_name, _balance_tbl_field_value)
+
+        _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
+        _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
+
+        print(f'query after changed\n{_qs.__dict__=}')
+
+        _qs.save()

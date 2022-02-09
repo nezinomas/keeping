@@ -201,8 +201,7 @@ class Balance(BalanceBase):
             _df['past'] = _df.balance.shift(periods=1, fill_value=0.0)
 
             # recalclate balance with past
-            _df['balance'] = (
-                _df[['past', 'incomes', 'expenses']].apply(calc.calc_balance, axis=1))
+            _df['balance'] = (_df[['past', 'incomes', 'expenses']].apply(calc.calc_balance, axis=1))
             _df['delta'] = _df[['have', 'balance']].apply(calc.calc_delta, axis=1)
 
             _arr.append(_df)

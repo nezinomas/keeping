@@ -1,23 +1,23 @@
 from django.apps import apps
 
+from ..conf import Conf
+from .balance import Balance
+
 
 class UpdatetBalanceTable():
-    def __init__(self, category_table, balance_table, balance_object, hooks):
-        self._balance_model = apps.get_model(balance_table)
-        self._hooks = hooks
-        self._balance_object = balance_object
-
-        self._accounts = self._get_accounts(category_table)
+    def __init__(self, conf: Conf):
+        self._conf = conf
+        self._accounts = self._get_accounts()
 
         self._calc()
 
-    def _get_accounts(self, category_table):
-        a = apps.get_model(category_table).objects.related()
+    def _get_accounts(self):
+        a = self._conf.tbl_categories.objects.related()
         return {obj.id: obj for obj in a}
 
     def _get_data(self):
         _data = []
-        _models = list(self._hooks.keys())
+        _models = list(self._conf.hooks.keys())
 
         for _model_name in _models:
             try:
@@ -25,7 +25,7 @@ class UpdatetBalanceTable():
             except LookupError:
                 continue
 
-            for _method, _ in self._hooks[_model_name].items():
+            for _method, _ in self._conf.hooks[_model_name].items():
                 try:
                     _method = getattr(model.objects, _method)
                     _qs = _method()
@@ -42,18 +42,19 @@ class UpdatetBalanceTable():
         if not _data:
             return
 
-        self._balance_object.create_balance(data=_data)
+        _balance_object = getattr(Balance, self._conf.balance_class_method)()
+        _balance_object.create_balance(data=_data)
 
-        _df = self._balance_object.balance_df
+        _df = _balance_object.balance_df
 
         _update = []
         _create = []
         _delete = []
         _link = {}
 
-        _items = self._balance_model.objects.items()
+        _items = self._conf.tbl_balance.objects.items()
         if not _items.exists():
-            _dicts = self._balance_object.balance
+            _dicts = _balance_object.balance
 
             # get name. it must be account_id|saving_type_id|pension_type_id
             if _dicts:
@@ -62,9 +63,9 @@ class UpdatetBalanceTable():
 
             for _dict in _dicts:
                 _id = _dict[_key_name]
-                _create.append(self._balance_model(account=self._accounts.get(_id), **_dict))
+                _create.append(self._conf.tbl_balance(account=self._accounts.get(_id), **_dict))
         else:
-            _link = self._balance_object.year_account_link
+            _link = _balance_object.year_account_link
 
             for _row in _items:
                 try:
@@ -73,7 +74,7 @@ class UpdatetBalanceTable():
                     _delete.append(_row.pk)
                     continue
 
-                _obj = self._balance_model(
+                _obj = self._conf.tbl_balance(
                     pk=_row.pk,
                     year=_row.year,
                     account=self._accounts.get(_row.account_id),
@@ -88,14 +89,14 @@ class UpdatetBalanceTable():
         for _year, _arr in _link.items():
             for _id in _arr:
                 _df_row = _df.loc[(_year, _id)].to_dict()
-                _obj = self._balance_model(year=_year, account=self._accounts.get(_id), **_df_row)
+                _obj = self._conf.tbl_balance(year=_year, account=self._accounts.get(_id), **_df_row)
                 _create.append(_obj)
 
         if _create:
-            self._balance_model.objects.bulk_create(_create)
+            self._conf.tbl_balance.objects.bulk_create(_create)
 
         if _update:
-            self._balance_model.objects.bulk_update(_update, _df.columns.values.tolist())
+            self._conf.tbl_balance.objects.bulk_update(_update, _df.columns.values.tolist())
 
         if _delete:
-            self._balance_model.objects.related().filter(pk__in=_delete).delete()
+            self._conf.tbl_balance.objects.related().filter(pk__in=_delete).delete()

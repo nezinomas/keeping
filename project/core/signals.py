@@ -1,48 +1,97 @@
-from typing import Dict, List
-
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from ..bookkeeping.models import PensionWorth, SavingWorth
-from ..pensions.models import Pension, PensionType
-from ..savings.models import Saving, SavingType
-from ..transactions.models import SavingChange, SavingClose
+from ..bookkeeping import models as worth
+from ..debts import models as debt
+from ..expenses import models as expense
+from ..incomes import models as income
+from ..pensions import models as pension
+from ..savings import models as saving
+from ..transactions import models as transaction
 from .signals_base import SignalBase
+
+
+# ----------------------------------------------------------------------------
+#                                                               AccountBalance
+# ----------------------------------------------------------------------------
+@receiver(post_save, sender=income.Income)
+@receiver(post_save, sender=expense.Expense)
+# @receiver(post_save, sender=saving.Saving)
+@receiver(post_save, sender=transaction.Transaction)
+@receiver(post_save, sender=transaction.SavingClose)
+@receiver(post_save, sender=debt.Borrow)
+@receiver(post_save, sender=debt.BorrowReturn)
+@receiver(post_save, sender=debt.Lent)
+@receiver(post_save, sender=debt.LentReturn)
+# @receiver(post_save, sender=worth.AccountWorth)
+def accounts_post_save(sender: object, instance: object, *args, **kwargs):
+    print(f'<< Account post save\n{args=}\n{kwargs=}')
+    created = kwargs.get('created')
+    SignalBase.accounts(sender, instance, created, 'save')
+
+
+@receiver(post_delete, sender=income.Income)
+@receiver(post_delete, sender=expense.Expense)
+# @receiver(post_delete, sender=saving.Saving)
+@receiver(post_delete, sender=transaction.Transaction)
+@receiver(post_delete, sender=transaction.SavingClose)
+@receiver(post_delete, sender=debt.Borrow)
+@receiver(post_delete, sender=debt.BorrowReturn)
+@receiver(post_delete, sender=debt.Lent)
+@receiver(post_delete, sender=debt.LentReturn)
+def accounts_post_delete(sender: object, instance: object, *args, **kwargs):
+    print(f'<< Accounts post delete {args=}\n{kwargs=}\n')
+    created = kwargs.get('created')
+    SignalBase.accounts(sender, instance, created, 'delete')
 
 
 # ----------------------------------------------------------------------------
 #                                                               SavingBalance
 # ----------------------------------------------------------------------------
-@receiver(post_save, sender=Saving)
-@receiver(post_delete, sender=Saving)
-@receiver(post_save, sender=SavingClose)
-@receiver(post_delete, sender=SavingClose)
-@receiver(post_save, sender=SavingChange)
-@receiver(post_delete, sender=SavingChange)
-@receiver(post_save, sender=SavingWorth)
-@receiver(post_save, sender=SavingType)
-def savings_post_signal(sender: object,
+# @receiver(post_save, sender=saving.Saving)
+@receiver(post_save, sender=transaction.SavingClose)
+# @receiver(post_save, sender=transaction.SavingChange)
+# @receiver(post_save, sender=worth.SavingWorth)
+def savings_post_save(sender: object,
                         instance: object,
-                        year: int = None,
-                        types: Dict[str, int] = None,
-                        all_id: List[int] = None,
                         *args,
                         **kwargs):
-    SignalBase.savings(sender, instance, year, types, all_id)
+    print(f'<< Savings post save {args=}\n{kwargs=}\n')
+    created = kwargs.get('created')
+    SignalBase.savings(sender, instance, created, 'save')
+
+
+# @receiver(post_delete, sender=saving.Saving)
+@receiver(post_delete, sender=transaction.SavingClose)
+# @receiver(post_delete, sender=transaction.SavingChange)
+def savings_post_delete(sender: object,
+                        instance: object,
+                        *args,
+                        **kwargs):
+    print(f'<< Savings post delete {args=}\n{kwargs=}\n')
+    created = kwargs.get('created')
+    SignalBase.savings(sender, instance, created, 'delete')
 
 
 # ----------------------------------------------------------------------------
 #                                                               PensionBalance
 # ----------------------------------------------------------------------------
-@receiver(post_save, sender=Pension)
-@receiver(post_delete, sender=Pension)
-@receiver(post_save, sender=PensionWorth)
-@receiver(post_save, sender=PensionType)
-def pensions_post_signal(sender: object,
+# @receiver(post_save, sender=pension.Pension)
+# @receiver(post_save, sender=worth.PensionWorth)
+def pensions_post_save(sender: object,
                          instance: object,
-                         year: int = None,
-                         types: Dict[str, int] = None,
-                         all_id: List[int] = None,
                          *args,
                          **kwargs):
-    SignalBase.pensions(sender, instance, year, types, all_id)
+    print(f'<< pensions post save {args=}\n{kwargs=}\n')
+    created = kwargs.get('created')
+    SignalBase.pensions(sender, instance, created, 'save')
+
+
+# @receiver(post_save, sender=pension.Pension)
+def pensions_post_delete(sender: object,
+                         instance: object,
+                         *args,
+                         **kwargs):
+    print(f'<< pensions post delete {args=}\n{kwargs=}\n')
+    created = kwargs.get('created')
+    SignalBase.pensions(sender, instance, created, 'delete')
