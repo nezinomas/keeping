@@ -345,9 +345,11 @@ def test_income_update_post_save_count_qs(django_assert_max_num_queries):
         obj_update.save()
 
     assert AccountBalance.objects.all().count() == 1
-    assert AccountBalance.objects.last().incomes == Decimal('6')
-    assert AccountBalance.objects.last().balance == Decimal('6')
-    assert AccountBalance.objects.last().delta == Decimal('-6')
+
+    actual = AccountBalance.objects.last()
+    assert actual.incomes == Decimal('6')
+    assert actual.balance == Decimal('6')
+    assert actual.delta == Decimal('-6')
 
 
 def test_income_post_save_first_year_record():
