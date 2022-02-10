@@ -13,8 +13,8 @@ class UpdatetBalanceTable():
         self._calc()
 
     def _get_categories(self):
-        a = self._conf.tbl_categories.objects.related()
-        return {obj.id: obj for obj in a}
+        categories = self._conf.tbl_categories.objects.related()
+        return {category.id: category for category in categories}
 
     def _get_data(self):
         _data = []
