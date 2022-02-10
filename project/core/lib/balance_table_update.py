@@ -63,23 +63,25 @@ class UpdatetBalanceTable():
 
             for _dict in _dicts:
                 _id = _dict[_key_name]
-                _create.append(self._conf.tbl_balance(account=self._accounts.get(_id), **_dict))
+                _dict.update({
+                    'account': self._accounts.get(_id)
+                })
+                _create.append(self._conf.tbl_balance(**_dict))
         else:
             _link = _balance_object.year_account_link
 
             for _row in _items:
                 try:
-                    _df_row = _df.loc[(_row.year, _row.account_id)].to_dict()
+                    _dict = _df.loc[(_row.year, _row.account_id)].to_dict()
                 except KeyError:
                     _delete.append(_row.pk)
                     continue
-
-                _obj = self._conf.tbl_balance(
-                    pk=_row.pk,
-                    year=_row.year,
-                    account=self._accounts.get(_row.account_id),
-                    **_df_row)
-
+                _dict.update({
+                    'pk': _row.pk,
+                    'year': _row.year,
+                    'account': self._accounts.get(_row.account_id)
+                })
+                _obj = self._conf.tbl_balance(**_dict)
                 _update.append(_obj)
 
                 # remove id in link
@@ -88,8 +90,12 @@ class UpdatetBalanceTable():
         # if in _link {year: [account_id]} left some id, create records
         for _year, _arr in _link.items():
             for _id in _arr:
-                _df_row = _df.loc[(_year, _id)].to_dict()
-                _obj = self._conf.tbl_balance(year=_year, account=self._accounts.get(_id), **_df_row)
+                _dict = _df.loc[(_year, _id)].to_dict()
+                _dict.update({
+                    'year': _year,
+                    'account': self._accounts.get(_id)
+                })
+                _obj = self._conf.tbl_balance(**_dict)
                 _create.append(_obj)
 
         if _create:
