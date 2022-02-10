@@ -178,6 +178,7 @@ class SignalBase():
             raise e
 
         _qs_values = {k: v for k, v in _qs.__dict__.items() if not '_state' in k}
+        print(f'>>> qs loaded values\n{_qs_values}\n')
         _df = pd.DataFrame([_qs_values])
 
         _df.at[0, balance_tbl_field_name] = _df.at[0, balance_tbl_field_name] + self._calc_field(caller)
@@ -188,6 +189,6 @@ class SignalBase():
             _df = Balance.recalc_savings(_df)
 
         _qs_updated_values = _df.to_dict('records')[0]
-
+        print(f'>>> qs before save\n{_qs_updated_values}\n')
         _qs.__dict__.update(_qs_updated_values)
         _qs.save()

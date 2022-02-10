@@ -14,6 +14,7 @@ class UpdatetBalanceTable():
 
     def _get_categories(self):
         categories = self._conf.tbl_categories.objects.related()
+        print(f'categories\n{categories}')
         return {category.id: category for category in categories}
 
     def _get_data(self):
@@ -35,6 +36,7 @@ class UpdatetBalanceTable():
 
                 except AttributeError:
                     pass
+        print(f'\ndata\n{_data}\n')
         return _data
 
     def _calc(self):
