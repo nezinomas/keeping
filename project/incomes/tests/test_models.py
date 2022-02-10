@@ -202,6 +202,15 @@ def test_income_update_post_save():
     assert actual['balance'] == 1.0
 
 
+def test_income_post_save_different_accounts():
+    IncomeFactory(price=5, account=AccountFactory(title='X'))
+    IncomeFactory(price=50, account=AccountFactory(title='Z'))
+
+    actual = AccountBalance.objects.all()
+
+    assert actual.count() == 2
+
+
 def test_income_post_save_update_with_nothing_changed():
     obj = IncomeFactory(price=5)
 
