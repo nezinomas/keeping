@@ -200,15 +200,21 @@ class Balance(BalanceBase):
             # shift balance values down one row
             _df['past'] = _df.balance.shift(periods=1, fill_value=0.0)
 
-            # recalclate balance with past
-            _df['balance'] = (_df[['past', 'incomes', 'expenses']].apply(calc.calc_balance, axis=1))
-            _df['delta'] = _df[['have', 'balance']].apply(calc.calc_delta, axis=1)
+            _df = Balance.recalc_accounts(_df)
 
             _arr.append(_df)
 
         df = reduce(lambda a, b: a.append(b), _arr)
 
         return df
+
+    @staticmethod
+    def recalc_accounts(_df):
+        # recalclate balance with past
+        _df['balance'] = (_df[['past', 'incomes', 'expenses']].apply(calc.calc_balance, axis=1))
+        _df['delta'] = _df[['have', 'balance']].apply(calc.calc_delta, axis=1)
+
+        return _df
 
     def _calc_saving_balance(self, df):
         if not isinstance(df, DF):
@@ -234,6 +240,9 @@ class Balance(BalanceBase):
             # new column with account_id value
             _df[self.id_field] = account_id
 
+            # copy values from have to market_value
+            _df['market_value'] = _df['have']
+
             # calculate incomes
             _df['incomes'] = _df['incomes'] - _df['expenses']
 
@@ -242,31 +251,7 @@ class Balance(BalanceBase):
             _df['past_amount'] = _df.incomes.shift(periods=1, fill_value=0.0)
             _df['past_fee'] = _df.fees.shift(periods=1, fill_value=0.0)
 
-            # recalclate incomes and fees with past
-            _df['incomes'] = _df['past_amount'] + _df['incomes']
-            _df['fees'] = _df['past_fee'] + _df['fees']
-
-            _df['invested'] = _df['incomes'] - _df['fees']
-
-            # invested sum cannot be negative
-            _df['invested'] = _df['invested'].mask(_df['invested'] < 0, 0.0)
-
-            # copy values from have to market_value
-            _df['market_value'] = _df['have']
-
-            # # calc profit/loss sum and %
-            _df['profit_incomes_sum'] = _df['market_value'] - _df['incomes']
-            _df['profit_invested_sum'] = _df['market_value'] - _df['invested']
-
-            _df['profit_incomes_proc'] = (
-                _df[['market_value', 'incomes']]
-                .apply(calc.calc_percent, axis=1)
-            )
-
-            _df['profit_invested_proc'] = (
-                _df[['market_value', 'invested']]
-                .apply(calc.calc_percent, axis=1)
-            )
+            _df = Balance.recalc_savings(_df)
 
 
             _arr.append(_df)
@@ -277,3 +262,31 @@ class Balance(BalanceBase):
         df.drop(['expenses', 'have'], axis=1, inplace=True)
 
         return df
+
+    @staticmethod
+    def recalc_savings(_df):
+        # recalclate balance with past
+        # recalclate incomes and fees with past
+        _df['incomes'] = _df['past_amount'] + _df['incomes']
+        _df['fees'] = _df['past_fee'] + _df['fees']
+
+        _df['invested'] = _df['incomes'] - _df['fees']
+
+        # invested sum cannot be negative
+        _df['invested'] = _df['invested'].mask(_df['invested'] < 0, 0.0)
+
+        # # calc profit/loss sum and %
+        _df['profit_incomes_sum'] = _df['market_value'] - _df['incomes']
+        _df['profit_invested_sum'] = _df['market_value'] - _df['invested']
+
+        _df['profit_incomes_proc'] = (
+            _df[['market_value', 'incomes']]
+            .apply(calc.calc_percent, axis=1)
+        )
+
+        _df['profit_invested_proc'] = (
+            _df[['market_value', 'invested']]
+            .apply(calc.calc_percent, axis=1)
+        )
+
+        return _df
