@@ -1,8 +1,9 @@
+import pandas as pd
 from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
-from ..bookkeeping.lib import helpers as calc
+from ..core.lib.balance import Balance
 from ..core.lib.balance_table_update import UpdatetBalanceTable
 from .conf import Conf
 
@@ -151,16 +152,16 @@ class SignalBase():
                 except ObjectDoesNotExist:
                     return
 
-    def _calc_field(self, /, caller, field_value):
-            price = float(self._conf.instance.price)
-            original_price = float(self._conf.get_old_values('price', 0.0))
+    def _calc_field(self, /, caller, field = 'price'):
+            price = float(getattr(self._conf.instance, field))
+            original_price = float(self._conf.get_old_values(field, 0.0))
 
             _switch = {
-                'new': field_value + price,
-                'update': field_value - original_price + price,
-                'delete': field_value - original_price
+                'new': price,
+                'update': - original_price + price,
+                'delete': - original_price
             }
-            return _switch.get(caller, field_value)
+            return _switch.get(caller, 0.0)
 
     def _tbl_balance_field_update(self, caller, balance_tbl_field_name, pk):
         _year = self._conf.instance.date.year
@@ -176,16 +177,17 @@ class SignalBase():
             UpdatetBalanceTable(self._conf)
             raise e
 
-        print(f'query before changes\n{_qs.__dict__=}')
+        _qs_values = {k: v for k, v in _qs.__dict__.items() if not '_state' in k}
+        _df = pd.DataFrame([_qs_values])
 
-        _balance_tbl_field_value = getattr(_qs, balance_tbl_field_name)
-        _balance_tbl_field_value = self._calc_field(caller, _balance_tbl_field_value)
+        _df.at[0, balance_tbl_field_name] = _df.at[0, balance_tbl_field_name] + self._calc_field(caller)
 
-        setattr(_qs, balance_tbl_field_name, _balance_tbl_field_value)
+        if 'accounts' in self._conf.balance_class_method:
+            _df = Balance.recalc_accounts(_df)
+        else:
+            _df = Balance.recalc_savings(_df)
 
-        _qs.balance = calc.calc_balance([_qs.past, _qs.incomes, _qs.expenses])
-        _qs.delta = calc.calc_delta([_qs.have, _qs.balance])
+        _qs_updated_values = _df.to_dict('records')[0]
 
-        print(f'query after changed\n{_qs.__dict__=}')
-
+        _qs.__dict__.update(_qs_updated_values)
         _qs.save()
