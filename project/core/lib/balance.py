@@ -15,6 +15,7 @@ class Balance(BalanceBase):
     @classmethod
     def accounts(cls, year=None):
         cls.id_field = 'account_id'
+        cls.calc_balance_method_name = '_calc_account_balance'
         cls.columns = [
             'past',
             'incomes',
@@ -29,6 +30,7 @@ class Balance(BalanceBase):
     @classmethod
     def savings(cls, year=None):
         cls.id_field = 'saving_type_id'
+        cls.calc_balance_method_name = '_calc_saving_balance'
         cls.columns = [
             'past_amount',
             'past_fee',
@@ -131,13 +133,7 @@ class Balance(BalanceBase):
             return
 
         df = self._create_df(data)
-
-        if self.id_field == 'account_id':
-            # balance for accounts
-            df = self._calc_account_balance(df)
-        else:
-            # balance for savings/pensions
-            df = self._calc_saving_balance(df)
+        df = getattr(self, self.calc_balance_method_name)(df)
 
         self._balance = df
 
