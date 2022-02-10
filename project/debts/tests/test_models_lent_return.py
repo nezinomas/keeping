@@ -66,30 +66,6 @@ def test_lent_return_year():
     assert actual.count() == 1
 
 
-def test_lent_return_summary(lent_return_fixture):
-    expect = [{
-        'id': 1,
-        'title': 'A1',
-        'lent_return_past': Decimal('8'),
-        'lent_return_now': Decimal('2'),
-
-    }, {
-        'id': 2,
-        'title': 'A2',
-        'lent_return_past': Decimal('0'),
-        'lent_return_now': Decimal('1.6'),
-    }]
-
-    actual = list(
-        LentReturn
-        .objects
-        .summary(1999)
-        .order_by('account__title')
-    )
-
-    assert expect == actual
-
-
 def test_lent_return_new_record_updates_lent_tbl():
     LentReturnFactory()
 

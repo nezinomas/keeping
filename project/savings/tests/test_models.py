@@ -219,43 +219,6 @@ def test_saving_day_saving_query_count(django_assert_max_num_queries):
         Saving.objects.sum_by_day(1999, 1).values()
 
 
-def test_saving_summary_from(savings):
-    expect = [{
-        'title': 'Account1',
-        's_past': 1.25,
-        's_now': 3.5,
-    }, {
-        'title': 'Account2',
-        's_past': 0.25,
-        's_now': 2.25,
-    }]
-
-    actual = [*Saving.objects.summary_from(1999).order_by('account__title')]
-
-    assert expect == actual
-
-
-def test_saving_summary_to(savings):
-    expect = [{
-        'title': 'Saving1',
-        's_past': 1.25,
-        's_now': 3.5,
-        's_fee_past': 0.25,
-        's_fee_now': 0.5,
-
-    }, {
-        'title': 'Saving2',
-        's_past': 0.25,
-        's_now': 2.25,
-        's_fee_past': 0.0,
-        's_fee_now': 0.25,
-    }]
-
-    actual = [*Saving.objects.summary_to(1999).order_by('saving_type__title')]
-
-    assert expect == actual
-
-
 @freeze_time('1999-06-01')
 def test_saving_last_months():
     SavingFactory(date=date(1998, 11, 30), price=3)

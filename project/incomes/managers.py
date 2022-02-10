@@ -1,7 +1,7 @@
-from decimal import Decimal
-from typing import Any, Dict, List
+from typing import List
+
 from django.db import models
-from django.db.models import Case, Count, F, Sum, When
+from django.db.models import Count, F, Sum
 from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
 
 from ..core.lib import utils
@@ -55,40 +55,6 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             qs = qs.filter(income_type__type__in=income_type)
 
         return qs
-
-    def summary(self, year: int) -> List[Dict[str, Any]]:
-        '''
-        return:
-            {
-                'id': account.id,
-                'title': account.title,
-                'i_past': Decimal(),
-                'i_now': Decimal()
-            }
-        '''
-        return (
-            self
-            .related()
-            .annotate(cnt=Count('income_type'))
-            .values('cnt')
-            .order_by('cnt')
-            .annotate(
-                i_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='price'),
-                        default=Decimal(0))),
-                i_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='price'),
-                        default=Decimal(0)))
-            )
-            .values(
-                'i_past',
-                'i_now',
-                title=models.F('account__title'),
-                id=models.F('account__pk')
-            )
-        )
 
     def incomes(self):
         return (

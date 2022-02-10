@@ -323,23 +323,6 @@ def test_month_name_sum():
     assert [*actual] == expect
 
 
-def test_summary(expenses):
-    expect = [{
-        'title': 'Account1',
-        'e_past': 2.5,
-        'e_now': 0.5,
-
-    }, {
-        'title': 'Account2',
-        'e_past': 2.25,
-        'e_now': 1.25,
-    }]
-
-    actual = [*Expense.objects.summary(1999).order_by('account__title')]
-
-    assert actual == expect
-
-
 @freeze_time('1999-06-01')
 def test_expense_avg_last_months():
     ExpenseFactory(date=date(1998, 11, 30), price=3)

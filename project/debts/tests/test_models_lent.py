@@ -95,25 +95,6 @@ def test_lent_year_and_not_closed():
     assert actual[2].date == o1.date
 
 
-def test_lent_summary(lent_fixture):
-    expect = [{
-        'id': 1,
-        'title': 'A1',
-        'lent_past': Decimal('9'),
-        'lent_now': Decimal('3'),
-
-    }, {
-        'id': 2,
-        'title': 'A2',
-        'lent_past': Decimal('0'),
-        'lent_now': Decimal('3.1'),
-    }]
-
-    actual = list(Lent.objects.summary(1999).order_by('account__title'))
-
-    assert expect == actual
-
-
 def test_lent_new_post_save():
     LentFactory()
 

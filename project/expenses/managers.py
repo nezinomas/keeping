@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 from decimal import Decimal
-from typing import Any, Dict, List
+from typing import List
 
 from dateutil.relativedelta import relativedelta
 from django.db import models
@@ -215,34 +215,6 @@ class ExpenseQuerySet(models.QuerySet):
                 title=F('expense_name__title'),
                 root=F('expense_name__parent__title')
             )
-        )
-
-    def summary(self, year: int) -> List[Dict[str, Any]]:
-        '''
-        return:
-            {
-                'title': account.title,
-                'e_past': Decimal(),
-                'e_now': Decimal()
-            }
-        '''
-        return (
-            self
-            .related()
-            .annotate(cnt=Count('expense_type'))
-            .values('cnt')
-            .order_by('cnt')
-            .annotate(
-                e_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='price'),
-                        default=Decimal(0))),
-                e_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='price'),
-                        default=Decimal(0)))
-            )
-            .values('e_past', 'e_now', title=models.F('account__title'))
         )
 
     def last_months(self, months: int = 6) -> float:

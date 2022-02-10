@@ -95,27 +95,6 @@ def test_pension_year_query_count(pensions,
         list(Pension.objects.year(1999).values())
 
 
-def test_pension_summary_query_count(pensions,
-                                     django_assert_max_num_queries):
-    with django_assert_max_num_queries(1):
-        list(Pension.objects.summary(1999).values())
-
-
-def test_pension_summary(pensions):
-    expect = [{
-        'id': 1,
-        'title': 'PensionType',
-        's_past': Decimal(3.5),
-        's_now': Decimal(4.5),
-        's_fee_past': Decimal(0.25),
-        's_fee_now': Decimal(0.5),
-    }]
-
-    actual = list(Pension.objects.summary(1999))
-
-    assert expect == actual
-
-
 def test_pension_new_post_save():
     PensionFactory(price=1)
 

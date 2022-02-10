@@ -124,25 +124,6 @@ def test_incomes_income_sum_query_count(django_assert_max_num_queries):
         list([x['date'] for x in qs])
 
 
-def test_summary(incomes):
-    expect = [{
-        'id': 1,
-        'title': 'Account1',
-        'i_past': Decimal(5.25),
-        'i_now': Decimal(3.25),
-
-    }, {
-        'id': 2,
-        'title': 'Account2',
-        'i_past': Decimal(4.5),
-        'i_now': Decimal(3.5),
-    }]
-
-    actual = list(Income.objects.summary(1999).order_by('account__title'))
-
-    assert expect == actual
-
-
 def test_balance(incomes):
     qs = Income.objects.incomes()
 

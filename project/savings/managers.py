@@ -46,33 +46,6 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         )
         return qs
 
-    def _summary(self, year):
-        return (
-            self
-            .related()
-            .annotate(cnt=Count('saving_type'))
-            .values('cnt')
-            .order_by('cnt')
-            .annotate(
-                s_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='price'),
-                        default=Decimal(0))),
-                s_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='price'),
-                        default=Decimal(0))),
-                s_fee_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='fee'),
-                        default=Decimal(0))),
-                s_fee_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='fee'),
-                        default=Decimal(0)))
-            )
-        )
-
     def year(self, year):
         return (
             self
@@ -142,52 +115,6 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .values(
                 sum_annotation,
                 'date')
-        )
-
-    def summary_from(self, year: int) -> List[Dict[str, Any]]:
-        '''
-        summary for accounts
-        return:
-            {
-                'title': ACCOUNT,
-                's_past': Decimal(),
-                's_now': Decimal()
-            }
-        '''
-        return (
-            self
-            .related()
-            ._summary(year)
-            .values(
-                's_past',
-                's_now',
-                title=models.F('account__title'),
-            )
-        )
-
-    def summary_to(self, year: int) -> List[Dict[str, Any]]:
-        '''
-        summary for saving_types
-        return:
-            {
-                'title': SAVING_TYPE,
-                's_past': Decimal(),
-                's_now': Decimal(),
-                's_fee_past': Decimal(),
-                's_free_now': Decimal()
-            }
-        '''
-        return (
-            self
-            .related()
-            ._summary(year)
-            .values(
-                's_past',
-                's_now',
-                's_fee_past',
-                's_fee_now',
-                title=models.F('saving_type__title'),
-            )
         )
 
     def last_months(self, months: int = 6) -> float:

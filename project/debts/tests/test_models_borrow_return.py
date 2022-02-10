@@ -66,30 +66,6 @@ def test_borrow_return_year():
     assert actual.count() == 1
 
 
-def test_borrow_return_summary(borrow_return_fixture):
-    expect = [{
-        'id': 1,
-        'title': 'A1',
-        'borrow_return_past': Decimal('8'),
-        'borrow_return_now': Decimal('2'),
-
-    }, {
-        'id': 2,
-        'title': 'A2',
-        'borrow_return_past': Decimal('0'),
-        'borrow_return_now': Decimal('1.6'),
-    }]
-
-    actual = list(
-        BorrowReturn
-        .objects
-        .summary(1999)
-        .order_by('account__title')
-    )
-
-    assert expect == actual
-
-
 def test_borrow_return_new_record_updates_borrow_tbl():
     BorrowReturnFactory()
 

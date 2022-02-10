@@ -37,51 +37,6 @@ class PensionQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self.related().all()
 
-    def summary(self, year: int) -> List[Dict[str, Any]]:
-        '''
-        return:
-            {
-                'id': account.id,
-                'title': account.title,
-                's_past': Decimal(),
-                's_now': Decimal()
-            }
-        '''
-        return (
-            self
-            .related()
-            .annotate(cnt=Count('pension_type'))
-            .values('cnt')
-            .order_by('cnt')
-            .annotate(
-                s_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='price'),
-                        default=Decimal(0))),
-                s_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='price'),
-                        default=Decimal(0))),
-                s_fee_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='fee'),
-                        default=Decimal(0))),
-                s_fee_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='fee'),
-                        default=Decimal(0)))
-            )
-            .values(
-                's_past',
-                's_now',
-                's_fee_now',
-                's_fee_past',
-                title=models.F('pension_type__title'),
-                id=models.F('pension_type__pk')
-            )
-        )
-
-
 class PensionBalanceQuerySet(models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
