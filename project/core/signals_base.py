@@ -1,9 +1,6 @@
-from dataclasses import dataclass
-from typing import Dict
-
 from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Model, Q
+from django.db.models import Q
 
 from ..bookkeeping.lib import helpers as calc
 from ..core.lib.balance_table_update import UpdatetBalanceTable
