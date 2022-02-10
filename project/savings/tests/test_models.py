@@ -332,6 +332,9 @@ def test_saving_post_save_different_types():
     SavingFactory(saving_type=s1, price=150)
     SavingFactory(saving_type=s2, price=250)
 
+    actual = Saving.objects.all()
+    assert actual.count() == 2
+    print('------------------------------------------------------------------------', Saving.objects.values())
     actual = AccountBalance.objects.all()
     assert actual.count() == 1
 

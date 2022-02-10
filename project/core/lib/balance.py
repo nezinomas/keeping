@@ -226,7 +226,7 @@ class Balance(BalanceBase):
 
         if not 'have' in df.columns.to_list():
             df['have'] = 0.0
-
+        print(f'\nstart df\n{df.to_dict("records")}\n')
         # account_id list from df index.level[0]
         idx = df.index.unique(level=0).to_list()
         for account_id in idx:
@@ -256,7 +256,7 @@ class Balance(BalanceBase):
 
         # delete expenses column
         df.drop(['expenses', 'have'], axis=1, inplace=True)
-
+        print(f'\nfinal df\n{df.to_dict("records")}\n')
         return df
 
     @staticmethod

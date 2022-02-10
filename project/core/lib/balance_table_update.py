@@ -36,7 +36,7 @@ class UpdatetBalanceTable():
 
                 except AttributeError:
                     pass
-        print(f'\ndata\n{_data}\n')
+        print(f'\nUpdateBalanceTable._get_data [39] data\n{_data}\n')
         return _data
 
     def _calc(self):
