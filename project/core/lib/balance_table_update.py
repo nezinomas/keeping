@@ -7,11 +7,12 @@ from .balance import Balance
 class UpdatetBalanceTable():
     def __init__(self, conf: Conf):
         self._conf = conf
-        self._accounts = self._get_accounts()
+        self._categories = self._get_categories()
+        self._category = conf.balance_model_fk_field[:-3]
 
         self._calc()
 
-    def _get_accounts(self):
+    def _get_categories(self):
         a = self._conf.tbl_categories.objects.related()
         return {obj.id: obj for obj in a}
 
@@ -64,7 +65,7 @@ class UpdatetBalanceTable():
             for _dict in _dicts:
                 _id = _dict[_key_name]
                 _dict.update({
-                    'account': self._accounts.get(_id)
+                    self._category: self._categories.get(_id)
                 })
                 _create.append(self._conf.tbl_balance(**_dict))
         else:
@@ -79,7 +80,7 @@ class UpdatetBalanceTable():
                 _dict.update({
                     'pk': _row.pk,
                     'year': _row.year,
-                    'account': self._accounts.get(_row.account_id)
+                    self._category: self._categories.get(_row.account_id)
                 })
                 _obj = self._conf.tbl_balance(**_dict)
                 _update.append(_obj)
@@ -93,7 +94,7 @@ class UpdatetBalanceTable():
                 _dict = _df.loc[(_year, _id)].to_dict()
                 _dict.update({
                     'year': _year,
-                    'account': self._accounts.get(_id)
+                    self._category: self._categories.get(_id)
                 })
                 _obj = self._conf.tbl_balance(**_dict)
                 _create.append(_obj)
