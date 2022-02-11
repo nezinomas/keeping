@@ -181,11 +181,18 @@ class SignalBase():
         print(f'>>> qs loaded values\n{_qs_values}\n')
         _df = pd.DataFrame([_qs_values])
 
-        _df.at[0, balance_tbl_field_name] = _df.at[0, balance_tbl_field_name] + self._calc_field(caller)
+        # print(f'\n>>> df loaded\n{_df}\n')
+        _df.at[0, balance_tbl_field_name] = (
+            _df.at[0, balance_tbl_field_name] + self._calc_field(caller, field='price')
+        )
 
         if 'accounts' in self._conf.balance_class_method:
             _df = Balance.recalc_accounts(_df)
         else:
+            # update fee
+            if self._conf.get_old_values('fee') is not None:
+                _df.at[0, 'fees'] = _df.at[0, 'fees'] + self._calc_field(caller, field='fee')
+
             _df = Balance.recalc_savings(_df)
 
         _qs_updated_values = _df.to_dict('records')[0]

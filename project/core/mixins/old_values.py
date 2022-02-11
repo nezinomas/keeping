@@ -15,8 +15,8 @@ class OldValuesMixin():
             self.old_values.update({
                 'price': self.price,
                 'account': _getattr(self, 'account_id'),
-                'saving_type': _getattr(self, 'saving_type'),
-                'pension_type': _getattr(self, 'pension_type'),
+                'saving_type': _getattr(self, 'saving_type_id'),
+                'pension_type': _getattr(self, 'pension_type_id'),
                 'to_account': _getattr(self, 'to_account_id'),
                 'from_account': _getattr(self, 'from_account_id'),
             })

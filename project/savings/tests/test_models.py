@@ -334,23 +334,23 @@ def test_saving_post_save_different_types():
 
     actual = Saving.objects.all()
     assert actual.count() == 2
-    print('------------------------------------------------------------------------', Saving.objects.values())
+
     actual = AccountBalance.objects.all()
     assert actual.count() == 1
 
     actual = AccountBalance.objects.last()
     assert actual.incomes == 0.0
-    assert actual.expenses == -400.0
+    assert actual.expenses == 400.0
 
     actual = SavingBalance.objects.all()
     assert actual.count() == 2
 
-    actual = SavingBalance.objects.get(year=1999, saving_type_id=s1.pl)
+    actual = SavingBalance.objects.get(year=1999, saving_type_id=s1.pk)
     assert actual.incomes == 150.0
     assert actual.fees == 5.55
     assert actual.invested == 144.45
 
-    actual = SavingBalance.objects.get(year=1999, saving_type_id=s2.pl)
+    actual = SavingBalance.objects.get(year=1999, saving_type_id=s2.pk)
     assert actual.incomes == 250.0
     assert actual.fees == 5.55
     assert actual.invested == 244.45
@@ -409,13 +409,12 @@ def test_saving_post_save_update_changed_saving_type():
     assert actual.expenses == 1.0
     assert actual.balance == -1.0
 
-    actual = SavingBalance.objects.get(saving_type_id=_s.pk, year=1999)
-    assert actual.saving_type.title == 'S'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fees == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    fail = False
+    try:
+        actual = SavingBalance.objects.get(saving_type_id=_s.pk, year=1999)
+    except SavingBalance.DoesNotExist:
+        fail = True
+    assert fail
 
     actual = SavingBalance.objects.get(saving_type_id=_s_new.pk, year=1999)
     assert actual.saving_type.title == 'S-New'
@@ -495,6 +494,7 @@ def test_saving_post_save_update_changed_account_and_saving_type():
     # update saving change
     obj_update = Saving.objects.get(pk=obj.pk)
     obj_update.account = _a_new
+    obj_update.saving_type = _s_new
     obj_update.save()
 
     fail = False
@@ -512,15 +512,15 @@ def test_saving_post_save_update_changed_account_and_saving_type():
     assert actual.expenses == 1.0
     assert actual.balance == -1.0
 
-    actual = SavingBalance.objects.get(saving_type_id=_s.pk, year=1999)
-    assert actual.saving_type.title == 'S'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fees == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    fail = False
+    try:
+        actual = SavingBalance.objects.get(saving_type_id=_s.pk, year=1999)
+    except SavingBalance.DoesNotExist:
+        fail = True
 
-    actual = SavingBalance.objects.get(saving_type_id=_s.pk, year=1999)
+    assert fail
+
+    actual = SavingBalance.objects.get(saving_type_id=_s_new.pk, year=1999)
     assert actual.saving_type.title == 'S-New'
     assert actual.past_amount == 0.0
     assert actual.past_fee == 0.0
