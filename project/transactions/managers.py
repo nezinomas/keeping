@@ -72,5 +72,16 @@ class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
             .order_by('year', 'id')
         )
 
+    def expenses(self):
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'from_account__title')
+            .annotate(expenses=Sum('price'), fee=Sum('fee'))
+            .values('year', 'expenses', 'fee', id=F('from_account__pk'))
+            .order_by('year', 'id')
+        )
+
 class SavingChangeQuerySet(TransactionQuerySet):
     pass

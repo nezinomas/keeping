@@ -881,6 +881,22 @@ def test_saving_close_balance_incomes(savings_close):
     assert actual[2]['id'] == 2
 
 
+def test_saving_close_balance_expenses(savings_close):
+    actual = SavingClose.objects.expenses()
+
+    # 1974
+    assert actual[0]['year'] == 1970
+    assert actual[0]['expenses'] == 0.25
+    assert actual[0]['fee'] == Decimal('0.05')
+    assert actual[0]['id'] == 1
+
+    # 1999
+    assert actual[1]['year'] == 1999
+    assert actual[1]['expenses'] == 0.25
+    assert actual[1]['fee'] == Decimal('0.05')
+    assert actual[1]['id'] == 1
+
+
 # ----------------------------------------------------------------------------
 #                                                                 Saving Change
 # ----------------------------------------------------------------------------
