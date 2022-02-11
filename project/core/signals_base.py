@@ -182,9 +182,12 @@ class SignalBase():
         _df = pd.DataFrame([_qs_values])
 
         # print(f'\n>>> df loaded\n{_df}\n')
-        _df.at[0, balance_tbl_field_name] = (
-            _df.at[0, balance_tbl_field_name] + self._calc_field(caller, field='price')
-        )
+        try:
+            _df.at[0, balance_tbl_field_name] = (
+                _df.at[0, balance_tbl_field_name] + self._calc_field(caller, field='price')
+            )
+        except KeyError:
+            pass
 
         if 'accounts' in self._conf.balance_class_method:
             _df = Balance.recalc_accounts(_df)
@@ -192,6 +195,9 @@ class SignalBase():
             # update fee
             if self._conf.get_old_values('fee') is not None:
                 _df.at[0, 'fee'] = _df.at[0, 'fee'] + self._calc_field(caller, field='fee')
+
+            # update incomes on SavingClose
+            _df.at[0, 'incomes'] = _df.at[0, 'incomes'] - self._calc_field(caller, field='price')
 
             _df = Balance.recalc_savings(_df)
 

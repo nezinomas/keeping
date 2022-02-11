@@ -686,13 +686,13 @@ def test_saving_close_post_save_changed_from():
     assert actual.expenses == 0.0
     assert actual.balance == 1.0
 
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk)
-    assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    fail = False
+    try:
+        actual = SavingBalance.objects.get(saving_type_id=_from.pk)
+    except SavingBalance.DoesNotExist:
+        fail = True
+
+    assert fail
 
     actual = SavingBalance.objects.get(saving_type_id=_from_new.pk)
     assert actual.saving_type.title == 'From-New'
@@ -789,13 +789,13 @@ def test_saving_close_post_save_changed_from_and_to():
     assert actual.expenses == 0.0
     assert actual.balance == 1.0
 
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk)
-    assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    fail = False
+    try:
+        actual = SavingBalance.objects.get(saving_type_id=_from.pk)
+    except SavingBalance.DoesNotExist:
+        fail = True
+
+    assert fail
 
     actual = SavingBalance.objects.get(saving_type_id=_from_new.pk)
     assert actual.saving_type.title == 'From-New'
