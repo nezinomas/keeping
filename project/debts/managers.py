@@ -1,8 +1,5 @@
-from decimal import Decimal
-from typing import Any, Dict, List
-
 from django.db import models
-from django.db.models import Case, Count, F, Q, Sum, When
+from django.db.models import Count, F, Q, Sum
 from django.db.models.functions import ExtractYear, TruncMonth
 
 from ..core.lib import utils
