@@ -135,8 +135,8 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .related()
             .annotate(year=ExtractYear(F('date')))
             .values('year', 'saving_type__title')
-            .annotate(incomes=Sum('price'), fees=Sum('fee'))
-            .values('year', 'incomes', 'fees', id=F('saving_type__pk'))
+            .annotate(incomes=Sum('price'), fee=Sum('fee'))
+            .values('year', 'incomes', 'fee', id=F('saving_type__pk'))
             .order_by('year', 'id')
         )
 
@@ -177,7 +177,7 @@ class SavingBalanceQuerySet(models.QuerySet):
         return qs.values(
             'year',
             'past_amount', 'past_fee',
-            'fees', 'invested', 'incomes', 'market_value',
+            'fee', 'invested', 'incomes', 'market_value',
             'profit_incomes_proc', 'profit_incomes_sum',
             'profit_invested_proc', 'profit_invested_sum',
             title=F('saving_type__title'),

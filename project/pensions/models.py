@@ -72,7 +72,7 @@ class PensionBalance(models.Model):
     )
     past_amount = models.FloatField(default=0.0)
     past_fee = models.FloatField(default=0.0)
-    fees = models.FloatField(default=0.0)
+    fee = models.FloatField(default=0.0)
     invested = models.FloatField(default=0.0)
     incomes = models.FloatField(default=0.0)
     market_value = models.FloatField(default=0.0)

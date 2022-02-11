@@ -191,7 +191,7 @@ class SignalBase():
         else:
             # update fee
             if self._conf.get_old_values('fee') is not None:
-                _df.at[0, 'fees'] = _df.at[0, 'fees'] + self._calc_field(caller, field='fee')
+                _df.at[0, 'fee'] = _df.at[0, 'fee'] + self._calc_field(caller, field='fee')
 
             _df = Balance.recalc_savings(_df)
 

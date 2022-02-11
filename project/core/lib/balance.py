@@ -34,7 +34,7 @@ class Balance(BalanceBase):
         cls.columns = [
             'past_amount',
             'past_fee',
-            'fees',
+            'fee',
             'invested',
             'incomes',
             'market_value',
@@ -245,7 +245,7 @@ class Balance(BalanceBase):
             # # get past values
             # shift free and incomes values down one row
             _df['past_amount'] = _df.incomes.shift(periods=1, fill_value=0.0)
-            _df['past_fee'] = _df.fees.shift(periods=1, fill_value=0.0)
+            _df['past_fee'] = _df.fee.shift(periods=1, fill_value=0.0)
 
             _df = Balance.recalc_savings(_df)
 
@@ -262,11 +262,11 @@ class Balance(BalanceBase):
     @staticmethod
     def recalc_savings(_df):
         # recalclate balance with past
-        # recalclate incomes and fees with past
+        # recalclate incomes and fee with past
         _df['incomes'] = _df['past_amount'] + _df['incomes']
-        _df['fees'] = _df['past_fee'] + _df['fees']
+        _df['fee'] = _df['past_fee'] + _df['fee']
 
-        _df['invested'] = _df['incomes'] - _df['fees']
+        _df['invested'] = _df['incomes'] - _df['fee']
 
         # invested sum cannot be negative
         _df['invested'] = _df['invested'].mask(_df['invested'] < 0, 0.0)

@@ -87,7 +87,7 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
         # form fields labels
         self.fields['price'].label = _('Amount')
         # 'Suma kuri lieka atskaičius mokesčius'
-        self.fields['price'].help_text = _('Amount left after fees')
+        self.fields['price'].help_text = _('Amount left after fee')
         self.fields['fee'].label = _('Fees')
         self.fields['date'].label = _('Date')
         self.fields['from_account'].label = _('From account')
@@ -141,7 +141,7 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
 
         # fields labels
         self.fields['price'].label = _('Amount')
-        self.fields['price'].help_text = _('Amount left after fees')
+        self.fields['price'].help_text = _('Amount left after fee')
         self.fields['fee'].label = _('Fees')
         self.fields['date'].label = _('Date')
         self.fields['from_account'].label = _('From account')

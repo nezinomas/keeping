@@ -58,7 +58,7 @@ class SavingBalanceFactory(factory.django.DjangoModelFactory):
 
     past_amount = 2.0
     past_fee = 2.1
-    fees = 2.2
+    fee = 2.2
     invested = 2.3
     incomes = 2.4
     market_value = 2.5

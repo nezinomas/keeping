@@ -57,7 +57,7 @@ class PensionBalanceQuerySet(models.QuerySet):
             'year',
             'past_amount',
             'past_fee',
-            'fees',
+            'fee',
             'invested',
             'incomes',
             'market_value',

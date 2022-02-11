@@ -50,10 +50,10 @@ def have():
 @pytest.fixture
 def savings():
     return [
-        {'year': 1970, 'incomes': Decimal('1'), 'fees': Decimal('0.5'), 'id': 1},
-        {'year': 1970, 'incomes': Decimal('3'), 'fees': Decimal('0.5'), 'id': 2},
-        {'year': 1999, 'incomes': Decimal('10'), 'fees': Decimal('0.5'), 'id': 1},
-        {'year': 1999, 'incomes': Decimal('13'), 'fees': Decimal('0.5'), 'id': 2},
+        {'year': 1970, 'incomes': Decimal('1'), 'fee': Decimal('0.5'), 'id': 1},
+        {'year': 1970, 'incomes': Decimal('3'), 'fee': Decimal('0.5'), 'id': 2},
+        {'year': 1999, 'incomes': Decimal('10'), 'fee': Decimal('0.5'), 'id': 1},
+        {'year': 1999, 'incomes': Decimal('13'), 'fee': Decimal('0.5'), 'id': 2},
     ]
 
 
@@ -310,7 +310,7 @@ def test_saving_balance_columns(incomes1):
 
     assert 'past_amount' in actual
     assert 'past_fee' in actual
-    assert 'fees' in actual
+    assert 'fee' in actual
     assert 'invested' in actual
     assert 'incomes' in actual
     assert 'market_value' in actual
@@ -353,7 +353,7 @@ def test_saving_balance_only_incomes(savings):
     assert actual[0]['past_amount'] == 0.0
     assert actual[0]['past_fee'] == 0.0
     assert actual[0]['incomes'] == 2.0
-    assert actual[0]['fees'] == 1.0
+    assert actual[0]['fee'] == 1.0
     assert actual[0]['invested'] == 1.0
     assert actual[0]['market_value'] == 0.0
     assert actual[0]['profit_incomes_proc'] == 0.0
@@ -366,7 +366,7 @@ def test_saving_balance_only_incomes(savings):
     assert actual[1]['past_amount'] == 2.0
     assert actual[1]['past_fee'] == 1.0
     assert actual[1]['incomes'] == 22.0
-    assert actual[1]['fees'] == 2.0
+    assert actual[1]['fee'] == 2.0
     assert actual[1]['invested'] == 20.0
     assert actual[1]['market_value'] == 0.0
     assert actual[1]['profit_incomes_proc'] == 0.0
@@ -379,7 +379,7 @@ def test_saving_balance_only_incomes(savings):
     assert actual[2]['past_amount'] == 0.0
     assert actual[2]['past_fee'] == 0.0
     assert actual[2]['incomes'] == 6.0
-    assert actual[2]['fees'] == 1.0
+    assert actual[2]['fee'] == 1.0
     assert actual[2]['invested'] == 5.0
     assert actual[2]['market_value'] == 0.0
     assert actual[2]['profit_incomes_proc'] == 0.0
@@ -392,7 +392,7 @@ def test_saving_balance_only_incomes(savings):
     assert actual[3]['past_amount'] == 6.0
     assert actual[3]['past_fee'] == 1.0
     assert actual[3]['incomes'] == 32.0
-    assert actual[3]['fees'] == 2.0
+    assert actual[3]['fee'] == 2.0
     assert actual[3]['invested'] == 30.0
     assert actual[3]['market_value'] == 0.0
     assert actual[3]['profit_incomes_proc'] == 0.0
@@ -403,10 +403,10 @@ def test_saving_balance_only_incomes(savings):
 
 def test_saving_balance_incomes_expenses(savings):
     expenses = [
-        {'year': 1970, 'expenses': Decimal('0.5'), 'fees': Decimal('0.25'), 'id': 1},
-        {'year': 1970, 'expenses': Decimal('0.5'), 'fees': Decimal('0.25'),  'id': 2},
-        {'year': 1999, 'expenses': Decimal('0.5'), 'fees': Decimal('0.25'),  'id': 1},
-        {'year': 1999, 'expenses': Decimal('0.5'), 'fees': Decimal('0.25'),  'id': 2},
+        {'year': 1970, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'), 'id': 1},
+        {'year': 1970, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 2},
+        {'year': 1999, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 1},
+        {'year': 1999, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 2},
     ]
 
     obj = T().savings()
@@ -419,7 +419,7 @@ def test_saving_balance_incomes_expenses(savings):
     assert actual[0]['past_amount'] == 0.0
     assert actual[0]['past_fee'] == 0.0
     assert actual[0]['incomes'] == 1.5
-    assert actual[0]['fees'] == 1.25
+    assert actual[0]['fee'] == 1.25
     assert actual[0]['invested'] == 0.25
     assert actual[0]['market_value'] == 0.0
     assert actual[0]['profit_incomes_sum'] == -1.5
@@ -432,7 +432,7 @@ def test_saving_balance_incomes_expenses(savings):
     assert actual[1]['past_amount'] == 1.5
     assert actual[1]['past_fee'] == 1.25
     assert actual[1]['incomes'] == 21.0
-    assert actual[1]['fees'] == 2.5
+    assert actual[1]['fee'] == 2.5
     assert actual[1]['invested'] == 18.5
     assert actual[1]['market_value'] == 0.0
     assert actual[1]['profit_incomes_sum'] == -21.0
@@ -445,7 +445,7 @@ def test_saving_balance_incomes_expenses(savings):
     assert actual[2]['past_amount'] == 0.0
     assert actual[2]['past_fee'] == 0.0
     assert actual[2]['incomes'] == 5.5
-    assert actual[2]['fees'] == 1.25
+    assert actual[2]['fee'] == 1.25
     assert actual[2]['invested'] == 4.25
     assert actual[2]['market_value'] == 0.0
     assert actual[2]['profit_incomes_sum'] == -5.5
@@ -458,7 +458,7 @@ def test_saving_balance_incomes_expenses(savings):
     assert actual[3]['past_amount'] == 5.5
     assert actual[3]['past_fee'] == 1.25
     assert actual[3]['incomes'] == 31.0
-    assert actual[3]['fees'] == 2.5
+    assert actual[3]['fee'] == 2.5
     assert actual[3]['invested'] == 28.5
     assert actual[3]['market_value'] == 0.0
     assert actual[3]['profit_incomes_sum'] == -31.0
@@ -469,10 +469,10 @@ def test_saving_balance_incomes_expenses(savings):
 
 def test_saving_balance_incomes_expenses_have(savings):
     expenses = [
-        {'year': 1970, 'expenses': Decimal('0.5'), 'fees': Decimal('0.25'), 'id': 1},
-        {'year': 1970, 'expenses': Decimal('0.5'), 'fees': Decimal('0.25'),  'id': 2},
-        {'year': 1999, 'expenses': Decimal('0.5'), 'fees': Decimal('0.25'),  'id': 1},
-        {'year': 1999, 'expenses': Decimal('0.5'), 'fees': Decimal('0.25'),  'id': 2},
+        {'year': 1970, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'), 'id': 1},
+        {'year': 1970, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 2},
+        {'year': 1999, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 1},
+        {'year': 1999, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 2},
     ]
 
     have = [
@@ -492,7 +492,7 @@ def test_saving_balance_incomes_expenses_have(savings):
     assert actual[0]['past_amount'] == 0.0
     assert actual[0]['past_fee'] == 0.0
     assert actual[0]['incomes'] == 1.5
-    assert actual[0]['fees'] == 1.25
+    assert actual[0]['fee'] == 1.25
     assert actual[0]['invested'] == 0.25
     assert actual[0]['market_value'] == 2.0
     assert actual[0]['profit_incomes_sum'] == 0.5
@@ -505,7 +505,7 @@ def test_saving_balance_incomes_expenses_have(savings):
     assert actual[1]['past_amount'] == 1.5
     assert actual[1]['past_fee'] == 1.25
     assert actual[1]['incomes'] == 21.0
-    assert actual[1]['fees'] == 2.5
+    assert actual[1]['fee'] == 2.5
     assert actual[1]['invested'] == 18.5
     assert actual[1]['market_value'] == 22.0
     assert actual[1]['profit_incomes_sum'] == 1.0
@@ -518,7 +518,7 @@ def test_saving_balance_incomes_expenses_have(savings):
     assert actual[2]['past_amount'] == 0.0
     assert actual[2]['past_fee'] == 0.0
     assert actual[2]['incomes'] == 5.5
-    assert actual[2]['fees'] == 1.25
+    assert actual[2]['fee'] == 1.25
     assert actual[2]['invested'] == 4.25
     assert actual[2]['market_value'] == 6.0
     assert actual[2]['profit_incomes_sum'] == 0.5
@@ -531,7 +531,7 @@ def test_saving_balance_incomes_expenses_have(savings):
     assert actual[3]['past_amount'] == 5.5
     assert actual[3]['past_fee'] == 1.25
     assert actual[3]['incomes'] == 31.0
-    assert actual[3]['fees'] == 2.5
+    assert actual[3]['fee'] == 2.5
     assert actual[3]['invested'] == 28.5
     assert actual[3]['market_value'] == 33.0
     assert actual[3]['profit_incomes_sum'] == 2.0
@@ -542,10 +542,10 @@ def test_saving_balance_incomes_expenses_have(savings):
 
 def test_saving_total_row(savings):
     expenses = [
-        {'year': 1970, 'expenses': Decimal('0.5'), 'fees': Decimal('0.25'), 'id': 1},
-        {'year': 1970, 'expenses': Decimal('0.5'), 'fees': Decimal('0.25'),  'id': 2},
-        {'year': 1999, 'expenses': Decimal('0.5'), 'fees': Decimal('0.25'),  'id': 1},
-        {'year': 1999, 'expenses': Decimal('0.5'), 'fees': Decimal('0.25'),  'id': 2},
+        {'year': 1970, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'), 'id': 1},
+        {'year': 1970, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 2},
+        {'year': 1999, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 1},
+        {'year': 1999, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 2},
     ]
 
     have = [
@@ -563,7 +563,7 @@ def test_saving_total_row(savings):
     assert actual['past_amount'] == 7.0
     assert actual['past_fee'] == 2.5
     assert actual['incomes'] == 52.0
-    assert actual['fees'] == 5.0
+    assert actual['fee'] == 5.0
     assert actual['invested'] == 47.0
     assert actual['market_value'] == 55
     assert actual['profit_incomes_sum'] == 3.0
@@ -574,7 +574,7 @@ def test_saving_total_row(savings):
 
 def test_saving_invested_cannot_be_negative():
     expenses = [
-        {'year': 1970, 'expenses': Decimal('0.5'), 'fees': Decimal('0.25'), 'id': 1},
+        {'year': 1970, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'), 'id': 1},
     ]
 
     have = [
@@ -587,7 +587,7 @@ def test_saving_invested_cannot_be_negative():
     actual = obj.balance
 
     assert actual[0]['incomes'] == -0.5
-    assert actual[0]['fees'] == 0.25
+    assert actual[0]['fee'] == 0.25
     assert actual[0]['invested'] == 0.0
     assert actual[0]['market_value'] == 0.1
     assert actual[0]['profit_incomes_sum'] == 0.6
