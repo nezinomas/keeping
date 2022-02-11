@@ -134,9 +134,9 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             self
             .related()
             .annotate(year=ExtractYear(F('date')))
-            .values('year', 'account__title')
+            .values('year', 'saving_type__title')
             .annotate(incomes=Sum('price'), fees=Sum('fee'))
-            .values('year', 'incomes', 'fees', id=F('account__pk'))
+            .values('year', 'incomes', 'fees', id=F('saving_type__pk'))
             .order_by('year', 'id')
         )
 

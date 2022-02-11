@@ -575,6 +575,14 @@ def test_saving_post_delete_with_update():
 
 
 def test_savings_incomes(savings):
+    SavingFactory(
+        date=date(1999, 1, 1),
+        price=2.25,
+        fee=0.25,
+        account=AccountFactory(title='Account1'),
+        saving_type=SavingTypeFactory(title='Saving2')
+    )
+
     actual = Saving.objects.incomes()
 
     assert actual[0]['year'] == 1970
@@ -594,8 +602,8 @@ def test_savings_incomes(savings):
 
     assert actual[3]['year'] == 1999
     assert actual[3]['id'] == 2
-    assert actual[3]['incomes'] == 2.25
-    assert actual[3]['fees'] == 0.25
+    assert actual[3]['incomes'] == 4.5
+    assert actual[3]['fees'] == 0.5
 
 
 def test_savings_expenses(savings):
