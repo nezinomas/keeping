@@ -7,134 +7,134 @@ from mock import patch
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...incomes.factories import IncomeFactory
-from ..factories import LentFactory, LentReturnFactory
-from ..models import Lent, LentReturn
+from ..factories import DebtFactory, DebtReturnFactory
+from ..models import Debt, DebtReturn
 
 pytestmark = pytest.mark.django_db
 
 
-def test_lent_return_str():
-    v = LentReturnFactory.build()
+def test_debt_return_str():
+    v = DebtReturnFactory.build()
 
     assert str(v) == 'Grąžino 5.0'
 
 
-def test_lent_return_fields():
-    assert LentReturn._meta.get_field('date')
-    assert LentReturn._meta.get_field('price')
-    assert LentReturn._meta.get_field('account')
-    assert LentReturn._meta.get_field('lent')
-    assert LentReturn._meta.get_field('remark')
+def test_debt_return_fields():
+    assert DebtReturn._meta.get_field('date')
+    assert DebtReturn._meta.get_field('price')
+    assert DebtReturn._meta.get_field('account')
+    assert DebtReturn._meta.get_field('debt')
+    assert DebtReturn._meta.get_field('remark')
 
 
-def test_lent_return_related(main_user, second_user):
-    b1 = LentFactory(name='B1', price=1, journal=main_user.journal)
-    b2 = LentFactory(name='B2', price=2, journal=second_user.journal)
+def test_debt_return_related(main_user, second_user):
+    b1 = DebtFactory(name='B1', price=1, journal=main_user.journal)
+    b2 = DebtFactory(name='B2', price=2, journal=second_user.journal)
 
-    LentReturnFactory(lent=b1, price=1.1)
-    LentReturnFactory(lent=b2, price=2.1)
+    DebtReturnFactory(debt=b1, price=1.1)
+    DebtReturnFactory(debt=b2, price=2.1)
 
-    actual = LentReturn.objects.related()
+    actual = DebtReturn.objects.related()
 
     assert actual.count() == 1
     assert str(actual[0]) == 'Grąžino 1.1'
 
 
-def test_lent_return_related_queries(django_assert_num_queries):
-    LentReturnFactory()
-    LentReturnFactory()
+def test_debt_return_related_queries(django_assert_num_queries):
+    DebtReturnFactory()
+    DebtReturnFactory()
 
     with django_assert_num_queries(1):
-        a = [x.account.title for x in list(LentReturn.objects.related())]
+        a = [x.account.title for x in list(DebtReturn.objects.related())]
 
 
-def test_lent_return_items():
-    LentReturnFactory()
-    LentReturnFactory()
+def test_debt_return_items():
+    DebtReturnFactory()
+    DebtReturnFactory()
 
-    actual = LentReturn.objects.items()
+    actual = DebtReturn.objects.items()
 
     assert actual.count() == 2
 
 
-def test_lent_return_year():
-    LentReturnFactory()
-    LentReturnFactory(date=dt(1974, 1, 2))
+def test_debt_return_year():
+    DebtReturnFactory()
+    DebtReturnFactory(date=dt(1974, 1, 2))
 
-    actual = LentReturn.objects.year(1999)
+    actual = DebtReturn.objects.year(1999)
 
     assert actual.count() == 1
 
 
-def test_lent_return_new_record_updates_lent_tbl():
-    LentReturnFactory()
+def test_debt_return_new_record_updates_debt_tbl():
+    DebtReturnFactory()
 
-    actual = Lent.objects.items()
+    actual = Debt.objects.items()
 
     assert actual.count() == 1
     assert actual[0].returned == Decimal('30')
 
 
-def test_lent_return_update():
-    obj = LentReturnFactory()
+def test_debt_return_update():
+    obj = DebtReturnFactory()
 
-    actual = Lent.objects.items()
+    actual = Debt.objects.items()
     assert actual[0].returned == Decimal('30')
 
     obj.price = Decimal('20')
     obj.save()
 
-    assert LentReturn.objects.items().count() == 1
+    assert DebtReturn.objects.items().count() == 1
 
-    actual = Lent.objects.items()
+    actual = Debt.objects.items()
     assert actual[0].returned == Decimal('45')
 
 
-def test_lent_return_new_record_updates_lent_tbl_empty_returned_field():
-    LentReturnFactory(lent=LentFactory(returned=None))
+def test_debt_return_new_record_updates_debt_tbl_empty_returned_field():
+    DebtReturnFactory(debt=DebtFactory(returned=None))
 
-    actual = Lent.objects.items()
+    actual = Debt.objects.items()
 
     assert actual.count() == 1
     assert actual[0].returned == Decimal('5')
 
 
-@patch('project.debts.models.Lent.objects.get')
-def test_lent_return_new_record_updates_lent_tbl_error_on_save_parent(mck):
+@patch('project.debts.models.Debt.objects.get')
+def test_debt_return_new_record_updates_debt_tbl_error_on_save_parent(mck):
     mck.side_effect = TypeError
 
     try:
-        LentReturnFactory()
+        DebtReturnFactory()
     except:
         pass
 
-    actual = Lent.objects.items()
+    actual = Debt.objects.items()
     assert actual[0].returned == Decimal('25')
 
-    actual = LentReturn.objects.all()
+    actual = DebtReturn.objects.all()
     assert actual.count() == 0
 
 
-def test_lent_return_delete_record_updates_lent_tbl():
-    obj = LentReturnFactory()
+def test_debt_return_delete_record_updates_debt_tbl():
+    obj = DebtReturnFactory()
 
-    actual = Lent.objects.items()
+    actual = Debt.objects.items()
 
     assert actual.count() == 1
     assert actual[0].returned == Decimal('30')
 
     obj.delete()
 
-    actual = Lent.objects.items()
+    actual = Debt.objects.items()
 
     assert actual.count() == 1
     assert actual[0].returned == Decimal('25')
 
 
-def test_lent_return_delete_record_updates_lent_tbl_error_on_save():
-    obj = LentReturnFactory()
+def test_debt_return_delete_record_updates_debt_tbl_error_on_save():
+    obj = DebtReturnFactory()
 
-    actual = Lent.objects.items()
+    actual = Debt.objects.items()
 
     assert actual[0].returned == Decimal('30')
 
@@ -146,13 +146,13 @@ def test_lent_return_delete_record_updates_lent_tbl_error_on_save():
         except:
             pass
 
-    actual = Lent.objects.items()
+    actual = Debt.objects.items()
 
     assert actual[0].returned == Decimal('30')
 
 
-def test_lent_return_new_post_save():
-    LentReturnFactory()
+def test_debt_return_new_post_save():
+    DebtReturnFactory()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -165,11 +165,11 @@ def test_lent_return_new_post_save():
     assert actual['balance'] == 95.0
 
 
-def test_lent_return_update_post_save():
-    obj = LentReturnFactory()
+def test_debt_return_update_post_save():
+    obj = DebtReturnFactory()
 
     # update object
-    obj_update = LentReturn.objects.get(pk=obj.pk)
+    obj_update = DebtReturn.objects.get(pk=obj.pk)
     obj_update.price = 1
     obj_update.save()
 
@@ -183,15 +183,15 @@ def test_lent_return_update_post_save():
     assert actual['balance'] == 99.0
 
 
-def test_lent_return_post_save_first_record():
-    l = LentFactory(price=5)
+def test_debt_return_post_save_first_record():
+    l = DebtFactory(price=5)
 
     IncomeFactory(date=dt(1998, 1, 1), price=1)
 
     # truncate AccountBalance table
     AccountBalance.objects.all().delete()
 
-    LentReturnFactory(date=dt(1999, 1, 1), lent=l, price=2)
+    DebtReturnFactory(date=dt(1999, 1, 1), debt=l, price=2)
 
     actual = AccountBalance.objects.items()
 
@@ -210,8 +210,8 @@ def test_lent_return_post_save_first_record():
     assert actual[1].delta == -4.0
 
 
-def test_lent_return_post_delete():
-    obj = LentReturnFactory()
+def test_debt_return_post_delete():
+    obj = DebtReturnFactory()
 
     actual = AccountBalance.objects.last()
     assert actual.account.title == 'Account1'
@@ -219,7 +219,7 @@ def test_lent_return_post_delete():
     assert actual.expenses == 5.0
     assert actual.balance == 95.0
 
-    LentReturn.objects.get(pk=obj.pk).delete()
+    DebtReturn.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.last()
     assert actual.account.title == 'Account1'
@@ -228,11 +228,11 @@ def test_lent_return_post_delete():
     assert actual.balance == 100.0
 
 
-def test_lent_return_post_delete_with_updt():
-    b = LentFactory()
-    LentReturnFactory(lent=b, price=1)
+def test_debt_return_post_delete_with_updt():
+    b = DebtFactory()
+    DebtReturnFactory(debt=b, price=1)
 
-    obj = LentReturnFactory(lent=b, price=2)
+    obj = DebtReturnFactory(debt=b, price=2)
 
     actual = AccountBalance.objects.last()
     assert actual.account.title == 'Account1'
@@ -240,7 +240,7 @@ def test_lent_return_post_delete_with_updt():
     assert actual.expenses == 3.0
     assert actual.balance == 97.0
 
-    LentReturn.objects.get(pk=obj.pk).delete()
+    DebtReturn.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.last()
     assert actual.account.title == 'Account1'
@@ -249,72 +249,72 @@ def test_lent_return_post_delete_with_updt():
     assert actual.balance == 99.0
 
 
-def test_lent_return_sum_all_months():
-    LentReturnFactory(date=dt(1999, 1, 1), price=1)
-    LentReturnFactory(date=dt(1999, 1, 2), price=2)
-    LentReturnFactory(date=dt(1999, 2, 1), price=4)
-    LentReturnFactory(date=dt(1999, 2, 2), price=1)
+def test_debt_return_sum_all_months():
+    DebtReturnFactory(date=dt(1999, 1, 1), price=1)
+    DebtReturnFactory(date=dt(1999, 1, 2), price=2)
+    DebtReturnFactory(date=dt(1999, 2, 1), price=4)
+    DebtReturnFactory(date=dt(1999, 2, 2), price=1)
 
     expect = [
         {'date': dt(1999, 1, 1), 'sum': Decimal('3')},
         {'date': dt(1999, 2, 1), 'sum': Decimal('5')},
     ]
 
-    actual = list(LentReturn.objects.sum_by_month(1999))
+    actual = list(DebtReturn.objects.sum_by_month(1999))
 
     assert expect == actual
 
 
-def test_lent_return_sum_all_months_ordering():
-    LentReturnFactory(date=dt(1999, 1, 1), price=1)
-    LentReturnFactory(date=dt(1999, 1, 2), price=2)
-    LentReturnFactory(date=dt(1999, 2, 1), price=4)
-    LentReturnFactory(date=dt(1999, 2, 2), price=1)
+def test_debt_return_sum_all_months_ordering():
+    DebtReturnFactory(date=dt(1999, 1, 1), price=1)
+    DebtReturnFactory(date=dt(1999, 1, 2), price=2)
+    DebtReturnFactory(date=dt(1999, 2, 1), price=4)
+    DebtReturnFactory(date=dt(1999, 2, 2), price=1)
 
-    actual = list(LentReturn.objects.sum_by_month(1999))
+    actual = list(DebtReturn.objects.sum_by_month(1999))
 
     assert actual[0]['date'] == dt(1999, 1, 1)
     assert actual[1]['date'] == dt(1999, 2, 1)
 
 
-def test_lent_return_sum_one_month():
-    LentReturnFactory(date=dt(1999, 1, 1), price=1)
-    LentReturnFactory(date=dt(1999, 1, 2), price=2)
+def test_debt_return_sum_one_month():
+    DebtReturnFactory(date=dt(1999, 1, 1), price=1)
+    DebtReturnFactory(date=dt(1999, 1, 2), price=2)
 
     expect = [
         {'date': dt(1999, 1, 1), 'sum': Decimal('3')}
     ]
 
-    actual = list(LentReturn.objects.sum_by_month(1999, 1))
+    actual = list(DebtReturn.objects.sum_by_month(1999, 1))
 
     assert len(expect) == 1
     assert expect == actual
 
 
-def test_lent_return_autoclose():
-    LentReturnFactory(price=75)
+def test_debt_return_autoclose():
+    DebtReturnFactory(price=75)
 
-    actual = Lent.objects.first()
+    actual = Debt.objects.first()
 
     assert actual.returned == Decimal('100')
     assert actual.closed
 
 
-def test_lent_return_expenses():
+def test_debt_return_expenses():
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
 
-    LentReturnFactory(date=dt(1970, 1, 1), account=a1, price=1)
-    LentReturnFactory(date=dt(1970, 1, 1), account=a1, price=2)
-    LentReturnFactory(date=dt(1970, 1, 1), account=a2, price=3)
-    LentReturnFactory(date=dt(1970, 1, 1), account=a2, price=4)
+    DebtReturnFactory(date=dt(1970, 1, 1), account=a1, price=1)
+    DebtReturnFactory(date=dt(1970, 1, 1), account=a1, price=2)
+    DebtReturnFactory(date=dt(1970, 1, 1), account=a2, price=3)
+    DebtReturnFactory(date=dt(1970, 1, 1), account=a2, price=4)
 
-    LentReturnFactory(date=dt(1999, 1, 1), account=a1, price=10)
-    LentReturnFactory(date=dt(1999, 1, 1), account=a1, price=20)
-    LentReturnFactory(date=dt(1999, 1, 1), account=a2, price=30)
-    LentReturnFactory(date=dt(1999, 1, 1), account=a2, price=40)
+    DebtReturnFactory(date=dt(1999, 1, 1), account=a1, price=10)
+    DebtReturnFactory(date=dt(1999, 1, 1), account=a1, price=20)
+    DebtReturnFactory(date=dt(1999, 1, 1), account=a2, price=30)
+    DebtReturnFactory(date=dt(1999, 1, 1), account=a2, price=40)
 
-    actual = LentReturn.objects.expenses()
+    actual = DebtReturn.objects.expenses()
 
     assert actual[0]['year'] == 1970
     assert actual[0]['id'] == 1

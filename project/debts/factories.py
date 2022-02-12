@@ -33,26 +33,26 @@ class BorrowReturnFactory(factory.django.DjangoModelFactory):
     borrow = factory.SubFactory(BorrowFactory)
 
 
-class LentFactory(factory.django.DjangoModelFactory):
+class DebtFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.Lent
+        model = models.Debt
 
     date = dt(1999, 1, 1)
     name = factory.Faker('first_name')
     price = Decimal('100')
     returned = Decimal('25')
     closed = False
-    remark = 'Lent Remark'
+    remark = 'Debt Remark'
     account = factory.SubFactory(AccountFactory)
     journal = factory.SubFactory(JournalFactory)
 
 
-class LentReturnFactory(factory.django.DjangoModelFactory):
+class DebtReturnFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.LentReturn
+        model = models.DebtReturn
 
     date = dt(1999, 1, 2)
     price = Decimal('5')
-    remark = 'Lent Return Remark'
+    remark = 'Debt Return Remark'
     account = factory.SubFactory(AccountFactory)
-    lent = factory.SubFactory(LentFactory)
+    debt = factory.SubFactory(DebtFactory)

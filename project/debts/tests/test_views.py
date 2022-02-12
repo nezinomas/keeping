@@ -51,36 +51,36 @@ def test_borrow_reload_ender_trigger_not_set(client_logged):
     assert views.Index == response.resolver_match.func.view_class
 
 
-def test_lent_reload_func():
-    view = resolve('/lents/reload/')
+def test_debt_reload_func():
+    view = resolve('/debts/reload/')
 
-    assert views.LentReload is view.func.view_class
+    assert views.DebtReload is view.func.view_class
 
 
-def test_lent_reload_render(rf):
-    request = rf.get('/lents/reload/?ajax_trigger=1')
+def test_debt_reload_render(rf):
+    request = rf.get('/debts/reload/?ajax_trigger=1')
     request.user = UserFactory.build()
 
-    response = views.LentReload.as_view()(request)
+    response = views.DebtReload.as_view()(request)
 
     assert response.status_code == 200
 
     actual = json.loads(response.content)
-    assert 'lent' in actual
-    assert 'lent_return' in actual
+    assert 'debt' in actual
+    assert 'debt_return' in actual
 
 
-def test_lent_reload_return_object(rf):
-    request = rf.get('/lents/reload/?ajax_trigger=1')
+def test_debt_reload_return_object(rf):
+    request = rf.get('/debts/reload/?ajax_trigger=1')
     request.user = UserFactory.build()
 
-    response = views.LentReload.as_view()(request)
+    response = views.DebtReload.as_view()(request)
 
     assert isinstance(response, JsonResponse)
 
 
-def test_lent_reload_ender_trigger_not_set(client_logged):
-    url = reverse('debts:lents_reload')
+def test_debt_reload_ender_trigger_not_set(client_logged):
+    url = reverse('debts:debts_reload')
     response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
@@ -128,22 +128,22 @@ def test_debts_index_borrow_return_in_ctx(client_logged):
     assert 'id="borrow_return"' in content
 
 
-def test_debts_index_lent_in_ctx(client_logged):
+def test_debts_index_debt_in_ctx(client_logged):
     url = reverse('debts:debts_index')
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
 
-    assert 'lent' in response.context
-    assert 'id="lent"' in content
+    assert 'debt' in response.context
+    assert 'id="debt"' in content
 
 
-def test_debts_index_lent_return_in_ctx(client_logged):
+def test_debts_index_debt_return_in_ctx(client_logged):
     url = reverse('debts:debts_index')
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
 
-    assert 'lent_return' in response.context
-    assert 'id="lent_return"' in content
+    assert 'debt_return' in response.context
+    assert 'id="debt_return"' in content
 
 
 def test_debts_index_borrow_add_button(client_logged):
@@ -172,26 +172,26 @@ def test_debts_index_borrow_return_add_button(client_logged):
     assert res[0] == 'Sumą'
 
 
-def test_debts_index_lent_add_button(client_logged):
+def test_debts_index_debt_add_button(client_logged):
     url = reverse('debts:debts_index')
     response = client_logged.get(url)
 
     content = response.content.decode()
 
-    link = reverse('debts:lents_new')
+    link = reverse('debts:debts_new')
     pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
     assert res[0] == 'Skolą'
 
 
-def test_debts_index_lent_return_add_button(client_logged):
+def test_debts_index_debt_return_add_button(client_logged):
     url = reverse('debts:debts_index')
     response = client_logged.get(url)
 
     content = response.content.decode()
 
-    link = reverse('debts:lents_return_new')
+    link = reverse('debts:debts_return_new')
     pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 

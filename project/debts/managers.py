@@ -95,7 +95,7 @@ class BorrowReturnQuerySet(SumMixin, models.QuerySet):
         )
 
 
-class LentQuerySet(models.QuerySet):
+class DebtQuerySet(models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
         return (
@@ -141,7 +141,7 @@ class LentQuerySet(models.QuerySet):
             self
             .related()
             .filter(closed=False)
-            .aggregate(lent=Sum('price'), lent_return=Sum('returned'))
+            .aggregate(debt=Sum('price'), debt_return=Sum('returned'))
         )
 
     def incomes(self):
@@ -156,13 +156,13 @@ class LentQuerySet(models.QuerySet):
         )
 
 
-class LentReturnQuerySet(SumMixin, models.QuerySet):
+class DebtReturnQuerySet(SumMixin, models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
         qs = (
             self
-            .select_related('account', 'lent')
-            .filter(lent__journal=journal)
+            .select_related('account', 'debt')
+            .filter(debt__journal=journal)
         )
         return qs
 

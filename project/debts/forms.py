@@ -146,9 +146,9 @@ class BorrowReturnForm(YearBetweenMixin, forms.ModelForm):
                 self.add_error('date', _('The date is earlier than the date of the debt.'))
 
 
-class LentForm(YearBetweenMixin, forms.ModelForm):
+class DebtForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
-        model = models.Lent
+        model = models.Debt
         fields = ['journal', 'date', 'name', 'price', 'closed', 'account', 'remark']
 
     field_order = ['date', 'name', 'price', 'account', 'remark', 'closed']
@@ -200,7 +200,7 @@ class LentForm(YearBetweenMixin, forms.ModelForm):
         # can't update name
         if not closed:
             if name != self.instance.name:
-                qs = models.Lent.objects.items().filter(name=name)
+                qs = models.Debt.objects.items().filter(name=name)
                 if qs.exists():
                     self.add_error('name', _('The name of the lender must be unique.'))
 
@@ -222,12 +222,12 @@ class LentForm(YearBetweenMixin, forms.ModelForm):
         return
 
 
-class LentReturnForm(YearBetweenMixin, forms.ModelForm):
+class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
-        model = models.LentReturn
-        fields = ['date', 'price', 'remark', 'account', 'lent']
+        model = models.DebtReturn
+        fields = ['date', 'price', 'remark', 'account', 'debt']
 
-    field_order = ['date', 'lent', 'account', 'price', 'remark']
+    field_order = ['date', 'debt', 'account', 'price', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -247,12 +247,12 @@ class LentReturnForm(YearBetweenMixin, forms.ModelForm):
 
         # overwrite ForeignKey expense_type queryset
         self.fields['account'].queryset = Account.objects.items()
-        self.fields['lent'].queryset = models.Lent.objects.items().filter(closed=False)
+        self.fields['debt'].queryset = models.Debt.objects.items().filter(closed=False)
 
         # fields labels
         self.fields['date'].label = _('Date')
         self.fields['account'].label = _('Account')
-        self.fields['lent'].label = _('Lender')
+        self.fields['debt'].label = _('Lender')
         self.fields['price'].label = _('Sum')
         self.fields['remark'].label = _('Remark')
 
@@ -261,10 +261,10 @@ class LentReturnForm(YearBetweenMixin, forms.ModelForm):
 
     def clean_price(self):
         price = self.cleaned_data['price']
-        lent = self.cleaned_data.get('lent')
+        debt = self.cleaned_data.get('debt')
 
-        if lent:
-            obj = models.Lent.objects.related().get(pk=lent.pk)
+        if debt:
+            obj = models.Debt.objects.related().get(pk=debt.pk)
 
             if price > (obj.price - obj.returned):
                 raise ValidationError(_('The amount to be paid is more than the debt!'))
@@ -274,8 +274,8 @@ class LentReturnForm(YearBetweenMixin, forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         date = cleaned_data.get('date')
-        lent = cleaned_data.get('lent')
+        debt = cleaned_data.get('debt')
 
-        if lent:
-            if date < lent.date:
+        if debt:
+            if date < debt.date:
                 self.add_error('date', _('The date is earlier than the date of the debt.'))

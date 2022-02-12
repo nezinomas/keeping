@@ -18,18 +18,18 @@
     </thead>
     <tbody>
         {% for item in items %}
-        {% url 'debts:lents_return_update' item.id as url_update %}
-        {% url 'debts:lents_return_delete' item.id as url_delete %}
-        <tr data-url="" class="dblclick" {% ifchanged item.lent.name or ifchanged item.lent.closed %}{% if not forloop.first %}style="border-top: 5px #c0c0c0 solid;"{% endif %}{% endifchanged %}>
+        {% url 'debts:debts_return_update' item.id as url_update %}
+        {% url 'debts:debts_return_delete' item.id as url_delete %}
+        <tr data-url="" class="dblclick" {% ifchanged item.debt.name or ifchanged item.debt.closed %}{% if not forloop.first %}style="border-top: 5px #c0c0c0 solid;"{% endif %}{% endifchanged %}>
             <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-start">{{ item.lent.name }}</td>
+            <td class="text-start">{{ item.debt.name }}</td>
             <td class="text-start">{{ item.price|intcomma }}</td>
             <td class="text-start">{{ item.account }}</td>
             <td class="text-start">{{ item.remark }}</td>
-            <td class="text-center">{% if item.lent.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
-            {% if not item.lent.closed %}
-            {% edit_cell url=url_update target="lent" %}
-            {% delete_cell url=url_delete target="lent" %}
+            <td class="text-center">{% if item.debt.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
+            {% if not item.debt.closed %}
+            {% edit_cell url=url_update target="debt" %}
+            {% delete_cell url=url_delete target="debt" %}
             {% else %}
             <td colspan="2"></td>
             {% endif %}

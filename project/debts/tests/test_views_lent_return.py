@@ -13,31 +13,31 @@ X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
 
 
-def test_lent_return_list_func():
-    view = resolve('/lents/return/lists/')
+def test_debt_return_list_func():
+    view = resolve('/debts/return/lists/')
 
-    assert views.LentReturnLists == view.func.view_class
+    assert views.DebtReturnLists == view.func.view_class
 
 
-def test_lent_return_list_200(client_logged):
-    url = reverse('debts:lents_return_list')
+def test_debt_return_list_200(client_logged):
+    url = reverse('debts:debts_return_list')
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
-def test_lent_return_list_empty(client_logged):
-    url = reverse('debts:lents_return_list')
+def test_debt_return_list_empty(client_logged):
+    url = reverse('debts:debts_return_list')
     response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     assert '<b>1999</b> metais įrašų nėra' in content
 
 
-def test_lent_return_list_with_data(client_logged):
-    factories.LentReturnFactory()
+def test_debt_return_list_with_data(client_logged):
+    factories.DebtReturnFactory()
 
-    url = reverse('debts:lents_return_list')
+    url = reverse('debts:debts_return_list')
     response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
@@ -49,50 +49,50 @@ def test_lent_return_list_with_data(client_logged):
     assert '1999-01-02' in content
     assert '5,0' in content
     assert 'Account1' in content
-    assert 'Lent Return Remark' in content
+    assert 'Debt Return Remark' in content
 
 
-def test_lent_return_list_edit_button(client_logged):
-    f = factories.LentReturnFactory()
+def test_debt_return_list_edit_button(client_logged):
+    f = factories.DebtReturnFactory()
 
-    url = reverse('debts:lents_return_list')
+    url = reverse('debts:debts_return_list')
     response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
-    link = reverse('debts:lents_return_update', kwargs={'pk': f.pk})
+    link = reverse('debts:debts_return_update', kwargs={'pk': f.pk})
 
-    assert f'<a role="button" data-url="{ link }" data-target="lent"' in content
+    assert f'<a role="button" data-url="{ link }" data-target="debt"' in content
     assert 'js-create set-target' in content
 
 
-def test_lent_return_list_delete_button(client_logged):
-    obj = factories.LentReturnFactory()
+def test_debt_return_list_delete_button(client_logged):
+    obj = factories.DebtReturnFactory()
 
-    url = reverse('debts:lents_return_list')
+    url = reverse('debts:debts_return_list')
     response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
-    link = reverse('debts:lents_return_delete', kwargs={'pk': obj.pk})
+    link = reverse('debts:debts_return_delete', kwargs={'pk': obj.pk})
 
-    assert f'<a role="button" data-url="{ link }" data-target="lent"' in content
+    assert f'<a role="button" data-url="{ link }" data-target="debt"' in content
     assert 'js-create set-target' in content
 
 
-def test_lent_return_new_func():
-    view = resolve('/lents/return/new/')
+def test_debt_return_new_func():
+    view = resolve('/debts/return/new/')
 
-    assert views.LentReturnNew == view.func.view_class
+    assert views.DebtReturnNew == view.func.view_class
 
 
-def test_lent_return_new_200(client_logged):
-    url = reverse('debts:lents_return_new')
+def test_debt_return_new_200(client_logged):
+    url = reverse('debts:debts_return_new')
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
-def test_lent_return_load_form(client_logged):
-    url = reverse('debts:lents_return_new')
+def test_debt_return_load_form(client_logged):
+    url = reverse('debts:debts_return_new')
 
     response = client_logged.get(url, {}, **X_Req)
 
@@ -102,13 +102,13 @@ def test_lent_return_load_form(client_logged):
     assert response.status_code == 200
 
 
-def test_lent_return_save(client_logged):
+def test_debt_return_save(client_logged):
     a = AccountFactory()
-    b = factories.LentFactory()
+    b = factories.DebtFactory()
 
-    data = {'date': '1999-1-3', 'lent': b.pk, 'price': '1.1', 'account': a.pk}
+    data = {'date': '1999-1-3', 'debt': b.pk, 'price': '1.1', 'account': a.pk}
 
-    url = reverse('debts:lents_return_new')
+    url = reverse('debts:debts_return_new')
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -117,19 +117,19 @@ def test_lent_return_save(client_logged):
 
     assert actual['form_is_valid']
 
-    actual = models.LentReturn.objects.items()[0]
+    actual = models.DebtReturn.objects.items()[0]
     assert actual.date == date(1999, 1, 3)
     assert actual.account.title == 'Account1'
     assert actual.price == Decimal('1.1')
 
 
-def test_lent_return_save_not_render_html_list(client_logged):
+def test_debt_return_save_not_render_html_list(client_logged):
     a = AccountFactory()
-    b = factories.LentFactory()
+    b = factories.DebtFactory()
 
-    data = {'date': '1999-1-3', 'lent': b.pk, 'price': '1.1', 'account': a.pk}
+    data = {'date': '1999-1-3', 'debt': b.pk, 'price': '1.1', 'account': a.pk}
 
-    url = reverse('debts:lents_return_new')
+    url = reverse('debts:debts_return_new')
 
     response = client_logged.post(url, data, **X_Req)
     json_str = response.content
@@ -138,10 +138,10 @@ def test_lent_return_save_not_render_html_list(client_logged):
     assert not actual.get('html_list')
 
 
-def test_lent_return_save_invalid_data(client_logged):
-    data = {'lent': 'A', 'price': '0'}
+def test_debt_return_save_invalid_data(client_logged):
+    data = {'debt': 'A', 'price': '0'}
 
-    url = reverse('debts:lents_return_new')
+    url = reverse('debts:debts_return_new')
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -151,24 +151,24 @@ def test_lent_return_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-def test_lent_return_update_func():
-    view = resolve('/lents/return/update/1/')
+def test_debt_return_update_func():
+    view = resolve('/debts/return/update/1/')
 
-    assert views.LentReturnUpdate == view.func.view_class
+    assert views.DebtReturnUpdate == view.func.view_class
 
 
-def test_lent_return_update_200(client_logged):
-    f = factories.LentReturnFactory()
+def test_debt_return_update_200(client_logged):
+    f = factories.DebtReturnFactory()
 
-    url = reverse('debts:lents_return_update', kwargs={'pk': f.pk})
+    url = reverse('debts:debts_return_update', kwargs={'pk': f.pk})
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
-def test_lent_return_load_update_form(client_logged):
-    f = factories.LentReturnFactory()
-    url = reverse('debts:lents_return_update', kwargs={'pk': f.pk})
+def test_debt_return_load_update_form(client_logged):
+    f = factories.DebtReturnFactory()
+    url = reverse('debts:debts_return_update', kwargs={'pk': f.pk})
 
     response = client_logged.get(url, **X_Req)
 
@@ -180,12 +180,12 @@ def test_lent_return_load_update_form(client_logged):
 
     assert '5' in form
     assert 'Account1' in form
-    assert 'Lent Return Remark' in form
+    assert 'Debt Return Remark' in form
 
 
-def test_lent_return_update(client_logged):
-    e = factories.LentReturnFactory()
-    l = factories.LentFactory()
+def test_debt_return_update(client_logged):
+    e = factories.DebtReturnFactory()
+    l = factories.DebtFactory()
     a = AccountFactory(title='AAA')
 
     data = {
@@ -193,9 +193,9 @@ def test_lent_return_update(client_logged):
         'price': '15',
         'remark': 'Pastaba',
         'account': a.pk,
-        'lent': l.pk
+        'debt': l.pk
     }
-    url = reverse('debts:lents_return_update', kwargs={'pk': e.pk})
+    url = reverse('debts:debts_return_update', kwargs={'pk': e.pk})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -206,28 +206,28 @@ def test_lent_return_update(client_logged):
 
     assert actual['form_is_valid']
 
-    actual = models.LentReturn.objects.get(pk=e.pk)
+    actual = models.DebtReturn.objects.get(pk=e.pk)
 
-    assert actual.lent == l
+    assert actual.debt == l
     assert actual.date == date(1999, 1, 2)
     assert actual.price == Decimal('15')
     assert actual.account.title == 'AAA'
     assert actual.remark == 'Pastaba'
-    assert models.Lent.objects.get(pk=l.pk).returned == Decimal('35')
+    assert models.Debt.objects.get(pk=l.pk).returned == Decimal('35')
 
 
-def test_lent_return_update_not_load_other_journal(client_logged, main_user, second_user):
+def test_debt_return_update_not_load_other_journal(client_logged, main_user, second_user):
     j1 = main_user.journal
     j2 = second_user.journal
     a1 = AccountFactory(journal=j1, title='a1')
     a2 = AccountFactory(journal=j2, title='a2')
-    d1 = factories.LentFactory(account=a1, journal=j1)
-    d2 = factories.LentFactory(account=a2, journal=j2)
+    d1 = factories.DebtFactory(account=a1, journal=j1)
+    d2 = factories.DebtFactory(account=a2, journal=j2)
 
-    factories.LentReturnFactory(lent=d1, account=a1)
-    obj = factories.LentReturnFactory(lent=d2, account=a2, price=666)
+    factories.DebtReturnFactory(debt=d1, account=a1)
+    obj = factories.DebtReturnFactory(debt=d2, account=a2, price=666)
 
-    url = reverse('debts:lents_return_update', kwargs={'pk': obj.pk})
+    url = reverse('debts:debts_return_update', kwargs={'pk': obj.pk})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -240,9 +240,9 @@ def test_lent_return_update_not_load_other_journal(client_logged, main_user, sec
     assert str(obj.price) not in form
 
 
-def test_lent_return_update_not_render_html_list(client_logged):
-    e = factories.LentReturnFactory()
-    l = factories.LentFactory()
+def test_debt_return_update_not_render_html_list(client_logged):
+    e = factories.DebtReturnFactory()
+    l = factories.DebtFactory()
     a = AccountFactory(title='AAA')
 
     data = {
@@ -250,9 +250,9 @@ def test_lent_return_update_not_render_html_list(client_logged):
         'price': '150',
         'remark': 'Pastaba',
         'account': a.pk,
-        'lent': l.pk
+        'debt': l.pk
     }
-    url = reverse('debts:lents_return_update', kwargs={'pk': e.pk})
+    url = reverse('debts:debts_return_update', kwargs={'pk': e.pk})
 
     response = client_logged.post(url, data, **X_Req)
     json_str = response.content
@@ -261,25 +261,25 @@ def test_lent_return_update_not_render_html_list(client_logged):
     assert not actual.get('html_list')
 
 
-def test_lent_return_delete_func():
-    view = resolve('/lents/return/delete/1/')
+def test_debt_return_delete_func():
+    view = resolve('/debts/return/delete/1/')
 
-    assert views.LentReturnDelete == view.func.view_class
+    assert views.DebtReturnDelete == view.func.view_class
 
 
-def test_lent_return_delete_200(client_logged):
-    f = factories.LentReturnFactory()
+def test_debt_return_delete_200(client_logged):
+    f = factories.DebtReturnFactory()
 
-    url = reverse('debts:lents_return_delete', kwargs={'pk': f.pk})
+    url = reverse('debts:debts_return_delete', kwargs={'pk': f.pk})
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
-def test_lent_return_delete_load_form(client_logged):
-    obj = factories.LentReturnFactory()
+def test_debt_return_delete_load_form(client_logged):
+    obj = factories.DebtReturnFactory()
 
-    url = reverse('debts:lents_return_delete', kwargs={'pk': obj.pk})
+    url = reverse('debts:debts_return_delete', kwargs={'pk': obj.pk})
     response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
@@ -289,28 +289,28 @@ def test_lent_return_delete_load_form(client_logged):
     assert response.status_code == 200
     assert '<form method="post"' in actual
     assert 'data-action="delete"' in actual
-    assert 'data-update-container="lent_return">' in actual
+    assert 'data-update-container="debt_return">' in actual
     assert f'Ar tikrai norite ištrinti: <strong>{ obj }</strong>?' in actual
 
 
-def test_lent_return_delete(client_logged):
-    p = factories.LentReturnFactory()
+def test_debt_return_delete(client_logged):
+    p = factories.DebtReturnFactory()
 
-    assert models.LentReturn.objects.all().count() == 1
-    url = reverse('debts:lents_return_delete', kwargs={'pk': p.pk})
+    assert models.DebtReturn.objects.all().count() == 1
+    url = reverse('debts:debts_return_delete', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, {}, **X_Req)
 
     assert response.status_code == 200
 
-    assert models.LentReturn.objects.all().count() == 0
+    assert models.DebtReturn.objects.all().count() == 0
 
 
-def test_lent_return_delete_not_render_html_list(client_logged):
-    p = factories.LentReturnFactory()
+def test_debt_return_delete_not_render_html_list(client_logged):
+    p = factories.DebtReturnFactory()
 
-    assert models.LentReturn.objects.all().count() == 1
-    url = reverse('debts:lents_return_delete', kwargs={'pk': p.pk})
+    assert models.DebtReturn.objects.all().count() == 1
+    url = reverse('debts:debts_return_delete', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, {}, **X_Req)
     json_str = response.content
@@ -319,11 +319,11 @@ def test_lent_return_delete_not_render_html_list(client_logged):
     assert not actual.get('html_list')
 
 
-def test_lent_return_delete_other_journal_get_form(client_logged, second_user):
-    d = factories.LentFactory(journal=second_user.journal)
-    obj = factories.LentReturnFactory(lent=d)
+def test_debt_return_delete_other_journal_get_form(client_logged, second_user):
+    d = factories.DebtFactory(journal=second_user.journal)
+    obj = factories.DebtReturnFactory(debt=d)
 
-    url = reverse('debts:lents_return_delete', kwargs={'pk': obj.pk})
+    url = reverse('debts:debts_return_delete', kwargs={'pk': obj.pk})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -335,11 +335,11 @@ def test_lent_return_delete_other_journal_get_form(client_logged, second_user):
     assert 'SRSLY' in form
 
 
-def test_lent_return_delete_other_journal_post_form(client_logged, second_user):
-    d = factories.LentFactory(journal=second_user.journal)
-    obj = factories.LentReturnFactory(lent=d)
+def test_debt_return_delete_other_journal_post_form(client_logged, second_user):
+    d = factories.DebtFactory(journal=second_user.journal)
+    obj = factories.DebtReturnFactory(debt=d)
 
-    url = reverse('debts:lents_return_delete', kwargs={'pk': obj.pk})
+    url = reverse('debts:debts_return_delete', kwargs={'pk': obj.pk})
     client_logged.post(url, **X_Req)
 
-    assert models.LentReturn.objects.all().count() == 1
+    assert models.DebtReturn.objects.all().count() == 1

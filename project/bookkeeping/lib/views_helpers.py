@@ -13,7 +13,7 @@ from ...core.lib import utils
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...core.lib.utils import sum_all, sum_col
-from ...debts.models import Borrow, Lent
+from ...debts.models import Borrow, Debt
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
 from ...pensions.models import PensionBalance
@@ -294,17 +294,17 @@ class IndexHelper():
         qs_savings = Saving.objects.sum_by_month(year)
         qs_savings_close = SavingClose.objects.sum_by_month(year)
         qs_borrow = Borrow.objects.sum_by_month(year)
-        qs_lent = Lent.objects.sum_by_month(year)
+        qs_debt = Debt.objects.sum_by_month(year)
 
         # generate debts and debts_return arrays
-        borrow, borrow_return, lent, lent_return = [], [], [], []
+        borrow, borrow_return, debt, debt_return = [], [], [], []
         for x in qs_borrow:
             borrow.append({'date': x['date'], 'sum': x['sum_debt']})
             borrow_return.append({'date': x['date'], 'sum': x['sum_return']})
 
-        for x in qs_lent:
-            lent.append({'date': x['date'], 'sum': x['sum_debt']})
-            lent_return.append({'date': x['date'], 'sum': x['sum_return']})
+        for x in qs_debt:
+            debt.append({'date': x['date'], 'sum': x['sum_debt']})
+            debt_return.append({'date': x['date'], 'sum': x['sum_return']})
 
         self._YearBalance = YearBalance(
             year=year,
@@ -314,8 +314,8 @@ class IndexHelper():
             savings_close=qs_savings_close,
             borrow=borrow,
             borrow_return=borrow_return,
-            lent=lent,
-            lent_return=lent_return,
+            debt=debt,
+            debt_return=debt_return,
             amount_start=sum_col(self._account, 'past'))
 
     def render_year_balance(self):
@@ -533,14 +533,14 @@ class IndexHelper():
 
         return {}
 
-    def render_lent(self):
-        lent = sum(self._YearBalance.lent_data)
-        lent_return = sum(self._YearBalance.lent_return_data)
+    def render_debt(self):
+        debt = sum(self._YearBalance.debt_data)
+        debt_return = sum(self._YearBalance.debt_return_data)
 
-        if lent:
+        if debt:
             context = {
-                'title': [_('Lent'), _('Lent return')],
-                'data': [lent, lent_return],
+                'title': [_('Debt'), _('Debt return')],
+                'data': [debt, debt_return],
             }
             return context
 

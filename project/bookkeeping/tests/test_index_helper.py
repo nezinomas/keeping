@@ -3,7 +3,7 @@ from datetime import date
 
 import pytest
 
-from ...debts.factories import BorrowFactory, LentFactory
+from ...debts.factories import BorrowFactory, DebtFactory
 from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from ...savings.factories import SavingFactory
@@ -41,17 +41,17 @@ def test_render_borrow(rf):
     assert 25.0 in actual['data']
 
 
-def test_render_lent_no_data(rf):
+def test_render_debt_no_data(rf):
     obj = IndexHelper(rf, 1999)
-    actual = obj.render_lent()
+    actual = obj.render_debt()
 
     assert {} == actual
 
 
-def test_render_lent(rf):
-    LentFactory()
+def test_render_debt(rf):
+    DebtFactory()
     obj = IndexHelper(rf, 1999)
-    actual = obj.render_lent()
+    actual = obj.render_debt()
 
     assert 'Pasiskolinta' in actual['title']
     assert 'Gražinau' in actual['title']

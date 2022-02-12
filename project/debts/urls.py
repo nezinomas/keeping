@@ -58,48 +58,48 @@ urlpatterns = [
         name='borrows_return_delete'
     ),
     path(
-        'lents/reload/',
-        views.LentReload.as_view(),
-        name='lents_reload'
+        'debts/reload/',
+        views.DebtReload.as_view(),
+        name='debts_reload'
     ),
     path(
-        'lents/lists/',
-        views.LentLists.as_view(),
-        name='lents_list'
+        'debts/lists/',
+        views.DebtLists.as_view(),
+        name='debts_list'
     ),
     path(
-        'lents/new/',
-        views.LentNew.as_view(),
-        name='lents_new'
+        'debts/new/',
+        views.DebtNew.as_view(),
+        name='debts_new'
     ),
     path(
-        'lents/update/<int:pk>/',
-        views.LentUpdate.as_view(),
-        name='lents_update'
+        'debts/update/<int:pk>/',
+        views.DebtUpdate.as_view(),
+        name='debts_update'
     ),
     path(
-        'lents/delete/<int:pk>/',
-        views.LentDelete.as_view(),
-        name='lents_delete'
+        'debts/delete/<int:pk>/',
+        views.DebtDelete.as_view(),
+        name='debts_delete'
     ),
     path(
-        'lents/return/lists/',
-        views.LentReturnLists.as_view(),
-        name='lents_return_list'
+        'debts/return/lists/',
+        views.DebtReturnLists.as_view(),
+        name='debts_return_list'
     ),
     path(
-        'lents/return/new/',
-        views.LentReturnNew.as_view(),
-        name='lents_return_new'
+        'debts/return/new/',
+        views.DebtReturnNew.as_view(),
+        name='debts_return_new'
     ),
     path(
-        'lents/return/update/<int:pk>/',
-        views.LentReturnUpdate.as_view(),
-        name='lents_return_update'
+        'debts/return/update/<int:pk>/',
+        views.DebtReturnUpdate.as_view(),
+        name='debts_return_update'
     ),
     path(
-        'lents/return/delete/<int:pk>/',
-        views.LentReturnDelete.as_view(),
-        name='lents_return_delete'
+        'debts/return/delete/<int:pk>/',
+        views.DebtReturnDelete.as_view(),
+        name='debts_return_delete'
     ),
 ]

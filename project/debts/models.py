@@ -111,7 +111,7 @@ class BorrowReturn(OldValuesMixin, models.Model):
         obj.save()
 
 
-class Lent(OldValuesMixin, models.Model):
+class Debt(OldValuesMixin, models.Model):
     date = models.DateField()
     name = models.CharField(
         max_length=100,
@@ -138,14 +138,14 @@ class Lent(OldValuesMixin, models.Model):
     account = models.ForeignKey(
         Account,
         on_delete=models.PROTECT,
-        related_name='lent_from_account'
+        related_name='debt_from_account'
     )
     journal = models.ForeignKey(
         Journal,
         on_delete=models.CASCADE
     )
 
-    objects = managers.LentQuerySet.as_manager()
+    objects = managers.DebtQuerySet.as_manager()
 
     class Meta:
         ordering = ['-date']
@@ -154,7 +154,7 @@ class Lent(OldValuesMixin, models.Model):
         return str(self.name)
 
 
-class LentReturn(OldValuesMixin, models.Model):
+class DebtReturn(OldValuesMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
@@ -168,29 +168,29 @@ class LentReturn(OldValuesMixin, models.Model):
     account = models.ForeignKey(
         Account,
         on_delete=models.PROTECT,
-        related_name='lent_return_account'
+        related_name='debt_return_account'
     )
-    lent = models.ForeignKey(
-        Lent,
+    debt = models.ForeignKey(
+        Debt,
         on_delete=models.CASCADE
     )
 
-    objects = managers.LentReturnQuerySet.as_manager()
+    objects = managers.DebtReturnQuerySet.as_manager()
 
     class Meta:
-        ordering = ['lent__closed', 'lent__name', '-date']
+        ordering = ['debt__closed', 'debt__name', '-date']
 
     def __str__(self):
         return f'Grąžino {round(self.price, 1)}'
 
     def save(self, *args, **kwargs):
-        obj = Lent.objects.get(id=self.lent_id)
+        obj = Debt.objects.get(id=self.debt_id)
         obj.returned = obj.returned if obj.returned else Decimal('0')
 
         if not self.pk:
             obj.returned += Decimal(self.price)
         else:
-            old =LentReturn.objects.get(pk=self.pk)
+            old =DebtReturn.objects.get(pk=self.pk)
             dif = self.price - old.price
             obj.returned += dif
 
@@ -207,6 +207,6 @@ class LentReturn(OldValuesMixin, models.Model):
         except Exception as e:
             raise e
 
-        obj = Lent.objects.get(id=self.lent_id)
+        obj = Debt.objects.get(id=self.debt_id)
         obj.returned -= Decimal(self.price)
         obj.save()

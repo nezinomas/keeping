@@ -7,8 +7,8 @@ import pytz
 from .accounts.factories import AccountFactory
 from .bookkeeping.factories import (AccountWorthFactory, PensionWorthFactory,
                                     SavingWorthFactory)
-from .debts.factories import (BorrowFactory, BorrowReturnFactory, LentFactory,
-                              LentReturnFactory)
+from .debts.factories import (BorrowFactory, BorrowReturnFactory, DebtFactory,
+                              DebtReturnFactory)
 from .expenses.factories import ExpenseFactory
 from .incomes.factories import IncomeFactory
 from .pensions.factories import PensionFactory
@@ -397,26 +397,26 @@ def borrow_return_fixture():
 
 
 @pytest.fixture
-def lent_fixture():
+def debt_fixture():
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
 
-    LentFactory(date=date(1999, 1, 2), price=1, account=a1)
-    LentFactory(date=date(1999, 2, 3), price=2, account=a1)
-    LentFactory(date=date(1999, 3, 4), price=3.1, account=a2)
+    DebtFactory(date=date(1999, 1, 2), price=1, account=a1)
+    DebtFactory(date=date(1999, 2, 3), price=2, account=a1)
+    DebtFactory(date=date(1999, 3, 4), price=3.1, account=a2)
 
-    LentFactory(date=date(1974, 1, 2), price=4, account=a1)
-    LentFactory(date=date(1974, 2, 3), price=5, account=a1)
+    DebtFactory(date=date(1974, 1, 2), price=4, account=a1)
+    DebtFactory(date=date(1974, 2, 3), price=5, account=a1)
 
 
 @pytest.fixture
-def lent_return_fixture():
+def debt_return_fixture():
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
 
-    LentReturnFactory(date=date(1999, 1, 2), price=0.5, account=a1)
-    LentReturnFactory(date=date(1999, 2, 3), price=1.5, account=a1)
-    LentReturnFactory(date=date(1999, 3, 4), price=1.6, account=a2)
+    DebtReturnFactory(date=date(1999, 1, 2), price=0.5, account=a1)
+    DebtReturnFactory(date=date(1999, 2, 3), price=1.5, account=a1)
+    DebtReturnFactory(date=date(1999, 3, 4), price=1.6, account=a2)
 
-    LentReturnFactory(date=date(1974, 1, 2), price=3.5, account=a1)
-    LentReturnFactory(date=date(1974, 2, 3), price=4.5, account=a1)
+    DebtReturnFactory(date=date(1974, 1, 2), price=3.5, account=a1)
+    DebtReturnFactory(date=date(1974, 2, 3), price=4.5, account=a1)

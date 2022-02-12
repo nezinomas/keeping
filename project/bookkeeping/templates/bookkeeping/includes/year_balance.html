@@ -20,8 +20,8 @@
             <th class="br">{% translate 'Sold' %}</th>
             <th class="bl toggleDisplay">{% translate 'Borrow' %}</th>
             <th class="toggleDisplay">{% translate 'Borrow return' %}</th>
-            <th class="toggleDisplay">{% translate 'Lent' %}</th>
-            <th class="br toggleDisplay">{% translate 'Lent return' %}</th>
+            <th class="toggleDisplay">{% translate 'Debt' %}</th>
+            <th class="br toggleDisplay">{% translate 'Debt return' %}</th>
             <th class="text-nowrap">{% translate 'Money flow' %}</th>
         </tr>
     </thead>
@@ -36,8 +36,8 @@
             {% cell item.savings_close css_class="br"  %}
             {% cell item.borrow css_class="bl toggleDisplay" %}
             {% cell item.borrow_return css_class="toggleDisplay" %}
-            {% cell item.lent css_class="toggleDisplay" %}
-            {% cell item.lent_return css_class="br toggleDisplay" %}
+            {% cell item.debt css_class="toggleDisplay" %}
+            {% cell item.debt_return css_class="br toggleDisplay" %}
             {% cell item.money_flow %}
         </tr>
         {% endfor %}
@@ -52,8 +52,8 @@
             {% cell avg_row.savings_close tag='th' css_class="br" %}
             <th class="bl toggleDisplay">{{ avg_row.borrow }}</th>
             <th class="toggleDisplay">{{ avg_row.borrow_return }}</th>
-            <th class="toggleDisplay">{{ avg_row.lent }}</th>
-            <th class="br toggleDisplay">{{ avg_row.lent_return }}</th>
+            <th class="toggleDisplay">{{ avg_row.debt }}</th>
+            <th class="br toggleDisplay">{{ avg_row.debt_return }}</th>
             <th><b>{% translate "End of year" %}</b></th>
         </tr>
         <tr class="total">
@@ -65,8 +65,8 @@
             {% cell total_row.savings_close tag='th' css_class="br" %}
             {% cell total_row.borrow tag='th' css_class="bl toggleDisplay" %}
             {% cell total_row.borrow_return tag="th" css_class="toggleDisplay" %}
-            {% cell total_row.lent tag="th" css_class="toggleDisplay" %}
-            {% cell total_row.lent_return tag="th" css_class="br toggleDisplay" %}
+            {% cell total_row.debt tag="th" css_class="toggleDisplay" %}
+            {% cell total_row.debt_return tag="th" css_class="br toggleDisplay" %}
             {% if accounts_amount_end|floatformat:2 != months_amount_end|floatformat:2 %}
                 {% cell months_amount_end tag="th" css_class='bad' text_before='!' text_after='!' %}
             {% else %}

@@ -23,10 +23,10 @@ class SignalBase():
             'expenses.Expense': {
                 'expenses': 'account',
             },
-            'debts.Lent': {
+            'debts.Debt': {
                 'incomes': 'account',
             },
-            'debts.LentReturn': {
+            'debts.DebtReturn': {
                 'expenses': 'account',
             },
             'debts.Borrow': {

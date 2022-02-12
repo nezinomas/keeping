@@ -17,10 +17,10 @@ def _borrow_context_to_reload(request):
     return context
 
 
-def _lent_context_to_reload(request):
+def _debt_context_to_reload(request):
     context = {
-        'lent': LentLists.as_view()(request, as_string=True),
-        'lent_return': LentReturnLists.as_view()(request, as_string=True),
+        'debt': DebtLists.as_view()(request, as_string=True),
+        'debt_return': DebtReturnLists.as_view()(request, as_string=True),
     }
     return context
 
@@ -30,7 +30,7 @@ class Index(IndexMixin):
         context = super().get_context_data(**kwargs)
         context.update({
             **_borrow_context_to_reload(self.request),
-            **_lent_context_to_reload(self.request),
+            **_debt_context_to_reload(self.request),
         })
         return context
 
@@ -88,54 +88,54 @@ class BorrowReturnDelete(DeleteAjaxMixin):
     list_render_output = False
 
 
-class LentReload(LoginRequiredMixin, DispatchAjaxMixin, TemplateView):
+class DebtReload(LoginRequiredMixin, DispatchAjaxMixin, TemplateView):
     template_name = 'debts/index.html'
     redirect_view = reverse_lazy('debts:debts_index')
 
     def get(self, request, *args, **kwargs):
-        context = _lent_context_to_reload(self.request)
+        context = _debt_context_to_reload(self.request)
         return JsonResponse(context)
 
 
-class LentLists(DispatchListsMixin, ListMixin):
-    model = models.Lent
-    template_name = 'debts/includes/lents_list.html'
+class DebtLists(DispatchListsMixin, ListMixin):
+    model = models.Debt
+    template_name = 'debts/includes/debts_list.html'
 
 
-class LentNew(CreateAjaxMixin):
-    model = models.Lent
-    form_class = forms.LentForm
+class DebtNew(CreateAjaxMixin):
+    model = models.Debt
+    form_class = forms.DebtForm
     list_render_output = False
 
 
-class LentUpdate(UpdateAjaxMixin):
-    model = models.Lent
-    form_class = forms.LentForm
+class DebtUpdate(UpdateAjaxMixin):
+    model = models.Debt
+    form_class = forms.DebtForm
     list_render_output = False
 
 
-class LentDelete(DeleteAjaxMixin):
-    model = models.Lent
+class DebtDelete(DeleteAjaxMixin):
+    model = models.Debt
     list_render_output = False
 
 
-class LentReturnLists(DispatchListsMixin, ListMixin):
-    model = models.LentReturn
-    template_name = 'debts/includes/lents_return_list.html'
+class DebtReturnLists(DispatchListsMixin, ListMixin):
+    model = models.DebtReturn
+    template_name = 'debts/includes/debts_return_list.html'
 
 
-class LentReturnNew(CreateAjaxMixin):
-    model = models.LentReturn
-    form_class = forms.LentReturnForm
+class DebtReturnNew(CreateAjaxMixin):
+    model = models.DebtReturn
+    form_class = forms.DebtReturnForm
     list_render_output = False
 
 
-class LentReturnUpdate(UpdateAjaxMixin):
-    model = models.LentReturn
-    form_class = forms.LentReturnForm
+class DebtReturnUpdate(UpdateAjaxMixin):
+    model = models.DebtReturn
+    form_class = forms.DebtReturnForm
     list_render_output = False
 
 
-class LentReturnDelete(DeleteAjaxMixin):
-    model = models.LentReturn
+class DebtReturnDelete(DeleteAjaxMixin):
+    model = models.DebtReturn
     list_render_output = False

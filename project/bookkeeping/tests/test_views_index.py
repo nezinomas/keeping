@@ -46,7 +46,7 @@ def test_view_index_context(client_logged):
     assert 'averages' in response.context
     assert 'wealth' in response.context
     assert 'borrow' in response.context
-    assert 'lent' in response.context
+    assert 'debt' in response.context
     assert 'chart_expenses' in response.context
     assert 'chart_balance' in response.context
 

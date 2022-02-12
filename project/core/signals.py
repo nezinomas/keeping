@@ -22,8 +22,8 @@ from .signals_base import SignalBase
 @receiver(post_save, sender=transaction.SavingClose)
 @receiver(post_save, sender=debt.Borrow)
 @receiver(post_save, sender=debt.BorrowReturn)
-@receiver(post_save, sender=debt.Lent)
-@receiver(post_save, sender=debt.LentReturn)
+@receiver(post_save, sender=debt.Debt)
+@receiver(post_save, sender=debt.DebtReturn)
 # @receiver(post_save, sender=worth.AccountWorth)
 def accounts_post_save(sender: object, instance: object, *args, **kwargs):
     print(f'\n<< Account post save\n{args=}\n{kwargs=}')
@@ -39,8 +39,8 @@ def accounts_post_save(sender: object, instance: object, *args, **kwargs):
 @receiver(post_delete, sender=transaction.SavingClose)
 @receiver(post_delete, sender=debt.Borrow)
 @receiver(post_delete, sender=debt.BorrowReturn)
-@receiver(post_delete, sender=debt.Lent)
-@receiver(post_delete, sender=debt.LentReturn)
+@receiver(post_delete, sender=debt.Debt)
+@receiver(post_delete, sender=debt.DebtReturn)
 def accounts_post_delete(sender: object, instance: object, *args, **kwargs):
     print(f'\n<< Accounts post delete {args=}\n{kwargs=}\n')
     created = kwargs.get('created')
