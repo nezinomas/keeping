@@ -63,7 +63,6 @@ class UpdatetBalanceTable():
         _update = []
         _create = []
         _delete = []
-        _link = {}
 
         _items = self._conf.tbl_balance.objects.items()
         _link = _balance_object.year_account_link
