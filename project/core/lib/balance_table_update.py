@@ -10,7 +10,7 @@ class UpdatetBalanceTable():
         self._categories = self._get_categories()
         self._category = conf.balance_model_fk_field[:-3]
 
-        self._calc()
+        self._update_balance_table()
 
     def _get_categories(self):
         categories = self._conf.tbl_categories.objects.related()
@@ -52,7 +52,7 @@ class UpdatetBalanceTable():
         return _data
 
 
-    def _calc(self):
+    def _update_balance_table(self):
         _balance_object = self._get_balance()
 
         if not _balance_object:
