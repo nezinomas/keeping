@@ -19,7 +19,6 @@ class UpdatetBalanceTable():
 
     def _get_data(self):
         _data = []
-        _models = list(self._conf.hooks.keys())
 
         for _model, _hooks in self._conf.hooks.items():
             try:
