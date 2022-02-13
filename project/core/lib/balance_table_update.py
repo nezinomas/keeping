@@ -29,7 +29,6 @@ class UpdatetBalanceTable():
 
         return _balance_object
 
-
     def _get_data(self):
         _data = []
 
@@ -64,28 +63,29 @@ class UpdatetBalanceTable():
         _create = []
         _delete = []
 
-        _items = self._conf.tbl_balance.objects.items()
+        _items = self._conf.tbl_balance.objects.items().values()
         _link = _balance_object.year_account_link
 
         for _row in _items:
-            _category_id = getattr(_row, self._conf.balance_model_fk_field)
+            _category_id = _row[self._conf.balance_model_fk_field]
+            _year = _row['year']
 
             try:
-                _dict = _df.loc[(_row.year, _category_id)].to_dict()
+                _dict = _df.loc[(_year, _category_id)].to_dict()
             except KeyError:
-                _delete.append(_row.pk)
+                _delete.append(_row['id'])
                 continue
 
             _dict.update({
-                'pk': _row.pk,
-                'year': _row.year,
+                'pk': _row['id'],
+                'year': _year,
                 self._category: self._categories.get(_category_id)
             })
             _obj = self._conf.tbl_balance(**_dict)
             _update.append(_obj)
 
             # remove id in link
-            _link.get(_row.year).remove(_category_id)
+            _link.get(_year).remove(_category_id)
 
         # if in _link {year: [account_id]} left some id, create records
         for _year, _arr in _link.items():
@@ -109,4 +109,3 @@ class UpdatetBalanceTable():
         if _delete:
             print('UpdateBalanceTable >> delete')
             self._conf.tbl_balance.objects.related().filter(pk__in=_delete).delete()
-
