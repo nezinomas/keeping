@@ -17,6 +17,19 @@ class UpdatetBalanceTable():
         print(f'categories\n{categories}')
         return {category.id: category for category in categories}
 
+    def _get_balance(self) -> Balance:
+        _balance_object = None
+        _data = self._get_data()
+
+        if not _data:
+            return _balance_object
+
+        _balance_object = getattr(Balance, self._conf.balance_class_method)()
+        _balance_object.create_balance(data=_data)
+
+        return _balance_object
+
+
     def _get_data(self):
         _data = []
 
@@ -38,14 +51,12 @@ class UpdatetBalanceTable():
         print(f'\nUpdateBalanceTable._get_data [39] data\n{_data}\n')
         return _data
 
+
     def _calc(self):
-        _data = self._get_data()
+        _balance_object = self._get_balance()
 
-        if not _data:
+        if not _balance_object:
             return
-
-        _balance_object = getattr(Balance, self._conf.balance_class_method)()
-        _balance_object.create_balance(data=_data)
 
         _df = _balance_object.balance_df
 
