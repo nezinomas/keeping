@@ -55,41 +55,27 @@ class UpdatetBalanceTable():
         _link = {}
 
         _items = self._conf.tbl_balance.objects.items()
-        if not _items.exists():
-            _dicts = _balance_object.balance
+        _link = _balance_object.year_account_link
 
-            # get name. it must be account_id|saving_type_id|pension_type_id
-            if _dicts:
-                for x in _dicts[0].keys():
-                    _key_name = x if '_id' in x else None
+        for _row in _items:
+            _category_id = getattr(_row, self._conf.balance_model_fk_field)
 
-            for _dict in _dicts:
-                _id = _dict[_key_name]
-                _dict.update({
-                    self._category: self._categories.get(_id)
-                })
-                _create.append(self._conf.tbl_balance(**_dict))
-        else:
-            _link = _balance_object.year_account_link
+            try:
+                _dict = _df.loc[(_row.year, _category_id)].to_dict()
+            except KeyError:
+                _delete.append(_row.pk)
+                continue
 
-            for _row in _items:
-                _category_id = getattr(_row, self._conf.balance_model_fk_field)
+            _dict.update({
+                'pk': _row.pk,
+                'year': _row.year,
+                self._category: self._categories.get(_category_id)
+            })
+            _obj = self._conf.tbl_balance(**_dict)
+            _update.append(_obj)
 
-                try:
-                    _dict = _df.loc[(_row.year, _category_id)].to_dict()
-                except KeyError:
-                    _delete.append(_row.pk)
-                    continue
-                _dict.update({
-                    'pk': _row.pk,
-                    'year': _row.year,
-                    self._category: self._categories.get(_category_id)
-                })
-                _obj = self._conf.tbl_balance(**_dict)
-                _update.append(_obj)
-
-                # remove id in link
-                _link.get(_row.year).remove(_category_id)
+            # remove id in link
+            _link.get(_row.year).remove(_category_id)
 
         # if in _link {year: [account_id]} left some id, create records
         for _year, _arr in _link.items():
@@ -113,3 +99,4 @@ class UpdatetBalanceTable():
         if _delete:
             print('UpdateBalanceTable >> delete')
             self._conf.tbl_balance.objects.related().filter(pk__in=_delete).delete()
+
