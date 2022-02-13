@@ -40,17 +40,17 @@ def test_render_borrow(rf):
     assert 25.0 in actual['data']
 
 
-def test_render_debt_no_data(rf):
+def test_render_lend_no_data(rf):
     obj = IndexHelper(rf, 1999)
-    actual = obj.render_debt()
+    actual = obj.render_lend()
 
     assert {} == actual
 
 
-def test_render_debt(rf):
+def test_render_lend(rf):
     DebtFactory()
     obj = IndexHelper(rf, 1999)
-    actual = obj.render_debt()
+    actual = obj.render_lend()
 
     assert 'Pasiskolinta' in actual['title']
     assert 'Gražinau' in actual['title']

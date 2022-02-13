@@ -13,7 +13,7 @@ from ...core.lib import utils
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...core.lib.utils import sum_all, sum_col
-from ...debts.models import Borrow, Debt
+from ...debts.models import Debt
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
 from ...pensions.models import PensionBalance
@@ -293,18 +293,19 @@ class IndexHelper():
         qs_expenses = Expense.objects.sum_by_month(year)
         qs_savings = Saving.objects.sum_by_month(year)
         qs_savings_close = SavingClose.objects.sum_by_month(year)
-        qs_borrow = Borrow.objects.sum_by_month(year)
-        qs_debt = Debt.objects.sum_by_month(year)
+        # qs_borrow = Borrow.objects.sum_by_month(year)
+        qs_borrow = []
+        qs_lend = Debt.objects.sum_by_month(year)
 
         # generate debts and debts_return arrays
-        borrow, borrow_return, debt, debt_return = [], [], [], []
+        borrow, borrow_return, lend, lend_return = [], [], [], []
         for x in qs_borrow:
             borrow.append({'date': x['date'], 'sum': x['sum_debt']})
             borrow_return.append({'date': x['date'], 'sum': x['sum_return']})
 
-        for x in qs_debt:
-            debt.append({'date': x['date'], 'sum': x['sum_debt']})
-            debt_return.append({'date': x['date'], 'sum': x['sum_return']})
+        for x in qs_lend:
+            lend.append({'date': x['date'], 'sum': x['sum_debt']})
+            lend_return.append({'date': x['date'], 'sum': x['sum_return']})
 
         self._YearBalance = YearBalance(
             year=year,
@@ -314,8 +315,8 @@ class IndexHelper():
             savings_close=qs_savings_close,
             borrow=borrow,
             borrow_return=borrow_return,
-            debt=debt,
-            debt_return=debt_return,
+            lend=lend,
+            lend_return=lend_return,
             amount_start=sum_col(self._account, 'past'))
 
     def render_year_balance(self):
@@ -420,8 +421,6 @@ class IndexHelper():
 
     @staticmethod
     def pensions_context(pensions, year):
-        total_row = sum_all(pensions)
-
         if not pensions:
             return {}
 
@@ -533,14 +532,14 @@ class IndexHelper():
 
         return {}
 
-    def render_debt(self):
-        debt = sum(self._YearBalance.debt_data)
-        debt_return = sum(self._YearBalance.debt_return_data)
+    def render_lend(self):
+        lend = sum(self._YearBalance.lend_data)
+        lend_return = sum(self._YearBalance.lend_return_data)
 
-        if debt:
+        if lend:
             context = {
-                'title': [_('Debt'), _('Debt return')],
-                'data': [debt, debt_return],
+                'title': [_('Lend'), _('Lend return')],
+                'data': [lend, lend_return],
             }
             return context
 

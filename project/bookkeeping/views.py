@@ -48,7 +48,7 @@ class Index(IndexMixin):
             'averages': obj.render_averages(),
             'wealth': obj.render_wealth(),
             'borrow': obj.render_borrow(),
-            'debt': obj.render_debt(),
+            'lend': obj.render_lend(),
             'chart_expenses': exp.render_chart_expenses(),
             'chart_balance': obj.render_chart_balance(),
         })
