@@ -67,8 +67,8 @@ class UpdatetBalanceTable():
         _link = _balance_object.year_account_link
 
         for _row in _items:
-            _category_id = _row[self._conf.balance_model_fk_field]
             _year = _row['year']
+            _category_id = _row[self._conf.balance_model_fk_field]
 
             try:
                 _dict = _df.loc[(_year, _category_id)].to_dict()
