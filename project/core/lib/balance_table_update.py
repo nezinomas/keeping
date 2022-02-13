@@ -21,15 +21,15 @@ class UpdatetBalanceTable():
         _data = []
         _models = list(self._conf.hooks.keys())
 
-        for _model_name in _models:
+        for _model, _hooks in self._conf.hooks.items():
             try:
-                model = apps.get_model(_model_name)
+                model = apps.get_model(_model)
             except LookupError:
                 continue
 
-            for _method, _ in self._conf.hooks[_model_name].items():
+            for _hook in _hooks:
                 try:
-                    _method = getattr(model.objects, _method)
+                    _method = getattr(model.objects, _hook['method'])
                     _qs = _method()
                     if _qs:
                         _data.append(_qs)
@@ -104,10 +104,13 @@ class UpdatetBalanceTable():
                 _create.append(_obj)
 
         if _create:
+            print('UpdateBalanceTable >> create')
             self._conf.tbl_balance.objects.bulk_create(_create)
 
         if _update:
+            print('UpdateBalanceTable >> update')
             self._conf.tbl_balance.objects.bulk_update(_update, _df.columns.values.tolist())
 
         if _delete:
+            print('UpdateBalanceTable >> delete')
             self._conf.tbl_balance.objects.related().filter(pk__in=_delete).delete()
