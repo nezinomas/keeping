@@ -156,15 +156,15 @@ class SignalBase():
                     return
 
     def _calc_field(self, /, caller, field = 'price'):
-            price = float(getattr(self._conf.instance, field))
-            original_price = float(self._conf.get_old_values(field, 0.0))
+        price = float(getattr(self._conf.instance, field))
+        original_price = float(self._conf.get_old_values(field, 0.0))
 
-            _switch = {
-                'new': price,
-                'update': - original_price + price,
-                'delete': - original_price
-            }
-            return _switch.get(caller, 0.0)
+        _switch = {
+            'new': price,
+            'update': - original_price + price,
+            'delete': - original_price
+        }
+        return _switch.get(caller, 0.0)
 
     def _tbl_balance_field_update(self, caller, balance_tbl_field_name, pk):
         _year = self._conf.instance.date.year
