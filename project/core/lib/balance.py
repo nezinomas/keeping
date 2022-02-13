@@ -48,6 +48,13 @@ class Balance(BalanceBase):
 
     @property
     def year_account_link(self):
+        """
+        return dictionary
+
+        {Year: [Category1_id, Category2_id, ]}
+
+        """
+
         rtn = {}
 
         if self._balance.empty:
