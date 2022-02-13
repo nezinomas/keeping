@@ -29,12 +29,6 @@ class SignalBase():
             'debts.DebtReturn': {
                 'expenses': 'account',
             },
-            'debts.Borrow': {
-                'expenses': 'account',
-            },
-            'debts.BorrowReturn': {
-                'incomes': 'account',
-            },
             'transactions.Transaction': {
                 'incomes': 'to_account',
                 'expenses': 'from_account',

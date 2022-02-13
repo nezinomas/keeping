@@ -1,9 +1,8 @@
-import re
 from datetime import date
 
 import pytest
 
-from ...debts.factories import BorrowFactory, DebtFactory
+from ...debts.factories import DebtFactory
 from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from ...savings.factories import SavingFactory
@@ -26,11 +25,11 @@ def test_render_borrow_no_data(rf):
     obj = IndexHelper(rf, 1999)
     actual = obj.render_borrow()
 
-    assert {} == actual
+    assert actual is {}
 
 
 def test_render_borrow(rf):
-    BorrowFactory()
+    DebtFactory()
 
     obj = IndexHelper(rf, 1999)
     actual = obj.render_borrow()

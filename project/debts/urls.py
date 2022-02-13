@@ -13,51 +13,6 @@ urlpatterns = [
         name='debts_index'
     ),
     path(
-        'borrows/reload/',
-        views.BorrowReload.as_view(),
-        name='borrows_reload'
-    ),
-    path(
-        'borrows/lists/',
-        views.BorrowLists.as_view(),
-        name='borrows_list'
-    ),
-    path(
-        'borrows/new/',
-        views.BorrowNew.as_view(),
-        name='borrows_new'
-    ),
-    path(
-        'borrows/update/<int:pk>/',
-        views.BorrowUpdate.as_view(),
-        name='borrows_update'
-    ),
-    path(
-        'borrows/delete/<int:pk>/',
-        views.BorrowDelete.as_view(),
-        name='borrows_delete'
-    ),
-    path(
-        'borrows/return/lists/',
-        views.BorrowReturnLists.as_view(),
-        name='borrows_return_list'
-    ),
-    path(
-        'borrows/return/new/',
-        views.BorrowReturnNew.as_view(),
-        name='borrows_return_new'
-    ),
-    path(
-        'borrows/return/update/<int:pk>/',
-        views.BorrowReturnUpdate.as_view(),
-        name='borrows_return_update'
-    ),
-    path(
-        'borrows/return/delete/<int:pk>/',
-        views.BorrowReturnDelete.as_view(),
-        name='borrows_return_delete'
-    ),
-    path(
         'debts/reload/',
         views.DebtReload.as_view(),
         name='debts_reload'

@@ -15,34 +15,6 @@ pytestmark = pytest.mark.django_db
 # ---------------------------------------------------------------------------------------
 #                                                                                  Reload
 # ---------------------------------------------------------------------------------------
-def test_borrow_reload_func():
-    view = resolve('/borrows/reload/')
-
-    assert views.BorrowReload is view.func.view_class
-
-
-def test_borrow_reload_render(rf):
-    request = rf.get('/borrows/reload/?ajax_trigger=1')
-    request.user = UserFactory.build()
-
-    response = views.BorrowReload.as_view()(request)
-
-    assert response.status_code == 200
-
-    actual = json.loads(response.content)
-    assert 'borrow' in actual
-    assert 'borrow_return' in actual
-
-
-def test_borrow_reload_return_object(rf):
-    request = rf.get('/borrows/reload/?ajax_trigger=1')
-    request.user = UserFactory.build()
-
-    response = views.BorrowReload.as_view()(request)
-
-    assert isinstance(response, JsonResponse)
-
-
 def test_borrow_reload_ender_trigger_not_set(client_logged):
     url = reverse('debts:borrows_reload')
     response = client_logged.get(url, follow=True)
