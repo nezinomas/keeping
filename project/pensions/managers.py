@@ -1,8 +1,6 @@
-from decimal import Decimal
-from typing import Any, Dict, List
-
 from django.db import models
-from django.db.models import Case, Count, F, Sum, When
+from django.db.models import F, Sum
+from django.db.models.functions import ExtractYear
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
