@@ -480,8 +480,9 @@ def test_expense_post_save_change_account():
 
 
 def test_expense_post_delete():
-    obj = ExpenseFactory()
-    obj.delete()
+    ExpenseFactory()
+
+    Expense.objects.first().delete()
 
     actual = AccountBalance.objects.year(1999)
 
@@ -495,20 +496,26 @@ def test_expense_post_delete():
 
 
 def test_expense_post_delete_with_update():
-    ExpenseFactory(price=1)
+    ExpenseFactory(date=date(1974, 1, 1), price=5)
+    obj = ExpenseFactory(date=date(1999, 1, 1), price=1)
 
-    obj = ExpenseFactory()
+    # check before delete
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
+    assert actual.past == Decimal('-5')
+    assert actual.incomes == Decimal('0')
+    assert actual.expenses == Decimal('1')
+    assert actual.balance == Decimal('-6')
+    assert actual.delta == Decimal('6')
+
+    # delete Expense object
     Expense.objects.get(pk=obj.pk).delete()
 
-    actual = AccountBalance.objects.year(1999)
-
-    assert actual.count() == 1
-
-    assert actual[0]['title'] == 'Account1'
-    assert actual[0]['expenses'] == 1.0
-    assert actual[0]['balance'] == -1.0
-
-    assert Expense.objects.all().count() == 1
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
+    assert actual.past == Decimal('-5')
+    assert actual.incomes == Decimal('0')
+    assert actual.expenses == Decimal('0')
+    assert actual.balance == Decimal('-5')
+    assert actual.delta == Decimal('5')
 
 
 def test_expense_post_save_first_year_record():
@@ -545,29 +552,6 @@ def test_expense_post_save_update_balance_row():
     assert actual.expenses == Decimal('1')
     assert actual.balance == Decimal('-6')
     assert actual.delta == Decimal('6')
-
-
-def test_expense_post_delete():
-    ExpenseFactory(date=date(1974, 1, 1), price=5)
-    obj = ExpenseFactory(date=date(1999, 1, 1), price=1)
-
-    # check before delete
-    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-    assert actual.past == Decimal('-5')
-    assert actual.incomes == Decimal('0')
-    assert actual.expenses == Decimal('1')
-    assert actual.balance == Decimal('-6')
-    assert actual.delta == Decimal('6')
-
-    # delete Expense object
-    Expense.objects.get(pk=obj.pk).delete()
-
-    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-    assert actual.past == Decimal('-5')
-    assert actual.incomes == Decimal('0')
-    assert actual.expenses == Decimal('0')
-    assert actual.balance == Decimal('-5')
-    assert actual.delta == Decimal('5')
 
 
 def test_expense_post_delete_empty_account_balance_table():

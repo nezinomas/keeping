@@ -10,87 +10,81 @@ class UpdatetBalanceTable():
         self._categories = self._get_categories()
         self._category = conf.balance_model_fk_field[:-3]
 
-        self._calc()
+        self._update_balance_table()
 
     def _get_categories(self):
         categories = self._conf.tbl_categories.objects.related()
-        print(f'categories\n{categories}')
+
         return {category.id: category for category in categories}
+
+    def _get_balance(self) -> Balance:
+        _balance_object = None
+        _data = self._get_data()
+
+        if not _data:
+            return _balance_object
+
+        _balance_object = getattr(Balance, self._conf.balance_class_method)()
+        _balance_object.create_balance(data=_data)
+
+        return _balance_object
 
     def _get_data(self):
         _data = []
-        _models = list(self._conf.hooks.keys())
 
-        for _model_name in _models:
+        for _model, _hooks in self._conf.hooks.items():
             try:
-                model = apps.get_model(_model_name)
+                model = apps.get_model(_model)
             except LookupError:
                 continue
 
-            for _method, _ in self._conf.hooks[_model_name].items():
+            for _hook in _hooks:
                 try:
-                    _method = getattr(model.objects, _method)
+                    _method = getattr(model.objects, _hook['method'])
                     _qs = _method()
                     if _qs:
                         _data.append(_qs)
 
                 except AttributeError:
                     pass
-        print(f'\nUpdateBalanceTable._get_data [39] data\n{_data}\n')
         return _data
 
-    def _calc(self):
-        _data = self._get_data()
 
-        if not _data:
+    def _update_balance_table(self):
+        _balance_object = self._get_balance()
+
+        if not _balance_object:
             return
-
-        _balance_object = getattr(Balance, self._conf.balance_class_method)()
-        _balance_object.create_balance(data=_data)
 
         _df = _balance_object.balance_df
 
         _update = []
         _create = []
         _delete = []
-        _link = {}
 
-        _items = self._conf.tbl_balance.objects.items()
-        if not _items.exists():
-            _dicts = _balance_object.balance
+        _items = self._conf.tbl_balance.objects.items().values()
+        _link = _balance_object.year_account_link
 
-            # get name. it must be account_id|saving_type_id|pension_type_id
-            if _dicts:
-                for x in _dicts[0].keys():
-                    _key_name = x if '_id' in x else None
+        for _row in _items:
+            _year = _row['year']
+            _category_id = _row[self._conf.balance_model_fk_field]
 
-            for _dict in _dicts:
-                _id = _dict[_key_name]
-                _dict.update({
-                    self._category: self._categories.get(_id)
-                })
-                _create.append(self._conf.tbl_balance(**_dict))
-        else:
-            _link = _balance_object.year_account_link
+            try:
+                _dict = _df.loc[(_year, _category_id)].to_dict()
+            except KeyError:
+                _delete.append(_row['id'])
+                continue
 
-            for _row in _items:
-                _category_id = getattr(_row, self._conf.balance_model_fk_field)
+            _dict.update({
+                'pk': _row['id'],
+                'year': _year,
+                self._category: self._categories.get(_category_id)
+            })
+            _obj = self._conf.tbl_balance(**_dict)
+            _update.append(_obj)
 
-                try:
-                    _dict = _df.loc[(_row.year, _category_id)].to_dict()
-                except KeyError:
-                    _delete.append(_row.pk)
-                    continue
-                _dict.update({
-                    'pk': _row.pk,
-                    'year': _row.year,
-                    self._category: self._categories.get(_category_id)
-                })
-                _obj = self._conf.tbl_balance(**_dict)
-                _update.append(_obj)
-
-                # remove id in link
-                _link.get(_row.year).remove(_category_id)
+            # remove id in link
+            _link.get(_year).remove(_category_id)
 
         # if in _link {year: [account_id]} left some id, create records
         for _year, _arr in _link.items():

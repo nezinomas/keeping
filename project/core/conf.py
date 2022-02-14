@@ -3,6 +3,8 @@ from typing import Dict
 
 from django.db.models import Model
 
+from .lib import utils
+
 
 @dataclass
 class Conf():
@@ -23,5 +25,13 @@ class Conf():
 
         return _hook
 
-    def get_old_values(self, name, default=None):
-        return self.instance.old_values.get(name, default)
+    def get_old_values(self, name):
+        return self.instance.old_values.get(name, 0.0)
+
+    def get_values(self, name):
+        val = utils._getattr(self.instance, name, 0.0)
+
+        if val is None:
+            val = 0.0
+
+        return val

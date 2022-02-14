@@ -1,8 +1,6 @@
-from decimal import Decimal
-from typing import Any, Dict, List
-
 from django.db import models
-from django.db.models import Case, Count, F, Sum, When
+from django.db.models import F, Sum
+from django.db.models.functions import ExtractYear
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
@@ -36,6 +34,18 @@ class PensionQuerySet(SumMixin, models.QuerySet):
 
     def items(self):
         return self.related().all()
+
+    def incomes(self):
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'pension_type__title')
+            .annotate(incomes=Sum('price'), fee=Sum('fee'))
+            .values('year', 'incomes', 'fee', id=F('pension_type__pk'))
+            .order_by('year', 'id')
+        )
+
 
 class PensionBalanceQuerySet(models.QuerySet):
     def related(self):

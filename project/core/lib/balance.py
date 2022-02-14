@@ -48,6 +48,13 @@ class Balance(BalanceBase):
 
     @property
     def year_account_link(self):
+        """
+        return dictionary
+
+        {Year: [Category1_id, Category2_id, ]}
+
+        """
+
         rtn = {}
 
         if self._balance.empty:
@@ -226,7 +233,7 @@ class Balance(BalanceBase):
 
         if not 'have' in df.columns.to_list():
             df['have'] = 0.0
-        print(f'\nstart df\n{df.to_dict("records")}\n')
+
         # account_id list from df index.level[0]
         idx = df.index.unique(level=0).to_list()
         for account_id in idx:
@@ -247,8 +254,12 @@ class Balance(BalanceBase):
             _df['past_amount'] = _df.incomes.shift(periods=1, fill_value=0.0)
             _df['past_fee'] = _df.fee.shift(periods=1, fill_value=0.0)
 
-            _df = Balance.recalc_savings(_df)
+            # recalclate balance with past
+            # recalclate incomes and fee with past
+            _df['incomes'] = _df['past_amount'] + _df['incomes']
+            _df['fee'] = _df['past_fee'] + _df['fee']
 
+            _df = Balance.recalc_savings(_df)
 
             _arr.append(_df)
 
@@ -256,16 +267,11 @@ class Balance(BalanceBase):
 
         # delete expenses column
         df.drop(['expenses', 'have'], axis=1, inplace=True)
-        print(f'\nfinal df\n{df.to_dict("records")}\n')
+
         return df
 
     @staticmethod
     def recalc_savings(_df):
-        # recalclate balance with past
-        # recalclate incomes and fee with past
-        _df['incomes'] = _df['past_amount'] + _df['incomes']
-        _df['fee'] = _df['past_fee'] + _df['fee']
-
         _df['invested'] = _df['incomes'] - _df['fee']
 
         # invested sum cannot be negative

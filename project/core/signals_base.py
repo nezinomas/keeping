@@ -17,31 +17,37 @@ class SignalBase():
     @classmethod
     def accounts(cls, sender: object, instance: object, created: bool, signal: str):
         _hooks = {
-            'incomes.Income': {
-                'incomes': 'account',
-            },
-            'expenses.Expense': {
-                'expenses': 'account',
-            },
-            'debts.Debt': {
-                'incomes': 'account',
-            },
-            'debts.DebtReturn': {
-                'expenses': 'account',
-            },
-            'transactions.Transaction': {
-                'incomes': 'to_account',
-                'expenses': 'from_account',
-            },
-            'savings.Saving': {
-                'expenses': 'account',
-            },
-            'transactions.SavingClose': {
-                'incomes': 'to_account',
-            },
-            'bookkeeping.AccountWorth': {
-                'have': 'account',
-            }
+            'incomes.Income': [
+                {'method': 'incomes', 'category': 'account', 'balance_field': 'incomes'},
+            ],
+            'expenses.Expense': [
+                {'method': 'expenses', 'category': 'account', 'balance_field': 'expenses'},
+            ],
+            # 'debts.Lent': {
+            #     'incomes': 'account',
+            # },
+            # 'debts.LentReturn': {
+            #     'expenses': 'account',
+            # },
+            # 'debts.Borrow': {
+            #     'expenses': 'account',
+            # },
+            # 'debts.BorrowReturn': {
+            #     'incomes': 'account',
+            # },
+            'transactions.Transaction': [
+                {'method': 'incomes', 'category': 'to_account', 'balance_field': 'incomes'},
+                {'method': 'expenses', 'category': 'from_account', 'balance_field': 'expenses'},
+            ],
+            'transactions.SavingClose': [
+                {'method': 'incomes', 'category': 'to_account', 'balance_field': 'incomes'},
+            ],
+            'savings.Saving': [
+                {'method': 'expenses', 'category': 'account', 'balance_field': 'expenses'},
+            ],
+            'bookkeeping.AccountWorth': [
+                {'method': 'have', 'category': 'account', 'balance_field': 'have'},
+            ]
         }
 
         _conf = Conf(
@@ -60,12 +66,16 @@ class SignalBase():
     @classmethod
     def savings(cls, sender: object, instance: object, created: bool, signal: str):
         _hooks = {
-            'savings.Saving': {
-                'incomes': 'saving_type',
-            },
-            'transactions.SavingClose': {
-                'expenses': 'from_account',
-            },
+            'savings.Saving': [
+                {'method': 'incomes', 'category': 'saving_type', 'balance_field': 'incomes.fee'},
+            ],
+            'transactions.SavingClose': [
+                {'method': 'expenses', 'category': 'from_account', 'balance_field': '-incomes.fee'},
+            ],
+            'transactions.SavingChange': [
+                {'method': 'incomes', 'category': 'to_account', 'balance_field': 'incomes'},
+                {'method': 'expenses', 'category': 'from_account', 'balance_field': '-incomes.fee'},
+            ],
         }
 
         _conf = Conf(
@@ -84,9 +94,9 @@ class SignalBase():
     @classmethod
     def pensions(cls, sender: object, instance: object, created: bool, signal: str):
         _hooks = {
-            'pensions.Pension': {
-                'incomes': 'pension_type',
-            },
+            'pensions.Pension': [
+                {'method': 'incomes', 'category': 'pension_type', 'balance_field': 'incomes.fee'},
+            ],
         }
 
         _conf = Conf(
@@ -103,19 +113,20 @@ class SignalBase():
         return cls(conf=_conf)
 
     def _update(self):
-        _hook = self._conf.get_hook()
-        if not _hook:
+        _hooks = self._conf.get_hook()
+
+        if not _hooks:
             return
 
-        for _balance_tbl_field_name, _account_name in _hook.items():
-            _account = getattr(self._conf.instance, _account_name)
-            _old_account_id = self._conf.instance.old_values.get(_account_name)
+        # for _hook['balance_field'], _account_name in _hook.items():
+        for _hook in _hooks:
+            _account = getattr(self._conf.instance, _hook['category'])
+            _old_account_id = self._conf.instance.old_values.get(_hook['category'])
 
             # new
             if self._conf.created:
                 try:
-                    print('<<< try new')
-                    self._tbl_balance_field_update('new', _balance_tbl_field_name, _account.pk)
+                    self._tbl_balance_field_update('new', _hook['balance_field'], _account.pk)
                 except ObjectDoesNotExist:
                     return
                 continue
@@ -123,8 +134,7 @@ class SignalBase():
             # delete
             if self._conf.signal == 'delete':
                 try:
-                    print('<<< try delete')
-                    self._tbl_balance_field_update('delete', _balance_tbl_field_name, _account.pk)
+                    self._tbl_balance_field_update('delete', _hook['balance_field'], _account.pk)
                 except ObjectDoesNotExist:
                     return
                 continue
@@ -133,29 +143,27 @@ class SignalBase():
             if _old_account_id == _account.pk:
                 # account not changed
                 try:
-                    print('<<< try update account not changed')
-                    self._tbl_balance_field_update('update', _balance_tbl_field_name, _account.pk)
+                    self._tbl_balance_field_update('update', _hook['balance_field'], _account.pk)
                 except ObjectDoesNotExist:
                     return
             else:
                 # account changed
                 try:
-                    print('<<< try update account changed')
-                    self._tbl_balance_field_update('new', _balance_tbl_field_name, _account.pk)
-                    self._tbl_balance_field_update('delete', _balance_tbl_field_name, _old_account_id)
+                    self._tbl_balance_field_update('new', _hook['balance_field'], _account.pk)
+                    self._tbl_balance_field_update('delete', _hook['balance_field'], _old_account_id)
                 except ObjectDoesNotExist:
                     return
 
     def _calc_field(self, /, caller, field = 'price'):
-            price = float(getattr(self._conf.instance, field))
-            original_price = float(self._conf.get_old_values(field, 0.0))
+        val = float(self._conf.get_values(field))
+        val_old = float(self._conf.get_old_values(field))
 
-            _switch = {
-                'new': price,
-                'update': - original_price + price,
-                'delete': - original_price
-            }
-            return _switch.get(caller, 0.0)
+        _switch = {
+            'new': val,
+            'update': - val_old + val,
+            'delete': - val_old
+        }
+        return _switch.get(caller, 0.0)
 
     def _tbl_balance_field_update(self, caller, balance_tbl_field_name, pk):
         _year = self._conf.instance.date.year
@@ -167,35 +175,33 @@ class SignalBase():
             )
 
         except ObjectDoesNotExist as e:
-            print(f'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nquery failed -> UPDATE ACCOUNT CLASS CALLED\n')
             UpdatetBalanceTable(self._conf)
             raise e
 
         _qs_values = {k: v for k, v in _qs.__dict__.items() if not '_state' in k}
-        print(f'>>> qs loaded values\n{_qs_values}\n')
         _df = pd.DataFrame([_qs_values])
 
-        # print(f'\n>>> df loaded\n{_df}\n')
-        try:
-            _df.at[0, balance_tbl_field_name] = (
-                _df.at[0, balance_tbl_field_name] + self._calc_field(caller, field='price')
-            )
-        except KeyError:
-            pass
+        # update balance table fields
+        fields = balance_tbl_field_name.split('.')
+        for field in fields:
+            val = field if field == 'fee' else 'price'
+            try:
+                _df.at[0, field] = (
+                    _df.at[0, field] + self._calc_field(caller, field=val)
+                )
+            except KeyError:
+                pass
 
         if 'accounts' in self._conf.balance_class_method:
             _df = Balance.recalc_accounts(_df)
         else:
-            # update fee
-            if self._conf.get_old_values('fee') is not None:
-                _df.at[0, 'fee'] = _df.at[0, 'fee'] + self._calc_field(caller, field='fee')
-
-            # update incomes on SavingClose
-            _df.at[0, 'incomes'] = _df.at[0, 'incomes'] - self._calc_field(caller, field='price')
+            # update incomes on SavingClose, SavingChange
+            if '-incomes' in balance_tbl_field_name:
+                _df.at[0, 'incomes'] = _df.at[0, 'incomes'] - self._calc_field(caller, field='price')
 
             _df = Balance.recalc_savings(_df)
 
         _qs_updated_values = _df.to_dict('records')[0]
-        print(f'>>> qs before save\n{_qs_updated_values}\n')
+
         _qs.__dict__.update(_qs_updated_values)
         _qs.save()

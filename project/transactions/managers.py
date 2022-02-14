@@ -6,7 +6,7 @@ from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 
 
-class TransactionQuerySet(models.QuerySet):
+class BaseMixin(models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
         return (
@@ -36,18 +36,38 @@ class TransactionQuerySet(models.QuerySet):
             .order_by('year', 'id')
         )
 
-    def expenses(self):
+    def _annotate_fee(self, fee):
+        if fee:
+            return (
+                self
+                .annotate(fee=Sum('fee'))
+            )
+        return self
+
+    def base_expenses(self, fee=False):
+        values = ['year', 'expenses']
+
+        if fee:
+            values.append('fee')
+
         return (
             self
             .related()
             .annotate(year=ExtractYear(F('date')))
             .values('year', 'from_account__title')
             .annotate(expenses=Sum('price'))
-            .values('year', 'expenses', id=F('from_account__pk'))
+            ._annotate_fee(fee=fee)
+            .values(*values, id=F('from_account__pk'))
             .order_by('year', 'id')
         )
 
-class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
+
+class TransactionQuerySet(BaseMixin):
+    def expenses(self):
+        return self.base_expenses()
+
+
+class SavingCloseQuerySet(BaseMixin, SumMixin):
     def sum_by_month(self, year, month=None):
         sum_annotation = 'sum'
 
@@ -61,27 +81,10 @@ class SavingCloseQuerySet(SumMixin, TransactionQuerySet):
             .values('date', sum_annotation)
         )
 
-    def incomes(self):
-        return (
-            self
-            .related()
-            .annotate(year=ExtractYear(F('date')))
-            .values('year', 'to_account__title')
-            .annotate(incomes=Sum('price'))
-            .values('year', 'incomes', id=F('to_account__pk'))
-            .order_by('year', 'id')
-        )
-
     def expenses(self):
-        return (
-            self
-            .related()
-            .annotate(year=ExtractYear(F('date')))
-            .values('year', 'from_account__title')
-            .annotate(expenses=Sum('price'), fee=Sum('fee'))
-            .values('year', 'expenses', 'fee', id=F('from_account__pk'))
-            .order_by('year', 'id')
-        )
+        return self.base_expenses(fee=True)
 
-class SavingChangeQuerySet(TransactionQuerySet):
-    pass
+
+class SavingChangeQuerySet(BaseMixin):
+    def expenses(self):
+        return self.base_expenses(fee=True)
