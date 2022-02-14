@@ -20,6 +20,7 @@ def test_debt_str():
 
 def test_debt_fields():
     assert Debt._meta.get_field('date')
+    assert Debt._meta.get_field('type')
     assert Debt._meta.get_field('name')
     assert Debt._meta.get_field('price')
     assert Debt._meta.get_field('returned')

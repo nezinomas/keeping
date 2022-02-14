@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
 from ..core.mixins.old_values import OldValuesMixin
@@ -10,7 +11,16 @@ from . import managers
 
 
 class Debt(OldValuesMixin, models.Model):
+    class Types(models.TextChoices):
+        LEND = 'lend', _('Lend')
+        BORROW = 'borrow', _('Borrow')
+
     date = models.DateField()
+    type = models.CharField(
+        max_length=12,
+        choices=Types.choices,
+        default=Types.LEND,
+    )
     name = models.CharField(
         max_length=100,
         validators=[MinLengthValidator(3)]
