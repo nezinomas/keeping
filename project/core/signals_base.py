@@ -94,9 +94,9 @@ class SignalBase():
     @classmethod
     def pensions(cls, sender: object, instance: object, created: bool, signal: str):
         _hooks = {
-            'pensions.Pension': {
-                'incomes': 'pension_type',
-            },
+            'pensions.Pension': [
+                {'method': 'incomes', 'category': 'pension_type', 'balance_field': 'incomes.fee'},
+            ],
         }
 
         _conf = Conf(

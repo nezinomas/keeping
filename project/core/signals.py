@@ -73,7 +73,7 @@ def savings_post_delete(sender: object,
 # ----------------------------------------------------------------------------
 #                                                               PensionBalance
 # ----------------------------------------------------------------------------
-# @receiver(post_save, sender=pension.Pension)
+@receiver(post_save, sender=pension.Pension)
 # @receiver(post_save, sender=worth.PensionWorth)
 def pensions_post_save(sender: object,
                          instance: object,
@@ -83,7 +83,7 @@ def pensions_post_save(sender: object,
     SignalBase.pensions(sender, instance, created, 'save')
 
 
-# @receiver(post_save, sender=pension.Pension)
+@receiver(post_delete, sender=pension.Pension)
 def pensions_post_delete(sender: object,
                          instance: object,
                          *args,

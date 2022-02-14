@@ -35,6 +35,18 @@ class PensionQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self.related().all()
 
+    def incomes(self):
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'pension_type__title')
+            .annotate(incomes=Sum('price'), fee=Sum('fee'))
+            .values('year', 'incomes', 'fee', id=F('pension_type__pk'))
+            .order_by('year', 'id')
+        )
+
+
 class PensionBalanceQuerySet(models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
