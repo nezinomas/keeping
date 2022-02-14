@@ -300,7 +300,7 @@ def test_income_post_save_update_account_balance_count_qs(django_assert_max_num_
 
     IncomeFactory()
 
-    with django_assert_max_num_queries(4):
+    with django_assert_max_num_queries(5):
         Income.objects.create(
             date=date(1999, 1, 1),
             price=Decimal('2'),

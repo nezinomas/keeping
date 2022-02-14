@@ -53,7 +53,7 @@ def accounts_post_delete(sender: object, instance: object, *args, **kwargs):
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=saving.Saving)
 @receiver(post_save, sender=transaction.SavingClose)
-# @receiver(post_save, sender=transaction.SavingChange)
+@receiver(post_save, sender=transaction.SavingChange)
 # @receiver(post_save, sender=worth.SavingWorth)
 def savings_post_save(sender: object,
                         instance: object,
@@ -68,7 +68,7 @@ def savings_post_save(sender: object,
 
 @receiver(post_delete, sender=saving.Saving)
 @receiver(post_delete, sender=transaction.SavingClose)
-# @receiver(post_delete, sender=transaction.SavingChange)
+@receiver(post_delete, sender=transaction.SavingChange)
 def savings_post_delete(sender: object,
                         instance: object,
                         *args,

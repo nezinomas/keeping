@@ -67,10 +67,14 @@ class SignalBase():
     def savings(cls, sender: object, instance: object, created: bool, signal: str):
         _hooks = {
             'savings.Saving': [
-                {'method': 'incomes', 'category': 'saving_type', 'balance_field': 'incomes'},
+                {'method': 'incomes', 'category': 'saving_type', 'balance_field': 'incomes.fee'},
             ],
             'transactions.SavingClose': [
-                {'method': 'expenses', 'category': 'from_account', 'balance_field': 'expensess'},
+                {'method': 'expenses', 'category': 'from_account', 'balance_field': '-incomes.fee'},
+            ],
+            'transactions.SavingChange': [
+                {'method': 'incomes', 'category': 'to_account', 'balance_field': 'incomes'},
+                {'method': 'expenses', 'category': 'from_account', 'balance_field': '-incomes.fee'},
             ],
         }
 
@@ -185,22 +189,22 @@ class SignalBase():
         print(f'\n>>> old values\n{self._conf.instance.old_values}\n')
         _df = pd.DataFrame([_qs_values])
 
-        try:
-            _df.at[0, balance_tbl_field_name] = (
-                _df.at[0, balance_tbl_field_name] + self._calc_field(caller, field='price')
-            )
-        except KeyError:
-            pass
+        # update balance table fields
+        fields = balance_tbl_field_name.split('.')
+        for field in fields:
+            val = field if field == 'fee' else 'price'
+            try:
+                _df.at[0, field] = (
+                    _df.at[0, field] + self._calc_field(caller, field=val)
+                )
+            except KeyError:
+                pass
 
         if 'accounts' in self._conf.balance_class_method:
             _df = Balance.recalc_accounts(_df)
         else:
-            # update fee
-            if self._conf.get_old_values('fee') is not None:
-                _df.at[0, 'fee'] = _df.at[0, 'fee'] + self._calc_field(caller, field='fee')
-
-            # update incomes on SavingClose
-            if balance_tbl_field_name == 'expenses':
+            # update incomes on SavingClose, SavingChange
+            if '-incomes' in balance_tbl_field_name:
                 _df.at[0, 'incomes'] = _df.at[0, 'incomes'] - self._calc_field(caller, field='price')
 
             _df = Balance.recalc_savings(_df)
