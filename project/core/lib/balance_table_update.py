@@ -14,7 +14,7 @@ class UpdatetBalanceTable():
 
     def _get_categories(self):
         categories = self._conf.tbl_categories.objects.related()
-        print(f'categories\n{categories}')
+
         return {category.id: category for category in categories}
 
     def _get_balance(self) -> Balance:
@@ -47,7 +47,6 @@ class UpdatetBalanceTable():
 
                 except AttributeError:
                     pass
-        print(f'\nUpdateBalanceTable._get_data [39] data\n{_data}\n')
         return _data
 
 
@@ -99,13 +98,10 @@ class UpdatetBalanceTable():
                 _create.append(_obj)
 
         if _create:
-            print('UpdateBalanceTable >> create')
             self._conf.tbl_balance.objects.bulk_create(_create)
 
         if _update:
-            print('UpdateBalanceTable >> update')
             self._conf.tbl_balance.objects.bulk_update(_update, _df.columns.values.tolist())
 
         if _delete:
-            print('UpdateBalanceTable >> delete')
             self._conf.tbl_balance.objects.related().filter(pk__in=_delete).delete()

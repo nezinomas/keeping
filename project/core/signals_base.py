@@ -120,14 +120,12 @@ class SignalBase():
 
         # for _hook['balance_field'], _account_name in _hook.items():
         for _hook in _hooks:
-            print(f'---------> {_hook=} {_hooks=}')
             _account = getattr(self._conf.instance, _hook['category'])
             _old_account_id = self._conf.instance.old_values.get(_hook['category'])
 
             # new
             if self._conf.created:
                 try:
-                    print('<<< try new')
                     self._tbl_balance_field_update('new', _hook['balance_field'], _account.pk)
                 except ObjectDoesNotExist:
                     return
@@ -136,7 +134,6 @@ class SignalBase():
             # delete
             if self._conf.signal == 'delete':
                 try:
-                    print('<<< try delete')
                     self._tbl_balance_field_update('delete', _hook['balance_field'], _account.pk)
                 except ObjectDoesNotExist:
                     return
@@ -146,14 +143,12 @@ class SignalBase():
             if _old_account_id == _account.pk:
                 # account not changed
                 try:
-                    print('<<< try update account not changed')
                     self._tbl_balance_field_update('update', _hook['balance_field'], _account.pk)
                 except ObjectDoesNotExist:
                     return
             else:
                 # account changed
                 try:
-                    print('<<< try update account changed')
                     self._tbl_balance_field_update('new', _hook['balance_field'], _account.pk)
                     self._tbl_balance_field_update('delete', _hook['balance_field'], _old_account_id)
                 except ObjectDoesNotExist:
@@ -180,13 +175,10 @@ class SignalBase():
             )
 
         except ObjectDoesNotExist as e:
-            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nquery failed -> UPDATE ACCOUNT CLASS CALLED\n')
             UpdatetBalanceTable(self._conf)
             raise e
 
         _qs_values = {k: v for k, v in _qs.__dict__.items() if not '_state' in k}
-        print(f'\n>>> qs loaded values\n{_qs_values}\n')
-        print(f'\n>>> old values\n{self._conf.instance.old_values}\n')
         _df = pd.DataFrame([_qs_values])
 
         # update balance table fields
@@ -210,6 +202,6 @@ class SignalBase():
             _df = Balance.recalc_savings(_df)
 
         _qs_updated_values = _df.to_dict('records')[0]
-        print(f'>>> qs before save\n{_qs_updated_values}\n')
+
         _qs.__dict__.update(_qs_updated_values)
         _qs.save()

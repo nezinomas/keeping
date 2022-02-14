@@ -26,10 +26,8 @@ from .signals_base import SignalBase
 @receiver(post_save, sender=debt.LentReturn)
 # @receiver(post_save, sender=worth.AccountWorth)
 def accounts_post_save(sender: object, instance: object, *args, **kwargs):
-    print(f'\n<< Account post save\n{args=}\n{kwargs=}')
     created = kwargs.get('created')
     SignalBase.accounts(sender, instance, created, 'save')
-    print(f'\n>> after Account post save\n{account.AccountBalance.objects.values()}\n')
 
 
 @receiver(post_delete, sender=income.Income)
@@ -42,10 +40,8 @@ def accounts_post_save(sender: object, instance: object, *args, **kwargs):
 @receiver(post_delete, sender=debt.Lent)
 @receiver(post_delete, sender=debt.LentReturn)
 def accounts_post_delete(sender: object, instance: object, *args, **kwargs):
-    print(f'\n<< Accounts post delete {args=}\n{kwargs=}\n')
     created = kwargs.get('created')
     SignalBase.accounts(sender, instance, created, 'delete')
-    print(f'\n>> after Account post delete\n{account.AccountBalance.objects.values()}\n')
 
 
 # ----------------------------------------------------------------------------
@@ -59,11 +55,8 @@ def savings_post_save(sender: object,
                         instance: object,
                         *args,
                         **kwargs):
-    print(f'\n<< Savings post save {args=}\n{kwargs=}\n')
     created = kwargs.get('created')
     SignalBase.savings(sender, instance, created, 'save')
-    print(f'\n>> after SAVING post save\n{saving.SavingBalance.objects.values()}\n')
-
 
 
 @receiver(post_delete, sender=saving.Saving)
@@ -73,10 +66,8 @@ def savings_post_delete(sender: object,
                         instance: object,
                         *args,
                         **kwargs):
-    print(f'\n<< Savings post delete {args=}\n{kwargs=}\n')
     created = kwargs.get('created')
     SignalBase.savings(sender, instance, created, 'delete')
-    print(f'\n>> after SAVING post delete\n{saving.SavingBalance.objects.values()}\n')
 
 
 # ----------------------------------------------------------------------------
@@ -88,7 +79,6 @@ def pensions_post_save(sender: object,
                          instance: object,
                          *args,
                          **kwargs):
-    print(f'\n<< pensions post save {args=}\n{kwargs=}\n')
     created = kwargs.get('created')
     SignalBase.pensions(sender, instance, created, 'save')
 
@@ -98,6 +88,5 @@ def pensions_post_delete(sender: object,
                          instance: object,
                          *args,
                          **kwargs):
-    print(f'\n<< pensions post delete {args=}\n{kwargs=}\n')
     created = kwargs.get('created')
     SignalBase.pensions(sender, instance, created, 'delete')
