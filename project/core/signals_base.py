@@ -155,8 +155,8 @@ class SignalBase():
                     return
 
     def _calc_field(self, /, caller, field = 'price'):
-        val = float(getattr(self._conf.instance, field))
-        val_old = float(self._conf.get_old_values(field, 0.0))
+        val = float(self._conf.get_values(field))
+        val_old = float(self._conf.get_old_values(field))
 
         _switch = {
             'new': val,
