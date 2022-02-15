@@ -18,42 +18,42 @@ urlpatterns = [
         name='debts_reload'
     ),
     path(
-        'debts/lists/',
+        'debts/<str:type>/lists/',
         views.DebtLists.as_view(),
         name='debts_list'
     ),
     path(
-        'debts/new/',
+        'debts/<str:type>/new/',
         views.DebtNew.as_view(),
         name='debts_new'
     ),
     path(
-        'debts/update/<int:pk>/',
+        'debts/<str:type>/update/<int:pk>/',
         views.DebtUpdate.as_view(),
         name='debts_update'
     ),
     path(
-        'debts/delete/<int:pk>/',
+        'debts/<str:type>/delete/<int:pk>/',
         views.DebtDelete.as_view(),
         name='debts_delete'
     ),
     path(
-        'debts/return/lists/',
+        'debts/<str:type>/return/lists/',
         views.DebtReturnLists.as_view(),
         name='debts_return_list'
     ),
     path(
-        'debts/return/new/',
+        'debts/<str:type>/return/new/',
         views.DebtReturnNew.as_view(),
         name='debts_return_new'
     ),
     path(
-        'debts/return/update/<int:pk>/',
+        'debts/<str:type>/return/update/<int:pk>/',
         views.DebtReturnUpdate.as_view(),
         name='debts_return_update'
     ),
     path(
-        'debts/return/delete/<int:pk>/',
+        'debts/<str:type>/return/delete/<int:pk>/',
         views.DebtReturnDelete.as_view(),
         name='debts_return_delete'
     ),
