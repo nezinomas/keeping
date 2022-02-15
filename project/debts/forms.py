@@ -44,8 +44,17 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
         self.fields['account'].queryset = Account.objects.items()
 
         # fields labels
+        _type = utils.get_request_kwargs("type")
+        _name = _('Debtor')
+
+        if _type == 'lend':
+            _name = _('Borrower')
+
+        if _type == 'borrow':
+            _name = _('Lender')
+
         self.fields['date'].label = _('Date')
-        self.fields['name'].label = _('Lender')
+        self.fields['name'].label = _name
         self.fields['account'].label = _('Account')
         self.fields['price'].label = _('Sum')
         self.fields['remark'].label = _('Remark')
@@ -55,6 +64,17 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
         set_field_properties(self, self.helper)
 
         self.fields['closed'].widget.attrs['class'] = " form-check-input"
+
+    def save(self, *args, **kwargs):
+        instance = super().save(commit=False)
+
+        type = utils.get_request_kwargs("type")
+        type = type if type else 'lend'
+        instance.type = type
+
+        instance.save()
+
+        return instance
 
     def clean(self):
         cleaned_data = super().clean()
@@ -71,8 +91,7 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
                     self.add_error('name', _('The name of the lender must be unique.'))
 
         # can't close not returned debt
-        _msg_cant_close = _(
-            "You can't close a debt that hasn't been returned.")
+        _msg_cant_close = _("You can't close a debt that hasn't been returned.")
         if not self.instance.pk and closed:
             self.add_error('closed', _msg_cant_close)
 
