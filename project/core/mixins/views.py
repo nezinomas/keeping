@@ -65,11 +65,15 @@ class CreateAjaxMixin(
         context['form_action'] = 'insert'
 
         # tweak for url resolver for count types
-        count_type = {}
+        _dict = {}
         if self.kwargs.get('count_type'):
-            count_type['count_type'] = self.kwargs.get('count_type')
+            _dict['count_type'] = self.kwargs.get('count_type')
 
-        context['url'] = reverse(view_name, kwargs={**count_type})
+        # tweak for url resolver for Debt types
+        if self.kwargs.get('type'):
+            _dict['type'] = self.kwargs.get('type')
+
+        context['url'] = reverse(view_name, kwargs={**_dict})
 
         return context
 
