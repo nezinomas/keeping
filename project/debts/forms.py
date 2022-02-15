@@ -135,9 +135,18 @@ class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
         self.fields['debt'].queryset = models.Debt.objects.items().filter(closed=False)
 
         # fields labels
+        _type = utils.get_request_kwargs("type")
+        _name = _('Debtor')
+
+        if _type == 'lend':
+            _name = _('Borrower')
+
+        if _type == 'borrow':
+            _name = _('Lender')
+
         self.fields['date'].label = _('Date')
         self.fields['account'].label = _('Account')
-        self.fields['debt'].label = _('Lender')
+        self.fields['debt'].label = _name
         self.fields['price'].label = _('Sum')
         self.fields['remark'].label = _('Remark')
 
