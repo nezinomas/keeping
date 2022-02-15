@@ -55,5 +55,4 @@ def _getattr(obj, name, default=None):
     try:
         return getattr(obj, name)
     except AttributeError:
-        print(f'wtf {default=}')
         return default
