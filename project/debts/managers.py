@@ -7,11 +7,13 @@ from ..core.mixins.queryset_sum import SumMixin
 
 class DebtQuerySet(models.QuerySet):
     def related(self):
-        journal = utils.get_user().journal
+        _journal = utils.get_user().journal
+        _type = utils.get_request_kwargs('type')
+
         return (
             self
             .select_related('account', 'journal')
-            .filter(journal=journal)
+            .filter(journal=_journal, type=_type)
         )
 
     def items(self):
@@ -68,11 +70,13 @@ class DebtQuerySet(models.QuerySet):
 
 class DebtReturnQuerySet(SumMixin, models.QuerySet):
     def related(self):
-        journal = utils.get_user().journal
+        _journal = utils.get_user().journal
+        _type = utils.get_request_kwargs('type')
+
         qs = (
             self
             .select_related('account', 'debt')
-            .filter(debt__journal=journal)
+            .filter(debt__journal=_journal, debt__type=_type)
         )
         return qs
 

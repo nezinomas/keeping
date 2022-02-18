@@ -31,7 +31,7 @@ class BorrowReturnFactory(factory.django.DjangoModelFactory):
     price = Decimal('5')
     remark = 'Borrow Return Remark'
     account = factory.SubFactory(AccountFactory)
-    borrow = factory.SubFactory(BorrowFactory)
+    debt = factory.SubFactory(BorrowFactory)
 
 
 class LendFactory(factory.django.DjangoModelFactory):
@@ -57,4 +57,4 @@ class LendReturnFactory(factory.django.DjangoModelFactory):
     price = Decimal('5')
     remark = 'Lend Return Remark'
     account = factory.SubFactory(AccountFactory)
-    lent = factory.SubFactory(LendFactory)
+    debt = factory.SubFactory(LendFactory)

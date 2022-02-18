@@ -89,7 +89,13 @@ class DebtReturn(OldValuesMixin, models.Model):
         ordering = ['debt__closed', 'debt__name', '-date']
 
     def __str__(self):
-        return f'Grąžino {round(self.price, 1)}'
+        _price = round(self.price, 1)
+        if self.debt.type == 'lend':
+            return f'{_("Lend return")} {_price}'
+
+        if self.debt.type == 'borrow':
+            return f'{_("Borrow return")} {_price}'
+
 
     def save(self, *args, **kwargs):
         obj = Debt.objects.get(id=self.debt_id)
