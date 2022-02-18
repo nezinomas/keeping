@@ -13,7 +13,7 @@ urlpatterns = [
         name='debts_index'
     ),
     path(
-        'debts/reload/',
+        'debts/<str:type>/reload/',
         views.DebtReload.as_view(),
         name='debts_reload'
     ),

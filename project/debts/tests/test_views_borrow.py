@@ -5,6 +5,7 @@ from decimal import Decimal
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
+from mock import patch
 
 from ...accounts.factories import AccountFactory
 from .. import factories, models, views
@@ -13,36 +14,39 @@ X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
 
 
-def test_debt_list_func():
-    view = resolve('/debts/lists/')
+def test_borrow_list_func():
+    view = resolve('/debts/XXX/lists/')
 
     assert views.DebtLists == view.func.view_class
 
 
-def test_debt_list_200(client_logged):
-    url = reverse('debts:debts_list')
+def test_borrow_list_200(client_logged):
+    url = reverse('debts:debts_list', kwargs={'type': 'borrow'})
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
-def test_debt_list_empty(client_logged):
-    url = reverse('debts:debts_list')
+def test_borrow_list_empty(client_logged):
+    factories.LendFactory(price=666)
+
+    url = reverse('debts:debts_list', kwargs={'type': 'borrow'})
     response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     assert '<b>1999</b> metais įrašų nėra' in content
 
 
-def test_debt_list_with_data(client_logged):
-    obj = factories.DebtFactory(closed=True)
+def test_borrow_list_with_data(client_logged):
+    obj1 = factories.BorrowFactory(closed=True)
+    obj2 = factories.LendFactory(price=666)
 
-    url = reverse('debts:debts_list')
+    url = reverse('debts:debts_list', kwargs={'type': 'borrow'})
     response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
     assert 'Data' in content
-    assert 'Skolintojas' in content
+    assert 'Paskolos davėjas' in content
     assert 'Suma' in content
     assert 'Gražinta' in content
     assert 'Sąskaita' in content
@@ -50,56 +54,59 @@ def test_debt_list_with_data(client_logged):
     assert 'Uždaryta' in content
 
     assert '1999-01-01' in content
-    assert obj.name in content
+    assert obj1.name in content
     assert '100,0' in content
     assert '25,0' in content
     assert 'Account1' in content
-    assert 'Debt Remark' in content
+    assert 'Borrow Remark' in content
     assert '<i class="bi bi-check-circle-fill"></i>' in content
 
+    assert obj2.name not in content
+    assert '666,0' not in content
 
-def test_debt_list_edit_button(client_logged):
-    obj = factories.DebtFactory()
 
-    url = reverse('debts:debts_list')
+def test_borrow_list_edit_button(client_logged):
+    obj = factories.BorrowFactory()
+
+    url = reverse('debts:debts_list', kwargs={'type': 'borrow'})
     response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
-    link = reverse('debts:debts_update', kwargs={'pk': obj.pk})
+    link = reverse('debts:debts_update', kwargs={'pk': obj.pk, 'type': 'borrow'})
 
-    assert f'<a role="button" data-url="{ link }" data-target="debt"' in content
+    assert f'<a role="button" data-url="{ link }" data-target="borrow"' in content
     assert 'js-create set-target' in content
 
 
-def test_debt_list_delete_button(client_logged):
-    obj = factories.DebtFactory()
+def test_borrow_list_delete_button(client_logged):
+    obj = factories.BorrowFactory()
 
-    url = reverse('debts:debts_list')
+    url = reverse('debts:debts_list', kwargs={'type': 'borrow'})
     response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
-    link = reverse('debts:debts_delete', kwargs={'pk': obj.pk})
+    link = reverse('debts:debts_delete', kwargs={'pk': obj.pk, 'type': 'borrow'})
 
-    assert f'<a role="button" data-url="{ link }" data-target="debt"' in content
+    assert f'<a role="button" data-url="{ link }" data-target="borrow"' in content
     assert 'js-create set-target' in content
 
 
-def test_debt_new_func():
-    view = resolve('/debts/new/')
+def test_borrow_new_func():
+    view = resolve('/debts/XXX/new/')
 
     assert views.DebtNew == view.func.view_class
 
 
-def test_debt_new_200(client_logged):
-    url = reverse('debts:debts_new')
+def test_borrow_new_200(client_logged):
+    url = reverse('debts:debts_new', kwargs={'type': 'borrow'})
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 @freeze_time('2000-01-01')
-def test_debt_load_form(client_logged):
-    url = reverse('debts:debts_new')
+def test_borrow_load_form(client_logged):
+    url = reverse('debts:debts_new', kwargs={'type': 'borrow'})
 
     response = client_logged.get(url, {}, **X_Req)
 
@@ -110,11 +117,12 @@ def test_debt_load_form(client_logged):
     assert '<input type="text" name="date" value="1999-01-01"' in actual['html_form']
 
 
-def test_debt_save(client_logged):
+@patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
+def test_borrow_save(mck, client_logged):
     a = AccountFactory()
     data = {'date': '1999-01-01', 'name': 'AAA', 'price': '1.1', 'account': a.pk}
 
-    url = reverse('debts:debts_new')
+    url = reverse('debts:debts_new', kwargs={'type': 'borrow'})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -129,13 +137,14 @@ def test_debt_save(client_logged):
     assert actual.account.title == 'Account1'
     assert actual.name == 'AAA'
     assert actual.price == Decimal('1.1')
+    assert actual.type == 'borrow'
 
 
-def test_debt_save_not_render_html_list(client_logged):
+def test_borrow_save_not_render_html_list(client_logged):
     a = AccountFactory()
     data = {'date': '1999-01-01', 'name': 'AAA', 'price': '1.1', 'account': a.pk}
 
-    url = reverse('debts:debts_new')
+    url = reverse('debts:debts_new', kwargs={'type': 'borrow'})
 
     response = client_logged.post(url, data, **X_Req)
     json_str = response.content
@@ -144,10 +153,10 @@ def test_debt_save_not_render_html_list(client_logged):
     assert not actual.get('html_list')
 
 
-def test_debt_save_invalid_data(client_logged):
+def test_borrow_save_invalid_data(client_logged):
     data = {'date': 'x', 'name': 'A', 'price': '0'}
 
-    url = reverse('debts:debts_new')
+    url = reverse('debts:debts_new', kwargs={'type': 'borrow'})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -157,24 +166,24 @@ def test_debt_save_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-def test_debt_update_func():
-    view = resolve('/debts/update/1/')
+def test_borrow_update_func():
+    view = resolve('/debts/XXX/update/1/')
 
     assert views.DebtUpdate == view.func.view_class
 
 
-def test_debt_update_200(client_logged):
-    f = factories.DebtFactory()
+def test_borrow_update_200(client_logged):
+    f = factories.BorrowFactory()
 
-    url = reverse('debts:debts_update', kwargs={'pk': f.pk})
+    url = reverse('debts:debts_update', kwargs={'pk': f.pk, 'type': 'borrow'})
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
-def test_debt_load_update_form(client_logged):
-    f = factories.DebtFactory()
-    url = reverse('debts:debts_update', kwargs={'pk': f.pk})
+def test_borrow_load_update_form(client_logged):
+    f = factories.BorrowFactory()
+    url = reverse('debts:debts_update', kwargs={'pk': f.pk, 'type': 'borrow'})
 
     response = client_logged.get(url, **X_Req)
 
@@ -187,11 +196,12 @@ def test_debt_load_update_form(client_logged):
     assert '1999-01-01' in form
     assert '100' in form
     assert 'Account1' in form
-    assert 'Debt Remark' in form
+    assert 'Borrow Remark' in form
 
 
-def test_debt_update(client_logged):
-    e = factories.DebtFactory()
+@patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
+def test_borrow_update(mck, client_logged):
+    e = factories.BorrowFactory()
 
     data = {
         'name': 'XXX',
@@ -201,7 +211,7 @@ def test_debt_update(client_logged):
         'account': 1,
         'closed': False
     }
-    url = reverse('debts:debts_update', kwargs={'pk': e.pk})
+    url = reverse('debts:debts_update', kwargs={'pk': e.pk, 'type': 'borrow'})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -224,8 +234,8 @@ def test_debt_update(client_logged):
     assert not actual.closed
 
 
-def test_debt_update_not_closed(client_logged):
-    e = factories.DebtFactory(name='XXX')
+def test_borrow_update_not_closed(client_logged):
+    e = factories.BorrowFactory(name='XXX')
 
     data = {
         'name': 'XXX',
@@ -235,7 +245,7 @@ def test_debt_update_not_closed(client_logged):
         'account': 1,
         'closed': False
     }
-    url = reverse('debts:debts_update', kwargs={'pk': e.pk})
+    url = reverse('debts:debts_update', kwargs={'pk': e.pk, 'type': 'borrow'})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -255,8 +265,8 @@ def test_debt_update_not_closed(client_logged):
     assert not actual.closed
 
 
-def test_debt_update_price_smaller_then_returned(client_logged):
-    e = factories.DebtFactory(name='XXX')
+def test_borrow_update_price_smaller_then_returned(client_logged):
+    e = factories.BorrowFactory(name='XXX')
 
     data = {
         'name': 'XXX',
@@ -266,7 +276,7 @@ def test_debt_update_price_smaller_then_returned(client_logged):
         'account': 1,
         'closed': False
     }
-    url = reverse('debts:debts_update', kwargs={'pk': e.pk})
+    url = reverse('debts:debts_update', kwargs={'pk': e.pk, 'type': 'borrow'})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -279,8 +289,8 @@ def test_debt_update_price_smaller_then_returned(client_logged):
     assert 'Negalite atnaujinti į mažesnę sumą nei jau sugrąžinta suma.' in  actual['html_form']
 
 
-def test_debt_update_cant_close(client_logged):
-    e = factories.DebtFactory()
+def test_borrow_update_cant_close(client_logged):
+    e = factories.BorrowFactory()
 
     data = {
         'name': 'XXX',
@@ -290,7 +300,7 @@ def test_debt_update_cant_close(client_logged):
         'account': 1,
         'closed': True
     }
-    url = reverse('debts:debts_update', kwargs={'pk': e.pk})
+    url = reverse('debts:debts_update', kwargs={'pk': e.pk, 'type': 'borrow'})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -301,8 +311,9 @@ def test_debt_update_cant_close(client_logged):
     assert 'Negalite uždaryti dar negražintos skolos.' in actual['html_form']
 
 
-def test_debt_update_not_render_html_list(client_logged):
-    e = factories.DebtFactory()
+@patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
+def test_borrow_update_not_render_html_list(mck, client_logged):
+    e = factories.BorrowFactory()
 
     data = {
         'name': 'XXX',
@@ -313,7 +324,7 @@ def test_debt_update_not_render_html_list(client_logged):
         'closed': True
     }
 
-    url = reverse('debts:debts_update', kwargs={'pk': e.pk})
+    url = reverse('debts:debts_update', kwargs={'pk': e.pk, 'type': 'borrow'})
     response = client_logged.post(url, data, **X_Req)
     json_str = response.content
     actual = json.loads(json_str)
@@ -321,16 +332,16 @@ def test_debt_update_not_render_html_list(client_logged):
     assert not actual.get('html_list')
 
 
-def test_debt_update_not_load_other_journal(client_logged, main_user, second_user):
+def test_borrow_update_not_load_other_journal(client_logged, main_user, second_user):
     j1 = main_user.journal
     j2 = second_user.journal
     a1 = AccountFactory(journal=j1, title='a1')
     a2 = AccountFactory(journal=j2, title='a2')
 
-    factories.DebtFactory(name='xxx', journal=j1, account=a1)
-    obj = factories.DebtFactory(name='yyy', price=666, journal=j2, account=a2)
+    factories.BorrowFactory(name='xxx', journal=j1, account=a1)
+    obj = factories.BorrowFactory(name='yyy', price=666, journal=j2, account=a2)
 
-    url = reverse('debts:debts_update', kwargs={'pk': obj.pk})
+    url = reverse('debts:debts_update', kwargs={'pk': obj.pk, 'type': 'borrow'})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -343,25 +354,25 @@ def test_debt_update_not_load_other_journal(client_logged, main_user, second_use
     assert str(obj.price) not in form
 
 
-def test_debt_delete_func():
-    view = resolve('/debts/delete/1/')
+def test_borrow_delete_func():
+    view = resolve('/debts/XXX/delete/1/')
 
     assert views.DebtDelete == view.func.view_class
 
 
-def test_debt_delete_200(client_logged):
-    f = factories.DebtFactory()
+def test_borrow_delete_200(client_logged):
+    f = factories.BorrowFactory()
 
-    url = reverse('debts:debts_delete', kwargs={'pk': f.pk})
+    url = reverse('debts:debts_delete', kwargs={'pk': f.pk, 'type': 'borrow'})
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
-def test_debt_delete_load_form(client_logged):
-    obj = factories.DebtFactory()
+def test_borrow_delete_load_form(client_logged):
+    obj = factories.BorrowFactory()
 
-    url = reverse('debts:debts_delete', kwargs={'pk': obj.pk})
+    url = reverse('debts:debts_delete', kwargs={'pk': obj.pk, 'type': 'borrow'})
     response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
@@ -371,15 +382,15 @@ def test_debt_delete_load_form(client_logged):
     assert response.status_code == 200
     assert '<form method="post"' in actual
     assert 'data-action="delete"' in actual
-    assert 'data-update-container="debt">' in actual
+    assert 'data-update-container="borrow">' in actual
     assert f'Ar tikrai norite ištrinti: <strong>{ obj }</strong>?' in actual
 
 
-def test_debt_delete(client_logged):
-    p = factories.DebtFactory()
+def test_borrow_delete(client_logged):
+    p = factories.BorrowFactory()
 
     assert models.Debt.objects.all().count() == 1
-    url = reverse('debts:debts_delete', kwargs={'pk': p.pk})
+    url = reverse('debts:debts_delete', kwargs={'pk': p.pk, 'type': 'borrow'})
 
     response = client_logged.post(url, {}, **X_Req)
 
@@ -388,11 +399,11 @@ def test_debt_delete(client_logged):
     assert models.Debt.objects.all().count() == 0
 
 
-def test_debt_delete_not_render_html_list(client_logged):
-    p = factories.DebtFactory()
+def test_borrow_delete_not_render_html_list(client_logged):
+    p = factories.BorrowFactory()
 
     assert models.Debt.objects.all().count() == 1
-    url = reverse('debts:debts_delete', kwargs={'pk': p.pk})
+    url = reverse('debts:debts_delete', kwargs={'pk': p.pk, 'type': 'borrow'})
 
     response = client_logged.post(url, {}, **X_Req)
     json_str = response.content
@@ -401,10 +412,10 @@ def test_debt_delete_not_render_html_list(client_logged):
     assert not actual.get('html_list')
 
 
-def test_debt_delete_other_journal_get_form(client_logged, second_user):
-    obj = factories.DebtFactory(name='yyy', journal=second_user.journal)
+def test_borrow_delete_other_journal_get_form(client_logged, second_user):
+    obj = factories.BorrowFactory(name='yyy', journal=second_user.journal)
 
-    url = reverse('debts:debts_delete', kwargs={'pk': obj.pk})
+    url = reverse('debts:debts_delete', kwargs={'pk': obj.pk, 'type': 'borrow'})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -416,10 +427,10 @@ def test_debt_delete_other_journal_get_form(client_logged, second_user):
     assert 'SRSLY' in form
 
 
-def test_debt_delete_other_journal_post_form(client_logged, second_user):
-    obj = factories.DebtFactory(name='yyy', journal=second_user.journal)
+def test_borrow_delete_other_journal_post_form(client_logged, second_user):
+    obj = factories.BorrowFactory(name='yyy', journal=second_user.journal)
 
-    url = reverse('debts:debts_delete', kwargs={'pk': obj.pk})
+    url = reverse('debts:debts_delete', kwargs={'pk': obj.pk, 'type': 'borrow'})
     client_logged.post(url, **X_Req)
 
     assert models.Debt.objects.all().count() == 1

@@ -3,17 +3,35 @@ from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 
+from ..core.lib import utils
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                  DispatchAjaxMixin, DispatchListsMixin,
                                  IndexMixin, ListMixin, UpdateAjaxMixin)
 from . import forms, models
 
 
+def _borrow_context_to_reload(request):
+    try:
+        request.resolver_match.kwargs['type'] = 'borrow'
+    except AttributeError:
+        pass
 
-def _debt_context_to_reload(request):
     context = {
-        'debt': DebtLists.as_view()(request, as_string=True),
-        'debt_return': DebtReturnLists.as_view()(request, as_string=True),
+        'borrow': DebtLists.as_view()(request, as_string=True),
+        'borrow_return': DebtReturnLists.as_view()(request, as_string=True),
+    }
+    return context
+
+
+def _lend_context_to_reload(request):
+    try:
+        request.resolver_match.kwargs['type'] = 'lend'
+    except AttributeError:
+        pass
+
+    context = {
+        'lend': DebtLists.as_view()(request, as_string=True),
+        'lend_return': DebtReturnLists.as_view()(request, as_string=True),
     }
     return context
 
@@ -22,7 +40,8 @@ class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            **_debt_context_to_reload(self.request),
+            **_lend_context_to_reload(self.request),
+            **_borrow_context_to_reload(self.request),
         })
         return context
 
@@ -32,8 +51,16 @@ class DebtReload(LoginRequiredMixin, DispatchAjaxMixin, TemplateView):
     redirect_view = reverse_lazy('debts:debts_index')
 
     def get(self, request, *args, **kwargs):
-        context = _debt_context_to_reload(self.request)
-        return JsonResponse(context)
+        _context = {}
+        _type = self.kwargs.get('type')
+
+        if _type == 'lend':
+            _context.update({**_lend_context_to_reload(self.request)})
+
+        if _type == 'borrow':
+            _context.update({**_borrow_context_to_reload(self.request)})
+
+        return JsonResponse(_context)
 
 
 class DebtLists(DispatchListsMixin, ListMixin):
