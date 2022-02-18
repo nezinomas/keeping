@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-18 11:02+0200\n"
-"PO-Revision-Date: 2022-02-18 11:02+0200\n"
+"POT-Creation-Date: 2022-02-18 11:07+0200\n"
+"PO-Revision-Date: 2022-02-18 11:07+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -194,6 +194,7 @@ msgstr "Pasiskolinta"
 
 #: .\project\bookkeeping\lib\views_helpers.py:528
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:22
+#: .\project\debts\templates\debts\index.html:48
 msgid "Borrow return"
 msgstr "Grąžinau"
 
@@ -985,10 +986,6 @@ msgctxt "lend button"
 msgid "Lend"
 msgstr "Skolą"
 
-#: .\project\debts\templates\debts\index.html:48
-msgid "Returned borrow"
-msgstr "Gražino"
-
 #: .\project\debts\templates\debts\index.html:51
 #: .\project\debts\templates\debts\index.html:67
 msgctxt "sum button"
@@ -1706,6 +1703,9 @@ msgstr "Įspėjimas"
 #: .\project\users\views.py:293
 msgid "You cannot delete yourself."
 msgstr "Negalite ištrinti savęs."
+
+#~ msgid "Returned borrow"
+#~ msgstr "Gražino"
 
 #~ msgid "Lend returned"
 #~ msgstr "Gražino"
