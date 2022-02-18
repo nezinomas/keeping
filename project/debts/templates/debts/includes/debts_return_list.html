@@ -1,13 +1,19 @@
 {% load humanize %}
 {% load i18n %}
 {% load slippers %}
+
 {% if items %}
+
+{% var target=request.resolver_match.kwargs.type %}
 
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
             <th class="w5">{% translate 'Date' %}</th>
-            <th class="w8">{% translate 'Borrower' %}</th>
+            <th class="w8">
+                {% if target == 'lend' %}{% translate 'Borrower' %}{% endif %}
+                {% if target == 'borrow' %}{% translate 'Lender' %}{% endif %}
+            </th>
             <th class="w10">{% translate 'Sum' %}</th>
             <th class="w10">{% translate 'Account' %}</th>
             <th>{% translate 'Remark' %}</th>
@@ -17,18 +23,18 @@
     </thead>
     <tbody>
         {% for item in items %}
-        {% url 'debts:borrows_return_update' item.id as url_update %}
-        {% url 'debts:borrows_return_delete' item.id as url_delete %}
-        <tr data-url="" class="dblclick" {% ifchanged item.borrow.name or ifchanged item.borrow.closed %}{% if not forloop.first %}style="border-top: 5px #c0c0c0 solid;"{% endif %}{% endifchanged %}>
+        {% url 'debts:debts_return_update' target item.id as url_update %}
+        {% url 'debts:debts_return_delete' target item.id as url_delete %}
+        <tr data-url="" class="dblclick" {% ifchanged item.debt.name or ifchanged item.debt.closed %}{% if not forloop.first %}style="border-top: 5px #c0c0c0 solid;"{% endif %}{% endifchanged %}>
             <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-start">{{ item.borrow.name }}</td>
+            <td class="text-start">{{ item.debt.name }}</td>
             <td class="text-start">{{ item.price|intcomma }}</td>
             <td class="text-start">{{ item.account }}</td>
             <td class="text-start">{{ item.remark }}</td>
-            <td class="text-center">{% if item.borrow.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
-            {% if not item.borrow.closed %}
-            {% edit_cell url=url_update target="borrow" %}
-            {% delete_cell url=url_delete target="borrow" %}
+            <td class="text-center">{% if item.debt.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
+            {% if not item.debt.closed %}
+            {% edit_cell url=url_update target=target %}
+            {% delete_cell url=url_delete target=target %}
             {% else %}
             <td colspan="2"></td>
             {% endif %}

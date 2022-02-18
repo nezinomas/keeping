@@ -106,15 +106,20 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
         new_view = f"{app}:{model}_new"
         update_view = f"{app}:{model}_update"
 
-        # tweak for url resolver for count types
-        count_type = {}
+        # tweak for url resolver for
+        # count_types in Counts
+        # type in Debts, DebtsReturn
+        _dict = {}
         if self.kwargs.get('count_type'):
-            count_type['count_type'] = self.kwargs.get('count_type')
+            _dict['count_type'] = self.kwargs.get('count_type')
+
+        if self.kwargs.get('type'):
+            _dict['type'] = self.kwargs.get('type')
 
         if self.object:
-            url = reverse(update_view, kwargs={"pk": self.object.pk, **count_type})
+            url = reverse(update_view, kwargs={"pk": self.object.pk, **_dict})
         else:
-            url = reverse(new_view, kwargs={**count_type})
+            url = reverse(new_view, kwargs={**_dict})
 
         return url
 

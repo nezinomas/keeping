@@ -5,14 +5,17 @@ from django.db.models.functions import ExtractYear, TruncMonth
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 
+class DebtQuerySet(models.QuerySet):
+    def related(self, debt_type=None):
+        _journal = utils.get_user().journal
 
-class BorrowQuerySet(models.QuerySet):
-    def related(self):
-        journal = utils.get_user().journal
+        if not debt_type:
+            debt_type = utils.get_request_kwargs('type')
+
         return (
             self
             .select_related('account', 'journal')
-            .filter(journal=journal)
+            .filter(journal=_journal, type=debt_type)
         )
 
     def items(self):
@@ -52,130 +55,67 @@ class BorrowQuerySet(models.QuerySet):
             self
             .related()
             .filter(closed=False)
-            .aggregate(borrow=Sum('price'), borrow_return=Sum('returned'))
+            .aggregate(debt=Sum('price'), debt_return=Sum('returned'))
+        )
+
+    def incomes(self):
+        return (
+            self
+            .related(debt_type='borrow')
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'account__title')
+            .annotate(incomes=Sum('price'))
+            .values('year', 'incomes', id=F('account__pk'))
+            .order_by('year', 'account')
         )
 
     def expenses(self):
         return (
             self
-            .related()
+            .related(debt_type='lend')
             .annotate(year=ExtractYear(F('date')))
             .values('year', 'account__title')
             .annotate(expenses=Sum('price'))
             .values('year', 'expenses', id=F('account__pk'))
+            .order_by('year', 'account')
+        )
+
+
+class DebtReturnQuerySet(SumMixin, models.QuerySet):
+    def related(self, debt_type=None):
+        _journal = utils.get_user().journal
+
+        if not debt_type:
+            debt_type = utils.get_request_kwargs('type')
+
+        qs = (
+            self
+            .select_related('account', 'debt')
+            .filter(debt__journal=_journal, debt__type=debt_type)
+        )
+        return qs
+
+    def items(self):
+        return self.related().all()
+
+    def year(self, year):
+        return self.related().filter(date__year=year)
+
+    def incomes(self):
+        return (
+            self
+            .related(debt_type='lend')
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'account__title')
+            .annotate(incomes=Sum('price'))
+            .values('year', 'incomes', id=F('account__pk'))
             .order_by('year', 'id')
         )
-
-
-class BorrowReturnQuerySet(SumMixin, models.QuerySet):
-    def related(self):
-        journal = utils.get_user().journal
-        qs = (
-            self
-            .select_related('account', 'borrow')
-            .filter(borrow__journal=journal)
-        )
-        return qs
-
-    def items(self):
-        return self.related().all()
-
-    def year(self, year):
-        return self.related().filter(date__year=year)
-
-    def incomes(self):
-        return (
-            self
-            .related()
-            .annotate(year=ExtractYear(F('date')))
-            .values('year', 'account__title')
-            .annotate(incomes=Sum('price'))
-            .values('year', 'incomes', id=F('account__pk'))
-            .order_by('year', 'account')
-        )
-
-
-class LentQuerySet(models.QuerySet):
-    def related(self):
-        journal = utils.get_user().journal
-        return (
-            self
-            .select_related('account', 'journal')
-            .filter(journal=journal)
-        )
-
-    def items(self):
-        return (
-            self
-            .related()
-            .filter(closed=False)
-        )
-
-    def year(self, year):
-        return (
-            self
-            .related()
-            .filter(
-                Q(date__year=year) | (Q(date__year__lt=year) & Q(closed=False))
-            )
-        )
-
-    def sum_by_month(self, year):
-        return (
-            self
-            .related()
-            .filter(closed=False)
-            .filter()
-            .filter(date__year=year)
-            .annotate(cnt=Count('id'))
-            .values('id')
-            .annotate(date=TruncMonth('date'))
-            .values('date')
-            .annotate(sum_debt=Sum('price'))
-            .annotate(sum_return=Sum('returned'))
-            .order_by('date')
-        )
-
-    def sum_all(self):
-        return (
-            self
-            .related()
-            .filter(closed=False)
-            .aggregate(lent=Sum('price'), lent_return=Sum('returned'))
-        )
-
-    def incomes(self):
-        return (
-            self
-            .related()
-            .annotate(year=ExtractYear(F('date')))
-            .values('year', 'account__title')
-            .annotate(incomes=Sum('price'))
-            .values('year', 'incomes', id=F('account__pk'))
-            .order_by('year', 'account')
-        )
-
-
-class LentReturnQuerySet(SumMixin, models.QuerySet):
-    def related(self):
-        journal = utils.get_user().journal
-        qs = (
-            self
-            .select_related('account', 'lent')
-            .filter(lent__journal=journal)
-        )
-        return qs
-
-    def items(self):
-        return self.related().all()
-
-    def year(self, year):
-        return self.related().filter(date__year=year)
 
     def expenses(self):
         return (
             self
-            .related()
+            .related(debt_type='borrow')
             .annotate(year=ExtractYear(F('date')))
             .values('year', 'account__title')
             .annotate(expenses=Sum('price'))

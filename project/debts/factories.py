@@ -10,9 +10,10 @@ from . import models
 
 class BorrowFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.Borrow
+        model = models.Debt
 
     date = dt(1999, 1, 1)
+    type = 'borrow'
     name = factory.Faker('first_name')
     price = Decimal('100')
     returned = Decimal('25')
@@ -24,35 +25,36 @@ class BorrowFactory(factory.django.DjangoModelFactory):
 
 class BorrowReturnFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.BorrowReturn
+        model = models.DebtReturn
 
     date = dt(1999, 1, 2)
     price = Decimal('5')
     remark = 'Borrow Return Remark'
     account = factory.SubFactory(AccountFactory)
-    borrow = factory.SubFactory(BorrowFactory)
+    debt = factory.SubFactory(BorrowFactory)
 
 
-class LentFactory(factory.django.DjangoModelFactory):
+class LendFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.Lent
+        model = models.Debt
 
     date = dt(1999, 1, 1)
+    type = 'lend'
     name = factory.Faker('first_name')
     price = Decimal('100')
     returned = Decimal('25')
     closed = False
-    remark = 'Lent Remark'
+    remark = 'Lend Remark'
     account = factory.SubFactory(AccountFactory)
     journal = factory.SubFactory(JournalFactory)
 
 
-class LentReturnFactory(factory.django.DjangoModelFactory):
+class LendReturnFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.LentReturn
+        model = models.DebtReturn
 
     date = dt(1999, 1, 2)
     price = Decimal('5')
-    remark = 'Lent Return Remark'
+    remark = 'Lend Return Remark'
     account = factory.SubFactory(AccountFactory)
-    lent = factory.SubFactory(LentFactory)
+    debt = factory.SubFactory(LendFactory)

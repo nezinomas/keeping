@@ -13,93 +13,48 @@ urlpatterns = [
         name='debts_index'
     ),
     path(
-        'borrows/reload/',
-        views.BorrowReload.as_view(),
-        name='borrows_reload'
+        'debts/<str:type>/reload/',
+        views.DebtReload.as_view(),
+        name='debts_reload'
     ),
     path(
-        'borrows/lists/',
-        views.BorrowLists.as_view(),
-        name='borrows_list'
+        'debts/<str:type>/lists/',
+        views.DebtLists.as_view(),
+        name='debts_list'
     ),
     path(
-        'borrows/new/',
-        views.BorrowNew.as_view(),
-        name='borrows_new'
+        'debts/<str:type>/new/',
+        views.DebtNew.as_view(),
+        name='debts_new'
     ),
     path(
-        'borrows/update/<int:pk>/',
-        views.BorrowUpdate.as_view(),
-        name='borrows_update'
+        'debts/<str:type>/update/<int:pk>/',
+        views.DebtUpdate.as_view(),
+        name='debts_update'
     ),
     path(
-        'borrows/delete/<int:pk>/',
-        views.BorrowDelete.as_view(),
-        name='borrows_delete'
+        'debts/<str:type>/delete/<int:pk>/',
+        views.DebtDelete.as_view(),
+        name='debts_delete'
     ),
     path(
-        'borrows/return/lists/',
-        views.BorrowReturnLists.as_view(),
-        name='borrows_return_list'
+        'debts/<str:type>/return/lists/',
+        views.DebtReturnLists.as_view(),
+        name='debts_return_list'
     ),
     path(
-        'borrows/return/new/',
-        views.BorrowReturnNew.as_view(),
-        name='borrows_return_new'
+        'debts/<str:type>/return/new/',
+        views.DebtReturnNew.as_view(),
+        name='debts_return_new'
     ),
     path(
-        'borrows/return/update/<int:pk>/',
-        views.BorrowReturnUpdate.as_view(),
-        name='borrows_return_update'
+        'debts/<str:type>/return/update/<int:pk>/',
+        views.DebtReturnUpdate.as_view(),
+        name='debts_return_update'
     ),
     path(
-        'borrows/return/delete/<int:pk>/',
-        views.BorrowReturnDelete.as_view(),
-        name='borrows_return_delete'
-    ),
-    path(
-        'lents/reload/',
-        views.LentReload.as_view(),
-        name='lents_reload'
-    ),
-    path(
-        'lents/lists/',
-        views.LentLists.as_view(),
-        name='lents_list'
-    ),
-    path(
-        'lents/new/',
-        views.LentNew.as_view(),
-        name='lents_new'
-    ),
-    path(
-        'lents/update/<int:pk>/',
-        views.LentUpdate.as_view(),
-        name='lents_update'
-    ),
-    path(
-        'lents/delete/<int:pk>/',
-        views.LentDelete.as_view(),
-        name='lents_delete'
-    ),
-    path(
-        'lents/return/lists/',
-        views.LentReturnLists.as_view(),
-        name='lents_return_list'
-    ),
-    path(
-        'lents/return/new/',
-        views.LentReturnNew.as_view(),
-        name='lents_return_new'
-    ),
-    path(
-        'lents/return/update/<int:pk>/',
-        views.LentReturnUpdate.as_view(),
-        name='lents_return_update'
-    ),
-    path(
-        'lents/return/delete/<int:pk>/',
-        views.LentReturnDelete.as_view(),
-        name='lents_return_delete'
+        'debts/<str:type>/return/delete/<int:pk>/',
+        views.DebtReturnDelete.as_view(),
+        name='debts_return_delete'
     ),
 ]

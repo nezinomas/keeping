@@ -16,8 +16,8 @@ class YearBalance(BalanceBase):
                  savings_close: List[Dict] = None,
                  borrow: List[Dict] = None,
                  borrow_return: List[Dict] = None,
-                 lent: List[Dict] = None,
-                 lent_return: List[Dict] = None,
+                 lend: List[Dict] = None,
+                 lend_return: List[Dict] = None,
                  amount_start: float = 0.0):
 
         '''
@@ -28,8 +28,8 @@ class YearBalance(BalanceBase):
         savings_close: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
         borrow: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
         borrow_return: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        lent: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        lent_return: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
+        lend: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
+        lend_return: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
         amount_start: year start worth amount
         '''
 
@@ -54,8 +54,8 @@ class YearBalance(BalanceBase):
             savings_close=savings_close,
             borrow=borrow,
             borrow_return=borrow_return,
-            lent=lent,
-            lent_return=lent_return,
+            lend=lend,
+            lend_return=lend_return,
         )
 
         self._balance = self._calc(self._balance)
@@ -138,18 +138,18 @@ class YearBalance(BalanceBase):
         return rtn
 
     @property
-    def lent_data(self) -> List[float]:
+    def lend_data(self) -> List[float]:
         rtn = []
-        if 'lent' in self._balance:
-            rtn = self._balance.lent.tolist()
+        if 'lend' in self._balance:
+            rtn = self._balance.lend.tolist()
 
         return rtn
 
     @property
-    def lent_return_data(self) -> List[float]:
+    def lend_return_data(self) -> List[float]:
         rtn = []
-        if 'lent_return' in self._balance:
-            rtn = self._balance.lent_return.tolist()
+        if 'lend_return' in self._balance:
+            rtn = self._balance.lend_return.tolist()
 
         return rtn
 
@@ -169,8 +169,8 @@ class YearBalance(BalanceBase):
                  savings_close: List[Dict],
                  borrow: List[Dict],
                  borrow_return: List[Dict],
-                 lent: List[Dict],
-                 lent_return: List[Dict]) -> DF:
+                 lend: List[Dict],
+                 lend_return: List[Dict]) -> DF:
 
         df = df_months_of_year(year)
 
@@ -182,8 +182,8 @@ class YearBalance(BalanceBase):
             'savings_close': savings_close,
             'borrow': borrow,
             'borrow_return': borrow_return,
-            'lent': lent,
-            'lent_return': lent_return,
+            'lend': lend,
+            'lend_return': lend_return,
         }
 
         for name, arr in dict.items():
@@ -215,8 +215,8 @@ class YearBalance(BalanceBase):
                 - df.loc[idx, 'savings']
                 - df.loc[idx, 'borrow']
                 + df.loc[idx, 'borrow_return']
-                + df.loc[idx, 'lent']
-                - df.loc[idx, 'lent_return']
+                + df.loc[idx, 'lend']
+                - df.loc[idx, 'lend_return']
             )
 
             cell = (idx, 'money_flow')
