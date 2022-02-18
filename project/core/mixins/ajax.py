@@ -114,7 +114,7 @@ class AjaxCreateUpdateMixin(GetQuerysetMixin):
             _dict['count_type'] = self.kwargs.get('count_type')
 
         if self.kwargs.get('type'):
-            _dict['type'] = self.kwargs.get('count_type')
+            _dict['type'] = self.kwargs.get('type')
 
         if self.object:
             url = reverse(update_view, kwargs={"pk": self.object.pk, **_dict})

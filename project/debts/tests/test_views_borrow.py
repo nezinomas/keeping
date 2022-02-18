@@ -234,6 +234,30 @@ def test_borrow_update(mck, client_logged):
     assert not actual.closed
 
 
+@patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
+def test_borrow_update_action_url(mck, client_logged):
+    e = factories.LendFactory()
+
+    data = {
+        'name': 'XXX',
+        'price': '150',
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'closed': False
+    }
+    url = reverse('debts:debts_update', kwargs={'pk': e.pk, 'type': 'borrow'})
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert f'action="{url}"' in actual['html_form']
+    assert 'data-action="update"' in actual['html_form']
+    assert 'data-update-container="borrow"' in actual['html_form']
+
+
 def test_borrow_update_not_closed(client_logged):
     e = factories.BorrowFactory(name='XXX')
 
