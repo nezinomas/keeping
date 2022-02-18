@@ -111,7 +111,7 @@ class DebtReturn(OldValuesMixin, models.Model):
         if obj.price == obj.returned:
             obj.closed = True
 
-        obj.save()
+        obj.update()
 
         super().save(*args, **kwargs)
 
@@ -123,4 +123,4 @@ class DebtReturn(OldValuesMixin, models.Model):
 
         obj = Debt.objects.get(id=self.debt_id)
         obj.returned -= Decimal(self.price)
-        obj.save()
+        obj.update()
