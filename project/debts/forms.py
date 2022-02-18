@@ -66,15 +66,18 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
         self.fields['closed'].widget.attrs['class'] = " form-check-input"
 
     def save(self, *args, **kwargs):
-        instance = super().save(commit=False)
+        if not self.instance.pk:
+            instance = super().save(commit=False)
 
-        type = utils.get_request_kwargs("type")
-        type = type if type else 'lend'
-        instance.type = type
+            type = utils.get_request_kwargs("type")
+            type = type if type else 'lend'
+            instance.type = type
 
-        instance.save()
+            instance.save()
 
-        return instance
+            return instance
+
+        super().save()
 
     def clean(self):
         cleaned_data = super().clean()

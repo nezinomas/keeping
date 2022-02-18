@@ -72,9 +72,35 @@ def test_debt_return_select_first_account(second_user):
     assert expect in form
 
 
-def test_debt_return_valid_data():
+@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
+def test_lend_return_valid_data(mck):
     a = AccountFactory()
     b = factories.LendFactory()
+
+    form = forms.DebtReturnForm(
+        data={
+            'date': '1999-12-02',
+            'debt': b.pk,
+            'price': '1.1',
+            'account': a.pk,
+            'remark': 'Rm'
+        },
+    )
+
+    assert form.is_valid()
+
+    e = form.save()
+    assert e.date == date(1999, 12, 2)
+    assert e.account == a
+    assert e.debt == b
+    assert e.price == Decimal('1.1')
+    assert e.remark == 'Rm'
+
+
+@patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
+def test_borrow_return_valid_data(mck):
+    a = AccountFactory()
+    b = factories.BorrowFactory()
 
     form = forms.DebtReturnForm(
         data={
@@ -132,7 +158,8 @@ def test_debt_return_blank_data():
     assert 'price' in form.errors
 
 
-def test_debt_return_only_not_closed():
+@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
+def test_lend_return_only_not_closed(mck):
     b1 = factories.LendFactory(closed=True)
     b2 = factories.LendFactory(closed=False)
 
@@ -142,9 +169,39 @@ def test_debt_return_only_not_closed():
     assert b2.name in form
 
 
-def test_debt_return_price_higher():
+@patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
+def test_borrow_return_only_not_closed(mck):
+    b1 = factories.BorrowFactory(closed=True)
+    b2 = factories.BorrowFactory(closed=False)
+
+    form = forms.DebtReturnForm().as_p()
+
+    assert b1.name not in form
+    assert b2.name in form
+
+
+@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
+def test_lend_return_price_higher(mck):
     a = AccountFactory()
     b = factories.LendFactory()
+
+    form = forms.DebtReturnForm(
+        data={
+            'date': '1999-1-1',
+            'debt': b.pk,
+            'price': '76',
+            'account': a.pk,
+        },
+    )
+
+    assert not form.is_valid()
+    assert 'price' in form.errors
+
+
+@patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
+def test_borrow_return_price_higher(mck):
+    a = AccountFactory()
+    b = factories.BorrowFactory()
 
     form = forms.DebtReturnForm(
         data={
