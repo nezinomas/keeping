@@ -123,8 +123,8 @@ def test_lend_post_save_new():
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == -100.0
-    assert actual['expenses'] == 0.0
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 100.0
     assert actual['balance'] == -100.0
 
 
@@ -146,19 +146,22 @@ def test_borrow_post_save_new():
 def test_lend_post_save_update():
     obj = LendFactory()
 
+    print(f'\nTest after factory {Debt.objects.values()}\n')
+    print(f'\nTest after factory {AccountBalance.objects.values()}\n')
     # update object
     obj_update = Debt.objects.get(pk=obj.pk)
-    obj_update.price = 1
+    obj_update.price = 2
     obj_update.save()
-
+    print(f'\nTest after update{Debt.objects.values()}\n')
+    print(f'\nTest after update{AccountBalance.objects.values()}\n')
     actual = AccountBalance.objects.year(1999)
 
     actual = actual[0]
 
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == -1.0
-    assert actual['expenses'] == 0.0
-    assert actual['balance'] == -1.0
+    assert actual['incomes'] == 0.0
+    assert actual['expenses'] == 2.0
+    assert actual['balance'] == -2.0
 
 
 def test_borrow_post_save_update():

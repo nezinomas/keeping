@@ -124,6 +124,7 @@ class Balance(BalanceBase):
         return t.get('market_value', 0.0)
 
     def create_balance(self, data):
+        print(f'>>>> data:\n{data}')
         """
         Args:
             data (List[Dict]], optional): Defaults to None.
@@ -148,6 +149,7 @@ class Balance(BalanceBase):
         _arr = []
 
         for qs in data:
+            print(f'qs->{qs}')
             _df = pd.DataFrame(qs)
 
             try:
@@ -160,6 +162,7 @@ class Balance(BalanceBase):
             _df[_columns] = _df[_columns].apply(pd.to_numeric)
 
             _arr.append(_df)
+            print(f'{_arr=}')
 
         if not _arr:
             return

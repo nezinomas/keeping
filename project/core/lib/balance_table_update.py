@@ -41,6 +41,7 @@ class UpdatetBalanceTable():
             for _hook in _hooks:
                 try:
                     _method = getattr(model.objects, _hook['method'])
+                    # print(f'balance_table_update: {_model} : {_hook}\n_method={ _hook["method"]}\n')
                     _qs = _method()
                     if _qs:
                         _data.append(_qs)

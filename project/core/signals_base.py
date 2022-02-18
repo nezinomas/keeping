@@ -23,18 +23,14 @@ class SignalBase():
             'expenses.Expense': [
                 {'method': 'expenses', 'category': 'account', 'balance_field': 'expenses'},
             ],
-            # 'debts.Lent': {
-            #     'incomes': 'account',
-            # },
-            # 'debts.LentReturn': {
-            #     'expenses': 'account',
-            # },
-            # 'debts.Borrow': {
-            #     'expenses': 'account',
-            # },
-            # 'debts.BorrowReturn': {
-            #     'incomes': 'account',
-            # },
+            'debts.Debt': [
+                {'method': 'sm', 'category': 'account', 'balance_field': 'incomes'},
+                {'method': 'expenses', 'category': 'account', 'balance_field': 'expenses'},
+            ],
+            'debts.DebtReturn': [
+                {'method': 'incomes', 'category': 'account', 'balance_field': 'incomes'},
+                {'method': 'expenses', 'category': 'account', 'balance_field': 'expenses'},
+            ],
             'transactions.Transaction': [
                 {'method': 'incomes', 'category': 'to_account', 'balance_field': 'incomes'},
                 {'method': 'expenses', 'category': 'from_account', 'balance_field': 'expenses'},
@@ -122,7 +118,7 @@ class SignalBase():
         for _hook in _hooks:
             _account = getattr(self._conf.instance, _hook['category'])
             _old_account_id = self._conf.instance.old_values.get(_hook['category'])
-
+            print(f'\n{_hook=} {self._conf.instance.old_values=}\n')
             # new
             if self._conf.created:
                 try:
@@ -141,6 +137,7 @@ class SignalBase():
 
             # update
             if _old_account_id == _account.pk:
+                print('UPDATE?')
                 # account not changed
                 try:
                     self._tbl_balance_field_update('update', _hook['balance_field'], _account.pk)
@@ -148,6 +145,7 @@ class SignalBase():
                     return
             else:
                 # account changed
+                print('Account changed?')
                 try:
                     self._tbl_balance_field_update('new', _hook['balance_field'], _account.pk)
                     self._tbl_balance_field_update('delete', _hook['balance_field'], _old_account_id)
@@ -180,7 +178,7 @@ class SignalBase():
 
         _qs_values = {k: v for k, v in _qs.__dict__.items() if not '_state' in k}
         _df = pd.DataFrame([_qs_values])
-
+        print(f'\nloaded data\n{_df}\n')
         # update balance table fields
         fields = balance_tbl_field_name.split('.')
         for field in fields:
@@ -202,6 +200,6 @@ class SignalBase():
             _df = Balance.recalc_savings(_df)
 
         _qs_updated_values = _df.to_dict('records')[0]
-
+        print(f'\nbefore update object\n{_qs_updated_values}\n')
         _qs.__dict__.update(_qs_updated_values)
         _qs.save()
