@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-18 11:07+0200\n"
-"PO-Revision-Date: 2022-02-18 11:07+0200\n"
+"POT-Creation-Date: 2022-02-18 11:35+0200\n"
+"PO-Revision-Date: 2022-02-18 11:35+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -1626,6 +1626,7 @@ msgid ""
 msgstr "Sėkmingai pakeitėte slaptažodį! Dabar galite prisijungti."
 
 #: .\project\users\templates\users\password_reset_complete.html:9
+#: .\project\users\templates\users\password_reset_done.html:9
 msgid "Return to Log in"
 msgstr "Grįžti į prisijungimo puslapį"
 
@@ -1654,10 +1655,6 @@ msgstr ""
 #: .\project\users\templates\users\password_reset_confirm.html:21
 msgid "Request a new password reset link"
 msgstr "Prašyti naujos slaptažodžio atstatymo nuorodos"
-
-#: .\project\users\templates\users\password_reset_done.html:9
-msgid "Return to Log In"
-msgstr "Grįžti į Prisijungimo puslapį"
 
 #: .\project\users\templates\users\settings_index.html:28
 msgid "Journal settings"
@@ -1703,6 +1700,9 @@ msgstr "Įspėjimas"
 #: .\project\users\views.py:293
 msgid "You cannot delete yourself."
 msgstr "Negalite ištrinti savęs."
+
+#~ msgid "Return to Log In"
+#~ msgstr "Grįžti į Prisijungimo puslapį"
 
 #~ msgid "Returned borrow"
 #~ msgstr "Gražino"
