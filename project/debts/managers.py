@@ -6,14 +6,16 @@ from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 
 class DebtQuerySet(models.QuerySet):
-    def related(self):
+    def related(self, debt_type=None):
         _journal = utils.get_user().journal
-        _type = utils.get_request_kwargs('type')
+
+        if not debt_type:
+            debt_type = utils.get_request_kwargs('type')
 
         return (
             self
             .select_related('account', 'journal')
-            .filter(journal=_journal, type=_type)
+            .filter(journal=_journal, type=debt_type)
         )
 
     def items(self):
@@ -59,11 +61,22 @@ class DebtQuerySet(models.QuerySet):
     def incomes(self):
         return (
             self
-            .related()
+            .related(debt_type='borrow')
             .annotate(year=ExtractYear(F('date')))
             .values('year', 'account__title')
             .annotate(incomes=Sum('price'))
             .values('year', 'incomes', id=F('account__pk'))
+            .order_by('year', 'account')
+        )
+
+    def expenses(self):
+        return (
+            self
+            .related(debt_type='lend')
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'account__title')
+            .annotate(expenses=Sum('price'))
+            .values('year', 'expenses', id=F('account__pk'))
             .order_by('year', 'account')
         )
 

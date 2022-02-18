@@ -460,20 +460,21 @@ def test_debt_sum_all_not_closed(mck):
     assert expect == actual
 
 
-@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
-def test_lend_incomes(mck):
+def test_debt_incomes():
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
 
-    LendFactory(date=dt(1970, 1, 1), account=a1, price=1)
-    LendFactory(date=dt(1970, 1, 1), account=a1, price=2)
-    LendFactory(date=dt(1970, 1, 1), account=a2, price=3)
-    LendFactory(date=dt(1970, 1, 1), account=a2, price=4)
+    BorrowFactory(date=dt(1970, 1, 1), account=a1, price=1)
+    BorrowFactory(date=dt(1970, 1, 1), account=a1, price=2)
+    BorrowFactory(date=dt(1970, 1, 1), account=a2, price=3)
+    BorrowFactory(date=dt(1970, 1, 1), account=a2, price=4)
 
-    LendFactory(date=dt(1999, 1, 1), account=a1, price=10)
-    LendFactory(date=dt(1999, 1, 1), account=a1, price=20)
-    LendFactory(date=dt(1999, 1, 1), account=a2, price=30)
-    LendFactory(date=dt(1999, 1, 1), account=a2, price=40)
+    BorrowFactory(date=dt(1999, 1, 1), account=a1, price=10)
+    BorrowFactory(date=dt(1999, 1, 1), account=a1, price=20)
+    BorrowFactory(date=dt(1999, 1, 1), account=a2, price=30)
+    BorrowFactory(date=dt(1999, 1, 1), account=a2, price=40)
+
+    LendFactory()
 
     actual = Debt.objects.incomes()
 
@@ -492,3 +493,38 @@ def test_lend_incomes(mck):
     assert actual[3]['year'] == 1999
     assert actual[3]['id'] == 2
     assert actual[3]['incomes'] == 70
+
+
+def test_debt_expenses():
+    a1 = AccountFactory(title='A1')
+    a2 = AccountFactory(title='A2')
+
+    LendFactory(date=dt(1970, 1, 1), account=a1, price=1)
+    LendFactory(date=dt(1970, 1, 1), account=a1, price=2)
+    LendFactory(date=dt(1970, 1, 1), account=a2, price=3)
+    LendFactory(date=dt(1970, 1, 1), account=a2, price=4)
+
+    LendFactory(date=dt(1999, 1, 1), account=a1, price=10)
+    LendFactory(date=dt(1999, 1, 1), account=a1, price=20)
+    LendFactory(date=dt(1999, 1, 1), account=a2, price=30)
+    LendFactory(date=dt(1999, 1, 1), account=a2, price=40)
+
+    BorrowFactory()
+
+    actual = Debt.objects.expenses()
+
+    assert actual[0]['year'] == 1970
+    assert actual[0]['id'] == 1
+    assert actual[0]['expenses'] == 3
+
+    assert actual[1]['year'] == 1970
+    assert actual[1]['id'] == 2
+    assert actual[1]['expenses'] == 7
+
+    assert actual[2]['year'] == 1999
+    assert actual[2]['id'] == 1
+    assert actual[2]['expenses'] == 30
+
+    assert actual[3]['year'] == 1999
+    assert actual[3]['id'] == 2
+    assert actual[3]['expenses'] == 70
