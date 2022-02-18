@@ -431,8 +431,7 @@ def test_lend_return_autoclose():
     assert actual.closed
 
 
-@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
-def test_lend_return_expenses(mck):
+def test_debt_return_incomes():
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
 
@@ -445,6 +444,43 @@ def test_lend_return_expenses(mck):
     LendReturnFactory(date=dt(1999, 1, 1), account=a1, price=20)
     LendReturnFactory(date=dt(1999, 1, 1), account=a2, price=30)
     LendReturnFactory(date=dt(1999, 1, 1), account=a2, price=40)
+
+    BorrowReturnFactory(date=dt(1999, 1, 1), account=a2, price=180)
+
+    actual = DebtReturn.objects.incomes()
+
+    assert actual[0]['year'] == 1970
+    assert actual[0]['id'] == 1
+    assert actual[0]['incomes'] == 3
+
+    assert actual[1]['year'] == 1970
+    assert actual[1]['id'] == 2
+    assert actual[1]['incomes'] == 7
+
+    assert actual[2]['year'] == 1999
+    assert actual[2]['id'] == 1
+    assert actual[2]['incomes'] == 30
+
+    assert actual[3]['year'] == 1999
+    assert actual[3]['id'] == 2
+    assert actual[3]['incomes'] == 70
+
+
+def test_debt_return_expenses():
+    a1 = AccountFactory(title='A1')
+    a2 = AccountFactory(title='A2')
+
+    BorrowReturnFactory(date=dt(1970, 1, 1), account=a1, price=1)
+    BorrowReturnFactory(date=dt(1970, 1, 1), account=a1, price=2)
+    BorrowReturnFactory(date=dt(1970, 1, 1), account=a2, price=3)
+    BorrowReturnFactory(date=dt(1970, 1, 1), account=a2, price=4)
+
+    BorrowReturnFactory(date=dt(1999, 1, 1), account=a1, price=10)
+    BorrowReturnFactory(date=dt(1999, 1, 1), account=a1, price=20)
+    BorrowReturnFactory(date=dt(1999, 1, 1), account=a2, price=30)
+    BorrowReturnFactory(date=dt(1999, 1, 1), account=a2, price=40)
+
+    LendReturnFactory(date=dt(1999, 1, 1), account=a2, price=180)
 
     actual = DebtReturn.objects.expenses()
 

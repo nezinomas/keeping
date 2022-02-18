@@ -82,14 +82,16 @@ class DebtQuerySet(models.QuerySet):
 
 
 class DebtReturnQuerySet(SumMixin, models.QuerySet):
-    def related(self):
+    def related(self, debt_type=None):
         _journal = utils.get_user().journal
-        _type = utils.get_request_kwargs('type')
+
+        if not debt_type:
+            debt_type = utils.get_request_kwargs('type')
 
         qs = (
             self
             .select_related('account', 'debt')
-            .filter(debt__journal=_journal, debt__type=_type)
+            .filter(debt__journal=_journal, debt__type=debt_type)
         )
         return qs
 
@@ -99,10 +101,21 @@ class DebtReturnQuerySet(SumMixin, models.QuerySet):
     def year(self, year):
         return self.related().filter(date__year=year)
 
+    def incomes(self):
+        return (
+            self
+            .related(debt_type='lend')
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'account__title')
+            .annotate(incomes=Sum('price'))
+            .values('year', 'incomes', id=F('account__pk'))
+            .order_by('year', 'id')
+        )
+
     def expenses(self):
         return (
             self
-            .related()
+            .related(debt_type='borrow')
             .annotate(year=ExtractYear(F('date')))
             .values('year', 'account__title')
             .annotate(expenses=Sum('price'))
