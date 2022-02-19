@@ -100,15 +100,15 @@ class SignalBase():
         }
 
         _conf = Conf(
-            balance_class_method='accounts',
-            balance_model_fk_field='account_id',
+            sender=sender,
+            instance=instance,
             created=created,
             signal=signal,
             tbl_categories=apps.get_model('accounts.Account'),
             tbl_balance=apps.get_model('accounts.AccountBalance'),
-            sender=sender,
-            instance=instance,
-            hooks=_hooks
+            hooks=_hooks,
+            balance_class_method='accounts',
+            balance_model_fk_field='account_id'
         )
         return cls(conf=_conf, update_on_load=update_on_load)
 
@@ -149,15 +149,15 @@ class SignalBase():
         }
 
         _conf = Conf(
-            balance_class_method='savings',
-            balance_model_fk_field='saving_type_id',
+            sender=sender,
+            instance=instance,
             created=created,
             signal=signal,
             tbl_categories=apps.get_model('savings.SavingType'),
             tbl_balance=apps.get_model('savings.SavingBalance'),
-            sender=sender,
-            instance=instance,
-            hooks=_hooks
+            hooks=_hooks,
+            balance_class_method='savings',
+            balance_model_fk_field='saving_type_id'
         )
         return cls(conf=_conf, update_on_load=update_on_load)
 
@@ -176,15 +176,15 @@ class SignalBase():
         }
 
         _conf = Conf(
-            balance_class_method='savings', #balance object same for pensions and savings
-            balance_model_fk_field='pension_type_id',
+            sender=sender,
+            instance=instance,
             created=created,
             signal=signal,
             tbl_categories=apps.get_model('pensions.PensionType'),
             tbl_balance=apps.get_model('pensions.PensionBalance'),
-            sender=sender,
-            instance=instance,
-            hooks=_hooks
+            hooks=_hooks,
+            balance_class_method='savings', #balance object same for pensions and savings
+            balance_model_fk_field='pension_type_id'
         )
         return cls(conf=_conf, update_on_load=update_on_load)
 

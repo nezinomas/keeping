@@ -9,15 +9,15 @@ from .lib import utils
 
 @dataclass
 class Conf():
+    sender: object
+    instance: object
     created: bool
     signal: str
-    balance_class_method: str
-    balance_model_fk_field: str
     tbl_categories: Model
     tbl_balance: Model
     hooks: Dict
-    sender: object
-    instance: object
+    balance_class_method: str
+    balance_model_fk_field: str
     old_values: Dict = field(init=False)
 
     def __post_init__(self):
