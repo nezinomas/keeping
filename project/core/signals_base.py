@@ -19,31 +19,76 @@ class SignalBase():
     def accounts(cls, sender: object, instance: object, created: bool, signal: str):
         _hooks = {
             'incomes.Income': [
-                {'method': 'incomes', 'category': 'account', 'balance_field': 'incomes'},
+                {
+                    'method': 'incomes',
+                    'category': 'account',
+                    'balance_field': 'incomes',
+                },
             ],
             'expenses.Expense': [
-                {'method': 'expenses', 'category': 'account', 'balance_field': 'expenses'},
+                {
+                    'method': 'expenses',
+                    'category': 'account',
+                    'balance_field': 'expenses',
+                },
             ],
             'debts.Debt': [
-                {'method': 'incomes', 'category': 'account', 'balance_field': 'incomes', 'skip': 'lend'},
-                {'method': 'expenses', 'category': 'account', 'balance_field': 'expenses', 'skip': 'borrow'},
+                {
+                    'method': 'incomes',
+                    'category': 'account',
+                    'balance_field': 'incomes',
+                    'skip': 'lend',
+                }, {
+                    'method': 'expenses',
+                    'category': 'account',
+                    'balance_field': 'expenses',
+                    'skip': 'borrow',
+                },
             ],
             'debts.DebtReturn': [
-                {'method': 'incomes', 'category': 'account', 'balance_field': 'incomes', 'skip': 'borrow'},
-                {'method': 'expenses', 'category': 'account', 'balance_field': 'expenses', 'skip': 'lend'},
+                {
+                    'method': 'incomes',
+                    'category': 'account',
+                    'balance_field': 'incomes',
+                    'skip': 'borrow',
+                }, {
+                    'method': 'expenses',
+                    'category': 'account',
+                    'balance_field': 'expenses',
+                    'skip': 'lend',
+                },
             ],
             'transactions.Transaction': [
-                {'method': 'incomes', 'category': 'to_account', 'balance_field': 'incomes'},
-                {'method': 'expenses', 'category': 'from_account', 'balance_field': 'expenses'},
+                {
+                    'method': 'incomes',
+                    'category': 'to_account',
+                    'balance_field': 'incomes'
+                }, {
+                    'method': 'expenses',
+                    'category': 'from_account',
+                    'balance_field': 'expenses',
+                },
             ],
             'transactions.SavingClose': [
-                {'method': 'incomes', 'category': 'to_account', 'balance_field': 'incomes'},
+                {
+                    'method': 'incomes',
+                    'category': 'to_account',
+                    'balance_field': 'incomes',
+                },
             ],
             'savings.Saving': [
-                {'method': 'expenses', 'category': 'account', 'balance_field': 'expenses'},
+                {
+                    'method': 'expenses',
+                    'category': 'account',
+                    'balance_field': 'expenses',
+                },
             ],
             'bookkeeping.AccountWorth': [
-                {'method': 'have', 'category': 'account', 'balance_field': 'have'},
+                {
+                    'method': 'have',
+                    'category': 'account',
+                    'balance_field': 'have',
+                },
             ]
         }
 
@@ -64,14 +109,29 @@ class SignalBase():
     def savings(cls, sender: object, instance: object, created: bool, signal: str):
         _hooks = {
             'savings.Saving': [
-                {'method': 'incomes', 'category': 'saving_type', 'balance_field': 'incomes.fee'},
+                {
+                    'method': 'incomes',
+                    'category': 'saving_type',
+                    'balance_field': 'incomes.fee',
+                },
             ],
             'transactions.SavingClose': [
-                {'method': 'expenses', 'category': 'from_account', 'balance_field': '-incomes.fee'},
+                {
+                    'method': 'expenses',
+                    'category': 'from_account',
+                    'balance_field': '-incomes.fee',
+                },
             ],
             'transactions.SavingChange': [
-                {'method': 'incomes', 'category': 'to_account', 'balance_field': 'incomes'},
-                {'method': 'expenses', 'category': 'from_account', 'balance_field': '-incomes.fee'},
+                {
+                    'method': 'incomes',
+                    'category': 'to_account',
+                    'balance_field': 'incomes',
+                }, {
+                    'method': 'expenses',
+                    'category': 'from_account',
+                    'balance_field': '-incomes.fee',
+                },
             ],
         }
 
