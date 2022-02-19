@@ -1,5 +1,5 @@
 import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict
 
 from django.db.models import Model
@@ -18,6 +18,7 @@ class Conf():
     hooks: Dict
     sender: object
     instance: object
+    old_values: Dict = field(init=False)
 
     def __post_init__(self):
         # copy old values to Dictionary
