@@ -124,7 +124,6 @@ class Balance(BalanceBase):
         return t.get('market_value', 0.0)
 
     def create_balance(self, data):
-        print(f'>>>> data:\n{data}')
         """
         Args:
             data (List[Dict]], optional): Defaults to None.

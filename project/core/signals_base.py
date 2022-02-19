@@ -6,6 +6,7 @@ from django.db.models import Q
 from ..core.lib.balance import Balance
 from ..core.lib.balance_table_update import UpdatetBalanceTable
 from .conf import Conf
+from .lib import utils
 
 
 class SignalBase():
@@ -24,12 +25,12 @@ class SignalBase():
                 {'method': 'expenses', 'category': 'account', 'balance_field': 'expenses'},
             ],
             'debts.Debt': [
-                {'method': 'sm', 'category': 'account', 'balance_field': 'incomes'},
-                {'method': 'expenses', 'category': 'account', 'balance_field': 'expenses'},
+                {'method': 'incomes', 'category': 'account', 'balance_field': 'incomes', 'skip': 'lend'},
+                {'method': 'expenses', 'category': 'account', 'balance_field': 'expenses', 'skip': 'borrow'},
             ],
             'debts.DebtReturn': [
-                {'method': 'incomes', 'category': 'account', 'balance_field': 'incomes'},
-                {'method': 'expenses', 'category': 'account', 'balance_field': 'expenses'},
+                {'method': 'incomes', 'category': 'account', 'balance_field': 'incomes', 'skip': 'borrow'},
+                {'method': 'expenses', 'category': 'account', 'balance_field': 'expenses', 'skip': 'lend'},
             ],
             'transactions.Transaction': [
                 {'method': 'incomes', 'category': 'to_account', 'balance_field': 'incomes'},
@@ -118,7 +119,11 @@ class SignalBase():
         for _hook in _hooks:
             _account = getattr(self._conf.instance, _hook['category'])
             _old_account_id = self._conf.instance.old_values.get(_hook['category'])
-            print(f'\n{_hook=} {self._conf.instance.old_values=}\n')
+            print(f'\n------------\n{self._conf.instance.old_values=}')
+            # skip debts methods
+            if self._skip_debt(_hook):
+                continue
+
             # new
             if self._conf.created:
                 try:
@@ -203,3 +208,12 @@ class SignalBase():
         print(f'\nbefore update object\n{_qs_updated_values}\n')
         _qs.__dict__.update(_qs_updated_values)
         _qs.save()
+
+    def _skip_debt(self, hook):
+        _debt_type = utils._getattr(self._conf.instance, "type")
+        _skip = hook.get('skip')
+
+        if _debt_type and _debt_type == _skip:
+            return True
+
+        return False
