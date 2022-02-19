@@ -211,6 +211,12 @@ class SignalBase():
 
     def _skip_debt(self, hook):
         _debt_type = utils._getattr(self._conf.instance, "type")
+
+        if not _debt_type:
+            _debt = utils._getattr(self._conf.instance, 'debt')
+            if _debt:
+                _debt_type= utils._getattr(_debt, "type")
+
         _skip = hook.get('skip')
 
         if _debt_type and _debt_type == _skip:
