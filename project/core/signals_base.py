@@ -171,7 +171,11 @@ class SignalBase():
 
         _hooks = {
             'pensions.Pension': [
-                {'method': 'incomes', 'category': 'pension_type', 'balance_field': 'incomes.fee'},
+                {
+                    'method': 'incomes',
+                    'category': 'pension_type',
+                    'balance_field': 'incomes.fee',
+                },
             ],
         }
 
