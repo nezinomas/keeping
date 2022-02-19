@@ -10,13 +10,20 @@ from .lib import utils
 
 
 class SignalBase():
-    def __init__(self, conf: Conf):
+    def __init__(self, conf: Conf, update_on_load: bool = True):
         self._conf = conf
 
-        self._update()
+        if update_on_load:
+            self._update()
 
     @classmethod
-    def accounts(cls, sender: object, instance: object, created: bool, signal: str):
+    def accounts(cls,
+                 sender: object,
+                 instance: object,
+                 created: bool,
+                 signal: str,
+                 update_on_load: bool = True):
+
         _hooks = {
             'incomes.Income': [
                 {
@@ -103,10 +110,16 @@ class SignalBase():
             instance=instance,
             hooks=_hooks
         )
-        return cls(conf=_conf)
+        return cls(conf=_conf, update_on_load=update_on_load)
 
     @classmethod
-    def savings(cls, sender: object, instance: object, created: bool, signal: str):
+    def savings(cls,
+                sender: object,
+                instance: object,
+                created: bool,
+                signal: str,
+                update_on_load: bool = True):
+
         _hooks = {
             'savings.Saving': [
                 {
@@ -146,10 +159,16 @@ class SignalBase():
             instance=instance,
             hooks=_hooks
         )
-        return cls(conf=_conf)
+        return cls(conf=_conf, update_on_load=update_on_load)
 
     @classmethod
-    def pensions(cls, sender: object, instance: object, created: bool, signal: str):
+    def pensions(cls,
+                 sender: object,
+                 instance: object,
+                 created: bool,
+                 signal: str,
+                 update_on_load: bool = True):
+
         _hooks = {
             'pensions.Pension': [
                 {'method': 'incomes', 'category': 'pension_type', 'balance_field': 'incomes.fee'},
@@ -167,7 +186,7 @@ class SignalBase():
             instance=instance,
             hooks=_hooks
         )
-        return cls(conf=_conf)
+        return cls(conf=_conf, update_on_load=update_on_load)
 
     def _update(self):
         _hooks = self._conf.get_hook()
