@@ -236,7 +236,7 @@ def test_borrow_update(mck, client_logged):
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
 def test_borrow_update_action_url(mck, client_logged):
-    e = factories.LendFactory()
+    e = factories.BorrowFactory()
 
     data = {
         'name': 'XXX',

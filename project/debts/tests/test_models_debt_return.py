@@ -127,20 +127,19 @@ def test_lend_return_new_record_updates_debt_tbl_empty_returned_field(mck):
 
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
-@patch('project.debts.models.Debt.objects.get')
+@patch('project.debts.models.Debt.objects.filter')
 def test_lend_return_new_record_updates_debt_tbl_error_on_save_parent(mck, m):
     mck.side_effect = TypeError
 
     try:
         LendReturnFactory()
-    except:
+    except TypeError:
         pass
 
     actual = Debt.objects.items()
     assert actual[0].returned == Decimal('25')
 
-    actual = DebtReturn.objects.all()
-    assert actual.count() == 0
+    assert DebtReturn.objects.count() == 0
 
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
@@ -190,9 +189,9 @@ def test_lend_return_post_save_new():
 
     actual = actual[0]
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 25.0
-    assert actual['expenses'] == 75.0
-    assert actual['balance'] == -50.0
+    assert actual['incomes'] == 5.0
+    assert actual['expenses'] == 100.0
+    assert actual['balance'] == -95.0
 
 
 def test_borrow_return_post_save_new():
@@ -204,45 +203,51 @@ def test_borrow_return_post_save_new():
 
     actual = actual[0]
     assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 75.0
-    assert actual['expenses'] == 25.0
-    assert actual['balance'] == 50.0
+    assert actual['incomes'] == 100.0
+    assert actual['expenses'] == 5.0
+    assert actual['balance'] == 95.0
 
 
 def test_lend_return_post_save_update():
     obj = LendReturnFactory()
 
+    actual = AccountBalance.objects.first()
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 5.0
+    assert actual.expenses == 100.0
+    assert actual.balance == -95.0
+
     # update object
     obj_update = DebtReturn.objects.get(pk=obj.pk)
     obj_update.price = 1
     obj_update.save()
 
-    actual = AccountBalance.objects.year(1999)
-
-    actual = actual[0]
-
-    assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 0.0
-    assert actual['expenses'] == 76.0
-    assert actual['balance'] == -76.0
+    actual = AccountBalance.objects.first()
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 1.0
+    assert actual.expenses == 100.0
+    assert actual.balance == -99.0
 
 
 def test_borrow_return_post_save_update():
     obj = BorrowReturnFactory()
 
+    actual = AccountBalance.objects.first()
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 100.0
+    assert actual.expenses == 5.0
+    assert actual.balance == 95.0
+
     # update object
     obj_update = DebtReturn.objects.get(pk=obj.pk)
     obj_update.price = 1
     obj_update.save()
 
-    actual = AccountBalance.objects.year(1999)
-
-    actual = actual[0]
-
-    assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 75.0
-    assert actual['expenses'] == 1.0
-    assert actual['balance'] == 74.0
+    actual = AccountBalance.objects.first()
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 100.0
+    assert actual.expenses == 1.0
+    assert actual.balance == 99.0
 
 
 def test_lend_return_post_save_first_record():
@@ -266,10 +271,10 @@ def test_lend_return_post_save_first_record():
 
     assert actual[1].year == 1999
     assert actual[1].past == 1.0
-    assert actual[1].incomes == -1.0
-    assert actual[1].expenses == 0.0
-    assert actual[1].balance == -1.0
-    assert actual[1].delta == 1.0
+    assert actual[1].incomes == 2.0
+    assert actual[1].expenses == 5.0
+    assert actual[1].balance == -2.0
+    assert actual[1].delta == 2.0
 
 
 def test_borrow_return_post_save_first_record():
@@ -304,17 +309,17 @@ def test_lend_return_post_delete():
 
     actual = AccountBalance.objects.last()
     assert actual.account.title == 'Account1'
-    assert actual.incomes == 30.0
-    assert actual.expenses == 70.0
-    assert actual.balance == -40.0
+    assert actual.incomes == 5.0
+    assert actual.expenses == 100.0
+    assert actual.balance == -95.0
 
     DebtReturn.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.last()
     assert actual.account.title == 'Account1'
-    assert actual.incomes == 25.0
-    assert actual.expenses == 75.0
-    assert actual.balance == -50.0
+    assert actual.incomes == 0.0
+    assert actual.expenses == 100.0
+    assert actual.balance == -100.0
 
 
 def test_borrow_return_post_delete():
@@ -322,17 +327,17 @@ def test_borrow_return_post_delete():
 
     actual = AccountBalance.objects.last()
     assert actual.account.title == 'Account1'
-    assert actual.incomes == 70.0
-    assert actual.expenses == 30.0
-    assert actual.balance == 40.0
+    assert actual.incomes == 100.0
+    assert actual.expenses == 5.0
+    assert actual.balance == 95.0
 
     DebtReturn.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.last()
     assert actual.account.title == 'Account1'
-    assert actual.incomes == 75.0
-    assert actual.expenses == 25.0
-    assert actual.balance == 50.0
+    assert actual.incomes == 100.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 100.0
 
 
 def test_lend_return_post_delete_with_updt():
@@ -343,17 +348,17 @@ def test_lend_return_post_delete_with_updt():
 
     actual = AccountBalance.objects.last()
     assert actual.account.title == 'Account1'
-    assert actual.incomes == 100.0
-    assert actual.expenses == 3.0
-    assert actual.balance == 97.0
+    assert actual.incomes == 3.0
+    assert actual.expenses == 100.0
+    assert actual.balance == -97.0
 
     DebtReturn.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.last()
     assert actual.account.title == 'Account1'
-    assert actual.incomes == 100.0
-    assert actual.expenses == 1.0
-    assert actual.balance == 99.0
+    assert actual.incomes == 1.0
+    assert actual.expenses == 100.0
+    assert actual.balance == -99.0
 
 
 def test_borrow_return_post_delete_with_updt():
