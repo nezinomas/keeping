@@ -188,6 +188,9 @@ class SignalBase():
         )
         return cls(conf=_conf, update_on_load=update_on_load)
 
+    def full_balance_update(self):
+        UpdatetBalanceTable(self._conf)
+
     def _update(self):
         _hooks = self._conf.get_hook()
 
@@ -255,7 +258,7 @@ class SignalBase():
             )
 
         except ObjectDoesNotExist as e:
-            UpdatetBalanceTable(self._conf)
+            self.full_balance_update()
             raise e
 
         _qs_values = {k: v for k, v in _qs.__dict__.items() if not '_state' in k}
