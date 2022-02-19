@@ -98,22 +98,26 @@ class DebtReturn(OldValuesMixin, models.Model):
 
 
     def save(self, *args, **kwargs):
-        obj = Debt.objects.get(id=self.debt_id)
-        obj.returned = obj.returned if obj.returned else Decimal('0')
+        qs = Debt.objects.filter(id=self.debt_id)
+        obj = qs[0]
+
+        _returned = obj.returned if obj.returned else Decimal('0')
+        _closed = False
 
         if not self.pk:
-            obj.returned += Decimal(self.price)
+            _returned += Decimal(self.price)
         else:
             old = DebtReturn.objects.get(pk=self.pk)
             dif = self.price - old.price
-            obj.returned += dif
+            _returned += dif
 
-        if obj.price == obj.returned:
-            obj.closed = True
+        if obj.price == _returned:
+            _closed = True
 
-        obj.update()
+        qs.update(returned=_returned, closed=_closed)
 
         super().save(*args, **kwargs)
+
 
     def delete(self, *args, **kwargs):
         try:
@@ -121,6 +125,7 @@ class DebtReturn(OldValuesMixin, models.Model):
         except Exception as e:
             raise e
 
-        obj = Debt.objects.get(id=self.debt_id)
-        obj.returned -= Decimal(self.price)
-        obj.update()
+        qs = Debt.objects.filter(id=self.debt_id)
+        _returned = qs[0].returned - Decimal(self.price)
+
+        qs.update(returned=_returned)
