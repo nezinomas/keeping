@@ -118,7 +118,7 @@ class SignalBase():
         # for _hook['balance_field'], _account_name in _hook.items():
         for _hook in _hooks:
             _account = getattr(self._conf.instance, _hook['category'])
-            _old_account_id = self._conf.instance.old_values.get(_hook['category'])
+            _old_account_id = self._conf.old_values.get(_hook['category'])
             print(f'\n------------\n{self._conf.instance.old_values=}')
             # skip debts methods
             if self._skip_debt(_hook):
