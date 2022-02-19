@@ -148,7 +148,6 @@ class Balance(BalanceBase):
         _arr = []
 
         for qs in data:
-            print(f'qs->{qs}')
             _df = pd.DataFrame(qs)
 
             try:
@@ -161,7 +160,6 @@ class Balance(BalanceBase):
             _df[_columns] = _df[_columns].apply(pd.to_numeric)
 
             _arr.append(_df)
-            print(f'{_arr=}')
 
         if not _arr:
             return

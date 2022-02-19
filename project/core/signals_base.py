@@ -119,7 +119,7 @@ class SignalBase():
         for _hook in _hooks:
             _account = getattr(self._conf.instance, _hook['category'])
             _old_account_id = self._conf.old_values.get(_hook['category'])
-            print(f'\n------------\n{self._conf.instance.old_values=}')
+
             # skip debts methods
             if self._skip_debt(_hook):
                 continue
@@ -142,7 +142,6 @@ class SignalBase():
 
             # update
             if _old_account_id == _account.pk:
-                print('UPDATE?')
                 # account not changed
                 try:
                     self._tbl_balance_field_update('update', _hook['balance_field'], _account.pk)
@@ -150,7 +149,6 @@ class SignalBase():
                     return
             else:
                 # account changed
-                print('Account changed?')
                 try:
                     self._tbl_balance_field_update('new', _hook['balance_field'], _account.pk)
                     self._tbl_balance_field_update('delete', _hook['balance_field'], _old_account_id)
@@ -183,7 +181,7 @@ class SignalBase():
 
         _qs_values = {k: v for k, v in _qs.__dict__.items() if not '_state' in k}
         _df = pd.DataFrame([_qs_values])
-        print(f'\nloaded data\n{_df}\n')
+
         # update balance table fields
         fields = balance_tbl_field_name.split('.')
         for field in fields:
@@ -205,7 +203,6 @@ class SignalBase():
             _df = Balance.recalc_savings(_df)
 
         _qs_updated_values = _df.to_dict('records')[0]
-        print(f'\nbefore update object\n{_qs_updated_values}\n')
         _qs.__dict__.update(_qs_updated_values)
         _qs.save()
 
