@@ -11,15 +11,15 @@ from . import managers
 
 
 class Debt(OldValuesMixin, models.Model):
-    class Types(models.TextChoices):
+    class DebtType(models.TextChoices):
         LEND = 'lend', _('Lend')
         BORROW = 'borrow', _('Borrow')
 
     date = models.DateField()
-    type = models.CharField(
+    debt_type = models.CharField(
         max_length=12,
-        choices=Types.choices,
-        default=Types.LEND,
+        choices=DebtType.choices,
+        default=DebtType.LEND,
     )
     name = models.CharField(
         max_length=100,
@@ -90,10 +90,10 @@ class DebtReturn(OldValuesMixin, models.Model):
 
     def __str__(self):
         _price = round(self.price, 1)
-        if self.debt.type == 'lend':
+        if self.debt.debt_type == 'lend':
             return f'{_("Lend return")} {_price}'
 
-        if self.debt.type == 'borrow':
+        if self.debt.debt_type == 'borrow':
             return f'{_("Borrow return")} {_price}'
 
 

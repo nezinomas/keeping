@@ -137,7 +137,7 @@ def test_lend_save(mck, client_logged):
     assert actual.account.title == 'Account1'
     assert actual.name == 'AAA'
     assert actual.price == Decimal('1.1')
-    assert actual.type == 'lend'
+    assert actual.debt_type == 'lend'
 
 
 def test_lend_save_not_render_html_list(client_logged):

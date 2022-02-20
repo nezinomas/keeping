@@ -152,7 +152,7 @@ def test_debt_valid_data_type_from_request(mck):
         },
     )
 
-    e = form.save()
+    form.save()
 
     actual = models.Debt.objects.first()
 
@@ -162,7 +162,7 @@ def test_debt_valid_data_type_from_request(mck):
     assert actual.account == a
     assert not actual.closed
     assert actual.remark == 'Rm'
-    assert actual.type == 'xxx'
+    assert actual.debt_type == 'xxx'
 
 
 @freeze_time('1999-2-2')

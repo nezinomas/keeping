@@ -69,9 +69,9 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
         if not self.instance.pk:
             instance = super().save(commit=False)
 
-            type = utils.get_request_kwargs("type")
-            type = type if type else 'lend'
-            instance.type = type
+            _debt_type = utils.get_request_kwargs("type")
+            _debt_type = _debt_type if _debt_type else 'lend'
+            instance.debt_type = _debt_type
 
             instance.save()
 

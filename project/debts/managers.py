@@ -15,7 +15,7 @@ class DebtQuerySet(models.QuerySet):
         return (
             self
             .select_related('account', 'journal')
-            .filter(journal=_journal, type=debt_type)
+            .filter(journal=_journal, debt_type=debt_type)
         )
 
     def items(self):
@@ -91,7 +91,7 @@ class DebtReturnQuerySet(SumMixin, models.QuerySet):
         qs = (
             self
             .select_related('account', 'debt')
-            .filter(debt__journal=_journal, debt__type=debt_type)
+            .filter(debt__journal=_journal, debt__debt_type=debt_type)
         )
         return qs
 

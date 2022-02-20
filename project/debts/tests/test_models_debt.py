@@ -21,7 +21,7 @@ def test_debt_str():
 
 def test_debt_fields():
     assert Debt._meta.get_field('date')
-    assert Debt._meta.get_field('type')
+    assert Debt._meta.get_field('debt_type')
     assert Debt._meta.get_field('name')
     assert Debt._meta.get_field('price')
     assert Debt._meta.get_field('returned')
@@ -199,7 +199,7 @@ def test_lend_post_save_first_record():
         price=1,
         account=a,
         journal=j,
-        type='lend'
+        debt_type='lend'
     )
 
     actual = AccountBalance.objects.year(1999)
@@ -229,7 +229,7 @@ def test_borrow_post_save_first_record():
         price=1,
         account=a,
         journal=j,
-        type='borrow'
+        debt_type='borrow'
     )
 
     actual = AccountBalance.objects.year(1999)
