@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from ...debts.factories import DebtFactory
+from ...debts.factories import LendFactory
 from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from ...savings.factories import SavingFactory
@@ -29,7 +29,7 @@ def test_render_borrow_no_data(rf):
 
 
 def test_render_borrow(rf):
-    DebtFactory()
+    LendFactory()
 
     obj = IndexHelper(rf, 1999)
     actual = obj.render_borrow()
@@ -48,7 +48,7 @@ def test_render_lend_no_data(rf):
 
 
 def test_render_lend(rf):
-    DebtFactory()
+    LendFactory()
     obj = IndexHelper(rf, 1999)
     actual = obj.render_lend()
 
