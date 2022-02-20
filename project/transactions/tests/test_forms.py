@@ -311,16 +311,11 @@ def test_saving_change_save_and_close_from_account():
 
     assert form.is_valid()
 
-    data = form.save()
+    form.save()
 
     actual = SavingType.objects.get(title=a_from.title)
 
     assert actual.closed == 1999
-
-    assert SavingBalance.objects.all().count() == 1
-
-    actual = SavingBalance.objects.last()
-    assert  actual.saving_type_id == a_to.pk
 
 
 # ----------------------------------------------------------------------------
@@ -493,9 +488,8 @@ def test_saving_close_save_and_close_saving_account():
 
     assert form.is_valid()
 
-    data = form.save()
+    form.save()
 
     actual = SavingType.objects.get(title=a_from.title)
 
     assert actual.closed == 1999
-    assert SavingBalance.objects.all().count() == 0
