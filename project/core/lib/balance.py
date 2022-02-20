@@ -85,7 +85,7 @@ class Balance(BalanceBase):
 
         df.reset_index(inplace=True)
         df.set_index(['year', self.id_field], inplace=True)
-
+        df.sort_index(inplace=True)
         return df
 
     @property
