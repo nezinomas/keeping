@@ -5,10 +5,10 @@ import pytz
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
-from ...accounts.factories import AccountBalanceFactory, AccountBalance
+from ...accounts.factories import AccountBalanceFactory
 from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
-from ...incomes.factories import IncomeFactory
 from ...pensions.factories import PensionFactory
+from ...savings.factories import SavingFactory
 from .. import views
 from ..factories import (AccountWorthFactory, PensionWorthFactory,
                          SavingWorthFactory)
@@ -98,6 +98,7 @@ def test_index_account_worth_then_last_check_empty(client_logged):
 
 
 def test_index_savings_worth(client_logged):
+    SavingFactory()
     SavingWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
     SavingWorthFactory(date=datetime(1998, 2, 2, tzinfo=pytz.utc))
 

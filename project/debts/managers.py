@@ -34,10 +34,10 @@ class DebtQuerySet(models.QuerySet):
             )
         )
 
-    def sum_by_month(self, year):
+    def sum_by_month(self, year, debt_type=None):
         return (
             self
-            .related()
+            .related(debt_type=debt_type)
             .filter(closed=False)
             .filter()
             .filter(date__year=year)
@@ -50,10 +50,10 @@ class DebtQuerySet(models.QuerySet):
             .order_by('date')
         )
 
-    def sum_all(self):
+    def sum_all(self, debt_type=None):
         return (
             self
-            .related()
+            .related(debt_type=debt_type)
             .filter(closed=False)
             .aggregate(debt=Sum('price'), debt_return=Sum('returned'))
         )

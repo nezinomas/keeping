@@ -293,9 +293,8 @@ class IndexHelper():
         qs_expenses = Expense.objects.sum_by_month(year)
         qs_savings = Saving.objects.sum_by_month(year)
         qs_savings_close = SavingClose.objects.sum_by_month(year)
-        # qs_borrow = Borrow.objects.sum_by_month(year)
-        qs_borrow = []
-        qs_lend = Debt.objects.sum_by_month(year)
+        qs_borrow = Debt.objects.sum_by_month(year, debt_type='borrow')
+        qs_lend = Debt.objects.sum_by_month(year, debt_type='lend')
 
         # generate debts and debts_return arrays
         borrow, borrow_return, lend, lend_return = [], [], [], []
