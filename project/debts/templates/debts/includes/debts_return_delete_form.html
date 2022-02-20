@@ -2,6 +2,6 @@
 {% load i18n %}
 {% load slippers %}
 
-{% var target=request.resolver_match.kwargs.type|add:'_return' %}
+{% var target=request.resolver_match.kwargs.debt_type|add:'_return' %}
 
 {% generic_delete_form title=_('Delete') update_container=target %}

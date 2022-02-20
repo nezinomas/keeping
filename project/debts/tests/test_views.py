@@ -26,7 +26,7 @@ def test_debt_reload_lend_render(rf):
     request = rf.get('/debts/lend/reload/?ajax_trigger=1')
     request.user = UserFactory.build()
 
-    response = views.DebtReload.as_view()(request, type='lend')
+    response = views.DebtReload.as_view()(request, debt_type='lend')
 
     assert response.status_code == 200
 
@@ -39,7 +39,7 @@ def test_debt_reload_borrow_render(rf):
     request = rf.get('/debts/borrow/reload/?ajax_trigger=1')
     request.user = UserFactory.build()
 
-    response = views.DebtReload.as_view()(request, type='borrow')
+    response = views.DebtReload.as_view()(request, debt_type='borrow')
 
     assert response.status_code == 200
 
@@ -58,7 +58,7 @@ def test_debt_reload_return_object(rf):
 
 
 def test_debt_reload_trigger_not_set(client_logged):
-    url = reverse('debts:debts_reload', kwargs={'type': 'XXX'})
+    url = reverse('debts:debts_reload', kwargs={'debt_type': 'XXX'})
     response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
@@ -130,7 +130,7 @@ def test_debts_index_borrow_add_button(client_logged):
 
     content = response.content.decode()
 
-    link = reverse('debts:debts_new', kwargs={'type': 'borrow'})
+    link = reverse('debts:debts_new', kwargs={'debt_type': 'borrow'})
     pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
@@ -143,7 +143,7 @@ def test_debts_index_borrow_return_add_button(client_logged):
 
     content = response.content.decode()
 
-    link = reverse('debts:debts_return_new', kwargs={'type': 'borrow'})
+    link = reverse('debts:debts_return_new', kwargs={'debt_type': 'borrow'})
     pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
@@ -156,7 +156,7 @@ def test_debts_index_lend_add_button(client_logged):
 
     content = response.content.decode()
 
-    link = reverse('debts:debts_new', kwargs={'type': 'lend'})
+    link = reverse('debts:debts_new', kwargs={'debt_type': 'lend'})
     pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
@@ -169,7 +169,7 @@ def test_debts_index_lend_return_add_button(client_logged):
 
     content = response.content.decode()
 
-    link = reverse('debts:debts_return_new', kwargs={'type': 'lend'})
+    link = reverse('debts:debts_return_new', kwargs={'debt_type': 'lend'})
     pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 

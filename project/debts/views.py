@@ -12,7 +12,7 @@ from . import forms, models
 
 def _borrow_context_to_reload(request):
     try:
-        request.resolver_match.kwargs['type'] = 'borrow'
+        request.resolver_match.kwargs['debt_type'] = 'borrow'
     except AttributeError:
         pass
 
@@ -25,7 +25,7 @@ def _borrow_context_to_reload(request):
 
 def _lend_context_to_reload(request):
     try:
-        request.resolver_match.kwargs['type'] = 'lend'
+        request.resolver_match.kwargs['debt_type'] = 'lend'
     except AttributeError:
         pass
 
@@ -52,7 +52,7 @@ class DebtReload(LoginRequiredMixin, DispatchAjaxMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         _context = {}
-        _type = self.kwargs.get('type')
+        _type = self.kwargs.get('debt_type')
 
         if _type == 'lend':
             _context.update({**_lend_context_to_reload(self.request)})

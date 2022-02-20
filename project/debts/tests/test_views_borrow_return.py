@@ -20,14 +20,14 @@ def test_borrow_return_list_func():
 
 
 def test_borrow_return_list_200(client_logged):
-    url = reverse('debts:debts_return_list', kwargs={'type': 'borrow'})
+    url = reverse('debts:debts_return_list', kwargs={'debt_type': 'borrow'})
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_borrow_return_list_empty(client_logged):
-    url = reverse('debts:debts_return_list', kwargs={'type': 'borrow'})
+    url = reverse('debts:debts_return_list', kwargs={'debt_type': 'borrow'})
     response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
@@ -38,7 +38,7 @@ def test_borrow_return_list_with_data(client_logged):
     factories.BorrowReturnFactory()
     factories.LendReturnFactory(price=6.6)
 
-    url = reverse('debts:debts_return_list', kwargs={'type': 'borrow'})
+    url = reverse('debts:debts_return_list', kwargs={'debt_type': 'borrow'})
     response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
@@ -58,11 +58,11 @@ def test_borrow_return_list_with_data(client_logged):
 def test_borrow_return_list_edit_button(client_logged):
     obj = factories.BorrowReturnFactory()
 
-    url = reverse('debts:debts_return_list', kwargs={'type': 'borrow'})
+    url = reverse('debts:debts_return_list', kwargs={'debt_type': 'borrow'})
     response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
-    link = reverse('debts:debts_return_update', kwargs={'pk': obj.pk, 'type': 'borrow'})
+    link = reverse('debts:debts_return_update', kwargs={'pk': obj.pk, 'debt_type': 'borrow'})
 
     assert f'<a role="button" data-url="{ link }" data-target="borrow"' in content
     assert 'js-create set-target' in content
@@ -71,11 +71,11 @@ def test_borrow_return_list_edit_button(client_logged):
 def test_borrow_return_list_delete_button(client_logged):
     obj = factories.BorrowReturnFactory()
 
-    url = reverse('debts:debts_return_list', kwargs={'type': 'borrow'})
+    url = reverse('debts:debts_return_list', kwargs={'debt_type': 'borrow'})
     response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 
-    link = reverse('debts:debts_return_delete', kwargs={'pk': obj.pk, 'type': 'borrow'})
+    link = reverse('debts:debts_return_delete', kwargs={'pk': obj.pk, 'debt_type': 'borrow'})
 
     assert f'<a role="button" data-url="{ link }" data-target="borrow"' in content
     assert 'js-create set-target' in content
@@ -88,14 +88,14 @@ def test_borrow_return_new_func():
 
 
 def test_borrow_return_new_200(client_logged):
-    url = reverse('debts:debts_return_new', kwargs={'type': 'borrow'})
+    url = reverse('debts:debts_return_new', kwargs={'debt_type': 'borrow'})
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_borrow_return_load_form(client_logged):
-    url = reverse('debts:debts_return_new', kwargs={'type': 'borrow'})
+    url = reverse('debts:debts_return_new', kwargs={'debt_type': 'borrow'})
 
     response = client_logged.get(url, {}, **X_Req)
 
@@ -112,7 +112,7 @@ def test_borrow_return_save(mck, client_logged):
 
     data = {'date': '1999-1-3', 'debt': b.pk, 'price': '1.1', 'account': a.pk}
 
-    url = reverse('debts:debts_return_new', kwargs={'type': 'borrow'})
+    url = reverse('debts:debts_return_new', kwargs={'debt_type': 'borrow'})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -131,9 +131,9 @@ def test_borrow_return_save_not_render_html_list(client_logged):
     a = AccountFactory()
     b = factories.BorrowFactory()
 
-    data = {'date': '1999-1-3', 'borrow': b.pk, 'price': '1.1', 'account': a.pk, 'type': 'borrow'}
+    data = {'date': '1999-1-3', 'borrow': b.pk, 'price': '1.1', 'account': a.pk, 'debt_type': 'borrow'}
 
-    url = reverse('debts:debts_return_new', kwargs={'type': 'borrow'})
+    url = reverse('debts:debts_return_new', kwargs={'debt_type': 'borrow'})
 
     response = client_logged.post(url, data, **X_Req)
     json_str = response.content
@@ -145,7 +145,7 @@ def test_borrow_return_save_not_render_html_list(client_logged):
 def test_borrow_return_save_invalid_data(client_logged):
     data = {'borrow': 'A', 'price': '0'}
 
-    url = reverse('debts:debts_return_new', kwargs={'type': 'borrow'})
+    url = reverse('debts:debts_return_new', kwargs={'debt_type': 'borrow'})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -164,7 +164,7 @@ def test_borrow_return_update_func():
 def test_borrow_return_update_200(client_logged):
     obj = factories.BorrowReturnFactory()
 
-    url = reverse('debts:debts_return_update', kwargs={'pk': obj.pk, 'type': 'borrow'})
+    url = reverse('debts:debts_return_update', kwargs={'pk': obj.pk, 'debt_type': 'borrow'})
     response = client_logged.get(url)
 
     assert response.status_code == 200
@@ -172,7 +172,7 @@ def test_borrow_return_update_200(client_logged):
 
 def test_borrow_return_load_update_form(client_logged):
     obj = factories.BorrowReturnFactory()
-    url = reverse('debts:debts_return_update', kwargs={'pk': obj.pk, 'type': 'borrow'})
+    url = reverse('debts:debts_return_update', kwargs={'pk': obj.pk, 'debt_type': 'borrow'})
 
     response = client_logged.get(url, **X_Req)
 
@@ -200,7 +200,7 @@ def test_borrow_return_update(mck, client_logged):
         'account': a.pk,
         'debt': l.pk
     }
-    url = reverse('debts:debts_return_update', kwargs={'pk': e.pk, 'type': 'borrow'})
+    url = reverse('debts:debts_return_update', kwargs={'pk': e.pk, 'debt_type': 'borrow'})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -232,7 +232,7 @@ def test_borrow_return_update_not_load_other_journal(client_logged, main_user, s
     factories.BorrowReturnFactory(debt=d1, account=a1)
     obj = factories.BorrowReturnFactory(debt=d2, account=a2, price=666)
 
-    url = reverse('debts:debts_return_update', kwargs={'pk': obj.pk, 'type': 'borrow'})
+    url = reverse('debts:debts_return_update', kwargs={'pk': obj.pk, 'debt_type': 'borrow'})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -257,7 +257,7 @@ def test_borrow_return_update_not_render_html_list(client_logged):
         'account': a.pk,
         'borrow': l.pk
     }
-    url = reverse('debts:debts_return_update', kwargs={'pk': e.pk, 'type': 'borrow'})
+    url = reverse('debts:debts_return_update', kwargs={'pk': e.pk, 'debt_type': 'borrow'})
 
     response = client_logged.post(url, data, **X_Req)
     json_str = response.content
@@ -275,7 +275,7 @@ def test_borrow_return_delete_func():
 def test_borrow_return_delete_200(client_logged):
     f = factories.BorrowReturnFactory()
 
-    url = reverse('debts:debts_return_delete', kwargs={'pk': f.pk, 'type': 'borrow'})
+    url = reverse('debts:debts_return_delete', kwargs={'pk': f.pk, 'debt_type': 'borrow'})
     response = client_logged.get(url)
 
     assert response.status_code == 200
@@ -284,7 +284,7 @@ def test_borrow_return_delete_200(client_logged):
 def test_borrow_return_delete_load_form(client_logged):
     obj = factories.BorrowReturnFactory()
 
-    url = reverse('debts:debts_return_delete', kwargs={'pk': obj.pk, 'type': 'borrow'})
+    url = reverse('debts:debts_return_delete', kwargs={'pk': obj.pk, 'debt_type': 'borrow'})
     response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
@@ -302,7 +302,7 @@ def test_borrow_return_delete(client_logged):
     p = factories.BorrowReturnFactory()
 
     assert models.DebtReturn.objects.all().count() == 1
-    url = reverse('debts:debts_return_delete', kwargs={'pk': p.pk, 'type': 'borrow'})
+    url = reverse('debts:debts_return_delete', kwargs={'pk': p.pk, 'debt_type': 'borrow'})
 
     response = client_logged.post(url, {}, **X_Req)
 
@@ -315,7 +315,7 @@ def test_borrow_return_delete_not_render_html_list(client_logged):
     p = factories.BorrowReturnFactory()
 
     assert models.DebtReturn.objects.all().count() == 1
-    url = reverse('debts:debts_return_delete', kwargs={'pk': p.pk, 'type': 'borrow'})
+    url = reverse('debts:debts_return_delete', kwargs={'pk': p.pk, 'debt_type': 'borrow'})
 
     response = client_logged.post(url, {}, **X_Req)
     json_str = response.content
@@ -328,7 +328,7 @@ def test_borrow_return_delete_other_journal_get_form(client_logged, second_user)
     d = factories.BorrowFactory(journal=second_user.journal)
     obj = factories.BorrowReturnFactory(debt=d)
 
-    url = reverse('debts:debts_return_delete', kwargs={'pk': obj.pk, 'type': 'borrow'})
+    url = reverse('debts:debts_return_delete', kwargs={'pk': obj.pk, 'debt_type': 'borrow'})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -344,7 +344,7 @@ def test_borrow_return_delete_other_journal_post_form(client_logged, second_user
     d = factories.BorrowFactory(journal=second_user.journal)
     obj = factories.BorrowReturnFactory(debt=d)
 
-    url = reverse('debts:debts_return_delete', kwargs={'pk': obj.pk, 'type': 'borrow'})
+    url = reverse('debts:debts_return_delete', kwargs={'pk': obj.pk, 'debt_type': 'borrow'})
     client_logged.post(url, **X_Req)
 
     assert models.DebtReturn.objects.all().count() == 1

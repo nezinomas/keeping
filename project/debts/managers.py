@@ -10,7 +10,7 @@ class DebtQuerySet(models.QuerySet):
         _journal = utils.get_user().journal
 
         if not debt_type:
-            debt_type = utils.get_request_kwargs('type')
+            debt_type = utils.get_request_kwargs('debt_type')
 
         return (
             self
@@ -86,7 +86,7 @@ class DebtReturnQuerySet(SumMixin, models.QuerySet):
         _journal = utils.get_user().journal
 
         if not debt_type:
-            debt_type = utils.get_request_kwargs('type')
+            debt_type = utils.get_request_kwargs('debt_type')
 
         qs = (
             self
