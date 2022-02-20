@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import JsonResponse
@@ -42,14 +40,21 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
 
     @timer
     def get(self, request, *args, **kwargs):
-        # obj.full_balance_table_update()
+        kwargs = {
+            'sender': None,
+            'instance': None,
+            'created': False,
+            'signal': 'any',
+            'update_on_load': False,
+        }
 
-        _years = years()
+        arr = [
+            SignalBase.accounts(**kwargs),
+            SignalBase.savings(**kwargs),
+            SignalBase.pensions(**kwargs),
+        ]
 
-        for year in _years:
-            if year > datetime.now().year:
-                continue
-
-            signals(year)
+        for x in arr:
+            x.full_balance_update()
 
         return JsonResponse({'redirect': self.redirect_view})
