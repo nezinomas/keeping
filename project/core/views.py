@@ -13,19 +13,6 @@ from .mixins.views import DispatchAjaxMixin
 from .tests.utils import timer
 
 
-def signals(year):
-    SignalBase.savings(
-        sender=None,
-        instance=None,
-        year=year
-    )
-    SignalBase.pensions(
-        sender=None,
-        instance=None,
-        year=year
-    )
-
-
 @login_required()
 def set_year(request, year):
     if year in years():
@@ -64,17 +51,5 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
                 continue
 
             signals(year)
-
-        return JsonResponse({'redirect': self.redirect_view})
-
-
-class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View):
-    redirect_view = reverse_lazy('bookkeeping:index')
-
-    @timer
-    def get(self, request, *args, **kwargs):
-        # obj.full_balance_table_update()
-
-        signals(request.user.year)
 
         return JsonResponse({'redirect': self.redirect_view})
