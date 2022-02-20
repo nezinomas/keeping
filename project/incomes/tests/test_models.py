@@ -1,9 +1,9 @@
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
 
 import pytest
 
-from ...accounts.factories import AccountBalanceFactory, AccountFactory
+from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...journals.models import Journal
 from ..factories import IncomeFactory, IncomeTypeFactory
