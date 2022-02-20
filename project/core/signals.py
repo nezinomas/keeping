@@ -1,7 +1,6 @@
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from ..accounts import models as account
 from ..bookkeeping import models as worth
 from ..debts import models as debt
 from ..expenses import models as expense
@@ -22,7 +21,7 @@ from .signals_base import SignalBase
 @receiver(post_save, sender=transaction.SavingClose)
 @receiver(post_save, sender=debt.Debt)
 @receiver(post_save, sender=debt.DebtReturn)
-# @receiver(post_save, sender=worth.AccountWorth)
+@receiver(post_save, sender=worth.AccountWorth)
 def accounts_post_save(sender: object, instance: object, *args, **kwargs):
     created = kwargs.get('created')
     SignalBase.accounts(sender, instance, created, 'save')
@@ -46,7 +45,7 @@ def accounts_post_delete(sender: object, instance: object, *args, **kwargs):
 @receiver(post_save, sender=saving.Saving)
 @receiver(post_save, sender=transaction.SavingClose)
 @receiver(post_save, sender=transaction.SavingChange)
-# @receiver(post_save, sender=worth.SavingWorth)
+@receiver(post_save, sender=worth.SavingWorth)
 def savings_post_save(sender: object,
                         instance: object,
                         *args,
@@ -70,7 +69,7 @@ def savings_post_delete(sender: object,
 #                                                               PensionBalance
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=pension.Pension)
-# @receiver(post_save, sender=worth.PensionWorth)
+@receiver(post_save, sender=worth.PensionWorth)
 def pensions_post_save(sender: object,
                          instance: object,
                          *args,

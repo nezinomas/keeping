@@ -146,6 +146,13 @@ class SignalBase():
                     'balance_field': '-incomes.fee',
                 },
             ],
+            'bookkeeping.SavingWorth': [
+                {
+                    'method': 'have',
+                    'category': 'saving_type',
+                    'balance_field': 'have',
+                },
+            ],
         }
 
         _conf = Conf(
@@ -175,6 +182,13 @@ class SignalBase():
                     'method': 'incomes',
                     'category': 'pension_type',
                     'balance_field': 'incomes.fee',
+                },
+            ],
+            'bookkeeping.PensionWorth': [
+                {
+                    'method': 'have',
+                    'category': 'pension_type',
+                    'balance_field': 'have',
                 },
             ],
         }

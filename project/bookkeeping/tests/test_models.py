@@ -137,9 +137,16 @@ def test_saving_worth_queries(savings_worth,
 def test_saving_worth_post_save():
     SavingWorthFactory()
 
-    actual = SavingBalance.objects.year(1999)
+    assert SavingBalance.objects.count() == 1
 
-    assert actual.count() == 1
+    actual = SavingBalance.objects.first()
+    assert actual.saving_type.title == 'Savings'
+    assert actual.past_amount == 0.0
+    assert actual.past_fee == 0.0
+    assert actual.fee == 0.0
+    assert actual.invested == 0.0
+    assert actual.incomes == 0.0
+    assert actual.market_value == 0.5
 
 
 def test_saving_worth_have():
@@ -201,9 +208,16 @@ def test_pension_worth_queries(pensions_worth,
 def test_pension_worth_post_save():
     PensionWorthFactory()
 
-    actual = PensionBalance.objects.year(1999)
+    assert PensionBalance.objects.count() == 1
 
-    assert actual.count() == 1
+    actual = PensionBalance.objects.first()
+    assert actual.pension_type.title == 'PensionType'
+    assert actual.past_amount == 0.0
+    assert actual.past_fee == 0.0
+    assert actual.fee == 0.0
+    assert actual.invested == 0.0
+    assert actual.incomes == 0.0
+    assert actual.market_value == 0.5
 
 
 def test_pension_worth_have():

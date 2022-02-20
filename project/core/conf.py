@@ -26,7 +26,10 @@ class Conf():
         # e.g debt_type=debt_return.debt.type
         # then old_values somehow becomes not debt_return.old_values, but debt.old_values
         # why?
-        self.old_values = copy.copy(self.instance.old_values)
+        try:
+            self.old_values = copy.copy(self.instance.old_values)
+        except AttributeError:
+            self.old_values = {}
 
     def get_hook(self):
         _app = self.sender.__module__.split('.')[1]
