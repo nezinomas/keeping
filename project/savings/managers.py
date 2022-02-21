@@ -190,6 +190,10 @@ class SavingBalanceQuerySet(models.QuerySet):
             .values('saving_type__type')
             .annotate(y=F('year'))
             .values('y')
+            .filter(
+                Q(saving_type__closed__isnull=True) |
+                Q(saving_type__closed__gt=F('y'))
+            )
             .annotate(invested=Sum('incomes'), profit=Sum('profit_incomes_sum'))
             .order_by('year')
             .values(
