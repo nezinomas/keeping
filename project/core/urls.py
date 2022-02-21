@@ -18,8 +18,4 @@ urlpatterns = [
         'set/balances/',
         views.RegenerateBalances.as_view(),
         name='regenerate_balances'),
-    path(
-        'set/balances/<int:year>/',
-        views.RegenerateBalancesCurrentYear.as_view(),
-        name='regenerate_balances_current_year'),
 ]

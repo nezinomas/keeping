@@ -2,14 +2,12 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
-from ..accounts.models import Account, AccountBalance
+from ..accounts.models import Account
 from ..core.lib import utils
-from ..core.mixins.from_db import MixinFromDbAccountId
+from ..core.mixins.old_values import OldValuesMixin
 from ..core.models import TitleAbstract
-from ..core.signals import SignalBase
 from ..journals.models import Journal
 from .managers import IncomeQuerySet, IncomeTypeQuerySet
 
@@ -39,7 +37,7 @@ class IncomeType(TitleAbstract):
         ordering = ['title']
 
 
-class Income(MixinFromDbAccountId):
+class Income(OldValuesMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
@@ -72,13 +70,6 @@ class Income(MixinFromDbAccountId):
     # managers
     objects = IncomeQuerySet.as_manager()
 
-    original_price = 0.0
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if self.pk:
-            self.original_price = self.price
-
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
@@ -89,42 +80,3 @@ class Income(MixinFromDbAccountId):
             journal.first_record = self.date
             journal.save()
 
-        try:
-            _qs = (
-                AccountBalance
-                .objects
-                .get(Q(year=self.date.year) & Q(account_id=self.account.pk))
-            )
-
-            _price = float(self.price)
-            _original_price = float(self.original_price)
-
-            _qs.incomes = _qs.incomes - _original_price + _price
-            _qs.balance = _qs.balance - _original_price + _price
-            _qs.delta = _qs.have - _qs.balance
-
-            _qs.save()
-
-        except AccountBalance.DoesNotExist:
-            SignalBase.accounts(sender=Income, instance=None)
-
-    def delete(self, *args, **kwargs):
-        super().delete(*args, **kwargs)
-
-        try:
-            _qs = (
-                AccountBalance
-                .objects
-                .get(Q(year=self.date.year) & Q(account_id=self.account.pk))
-            )
-
-            _price = float(self.price)
-
-            _qs.incomes = _qs.incomes - _price
-            _qs.balance = _qs.balance - _price
-            _qs.delta = _qs.have - _qs.balance
-
-            _qs.save()
-
-        except AccountBalance.DoesNotExist:
-            SignalBase.accounts(sender=Income, instance=None)

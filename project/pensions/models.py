@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from ..core.mixins.old_values import OldValuesMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from . import managers
@@ -26,7 +27,7 @@ class PensionType(TitleAbstract):
         ordering = ['title']
 
 
-class Pension(models.Model):
+class Pension(OldValuesMixin, models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
@@ -72,7 +73,7 @@ class PensionBalance(models.Model):
     )
     past_amount = models.FloatField(default=0.0)
     past_fee = models.FloatField(default=0.0)
-    fees = models.FloatField(default=0.0)
+    fee = models.FloatField(default=0.0)
     invested = models.FloatField(default=0.0)
     incomes = models.FloatField(default=0.0)
     market_value = models.FloatField(default=0.0)

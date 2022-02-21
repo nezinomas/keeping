@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import JsonResponse
@@ -7,28 +5,10 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import View
 
-from ..core.signals import SignalBase
+from ..core.signals_base import SignalBase
 from .lib.date import years
 from .mixins.views import DispatchAjaxMixin
 from .tests.utils import timer
-
-
-def signals(year):
-    SignalBase.accounts(
-        sender=None,
-        instance=None,
-        year=year
-    )
-    SignalBase.savings(
-        sender=None,
-        instance=None,
-        year=year
-    )
-    SignalBase.pensions(
-        sender=None,
-        instance=None,
-        year=year
-    )
 
 
 @login_required()
@@ -58,24 +38,23 @@ def set_month(request, month):
 class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
     redirect_view = reverse_lazy('bookkeeping:index')
 
-    # @timer
+    @timer
     def get(self, request, *args, **kwargs):
-        _years = years()
+        kwargs = {
+            'sender': None,
+            'instance': None,
+            'created': False,
+            'signal': 'any',
+            'update_on_load': False,
+        }
 
-        for year in _years:
-            if year > datetime.now().year:
-                continue
+        arr = [
+            SignalBase.accounts(**kwargs),
+            SignalBase.savings(**kwargs),
+            SignalBase.pensions(**kwargs),
+        ]
 
-            signals(year)
-
-        return JsonResponse({'redirect': self.redirect_view})
-
-
-class RegenerateBalancesCurrentYear(LoginRequiredMixin, DispatchAjaxMixin, View):
-    redirect_view = reverse_lazy('bookkeeping:index')
-
-    # @timer
-    def get(self, request, *args, **kwargs):
-        signals(request.user.year)
+        for x in arr:
+            x.full_balance_update()
 
         return JsonResponse({'redirect': self.redirect_view})

@@ -1,8 +1,6 @@
-from decimal import Decimal
-from typing import Any, Dict, List
-
 from django.db import models
-from django.db.models import Case, Count, F, Sum, When
+from django.db.models import F, Sum
+from django.db.models.functions import ExtractYear
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
@@ -37,48 +35,15 @@ class PensionQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self.related().all()
 
-    def summary(self, year: int) -> List[Dict[str, Any]]:
-        '''
-        return:
-            {
-                'id': account.id,
-                'title': account.title,
-                's_past': Decimal(),
-                's_now': Decimal()
-            }
-        '''
+    def incomes(self):
         return (
             self
             .related()
-            .annotate(cnt=Count('pension_type'))
-            .values('cnt')
-            .order_by('cnt')
-            .annotate(
-                s_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='price'),
-                        default=Decimal(0))),
-                s_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='price'),
-                        default=Decimal(0))),
-                s_fee_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='fee'),
-                        default=Decimal(0))),
-                s_fee_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='fee'),
-                        default=Decimal(0)))
-            )
-            .values(
-                's_past',
-                's_now',
-                's_fee_now',
-                's_fee_past',
-                title=models.F('pension_type__title'),
-                id=models.F('pension_type__pk')
-            )
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'pension_type__title')
+            .annotate(incomes=Sum('price'), fee=Sum('fee'))
+            .values('year', 'incomes', 'fee', id=F('pension_type__pk'))
+            .order_by('year', 'id')
         )
 
 
@@ -102,7 +67,7 @@ class PensionBalanceQuerySet(models.QuerySet):
             'year',
             'past_amount',
             'past_fee',
-            'fees',
+            'fee',
             'invested',
             'incomes',
             'market_value',

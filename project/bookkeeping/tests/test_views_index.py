@@ -8,6 +8,7 @@ from freezegun import freeze_time
 from ...accounts.factories import AccountBalanceFactory
 from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...pensions.factories import PensionFactory
+from ...savings.factories import SavingFactory
 from .. import views
 from ..factories import (AccountWorthFactory, PensionWorthFactory,
                          SavingWorthFactory)
@@ -45,7 +46,7 @@ def test_view_index_context(client_logged):
     assert 'averages' in response.context
     assert 'wealth' in response.context
     assert 'borrow' in response.context
-    assert 'lent' in response.context
+    assert 'lend' in response.context
     assert 'chart_expenses' in response.context
     assert 'chart_balance' in response.context
 
@@ -72,7 +73,6 @@ def test_no_incomes_no_data(client_logged):
     assert round(response.context['save_sum'], 2) == 0
 
 
-@freeze_time('1999-1-1')
 def test_index_account_worth(client_logged):
     AccountWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
     AccountWorthFactory(date=datetime(1999, 2, 2, tzinfo=pytz.utc), price=555)
@@ -81,7 +81,7 @@ def test_index_account_worth(client_logged):
     response = client_logged.get(url)
 
     actual = response.context['accounts']
-    assert 'data-bs-title="1999 m. vasario 2 d., 00:00"' in actual
+    assert 'title="1999 m. vasario 2 d., 00:00"' in actual
     assert '555,0' in actual
 
 
@@ -98,6 +98,7 @@ def test_index_account_worth_then_last_check_empty(client_logged):
 
 
 def test_index_savings_worth(client_logged):
+    SavingFactory()
     SavingWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
     SavingWorthFactory(date=datetime(1998, 2, 2, tzinfo=pytz.utc))
 

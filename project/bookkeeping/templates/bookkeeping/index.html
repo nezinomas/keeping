@@ -31,7 +31,6 @@
         <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="bi bi-plus"></i> {% translate 'Funds fact' %}</button>
         {% url 'bookkeeping:pensions_worth_new' as url_pensions_new %}
         <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_pensions_new }}"><i class="bi bi-plus"></i> {% translate 'Pensions fact' %}</button>
-        <button class="btn btn-sm btn-outline-secondary recalc" data-url="{% url 'core:regenerate_balances_current_year' year %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'The balance for this year will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% blocktranslate with year=year|safe %}Update {{ year }} balance{% endblocktranslate %}</button>
         <button class="btn btn-sm btn-outline-danger recalc" data-url="{% url 'core:regenerate_balances' %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</button>
     </div>
 </div>
@@ -68,8 +67,8 @@
             </div>
 
             <div class="col-lg-12 col-md-3">
-                <!-- Debts Lent -->
-                <div id="lent">{% info_table lent %}</div>
+                <!-- Debts Lend -->
+                <div id="lend">{% info_table lend %}</div>
             </div>
         </div>
     </div>

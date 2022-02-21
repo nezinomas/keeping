@@ -10,7 +10,7 @@
             <th>{% translate 'From account' %}</th>
             <th>{% translate 'To account' %}</th>
             <th class="text-end">{% translate 'Amount' %}</th>
-            {% if fees %}<th class="text-end">{% translate 'Fees' %}</th>{% endif %}
+            {% if fee %}<th class="text-end">{% translate 'Fees' %}</th>{% endif %}
             <th colspan="2"></th>
         </tr>
     </thead>
@@ -25,7 +25,7 @@
             <td class="text-start">{{ item.from_account }}</td>
             <td class="text-start">{{ item.to_account }}</td>
             <td>{{ item.price }}</td>
-            {% if fees %}<td>{{ item.fee }}</td>{% endif %}
+            {% if fee %}<td>{{ item.fee }}</td>{% endif %}
             {% edit_cell url=url__update %}
             {% delete_cell url=url__delete %}
         </tr>

@@ -1,9 +1,8 @@
-import re
 from datetime import date
 
 import pytest
 
-from ...debts.factories import BorrowFactory, LentFactory
+from ...debts.factories import LendFactory, BorrowFactory
 from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from ...savings.factories import SavingFactory
@@ -26,7 +25,7 @@ def test_render_borrow_no_data(rf):
     obj = IndexHelper(rf, 1999)
     actual = obj.render_borrow()
 
-    assert {} == actual
+    assert actual == {}
 
 
 def test_render_borrow(rf):
@@ -35,26 +34,26 @@ def test_render_borrow(rf):
     obj = IndexHelper(rf, 1999)
     actual = obj.render_borrow()
 
-    assert 'Paskolinta' in actual['title']
-    assert 'Gražino' in actual['title']
+    assert 'Pasiskolinta' in actual['title']
+    assert 'Grąžinau' in actual['title']
     assert 100.0 in actual['data']
     assert 25.0 in actual['data']
 
 
-def test_render_lent_no_data(rf):
+def test_render_lend_no_data(rf):
     obj = IndexHelper(rf, 1999)
-    actual = obj.render_lent()
+    actual = obj.render_lend()
 
     assert {} == actual
 
 
-def test_render_lent(rf):
-    LentFactory()
+def test_render_lend(rf):
+    LendFactory()
     obj = IndexHelper(rf, 1999)
-    actual = obj.render_lent()
+    actual = obj.render_lend()
 
-    assert 'Pasiskolinta' in actual['title']
-    assert 'Gražinau' in actual['title']
+    assert 'Paskolinta' in actual['title']
+    assert 'Grąžino' in actual['title']
     assert 100.0 in actual['data']
     assert 25.0 in actual['data']
 

@@ -107,22 +107,3 @@ def test_account_balance_items():
     actual = AccountBalance.objects.year(1999)
 
     assert len(actual) == 1
-
-
-def test_account_balance_queries(django_assert_num_queries):
-    a1 = AccountFactory(title='a1')
-    a2 = AccountFactory(title='a2')
-
-    with django_assert_num_queries(1):
-        list(x.account.title for x in AccountBalance.objects.items())
-
-
-def test_account_balance_related_for_journal(main_user, second_user):
-    a1 = AccountFactory(title='A1', journal=main_user.journal)
-    a2 = AccountFactory(title='A2', journal=second_user.journal)
-
-    actual = AccountBalance.objects.related()
-
-    assert len(actual) == 1
-    assert str(actual[0].account) == 'A1'
-    assert actual[0].account.journal.users.first().username == 'bob'

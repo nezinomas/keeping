@@ -1,11 +1,9 @@
 from datetime import date, timedelta
-from decimal import Decimal
-from typing import Any, Dict, List
 
 from dateutil.relativedelta import relativedelta
 from django.db import models
-from django.db.models import Case, Count, F, Q, Sum, When
-from django.db.models.functions import TruncMonth
+from django.db.models import Count, F, Q, Sum
+from django.db.models.functions import ExtractYear, TruncMonth
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
@@ -45,33 +43,6 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .filter(saving_type__journal=journal)
         )
         return qs
-
-    def _summary(self, year):
-        return (
-            self
-            .related()
-            .annotate(cnt=Count('saving_type'))
-            .values('cnt')
-            .order_by('cnt')
-            .annotate(
-                s_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='price'),
-                        default=Decimal(0))),
-                s_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='price'),
-                        default=Decimal(0))),
-                s_fee_past=Sum(
-                    Case(
-                        When(**{'date__year__lt': year}, then='fee'),
-                        default=Decimal(0))),
-                s_fee_now=Sum(
-                    Case(
-                        When(**{'date__year': year}, then='fee'),
-                        default=Decimal(0)))
-            )
-        )
 
     def year(self, year):
         return (
@@ -144,52 +115,6 @@ class SavingQuerySet(SumMixin, models.QuerySet):
                 'date')
         )
 
-    def summary_from(self, year: int) -> List[Dict[str, Any]]:
-        '''
-        summary for accounts
-        return:
-            {
-                'title': ACCOUNT,
-                's_past': Decimal(),
-                's_now': Decimal()
-            }
-        '''
-        return (
-            self
-            .related()
-            ._summary(year)
-            .values(
-                's_past',
-                's_now',
-                title=models.F('account__title'),
-            )
-        )
-
-    def summary_to(self, year: int) -> List[Dict[str, Any]]:
-        '''
-        summary for saving_types
-        return:
-            {
-                'title': SAVING_TYPE,
-                's_past': Decimal(),
-                's_now': Decimal(),
-                's_fee_past': Decimal(),
-                's_free_now': Decimal()
-            }
-        '''
-        return (
-            self
-            .related()
-            ._summary(year)
-            .values(
-                's_past',
-                's_now',
-                's_fee_past',
-                's_fee_now',
-                title=models.F('saving_type__title'),
-            )
-        )
-
     def last_months(self, months: int = 6) -> float:
         # previous month
         # if today February, then start is 2020-01-31
@@ -201,6 +126,28 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         qs = self.related().filter(date__range=(end, start)).aggregate(sum=Sum('price'))
 
         return qs
+
+    def incomes(self):
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'saving_type__title')
+            .annotate(incomes=Sum('price'), fee=Sum('fee'))
+            .values('year', 'incomes', 'fee', id=F('saving_type__pk'))
+            .order_by('year', 'id')
+        )
+
+    def expenses(self):
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'account__title')
+            .annotate(expenses=Sum('price'))
+            .values('year', 'expenses', id=F('account__pk'))
+            .order_by('year', 'id')
+        )
 
 
 class SavingBalanceQuerySet(models.QuerySet):
@@ -228,7 +175,7 @@ class SavingBalanceQuerySet(models.QuerySet):
         return qs.values(
             'year',
             'past_amount', 'past_fee',
-            'fees', 'invested', 'incomes', 'market_value',
+            'fee', 'invested', 'incomes', 'market_value',
             'profit_incomes_proc', 'profit_incomes_sum',
             'profit_invested_proc', 'profit_invested_sum',
             title=F('saving_type__title'),
@@ -243,6 +190,10 @@ class SavingBalanceQuerySet(models.QuerySet):
             .values('saving_type__type')
             .annotate(y=F('year'))
             .values('y')
+            .filter(
+                Q(saving_type__closed__isnull=True) |
+                Q(saving_type__closed__gt=F('y'))
+            )
             .annotate(invested=Sum('incomes'), profit=Sum('profit_incomes_sum'))
             .order_by('year')
             .values(

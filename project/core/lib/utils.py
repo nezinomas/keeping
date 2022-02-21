@@ -49,3 +49,10 @@ def sum_col(arr: List[Dict], key: Any) -> float:
     rtn = sum_all(arr)
 
     return rtn.get(key, 0.0)
+
+
+def _getattr(obj, name, default=None):
+    try:
+        return getattr(obj, name)
+    except AttributeError:
+        return default

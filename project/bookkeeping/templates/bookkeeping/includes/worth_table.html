@@ -16,7 +16,7 @@
         <tr>
             <th class="text-start">{% translate 'Fund' %}</th>
             <th>{% translate '01.01 transferred' %}</th>
-            <th>{% translate '01.01 fees' %}</th>
+            <th>{% translate '01.01 fee' %}</th>
             <th>{% translate 'Transferred' %}</th>
             <th>{% translate 'Fees' %}</th>
             <th>{% translate 'Purchased' %}</th>
@@ -34,7 +34,7 @@
             {% cell item.past_amount css_class='w8' %}
             {% cell item.past_fee css_class='w8' %}
             {% cell item.incomes css_class='w8' %}
-            {% cell item.fees css_class='w8' %}
+            {% cell item.fee css_class='w8' %}
             {% cell item.invested css_class='w8' %}
             {% cell item.market_value css_class='br w8' %}
             {% cell item.profit_incomes_sum text_after='€' highlight_value=True css_class='w8' %}
@@ -50,7 +50,7 @@
             {% cell total_row.past_amount tag='th' %}
             {% cell total_row.past_fee tag='th' %}
             {% cell total_row.incomes tag='th' %}
-            {% cell total_row.fees tag='th' %}
+            {% cell total_row.fee tag='th' %}
             {% cell total_row.invested tag='th' %}
             {% cell total_row.market_value tag='th' css_class='br' %}
             {% cell total_row.profit_incomes_sum text_after='€' highlight_value=True tag='th' %}

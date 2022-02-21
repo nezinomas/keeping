@@ -1,14 +1,12 @@
 from datetime import datetime as dt
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
-import mock
 import pytest
 import pytz
-from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
-from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...pensions.factories import PensionTypeFactory
 from ...pensions.models import PensionBalance
 from ...savings.factories import SavingTypeFactory
@@ -44,15 +42,19 @@ def test_account_worth_related(second_user):
 
 
 def test_account_worth_latest_values(accounts_worth):
-    actual = list(AccountWorth.objects.items())
+    actual = AccountWorth.objects.items()
 
-    expect = [
-        {'title': 'Account1', 'have': Decimal('3.25')},
-        {'title': 'Account2', 'have': Decimal('8.00')},
-    ]
+    assert actual[0]['title'] == 'Account1'
+    assert actual[0]['have'] == Decimal('3.25')
+    assert actual[0]['latest_check'].year == 1999
+    assert actual[0]['latest_check'].month == 1
+    assert actual[0]['latest_check'].day == 2
 
-    assert_(expect, actual)
-
+    assert actual[1]['title'] == 'Account2'
+    assert actual[1]['have'] == Decimal('8.0')
+    assert actual[1]['latest_check'].year == 1999
+    assert actual[1]['latest_check'].month == 1
+    assert actual[1]['latest_check'].day == 1
 
 
 def test_account_worth_queries(accounts_worth,
@@ -62,15 +64,37 @@ def test_account_worth_queries(accounts_worth,
 
 
 def test_account_worth_post_save():
-    AccountWorthFactory()
+    AccountWorthFactory(date=dt(1999, 1, 1))
 
     actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
+    assert actual[0]['incomes'] == 0.0
+    assert actual[0]['expenses'] == 0.0
+    assert actual[0]['balance'] == 0.0
+    assert actual[0]['have'] == 0.5
+    assert actual[0]['delta'] == 0.5
+
+
+def test_account_worth_have():
+    AccountWorthFactory(date=dt(1970, 1, 1, tzinfo=ZoneInfo('UTC')), price=1)
+    AccountWorthFactory(date=dt(1970, 12, 31, tzinfo=ZoneInfo('UTC')), price=2)
+    AccountWorthFactory(date=dt(2000, 1, 1, tzinfo=ZoneInfo('UTC')), price=3)
+    AccountWorthFactory(date=dt(2000, 12, 31, tzinfo=ZoneInfo('UTC')), price=4)
+
+    actual = AccountWorth.objects.have()
+
+    assert actual[0]['year'] == 1970
+    assert actual[0]['id'] == 1
+    assert actual[0]['have'] == 2
+
+    assert actual[1]['year'] == 2000
+    assert actual[1]['id'] == 1
+    assert actual[1]['have'] == 4
 
 
 # ---------------------------------------------------------------------------------------
-#                                                                  SavingWorth
+#                                                                             SavingWorth
 # ---------------------------------------------------------------------------------------
 def test_saving_worth_str():
     model = SavingWorthFactory()
@@ -113,9 +137,33 @@ def test_saving_worth_queries(savings_worth,
 def test_saving_worth_post_save():
     SavingWorthFactory()
 
-    actual = SavingBalance.objects.year(1999)
+    assert SavingBalance.objects.count() == 1
 
-    assert actual.count() == 1
+    actual = SavingBalance.objects.first()
+    assert actual.saving_type.title == 'Savings'
+    assert actual.past_amount == 0.0
+    assert actual.past_fee == 0.0
+    assert actual.fee == 0.0
+    assert actual.invested == 0.0
+    assert actual.incomes == 0.0
+    assert actual.market_value == 0.5
+
+
+def test_saving_worth_have():
+    SavingWorthFactory(date=dt(1970, 1, 1, tzinfo=ZoneInfo('UTC')), price=1)
+    SavingWorthFactory(date=dt(1970, 12, 31, tzinfo=ZoneInfo('UTC')), price=2)
+    SavingWorthFactory(date=dt(2000, 1, 1, tzinfo=ZoneInfo('UTC')), price=3)
+    SavingWorthFactory(date=dt(2000, 12, 31, tzinfo=ZoneInfo('UTC')), price=4)
+
+    actual = SavingWorth.objects.have()
+
+    assert actual[0]['year'] == 1970
+    assert actual[0]['id'] == 1
+    assert actual[0]['have'] == 2
+
+    assert actual[1]['year'] == 2000
+    assert actual[1]['id'] == 1
+    assert actual[1]['have'] == 4
 
 
 # ---------------------------------------------------------------------------------------
@@ -144,11 +192,11 @@ def test_pension_worth_related(second_user):
 def test_pension_worth_latest_values(pensions_worth):
     actual = list(PensionWorth.objects.items())
 
-    expect = [
-        {'title': 'PensionType', 'have': 2.15},
-    ]
-
-    assert_(expect, actual)
+    assert actual[0]['title'] == 'PensionType'
+    assert actual[0]['have'] == Decimal('2.15')
+    assert actual[0]['latest_check'].year == 1999
+    assert actual[0]['latest_check'].month == 1
+    assert actual[0]['latest_check'].day == 1
 
 
 def test_pension_worth_queries(pensions_worth,
@@ -160,6 +208,30 @@ def test_pension_worth_queries(pensions_worth,
 def test_pension_worth_post_save():
     PensionWorthFactory()
 
-    actual = PensionBalance.objects.year(1999)
+    assert PensionBalance.objects.count() == 1
 
-    assert actual.count() == 1
+    actual = PensionBalance.objects.first()
+    assert actual.pension_type.title == 'PensionType'
+    assert actual.past_amount == 0.0
+    assert actual.past_fee == 0.0
+    assert actual.fee == 0.0
+    assert actual.invested == 0.0
+    assert actual.incomes == 0.0
+    assert actual.market_value == 0.5
+
+
+def test_pension_worth_have():
+    PensionWorthFactory(date=dt(1970, 1, 1, tzinfo=ZoneInfo('UTC')), price=1)
+    PensionWorthFactory(date=dt(1970, 12, 31, tzinfo=ZoneInfo('UTC')), price=2)
+    PensionWorthFactory(date=dt(2000, 1, 1, tzinfo=ZoneInfo('UTC')), price=3)
+    PensionWorthFactory(date=dt(2000, 12, 31, tzinfo=ZoneInfo('UTC')), price=4)
+
+    actual = PensionWorth.objects.have()
+
+    assert actual[0]['year'] == 1970
+    assert actual[0]['id'] == 1
+    assert actual[0]['have'] == 2
+
+    assert actual[1]['year'] == 2000
+    assert actual[1]['id'] == 1
+    assert actual[1]['have'] == 4

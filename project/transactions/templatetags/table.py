@@ -7,7 +7,7 @@ register = template.Library()
     'transactions/includes/table.html',
     takes_context=True
 )
-def table(context, url_update, url_delete, fees=False):
+def table(context, url_update, url_delete, fee=False):
     try:
         year = context['request'].user.year
     except Exception as ex:
@@ -18,5 +18,5 @@ def table(context, url_update, url_delete, fees=False):
         'url_delete': url_delete,
         'items': context['items'],
         'year': year,
-        'fees': fees
+        'fee': fee
     }

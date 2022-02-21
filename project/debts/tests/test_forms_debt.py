@@ -5,20 +5,21 @@ from decimal import Decimal
 import pytest
 from django.forms.models import model_to_dict
 from freezegun import freeze_time
+from mock import patch
 
 from ...accounts.factories import AccountFactory
 from ...users.factories import UserFactory
-from .. import factories, forms
+from .. import factories, forms, models
 
 pytestmark = pytest.mark.django_db
 
 
-def test_lent_init():
-    forms.LentForm()
+def test_debt_init():
+    forms.DebtForm()
 
 
-def test_lent_init_fields():
-    form = forms.LentForm().as_p()
+def test_debt_init_fields():
+    form = forms.DebtForm().as_p()
 
     assert '<input type="text" name="date"' in form
     assert '<select name="account"' in form
@@ -31,8 +32,22 @@ def test_lent_init_fields():
     assert '<input type="number" name="returned"' not in form
 
 
-def test_lent_checkbox_class():
-    form = forms.LentForm().as_p()
+@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
+def test_debt_name_field_label_for_lend(mck):
+    form = forms.DebtForm().as_p()
+
+    assert '<label for="id_name">Paskolos gavėjas:</label>' in form
+
+
+@patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
+def test_debt_name_field_label_for_borrow(mck):
+    form = forms.DebtForm().as_p()
+
+    assert '<label for="id_name">Paskolos davėjas:</label>' in form
+
+
+def test_debt_checkbox_class():
+    form = forms.DebtForm().as_p()
 
     pattern = re.compile(r'<input type="checkbox" name="closed" class="(.*?)>')
     res = re.findall(pattern, form)
@@ -41,37 +56,37 @@ def test_lent_checkbox_class():
 
 
 @freeze_time('1000-01-01')
-def test_lent_initial_values():
+def test_debt_initial_values():
     UserFactory()
 
-    form = forms.LentForm().as_p()
+    form = forms.DebtForm().as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_lent_current_user_accounts(second_user):
+def test_debt_current_user_accounts(second_user):
     AccountFactory(title='A1')  # user bob, current user
     AccountFactory(title='A2', journal=second_user.journal)  # user X
 
-    form = forms.LentForm().as_p()
+    form = forms.DebtForm().as_p()
 
     assert 'A1' in form
     assert 'A2' not in form
 
 
-def test_lent_select_first_account(second_user):
+def test_debt_select_first_account(second_user):
     AccountFactory(title='A1', journal=second_user.journal)
 
     a2 = AccountFactory(title='A2')
 
-    form = forms.LentForm().as_p()
+    form = forms.DebtForm().as_p()
 
     expect = f'<option value="{a2.pk}" selected>{a2}</option>'
     assert expect in form
 
 
-def test_lent_name_too_short():
-    form = forms.LentForm(data={
+def test_debt_name_too_short():
+    form = forms.DebtForm(data={
         'date': '1974-01-01',
         'name': 'AA',
         'price': '1',
@@ -83,8 +98,8 @@ def test_lent_name_too_short():
     assert 'name' in form.errors
 
 
-def test_lent_name_too_long():
-    form = forms.LentForm(data={
+def test_debt_name_too_long():
+    form = forms.DebtForm(data={
         'date': '1974-01-01',
         'name': 'A'*101,
         'price': '1',
@@ -96,10 +111,10 @@ def test_lent_name_too_long():
     assert 'name' in form.errors
 
 
-def test_lent_valid_data():
+def test_debt_valid_data():
     a = AccountFactory()
 
-    form = forms.LentForm(
+    form = forms.DebtForm(
         data={
             'date': '1999-01-01',
             'name': 'Name',
@@ -122,15 +137,43 @@ def test_lent_valid_data():
     assert not e.closed
 
 
+@patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
+def test_debt_valid_data_type_from_request(mck):
+    a = AccountFactory()
+
+    form = forms.DebtForm(
+        data={
+            'date': '1999-01-01',
+            'name': 'Name',
+            'price': '1.1',
+            'account': a.pk,
+            'closed': False,
+            'remark': 'Rm'
+        },
+    )
+
+    form.save()
+
+    actual = models.Debt.objects.first()
+
+    assert actual.date == date(1999, 1, 1)
+    assert actual.name == 'Name'
+    assert actual.price == Decimal('1.1')
+    assert actual.account == a
+    assert not actual.closed
+    assert actual.remark == 'Rm'
+    assert actual.debt_type == 'xxx'
+
+
 @freeze_time('1999-2-2')
 @pytest.mark.parametrize(
     'year',
     [1998, 2001]
 )
-def test_lent_inalid_date(year):
+def test_debt_inalid_date(year):
     a = AccountFactory()
 
-    form = forms.LentForm(
+    form = forms.DebtForm(
         data={
             'date': f'{year}-01-01',
             'name': 'Name',
@@ -146,8 +189,8 @@ def test_lent_inalid_date(year):
     assert 'Metai turi būti tarp 1999 ir 2000' in form.errors['date']
 
 
-def test_lent_blank_data():
-    form = forms.LentForm(data={})
+def test_debt_blank_data():
+    form = forms.DebtForm(data={})
 
     assert not form.is_valid()
 
@@ -158,10 +201,10 @@ def test_lent_blank_data():
     assert 'account' in form.errors
 
 
-def test_lent_same_name_for_diff_journal(second_user):
-    factories.LentFactory(name='XXX', journal=second_user.journal)
+def test_debt_same_name_for_diff_journal(second_user):
+    factories.LendFactory(name='XXX', journal=second_user.journal)
 
-    form = forms.LentForm({
+    form = forms.DebtForm({
         'date': '1999-01-04',
         'name': 'XXX',
         'account': AccountFactory(),
@@ -172,32 +215,32 @@ def test_lent_same_name_for_diff_journal(second_user):
     assert form.is_valid()
 
 
-def test_lent_unique_name():
-    obj = factories.LentFactory(name='X')
+def test_debt_unique_name():
+    obj = factories.LendFactory(name='X')
 
-    form = forms.LentForm(model_to_dict(obj))
+    form = forms.DebtForm(model_to_dict(obj))
 
     assert form.is_bound
     assert not form.is_valid()
     assert 'name' in form.errors
 
 
-def test_lent_unique_name_unclose_with_same_name():
-    factories.LentFactory(name='X')
+def test_debt_unique_name_unclose_with_same_name():
+    factories.LendFactory(name='X')
 
-    obj = factories.LentFactory(name='X', closed=True)
+    obj = factories.LendFactory(name='X', closed=True)
     obj.closed = False
 
-    form = forms.LentForm(data=model_to_dict(obj))
+    form = forms.DebtForm(data=model_to_dict(obj))
 
     assert form.is_bound
     assert not form.is_valid()
     assert 'name' in form.errors
 
 
-def test_lent_cant_close():
-    obj = factories.LentFactory(name='Xxx', closed=True)
-    form = forms.LentForm(data=model_to_dict(obj))
+def test_debt_cant_close():
+    obj = factories.LendFactory(name='Xxx', closed=True)
+    form = forms.DebtForm(data=model_to_dict(obj))
 
     assert not form.is_valid()
     assert len(form.errors) == 1
