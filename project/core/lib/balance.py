@@ -193,6 +193,9 @@ class Balance(BalanceBase):
             # filter df by account_id
             _df =  df.loc[account_id, :].copy()
 
+            # update have
+            self._update_have(_df, 'have')
+
             # new column with account_id value
             _df['account_id'] = account_id
 
@@ -246,6 +249,9 @@ class Balance(BalanceBase):
             # copy values from have to market_value
             _df['market_value'] = _df['have']
 
+            # update last row market_value cell if empty
+            self._update_have(_df, 'market_value')
+
             # calculate incomes
             _df['incomes'] = _df['incomes'] - _df['expenses']
 
@@ -292,3 +298,14 @@ class Balance(BalanceBase):
         )
 
         return _df
+
+    def _update_have(self, df, field):
+        # if last row have empty, copy values from one year earler
+        _years = df.index.values
+        if len(_years) > 1:
+            _last_year = _years[-1]
+            _prev_year = _years[-2]
+
+            _have = df.iloc[-1][field]
+            if not _have:
+                df.at[_last_year, field] = df.at[_prev_year, field]

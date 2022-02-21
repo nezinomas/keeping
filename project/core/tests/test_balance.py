@@ -696,3 +696,62 @@ def test_savings_total_market_no_data():
 
     assert actual == 0.0
 
+
+def test_account_balance_have_previous_year_value():
+    incomes = [
+        {'year': 1, 'have': Decimal('1'), 'id': 1},
+        {'year': 2, 'have': Decimal('0'), 'id': 1},
+    ]
+
+    obj = T().accounts()
+    obj.create_balance(data=[incomes])
+    actual = obj.balance
+
+    assert actual[0]['year'] == 1
+    assert actual[0]['have'] == 1.0
+
+    assert actual[1]['year'] == 2
+    assert actual[1]['have'] == 1.0
+
+
+def test_account_balance_have_previous_year_value_one_row():
+    incomes = [
+        {'year': 1, 'have': Decimal('0'), 'id': 1},
+    ]
+
+    obj = T().accounts()
+    obj.create_balance(data=[incomes])
+    actual = obj.balance
+
+    assert actual[0]['year'] == 1
+    assert actual[0]['have'] == 0.0
+
+
+def test_saving_balance_have_previous_year_value():
+    incomes = [
+        {'year': 1, 'have': Decimal('1'), 'id': 1},
+        {'year': 2, 'have': Decimal('0'), 'id': 1},
+    ]
+
+    obj = T().savings()
+    obj.create_balance(data=[incomes])
+    actual = obj.balance
+
+    assert actual[0]['year'] == 1
+    assert actual[0]['market_value'] == 1.0
+
+    assert actual[1]['year'] == 2
+    assert actual[1]['market_value'] == 1.0
+
+
+def test_saving_balance_have_previous_year_value_one_row():
+    incomes = [
+        {'year': 1, 'have': Decimal('0'), 'id': 1},
+    ]
+
+    obj = T().savings()
+    obj.create_balance(data=[incomes])
+    actual = obj.balance
+
+    assert actual[0]['year'] == 1
+    assert actual[0]['market_value'] == 0.0
