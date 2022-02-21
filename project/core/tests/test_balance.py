@@ -138,6 +138,57 @@ def test_account_balance_only_incomes(incomes1, incomes2):
     assert actual[3]['delta'] == -8.0
 
 
+def test_account_balance_growing_years():
+    incomes = [
+        {'year': 1, 'incomes': Decimal('1'), 'id': 1},
+        {'year': 2, 'incomes': Decimal('3'), 'id': 1},
+        {'year': 3, 'incomes': Decimal('5'), 'id': 1},
+    ]
+
+    obj = T().accounts()
+    obj.create_balance(data=[incomes])
+    actual = obj.balance
+
+    assert actual[0]['year'] == 1
+    assert actual[0]['past'] == 0.0
+    assert actual[0]['incomes'] == 1.0
+    assert actual[0]['balance'] == 1.0
+
+    assert actual[1]['year'] == 2
+    assert actual[1]['past'] == 1.0
+    assert actual[1]['incomes'] == 3.0
+    assert actual[1]['balance'] == 4.0
+
+    assert actual[2]['year'] == 3
+    assert actual[2]['past'] == 4.0
+    assert actual[2]['incomes'] == 5.0
+    assert actual[2]['balance'] == 9.0
+
+
+def test_savings_balance_growing_years():
+    incomes = [
+        {'year': 1, 'incomes': Decimal('1'), 'id': 1},
+        {'year': 2, 'incomes': Decimal('3'), 'id': 1},
+        {'year': 3, 'incomes': Decimal('5'), 'id': 1},
+    ]
+
+    obj = T().savings()
+    obj.create_balance(data=[incomes])
+    actual = obj.balance
+
+    assert actual[0]['year'] == 1
+    assert actual[0]['past_amount'] == 0.0
+    assert actual[0]['incomes'] == 1.0
+
+    assert actual[1]['year'] == 2
+    assert actual[1]['past_amount'] == 1.0
+    assert actual[1]['incomes'] == 4.0
+
+    assert actual[2]['year'] == 3
+    assert actual[2]['past_amount'] == 4.0
+    assert actual[2]['incomes'] == 9.0
+
+
 def test_account_balance_incomes_expenses(incomes1, incomes2, expenses):
     obj = T().accounts()
     obj.create_balance(data=[incomes1, incomes2, expenses, expenses])

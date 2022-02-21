@@ -201,7 +201,7 @@ class Balance(BalanceBase):
 
             # get past values
             # shift balance values down one row
-            _df['past'] = _df.balance.shift(periods=1, fill_value=0.0)
+            _df['past'] = _df.balance.cumsum().shift(periods=1, fill_value=0.0)
 
             _df = Balance.recalc_accounts(_df)
 
@@ -251,8 +251,8 @@ class Balance(BalanceBase):
 
             # # get past values
             # shift free and incomes values down one row
-            _df['past_amount'] = _df.incomes.shift(periods=1, fill_value=0.0)
-            _df['past_fee'] = _df.fee.shift(periods=1, fill_value=0.0)
+            _df['past_amount'] = _df.incomes.cumsum().shift(periods=1, fill_value=0.0)
+            _df['past_fee'] = _df.fee.cumsum().shift(periods=1, fill_value=0.0)
 
             # recalclate balance with past
             # recalclate incomes and fee with past
