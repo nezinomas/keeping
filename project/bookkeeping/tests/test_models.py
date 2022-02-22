@@ -5,11 +5,11 @@ from zoneinfo import ZoneInfo
 import pytest
 import pytz
 
-from ...accounts.factories import AccountFactory
+from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import AccountBalance
-from ...pensions.factories import PensionTypeFactory
+from ...pensions.factories import PensionBalanceFactory, PensionTypeFactory
 from ...pensions.models import PensionBalance
-from ...savings.factories import SavingTypeFactory
+from ...savings.factories import SavingBalanceFactory, SavingTypeFactory
 from ...savings.models import SavingBalance
 from ..factories import (AccountWorthFactory, PensionWorthFactory,
                          SavingWorthFactory)
@@ -74,6 +74,18 @@ def test_account_worth_post_save():
     assert actual[0]['balance'] == 0.0
     assert actual[0]['have'] == 0.5
     assert actual[0]['delta'] == 0.5
+
+
+def test_account_worth_post_save_new():
+    AccountBalanceFactory()
+
+    actual = AccountBalance.objects.first()
+    actual.have == 0.2
+
+    AccountWorthFactory(price=5)
+
+    actual = AccountBalance.objects.first()
+    assert actual.have == 5.0
 
 
 def test_account_worth_have():
@@ -149,6 +161,28 @@ def test_saving_worth_post_save():
     assert actual.market_value == 0.5
 
 
+def test_saving_worth_post_save_new():
+    SavingBalanceFactory(incomes=2, fee=0)
+
+    actual = SavingBalance.objects.first()
+    assert actual.saving_type.title == 'Savings'
+    assert actual.fee == 0.0
+    assert actual.invested == 2.3
+    assert actual.incomes == 2.0
+    assert actual.market_value == 2.5
+
+    SavingWorthFactory(price=3)
+
+    assert SavingBalance.objects.count() == 1
+
+    actual = SavingBalance.objects.first()
+    assert actual.saving_type.title == 'Savings'
+    assert actual.fee == 0.0
+    assert actual.invested == 2.0
+    assert actual.incomes == 2.0
+    assert actual.market_value == 3.0
+
+
 def test_saving_worth_have():
     SavingWorthFactory(date=dt(1970, 1, 1, tzinfo=ZoneInfo('UTC')), price=1)
     SavingWorthFactory(date=dt(1970, 12, 31, tzinfo=ZoneInfo('UTC')), price=2)
@@ -218,6 +252,22 @@ def test_pension_worth_post_save():
     assert actual.invested == 0.0
     assert actual.incomes == 0.0
     assert actual.market_value == 0.5
+
+
+def test_pension_worth_post_save_new():
+    PensionBalanceFactory()
+
+    actual = PensionBalance.objects.first()
+    assert actual.pension_type.title == 'PensionType'
+    assert actual.market_value == 2.5
+
+    PensionWorthFactory(price=3)
+
+    assert PensionBalance.objects.count() == 1
+
+    actual = PensionBalance.objects.first()
+    assert actual.pension_type.title == 'PensionType'
+    assert actual.market_value == 3.0
 
 
 def test_pension_worth_have():

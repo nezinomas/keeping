@@ -150,7 +150,7 @@ class SignalBase():
                 {
                     'method': 'have',
                     'category': 'saving_type',
-                    'balance_field': 'have',
+                    'balance_field': 'market_value',
                 },
             ],
         }
@@ -188,7 +188,7 @@ class SignalBase():
                 {
                     'method': 'have',
                     'category': 'pension_type',
-                    'balance_field': 'have',
+                    'balance_field': 'market_value',
                 },
             ],
         }
@@ -287,9 +287,13 @@ class SignalBase():
         for field in fields:
             val = field if field == 'fee' else 'price'
             try:
-                _df.at[0, field] = (
-                    _df.at[0, field] + self._calc_field(caller, field=val)
-                )
+                _start = _df.at[0, field]
+
+                # [have,market_value] fields have no start value
+                if field in ['have', 'market_value']:
+                    _start = 0.0
+
+                _df.at[0, field] = _start + self._calc_field(caller, field=val)
             except KeyError:
                 pass
 
