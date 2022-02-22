@@ -65,19 +65,20 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        year = self.request.user.year
-        funds = SavingBalance.objects.year(year)
-        incomes = Income.objects.year(year).aggregate(Sum('price'))
-        savings = Saving.objects.year(year).aggregate(Sum('price'))
+        if self.request.POST:
+            year = self.request.user.year
+            funds = SavingBalance.objects.year(year)
+            incomes = Income.objects.year(year).aggregate(Sum('price'))
+            savings = Saving.objects.year(year).aggregate(Sum('price'))
 
-        context.update({
-            **H.IndexHelper.savings_context(
-                funds,
-                incomes.get('price__sum', 0),
-                savings.get('price__sum', 0),
-                year
-            )
-        })
+            context.update({
+                **H.IndexHelper.savings_context(
+                    funds,
+                    incomes.get('price__sum', 0),
+                    savings.get('price__sum', 0),
+                    year
+                )
+            })
         return context
 
 
@@ -89,10 +90,11 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
     list_template_name = 'bookkeeping/includes/accounts_worth_list.html'
 
     def get_context_data(self, **kwargs):
-        obj = H.IndexHelper(self.request, self.request.user.year)
-
         context = super().get_context_data(**kwargs)
-        context.update({**obj.render_accounts(to_string=False)})
+
+        if self.request.POST:
+            obj = H.IndexHelper(self.request, self.request.user.year)
+            context.update({**obj.render_accounts(to_string=False)})
 
         return context
 
@@ -107,12 +109,13 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        year = self.request.user.year
-        pensions = PensionBalance.objects.year(year)
+        if self.request.POST:
+            year = self.request.user.year
+            pensions = PensionBalance.objects.year(year)
 
-        context.update({
-            **H.IndexHelper.pensions_context(pensions, year)
-        })
+            context.update({
+                **H.IndexHelper.pensions_context(pensions, year)
+            })
 
         return context
 
