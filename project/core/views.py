@@ -54,6 +54,7 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
             SignalBase.pensions(**kwargs),
         ]
 
+
         for x in arr:
             x.full_balance_update()
 
