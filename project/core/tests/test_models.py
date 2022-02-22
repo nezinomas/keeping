@@ -4,6 +4,7 @@ from ..factories import TitleDummyFactory
 
 pytestmark = pytest.mark.django_db
 
+
 def test_title_build():
     m = TitleDummyFactory()
 
