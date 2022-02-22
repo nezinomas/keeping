@@ -13,6 +13,7 @@ X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
 
 
+
 def test_borrow_return_list_func():
     view = resolve('/debts/XXX/return/lists/')
 
