@@ -5,6 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 
 from ...core.lib.date import weeknumber
 from ..lib.stats import Stats
@@ -99,7 +100,7 @@ class RenderContext():
         )
         return rendered
 
-    def chart_years(self, title: str = _('Year')) -> str:
+    def chart_years(self, title: str = _lazy('Year')) -> str:
         year_totals = self._stats.year_totals()
         rendered = render_to_string(
             'counts/includes/chart_periodicity.html',
