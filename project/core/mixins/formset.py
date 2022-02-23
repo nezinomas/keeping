@@ -1,8 +1,35 @@
+from django.forms import ValidationError
+from django.forms.formsets import BaseFormSet
 from django.forms.models import modelformset_factory
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 
 from ...core.lib import utils
+
+
+class BaseTypeFormSet(BaseFormSet):
+    def clean(self):
+        if any(self.errors):
+            return
+
+        arr = []
+        duplicates = False
+
+        for form in self.forms:
+            if form.cleaned_data:
+                _types = ['account', 'saving_type', 'pension_type']
+                for _type in _types:
+                    _account = form.cleaned_data.get(_type)
+                    if not _account:
+                        continue
+
+                    if _account in arr:
+                        duplicates = True
+                    arr.append(_account)
+
+                    if duplicates:
+                        raise ValidationError(_('The same accounts are selected.'))
 
 
 class FormsetMixin():
@@ -24,6 +51,7 @@ class FormsetMixin():
 
         return _list
 
+
     def _get_type_model(self):
         if not self.type_model:
             return self.model
@@ -33,23 +61,22 @@ class FormsetMixin():
     def _get_formset(self, post=None):
         form = self.get_form_class()
         # year = self.request.user.year
-        _formset = (
+        __formset = (
             modelformset_factory(
-                extra=0,
+                model=self.model,
                 form=form,
-                model=self.model
+                formset=BaseTypeFormSet,
+                extra=0,
             )
         )
 
         if post:
-            _formset = _formset(post)
+            _formset = __formset(post)
         else:
             initial = self._formset_initial()
-            _formset = _formset(
-                queryset=self.model.objects.none(),
-                initial=initial)
+            _formset = __formset(initial=initial)
 
-            _formset.extra += len(initial)
+            # _formset.extra += len(initial)
 
         return _formset
 

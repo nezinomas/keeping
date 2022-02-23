@@ -69,6 +69,29 @@ def test_account_worth_new(client_logged):
     assert actual.date.day == 9
 
 
+@freeze_time('1999-9-9')
+def test_account_worth_dublicated(client_logged):
+    i = AccountFactory()
+    data = {
+        'form-TOTAL_FORMS': 2,
+        'form-INITIAL_FORMS': 0,
+        'form-0-price': '999',
+        'form-0-account': i.pk,
+        'form-1-price': '666',
+        'form-1-account': i.pk
+    }
+
+    url = reverse('bookkeeping:accounts_worth_new')
+
+    response = client_logged.post(url, data, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)
+
+    assert not actual['form_is_valid']
+    assert 'Pasirinktos vienodos sąskaitos.' in actual['html_form']
+
+
 def test_account_worth_new_with_date(client_logged):
     i = AccountFactory()
     data = {
