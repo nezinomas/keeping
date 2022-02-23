@@ -60,7 +60,7 @@ class FormsetMixin():
 
     def _get_formset(self, post=None):
         form = self.get_form_class()
-        # year = self.request.user.year
+
         __formset = (
             modelformset_factory(
                 model=self.model,
@@ -75,8 +75,6 @@ class FormsetMixin():
         else:
             initial = self._formset_initial()
             _formset = __formset(initial=initial)
-
-            # _formset.extra += len(initial)
 
         return _formset
 
