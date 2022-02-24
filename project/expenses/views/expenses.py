@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from datetime import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -95,10 +96,12 @@ class Delete(DeleteAjaxMixin):
 
 class Search(AjaxSearchMixin):
     template_name = 'core/includes/search_form.html'
+    list_template = 'expenses/includes/expenses_list.html'
     form_class = SearchForm
     form_data_dict = {}
     url = reverse_lazy('expenses:expenses_search')
     update_container = 'expenses_list'
+    per_page = 10
 
     def dispatch(self, request, *args, **kwargs):
         if 'as_string' in kwargs:
@@ -110,18 +113,41 @@ class Search(AjaxSearchMixin):
         _search = self.form_data_dict['search']
         context = {'items': None}
         sql = search.search_expenses(_search)
-
+        paginator = Paginator(sql, self.per_page)
         if sql:
-            context['items'] = sql
+
+            context['items'] = paginator.page(1).object_list
+            context['page_range'] = paginator.page_range
+            context['search'] = _search
+
         else:
             context['notice'] = _('Found nothing')
 
-        template = 'expenses/includes/expenses_list.html'
         kwargs.update({
-            'html': render_to_string(template, context, self.request),
+            'html': render_to_string(self.list_template, context, self.request),
         })
 
         return super().form_valid(form, **kwargs)
+
+
+    def get(self, request, *args, **kwargs):
+        _page = request.GET.get('page')
+        _search = request.GET.get('search')
+
+        if _page and _search:
+            sql = search.search_expenses(_search)
+            paginator = Paginator(sql, self.per_page)
+            context = {
+                'items': paginator.page(_page).object_list,
+                'page_range': paginator.page_range,
+                'search': _search,
+            }
+
+            return JsonResponse(
+                {'expenses_list': render_to_string(self.list_template, context, self.request)}
+            )
+
+        return super().get(request, *args, **kwargs)
 
 
 class ReloadExpenses(LoginRequiredMixin, DispatchAjaxMixin, TemplateView):

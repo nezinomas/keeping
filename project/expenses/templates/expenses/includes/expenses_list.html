@@ -51,6 +51,12 @@
 
 <script>$('.sticky-table').stickyTableHeaders();</script>
 
+{% if page_range.1 > 1 %}
+{% for i in page_range %}
+<button class="paging" data-url="{% url 'expenses:expenses_search' %}" data-page="{{ i|title }}" data-search="{{ search }}" data-container="expenses_list">{{i|title }}</button>
+{% endfor %}
+{% endif %}
+
 {% else %}
 
 <div class="mx-auto text-center alert alert-warning py-2">
