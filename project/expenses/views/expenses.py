@@ -101,7 +101,7 @@ class Search(AjaxSearchMixin):
     form_data_dict = {}
     url = reverse_lazy('expenses:expenses_search')
     update_container = 'expenses_list'
-    per_page = 10
+    per_page = 50
 
     def dispatch(self, request, *args, **kwargs):
         if 'as_string' in kwargs:
@@ -143,10 +143,11 @@ class Search(AjaxSearchMixin):
             sql = search.search_expenses(_search)
             paginator = Paginator(sql, self.per_page)
             page_range = paginator.get_elided_page_range(number=_page)
+
             context = {
                 'items': paginator.get_page(_page),
-                'page_range': page_range,
                 'search': _search,
+                'page_range': page_range,
                 'url': self.url,
                 'update_container': self.update_container,
             }
