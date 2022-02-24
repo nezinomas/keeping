@@ -3,6 +3,7 @@ $(document).on('click', '.paging', function () {
     var page = $(this).data('page');
     var search = $(this).data('search');
     var container = $(this).data('container');
+
     $.ajax({
         type: 'GET',
         url: url,
@@ -14,7 +15,7 @@ $(document).on('click', '.paging', function () {
             var blocks = [container];
             reload_stats(data, blocks);
         },
-        error: function (data) {
+        error: function () {
             alert('Paging has broken for unknown reason.')
         }
     });
