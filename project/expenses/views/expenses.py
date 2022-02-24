@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from datetime import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -95,10 +96,12 @@ class Delete(DeleteAjaxMixin):
 
 class Search(AjaxSearchMixin):
     template_name = 'core/includes/search_form.html'
+    list_template = 'expenses/includes/expenses_list.html'
     form_class = SearchForm
     form_data_dict = {}
     url = reverse_lazy('expenses:expenses_search')
     update_container = 'expenses_list'
+    per_page = 50
 
     def dispatch(self, request, *args, **kwargs):
         if 'as_string' in kwargs:
@@ -107,21 +110,53 @@ class Search(AjaxSearchMixin):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form, **kwargs):
-        _search = self.form_data_dict['search']
-        context = {'items': None}
-        sql = search.search_expenses(_search)
+        search_str = self.form_data_dict['search']
+        sql = search.search_expenses(search_str)
+        paginator = Paginator(sql, self.per_page)
+        page_range = paginator.get_elided_page_range(number=1)
 
         if sql:
-            context['items'] = sql
+            context = {
+                'items': paginator.get_page(1),
+                'search': search_str,
+                'page_range': page_range,
+                'url': self.url,
+                'update_container': self.update_container,
+            }
         else:
-            context['notice'] = _('Found nothing')
+            context = {
+                'items': None,
+                'notice': _('Found nothing'),
+            }
 
-        template = 'expenses/includes/expenses_list.html'
         kwargs.update({
-            'html': render_to_string(template, context, self.request),
+            'html': render_to_string(self.list_template, context, self.request),
         })
 
         return super().form_valid(form, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        _page = request.GET.get('page')
+        _search = request.GET.get('search')
+
+        if _page and _search:
+            sql = search.search_expenses(_search)
+            paginator = Paginator(sql, self.per_page)
+            page_range = paginator.get_elided_page_range(number=_page)
+
+            context = {
+                'items': paginator.get_page(_page),
+                'search': _search,
+                'page_range': page_range,
+                'url': self.url,
+                'update_container': self.update_container,
+            }
+
+            return JsonResponse(
+                {self.update_container: render_to_string(self.list_template, context, self.request)}
+            )
+
+        return super().get(request, *args, **kwargs)
 
 
 class ReloadExpenses(LoginRequiredMixin, DispatchAjaxMixin, TemplateView):

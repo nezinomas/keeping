@@ -4,7 +4,8 @@ body, .tooltip {
 
 .btn-sm,
 .form-control-sm,
-.form-control {
+.form-control,
+.page-link {
     font-size: .7rem!important;
 }
 
@@ -424,4 +425,9 @@ input.form-check-input.is-invalid:checked {
 
 table.stats tr > .expense-ordinary {
     padding-left:.55rem!important;
+}
+
+.page-link {
+    padding-left: .75rem!important;
+    padding-right: .75rem!important;
 }
