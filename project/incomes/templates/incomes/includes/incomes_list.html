@@ -34,6 +34,8 @@
     </tbody>
 </table>
 
+{% paging url=url page_obj=items page_range=page_range search=search container=update_container %}
+
 {% else %}
 
 <div class="mx-auto text-center alert alert-warning py-2">
