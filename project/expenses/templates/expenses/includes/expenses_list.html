@@ -51,8 +51,7 @@
 
 <script>$('.sticky-table').stickyTableHeaders();</script>
 
-{% url 'expenses:expenses_search' as url_search %}
-{% paging url=url_search page_obj=items page_range=page_range search=search container='expenses_list' %}
+{% paging url=url page_obj=items page_range=page_range search=search container=update_container %}
 
 {% else %}
 

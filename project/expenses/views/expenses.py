@@ -120,7 +120,8 @@ class Search(AjaxSearchMixin):
                 'items': paginator.get_page(1),
                 'search': search_str,
                 'page_range': page_range,
-
+                'url': self.url,
+                'update_container': self.update_container,
             }
         else:
             context = {
@@ -146,10 +147,12 @@ class Search(AjaxSearchMixin):
                 'items': paginator.get_page(_page),
                 'page_range': page_range,
                 'search': _search,
+                'url': self.url,
+                'update_container': self.update_container,
             }
 
             return JsonResponse(
-                {'expenses_list': render_to_string(self.list_template, context, self.request)}
+                {self.update_container: render_to_string(self.list_template, context, self.request)}
             )
 
         return super().get(request, *args, **kwargs)
