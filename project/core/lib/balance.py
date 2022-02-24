@@ -210,7 +210,7 @@ class Balance(BalanceBase):
 
             _arr.append(_df)
 
-        df = reduce(lambda a, b: a.append(b), _arr)
+        df = pd.concat(_arr)
 
         return df
 
@@ -269,7 +269,7 @@ class Balance(BalanceBase):
 
             _arr.append(_df)
 
-        df = reduce(lambda a, b: a.append(b), _arr)
+        df = pd.concat(_arr)
 
         # delete expenses column
         df.drop(['expenses', 'have'], axis=1, inplace=True)
