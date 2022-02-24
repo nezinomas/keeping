@@ -110,15 +110,15 @@ class Search(AjaxSearchMixin):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form, **kwargs):
-        _search = self.form_data_dict['search']
-        sql = search.search_expenses(_search)
+        search_str = self.form_data_dict['search']
+        sql = search.search_expenses(search_str)
         paginator = Paginator(sql, self.per_page)
         page_range = paginator.get_elided_page_range(number=1)
 
         if sql:
             context = {
                 'items': paginator.get_page(1),
-                'search': _search,
+                'search': search_str,
                 'page_range': page_range,
 
             }
