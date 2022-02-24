@@ -15,6 +15,7 @@ pytest-diff==0.1.14
 pytest-django==4.5.2
 pytest-factoryboy==2.1.0
 pytest-forked==1.4.0
+pytest-freezegun==0.4.2
 pytest-icdiff==0.5
 pytest-mock==3.7.0
 pytest-raises==0.11
