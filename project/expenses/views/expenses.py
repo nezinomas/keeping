@@ -114,10 +114,12 @@ class Search(AjaxSearchMixin):
         context = {'items': None}
         sql = search.search_expenses(_search)
         paginator = Paginator(sql, self.per_page)
-        if sql:
+        page_range = paginator.get_elided_page_range(number=1)
 
+        if sql:
             context['items'] = paginator.get_page(1)
             context['search'] = _search
+            context['page_range'] = page_range
 
         else:
             context['notice'] = _('Found nothing')
