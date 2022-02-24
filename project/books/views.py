@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
@@ -118,10 +119,13 @@ class ReloadStats(DispatchAjaxMixin, BookTabMixin, IndexMixin):
 
 class Search(AjaxSearchMixin):
     template_name = 'core/includes/search_form.html'
+    list_template = 'books/includes/books_list.html'
     form_class = SearchForm
     form_data_dict = {}
     update_container = 'book_list'
     url = reverse_lazy('books:books_search')
+    update_container = 'book_list'
+    per_page = 25
 
     def dispatch(self, request, *args, **kwargs):
         if 'as_string' in kwargs:
@@ -130,21 +134,57 @@ class Search(AjaxSearchMixin):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form, **kwargs):
-        _search = self.form_data_dict['search']
-        context = {'items': None, 'tab': 'index' }
-        sql = search.search_books(_search)
+        search_str = self.form_data_dict['search']
+        context = { 'tab': 'index' }
+        sql = search.search_books(search_str)
+        paginator = Paginator(sql, self.per_page)
+        page_range = paginator.get_elided_page_range(number=1)
 
         if sql:
-            context['items'] = sql
+            context.update({
+                'items': paginator.get_page(1),
+                'search': search_str,
+                'page_range': page_range,
+                'url': self.url,
+                'update_container': self.update_container,
+            })
         else:
-            context['notice'] = _('Found nothing')
+            context.update({
+                'items': None,
+                'notice': _('Found nothing'),
+            })
 
-        template = 'books/includes/books_list.html'
-        html = render_to_string(template, context, self.request)
 
-        kwargs.update({'container': 'book_list', 'html': html})
+        html = render_to_string(self.list_template, context, self.request)
+
+        kwargs.update({'container': self.update_container, 'html': html})
 
         return super().form_valid(form, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        _page = request.GET.get('page')
+        _search = request.GET.get('search')
+
+        if _page and _search:
+            sql = search.search_books(_search)
+            paginator = Paginator(sql, self.per_page)
+            page_range = paginator.get_elided_page_range(number=_page)
+
+            context = {
+                'tab': 'index',
+                'items': paginator.get_page(_page),
+                'search': _search,
+                'page_range': page_range,
+                'url': self.url,
+                'update_container': self.update_container,
+            }
+
+            return JsonResponse(
+                {self.update_container: render_to_string(self.list_template, context, self.request)}
+            )
+
+        return super().get(request, *args, **kwargs)
+
 
 #----------------------------------------------------------------------------------------
 #                                                                            Target Views

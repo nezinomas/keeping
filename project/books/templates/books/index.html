@@ -47,6 +47,8 @@
 {% endif %}
 
 <script src="{% static 'js/search.js' %}"></script>
+<script src="{% static 'js/paging.js' %}"></script>
+
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
         var url = `{% url 'books:reload_stats' %}`;
