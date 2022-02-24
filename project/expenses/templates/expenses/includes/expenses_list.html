@@ -51,10 +51,33 @@
 
 <script>$('.sticky-table').stickyTableHeaders();</script>
 
-{% if page_range.1 > 1 %}
-{% for i in page_range %}
-<button class="paging" data-url="{% url 'expenses:expenses_search' %}" data-page="{{ i|title }}" data-search="{{ search }}" data-container="expenses_list">{{i|title }}</button>
-{% endfor %}
+{% if items.paginator.num_pages > 1 %}
+{% url 'expenses:expenses_search' as url_search %}
+<ul class="pagination justify-content-center flex-wrap mt-2 mb-4">
+    {% if items.has_previous %}
+        <li class="page-item"><a class="page-link paging" role="button" data-url="{{ url_search }}" data-page="{{ items.previous_page_number|title }}" data-search="{{ search }}" data-container="expenses_list">&laquo;</a></li>
+    {% else %}
+        <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
+    {% endif %}
+    {% for i in page_range|default_if_none:items.paginator.get_elided_page_range %}
+        {% if items.number == i %}
+            <li class="active page-item"><span class="page-link">{{ i|title }} <span class="sr-only">(current)</span></span>
+            </li>
+        {% else %}
+            {% if i == items.paginator.ELLIPSIS %}
+                <li class="page-item"><span class="page-link">{{ i|title }}</span></li>
+            {% else %}
+                <li class="page-item"><a class="page-link paging" role="button" data-url="{{ url_search }}" data-page="{{ i|title }}" data-search="{{ search }}" data-container="expenses_list">{{ i|title }}</a></li>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+    {% if items.has_next %}
+        <li class="page-item"><a class="page-link paging" role="button" data-url="{{ url_search }}" data-page="{{ items.next_page_number|title }}" data-search="{{ search }}" data-container="expenses_list">&raquo;</a></li>
+    {% else %}
+        <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
+    {% endif %}
+</ul>
+
 {% endif %}
 
 {% else %}

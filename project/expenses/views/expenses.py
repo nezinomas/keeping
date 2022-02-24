@@ -116,8 +116,7 @@ class Search(AjaxSearchMixin):
         paginator = Paginator(sql, self.per_page)
         if sql:
 
-            context['items'] = paginator.page(1).object_list
-            context['page_range'] = paginator.page_range
+            context['items'] = paginator.get_page(1)
             context['search'] = _search
 
         else:
@@ -129,7 +128,6 @@ class Search(AjaxSearchMixin):
 
         return super().form_valid(form, **kwargs)
 
-
     def get(self, request, *args, **kwargs):
         _page = request.GET.get('page')
         _search = request.GET.get('search')
@@ -137,9 +135,10 @@ class Search(AjaxSearchMixin):
         if _page and _search:
             sql = search.search_expenses(_search)
             paginator = Paginator(sql, self.per_page)
+            page_range = paginator.get_elided_page_range(number=_page)
             context = {
-                'items': paginator.page(_page).object_list,
-                'page_range': paginator.page_range,
+                'items': paginator.get_page(_page),
+                'page_range': page_range,
                 'search': _search,
             }
 
