@@ -12,7 +12,7 @@ from mock import patch
 from ...core.tests.utils import setup_view
 from ...users.factories import UserFactory
 from .. import models, views
-from ..factories import BookFactory, BookTargetFactory
+from ..factories import Book, BookFactory, BookTargetFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
@@ -599,6 +599,40 @@ def test_search_found(client_logged, _search_form_data):
     assert 'Book Title' in actual['html']
     assert 'Author' in actual['html']
 
+
+def test_search_pagination_first_page(client_logged, _search_form_data):
+    u = UserFactory()
+    i = BookFactory.build_batch(26, user=u)
+    Book.objects.bulk_create(i)
+
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('books:books_search')
+    response = client_logged.post(url, {'form_data': form_data})
+    actual = json.loads(response.content)
+
+    assert 'html' in actual
+
+    actual = actual['html']
+
+    assert actual.count('Author') == 25
+
+
+def test_search_pagination_second_page(client_logged):
+    u = UserFactory()
+    i = BookFactory.build_batch(26, user=u)
+    Book.objects.bulk_create(i)
+
+    url = reverse('books:books_search')
+
+    response = client_logged.get(url, {'page': 2, 'search': 'author'})
+    actual = json.loads(response.content)
+
+    assert 'book_list' in actual
+
+    actual = actual['book_list']
+
+    assert actual.count('Author') == 1
 
 
 # ---------------------------------------------------------------------------------------

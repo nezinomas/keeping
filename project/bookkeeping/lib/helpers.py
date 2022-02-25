@@ -9,13 +9,6 @@ def calc_percent(args):
     return rtn
 
 
-def calc_sum(args):
-    market = args[0]
-    invested = args[1]
-
-    return market - invested
-
-
 def calc_balance(args) -> float:
     """[summary]
 

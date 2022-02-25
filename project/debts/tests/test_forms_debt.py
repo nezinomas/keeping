@@ -170,7 +170,7 @@ def test_debt_valid_data_type_from_request(mck):
     'year',
     [1998, 2001]
 )
-def test_debt_inalid_date(year):
+def test_debt_invalid_date(year):
     a = AccountFactory()
 
     form = forms.DebtForm(
@@ -215,20 +215,25 @@ def test_debt_same_name_for_diff_journal(second_user):
     assert form.is_valid()
 
 
-def test_debt_unique_name():
-    obj = factories.LendFactory(name='X')
+@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
+def test_debt_unique_name(mck):
+    factories.LendFactory(name='XXX')
+    obj = factories.LendFactory(name='YYY')
+    d = model_to_dict(obj)
+    d['name'] = 'XXX'
 
-    form = forms.DebtForm(model_to_dict(obj))
+    form = forms.DebtForm(data=d)
 
-    assert form.is_bound
     assert not form.is_valid()
     assert 'name' in form.errors
+    assert form.errors['name'] == ['Skolintojo vardas turi būti unikalus.']
 
 
-def test_debt_unique_name_unclose_with_same_name():
-    factories.LendFactory(name='X')
+@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
+def test_debt_unique_name_unclose_with_same_name(mck):
+    factories.LendFactory(name='XXX')
 
-    obj = factories.LendFactory(name='X', closed=True)
+    obj = factories.LendFactory(name='XXX', closed=True)
     obj.closed = False
 
     form = forms.DebtForm(data=model_to_dict(obj))
@@ -236,6 +241,7 @@ def test_debt_unique_name_unclose_with_same_name():
     assert form.is_bound
     assert not form.is_valid()
     assert 'name' in form.errors
+    assert form.errors['name'] == ['Skolintojo vardas turi būti unikalus.']
 
 
 def test_debt_cant_close():
@@ -245,3 +251,4 @@ def test_debt_cant_close():
     assert not form.is_valid()
     assert len(form.errors) == 1
     assert 'closed' in form.errors
+    assert form.errors['closed'] == ['Negalite uždaryti dar negražintos skolos.']

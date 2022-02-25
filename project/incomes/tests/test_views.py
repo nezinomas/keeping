@@ -505,3 +505,40 @@ def test_search_found(client_logged, _search_form_data):
 
     assert '1999-01-01' in actual['html']
     assert 'remark' in actual['html']
+
+
+def test_search_pagination_first_page(client_logged, _search_form_data):
+    a = AccountFactory()
+    t = IncomeTypeFactory()
+    i = IncomeFactory.build_batch(51, account=a, income_type=t)
+    Income.objects.bulk_create(i)
+
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('incomes:incomes_search')
+    response = client_logged.post(url, {'form_data': form_data})
+    actual = json.loads(response.content)
+
+    assert 'html' in actual
+
+    actual = actual['html']
+
+    assert actual.count('Income Type') == 50
+
+
+def test_search_pagination_second_page(client_logged):
+    a = AccountFactory()
+    t = IncomeTypeFactory()
+    i = IncomeFactory.build_batch(51, account=a, income_type=t)
+    Income.objects.bulk_create(i)
+
+    url = reverse('incomes:incomes_search')
+
+    response = client_logged.get(url, {'page': 2, 'search': 'type'})
+    actual = json.loads(response.content)
+
+    assert 'ajax-content' in actual
+
+    actual = actual['ajax-content']
+
+    assert actual.count('Income Type') == 1
