@@ -180,8 +180,9 @@ def test_borrow_return_only_not_closed(mck):
     assert b2.name in form
 
 
-@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
-def test_lend_return_price_higher(mck):
+def test_lend_return_price_higher(mocker):
+    mocker.patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
+
     a = AccountFactory()
     b = factories.LendFactory()
 
@@ -196,10 +197,12 @@ def test_lend_return_price_higher(mck):
 
     assert not form.is_valid()
     assert 'price' in form.errors
+    assert form.errors['price'] == ['Gražinama suma yra didesnė nei skola!']
 
 
-@patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
-def test_borrow_return_price_higher(mck):
+def test_borrow_return_price_higher(mocker):
+    mocker.patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
+
     a = AccountFactory()
     b = factories.BorrowFactory()
 
@@ -214,15 +217,17 @@ def test_borrow_return_price_higher(mck):
 
     assert not form.is_valid()
     assert 'price' in form.errors
+    assert form.errors['price'] == ['Gražinama suma yra didesnė nei skola!']
 
 
-def test_debt_return_date_earlier():
+def test_debt_return_date_earlier(mocker):
+    mocker.patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
     a = AccountFactory()
-    b = factories.LendFactory()
+    b = factories.LendFactory(date=date(2001, 1, 1))
 
     form = forms.DebtReturnForm(
         data={
-            'date': '1974-01-01',
+            'date': '2000-01-01',
             'debt': b.pk,
             'price': '1',
             'account': a.pk,
@@ -231,3 +236,4 @@ def test_debt_return_date_earlier():
 
     assert not form.is_valid()
     assert 'date' in form.errors
+    assert form.errors['date'] == ['Pasirinkta data yra ankstesnė nei skolos data.']
