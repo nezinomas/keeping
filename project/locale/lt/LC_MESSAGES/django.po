@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-23 13:02+0200\n"
-"PO-Revision-Date: 2022-02-23 13:02+0200\n"
+"POT-Creation-Date: 2022-02-25 10:15+0200\n"
+"PO-Revision-Date: 2022-02-25 10:17+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < "
 "11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? "
 "1 : n % 1 != 0 ? 2: 3);\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 2.0.7\n"
 
 #: .\project\accounts\forms.py:37
 msgid "Account title"
@@ -434,7 +434,7 @@ msgid "Expenses"
 msgstr "Išlaidas"
 
 #: .\project\bookkeeping\templates\bookkeeping\month.html:117
-#: .\project\incomes\templates\incomes\index.html:28
+#: .\project\incomes\templates\incomes\index.html:29
 #: .\project\templates\base.html:177
 msgctxt "incomes button"
 msgid "Incomes"
@@ -558,13 +558,13 @@ msgctxt "book form title"
 msgid "Book"
 msgstr "Knyga"
 
-#: .\project\books\templates\books\includes\books_list.html:45
+#: .\project\books\templates\books\includes\books_list.html:47
 #: .\project\core\templates\core\no_records.html:9
 #: .\project\debts\templates\debts\includes\debts_list.html:47
 #: .\project\debts\templates\debts\includes\debts_return_list.html:49
-#: .\project\expenses\templates\expenses\includes\expenses_list.html:60
-#: .\project\expenses\views\expenses.py:57
-#: .\project\incomes\templates\incomes\includes\incomes_list.html:43
+#: .\project\expenses\templates\expenses\includes\expenses_list.html:62
+#: .\project\expenses\views\expenses.py:58
+#: .\project\incomes\templates\incomes\includes\incomes_list.html:45
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:37
 #: .\project\plans\templates\plans\includes\generic_list.html:41
 #: .\project\savings\templates\savings\includes\savings_list.html:41
@@ -594,8 +594,8 @@ msgstr "Knygą"
 msgid "year goal"
 msgstr "metų tikslą"
 
-#: .\project\books\views.py:140 .\project\expenses\views\expenses.py:117
-#: .\project\incomes\views.py:98
+#: .\project\books\views.py:154 .\project\expenses\views\expenses.py:129
+#: .\project\incomes\views.py:111
 msgid "Found nothing"
 msgstr "Nieko nerasta"
 
@@ -728,7 +728,7 @@ msgstr "Sekmadienis"
 msgid "Form is broken."
 msgstr "Forma neveikia."
 
-#: .\project\core\mixins\formset.py:33
+#: .\project\core\mixins\formset.py:32
 msgid "The same accounts are selected."
 msgstr "Pasirinktos vienodos sąskaitos."
 
@@ -976,8 +976,8 @@ msgstr "Skolos gražinimas"
 
 #: .\project\debts\templates\debts\index.html:17
 #: .\project\debts\templates\debts\index.html:33
-msgctxt "lend button"
-msgid "Lend"
+msgctxt "debt button"
+msgid "Debt"
 msgstr "Skolą"
 
 #: .\project\debts\templates\debts\index.html:51
@@ -1209,7 +1209,7 @@ msgctxt "expenses name button"
 msgid "Expenses name"
 msgstr "Išlaidų pavadinimą"
 
-#: .\project\expenses\views\expenses.py:55
+#: .\project\expenses\views\expenses.py:56
 #, python-format
 msgid "There are no records for month <b>%(month)s</b>."
 msgstr "<b>%(month)s</b> mėnesį įrašų nėra."
@@ -1249,7 +1249,7 @@ msgstr "Kita"
 msgid "Delete incomes"
 msgstr "Trinti pajamas"
 
-#: .\project\incomes\templates\incomes\index.html:39
+#: .\project\incomes\templates\incomes\index.html:40
 #: .\project\templates\base.html:195
 msgctxt "income type button"
 msgid "Incomes type"
@@ -1694,6 +1694,10 @@ msgstr "Įspėjimas"
 #: .\project\users\views.py:293
 msgid "You cannot delete yourself."
 msgstr "Negalite ištrinti savęs."
+
+#~ msgctxt "lend button"
+#~ msgid "Lend"
+#~ msgstr "Skolą"
 
 #~ msgid "The balance for this year will be updated."
 #~ msgstr "Bus atnaujintas šių metų balansas."
