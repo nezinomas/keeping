@@ -44,13 +44,13 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
         self.fields['account'].queryset = Account.objects.items()
 
         # fields labels
-        _type = utils.get_request_kwargs("type")
+        debt_type = utils.get_request_kwargs('debt_type')
         _name = _('Debtor')
 
-        if _type == 'lend':
+        if debt_type == 'lend':
             _name = _('Borrower')
 
-        if _type == 'borrow':
+        if debt_type == 'borrow':
             _name = _('Lender')
 
         self.fields['date'].label = _('Date')
@@ -69,7 +69,7 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
         if not self.instance.pk:
             instance = super().save(commit=False)
 
-            _debt_type = utils.get_request_kwargs("type")
+            _debt_type = utils.get_request_kwargs('debt_type')
             _debt_type = _debt_type if _debt_type else 'lend'
             instance.debt_type = _debt_type
 
@@ -138,13 +138,13 @@ class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
         self.fields['debt'].queryset = models.Debt.objects.items().filter(closed=False)
 
         # fields labels
-        _type = utils.get_request_kwargs("type")
+        debt_type = utils.get_request_kwargs('debt_type')
         _name = _('Debtor')
 
-        if _type == 'lend':
+        if debt_type == 'lend':
             _name = _('Borrower')
 
-        if _type == 'borrow':
+        if debt_type == 'borrow':
             _name = _('Lender')
 
         self.fields['date'].label = _('Date')
