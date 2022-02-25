@@ -58,6 +58,35 @@ def test_income_create(_accounts_conf):
     assert actual[0].delta == -2.0
 
 
+def test_income_create_incorect_model(_accounts_conf):
+    _accounts_conf.hooks.pop('incomes.Income')
+    _accounts_conf.hooks.update({'xxx.yyy': []})
+
+    IncomeFactory(price=2)
+
+    AccountBalance.objects.all().delete()
+
+    T(_accounts_conf)
+
+    actual = AccountBalance.objects.all()
+
+    assert actual.count() == 0
+
+
+def test_income_create_incorect_method(_accounts_conf):
+    _accounts_conf.hooks['incomes.Income'][0]['method'] = 'xxx'
+    print(f'{_accounts_conf.hooks=}')
+    IncomeFactory(price=2)
+
+    AccountBalance.objects.all().delete()
+
+    T(_accounts_conf)
+
+    actual = AccountBalance.objects.all()
+
+    assert actual.count() == 0
+
+
 def test_income_update(_accounts_conf):
     obj = IncomeFactory(price=2)
 
