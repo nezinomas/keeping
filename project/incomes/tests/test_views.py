@@ -1,6 +1,5 @@
 import json
 from datetime import date
-from os import access
 
 import pytest
 from django.urls import resolve, reverse
