@@ -4,7 +4,6 @@ import pytest
 from django.core.exceptions import ObjectDoesNotExist
 from mock import patch
 
-from ...accounts.factories import AccountFactory
 from ..conf import Conf
 from ..signals_base import SignalBase
 
