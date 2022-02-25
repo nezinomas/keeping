@@ -815,3 +815,42 @@ def test_search_found(client_logged, _search_form_data):
 
     assert '1999-01-01' in actual['html']
     assert 'Remark' in actual['html']
+
+
+def test_search_pagination_first_page(client_logged, _search_form_data):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory()
+    i = ExpenseFactory.build_batch(51, account=a, expense_type=t, expense_name=n)
+    Expense.objects.bulk_create(i)
+
+    form_data = json.dumps(_search_form_data)
+
+    url = reverse('expenses:expenses_search')
+    response = client_logged.post(url, {'form_data': form_data})
+    actual = json.loads(response.content)
+
+    assert 'html' in actual
+
+    actual = actual['html']
+
+    assert actual.count('Expense Type') == 50
+
+
+def test_search_pagination_second_page(client_logged):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory()
+    i = ExpenseFactory.build_batch(51, account=a, expense_type=t, expense_name=n)
+    Expense.objects.bulk_create(i)
+
+    url = reverse('expenses:expenses_search')
+
+    response = client_logged.get(url, {'page': 2, 'search': 'type'})
+    actual = json.loads(response.content)
+
+    assert 'expenses_list' in actual
+
+    actual = actual['expenses_list']
+
+    assert actual.count('Expense Type') == 1
