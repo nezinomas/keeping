@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 import pytest
-
+from pandas import DataFrame as DF
 
 from ..lib.balance import Balance as T
 
@@ -78,11 +78,11 @@ def test_account_balance_no_data():
     assert actual == []
 
 
-def test_account_balance_empty_data():
+def test_account_balance_df_empty_data():
     obj = T().accounts()
-    actual = obj.balance
+    actual = obj.balance_df
 
-    assert actual == []
+    assert actual.empty
 
 
 def test_account_balance_wrong_data():
@@ -135,6 +135,46 @@ def test_account_balance_only_incomes(incomes1, incomes2):
     assert actual[3]['balance'] == 8.0
     assert actual[3]['have'] == 0.0
     assert actual[3]['delta'] == -8.0
+
+
+def test_account_balance_only_incomes_df(incomes1, incomes2):
+    obj = T().accounts()
+    obj.create_balance(data=[incomes1, incomes2])
+    df = obj.balance_df
+
+    # Account1
+    actual = df.loc[(1970, 1)]
+    assert actual.past == 0.0
+    assert actual.incomes == 2.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 2.0
+    assert actual.have == 0.0
+    assert actual.delta == -2.0
+
+    actual = df.loc[(1999, 1)]
+    assert actual.past == 2.0
+    assert actual.incomes == 4.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 6.0
+    assert actual.have == 0.0
+    assert actual.delta == -6.0
+
+    # # Account2
+    actual = df.loc[(1970, 2)]
+    assert actual.past == 0.0
+    assert actual.incomes == 3.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 3.0
+    assert actual.have == 0.0
+    assert actual.delta == -3.0
+
+    actual = df.loc[(1999, 2)]
+    assert actual.past == 3.0
+    assert actual.incomes == 5.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 8.0
+    assert actual.have == 0.0
+    assert actual.delta == -8.0
 
 
 def test_account_balance_growing_years():
@@ -341,6 +381,14 @@ def test_account_balance_end_with_year(incomes1, incomes2, expenses, have):
     actual = obj.balance_end
 
     assert actual == 1.0
+
+
+def test_account_balance_year_account_id_link_no_data():
+    obj = T().accounts()
+    obj.create_balance(data=[])
+    actual = obj.year_account_link
+
+    assert actual == {}
 
 
 def test_account_balance_year_account_id_link(incomes1):
