@@ -75,7 +75,7 @@ def test_income_create_incorect_model(_accounts_conf):
 
 def test_income_create_incorect_method(_accounts_conf):
     _accounts_conf.hooks['incomes.Income'][0]['method'] = 'xxx'
-    print(f'{_accounts_conf.hooks=}')
+
     IncomeFactory(price=2)
 
     AccountBalance.objects.all().delete()
