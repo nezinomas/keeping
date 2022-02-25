@@ -217,7 +217,8 @@ class SignalBase():
 
         # for _hook['balance_field'], _account_name in _hook.items():
         for _hook in _hooks:
-            _account = getattr(self._conf.instance, _hook['category'])
+            _account = utils._getattr(self._conf.instance, _hook['category'])
+            _account_id = utils._getattr(_account, 'pk')
             _old_account_id = self._conf.old_values.get(_hook['category'])
 
             # skip debts methods
@@ -227,30 +228,30 @@ class SignalBase():
             # new
             if self._conf.created:
                 try:
-                    self._tbl_balance_field_update('new', _hook['balance_field'], _account.pk)
+                    self._tbl_balance_field_update('new', _hook['balance_field'], _account_id)
+                    continue
                 except ObjectDoesNotExist:
                     return
-                continue
 
             # delete
             if self._conf.signal == 'delete':
                 try:
-                    self._tbl_balance_field_update('delete', _hook['balance_field'], _account.pk)
+                    self._tbl_balance_field_update('delete', _hook['balance_field'], _account_id)
+                    continue
                 except ObjectDoesNotExist:
                     return
-                continue
 
             # update
-            if _old_account_id == _account.pk:
+            if _old_account_id == _account_id:
                 # account not changed
                 try:
-                    self._tbl_balance_field_update('update', _hook['balance_field'], _account.pk)
+                    self._tbl_balance_field_update('update', _hook['balance_field'], _account_id)
                 except ObjectDoesNotExist:
                     return
             else:
                 # account changed
                 try:
-                    self._tbl_balance_field_update('new', _hook['balance_field'], _account.pk)
+                    self._tbl_balance_field_update('new', _hook['balance_field'], _account_id)
                     self._tbl_balance_field_update('delete', _hook['balance_field'], _old_account_id)
                 except ObjectDoesNotExist:
                     return
