@@ -100,8 +100,6 @@ def test_per_month_quantity_invalid_data():
 
 @freeze_time('2019-10-10')
 def test_std_av():
-    
-
     actual = std_av(2019, 273.5)
 
     expect = [

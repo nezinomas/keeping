@@ -213,7 +213,7 @@ def test_drink_summary():
 def test_drink_summary_no_records():
     actual = list(Drink.objects.summary())
 
-    assert actual == []
+    assert not actual
 
 
 @pytest.mark.parametrize(

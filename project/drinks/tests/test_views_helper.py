@@ -5,7 +5,6 @@ import pytest
 
 from ..factories import DrinkFactory
 from ..lib import views_helper as T
-from ..models import Drink
 
 pytestmark = pytest.mark.django_db
 
@@ -22,7 +21,7 @@ def test_dry_days(fake_request):
 def test_dry_days_no_records(fake_request):
     actual = T.RenderContext(fake_request)._dry_days()
 
-    assert actual == {}
+    assert not actual
 
 
 def test_target_label_position_between(fake_request):
