@@ -103,6 +103,8 @@ def test_lend_return_load_form(client_logged):
     actual = json.loads(json_str)
 
     assert response.status_code == 200
+    assert 'html_form' in actual
+    assert not 'html' in actual
 
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')

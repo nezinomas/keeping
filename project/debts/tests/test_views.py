@@ -4,7 +4,6 @@ import re
 import pytest
 from django.http.response import JsonResponse
 from django.urls import resolve, reverse
-from mock import patch
 
 from ...users.factories import UserFactory
 from .. import factories, views

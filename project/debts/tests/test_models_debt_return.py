@@ -67,7 +67,7 @@ def test_lend_return_related_queries(django_assert_num_queries):
     LendReturnFactory()
 
     with django_assert_num_queries(1):
-        a = [x.account.title for x in list(DebtReturn.objects.related())]
+        list(x.account.title for x in list(DebtReturn.objects.related()))
 
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
