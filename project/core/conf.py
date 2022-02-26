@@ -42,7 +42,7 @@ class Conf():
         return self.old_values.get(name, 0.0)
 
     def get_values(self, name):
-        val = utils._getattr(self.instance, name, 0.0)
+        val = utils.getattr_(self.instance, name, 0.0)
 
         if val is None:
             val = 0.0

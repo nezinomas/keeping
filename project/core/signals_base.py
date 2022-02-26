@@ -217,8 +217,8 @@ class SignalBase():
 
         # for _hook['balance_field'], _account_name in _hook.items():
         for _hook in _hooks:
-            _account = utils._getattr(self._conf.instance, _hook['category'])
-            _account_id = utils._getattr(_account, 'pk')
+            _account = utils.getattr_(self._conf.instance, _hook['category'])
+            _account_id = utils.getattr_(_account, 'pk')
             _old_account_id = self._conf.old_values.get(_hook['category'])
 
             # skip debts methods
@@ -312,12 +312,12 @@ class SignalBase():
         _qs.save()
 
     def _skip_debt(self, hook):
-        _debt_type = utils._getattr(self._conf.instance, "debt_type")
+        _debt_type = utils.getattr_(self._conf.instance, "debt_type")
 
         if not _debt_type:
-            _debt = utils._getattr(self._conf.instance, 'debt')
+            _debt = utils.getattr_(self._conf.instance, 'debt')
             if _debt:
-                _debt_type= utils._getattr(_debt, "debt_type")
+                _debt_type= utils.getattr_(_debt, "debt_type")
 
         _skip = hook.get('skip')
 
