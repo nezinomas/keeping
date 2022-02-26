@@ -64,7 +64,7 @@ def test_account_worth_queries(accounts_worth,
 
 
 def test_account_worth_post_save():
-    AccountWorthFactory(date=dt(1999, 1, 1))
+    AccountWorthFactory(date=dt(1999, 1, 1, tzinfo=ZoneInfo('UTC')))
 
     actual = AccountBalance.objects.year(1999)
 
