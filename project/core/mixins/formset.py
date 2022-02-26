@@ -33,7 +33,7 @@ class BaseTypeFormSet(BaseFormSet):
 
 
 class FormsetMixin():
-    def _formset_initial(self):
+    def formset_initial(self):
         _list = []
 
         # get self.model ForeignKey field name
@@ -44,7 +44,7 @@ class FormsetMixin():
         if not foreign_key:
             return _list
 
-        model = self._get_type_model()
+        model = self.get_type_model()
         _objects = model.objects.items()
         for _object in _objects:
             _list.append({'price': 0, foreign_key[0]: _object})
@@ -52,13 +52,13 @@ class FormsetMixin():
         return _list
 
 
-    def _get_type_model(self):
+    def get_type_model(self):
         if not self.type_model:
             return self.model
 
         return self.type_model
 
-    def _get_formset(self, post=None):
+    def get_formset(self, post=None):
         form = self.get_form_class()
 
         __formset = (
@@ -73,12 +73,12 @@ class FormsetMixin():
         if post:
             _formset = __formset(post)
         else:
-            initial = self._formset_initial()
+            initial = self.formset_initial()
             _formset = __formset(initial=initial)
 
         return _formset
 
-    def _get_shared_form(self, post=None):
+    def get_shared_form(self, post=None):
         form = None
 
         if self.shared_form_class:
@@ -87,8 +87,8 @@ class FormsetMixin():
         return form
 
     def post(self, request, *args, **kwargs):
-        formset = self._get_formset(request.POST or None)
-        shared_form = self._get_shared_form(request.POST or None)
+        formset = self.get_formset(request.POST or None)
+        shared_form = self.get_shared_form(request.POST or None)
 
         if formset.is_valid() and (shared_form and shared_form.is_valid()):
             data = {}
@@ -118,7 +118,7 @@ class FormsetMixin():
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['formset'] = self._get_formset(self.request.POST or None)
-        context['shared_form'] = self._get_shared_form(self.request.POST or None)
+        context['formset'] = self.get_formset(self.request.POST or None)
+        context['shared_form'] = self.get_shared_form(self.request.POST or None)
 
         return context

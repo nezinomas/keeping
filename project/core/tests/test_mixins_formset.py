@@ -14,7 +14,7 @@ def test_get_type_model_type_model_not_set(fake_request):
 
     view = setup_view(Dummy(), fake_request)
 
-    actual = view._get_type_model()
+    actual = view.get_type_model()
 
     assert actual == 'Model'
 
@@ -27,7 +27,7 @@ def test_get_type_model_type_model_is_set(fake_request):
 
     view = setup_view(Dummy(), fake_request)
 
-    actual = view._get_type_model()
+    actual = view.get_type_model()
 
     assert actual == 'Type'
 
@@ -45,12 +45,12 @@ def test_model_type_without_foreignkey(fake_request):
 
     view = setup_view(Dummy(), fake_request)
 
-    actual = view._formset_initial()
+    actual = view.formset_initial()
 
     assert not actual
 
 
-@patch('project.core.mixins.formset.FormsetMixin._get_type_model')
+@patch('project.core.mixins.formset.FormsetMixin.get_type_model')
 def test_model_type_items_is_called(mocked_model, fake_request):
     mocked_items = Mock()
     mocked_items.objects.items.return_value = ['XXX']
@@ -69,7 +69,7 @@ def test_model_type_items_is_called(mocked_model, fake_request):
 
     view = setup_view(Dummy(), fake_request)
 
-    actual = view._formset_initial()
+    actual = view.formset_initial()
 
     assert mocked_items.objects.items.call_count == 1
 

@@ -145,7 +145,7 @@ def test_account_worth_formset_closed_in_past(get_user, fake_request):
 
     view = setup_view(views.AccountsWorthNew(), fake_request)
 
-    actual = str(view._get_formset())  # pylint: disable=protected-access
+    actual = str(view.get_formset())  # pylint: disable=protected-access
 
     assert 'S1' in actual
     assert 'S2' not in actual
@@ -159,7 +159,7 @@ def test_account_worth_formset_closed_in_current(get_user, fake_request):
 
     view = setup_view(views.AccountsWorthNew(), fake_request)
 
-    actual = str(view._get_formset())  #pylint: disable=protected-access
+    actual = str(view.get_formset())  #pylint: disable=protected-access
 
     assert 'S1' in actual
     assert 'S2' in actual
@@ -173,7 +173,7 @@ def test_account_worth_formset_closed_in_future(get_user, fake_request):
 
     view = setup_view(views.AccountsWorthNew(), fake_request)
 
-    actual = str(view._get_formset())  #pylint: disable=protected-access
+    actual = str(view.get_formset())  #pylint: disable=protected-access
 
     assert 'S1' in actual
     assert 'S2' in actual
