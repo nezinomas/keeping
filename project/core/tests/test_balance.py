@@ -1,13 +1,12 @@
 from decimal import Decimal
 
 import pytest
-from pandas import DataFrame as DF
 
 from ..lib.balance import Balance as T
 
 
 @pytest.fixture()
-def incomes1():
+def _incomes1():
     return [
         {'year': 1970, 'incomes': Decimal('1'), 'id': 1},
         {'year': 1970, 'incomes': Decimal('2'), 'id': 2},
@@ -17,7 +16,7 @@ def incomes1():
 
 
 @pytest.fixture
-def incomes2():
+def _incomes2():
     return [
         {'year': 1970, 'incomes': Decimal('1'), 'id': 1},
         {'year': 1970, 'incomes': Decimal('1'), 'id': 2},
@@ -27,7 +26,7 @@ def incomes2():
 
 
 @pytest.fixture()
-def expenses():
+def _expenses():
     return [
         {'year': 1970, 'expenses': Decimal('1'), 'id': 1},
         {'year': 1970, 'expenses': Decimal('1'), 'id': 2},
@@ -37,7 +36,7 @@ def expenses():
 
 
 @pytest.fixture()
-def have():
+def _have():
     return [
         {'year': 1970, 'have': Decimal('5'), 'id': 1},
         {'year': 1999, 'have': Decimal('15'), 'id': 1},
@@ -47,7 +46,7 @@ def have():
 
 
 @pytest.fixture
-def savings():
+def _savings():
     return [
         {'year': 1970, 'incomes': Decimal('1'), 'fee': Decimal('0.5'), 'id': 1},
         {'year': 1970, 'incomes': Decimal('3'), 'fee': Decimal('0.5'), 'id': 2},
@@ -56,11 +55,11 @@ def savings():
     ]
 
 
-def test_account_balance_columns(incomes1):
+def test_account_balance_columns(_incomes1):
     obj = T().accounts()
-    obj.create_balance(data=[incomes1])
+    obj.create_balance(data=[_incomes1])
 
-    actual = obj._balance.columns
+    actual = obj.balance_df.columns
 
     assert 'past' in actual
     assert 'incomes' in actual
@@ -68,7 +67,10 @@ def test_account_balance_columns(incomes1):
     assert 'balance' in actual
     assert 'have' in actual
     assert 'delta' in actual
+
+    actual = obj.balance_df.index.names
     assert 'account_id' in actual
+    assert 'year' in actual
 
 
 def test_account_balance_no_data():
@@ -93,9 +95,9 @@ def test_account_balance_wrong_data():
     assert actual == []
 
 
-def test_account_balance_only_incomes(incomes1, incomes2):
+def test_account_balance_only_incomes(_incomes1, _incomes2):
     obj = T().accounts()
-    obj.create_balance(data=[incomes1, incomes2])
+    obj.create_balance(data=[_incomes1, _incomes2])
     actual = obj.balance
 
     # Account1
@@ -137,9 +139,9 @@ def test_account_balance_only_incomes(incomes1, incomes2):
     assert actual[3]['delta'] == -8.0
 
 
-def test_account_balance_only_incomes_df(incomes1, incomes2):
+def test_account_balance_only_incomes_df(_incomes1, _incomes2):
     obj = T().accounts()
-    obj.create_balance(data=[incomes1, incomes2])
+    obj.create_balance(data=[_incomes1, _incomes2])
     df = obj.balance_df
 
     # Account1
@@ -228,9 +230,9 @@ def test_savings_balance_growing_years():
     assert actual[2]['incomes'] == 9.0
 
 
-def test_account_balance_incomes_expenses(incomes1, incomes2, expenses):
+def test_account_balance_incomes_expenses(_incomes1, _incomes2, _expenses):
     obj = T().accounts()
-    obj.create_balance(data=[incomes1, incomes2, expenses, expenses])
+    obj.create_balance(data=[_incomes1, _incomes2, _expenses, _expenses])
 
     actual = obj.balance
 
@@ -273,9 +275,9 @@ def test_account_balance_incomes_expenses(incomes1, incomes2, expenses):
     assert actual[3]['delta'] == -4.0
 
 
-def test_account_balance_incomes_expenses_have(incomes1, incomes2, expenses, have):
+def test_account_balance_incomes_expenses_have(_incomes1, _incomes2, _expenses, _have):
     obj = T().accounts()
-    obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])
+    obj.create_balance(data=[_incomes1, _incomes2, _expenses, _expenses, _have])
     actual = obj.balance
 
     # Account1
@@ -317,9 +319,9 @@ def test_account_balance_incomes_expenses_have(incomes1, incomes2, expenses, hav
     assert actual[3]['delta'] == 16.0
 
 
-def test_total_row_no_year(incomes1, incomes2, expenses, have):
+def test_total_row_no_year(_incomes1, _incomes2, _expenses, _have):
     obj = T().accounts()
-    obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])
+    obj.create_balance(data=[_incomes1, _incomes2, _expenses, _expenses, _have])
     actual = obj.total_row
 
     assert actual['past'] == 1.0
@@ -330,9 +332,9 @@ def test_total_row_no_year(incomes1, incomes2, expenses, have):
     assert actual['delta'] == 29.0
 
 
-def test_total_row_with_year(incomes1, incomes2, expenses, have):
+def test_total_row_with_year(_incomes1, _incomes2, _expenses, _have):
     obj = T().accounts(year=1970)
-    obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])
+    obj.create_balance(data=[_incomes1, _incomes2, _expenses, _expenses, _have])
     actual = obj.total_row
 
     assert actual['past'] == 0.0
@@ -351,33 +353,33 @@ def test_total_row_no_data():
     assert actual == {}
 
 
-def test_account_balance_start_no_year(incomes1, incomes2, expenses, have):
+def test_account_balance_start_no_year(_incomes1, _incomes2, _expenses, _have):
     obj = T().accounts()
-    obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])
+    obj.create_balance(data=[_incomes1, _incomes2, _expenses, _expenses, _have])
     actual = obj.balance_start
 
     assert actual == 1.0
 
 
-def test_account_balance_start_with_year(incomes1, incomes2, expenses, have):
+def test_account_balance_start_with_year(_incomes1, _incomes2, _expenses, _have):
     obj = T().accounts(year=1970)
-    obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])
+    obj.create_balance(data=[_incomes1, _incomes2, _expenses, _expenses, _have])
     actual = obj.balance_start
 
     assert actual == 0.0
 
 
-def test_account_balance_end_no_year(incomes1, incomes2, expenses, have):
+def test_account_balance_end_no_year(_incomes1, _incomes2, _expenses, _have):
     obj = T().accounts()
-    obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])
+    obj.create_balance(data=[_incomes1, _incomes2, _expenses, _expenses, _have])
     actual = obj.balance_end
 
     assert actual == 6.0
 
 
-def test_account_balance_end_with_year(incomes1, incomes2, expenses, have):
+def test_account_balance_end_with_year(_incomes1, _incomes2, _expenses, _have):
     obj = T().accounts(year=1970)
-    obj.create_balance(data=[incomes1, incomes2, expenses, expenses, have])
+    obj.create_balance(data=[_incomes1, _incomes2, _expenses, _expenses, _have])
     actual = obj.balance_end
 
     assert actual == 1.0
@@ -391,18 +393,18 @@ def test_account_balance_year_account_id_link_no_data():
     assert actual == {}
 
 
-def test_account_balance_year_account_id_link(incomes1):
+def test_account_balance_year_account_id_link(_incomes1):
     obj = T().accounts()
-    obj.create_balance(data=[incomes1, [{'id': 3, 'year': 1970, 'x': 4}]])
+    obj.create_balance(data=[_incomes1, [{'id': 3, 'year': 1970, 'x': 4}]])
     actual = obj.year_account_link
 
     assert actual[1970] == [1, 2, 3]
     assert actual[1999] == [1, 2]
 
 
-def test_saving_balance_columns(incomes1):
+def test_saving_balance_columns(_incomes1):
     obj = T().savings()
-    obj.create_balance(data=[incomes1])
+    obj.create_balance(data=[_incomes1])
 
     actual = obj._balance.columns
 
@@ -440,9 +442,9 @@ def test_saving_balance_wrong_data():
     assert actual == []
 
 
-def test_saving_balance_only_incomes(savings):
+def test_saving_balance_only_incomes(_savings):
     obj = T().savings()
-    obj.create_balance(data=[savings, savings])
+    obj.create_balance(data=[_savings, _savings])
 
     actual = obj.balance
 
@@ -499,8 +501,8 @@ def test_saving_balance_only_incomes(savings):
     assert actual[3]['profit_invested_sum'] == -30.0
 
 
-def test_saving_balance_incomes_expenses(savings):
-    expenses = [
+def test_saving_balance_incomes_expenses(_savings):
+    _expenses = [
         {'year': 1970, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'), 'id': 1},
         {'year': 1970, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 2},
         {'year': 1999, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 1},
@@ -508,7 +510,7 @@ def test_saving_balance_incomes_expenses(savings):
     ]
 
     obj = T().savings()
-    obj.create_balance(data=[savings, savings, expenses])
+    obj.create_balance(data=[_savings, _savings, _expenses])
 
     actual = obj.balance
 
@@ -565,15 +567,15 @@ def test_saving_balance_incomes_expenses(savings):
     assert actual[3]['profit_invested_proc'] == 0.0
 
 
-def test_saving_balance_incomes_expenses_have(savings):
-    expenses = [
+def test_saving_balance_incomes_expenses_have(_savings):
+    _expenses = [
         {'year': 1970, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'), 'id': 1},
         {'year': 1970, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 2},
         {'year': 1999, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 1},
         {'year': 1999, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 2},
     ]
 
-    have = [
+    _have = [
         {'year': 1970, 'have': Decimal('2'), 'id': 1},
         {'year': 1970, 'have': Decimal('6'),  'id': 2},
         {'year': 1999, 'have': Decimal('22'),  'id': 1},
@@ -581,7 +583,7 @@ def test_saving_balance_incomes_expenses_have(savings):
     ]
 
     obj = T().savings()
-    obj.create_balance(data=[savings, savings, expenses, have])
+    obj.create_balance(data=[_savings, _savings, _expenses, _have])
 
     actual = obj.balance
 
@@ -638,15 +640,15 @@ def test_saving_balance_incomes_expenses_have(savings):
     assert round(actual[3]['profit_invested_proc'], 2) == 15.79
 
 
-def test_saving_total_row(savings):
-    expenses = [
+def test_saving_total_row(_savings):
+    _expenses = [
         {'year': 1970, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'), 'id': 1},
         {'year': 1970, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 2},
         {'year': 1999, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 1},
         {'year': 1999, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'),  'id': 2},
     ]
 
-    have = [
+    _have = [
         {'year': 1970, 'have': Decimal('2'), 'id': 1},
         {'year': 1970, 'have': Decimal('6'),  'id': 2},
         {'year': 1999, 'have': Decimal('22'),  'id': 1},
@@ -654,7 +656,7 @@ def test_saving_total_row(savings):
     ]
 
     obj = T().savings()
-    obj.create_balance(data=[savings, savings, expenses, have])
+    obj.create_balance(data=[_savings, _savings, _expenses, _have])
 
     actual = obj.total_row
 
@@ -671,16 +673,16 @@ def test_saving_total_row(savings):
 
 
 def test_saving_invested_cannot_be_negative():
-    expenses = [
+    _expenses = [
         {'year': 1970, 'expenses': Decimal('0.5'), 'fee': Decimal('0.25'), 'id': 1},
     ]
 
-    have = [
+    _have = [
         {'year': 1970, 'have': Decimal('0.1'), 'id': 1},
     ]
 
     obj = T().savings()
-    obj.create_balance(data=[expenses, have])
+    obj.create_balance(data=[_expenses, _have])
 
     actual = obj.balance
 
@@ -695,7 +697,7 @@ def test_saving_invested_cannot_be_negative():
 
 
 def test_saving_total_market():
-    have = [
+    _have = [
         {'year': 1970, 'have': Decimal('2'), 'id': 1},
         {'year': 1970, 'have': Decimal('6'),  'id': 2},
         {'year': 1999, 'have': Decimal('22'),  'id': 1},
@@ -703,7 +705,7 @@ def test_saving_total_market():
     ]
 
     obj = T().savings()
-    obj.create_balance(data=[have])
+    obj.create_balance(data=[_have])
 
     actual = obj.total_market
 
@@ -711,7 +713,7 @@ def test_saving_total_market():
 
 
 def test_saving_total_market_year():
-    have = [
+    _have = [
         {'year': 1970, 'have': Decimal('2'), 'id': 1},
         {'year': 1970, 'have': Decimal('6'),  'id': 2},
         {'year': 1999, 'have': Decimal('22'),  'id': 1},
@@ -719,7 +721,7 @@ def test_saving_total_market_year():
     ]
 
     obj = T().savings(year=1970)
-    obj.create_balance(data=[have])
+    obj.create_balance(data=[_have])
 
     actual = obj.total_market
 
@@ -745,13 +747,13 @@ def test_savings_total_market_no_data():
 
 
 def test_account_balance_have_previous_year_value():
-    incomes = [
+    _incomes = [
         {'year': 1, 'have': Decimal('1'), 'id': 1},
         {'year': 2, 'have': Decimal('0'), 'id': 1},
     ]
 
     obj = T().accounts()
-    obj.create_balance(data=[incomes])
+    obj.create_balance(data=[_incomes])
     actual = obj.balance
 
     assert actual[0]['year'] == 1
@@ -762,12 +764,12 @@ def test_account_balance_have_previous_year_value():
 
 
 def test_account_balance_have_previous_year_value_one_row():
-    incomes = [
+    _incomes = [
         {'year': 1, 'have': Decimal('0'), 'id': 1},
     ]
 
     obj = T().accounts()
-    obj.create_balance(data=[incomes])
+    obj.create_balance(data=[_incomes])
     actual = obj.balance
 
     assert actual[0]['year'] == 1
@@ -775,13 +777,13 @@ def test_account_balance_have_previous_year_value_one_row():
 
 
 def test_saving_balance_have_previous_year_value():
-    incomes = [
+    _incomes = [
         {'year': 1, 'have': Decimal('1'), 'id': 1},
         {'year': 2, 'have': Decimal('0'), 'id': 1},
     ]
 
     obj = T().savings()
-    obj.create_balance(data=[incomes])
+    obj.create_balance(data=[_incomes])
     actual = obj.balance
 
     assert actual[0]['year'] == 1
@@ -792,12 +794,12 @@ def test_saving_balance_have_previous_year_value():
 
 
 def test_saving_balance_have_previous_year_value_one_row():
-    incomes = [
+    _incomes = [
         {'year': 1, 'have': Decimal('0'), 'id': 1},
     ]
 
     obj = T().savings()
-    obj.create_balance(data=[incomes])
+    obj.create_balance(data=[_incomes])
     actual = obj.balance
 
     assert actual[0]['year'] == 1

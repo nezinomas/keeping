@@ -5,7 +5,6 @@ import pytest
 from freezegun import freeze_time
 from mock import patch
 
-from ...counts.factories import CountTypeFactory
 from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
 from ..context import context_months, yday, years

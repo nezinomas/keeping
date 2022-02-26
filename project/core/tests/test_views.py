@@ -4,7 +4,6 @@ import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 from mock import patch
-from project.journals.factories import JournalFactory
 
 from ...accounts.factories import AccountBalance
 from ...expenses.factories import ExpenseFactory
