@@ -390,7 +390,7 @@ def test_account_balance_year_account_id_link_no_data():
     obj.create_balance(data=[])
     actual = obj.year_account_link
 
-    assert actual == {}
+    assert not actual
 
 
 def test_account_balance_year_account_id_link(_incomes1):
@@ -406,7 +406,7 @@ def test_saving_balance_columns(_incomes1):
     obj = T().savings()
     obj.create_balance(data=[_incomes1])
 
-    actual = obj._balance.columns
+    actual = obj.balance_df.columns
 
     assert 'past_amount' in actual
     assert 'past_fee' in actual
