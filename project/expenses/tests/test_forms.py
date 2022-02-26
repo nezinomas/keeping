@@ -2,7 +2,6 @@ from datetime import date
 from decimal import Decimal
 from io import BytesIO
 
-import mock
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from freezegun import freeze_time

@@ -1,4 +1,3 @@
-import pytest
 from ..templatetags.colorize import bg_color
 
 

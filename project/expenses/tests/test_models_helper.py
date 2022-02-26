@@ -3,11 +3,9 @@ from datetime import date
 
 import pytest
 from django.core.files import File
-from freezegun import freeze_time
 from mock import MagicMock
 from override_storage import override_storage
 
-from ...users.models import User
 from ..factories import ExpenseFactory
 from ..helpers import models_helper as T
 

@@ -152,7 +152,7 @@ class Expenses(LiveServerTestCase):
         assert '65.78' in page
 
     def test_empty_required_fields(self):
-        self.browser.get('%s%s' % (self.live_server_url, f'/expenses/1/'))
+        self.browser.get('%s%s' % (self.live_server_url, '/expenses/1/'))
 
         # click Add Expenses button
         WebDriverWait(self.browser, 5).until(
