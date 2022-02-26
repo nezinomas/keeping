@@ -80,7 +80,7 @@ def test_account_worth_post_save_new():
     AccountBalanceFactory()
 
     actual = AccountBalance.objects.first()
-    actual.have == 0.2
+    assert actual.have == 0.2
 
     AccountWorthFactory(price=5)
 
