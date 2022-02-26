@@ -9,7 +9,7 @@ from mock import patch
 
 from ...core.tests.utils import setup_view
 from ...users.factories import UserFactory
-from ..factories import Count, CountFactory, CountTypeFactory
+from ..factories import CountFactory, CountTypeFactory
 from ..lib import views_helper as H
 
 pytestmark = pytest.mark.django_db

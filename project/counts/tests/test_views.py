@@ -56,7 +56,7 @@ def test_view_new(client_logged):
 
     assert actual['form_is_valid']
     assert '68' in actual['html_list']
-    assert f'<a role="button" data-url="/counts/update/count-type/1/"' in actual['html_list']
+    assert '<a role="button" data-url="/counts/update/count-type/1/"' in actual['html_list']
 
 
 def test_view_new_invalid_data(client_logged):
