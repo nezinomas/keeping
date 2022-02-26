@@ -99,7 +99,7 @@ class Balance(BalanceBase):
         arr = arr.sum()
 
         # update values for saving/pension
-        if not self.id_field == 'account_id':
+        if self.id_field != 'account_id':
             arr['profit_incomes_proc'] = (
                 calc.calc_percent(arr[['market_value', 'incomes']])
             )
