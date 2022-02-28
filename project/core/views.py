@@ -38,7 +38,7 @@ def set_month(request, month):
 class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
     redirect_view = reverse_lazy('bookkeeping:index')
 
-    @timer
+    # @timer
     def get(self, request, *args, **kwargs):
         kwargs = {
             'sender': None,
