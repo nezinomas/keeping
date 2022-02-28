@@ -22,7 +22,10 @@ from .signals_base import SignalBase
 @receiver(post_save, sender=debt.Debt)
 @receiver(post_save, sender=debt.DebtReturn)
 @receiver(post_save, sender=worth.AccountWorth)
-def accounts_post_save(sender: object, instance: object, *args, **kwargs):
+def accounts_post_save(sender: object,
+                       instance: object,
+                       *args,
+                       **kwargs):
     created = kwargs.get('created')
     SignalBase.accounts(sender, instance, created, 'save')
 
@@ -34,7 +37,10 @@ def accounts_post_save(sender: object, instance: object, *args, **kwargs):
 @receiver(post_delete, sender=transaction.SavingClose)
 @receiver(post_delete, sender=debt.Debt)
 @receiver(post_delete, sender=debt.DebtReturn)
-def accounts_post_delete(sender: object, instance: object, *args, **kwargs):
+def accounts_post_delete(sender: object,
+                         instance: object,
+                         *args,
+                         **kwargs):
     created = kwargs.get('created')
     SignalBase.accounts(sender, instance, created, 'delete')
 
@@ -47,9 +53,9 @@ def accounts_post_delete(sender: object, instance: object, *args, **kwargs):
 @receiver(post_save, sender=transaction.SavingChange)
 @receiver(post_save, sender=worth.SavingWorth)
 def savings_post_save(sender: object,
-                        instance: object,
-                        *args,
-                        **kwargs):
+                      instance: object,
+                      *args,
+                      **kwargs):
     created = kwargs.get('created')
     SignalBase.savings(sender, instance, created, 'save')
 
@@ -71,9 +77,9 @@ def savings_post_delete(sender: object,
 @receiver(post_save, sender=pension.Pension)
 @receiver(post_save, sender=worth.PensionWorth)
 def pensions_post_save(sender: object,
-                         instance: object,
-                         *args,
-                         **kwargs):
+                       instance: object,
+                       *args,
+                       **kwargs):
     created = kwargs.get('created')
     SignalBase.pensions(sender, instance, created, 'save')
 
