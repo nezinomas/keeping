@@ -310,6 +310,7 @@ class SignalBase():
 
             _df = Balance.recalc_savings(_df)
 
+        # update get query object values and save object
         _qs_updated_values = _df.to_dict('records')[0]
         _qs.__dict__.update(_qs_updated_values)
         _qs.save()
