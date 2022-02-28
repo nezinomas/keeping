@@ -302,6 +302,9 @@ class SignalBase():
         if 'accounts' in self._conf.balance_class_method:
             _df = Balance.recalc_accounts(_df)
 
+            self._save_object(_qs, _df)
+            return
+
         # recalculate savings
         if 'savings' in self._conf.balance_class_method:
             # update incomes on SavingClose, SavingChange
@@ -310,10 +313,14 @@ class SignalBase():
 
             _df = Balance.recalc_savings(_df)
 
+            self._save_object(_qs, _df)
+            return
+
+    def _save_object(self, obj, df):
         # update get query object values and save object
-        _qs_updated_values = _df.to_dict('records')[0]
-        _qs.__dict__.update(_qs_updated_values)
-        _qs.save()
+        _qs_updated_values = df.to_dict('records')[0]
+        obj.__dict__.update(_qs_updated_values)
+        obj.save()
 
     def _skip_debt(self, hook):
         _debt_type = utils.getattr_(self._conf.instance, "debt_type")
