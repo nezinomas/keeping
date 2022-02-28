@@ -215,7 +215,7 @@ class Balance(BalanceBase):
         return df
 
     @staticmethod
-    def recalc_accounts(_df):
+    def recalc_accounts(_df: DF) -> DF:
         # recalclate balance with past
         _df['balance'] = (_df[['past', 'incomes', 'expenses']].apply(calc.calc_balance, axis=1))
         _df['delta'] = _df[['have', 'balance']].apply(calc.calc_delta, axis=1)
@@ -277,7 +277,7 @@ class Balance(BalanceBase):
         return df
 
     @staticmethod
-    def recalc_savings(_df):
+    def recalc_savings(_df: DF) -> DF:
         _df['invested'] = _df['incomes'] - _df['fee']
 
         # invested sum cannot be negative
