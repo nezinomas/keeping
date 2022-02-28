@@ -1,7 +1,10 @@
+from typing import Dict
+
 import pandas as pd
 from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from pandas import DataFrame as DF
 
 from ..core.lib.balance import Balance
 from ..core.lib.balance_table_update import UpdatetBalanceTable
@@ -206,10 +209,10 @@ class SignalBase():
         )
         return cls(conf=_conf, update_on_load=update_on_load)
 
-    def full_balance_update(self):
+    def full_balance_update(self) -> None:
         UpdatetBalanceTable(self._conf)
 
-    def _update(self):
+    def _update(self) -> None:
         _hooks = self._conf.get_hook()
 
         if not _hooks:
@@ -256,7 +259,7 @@ class SignalBase():
                 except ObjectDoesNotExist:
                     return
 
-    def _calc_field(self, /, caller, field = 'price'):
+    def _calc_field(self, /, caller: str, field: str = 'price') -> float:
         val = float(self._conf.get_values(field))
         val_old = float(self._conf.get_old_values(field))
 
@@ -267,7 +270,7 @@ class SignalBase():
         }
         return _switch.get(caller, 0.0)
 
-    def _tbl_balance_field_update(self, caller, balance_tbl_field_name, pk):
+    def _tbl_balance_field_update(self, caller: str, balance_tbl_field_name: str, pk: int) -> None:
         _year = self._conf.instance.date.year
         try:
             _qs = (
@@ -299,7 +302,7 @@ class SignalBase():
             self._save_object(_qs, _df)
             return
 
-    def _update_values(self, obj, caller, balance_tbl_field_name):
+    def _update_values(self, obj: object, caller: str, balance_tbl_field_name: str) -> DF:
         obj_values = {k: v for k, v in obj.__dict__.items() if not '_state' in k}
         _df = pd.DataFrame([obj_values])
 
@@ -320,13 +323,13 @@ class SignalBase():
 
         return _df
 
-    def _save_object(self, obj, df):
+    def _save_object(self, obj: object, df: DF) -> None:
         # update get query object values and save object
         _qs_updated_values = df.to_dict('records')[0]
         obj.__dict__.update(_qs_updated_values)
         obj.save()
 
-    def _skip_debt(self, hook):
+    def _skip_debt(self, hook: Dict) -> bool:
         _debt_type = utils.getattr_(self._conf.instance, "debt_type")
 
         if not _debt_type:
