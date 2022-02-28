@@ -275,28 +275,11 @@ class SignalBase():
                 .objects
                 .get(Q(year=_year) & Q(**{self._conf.balance_model_fk_field: pk}))
             )
-
         except ObjectDoesNotExist as e:
             self.full_balance_update()
             raise e
 
-        _qs_values = {k: v for k, v in _qs.__dict__.items() if not '_state' in k}
-        _df = pd.DataFrame([_qs_values])
-
-        # update balance table fields
-        fields = balance_tbl_field_name.split('.')
-        for field in fields:
-            val = field if field == 'fee' else 'price'
-            try:
-                # [have,market_value] fields have no start value
-                if field in ['have', 'market_value']:
-                    _start = 0.0
-                else:
-                    _start = _df.at[0, field]
-
-                _df.at[0, field] = _start + self._calc_field(caller, field=val)
-            except KeyError:
-                pass
+        _df = self._update_values(_qs, caller, balance_tbl_field_name)
 
         # recalculate accounts
         if 'accounts' in self._conf.balance_class_method:
@@ -315,6 +298,27 @@ class SignalBase():
 
             self._save_object(_qs, _df)
             return
+
+    def _update_values(self, obj, caller, balance_tbl_field_name):
+        obj_values = {k: v for k, v in obj.__dict__.items() if not '_state' in k}
+        _df = pd.DataFrame([obj_values])
+
+        # update balance table fields
+        fields = balance_tbl_field_name.split('.')
+        for field in fields:
+            val = field if field == 'fee' else 'price'
+            try:
+                # [have,market_value] fields have no start value
+                if field in ['have', 'market_value']:
+                    _start = 0.0
+                else:
+                    _start = _df.at[0, field]
+
+                _df.at[0, field] = _start + self._calc_field(caller, field=val)
+            except KeyError:
+                pass
+
+        return _df
 
     def _save_object(self, obj, df):
         # update get query object values and save object
