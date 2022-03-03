@@ -1,7 +1,7 @@
 beautifulsoup4==4.10.0
 crispy-bootstrap5==0.6
 dateparser==1.1.0
-Django==4.0.2
+Django==4.0.3
 django-bootstrap-datepicker-plus==4.0.0
 django-bootstrap-datepicker-widget==0.1
 django-bootstrap4==21.1
