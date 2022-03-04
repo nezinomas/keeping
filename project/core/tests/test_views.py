@@ -10,6 +10,7 @@ from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from ...pensions.factories import PensionBalance, PensionFactory
 from ...savings.factories import SavingBalance, SavingFactory
+from ...users.factories import UserFactory
 from .. import views
 from .utils import setup_view
 
@@ -103,14 +104,10 @@ def test_view_regenerate_balances_all_year(client_logged, get_user):
     assert PensionBalance.objects.all().count() == 1
 
 
-@patch.object(views.SignalBase, 'accounts')
-@patch.object(views.SignalBase, 'savings')
-@patch.object(views.SignalBase, 'pensions')
-def test_view_regenerate_balances_func_called(mck_pension,
-                                              mck_saving,
-                                              mck_account,
-                                              get_user,
-                                              fake_request):
+def test_view_regenerate_balances_func_called(mocker, fake_request):
+    account = mocker.patch.object(views.SignalBase, 'accounts')
+    saving = mocker.patch.object(views.SignalBase, 'savings')
+    pension = mocker.patch.object(views.SignalBase, 'pensions')
 
     class Dummy(views.RegenerateBalances):
         pass
@@ -118,6 +115,63 @@ def test_view_regenerate_balances_func_called(mck_pension,
     view = setup_view(Dummy(), fake_request)
     view.get(fake_request)
 
-    assert mck_account.call_count == 1
-    assert mck_saving.call_count == 1
-    assert mck_pension.call_count == 1
+    assert account.call_count == 1
+    assert saving.call_count == 1
+    assert pension.call_count == 1
+
+
+def test_view_regenerate_account_balances(mocker, rf):
+    request = rf.get('/fake/?type=accounts')
+    request.user = UserFactory.build()
+
+    account = mocker.patch.object(views.SignalBase, 'accounts')
+    saving = mocker.patch.object(views.SignalBase, 'savings')
+    pension = mocker.patch.object(views.SignalBase, 'pensions')
+
+    class Dummy(views.RegenerateBalances):
+        pass
+
+    view = setup_view(Dummy(), request)
+    view.get(request)
+
+    assert account.call_count == 1
+    assert saving.call_count == 0
+    assert pension.call_count == 0
+
+
+def test_view_regenerate_saving_balances(mocker, rf):
+    request = rf.get('/fake/?type=savings')
+    request.user = UserFactory.build()
+
+    account = mocker.patch.object(views.SignalBase, 'accounts')
+    saving = mocker.patch.object(views.SignalBase, 'savings')
+    pension = mocker.patch.object(views.SignalBase, 'pensions')
+
+    class Dummy(views.RegenerateBalances):
+        pass
+
+    view = setup_view(Dummy(), request)
+    view.get(request)
+
+    assert account.call_count == 0
+    assert saving.call_count == 1
+    assert pension.call_count == 0
+
+
+def test_view_regenerate_pension_balances(mocker, rf):
+    request = rf.get('/fake/?type=pensions')
+    request.user = UserFactory.build()
+
+    account = mocker.patch.object(views.SignalBase, 'accounts')
+    saving = mocker.patch.object(views.SignalBase, 'savings')
+    pension = mocker.patch.object(views.SignalBase, 'pensions')
+
+    class Dummy(views.RegenerateBalances):
+        pass
+
+    view = setup_view(Dummy(), request)
+    view.get(request)
+
+    assert account.call_count == 0
+    assert saving.call_count == 0
+    assert pension.call_count == 1

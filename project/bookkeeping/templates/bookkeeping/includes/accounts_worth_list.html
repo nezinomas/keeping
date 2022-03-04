@@ -1,10 +1,11 @@
 {% load table_cell %}
 {% load i18n %}
+{% load slippers %}
 
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
-            <th colspan="7">{% translate 'Accounts' %}</th>
+            <th colspan="7">{% regenerate_balances type='accounts' %}{% translate 'Accounts' %}</th>
         </tr>
         <tr>
             <th class="text-start">{% translate 'Account' %}</th>

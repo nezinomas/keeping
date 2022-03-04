@@ -34,7 +34,7 @@ def info_table(_dict):
 
 
 @register.inclusion_tag('bookkeeping/includes/worth_table.html')
-def funds_table(_dict):
+def funds_table(_dict, _type=None):
     rtn = {
         'title': None,
         'items': None,
@@ -49,5 +49,7 @@ def funds_table(_dict):
             rtn[k] = _dict.get(k)
         except AttributeError:
             continue
+
+    rtn['type'] = _type
 
     return rtn

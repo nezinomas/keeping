@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-25 10:15+0200\n"
-"PO-Revision-Date: 2022-02-25 10:17+0200\n"
+"POT-Creation-Date: 2022-03-04 14:40+0200\n"
+"PO-Revision-Date: 2022-03-04 14:40+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < "
 "11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? "
 "1 : n % 1 != 0 ? 2: 3);\n"
-"X-Generator: Poedit 2.0.7\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #: .\project\accounts\forms.py:37
 msgid "Account title"
@@ -36,7 +36,7 @@ msgid "Sorting"
 msgstr "Rūšiavimas"
 
 #: .\project\accounts\templates\accounts\includes\accounts_form.html:3
-#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:10
+#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:11
 #: .\project\debts\forms.py:58 .\project\debts\forms.py:151
 #: .\project\debts\templates\debts\includes\debts_list.html:19
 #: .\project\debts\templates\debts\includes\debts_return_list.html:18
@@ -48,7 +48,7 @@ msgid "Account"
 msgstr "Sąskaita"
 
 #: .\project\accounts\templates\accounts\includes\accounts_list.html:6
-#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:7
+#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:8
 msgid "Accounts"
 msgstr "Sąskaitos"
 
@@ -100,7 +100,7 @@ msgid "Savings"
 msgstr "Taupymas"
 
 #: .\project\bookkeeping\lib\views_helpers.py:236
-#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:12
+#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:13
 #: .\project\bookkeeping\templates\bookkeeping\includes\chart_balance.html:80
 #: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_balance.html:82
 #: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_incomes.html:20
@@ -114,7 +114,7 @@ msgid "Incomes"
 msgstr "Pajamos"
 
 #: .\project\bookkeeping\lib\views_helpers.py:241
-#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:13
+#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:14
 #: .\project\bookkeeping\templates\bookkeeping\includes\chart_balance.html:85
 #: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_balance.html:83
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:17
@@ -129,7 +129,7 @@ msgid "Money for a day"
 msgstr "Pinigai dienai"
 
 #: .\project\bookkeeping\lib\views_helpers.py:256
-#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:14
+#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:15
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:20
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:7
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:18
@@ -214,24 +214,24 @@ msgstr "Grąžino"
 msgid "Worth of accounts"
 msgstr "Sąskaitų vertė"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:15
+#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:16
 msgid "Have"
 msgstr "Turiu"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:16
+#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:17
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:11
 msgid "Delta"
 msgstr "Delta"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:23
+#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:24
 msgid "Not specified"
 msgstr "Nenurodyta"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:27
+#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:28
 msgid "Reset"
 msgstr "Atstatyti"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:42
+#: .\project\bookkeeping\templates\bookkeeping\includes\accounts_worth_list.html:43
 #: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_savings.html:115
 #: .\project\bookkeeping\templates\bookkeeping\includes\detailed_table.html:12
 #: .\project\bookkeeping\templates\bookkeeping\includes\detailed_table.html:30
@@ -239,7 +239,7 @@ msgstr "Atstatyti"
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:15
 #: .\project\bookkeeping\templates\bookkeeping\includes\summary_expenses_table.html:12
 #: .\project\bookkeeping\templates\bookkeeping\includes\summary_expenses_table.html:28
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:49
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:50
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:60
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_expenses.html:14
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_expenses.html:35
@@ -266,7 +266,7 @@ msgid "Average salary"
 msgstr "Vidutinis atlyginimas"
 
 #: .\project\bookkeeping\templates\bookkeeping\includes\chart_summary_savings.html:125
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:10
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:11
 msgid "Profit"
 msgstr "Pelnas"
 
@@ -320,25 +320,25 @@ msgstr "Filtruoti"
 msgid "Expense"
 msgstr "Išlaidos"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:9
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:10
 msgid "From incomes"
 msgstr "Nuo pajamų"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:10
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:11
 msgid "Loss"
 msgstr "Nuostolis"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:13
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:20
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:14
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:21
 msgid "Transferred"
 msgstr "Pervesta"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:14
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:22
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:15
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:23
 msgid "Purchased"
 msgstr "Pirkta"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:17
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:18
 #: .\project\pensions\forms.py:44
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:10
 #: .\project\savings\forms.py:33 .\project\savings\forms.py:75
@@ -347,15 +347,15 @@ msgstr "Pirkta"
 msgid "Fund"
 msgstr "Fondas"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:18
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:19
 msgid "01.01 transferred"
 msgstr "01.01 pervesta"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:19
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:20
 msgid "01.01 fee"
 msgstr "01.01 mokesčiai"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:21
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:22
 #: .\project\pensions\templates\pensions\includes\pensions_list.html:13
 #: .\project\savings\forms.py:73
 #: .\project\savings\templates\savings\includes\savings_list.html:15
@@ -364,12 +364,12 @@ msgstr "01.01 mokesčiai"
 msgid "Fees"
 msgstr "Mokesčiai"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:23
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:24
 msgid "Market value"
 msgstr "Rinkos vertė"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:24
-#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:26
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:25
+#: .\project\bookkeeping\templates\bookkeeping\includes\worth_table.html:27
 #: .\project\debts\forms.py:59 .\project\debts\forms.py:153
 #: .\project\debts\templates\debts\includes\debts_list.html:17
 #: .\project\debts\templates\debts\includes\debts_return_list.html:17
@@ -787,6 +787,10 @@ msgstr "Ar tikrai norite ištrinti"
 #: .\project\templates\base.html:174
 msgid "Add"
 msgstr "Pridėti"
+
+#: .\project\core\templates\core\includes\regenerate_balances.html:2
+msgid "Only the balances in this table will be updated."
+msgstr "Bus atnaujinti tik šios lentelės balansai."
 
 #: .\project\core\templates\core\includes\search_form.html:9
 msgid "Search"
@@ -1698,9 +1702,6 @@ msgstr "Negalite ištrinti savęs."
 #~ msgctxt "lend button"
 #~ msgid "Lend"
 #~ msgstr "Skolą"
-
-#~ msgid "The balance for this year will be updated."
-#~ msgstr "Bus atnaujintas šių metų balansas."
 
 #~ msgid "Update %(year)s balance"
 #~ msgstr "Atnaujinti %(year)s balansą"

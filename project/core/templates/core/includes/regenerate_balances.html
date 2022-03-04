@@ -1,0 +1,2 @@
+{% load i18n %}
+<button class="btn btn-super-sm btn-outline-primary me-1 recalc" data-url="{% url 'core:regenerate_balances' %}{% if type %}?type={{ type }}"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Only the balances in this table will be updated.' %}"><i class="bi bi-arrow-repeat"></i></button>
