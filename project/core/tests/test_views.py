@@ -10,6 +10,7 @@ from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from ...pensions.factories import PensionBalance, PensionFactory
 from ...savings.factories import SavingBalance, SavingFactory
+from ...users.factories import UserFactory
 from .. import views
 from .utils import setup_view
 
@@ -116,4 +117,61 @@ def test_view_regenerate_balances_func_called(mocker, fake_request):
 
     assert account.call_count == 1
     assert saving.call_count == 1
+    assert pension.call_count == 1
+
+
+def test_view_regenerate_account_balances(mocker, rf):
+    request = rf.get('/fake/?type=accounts')
+    request.user = UserFactory.build()
+
+    account = mocker.patch.object(views.SignalBase, 'accounts')
+    saving = mocker.patch.object(views.SignalBase, 'savings')
+    pension = mocker.patch.object(views.SignalBase, 'pensions')
+
+    class Dummy(views.RegenerateBalances):
+        pass
+
+    view = setup_view(Dummy(), request)
+    view.get(request)
+
+    assert account.call_count == 1
+    assert saving.call_count == 0
+    assert pension.call_count == 0
+
+
+def test_view_regenerate_saving_balances(mocker, rf):
+    request = rf.get('/fake/?type=savings')
+    request.user = UserFactory.build()
+
+    account = mocker.patch.object(views.SignalBase, 'accounts')
+    saving = mocker.patch.object(views.SignalBase, 'savings')
+    pension = mocker.patch.object(views.SignalBase, 'pensions')
+
+    class Dummy(views.RegenerateBalances):
+        pass
+
+    view = setup_view(Dummy(), request)
+    view.get(request)
+
+    assert account.call_count == 0
+    assert saving.call_count == 1
+    assert pension.call_count == 0
+
+
+def test_view_regenerate_pension_balances(mocker, rf):
+    request = rf.get('/fake/?type=pensions')
+    request.user = UserFactory.build()
+
+    account = mocker.patch.object(views.SignalBase, 'accounts')
+    saving = mocker.patch.object(views.SignalBase, 'savings')
+    pension = mocker.patch.object(views.SignalBase, 'pensions')
+
+    class Dummy(views.RegenerateBalances):
+        pass
+
+    view = setup_view(Dummy(), request)
+    view.get(request)
+
+    assert account.call_count == 0
+    assert saving.call_count == 0
     assert pension.call_count == 1

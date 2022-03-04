@@ -47,13 +47,23 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
             'signal': 'any',
             'update_on_load': False,
         }
+        _type = request.GET.get('type')
 
-        arr = [
-            SignalBase.accounts(**kwargs),
-            SignalBase.savings(**kwargs),
-            SignalBase.pensions(**kwargs),
-        ]
+        if not _type:
+            arr = [
+                SignalBase.accounts(**kwargs),
+                SignalBase.savings(**kwargs),
+                SignalBase.pensions(**kwargs),
+            ]
+        else:
+            if _type == 'accounts':
+                arr = [SignalBase.accounts(**kwargs)]
 
+            if _type == 'savings':
+                arr = [SignalBase.savings(**kwargs)]
+
+            if _type == 'pensions':
+                arr = [SignalBase.pensions(**kwargs)]
 
         for x in arr:
             x.full_balance_update()
