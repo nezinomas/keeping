@@ -5,7 +5,7 @@ import pytz
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
-from ...accounts.factories import AccountBalance, AccountBalanceFactory
+from ...accounts.factories import AccountBalanceFactory
 from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...pensions.factories import PensionFactory
 from ...savings.factories import SavingFactory
@@ -49,6 +49,26 @@ def test_view_index_context(client_logged):
     assert 'lend' in response.context
     assert 'chart_expenses' in response.context
     assert 'chart_balance' in response.context
+
+
+def test_view_index_regenerate_buttons(client_logged):
+    SavingFactory()
+    PensionFactory()
+
+    url = reverse('bookkeeping:index')
+    response = client_logged.get(url)
+    content = response.content.decode('utf-8')
+
+    url = reverse('core:regenerate_balances')
+
+    assert f'data-url="{ url }"' in content
+    assert f'data-url="{ url }?type=accounts"' in content
+    assert f'data-url="{ url }?type=savings"' in content
+    assert f'data-url="{ url }?type=pensions"' in content
+
+    assert 'Bus atnaujinti visų metų balansai.' in content
+    assert 'Bus atnaujinti tik šios lentelės balansai.' in content
+    assert content.count('Bus atnaujinti tik šios lentelės balansai.') == 3
 
 
 @freeze_time('1999-07-01')
