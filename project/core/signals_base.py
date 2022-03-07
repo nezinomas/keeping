@@ -218,7 +218,6 @@ class SignalBase():
         if not _hooks:
             return
 
-        # for _hook['balance_field'], _account_name in _hook.items():
         for _hook in _hooks:
             _account = utils.getattr_(self._conf.instance, _hook['category'])
             _account_id = utils.getattr_(_account, 'pk')
