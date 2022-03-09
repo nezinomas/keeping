@@ -19,6 +19,10 @@ class User(AbstractUser):
         on_delete=models.CASCADE,
         related_name='users'
     )
+    drink_type = models.CharField(
+        max_length=16,
+        default='beer'
+    )
     email = models.EmailField(unique=True)
 
     objects = managers.KeepingUserManager()
