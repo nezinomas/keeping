@@ -6,7 +6,7 @@ from django.db.models.functions import Round
 
 def convert_beer_to_av(apps, schema_editor):
     Counter = apps.get_model('counters', 'Counter')
-    Counter.objects.filter(counter_type='drinks').update(quantity=Round(F('quantity') * 2.5, 2))
+    Counter.objects.filter(counter_type='drinks').update(quantity=Round(F('quantity') * 2.5, 2), option='beer')
 
 
 class Migration(migrations.Migration):
