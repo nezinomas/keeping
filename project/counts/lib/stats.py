@@ -91,8 +91,7 @@ class Stats():
 
     def chart_calendar(self):
         if not self._year:
-            raise MethodInvalid(
-                'class Stats must be called with specified year.')
+            raise MethodInvalid('class Stats must be called with specified year.')
 
         df = self._df.copy()
         if not df.empty:
