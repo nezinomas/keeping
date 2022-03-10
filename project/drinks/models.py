@@ -7,6 +7,7 @@ from . import managers
 
 MAX_BOTTLES = 20
 
+
 class Drink(Counter):
     objects = managers.DrinkQuerySet.as_manager()
 
