@@ -1,6 +1,6 @@
 import calendar
-from datetime import datetime
-from typing import Dict
+from datetime import date, datetime
+from typing import Dict, List
 
 from django.db import models
 
@@ -10,6 +10,7 @@ from ..core.mixins.queryset_sum import SumMixin
 from ..counters.managers import CounterQuerySet
 from .apps import App_name as DrinksAppName
 from .lib.drinks_options import DrinksOptions
+
 
 class DrinkQuerySet(CounterQuerySet):
     counter_type = DrinksAppName
@@ -65,6 +66,15 @@ class DrinkQuerySet(CounterQuerySet):
         arr['per_day'] = self._consumption(_qty, _day_of_year)
 
         return arr
+
+    def sum_by_day(self, year: int, month: int = None) -> List[Dict[date, float]]:
+        qs = super().sum_by_day(year, month)
+        ratio = DrinksOptions().ratio
+
+        for q in qs:
+            q['qty'] = q['qty'] * ratio
+
+        return qs
 
     def summary(self):
         #Returns

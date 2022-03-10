@@ -226,6 +226,15 @@ def test_drink_recalculate_ml_on_save(value, expect):
     assert d.quantity == expect
 
 
+def test_drink_sum_by_day():
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.5)
+
+    actual = Drink.objects.sum_by_day(1999)
+
+    assert actual[0]['qty'] == 1
+
+
 # ----------------------------------------------------------------------------
 #                                                                 Drink Target
 # ----------------------------------------------------------------------------
