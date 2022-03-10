@@ -9,7 +9,7 @@ from ..core.lib.date import ydays
 from ..core.mixins.queryset_sum import SumMixin
 from ..counters.managers import CounterQuerySet
 from .apps import App_name as DrinksAppName
-
+from .lib.drinks_options import DrinksOptions
 
 class DrinkQuerySet(CounterQuerySet):
     counter_type = DrinksAppName
@@ -21,13 +21,14 @@ class DrinkQuerySet(CounterQuerySet):
         """
 
         qs = super().sum_by_month(year, month)
+        ratio = DrinksOptions().ratio
 
         arr = []
         for row in qs:
             _date = row.get('date')
             _month = _date.month
             _monthlen = calendar.monthrange(year, _month)[1]
-            _qty = row.get('qty')
+            _qty = row.get('qty') * ratio
 
             item = {}
             item['date'] = _date
@@ -58,7 +59,7 @@ class DrinkQuerySet(CounterQuerySet):
         else:
             _day_of_year = ydays(year)
 
-        _qty = qs[0].get('qty')
+        _qty = qs[0].get('qty') * DrinksOptions().ratio
 
         arr['qty'] = _qty
         arr['per_day'] = self._consumption(_qty, _day_of_year)
@@ -70,10 +71,10 @@ class DrinkQuerySet(CounterQuerySet):
         # [{'year': int, 'qty': float, 'per_day': float}]
 
         qs = super().sum_by_year()
-
+        ratio = DrinksOptions().ratio
         arr = []
         for row in qs:
-            _qty = row.get('qty')
+            _qty = row.get('qty') * ratio
             _date = row.get('date')
             _days = ydays(_date.year)
 
