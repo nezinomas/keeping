@@ -1,24 +1,24 @@
 from ..lib.drinks_options import  DrinksOptions
 
 
-def test_to_beer():
-    assert  DrinksOptions.to_beer(2.5) == 1
+def test_std_to_beer():
+    assert  DrinksOptions.std_to_beer(2.5) == 1
 
 
 def test_beer_to_std():
     assert  DrinksOptions.beer_to_std(1) == 2.5
 
 
-def test_to_wine():
-    assert  DrinksOptions.to_wine(8) == 1
+def test_std_to_wine():
+    assert  DrinksOptions.std_to_wine(8) == 1
 
 
 def test_wine_to_std():
     assert  DrinksOptions.wine_to_std(1) == 8
 
 
-def test_to_vodka():
-    assert  DrinksOptions.to_vodka(40) == 1
+def test_std_to_vodka():
+    assert  DrinksOptions.std_to_vodka(40) == 1
 
 
 def test_vodka_to_std():
