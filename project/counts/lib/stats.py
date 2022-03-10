@@ -11,7 +11,11 @@ from ...core.lib.translation import month_names, weekday_names
 
 
 class Stats():
-    def __init__(self, year: int = None, data: List[Dict[date, float]] = None, past_latest: date = None):
+    def __init__(self,
+                 year: int = None,
+                 data: List[Dict[date, float]] = None,
+                 past_latest: date = None):
+
         self._year = year
         self.past_latest = past_latest
         self._df = self._prepare_df(data)
@@ -95,6 +99,7 @@ class Stats():
             raise MethodInvalid('class Stats must be called with specified year.')
 
         df = self._df.copy()
+
         if not df.empty:
             df = self._calc_gaps(df)
             df['date'] = pd.to_datetime(df.date).dt.date
