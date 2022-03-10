@@ -2,9 +2,11 @@ from ...core.lib import utils
 
 
 class DrinksOptions():
-    Std_Beer = 0.4
-    Std_Wine = 0.125
-    Std_Vodka = 0.025
+    ratios = {
+        'beer': 2.5,  # 500ml -> 2.5 std_av
+        'wine': 8,  # 750ml -> 8 std_av
+        'vodka': 40,  # 1000ml -> 40 std_av
+    }
 
     def __init__(self, drink_type: str = None):
         if not drink_type:
@@ -14,58 +16,13 @@ class DrinksOptions():
 
     @property
     def ratio(self) -> float:
-        ratios = {
-            'beer': DrinksOptions.std_to_beer(1),
-            'wine': DrinksOptions.std_to_wine(1),
-            'vodka': DrinksOptions.std_to_vodka(1)
-        }
-
-        return ratios.get(self._drink_type, 1)
+        return 1 / self.ratios.get(self._drink_type, 1)
 
     @property
     def stdav(self) -> float:
-        ratios = {
-            'beer': DrinksOptions.beer_to_std(1),
-            'wine': DrinksOptions.wine_to_std(1),
-            'vodka': DrinksOptions.vodka_to_std(1)
-        }
-
-        return ratios.get(self._drink_type, 1)
-
-    @staticmethod
-    def std_to_beer(av: float) -> float:
-        # one 500ml bottle ~ 2.5 std av
-        return av * DrinksOptions.Std_Beer
-
-    @staticmethod
-    def beer_to_std(av: float) -> float:
-        # one 500ml bottle ~ 2.5 std av
-        return av / DrinksOptions.Std_Beer
-
-    @staticmethod
-    def std_to_wine(av: float) -> float:
-        # one 750ml bottle ~ 8 std av
-        return av * DrinksOptions.Std_Wine
-
-    @staticmethod
-    def wine_to_std(av: float) -> float:
-        # one 750ml bottle ~ 8 std av
-        return av / DrinksOptions.Std_Wine
-
-    @staticmethod
-    def std_to_vodka(av: float) -> float:
-        # one 1000ml bottle ~ 40 std av
-        return av * DrinksOptions.Std_Vodka
-
-    @staticmethod
-    def vodka_to_std(av: float) -> float:
-        # one 1000ml bottle ~ 40 std av
-        return av / DrinksOptions.Std_Vodka
+        return self.ratios.get(self._drink_type, 1)
 
     def convert(self, qty: float, to: str) -> float:
-        alkohol_to_std = getattr(DrinksOptions, f'{self._drink_type}_to_std')
-        std = alkohol_to_std(qty)
+        stdav = qty * self.stdav
 
-        std_to_alkohol = getattr(DrinksOptions, f'std_to_{to}')
-
-        return std_to_alkohol(std)
+        return stdav / self.ratios.get(to, 1)

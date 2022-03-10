@@ -1,108 +1,66 @@
-from ..lib.drinks_options import  DrinksOptions
 import pytest
 
-def test_std_to_beer():
-    assert  DrinksOptions.std_to_beer(2.5) == 1
+from ..lib.drinks_options import DrinksOptions
 
 
-def test_beer_to_std():
-    assert  DrinksOptions.beer_to_std(1) == 2.5
+@pytest.mark.parametrize(
+    'drink_type, expect',
+    [
+        ('beer', 1 / 2.5),
+        ('wine', 1 / 8),
+        ('vodka', 1 / 40),
+        ('xxx', 1),
+    ]
+)
+def test_ratio(drink_type, expect):
+    actual = DrinksOptions(drink_type=drink_type).ratio
+
+    assert actual == expect
 
 
-def test_std_to_wine():
-    assert  DrinksOptions.std_to_wine(8) == 1
+@pytest.mark.parametrize(
+    'drink_type, expect',
+    [
+        ('beer', 1 / 2.5),
+        ('wine', 1 / 8),
+        ('vodka', 1 / 40),
+        ('xxx', 1),
+    ]
+)
+def test_ratio_drink_type_from_user(drink_type, expect):
+    actual = DrinksOptions(drink_type=drink_type).ratio
+
+    assert actual == expect
 
 
-def test_wine_to_std():
-    assert  DrinksOptions.wine_to_std(1) == 8
+@pytest.mark.parametrize(
+    'drink_type, expect',
+    [
+        ('beer', 2.5),
+        ('wine', 8),
+        ('vodka', 40),
+        ('xxx', 1),
+    ]
+)
+def test_stdav(drink_type, expect):
+    actual = DrinksOptions(drink_type=drink_type).stdav
+
+    assert actual == expect
 
 
-def test_std_to_vodka():
-    assert  DrinksOptions.std_to_vodka(40) == 1
+@pytest.mark.parametrize(
+    'drink_type, expect',
+    [
+        ('beer', 2.5),
+        ('wine', 8),
+        ('vodka', 40),
+        ('xxx', 1),
+    ]
+)
+def test_stdav_drink_type_from_user(drink_type, expect):
+    actual = DrinksOptions(drink_type=drink_type).stdav
 
-
-def test_vodka_to_std():
-    assert  DrinksOptions.vodka_to_std(1) == 40
-
-
-def test_get_ratio_for_beer(get_user):
-    get_user.drink_type = 'beer'
-
-    assert DrinksOptions().ratio == 1 / 2.5
-
-
-def test_get_ratio_for_wine(get_user):
-    get_user.drink_type = 'wine'
-
-    assert DrinksOptions().ratio == 1 / 8
-
-
-def test_get_ratio_for_vodka(get_user):
-    get_user.drink_type = 'vodka'
-
-    assert DrinksOptions().ratio == 1 / 40
-
-
-def test_get_ratio_for_std_av(get_user):
-    get_user.drink_type = 'std_av'
-
-    assert DrinksOptions().ratio == 1
-
-
-def test_get_ratio_for_beer_set_in_init():
-    assert DrinksOptions('beer').ratio == 1 / 2.5
-
-
-def test_get_ratio_for_wine_set_in_init():
-    assert DrinksOptions('wine').ratio == 1 / 8
-
-
-def test_get_ratio_for_vodka_set_in_init():
-    assert DrinksOptions('vodka').ratio == 1 / 40
-
-
-def test_get_ratio_for_std_av_set_in_init():
-     assert DrinksOptions('std_av').ratio == 1
-
-
-def test_get_stdav_for_beer(get_user):
-    get_user.drink_type = 'beer'
-
-    assert DrinksOptions().stdav == 2.5
-
-
-def test_get_stdav_for_wine(get_user):
-    get_user.drink_type = 'wine'
-
-    assert DrinksOptions().stdav == 8
-
-
-def test_get_stdav_for_vodka(get_user):
-    get_user.drink_type = 'vodka'
-
-    assert DrinksOptions().stdav == 40
-
-
-def test_get_stdav_for_std_av(get_user):
-    get_user.drink_type = 'std_av'
-
-    assert DrinksOptions().stdav == 1
-
-
-def test_get_stdav_for_beer_set_in_init():
-    assert DrinksOptions('beer').stdav == 2.5
-
-
-def test_get_stdav_for_wine_set_in_init():
-    assert DrinksOptions('wine').stdav == 8
-
-
-def test_get_stdav_for_vodka_set_in_init():
-    assert DrinksOptions('vodka').stdav == 40
-
-
-def test_get_stdav_for_std_av_set_in_init():
-     assert DrinksOptions('std_av').stdav == 1
+    assert actual == expect
 
 
 @pytest.mark.parametrize(
@@ -138,7 +96,7 @@ def test_convert(qty, from_, to, expect):
         (1, 'vodka', 'vodka', 1),
     ]
 )
-def test_convert(qty, from_, to, expect, get_user):
+def test_convert_from_user(qty, from_, to, expect, get_user):
     get_user.drink_type = from_
 
     actual = DrinksOptions().convert(qty, to)
