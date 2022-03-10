@@ -18,6 +18,16 @@ class DrinksOptions():
 
         return ratios.get(self._drink_type, 1)
 
+    @property
+    def stdav(self) -> float:
+        ratios = {
+            'beer': DrinksOptions.beer_to_std(1),
+            'wine': DrinksOptions.wine_to_std(1),
+            'vodka': DrinksOptions.vodka_to_std(1)
+        }
+
+        return ratios.get(self._drink_type, 1)
+
     @staticmethod
     def std_to_beer(av: float) -> float:
         # one 500ml bottle ~ 2.5 std av
@@ -47,3 +57,11 @@ class DrinksOptions():
     def vodka_to_std(av: float) -> float:
         # one 1000ml bottle ~ 40 std av
         return av / 0.025
+
+    def convert(self, qty: float, to: str) -> float:
+        alkohol_to_std = getattr(DrinksOptions, f'{self._drink_type}_to_std')
+        std = alkohol_to_std(qty)
+
+        std_to_alkohol = getattr(DrinksOptions, f'std_to_{to}')
+
+        return std_to_alkohol(std)
