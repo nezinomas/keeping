@@ -2,6 +2,10 @@ from ...core.lib import utils
 
 
 class DrinksOptions():
+    Std_Beer = 0.4
+    Std_Wine = 0.125
+    Std_Vodka = 0.025
+
     def __init__(self, drink_type: str = None):
         if not drink_type:
             drink_type = utils.get_user().drink_type
@@ -31,32 +35,32 @@ class DrinksOptions():
     @staticmethod
     def std_to_beer(av: float) -> float:
         # one 500ml bottle ~ 2.5 std av
-        return av * 0.4
+        return av * DrinksOptions.Std_Beer
 
     @staticmethod
     def beer_to_std(av: float) -> float:
         # one 500ml bottle ~ 2.5 std av
-        return av / 0.4
+        return av / DrinksOptions.Std_Beer
 
     @staticmethod
     def std_to_wine(av: float) -> float:
         # one 750ml bottle ~ 8 std av
-        return av * 0.125
+        return av * DrinksOptions.Std_Wine
 
     @staticmethod
     def wine_to_std(av: float) -> float:
         # one 750ml bottle ~ 8 std av
-        return av / 0.125
+        return av / DrinksOptions.Std_Wine
 
     @staticmethod
     def std_to_vodka(av: float) -> float:
         # one 1000ml bottle ~ 40 std av
-        return av * 0.025
+        return av * DrinksOptions.Std_Vodka
 
     @staticmethod
     def vodka_to_std(av: float) -> float:
         # one 1000ml bottle ~ 40 std av
-        return av / 0.025
+        return av / DrinksOptions.Std_Vodka
 
     def convert(self, qty: float, to: str) -> float:
         alkohol_to_std = getattr(DrinksOptions, f'{self._drink_type}_to_std')
