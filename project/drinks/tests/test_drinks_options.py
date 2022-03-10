@@ -35,3 +35,19 @@ def test_get_ratio_for_std_av(get_user):
     get_user.drink_type = 'std_av'
 
     assert DrinksOptions().ratio == 1
+
+
+def test_get_ratio_for_beer_set_in_init():
+    assert DrinksOptions('beer').ratio == 1 / 2.5
+
+
+def test_get_ratio_for_wine_set_in_init():
+    assert DrinksOptions('wine').ratio == 1 / 8
+
+
+def test_get_ratio_for_vodka_set_in_init():
+    assert DrinksOptions('vodka').ratio == 1 / 40
+
+
+def test_get_ratio_for_std_av_set_in_init():
+     assert DrinksOptions('std_av').ratio == 1

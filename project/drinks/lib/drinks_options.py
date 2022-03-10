@@ -2,8 +2,11 @@ from ...core.lib import utils
 
 
 class DrinksOptions():
-    def __init__(self):
-        self._drink_type = utils.get_user().drink_type
+    def __init__(self, drink_type: str = None):
+        if not drink_type:
+            drink_type = utils.get_user().drink_type
+
+        self._drink_type = drink_type
 
     @property
     def ratio(self) -> float:
