@@ -120,7 +120,7 @@ def test_drink_months_consumption(_drinks):
     # filter per_month key from return list
     actual = [x['per_month'] for x in actual]
 
-    expect = [40.32, 53.57]
+    expect = [16.12, 21.43]
 
     assert expect == pytest.approx(actual, rel=1e-2)
 
@@ -131,7 +131,7 @@ def test_drink_months_quantity_sum(_drinks):
     # filter sum key from return list
     actual = [x['sum'] for x in actual]
 
-    expect = [2.5, 3.0]
+    expect = [1.0, 1.2]
 
     assert expect == pytest.approx(actual, rel=1e-2)
 
@@ -178,8 +178,8 @@ def test_drink_days_sum(_second_user):
 
     actual = Drink.objects.drink_day_sum(1999)
 
-    assert actual['qty'] == 2.5
-    assert round(actual['per_day'], 2) == 4.1
+    assert actual['qty'] == 1
+    assert round(actual['per_day'], 2) == 1.64
 
 
 @freeze_time('1999-01-03')
@@ -200,14 +200,14 @@ def test_drink_summary():
     DrinkFactory(date=date(2000, 1, 2), quantity=3.0)
 
     expect = [
-        {'year': 1999, 'qty': 3.0, 'per_day': 4.11},
-        {'year': 2000, 'qty': 4.0, 'per_day': 5.46},
+        {'year': 1999, 'qty': 1.2, 'per_day': 1.64},
+        {'year': 2000, 'qty': 1.6, 'per_day': 2.18},
     ]
     actual = list(Drink.objects.summary())
 
     assert len(actual) == 2
     assert expect[0] == pytest.approx(actual[0], 0.01)
-    assert expect[1] == pytest.approx(actual[1], 0.001)
+    assert expect[1] == pytest.approx(actual[1], 0.01)
 
 
 def test_drink_summary_no_records():

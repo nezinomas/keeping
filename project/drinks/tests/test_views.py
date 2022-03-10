@@ -288,7 +288,7 @@ def test_historical_data_ajax(client_logged):
 
     assert response.status_code == 200
     assert "'name': 1999" in actual['html']
-    assert "'data': [16.129032258064516, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" in actual['html']
+    assert "'data': [6.451612903225806, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" in actual['html']
 
 
 # ---------------------------------------------------------------------------------------
@@ -391,10 +391,10 @@ def test_compare_chart_data(client_logged, _compare_form_data):
     assert response.status_code == 200
 
     assert "'name': '1999'" in actual['html']
-    assert "'data': [16.129032258064516, 0.0" in actual['html']
+    assert "'data': [6.451612903225806, 0.0" in actual['html']
 
     assert "'name': '2020'" in actual['html']
-    assert "'data': [161.29032258064515, 0.0" in actual['html']
+    assert "'data': [64.51612903225806, 0.0" in actual['html']
 
 
 # ---------------------------------------------------------------------------------------
@@ -587,7 +587,8 @@ def test_index_first_record_with_gap_from_previous_year(client_logged):
     response = client_logged.get('/drinks/')
     context = response.context
 
-    assert "'1999-01-02', 1.0, 366.0]" in context['chart_calendar_1H']
+    assert "'1999-01-02', 0.4, 366.0]" in context['chart_calendar_1H']
+
 
 @freeze_time('1999-1-1')
 def test_index_no_data_dry_days(client_logged):
@@ -717,7 +718,7 @@ def test_history_drinks_data_ml(client_logged):
     url = reverse('drinks:drinks_history')
     response = client_logged.get(url)
 
-    assert response.context['drinks_data_ml'] == pytest.approx([2.74, 1.37], rel=1e-2)
+    assert response.context['drinks_data_ml'] == pytest.approx([1.1, 0.55], rel=1e-2)
 
 
 @freeze_time('1999-01-01')
@@ -728,7 +729,7 @@ def test_history_drinks_data_alcohol(client_logged):
     url = reverse('drinks:drinks_history')
     response = client_logged.get(url)
 
-    assert response.context['drinks_data_alcohol'] == [0.05, 0.025]
+    assert response.context['drinks_data_alcohol'] == pytest.approx([0.02, 0.01], 0.01)
 
 
 @freeze_time('1999-1-1')
@@ -743,8 +744,8 @@ def test_history_categories_with_empty_year_in_between(fake_request):
     actual = view.get_context_data()
 
     assert actual['drinks_categories'] == [1997, 1998, 1999]
-    assert actual['drinks_data_ml'] == [1.0, 0.0, 2.0]
-    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == [0.018, 0.0, 0.037]
+    assert pytest.approx(actual['drinks_data_ml'], 0.01) == [0.4, 0.0, 0.8]
+    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == [0.007, 0.0, 0.015]
 
 
 @freeze_time('1999-1-1')
@@ -758,5 +759,5 @@ def test_history_categories_with_empty_current_year(fake_request):
     actual = view.get_context_data()
 
     assert actual['drinks_categories'] == [1998, 1999]
-    assert actual['drinks_data_ml'] == [1.0, 0.0]
-    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == [0.018, 0.0]
+    assert pytest.approx(actual['drinks_data_ml'], rel=1e-1) == [0.4, 0.0]
+    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == [0.007, 0.0]

@@ -116,11 +116,11 @@ def test_std_av():
             'per_week': 6.67,
             'per_month': 27.35
         }, {
-            'title': 'Vynas, 1L',
-            'total': 68.38,
-            'per_day': 0.24,
-            'per_week': 1.67,
-            'per_month': 6.84
+            'title': 'Vynas, 0.75L',
+            'total': 85.47,
+            'per_day': 0.3,
+            'per_week': 2.08,
+            'per_month': 8.55
         }, {
             'title': 'Degtinė, 1L',
             'total': 17.09,
@@ -158,11 +158,11 @@ def test_std_av_past_recods():
             'per_week': 5.26,
             'per_month': 22.79
         }, {
-            'title': 'Vynas, 1L',
-            'total': 68.38,
-            'per_day': 0.19,
-            'per_week': 1.31,
-            'per_month': 5.70
+            'title': 'Vynas, 0.75L',
+            'total': 85.47,
+            'per_day': 0.23,
+            'per_week': 1.64,
+            'per_month': 7.12
         }, {
             'title': 'Degtinė, 1L',
             'total': 17.09,
