@@ -24,11 +24,26 @@ class DrinksOptions():
         return av * 0.4
 
     @staticmethod
+    def beer_to_std(av: float) -> float:
+        # one 500ml bottle ~ 2.5 std av
+        return av / 0.4
+
+    @staticmethod
     def to_wine(av: float) -> float:
         # one 750ml bottle ~ 8 std av
         return av * 0.125
 
     @staticmethod
+    def wine_to_std(av: float) -> float:
+        # one 750ml bottle ~ 8 std av
+        return av / 0.125
+
+    @staticmethod
     def to_vodka(av: float) -> float:
         # one 1000ml bottle ~ 40 std av
         return av * 0.025
+
+    @staticmethod
+    def vodka_to_std(av: float) -> float:
+        # one 1000ml bottle ~ 40 std av
+        return av / 0.025
