@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load slippers %}
+{% load drinks_templatetags %}
 
 {% if items %}
 
@@ -22,7 +23,7 @@
             <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
             {% var drink_type=item.option|title %}
             <td>{% translate drink_type %}</td>
-            <td>{{ item.quantity }}</td>
+            <td>{{ item.quantity|convert:item.option|floatformat:2 }}</td>
             {% edit_cell url=url_update %}
             {% delete_cell url=url_delete %}
         </tr>
