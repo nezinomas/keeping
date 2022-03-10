@@ -11,7 +11,7 @@ from django.utils.translation import gettext as _
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
 from ..core.lib.date import monthnames, set_year_for_form
-from ..core.lib.transalation import month_names
+from ..core.lib.translation import month_names
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
 from ..savings.models import SavingType

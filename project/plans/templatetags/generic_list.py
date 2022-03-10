@@ -1,6 +1,6 @@
 from django import template
 
-from ...core.lib.transalation import month_names
+from ...core.lib.translation import month_names
 
 register = template.Library()
 

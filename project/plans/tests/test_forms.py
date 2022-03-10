@@ -1,7 +1,7 @@
 import pytest
 from freezegun import freeze_time
 
-from ...core.lib.transalation import month_names
+from ...core.lib.translation import month_names
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
 from ...savings.factories import SavingTypeFactory

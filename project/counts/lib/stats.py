@@ -7,7 +7,8 @@ from django.db import models
 from django.db.models import QuerySet
 
 from ...core.exceptions import MethodInvalid
-from ...core.lib.transalation import month_names, weekday_names
+from ...core.lib.translation import month_names, weekday_names
+
 
 class Stats():
     def __init__(self, year: int = None, data: List[Dict[date, float]] = None, past_latest: date = None):
