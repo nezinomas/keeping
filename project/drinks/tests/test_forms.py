@@ -23,6 +23,7 @@ def test_drink_init_fields():
 
     assert '<input type="text" name="date"' in form
     assert '<input type="number" name="quantity"' in form
+    assert '<select name="option"' in form
     assert '<select name="user"' not in form
     assert '<input type="text" name="counter_type"' not in form
 
@@ -40,6 +41,14 @@ def test_drink_year_initial_value():
     form = DrinkForm().as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
+
+
+def test_drink_option_initial_value():
+    UserFactory()
+
+    form = DrinkForm().as_p()
+
+    assert '<option value="beer" selected>Alus</option>' in form
 
 
 @patch('project.drinks.forms.App_name', 'Counter Type')
