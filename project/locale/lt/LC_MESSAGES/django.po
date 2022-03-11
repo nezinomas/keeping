@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-04 14:40+0200\n"
-"PO-Revision-Date: 2022-03-04 14:40+0200\n"
+"POT-Creation-Date: 2022-03-11 13:27+0200\n"
+"PO-Revision-Date: 2022-03-11 13:31+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < "
 "11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? "
 "1 : n % 1 != 0 ? 2: 3);\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 2.0.7\n"
 
 #: .\project\accounts\forms.py:37
 msgid "Account title"
@@ -62,7 +62,7 @@ msgstr "uždaryta"
 #: .\project\debts\forms.py:56 .\project\debts\forms.py:150
 #: .\project\debts\templates\debts\includes\debts_list.html:12
 #: .\project\debts\templates\debts\includes\debts_return_list.html:12
-#: .\project\drinks\forms.py:40 .\project\expenses\forms.py:69
+#: .\project\drinks\forms.py:55 .\project\expenses\forms.py:69
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:13
 #: .\project\incomes\forms.py:42
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:10
@@ -530,7 +530,7 @@ msgstr "Data negali būti ateityje"
 msgid "Ended reading cannot precede started reading"
 msgstr "Baigta skaityti negali būti anksčiau nei pradėta skaityti"
 
-#: .\project\books\forms.py:125 .\project\drinks\forms.py:77
+#: .\project\books\forms.py:125 .\project\drinks\forms.py:92
 msgid "Year"
 msgstr "Metai"
 
@@ -541,7 +541,7 @@ msgstr "Metai"
 msgid "How many"
 msgstr "Kiek"
 
-#: .\project\books\forms.py:141 .\project\drinks\forms.py:93
+#: .\project\books\forms.py:141 .\project\drinks\forms.py:108
 msgid "already has a goal."
 msgstr "metai jau turi tikslą."
 
@@ -648,79 +648,79 @@ msgstr "Kitas mėnuo"
 msgid "Previous Month"
 msgstr "Ankstesnis mėnesis"
 
-#: .\project\core\lib\transalation.py:6
+#: .\project\core\lib\translation.py:6
 msgid "January"
 msgstr "Sausis"
 
-#: .\project\core\lib\transalation.py:7
+#: .\project\core\lib\translation.py:7
 msgid "February"
 msgstr "Vasaris"
 
-#: .\project\core\lib\transalation.py:8
+#: .\project\core\lib\translation.py:8
 msgid "March"
 msgstr "Kovas"
 
-#: .\project\core\lib\transalation.py:9
+#: .\project\core\lib\translation.py:9
 msgid "April"
 msgstr "Balandis"
 
-#: .\project\core\lib\transalation.py:10
+#: .\project\core\lib\translation.py:10
 msgid "May"
 msgstr "Gegužė"
 
-#: .\project\core\lib\transalation.py:11
+#: .\project\core\lib\translation.py:11
 msgid "June"
 msgstr "Birželis"
 
-#: .\project\core\lib\transalation.py:12
+#: .\project\core\lib\translation.py:12
 msgid "July"
 msgstr "Liepa"
 
-#: .\project\core\lib\transalation.py:13
+#: .\project\core\lib\translation.py:13
 msgid "August"
 msgstr "Rugpjūtis"
 
-#: .\project\core\lib\transalation.py:14
+#: .\project\core\lib\translation.py:14
 msgid "September"
 msgstr "Rugsėjis"
 
-#: .\project\core\lib\transalation.py:15
+#: .\project\core\lib\translation.py:15
 msgid "October"
 msgstr "Spalis"
 
-#: .\project\core\lib\transalation.py:16
+#: .\project\core\lib\translation.py:16
 msgid "November"
 msgstr "Lapkritis"
 
-#: .\project\core\lib\transalation.py:17
+#: .\project\core\lib\translation.py:17
 msgid "December"
 msgstr "Gruodis"
 
-#: .\project\core\lib\transalation.py:23
+#: .\project\core\lib\translation.py:23
 msgid "Monday"
 msgstr "Pirmadienis"
 
-#: .\project\core\lib\transalation.py:24
+#: .\project\core\lib\translation.py:24
 msgid "Tuesday"
 msgstr "Antradienis"
 
-#: .\project\core\lib\transalation.py:25
+#: .\project\core\lib\translation.py:25
 msgid "Wednesday"
 msgstr "Trečiadienis"
 
-#: .\project\core\lib\transalation.py:26
+#: .\project\core\lib\translation.py:26
 msgid "Thursday"
 msgstr "Ketvirtadienis"
 
-#: .\project\core\lib\transalation.py:27
+#: .\project\core\lib\translation.py:27
 msgid "Friday"
 msgstr "Penktadienis"
 
-#: .\project\core\lib\transalation.py:28
+#: .\project\core\lib\translation.py:28
 msgid "Saturday"
 msgstr "Šeštadienis"
 
-#: .\project\core\lib\transalation.py:29
+#: .\project\core\lib\translation.py:29
 msgid "Sunday"
 msgstr "Sekmadienis"
 
@@ -809,9 +809,9 @@ msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 #: .\project\counts\templates\counts\includes\chart_month.html:71
 #: .\project\counts\templates\counts\includes\counts_list.html:9
 #: .\project\counts\templates\counts\includes\info_row.html:5
-#: .\project\drinks\forms.py:78
+#: .\project\drinks\forms.py:93
 #: .\project\drinks\templates\drinks\includes\chart_quantity.html:61
-#: .\project\drinks\templates\drinks\includes\drinks_list.html:10
+#: .\project\drinks\templates\drinks\includes\drinks_list.html:12
 msgid "Quantity"
 msgstr "Kiekis"
 
@@ -887,7 +887,7 @@ msgid "Charts"
 msgstr "Grafikai"
 
 #: .\project\counts\templates\counts\index.html:24
-#: .\project\drinks\templates\drinks\includes\drinks_list.html:9
+#: .\project\drinks\templates\drinks\includes\drinks_list.html:10
 #: .\project\drinks\templates\drinks\index.html:27
 #: .\project\templates\base.html:121
 msgid "Data"
@@ -990,28 +990,28 @@ msgctxt "sum button"
 msgid "Sum"
 msgstr "Sumą"
 
-#: .\project\drinks\forms.py:41
+#: .\project\drinks\forms.py:56
 msgid "Quantity (0,5L beer bottle)"
 msgstr "Kiekis (0,5L alaus)"
 
-#: .\project\drinks\forms.py:42
+#: .\project\drinks\forms.py:57
 #, python-format
-msgid "If you enter more than %(cnt)s, the quantity will be converted to mL."
-msgstr "Įvedus daugiau nei %(cnt)s, kiekis bus konvertuotas į mL."
+msgid "If more than %(cnt)s is entered, it will be considered to be mL."
+msgstr "Įvedus daugiau nei %(cnt)s, bus laikoma kad tai yra mL."
 
-#: .\project\drinks\forms.py:133
+#: .\project\drinks\forms.py:148
 msgid "Must be 4 digits."
 msgstr "Turi būti 4 skaitmenys."
 
-#: .\project\drinks\lib\drinks_stats.py:54
+#: .\project\drinks\lib\drinks_stats.py:58
 msgid "Beer"
 msgstr "Alus"
 
-#: .\project\drinks\lib\drinks_stats.py:55
+#: .\project\drinks\lib\drinks_stats.py:61
 msgid "Wine"
 msgstr "Vynas"
 
-#: .\project\drinks\lib\drinks_stats.py:56
+#: .\project\drinks\lib\drinks_stats.py:64
 msgid "Vodka"
 msgstr "Degtinė"
 
@@ -1040,6 +1040,10 @@ msgstr "Per metus gryno alkoholio, L"
 #: .\project\drinks\templates\drinks\includes\drinks_delete_form.html:3
 msgid "Delete drinks"
 msgstr "Trinti gėrimus"
+
+#: .\project\drinks\templates\drinks\includes\drinks_list.html:11
+msgid "Dink Type"
+msgstr "Gėtimo tipas"
 
 #: .\project\drinks\templates\drinks\includes\drinks_target_form.html:3
 #: .\project\drinks\templates\drinks\index.html:37
