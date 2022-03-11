@@ -31,7 +31,7 @@ def test_drink_init_fields():
 def test_drink_help_text():
     form = DrinkForm().as_p()
 
-    assert 'Įvedus daugiau nei 20, kiekis bus konvertuotas į mL.' in form
+    assert 'Įvedus daugiau nei 20, bus laikoma kad tai yra mL.' in form
 
 
 @freeze_time('1000-01-01')
@@ -55,7 +55,8 @@ def test_drink_option_initial_value():
 def test_drink_valid_data():
     form = DrinkForm(data={
         'date': '1999-01-01',
-        'quantity': 1.0
+        'quantity': 1.0,
+        'option': 'beer',
     })
 
     assert form.is_valid()
@@ -77,7 +78,8 @@ def test_drink_valid_data():
 def test_drink_invalid_date(year):
     form = DrinkForm(data={
         'date': f'{year}-01-01',
-        'quantity': 1.0
+        'quantity': 1.0,
+        'option': 'beer',
     })
 
     assert not form.is_valid()
@@ -90,9 +92,10 @@ def test_drink_blank_data():
 
     assert not form.is_valid()
 
-    assert len(form.errors) == 2
+    assert len(form.errors) == 3
     assert 'date' in form.errors
     assert 'quantity' in form.errors
+    assert 'option' in form.errors
 
 
 # ---------------------------------------------------------------------------------------
