@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-14 12:36+0200\n"
-"PO-Revision-Date: 2022-03-14 12:36+0200\n"
+"POT-Creation-Date: 2022-03-14 12:42+0200\n"
+"PO-Revision-Date: 2022-03-14 12:42+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -62,7 +62,7 @@ msgstr "uždaryta"
 #: .\project\debts\forms.py:56 .\project\debts\forms.py:150
 #: .\project\debts\templates\debts\includes\debts_list.html:12
 #: .\project\debts\templates\debts\includes\debts_return_list.html:12
-#: .\project\drinks\forms.py:55 .\project\expenses\forms.py:69
+#: .\project\drinks\forms.py:54 .\project\expenses\forms.py:69
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:13
 #: .\project\incomes\forms.py:42
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:10
@@ -989,6 +989,10 @@ msgstr "Skolą"
 msgctxt "sum button"
 msgid "Sum"
 msgstr "Sumą"
+
+#: .\project\drinks\forms.py:55
+msgid "Drink type"
+msgstr "Gėrimo tipas"
 
 #: .\project\drinks\forms.py:58
 msgid "1 Beer = 0.5L"

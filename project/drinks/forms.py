@@ -24,7 +24,6 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
     option = forms.ChoiceField(
         choices=choices,
         initial='beer',
-        label=_l('Drink type'),
         widget=forms.Select(),
         required=True
     )
@@ -53,6 +52,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.fields['date'].initial = set_year_for_form()
 
         self.fields['date'].label = _('Date')
+        self.fields['option'].label = _('Drink type')
         self.fields['quantity'].label = _('Quantity')
 
         _h1 = _('1 Beer = 0.5L')
