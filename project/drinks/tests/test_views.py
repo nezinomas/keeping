@@ -76,7 +76,7 @@ def test_update(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '0,27' in actual['html_list']
+    assert '0,68' in actual['html_list']
     assert f'<a role="button" data-url="/drinks/update/{p.pk}/"' in actual['html_list']
 
 
@@ -744,8 +744,8 @@ def test_history_categories_with_empty_year_in_between(fake_request):
     actual = view.get_context_data()
 
     assert actual['drinks_categories'] == [1997, 1998, 1999]
-    assert pytest.approx(actual['drinks_data_ml'], 0.01) == [0.4, 0.0, 0.8]
-    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == [0.007, 0.0, 0.015]
+    assert pytest.approx(actual['drinks_data_ml'], 0.01) == [200, 0.0, 400]
+    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == [3.65, 0.0, 7.3]
 
 
 @freeze_time('1999-1-1')
@@ -759,5 +759,5 @@ def test_history_categories_with_empty_current_year(fake_request):
     actual = view.get_context_data()
 
     assert actual['drinks_categories'] == [1998, 1999]
-    assert pytest.approx(actual['drinks_data_ml'], rel=1e-1) == [0.4, 0.0]
-    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == [0.007, 0.0]
+    assert pytest.approx(actual['drinks_data_ml'], rel=1e-1) == [200, 0.0]
+    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == [3.65, 0.0]

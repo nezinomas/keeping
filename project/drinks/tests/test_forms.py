@@ -64,7 +64,7 @@ def test_drink_valid_data():
     data = form.save()
 
     assert data.date == date(1999, 1, 1)
-    assert data.quantity == 1.0
+    assert data.quantity == 2.5
     assert data.user.username == 'bob'
     assert data.counter_type == 'Counter Type'
 
