@@ -35,7 +35,7 @@ def test_new_200(client_logged):
 
 
 def test_new(client_logged):
-    data = {'date': '1999-01-01', 'quantity': 19}
+    data = {'date': '1999-01-01', 'quantity': 19, 'option': 'beer'}
 
     url = reverse('drinks:drinks_new')
 
@@ -65,7 +65,7 @@ def test_new_invalid_data(client_logged):
 def test_update(client_logged):
     p = DrinkFactory()
 
-    data = {'date': '1999-01-01', 'quantity': 0.68}
+    data = {'date': '1999-01-01', 'quantity': 0.68, 'option': 'beer'}
     url = reverse('drinks:drinks_update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data, **X_Req)
@@ -76,7 +76,7 @@ def test_update(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '0,68' in actual['html_list']
+    assert '0,27' in actual['html_list']
     assert f'<a role="button" data-url="/drinks/update/{p.pk}/"' in actual['html_list']
 
 
