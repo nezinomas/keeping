@@ -217,11 +217,21 @@ def test_drink_summary_no_records():
 
 
 @pytest.mark.parametrize(
-    'value, expect',
-    [(20, 20), (21, 0.04), (350, 0.7)]
+    'ml, drink_type, expect',
+    [
+        (20, 'beer', 50),
+        (21, 'beer', 0.1),
+        (350, 'beer', 1.75),
+        (20, 'wine', 160),
+        (21, 'wine', 0.22),
+        (350, 'wine', 3.73),
+        (20, 'vodka', 800),
+        (21, 'vodka', 0.84),
+        (350, 'vodka', 14),
+    ]
 )
-def test_drink_recalculate_ml_on_save(value, expect):
-    d = DrinkFactory(quantity=value)
+def test_drink_recalculate_ml_on_save(ml, drink_type, expect):
+    d = DrinkFactory(quantity=ml, option=drink_type)
 
     assert d.quantity == expect
 
@@ -233,6 +243,60 @@ def test_drink_sum_by_day():
     actual = Drink.objects.sum_by_day(1999)
 
     assert actual[0]['qty'] == 1
+
+
+def test_drink_new_beer_quantity():
+    obj = DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option='beer')
+
+    actual = Drink.objects.get(pk=obj.pk)
+
+    assert actual.option == 'beer'
+    assert actual.quantity == 2.5
+
+
+def test_drink_new_beer_quantity_ml():
+    obj = DrinkFactory(date=date(1999, 1, 1), quantity=500, option='beer')
+
+    actual = Drink.objects.get(pk=obj.pk)
+
+    assert actual.option == 'beer'
+    assert actual.quantity == 2.5
+
+
+def test_drink_new_wine_quantity():
+    obj = DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option='wine')
+
+    actual = Drink.objects.get(pk=obj.pk)
+
+    assert actual.option == 'wine'
+    assert actual.quantity == 8
+
+
+def test_drink_new_wine_quantity_ml():
+    obj = DrinkFactory(date=date(1999, 1, 1), quantity=750, option='wine')
+
+    actual = Drink.objects.get(pk=obj.pk)
+
+    assert actual.option == 'wine'
+    assert actual.quantity == 8
+
+
+def test_drink_new_vodka_quantity():
+    obj = DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option='vodka')
+
+    actual = Drink.objects.get(pk=obj.pk)
+
+    assert actual.option == 'vodka'
+    assert actual.quantity == 40
+
+
+def test_drink_new_vodka_quantity_ml():
+    obj = DrinkFactory(date=date(1999, 1, 1), quantity=1000, option='vodka')
+
+    actual = Drink.objects.get(pk=obj.pk)
+
+    assert actual.option == 'vodka'
+    assert actual.quantity == 40
 
 
 # ----------------------------------------------------------------------------

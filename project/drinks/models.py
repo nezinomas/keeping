@@ -4,6 +4,7 @@ from django.db import models
 from ..counters.models import Counter
 from ..users.models import User
 from . import managers
+from .lib.drinks_options import DrinksOptions
 
 MAX_BOTTLES = 20
 
@@ -15,8 +16,14 @@ class Drink(Counter):
         proxy = True
 
     def save(self, *args, **kwargs):
+        obj = DrinksOptions()
+
         if self.quantity > MAX_BOTTLES:
-            self.quantity = round(self.quantity / 500, 2)
+            q = obj.ml_to_stdav(drink_type=self.option, ml=self.quantity)
+        else:
+            q = self.quantity / obj.get_ratio(drink_type=self.option)
+
+        self.quantity = q
 
         super().save(*args, **kwargs)
 
