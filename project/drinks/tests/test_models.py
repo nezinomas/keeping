@@ -245,58 +245,26 @@ def test_drink_sum_by_day():
     assert actual[0]['qty'] == 1
 
 
-def test_drink_new_beer_quantity():
-    obj = DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option='beer')
+@pytest.mark.parametrize(
+    'drink_type, quantity, stdav',
+    [
+        ('beer', 1, 2.5),
+        ('beer', 500, 2.5),
+        ('wine', 1, 8),
+        ('wine', 750, 8),
+        ('vodka', 1, 40),
+        ('vodka', 1000, 40),
+        ('stdav', 1, 1),
+        ('stdav', 10, 10),
+    ]
+)
+def test_drink_save_convert_quantity(drink_type, quantity, stdav):
+    obj = DrinkFactory(date=date(1999, 1, 1), quantity=quantity, option=drink_type)
 
     actual = Drink.objects.get(pk=obj.pk)
 
-    assert actual.option == 'beer'
-    assert actual.quantity == 2.5
-
-
-def test_drink_new_beer_quantity_ml():
-    obj = DrinkFactory(date=date(1999, 1, 1), quantity=500, option='beer')
-
-    actual = Drink.objects.get(pk=obj.pk)
-
-    assert actual.option == 'beer'
-    assert actual.quantity == 2.5
-
-
-def test_drink_new_wine_quantity():
-    obj = DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option='wine')
-
-    actual = Drink.objects.get(pk=obj.pk)
-
-    assert actual.option == 'wine'
-    assert actual.quantity == 8
-
-
-def test_drink_new_wine_quantity_ml():
-    obj = DrinkFactory(date=date(1999, 1, 1), quantity=750, option='wine')
-
-    actual = Drink.objects.get(pk=obj.pk)
-
-    assert actual.option == 'wine'
-    assert actual.quantity == 8
-
-
-def test_drink_new_vodka_quantity():
-    obj = DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option='vodka')
-
-    actual = Drink.objects.get(pk=obj.pk)
-
-    assert actual.option == 'vodka'
-    assert actual.quantity == 40
-
-
-def test_drink_new_vodka_quantity_ml():
-    obj = DrinkFactory(date=date(1999, 1, 1), quantity=1000, option='vodka')
-
-    actual = Drink.objects.get(pk=obj.pk)
-
-    assert actual.option == 'vodka'
-    assert actual.quantity == 40
+    assert actual.option == drink_type
+    assert actual.quantity == stdav
 
 
 # ----------------------------------------------------------------------------
