@@ -278,9 +278,9 @@ def test_drink_target_fields():
 
 
 def test_drink_target_str():
-    actual = DrinkTargetFactory.build()
+    actual = DrinkTargetFactory()
 
-    assert str(actual) == '1999: 100'
+    assert str(actual) == '1999: 100.0'
 
 
 def test_drink_target_related():
@@ -333,7 +333,7 @@ def test_drink_target_ordering():
     DrinkTargetFactory(year=1970)
     DrinkTargetFactory(year=1999)
 
-    actual = list(DrinkTarget.objects.all())
+    actual = DrinkTarget.objects.all()
 
     assert str(actual[0]) == '1999: 100.0'
     assert str(actual[1]) == '1970: 100.0'

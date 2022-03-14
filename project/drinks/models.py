@@ -54,7 +54,10 @@ class DrinkTarget(models.Model):
     objects = managers.DrinkTargetQuerySet.as_manager()
 
     def __str__(self):
-        return f'{self.year}: {self.quantity}'
+        obj = DrinksOptions()
+        ml = obj.stdav_to_ml(drink_type=self.drink_type, stdav=self.quantity)
+
+        return f'{self.year}: {ml}'
 
     class Meta:
         ordering = ['-year']
