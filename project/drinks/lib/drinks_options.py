@@ -34,7 +34,7 @@ class DrinksOptions():
 
         _converted = (ml * _stdav) / _ml
 
-        return round(_converted, 2)
+        return _converted
 
     def stdav_to_ml(self, drink_type: str, stdav: float):
         _node = self.ratios.get(drink_type, {})
@@ -43,4 +43,4 @@ class DrinksOptions():
 
         _converted = (stdav * _ml) / _stdav
 
-        return round(_converted, 2)
+        return _converted
