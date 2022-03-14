@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-14 09:50+0200\n"
-"PO-Revision-Date: 2022-03-14 09:50+0200\n"
+"POT-Creation-Date: 2022-03-14 12:36+0200\n"
+"PO-Revision-Date: 2022-03-14 12:36+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -530,7 +530,7 @@ msgstr "Data negali būti ateityje"
 msgid "Ended reading cannot precede started reading"
 msgstr "Baigta skaityti negali būti anksčiau nei pradėta skaityti"
 
-#: .\project\books\forms.py:125 .\project\drinks\forms.py:92
+#: .\project\books\forms.py:125 .\project\drinks\forms.py:98
 msgid "Year"
 msgstr "Metai"
 
@@ -541,7 +541,7 @@ msgstr "Metai"
 msgid "How many"
 msgstr "Kiek"
 
-#: .\project\books\forms.py:141 .\project\drinks\forms.py:108
+#: .\project\books\forms.py:141 .\project\drinks\forms.py:114
 msgid "already has a goal."
 msgstr "metai jau turi tikslą."
 
@@ -809,7 +809,7 @@ msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 #: .\project\counts\templates\counts\includes\chart_month.html:71
 #: .\project\counts\templates\counts\includes\counts_list.html:9
 #: .\project\counts\templates\counts\includes\info_row.html:5
-#: .\project\drinks\forms.py:93
+#: .\project\drinks\forms.py:56 .\project\drinks\forms.py:99
 #: .\project\drinks\templates\drinks\includes\chart_quantity.html:61
 #: .\project\drinks\templates\drinks\includes\drinks_list.html:12
 msgid "Quantity"
@@ -990,16 +990,24 @@ msgctxt "sum button"
 msgid "Sum"
 msgstr "Sumą"
 
-#: .\project\drinks\forms.py:56
-msgid "Quantity (0,5L beer bottle)"
-msgstr "Kiekis (0,5L alaus)"
+#: .\project\drinks\forms.py:58
+msgid "1 Beer = 0.5L"
+msgstr "1 Alus = 0.5L"
 
-#: .\project\drinks\forms.py:57
+#: .\project\drinks\forms.py:59
+msgid "1 Wine = 0.75L"
+msgstr "1 Vynas = 0.75L"
+
+#: .\project\drinks\forms.py:60
+msgid "1 Vodka = 1L"
+msgstr "1 Degtinė = 1L"
+
+#: .\project\drinks\forms.py:61
 #, python-format
-msgid "If more than %(cnt)s is entered, it will be assumed to be mL."
-msgstr "Įvedus daugiau nei %(cnt)s, bus manoma kad tai yra mL."
+msgid "If more than %(cnt)s is entered, it will be assumed to be mL"
+msgstr "Įvedus daugiau nei %(cnt)s, bus manoma kad tai yra mL"
 
-#: .\project\drinks\forms.py:148
+#: .\project\drinks\forms.py:154
 msgid "Must be 4 digits."
 msgstr "Turi būti 4 skaitmenys."
 
@@ -1102,7 +1110,7 @@ msgstr "Alus (išgerta)"
 #: .\project\drinks\templates\drinks\includes\tbl_consumption.html:20
 #: .\project\drinks\templates\drinks\includes\tbl_last_day.html:13
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:25
-#: .\project\drinks\views.py:50
+#: .\project\drinks\views.py:51
 msgid "No data"
 msgstr "Nėra duomenų"
 
@@ -1702,6 +1710,9 @@ msgstr "Įspėjimas"
 #: .\project\users\views.py:293
 msgid "You cannot delete yourself."
 msgstr "Negalite ištrinti savęs."
+
+#~ msgid "Quantity (0,5L beer bottle)"
+#~ msgstr "Kiekis (0,5L alaus)"
 
 #~ msgctxt "lend button"
 #~ msgid "Lend"

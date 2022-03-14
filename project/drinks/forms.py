@@ -53,8 +53,14 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.fields['date'].initial = set_year_for_form()
 
         self.fields['date'].label = _('Date')
-        self.fields['quantity'].label = _('Quantity (0,5L beer bottle)')
-        self.fields['quantity'].help_text = _('If more than %(cnt)s is entered, it will be assumed to be mL.') % {'cnt': MAX_BOTTLES}
+        self.fields['quantity'].label = _('Quantity')
+
+        _h1 = _('1 Beer = 0.5L')
+        _h2 = _('1 Wine = 0.75L')
+        _h3 = _('1 Vodka = 1L')
+        _h4 = _('If more than %(cnt)s is entered, it will be assumed to be mL') % {'cnt': MAX_BOTTLES}
+        _help_text = f'{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}'
+        self.fields['quantity'].help_text = _help_text
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
