@@ -1,5 +1,6 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils.translation import gettext as _
 
 from ..counters.models import Counter
 from ..users.models import User
@@ -29,10 +30,21 @@ class Drink(Counter):
 
 
 class DrinkTarget(models.Model):
+    class DrinkType(models.TextChoices):
+        BEER = 'beer', _('Beer')
+        WINE = 'wine', _('Wine')
+        VODKA = 'vodka', _('Vodka')
+        STDAV = 'stdav', 'Std Av'
+
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
-    quantity = models.PositiveIntegerField()
+    quantity = models.FloatField()
+    drink_type = models.CharField(
+        max_length=7,
+        choices=DrinkType.choices,
+        default=DrinkType.BEER,
+    )
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
