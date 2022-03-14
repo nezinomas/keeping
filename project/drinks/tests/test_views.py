@@ -80,6 +80,27 @@ def test_update(client_logged):
     assert f'<a role="button" data-url="/drinks/update/{p.pk}/"' in actual['html_list']
 
 
+@pytest.mark.parametrize(
+    'drink_type, expect',
+    [
+        ('beer', 1.0),
+        ('wine', 1.0),
+        ('vodka', 1.0),
+    ]
+)
+def test_update_load_form_convert_quantity(drink_type, expect, client_logged):
+    p = DrinkFactory(quantity=1, option=drink_type)
+
+    url = reverse('drinks:drinks_update', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)['html_form']
+
+    assert f'name="quantity" value="{expect}"' in actual
+
+
 @patch('project.drinks.forms.App_name', 'Counter Type')
 def test_drinks_update_not_load_other_user(client_logged, second_user):
     DrinkFactory()

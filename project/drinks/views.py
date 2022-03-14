@@ -13,6 +13,7 @@ from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
 from . import forms, models
 from .apps import App_name
 from .lib import views_helper as H
+from .lib.drinks_options import DrinksOptions
 
 
 class ReloadStats(DispatchAjaxMixin, IndexMixin):
@@ -130,6 +131,14 @@ class Summary(IndexMixin):
 class Update(UpdateAjaxMixin):
     model = models.Drink
     form_class = forms.DrinkForm
+
+    def get_object(self):
+        obj = super().get_object()
+
+        if obj:
+            obj.quantity = obj.quantity * DrinksOptions().get_ratio(drink_type=obj.option)
+
+        return obj
 
 
 class Delete(DeleteAjaxMixin):
