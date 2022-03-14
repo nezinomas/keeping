@@ -7,4 +7,4 @@ register = template.Library()
 
 @register.filter
 def convert(stdav: float, to: str):
-    return stdav / DrinksOptions().ratios.get(to, 1)
+    return stdav / DrinksOptions().ratios.get(to, {}).get('stdav', 1)
