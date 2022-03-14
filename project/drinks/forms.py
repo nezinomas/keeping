@@ -33,7 +33,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         model = Drink
         fields = ['user', 'date', 'quantity', 'option']
 
-    field_order = ['date', 'quantity']
+    field_order = ['date', 'option', 'quantity']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
