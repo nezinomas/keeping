@@ -49,6 +49,21 @@ def test_ml_to_stdav(drink_type, ml, expect):
 
 
 @pytest.mark.parametrize(
+    'drink_type, stdav, expect',
+    [
+        ('beer', 2.5, 500),
+        ('wine', 8, 750),
+        ('vodka', 40, 1000),
+        ('stdav', 5, 5),
+    ]
+)
+def test_stdav_to_ml(drink_type, stdav, expect):
+    actual = DrinksOptions().stdav_to_ml(drink_type, stdav)
+
+    assert actual == expect
+
+
+@pytest.mark.parametrize(
     'drink_type, expect',
     [
         ('beer', 1 / 2.5),
