@@ -59,3 +59,10 @@ class DrinkTarget(models.Model):
     class Meta:
         ordering = ['-year']
         unique_together = ['year', 'user']
+
+    def save(self, *args, **kwargs):
+        if self.drink_type != 'stdav':
+            obj = DrinksOptions()
+            self.quantity = obj.ml_to_stdav(drink_type=self.drink_type, ml=self.quantity)
+
+        super().save(*args, **kwargs)

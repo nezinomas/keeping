@@ -270,6 +270,13 @@ def test_drink_save_convert_quantity(drink_type, quantity, stdav):
 # ----------------------------------------------------------------------------
 #                                                                 Drink Target
 # ----------------------------------------------------------------------------
+def test_drink_target_fields():
+    assert DrinkTarget._meta.get_field('year')
+    assert DrinkTarget._meta.get_field('drink_type')
+    assert DrinkTarget._meta.get_field('quantity')
+    assert DrinkTarget._meta.get_field('user')
+
+
 def test_drink_target_str():
     actual = DrinkTargetFactory.build()
 
@@ -328,5 +335,23 @@ def test_drink_target_ordering():
 
     actual = list(DrinkTarget.objects.all())
 
-    assert str(actual[0]) == '1999: 100'
-    assert str(actual[1]) == '1970: 100'
+    assert str(actual[0]) == '1999: 100.0'
+    assert str(actual[1]) == '1970: 100.0'
+
+
+@pytest.mark.parametrize(
+    'drink_type, quantity, stdav',
+    [
+        ('beer', 500, 2.5),
+        ('wine', 750, 8),
+        ('vodka', 1000, 40),
+        ('stdav', 10, 10),
+    ]
+)
+def test_drink_target_save_convert_quantity(drink_type, quantity, stdav):
+    obj = DrinkTargetFactory(quantity=quantity, drink_type=drink_type)
+
+    actual = DrinkTarget.objects.get(pk=obj.pk)
+
+    assert actual.drink_type == drink_type
+    assert actual.quantity == stdav
