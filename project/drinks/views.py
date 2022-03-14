@@ -136,7 +136,7 @@ class Update(UpdateAjaxMixin):
         obj = super().get_object()
 
         if obj:
-            obj.quantity = obj.quantity * DrinksOptions().get_ratio(drink_type=obj.option)
+            obj.quantity = obj.quantity * DrinksOptions(drink_type=obj.option).ratio
 
         return obj
 

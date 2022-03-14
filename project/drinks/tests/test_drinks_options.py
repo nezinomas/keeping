@@ -19,21 +19,6 @@ def test_ratio(drink_type, expect):
 
 
 @pytest.mark.parametrize(
-    'drink_type, expect',
-    [
-        ('beer', 1 / 2.5),
-        ('wine', 1 / 8),
-        ('vodka', 1 / 40),
-        ('xxx', 1),
-    ]
-)
-def test_get_ratio(drink_type, expect):
-    actual = DrinksOptions().get_ratio(drink_type)
-
-    assert actual == expect
-
-
-@pytest.mark.parametrize(
     'drink_type, ml, expect',
     [
         ('beer', 500, 2.5),

@@ -22,9 +22,6 @@ class DrinksOptions():
     def stdav(self) -> float:
         return self.ratios.get(self._drink_type, {}).get('stdav', 1)
 
-    def get_ratio(self, drink_type: str) -> float:
-        return 1 / self.ratios.get(drink_type, {}).get('stdav', 1)
-
     def convert(self, qty: float, to: str) -> float:
         stdav = qty * self.stdav
 

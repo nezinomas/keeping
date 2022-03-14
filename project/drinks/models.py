@@ -17,12 +17,12 @@ class Drink(Counter):
         proxy = True
 
     def save(self, *args, **kwargs):
-        obj = DrinksOptions()
+        obj = DrinksOptions(drink_type=self.option)
 
         if self.quantity > MAX_BOTTLES:
             q = obj.ml_to_stdav(drink_type=self.option, ml=self.quantity)
         else:
-            q = self.quantity / obj.get_ratio(drink_type=self.option)
+            q = self.quantity / obj.ratio
 
         self.quantity = q
 
