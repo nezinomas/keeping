@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-11 13:27+0200\n"
-"PO-Revision-Date: 2022-03-11 13:31+0200\n"
+"POT-Creation-Date: 2022-03-14 09:50+0200\n"
+"PO-Revision-Date: 2022-03-14 09:50+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < "
 "11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? "
 "1 : n % 1 != 0 ? 2: 3);\n"
-"X-Generator: Poedit 2.0.7\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #: .\project\accounts\forms.py:37
 msgid "Account title"
@@ -996,8 +996,8 @@ msgstr "Kiekis (0,5L alaus)"
 
 #: .\project\drinks\forms.py:57
 #, python-format
-msgid "If more than %(cnt)s is entered, it will be considered to be mL."
-msgstr "Įvedus daugiau nei %(cnt)s, bus laikoma kad tai yra mL."
+msgid "If more than %(cnt)s is entered, it will be assumed to be mL."
+msgstr "Įvedus daugiau nei %(cnt)s, bus manoma kad tai yra mL."
 
 #: .\project\drinks\forms.py:148
 msgid "Must be 4 digits."

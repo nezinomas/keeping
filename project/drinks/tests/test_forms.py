@@ -31,7 +31,7 @@ def test_drink_init_fields():
 def test_drink_help_text():
     form = DrinkForm().as_p()
 
-    assert 'Įvedus daugiau nei 20, bus laikoma kad tai yra mL.' in form
+    assert 'Įvedus daugiau nei 20, bus manoma kad tai yra mL.' in form
 
 
 @freeze_time('1000-01-01')
