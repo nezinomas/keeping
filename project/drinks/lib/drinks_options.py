@@ -27,7 +27,10 @@ class DrinksOptions():
 
         return stdav / self.ratios.get(to, {}).get('stdav', 1)
 
-    def ml_to_stdav(self, drink_type: str, ml: int):
+    def ml_to_stdav(self, ml: int, drink_type: str = None):
+        if not drink_type:
+            drink_type = self.drink_type
+
         _node = self.ratios.get(drink_type, {})
         _ml = _node.get('ml', 1)
         _stdav = _node.get('stdav', 1)
@@ -36,7 +39,10 @@ class DrinksOptions():
 
         return _converted
 
-    def stdav_to_ml(self, drink_type: str, stdav: float):
+    def stdav_to_ml(self, stdav: float, drink_type: str = None):
+        if not drink_type:
+            drink_type = self.drink_type
+
         _node = self.ratios.get(drink_type, {})
         _ml = _node.get('ml', 1)
         _stdav = _node.get('stdav', 1)

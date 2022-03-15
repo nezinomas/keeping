@@ -28,7 +28,22 @@ def test_ratio(drink_type, expect):
     ]
 )
 def test_ml_to_stdav(drink_type, ml, expect):
-    actual = DrinksOptions().ml_to_stdav(drink_type, ml)
+    actual = DrinksOptions().ml_to_stdav(drink_type=drink_type, ml=ml)
+
+    assert actual == expect
+
+
+@pytest.mark.parametrize(
+    'drink_type, ml, expect',
+    [
+        ('beer', 500, 2.5),
+        ('wine', 750, 8),
+        ('vodka', 1000, 40),
+        ('xxx', 500, 500),
+    ]
+)
+def test_ml_to_stdav_01(drink_type, ml, expect):
+    actual = DrinksOptions(drink_type).ml_to_stdav(ml)
 
     assert actual == expect
 
@@ -43,7 +58,22 @@ def test_ml_to_stdav(drink_type, ml, expect):
     ]
 )
 def test_stdav_to_ml(drink_type, stdav, expect):
-    actual = DrinksOptions().stdav_to_ml(drink_type, stdav)
+    actual = DrinksOptions().stdav_to_ml(drink_type=drink_type, stdav=stdav)
+
+    assert actual == expect
+
+
+@pytest.mark.parametrize(
+    'drink_type, stdav, expect',
+    [
+        ('beer', 2.5, 500),
+        ('wine', 8, 750),
+        ('vodka', 40, 1000),
+        ('stdav', 5, 5),
+    ]
+)
+def test_stdav_to_ml_01(drink_type, stdav, expect):
+    actual = DrinksOptions(drink_type).stdav_to_ml(stdav)
 
     assert actual == expect
 
