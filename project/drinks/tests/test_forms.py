@@ -113,6 +113,7 @@ def test_drink_target_init_fields():
 
     assert '<input type="text" name="year"' in form
     assert '<input type="number" name="quantity"' in form
+    assert '<select name="drink_type"' in form
     assert '<select name="user"' not in form
 
 
@@ -125,10 +126,19 @@ def test_drink_target_year_initial_value():
     assert '<input type="text" name="year" value="1999"' in form
 
 
-def test_drink_target_valid_data():
+@pytest.mark.parametrize(
+    'type, qty, expect',
+    [
+        ('beer', 500, 2.5),
+        ('wine', 750, 8),
+        ('vodka', 1000, 40),
+    ]
+)
+def test_drink_target_valid_data(type, qty, expect):
     form = DrinkTargetForm(data={
         'year': 1974,
-        'quantity': 1.0
+        'quantity': qty,
+        'drink_type': type
     })
 
     assert form.is_valid()
@@ -136,7 +146,7 @@ def test_drink_target_valid_data():
     data = form.save()
 
     assert data.year == 1974
-    assert data.quantity == 1.0
+    assert data.quantity == expect
     assert data.user.username == 'bob'
 
 
@@ -158,9 +168,10 @@ def test_drink_target_blank_data():
 
     assert not form.is_valid()
 
-    assert len(form.errors) == 2
+    assert len(form.errors) == 3
     assert 'year' in form.errors
     assert 'quantity' in form.errors
+    assert 'drink_type' in form.errors
 
 
 # ---------------------------------------------------------------------------------------

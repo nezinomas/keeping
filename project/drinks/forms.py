@@ -76,7 +76,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 class DrinkTargetForm(forms.ModelForm):
     class Meta:
         model = DrinkTarget
-        fields = ['user', 'year', 'quantity']
+        fields = ['user', 'year', 'drink_type', 'quantity']
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
