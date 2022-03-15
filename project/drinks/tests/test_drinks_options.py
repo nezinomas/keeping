@@ -191,3 +191,19 @@ def test_stdav_to_alkohol_01(drink_type, stdav, expect):
     actual = DrinksOptions(drink_type).stdav_to_alkohol(stdav)
 
     assert actual == expect
+
+
+@pytest.mark.parametrize(
+    'drink_type, year, stdav, expect',
+    [
+        ('beer', 1999, 2.5, 365),
+        ('wine', 1999, 8, 365),
+        ('vodka', 1999, 40, 365),
+    ]
+)
+def test_stdav_to_bottles(drink_type, year, stdav, expect, get_user):
+    get_user.drink_type = drink_type
+
+    actual = DrinksOptions().stdav_to_bottles(year=year, max_stdav=stdav)
+
+    assert actual == expect

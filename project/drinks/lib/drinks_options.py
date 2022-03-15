@@ -54,3 +54,12 @@ class DrinksOptions():
     def stdav_to_alkohol(self, stdav: float):
         # one stdav = 10g pure alkohol (100%)
         return stdav * 0.01
+
+    def stdav_to_bottles(self, year: int, max_stdav: float) -> float:
+        _days = ydays(year)
+
+        _node = self.ratios.get(self.drink_type, {})
+        _ml = _node.get('ml', 1)
+        _stdav = _node.get('stdav', 1)
+
+        return (max_stdav * _days) / _stdav
