@@ -21,7 +21,11 @@ class ReloadStats(DispatchAjaxMixin, IndexMixin):
     redirect_view = reverse_lazy(f'{App_name}:{App_name}_index')
 
     def get(self, request, *args, **kwargs):
-        context = H.RenderContext(request).context_to_reload()
+        context = {}
+        context.update({
+            'target_list': TargetLists.as_view()(self.request, as_string=True),
+            **H.RenderContext(request).context_to_reload()
+        })
 
         return JsonResponse(context)
 
@@ -76,6 +80,7 @@ class Index(IndexMixin):
                 context={'form': forms.DrinkCompareForm()},
                 request=self.request
             ),
+            'target_list': TargetLists.as_view()(self.request, as_string=True),
             **H.RenderContext(self.request).context_to_reload(),
         })
         return context
@@ -147,11 +152,24 @@ class Delete(DeleteAjaxMixin):
 
 class TargetLists(DispatchListsMixin, ListMixin):
     model = models.DrinkTarget
+    list_render_output = False
 
+    def get_queryset(self):
+        obj = DrinksOptions()
+        year = self.request.user.year
+
+        qs = models.DrinkTarget.objects.year(year)
+        for q in qs:
+            _qty = q.quantity
+            q.quantity = obj.stdav_to_ml(stdav=_qty)
+            q.max_bottles = obj.stdav_to_bottles(year=year, max_stdav=_qty)
+
+        return qs
 
 class TargetNew(CreateAjaxMixin):
     model = models.DrinkTarget
     form_class = forms.DrinkTargetForm
+    list_render_output = False
 
 
 class TargetUpdate(UpdateAjaxMixin):
