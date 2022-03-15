@@ -1,4 +1,5 @@
 from ...core.lib import utils
+from ...core.lib.date import ydays
 
 
 class DrinksOptions():
@@ -27,7 +28,7 @@ class DrinksOptions():
 
         return stdav / self.ratios.get(to, {}).get('stdav', 1)
 
-    def ml_to_stdav(self, ml: int, drink_type: str = None):
+    def ml_to_stdav(self, ml: int, drink_type: str = None) -> float:
         if not drink_type:
             drink_type = self.drink_type
 
@@ -39,7 +40,7 @@ class DrinksOptions():
 
         return _converted
 
-    def stdav_to_ml(self, stdav: float, drink_type: str = None):
+    def stdav_to_ml(self, stdav: float, drink_type: str = None) -> float:
         if not drink_type:
             drink_type = self.drink_type
 
@@ -51,7 +52,7 @@ class DrinksOptions():
 
         return _converted
 
-    def stdav_to_alkohol(self, stdav: float):
+    def stdav_to_alkohol(self, stdav: float) -> float:
         # one stdav = 10g pure alkohol (100%)
         return stdav * 0.01
 
