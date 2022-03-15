@@ -12,15 +12,15 @@ class DrinksOptions():
         if not drink_type:
             drink_type = utils.get_user().drink_type
 
-        self._drink_type = drink_type
+        self.drink_type = drink_type
 
     @property
     def ratio(self) -> float:
-        return 1 / self.ratios.get(self._drink_type, {}).get('stdav', 1)
+        return 1 / self.ratios.get(self.drink_type, {}).get('stdav', 1)
 
     @property
     def stdav(self) -> float:
-        return self.ratios.get(self._drink_type, {}).get('stdav', 1)
+        return self.ratios.get(self.drink_type, {}).get('stdav', 1)
 
     def convert(self, qty: float, to: str) -> float:
         stdav = qty * self.stdav
