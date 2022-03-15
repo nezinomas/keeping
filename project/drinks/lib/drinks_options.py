@@ -44,3 +44,13 @@ class DrinksOptions():
         _converted = (stdav * _ml) / _stdav
 
         return _converted
+
+    def stdav_to_alkohol(self, stdav: float, drink_type: str = None):
+        if not drink_type:
+            drink_type = self.drink_type
+
+        _node = self.ratios.get(drink_type, {})
+        _stdav = _node.get('stdav', 1)
+
+        # one stdav = 10g pure alkohol (100%)
+        return _stdav * 0.01
