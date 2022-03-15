@@ -69,11 +69,6 @@ def std_av(year: int, qty: float) -> List[Dict]:
     return arr
 
 
-def max_beer_bottles(year: int, max_quantity: int) -> float:
-    _days = ydays(year)
-    return (max_quantity * _days) / 500
-
-
 def _dates(year: int) -> Tuple[int, int, int]:
     now = datetime.now().date()
 
