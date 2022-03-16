@@ -82,7 +82,7 @@ class DrinkTargetForm(forms.ModelForm):
             'year': YearPickerInput(format='%Y'),
         }
 
-    field_order = ['year', 'quantity']
+    field_order = ['year', 'drink_type', 'quantity']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
