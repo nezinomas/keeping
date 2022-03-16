@@ -66,4 +66,9 @@ urlpatterns = [
         views.Summary.as_view(),
         name='drinks_history'
     ),
+    path(
+        'drinks/drink_type/<str:drink_type>/',
+        views.SelectDrink.as_view(),
+        name='set_drink_type'
+    )
 ]

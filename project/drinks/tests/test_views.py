@@ -10,9 +10,9 @@ from mock import patch
 
 from ...core.tests.utils import change_profile_year, setup_view
 from ...journals.factories import JournalFactory
-from ...users.factories import UserFactory
+from ...users.factories import User, UserFactory
 from .. import models, views
-from ..factories import DrinkFactory, DrinkTargetFactory, Drink
+from ..factories import Drink, DrinkFactory, DrinkTargetFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
@@ -597,6 +597,7 @@ def test_index_context(client_logged):
     assert 'target_list' in response.context
     assert 'all_years' in response.context
     assert 'compare_form' in response.context
+    assert 'select_drink_type' in response.context
 
 
 def test_index_context_tab_value(client_logged):
@@ -722,6 +723,27 @@ def test_index_no_data_dry_days(client_logged):
 
     assert "1998-01-01" in context['tbl_last_day']
     assert "365" in context['tbl_last_day']
+
+
+def test_index_select_drink_drop_down_title(client_logged):
+    url = reverse('drinks:drinks_index')
+    response = client_logged.get(url)
+
+    content = response.content.decode()
+
+    assert 'id="dropdownDrinkType">Alus</a>' in content
+
+
+def test_index_select_drink_drop_down_link_list(client_logged):
+    url = reverse('drinks:drinks_index')
+    response = client_logged.get(url)
+
+    content = response.content.decode()
+
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "beer"})}">Alus</a>' in content
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})}">Vynas</a>' in content
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "vodka"})}">Degtinė</a>' in content
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "stdav"})}">Std Av</a>' in content
 
 
 # ---------------------------------------------------------------------------------------
@@ -915,3 +937,54 @@ def test_history_categories_with_empty_current_year(user_drink_type, drink_type,
     assert actual['drinks_categories'] == [1998, 1999]
     assert pytest.approx(actual['drinks_data_ml'], rel=1e-1) == ml
     assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == alkohol
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                            Select Drink
+# ---------------------------------------------------------------------------------------
+def test_select_drink_func():
+    view = resolve('/drinks/drink_type/xxx/')
+
+    assert views.SelectDrink == view.func.view_class
+
+
+def test_select_drink_redirect(client_logged):
+    url = reverse('drinks:set_drink_type', kwargs={'drink_type': 'xxx'})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 302
+
+
+def test_select_drink_redirect_follow(client_logged):
+    url = reverse('drinks:set_drink_type', kwargs={'drink_type': 'xxx'})
+
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert views.Index == response.resolver_match.func.view_class
+
+
+def test_select_drinks_set_drink_type(client_logged):
+    url = reverse('drinks:set_drink_type', kwargs={'drink_type': 'wine'})
+
+    response = client_logged.get(url)
+
+    actual = User.objects.first()
+
+    assert actual.drink_type == 'wine'
+
+
+def test_select_drinks_set_default_drink_type(main_user, client_logged):
+    main_user.drink_type = 'wine'
+    main_user.save()
+
+    assert User.objects.first().drink_type == 'wine'
+
+    url = reverse('drinks:set_drink_type', kwargs={'drink_type': 'xxx'})
+
+    response = client_logged.get(url)
+
+    actual = User.objects.first()
+
+    assert actual.drink_type == 'beer'
