@@ -4,26 +4,18 @@ from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
-from django.utils.translation import gettext_lazy as _l
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.forms import YearBetweenMixin
 from .apps import App_name
-from .models import MAX_BOTTLES, Drink, DrinkTarget
+from .models import MAX_BOTTLES, Drink, DrinkTarget, DrinkType
 
 
 class DrinkForm(YearBetweenMixin, forms.ModelForm):
-    choices = (
-        ('beer', _l('Beer')),
-        ('wine', _l('Wine')),
-        ('vodka', _l('Vodka')),
-        ('stdav', 'Std Av'),
-    )
-
     option = forms.ChoiceField(
-        choices=choices,
-        initial='beer',
+        choices=DrinkType.choices,
+        initial=DrinkType.BEER,
         widget=forms.Select(),
         required=True
     )
