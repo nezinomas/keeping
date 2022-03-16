@@ -55,7 +55,7 @@
                 width: 2,
                 value: {{ target|safe }},
                 label: {
-                    text: '{% translate "Limit" %}: {{ target|safe }}',
+                    text: '{% translate "Limit" %}: {{ target|floatformat:0|safe }}',
                     align: 'right',
                     x: -5,
                     y: {{ target_label_y|safe }},

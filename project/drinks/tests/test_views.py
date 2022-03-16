@@ -656,6 +656,44 @@ def test_index_tbl_consumption_empty_current_year(client_logged):
     assert 'Nėra duomenų' in response.context["tbl_consumption"]
 
 
+@pytest.mark.parametrize(
+    'user_drink_type, drink_type, expect',
+    [
+        ('beer', 'beer', 'Avg: 14'),
+        ('beer', 'wine', 'Avg: 44'),
+        ('beer', 'vodka', 'Avg: 219'),
+    ]
+)
+def test_chart_consumption_avg(user_drink_type, drink_type, expect, get_user, client_logged):
+    get_user.drink_type = user_drink_type
+
+    DrinkFactory(quantity=10, option=drink_type)
+
+    response = client_logged.get('/drinks/')
+    actual = response.context["chart_consumption"]
+
+    assert expect in actual
+
+
+@pytest.mark.parametrize(
+    'user_drink_type, drink_type, expect',
+    [
+        ('beer', 'beer', 'Riba: 500'),
+        ('beer', 'wine', 'Riba: 1.067'),
+        ('beer', 'vodka', 'Riba: 4.000'),
+    ]
+)
+def test_chart_consumption_limit(user_drink_type, drink_type, expect, get_user, client_logged):
+    get_user.drink_type = user_drink_type
+
+    DrinkTargetFactory(quantity=500, drink_type=drink_type)
+
+    response = client_logged.get('/drinks/')
+    actual = response.context["chart_consumption"]
+
+    assert expect in actual
+
+
 def test_index_tbl_std_av_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 

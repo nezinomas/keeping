@@ -137,8 +137,10 @@ class RenderContext():
         return r
 
     def _get_target(self):
+        obj = DrinksOptions()
         qs = models.DrinkTarget.objects.year(self._year)
-        return qs[0].quantity if qs else 0
+
+        return obj.stdav_to_ml(qs[0].quantity) if qs else 0
 
     def _get_drink_stats(self):
         qs = models.Drink.objects.sum_by_month(self._year)
