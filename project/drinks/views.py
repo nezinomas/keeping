@@ -110,17 +110,23 @@ class Summary(IndexMixin):
 
         qs = list(models.Drink.objects.summary())
 
+        obj = DrinksOptions()
+        ratio = obj.ratio
+
         if qs:
             for year in range(qs[0]['year'], datetime.now().year+1):
                 drink_years.append(year)
 
                 item = next((x for x in qs if x['year'] == year), False)
                 if item:
+                    _stdav = item['qty'] / ratio
+                    _alkohol = obj.stdav_to_alkohol(stdav=_stdav)
+
+                    alcohol.append(_alkohol)
                     ml.append(item['per_day'])
-                    alcohol.append(item['qty']*0.025)
                 else:
-                    ml.append(0.0)
                     alcohol.append(0.0)
+                    ml.append(0.0)
 
         context = super().get_context_data(**kwargs)
         context.update({
@@ -175,3 +181,15 @@ class TargetNew(CreateAjaxMixin):
 class TargetUpdate(UpdateAjaxMixin):
     model = models.DrinkTarget
     form_class = forms.DrinkTargetForm
+    list_render_output = False
+
+    def get_object(self):
+        obj = super().get_object()
+
+        if obj:
+            obj.quantity = (
+                DrinksOptions().stdav_to_ml(drink_type=obj.drink_type,
+                                            stdav=obj.quantity)
+            )
+
+        return obj

@@ -12,7 +12,7 @@ from ...core.tests.utils import change_profile_year, setup_view
 from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
 from .. import models, views
-from ..factories import DrinkFactory, DrinkTargetFactory
+from ..factories import DrinkFactory, DrinkTargetFactory, Drink
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
@@ -205,8 +205,17 @@ def test_target(client_logged):
     assert '<input type="text" name="year" value="1999"' in actual['html_form']
 
 
-def test_target_new(client_logged):
-    data = {'year': 1999, 'quantity': 66}
+@pytest.mark.parametrize(
+    'type, ml, expect',
+    [
+        ('beer', 500, 2.5),
+        ('wine', 750, 8),
+        ('vodka', 1000, 40),
+        ('stdav', 66, 66),
+    ]
+)
+def test_target_new(type, ml, expect, client_logged):
+    data = {'year': 1999, 'quantity': ml, 'drink_type': type}
 
     url = reverse('drinks:drinks_target_new')
 
@@ -216,7 +225,10 @@ def test_target_new(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '66' in actual['html_list']
+
+    actual = models.DrinkTarget.objects.last()
+    assert actual.drink_type == type
+    assert actual.quantity == expect
 
 
 def test_target_new_invalid_data(client_logged):
@@ -232,10 +244,41 @@ def test_target_new_invalid_data(client_logged):
     assert not actual['form_is_valid']
 
 
-def test_target_update(client_logged):
+@pytest.mark.parametrize(
+    'drink_type, expect',
+    [
+        ('beer', 500.0),
+        ('wine', 750.0),
+        ('vodka', 1000.0),
+        ('stdav', 1.0),
+    ]
+)
+def test_target_update_load_form_convert_quantity(drink_type, expect, client_logged):
+    p = DrinkTargetFactory(quantity=expect, drink_type=drink_type)
+
+    url = reverse('drinks:drinks_target_update', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url, **X_Req)
+
+    json_str = response.content
+    actual = json.loads(json_str)['html_form']
+
+    assert f'name="quantity" value="{expect}"' in actual
+
+
+@pytest.mark.parametrize(
+    'type, ml, expect',
+    [
+        ('beer', 500, 2.5),
+        ('wine', 750, 8),
+        ('vodka', 1000, 40),
+        ('stdav', 66, 66),
+    ]
+)
+def test_target_update(type, ml, expect, client_logged):
     p = DrinkTargetFactory()
 
-    data = {'year': 1999, 'quantity': 66}
+    data = {'year': 1999, 'quantity': ml, 'drink_type': type}
     url = reverse('drinks:drinks_target_update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data, **X_Req)
@@ -246,7 +289,37 @@ def test_target_update(client_logged):
     actual = json.loads(json_str)
 
     assert actual['form_is_valid']
-    assert '66' in actual['html_list']
+
+    actual = models.DrinkTarget.objects.get(pk=p.pk)
+    assert actual.quantity == expect
+
+
+@pytest.mark.parametrize(
+    'user_drink_type, drink_type, ml, expect_ml, expect_pcs',
+    [
+        ('beer', 'beer', 500, '500,0', '365'),
+        ('wine', 'beer', 500, '234,4', '114'),
+        ('vodka', 'beer', 500, '62,5', '23'),
+        ('beer', 'wine', 750, '1.600,0', '1.168'),
+        ('wine', 'wine', 750, '750,0', '365'),
+        ('vodka', 'wine', 750, '200,0', '73'),
+        ('beer', 'vodka', 1000, '8.000,0', '5.840'),
+        ('wine', 'vodka', 1000, '3.750,0', '1.825'),
+        ('vodka', 'vodka', 1000, '1.000,0', '365'),
+    ]
+)
+def test_target_lists(user_drink_type, drink_type, ml, expect_ml, expect_pcs, get_user, client_logged):
+    get_user.drink_type = user_drink_type
+
+    p = DrinkTargetFactory(drink_type=drink_type, quantity=ml)
+
+    url = reverse('drinks:drinks_target_lists')
+
+    response = client_logged.get(url, **X_Req)
+    actual = response.content.decode('utf-8')
+
+    assert f'<td>{expect_ml}</td>' in actual
+    assert f'<td>{expect_pcs}</td>' in actual
 
 
 def test_target_update_not_load_other_user(client_logged, second_user):
@@ -309,7 +382,7 @@ def test_historical_data_ajax(client_logged):
 
     assert response.status_code == 200
     assert "'name': 1999" in actual['html']
-    assert "'data': [6.451612903225806, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" in actual['html']
+    assert "'data': [16.129032258064516, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" in actual['html']
 
 
 # ---------------------------------------------------------------------------------------
@@ -412,10 +485,10 @@ def test_compare_chart_data(client_logged, _compare_form_data):
     assert response.status_code == 200
 
     assert "'name': '1999'" in actual['html']
-    assert "'data': [6.451612903225806, 0.0" in actual['html']
+    assert "'data': [16.129032258064516, 0.0" in actual['html']
 
     assert "'name': '2020'" in actual['html']
-    assert "'data': [64.51612903225806, 0.0" in actual['html']
+    assert "'data': [161.29032258064515, 0.0" in actual['html']
 
 
 # ---------------------------------------------------------------------------------------
@@ -425,16 +498,6 @@ def test_reload_stats_func():
     view = resolve('/drinks/reload_stats/')
 
     assert views.ReloadStats is view.func.view_class
-
-
-def test_reload_stats_render(rf):
-    request = rf.get('/drinks/reload_stats/?ajax_trigger=1')
-    request.user = UserFactory.build()
-    request.user.journal = JournalFactory.build()
-
-    response = views.ReloadStats.as_view()(request)
-
-    assert response.status_code == 200
 
 
 def test_reload_stats_render_ajax_trigger(client_logged):
@@ -452,6 +515,7 @@ def test_reload_stats_render_ajax_trigger(client_logged):
     assert 'tbl_last_day' in actual
     assert 'tbl_alcohol' in actual
     assert 'tbl_std_av' in actual
+    assert 'target_list' in actual
 
 
 def test_reload_stats_response_type(client_logged):
@@ -608,7 +672,7 @@ def test_index_first_record_with_gap_from_previous_year(client_logged):
     response = client_logged.get('/drinks/')
     context = response.context
 
-    assert "'1999-01-02', 0.4, 366.0]" in context['chart_calendar_1H']
+    assert "'1999-01-02', 1.0, 366.0]" in context['chart_calendar_1H']
 
 
 @freeze_time('1999-1-1')
@@ -732,31 +796,52 @@ def test_history_drinks_years(client_logged):
 
 
 @freeze_time('1999-01-01')
-def test_history_drinks_data_ml(client_logged):
-    DrinkFactory(quantity=1)
-    DrinkFactory(date=date(1998, 1, 1), quantity=2)
+@pytest.mark.parametrize(
+    'user_drink_type, drink_type, ml',
+    [
+        ('beer', 'beer', [2.74, 1.37]),
+        ('beer', 'wine', [8.77, 4.38]),
+        ('beer', 'vodka', [43.84, 21.92]),
+    ]
+)
+def test_history_drinks_data_ml(user_drink_type, drink_type, ml, get_user, client_logged):
+    get_user.drink_type = user_drink_type
+
+    DrinkFactory(date=date(1999, 1, 1), quantity=1, option=drink_type)
+    DrinkFactory(date=date(1998, 1, 1), quantity=2, option=drink_type)
 
     url = reverse('drinks:drinks_history')
     response = client_logged.get(url)
 
-    assert response.context['drinks_data_ml'] == pytest.approx([1.1, 0.55], rel=1e-2)
+    assert response.context['drinks_data_ml'] == pytest.approx(ml, rel=1e-2)
 
 
 @freeze_time('1999-01-01')
-def test_history_drinks_data_alcohol(client_logged):
-    DrinkFactory(quantity=1)
-    DrinkFactory(date=date(1998, 1, 1), quantity=2)
+@pytest.mark.parametrize(
+    'user_drink_type, drink_type, expect',
+    [
+        ('beer', 'beer', [0.05, 0.025]),
+        ('beer', 'wine', [0.16, 0.08]),
+        ('beer', 'vodka', [0.8, 0.4]),
+    ]
+)
+def test_history_drinks_data_alcohol(user_drink_type, drink_type, expect, get_user, client_logged):
+    get_user.drink_type = user_drink_type
+
+    DrinkFactory(quantity=1, option=drink_type)
+    DrinkFactory(date=date(1998, 1, 1), quantity=2, option=drink_type)
 
     url = reverse('drinks:drinks_history')
     response = client_logged.get(url)
 
-    assert response.context['drinks_data_alcohol'] == pytest.approx([0.02, 0.01], 0.01)
+    assert response.context['drinks_data_alcohol'] == pytest.approx(expect, 0.01)
 
 
 @freeze_time('1999-1-1')
 def test_history_categories_with_empty_year_in_between(fake_request):
-    DrinkFactory(date=date(1997, 1, 1), quantity=365)
-    DrinkFactory(date=date(1999, 1, 1), quantity=730)
+    DrinkFactory(date=date(1997, 1, 1), quantity=15)
+    DrinkFactory(date=date(1999, 1, 1), quantity=15)
+    DrinkFactory(date=date(1999, 1, 1), quantity=15)
 
     class Dummy(views.Summary):
         pass
@@ -765,13 +850,23 @@ def test_history_categories_with_empty_year_in_between(fake_request):
     actual = view.get_context_data()
 
     assert actual['drinks_categories'] == [1997, 1998, 1999]
-    assert pytest.approx(actual['drinks_data_ml'], 0.01) == [200, 0.0, 400]
-    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == [3.65, 0.0, 7.3]
+    assert pytest.approx(actual['drinks_data_ml'], 0.01) == [20.55, 0.0, 41.1]
+    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == [0.38, 0.0, 0.75]
 
 
 @freeze_time('1999-1-1')
-def test_history_categories_with_empty_current_year(fake_request):
-    DrinkFactory(date=date(1998, 1, 1), quantity=365)
+@pytest.mark.parametrize(
+    'user_drink_type, drink_type, ml, alkohol',
+    [
+        ('beer', 'beer', [1.37, 0.0], [0.025, 0.0]),
+        ('beer', 'wine', [4.38, 0.0], [0.08, 0.0]),
+        ('beer', 'vodka', [21.92, 0.0], [0.4, 0.0]),
+    ]
+)
+def test_history_categories_with_empty_current_year(user_drink_type, drink_type, ml, alkohol, get_user, fake_request):
+    get_user.drink_type = user_drink_type
+
+    DrinkFactory(date=date(1998, 1, 1), quantity=1, option=drink_type)
 
     class Dummy(views.Summary):
         pass
@@ -780,5 +875,5 @@ def test_history_categories_with_empty_current_year(fake_request):
     actual = view.get_context_data()
 
     assert actual['drinks_categories'] == [1998, 1999]
-    assert pytest.approx(actual['drinks_data_ml'], rel=1e-1) == [200, 0.0]
-    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == [3.65, 0.0]
+    assert pytest.approx(actual['drinks_data_ml'], rel=1e-1) == ml
+    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == alkohol
