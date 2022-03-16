@@ -16,6 +16,10 @@ class Drink(Counter):
     class Meta:
         proxy = True
 
+    def __str__(self):
+        qty = DrinksOptions().ratio
+        return f'{self.date}: {round(self.quantity * qty, 2)}'
+
     def save(self, *args, **kwargs):
         obj = DrinksOptions(drink_type=self.option)
 

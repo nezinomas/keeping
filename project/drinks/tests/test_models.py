@@ -41,12 +41,6 @@ def _different_users(_second_user):
 # ----------------------------------------------------------------------------
 #                                                                        Drink
 # ----------------------------------------------------------------------------
-def test_drink_str():
-    actual = DrinkFactory.build()
-
-    assert str(actual) == '1999-01-01: 1'
-
-
 def test_drink_related(_different_users):
     actual = Drink.objects.related()
 
@@ -88,20 +82,21 @@ def test_drink_year(_different_users):
     assert actual[0].user.username == 'bob'
 
 
-def test_drink_quantity_float():
-    p = DrinkFactory(quantity=0.5)
+@pytest.mark.parametrize(
+    'user_drink_type, drink_type, expect',
+    [
+        ('beer', 'beer', 1.0),
+        ('wine', 'beer', 0.31),
+        ('vodka', 'beer', 0.06),
+    ]
+)
+def test_drink_str(user_drink_type, drink_type, expect, get_user):
+    get_user.drink_type = user_drink_type
+    p = DrinkFactory(quantity=1, option=drink_type)
 
     p.full_clean()
 
-    assert str(p) == '1999-01-01: 0.5'
-
-
-def test_drink_quantity_int():
-    p = DrinkFactory(quantity=5)
-
-    p.full_clean()
-
-    assert str(p) == '1999-01-01: 5.0'
+    assert str(p) == f'1999-01-01: {expect}'
 
 
 def test_drink_order():
@@ -114,26 +109,52 @@ def test_drink_order():
     assert str(actual[1]) == '1999-01-01: 1.0'
 
 
-def test_drink_months_consumption(_drinks):
+@pytest.mark.parametrize(
+    'user_drink_type, target_drink_type, expect',
+    [
+        ('beer', 'beer', [40.32, 53.57]),
+        ('wine', 'beer', [18.9, 25.11]),
+        ('vodka', 'beer', [5.04, 6.7]),
+    ]
+)
+def test_drink_months_consumption(user_drink_type, target_drink_type, expect, get_user):
+    get_user.drink_type = user_drink_type
+
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option=target_drink_type)
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.5, option=target_drink_type)
+    DrinkFactory(date=date(1999, 2, 1), quantity=2.0, option=target_drink_type)
+    DrinkFactory(date=date(1999, 2, 1), quantity=1.0, option=target_drink_type)
+
     actual = Drink.objects.sum_by_month(1999)
 
     # filter per_month key from return list
     actual = [x['per_month'] for x in actual]
 
-    expect = [16.12, 21.43]
-
     assert expect == pytest.approx(actual, rel=1e-2)
 
 
-def test_drink_months_quantity_sum(_drinks):
+@pytest.mark.parametrize(
+    'user_drink_type, target_drink_type, expect',
+    [
+        ('beer', 'beer', [2.5, 3.0]),
+        ('wine', 'beer', [0.78, 0.94]),
+        ('vodka', 'beer', [0.16, 0.19]),
+    ]
+)
+def test_drink_months_quantity_sum(user_drink_type, target_drink_type, expect, get_user):
+    get_user.drink_type = user_drink_type
+
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option=target_drink_type)
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.5, option=target_drink_type)
+    DrinkFactory(date=date(1999, 2, 1), quantity=2.0, option=target_drink_type)
+    DrinkFactory(date=date(1999, 2, 1), quantity=1.0, option=target_drink_type)
+
     actual = Drink.objects.sum_by_month(1999)
 
     # filter sum key from return list
     actual = [x['sum'] for x in actual]
 
-    expect = [1.0, 1.2]
-
-    assert expect == pytest.approx(actual, rel=1e-2)
+    assert expect == pytest.approx(actual, rel=1e-1)
 
 
 def test_drink_months_quantity_sum_no_records_for_current_year(_second_user):
@@ -171,15 +192,28 @@ def test_drink_months_month_len(_drinks):
 
 
 @freeze_time('1999-11-01')
-def test_drink_days_sum(_second_user):
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
-    DrinkFactory(date=date(1999, 11, 1), quantity=1.5)
-    DrinkFactory(date=date(1999, 11, 1), quantity=111, counter_type=_second_user)
+@pytest.mark.parametrize(
+    'user_drink_type, target_drink_type, qty, per_day',
+    [
+        ('beer', 'beer', 2.5, 4.1),
+        ('wine', 'beer', 0.78, 1.92),
+        ('vodka', 'beer', 0.16, 0.51),
+    ]
+)
+def test_drink_days_sum(user_drink_type, target_drink_type, qty, per_day, get_user, _second_user):
+    get_user.drink_type = user_drink_type
+
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.0,
+                 option=target_drink_type)
+    DrinkFactory(date=date(1999, 11, 1), quantity=1.5,
+                 option=target_drink_type)
+    DrinkFactory(date=date(1999, 11, 1), quantity=111,
+                 option=target_drink_type, counter_type=_second_user)
 
     actual = Drink.objects.drink_day_sum(1999)
 
-    assert actual['qty'] == 1
-    assert round(actual['per_day'], 2) == 1.64
+    assert round(actual['qty'], 2) == qty
+    assert round(actual['per_day'], 2) == per_day
 
 
 @freeze_time('1999-01-03')
@@ -193,21 +227,25 @@ def test_drink_days_sum_no_records_for_selected_year(_second_user):
     assert actual == {}
 
 
-def test_drink_summary():
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
-    DrinkFactory(date=date(1999, 1, 2), quantity=2.0)
-    DrinkFactory(date=date(2000, 1, 1), quantity=1.0)
-    DrinkFactory(date=date(2000, 1, 2), quantity=3.0)
-
-    expect = [
-        {'year': 1999, 'qty': 1.2, 'per_day': 1.64},
-        {'year': 2000, 'qty': 1.6, 'per_day': 2.18},
+@pytest.mark.parametrize(
+    'user_drink_type, target_drink_type, qty, per_day',
+    [
+        ('beer', 'beer', 3.0, 4.11),
+        ('wine', 'beer', 0.94, 1.93),
+        ('vodka', 'beer', 0.19, 0.51),
     ]
-    actual = list(Drink.objects.summary())
+)
+def test_drink_summary(user_drink_type, target_drink_type, qty, per_day, get_user):
+    get_user.drink_type = user_drink_type
 
-    assert len(actual) == 2
-    assert expect[0] == pytest.approx(actual[0], 0.01)
-    assert expect[1] == pytest.approx(actual[1], 0.01)
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option=target_drink_type)
+    DrinkFactory(date=date(1999, 1, 2), quantity=2.0, option=target_drink_type)
+
+    actual = Drink.objects.summary()
+
+    assert actual[0]['year'] == 1999
+    assert round(actual[0]['qty'], 2) == qty
+    assert round(actual[0]['per_day'], 2) == per_day
 
 
 def test_drink_summary_no_records():
@@ -233,16 +271,25 @@ def test_drink_summary_no_records():
 def test_drink_recalculate_ml_on_save(ml, drink_type, expect):
     d = DrinkFactory(quantity=ml, option=drink_type)
 
-    assert d.quantity == expect
+    assert round(d.quantity, 2) == expect
 
 
-def test_drink_sum_by_day():
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.5)
+@pytest.mark.parametrize(
+    'user_drink_type, target_drink_type, qty',
+    [
+        ('beer', 'beer', 2.5),
+        ('wine', 'beer', 0.78),
+        ('vodka', 'beer', 0.16),
+    ]
+)
+def test_drink_sum_by_day(user_drink_type, target_drink_type, qty, get_user):
+    get_user.drink_type = user_drink_type
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option=target_drink_type)
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.5, option=target_drink_type)
 
     actual = Drink.objects.sum_by_day(1999)
 
-    assert actual[0]['qty'] == 1
+    assert round(actual[0]['qty'], 2) == qty
 
 
 @pytest.mark.parametrize(
@@ -304,13 +351,14 @@ def test_drink_target_items():
 
 
 def test_drink_target_year():
-    DrinkTargetFactory(year=1999)
+    DrinkTargetFactory(year=1999, quantity=1, drink_type='beer')
     DrinkTargetFactory(year=1999, user=UserFactory(username='XXX', email='x@x.x'))
 
-    actual = list(DrinkTarget.objects.year(1999))
+    actual = DrinkTarget.objects.year(1999)
 
     assert len(actual) == 1
     assert actual[0].year == 1999
+    assert round(actual[0].quantity, 3) == 0.005
     assert actual[0].user.username == 'bob'
 
 
