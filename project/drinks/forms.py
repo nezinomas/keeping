@@ -96,7 +96,8 @@ class DrinkTargetForm(forms.ModelForm):
         self.fields['year'].initial = set_year_for_form()
 
         self.fields['year'].label = _('Year')
-        self.fields['quantity'].label = _('Quantity') + ' ml'
+        self.fields['quantity'].label = _('Quantity') + ', ml'
+        self.fields['drink_type'].label = _('Drink type')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

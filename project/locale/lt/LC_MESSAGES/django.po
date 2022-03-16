@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-14 13:14+0200\n"
-"PO-Revision-Date: 2022-03-14 13:14+0200\n"
+"POT-Creation-Date: 2022-03-16 12:56+0200\n"
+"PO-Revision-Date: 2022-03-16 12:56+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -541,7 +541,7 @@ msgstr "Metai"
 msgid "How many"
 msgstr "Kiek"
 
-#: .\project\books\forms.py:141 .\project\drinks\forms.py:114
+#: .\project\books\forms.py:141 .\project\drinks\forms.py:115
 msgid "already has a goal."
 msgstr "metai jau turi tikslą."
 
@@ -990,7 +990,7 @@ msgctxt "sum button"
 msgid "Sum"
 msgstr "Sumą"
 
-#: .\project\drinks\forms.py:55
+#: .\project\drinks\forms.py:55 .\project\drinks\forms.py:100
 msgid "Drink type"
 msgstr "Gėrimo tipas"
 
@@ -1011,7 +1011,7 @@ msgstr "1 Degtinė = 1L"
 msgid "If more than %(cnt)s is entered, it will be assumed to be mL"
 msgstr "Įvedus daugiau nei %(cnt)s, bus manoma kad tai yra mL"
 
-#: .\project\drinks\forms.py:154
+#: .\project\drinks\forms.py:155
 msgid "Must be 4 digits."
 msgstr "Turi būti 4 skaitmenys."
 
@@ -1114,7 +1114,7 @@ msgstr "išgerta"
 #: .\project\drinks\templates\drinks\includes\tbl_consumption.html:22
 #: .\project\drinks\templates\drinks\includes\tbl_last_day.html:13
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:25
-#: .\project\drinks\views.py:51
+#: .\project\drinks\views.py:55
 msgid "No data"
 msgstr "Nėra duomenų"
 
