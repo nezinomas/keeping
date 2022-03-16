@@ -83,6 +83,7 @@ class Index(IndexMixin):
                 request=self.request
             ),
             'target_list': TargetLists.as_view()(self.request, as_string=True),
+            'select_drink_type': zip(models.DrinkType.labels, models.DrinkType.values),
             **H.RenderContext(self.request).context_to_reload(),
         })
         return context

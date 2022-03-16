@@ -597,6 +597,7 @@ def test_index_context(client_logged):
     assert 'target_list' in response.context
     assert 'all_years' in response.context
     assert 'compare_form' in response.context
+    assert 'select_drink_type' in response.context
 
 
 def test_index_context_tab_value(client_logged):
@@ -722,6 +723,27 @@ def test_index_no_data_dry_days(client_logged):
 
     assert "1998-01-01" in context['tbl_last_day']
     assert "365" in context['tbl_last_day']
+
+
+def test_index_select_drink_drop_down_title(client_logged):
+    url = reverse('drinks:drinks_index')
+    response = client_logged.get(url)
+
+    content = response.content.decode()
+
+    assert 'id="dropdownDrinkType">Alus</a>' in content
+
+
+def test_index_select_drink_drop_down_link_list(client_logged):
+    url = reverse('drinks:drinks_index')
+    response = client_logged.get(url)
+
+    content = response.content.decode()
+
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "beer"})}">Alus</a>' in content
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})}">Vynas</a>' in content
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "vodka"})}">Degtinė</a>' in content
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "stdav"})}">Std Av</a>' in content
 
 
 # ---------------------------------------------------------------------------------------
