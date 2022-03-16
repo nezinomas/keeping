@@ -1,9 +1,11 @@
 from datetime import datetime
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
+from django.views.generic import RedirectView
 
 from ..core.lib.date import years
 from ..core.mixins.ajax import AjaxSearchMixin
@@ -193,3 +195,17 @@ class TargetUpdate(UpdateAjaxMixin):
             )
 
         return obj
+
+
+class SelectDrink(LoginRequiredMixin, RedirectView):
+    def get_redirect_url(self, *args, **kwargs):
+        drink_type = kwargs.get('drink_type')
+
+        if drink_type not in models.DrinkType.values:
+            drink_type = models.DrinkType.BEER.value
+
+        user = self.request.user
+        user.drink_type = drink_type
+        user.save()
+
+        return reverse_lazy('drinks:drinks_index')

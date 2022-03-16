@@ -10,9 +10,9 @@ from mock import patch
 
 from ...core.tests.utils import change_profile_year, setup_view
 from ...journals.factories import JournalFactory
-from ...users.factories import UserFactory
+from ...users.factories import User, UserFactory
 from .. import models, views
-from ..factories import DrinkFactory, DrinkTargetFactory, Drink
+from ..factories import Drink, DrinkFactory, DrinkTargetFactory
 
 X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
@@ -915,3 +915,54 @@ def test_history_categories_with_empty_current_year(user_drink_type, drink_type,
     assert actual['drinks_categories'] == [1998, 1999]
     assert pytest.approx(actual['drinks_data_ml'], rel=1e-1) == ml
     assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == alkohol
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                            Select Drink
+# ---------------------------------------------------------------------------------------
+def test_select_drink_func():
+    view = resolve('/drinks/drink_type/xxx/')
+
+    assert views.SelectDrink == view.func.view_class
+
+
+def test_select_drink_redirect(client_logged):
+    url = reverse('drinks:set_drink_type', kwargs={'drink_type': 'xxx'})
+
+    response = client_logged.get(url)
+
+    assert response.status_code == 302
+
+
+def test_select_drink_redirect_follow(client_logged):
+    url = reverse('drinks:set_drink_type', kwargs={'drink_type': 'xxx'})
+
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert views.Index == response.resolver_match.func.view_class
+
+
+def test_select_drinks_set_drink_type(client_logged):
+    url = reverse('drinks:set_drink_type', kwargs={'drink_type': 'wine'})
+
+    response = client_logged.get(url)
+
+    actual = User.objects.first()
+
+    assert actual.drink_type == 'wine'
+
+
+def test_select_drinks_set_default_drink_type(main_user, client_logged):
+    main_user.drink_type = 'wine'
+    main_user.save()
+
+    assert User.objects.first().drink_type == 'wine'
+
+    url = reverse('drinks:set_drink_type', kwargs={'drink_type': 'xxx'})
+
+    response = client_logged.get(url)
+
+    actual = User.objects.first()
+
+    assert actual.drink_type == 'beer'
