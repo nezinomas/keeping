@@ -759,6 +759,28 @@ def test_index_select_drink_drop_down_link_list(client_logged):
     assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "stdav"})}">Std Av</a>' in content
 
 
+@pytest.mark.parametrize(
+    'drink_type, qty, expect',
+    [
+        ('beer', 4, '0,10'),
+        ('wine', 1.25, '0,10'),
+        ('vodka', 0.25, '0,10'),
+        ('stdav', 10, '0,10'),
+    ]
+)
+def test_index_tbl_alkohol(drink_type, qty, expect, get_user, client_logged):
+    get_user.drink_type = drink_type
+
+    DrinkFactory(option=drink_type, quantity=qty)
+
+    url = reverse('drinks:drinks_index')
+    response = client_logged.get(url)
+
+    actual = response.context.get('tbl_alcohol')
+
+    assert f'<td>{expect}</td>' in actual
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                                   Lists
 # ---------------------------------------------------------------------------------------
