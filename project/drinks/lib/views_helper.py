@@ -97,7 +97,6 @@ class RenderContext():
         )
         return r
 
-
     def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
         rendered = render_to_string(
             'counts/includes/chart_calendar.html',
