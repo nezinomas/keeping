@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-16 12:56+0200\n"
-"PO-Revision-Date: 2022-03-16 12:56+0200\n"
+"POT-Creation-Date: 2022-03-17 12:13+0200\n"
+"PO-Revision-Date: 2022-03-17 12:14+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -62,7 +62,7 @@ msgstr "uždaryta"
 #: .\project\debts\forms.py:56 .\project\debts\forms.py:150
 #: .\project\debts\templates\debts\includes\debts_list.html:12
 #: .\project\debts\templates\debts\includes\debts_return_list.html:12
-#: .\project\drinks\forms.py:54 .\project\expenses\forms.py:69
+#: .\project\drinks\forms.py:46 .\project\expenses\forms.py:69
 #: .\project\expenses\templates\expenses\includes\expenses_list.html:13
 #: .\project\incomes\forms.py:42
 #: .\project\incomes\templates\incomes\includes\incomes_list.html:10
@@ -453,7 +453,7 @@ msgid "Transactions"
 msgstr "Pervedimą"
 
 #: .\project\bookkeeping\templates\bookkeeping\month.html:123
-#: .\project\drinks\templates\drinks\index.html:36
+#: .\project\drinks\templates\drinks\index.html:45
 msgctxt "drinks button"
 msgid "Drinks"
 msgstr "Gertynės"
@@ -530,7 +530,7 @@ msgstr "Data negali būti ateityje"
 msgid "Ended reading cannot precede started reading"
 msgstr "Baigta skaityti negali būti anksčiau nei pradėta skaityti"
 
-#: .\project\books\forms.py:125 .\project\drinks\forms.py:98
+#: .\project\books\forms.py:125 .\project\drinks\forms.py:90
 msgid "Year"
 msgstr "Metai"
 
@@ -541,7 +541,7 @@ msgstr "Metai"
 msgid "How many"
 msgstr "Kiek"
 
-#: .\project\books\forms.py:141 .\project\drinks\forms.py:115
+#: .\project\books\forms.py:141 .\project\drinks\forms.py:113
 msgid "already has a goal."
 msgstr "metai jau turi tikslą."
 
@@ -809,7 +809,7 @@ msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 #: .\project\counts\templates\counts\includes\chart_month.html:71
 #: .\project\counts\templates\counts\includes\counts_list.html:9
 #: .\project\counts\templates\counts\includes\info_row.html:5
-#: .\project\drinks\forms.py:56 .\project\drinks\forms.py:99
+#: .\project\drinks\forms.py:48 .\project\drinks\forms.py:91
 #: .\project\drinks\templates\drinks\includes\chart_quantity.html:61
 #: .\project\drinks\templates\drinks\includes\drinks_list.html:12
 msgid "Quantity"
@@ -990,28 +990,32 @@ msgctxt "sum button"
 msgid "Sum"
 msgstr "Sumą"
 
-#: .\project\drinks\forms.py:55 .\project\drinks\forms.py:100
+#: .\project\drinks\forms.py:47 .\project\drinks\forms.py:92
 msgid "Drink type"
 msgstr "Gėrimo tipas"
 
-#: .\project\drinks\forms.py:58
+#: .\project\drinks\forms.py:50
 msgid "1 Beer = 0.5L"
 msgstr "1 Alus = 0.5L"
 
-#: .\project\drinks\forms.py:59
+#: .\project\drinks\forms.py:51
 msgid "1 Wine = 0.75L"
 msgstr "1 Vynas = 0.75L"
 
-#: .\project\drinks\forms.py:60
+#: .\project\drinks\forms.py:52
 msgid "1 Vodka = 1L"
 msgstr "1 Degtinė = 1L"
 
-#: .\project\drinks\forms.py:61
+#: .\project\drinks\forms.py:53
 #, python-format
 msgid "If more than %(cnt)s is entered, it will be assumed to be mL"
 msgstr "Įvedus daugiau nei %(cnt)s, bus manoma kad tai yra mL"
 
-#: .\project\drinks\forms.py:155
+#: .\project\drinks\forms.py:94
+msgid "if the type of drink is"
+msgstr "jei gėrimo tipas yra"
+
+#: .\project\drinks\forms.py:153
 msgid "Must be 4 digits."
 msgstr "Turi būti 4 skaitmenys."
 
@@ -1058,7 +1062,7 @@ msgid "Dink Type"
 msgstr "Gėtimo tipas"
 
 #: .\project\drinks\templates\drinks\includes\drinks_target_form.html:3
-#: .\project\drinks\templates\drinks\index.html:37
+#: .\project\drinks\templates\drinks\index.html:46
 msgid "Goal for the year"
 msgstr "Tikslas metams"
 
@@ -1114,7 +1118,7 @@ msgstr "išgerta"
 #: .\project\drinks\templates\drinks\includes\tbl_consumption.html:22
 #: .\project\drinks\templates\drinks\includes\tbl_last_day.html:13
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:25
-#: .\project\drinks\views.py:55
+#: .\project\drinks\views.py:57
 msgid "No data"
 msgstr "Nėra duomenų"
 
