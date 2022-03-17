@@ -7,6 +7,7 @@ class DrinksOptions():
         'beer': {'stdav': 2.5, 'ml': 500},  # 500ml -> 2.5 std_av
         'wine': {'stdav': 8, 'ml': 750},  # 750ml -> 8 std_av
         'vodka': {'stdav': 40, 'ml': 1000},  # 1000ml -> 40 std_av
+        'stdav': {'stdav': 1, 'ml': 10},  # 1000ml -> 40 std_av
     }
 
     def __init__(self, drink_type: str = None):
