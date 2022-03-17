@@ -14,7 +14,7 @@
     </thead>
     <tbody>
         {% for item in items %}
-        <tr {% if 'AV' in item.title %}class="table-warning bor"{% endif %}>
+        <tr {% if 'Av' in item.title %}class="table-warning bor"{% endif %}>
             <td class="text-start"><span class="ms-2">{{ item.title }}</span></td>
             {% cell item.total %}
             {% cell item.per_day %}
