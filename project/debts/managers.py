@@ -5,6 +5,7 @@ from django.db.models.functions import ExtractYear, TruncMonth
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 
+
 class DebtQuerySet(models.QuerySet):
     def related(self, debt_type=None):
         _journal = utils.get_user().journal
