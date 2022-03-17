@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-17 12:13+0200\n"
-"PO-Revision-Date: 2022-03-17 12:14+0200\n"
+"POT-Creation-Date: 2022-03-17 14:54+0200\n"
+"PO-Revision-Date: 2022-03-17 14:54+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -243,6 +243,7 @@ msgstr "Atstatyti"
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:60
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_expenses.html:14
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_expenses.html:35
+#: .\project\drinks\templates\drinks\includes\tbl_consumption.html:12
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:9
 msgid "Total"
 msgstr "Viso"
@@ -1076,6 +1077,7 @@ msgstr "ml"
 
 #: .\project\drinks\templates\drinks\includes\drinks_target_list.html:8
 #: .\project\drinks\templates\drinks\includes\tbl_consumption.html:12
+#: .\project\drinks\templates\drinks\includes\tbl_std_av.html:6
 msgid "pcs"
 msgstr "vnt"
 
@@ -1115,6 +1117,11 @@ msgstr "Litrai"
 msgid "drunk"
 msgstr "išgerta"
 
+#: .\project\drinks\templates\drinks\includes\tbl_consumption.html:13
+#: .\project\drinks\templates\drinks\includes\tbl_std_av.html:10
+msgid "Per day"
+msgstr "Per dieną"
+
 #: .\project\drinks\templates\drinks\includes\tbl_consumption.html:22
 #: .\project\drinks\templates\drinks\includes\tbl_last_day.html:13
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:25
@@ -1131,12 +1138,8 @@ msgid "Number of days"
 msgstr "Dienų skaičius"
 
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:6
-msgid "Average Std Av consumption"
-msgstr "Vidutiniškai išgerta Std Av"
-
-#: .\project\drinks\templates\drinks\includes\tbl_std_av.html:10
-msgid "Per day"
-msgstr "Per dieną"
+msgid "Average consumption"
+msgstr "Vidutiniškai išgerta"
 
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:12
 msgid "Per month"
