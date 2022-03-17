@@ -725,13 +725,25 @@ def test_index_no_data_dry_days(client_logged):
     assert "365" in context['tbl_last_day']
 
 
-def test_index_select_drink_drop_down_title(client_logged):
+@pytest.mark.parametrize(
+    'drink_type, expect',
+    [
+        ('beer', 'Alus'),
+        ('wine', 'Vynas'),
+        ('vodka', 'Degtinė'),
+        ('stdav', 'Std Av'),
+    ]
+)
+def test_index_select_drink_drop_down_title(drink_type, expect, main_user, client_logged):
+    main_user.drink_type = drink_type
+    main_user.save()
+
     url = reverse('drinks:drinks_index')
     response = client_logged.get(url)
 
-    content = response.content.decode()
+    content = response.content.decode('utf-8')
 
-    assert 'id="dropdownDrinkType">Alus</a>' in content
+    assert f'id="dropdownDrinkType">{ expect }</a>' in content
 
 
 def test_index_select_drink_drop_down_link_list(client_logged):

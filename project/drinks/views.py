@@ -73,6 +73,8 @@ class Compare(AjaxSearchMixin):
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
+        drink_type = self.request.user.drink_type
+
         context = super().get_context_data(**kwargs)
         context.update({
             'tab': 'index',
@@ -84,6 +86,7 @@ class Index(IndexMixin):
             ),
             'target_list': TargetLists.as_view()(self.request, as_string=True),
             'select_drink_type': zip(models.DrinkType.labels, models.DrinkType.values),
+            'current_drink_type': models.DrinkType(drink_type).label,
             **H.RenderContext(self.request).context_to_reload(),
         })
         return context

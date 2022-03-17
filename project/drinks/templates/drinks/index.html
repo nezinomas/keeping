@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load i18n %}
-{% load slippers %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
@@ -31,8 +30,7 @@
 
     <div class="col text-center" id="info_row">
         <div class="dropdown">
-            {% var drink_type=request.user.drink_type|title %}
-            <a class="btn btn-sm btn-outline-primary dropdown-toggle ps-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" id="dropdownDrinkType">{% translate drink_type %}</a>
+            <a class="btn btn-sm btn-outline-primary dropdown-toggle ps-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" id="dropdownDrinkType">{{ current_drink_type }}</a>
             <ul class="dropdown-menu" aria-labelledby="dropdownDrinkType">
                 {% for type in select_drink_type %}
                     <li><a class="dropdown-item btn-sm" href="{% url 'drinks:set_drink_type' type.1 %}">{{ type.0 }}</a></li>
