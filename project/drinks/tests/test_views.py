@@ -9,8 +9,7 @@ from freezegun import freeze_time
 from mock import patch
 
 from ...core.tests.utils import change_profile_year, setup_view
-from ...journals.factories import JournalFactory
-from ...users.factories import User, UserFactory
+from ...users.factories import User
 from .. import models, views
 from ..factories import Drink, DrinkFactory, DrinkTargetFactory
 
