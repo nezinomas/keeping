@@ -83,13 +83,14 @@ def test_update(client_logged):
 @pytest.mark.parametrize(
     'drink_type, expect',
     [
-        ('beer', 1.0),
-        ('wine', 1.0),
-        ('vodka', 1.0),
+        ('beer', 10.0),
+        ('wine', 10.0),
+        ('vodka', 10.0),
+        ('stdav', 10.0),
     ]
 )
 def test_update_load_form_convert_quantity(drink_type, expect, client_logged):
-    p = DrinkFactory(quantity=1, option=drink_type)
+    p = DrinkFactory(quantity=10, option=drink_type)
 
     url = reverse('drinks:drinks_update', kwargs={'pk': p.pk})
 
