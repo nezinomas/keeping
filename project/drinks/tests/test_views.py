@@ -810,6 +810,39 @@ def test_list(client_logged):
     assert f'<a role="button" data-url="/drinks/update/{p.pk}/"' in actual
 
 
+@pytest.mark.parametrize(
+    'drink_type, expect',
+    [
+        ('beer', 'Alus'),
+        ('wine', 'Vynas'),
+        ('vodka', 'Degtinė'),
+        ('stdav', 'Std Av'),
+    ]
+)
+def test_list_select_drink_drop_down_title(drink_type, expect, main_user, client_logged):
+    main_user.drink_type = drink_type
+    main_user.save()
+
+    url = reverse('drinks:drinks_list')
+    response = client_logged.get(url)
+
+    content = response.content.decode('utf-8')
+
+    assert f'id="dropdownDrinkType">{ expect }</a>' in content
+
+
+def test_list_select_drink_drop_down_link_list(client_logged):
+    url = reverse('drinks:drinks_list')
+    response = client_logged.get(url)
+
+    content = response.content.decode()
+
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "beer"})}">Alus</a>' in content
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})}">Vynas</a>' in content
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "vodka"})}">Degtinė</a>' in content
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "stdav"})}">Std Av</a>' in content
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                                 Summary
 # ---------------------------------------------------------------------------------------
@@ -949,6 +982,39 @@ def test_history_categories_with_empty_current_year(user_drink_type, drink_type,
     assert actual['drinks_categories'] == [1998, 1999]
     assert pytest.approx(actual['drinks_data_ml'], rel=1e-1) == ml
     assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == alkohol
+
+
+@pytest.mark.parametrize(
+    'drink_type, expect',
+    [
+        ('beer', 'Alus'),
+        ('wine', 'Vynas'),
+        ('vodka', 'Degtinė'),
+        ('stdav', 'Std Av'),
+    ]
+)
+def test_history_select_drink_drop_down_title(drink_type, expect, main_user, client_logged):
+    main_user.drink_type = drink_type
+    main_user.save()
+
+    url = reverse('drinks:drinks_history')
+    response = client_logged.get(url)
+
+    content = response.content.decode('utf-8')
+
+    assert f'id="dropdownDrinkType">{ expect }</a>' in content
+
+
+def test_history_select_drink_drop_down_link_list(client_logged):
+    url = reverse('drinks:drinks_history')
+    response = client_logged.get(url)
+
+    content = response.content.decode()
+
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "beer"})}">Alus</a>' in content
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})}">Vynas</a>' in content
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "vodka"})}">Degtinė</a>' in content
+    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "stdav"})}">Std Av</a>' in content
 
 
 # ---------------------------------------------------------------------------------------

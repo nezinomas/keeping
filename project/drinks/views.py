@@ -73,8 +73,6 @@ class Compare(AjaxSearchMixin):
 
 class Index(IndexMixin):
     def get_context_data(self, **kwargs):
-        drink_type = self.request.user.drink_type
-
         context = super().get_context_data(**kwargs)
         context.update({
             'tab': 'index',
@@ -85,8 +83,7 @@ class Index(IndexMixin):
                 request=self.request
             ),
             'target_list': TargetLists.as_view()(self.request, as_string=True),
-            'select_drink_type': zip(models.DrinkType.labels, models.DrinkType.values),
-            'current_drink_type': models.DrinkType(drink_type).label,
+            **H.drink_type_dropdown(self.request),
             **H.RenderContext(self.request).context_to_reload(),
         })
         return context
@@ -98,7 +95,10 @@ class Lists(ListMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['tab'] = 'data'
+        context.update({
+            'tab': 'data',
+            **H.drink_type_dropdown(self.request),
+        })
 
         return context
 
@@ -141,6 +141,7 @@ class Summary(IndexMixin):
             'drinks_data_ml': ml,
             'drinks_data_alcohol': alcohol,
             'records': len(drink_years) if len(drink_years) > 1 else 0,
+            **H.drink_type_dropdown(self.request),
         })
         return context
 
