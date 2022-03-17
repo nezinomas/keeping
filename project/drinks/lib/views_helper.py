@@ -128,9 +128,12 @@ class RenderContext():
         return r
 
     def tbl_alcohol(self) -> str:
+        obj = DrinksOptions()
+        stdav = self._qty / obj.ratio
+
         r = render_to_string(
             'drinks/includes/tbl_alcohol.html', {
-                'l': self._qty * 0.025
+                'l': obj.stdav_to_alkohol(stdav)
             },
             self._request
         )
