@@ -33,6 +33,7 @@ def several_years_consumption(years):
 
     return serries
 
+
 class RenderContext():
     def __init__(self, request: HttpRequest):
         self._request = request
