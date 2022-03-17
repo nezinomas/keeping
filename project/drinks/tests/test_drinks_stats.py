@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 from freezegun import freeze_time
 
-from ..lib.drinks_stats import DrinkStats, max_beer_bottles, std_av
+from ..lib.drinks_stats import DrinkStats, std_av
 
 
 @pytest.fixture
@@ -116,11 +116,11 @@ def test_std_av():
             'per_week': 6.67,
             'per_month': 27.35
         }, {
-            'title': 'Vynas, 1L',
-            'total': 68.38,
-            'per_day': 0.24,
-            'per_week': 1.67,
-            'per_month': 6.84
+            'title': 'Vynas, 0.75L',
+            'total': 85.47,
+            'per_day': 0.3,
+            'per_week': 2.08,
+            'per_month': 8.55
         }, {
             'title': 'Degtinė, 1L',
             'total': 17.09,
@@ -158,11 +158,11 @@ def test_std_av_past_recods():
             'per_week': 5.26,
             'per_month': 22.79
         }, {
-            'title': 'Vynas, 1L',
-            'total': 68.38,
-            'per_day': 0.19,
-            'per_week': 1.31,
-            'per_month': 5.70
+            'title': 'Vynas, 0.75L',
+            'total': 85.47,
+            'per_day': 0.23,
+            'per_week': 1.64,
+            'per_month': 7.12
         }, {
             'title': 'Degtinė, 1L',
             'total': 17.09,
@@ -180,10 +180,3 @@ def test_std_av_past_recods():
                 assert expect[i][k] == v
             else:
                 assert expect[i][k] == round(v, 2)
-
-
-@freeze_time('2020-6-6')
-def test_max_beer_bottles():
-    actual = max_beer_bottles(2020, 350)
-
-    assert actual == 256.2

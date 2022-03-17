@@ -1,7 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
 
-from ...core.lib.transalation import month_names
+from ..lib.translation import month_names
 
 register = template.Library()
 

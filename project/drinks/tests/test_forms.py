@@ -23,6 +23,7 @@ def test_drink_init_fields():
 
     assert '<input type="text" name="date"' in form
     assert '<input type="number" name="quantity"' in form
+    assert '<select name="option"' in form
     assert '<select name="user"' not in form
     assert '<input type="text" name="counter_type"' not in form
 
@@ -30,7 +31,10 @@ def test_drink_init_fields():
 def test_drink_help_text():
     form = DrinkForm().as_p()
 
-    assert 'Įvedus daugiau nei 20, kiekis bus konvertuotas į mL.' in form
+    assert '1 Alus = 0.5L' in form
+    assert '1 Vynas = 0.75L' in form
+    assert '1 Degtinė = 1L' in form
+    assert 'Įvedus daugiau nei 20, bus manoma kad tai yra mL' in form
 
 
 @freeze_time('1000-01-01')
@@ -42,11 +46,20 @@ def test_drink_year_initial_value():
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
+def test_drink_option_initial_value():
+    UserFactory()
+
+    form = DrinkForm().as_p()
+
+    assert '<option value="beer" selected>Alus</option>' in form
+
+
 @patch('project.drinks.forms.App_name', 'Counter Type')
 def test_drink_valid_data():
     form = DrinkForm(data={
         'date': '1999-01-01',
-        'quantity': 1.0
+        'quantity': 1.0,
+        'option': 'beer',
     })
 
     assert form.is_valid()
@@ -54,7 +67,7 @@ def test_drink_valid_data():
     data = form.save()
 
     assert data.date == date(1999, 1, 1)
-    assert data.quantity == 1.0
+    assert data.quantity == 2.5
     assert data.user.username == 'bob'
     assert data.counter_type == 'Counter Type'
 
@@ -68,7 +81,8 @@ def test_drink_valid_data():
 def test_drink_invalid_date(year):
     form = DrinkForm(data={
         'date': f'{year}-01-01',
-        'quantity': 1.0
+        'quantity': 1.0,
+        'option': 'beer',
     })
 
     assert not form.is_valid()
@@ -81,9 +95,10 @@ def test_drink_blank_data():
 
     assert not form.is_valid()
 
-    assert len(form.errors) == 2
+    assert len(form.errors) == 3
     assert 'date' in form.errors
     assert 'quantity' in form.errors
+    assert 'option' in form.errors
 
 
 # ---------------------------------------------------------------------------------------
@@ -98,6 +113,7 @@ def test_drink_target_init_fields():
 
     assert '<input type="text" name="year"' in form
     assert '<input type="number" name="quantity"' in form
+    assert '<select name="drink_type"' in form
     assert '<select name="user"' not in form
 
 
@@ -110,10 +126,19 @@ def test_drink_target_year_initial_value():
     assert '<input type="text" name="year" value="1999"' in form
 
 
-def test_drink_target_valid_data():
+@pytest.mark.parametrize(
+    'type, qty, expect',
+    [
+        ('beer', 500, 2.5),
+        ('wine', 750, 8),
+        ('vodka', 1000, 40),
+    ]
+)
+def test_drink_target_valid_data(type, qty, expect):
     form = DrinkTargetForm(data={
         'year': 1974,
-        'quantity': 1.0
+        'quantity': qty,
+        'drink_type': type
     })
 
     assert form.is_valid()
@@ -121,7 +146,7 @@ def test_drink_target_valid_data():
     data = form.save()
 
     assert data.year == 1974
-    assert data.quantity == 1.0
+    assert data.quantity == expect
     assert data.user.username == 'bob'
 
 
@@ -143,9 +168,10 @@ def test_drink_target_blank_data():
 
     assert not form.is_valid()
 
-    assert len(form.errors) == 2
+    assert len(form.errors) == 3
     assert 'year' in form.errors
     assert 'quantity' in form.errors
+    assert 'drink_type' in form.errors
 
 
 # ---------------------------------------------------------------------------------------

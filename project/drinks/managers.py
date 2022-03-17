@@ -1,6 +1,6 @@
 import calendar
-from datetime import datetime
-from typing import Dict
+from datetime import date, datetime
+from typing import Dict, List
 
 from django.db import models
 
@@ -9,6 +9,7 @@ from ..core.lib.date import ydays
 from ..core.mixins.queryset_sum import SumMixin
 from ..counters.managers import CounterQuerySet
 from .apps import App_name as DrinksAppName
+from .lib.drinks_options import DrinksOptions
 
 
 class DrinkQuerySet(CounterQuerySet):
@@ -22,19 +23,23 @@ class DrinkQuerySet(CounterQuerySet):
 
         qs = super().sum_by_month(year, month)
 
+        obj = DrinksOptions()
+        ratio = obj.ratio
+
         arr = []
         for row in qs:
             _date = row.get('date')
             _month = _date.month
             _monthlen = calendar.monthrange(year, _month)[1]
-            _qty = row.get('qty')
+            _qty = row.get('qty') * ratio
+            _stdav = row.get('qty')
 
             item = {}
             item['date'] = _date
             item['sum'] = _qty
             item['month'] = _month
             item['monthlen'] = _monthlen
-            item['per_month'] = self._consumption(_qty, _monthlen)
+            item['per_month'] = obj.stdav_to_ml(stdav=_stdav) / _monthlen
 
             if item:
                 arr.append(item)
@@ -58,37 +63,49 @@ class DrinkQuerySet(CounterQuerySet):
         else:
             _day_of_year = ydays(year)
 
-        _qty = qs[0].get('qty')
+        _obj = DrinksOptions()
+        _qty = qs[0].get('qty') * _obj.ratio
+        _stdav = qs[0].get('qty')
 
         arr['qty'] = _qty
-        arr['per_day'] = self._consumption(_qty, _day_of_year)
+        arr['per_day'] = _obj.stdav_to_ml(stdav=_stdav) / _day_of_year
 
         return arr
+
+    def sum_by_day(self, year: int, month: int = None) -> List[Dict[date, float]]:
+        qs = super().sum_by_day(year, month)
+        ratio = DrinksOptions().ratio
+
+        for q in qs:
+            q['qty'] = q['qty'] * ratio
+
+        return qs
 
     def summary(self):
         #Returns
         # [{'year': int, 'qty': float, 'per_day': float}]
 
         qs = super().sum_by_year()
+        obj = DrinksOptions()
+        ratio = obj.ratio
 
         arr = []
         for row in qs:
-            _qty = row.get('qty')
+            _qty = row.get('qty') * ratio
+            _stdav = row.get('qty')
+
             _date = row.get('date')
             _days = ydays(_date.year)
 
             item = {}
             item['year'] = _date.year
             item['qty'] = _qty
-            item['per_day'] = self._consumption(_qty, _days)
+            item['per_day'] = obj.stdav_to_ml(drink_type=obj.drink_type, stdav=_stdav) / _days
 
             if item:
                 arr.append(item)
 
         return arr
-
-    def _consumption(self, qty: float, days: int) -> float:
-        return ((qty * 0.5) / days) * 1000
 
 
 class DrinkTargetQuerySet(SumMixin, models.QuerySet):
@@ -101,11 +118,13 @@ class DrinkTargetQuerySet(SumMixin, models.QuerySet):
         )
 
     def year(self, year):
-        return (
+        qs = (
             self
             .related()
             .filter(year=year)
         )
+
+        return qs
 
     def items(self):
         return self.related()

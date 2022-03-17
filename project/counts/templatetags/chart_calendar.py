@@ -1,7 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
 
-from ...core.lib.transalation import weekday_names
+from ...core.lib.translation import weekday_names
 
 register = template.Library()
 

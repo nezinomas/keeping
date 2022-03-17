@@ -40,7 +40,7 @@ class CounterQuerySet(SumMixin, models.QuerySet):
         return self.related(user)
 
     def sum_by_year(self, year: int = None) -> List[Dict[date, float]]:
-        #Returns
+        # Returns
         # QuerySet [{'date': datetime.date, 'qty': float}]
 
         return (
@@ -54,7 +54,7 @@ class CounterQuerySet(SumMixin, models.QuerySet):
         )
 
     def sum_by_month(self, year: int, month: int = None) -> List[Dict[date, float]]:
-        #Returns
+        # Returns
         # QuerySet [{'date': datetime.date, 'qty': float}]
 
         return (
@@ -69,7 +69,7 @@ class CounterQuerySet(SumMixin, models.QuerySet):
         )
 
     def sum_by_day(self, year: int, month: int = None) -> List[Dict[date, float]]:
-        #Returns
+        # Returns
         # QuerySet [{'date': datetime.date, 'qty': float}]
 
         return (

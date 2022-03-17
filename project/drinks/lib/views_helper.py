@@ -7,7 +7,17 @@ from django.utils.translation import gettext as _
 
 from ...counts.lib.stats import Stats as CountStats
 from .. import models
-from .drinks_stats import DrinkStats, max_beer_bottles, std_av
+from .drinks_options import DrinksOptions
+from .drinks_stats import DrinkStats, std_av
+
+
+def drink_type_dropdown(request):
+    drink_type = request.user.drink_type
+
+    return {
+        'select_drink_type': zip(models.DrinkType.labels, models.DrinkType.values),
+        'current_drink_type': models.DrinkType(drink_type).label,
+    }
 
 
 def several_years_consumption(years):
@@ -28,7 +38,6 @@ class RenderContext():
         self._request = request
         self._year = self._request.user.year
 
-        self._target_qs = models.DrinkTarget.objects.year(self._year)
         self._target = self._get_target()
 
         self._avg, self._qty = self._get_avg_qty()
@@ -62,7 +71,6 @@ class RenderContext():
             'tbl_last_day': self.tbl_last_day(),
             'tbl_alcohol': self.tbl_alcohol(),
             'tbl_std_av': self.tbl_std_av(),
-            'target_list': self.target_list(),
             'records': qs.count(),
         }
         return context
@@ -137,19 +145,11 @@ class RenderContext():
         )
         return r
 
-    def target_list(self) -> str:
-        r = render_to_string(
-            'drinks/includes/drinks_target_list.html',
-            {
-                'items': self._target_qs,
-                'max_bottles': max_beer_bottles(self._year, self._target)
-            },
-            self._request)
-        return r
-
     def _get_target(self):
-        qs = self._target_qs
-        return qs[0].quantity if qs else 0
+        obj = DrinksOptions()
+        qs = models.DrinkTarget.objects.year(self._year)
+
+        return obj.stdav_to_ml(qs[0].quantity) if qs else 0
 
     def _get_drink_stats(self):
         qs = models.Drink.objects.sum_by_month(self._year)

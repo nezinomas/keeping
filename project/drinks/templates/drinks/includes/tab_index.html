@@ -12,7 +12,7 @@
             {% if records %}<div id="tbl_consumption" class="col-lg-3 col-md-3">{{ tbl_consumption }}</div>{% endif %}
             <div id="tbl_last_day" class="col-lg-4 col-md-3">{{ tbl_last_day }}</div>
             {% if records %}<div id="tbl_alcohol" class="col-lg-2 col-md-3">{{ tbl_alcohol }}</div>{% endif %}
-            <div id="drinks-target-content" class="col-lg-3 col-md-3">{{ target_list }}</div>
+            <div id="target_list" class="col-lg-3 col-md-3">{{ target_list }}</div>
         </div>
 
         <div class="row">
@@ -76,6 +76,7 @@
                 var blocks = [
                     'chart_consumption',
                     'chart_quantity',
+                    'target_list',
                     'tbl_consumption',
                     'tbl_last_day',
                     'tbl_alcohol',

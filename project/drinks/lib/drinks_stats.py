@@ -4,6 +4,7 @@ from typing import Dict, List, Tuple
 from django.utils.translation import gettext as _
 
 from ...core.lib.date import ydays
+from .drinks_options import DrinksOptions
 
 
 class DrinkStats():
@@ -40,40 +41,32 @@ def std_av(year: int, qty: float) -> List[Dict]:
 
     (day, week, month) = _dates(year)
 
-    av = qty * 2.5
-
     a = {
-        'total': av,
-        'per_day': av / day,
-        'per_week': av / week,
-        'per_month': av / month
+        'total': qty,
+        'per_day': qty / day,
+        'per_week': qty / week,
+        'per_month': qty / month
     }
 
+    obj = DrinksOptions()
+
     arr = [
-        {'title': 'Std Av', **a},
-        {'title': _('Beer') + ', 0.5L', **{k: _beer(v) for k, v in a.items()}},
-        {'title': _('Wine') + ', 1L', **{k: _wine(v) for k, v in a.items()}},
-        {'title': _('Vodka') + ', 1L', **{k: _vodka(v) for k, v in a.items()}},
+        {
+            'title': 'Std Av',
+            **{k: v * obj.stdav for k, v in a.items()}
+        }, {
+            'title': _('Beer') + ', 0.5L',
+            **{k: obj.convert(v, 'beer') for k, v in a.items()}
+        }, {
+            'title': _('Wine') + ', 0.75L',
+            **{k: obj.convert(v, 'wine') for k, v in a.items()}
+        }, {
+            'title': _('Vodka') + ', 1L',
+            **{k: obj.convert(v, 'vodka') for k, v in a.items()}
+        },
     ]
 
     return arr
-
-
-def max_beer_bottles(year: int, max_quantity: int) -> float:
-    _days = ydays(year)
-    return (max_quantity * _days) / 500
-
-
-def _beer(av: float) -> float:
-    return (av * 200) / 500
-
-
-def _wine(av: float) -> float:
-    return (av * 100) / 1000
-
-
-def _vodka(av: float) -> float:
-    return (av * 25) / 1000
 
 
 def _dates(year: int) -> Tuple[int, int, int]:

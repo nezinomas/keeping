@@ -16,6 +16,11 @@ class Counter(models.Model):
         blank=False,
         validators=[MinLengthValidator(3)]
     )
+    option = models.CharField(
+        null=True,
+        blank=True,
+        max_length=16
+    )
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE

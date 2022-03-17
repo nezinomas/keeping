@@ -4,21 +4,27 @@ from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
-
 from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.forms import YearBetweenMixin
 from .apps import App_name
-from .models import MAX_BOTTLES, Drink, DrinkTarget
+from .models import MAX_BOTTLES, Drink, DrinkTarget, DrinkType
 
 
 class DrinkForm(YearBetweenMixin, forms.ModelForm):
+    option = forms.ChoiceField(
+        choices=DrinkType.choices,
+        initial=DrinkType.BEER,
+        widget=forms.Select(),
+        required=True
+    )
+
     class Meta:
         model = Drink
-        fields = ['user', 'date', 'quantity']
+        fields = ['user', 'date', 'quantity', 'option']
 
-    field_order = ['date', 'quantity']
+    field_order = ['date', 'option', 'quantity']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -38,8 +44,15 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.fields['date'].initial = set_year_for_form()
 
         self.fields['date'].label = _('Date')
-        self.fields['quantity'].label = _('Quantity (0,5L beer bottle)')
-        self.fields['quantity'].help_text = _('If you enter more than %(cnt)s, the quantity will be converted to mL.') % {'cnt': MAX_BOTTLES}
+        self.fields['option'].label = _('Drink type')
+        self.fields['quantity'].label = _('Quantity')
+
+        _h1 = _('1 Beer = 0.5L')
+        _h2 = _('1 Wine = 0.75L')
+        _h3 = _('1 Vodka = 1L')
+        _h4 = _('If more than %(cnt)s is entered, it will be assumed to be mL') % {'cnt': MAX_BOTTLES}
+        _help_text = f'{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}'
+        self.fields['quantity'].help_text = _help_text
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -55,13 +68,13 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 class DrinkTargetForm(forms.ModelForm):
     class Meta:
         model = DrinkTarget
-        fields = ['user', 'year', 'quantity']
+        fields = ['user', 'year', 'drink_type', 'quantity']
 
         widgets = {
             'year': YearPickerInput(format='%Y'),
         }
 
-    field_order = ['year', 'quantity']
+    field_order = ['year', 'drink_type', 'quantity']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -75,7 +88,14 @@ class DrinkTargetForm(forms.ModelForm):
         self.fields['year'].initial = set_year_for_form()
 
         self.fields['year'].label = _('Year')
-        self.fields['quantity'].label = _('Quantity') + ' ml'
+        self.fields['quantity'].label = _('Quantity')
+        self.fields['drink_type'].label = _('Drink type')
+
+        type = _("if the type of drink is")
+        h1 = f'<b>ml</b> - {type} {_("Beer")} / {_("Wine")} / {_("Vodka")}'
+        h2 = f'<b>{_("pcs")}</b> - {type} Std Av'
+        help_text = f'{h1}</br>{h2}'
+        self.fields['quantity'].help_text = help_text
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

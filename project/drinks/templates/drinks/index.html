@@ -28,7 +28,16 @@
         <a href="{% url 'drinks:drinks_history' %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
     </div>
 
-    <div class="col text-center" id="info_row"></div>
+    <div class="col text-center" id="info_row">
+        <div class="dropdown">
+            <a class="btn btn-sm btn-outline-primary dropdown-toggle ps-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" id="dropdownDrinkType">{{ current_drink_type }}</a>
+            <ul class="dropdown-menu" aria-labelledby="dropdownDrinkType">
+                {% for type in select_drink_type %}
+                    <li><a class="dropdown-item btn-sm" href="{% url 'drinks:set_drink_type' type.1 %}">{{ type.0 }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 
     <div class="col text-end">
         {% url 'drinks:drinks_new' as url_drinks %}
