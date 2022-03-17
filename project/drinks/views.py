@@ -194,7 +194,7 @@ class TargetUpdate(UpdateAjaxMixin):
         obj = super().get_object()
 
         if obj:
-            if obj.drink_type ==  'stdav':
+            if obj.drink_type == 'stdav':
                 return obj
 
             obj.quantity = (
