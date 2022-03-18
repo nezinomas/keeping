@@ -52,17 +52,20 @@ def std_av(year: int, qty: float) -> List[Dict]:
 
     arr = [
         {
-            'title': 'Std Av',
-            **{k: v * obj.stdav for k, v in a.items()}
-        }, {
             'title': _('Beer') + ', 0.5L',
             **{k: obj.convert(v, 'beer') for k, v in a.items()}
-        }, {
+        },
+        {
             'title': _('Wine') + ', 0.75L',
             **{k: obj.convert(v, 'wine') for k, v in a.items()}
-        }, {
+        },
+        {
             'title': _('Vodka') + ', 1L',
             **{k: obj.convert(v, 'vodka') for k, v in a.items()}
+        },
+        {
+            'title': 'Std Av',
+            **{k: v * obj.stdav for k, v in a.items()}
         },
     ]
 
