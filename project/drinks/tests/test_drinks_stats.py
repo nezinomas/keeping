@@ -104,12 +104,6 @@ def test_std_av():
 
     expect = [
         {
-            'title': 'Std Av',
-            'total': 683.75,
-            'per_day': 2.42,
-            'per_week': 16.68,
-            'per_month': 68.38
-        }, {
             'title': 'Alus, 0.5L',
             'total': 273.5,
             'per_day': 0.97,
@@ -127,7 +121,13 @@ def test_std_av():
             'per_day': 0.06,
             'per_week': 0.42,
             'per_month': 1.71
-        },
+        }, {
+            'title': 'Std Av',
+            'total': 683.75,
+            'per_day': 2.42,
+            'per_week': 16.68,
+            'per_month': 68.38
+        }
     ]
 
     assert len(actual) == 4
@@ -146,12 +146,6 @@ def test_std_av_past_recods():
 
     expect = [
         {
-            'title': 'Std Av',
-            'total': 683.75,
-            'per_day': 1.87,
-            'per_week': 13.15,
-            'per_month': 56.98
-        }, {
             'title': 'Alus, 0.5L',
             'total': 273.5,
             'per_day': 0.75,
@@ -169,7 +163,13 @@ def test_std_av_past_recods():
             'per_day': 0.05,
             'per_week': 0.33,
             'per_month': 1.42
-        },
+        }, {
+            'title': 'Std Av',
+            'total': 683.75,
+            'per_day': 1.87,
+            'per_week': 13.15,
+            'per_month': 56.98
+        }
     ]
 
     assert len(actual) == 4
