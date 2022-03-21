@@ -208,11 +208,11 @@ tr.top-text, tr.top-text th {
 }
 
 .stats .br {
-    border-right: 3px solid #0359b0!important;
+    border-right: .15rem solid #0359b0!important;
 }
 
 .stats .bl {
-    border-left: 3px solid #0359b0!important;
+    border-left: .15rem solid #0359b0!important;
 }
 
 .dash {
