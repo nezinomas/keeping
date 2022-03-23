@@ -311,7 +311,8 @@ class SignalBase():
         # update balance table fields
         fields = balance_tbl_field_name.split('.')
         for field in fields:
-            val = field if field == 'fee' else 'price'
+            _field_name = 'price' if field != 'fee' else 'fee'
+
             try:
                 # [have,market_value] fields have no start value
                 if field in ['have', 'market_value']:
@@ -319,7 +320,7 @@ class SignalBase():
                 else:
                     _start = _df.at[0, field]
 
-                _df.at[0, field] = _start + self._calc_field(caller, field=val)
+                _df.at[0, field] = _start + self._calc_field(caller, field=_field_name)
             except KeyError:
                 pass
 
