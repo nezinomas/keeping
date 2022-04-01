@@ -40,6 +40,7 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
 
     # @timer
     def get(self, request, *args, **kwargs):
+        _type = request.GET.get('type')
         _kwargs = {
             'sender': None,
             'instance': None,
@@ -47,7 +48,6 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
             'signal': 'any',
             'update_on_load': False,
         }
-        _type = request.GET.get('type')
 
         if _type:
             arr = [_type]
