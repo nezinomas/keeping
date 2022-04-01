@@ -49,23 +49,14 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
         }
         _type = request.GET.get('type')
 
-        if not _type:
-            arr = [
-                SignalBase.accounts(**_kwargs),
-                SignalBase.savings(**_kwargs),
-                SignalBase.pensions(**_kwargs),
-            ]
+        if _type:
+            arr = [_type]
         else:
-            if _type == 'accounts':
-                arr = [SignalBase.accounts(**_kwargs)]
-
-            if _type == 'savings':
-                arr = [SignalBase.savings(**_kwargs)]
-
-            if _type == 'pensions':
-                arr = [SignalBase.pensions(**_kwargs)]
+            arr = ['accounts', 'savings', 'pensions']
 
         for x in arr:
-            x.full_balance_update()
+            _class_method = getattr(SignalBase, x)
+            _obj = _class_method(**_kwargs)
+            _obj.full_balance_update()
 
         return JsonResponse({'redirect': self.redirect_view})
