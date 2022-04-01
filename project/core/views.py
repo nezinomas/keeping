@@ -49,10 +49,10 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
             'update_on_load': False,
         }
 
+        arr = ['accounts', 'savings', 'pensions']
+
         if _type:
             arr = [_type]
-        else:
-            arr = ['accounts', 'savings', 'pensions']
 
         for x in arr:
             _class_method = getattr(SignalBase, x)
