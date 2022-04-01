@@ -3,7 +3,6 @@ from datetime import date
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
-from mock import patch
 
 from ...accounts.factories import AccountBalance
 from ...expenses.factories import ExpenseFactory
