@@ -40,7 +40,7 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
 
     # @timer
     def get(self, request, *args, **kwargs):
-        kwargs = {
+        _kwargs = {
             'sender': None,
             'instance': None,
             'created': False,
@@ -51,19 +51,19 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
 
         if not _type:
             arr = [
-                SignalBase.accounts(**kwargs),
-                SignalBase.savings(**kwargs),
-                SignalBase.pensions(**kwargs),
+                SignalBase.accounts(**_kwargs),
+                SignalBase.savings(**_kwargs),
+                SignalBase.pensions(**_kwargs),
             ]
         else:
             if _type == 'accounts':
-                arr = [SignalBase.accounts(**kwargs)]
+                arr = [SignalBase.accounts(**_kwargs)]
 
             if _type == 'savings':
-                arr = [SignalBase.savings(**kwargs)]
+                arr = [SignalBase.savings(**_kwargs)]
 
             if _type == 'pensions':
-                arr = [SignalBase.pensions(**kwargs)]
+                arr = [SignalBase.pensions(**_kwargs)]
 
         for x in arr:
             x.full_balance_update()
