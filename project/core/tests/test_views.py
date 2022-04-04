@@ -174,3 +174,10 @@ def test_view_regenerate_pension_balances(mocker, rf):
     assert account.call_count == 0
     assert saving.call_count == 0
     assert pension.call_count == 1
+
+
+def test_view_regenerate_no_errors(client_logged):
+    url = reverse('core:regenerate_balances')
+    response = client_logged.get(f'{url}?type=xxx&ajax_trigger=1', {}, **X_Req)
+
+    assert response.status_code == 200

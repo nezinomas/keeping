@@ -37,9 +37,11 @@ def set_month(request, month):
 
 class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
     redirect_view = reverse_lazy('bookkeeping:index')
+    types = ['accounts', 'savings', 'pensions']
 
     # @timer
     def get(self, request, *args, **kwargs):
+        _arr = []
         _type = request.GET.get('type')
         _kwargs = {
             'sender': None,
@@ -49,12 +51,12 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
             'update_on_load': False,
         }
 
-        arr = ['accounts', 'savings', 'pensions']
+        if _type and _type in self.types:
+            _arr = [_type]
+        else:
+            _arr = self.types
 
-        if _type:
-            arr = [_type]
-
-        for x in arr:
+        for x in _arr:
             _class_method = getattr(SignalBase, x)
             _obj = _class_method(**_kwargs)
             _obj.full_balance_update()
