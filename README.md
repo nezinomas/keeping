@@ -56,3 +56,8 @@ mkdir media; chmod -R 755 media
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media/')
 MEDIA_URL = "/media/"
 ```
+
+10. Run tests:
+```
+pytest -n auto -k "not webtest"
+```
