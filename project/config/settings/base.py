@@ -134,6 +134,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_htmx.middleware.HtmxMiddleware',
     'crequest.middleware.CrequestMiddleware',
 ]
 
@@ -155,6 +156,7 @@ INSTALLED_APPS = [
     'crequest',
     'slippers',
     'django_filters',
+    'django_htmx',
 ]
 
 for app in PROJECT_APPS:
