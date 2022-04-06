@@ -154,6 +154,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'crequest',
     'slippers',
+    'django_filters',
 ]
 
 for app in PROJECT_APPS:
