@@ -1,73 +1,33 @@
+import json
+
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
+from django.views.generic import (CreateView, DeleteView, ListView,
+                                  TemplateView, UpdateView)
 
 from ..core.forms import SearchForm
 from ..core.lib import search
 from ..core.mixins.ajax import AjaxSearchMixin
+from ..core.mixins.get import GetQuerysetMixin
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                  DispatchAjaxMixin, DispatchListsMixin,
                                  IndexMixin, ListMixin, UpdateAjaxMixin)
 from . import forms, models
-from .lib.views_helper import BookRenderer
 
 
-#----------------------------------------------------------------------------------------
-#                                                                            Local Mixins
-#----------------------------------------------------------------------------------------
-def context_update(request, tab):
-    context = {
-        'tab': tab,
-        'book_list': Lists.as_view()(request, as_string=True, tab=tab)
-    }
-    return context
+class Index(LoginRequiredMixin, TemplateView):
+    template_name = 'books/index.html'
 
-
-class BookTabMixin():
-    def get_tab(self):
-        tab = self.request.GET.get("tab")
-
-        if not tab:
-            tab = self.kwargs.get('tab')
-
-        tab = tab if tab in ['index', 'all'] else 'index'
-
-        return tab
-
-    def get_queryset(self):
-        tab = self.get_tab()
-
-        if tab == 'all':
-            items = models.Book.objects.items()
-        else:
-            items = super().get_queryset()
-
-        return items
-
-
-class BookListMixin():
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update(**context_update(self.request, self.get_tab()))
-
-        return context
-
-
-#----------------------------------------------------------------------------------------
-#                                                                                   Views
-#----------------------------------------------------------------------------------------
-class Index(IndexMixin):
-    def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        obj = BookRenderer(self.request, year)
         context = super().get_context_data(**kwargs)
         context.update({
-            'year': year,
-            'search': Search.as_view()(self.request, as_string=True),
-            **obj.context_to_reload(),
-            **context_update(self.request, 'index'),
+            'year': self.request.user.year,
+            'all': self.request.GET.get('tab'),
         })
         return context
 
@@ -135,26 +95,25 @@ class InfoRow(LoginRequiredMixin, TemplateView):
         return context
 
 
-class Lists(DispatchListsMixin, BookTabMixin, ListMixin):
+class Lists(LoginRequiredMixin, GetQuerysetMixin, ListView):
     model = models.Book
+    template_name = 'books/includes/books_list.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({'tab': self.kwargs.get('tab')})
-        return context
-
-
-class New(BookListMixin, BookTabMixin, CreateAjaxMixin):
-    model = models.Book
-    form_class = forms.BookForm
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
-class Update(BookListMixin, BookTabMixin, UpdateAjaxMixin):
+class New(CreateAjaxMixin):
     model = models.Book
     form_class = forms.BookForm
 
 
-class Delete(BookListMixin, BookTabMixin, DeleteAjaxMixin):
+class Update(UpdateAjaxMixin):
+    model = models.Book
+    form_class = forms.BookForm
+
+
+class Delete(DeleteAjaxMixin):
     model = models.Book
 
 
@@ -176,7 +135,7 @@ class Search(AjaxSearchMixin):
 
     def form_valid(self, form, **kwargs):
         search_str = self.form_data_dict['search']
-        context = { 'tab': 'index' }
+        context = {'tab': 'index'}
         sql = search.search_books(search_str)
         paginator = Paginator(sql, self.per_page)
         page_range = paginator.get_elided_page_range(number=1)
@@ -194,7 +153,6 @@ class Search(AjaxSearchMixin):
                 'items': None,
                 'notice': _('Found nothing'),
             })
-
 
         html = render_to_string(self.list_template, context, self.request)
 
@@ -221,7 +179,8 @@ class Search(AjaxSearchMixin):
             }
 
             return JsonResponse(
-                {self.update_container: render_to_string(self.list_template, context, self.request)}
+                {self.update_container: render_to_string(
+                    self.list_template, context, self.request)}
             )
 
         return super().get(request, *args, **kwargs)
