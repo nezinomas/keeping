@@ -18,11 +18,6 @@ urlpatterns = [
         name='books_list'
     ),
     path(
-        'books/all/',
-        views.All.as_view(),
-        name='books_all'
-    ),
-    path(
         'books/new/',
         views.New.as_view(),
         name='books_new'
@@ -51,11 +46,6 @@ urlpatterns = [
         'books/target/update/<int:pk>/',
         views.TargetUpdate.as_view(),
         name='books_target_update'
-    ),
-    path(
-        'books/reload_stats/',
-        views.ReloadStats.as_view(),
-        name='reload_stats'
     ),
     path(
         'books/search/',

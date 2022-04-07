@@ -72,13 +72,6 @@ class Index(IndexMixin):
         return context
 
 
-class All(IndexMixin):
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update(**context_update(self.request, 'all'))
-        return context
-
-
 class Lists(DispatchListsMixin, BookTabMixin, ListMixin):
     model = models.Book
 
@@ -100,21 +93,6 @@ class Update(BookListMixin, BookTabMixin, UpdateAjaxMixin):
 
 class Delete(BookListMixin, BookTabMixin, DeleteAjaxMixin):
     model = models.Book
-
-
-class ReloadStats(DispatchAjaxMixin, BookTabMixin, IndexMixin):
-    template_name = 'books/index.html'
-    redirect_view = reverse_lazy('books:books_index')
-
-    def get(self, request, *args, **kwargs):
-        tab = self.get_tab()
-        context = context_update(self.request, tab)
-
-        if tab == 'index':
-            obj = BookRenderer(request)
-            context.update(**obj.context_to_reload())
-
-        return JsonResponse(context)
 
 
 class Search(AjaxSearchMixin):
