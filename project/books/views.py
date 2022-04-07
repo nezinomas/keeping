@@ -72,6 +72,69 @@ class Index(IndexMixin):
         return context
 
 
+class ChartReaded(LoginRequiredMixin, TemplateView):
+    template_name = 'books/includes/chart_readed_books.html'
+
+    def get_context_data(self, **kwargs):
+        _qs_readed = models.Book.objects.readed()
+
+        if not _qs_readed.count():
+            self.template_name = 'books/includes/chart_readed_books_empty.html'
+            return {}
+
+        _qs_targets = models.BookTarget.objects.items().values_list('year', 'quantity')
+
+        _targets = {k: v for k, v in _qs_targets}
+
+        categories = []
+        data = []
+
+        for readed in _qs_readed:
+            _year = readed['year']
+
+            categories.append(_year)
+
+            _data = {
+                'y': readed['cnt'],
+                'target': _targets.get(_year, 0),
+            }
+            data.append(_data)
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'readed': _qs_readed.count(),
+            'categories': categories,
+            'data': data,
+            'targets': [*_targets.values()],
+            'chart': 'chart_readed_books',
+            'chart_title': _('Readed books'),
+            'chart_column_color': '70, 171, 157',
+        })
+
+        return context
+
+
+class InfoRow(LoginRequiredMixin, TemplateView):
+    template_name = 'books/includes/info_row.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        year = self.request.user.year
+
+        readed = models.Book.objects.readed().filter(year=year)[0]['cnt']
+        reading = models.Book.objects.reading(year)['reading']
+        target = models.BookTarget.objects.items().filter(year=year)[0]
+
+        context.update({
+            'readed': readed if readed else 0,
+            'reading': reading if reading else 0,
+            'target': target if target else None,
+        })
+
+        return context
+
+
 class Lists(DispatchListsMixin, BookTabMixin, ListMixin):
     model = models.Book
 

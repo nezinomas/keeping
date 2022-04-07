@@ -13,6 +13,16 @@ urlpatterns = [
         name='books_index'
     ),
     path(
+        'books/info_row/',
+        views.InfoRow.as_view(),
+        name='books_info_row'
+    ),
+    path(
+        'books/chart_readed/',
+        views.ChartReaded.as_view(),
+        name='books_chart_readed'
+    ),
+    path(
         'books/lists/',
         views.Lists.as_view(),
         name='books_list'
