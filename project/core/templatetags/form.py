@@ -5,12 +5,11 @@ register = template.Library()
 
 
 @register.inclusion_tag('core/includes/generic_form.html', takes_context=True)
-def generic_form(context, title, update_container, chained_dropdown=None):
+def generic_form(context, title, chained_dropdown=None):
     form_action = context.get('form_action', 'insert')
 
     return {
         'title': title,
-        'update_container': update_container,
         'form': context['form'],
         'submit_button': _(form_action.title()),
         'form_action': form_action,
@@ -20,12 +19,11 @@ def generic_form(context, title, update_container, chained_dropdown=None):
 
 
 @register.inclusion_tag('core/includes/generic_delete_form.html', takes_context=True)
-def generic_delete_form(context, title, update_container):
+def generic_delete_form(context, title):
     form_action = context.get('form_action', 'insert')
 
     return {
         'title': title,
-        'update_container': update_container,
         'submit_button': _(form_action.title()),
         'form_action': form_action,
         'url': context['url'] if 'url' in context else '',
