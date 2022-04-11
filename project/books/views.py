@@ -16,7 +16,7 @@ from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.get import GetQuerysetMixin
 from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
                                  DispatchAjaxMixin, DispatchListsMixin,
-                                 IndexMixin, ListMixin, UpdateAjaxMixin)
+                                 IndexMixin, ListMixin, UpdateAjaxMixin, CreateUpdateMixin, DeleteMixin)
 from . import forms, models
 
 
@@ -103,79 +103,30 @@ class Lists(LoginRequiredMixin, GetQuerysetMixin, ListView):
         return super().get(request, *args, **kwargs)
 
 
-class New(LoginRequiredMixin, CreateView):
+class New(LoginRequiredMixin, CreateUpdateMixin, CreateView):
     template_name = 'books/includes/books_form.html'
     model = models.Book
     form_class = forms.BookForm
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'form_action': 'insert',
-            'url': reverse_lazy('books:books_new'),
-        })
-
-        return context
-
-    def form_valid(self, form):
-        super().form_valid(form)
-
-        return HttpResponse(
-            status=204,
-            headers={
-                'HX-Trigger': json.dumps({"reloadTrigger": None}),
-            },
-        )
+    url = reverse_lazy('books:books_new')
+    form_action = 'insert'
 
 
-class Update(LoginRequiredMixin, UpdateView):
+class Update(LoginRequiredMixin, CreateUpdateMixin, UpdateView):
     template_name = 'books/includes/books_form.html'
     model = models.Book
     form_class = forms.BookForm
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'form_action': 'update',
-            'url': reverse_lazy('books:books_update', kwargs={"pk": self.object.pk}),
-        })
-
-        return context
-
-    def form_valid(self, form):
-        super().form_valid(form)
-
-        return HttpResponse(
-            status=204,
-            headers={
-                'HX-Trigger': json.dumps({"reloadTrigger": None}),
-            },
-        )
+    url = lambda self: self.object.get_absolute_url()
+    form_action = 'update'
 
 
-class Delete(LoginRequiredMixin, DeleteView):
+class Delete(LoginRequiredMixin, DeleteMixin, DeleteView):
     model = models.Book
     template_name = 'books/includes/books_delete.html'
     success_url = reverse_lazy('books:books_list')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'form_action': 'update',
-            'url': reverse_lazy('books:books_delete', kwargs={"pk": self.object.pk}),
-        })
-
-        return context
-
-    def post(self, *args, **kwargs):
-        super().post(*args, **kwargs)
-
-        return HttpResponse(
-            status=204,
-            headers={
-                'HX-Trigger': json.dumps({"reloadTrigger": None}),
-            },
-        )
+    url = lambda self: reverse_lazy('books:books_delete', kwargs={"pk": self.object.pk})
 
 
 class Search(AjaxSearchMixin):
