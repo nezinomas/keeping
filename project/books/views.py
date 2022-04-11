@@ -111,10 +111,11 @@ class New(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['submit_button'] = _('Insert')
-        context['form_action'] = 'insert'
 
-        context['url'] = reverse_lazy('books:books_new')
+        context.update({
+            'form_action': 'insert',
+            'url': reverse_lazy('books:books_new'),
+        })
 
         return context
 
@@ -123,7 +124,9 @@ class New(LoginRequiredMixin, CreateView):
 
         return HttpResponse(
             status=204,
-            headers={'HX-Trigger': json.dumps({"reloadTrigger": None})},
+            headers={
+                'HX-Trigger': json.dumps({"reloadTrigger": None}),
+            },
         )
 
 
