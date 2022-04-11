@@ -1,7 +1,10 @@
+import json
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.shortcuts import redirect, reverse
 from django.template.loader import render_to_string
+from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import (CreateView, DeleteView, ListView,
                                   TemplateView, UpdateView)
@@ -10,6 +13,47 @@ from ...core.lib import utils
 from . import helpers as H
 from .ajax import AjaxCreateUpdateMixin, AjaxDeleteMixin
 from .get import GetQuerysetMixin
+
+
+class CreateUpdateMixin():
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'form_action': self.form_action,
+            'url': self.url,
+        })
+
+        return context
+
+    def form_valid(self, form):
+        super().form_valid(form)
+
+        return HttpResponse(
+            status=204,
+            headers={
+                'HX-Trigger': json.dumps({"reloadTrigger": None}),
+            },
+        )
+
+
+class DeleteMixin():
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'url': self.url,
+        })
+
+        return context
+
+    def post(self, *args, **kwargs):
+        super().post(*args, **kwargs)
+
+        return HttpResponse(
+            status=204,
+            headers={
+                'HX-Trigger': json.dumps({"reloadTrigger": None}),
+            },
+        )
 
 
 class IndexMixin(LoginRequiredMixin, TemplateView):
