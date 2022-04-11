@@ -103,12 +103,33 @@ class Lists(LoginRequiredMixin, GetQuerysetMixin, ListView):
         return super().get(request, *args, **kwargs)
 
 
-class New(CreateAjaxMixin):
+class New(LoginRequiredMixin, CreateView):
+    template_name = 'books/includes/books_form.html'
+    get_success_url = lambda self: reverse_lazy('books:books_index')
     model = models.Book
     form_class = forms.BookForm
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['submit_button'] = _('Insert')
+        context['form_action'] = 'insert'
+
+        context['url'] = reverse_lazy('books:books_new')
+
+        return context
+
+    def form_valid(self, form):
+        super().form_valid(form)
+
+        return HttpResponse(
+            status=204,
+            headers={'HX-Trigger': json.dumps({"reloadTrigger": None})},
+        )
+
 
 class Update(UpdateAjaxMixin):
+    template_name = 'books/includes/books_form.html'
+
     model = models.Book
     form_class = forms.BookForm
 

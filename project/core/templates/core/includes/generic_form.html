@@ -1,36 +1,36 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
-<form method="POST" enctype="multipart/form-data" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ form_action }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}" {% if chained_dropdown %}data-chained-dropdown="{{ chained_dropdown }}"{% endif %}>
-    {% csrf_token %}
-    {% include 'core/includes/form_date_scripts.html' %}
-    <div class="modal-header">
-        <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
-    </div>
-    <div class="modal-body">
-        {% include 'core/includes/form_errors.html' %}
-
-        {% for field in form %}
-        {% if not field.is_hidden %}
-        <div class="row">
-            <div class="col-4">{{ field.label_tag }}</div>
-            <div class="col-8">
-            {% if field.html_name == 'total_sum' %}
-            <div class="row gx-2">
-                <div class="col">{{ field|as_crispy_field }}</div>
-                <div class="col-2" id="div_sum_prices"><button type="button" id="add_price" class="btn btn-sm btn-secondary" style="width: 100%;">{% translate 'Add' %}</button></div>
-            </div>
-            {% else %}
-            {{ field|as_crispy_field }}
-            {% endif %}</div>
+<div class="modal-content">
+    <form method="POST" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-encoding="multipart/form-data" id="js_form" class="js_form" novalidate autocomplete="off" tabindex="-1" {% if chained_dropdown %}data-chained-dropdown="{{ chained_dropdown }}"{% endif %}>
+        {% csrf_token %}
+        {% include 'core/includes/form_date_scripts.html' %}
+        <div class="modal-header">
+            <h5 class="modal-title">{{ title }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
         </div>
-        {% endif %}
-        {% endfor %}
-    </div>
+        <div class="modal-body">
+            {% include 'core/includes/form_errors.html' %}
 
-    {% include 'core/includes/form_footer.html' %}
-</form>
+            {% for field in form %}
+            {% if not field.is_hidden %}
+            <div class="row">
+                <div class="col-4">{{ field.label_tag }}</div>
+                <div class="col-8">
+                {% if field.html_name == 'total_sum' %}
+                <div class="row gx-2">
+                    <div class="col">{{ field|as_crispy_field }}</div>
+                    <div class="col-2" id="div_sum_prices"><button type="button" id="add_price" class="btn btn-sm btn-secondary" style="width: 100%;">{% translate 'Add' %}</button></div>
+                </div>
+                {% else %}
+                {{ field|as_crispy_field }}
+                {% endif %}</div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
 
+        {% include 'core/includes/form_footer.html' %}
+    </form>
+</div>
 {% include 'core/includes/modal_form_js.html' %}
-
