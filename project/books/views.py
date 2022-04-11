@@ -128,15 +128,54 @@ class New(LoginRequiredMixin, CreateView):
         )
 
 
-class Update(UpdateAjaxMixin):
+class Update(LoginRequiredMixin, UpdateView):
     template_name = 'books/includes/books_form.html'
-
     model = models.Book
     form_class = forms.BookForm
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'form_action': 'update',
+            'url': reverse_lazy('books:books_update', kwargs={"pk": self.object.pk}),
+        })
 
-class Delete(DeleteAjaxMixin):
+        return context
+
+    def form_valid(self, form):
+        super().form_valid(form)
+
+        return HttpResponse(
+            status=204,
+            headers={
+                'HX-Trigger': json.dumps({"reloadTrigger": None}),
+            },
+        )
+
+
+class Delete(LoginRequiredMixin, DeleteView):
     model = models.Book
+    template_name = 'books/includes/books_delete.html'
+    success_url = reverse_lazy('books:books_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'form_action': 'update',
+            'url': reverse_lazy('books:books_delete', kwargs={"pk": self.object.pk}),
+        })
+
+        return context
+
+    def post(self, *args, **kwargs):
+        super().post(*args, **kwargs)
+
+        return HttpResponse(
+            status=204,
+            headers={
+                'HX-Trigger': json.dumps({"reloadTrigger": None}),
+            },
+        )
 
 
 class Search(AjaxSearchMixin):
