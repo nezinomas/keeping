@@ -1,6 +1,7 @@
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
                                     MinValueValidator)
 from django.db import models
+from django.urls import reverse_lazy
 
 from ..users.models import User
 from .managers import BooksQuerySet, BookTargetQuerySet
@@ -38,6 +39,9 @@ class Book(models.Model):
 
     def __str__(self):
         return str(self.title)
+
+    def get_absolute_url(self):
+        return reverse_lazy("books:books_update", kwargs={"pk": self.pk})
 
 
 class BookTarget(models.Model):

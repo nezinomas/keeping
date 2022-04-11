@@ -105,13 +105,11 @@ class Lists(LoginRequiredMixin, GetQuerysetMixin, ListView):
 
 class New(LoginRequiredMixin, CreateView):
     template_name = 'books/includes/books_form.html'
-    get_success_url = lambda self: reverse_lazy('books:books_index')
     model = models.Book
     form_class = forms.BookForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         context.update({
             'form_action': 'insert',
             'url': reverse_lazy('books:books_new'),
