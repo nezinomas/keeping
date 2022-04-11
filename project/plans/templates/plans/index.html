@@ -105,7 +105,7 @@
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
         var url = `{% url 'plans:reload_plan_stats' %}`;
-        var update_id = $("#js-form").attr("data-chained-dropdown");
+        var update_id = $("#js_form").attr("data-chained-dropdown");
 
         $.ajax({
             url: url,

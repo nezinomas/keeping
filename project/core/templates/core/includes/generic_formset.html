@@ -2,7 +2,7 @@
 {% load i18n %}
 
 
-<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ form_action }}"
+<form method="post" novalidate id="js_form" class="js_form" action="{{ url }}" data-action="{{ form_action }}"
     autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}">
     {% csrf_token %}
     {% include 'core/includes/form_date_scripts.html' %}
@@ -44,7 +44,7 @@
         }
     });
 
-    $(document).on('submit', '.js-form', function (e) {
+    $(document).on('submit', '.js_form', function (e) {
         e.preventDefault();
     });
 </script>

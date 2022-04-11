@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<form method="post" novalidate id="js-form" class="js-form" action="{% url 'users:invite' %}">
+<form method="post" novalidate id="js_form" class="js_form" action="{% url 'users:invite' %}">
     {% csrf_token %}
     <div class="modal-header">
         <h5 class="modal-title">{% translate 'Invitation' %}</h5>

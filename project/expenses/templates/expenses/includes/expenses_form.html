@@ -52,7 +52,7 @@
 
     // expense type dropdown event
     $("#id_expense_type").change(function () {
-        var url = $("#js-form").attr("data-chained-dropdown");
+        var url = $("#js_form").attr("data-chained-dropdown");
         var expense_typeId = $(this).val();
 
         $.ajax({

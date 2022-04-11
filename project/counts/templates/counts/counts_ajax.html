@@ -1,7 +1,7 @@
 <script>
     $(document).on('hidden.bs.modal', '#modal-form', function () {
         var url = `{% url 'counts:reload_stats' count_type_object.slug %}`;
-        var form = document.getElementById('js-form');
+        var form = document.getElementById('js_form');
         var action = form.action;
 
         if (action.includes('type')) {

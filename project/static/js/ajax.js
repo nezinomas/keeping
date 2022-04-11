@@ -15,11 +15,11 @@ $(function () {
             success: function (data) {
                 $("#modal-form .modal-content").html(data.html_form);
 
-                var form = $('.js-form');
+                var form = $('.js_form');
                 var action = form.attr("data-action");
 
                 // load url from list table to form
-                $("#js-form").attr('action', url);
+                $("#js_form").attr('action', url);
 
                 if (action == 'update') {
                     var price = document.getElementById("id_price");
@@ -34,13 +34,13 @@ $(function () {
     };
 
     var saveForm = function (event) {
-        var form = $('.js-form');
+        var form = $('.js_form');
         var action = form.attr("data-action");
         var ajax_update_container = form.attr('data-update-container')
 
         $.ajax({
             url: form.attr("action"),
-            data: new FormData($('.js-form')[0]), // The form with the file inputs.
+            data: new FormData($('.js_form')[0]), // The form with the file inputs.
             processData: false,
             contentType: false,
             type: form.attr("method"),
