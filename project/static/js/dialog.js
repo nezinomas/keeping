@@ -4,10 +4,6 @@ $(document).keydown(function (event) {
     }
 });
 
-// eh?
-// $(document).on('submit', '.js_form', function (e) {
-//     e.preventDefault();
-// });
 
 // replace dot in year field
 $(document).ready(function () {
@@ -26,9 +22,13 @@ $(document).ready(function () {
     }
 });
 
+// eh?
+$(document).on('submit', '.js_form', function (e) {
+    e.preventDefault();
+});
+
 
 // HTMX related functions
-const modal = new bootstrap.Modal(document.getElementById("modal"))
 
 htmx.on("htmx:afterSwap", (e) => {
     // Response targeting #dialog => show the modal
@@ -37,33 +37,20 @@ htmx.on("htmx:afterSwap", (e) => {
     }
 })
 
-function save_new() {
-    htmx.on("htmx:beforeSwap", (e) => {
-        // Empty response targeting #dialog => hide the modal
-        if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
+
+htmx.on("htmx:beforeSwap", (e) => {
+    if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
+        var subbmiter = e.detail.requestConfig.triggeringEvent.submitter.id
+
+        if(subbmiter == '_new') {
             $('#modal form')[0].reset();
-            e.detail.shouldSwap = false;
         }
-    })
-}
 
-function update() {
-    htmx.on("htmx:beforeSwap", (e) => {
-        // Empty response targeting #dialog => hide the modal
-        if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
-            e.detail.shouldSwap = false;
-        }
-    })
-}
-
-function save_and_close() {
-    htmx.on("htmx:beforeSwap", (e) => {
-        // Empty response targeting #dialog => hide the modal
-        if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
-            modal.hide();
-
+        if(subbmiter == '_close') {
+            $('#modal').modal('hide');
             $('#modal form')[0].reset();
-            e.detail.shouldSwap = false;
         }
-    })
-}
+
+        e.detail.shouldSwap = false;
+    }
+})
