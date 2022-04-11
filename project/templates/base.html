@@ -10,11 +10,8 @@
     <script src="{% static 'js/jquery-ui-1.11.3.min.js' %}"></script>
     <script src="https://unpkg.com/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" ntegrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-    <script src="{% static 'js/htmx.min.js' %}"></script>
 
     {% include 'core/includes/form_date_scripts.html' %}
-
-    {% comment %} <script src="{% static 'js/ajax.js' %}"></script> {% endcomment %}
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
@@ -225,10 +222,16 @@
         </div>
       </nav>
 
-      {% include 'modal.html' %}
       {% block content %}{% endblock content %}
     </div>
     {% endblock body %}
+
+    <div id="modal" class="modal fade">
+      <div id="dialog" class="modal-dialog modal-650" hx-target="this"></div>
+    </div>
+
     <script src="{% static 'js/tooltip.js' %}"></script>
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    <script src="{% static 'js/dialog.js' %}"></script>
   </body>
 </html>
