@@ -47,16 +47,23 @@ class ChartReaded(LoginRequiredMixin, TemplateView):
         _targets = {k: v for k, v in _qs_targets}
 
         categories = []
+        targets = []
         data = []
 
         for readed in _qs_readed:
             _year = readed['year']
 
+            # chart categories
             categories.append(_year)
 
+            # chart targets
+            _target = _targets.get(_year, 0)
+            targets.append(_target)
+
+            # chart serries data
             _data = {
                 'y': readed['cnt'],
-                'target': _targets.get(_year, 0),
+                'target': _target,
             }
             data.append(_data)
 
@@ -65,7 +72,7 @@ class ChartReaded(LoginRequiredMixin, TemplateView):
             'readed': _qs_readed.count(),
             'categories': categories,
             'data': data,
-            'targets': [*_targets.values()],
+            'targets': targets,
             'chart': 'chart_readed_books',
             'chart_title': _('Readed books'),
             'chart_column_color': '70, 171, 157',
