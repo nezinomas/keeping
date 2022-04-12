@@ -43,11 +43,6 @@ urlpatterns = [
         name='books_delete'
     ),
     path(
-        'books/target/lists/',
-        views.TargetLists.as_view(),
-        name='books_target_lists'
-    ),
-    path(
         'books/target/new/',
         views.TargetNew.as_view(),
         name='books_target_new'

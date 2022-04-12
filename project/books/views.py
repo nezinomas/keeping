@@ -208,10 +208,6 @@ class Search(AjaxSearchMixin):
 #----------------------------------------------------------------------------------------
 #                                                                            Target Views
 #----------------------------------------------------------------------------------------
-class TargetLists(DispatchListsMixin, ListMixin):
-    model = models.BookTarget
-
-
 class TargetNew(CreateAjaxMixin):
     model = models.BookTarget
     form_class = forms.BookTargetForm
