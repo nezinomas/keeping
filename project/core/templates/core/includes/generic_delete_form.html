@@ -1,20 +1,18 @@
 {% load i18n %}
 
-<div class="modal-content">
-    <form method="POST" hx-post="{{ url }}" id="js_form" class="js_form" novalidate utocomplete="off" tabindex="-1" data-update-container="{{ update_container }}">
-        {% csrf_token %}
-        <div class="modal-header">
-            <h5 class="modal-title">{{ title }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
-        </div>
-        <div class="modal-body">
-            <p class="py-0 my-4">
-                {% translate 'Are you sure you want to delete' %}: <strong>{{ object }}</strong>?
-            </p>
-        </div>
-        <div class="modal-footer">
-            <button type="submit" id="_close" class="btn btn-sm btn-danger">{% translate 'Delete' %}</button>
-            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">{% translate 'Close' %}</button>
-        </div>
-    </form>
-</div>
+<form method="POST" hx-post="{{ url }}" id="js_form" class="js_form modal-content" novalidate utocomplete="off" tabindex="-1" data-update-container="{{ update_container }}">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h5 class="modal-title">{{ title }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
+    </div>
+    <div class="modal-body">
+        <p class="py-0 my-4">
+            {% translate 'Are you sure you want to delete' %}: <strong>{{ object }}</strong>?
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" id="_close" class="btn btn-sm btn-danger">{% translate 'Delete' %}</button>
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">{% translate 'Close' %}</button>
+    </div>
+</form>
