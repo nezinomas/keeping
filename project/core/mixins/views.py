@@ -18,6 +18,8 @@ from .get import GetQuerysetMixin
 
 
 class CreateUpdateMixin():
+    hx_trigger = 'reload'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
@@ -34,7 +36,7 @@ class CreateUpdateMixin():
             response.status_code = 204
             trigger_client_event(
                 response,
-                "reloadTrigger",
+                self.hx_trigger,
                 {},
             )
             return response
@@ -43,6 +45,8 @@ class CreateUpdateMixin():
 
 
 class DeleteMixin():
+    hx_trigger = 'reload'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
@@ -57,7 +61,7 @@ class DeleteMixin():
         return HttpResponse(
             status=204,
             headers={
-                'HX-Trigger': json.dumps({"reloadTrigger": None}),
+                'HX-Trigger': json.dumps({self.hx_trigger: None}),
             },
         )
 
