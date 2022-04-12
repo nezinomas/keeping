@@ -23,9 +23,9 @@ $(document).ready(function () {
 });
 
 // eh?
-$(document).on('submit', '.js_form', function (e) {
-    e.preventDefault();
-});
+// $(document).on('submit', '.js_form', function (e) {
+//     e.preventDefault();
+// });
 
 
 // HTMX related functions
@@ -40,7 +40,12 @@ htmx.on("htmx:afterSwap", (e) => {
 
 htmx.on("htmx:beforeSwap", (e) => {
     if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
+        // find submit button id
         var subbmiter = e.detail.requestConfig.triggeringEvent.submitter.id
+
+        // remove error messages
+        $('.invalid-feedback').remove();
+        $('.is-invalid').removeClass('is-invalid');
 
         if(subbmiter == '_new') {
             $('#modal form')[0].reset();
@@ -50,7 +55,6 @@ htmx.on("htmx:beforeSwap", (e) => {
             $('#modal').modal('hide');
             $('#modal form')[0].reset();
         }
-
         e.detail.shouldSwap = false;
     }
 })

@@ -2,12 +2,14 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
-from django.shortcuts import redirect, reverse
+from django.shortcuts import redirect, render, reverse
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import (CreateView, DeleteView, ListView,
                                   TemplateView, UpdateView)
+from django_htmx.http import trigger_client_event
+from requests import request
 
 from ...core.lib import utils
 from . import helpers as H
@@ -25,15 +27,19 @@ class CreateUpdateMixin():
 
         return context
 
-    def form_valid(self, form):
-        super().form_valid(form)
+    def form_valid(self, form, **kwargs):
+        response = super().form_valid(form)
 
-        return HttpResponse(
-            status=204,
-            headers={
-                'HX-Trigger': json.dumps({"reloadTrigger": None}),
-            },
-        )
+        if self.request.htmx:
+            response.status_code = 204
+            trigger_client_event(
+                response,
+                "reloadTrigger",
+                {},
+            )
+            return response
+
+        return response
 
 
 class DeleteMixin():
