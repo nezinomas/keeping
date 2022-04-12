@@ -208,11 +208,21 @@ class Search(AjaxSearchMixin):
 #----------------------------------------------------------------------------------------
 #                                                                            Target Views
 #----------------------------------------------------------------------------------------
-class TargetNew(CreateAjaxMixin):
+class TargetNew(LoginRequiredMixin, CreateUpdateMixin, CreateView):
+    template_name = 'books/includes/books_target_form.html'
     model = models.BookTarget
     form_class = forms.BookTargetForm
 
+    url = reverse_lazy('books:books_target_new')
+    form_action = 'insert'
+    hx_trigger = 'afterTarget'
 
-class TargetUpdate(UpdateAjaxMixin):
+
+class TargetUpdate(LoginRequiredMixin, CreateUpdateMixin, UpdateView):
+    template_name = 'books/includes/books_target_form.html'
     model = models.BookTarget
     form_class = forms.BookTargetForm
+
+    def url(self): return self.object.get_absolute_url()
+    form_action = 'update'
+    hx_trigger = 'afterTarget'

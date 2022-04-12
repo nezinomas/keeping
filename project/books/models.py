@@ -31,7 +31,6 @@ class Book(models.Model):
         related_name='books'
     )
 
-    # objects = BookManager()
     objects = BooksQuerySet.as_manager()
 
     class Meta:
@@ -57,9 +56,12 @@ class BookTarget(models.Model):
 
     objects = BookTargetQuerySet.as_manager()
 
-    def __str__(self):
-        return f'{self.year}: {self.quantity}'
-
     class Meta:
         ordering = ['-year']
         unique_together = ['year', 'user']
+
+    def __str__(self):
+        return f'{self.year}: {self.quantity}'
+
+    def get_absolute_url(self):
+        return reverse_lazy("books:books_target_update", kwargs={"pk": self.pk})
