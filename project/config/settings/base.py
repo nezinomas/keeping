@@ -157,6 +157,7 @@ INSTALLED_APPS = [
     'slippers',
     'django_filters',
     'django_htmx',
+    'widget_tweaks',
 ]
 
 for app in PROJECT_APPS:
