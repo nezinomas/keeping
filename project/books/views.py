@@ -1,8 +1,6 @@
-import json
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
@@ -14,9 +12,7 @@ from ..core.forms import SearchForm
 from ..core.lib import search
 from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.get import GetQuerysetMixin
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchAjaxMixin, DispatchListsMixin,
-                                 IndexMixin, ListMixin, UpdateAjaxMixin, CreateUpdateMixin, DeleteMixin)
+from ..core.mixins.views import CreateUpdateMixin, DeleteMixin
 from . import forms, models
 
 
