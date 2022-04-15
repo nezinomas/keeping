@@ -5,7 +5,7 @@
     <div class="accordion-item mb-2">
         <div class="accordion-header" id="heading_{{ item.id }}">
             <span class="expenses-edit-icon">
-                <button type="button" data-url="{{ url_type_update }}" class="btn btn-sm edit js-create" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></button>
+                <button type="button" data-url="{{ url_type_update }}" class="btn btn-sm edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></button>
             </span>
             <button class="accordion-button collapsed btn-sm rounded-top" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ item.id }}" aria-expanded="false" aria-controls="collapse_{{ item.id }}">
                 {{ item.title }}
@@ -22,7 +22,7 @@
                 <div class="list-group-item" data-url="{{ url_name_update }}">{{ sub.title }}
                     {% if sub.valid_for %}<span class="badge badge-secondary">{{ sub.valid_for|safe }}</span>{% endif %}
                     <span class="expenses-edit-icon">
-                        <button type="button" data-url="{{ url_name_update }}" class="btn btn-super-sm edit js-create"><i class="bi bi-pencil-fill"></i></button>
+                        <button type="button" data-url="{{ url_name_update }}" class="btn btn-super-sm edit"><i class="bi bi-pencil-fill"></i></button>
                     </span>
                 </div>
                 {% endfor %}

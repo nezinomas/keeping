@@ -65,7 +65,6 @@ def test_lend_return_list_edit_button(client_logged):
     link = reverse('debts:debts_return_update', kwargs={'pk': f.pk, 'debt_type': 'lend'})
 
     assert f'<a role="button" data-url="{ link }" data-target="lend"' in content
-    assert 'js-create set-target' in content
 
 
 def test_lend_return_list_delete_button(client_logged):
@@ -78,7 +77,6 @@ def test_lend_return_list_delete_button(client_logged):
     link = reverse('debts:debts_return_delete', kwargs={'pk': obj.pk, 'debt_type': 'lend'})
 
     assert f'<a role="button" data-url="{ link }" data-target="lend"' in content
-    assert 'js-create set-target' in content
 
 
 def test_lend_return_new_func():

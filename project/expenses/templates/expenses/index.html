@@ -43,7 +43,7 @@
                 <button id="13" type="button" data-url="{% url 'expenses:expenses_all' %}" class="btn btn-sm btn-month js-filter ms-2 {% if not current_month %}btn-info{% endif %}">{% translate 'All records' %}</button>
             </div>
             <div class="col-auto text-end">
-                <button type="button" id="insert_expense" class="btn btn-sm btn-outline-success js-create w5" data-url="{{ url_expense_new }}"><i class="bi bi-plus"></i>{% translate "Expenses" context "expenses button" %}</button>
+                <button type="button" id="insert_expense" class="btn btn-sm btn-outline-success w5" data-url="{{ url_expense_new }}"><i class="bi bi-plus"></i>{% translate "Expenses" context "expenses button" %}</button>
             </div>
         </div>
 
@@ -59,8 +59,8 @@
     <div class="col-lg-4">
         <div class="row my-2">
             <div class="col-lg-12 text-end">
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_type_new }}"><i class="bi bi-plus"></i>{% translate "Expenses type" context "expenses type button" %}</button>
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_name_new }}"><i class="bi bi-plus"></i>{% translate "Expenses name" context "expenses name button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_expenses_type_new }}"><i class="bi bi-plus"></i>{% translate "Expenses type" context "expenses type button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_expenses_name_new }}"><i class="bi bi-plus"></i>{% translate "Expenses name" context "expenses name button" %}</button>
             </div>
         </div>
 

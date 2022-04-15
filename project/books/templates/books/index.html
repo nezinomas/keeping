@@ -25,7 +25,7 @@
 
     <div class="col-3 text-end">
         <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'books:books_new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Book' context 'book add button' %}</button>
-        <button type="button" class="btn btn-sm btn-outline-success js-create" hx-get="{% url 'books:books_target_new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{{ year|title }} {% translate 'year goal' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'books:books_target_new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{{ year|title }} {% translate 'year goal' %}</button>
     </div>
 </div>
 

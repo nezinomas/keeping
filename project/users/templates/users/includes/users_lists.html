@@ -18,7 +18,7 @@
             <td class="text-start">{{ item.email }}</td>
             <td class="text-center">{% if item.is_superuser %}<i class="bi bi-check-circle" style="color: #198754;"></i>{% else %}<i class="bi bi-dash-circle-fill" style="color: #dc3545;"></i>{% endif %}</td>
             <td class="w-delete">
-                <a role="button" data-url="{{ url_delete }}" class="js-delete trash" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
+                <a role="button" data-url="{{ url_delete }}" class="trash" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
             </td>
         </tr>
         {% endfor %}

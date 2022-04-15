@@ -30,8 +30,8 @@
             </div>
             <div class="col-3 text-end">
                 {% url 'plans:incomes_plan_new' as url_incomes_new %}
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url 'plans:copy_plans' %}"><i class="bi bi-stickies"></i> {% translate 'Copy plans' %}</button>
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_incomes_new }}"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'plans:copy_plans' %}"><i class="bi bi-stickies"></i> {% translate 'Copy plans' %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_incomes_new }}"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
         <div class="row">
@@ -43,7 +43,7 @@
             <div class="col"><h6>{% translate 'Expenses' %}</h6></div>
             <div class="col-3 text-end">
                 {% url 'plans:expenses_plan_new' as url_expenses_new %}
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_expenses_new }}"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_expenses_new }}"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
         <div class="row">
@@ -55,7 +55,7 @@
             <div class="col"><h6>{% translate 'Additional necessary expenses' %}</h6></div>
             <div class="col-3 text-end">
                 {% url 'plans:necessarys_plan_new' as url_necessary_new %}
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_necessary_new }}"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_necessary_new }}"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
         <div class="row">
@@ -69,7 +69,7 @@
             </div>
             <div class="col-3 text-end">
                 {% url 'plans:savings_plan_new' as url_savings_new %}
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_savings_new }}"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_savings_new }}"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
         <div class="row">
@@ -83,7 +83,7 @@
             </div>
             <div class="col-3 text-end">
                 {% url 'plans:days_plan_new' as url_day_new %}
-                <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_day_new }}"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_day_new }}"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
         <div class="row">

@@ -35,10 +35,10 @@
     </div>
 
     <div class="col-sm-3 text-end">
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{% url 'counts:counts_new' view.kwargs.count_type %}"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'counts:counts_new' view.kwargs.count_type %}"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
 
-        <button type="button" class="btn btn-sm btn-success js-create" data-url="{% url 'counts:counts_type_update' count_type_object.pk %}"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
-        <button type="button" class="btn btn-sm btn-danger js-delete" data-url="{% url 'counts:counts_type_delete' count_type_object.pk %}" id="delete_button"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button" class="btn btn-sm btn-success" data-url="{% url 'counts:counts_type_update' count_type_object.pk %}"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button" class="btn btn-sm btn-danger" data-url="{% url 'counts:counts_type_delete' count_type_object.pk %}" id="delete_button"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
 
     </div>
 </div>

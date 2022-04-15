@@ -42,8 +42,8 @@
     <div class="col text-end">
         {% url 'drinks:drinks_new' as url_drinks %}
         {% url 'drinks:drinks_target_new' as url_drinks_target %}
-        <button type="button" class="btn btn-sm btn-outline-success js-create" data-url="{{ url_drinks }}"><i class="bi bi-plus"></i> {% translate "Drinks" context "drinks button" %}</button>
-        <button type="button" class="btn btn-sm btn-info js-create" data-url="{{ url_drinks_target }}"><i class="bi bi-plus"></i> {% translate 'Goal for the year' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_drinks }}"><i class="bi bi-plus"></i> {% translate "Drinks" context "drinks button" %}</button>
+        <button type="button" class="btn btn-sm btn-info" data-url="{{ url_drinks_target }}"><i class="bi bi-plus"></i> {% translate 'Goal for the year' %}</button>
     </div>
 </div>
 

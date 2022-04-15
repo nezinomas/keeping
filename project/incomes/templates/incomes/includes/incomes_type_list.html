@@ -10,7 +10,7 @@
                 {% url 'incomes:incomes_type_update' item.id as url_update %}
                 <div class="list-group-item" data-url="{{ url_update }}">{{ item.title }}
                     <span class="edit-icon">
-                        <button type="button" data-url="{{ url_update }}" class="btn btn-super-sm edit js-create"><i class="bi bi-pencil-fill"></i></button>
+                        <button type="button" data-url="{{ url_update }}" class="btn btn-super-sm edit"><i class="bi bi-pencil-fill"></i></button>
                     </span>
                 </div>
                 {% endfor %}
