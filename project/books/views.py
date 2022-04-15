@@ -1,8 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import (CreateView, DeleteView, ListView,
@@ -10,7 +7,6 @@ from django.views.generic import (CreateView, DeleteView, ListView,
 
 from ..core.forms import SearchForm
 from ..core.lib import search
-from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.get import GetQuerysetMixin
 from ..core.mixins.views import CreateUpdateMixin, DeleteMixin
 from . import forms, models
@@ -24,6 +20,7 @@ class Index(LoginRequiredMixin, TemplateView):
         context.update({
             'year': self.request.user.year,
             'all': self.request.GET.get('tab'),
+            'form': SearchForm(),
         })
         return context
 
@@ -132,73 +129,36 @@ class Delete(LoginRequiredMixin, DeleteMixin, DeleteView):
     url = lambda self: reverse_lazy('books:books_delete', kwargs={"pk": self.object.pk})
 
 
-class Search(AjaxSearchMixin):
-    template_name = 'core/includes/search_form.html'
-    list_template = 'books/includes/books_list.html'
-    form_class = SearchForm
-    form_data_dict = {}
-    update_container = 'book_list'
-    url = reverse_lazy('books:books_search')
-    update_container = 'book_list'
+class Search(LoginRequiredMixin, TemplateView):
+    template_name = 'books/includes/books_list.html'
     per_page = 25
 
-    def dispatch(self, request, *args, **kwargs):
-        if 'as_string' in kwargs:
-            return self._render_form(self.get_context_data())
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({**self.search()})
 
-        return super().dispatch(request, *args, **kwargs)
+        return context
 
-    def form_valid(self, form, **kwargs):
-        search_str = self.form_data_dict['search']
+    def search(self):
+        search_str = self.request.GET.get('search')
         context = {'tab': 'index'}
         sql = search.search_books(search_str)
-        paginator = Paginator(sql, self.per_page)
-        page_range = paginator.get_elided_page_range(number=1)
 
         if sql:
+            paginator = Paginator(sql, self.per_page)
+            page_range = paginator.get_elided_page_range(number=1)
+
             context.update({
-                'items': paginator.get_page(1),
-                'search': search_str,
+                'object_list': paginator.get_page(1),
                 'page_range': page_range,
-                'url': self.url,
-                'update_container': self.update_container,
             })
         else:
             context.update({
-                'items': None,
+                'object_list': None,
                 'notice': _('Found nothing'),
             })
 
-        html = render_to_string(self.list_template, context, self.request)
-
-        kwargs.update({'container': self.update_container, 'html': html})
-
-        return super().form_valid(form, **kwargs)
-
-    def get(self, request, *args, **kwargs):
-        _page = request.GET.get('page')
-        _search = request.GET.get('search')
-
-        if _page and _search:
-            sql = search.search_books(_search)
-            paginator = Paginator(sql, self.per_page)
-            page_range = paginator.get_elided_page_range(number=_page)
-
-            context = {
-                'tab': 'index',
-                'items': paginator.get_page(_page),
-                'search': _search,
-                'page_range': page_range,
-                'url': self.url,
-                'update_container': self.update_container,
-            }
-
-            return JsonResponse(
-                {self.update_container: render_to_string(
-                    self.list_template, context, self.request)}
-            )
-
-        return super().get(request, *args, **kwargs)
+        return context
 
 
 #----------------------------------------------------------------------------------------

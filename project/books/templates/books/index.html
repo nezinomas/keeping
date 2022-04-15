@@ -17,11 +17,9 @@
 {% block content %}
 
 <div class="row my-2">
-    <div class="col-3 text-start" id="search_form_data">{{ search }}</div>
+    <div class="col-3 text-start" id="search_form_data" hx-trigger="reloadSearch from:body">{% include 'core/includes/search_form.html' %}</div>
 
-    <div class="col text-center" id="info_row">
-        <div hx-trigger="load, reload from:body, afterTarget from:body" hx-get="{% url 'books:books_info_row' %}" hx-target="this"></div>
-    </div>
+    <div class="col text-center" id="info_row" hx-trigger="load, reload from:body, afterTarget from:body" hx-get="{% url 'books:books_info_row' %}" hx-target="this"></div>
 
     <div class="col-3 text-end">
         <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'books:books_new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Book' context 'book add button' %}</button>

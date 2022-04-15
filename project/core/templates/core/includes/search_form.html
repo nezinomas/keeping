@@ -1,11 +1,7 @@
-{% load crispy_forms_tags %}{% load i18n %}
+{% load i18n %}
 
-<form novalidate method="post" id="search_form" class="row d-flex gx-1 align-items-center">
-    {% csrf_token %}
-    <div class="col align-self-start">
-        {{ form.search|as_crispy_field }}
-    </div>
-    <div class="col-auto align-self-start">
-        <input type="submit" name="search" value="{% translate 'Search' %}" id="search_btn" class="btn btn-secondary btn-sm search_click text-center w5" data-url="{{ url }}" data-update-container="{{ update_container }}">
-    </div>
+<form novalidate method="post" id="search_form" class="gx-1" hx-get="{% url 'books:books_search' %}"
+    hx-target="#book_list" hx-swap="innerHTML">
+    <input type="search" name="search" class="textinput textInput form-control form-control-sm"
+        placeholder="{% translate 'Search' %}..." aria-label="{% translate 'Search' %}">
 </form>
