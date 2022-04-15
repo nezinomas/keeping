@@ -3,3 +3,4 @@ components:
     edit_cell: "core/includes/cell_edit.html"
     paging: "core/includes/paging.html"
     regenerate_balances: "core/includes/regenerate_balances.html"
+    search_form: "core/includes/search_form.html"

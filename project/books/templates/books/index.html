@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load slippers %}
 {% load i18n %}
 
 {% block head %}
@@ -17,7 +18,8 @@
 {% block content %}
 
 <div class="row my-2">
-    <div class="col-3 text-start" id="search_form_data" hx-trigger="reloadSearch from:body">{% include 'core/includes/search_form.html' %}</div>
+    {% url 'books:books_search' as search_url %}
+    <div class="col-3 text-start" id="search_form_data" hx-trigger="reloadSearch from:body">{% search_form url=search_url target="#book_list" %}</div>
 
     <div class="col text-center" id="info_row" hx-trigger="load, reload from:body, afterTarget from:body" hx-get="{% url 'books:books_info_row' %}" hx-target="this"></div>
 
