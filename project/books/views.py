@@ -98,6 +98,20 @@ class InfoRow(LoginRequiredMixin, TemplateView):
 class Lists(LoginRequiredMixin, GetQuerysetMixin, ListView):
     model = models.Book
     template_name = 'books/includes/books_list.html'
+    per_page = 50
+
+    def get_context_data(self, **kwargs):
+        page = self.request.GET.get('page', 1)
+        paginator = Paginator(self.get_queryset(), self.per_page)
+        page_range = paginator.get_elided_page_range(number=page)
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'object_list': paginator.get_page(page),
+            'url': reverse("books:books_list"),
+            'page_range': page_range,
+        })
+        return context
 
 
 class New(LoginRequiredMixin, CreateUpdateMixin, CreateView):
@@ -128,7 +142,7 @@ class Delete(LoginRequiredMixin, DeleteMixin, DeleteView):
 
 class Search(LoginRequiredMixin, TemplateView):
     template_name = 'books/includes/books_list.html'
-    per_page = 25
+    per_page = 50
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -147,9 +161,9 @@ class Search(LoginRequiredMixin, TemplateView):
             page_range = paginator.get_elided_page_range(number=page)
 
             context.update({
-                'search': search_str,
-                'url': reverse('books:books_search'),
                 'object_list': paginator.get_page(page),
+                'search': search_str,
+                'url': reverse("books:books_search"),
                 'page_range': page_range,
             })
         else:

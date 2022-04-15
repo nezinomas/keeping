@@ -3,7 +3,7 @@
 <ul class="pagination justify-content-center flex-wrap mt-2 mb-4">
     <!-- previous button -->
     {% if page_obj.has_previous %}
-        <li class="page-item"><a class="page-link paging" role="button" hx-get="{{ url }}?search={{ search }}&page={{ page_obj.previous_page_number|title }}">&laquo;</a></li>
+        <li class="page-item"><a class="page-link paging" role="button" hx-get="{{ url }}?page={{ page_obj.previous_page_number|title }}{% if search %}&search={{ search }}{% endif %}">&laquo;</a></li>
     {% else %}
         <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
     {% endif %}
@@ -17,14 +17,14 @@
             {% if i == page_obj.paginator.ELLIPSIS %}
                 <li class="page-item"><span class="page-link">{{ i|title }}</span></li>
             {% else %}
-                <li class="page-item"><a class="page-link paging" role="button" hx-get="{{ url }}?search={{ search }}&page={{ i|title }}">{{ i|title }}</a></li>
+                <li class="page-item"><a class="page-link paging" role="button" hx-get="{{ url }}?page={{ i|title }}{% if search %}&search={{ search }}{% endif %}">{{ i|title }}</a></li>
             {% endif %}
         {% endif %}
     {% endfor %}
 
     <!-- next button -->
     {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link paging" role="button" hx-get="{{ url }}?search={{ search }}&page={{ page_obj.next_page_number|title }}">&raquo;</a></li>
+        <li class="page-item"><a class="page-link paging" role="button" hx-get="{{ url }}?page={{ page_obj.next_page_number|title }}{% if search %}&search={{ search }}{% endif %}">&raquo;</a></li>
     {% else %}
         <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
     {% endif %}
