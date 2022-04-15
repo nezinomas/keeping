@@ -41,13 +41,12 @@ def test_get_strings_no_strings():
     assert not _str
 
 
-def test_get_nothing():
-    search = '300 xxx'
+def test_search_min_word_length():
+    search = 'xx'
 
-    _d, _s = H.parse_search_input(search)
+    _, _s = H.parse_search_input(search)
 
-    assert not _s
-    assert not _d
+    assert _s == ['xx']
 
 
 # ---------------------------------------------------------------------------------------

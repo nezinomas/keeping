@@ -23,7 +23,7 @@ def parse_search_input(search_str):
         if word in match:
             continue
 
-        if len(word) >= 4:
+        if len(word) >= 2:
             _search.append(word)
 
     return _date, _search
