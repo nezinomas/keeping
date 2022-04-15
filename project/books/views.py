@@ -99,9 +99,6 @@ class Lists(LoginRequiredMixin, GetQuerysetMixin, ListView):
     model = models.Book
     template_name = 'books/includes/books_list.html'
 
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
 
 class New(LoginRequiredMixin, CreateUpdateMixin, CreateView):
     template_name = 'books/includes/books_form.html'
