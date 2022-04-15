@@ -26,7 +26,7 @@ class Index(LoginRequiredMixin, TemplateView):
 
 
 class ChartReaded(LoginRequiredMixin, TemplateView):
-    template_name = 'books/includes/chart_readed_books.html'
+    template_name = 'books/chart_readed_books.html'
 
     def get_context_data(self, **kwargs):
         _qs_readed = models.Book.objects.readed()
@@ -75,7 +75,7 @@ class ChartReaded(LoginRequiredMixin, TemplateView):
 
 
 class InfoRow(LoginRequiredMixin, TemplateView):
-    template_name = 'books/includes/info_row.html'
+    template_name = 'books/info_row.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
