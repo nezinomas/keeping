@@ -138,8 +138,8 @@ class Search(LoginRequiredMixin, TemplateView):
 
     def search(self):
         search_str = self.request.GET.get('search')
-        context = {'tab': 'index'}
         sql = search.search_books(search_str)
+        context = {}
 
         if sql:
             paginator = Paginator(sql, self.per_page)
