@@ -3,7 +3,7 @@
 
 
 <form method="post" novalidate id="js_form" class="js_form" action="{{ url }}" data-action="{{ form_action }}"
-    autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}">
+    autocomplete="off" tabindex="-1">
     {% csrf_token %}
     {% include 'core/includes/form_date_scripts.html' %}
     {{ formset.management_form|crispy }}

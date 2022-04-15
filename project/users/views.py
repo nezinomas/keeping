@@ -358,7 +358,6 @@ class SettingsJournal(AjaxCustomFormMixin):
 def render_unnecessary_form(request, template_name):
     context = {
         'form': UnnecessaryForm(),
-        'update_container': 'unnecessary_ajax',
         'form_name': 'unnecessary',
         'url': reverse('users:settings_unnecessary')
     }
@@ -372,7 +371,6 @@ def render_unnecessary_form(request, template_name):
 def render_journal_form(request, template_name):
     context = {
         'form': SettingsForm(),
-        'update_container': 'journal_ajax',
         'form_name': 'journal',
         'url': reverse('users:settings_journal'),
     }

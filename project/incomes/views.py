@@ -82,7 +82,6 @@ class Search(AjaxSearchMixin):
     form_class = SearchForm
     form_data_dict = {}
     url = reverse_lazy('incomes:incomes_search')
-    update_container = 'ajax-content'
     per_page = 50
 
     def dispatch(self, request, *args, **kwargs):
@@ -103,7 +102,6 @@ class Search(AjaxSearchMixin):
                 'search': search_str,
                 'page_range': page_range,
                 'url': self.url,
-                'update_container': self.update_container,
             }
         else:
             context = {
@@ -131,11 +129,10 @@ class Search(AjaxSearchMixin):
                 'search': _search,
                 'page_range': page_range,
                 'url': self.url,
-                'update_container': self.update_container,
             }
 
             _page = render_to_string(self.list_template, context, self.request)
 
-            return JsonResponse({self.update_container: _page})
+            return JsonResponse({'xxx': _page})
 
         return super().get(request, *args, **kwargs)
