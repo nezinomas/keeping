@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<form method="POST" hx-post="{{ url }}" id="js_form" class="js_form modal-content" novalidate utocomplete="off" tabindex="-1" data-update-container="{{ update_container }}">
+<form method="POST" hx-post="{{ url }}" id="js_form" class="js_form modal-content" novalidate utocomplete="off" tabindex="-1">
     {% csrf_token %}
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
