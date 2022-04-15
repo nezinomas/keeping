@@ -32,7 +32,7 @@ class ChartReaded(LoginRequiredMixin, TemplateView):
         _qs_readed = models.Book.objects.readed()
 
         if not _qs_readed.count():
-            self.template_name = 'books/includes/chart_readed_books_empty.html'
+            self.template_name = 'empty.html'
             return {}
 
         _qs_targets = models.BookTarget.objects.items().values_list('year', 'quantity')
