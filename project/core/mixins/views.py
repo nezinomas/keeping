@@ -56,6 +56,7 @@ class DeleteMixin():
         return context
 
     def post(self, *args, **kwargs):
+        if self.get_object():
         super().post(*args, **kwargs)
 
         return HttpResponse(
@@ -64,6 +65,8 @@ class DeleteMixin():
                 'HX-Trigger': json.dumps({self.hx_trigger: None}),
             },
         )
+        else:
+            return HttpResponse()
 
 
 class IndexMixin(LoginRequiredMixin, TemplateView):
