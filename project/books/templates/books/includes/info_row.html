@@ -5,7 +5,7 @@
     {% if target %}
     <span>{% translate 'Goal' %}: </span>
     <h6 class="me-3 ms-1">
-        <a role="button" hx-get="{% url 'books:books_target_update' target.id %}" hx-target="#dialog" class="js-create no-hover">{{ target.quantity }}</a>
+        <a role="button" hx-get="{% url 'books:books_target_update' target.id %}" hx-target="#dialog" class="no-hover">{{ target.quantity }}</a>
     </h6>
     {% endif %}
 </div>
