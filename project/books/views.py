@@ -177,7 +177,6 @@ class Search(LoginRequiredMixin, TemplateView):
 #                                                                            Target Views
 #----------------------------------------------------------------------------------------
 class TargetNew(LoginRequiredMixin, CreateUpdateMixin, CreateView):
-    template_name = 'books/includes/books_target_form.html'
     model = models.BookTarget
     form_class = forms.BookTargetForm
 
@@ -187,7 +186,6 @@ class TargetNew(LoginRequiredMixin, CreateUpdateMixin, CreateView):
 
 
 class TargetUpdate(LoginRequiredMixin, CreateUpdateMixin, GetQuerysetMixin, UpdateView):
-    template_name = 'books/includes/books_target_form.html'
     model = models.BookTarget
     form_class = forms.BookTargetForm
 
