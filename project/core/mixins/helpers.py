@@ -1,3 +1,5 @@
+# TODO: delete this module
+
 def format_plural(verbose_name: str) -> str:
     plural = verbose_name + 's'
 
