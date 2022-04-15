@@ -41,6 +41,15 @@ def test_get_strings_no_strings():
     assert not _str
 
 
+def test_get_strings_no_data():
+    search = None
+
+    _d, _str = H.parse_search_input(search)
+
+    assert not _d
+    assert _str == []
+
+
 def test_search_min_word_length():
     search = 'xx'
 
@@ -54,6 +63,13 @@ def test_sanitize_search_str():
     actual = H.sanitize_search_str(search)
 
     assert actual == '_-. x1'
+
+
+def test_sanitize_search_str_empty():
+    search = None
+    actual = H.sanitize_search_str(search)
+
+    assert not actual
 
 
 # ---------------------------------------------------------------------------------------
