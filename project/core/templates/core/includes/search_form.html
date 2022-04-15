@@ -1,7 +1,6 @@
 {% load i18n %}
 
-<form novalidate method="post" id="search_form" class="gx-1" hx-get="{% url 'books:books_search' %}"
-    hx-target="#book_list" hx-swap="innerHTML">
+<form novalidate method="post" id="search_form" class="gx-1" hx-get="{% url 'books:books_search' %}" hx-target="#book_list" hx-swap="innerHTML">
     <input type="search" name="search" class="textinput textInput form-control form-control-sm"
         placeholder="{% translate 'Search' %}..." aria-label="{% translate 'Search' %}">
 </form>
