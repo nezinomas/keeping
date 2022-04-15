@@ -21,68 +21,17 @@ pytestmark = pytest.mark.django_db
 # ----------------------------------------------------------------------------
 #                                                             Books Index View
 # ----------------------------------------------------------------------------
-def test_view_index_func():
+def test_index_func():
     view = resolve('/books/')
 
     assert views.Index == view.func.view_class
 
 
-def test_books_index_200(client_logged):
+def test_index_200(client_logged):
     url = reverse('books:books_index')
     response = client_logged.get(url)
 
     assert response.status_code == 200
-
-
-def test_books_index_context(client_logged):
-    url = reverse('books:books_index')
-    response = client_logged.get(url)
-
-    assert 'book_list' in response.context
-    assert 'chart_readed_books' in response.context
-
-
-def test_books_index_chart_year(client_logged):
-    BookFactory(ended=date(1999, 1, 1))
-
-    url = reverse('books:books_index')
-    response = client_logged.get(url)
-
-    content = response.content.decode("utf-8")
-
-    assert 'id="chart_readed_books"><div id="chart_readed_books_container"></div>' in content
-
-
-@freeze_time('1999-07-18')
-def test_books_index_info_row(client_logged):
-    BookFactory()
-    BookFactory()
-    BookFactory(ended=date(1999, 2, 1))
-
-    url = reverse('books:books_index')
-    response = client_logged.get(url)
-
-    content = response.content.decode("utf-8")
-
-    readed = re.compile(r'Perskaitytos:.*?(\d+)<\/h6>')
-    assert re.findall(readed, content) == ['1']
-
-    reading = re.compile(r'Skaitomos:.*?(\d+)<\/h6>')
-    assert re.findall(reading, content) == ['2']
-
-
-@freeze_time('1999-07-18')
-def test_books_index_info_row_no_data(client_logged):
-    url = reverse('books:books_index')
-    response = client_logged.get(url)
-
-    content = response.content.decode("utf-8")
-
-    readed = re.compile(r'Perskaitytos:.*?(\d+)<\/h6>')
-    assert re.findall(readed, content) == ['0']
-
-    reading = re.compile(r'Skaitomos:.*?(\d+)<\/h6>')
-    assert re.findall(reading, content) == ['0']
 
 
 def test_books_index_add_button(client_logged):
@@ -92,7 +41,7 @@ def test_books_index_add_button(client_logged):
     content = response.content.decode()
 
     link = reverse('books:books_new')
-    pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
+    pattern = re.compile(fr'<button type="button".+hx-get="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
     assert res[0] == 'Knygą'
@@ -108,111 +57,130 @@ def test_books_index_add_target_button(get_user, client_logged):
     content = response.content.decode()
 
     link = reverse('books:books_target_new')
-    pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
+    pattern = re.compile(fr'<button type="button".+hx-get="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
     assert res[0] == '1111 metų tikslą'
-
-
-def test_books_index_target_update_link(client_logged):
-    t = BookTargetFactory()
-
-    url = reverse('books:books_index')
-    response = client_logged.get(url)
-
-    content = response.content.decode()
-    link = reverse('books:books_target_update', kwargs={'pk': t.pk})
-
-    pattern = re.compile(fr'<a role="button" data-url="{ link }".*?>(\d+)<\/a>')
-    res = re.findall(pattern, content)
-
-    assert res[0] == '100'
 
 
 def test_books_index_search_form(client_logged):
     url = reverse('books:books_index')
     response = client_logged.get(url).content.decode('utf-8')
 
-    assert '<input type="text" name="search"' in response
-    assert reverse('books:books_search') in response
+    assert '<input type="search" name="search" id="id_search"' in response
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                            Realod Stats
-# ---------------------------------------------------------------------------------------
-def test_books_reload_stats_func():
-    view = resolve('/books/reload_stats/')
+# ----------------------------------------------------------------------------
+#                                                                     Info Row
+# ----------------------------------------------------------------------------
+def test_info_row_func():
+    view = resolve('/books/info_row/')
 
-    assert views.ReloadStats is view.func.view_class
+    assert views.InfoRow == view.func.view_class
 
 
-def test_books_reload_stats_render(rf):
-    request = rf.get('/books/reload_stats/?ajax_trigger=1')
-    request.user = UserFactory.build()
-    request.resolver_match = SimpleNamespace(app_name='books')
-
-    response = views.ReloadStats.as_view()(request)
+def test_info_row_200(client_logged):
+    url = reverse('books:books_info_row')
+    response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
-def test_books_reload_stats_render_return_object(client_logged):
-    url = reverse('books:reload_stats')
-    response = client_logged.get(url, {'ajax_trigger': 1})
+@freeze_time('1999-07-18')
+def test_info_row_html(client_logged):
+    BookFactory()
+    BookFactory()
+    BookFactory(ended=date(1999, 2, 1))
 
-    assert isinstance(response, JsonResponse)
+    url = reverse('books:books_info_row')
+    response = client_logged.get(url)
+
+    content = response.content.decode("utf-8")
+
+    readed = re.compile(r'Perskaitytos:.*?(\d+)<\/h6>')
+    assert re.findall(readed, content) == ['1']
+
+    reading = re.compile(r'Skaitomos:.*?(\d+)<\/h6>')
+    assert re.findall(reading, content) == ['2']
 
 
-def test_books_reload_stats_render_ajax_trigger(client_logged):
-    url = reverse('books:reload_stats')
-    response = client_logged.get(url, {'ajax_trigger': 1})
+@freeze_time('1999-07-18')
+def test_info_row_no_data(client_logged):
+    url = reverse('books:books_info_row')
+    response = client_logged.get(url)
+
+    content = response.content.decode("utf-8")
+
+    readed = re.compile(r'Perskaitytos:.*?(\d+)<\/h6>')
+    assert re.findall(readed, content) == ['0']
+
+    reading = re.compile(r'Skaitomos:.*?(\d+)<\/h6>')
+    assert re.findall(reading, content) == ['0']
+
+
+def test_info_row_update_link(client_logged):
+    t = BookTargetFactory()
+
+    url = reverse('books:books_info_row')
+    response = client_logged.get(url)
+
+    content = response.content.decode('utf-8')
+    link = reverse('books:books_target_update', kwargs={'pk': t.pk})
+
+    pattern = re.compile(fr'<a role="button" hx-get="{ link }".*?>(\d+)<\/a>')
+    res = re.findall(pattern, content)
+
+    assert res[0] == '100'
+
+
+def test_info_row_no_target(client_logged):
+    url = reverse('books:books_info_row')
+    response = client_logged.get(url)
+
+    assert not 'Tikslas' in response.context
+
+
+# ----------------------------------------------------------------------------
+#                                                                 Readed Books
+# ----------------------------------------------------------------------------
+def test_chart_readed_func():
+    view = resolve('/books/chart_readed/')
+
+    assert views.ChartReaded == view.func.view_class
+
+
+def test_chart_readed_200(client_logged):
+    url = reverse('books:books_chart_readed')
+    response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
-def test_books_reload_stats_render_ajax_trigger_not_set(client_logged):
-    url = reverse('books:reload_stats')
-    response = client_logged.get(url, follow=True)
+def test_books_index_chart_year(client_logged):
+    BookFactory(ended=date(1999, 1, 1))
 
-    assert response.status_code == 200
-    assert views.Index == response.resolver_match.func.view_class
+    url = reverse('books:books_chart_readed')
+    response = client_logged.get(url)
 
+    content = response.content.decode("utf-8")
 
-@patch('project.books.views.BookTabMixin.get_tab', return_value='index')
-@patch('project.books.views.Lists.as_view')
-@patch('project.books.views.BookRenderer.context_to_reload', return_value={})
-def test_books_reload_tab_index(_BookRenderer, _ListView, _BookTabMixin, fake_request):
-    _ListView.return_value.return_value = {}
-
-    v = setup_view(views.ReloadStats(), fake_request)
-    v.get(fake_request)
-
-    assert _ListView.call_count == 1
-    assert _BookTabMixin.call_count == 1
-    assert _BookRenderer.call_count == 1
-
-
-@patch('project.books.views.BookTabMixin.get_tab', return_value='all')
-@patch('project.books.views.Lists.as_view')
-@patch('project.books.views.BookRenderer', return_value={})
-def test_books_reload_tab_all(_BookRenderer, _ListView, _BookTabMixin, fake_request):
-    _ListView.return_value.return_value = {}
-
-    v = setup_view(views.ReloadStats(), fake_request)
-    v.get(fake_request)
-
-    assert _ListView.call_count == 1
-    assert _BookTabMixin.call_count == 1
-    assert _BookRenderer.call_count == 0
+    assert '<div id="chart_readed_books_container"></div>' in content
 
 
 # ----------------------------------------------------------------------------
 #                                                             Books Lists View
 # ----------------------------------------------------------------------------
-def test_view_lists_func():
+def test_lists_func():
     view = resolve('/books/lists/')
 
     assert views.Lists == view.func.view_class
+
+
+def test_list_200(client_logged):
+    url = reverse('books:books_list')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
 
 
 # ----------------------------------------------------------------------------
@@ -234,13 +202,12 @@ def test_view_update_func():
 def test_load_books_form(client_logged):
     url = reverse('books:books_new')
 
-    response = client_logged.get(url, {}, **X_Req)
+    response = client_logged.get(url, {})
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    actual = response.context['form'].as_p()
 
     assert response.status_code == 200
-    assert '<input type="text" name="started" value="1999-01-01"' in actual['html_form']
+    assert '<input type="text" name="started" value="1999-01-01"' in actual
 
 
 def test_save_book(client_logged):
@@ -248,15 +215,15 @@ def test_save_book(client_logged):
 
     url = reverse('books:books_new')
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    assert response.resolver_match.func.view_class is views.Lists
 
-    assert actual['form_is_valid']
-    assert '1999-01-01' in actual['html_list']
-    assert 'AAA' in actual['html_list']
-    assert 'TTT' in actual['html_list']
+    obj = Book.objects.first()
+
+    assert obj.started == date(1999, 1, 1)
+    assert obj.author == 'AAA'
+    assert obj.title == 'TTT'
 
 
 def test_books_save_invalid_data(client_logged):
@@ -264,12 +231,11 @@ def test_books_save_invalid_data(client_logged):
 
     url = reverse('books:books_new')
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data)
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    actual = response.context['form']
 
-    assert not actual['form_is_valid']
+    assert not actual.is_valid()
 
 
 def test_books_update(client_logged):
@@ -283,31 +249,22 @@ def test_books_update(client_logged):
     }
     url = reverse('books:books_update', kwargs={'pk': book.pk})
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
 
-    assert response.status_code == 200
+    actual = response.content.decode('utf-8')
 
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
-    assert '1999-01-01' in actual['html_list']
-    assert '1999-01-31' in actual['html_list']
-    assert 'AAA' in actual['html_list']
-    assert 'TTT' in actual['html_list']
+    assert '1999-01-01' in actual
+    assert '1999-01-31' in actual
+    assert 'AAA' in actual
+    assert 'TTT' in actual
 
 
 def test_books_load_update_form(client_logged):
     i = BookFactory()
     url = reverse('books:books_update', kwargs={'pk': i.pk})
 
-    response = client_logged.get(url, **X_Req)
-
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
+    response = client_logged.get(url, follow=True)
+    form = response.context['form'].as_p()
 
     assert '1999-01-01' in form
     assert 'Author' in form
@@ -327,15 +284,10 @@ def test_book_update_to_another_year(client_logged):
     }
     url = reverse('books:books_update', kwargs={'pk': income.pk})
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
+    actual = response.content.decode('utf-8')
 
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
-    assert '2010-12-31' not in actual['html_list']
+    assert '2010-12-31' not in actual
 
 
 @freeze_time('2000-03-03')
@@ -351,14 +303,7 @@ def test_books_update_past_record(get_user, client_logged):
     }
     url = reverse('books:books_update', kwargs={'pk': i.pk})
 
-    response = client_logged.post(url, data, **X_Req)
-
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
+    client_logged.post(url, data)
 
     actual = models.Book.objects.get(pk=i.pk)
     assert actual.started == date(1999, 3, 3)
@@ -372,13 +317,9 @@ def test_books_update_not_load_other_user(client_logged, second_user):
     obj = BookFactory(author='xxx', title='yyy', user=second_user)
 
     url = reverse('books:books_update', kwargs={'pk': obj.pk})
-    response = client_logged.get(url, **X_Req)
+    response = client_logged.get(url)
 
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
+    form = response.context['form'].as_p()
 
     assert obj.author not in form
     assert obj.title not in form
@@ -407,15 +348,12 @@ def test_view_books_delete_load_form(client_logged):
     p = BookFactory()
 
     url = reverse('books:books_delete', kwargs={'pk': p.pk})
-    response = client_logged.get(url, {}, **X_Req)
+    response = client_logged.get(url, {}, follow=True)
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    actual = response.content.decode('utf-8')
 
-    assert response.status_code == 200
-
-    assert '<form method="post"' in actual['html_form']
-    assert f'Ar tikrai norite ištrinti: <strong>Book Title</strong>?' in actual['html_form']
+    assert '<form method="POST"' in actual
+    assert f'Ar tikrai norite ištrinti: <strong>Book Title</strong>?' in actual
 
 
 def test_view_books_delete(client_logged):
@@ -424,9 +362,7 @@ def test_view_books_delete(client_logged):
     assert models.Book.objects.all().count() == 1
     url = reverse('books:books_delete', kwargs={'pk': p.pk})
 
-    response = client_logged.post(url, {}, **X_Req)
-
-    assert response.status_code == 200
+    client_logged.post(url, {}, follow=True)
 
     assert models.Book.objects.all().count() == 0
 
@@ -435,70 +371,26 @@ def test_books_delete_other_user_get_form(client_logged, second_user):
     obj = BookFactory(user=second_user)
 
     url = reverse('books:books_delete', kwargs={'pk': obj.pk})
-    response = client_logged.get(url, **X_Req)
+    response = client_logged.get(url)
 
-    assert response.status_code == 200
+    actual = response.content.decode('utf-8')
 
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
-
-    assert 'SRSLY' in form
+    assert '<form method="POST" hx-post="None"' in actual
+    assert f'Ar tikrai norite ištrinti: <strong>None</strong>?' in actual
 
 
 def test_books_delete_other_user_post_form(client_logged, second_user):
     obj = BookFactory(user=second_user)
 
     url = reverse('books:books_delete', kwargs={'pk': obj.pk})
-    client_logged.post(url, **X_Req)
+    client_logged.post(url)
 
     assert models.Book.objects.all().count() == 1
-
-
-# ----------------------------------------------------------------------------
-#                                                               Books All List
-# ----------------------------------------------------------------------------
-def test_books_all_func():
-    view = resolve('/books/all/')
-
-    assert views.All == view.func.view_class
-
-
-def test_books_all_200(client_logged):
-    url = reverse('books:books_all')
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_books_all_list(client_logged):
-    BookFactory(started=date(2000, 1, 1), ended=date(2000, 1, 31))
-    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31))
-
-    url = reverse('books:books_all')
-    response = client_logged.get(url)
-
-    assert len(response.context['items']) == 2
-
-
-def test_books_all_whole_page(client_logged):
-    url = reverse('books:books_all')
-    response = client_logged.get(url)
-
-    assert '<head>' in response.content.decode('utf-8')
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                          Books Search
 # ---------------------------------------------------------------------------------------
-@pytest.fixture()
-def _search_form_data():
-    return ([
-        {"name": "csrfmiddlewaretoken", "value": "xxx"},
-        {"name": "search", "value": "1999 title"},
-    ])
-
-
 def test_search_func():
     view = resolve('/books/search/')
 
@@ -512,125 +404,49 @@ def test_search_get_200(client_logged):
     assert response.status_code == 200
 
 
-def test_search_get_302(client):
-    url = reverse('books:books_search')
-    response = client.get(url)
-
-    assert response.status_code == 302
-
-
-def test_search_post_200(client_logged, _search_form_data):
-    form_data = json.dumps(_search_form_data)
-    url = reverse('books:books_search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    assert response.status_code == 200
-
-
-def test_search_post_404(client_logged):
-    url = reverse('books:books_search')
-    response = client_logged.post(url)
-
-    assert response.status_code == 404
-
-
-def test_search_post_500(client_logged):
-    form_data = json.dumps([{'x': 'y'}])
-    url = reverse('books:books_search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    assert response.status_code == 500
-
-
-def test_search_bad_json_data(client_logged):
-    form_data = "{'x': 'y'}"
-    url = reverse('books:books_search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    assert response.status_code == 500
-
-
-def test_search_form_is_not_valid(client_logged, _search_form_data):
-    _search_form_data[1]['value'] = '@#$%^&*xxxx'  # search
-    form_data = json.dumps(_search_form_data)
-
-    url = reverse('books:books_search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    actual = json.loads(response.content)
-
-    assert not actual['form_is_valid']
-
-
-def test_search_form_is_valid(client_logged, _search_form_data):
-    form_data = json.dumps(_search_form_data)
-
-    url = reverse('books:books_search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    actual = json.loads(response.content)
-
-    assert actual['form_is_valid']
-
-
-def test_search_not_found(client_logged, _search_form_data):
+def test_search_not_found(client_logged):
     BookFactory()
 
-    _search_form_data[1]['value'] = 'xxxx'
-    form_data = json.dumps(_search_form_data)
-
     url = reverse('books:books_search')
-    response = client_logged.post(url, {'form_data': form_data})
-    actual = json.loads(response.content)
+    response = client_logged.get(url, {'search': 'xxx'})
+    actual = response.content.decode('utf-8')
 
-    assert 'Nieko nerasta' in actual['html']
+    assert 'Nieko nerasta' in actual
 
 
-def test_search_found(client_logged, _search_form_data):
+def test_search_found(client_logged):
     BookFactory()
 
-    form_data = json.dumps(_search_form_data)
-
     url = reverse('books:books_search')
-    response = client_logged.post(url, {'form_data': form_data})
-    actual = json.loads(response.content)
+    response = client_logged.get(url, {'search': '1999 title'})
+    actual = response.content.decode('utf-8')
 
-    assert '1999-01-01' in actual['html']
-    assert 'Book Title' in actual['html']
-    assert 'Author' in actual['html']
+    assert '1999-01-01' in actual
+    assert 'Book Title' in actual
+    assert 'Author' in actual
 
 
-def test_search_pagination_first_page(client_logged, _search_form_data):
+def test_search_pagination_first_page(client_logged):
     u = UserFactory()
-    i = BookFactory.build_batch(26, user=u)
+    i = BookFactory.build_batch(51, user=u)
     Book.objects.bulk_create(i)
 
-    form_data = json.dumps(_search_form_data)
-
     url = reverse('books:books_search')
-    response = client_logged.post(url, {'form_data': form_data})
-    actual = json.loads(response.content)
+    response = client_logged.get(url, {'search': 'title'})
+    actual = response.content.decode('utf-8')
 
-    assert 'html' in actual
-
-    actual = actual['html']
-
-    assert actual.count('Author') == 25
+    assert actual.count('Author') == 50
 
 
 def test_search_pagination_second_page(client_logged):
     u = UserFactory()
-    i = BookFactory.build_batch(26, user=u)
+    i = BookFactory.build_batch(51, user=u)
     Book.objects.bulk_create(i)
 
     url = reverse('books:books_search')
 
     response = client_logged.get(url, {'page': 2, 'search': 'author'})
-    actual = json.loads(response.content)
-
-    assert 'book_list' in actual
-
-    actual = actual['book_list']
+    actual = response.content.decode('utf-8')
 
     assert actual.count('Author') == 1
 
@@ -641,27 +457,18 @@ def test_search_pagination_second_page(client_logged):
 def test_target(client_logged):
     url = reverse('books:books_target_new')
 
-    response = client_logged.get(url, {}, **X_Req)
+    response = client_logged.get(url, {})
+    actual = response.content.decode('utf-8')
 
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert response.status_code == 200
-    assert '<input type="text" name="year" value="1999"' in actual['html_form']
+    assert '<input type="text" name="year" value="1999"' in actual
 
 
 def test_target_new(client_logged):
     data = {'year': 1999, 'quantity': 66}
-
     url = reverse('books:books_target_new')
+    client_logged.post(url, data)
 
-    response = client_logged.post(url, data, **X_Req)
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
-    assert models.BookTarget.objects.year(1999)[0].quantity == 66
+    assert models.BookTarget.objects.first().quantity == 66
 
 
 def test_target_new_invalid_data(client_logged):
@@ -669,12 +476,11 @@ def test_target_new_invalid_data(client_logged):
 
     url = reverse('books:books_target_new')
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data)
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    form = response.context['form']
 
-    assert not actual['form_is_valid']
+    assert not form.is_valid()
 
 
 def test_target_update(client_logged):
@@ -683,18 +489,6 @@ def test_target_update(client_logged):
     data = {'year': 1999, 'quantity': 66}
     url = reverse('books:books_target_update', kwargs={'pk': p.pk})
 
-    response = client_logged.post(url, data, **X_Req)
+    client_logged.post(url, data)
 
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
-    assert models.BookTarget.objects.year(1999)[0].quantity == 66
-
-
-def test_target_empty_db(client_logged):
-    response = client_logged.get('/books/')
-
-    assert not 'Tikslas' in response.context["info_row"]
+    assert models.BookTarget.objects.first().quantity == 66

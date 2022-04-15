@@ -82,14 +82,14 @@ class InfoRow(LoginRequiredMixin, TemplateView):
 
         year = self.request.user.year
 
-        readed = models.Book.objects.readed().filter(year=year)[0]['cnt']
+        readed = models.Book.objects.readed().filter(year=year)
         reading = models.Book.objects.reading(year)['reading']
-        target = models.BookTarget.objects.items().filter(year=year)[0]
+        target = models.BookTarget.objects.items().filter(year=year)
 
         context.update({
-            'readed': readed if readed else 0,
+            'readed': readed[0]['cnt'] if readed else 0,
             'reading': reading if reading else 0,
-            'target': target if target else None,
+            'target': target[0] if target else None,
         })
 
         return context
@@ -115,29 +115,31 @@ class Lists(LoginRequiredMixin, GetQuerysetMixin, ListView):
 
 
 class New(LoginRequiredMixin, CreateUpdateMixin, CreateView):
-    template_name = 'books/includes/books_form.html'
     model = models.Book
     form_class = forms.BookForm
+    template_name = 'books/includes/books_form.html'
+    success_url = reverse_lazy('books:books_list')
 
     url = reverse_lazy('books:books_new')
     form_action = 'insert'
 
 
-class Update(LoginRequiredMixin, CreateUpdateMixin, UpdateView):
-    template_name = 'books/includes/books_form.html'
+class Update(LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView):
     model = models.Book
     form_class = forms.BookForm
+    template_name = 'books/includes/books_form.html'
+    success_url = reverse_lazy('books:books_list')
 
-    url = lambda self: self.object.get_absolute_url()
+    url = lambda self: self.object.get_absolute_url() if self.object else None
     form_action = 'update'
 
 
-class Delete(LoginRequiredMixin, DeleteMixin, DeleteView):
+class Delete(LoginRequiredMixin, DeleteMixin, GetQuerysetMixin, DeleteView):
     model = models.Book
     template_name = 'books/includes/books_delete.html'
     success_url = reverse_lazy('books:books_list')
 
-    url = lambda self: reverse_lazy('books:books_delete', kwargs={"pk": self.object.pk})
+    url = lambda self: self.object.get_delete_url() if self.object else None
 
 
 class Search(LoginRequiredMixin, TemplateView):
@@ -188,11 +190,11 @@ class TargetNew(LoginRequiredMixin, CreateUpdateMixin, CreateView):
     hx_trigger = 'afterTarget'
 
 
-class TargetUpdate(LoginRequiredMixin, CreateUpdateMixin, UpdateView):
+class TargetUpdate(LoginRequiredMixin, CreateUpdateMixin, GetQuerysetMixin, UpdateView):
     template_name = 'books/includes/books_target_form.html'
     model = models.BookTarget
     form_class = forms.BookTargetForm
 
-    def url(self): return self.object.get_absolute_url()
+    url = lambda self: self.object.get_absolute_url() if self.object else None
     form_action = 'update'
     hx_trigger = 'afterTarget'
