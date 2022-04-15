@@ -97,7 +97,6 @@ class InfoRow(LoginRequiredMixin, TemplateView):
 
 class Lists(LoginRequiredMixin, GetQuerysetMixin, ListView):
     model = models.Book
-    template_name = 'books/includes/books_list.html'
     per_page = 50
 
     def get_context_data(self, **kwargs):
@@ -117,7 +116,6 @@ class Lists(LoginRequiredMixin, GetQuerysetMixin, ListView):
 class New(LoginRequiredMixin, CreateUpdateMixin, CreateView):
     model = models.Book
     form_class = forms.BookForm
-    template_name = 'books/includes/books_form.html'
     success_url = reverse_lazy('books:books_list')
 
     url = reverse_lazy('books:books_new')
@@ -127,7 +125,6 @@ class New(LoginRequiredMixin, CreateUpdateMixin, CreateView):
 class Update(LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView):
     model = models.Book
     form_class = forms.BookForm
-    template_name = 'books/includes/books_form.html'
     success_url = reverse_lazy('books:books_list')
 
     url = lambda self: self.object.get_absolute_url() if self.object else None
@@ -136,14 +133,13 @@ class Update(LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView
 
 class Delete(LoginRequiredMixin, DeleteMixin, GetQuerysetMixin, DeleteView):
     model = models.Book
-    template_name = 'books/includes/books_delete.html'
     success_url = reverse_lazy('books:books_list')
 
     url = lambda self: self.object.get_delete_url() if self.object else None
 
 
 class Search(LoginRequiredMixin, TemplateView):
-    template_name = 'books/includes/books_list.html'
+    template_name = 'books/book_list.html'
     per_page = 50
 
     def get_context_data(self, **kwargs):
