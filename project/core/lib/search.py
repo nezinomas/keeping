@@ -85,17 +85,19 @@ def search_incomes(search_str):
 
 def search_books(search_str):
     _date, _search = parse_search_input(search_str)
+    sql = None
 
-    sql = Book.objects.items()
-    sql = filter_dates(_date, sql, 'started')
+    if _search or _date:
+        sql = Book.objects.items()
+        sql = filter_dates(_date, sql, 'started')
 
-    if _search:
-        sql = sql.filter(
-            reduce(or_, (Q(author__icontains=q) for q in _search)) |
-            reduce(or_, (Q(title__icontains=q) for q in _search)) |
-            reduce(or_, (Q(remark__icontains=q) for q in _search))
-        )
+        if _search:
+            sql = sql.filter(
+                reduce(or_, (Q(author__icontains=q) for q in _search)) |
+                reduce(or_, (Q(title__icontains=q) for q in _search)) |
+                reduce(or_, (Q(remark__icontains=q) for q in _search))
+            )
 
-    sql = sql.order_by('-started')
+        sql = sql.order_by('-started')
 
     return sql
