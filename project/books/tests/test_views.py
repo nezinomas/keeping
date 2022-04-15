@@ -1,20 +1,14 @@
-import json
 import re
 from datetime import date
-from types import SimpleNamespace
 
 import pytest
-from django.http import JsonResponse
 from django.urls import resolve, reverse
 from freezegun import freeze_time
-from mock import patch
 
-from ...core.tests.utils import setup_view
 from ...users.factories import UserFactory
 from .. import models, views
 from ..factories import Book, BookFactory, BookTargetFactory
 
-X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
 
 
