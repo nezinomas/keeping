@@ -57,14 +57,14 @@ class DeleteMixin():
 
     def post(self, *args, **kwargs):
         if self.get_object():
-        super().post(*args, **kwargs)
+            super().post(*args, **kwargs)
 
-        return HttpResponse(
-            status=204,
-            headers={
-                'HX-Trigger': json.dumps({self.hx_trigger: None}),
-            },
-        )
+            return HttpResponse(
+                status=204,
+                headers={
+                    'HX-Trigger': json.dumps({self.hx_trigger: None}),
+                },
+            )
         else:
             return HttpResponse()
 
