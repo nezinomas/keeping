@@ -49,6 +49,13 @@ def test_search_min_word_length():
     assert _s == ['xx']
 
 
+def test_sanitize_search_str():
+    search = '~!@#$%^&*()_+-=[]{}|;:,./<>?\\ x1'
+    actual = H.sanitize_search_str(search)
+
+    assert actual == '_-. x1'
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                                 Expense
 # ---------------------------------------------------------------------------------------

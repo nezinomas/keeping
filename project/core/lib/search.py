@@ -9,7 +9,14 @@ from ...expenses.models import Expense
 from ...incomes.models import Income
 
 
+def sanitize_search_str(search_str):
+    search_str = re.sub("[^\w\d\.\- ]", "", search_str)
+    return search_str
+
+
 def parse_search_input(search_str):
+    search_str = sanitize_search_str(search_str)
+
     # find all 2000 or 2000-01 or 2000.01 inputs
     rgx = re.compile(r'\d{4}-{0,1}\.{0,1}\d{0,2}')
 
