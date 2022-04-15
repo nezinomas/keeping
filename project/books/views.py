@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import (CreateView, DeleteView, ListView,
                                   TemplateView, UpdateView)
@@ -138,15 +138,18 @@ class Search(LoginRequiredMixin, TemplateView):
 
     def search(self):
         search_str = self.request.GET.get('search')
+        page = self.request.GET.get('page', 1)
         sql = search.search_books(search_str)
         context = {}
 
         if sql:
             paginator = Paginator(sql, self.per_page)
-            page_range = paginator.get_elided_page_range(number=1)
+            page_range = paginator.get_elided_page_range(number=page)
 
             context.update({
-                'object_list': paginator.get_page(1),
+                'search': search_str,
+                'url': reverse('books:books_search'),
+                'object_list': paginator.get_page(page),
                 'page_range': page_range,
             })
         else:
