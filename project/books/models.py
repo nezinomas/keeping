@@ -40,10 +40,10 @@ class Book(models.Model):
         return str(self.title)
 
     def get_absolute_url(self):
-        return reverse_lazy("books:books_update", kwargs={"pk": self.pk})
+        return reverse_lazy("books:update", kwargs={"pk": self.pk})
 
     def get_delete_url(self):
-        return reverse_lazy("books:books_delete", kwargs={"pk": self.pk})
+        return reverse_lazy("books:delete", kwargs={"pk": self.pk})
 
 
 class BookTarget(models.Model):
@@ -67,4 +67,4 @@ class BookTarget(models.Model):
         return f'{self.year}: {self.quantity}'
 
     def get_absolute_url(self):
-        return reverse_lazy("books:books_target_update", kwargs={"pk": self.pk})
+        return reverse_lazy("books:target_update", kwargs={"pk": self.pk})

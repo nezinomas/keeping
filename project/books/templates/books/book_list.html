@@ -18,8 +18,8 @@
     </thead>
     <tbody>
         {% for object in object_list %}
-        {% url 'books:books_update' object.id as url_update %}
-        {% url 'books:books_delete' object.id as url_delete %}
+        {% url 'books:update' object.id as url_update %}
+        {% url 'books:delete' object.id as url_delete %}
         {% ifchanged object.started|date:"Y" %}{% if not forloop.first %}<tr><td colspan="8" class="table-active"></td></tr>{% endif %}
         {% endifchanged %}
         <tr hx-get="{{ url_update }}{% if tab %}?tab={{ tab }}{% endif %}" hx-trigger="dblclick" hx-target="#dialog" class="{% if not object.ended %} teal{% endif %}">

@@ -191,7 +191,7 @@ def test_incomes_search_ordering():
         ('1999-1 titl', 'Author', 'Book Title', 'Remark'),
     ]
 )
-def test_books_search(search, author, title, remark):
+def test_search(search, author, title, remark):
     BookFactory()
     BookFactory(
         started=date(3333, 1, 1),
@@ -212,7 +212,7 @@ def test_books_search(search, author, title, remark):
 
 
 @pytest.mark.django_db
-def test_books_search_ordering():
+def test_search_ordering():
     BookFactory(started=date(1000, 1, 1))
     BookFactory()
 

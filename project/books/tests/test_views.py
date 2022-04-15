@@ -28,19 +28,19 @@ def test_index_func():
 
 
 def test_index_200(client_logged):
-    url = reverse('books:books_index')
+    url = reverse('books:index')
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_books_index_add_button(client_logged):
-    url = reverse('books:books_index')
+    url = reverse('books:index')
     response = client_logged.get(url)
 
     content = response.content.decode()
 
-    link = reverse('books:books_new')
+    link = reverse('books:new')
     pattern = re.compile(fr'<button type="button".+hx-get="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
@@ -51,12 +51,12 @@ def test_books_index_add_target_button(get_user, client_logged):
     get_user.year = 1111
     get_user.save()
 
-    url = reverse('books:books_index')
+    url = reverse('books:index')
     response = client_logged.get(url)
 
     content = response.content.decode()
 
-    link = reverse('books:books_target_new')
+    link = reverse('books:target_new')
     pattern = re.compile(fr'<button type="button".+hx-get="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
@@ -64,7 +64,7 @@ def test_books_index_add_target_button(get_user, client_logged):
 
 
 def test_books_index_search_form(client_logged):
-    url = reverse('books:books_index')
+    url = reverse('books:index')
     response = client_logged.get(url).content.decode('utf-8')
 
     assert '<input type="search" name="search" id="id_search"' in response
@@ -80,7 +80,7 @@ def test_info_row_func():
 
 
 def test_info_row_200(client_logged):
-    url = reverse('books:books_info_row')
+    url = reverse('books:info_row')
     response = client_logged.get(url)
 
     assert response.status_code == 200
@@ -92,7 +92,7 @@ def test_info_row_html(client_logged):
     BookFactory()
     BookFactory(ended=date(1999, 2, 1))
 
-    url = reverse('books:books_info_row')
+    url = reverse('books:info_row')
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -106,7 +106,7 @@ def test_info_row_html(client_logged):
 
 @freeze_time('1999-07-18')
 def test_info_row_no_data(client_logged):
-    url = reverse('books:books_info_row')
+    url = reverse('books:info_row')
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -121,11 +121,11 @@ def test_info_row_no_data(client_logged):
 def test_info_row_update_link(client_logged):
     t = BookTargetFactory()
 
-    url = reverse('books:books_info_row')
+    url = reverse('books:info_row')
     response = client_logged.get(url)
 
     content = response.content.decode('utf-8')
-    link = reverse('books:books_target_update', kwargs={'pk': t.pk})
+    link = reverse('books:target_update', kwargs={'pk': t.pk})
 
     pattern = re.compile(fr'<a role="button" hx-get="{ link }".*?>(\d+)<\/a>')
     res = re.findall(pattern, content)
@@ -134,7 +134,7 @@ def test_info_row_update_link(client_logged):
 
 
 def test_info_row_no_target(client_logged):
-    url = reverse('books:books_info_row')
+    url = reverse('books:info_row')
     response = client_logged.get(url)
 
     assert not 'Tikslas' in response.context
@@ -150,7 +150,7 @@ def test_chart_readed_func():
 
 
 def test_chart_readed_200(client_logged):
-    url = reverse('books:books_chart_readed')
+    url = reverse('books:chart_readed')
     response = client_logged.get(url)
 
     assert response.status_code == 200
@@ -159,7 +159,7 @@ def test_chart_readed_200(client_logged):
 def test_books_index_chart_year(client_logged):
     BookFactory(ended=date(1999, 1, 1))
 
-    url = reverse('books:books_chart_readed')
+    url = reverse('books:chart_readed')
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -177,7 +177,7 @@ def test_lists_func():
 
 
 def test_list_200(client_logged):
-    url = reverse('books:books_list')
+    url = reverse('books:list')
     response = client_logged.get(url)
 
     assert response.status_code == 200
@@ -200,7 +200,7 @@ def test_view_update_func():
 
 @freeze_time('2000-01-01')
 def test_load_books_form(client_logged):
-    url = reverse('books:books_new')
+    url = reverse('books:new')
 
     response = client_logged.get(url, {})
 
@@ -213,7 +213,7 @@ def test_load_books_form(client_logged):
 def test_save_book(client_logged):
     data = {'started': '1999-01-01', 'author': 'AAA', 'title': 'TTT'}
 
-    url = reverse('books:books_new')
+    url = reverse('books:new')
 
     response = client_logged.post(url, data, follow=True)
 
@@ -229,7 +229,7 @@ def test_save_book(client_logged):
 def test_books_save_invalid_data(client_logged):
     data = {'started': 'x', 'author': 'A', 'title': 'T'}
 
-    url = reverse('books:books_new')
+    url = reverse('books:new')
 
     response = client_logged.post(url, data)
 
@@ -247,7 +247,7 @@ def test_books_update(client_logged):
         'author': 'AAA',
         'title': 'TTT'
     }
-    url = reverse('books:books_update', kwargs={'pk': book.pk})
+    url = reverse('books:update', kwargs={'pk': book.pk})
 
     response = client_logged.post(url, data, follow=True)
 
@@ -261,7 +261,7 @@ def test_books_update(client_logged):
 
 def test_books_load_update_form(client_logged):
     i = BookFactory()
-    url = reverse('books:books_update', kwargs={'pk': i.pk})
+    url = reverse('books:update', kwargs={'pk': i.pk})
 
     response = client_logged.get(url, follow=True)
     form = response.context['form'].as_p()
@@ -282,7 +282,7 @@ def test_book_update_to_another_year(client_logged):
         'title': 'Book Title',
         'remark': 'Pastaba',
     }
-    url = reverse('books:books_update', kwargs={'pk': income.pk})
+    url = reverse('books:update', kwargs={'pk': income.pk})
 
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode('utf-8')
@@ -301,7 +301,7 @@ def test_books_update_past_record(get_user, client_logged):
         'title': 'YYY',
         'remark': 'ZZZ',
     }
-    url = reverse('books:books_update', kwargs={'pk': i.pk})
+    url = reverse('books:update', kwargs={'pk': i.pk})
 
     client_logged.post(url, data)
 
@@ -316,7 +316,7 @@ def test_books_update_not_load_other_user(client_logged, second_user):
     BookFactory()
     obj = BookFactory(author='xxx', title='yyy', user=second_user)
 
-    url = reverse('books:books_update', kwargs={'pk': obj.pk})
+    url = reverse('books:update', kwargs={'pk': obj.pk})
     response = client_logged.get(url)
 
     form = response.context['form'].as_p()
@@ -337,7 +337,7 @@ def test_view_books_delete_func():
 def test_view_books_delete_200(client_logged):
     p = BookFactory()
 
-    url = reverse('books:books_delete', kwargs={'pk': p.pk})
+    url = reverse('books:delete', kwargs={'pk': p.pk})
 
     response = client_logged.get(url)
 
@@ -347,7 +347,7 @@ def test_view_books_delete_200(client_logged):
 def test_view_books_delete_load_form(client_logged):
     p = BookFactory()
 
-    url = reverse('books:books_delete', kwargs={'pk': p.pk})
+    url = reverse('books:delete', kwargs={'pk': p.pk})
     response = client_logged.get(url, {}, follow=True)
 
     actual = response.content.decode('utf-8')
@@ -360,7 +360,7 @@ def test_view_books_delete(client_logged):
     p = BookFactory()
 
     assert models.Book.objects.all().count() == 1
-    url = reverse('books:books_delete', kwargs={'pk': p.pk})
+    url = reverse('books:delete', kwargs={'pk': p.pk})
 
     client_logged.post(url, {}, follow=True)
 
@@ -370,7 +370,7 @@ def test_view_books_delete(client_logged):
 def test_books_delete_other_user_get_form(client_logged, second_user):
     obj = BookFactory(user=second_user)
 
-    url = reverse('books:books_delete', kwargs={'pk': obj.pk})
+    url = reverse('books:delete', kwargs={'pk': obj.pk})
     response = client_logged.get(url)
 
     actual = response.content.decode('utf-8')
@@ -382,7 +382,7 @@ def test_books_delete_other_user_get_form(client_logged, second_user):
 def test_books_delete_other_user_post_form(client_logged, second_user):
     obj = BookFactory(user=second_user)
 
-    url = reverse('books:books_delete', kwargs={'pk': obj.pk})
+    url = reverse('books:delete', kwargs={'pk': obj.pk})
     client_logged.post(url)
 
     assert models.Book.objects.all().count() == 1
@@ -398,7 +398,7 @@ def test_search_func():
 
 
 def test_search_get_200(client_logged):
-    url = reverse('books:books_search')
+    url = reverse('books:search')
     response = client_logged.get(url)
 
     assert response.status_code == 200
@@ -407,7 +407,7 @@ def test_search_get_200(client_logged):
 def test_search_not_found(client_logged):
     BookFactory()
 
-    url = reverse('books:books_search')
+    url = reverse('books:search')
     response = client_logged.get(url, {'search': 'xxx'})
     actual = response.content.decode('utf-8')
 
@@ -417,7 +417,7 @@ def test_search_not_found(client_logged):
 def test_search_found(client_logged):
     BookFactory()
 
-    url = reverse('books:books_search')
+    url = reverse('books:search')
     response = client_logged.get(url, {'search': '1999 title'})
     actual = response.content.decode('utf-8')
 
@@ -431,7 +431,7 @@ def test_search_pagination_first_page(client_logged):
     i = BookFactory.build_batch(51, user=u)
     Book.objects.bulk_create(i)
 
-    url = reverse('books:books_search')
+    url = reverse('books:search')
     response = client_logged.get(url, {'search': 'title'})
     actual = response.content.decode('utf-8')
 
@@ -443,7 +443,7 @@ def test_search_pagination_second_page(client_logged):
     i = BookFactory.build_batch(51, user=u)
     Book.objects.bulk_create(i)
 
-    url = reverse('books:books_search')
+    url = reverse('books:search')
 
     response = client_logged.get(url, {'page': 2, 'search': 'author'})
     actual = response.content.decode('utf-8')
@@ -455,7 +455,7 @@ def test_search_pagination_second_page(client_logged):
 #                                                                    Target Create/Update
 # ---------------------------------------------------------------------------------------
 def test_target(client_logged):
-    url = reverse('books:books_target_new')
+    url = reverse('books:target_new')
 
     response = client_logged.get(url, {})
     actual = response.content.decode('utf-8')
@@ -465,7 +465,7 @@ def test_target(client_logged):
 
 def test_target_new(client_logged):
     data = {'year': 1999, 'quantity': 66}
-    url = reverse('books:books_target_new')
+    url = reverse('books:target_new')
     client_logged.post(url, data)
 
     assert models.BookTarget.objects.first().quantity == 66
@@ -474,7 +474,7 @@ def test_target_new(client_logged):
 def test_target_new_invalid_data(client_logged):
     data = {'year': -2, 'quantity': 'x'}
 
-    url = reverse('books:books_target_new')
+    url = reverse('books:target_new')
 
     response = client_logged.post(url, data)
 
@@ -487,7 +487,7 @@ def test_target_update(client_logged):
     p = BookTargetFactory()
 
     data = {'year': 1999, 'quantity': 66}
-    url = reverse('books:books_target_update', kwargs={'pk': p.pk})
+    url = reverse('books:target_update', kwargs={'pk': p.pk})
 
     client_logged.post(url, data)
 

@@ -6,6 +6,6 @@
         placeholder="{% translate 'Search' %}..." aria-label="{% translate 'Search' %}">
     </div>
     <div class="col-auto align-self-start">
-        <button type="button" class="btn btn-sm btn-secondary" hx-get="{% url 'books:books_list' %}" hx-target="{{ target }}" onclick="$('#id_search').val('');">{% translate 'Reset' %}</button>
+        <button type="button" class="btn btn-sm btn-secondary" hx-get="{% url 'books:list' %}" hx-target="{{ target }}" onclick="$('#id_search').val('');">{% translate 'Reset' %}</button>
     </div>
 </form>

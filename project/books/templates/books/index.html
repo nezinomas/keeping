@@ -18,23 +18,23 @@
 {% block content %}
 
 <div class="row my-2">
-    {% url 'books:books_search' as search_url %}
+    {% url 'books:search' as search_url %}
     <div class="col-3 text-start" id="search_form_data" hx-trigger="reloadSearch from:body">{% search_form url=search_url target="#book_list" %}</div>
 
-    <div class="col text-center" id="info_row" hx-trigger="load, reload from:body, afterTarget from:body" hx-get="{% url 'books:books_info_row' %}" hx-target="this"></div>
+    <div class="col text-center" id="info_row" hx-trigger="load, reload from:body, afterTarget from:body" hx-get="{% url 'books:info_row' %}" hx-target="this"></div>
 
     <div class="col-3 text-end">
-        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'books:books_new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Book' context 'book add button' %}</button>
-        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'books:books_target_new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{{ year|title }} {% translate 'year goal' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'books:new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Book' context 'book add button' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'books:target_new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{{ year|title }} {% translate 'year goal' %}</button>
     </div>
 </div>
 
 <div class="row">
-    <div id="book_list" class="col-lg-12" hx-trigger="load, reload from:body" hx-get="{% url 'books:books_list' %}{% if all %}?tab=all{% endif %}" hx-target="this"></div>
+    <div id="book_list" class="col-lg-12" hx-trigger="load, reload from:body" hx-get="{% url 'books:list' %}{% if all %}?tab=all{% endif %}" hx-target="this"></div>
 </div>
 
 <div class="row my-2">
-    <div class="col-lg-12" id="chart_readed_books" hx-trigger="load, reload from:body, afterTarget from:body" hx-get="{% url 'books:books_chart_readed' %}" hx-target="this"></div>
+    <div class="col-lg-12" id="chart_readed_books" hx-trigger="load, reload from:body, afterTarget from:body" hx-get="{% url 'books:chart_readed' %}" hx-target="this"></div>
 </div>
 
 {% endblock content %}

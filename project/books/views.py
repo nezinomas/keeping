@@ -107,7 +107,7 @@ class Lists(LoginRequiredMixin, GetQuerysetMixin, ListView):
         context = super().get_context_data(**kwargs)
         context.update({
             'object_list': paginator.get_page(page),
-            'url': reverse("books:books_list"),
+            'url': reverse("books:list"),
             'page_range': page_range,
         })
         return context
@@ -116,16 +116,16 @@ class Lists(LoginRequiredMixin, GetQuerysetMixin, ListView):
 class New(LoginRequiredMixin, CreateUpdateMixin, CreateView):
     model = models.Book
     form_class = forms.BookForm
-    success_url = reverse_lazy('books:books_list')
+    success_url = reverse_lazy('books:list')
 
-    url = reverse_lazy('books:books_new')
+    url = reverse_lazy('books:new')
     form_action = 'insert'
 
 
 class Update(LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView):
     model = models.Book
     form_class = forms.BookForm
-    success_url = reverse_lazy('books:books_list')
+    success_url = reverse_lazy('books:list')
 
     url = lambda self: self.object.get_absolute_url() if self.object else None
     form_action = 'update'
@@ -133,7 +133,7 @@ class Update(LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView
 
 class Delete(LoginRequiredMixin, DeleteMixin, GetQuerysetMixin, DeleteView):
     model = models.Book
-    success_url = reverse_lazy('books:books_list')
+    success_url = reverse_lazy('books:list')
 
     url = lambda self: self.object.get_delete_url() if self.object else None
 
@@ -161,7 +161,7 @@ class Search(LoginRequiredMixin, TemplateView):
             context.update({
                 'object_list': paginator.get_page(page),
                 'search': search_str,
-                'url': reverse("books:books_search"),
+                'url': reverse("books:search"),
                 'page_range': page_range,
             })
         else:
@@ -180,7 +180,7 @@ class TargetNew(LoginRequiredMixin, CreateUpdateMixin, CreateView):
     model = models.BookTarget
     form_class = forms.BookTargetForm
 
-    url = reverse_lazy('books:books_target_new')
+    url = reverse_lazy('books:target_new')
     form_action = 'insert'
     hx_trigger = 'afterTarget'
 

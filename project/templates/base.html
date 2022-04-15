@@ -96,13 +96,13 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu nav-link {% if '/books/' in request.path %}active{% endif %}" href="{% url 'books:books_index' %}">{% translate 'Books' %}</a>
+              <a class="btn btn-menu nav-link {% if '/books/' in request.path %}active{% endif %}" href="{% url 'books:index' %}">{% translate 'Books' %}</a>
               <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/books/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'books:books_index' %}?tab=all">{% translate 'All records' %}</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'books:index' %}?tab=all">{% translate 'All records' %}</a>
                 </li>
               </ul>
             </div>
