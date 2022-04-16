@@ -2,6 +2,7 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
+from django.urls import reverse_lazy
 from django.views.generic import (CreateView, DeleteView, ListView,
                                   TemplateView, UpdateView)
 from django_htmx.http import trigger_client_event
@@ -48,6 +49,10 @@ class CreateViewMixin(LoginRequiredMixin,
                       CreateUpdateMixin,
                       CreateView):
     form_action = 'insert'
+
+    def url(self):
+        app = self.request.resolver_match.app_name
+        return reverse_lazy(f'{app}:new')
 
 
 class UpdateViewMixin(LoginRequiredMixin,

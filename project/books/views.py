@@ -116,8 +116,6 @@ class New(CreateViewMixin):
     form_class = forms.BookForm
     success_url = reverse_lazy('books:list')
 
-    url = reverse_lazy('books:new')
-
 
 class Update(UpdateViewMixin):
     model = models.Book
