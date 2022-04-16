@@ -75,21 +75,22 @@ class ListViewMixin(LoginRequiredMixin,
 class CreateViewMixin(LoginRequiredMixin,
                       CreateUpdateMixin,
                       CreateView):
-    pass
+    form_action = 'insert'
 
 
 class UpdateViewMixin(LoginRequiredMixin,
                       GetQuerysetMixin,
                       CreateUpdateMixin,
                       UpdateView):
-    pass
+    form_action = 'update'
+    url = lambda self: self.object.get_absolute_url() if self.object else None
 
 
 class DeleteViewMixin(LoginRequiredMixin,
                       GetQuerysetMixin,
                       DeleteMixin,
                       DeleteView):
-    pass
+    url = lambda self: self.object.get_delete_url() if self.object else None
 
 
 class ListMixin(ListView):
