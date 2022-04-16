@@ -1,10 +1,12 @@
 import json
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
-from django.utils.translation import gettext as _
 from django.views.generic import (CreateView, DeleteView, ListView,
                                   TemplateView, UpdateView)
 from django_htmx.http import trigger_client_event
+
+from .get import GetQuerysetMixin
 
 
 class CreateUpdateMixin():
@@ -59,12 +61,43 @@ class DeleteMixin():
             return HttpResponse()
 
 
-class IndexMixin(TemplateView):
-    # TODO: delete this class
+class TemplateViewMixin(LoginRequiredMixin,
+                        TemplateView):
+    pass
+
+
+class ListViewMixin(LoginRequiredMixin,
+                    GetQuerysetMixin,
+                    ListView):
+    pass
+
+
+class CreateViewMixin(LoginRequiredMixin,
+                      CreateUpdateMixin,
+                      CreateView):
+    pass
+
+
+class UpdateViewMixin(LoginRequiredMixin,
+                      GetQuerysetMixin,
+                      CreateUpdateMixin,
+                      UpdateView):
+    pass
+
+
+class DeleteViewMixin(LoginRequiredMixin,
+                      GetQuerysetMixin,
+                      DeleteMixin,
+                      DeleteView):
     pass
 
 
 class ListMixin(ListView):
+    # TODO: delete this class
+    pass
+
+
+class IndexMixin(TemplateView):
     # TODO: delete this class
     pass
 

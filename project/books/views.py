@@ -1,18 +1,16 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
-from django.views.generic import (CreateView, DeleteView, ListView,
-                                  TemplateView, UpdateView)
 
 from ..core.forms import SearchForm
 from ..core.lib import search
-from ..core.mixins.get import GetQuerysetMixin
-from ..core.mixins.views import CreateUpdateMixin, DeleteMixin
+from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
+                                 ListViewMixin, TemplateViewMixin,
+                                 UpdateViewMixin)
 from . import forms, models
 
 
-class Index(LoginRequiredMixin, TemplateView):
+class Index(TemplateViewMixin):
     template_name = 'books/index.html'
 
     def get_context_data(self, **kwargs):
@@ -25,7 +23,7 @@ class Index(LoginRequiredMixin, TemplateView):
         return context
 
 
-class ChartReaded(LoginRequiredMixin, TemplateView):
+class ChartReaded(TemplateViewMixin):
     template_name = 'books/chart_readed_books.html'
 
     def get_context_data(self, **kwargs):
@@ -74,7 +72,7 @@ class ChartReaded(LoginRequiredMixin, TemplateView):
         return context
 
 
-class InfoRow(LoginRequiredMixin, TemplateView):
+class InfoRow(TemplateViewMixin):
     template_name = 'books/info_row.html'
 
     def get_context_data(self, **kwargs):
@@ -95,7 +93,7 @@ class InfoRow(LoginRequiredMixin, TemplateView):
         return context
 
 
-class Lists(LoginRequiredMixin, GetQuerysetMixin, ListView):
+class Lists(ListViewMixin):
     model = models.Book
     per_page = 50
 
@@ -113,7 +111,7 @@ class Lists(LoginRequiredMixin, GetQuerysetMixin, ListView):
         return context
 
 
-class New(LoginRequiredMixin, CreateUpdateMixin, CreateView):
+class New(CreateViewMixin):
     model = models.Book
     form_class = forms.BookForm
     success_url = reverse_lazy('books:list')
@@ -122,7 +120,7 @@ class New(LoginRequiredMixin, CreateUpdateMixin, CreateView):
     form_action = 'insert'
 
 
-class Update(LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView):
+class Update(UpdateViewMixin):
     model = models.Book
     form_class = forms.BookForm
     success_url = reverse_lazy('books:list')
@@ -131,14 +129,14 @@ class Update(LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView
     form_action = 'update'
 
 
-class Delete(LoginRequiredMixin, DeleteMixin, GetQuerysetMixin, DeleteView):
+class Delete(DeleteViewMixin):
     model = models.Book
     success_url = reverse_lazy('books:list')
 
     url = lambda self: self.object.get_delete_url() if self.object else None
 
 
-class Search(LoginRequiredMixin, TemplateView):
+class Search(TemplateViewMixin):
     template_name = 'books/book_list.html'
     per_page = 50
 
@@ -176,7 +174,7 @@ class Search(LoginRequiredMixin, TemplateView):
 #----------------------------------------------------------------------------------------
 #                                                                            Target Views
 #----------------------------------------------------------------------------------------
-class TargetNew(LoginRequiredMixin, CreateUpdateMixin, CreateView):
+class TargetNew(CreateViewMixin):
     model = models.BookTarget
     form_class = forms.BookTargetForm
 
@@ -185,7 +183,7 @@ class TargetNew(LoginRequiredMixin, CreateUpdateMixin, CreateView):
     hx_trigger = 'afterTarget'
 
 
-class TargetUpdate(LoginRequiredMixin, CreateUpdateMixin, GetQuerysetMixin, UpdateView):
+class TargetUpdate(UpdateViewMixin):
     model = models.BookTarget
     form_class = forms.BookTargetForm
 
