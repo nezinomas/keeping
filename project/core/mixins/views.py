@@ -36,30 +36,6 @@ class CreateUpdateMixin():
         return response
 
 
-class DeleteMixin():
-    hx_trigger = 'reload'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'url': self.url,
-        })
-
-        return context
-
-    def post(self, *args, **kwargs):
-        if self.get_object():
-            super().post(*args, **kwargs)
-
-            return HttpResponse(
-                status=204,
-                headers={
-                    'HX-Trigger': json.dumps({self.hx_trigger: None}),
-                },
-            )
-        else:
-            return HttpResponse()
-
 
 class TemplateViewMixin(LoginRequiredMixin,
                         TemplateView):
@@ -93,14 +69,35 @@ class UpdateViewMixin(LoginRequiredMixin,
 
 class DeleteViewMixin(LoginRequiredMixin,
                       GetQuerysetMixin,
-                      DeleteMixin,
                       DeleteView):
+    hx_trigger = 'reload'
     def url(self):
         if self.object:
             return self.object.get_delete_url()
 
         return None
 
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'url': self.url,
+        })
+
+        return context
+
+    def post(self, *args, **kwargs):
+        if self.get_object():
+            super().post(*args, **kwargs)
+
+            return HttpResponse(
+                status=204,
+                headers={
+                    'HX-Trigger': json.dumps({self.hx_trigger: None}),
+                },
+            )
+        else:
+            return HttpResponse()
 
 class ListMixin(ListView):
     # TODO: delete this class
