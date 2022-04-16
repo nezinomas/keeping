@@ -31,10 +31,7 @@ class CreateUpdateMixin():
                 self.hx_trigger,
                 {},
             )
-            return response
-
         return response
-
 
 
 class TemplateViewMixin(LoginRequiredMixin,
