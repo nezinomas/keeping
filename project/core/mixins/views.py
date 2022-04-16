@@ -83,14 +83,23 @@ class UpdateViewMixin(LoginRequiredMixin,
                       CreateUpdateMixin,
                       UpdateView):
     form_action = 'update'
-    url = lambda self: self.object.get_absolute_url() if self.object else None
+
+    def url(self):
+        if self.object:
+            return self.object.get_absolute_url()
+
+        return None
 
 
 class DeleteViewMixin(LoginRequiredMixin,
                       GetQuerysetMixin,
                       DeleteMixin,
                       DeleteView):
-    url = lambda self: self.object.get_delete_url() if self.object else None
+    def url(self):
+        if self.object:
+            return self.object.get_delete_url()
+
+        return None
 
 
 class ListMixin(ListView):
