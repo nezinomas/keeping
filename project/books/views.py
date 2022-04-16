@@ -142,7 +142,10 @@ class Search(TemplateViewMixin):
         search_str = self.request.GET.get('search')
         page = self.request.GET.get('page', 1)
         sql = search.search_books(search_str)
-        context = {}
+        context = {
+            'object_list': None,
+            'notice': _('Found nothing'),
+        }
 
         if sql:
             paginator = Paginator(sql, self.per_page)
@@ -153,11 +156,6 @@ class Search(TemplateViewMixin):
                 'search': search_str,
                 'url': reverse("books:search"),
                 'page_range': page_range,
-            })
-        else:
-            context.update({
-                'object_list': None,
-                'notice': _('Found nothing'),
             })
 
         return context
