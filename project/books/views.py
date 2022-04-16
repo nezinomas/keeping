@@ -168,8 +168,6 @@ class TargetNew(CreateViewMixin):
     model = models.BookTarget
     form_class = forms.BookTargetForm
 
-    url = reverse_lazy('books:target_new')
-    form_action = 'insert'
     hx_trigger = 'afterTarget'
 
 
@@ -177,6 +175,4 @@ class TargetUpdate(UpdateViewMixin):
     model = models.BookTarget
     form_class = forms.BookTargetForm
 
-    url = lambda self: self.object.get_absolute_url() if self.object else None
-    form_action = 'update'
     hx_trigger = 'afterTarget'
