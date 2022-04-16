@@ -117,7 +117,6 @@ class New(CreateViewMixin):
     success_url = reverse_lazy('books:list')
 
     url = reverse_lazy('books:new')
-    form_action = 'insert'
 
 
 class Update(UpdateViewMixin):
@@ -125,15 +124,10 @@ class Update(UpdateViewMixin):
     form_class = forms.BookForm
     success_url = reverse_lazy('books:list')
 
-    url = lambda self: self.object.get_absolute_url() if self.object else None
-    form_action = 'update'
-
 
 class Delete(DeleteViewMixin):
     model = models.Book
     success_url = reverse_lazy('books:list')
-
-    url = lambda self: self.object.get_delete_url() if self.object else None
 
 
 class Search(TemplateViewMixin):
