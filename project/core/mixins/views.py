@@ -18,7 +18,6 @@ class CreateUpdateMixin():
             'form_action': self.form_action,
             'url': self.url,
         })
-
         return context
 
     def form_valid(self, form, **kwargs):
@@ -81,7 +80,6 @@ class DeleteViewMixin(LoginRequiredMixin,
         context.update({
             'url': self.url,
         })
-
         return context
 
     def post(self, *args, **kwargs):
