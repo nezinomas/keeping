@@ -71,6 +71,7 @@ class DeleteViewMixin(LoginRequiredMixin,
                       GetQuerysetMixin,
                       DeleteView):
     hx_trigger = 'reload'
+
     def url(self):
         if self.object:
             return self.object.get_delete_url()
@@ -96,8 +97,8 @@ class DeleteViewMixin(LoginRequiredMixin,
                     'HX-Trigger': json.dumps({self.hx_trigger: None}),
                 },
             )
-        else:
-            return HttpResponse()
+        return HttpResponse()
+
 
 class ListMixin(ListView):
     # TODO: delete this class
