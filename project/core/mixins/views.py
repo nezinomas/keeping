@@ -59,7 +59,6 @@ class UpdateViewMixin(LoginRequiredMixin,
     def url(self):
         if self.object:
             return self.object.get_absolute_url()
-
         return None
 
 
@@ -71,9 +70,7 @@ class DeleteViewMixin(LoginRequiredMixin,
     def url(self):
         if self.object:
             return self.object.get_delete_url()
-
         return None
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
