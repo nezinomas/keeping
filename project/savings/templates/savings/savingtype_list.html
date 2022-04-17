@@ -10,7 +10,7 @@
             data-bs-parent="#accordion">
             <div class="accordion-body">
                 {% for item in items %}
-                {% url 'savings:savings_type_update' item.id as url_update %}
+                {% url 'savings:type_update' item.id as url_update %}
                 <div class="list-group-item" data-url="{{ url_update }}">
                     {% if item.closed %}<s>{{ item.title }}</s> <i>{% translate 'closed' %} {{ item.closed|safe }}</i>{% else %}{{ item.title }}{% endif %}
                     <span class="edit-icon">

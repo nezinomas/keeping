@@ -9,7 +9,7 @@
         <div id="collapse_p1" class="accordion-collapse collapse show" aria-labelledby="heading_p1" data-bs-parent="#accordion_p1">
             <div class="accordion-body">
                 {% for item in items %}
-                {% url 'pensions:pensions_type_update' item.id as url_update %}
+                {% url 'pensions:type_update' item.id as url_update %}
                 <div class="list-group-item" data-url="{{ url_update }}">{{ item.title }}
                     <span class="edit-icon">
                         <button type="button" data-url="{{ url_update }}" class="btn btn-super-sm edit"><i class="bi bi-pencil-fill"></i></button>

@@ -87,7 +87,7 @@
           </li>
 
           <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'savings_index' %}active{% endif %}" href="{% url 'savings:savings_index' %}">{% translate 'Savings' %}</a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" href="{% url 'savings:index' %}">{% translate 'Savings' %}</a>
           </li>
 
           <li class="nav-item">
@@ -181,7 +181,7 @@
                   <button class="dropdown-item btn-sm" data-url="{% url 'transactions:transactions_new' %}">{% translate 'Transactions' context "transactions button" %}</button>
                 </li>
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'savings:savings_new' %}">{% translate 'Savings' context "savings button" %}</button>
+                  <button class="dropdown-item btn-sm" data-url="{% url 'savings:new' %}">{% translate 'Savings' context "savings button" %}</button>
                 </li>
                 <li>
                   <hr class="dropdown-divider">
@@ -199,7 +199,7 @@
                   <button class="dropdown-item btn-sm" data-url="{% url 'expenses:expenses_name_new' %}">{% translate "Expenses name" context "expenses name button" %}</button>
                 </li>
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'savings:savings_type_new' %}">{% translate 'Fund' context 'fund button' %}</button>
+                  <button class="dropdown-item btn-sm" data-url="{% url 'savings:type_new' %}">{% translate 'Fund' context 'fund button' %}</button>
                 </li>
               </ul>
             </div>
