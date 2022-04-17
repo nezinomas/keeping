@@ -9,8 +9,6 @@ from ...accounts.factories import AccountFactory
 from .. import models, views
 from ..factories import Income, IncomeFactory, IncomeTypeFactory
 
-X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
-
 pytestmark = pytest.mark.django_db
 
 
@@ -63,13 +61,12 @@ def test_types_update_func():
 def test_income_load_form(client_logged):
     url = reverse('incomes:new')
 
-    response = client_logged.get(url, {}, **X_Req)
+    response = client_logged.get(url)
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    actual = response.content.decode('utf-8')
 
     assert response.status_code == 200
-    assert '1999-01-01' in actual['html_form']
+    assert '1999-01-01' in actual
 
 
 def test_income_save(client_logged):
@@ -85,16 +82,14 @@ def test_income_save(client_logged):
 
     url = reverse('incomes:new')
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    actual = response.content.decode('utf-8')
 
-    assert actual['form_is_valid']
-    assert '1999-01-01' in actual['html_list']
-    assert '1,05' in actual['html_list']
-    assert 'Account1' in actual['html_list']
-    assert 'Income Type' in actual['html_list']
+    assert '1999-01-01' in actual
+    assert '1,05' in actual
+    assert 'Account1' in actual
+    assert 'Income Type' in actual
 
 
 def test_income_save_invalid_data(client_logged):
@@ -107,25 +102,20 @@ def test_income_save_invalid_data(client_logged):
 
     url = reverse('incomes:new')
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data)
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    actual = response.context['form']
 
-    assert not actual['form_is_valid']
+    assert not actual.is_valid()
 
 
 def test_incomes_load_update_form(client_logged):
     i = IncomeFactory()
     url = reverse('incomes:update', kwargs={'pk': i.pk})
 
-    response = client_logged.get(url, **X_Req)
+    response = client_logged.get(url)
 
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
+    form = response.context.get('form').as_p()
 
     assert '1999-01-01' in form
     assert '1000.62' in form
@@ -140,13 +130,9 @@ def test_incomes_not_load_other_journal(client_logged, second_user):
     obj = IncomeFactory(income_type=it, price=666, account=a)
 
     url = reverse('incomes:update', kwargs={'pk': obj.pk})
-    response = client_logged.get(url, **X_Req)
+    response = client_logged.get(url)
 
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
+    form = response.context.get('form')
 
     assert it.title not in form
     assert str(obj.price) not in form
@@ -164,15 +150,10 @@ def test_income_update_to_another_year(client_logged):
     }
     url = reverse('incomes:update', kwargs={'pk': income.pk})
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
+    actual = response.content.decode('utf-8')
 
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
-    assert '2010-12-31' not in actual['html_list']
+    assert '2010-12-31' not in actual
 
 
 def test_income_update(client_logged):
@@ -187,17 +168,12 @@ def test_income_update(client_logged):
     }
     url = reverse('incomes:update', kwargs={'pk': income.pk})
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
+    actual = response.content.decode('utf-8')
 
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
-    assert '1999-12-31' in actual['html_list']
-    assert '150' in actual['html_list']
-    assert 'Pastaba' in actual['html_list']
+    assert '1999-12-31' in actual
+    assert '150' in actual
+    assert 'Pastaba' in actual
 
 
 @freeze_time('2000-03-03')
@@ -213,15 +189,7 @@ def test_incomes_update_past_record(get_user, client_logged):
         'income_type': 1,
     }
     url = reverse('incomes:update', kwargs={'pk': i.pk})
-
-    response = client_logged.post(url, data, **X_Req)
-
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
+    client_logged.post(url, data, follow=True)
 
     actual = models.Income.objects.get(pk=i.pk)
     assert actual.date == date(1997, 12, 12)
@@ -235,7 +203,7 @@ def test_incomes_index_search_form(client_logged):
     url = reverse('incomes:index')
     response = client_logged.get(url).content.decode('utf-8')
 
-    assert '<input type="text" name="search"' in response
+    assert '<input type="search" name="search"' in response
     assert reverse('incomes:search') in response
 
 
@@ -262,14 +230,11 @@ def test_view_incomes_delete_load_form(client_logged):
     p = IncomeFactory()
 
     url = reverse('incomes:delete', kwargs={'pk': p.pk})
-    response = client_logged.get(url, {}, **X_Req)
+    response = client_logged.get(url)
 
-    json_str = response.content
-    actual = json.loads(json_str)
-    actual = actual['html_form']
+    actual = response.content.decode('utf-8')
 
-    assert response.status_code == 200
-    assert '<form method="post"' in actual
+    assert '<form method="POST"' in actual
     assert f'Ar tikrai norite ištrinti: <strong>{p}</strong>?' in actual
 
 
@@ -279,9 +244,9 @@ def test_view_incomes_delete(client_logged):
     assert models.Income.objects.all().count() == 1
     url = reverse('incomes:delete', kwargs={'pk': p.pk})
 
-    response = client_logged.post(url, {}, **X_Req)
+    response = client_logged.post(url, {}, follow=True)
 
-    assert response.status_code == 200
+    assert response.status_code == 204
 
     assert models.Income.objects.all().count() == 0
 
@@ -291,15 +256,13 @@ def test_incomes_delete_other_journal_get_form(client_logged, second_user):
     i2 = IncomeFactory(income_type=it2, price=666)
 
     url = reverse('incomes:delete', kwargs={'pk': i2.pk})
-    response = client_logged.get(url, **X_Req)
+    response = client_logged.get(url)
 
-    assert response.status_code == 200
+    form = response.content.decode('utf-8')
+    print('form', form)
 
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
-
-    assert 'SRSLY' in form
+    assert '<form method="POST" hx-post="None"' in form
+    assert 'Ar tikrai norite ištrinti: <strong>None</strong>' in form
 
 
 def test_incomes_delete_other_journal_post_form(client_logged, second_user):
@@ -307,7 +270,7 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
     i2 = IncomeFactory(income_type=it2, price=666)
 
     url = reverse('incomes:delete', kwargs={'pk': i2.pk})
-    client_logged.post(url, **X_Req)
+    client_logged.post(url)
 
     assert Income.objects.all().count() == 1
 
@@ -319,7 +282,7 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
 def test_type_load_form(client_logged):
     url = reverse('incomes:type_new')
 
-    response = client_logged.get(url, {}, **X_Req)
+    response = client_logged.get(url)
 
     assert response.status_code == 200
 
@@ -332,13 +295,11 @@ def test_type_save(client_logged):
 
     url = reverse('incomes:type_new')
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    actual = response.content.decode('utf-8')
 
-    assert actual['form_is_valid']
-    assert 'TTT' in actual['html_list']
+    assert 'TTT' in actual
 
 
 def test_type_save_invalid_data(client_logged):
@@ -346,12 +307,11 @@ def test_type_save_invalid_data(client_logged):
 
     url = reverse('incomes:type_new')
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data)
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    form = response.context.get('form')
 
-    assert not actual['form_is_valid']
+    assert not form.is_valid()
 
 
 def test_type_update(client_logged):
@@ -360,15 +320,10 @@ def test_type_update(client_logged):
     data = {'title': 'TTT', 'type': 'other'}
     url = reverse('incomes:type_update', kwargs={'pk': income.pk})
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
+    actual = response.content.decode('utf-8')
 
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
-    assert 'TTT' in actual['html_list']
+    assert 'TTT' in actual
 
 
 def test_income_type_not_load_other_journal(client_logged, main_user, second_user):
@@ -376,15 +331,12 @@ def test_income_type_not_load_other_journal(client_logged, main_user, second_use
     obj = IncomeTypeFactory(title='yyy', journal=second_user.journal)
 
     url = reverse('incomes:type_update', kwargs={'pk': obj.pk})
-    response = client_logged.get(url, **X_Req)
+    response = client_logged.get(url)
 
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
+    form = response.content.decode('utf-8')
 
     assert obj.title not in form
+    assert '<form method="POST" hx-post="None"' in form
 
 
 def test_view_index_200(client_logged):
@@ -392,21 +344,12 @@ def test_view_index_200(client_logged):
 
     assert response.status_code == 200
 
-    assert 'incomes' in response.context
-    assert 'categories' in response.context
+    assert 'form' in response.context
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                          Incomes Search
 # ---------------------------------------------------------------------------------------
-@pytest.fixture()
-def _search_form_data():
-    return ([
-        {"name":"csrfmiddlewaretoken", "value":"xxx"},
-        {"name":"search", "value":"1999 type"},
-    ])
-
-
 def test_search_func():
     view = resolve('/incomes/search/')
 
@@ -419,109 +362,36 @@ def test_search_get_200(client_logged):
 
     assert response.status_code == 200
 
-
-def test_search_get_302(client):
-    url = reverse('incomes:search')
-    response = client.get(url)
-
-    assert response.status_code == 302
-
-
-def test_search_post_200(client_logged, _search_form_data):
-    form_data = json.dumps(_search_form_data)
-    url = reverse('incomes:search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    assert response.status_code == 200
-
-
-def test_search_post_404(client_logged):
-    url = reverse('incomes:search')
-    response = client_logged.post(url)
-
-    assert response.status_code == 404
-
-
-def test_search_post_500(client_logged):
-    form_data = json.dumps([{'x': 'y'}])
-    url = reverse('incomes:search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    assert response.status_code == 500
-
-
-def test_search_bad_json_data(client_logged):
-    form_data = "{'x': 'y'}"
-    url = reverse('incomes:search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    assert response.status_code == 500
-
-
-def test_search_form_is_not_valid(client_logged, _search_form_data):
-    _search_form_data[1]['value'] = '@#$%^&*xxxx'  # search
-    form_data = json.dumps(_search_form_data)
-
-    url = reverse('incomes:search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    actual = json.loads(response.content)
-
-    assert not actual['form_is_valid']
-
-
-def test_search_form_is_valid(client_logged, _search_form_data):
-    form_data = json.dumps(_search_form_data)
-
-    url = reverse('incomes:search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    actual = json.loads(response.content)
-
-    assert actual['form_is_valid']
-
-
-def test_search_not_found(client_logged, _search_form_data):
+def test_search_not_found(client_logged):
     IncomeFactory()
 
-    _search_form_data[1]['value'] = 'xxxx'
-    form_data = json.dumps(_search_form_data)
-
     url = reverse('incomes:search')
-    response = client_logged.post(url, {'form_data': form_data})
-    actual = json.loads(response.content)
+    response = client_logged.get(url, {'search': 'xxx'})
+    actual = response.content.decode('utf-8')
 
-    assert 'Nieko nerasta' in actual['html']
+    assert 'Nieko nerasta' in actual
 
 
-def test_search_found(client_logged, _search_form_data):
+def test_search_found(client_logged):
     IncomeFactory()
 
-    form_data = json.dumps(_search_form_data)
-
     url = reverse('incomes:search')
-    response = client_logged.post(url, {'form_data': form_data})
-    actual = json.loads(response.content)
+    response = client_logged.get(url, {'search': '1999 type'})
+    actual = response.content.decode('utf-8')
 
-    assert '1999-01-01' in actual['html']
-    assert 'remark' in actual['html']
+    assert '1999-01-01' in actual
+    assert 'remark' in actual
 
 
-def test_search_pagination_first_page(client_logged, _search_form_data):
+def test_search_pagination_first_page(client_logged):
     a = AccountFactory()
     t = IncomeTypeFactory()
     i = IncomeFactory.build_batch(51, account=a, income_type=t)
     Income.objects.bulk_create(i)
 
-    form_data = json.dumps(_search_form_data)
-
     url = reverse('incomes:search')
-    response = client_logged.post(url, {'form_data': form_data})
-    actual = json.loads(response.content)
-
-    assert 'html' in actual
-
-    actual = actual['html']
+    response = client_logged.get(url, {'search': '1999 type'})
+    actual = response.content.decode('utf-8')
 
     assert actual.count('Income Type') == 50
 
@@ -535,10 +405,6 @@ def test_search_pagination_second_page(client_logged):
     url = reverse('incomes:search')
 
     response = client_logged.get(url, {'page': 2, 'search': 'type'})
-    actual = json.loads(response.content)
-
-    assert 'ajax-content' in actual
-
-    actual = actual['ajax-content']
+    actual = response.content.decode('utf-8')
 
     assert actual.count('Income Type') == 1
