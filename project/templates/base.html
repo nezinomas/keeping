@@ -87,7 +87,7 @@
           </li>
 
           <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" href="{% url 'savings:index' %}">{% translate 'Savings' %}</a>
+            <a class="nav-link {% if '/savings/' in request.path %}active{% endif %}" href="{% url 'savings:index' %}">{% translate 'Savings' %}</a>
           </li>
 
           <li class="nav-item">
