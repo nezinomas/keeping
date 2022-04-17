@@ -13,30 +13,6 @@ from ...core.lib import search
 from .get import GetQuerysetMixin
 
 
-class CreateUpdateMixin():
-    hx_trigger = 'reload'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'form_action': self.form_action,
-            'url': self.url,
-        })
-        return context
-
-    def form_valid(self, form, **kwargs):
-        response = super().form_valid(form)
-
-        if self.request.htmx:
-            response.status_code = 204
-            trigger_client_event(
-                response,
-                self.hx_trigger,
-                {},
-            )
-        return response
-
-
 class SearchMixin(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -73,15 +49,28 @@ class SearchMixin(LoginRequiredMixin, TemplateView):
         return getattr(search, self.search_method)
 
 
-class TemplateViewMixin(LoginRequiredMixin,
-                        TemplateView):
-    pass
+class CreateUpdateMixin():
+    hx_trigger = 'reload'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'form_action': self.form_action,
+            'url': self.url,
+        })
+        return context
 
-class ListViewMixin(LoginRequiredMixin,
-                    GetQuerysetMixin,
-                    ListView):
-    pass
+    def form_valid(self, form, **kwargs):
+        response = super().form_valid(form)
+
+        if self.request.htmx:
+            response.status_code = 204
+            trigger_client_event(
+                response,
+                self.hx_trigger,
+                {},
+            )
+        return response
 
 
 class CreateViewMixin(LoginRequiredMixin,
@@ -134,6 +123,17 @@ class DeleteViewMixin(LoginRequiredMixin,
                 },
             )
         return HttpResponse()
+
+
+class TemplateViewMixin(LoginRequiredMixin,
+                        TemplateView):
+    pass
+
+
+class ListViewMixin(LoginRequiredMixin,
+                    GetQuerysetMixin,
+                    ListView):
+    pass
 
 
 class ListMixin(ListView):
