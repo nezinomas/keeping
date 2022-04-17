@@ -4,9 +4,6 @@ from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
 from . import forms, models
 
 
-#----------------------------------------------------------------------------------------
-#                                                                           Pension views
-#----------------------------------------------------------------------------------------
 class Lists(DispatchListsMixin, ListMixin):
     model = models.Pension
 
@@ -25,9 +22,6 @@ class Delete(DeleteAjaxMixin):
     model = models.Pension
 
 
-#----------------------------------------------------------------------------------------
-#                                                                       PensionType views
-#----------------------------------------------------------------------------------------
 class TypeLists(DispatchListsMixin, ListMixin):
     model = models.PensionType
 
