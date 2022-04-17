@@ -23,7 +23,9 @@ class Index(TemplateViewMixin):
 #----------------------------------------------------------------------------------------
 #                                                                                  Income
 #----------------------------------------------------------------------------------------
-class GetQuerySetMixin():
+class Lists(ListViewMixin):
+    model = models.Income
+
     def get_queryset(self):
         return (
             super()
@@ -32,17 +34,13 @@ class GetQuerySetMixin():
         )
 
 
-class Lists(GetQuerySetMixin, ListViewMixin):
-    model = models.Income
-
-
 class New(CreateViewMixin):
     model = models.Income
     form_class = forms.IncomeForm
     success_url = reverse_lazy('incomes:list')
 
 
-class Update(GetQuerySetMixin, UpdateViewMixin):
+class Update(UpdateViewMixin):
     model = models.Income
     form_class = forms.IncomeForm
     success_url = reverse_lazy('incomes:list')
