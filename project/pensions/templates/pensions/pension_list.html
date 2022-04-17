@@ -2,7 +2,7 @@
 {% load i18n %}
 {% load slippers %}
 
-{% if items %}
+{% if object_list %}
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
@@ -15,15 +15,15 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in items %}
-        {% url 'pensions:update' item.id as url_update %}
-        {% url 'pensions:delete' item.id as url_delete %}
-        <tr data-url="{{ url_update }}" class="dblclick">
-            <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-start">{{ item.pension_type }}</td>
-            <td class="text-start">{{ item.remark }}</td>
-            <td>{{ item.price|default_if_none:'-'|intcomma }}</td>
-            <td>{{ item.fee|default_if_none:'-'|intcomma }}</td>
+        {% for object in object_list %}
+        {% url 'pensions:update' object.id as url_update %}
+        {% url 'pensions:delete' object.id as url_delete %}
+        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#dialog">
+            <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ object.pension_type }}</td>
+            <td class="text-start">{{ object.remark }}</td>
+            <td>{{ object.price|default_if_none:'-'|intcomma }}</td>
+            <td>{{ object.fee|default_if_none:'-'|intcomma }}</td>
             {% edit_cell url=url_update %}
             {% delete_cell url=url_delete %}
         </tr>
