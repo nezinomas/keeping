@@ -20,7 +20,8 @@
 
 <div class="row my-2">
     {% url 'books:search' as search_url %}
-    <div class="col-3 text-start" id="search_form_data" hx-trigger="reloadSearch from:body">{% search_form url=search_url target="#book_list" %}</div>
+    {% url 'books:list' as reset_url %}
+    <div class="col-3 text-start" id="search_form_data" hx-trigger="reloadSearch from:body">{% search_form url=search_url reset_url=reset_url target="#book_list" %}</div>
 
     <div class="col text-center" id="info_row" hx-trigger="load, reload from:body, afterTarget from:body" hx-get="{% url 'books:info_row' %}" hx-target="this"></div>
 
