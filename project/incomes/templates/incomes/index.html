@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
 {% load static %}
+{% load slippers %}
 {% load i18n %}
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
-<script src="{% static 'js/reload_stats.js' %}"></script>
 
 <style>
     .incomes-types-col {
@@ -19,30 +19,30 @@
 <!-- Loader -->
 <div class="loader loader-default" id="loader"></div>
 
-{% url 'incomes:new' as url_incomes %}
-{% url 'incomes:type_new' as url_type_new %}
 <div class="row gx-2">
     <div class="col-lg-8">
         <div class="row my-2">
-            <div class="col" id="search_form_data">{{ search }}</div>
+            {% url 'incomes:search' as search_url %}
+            {% url 'incomes:list' as reset_url %}
+            <div class="col" id="search_form_data" hx-trigger="reloadSearch from:body">{% search_form url=search_url reset_url=reset_url target="#income_list" %}</div>
             <div class="col-auto text-end">
-                <button type="button" class="btn btn-sm btn-outline-success w5" data-url="{{ url_incomes }}"><i class="bi bi-plus"></i>{% translate 'Incomes' context 'incomes button' %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success w5" hx-get="{% url 'incomes:new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Incomes' context 'incomes button' %}</button>
             </div>
         </div>
         <div class="row">
-            <div id="ajax-content" class="col">{{ incomes }}</div>
+            <div id="income_list" class="col" hx-trigger="load, reload from:body, afterType from:body" hx-get="{% url 'incomes:list' %}" hx-target="this"></div>
         </div>
     </div>
 
     <div class="col-lg-4">
         <div class="row my-2">
             <div class="col-lg-12 text-end">
-                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_type_new }}"><i class="bi bi-plus"></i>{% translate 'Incomes type' context 'income type button' %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'incomes:type_new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Incomes type' context 'income type button' %}</button>
             </div>
         </div>
 
         <div class="row incomes-types-col">
-            <div id="ajax-content-categories" class="col">{{ categories }}</div>
+            <div id="incometype_list" class="col" hx-trigger="load, afterType from:body" hx-get="{% url 'incomes:type_list' %}" hx-target="this"></div>
         </div>
     </div>
 </div>
