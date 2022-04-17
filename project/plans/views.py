@@ -31,7 +31,7 @@ class Index(IndexMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['expenses_list'] = ExpensesLists.as_view()(self.request, as_string=True)
-        context['incomes_list'] = IncomesLists.as_view()(self.request, as_string=True)
+        context['list'] = IncomesLists.as_view()(self.request, as_string=True)
         context['savings_list'] = SavingsLists.as_view()(self.request, as_string=True)
         context['day_list'] = DayLists.as_view()(self.request, as_string=True)
         context['necessary_list'] = NecessaryLists.as_view()(self.request, as_string=True)
