@@ -7,41 +7,41 @@ urlpatterns = [
     path(
         'savings/',
         views.Index.as_view(),
-        name='savings_index'
+        name='index'
     ),
     path(
         'savings/lists/',
         views.Lists.as_view(),
-        name='savings_list'
+        name='list'
     ),
     path(
         'savings/new/',
         views.New.as_view(),
-        name='savings_new'
+        name='new'
     ),
     path(
         'savings/update/<int:pk>/',
         views.Update.as_view(),
-        name='savings_update'
+        name='update'
     ),
     path(
         'savings/delete/<int:pk>/',
         views.Delete.as_view(),
-        name='savings_delete'
+        name='delete'
     ),
     path(
         'savings/type/',
         views.TypeLists.as_view(),
-        name='savings_type_list'
+        name='type_list'
     ),
     path(
         'savings/type/new/',
         views.TypeNew.as_view(),
-        name='savings_type_new'
+        name='type_new'
     ),
     path(
         'savings/type/update/<int:pk>/',
         views.TypeUpdate.as_view(),
-        name='savings_type_update'
+        name='type_update'
     ),
 ]
