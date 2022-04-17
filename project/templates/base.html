@@ -79,7 +79,7 @@
           </li>
 
           <li class="nav-item">
-            <a class="nav-link {% if '/incomes/' in request.path %}active{% endif %}" href="{% url 'incomes:incomes_index' %}">{% translate 'Incomes' %}</a>
+            <a class="nav-link {% if '/incomes/' in request.path %}active{% endif %}" href="{% url 'incomes:index' %}">{% translate 'Incomes' %}</a>
           </li>
 
           <li class="nav-item">
@@ -172,7 +172,7 @@
               <button type="button" class="btn btn-menu dropdown-toggle nav-link" data-bs-toggle="dropdown" aria-expanded="false">{% translate 'Add' %}</button>
               <ul class="dropdown-menu">
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'incomes:incomes_new' %}">{% translate 'Incomes' context 'incomes button' %}</button>
+                  <button class="dropdown-item btn-sm" data-url="{% url 'incomes:new' %}">{% translate 'Incomes' context 'incomes button' %}</button>
                 </li>
                 <li>
                   <button class="dropdown-item btn-sm" data-url="{% url 'expenses:expenses_new' %}">{% translate "Expenses" context "expenses button" %}</button>
@@ -190,7 +190,7 @@
                   <button class="dropdown-item btn-sm" data-url="{% url 'accounts:accounts_new' %}">{% translate 'Account' context 'account button' %}</button>
                 </li>
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'incomes:incomes_type_new' %}">{% translate 'Incomes type' context 'income type button' %}</button>
+                  <button class="dropdown-item btn-sm" data-url="{% url 'incomes:type_new' %}">{% translate 'Incomes type' context 'income type button' %}</button>
                 </li>
                 <li>
                   <button class="dropdown-item btn-sm" data-url="{% url 'expenses:expenses_type_new' %}">{% translate "Expenses type" context "expenses type button" %}</button>

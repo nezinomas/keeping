@@ -61,7 +61,7 @@ def test_types_update_func():
 
 @freeze_time('2000-01-01')
 def test_income_load_form(client_logged):
-    url = reverse('incomes:incomes_new')
+    url = reverse('incomes:new')
 
     response = client_logged.get(url, {}, **X_Req)
 
@@ -83,7 +83,7 @@ def test_income_save(client_logged):
         'income_type': i.pk
     }
 
-    url = reverse('incomes:incomes_new')
+    url = reverse('incomes:new')
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -105,7 +105,7 @@ def test_income_save_invalid_data(client_logged):
         'income_type': 'x'
     }
 
-    url = reverse('incomes:incomes_new')
+    url = reverse('incomes:new')
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -117,7 +117,7 @@ def test_income_save_invalid_data(client_logged):
 
 def test_incomes_load_update_form(client_logged):
     i = IncomeFactory()
-    url = reverse('incomes:incomes_update', kwargs={'pk': i.pk})
+    url = reverse('incomes:update', kwargs={'pk': i.pk})
 
     response = client_logged.get(url, **X_Req)
 
@@ -139,7 +139,7 @@ def test_incomes_not_load_other_journal(client_logged, second_user):
     it = IncomeTypeFactory(title='yyy', journal=j)
     obj = IncomeFactory(income_type=it, price=666, account=a)
 
-    url = reverse('incomes:incomes_update', kwargs={'pk': obj.pk})
+    url = reverse('incomes:update', kwargs={'pk': obj.pk})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -162,7 +162,7 @@ def test_income_update_to_another_year(client_logged):
         'account': 1,
         'income_type': 1
     }
-    url = reverse('incomes:incomes_update', kwargs={'pk': income.pk})
+    url = reverse('incomes:update', kwargs={'pk': income.pk})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -185,7 +185,7 @@ def test_income_update(client_logged):
         'account': 1,
         'income_type': 1
     }
-    url = reverse('incomes:incomes_update', kwargs={'pk': income.pk})
+    url = reverse('incomes:update', kwargs={'pk': income.pk})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -212,7 +212,7 @@ def test_incomes_update_past_record(get_user, client_logged):
         'account': 1,
         'income_type': 1,
     }
-    url = reverse('incomes:incomes_update', kwargs={'pk': i.pk})
+    url = reverse('incomes:update', kwargs={'pk': i.pk})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -232,11 +232,11 @@ def test_incomes_update_past_record(get_user, client_logged):
 
 
 def test_incomes_index_search_form(client_logged):
-    url = reverse('incomes:incomes_index')
+    url = reverse('incomes:index')
     response = client_logged.get(url).content.decode('utf-8')
 
     assert '<input type="text" name="search"' in response
-    assert reverse('incomes:incomes_search') in response
+    assert reverse('incomes:search') in response
 
 
 # ---------------------------------------------------------------------------------------
@@ -251,7 +251,7 @@ def test_view_incomes_delete_func():
 def test_view_incomes_delete_200(client_logged):
     p = IncomeFactory()
 
-    url = reverse('incomes:incomes_delete', kwargs={'pk': p.pk})
+    url = reverse('incomes:delete', kwargs={'pk': p.pk})
 
     response = client_logged.get(url)
 
@@ -261,7 +261,7 @@ def test_view_incomes_delete_200(client_logged):
 def test_view_incomes_delete_load_form(client_logged):
     p = IncomeFactory()
 
-    url = reverse('incomes:incomes_delete', kwargs={'pk': p.pk})
+    url = reverse('incomes:delete', kwargs={'pk': p.pk})
     response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
@@ -277,7 +277,7 @@ def test_view_incomes_delete(client_logged):
     p = IncomeFactory()
 
     assert models.Income.objects.all().count() == 1
-    url = reverse('incomes:incomes_delete', kwargs={'pk': p.pk})
+    url = reverse('incomes:delete', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, {}, **X_Req)
 
@@ -290,7 +290,7 @@ def test_incomes_delete_other_journal_get_form(client_logged, second_user):
     it2 = IncomeTypeFactory(title='yyy', journal=second_user.journal)
     i2 = IncomeFactory(income_type=it2, price=666)
 
-    url = reverse('incomes:incomes_delete', kwargs={'pk': i2.pk})
+    url = reverse('incomes:delete', kwargs={'pk': i2.pk})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -306,7 +306,7 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
     it2 = IncomeTypeFactory(title='yyy', journal=second_user.journal)
     i2 = IncomeFactory(income_type=it2, price=666)
 
-    url = reverse('incomes:incomes_delete', kwargs={'pk': i2.pk})
+    url = reverse('incomes:delete', kwargs={'pk': i2.pk})
     client_logged.post(url, **X_Req)
 
     assert Income.objects.all().count() == 1
@@ -317,7 +317,7 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
 # ----------------------------------------------------------------------------
 @freeze_time('2000-01-01')
 def test_type_load_form(client_logged):
-    url = reverse('incomes:incomes_type_new')
+    url = reverse('incomes:type_new')
 
     response = client_logged.get(url, {}, **X_Req)
 
@@ -330,7 +330,7 @@ def test_type_save(client_logged):
         'type': 'salary',
     }
 
-    url = reverse('incomes:incomes_type_new')
+    url = reverse('incomes:type_new')
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -344,7 +344,7 @@ def test_type_save(client_logged):
 def test_type_save_invalid_data(client_logged):
     data = {'title': ''}
 
-    url = reverse('incomes:incomes_type_new')
+    url = reverse('incomes:type_new')
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -358,7 +358,7 @@ def test_type_update(client_logged):
     income = IncomeTypeFactory()
 
     data = {'title': 'TTT', 'type': 'other'}
-    url = reverse('incomes:incomes_type_update', kwargs={'pk': income.pk})
+    url = reverse('incomes:type_update', kwargs={'pk': income.pk})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -375,7 +375,7 @@ def test_income_type_not_load_other_journal(client_logged, main_user, second_use
     IncomeTypeFactory(title='xxx', journal=main_user.journal)
     obj = IncomeTypeFactory(title='yyy', journal=second_user.journal)
 
-    url = reverse('incomes:incomes_type_update', kwargs={'pk': obj.pk})
+    url = reverse('incomes:type_update', kwargs={'pk': obj.pk})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -414,14 +414,14 @@ def test_search_func():
 
 
 def test_search_get_200(client_logged):
-    url = reverse('incomes:incomes_search')
+    url = reverse('incomes:search')
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_search_get_302(client):
-    url = reverse('incomes:incomes_search')
+    url = reverse('incomes:search')
     response = client.get(url)
 
     assert response.status_code == 302
@@ -429,14 +429,14 @@ def test_search_get_302(client):
 
 def test_search_post_200(client_logged, _search_form_data):
     form_data = json.dumps(_search_form_data)
-    url = reverse('incomes:incomes_search')
+    url = reverse('incomes:search')
     response = client_logged.post(url, {'form_data': form_data})
 
     assert response.status_code == 200
 
 
 def test_search_post_404(client_logged):
-    url = reverse('incomes:incomes_search')
+    url = reverse('incomes:search')
     response = client_logged.post(url)
 
     assert response.status_code == 404
@@ -444,7 +444,7 @@ def test_search_post_404(client_logged):
 
 def test_search_post_500(client_logged):
     form_data = json.dumps([{'x': 'y'}])
-    url = reverse('incomes:incomes_search')
+    url = reverse('incomes:search')
     response = client_logged.post(url, {'form_data': form_data})
 
     assert response.status_code == 500
@@ -452,7 +452,7 @@ def test_search_post_500(client_logged):
 
 def test_search_bad_json_data(client_logged):
     form_data = "{'x': 'y'}"
-    url = reverse('incomes:incomes_search')
+    url = reverse('incomes:search')
     response = client_logged.post(url, {'form_data': form_data})
 
     assert response.status_code == 500
@@ -462,7 +462,7 @@ def test_search_form_is_not_valid(client_logged, _search_form_data):
     _search_form_data[1]['value'] = '@#$%^&*xxxx'  # search
     form_data = json.dumps(_search_form_data)
 
-    url = reverse('incomes:incomes_search')
+    url = reverse('incomes:search')
     response = client_logged.post(url, {'form_data': form_data})
 
     actual = json.loads(response.content)
@@ -473,7 +473,7 @@ def test_search_form_is_not_valid(client_logged, _search_form_data):
 def test_search_form_is_valid(client_logged, _search_form_data):
     form_data = json.dumps(_search_form_data)
 
-    url = reverse('incomes:incomes_search')
+    url = reverse('incomes:search')
     response = client_logged.post(url, {'form_data': form_data})
 
     actual = json.loads(response.content)
@@ -487,7 +487,7 @@ def test_search_not_found(client_logged, _search_form_data):
     _search_form_data[1]['value'] = 'xxxx'
     form_data = json.dumps(_search_form_data)
 
-    url = reverse('incomes:incomes_search')
+    url = reverse('incomes:search')
     response = client_logged.post(url, {'form_data': form_data})
     actual = json.loads(response.content)
 
@@ -499,7 +499,7 @@ def test_search_found(client_logged, _search_form_data):
 
     form_data = json.dumps(_search_form_data)
 
-    url = reverse('incomes:incomes_search')
+    url = reverse('incomes:search')
     response = client_logged.post(url, {'form_data': form_data})
     actual = json.loads(response.content)
 
@@ -515,7 +515,7 @@ def test_search_pagination_first_page(client_logged, _search_form_data):
 
     form_data = json.dumps(_search_form_data)
 
-    url = reverse('incomes:incomes_search')
+    url = reverse('incomes:search')
     response = client_logged.post(url, {'form_data': form_data})
     actual = json.loads(response.content)
 
@@ -532,7 +532,7 @@ def test_search_pagination_second_page(client_logged):
     i = IncomeFactory.build_batch(51, account=a, income_type=t)
     Income.objects.bulk_create(i)
 
-    url = reverse('incomes:incomes_search')
+    url = reverse('incomes:search')
 
     response = client_logged.get(url, {'page': 2, 'search': 'type'})
     actual = json.loads(response.content)

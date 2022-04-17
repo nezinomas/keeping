@@ -29,13 +29,13 @@
                 <h6>{% translate 'Incomes' %}</h6>
             </div>
             <div class="col-3 text-end">
-                {% url 'plans:incomes_plan_new' as url_incomes_new %}
+                {% url 'plans:incomes_plan_new' as url_new %}
                 <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'plans:copy_plans' %}"><i class="bi bi-stickies"></i> {% translate 'Copy plans' %}</button>
-                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_incomes_new }}"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_new }}"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
         <div class="row">
-            <div id="incomes_list" class="col-lg-12">{{ incomes_list }}</div>
+            <div id="list" class="col-lg-12">{{ list }}</div>
         </div>
 
         <!-- expenses plans -->

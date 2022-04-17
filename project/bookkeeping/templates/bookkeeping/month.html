@@ -113,8 +113,8 @@
     <div class="col-lg-4 my-sm-2 my-lg-0 gx-2 text-end">
         {% url 'expenses:expenses_new' as url_expenses_new %}
         <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_expenses_new }}"> <i class="bi bi-plus"></i>{% translate 'Expenses' context "expenses button" %}</button>
-        {% url 'incomes:incomes_new' as url_incomes_new %}
-        <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_incomes_new }}"> <i class="bi bi-plus"></i>{% translate 'Incomes' context "incomes button" %}</button>
+        {% url 'incomes:new' as url_new %}
+        <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_new }}"> <i class="bi bi-plus"></i>{% translate 'Incomes' context "incomes button" %}</button>
         {% url 'savings:savings_new' as url_savings_new %}
         <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_savings_new }}"> <i class="bi bi-plus"></i>{% translate 'Savings' context "savings button" %}</button>
         {% url 'transactions:transactions_new' as url_transactions_new %}

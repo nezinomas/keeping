@@ -78,10 +78,10 @@ class TypeUpdate(UpdateAjaxMixin):
 #----------------------------------------------------------------------------------------
 class Search(AjaxSearchMixin):
     template_name = 'core/includes/search_form.html'
-    list_template = 'incomes/includes/incomes_list.html'
+    list_template = 'incomes/includes/list.html'
     form_class = SearchForm
     form_data_dict = {}
-    url = reverse_lazy('incomes:incomes_search')
+    url = reverse_lazy('incomes:search')
     per_page = 50
 
     def dispatch(self, request, *args, **kwargs):

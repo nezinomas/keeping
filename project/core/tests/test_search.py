@@ -142,7 +142,7 @@ def test_expense_search_ordering():
         ('1999-1 type', 1, 'Income Type'),
     ]
 )
-def test_incomes_search(search, cnt, income_type):
+def test_search(search, cnt, income_type):
     IncomeFactory()
     IncomeFactory(
         date=date(3333, 1, 1),
@@ -161,7 +161,7 @@ def test_incomes_search(search, cnt, income_type):
 
 
 @pytest.mark.django_db
-def test_incomes_search_ordering():
+def test_search_ordering():
     IncomeFactory(date=date(1000, 1, 1))
     IncomeFactory()
 

@@ -7,7 +7,7 @@
         <div id="collapse_1" class="accordion-collapse collapse show" aria-labelledby="heading_1" data-bs-parent="#accordion">
             <div class="accordion-body">
                 {% for item in items %}
-                {% url 'incomes:incomes_type_update' item.id as url_update %}
+                {% url 'incomes:type_update' item.id as url_update %}
                 <div class="list-group-item" data-url="{{ url_update }}">{{ item.title }}
                     <span class="edit-icon">
                         <button type="button" data-url="{{ url_update }}" class="btn btn-super-sm edit"><i class="bi bi-pencil-fill"></i></button>
