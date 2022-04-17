@@ -70,8 +70,7 @@ class SearchMixin(LoginRequiredMixin, TemplateView):
         return context
 
     def get_search_method(self):
-        method_name = self.search_method
-        return getattr(search, method_name)
+        return getattr(search, self.search_method)
 
 
 class TemplateViewMixin(LoginRequiredMixin,
