@@ -3,9 +3,8 @@ from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 
 from ..core.forms import SearchForm
-from ..core.lib import search
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
-                                 ListViewMixin, TemplateViewMixin,
+                                 ListViewMixin, SearchMixin, TemplateViewMixin,
                                  UpdateViewMixin)
 from . import forms, models
 
@@ -128,37 +127,11 @@ class Delete(DeleteViewMixin):
     success_url = reverse_lazy('books:list')
 
 
-class Search(TemplateViewMixin):
+class Search(SearchMixin):
     template_name = 'books/book_list.html'
     per_page = 50
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({**self.search()})
-
-        return context
-
-    def search(self):
-        search_str = self.request.GET.get('search')
-        page = self.request.GET.get('page', 1)
-        sql = search.search_books(search_str)
-        context = {
-            'object_list': None,
-            'notice': _('Found nothing'),
-        }
-
-        if sql:
-            paginator = Paginator(sql, self.per_page)
-            page_range = paginator.get_elided_page_range(number=page)
-
-            context.update({
-                'object_list': paginator.get_page(page),
-                'search': search_str,
-                'url': reverse("books:search"),
-                'page_range': page_range,
-            })
-
-        return context
+    search_method = 'search_books'
 
 
 #----------------------------------------------------------------------------------------
