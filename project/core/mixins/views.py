@@ -1,12 +1,15 @@
 import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.http import HttpResponse
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext as _
 from django.views.generic import (CreateView, DeleteView, ListView,
                                   TemplateView, UpdateView)
 from django_htmx.http import trigger_client_event
 
+from ...core.lib import search
 from .get import GetQuerysetMixin
 
 
@@ -32,6 +35,43 @@ class CreateUpdateMixin():
                 {},
             )
         return response
+
+
+class SearchMixin(LoginRequiredMixin, TemplateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({**self.search()})
+
+        return context
+
+    def search(self):
+        search_str = self.request.GET.get('search')
+        page = self.request.GET.get('page', 1)
+        sql = self.get_search_method()(search_str)
+
+        context = {
+            'object_list': None,
+            'notice': _('Found nothing'),
+        }
+
+        if sql:
+            paginator = Paginator(sql, self.per_page)
+            page_range = paginator.get_elided_page_range(number=page)
+
+            app = self.request.resolver_match.app_name
+
+            context.update({
+                'object_list': paginator.get_page(page),
+                'search': search_str,
+                'url': reverse(f"{app}:search"),
+                'page_range': page_range,
+            })
+
+        return context
+
+    def get_search_method(self):
+        method_name = self.search_method
+        return getattr(search, method_name)
 
 
 class TemplateViewMixin(LoginRequiredMixin,
