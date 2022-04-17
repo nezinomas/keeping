@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
@@ -35,6 +36,9 @@ class IncomeType(TitleAbstract):
     class Meta:
         unique_together = ['journal', 'title']
         ordering = ['title']
+
+    def get_absolute_url(self):
+        return reverse_lazy("incomes:type_update", kwargs={"pk": self.pk})
 
 
 class Income(OldValuesMixin, models.Model):
@@ -80,3 +84,8 @@ class Income(OldValuesMixin, models.Model):
             journal.first_record = self.date
             journal.save()
 
+    def get_absolute_url(self):
+        return reverse_lazy("incomes:update", kwargs={"pk": self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy("incomes:delete", kwargs={"pk": self.pk})
