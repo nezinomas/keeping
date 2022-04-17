@@ -20,9 +20,6 @@ class Index(TemplateViewMixin):
         return context
 
 
-#----------------------------------------------------------------------------------------
-#                                                                                  Income
-#----------------------------------------------------------------------------------------
 class Lists(ListViewMixin):
     model = models.Income
 
@@ -51,9 +48,6 @@ class Delete(DeleteViewMixin):
     success_url = reverse_lazy('incomes:list')
 
 
-#----------------------------------------------------------------------------------------
-#                                                                             Income Type
-#----------------------------------------------------------------------------------------
 class TypeLists(ListViewMixin):
     model = models.IncomeType
 
@@ -75,9 +69,6 @@ class TypeUpdate(UpdateViewMixin):
     hx_trigger = 'afterType'
 
 
-#----------------------------------------------------------------------------------------
-#                                                                                 Search
-#----------------------------------------------------------------------------------------
 class Search(SearchMixin):
     template_name = 'incomes/income_list.html'
     per_page = 50
