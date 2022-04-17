@@ -20,6 +20,9 @@ class SearchMixin(LoginRequiredMixin, TemplateView):
 
         return context
 
+    def get_search_method(self):
+        return getattr(search, self.search_method)
+
     def search(self):
         search_str = self.request.GET.get('search')
         page = self.request.GET.get('page', 1)
@@ -42,11 +45,7 @@ class SearchMixin(LoginRequiredMixin, TemplateView):
                 'url': reverse(f"{app}:search"),
                 'page_range': page_range,
             })
-
         return context
-
-    def get_search_method(self):
-        return getattr(search, self.search_method)
 
 
 class CreateUpdateMixin():
