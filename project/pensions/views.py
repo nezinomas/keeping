@@ -39,7 +39,7 @@ class TypeLists(ListViewMixin):
 class TypeNew(CreateViewMixin):
     model = models.PensionType
     form_class = forms.PensionTypeForm
-    success_url = reverse_lazy('pensions:list')
+    success_url = reverse_lazy('pensions:type_list')
 
     url = reverse_lazy('pensions:type_new')
     hx_trigger = 'afterPensionType'
@@ -48,5 +48,6 @@ class TypeNew(CreateViewMixin):
 class TypeUpdate(UpdateViewMixin):
     model = models.PensionType
     form_class = forms.PensionTypeForm
+    success_url = reverse_lazy('pensions:type_list')
 
     hx_trigger = 'afterPensionType'
