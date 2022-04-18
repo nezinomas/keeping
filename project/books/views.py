@@ -74,22 +74,25 @@ class ChartReaded(TemplateViewMixin):
 class InfoRow(TemplateViewMixin):
     template_name = 'books/info_row.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def readed(self):
+        qs = (models.Book.objects
+              .readed()
+              .filter(year=self.request.user.year)
+        )
+        return qs[0]['cnt'] if qs else 0
 
-        year = self.request.user.year
+    def reading(self):
+        qs = (models.Book.objects
+              .reading(self.request.user.year)
+        )
+        return qs['reading'] if qs else 0
 
-        readed = models.Book.objects.readed().filter(year=year)
-        reading = models.Book.objects.reading(year)['reading']
-        target = models.BookTarget.objects.items().filter(year=year)
-
-        context.update({
-            'readed': readed[0]['cnt'] if readed else 0,
-            'reading': reading if reading else 0,
-            'target': target[0] if target else None,
-        })
-
-        return context
+    def target(self):
+        qs = (models.BookTarget.objects
+              .items()
+              .filter(year=self.request.user.year)
+        )
+        return qs[0] if qs else None
 
 
 class Lists(ListViewMixin):
