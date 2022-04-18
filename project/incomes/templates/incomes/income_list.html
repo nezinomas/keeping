@@ -21,7 +21,7 @@
         {% url 'incomes:delete' object.id as url_delete %}
         {% ifchanged object.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="7" class="table-active"></td></tr>{% endif %}
         {% endifchanged %}
-        <tr data-url="{{ url_update }}" class="dblclick">
+        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#dialog">
             <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ object.income_type }}</td>
             <td class="text-start">{{ object.account }}</td>
