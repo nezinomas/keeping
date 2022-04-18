@@ -1,54 +1,53 @@
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchListsMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
+from django.urls import reverse_lazy
+
+from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
+                                 ListViewMixin, UpdateViewMixin)
 from . import forms, models
 
 
-class Index(IndexMixin):
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        context['data'] = Lists.as_view()(
-            self.request, as_string=True)
-        context['categories'] = TypeLists.as_view()(
-            self.request, as_string=True)
-
-        return context
-
-
-#----------------------------------------------------------------------------------------
-#                                                                           Pension views
-#----------------------------------------------------------------------------------------
-class Lists(DispatchListsMixin, ListMixin):
+class Lists(ListViewMixin):
     model = models.Pension
 
 
-class New(CreateAjaxMixin):
+class New(CreateViewMixin):
     model = models.Pension
     form_class = forms.PensionForm
+    success_url = reverse_lazy('pensions:list')
+
+    hx_trigger = 'afterPension'
 
 
-class Update(UpdateAjaxMixin):
+class Update(UpdateViewMixin):
     model = models.Pension
     form_class = forms.PensionForm
+    success_url = reverse_lazy('pensions:list')
+
+    hx_trigger = 'afterPension'
 
 
-class Delete(DeleteAjaxMixin):
+class Delete(DeleteViewMixin):
     model = models.Pension
+    success_url = reverse_lazy('pensions:list')
+
+    hx_trigger = 'afterPension'
 
 
-#----------------------------------------------------------------------------------------
-#                                                                       PensionType views
-#----------------------------------------------------------------------------------------
-class TypeLists(DispatchListsMixin, ListMixin):
+class TypeLists(ListViewMixin):
     model = models.PensionType
 
 
-class TypeNew(CreateAjaxMixin):
-    model = models.PensionType
-    form_class = forms.PensionTypeForm
-
-
-class TypeUpdate(UpdateAjaxMixin):
+class TypeNew(CreateViewMixin):
     model = models.PensionType
     form_class = forms.PensionTypeForm
+    success_url = reverse_lazy('pensions:type_list')
+
+    url = reverse_lazy('pensions:type_new')
+    hx_trigger = 'afterPensionType'
+
+
+class TypeUpdate(UpdateViewMixin):
+    model = models.PensionType
+    form_class = forms.PensionTypeForm
+    success_url = reverse_lazy('pensions:type_list')
+
+    hx_trigger = 'afterPensionType'

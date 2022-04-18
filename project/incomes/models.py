@@ -62,6 +62,9 @@ class Income(OldValuesMixin, models.Model):
         on_delete=models.CASCADE
     )
 
+    # managers
+    objects = IncomeQuerySet.as_manager()
+
     class Meta:
         indexes = [
             models.Index(fields=['account', 'income_type']),
@@ -70,9 +73,6 @@ class Income(OldValuesMixin, models.Model):
 
     def __str__(self):
         return f'{(self.date)}: {self.income_type}'
-
-    # managers
-    objects = IncomeQuerySet.as_manager()
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

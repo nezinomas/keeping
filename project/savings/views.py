@@ -1,63 +1,54 @@
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchListsMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
-from ..pensions.views import Lists as PensionLists
-from ..pensions.views import TypeLists as PensionTypeLists
+from django.urls import reverse_lazy
+
+from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
+                                 ListViewMixin, TemplateViewMixin,
+                                 UpdateViewMixin)
 from . import forms, models
 
 
-class Index(IndexMixin):
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'savings': Lists.as_view()(self.request, as_string=True),
-            'categories': TypeLists.as_view()(self.request, as_string=True),
-            'pension_type':PensionTypeLists.as_view()(self.request, as_string=True),
-            'pension': PensionLists.as_view()(self.request, as_string=True),
-        })
-
-        return context
+class Index(TemplateViewMixin):
+    template_name = 'savings/index.html'
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Saving Views
-# ----------------------------------------------------------------------------
-class Lists(DispatchListsMixin, ListMixin):
+class Lists(ListViewMixin):
     model = models.Saving
 
 
-class New(CreateAjaxMixin):
+class New(CreateViewMixin):
     model = models.Saving
     form_class = forms.SavingForm
+    success_url = reverse_lazy('savings:list')
 
 
-class Update(UpdateAjaxMixin):
+class Update(UpdateViewMixin):
     model = models.Saving
     form_class = forms.SavingForm
+    success_url = reverse_lazy('savings:list')
 
 
-class Delete(DeleteAjaxMixin):
+class Delete(DeleteViewMixin):
     model = models.Saving
+    success_url = reverse_lazy('savings:list')
 
 
-# ----------------------------------------------------------------------------
-#                                                            Saving Type Views
-# ----------------------------------------------------------------------------
-class TypeLists(DispatchListsMixin, ListMixin):
+class TypeLists(ListViewMixin):
     model = models.SavingType
 
     def get_queryset(self):
         return models.SavingType.objects.related()
 
 
-class TypeNew(CreateAjaxMixin):
+class TypeNew(CreateViewMixin):
+    model = models.SavingType
+    form_class = forms.SavingTypeForm
+    success_url = reverse_lazy('savings:type_list')
+
+    url = reverse_lazy('savings:type_new')
+    hx_trigger = 'afterType'
+
+
+class TypeUpdate(UpdateViewMixin):
     model = models.SavingType
     form_class = forms.SavingTypeForm
 
-
-class TypeUpdate(UpdateAjaxMixin):
-    model = models.SavingType
-    form_class = forms.SavingTypeForm
-
-    def get_queryset(self):
-        return models.SavingType.objects.related()
+    hx_trigger = 'afterType'

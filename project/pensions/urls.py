@@ -6,43 +6,38 @@ app_name = 'pensions'
 
 urlpatterns = [
     path(
-        'pensions/',
-        views.Index.as_view(),
-        name='pensions_index'
-    ),
-    path(
         'pensions/lists/',
         views.Lists.as_view(),
-        name='pensions_list'
+        name='list'
     ),
     path(
         'pensions/new/',
         views.New.as_view(),
-        name='pensions_new'
+        name='new'
     ),
     path(
         'pensions/update/<int:pk>/',
         views.Update.as_view(),
-        name='pensions_update'
+        name='update'
     ),
     path(
         'pensions/delete/<int:pk>/',
         views.Delete.as_view(),
-        name='pensions_delete'
+        name='delete'
     ),
     path(
         'pensions/type/',
         views.TypeLists.as_view(),
-        name='pensions_type_list'
+        name='type_list'
     ),
     path(
         'pensions/type/new/',
         views.TypeNew.as_view(),
-        name='pensions_type_new'
+        name='type_new'
     ),
     path(
         'pensions/type/update/<int:pk>/',
         views.TypeUpdate.as_view(),
-        name='pensions_type_update'
+        name='type_update'
     ),
 ]

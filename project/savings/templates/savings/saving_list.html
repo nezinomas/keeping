@@ -2,7 +2,7 @@
 {% load i18n %}
 {% load slippers %}
 
-{% if items %}
+{% if object_list %}
 
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
@@ -17,18 +17,18 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in items %}
-        {% url 'savings:savings_update' item.id as url_update %}
-        {% url 'savings:savings_delete' item.id as url_delete %}
-        {% ifchanged item.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="8" class="table-active"></td></tr>{% endif %}
+        {% for object in object_list %}
+        {% url 'savings:update' object.id as url_update %}
+        {% url 'savings:delete' object.id as url_delete %}
+        {% ifchanged object.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="8" class="table-active"></td></tr>{% endif %}
         {% endifchanged %}
-        <tr data-url="{{ url_update }}" class="dblclick">
-            <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-start">{{ item.saving_type }}</td>
-            <td class="text-start">{{ item.account }}</td>
-            <td class="text-start">{{ item.remark }}</td>
-            <td>{{ item.price|intcomma }}</td>
-            <td>{{ item.fee|default_if_none:'-'|intcomma }}</td>
+        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#dialog">
+            <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ object.saving_type }}</td>
+            <td class="text-start">{{ object.account }}</td>
+            <td class="text-start">{{ object.remark }}</td>
+            <td>{{ object.price|intcomma }}</td>
+            <td>{{ object.fee|default_if_none:'-'|intcomma }}</td>
             {% edit_cell url=url_update %}
             {% delete_cell url=url_delete %}
         </tr>

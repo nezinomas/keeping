@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.urls import reverse_lazy
 
 from ..core.mixins.old_values import OldValuesMixin
 from ..core.models import TitleAbstract
@@ -26,6 +27,8 @@ class PensionType(TitleAbstract):
         unique_together = ['journal', 'title']
         ordering = ['title']
 
+    def get_absolute_url(self):
+        return reverse_lazy("pensions:type_update", kwargs={"pk": self.pk})
 
 class Pension(OldValuesMixin, models.Model):
     date = models.DateField()
@@ -52,14 +55,20 @@ class Pension(OldValuesMixin, models.Model):
         on_delete=models.CASCADE
     )
 
+    # managers
+    objects = managers.PensionQuerySet.as_manager()
+
     class Meta:
         ordering = ['-date', 'price']
 
     def __str__(self):
         return f'{(self.date)}: {self.pension_type}'
 
-    # managers
-    objects = managers.PensionQuerySet.as_manager()
+    def get_absolute_url(self):
+        return reverse_lazy("pensions:update", kwargs={"pk": self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy("pensions:delete", kwargs={"pk": self.pk})
 
 
 class PensionBalance(models.Model):

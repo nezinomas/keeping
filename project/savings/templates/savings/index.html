@@ -6,10 +6,7 @@
 
 {% block content %}
 
-{% url 'savings:savings_new' as url_savings %}
-{% url 'savings:savings_type_new' as url_savings_type_new %}
-{% url 'pensions:pensions_new' as url_pensions %}
-{% url 'pensions:pensions_type_new' as url_pensions_type_new %}
+
 <div class="row gx-2">
     <div class="col-lg-8">
         <!-- Funds -->
@@ -18,11 +15,11 @@
                 <h6>{% translate 'Funds' %}</h6>
             </div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_savings }}"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'savings:new' %}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
             </div>
         </div>
         <div class="row">
-            <div id="ajax-content" class="col">{{ savings }}</div>
+            <div id="saving_list" class="col" hx-get="{% url 'savings:list' %}" hx-trigger="load, reload from:body, afterType from:body" hx-target="this"></div>
         </div><!-- End Funds -->
 
         <!-- Pensions -->
@@ -31,11 +28,11 @@
                 <h6>{% translate 'Pension' %}, {% translate 'II stage' %}</h6>
             </div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_pensions }}"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'pensions:new' %}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
             </div>
         </div>
         <div class="row">
-            <div id="pension-content" class="col">{{ pension }}</div>
+            <div id="pensions_list" class="col" hx-get="{% url 'pensions:list' %}" hx-trigger="load, afterPension from:body, afterPensionType from:body" hx-target="this"></div>
         </div><!-- End Pensions -->
     </div>
 
@@ -43,22 +40,22 @@
         <!-- Funds Types -->
         <div class="row my-2">
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_savings_type_new }}"><i class="bi bi-plus"></i> {% translate 'Fund' context 'fund button' %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'savings:type_new' %}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Fund' context 'fund button' %}</button>
             </div>
         </div>
         <div class="row">
-            <div id="ajax-content-categories" class="col-lg-12">{{ categories }}</div>
+            <div id="savintype_list" class="col-lg-12" hx-get="{% url 'savings:type_list' %}" hx-trigger="load, afterType from:body" hx-target="this"></div>
         </div>
         <!-- End Funds Types -->
 
         <!-- Pension Types -->
         <div class="row mt-4 mb-2">
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_pensions_type_new }}"><i class="bi bi-plus"></i> {% translate 'Pension' context 'pension button' %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'pensions:type_new' %}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Pension' context 'pension button' %}</button>
             </div>
         </div>
         <div class="row">
-            <div id="pension-categories" class="col-lg-12">{{ pension_type }}</div>
+            <div id="pensiontype_list" class="col-lg-12" hx-get="{% url 'pensions:type_list' %}" hx-trigger="load, afterPensionType from:body" hx-target="this">{{ pension_type }}</div>
         </div>
         <!-- End Pension Types -->
     </div>

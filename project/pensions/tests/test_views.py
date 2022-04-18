@@ -7,19 +7,12 @@ from freezegun import freeze_time
 from .. import models, views
 from ..factories import Pension, PensionFactory, PensionTypeFactory
 
-X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                                Pensions
 # ---------------------------------------------------------------------------------------
-def test_pensions_index_func():
-    view = resolve('/pensions/')
-
-    assert views.Index == view.func.view_class
-
-
 def test_pensions_lists_func():
     view = resolve('/pensions/lists/')
 
@@ -58,15 +51,12 @@ def test_types_update_func():
 
 @freeze_time('2000-01-01')
 def test_pensions_load_form(admin_client):
-    url = reverse('pensions:pensions_new')
+    url = reverse('pensions:new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = admin_client.get(url)
+    form = response.context['form']
 
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert response.status_code == 200
-    assert '2000-01-01' in actual['html_form']
+    assert '2000-01-01' in form.as_p()
 
 
 def test_pensions_save(client_logged):
@@ -78,17 +68,15 @@ def test_pensions_save(client_logged):
         'pension_type': i.pk
     }
 
-    url = reverse('pensions:pensions_new')
+    url = reverse('pensions:new')
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    actual = response.content.decode('utf-8')
 
-    assert actual['form_is_valid']
-    assert '1999-01-01' in actual['html_list']
-    assert '1,05' in actual['html_list']
-    assert 'PensionType' in actual['html_list']
+    assert '1999-01-01' in actual
+    assert '1,05' in actual
+    assert 'PensionType' in actual
 
 
 def test_pensions_save_invalid_data(client_logged):
@@ -98,14 +86,13 @@ def test_pensions_save_invalid_data(client_logged):
         'pension_type': 'x'
     }
 
-    url = reverse('pensions:pensions_new')
+    url = reverse('pensions:new')
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data)
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    form = response.context['form']
 
-    assert not actual['form_is_valid']
+    assert not form.is_valid()
 
 
 def test_pensions_update_to_another_year(client_logged):
@@ -118,17 +105,15 @@ def test_pensions_update_to_another_year(client_logged):
         'account': 1,
         'pension_type': 1,
     }
-    url = reverse('pensions:pensions_update', kwargs={'pk': income.pk})
+    url = reverse('pensions:update', kwargs={'pk': income.pk})
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
 
     assert response.status_code == 200
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    actual = response.content.decode('utf-8')
 
-    assert actual['form_is_valid']
-    assert '2010-12-31' not in actual['html_list']
+    assert '2010-12-31' not in actual
 
 
 def test_pensions_update(client_logged):
@@ -140,19 +125,17 @@ def test_pensions_update(client_logged):
         'remark': 'Pastaba',
         'pension_type': 1
     }
-    url = reverse('pensions:pensions_update', kwargs={'pk': income.pk})
+    url = reverse('pensions:update', kwargs={'pk': income.pk})
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
 
     assert response.status_code == 200
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    actual = response.content.decode('utf-8')
 
-    assert actual['form_is_valid']
-    assert '1999-12-31' in actual['html_list']
-    assert '150' in actual['html_list']
-    assert 'Pastaba' in actual['html_list']
+    assert '1999-12-31' in actual
+    assert '150' in actual
+    assert 'Pastaba' in actual
 
 
 def test_pensions_not_load_other_journal(client_logged, main_user, second_user):
@@ -162,14 +145,9 @@ def test_pensions_not_load_other_journal(client_logged, main_user, second_user):
     PensionFactory(pension_type=it1)
     i2 = PensionFactory(pension_type=it2, price=666)
 
-    url = reverse('pensions:pensions_update', kwargs={'pk': i2.pk})
-    response = client_logged.get(url, **X_Req)
-
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
+    url = reverse('pensions:update', kwargs={'pk': i2.pk})
+    response = client_logged.get(url)
+    form = response.context['form'].as_p()
 
     assert it2.title not in form
     assert str(i2.price) not in form
@@ -187,7 +165,7 @@ def test_view_pensions_delete_func():
 def test_view_pensions_delete_200(client_logged):
     p = PensionFactory()
 
-    url = reverse('pensions:pensions_delete', kwargs={'pk': p.pk})
+    url = reverse('pensions:delete', kwargs={'pk': p.pk})
 
     response = client_logged.get(url)
 
@@ -197,27 +175,21 @@ def test_view_pensions_delete_200(client_logged):
 def test_view_pensions_delete_load_form(client_logged):
     p = PensionFactory()
 
-    url = reverse('pensions:pensions_delete', kwargs={'pk': p.pk})
-    response = client_logged.get(url, {}, **X_Req)
+    url = reverse('pensions:delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url)
+    form = response.content.decode('utf-8')
 
-    json_str = response.content
-    actual = json.loads(json_str)
-    actual = actual['html_form']
-
-    assert response.status_code == 200
-    assert '<form method="post"' in actual
-    assert f'Ar tikrai norite ištrinti: <strong>{p}</strong>?' in actual
+    assert '<form method="POST"' in form
+    assert f'Ar tikrai norite ištrinti: <strong>{p}</strong>?' in form
 
 
 def test_view_pensions_delete(client_logged):
     p = PensionFactory()
 
     assert models.Pension.objects.all().count() == 1
-    url = reverse('pensions:pensions_delete', kwargs={'pk': p.pk})
+    url = reverse('pensions:delete', kwargs={'pk': p.pk})
 
-    response = client_logged.post(url, {}, **X_Req)
-
-    assert response.status_code == 200
+    client_logged.post(url, follow=True)
 
     assert models.Pension.objects.all().count() == 0
 
@@ -226,24 +198,20 @@ def test_pensions_delete_other_journal_get_form(client_logged, second_user):
     it2 = PensionTypeFactory(title='yyy', journal=second_user.journal)
     i2 = PensionFactory(pension_type=it2, price=666)
 
-    url = reverse('pensions:pensions_delete', kwargs={'pk': i2.pk})
-    response = client_logged.get(url, **X_Req)
+    url = reverse('pensions:delete', kwargs={'pk': i2.pk})
+    response = client_logged.get(url)
+    form = response.content.decode('utf-8')
 
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
-
-    assert 'SRSLY' in form
+    assert '<form method="POST" hx-post="None"' in form
+    assert 'Ar tikrai norite ištrinti: <strong>None</strong>?' in form
 
 
 def test_pensions_delete_other_journal_post_form(client_logged, second_user):
     it2 = PensionTypeFactory(title='yyy', journal=second_user.journal)
     i2 = PensionFactory(pension_type=it2, price=666)
 
-    url = reverse('pensions:pensions_delete', kwargs={'pk': i2.pk})
-    client_logged.post(url, **X_Req)
+    url = reverse('pensions:delete', kwargs={'pk': i2.pk})
+    client_logged.post(url)
 
     assert Pension.objects.all().count() == 1
 
@@ -254,80 +222,60 @@ def test_pensions_delete_other_journal_post_form(client_logged, second_user):
 
 @freeze_time('2000-01-01')
 def test_type_load_form(admin_client):
-    url = reverse('pensions:pensions_type_new')
+    url = reverse('pensions:type_new')
 
-    response = admin_client.get(url, {}, **X_Req)
+    response = admin_client.get(url)
 
     assert response.status_code == 200
 
 
+@freeze_time('1999-01-01')
 def test_type_save(client_logged):
-    data = {
-        'title': 'TTT',
-    }
+    data = {'title': 'TTT'}
+    url = reverse('pensions:type_new')
 
-    url = reverse('pensions:pensions_type_new')
+    response = client_logged.post(url, data, follow=True)
+    actual = response.content.decode('utf-8')
 
-    response = client_logged.post(url, data, **X_Req)
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
-    assert 'TTT' in actual['html_list']
+    assert 'TTT' in actual
 
 
 def test_type_save_invalid_data(client_logged):
     data = {'title': ''}
 
-    url = reverse('pensions:pensions_type_new')
+    url = reverse('pensions:type_new')
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    form = response.context['form']
 
-    assert not actual['form_is_valid']
+    assert not form.is_valid()
 
 
 def test_type_update(client_logged):
     income = PensionTypeFactory()
 
     data = {'title': 'TTT'}
-    url = reverse('pensions:pensions_type_update', kwargs={'pk': income.pk})
+    url = reverse('pensions:type_update', kwargs={'pk': income.pk})
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
 
     assert response.status_code == 200
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    actual = response.content.decode('utf-8')
 
-    assert actual['form_is_valid']
-    assert 'TTT' in actual['html_list']
+    assert 'TTT' in actual
 
 
 def test_pension_type_not_load_other_journal(client_logged, main_user, second_user):
     PensionTypeFactory(title='xxx', journal=main_user.journal)
     obj = PensionTypeFactory(title='yyy', journal=second_user.journal)
 
-    url = reverse('pensions:pensions_type_update', kwargs={'pk': obj.pk})
-    response = client_logged.get(url, **X_Req)
+    url = reverse('pensions:type_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
 
     assert response.status_code == 200
 
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
+    form = response.context.get('form')
 
     assert obj.title not in form
-
-
-@pytest.mark.django_db
-def test_view_index_200(client_logged):
-    response = client_logged.get('/pensions/')
-
-    assert response.status_code == 200
-
-    assert 'data' in response.context
-    assert 'categories' in response.context
