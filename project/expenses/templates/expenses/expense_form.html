@@ -6,13 +6,6 @@
 {% generic_form title=form_title %}
 
 <script>
-    // on escape key hide modal form
-    $(document).keydown(function (event) {
-        if (event.keyCode == 27) {
-            $('#modal-form').modal("hide");
-        }
-    });
-
     // sum prices
     function sum_prices() {
         var input_total = document.getElementById("id_price")
