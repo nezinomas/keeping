@@ -10,71 +10,56 @@ urlpatterns = [
     path(
         'expenses/index/',
         expenses.Index.as_view(),
-        name='expenses_index'
+        name='index'
     ),
     path(
         'expenses/',
         expenses.Lists.as_view(),
-        name='expenses_list'
-    ),
-    path(
-        'expenses/all/',
-        expenses.MonthLists.as_view(),
-        name='expenses_all'
-    ),
-    path(
-        'expenses/<int:month>/',
-        expenses.MonthLists.as_view(),
-        name='expenses_month_list'
+        name='list'
     ),
     path(
         'expenses/new/',
         expenses.New.as_view(),
-        name='expenses_new'
+        name='new'
     ),
     path(
         'expenses/update/<int:pk>/',
         expenses.Update.as_view(),
-        name='expenses_update'
+        name='update'
     ),
     path(
         'expenses/delete/<int:pk>/',
         expenses.Delete.as_view(),
-        name='expenses_delete'
+        name='delete'
     ),
     path(
-        'ajax/load_expense_name/',
+        'expenses/load_expense_name/',
         expenses.LoadExpenseName.as_view(),
         name='load_expense_name'
     ),
     path(
-        'expenses/reload/',
-        expenses.ReloadExpenses.as_view(),
-        name='reload_expenses'
-    ),
-    path(
         'expenses/search/',
         expenses.Search.as_view(),
-        name='expenses_search'
+        name='search'
     ),
     path(
         'expenses/type/new/',
         expenses_type.New.as_view(),
-        name='expenses_type_new'
+        name='type_new'
     ),
     path(
         'expenses/type/update/<int:pk>/',
         expenses_type.Update.as_view(),
-        name='expenses_type_update'
+        name='type_update'
     ),
     path(
         'expenses/name/new/',
         expenses_name.New.as_view(),
-        name='expenses_name_new'
+        name='name_new'
     ),
     path(
         'expenses/name/update/<int:pk>/',
         expenses_name.Update.as_view(),
-        name='expenses_name_update'
+        name='name_update'
     ),
 ]
