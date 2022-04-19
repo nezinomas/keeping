@@ -1,7 +1,7 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
-<form method="post" novalidate id="js_form" class="js_form" action="{{ url }}" data-action="{{ action }}" data-chained-dropdown="plans_copy" autocomplete="off" tabindex="-1">
+<form method="post" novalidate id="js_form" class="js_form" action="{{ url }}" data-action="{{ action }}"  autocomplete="off" tabindex="-1">
     {% csrf_token %}
     {% include 'core/includes/form_date_scripts.html' %}
     <div class="modal-header">

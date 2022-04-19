@@ -5,7 +5,7 @@ register = template.Library()
 
 
 @register.inclusion_tag('core/includes/generic_form.html', takes_context=True)
-def generic_form(context, title, chained_dropdown=None):
+def generic_form(context, title):
     form_action = context.get('form_action', 'insert')
 
     return {
@@ -14,7 +14,6 @@ def generic_form(context, title, chained_dropdown=None):
         'submit_button': _(form_action.title()),
         'form_action': form_action,
         'url': context['url'] if 'url' in context else '',
-        'chained_dropdown': chained_dropdown
     }
 
 

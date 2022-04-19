@@ -101,27 +101,4 @@
     </div>
 </div>
 
-
-<script>
-    $(document).on('hidden.bs.modal', '#modal-form', function () {
-        var url = `{% url 'plans:reload_plan_stats' %}`;
-        var update_id = $("#js_form").attr("data-chained-dropdown");
-
-        $.ajax({
-            url: url,
-            data: {
-                'ajax_trigger': '1'
-            },
-            success: function (data) {
-                if (update_id === 'plans_copy') {
-                    window.location.href = '{% url 'plans:plans_index' %}'
-                    return
-                }
-                else {
-                    $(`#${update_id}`).html(data);
-                }
-            }
-        });
-    });
-</script>
 {% endblock content %}
