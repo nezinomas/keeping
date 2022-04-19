@@ -1,7 +1,7 @@
 {% load i18n %}
 <div class="accordion" id="accordion">
 {% for item in items %}
-{% url 'expenses:expenses_type_update' item.id as url_type_update %}
+{% url 'expenses:type_update' item.id as url_type_update %}
     <div class="accordion-item mb-2">
         <div class="accordion-header" id="heading_{{ item.id }}">
             <span class="expenses-edit-icon">
@@ -18,7 +18,7 @@
             data-bs-parent="#accordion">
             <div class="accordion-body">
                 {% for sub in item.expensename_set.all %}
-                {% url 'expenses:expenses_name_update' sub.id as url_name_update %}
+                {% url 'expenses:name_update' sub.id as url_name_update %}
                 <div class="list-group-item" data-url="{{ url_name_update }}">{{ sub.title }}
                     {% if sub.valid_for %}<span class="badge badge-secondary">{{ sub.valid_for|safe }}</span>{% endif %}
                     <span class="expenses-edit-icon">
