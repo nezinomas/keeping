@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<form novalidate method="post" id="search_form" class="row d-flex gx-1 align-items-center" hx-get="{{ url }}" hx-target="{{ target }}" hx-swap="innerHTML">
+<form novalidate method="post" id="search_form" class="row d-flex gx-1 align-items-center" hx-get="{{ url }}" hx-target="{{ target }}" hx-swap="innerHTML" hx-indicator="#indicator">
     <div class="col align-self-start">
         <input type="search" name="search" id="id_search" class="textinput textInput form-control form-control-sm"
         placeholder="{% translate 'Search' %}..." aria-label="{% translate 'Search' %}">
