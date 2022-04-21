@@ -56,9 +56,8 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu nav-link {% if request.resolver_match.url_name == 'list' %}active{% endif %}"
-                href="{% url 'expenses:index' %}">{% translate 'Expenses' %}</a>
-              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if request.resolver_match.url_name == 'list' %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="btn btn-menu nav-link {% if '/expenses/' in request.path %}active{% endif %}" href="{% url 'expenses:index' %}">{% translate 'Expenses' %}</a>
+              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/expenses/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
