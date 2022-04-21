@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load slippers %}
 
-{% if items %}
+{% if object_list %}
 
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
@@ -15,17 +15,17 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in items %}
-        {% url url_update item.id as url__update %}
-        {% url url_delete item.id as url__delete %}
-        {% ifchanged item.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="6" class="table-active"></td></tr>{% endif %}
+        {% for object in object_list %}
+        {% url url_update object.id as url__update %}
+        {% url url_delete object.id as url__delete %}
+        {% ifchanged object.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="6" class="table-active"></td></tr>{% endif %}
         {% endifchanged %}
         <tr data-url="{{ url_update }}" class="dblclick">
-            <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-start">{{ item.from_account }}</td>
-            <td class="text-start">{{ item.to_account }}</td>
-            <td>{{ item.price }}</td>
-            {% if fee %}<td>{{ item.fee }}</td>{% endif %}
+            <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ object.from_account }}</td>
+            <td class="text-start">{{ object.to_account }}</td>
+            <td>{{ object.price }}</td>
+            {% if fee %}<td>{{ object.fee }}</td>{% endif %}
             {% edit_cell url=url__update %}
             {% delete_cell url=url__delete %}
         </tr>

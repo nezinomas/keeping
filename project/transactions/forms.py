@@ -3,6 +3,7 @@ from datetime import datetime
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
@@ -53,6 +54,14 @@ class TransactionForm(YearBetweenMixin, forms.ModelForm):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+        # htmx attributes for chained dropdown
+        url = reverse('accounts:load')
+
+        field = self.fields['from_account']
+        field.widget.attrs['hx-get'] = url
+        field.widget.attrs['hx-target'] = '#id_to_account'
+        field.widget.attrs['hx-trigger'] = 'change'
 
 
 class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
@@ -162,6 +171,14 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
         set_field_properties(self, self.helper)
 
         self.fields['close'].widget.attrs['class'] = " form-check-input"
+
+        # htmx attributes for chained dropdown
+        url = reverse('transactions:load_saving_type')
+
+        field = self.fields['from_account']
+        field.widget.attrs['hx-get'] = url
+        field.widget.attrs['hx-target'] = '#id_to_account'
+        field.widget.attrs['hx-trigger'] = 'change'
 
     def save(self):
         close = self.cleaned_data.get('close')
