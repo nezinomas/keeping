@@ -15,7 +15,6 @@ from ..factories import (Expense, ExpenseFactory, ExpenseNameFactory,
                          ExpenseTypeFactory)
 from ..views import expenses, expenses_name, expenses_type
 
-X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
 
 
@@ -30,56 +29,29 @@ def _db_data():
 #                                                                                 Expense
 # ---------------------------------------------------------------------------------------
 def test_expenses_index_func():
-    view = resolve('/expenses/index/')
+    view = resolve('/expenses/')
 
     assert expenses.Index == view.func.view_class
 
 
 def test_expenses_lists_func():
-    view = resolve('/expenses/')
+    view = resolve('/expenses/list/')
 
     assert expenses.Lists == view.func.view_class
 
 
 def test_expenses_lists_200(client_logged):
-    url = reverse('expenses:expenses_list')
+    url = reverse('expenses:list')
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_expenses_lists_302(client):
-    url = reverse('expenses:expenses_list')
+    url = reverse('expenses:list')
     response = client.get(url)
 
     assert response.status_code == 302
-
-
-def test_expenses_lists_month_func():
-    view = resolve('/expenses/1/')
-
-    assert expenses.MonthLists == view.func.view_class
-
-
-def test_expenses_lists_all_func():
-    view = resolve('/expenses/all/')
-
-    assert expenses.MonthLists == view.func.view_class
-
-
-def test_expenses_lists_all_200(client_logged):
-    url = reverse('expenses:expenses_all')
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_expenses_lists_month_search_form(client_logged):
-    url = reverse('expenses:expenses_month_list', kwargs={'month': 1})
-    response = client_logged.get(url).content.decode('utf-8')
-
-    assert '<input type="text" name="search"' in response
-    assert reverse('expenses:expenses_search') in response
 
 
 def test_expenses_new_func():
@@ -97,15 +69,14 @@ def test_expenses_update_func():
 @freeze_time('1974-08-08')
 def test_expenses_load_new_form(get_user, client_logged):
     get_user.year = 3000
-    url = reverse('expenses:expenses_new')
+    url = reverse('expenses:new')
 
-    response = client_logged.get(url, {}, **X_Req)
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
 
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert response.status_code == 200
-    assert '3000-08-08' in actual['html_form']
+    assert '3000-08-08' in actual
+    assert 'Įrašyti</button>' in actual
+    assert 'Įrašyti ir uždaryti</button>' in actual
 
 
 def test_expenses_save(client_logged):
@@ -122,14 +93,9 @@ def test_expenses_save(client_logged):
         'expense_name': n.pk,
     }
 
-    url = reverse('expenses:expenses_new')
+    url = reverse('expenses:new')
 
-    response = client_logged.post(url, data, **X_Req)
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
+    client_logged.post(url, data, follow=True)
 
     actual = models.Expense.objects.get(pk=1)
     assert actual.date == date(1999, 1, 1)
@@ -138,56 +104,6 @@ def test_expenses_save(client_logged):
     assert actual.account.title == 'Account1'
     assert actual.expense_type.title == 'Expense Type'
     assert actual.expense_name.title == 'Expense Name'
-
-
-def test_expenses_save_not_render_html_list(client_logged):
-    a = AccountFactory()
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory()
-
-    data = {
-        'date': '1999-01-01',
-        'price': '1.05',
-        'quantity': 33,
-        'account': a.pk,
-        'expense_type': t.pk,
-        'expense_name': n.pk,
-    }
-
-    url = reverse('expenses:expenses_new')
-
-    response = client_logged.post(url, data, **X_Req)
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert not actual.get('html_list')
-
-
-def test_expenses_save_insert_button(client_logged):
-    a = AccountFactory()
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory()
-
-    data = {
-        'date': '1999-01-01',
-        'price': '1.05',
-        'quantity': 33,
-        'account': a.pk,
-        'expense_type': t.pk,
-        'expense_name': n.pk,
-    }
-
-    url = reverse('expenses:expenses_new')
-    response = client_logged.post(url, data, **X_Req)
-    json_str = response.content
-    actual = json.loads(json_str)
-    assert not actual.get('html_list')
-
-    actual = actual.get('html_form')
-    assert 'id="submit">Įrašyti</button>' in actual
-    assert 'data-action="insert"' in actual
-    assert 'data-chained-dropdown="/ajax/load_expense_name/' in actual
 
 
 def test_expenses_save_invalid_data(client_logged):
@@ -199,27 +115,22 @@ def test_expenses_save_invalid_data(client_logged):
         'expense_type': 'x',
     }
 
-    url = reverse('expenses:expenses_new')
+    url = reverse('expenses:new')
+    response = client_logged.post(url, data)
+    actual = response.context['form']
 
-    response = client_logged.post(url, data, **X_Req)
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert not actual['form_is_valid']
+    assert not actual.is_valid()
 
 
 def test_expenses_load_update_form(client_logged):
     e = ExpenseFactory()
-    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
 
-    response = client_logged.get(url, **X_Req)
+    url = reverse('expenses:update', kwargs={'pk': e.pk})
+    response = client_logged.get(url)
+    form = response.content.decode('utf-8')
 
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
+    assert 'Atnaujinti</button>' in form
+    assert 'Atnaujinti ir uždaryti</button>' in form
 
     assert '1999-01-01' in form
     assert '1.12' in form
@@ -241,15 +152,9 @@ def test_expenses_update_to_another_year(client_logged):
         'expense_type': 1,
         'expense_name': 1,
     }
-    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+    url = reverse('expenses:update', kwargs={'pk': e.pk})
 
-    response = client_logged.post(url, data, **X_Req)
-
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-    assert actual['form_is_valid']
+    client_logged.post(url, data)
 
     actual = models.Expense.objects.get(pk=e.pk)
     assert actual.date == date(2010, 12, 31)
@@ -268,16 +173,9 @@ def test_expenses_update(client_logged):
         'expense_type': 1,
         'expense_name': 1,
     }
-    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+    url = reverse('expenses:update', kwargs={'pk': e.pk})
 
-    response = client_logged.post(url, data, **X_Req)
-
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
+    client_logged.post(url, data, follow=True)
 
     actual = models.Expense.objects.get(pk=e.pk)
     assert actual.date == date(1999, 12, 31)
@@ -300,41 +198,13 @@ def test_expenses_not_load_other_journal(client_logged, main_user, second_user):
     ExpenseFactory(expense_type=et1, account=a1)
     e2 = ExpenseFactory(expense_type=et2, account=a2, price=666)
 
-    url = reverse('expenses:expenses_update', kwargs={'pk': e2.pk})
-    response = client_logged.get(url, **X_Req)
+    url = reverse('expenses:update', kwargs={'pk': e2.pk})
+    response = client_logged.get(url)
 
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
+    form = response.content.decode('utf-8')
 
     assert et2.title not in form
     assert str(e2.price) not in form
-
-
-def test_expenses_update_not_render_html_list(client_logged):
-    e = ExpenseFactory()
-
-    data = {
-        'price': '150',
-        'quantity': 33,
-        'date': '1999-12-31',
-        'remark': 'Pastaba',
-        'account': 1,
-        'expense_type': 1,
-        'expense_name': 1,
-    }
-    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
-
-    response = client_logged.post(url, data, **X_Req)
-
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert not actual.get('html_list')
 
 
 @freeze_time('2000-03-03')
@@ -351,16 +221,9 @@ def test_expenses_update_past_record(get_user, client_logged):
         'expense_type': 1,
         'expense_name': 1,
     }
-    url = reverse('expenses:expenses_update', kwargs={'pk': e.pk})
+    url = reverse('expenses:update', kwargs={'pk': e.pk})
 
-    response = client_logged.post(url, data, **X_Req)
-
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
+    response = client_logged.post(url, data)
 
     actual = models.Expense.objects.get(pk=e.pk)
     assert actual.date == date(1998, 12, 12)
@@ -373,29 +236,76 @@ def test_expenses_update_past_record(get_user, client_logged):
 
 
 def test_expenses_index_200(client_logged):
-    url = reverse('expenses:expenses_index')
+    url = reverse('expenses:index')
     response = client_logged.get(url, follow=True)
-
-    assert response.status_code == 200
-
-    assert 'expenses_list' in response.context
-    assert 'categories' in response.context
-    assert 'search' in response.context
-    assert 'current_month' in response.context
-
-
-def test_expenses_month_list_200(client_logged):
-    response = client_logged.get('/expenses/1/')
 
     assert response.status_code == 200
 
 
 def test_expenses_index_search_form(client_logged):
-    url = reverse('expenses:expenses_index')
+    url = reverse('expenses:index')
     response = client_logged.get(url, follow=True).content.decode('utf-8')
 
-    assert '<input type="text" name="search"' in response
-    assert reverse('expenses:expenses_search') in response
+    assert '<input type="search" name="search"' in response
+    assert reverse('expenses:search') in response
+
+
+@freeze_time('1999-1-1')
+def test_expenses_list_month_not_set(client_logged):
+    ExpenseFactory(date=date(1999, 1, 1))
+    ExpenseFactory(date=date(1999, 2, 1))
+
+    url = reverse('expenses:list')
+    actual = client_logged.get(url).context['object_list']
+
+    assert len(actual) == 1
+    assert actual[0].date == date(1999, 1, 1)
+
+
+@freeze_time('1999-1-1')
+def test_expenses_list_month_stringt(client_logged):
+    ExpenseFactory(date=date(1999, 1, 1))
+    ExpenseFactory(date=date(1999, 2, 1))
+
+    url = reverse('expenses:list')
+    actual = client_logged.get(url, {'month': 'xxx'}).context['object_list']
+
+    assert len(actual) == 1
+    assert actual[0].date == date(1999, 1, 1)
+
+
+@freeze_time('1999-1-1')
+def test_expenses_list_january(client_logged):
+    ExpenseFactory(date=date(1999, 1, 1))
+    ExpenseFactory(date=date(1999, 2, 1))
+
+    url = reverse('expenses:list')
+    actual = client_logged.get(url, {'month': 1}).context['object_list']
+
+    assert len(actual) == 1
+    assert actual[0].date == date(1999, 1, 1)
+
+
+@freeze_time('1999-1-1')
+def test_expenses_list_all(client_logged):
+    ExpenseFactory(date=date(1999, 1, 1))
+    ExpenseFactory(date=date(1999, 2, 1))
+
+    url = reverse('expenses:list')
+    actual = client_logged.get(url, {'month': 13}).context['object_list']
+
+    assert len(actual) == 2
+
+
+@freeze_time('1999-1-1')
+def test_expenses_list_all_any_num(client_logged):
+    ExpenseFactory(date=date(1999, 1, 1))
+    ExpenseFactory(date=date(1999, 2, 1))
+
+    url = reverse('expenses:list')
+    actual = client_logged.get(url, {'month': 133}).context['object_list']
+
+    assert len(actual) == 2
 
 
 # ---------------------------------------------------------------------------------------
@@ -410,7 +320,7 @@ def test_view_expenses_delete_func():
 def test_view_expenses_delete_200(client_logged):
     p = ExpenseFactory()
 
-    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
+    url = reverse('expenses:delete', kwargs={'pk': p.pk})
 
     response = client_logged.get(url)
 
@@ -420,17 +330,13 @@ def test_view_expenses_delete_200(client_logged):
 def test_view_expenses_delete_load_form(client_logged):
     p = ExpenseFactory()
 
-    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
-    response = client_logged.get(url, {}, **X_Req)
+    url = reverse('expenses:delete', kwargs={'pk': p.pk})
+    response = client_logged.get(url)
 
-    json_str = response.content
-    actual = json.loads(json_str)
-    actual = actual['html_form']
+    actual = response.content.decode('utf-8')
 
     assert response.status_code == 200
-    assert '<form method="post"' in actual
-    assert 'data-action="delete"' in actual
-    assert 'data-update-container="expenses_list">' in actual
+    assert '<form method="POST"' in actual
     assert 'Ar tikrai norite ištrinti: <strong>1999-01-01/Expense Type/Expense Name</strong>?' in actual
 
 
@@ -438,51 +344,32 @@ def test_view_expenses_delete(client_logged):
     p = ExpenseFactory()
 
     assert models.Expense.objects.all().count() == 1
-    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
+    url = reverse('expenses:delete', kwargs={'pk': p.pk})
 
-    response = client_logged.post(url, {}, **X_Req)
-
-    assert response.status_code == 200
+    client_logged.post(url)
 
     assert models.Expense.objects.all().count() == 0
-
-
-def test_view_expenses_delete_not_render_html_list(client_logged):
-    p = ExpenseFactory()
-
-    assert models.Expense.objects.all().count() == 1
-    url = reverse('expenses:expenses_delete', kwargs={'pk': p.pk})
-
-    response = client_logged.post(url, {}, **X_Req)
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert not actual.get('html_list')
 
 
 def test_expenses_delete_other_journal_get_form(client_logged, second_user):
     it2 = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
     i2 = ExpenseFactory(expense_type=it2, price=666)
 
-    url = reverse('expenses:expenses_delete', kwargs={'pk': i2.pk})
-    response = client_logged.get(url, **X_Req)
+    url = reverse('expenses:delete', kwargs={'pk': i2.pk})
+    response = client_logged.get(url)
 
-    assert response.status_code == 200
+    form = response.content.decode('utf-8')
 
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
-
-    assert 'SRSLY' in form
+    assert '<form method="POST" hx-post="None"' in form
+    assert 'Ar tikrai norite ištrinti: <strong>None</strong>' in form
 
 
 def test_expenses_delete_other_journal_post_form(client_logged, second_user):
     it2 = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
     i2 = ExpenseFactory(expense_type=it2, price=666)
 
-    url = reverse('expenses:expenses_delete', kwargs={'pk': i2.pk})
-    client_logged.post(url, **X_Req)
+    url = reverse('expenses:delete', kwargs={'pk': i2.pk})
+    client_logged.post(url)
 
     assert Expense.objects.all().count() == 1
 
@@ -506,14 +393,10 @@ def test_expense_type_not_load_other_journal(client_logged, main_user, second_us
     ExpenseTypeFactory(title='xxx', journal=main_user.journal)
     obj = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
 
-    url = reverse('expenses:expenses_type_update', kwargs={'pk': obj.pk})
-    response = client_logged.get(url, **X_Req)
+    url = reverse('expenses:type_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
 
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
+    form = response.content.decode('utf-8')
 
     assert obj.title not in form
 
@@ -534,22 +417,19 @@ def test_expenses_name_update_func():
 
 
 def test_expense_name_save_data(client_logged):
-    url = reverse('expenses:expenses_name_new')
+    url = reverse('expenses:name_new')
     p = ExpenseTypeFactory()
 
     data = {
         'title': 'TTT', 'parent': p.pk
     }
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
 
-    assert response.status_code == 200
+    actual = response.content.decode('utf-8')
 
-    templates = [t.name for t in response.templates]
-    template = 'expenses/includes/expenses_type_list.html'
+    assert 'TTT' in actual
 
-    # expense_name template is same as expense_type
-    assert template in templates
 
 
 def test_expense_name_save_invalid_data(client_logged):
@@ -558,14 +438,13 @@ def test_expense_name_save_invalid_data(client_logged):
         'parent': 0
     }
 
-    url = reverse('expenses:expenses_name_new')
+    url = reverse('expenses:name_new')
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data)
 
-    json_str = response.content
-    actual = json.loads(json_str)
+    actual = response.context['form']
 
-    assert not actual['form_is_valid']
+    assert not actual.is_valid()
 
 
 def test_expense_name_update(client_logged):
@@ -576,17 +455,13 @@ def test_expense_name_update(client_logged):
         'valid_for': 2000,
         'parent': e.parent.pk
     }
-    url = reverse('expenses:expenses_name_update', kwargs={'pk': e.pk})
+    url = reverse('expenses:name_update', kwargs={'pk': e.pk})
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data, follow=True)
 
-    assert response.status_code == 200
+    actual = response.content.decode('utf-8')
 
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
-    assert 'TTT' in actual['html_list']
+    assert 'TTT' in actual
 
 
 def test_expense_name_not_load_other_journal(client_logged, main_user, second_user):
@@ -596,24 +471,20 @@ def test_expense_name_not_load_other_journal(client_logged, main_user, second_us
     ExpenseNameFactory(parent=et1)
     obj = ExpenseNameFactory(parent=et2)
 
-    url = reverse('expenses:expenses_name_update', kwargs={'pk': obj.pk})
-    response = client_logged.get(url, **X_Req)
+    url = reverse('expenses:name_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
 
-    assert response.status_code == 200
+    actual = response.content.decode('utf-8')
 
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
-
-    assert obj.title not in form
-    assert et2.title not in form
+    assert obj.title not in actual
+    assert et2.title not in actual
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                       LoadExpenseName
 # ---------------------------------------------------------------------------------------
 def test_load_expenses_name_new_func():
-    actual = resolve('/ajax/load_expense_name/')
+    actual = resolve('/expenses/load_expense_name/')
 
     assert expenses.LoadExpenseName is actual.func.view_class
 
@@ -629,21 +500,21 @@ def test_load_expense_name_isnull_count(client_logged, _db_data):
     change_profile_year(client_logged)
 
     url = reverse('expenses:load_expense_name')
-    response = client_logged.get(url, {'expense_type': 1}, **X_Req)
+    response = client_logged.get(url, {'expense_type': 1})
 
     assert response.context['objects'].count() == 1
 
 
 def test_load_expense_name_all(client_logged, _db_data):
     url = reverse('expenses:load_expense_name')
-    response = client_logged.get(url, {'expense_type': 1}, **X_Req)
+    response = client_logged.get(url, {'expense_type': 1})
 
     assert response.context['objects'].count() == 2
 
 
 def test_load_expense_name_select_empty_parent(client_logged, _db_data):
     url = reverse('expenses:load_expense_name')
-    response = client_logged.get(url, {'expense_type': ''}, **X_Req)
+    response = client_logged.get(url, {'expense_type': ''})
 
     assert response.context['objects'] == []
 
@@ -651,7 +522,7 @@ def test_load_expense_name_select_empty_parent(client_logged, _db_data):
 def test_load_expense_name_must_logged(client):
     url = reverse('expenses:load_expense_name')
 
-    response = client.get(url, follow=True, **X_Req)
+    response = client.get(url, follow=True)
 
     assert response.status_code == 200
 
@@ -659,64 +530,9 @@ def test_load_expense_name_must_logged(client):
     assert response.resolver_match.func.view_class is Login
 
 
-def test_load_expense_name_request_ajax(client_logged):
-    a1 = ExpenseNameFactory()
-    url = reverse('expenses:load_expense_name')
-
-    response = client_logged.get(url, {'id': a1.parent.pk})
-
-    assert 'SRSLY' in response.content.decode('utf-8')
-
-
-# ---------------------------------------------------------------------------------------
-#                                                                         realod expenses
-# ---------------------------------------------------------------------------------------
-def test_view_reload_expenses_func():
-    view = resolve('/expenses/reload/')
-
-    assert expenses.ReloadExpenses is view.func.view_class
-
-
-def test_view_reload_return_object(rf):
-    request = rf.get('/expenses/reload/?ajax_trigger=1')
-    request.user = UserFactory.build()
-
-    response = expenses.ReloadExpenses.as_view()(request)
-
-    assert isinstance(response, JsonResponse)
-
-
-def test_view_reload_expenses_render(rf):
-    request = rf.get('/expenses/reload/?ajax_trigger=1')
-    request.user = UserFactory.build()
-
-    response = expenses.ReloadExpenses.as_view()(request)
-
-    assert response.status_code == 200
-
-    actual = json.loads(response.content)
-    assert 'expenses_list' in actual
-
-
-def test_view_reload_expenses_render_ajax_trigger_not_set(client_logged):
-    url = reverse('expenses:reload_expenses')
-    response = client_logged.get(url, follow=True)
-
-    assert response.status_code == 200
-    assert expenses.MonthLists == response.resolver_match.func.view_class
-
-
 # ---------------------------------------------------------------------------------------
 #                                                                         Expenses Search
 # ---------------------------------------------------------------------------------------
-@pytest.fixture()
-def _search_form_data():
-    return ([
-        {"name":"csrfmiddlewaretoken", "value":"xxx"},
-        {"name":"search", "value":"1999 type"},
-    ])
-
-
 def test_search_func():
     view = resolve('/expenses/search/')
 
@@ -724,117 +540,45 @@ def test_search_func():
 
 
 def test_search_get_200(client_logged):
-    url = reverse('expenses:expenses_search')
+    url = reverse('expenses:search')
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
-def test_search_get_302(client):
-    url = reverse('expenses:expenses_search')
-    response = client.get(url)
-
-    assert response.status_code == 302
-
-
-def test_search_post_200(client_logged, _search_form_data):
-    form_data = json.dumps(_search_form_data)
-    url = reverse('expenses:expenses_search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    assert response.status_code == 200
-
-
-def test_search_post_404(client_logged):
-    url = reverse('expenses:expenses_search')
-    response = client_logged.post(url)
-
-    assert response.status_code == 404
-
-
-def test_search_post_500(client_logged):
-    form_data = json.dumps([{'x': 'y'}])
-    url = reverse('expenses:expenses_search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    assert response.status_code == 500
-
-
-def test_search_bad_json_data(client_logged):
-    form_data = "{'x': 'y'}"
-    url = reverse('expenses:expenses_search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    assert response.status_code == 500
-
-
-def test_search_form_is_not_valid(client_logged, _search_form_data):
-    _search_form_data[1]['value'] = '@#$%^&*xxxx'  # search
-    form_data = json.dumps(_search_form_data)
-
-    url = reverse('expenses:expenses_search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    actual = json.loads(response.content)
-
-    assert not actual['form_is_valid']
-
-
-def test_search_form_is_valid(client_logged, _search_form_data):
-    form_data = json.dumps(_search_form_data)
-
-    url = reverse('expenses:expenses_search')
-    response = client_logged.post(url, {'form_data': form_data})
-
-    actual = json.loads(response.content)
-
-    assert actual['form_is_valid']
-
-
-def test_search_not_found(client_logged, _search_form_data):
+def test_search_not_found(client_logged):
     ExpenseFactory()
 
-    _search_form_data[1]['value'] = 'xxxx'
-    form_data = json.dumps(_search_form_data)
+    url = reverse('expenses:search')
+    response = client_logged.get(url, {'search': 'xxx'})
+    actual = response.content.decode('utf-8')
 
-    url = reverse('expenses:expenses_search')
-    response = client_logged.post(url, {'form_data': form_data})
-    actual = json.loads(response.content)
-
-    assert 'Nieko nerasta' in actual['html']
+    assert 'Nieko nerasta' in actual
 
 
-def test_search_found(client_logged, _search_form_data):
+def test_search_found(client_logged):
     ExpenseFactory()
 
-    form_data = json.dumps(_search_form_data)
+    url = reverse('expenses:search')
+    response = client_logged.get(url, {'search': 'type'})
+    actual = response.content.decode('utf-8')
 
-    url = reverse('expenses:expenses_search')
-    response = client_logged.post(url, {'form_data': form_data})
-    actual = json.loads(response.content)
-
-    assert '1999-01-01' in actual['html']
-    assert 'Remark' in actual['html']
+    assert '1999-01-01' in actual
+    assert 'Remark' in actual
 
 
-def test_search_pagination_first_page(client_logged, _search_form_data):
+def test_search_pagination_first_page(client_logged):
     a = AccountFactory()
     t = ExpenseTypeFactory()
     n = ExpenseNameFactory()
     i = ExpenseFactory.build_batch(51, account=a, expense_type=t, expense_name=n)
     Expense.objects.bulk_create(i)
 
-    form_data = json.dumps(_search_form_data)
+    url = reverse('expenses:search')
+    response = client_logged.get(url, {'search': 'type'})
+    actual = response.context['object_list']
 
-    url = reverse('expenses:expenses_search')
-    response = client_logged.post(url, {'form_data': form_data})
-    actual = json.loads(response.content)
-
-    assert 'html' in actual
-
-    actual = actual['html']
-
-    assert actual.count('Expense Type') == 50
+    assert len(actual) == 50
 
 
 def test_search_pagination_second_page(client_logged):
@@ -844,13 +588,8 @@ def test_search_pagination_second_page(client_logged):
     i = ExpenseFactory.build_batch(51, account=a, expense_type=t, expense_name=n)
     Expense.objects.bulk_create(i)
 
-    url = reverse('expenses:expenses_search')
-
+    url = reverse('expenses:search')
     response = client_logged.get(url, {'page': 2, 'search': 'type'})
-    actual = json.loads(response.content)
+    actual = response.context['object_list']
 
-    assert 'expenses_list' in actual
-
-    actual = actual['expenses_list']
-
-    assert actual.count('Expense Type') == 1
+    assert len(actual) == 1
