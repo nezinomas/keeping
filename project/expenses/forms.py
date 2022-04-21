@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
-from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
+from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
 from .models import Expense, ExpenseName, ExpenseType
@@ -53,14 +53,6 @@ class ExpenseForm(forms.ModelForm):
         # overwrite ForeignKey expense_type queryset
         self.fields['expense_type'].queryset = ExpenseType.objects.items()
         self.fields['account'].queryset = Account.objects.items()
-
-        # chained dropdown to select expense_names
-        _id = ChainedDropDown(self, 'expense_type').parent_field_id
-        if _id:
-            year = utils.get_user().year
-            self.fields['expense_name'].queryset = (
-                ExpenseName.objects.parent(_id).year(year)
-            )
 
         # form inputs settings
         self.fields['price'].widget.attrs = {'readonly': True, 'step': '0.01'}

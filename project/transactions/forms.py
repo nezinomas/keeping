@@ -7,7 +7,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
-from ..core.helpers.helper_forms import ChainedDropDown, set_field_properties
+from ..core.helpers.helper_forms import set_field_properties
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.forms import YearBetweenMixin
@@ -43,13 +43,6 @@ class TransactionForm(YearBetweenMixin, forms.ModelForm):
         self.fields['date'].label = _('Date')
         self.fields['from_account'].label = _('From account')
         self.fields['to_account'].label = _('To account')
-
-        # chained dropdown
-        _id = ChainedDropDown(self, 'from_account').parent_field_id
-        if _id:
-            self.fields['to_account'].queryset = (
-                Account.objects.items().exclude(pk=_id)
-            )
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -147,16 +140,6 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
         self.fields['from_account'].label = _('From account')
         self.fields['to_account'].label = _('To account')
         self.fields['close'].label = mark_safe(f"{_('Close')} <b>{_('From account')}</b>")
-
-        # chained dropdown
-        _id = ChainedDropDown(self, 'from_account').parent_field_id
-        if _id:
-            self.fields['to_account'].queryset = (
-                SavingType
-                .objects
-                .related()
-                .exclude(pk=_id)
-            )
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
