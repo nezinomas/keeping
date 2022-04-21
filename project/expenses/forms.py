@@ -4,6 +4,7 @@ from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
@@ -80,9 +81,16 @@ class ExpenseForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
-        self.fields['exception'].widget.attrs['class'] = " form-check-input"
-        self.fields['attachment'].widget.attrs['class'] = 'form-control form-control-sm'
+        # htmx attributes for chained dropdown
+        url = reverse('expenses:load_expense_name')
 
+        field = self.fields['expense_type']
+        field.widget.attrs['hx-get'] = url
+        field.widget.attrs['hx-target'] = '#id_expense_name'
+        field.widget.attrs['hx-trigger'] = 'change'
+
+        # add css classes to fields
+        self.fields['exception'].widget.attrs['class'] = " form-check-input"
 
     def clean_exception(self):
         data = self.cleaned_data

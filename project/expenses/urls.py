@@ -8,12 +8,12 @@ app_name = App_name
 
 urlpatterns = [
     path(
-        'expenses/index/',
+        'expenses/',
         expenses.Index.as_view(),
         name='index'
     ),
     path(
-        'expenses/',
+        'expenses/list/',
         expenses.Lists.as_view(),
         name='list'
     ),
@@ -46,6 +46,11 @@ urlpatterns = [
         'expenses/type/new/',
         expenses_type.New.as_view(),
         name='type_new'
+    ),
+    path(
+        'expenses/type/',
+        expenses_type.Lists.as_view(),
+        name='type_list'
     ),
     path(
         'expenses/type/update/<int:pk>/',

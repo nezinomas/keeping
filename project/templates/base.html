@@ -56,23 +56,23 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu nav-link {% if request.resolver_match.url_name == 'expenses_month_list' or request.resolver_match.url_name == 'expenses_all' %}active{% endif %}"
-                href="{% url 'expenses:expenses_index' %}">{% translate 'Expenses' %}</a>
-              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if request.resolver_match.url_name == 'expenses_month_list' or request.resolver_match.url_name == 'expenses_all' %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="btn btn-menu nav-link {% if request.resolver_match.url_name == 'list' %}active{% endif %}"
+                href="{% url 'expenses:index' %}">{% translate 'Expenses' %}</a>
+              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if request.resolver_match.url_name == 'list' %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
                 {% for m in context_months %}
                 {% with m|date:'n' as m_num %}
                 <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'expenses:expenses_month_list' forloop.counter %}">{{ m|date:'F'|title }}</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'expenses:index'%}?month={{ forloop.counter }}">{{ m|date:'F'|title }}</a>
                 </li>
                 {% endwith %}{% endfor %}
                 <li>
                   <hr class="dropdown-divider">
                 </li>
                 <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'expenses:expenses_all' %}">{% translate 'All records' %}</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'expenses:index' %}?month=13">{% translate 'All records' %}</a>
                 </li>
               </ul>
             </div>
@@ -175,7 +175,7 @@
                   <button class="dropdown-item btn-sm" data-url="{% url 'incomes:new' %}">{% translate 'Incomes' context 'incomes button' %}</button>
                 </li>
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'expenses:expenses_new' %}">{% translate "Expenses" context "expenses button" %}</button>
+                  <button class="dropdown-item btn-sm" data-url="{% url 'expenses:new' %}">{% translate "Expenses" context "expenses button" %}</button>
                 </li>
                 <li>
                   <button class="dropdown-item btn-sm" data-url="{% url 'transactions:transactions_new' %}">{% translate 'Transactions' context "transactions button" %}</button>
@@ -193,10 +193,10 @@
                   <button class="dropdown-item btn-sm" data-url="{% url 'incomes:type_new' %}">{% translate 'Incomes type' context 'income type button' %}</button>
                 </li>
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'expenses:expenses_type_new' %}">{% translate "Expenses type" context "expenses type button" %}</button>
+                  <button class="dropdown-item btn-sm" data-url="{% url 'expenses:type_new' %}">{% translate "Expenses type" context "expenses type button" %}</button>
                 </li>
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'expenses:expenses_name_new' %}">{% translate "Expenses name" context "expenses name button" %}</button>
+                  <button class="dropdown-item btn-sm" data-url="{% url 'expenses:name_new' %}">{% translate "Expenses name" context "expenses name button" %}</button>
                 </li>
                 <li>
                   <button class="dropdown-item btn-sm" data-url="{% url 'savings:type_new' %}">{% translate 'Fund' context 'fund button' %}</button>
