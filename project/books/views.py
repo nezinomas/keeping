@@ -2,7 +2,6 @@ from django.core.paginator import Paginator
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 
-from ..core.forms import SearchForm
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  ListViewMixin, SearchMixin, TemplateViewMixin,
                                  UpdateViewMixin)
@@ -17,7 +16,6 @@ class Index(TemplateViewMixin):
         context.update({
             'year': self.request.user.year,
             'all': self.request.GET.get('tab'),
-            'form': SearchForm(),
         })
         return context
 
