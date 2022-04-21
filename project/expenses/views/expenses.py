@@ -93,9 +93,11 @@ class LoadExpenseName(ListViewMixin):
             pk = None
 
         if pk:
-            objects = (models.ExpenseName
-                       .objects
-                       .parent(pk)
-                       .year(request.user.year))
+            objects = (
+                models.ExpenseName
+                .objects
+                .parent(pk)
+                .year(request.user.year)
+            )
 
         return self.render_to_response({'objects': objects})
