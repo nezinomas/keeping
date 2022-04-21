@@ -43,7 +43,7 @@ class LoadAccount(ListViewMixin):
             pk = int(pk)
         except (ValueError, TypeError):
             pk = None
-        print(f'------------> pk: {pk}')
+
         if pk:
             objects = (
                 models.Account
