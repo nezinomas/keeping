@@ -8,27 +8,27 @@ urlpatterns = [
     path(
         'transactions/',
         views.Index.as_view(),
-        name='transactions_index'
+        name='index'
     ),
     path(
         'transactions/lists/',
         views.Lists.as_view(),
-        name='transactions_list'
+        name='list'
     ),
     path(
         'transactions/new/',
         views.New.as_view(),
-        name='transactions_new'
+        name='new'
     ),
     path(
         'transactions/update/<int:pk>/',
         views.Update.as_view(),
-        name='transactions_update'
+        name='update'
     ),
     path(
         'transactions/delete/<int:pk>/',
         views.Delete.as_view(),
-        name='transactions_delete'
+        name='delete'
     ),
     path(
         'savings_close/new/',
@@ -71,7 +71,7 @@ urlpatterns = [
         name='savings_change_delete'
     ),
     path(
-        'ajax/load_saving_type/',
+        'transactions/load_saving_type/',
         views.LoadSavingType.as_view(),
         name='load_saving_type'
     ),

@@ -6,7 +6,7 @@ from django.template import Context, Template
 def _template():
     template = Template(
         '{% load table %}'
-        '{% table "transactions:transactions_update" "transactions:transactions_delete" %}'
+        '{% table "transactions:update" "transactions:delete" %}'
     )
     return template
 

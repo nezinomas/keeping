@@ -15,7 +15,7 @@
                 <h6>{% translate 'Account &hArr; Account' %}</h6>
             </div>
             <div class="col text-end">
-                {% url 'transactions:transactions_new' as url_transactions %}
+                {% url 'transactions:new' as url_transactions %}
                 <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_transactions }}"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
             </div>
         </div>
