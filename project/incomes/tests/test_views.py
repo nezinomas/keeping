@@ -259,7 +259,6 @@ def test_incomes_delete_other_journal_get_form(client_logged, second_user):
     response = client_logged.get(url)
 
     form = response.content.decode('utf-8')
-    print('form', form)
 
     assert '<form method="POST" hx-post="None"' in form
     assert 'Ar tikrai norite ištrinti: <strong>None</strong>' in form
