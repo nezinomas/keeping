@@ -1,0 +1,43 @@
+{% load i18n %}
+<div class="accordion" id="accordion">
+{% for object in object_list %}
+{% url 'expenses:type_update' object.id as url_type_update %}
+    <div class="accordion-item mb-2">
+        <div class="accordion-header" id="heading_{{ object.id }}">
+            <span class="expenses-edit-icon">
+                <button type="button" hx-get="{{ url_type_update }}" hx-target="#dialog" class="btn btn-sm edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></button>
+            </span>
+            <button class="accordion-button collapsed btn-sm rounded-top" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ object.id }}" aria-expanded="false" aria-controls="collapse_{{ object.id }}">
+                {{ object.title }}
+                {% if object.necessary %}
+                <span class="badge rounded-pill text-dark mx-2"><i class="bi bi-star"></i></span>{% endif %}
+            </button>
+
+        </div>
+        <div id="collapse_{{ object.id }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ object.id }}"
+            data-bs-parent="#accordion">
+            <div class="accordion-body">
+                {% for sub in object.expensename_set.all %}
+                {% url 'expenses:name_update' sub.id as url_name_update %}
+                <div class="list-group-item" hx-get="{{ url_name_update }}" hx-target="#dialog">{{ sub.title }}
+                    {% if sub.valid_for %}<span class="ms-2 badge rounded-pill bg-info text-dark">{{ sub.valid_for|safe }}</span>{% endif %}
+                    <span class="expenses-edit-icon">
+                        <button type="button" data-url="{{ url_name_update }}" class="btn btn-super-sm edit"><i class="bi bi-pencil-fill"></i></button>
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endfor %}
+</div>
+
+<script>
+    $('.panel-collapse').on('show.bs.collapse', function () {
+        $(this).siblings('.panel-heading').addClass('active');
+    });
+
+    $('.panel-collapse').on('hide.bs.collapse', function () {
+        $(this).siblings('.panel-heading').removeClass('active');
+    });
+</script>

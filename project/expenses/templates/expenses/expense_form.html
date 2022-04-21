@@ -1,19 +1,11 @@
 {% load form %}
 {% load i18n %}
 
-{% url 'expenses:load_expense_name' as chained_url %}
 {% translate "Expenses" context "expenses form title" as form_title %}
 
-{% generic_form title=form_title chained_dropdown=chained_url %}
+{% generic_form title=form_title %}
 
 <script>
-    // on escape key hide modal form
-    $(document).keydown(function (event) {
-        if (event.keyCode == 27) {
-            $('#modal-form').modal("hide");
-        }
-    });
-
     // sum prices
     function sum_prices() {
         var input_total = document.getElementById("id_price")
@@ -40,7 +32,7 @@
         sum_prices();
     });
 
-
+    // Enter key on price field
     var input = document.getElementById("id_total_sum");
     input.addEventListener("keyup", function (event) {
         event.preventDefault();
@@ -49,21 +41,12 @@
         }
     });
 
-
-    // expense type dropdown event
-    $("#id_expense_type").change(function () {
-        var url = $("#js_form").attr("data-chained-dropdown");
-        var expense_typeId = $(this).val();
-
-        $.ajax({
-            url: url,
-            data: {
-                'expense_type': expense_typeId
-            },
-            success: function (data) {
-                $("#id_expense_name").html(data);
+    // disable Enter key on form
+    document.addEventListener('keypress', function (e) {
+            if (e.keyCode === 13 || e.which === 13) {
+                e.preventDefault();
+                return false;
             }
-        });
 
-    });
+        });
 </script>

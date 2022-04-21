@@ -1,21 +1,26 @@
-from ...core.mixins.views import CreateAjaxMixin, UpdateAjaxMixin
+from django.urls import reverse_lazy
+
+from ...core.mixins.views import CreateViewMixin, UpdateViewMixin
 from .. import forms, models
 
 
-class UpdateContext():
-    list_template_name = 'expenses/includes/expenses_type_list.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context[self.context_object_name] = models.ExpenseType.objects.items()
-        return context
+class QuerySetMixin():
+    def get_queryset(self):
+        return models.ExpenseType.objects.items()
 
 
-class New(UpdateContext, CreateAjaxMixin):
+class New(QuerySetMixin, CreateViewMixin):
     model = models.ExpenseName
     form_class = forms.ExpenseNameForm
+    success_url = reverse_lazy('expenses:type_list')
+
+    url = reverse_lazy('expenses:name_new')
+    hx_trigger = 'afterName'
 
 
-class Update(UpdateContext, UpdateAjaxMixin):
+class Update(QuerySetMixin, UpdateViewMixin):
     model = models.ExpenseName
     form_class = forms.ExpenseNameForm
+    success_url = reverse_lazy('expenses:type_list')
+
+    hx_trigger = 'afterName'

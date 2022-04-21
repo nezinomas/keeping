@@ -1,0 +1,68 @@
+{% load humanize %}
+{% load colorize %}
+{% load static %}
+{% load i18n %}
+{% load slippers %}
+
+{% if object_list %}
+
+<script src="{% static 'js/sticky-table-headers.js' %}"></script>
+<table class="table table-hover stats sticky-table">
+    <thead class="thead-light">
+        <tr class="top">
+            <th class="expense-ordinary">{% translate 'Date' %}</th>
+            <th>{% translate 'Expense type' %}</th>
+            <th>{% translate 'Expense name' %}</th>
+            <th class="text-end">{% translate 'How many' %}</th>
+            <th class="text-end">{% translate 'Price' %}</th>
+            <th class="w16">{% translate 'Remark' %}</th>
+            <th class="text-end w5">{% translate 'Attachment' %}</th>
+            <th class="text-end">{% translate 'Account' %}</th>
+            <th colspan="2"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for object in object_list %}
+        {% url 'expenses:update' object.id as url_update %}
+        {% url 'expenses:delete' object.id as url_delete %}
+        {% ifchanged object.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="10" class="table-active"></td></tr>{% endif %}{% endifchanged %}
+        <tr data-url="{{ url_update }}" class="{{ object.expense_type.pk|bg_color }} dblclick">
+            <td class="text-start {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ object.expense_type }}</td>
+            <td class="text-start">{{ object.expense_name }}</td>
+            <td>{{ object.quantity }}</td>
+            <td>{{ object.price|intcomma }}</td>
+            <td class="text-start">{{ object.remark|linebreaksbr }}</td>
+            <td>{% if object.attachment %}
+                {% if not 'pdf' in object.attachment.url %}
+                <button type="button" class="btn btn-outline-primary btn-super-sm" data-bs-toggle="modal" data-bs-target="#imgModal" data-bs-url="{{ object.attachment.url }}">{% translate 'Image' %}</button>
+                {% else %}
+                <a role="button" class="btn btn-outline-primary btn-super-sm" href="{{ object.attachment.url }}" target="_blank">{% translate 'Pdf file' %}</a>
+                {% endif %}
+                {% endif %}
+            </td>
+            <td>{{ object.account }}</td>
+            {% edit_cell url=url_update %}
+            {% delete_cell url=url_delete %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>$('.sticky-table').stickyTableHeaders();</script>
+
+{% paging url=url page_obj=object_list page_range=page_range search=search %}
+
+{% else %}
+
+<div class="mx-auto text-center alert alert-warning py-2">
+{% if notice %}
+    {{ notice|safe }}
+{% else %}
+    {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+{% endif %}
+</div>
+
+{% endif %}
+
+{% include 'modal_images.html' %}

@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
-{% load static %}{% load i18n %}
+{% load static %}
+{% load slippers %}
+{% load i18n %}
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
-<script src="{% static 'js/reload_stats.js' %}"></script>
 
 <style>
     .expenses-edit-icon {
@@ -25,92 +26,56 @@
 {% endblock head %}
 
 {% block content %}
-<!-- Loader -->
-<div class="loader loader-default" id="loader"></div>
 
-{% url 'expenses:expenses_new' as url_expense_new %}
-{% url 'expenses:expenses_type_new' as url_expenses_type_new %}
-{% url 'expenses:expenses_name_new' as url_expenses_name_new %}
+<!-- Loader -->
+<div class="htmx-indicator loader loader-default is-active" id="indicator"></div>
+
+{% url 'expenses:new' as url_expense_new %}
+{% url 'expenses:type_new' as url_type_new %}
+{% url 'expenses:name_new' as url_name_new %}
 <div class="row gx-2">
     <div class="col-lg-8">
         <div class="row my-2">
             <div class="col">
+            {% var current_month=view.get_month %}
             {% for m in context_months %}
                 {% with m|date:'n' as m_num %}
-                <button id="{{m_num}}" type="button" data-url="{% url 'expenses:expenses_month_list' m_num %}" class="btn btn-sm btn-month js-filter {% if current_month|slugify == m_num %}btn-info{% endif %}">{{ m|date:'F'|title }}</button>
+                <button id="{{m_num}}" type="button" hx-get="{% url 'expenses:list' %}?month={{ m_num }}" hx-target="#list" hx-swap="innerHTML" hx-indicator="#indicator" class="btn btn-sm btn-month {% if current_month|slugify == m_num %}btn-info{% endif %}">{{ m|date:'F'|title }}</button>
                 {% endwith %}
                 {% endfor %}
-                <button id="13" type="button" data-url="{% url 'expenses:expenses_all' %}" class="btn btn-sm btn-month js-filter ms-2 {% if not current_month %}btn-info{% endif %}">{% translate 'All records' %}</button>
+                <button id="13" type="button" hx-get="{% url 'expenses:list' %}?month=13" hx-target="#list" hx-swap="innerHTML" hx-indicator="#indicator" class="btn btn-sm btn-month js-filter ms-2 {% if current_month == 13 %}btn-info{% endif %}">{% translate 'All records' %}</button>
             </div>
             <div class="col-auto text-end">
-                <button type="button" id="insert_expense" class="btn btn-sm btn-outline-success w5" data-url="{{ url_expense_new }}"><i class="bi bi-plus"></i>{% translate "Expenses" context "expenses button" %}</button>
+                <button type="button" id="insert_expense" class="btn btn-sm btn-outline-success w5" hx-get="{{ url_expense_new }}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Expenses" context "expenses button" %}</button>
             </div>
         </div>
 
         <div class="row mb-2">
-            <div id="search_form_data" class="col">{{ search }}</div>
+            {% url 'expenses:search' as search_url %}
+            {% url 'expenses:list' as reset_url %}
+            <div id="search_form_data" class="col">{% search_form url=search_url reset_url=reset_url target="#list" %}</div>
         </div>
 
         <div class="row">
-            <div id="expenses_list" class="col">{{ expenses_list }}</div>
+            <div id="list" class="col" hx-trigger="load, reload from:body, afterType from:body, afterName from:body" hx-get="{% url 'expenses:list' %}{% if current_month %}?month={{ current_month }}{% endif %}" hx-target="this"></div>
         </div>
     </div>
 
     <div class="col-lg-4">
         <div class="row my-2">
             <div class="col-lg-12 text-end">
-                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_expenses_type_new }}"><i class="bi bi-plus"></i>{% translate "Expenses type" context "expenses type button" %}</button>
-                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_expenses_name_new }}"><i class="bi bi-plus"></i>{% translate "Expenses name" context "expenses name button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_type_new }}"><i class="bi bi-plus"></i>{% translate "Expenses type" context "expenses type button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_name_new }}"><i class="bi bi-plus"></i>{% translate "Expenses name" context "expenses name button" %}</button>
             </div>
         </div>
 
         <div class="row">
-            <div id="ajax-content-categories" class="col-lg-12">{{ categories }}</div>
+            <div id="ajax-content-categories" class="col-lg-12" hx-trigger="load, afterType from:body, afterName from:body" hx-get="{% url 'expenses:type_list' %}" hx-target="this"></div>
         </div>
     </div>
 </div>
 
 <script>
-    $(document).on('hidden.bs.modal', '#modal-form', function () {
-        var url = `{% url 'expenses:reload_expenses' %}`;
-        var btn_month = $('.btn-info');
-
-        $.ajax({
-            url: url,
-            data: {
-                'ajax_trigger': '1',
-                'month': btn_month.attr('id'),
-            },
-            success: function (data) {
-                var blocks = ['expenses_list'];
-                reload_stats(data, blocks);
-            }
-        });
-    });
-
-    $(document).on('click', '.js-filter', function () {
-        $('#loader').addClass('is-active')
-
-        var url = `{% url 'expenses:reload_expenses' %}`;
-        var btn_month = $('.btn-info');
-
-        $.ajax({
-            url: url,
-            data: {
-                'ajax_trigger': '1',
-                'month': btn_month.attr('id'),
-            },
-            success: function (data) {
-                var blocks = ['expenses_list'];
-                reload_stats(data, blocks);
-                $('#loader').removeClass('is-active');
-            },
-            error: function (data) {
-                $('#loader').removeClass('is-active');
-            }
-        });
-    });
-
     $('.btn-month').on('click', function () {
         $('.btn-month').removeClass('btn-info');
         $(this).addClass('btn-info');

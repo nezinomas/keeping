@@ -431,3 +431,17 @@ table.stats tr > .expense-ordinary {
     padding-left: .75rem!important;
     padding-right: .75rem!important;
 }
+
+
+/* ajax request load indicator */
+.htmx-indicator {
+    display: none;
+}
+
+.htmx-request .htmx-indicator {
+    display: inline;
+}
+
+.htmx-request.htmx-indicator {
+    display: inline;
+}
