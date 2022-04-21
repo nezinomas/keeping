@@ -10,21 +10,21 @@ urlpatterns = [
     path(
         'accounts/',
         views.Lists.as_view(),
-        name='accounts_list'
+        name='list'
     ),
     path(
         'accounts/new/',
         views.New.as_view(),
-        name='accounts_new'
+        name='new'
     ),
     path(
         'accounts/update/<int:pk>/',
         views.Update.as_view(),
-        name='accounts_update'
+        name='update'
     ),
     path(
-        'ajax/load_to_account/',
+        'accounts/load/',
         views.LoadAccount.as_view(),
-        name='load_to_account'
+        name='load'
     )
 ]

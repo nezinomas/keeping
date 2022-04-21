@@ -8,7 +8,7 @@
         <div id="collapse_1" class="accordion-collapse collapse show" aria-labelledby="heading_1" data-bs-parent="#accordion">
             <div class="accordion-body">
                 {% for item in items %}
-                {% url 'accounts:accounts_update' item.id as url_update %}
+                {% url 'accounts:update' item.id as url_update %}
                 <div class="list-group-item" data-url="{{ url_update }}">
                     {% if item.closed %}<s>{{ item.title }}</s> <i>{% translate 'closed' %} {{ item.closed|safe }}</i>{% else %}{{ item.title }}{% endif %}
                     <span class="edit-icon">
