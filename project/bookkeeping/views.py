@@ -30,6 +30,8 @@ from .models import AccountWorth, PensionWorth, SavingWorth
 
 
 class Index(IndexMixin):
+    template_name = 'bookkeeping/index.html'
+
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         obj = H.IndexHelper(self.request, year)
