@@ -1,5 +1,6 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.urls import reverse_lazy
 
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
@@ -23,12 +24,15 @@ class Account(TitleAbstract):
         related_name='accounts'
     )
 
+    # Managers
+    objects = managers.AccountQuerySet.as_manager()
+
     class Meta:
         unique_together = ['journal', 'title']
         ordering = ['order', 'title']
 
-    # Managers
-    objects = managers.AccountQuerySet.as_manager()
+    def get_absolute_url(self):
+        return reverse_lazy("accounts:update", kwargs={"pk": self.pk})
 
 
 class AccountBalance(models.Model):

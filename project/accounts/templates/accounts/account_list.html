@@ -7,12 +7,12 @@
         </div>
         <div id="collapse_1" class="accordion-collapse collapse show" aria-labelledby="heading_1" data-bs-parent="#accordion">
             <div class="accordion-body">
-                {% for item in items %}
-                {% url 'accounts:update' item.id as url_update %}
+                {% for object in object_list %}
+                {% url 'accounts:update' object.id as url_update %}
                 <div class="list-group-item" data-url="{{ url_update }}">
-                    {% if item.closed %}<s>{{ item.title }}</s> <i>{% translate 'closed' %} {{ item.closed|safe }}</i>{% else %}{{ item.title }}{% endif %}
+                    {% if object.closed %}<s>{{ object.title }}</s> <i>{% translate 'closed' %} {{ object.closed|safe }}</i>{% else %}{{ object.title }}{% endif %}
                     <span class="edit-icon">
-                        <button type="button" data-url="{{ url_update }}" class="btn btn-super-sm edit"><i class="bi bi-pencil-fill"></i></button>
+                        <button type="button" hx-get="{{ url_update }}" hx-target="#dialog" class="btn btn-super-sm edit"><i class="bi bi-pencil-fill"></i></button>
                     </span>
                 </div>
                 {% endfor %}

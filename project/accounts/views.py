@@ -1,53 +1,55 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
-from django.template.loader import render_to_string
-from django.views.generic.base import TemplateView
+from django.urls import reverse_lazy
 
-from ..core.lib import utils
-from ..core.mixins.views import (CreateAjaxMixin, DispatchListsMixin,
-                                 ListMixin, UpdateAjaxMixin)
+from ..core.mixins.views import (CreateViewMixin, ListViewMixin,
+                                  UpdateViewMixin)
 from . import forms, models
 
 
-class Lists(DispatchListsMixin, ListMixin):
+class Lists(ListViewMixin):
     model = models.Account
-    template_name = 'accounts/includes/accounts_list.html'
 
     def get_queryset(self):
         return models.Account.objects.related()
 
 
-class New(CreateAjaxMixin):
+class New(CreateViewMixin):
     model = models.Account
     form_class = forms.AccountForm
+    success_url = reverse_lazy('accounts:list')
+
+    url = reverse_lazy('accounts:new')
+    hx_trigger = 'afterAccount'
 
 
-class Update(UpdateAjaxMixin):
+class Update(UpdateViewMixin):
     model = models.Account
     form_class = forms.AccountForm
+    success_url = reverse_lazy('accounts:list')
+
+    hx_trigger = 'afterAccount'
 
     def get_queryset(self):
         return models.Account.objects.related()
 
 
-class LoadAccount(LoginRequiredMixin, TemplateView):
+class LoadAccount(ListViewMixin):
     template_name = 'core/dropdown.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        if not utils.is_ajax(self.request):
-            return HttpResponse(render_to_string('srsly.html'))
-
-        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         objects = []
-        pk = request.GET.get('id')
+        pk = request.GET.get('from_account')
 
+        try:
+            pk = int(pk)
+        except (ValueError, TypeError):
+            pk = None
+        print(f'------------> pk: {pk}')
         if pk:
-            objects = (models
-                       .Account
-                       .objects
-                       .items()
-                       .exclude(pk=pk))
+            objects = (
+                models.Account
+                .objects
+                .items()
+                .exclude(pk=pk)
+            )
 
         return self.render_to_response({'objects': objects})
