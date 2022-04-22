@@ -1,11 +1,17 @@
 {% extends 'base.html' %}
+
+{% load static %}
 {% load i18n %}
 
-{% block head %}{% endblock head %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
+{% endblock head %}
 
 
 {% block content %}
 
+<!-- Loader -->
+<div class="htmx-indicator loader loader-default is-active" id="indicator"></div>
 
 <div class="row gx-2">
     <div class="col-lg-8">
@@ -19,7 +25,7 @@
             </div>
         </div>
         <div class="row">
-            <div id="saving_list" class="col" hx-get="{% url 'savings:list' %}" hx-trigger="load, reload from:body, afterType from:body" hx-target="this"></div>
+            <div id="saving_list" class="col" hx-get="{% url 'savings:list' %}" hx-trigger="load, reload from:body, afterType from:body" hx-target="this" hx-indicator="#indicator"></div>
         </div><!-- End Funds -->
 
         <!-- Pensions -->
