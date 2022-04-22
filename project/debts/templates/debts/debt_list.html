@@ -2,7 +2,7 @@
 {% load i18n %}
 {% load slippers %}
 
-{% if items %}
+{% if object_list %}
 
 {% var target=request.resolver_match.kwargs.debt_type %}
 
@@ -14,7 +14,8 @@
                 {% if target == 'lend' %}{% translate 'Borrower' %}{% endif %}
                 {% if target == 'borrow' %}{% translate 'Lender' %}{% endif %}
             </th>
-            <th class="w10">{% translate 'Sum' %}</th>
+            <th class="w5">{% translate 'Sum' %}</th>
+            <th class="w5">{% translate 'Returned' %}</th>
             <th class="w10">{% translate 'Account' %}</th>
             <th>{% translate 'Remark' %}</th>
             <th class="text-center w3">{% translate 'Closed' %}</th>
@@ -22,22 +23,19 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in items %}
-        {% url 'debts:debts_return_update' target item.id as url_update %}
-        {% url 'debts:debts_return_delete' target item.id as url_delete %}
-        <tr data-url="" class="dblclick" {% ifchanged item.debt.name or ifchanged item.debt.closed %}{% if not forloop.first %}style="border-top: 5px #c0c0c0 solid;"{% endif %}{% endifchanged %}>
-            <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-start">{{ item.debt.name }}</td>
-            <td class="text-start">{{ item.price|intcomma }}</td>
-            <td class="text-start">{{ item.account }}</td>
-            <td class="text-start">{{ item.remark }}</td>
-            <td class="text-center">{% if item.debt.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
-            {% if not item.debt.closed %}
+        {% for object in object_list %}
+        {% url 'debts:update' target object.id as url_update %}
+        {% url 'debts:delete' target object.id as url_delete %}
+        <tr data-url="" class="dblclick">
+            <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ object.name }}</td>
+            <td class="text-start">{{ object.price|intcomma }}</td>
+            <td class="text-start">{{ object.returned|intcomma }}</td>
+            <td class="text-start">{{ object.account }}</td>
+            <td class="text-start">{{ object.remark }}</td>
+            <td class="text-center">{% if object.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
             {% edit_cell url=url_update target=target %}
             {% delete_cell url=url_delete target=target %}
-            {% else %}
-            <td colspan="2"></td>
-            {% endif %}
         </tr>
         {% endfor %}
     </tbody>

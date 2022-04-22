@@ -1,7 +1,10 @@
+from decimal import Decimal
+
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 from django.core.exceptions import ValidationError
+from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
@@ -160,11 +163,24 @@ class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
         price = self.cleaned_data['price']
         debt = self.cleaned_data.get('debt')
 
-        if debt:
-            obj = models.Debt.objects.related().get(pk=debt.pk)
+        if not debt:
+            return price
 
-            if price > (obj.price - obj.returned):
-                raise ValidationError(_('The amount to be paid is more than the debt!'))
+        qs = (
+            models.DebtReturn.objects
+            .related()
+            .filter(debt=debt)
+            .exclude(pk=self.instance.pk)
+            .aggregate(Sum('price'))
+        )
+
+        price_sum = qs.get('price__sum')
+        if not price_sum:
+            price_sum = Decimal('0')
+
+        if price > (debt.price - price_sum):
+            msg = _('The amount to be paid is more than the debt!')
+            raise ValidationError(msg)
 
         return price
 
