@@ -6,13 +6,13 @@ from django.template import Context, Template
 def _template():
     template = Template(
         '{% load table %}'
-        '{% table "transactions:transactions_update" "transactions:transactions_delete" %}'
+        '{% table "transactions:update" "transactions:delete" %}'
     )
     return template
 
 
 def test_no_request_in_context(_template):
-    ctx = Context({'request': None, 'items': []})
+    ctx = Context({'request': None, 'object_list': []})
 
     actual = _template.render(ctx)
 
@@ -20,7 +20,7 @@ def test_no_request_in_context(_template):
 
 
 def test_request_in_context(_template, fake_request):
-    ctx = Context({'request': fake_request, 'items': []})
+    ctx = Context({'request': fake_request, 'object_list': []})
 
     actual = _template.render(ctx)
 

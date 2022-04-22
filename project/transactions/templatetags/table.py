@@ -16,7 +16,7 @@ def table(context, url_update, url_delete, fee=False):
     return {
         'url_update': url_update,
         'url_delete': url_delete,
-        'items': context['items'],
+        'object_list': context['object_list'],
         'year': year,
         'fee': fee
     }

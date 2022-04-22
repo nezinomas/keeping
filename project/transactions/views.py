@@ -1,114 +1,116 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
-from django.template.loader import render_to_string
-from django.views.generic.base import TemplateView
+from django.urls import reverse_lazy
 
-from ..accounts.views import Lists as accounts_list
-from ..core.lib import utils
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchListsMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
+from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
+                                 ListViewMixin, TemplateViewMixin,
+                                 UpdateViewMixin)
 from . import forms, models
 
 
-class Index(IndexMixin):
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        context['categories'] = accounts_list.as_view()(
-            self.request, as_string=True)
-        context['transactions'] = Lists.as_view()(
-            self.request, as_string=True)
-        context['savings_close'] = SavingsCloseLists.as_view()(
-            self.request, as_string=True)
-        context['savings_change'] = SavingsChangeLists.as_view()(
-            self.request, as_string=True)
-
-        return context
+class Index(TemplateViewMixin):
+    template_name = 'transactions/index.html'
 
 
-# SavingType dropdown
-class LoadSavingType(LoginRequiredMixin, TemplateView):
+class LoadSavingType(ListViewMixin):
     template_name = 'core/dropdown.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        if not utils.is_ajax(self.request):
-            return HttpResponse(render_to_string('srsly.html'))
-
-        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         objects = []
-        pk = request.GET.get('id')
+        pk = request.GET.get('from_account')
+
+        try:
+            pk = int(pk)
+        except (ValueError, TypeError):
+            pk = None
 
         if pk:
-            objects = (models
-                       .SavingType
-                       .objects
-                       .items()
-                       .exclude(pk=pk))
+            objects = (
+                models.SavingType
+                .objects
+                .items()
+                .exclude(pk=pk)
+            )
 
         return self.render_to_response({'objects': objects})
 
 
-#----------------------------------------------------------------------------------------
-#                                                           Transactions between Accounts
-#----------------------------------------------------------------------------------------
-class Lists(DispatchListsMixin, ListMixin):
+class Lists(ListViewMixin):
     model = models.Transaction
 
 
-class New(CreateAjaxMixin):
+class New(CreateViewMixin):
     model = models.Transaction
     form_class = forms.TransactionForm
+    success_url = reverse_lazy('transactions:list')
+
+    hx_trigger = 'afterTransaction'
 
 
-class Update(UpdateAjaxMixin):
+class Update(UpdateViewMixin):
     model = models.Transaction
     form_class = forms.TransactionForm
+    success_url = reverse_lazy('transactions:list')
+
+    hx_trigger = 'afterTransaction'
 
 
-class Delete(DeleteAjaxMixin):
+class Delete(DeleteViewMixin):
     model = models.Transaction
+    success_url = reverse_lazy('transactions:list')
+
+    hx_trigger = 'afterTransaction'
 
 
-#----------------------------------------------------------------------------------------
-#                                   Savings Transactions from Savings to regular Accounts
-#----------------------------------------------------------------------------------------
-class SavingsCloseLists(DispatchListsMixin, ListMixin):
+class SavingsCloseLists(ListViewMixin):
     model = models.SavingClose
 
 
-class SavingsCloseNew(CreateAjaxMixin):
-    model = models.SavingClose
-    form_class = forms.SavingCloseForm
-
-
-class SavingsCloseUpdate(UpdateAjaxMixin):
+class SavingsCloseNew(CreateViewMixin):
     model = models.SavingClose
     form_class = forms.SavingCloseForm
+    success_url = reverse_lazy('transactions:savings_close_list')
+
+    url = reverse_lazy('transactions:savings_close_new')
+    hx_trigger = 'afterClose'
 
 
-class SavingsCloseDelete(DeleteAjaxMixin):
+class SavingsCloseUpdate(UpdateViewMixin):
     model = models.SavingClose
+    form_class = forms.SavingCloseForm
+    success_url = reverse_lazy('transactions:savings_close_list')
+
+    hx_trigger = 'afterClose'
 
 
-#----------------------------------------------------------------------------------------
-#                                           Savings Transactions between Savings accounts
-#----------------------------------------------------------------------------------------
-class SavingsChangeLists(DispatchListsMixin, ListMixin):
+class SavingsCloseDelete(DeleteViewMixin):
+    model = models.SavingClose
+    success_url = reverse_lazy('transactions:savings_close_list')
+
+    hx_trigger = 'afterClose'
+
+
+class SavingsChangeLists(ListViewMixin):
     model = models.SavingChange
 
 
-class SavingsChangeNew(CreateAjaxMixin):
+class SavingsChangeNew(CreateViewMixin):
     model = models.SavingChange
     form_class = forms.SavingChangeForm
+    success_url = reverse_lazy('transactions:savings_change_list')
+
+    url = reverse_lazy('transactions:savings_change_new')
+    hx_trigger = 'afterChange'
 
 
-class SavingsChangeUpdate(UpdateAjaxMixin):
+class SavingsChangeUpdate(UpdateViewMixin):
     model = models.SavingChange
     form_class = forms.SavingChangeForm
+    success_url = reverse_lazy('transactions:savings_change_list')
+
+    hx_trigger = 'afterChange'
 
 
-class SavingsChangeDelete(DeleteAjaxMixin):
+class SavingsChangeDelete(DeleteViewMixin):
     model = models.SavingChange
+    success_url = reverse_lazy('transactions:savings_change_list')
+
+    hx_trigger = 'afterChange'

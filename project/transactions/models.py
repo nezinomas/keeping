@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.urls import reverse_lazy
 
 from ..accounts.models import Account
 from ..core.mixins.old_values import OldValuesMixin
@@ -27,6 +28,8 @@ class Transaction(OldValuesMixin, models.Model):
         validators=[MinValueValidator(Decimal('0.01'))]
     )
 
+    objects = managers.TransactionQuerySet.as_manager()
+
     class Meta:
         ordering = ['-date', 'price', 'from_account']
         indexes = [
@@ -40,7 +43,12 @@ class Transaction(OldValuesMixin, models.Model):
             format(self.date, self.from_account, self.to_account, self.price)
         )
 
-    objects = managers.TransactionQuerySet.as_manager()
+    def get_absolute_url(self):
+        return reverse_lazy("transactions:update", kwargs={"pk": self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy("transactions:delete", kwargs={"pk": self.pk})
+
 
 
 class SavingClose(OldValuesMixin, models.Model):
@@ -67,6 +75,8 @@ class SavingClose(OldValuesMixin, models.Model):
         validators=[MinValueValidator(Decimal('0.01'))]
     )
 
+    objects = managers.SavingCloseQuerySet.as_manager()
+
     class Meta:
         ordering = ['-date', 'price', 'from_account']
         indexes = [
@@ -80,7 +90,11 @@ class SavingClose(OldValuesMixin, models.Model):
             format(self.date, self.from_account, self.to_account, self.price)
         )
 
-    objects = managers.SavingCloseQuerySet.as_manager()
+    def get_absolute_url(self):
+        return reverse_lazy("transactions:savings_close_update", kwargs={"pk": self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy("transactions:savings_close_delete", kwargs={"pk": self.pk})
 
 
 class SavingChange(OldValuesMixin, models.Model):
@@ -107,6 +121,8 @@ class SavingChange(OldValuesMixin, models.Model):
         validators=[MinValueValidator(Decimal('0.01'))]
     )
 
+    objects = managers.SavingChangeQuerySet.as_manager()
+
     class Meta:
         ordering = ['-date', 'price', 'from_account']
         indexes = [
@@ -120,4 +136,8 @@ class SavingChange(OldValuesMixin, models.Model):
             format(self.date, self.from_account, self.to_account, self.price)
         )
 
-    objects = managers.SavingChangeQuerySet.as_manager()
+    def get_absolute_url(self):
+        return reverse_lazy("transactions:savings_change_update", kwargs={"pk": self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy("transactions:savings_change_delete", kwargs={"pk": self.pk})
