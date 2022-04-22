@@ -9,61 +9,56 @@ urlpatterns = [
     path(
         'counts/',
         views.CountsEmpty.as_view(),
-        name='counts_empty'
+        name='empty'
     ),
     path(
         'counts/<slug:count_type>/',
         views.Index.as_view(),
-        name='counts_index'
+        name='index'
     ),
     path(
         'counts/lists/<slug:count_type>/',
         views.Lists.as_view(),
-        name='counts_list'
+        name='list'
     ),
     path(
         'counts/new/<slug:count_type>/',
         views.New.as_view(),
-        name='counts_new'
+        name='new'
     ),
     path(
         'counts/update/<slug:count_type>/<int:pk>/',
         views.Update.as_view(),
-        name='counts_update'
+        name='update'
     ),
     path(
         'counts/delete/<slug:count_type>/<int:pk>/',
         views.Delete.as_view(),
-        name='counts_delete'
+        name='delete'
     ),
     path(
         'counts/type/new/',
         views.TypeNew.as_view(),
-        name='counts_type_new'
+        name='type_new'
     ),
     path(
         'counts/type/update/<int:pk>/',
         views.TypeUpdate.as_view(),
-        name='counts_type_update'
+        name='type_update'
     ),
     path(
         'counts/type/delete/<int:pk>/',
         views.TypeDelete.as_view(),
-        name='counts_type_delete'
-    ),
-    path(
-        'counts/reload_stats/<slug:count_type>/',
-        views.ReloadStats.as_view(),
-        name='reload_stats'
+        name='type_delete'
     ),
     path(
         'counts/history/<slug:count_type>/',
         views.History.as_view(),
-        name='counts_history'
+        name='history'
     ),
     path(
         'counts/redirect/<int:count_id>/',
         views.Redirect.as_view(),
-        name='counts_redirect'
+        name='redirect'
     ),
 ]

@@ -1,1 +1,1 @@
-{% for count_type in count_types %}<li><a class="dropdown-item btn-sm" href="{% url 'counts:counts_index' count_type.slug %}">{{ count_type.title }}</a></li>{% endfor %}
+{% for count_type in count_types %}<li><a class="dropdown-item btn-sm" href="{% url 'counts:index' count_type.slug %}">{{ count_type.title }}</a></li>{% endfor %}

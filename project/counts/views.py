@@ -27,32 +27,12 @@ class Redirect(LoginRequiredMixin, RedirectView):
             qs = CountType.objects.related().first()
 
         if not qs:
-            url = reverse('counts:counts_empty')
+            url = reverse('counts:empty')
         else:
-            url = reverse('counts:counts_index',
+            url = reverse('counts:index',
                           kwargs={'count_type': qs.slug})
 
         return url
-
-
-class ReloadStats(LoginRequiredMixin, ContextMixin, DispatchAjaxMixin, TemplateView):
-    template_name = 'counts/index.html'
-    redirect_view = reverse_lazy('counts:counts_index',
-                                 kwargs={'count_type': 'counter'})
-
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        context.update({
-            **self.helper.context_to_reload(
-                self.get_year(),
-                **{'count_type_object': context['count_type_object']}
-            )
-        })
-        # delete Objects that is not JSON serializable
-        context.pop('view')
-        context.pop('count_type_object')
-
-        return JsonResponse(context)
 
 
 class Index(ContextMixin, IndexMixin):
@@ -63,12 +43,12 @@ class Index(ContextMixin, IndexMixin):
         count_type = request.resolver_match.kwargs.get("count_type")
 
         if count_type and count_type == 'drinks':
-            return redirect(reverse('counts:counts_empty'))
+            return redirect(reverse('counts:empty'))
 
         if count_type:
             qs = CountType.objects.related().filter(slug=count_type)
             if not qs.exists():
-                return redirect(reverse('counts:counts_empty'))
+                return redirect(reverse('counts:empty'))
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -119,7 +99,7 @@ class History(ContextMixin, IndexMixin):
 
 
 class CountsEmpty(IndexMixin):
-    template_name = 'counts/counts_empty.html'
+    template_name = 'counts/empty.html'
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -127,7 +107,7 @@ class CountsEmpty(IndexMixin):
 
         qs = CountType.objects.related().exclude(slug='drinks')
         if qs.exists():
-            return redirect(reverse('counts:counts_index', kwargs={'count_type': qs[0].slug}))
+            return redirect(reverse('counts:index', kwargs={'count_type': qs[0].slug}))
 
         return super().dispatch(request, *args, **kwargs)
 

@@ -20,9 +20,9 @@
 <div class="row my-2">
     <div class="col-sm-3 text-start">
         {% with view.kwargs.count_type as type %}
-        <a href="{% url 'counts:counts_index' type %}" class="btn btn-sm {% if '/'|add:'counts'|add:'/'|add:type|add:'/' == request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Charts' %}</a>
-        <a href="{% url 'counts:counts_list' type %}" class="btn btn-sm {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Data' %}</a>
-        <a href="{% url 'counts:counts_history' type %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
+        <a href="{% url 'counts:index' type %}" class="btn btn-sm {% if '/'|add:'counts'|add:'/'|add:type|add:'/' == request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Charts' %}</a>
+        <a href="{% url 'counts:list' type %}" class="btn btn-sm {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Data' %}</a>
+        <a href="{% url 'counts:history' type %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
         {% endwith %}
     </div>
 
@@ -35,10 +35,10 @@
     </div>
 
     <div class="col-sm-3 text-end">
-        <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'counts:counts_new' view.kwargs.count_type %}"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'counts:new' view.kwargs.count_type %}"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
 
-        <button type="button" class="btn btn-sm btn-success" data-url="{% url 'counts:counts_type_update' count_type_object.pk %}"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
-        <button type="button" class="btn btn-sm btn-danger" data-url="{% url 'counts:counts_type_delete' count_type_object.pk %}" id="delete_button"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button" class="btn btn-sm btn-success" data-url="{% url 'counts:type_update' count_type_object.pk %}"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button" class="btn btn-sm btn-danger" data-url="{% url 'counts:type_delete' count_type_object.pk %}" id="delete_button"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
 
     </div>
 </div>

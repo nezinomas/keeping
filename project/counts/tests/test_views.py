@@ -29,7 +29,7 @@ pytestmark = pytest.mark.django_db
 @freeze_time('2000-01-01')
 def test_view_new_form_initial(client_logged):
     x = CountTypeFactory()
-    url = reverse('counts:counts_new', kwargs={'count_type': x.slug})
+    url = reverse('counts:new', kwargs={'count_type': x.slug})
 
     response = client_logged.get(url, {}, **X_Req)
 
@@ -47,7 +47,7 @@ def test_view_new(client_logged):
 
     data = {'date': '1999-01-01', 'quantity': 68}
 
-    url = reverse('counts:counts_new', kwargs={'count_type': 'count-type'})
+    url = reverse('counts:new', kwargs={'count_type': 'count-type'})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -62,7 +62,7 @@ def test_view_new(client_logged):
 def test_view_new_invalid_data(client_logged):
     data = {'date': -2, 'quantity': 'x'}
 
-    url = reverse('counts:counts_new', kwargs={'count_type': 'count-type'})
+    url = reverse('counts:new', kwargs={'count_type': 'count-type'})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -78,7 +78,7 @@ def test_view_update(client_logged):
     p = CountFactory()
 
     data = {'date': '1999-01-01', 'quantity': 68}
-    url = reverse('counts:counts_update', kwargs={'pk': p.pk, 'count_type': 'count-type'})
+    url = reverse('counts:update', kwargs={'pk': p.pk, 'count_type': 'count-type'})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -97,7 +97,7 @@ def test_view_update_not_load_other_user(client_logged, second_user):
     CountFactory()
     obj = CountFactory(date=date(1998, 12, 12), quantity=666, user=second_user)
 
-    url = reverse('counts:counts_update', kwargs={'pk': obj.pk, 'count_type': 'count-type'})
+    url = reverse('counts:update', kwargs={'pk': obj.pk, 'count_type': 'count-type'})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -123,7 +123,7 @@ def test_view_delete_func():
 def test_view_delete_200(client_logged):
     p = CountFactory()
 
-    url = reverse('counts:counts_delete', kwargs={'pk': p.pk, 'count_type': 'xxx'})
+    url = reverse('counts:delete', kwargs={'pk': p.pk, 'count_type': 'xxx'})
 
     response = client_logged.get(url)
 
@@ -134,7 +134,7 @@ def test_view_delete_200(client_logged):
 def test_view_delete_load_form(client_logged):
     p = CountFactory()
 
-    url = reverse('counts:counts_delete', kwargs={'pk': p.pk, 'count_type': 'count-type'})
+    url = reverse('counts:delete', kwargs={'pk': p.pk, 'count_type': 'count-type'})
     response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
@@ -151,7 +151,7 @@ def test_view_delete(client_logged):
     p = CountFactory()
 
     assert Count.objects.all().count() == 1
-    url = reverse('counts:counts_delete', kwargs={'pk': p.pk, 'count_type': 'count-type'})
+    url = reverse('counts:delete', kwargs={'pk': p.pk, 'count_type': 'count-type'})
 
     response = client_logged.post(url, {}, **X_Req)
 
@@ -164,7 +164,7 @@ def test_view_delete(client_logged):
 def test_view_delete_other_user_get_form(client_logged, second_user):
     obj = CountFactory(user=second_user)
 
-    url = reverse('counts:counts_delete', kwargs={'pk': obj.pk, 'count_type': 'count-type'})
+    url = reverse('counts:delete', kwargs={'pk': obj.pk, 'count_type': 'count-type'})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -180,7 +180,7 @@ def test_view_delete_other_user_get_form(client_logged, second_user):
 def test_view_delete_other_user_post_form(client_logged, second_user):
     obj = CountFactory(user=second_user)
 
-    url = reverse('counts:counts_delete', kwargs={'pk': obj.pk, 'count_type': 'count-type'})
+    url = reverse('counts:delete', kwargs={'pk': obj.pk, 'count_type': 'count-type'})
     client_logged.post(url, **X_Req)
 
     assert Count.objects.all().count() == 1
@@ -199,21 +199,21 @@ def test_index_func():
 def test_index_200(client_logged):
     obj = CountTypeFactory()
 
-    url = reverse('counts:counts_index', kwargs={'count_type': obj.slug})
+    url = reverse('counts:index', kwargs={'count_type': obj.slug})
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_index_not_load_drinks(client_logged):
-    url = reverse('counts:counts_index', kwargs={'count_type': 'drinks'})
+    url = reverse('counts:index', kwargs={'count_type': 'drinks'})
     response = client_logged.get(url, follow=True)
 
     assert views.CountsEmpty == response.resolver_match.func.view_class
 
 
 def test_index_not_exists_count_type(client_logged):
-    url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url, follow=True)
 
     assert views.CountsEmpty == response.resolver_match.func.view_class
@@ -221,7 +221,7 @@ def test_index_not_exists_count_type(client_logged):
 
 @pytest.mark.disable_get_user_patch
 def test_index_user_not_logged(client):
-    url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:index', kwargs={'count_type': 'xxx'})
     response = client.get(url, follow=True)
 
     assert response.resolver_match.func.view_class is Login
@@ -231,7 +231,7 @@ def test_index_user_not_logged(client):
 def test_index_add_button(client_logged):
     CountTypeFactory(title='Xxx')
 
-    url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
     content = response.content.decode()
@@ -240,7 +240,7 @@ def test_index_add_button(client_logged):
     res = re.findall(pattern, content)
 
     assert len(res[0]) == 2
-    assert res[0][0] == reverse('counts:counts_new', kwargs={'count_type': 'xxx'})
+    assert res[0][0] == reverse('counts:new', kwargs={'count_type': 'xxx'})
     assert res[0][1] == 'Įrašą'
 
 
@@ -248,7 +248,7 @@ def test_index_add_button(client_logged):
 def test_index_links(client_logged):
     CountTypeFactory(title='Xxx')
 
-    url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:index', kwargs={'count_type': 'xxx'})
 
     response = client_logged.get(url)
 
@@ -258,13 +258,13 @@ def test_index_links(client_logged):
     res = re.findall(pattern, content)
 
     assert len(res) == 3
-    assert res[0][0] == reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
+    assert res[0][0] == reverse('counts:index', kwargs={'count_type': 'xxx'})
     assert res[0][1] == 'Grafikai'
 
-    assert res[1][0] == reverse('counts:counts_list', kwargs={'count_type': 'xxx'})
+    assert res[1][0] == reverse('counts:list', kwargs={'count_type': 'xxx'})
     assert res[1][1] == 'Duomenys'
 
-    assert res[2][0] == reverse('counts:counts_history', kwargs={'count_type': 'xxx'})
+    assert res[2][0] == reverse('counts:history', kwargs={'count_type': 'xxx'})
     assert res[2][1] == 'Istorija'
 
 
@@ -272,7 +272,7 @@ def test_index_links(client_logged):
 def test_index_context(client_logged):
     CountTypeFactory(title='Xxx')
 
-    url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
     assert 'chart_weekdays' in response.context
@@ -288,7 +288,7 @@ def test_index_context(client_logged):
 def test_index_context_tab_value(client_logged):
     CountTypeFactory(title='Xxx')
 
-    url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
     assert response.context['tab'] == 'index'
@@ -299,7 +299,7 @@ def test_index_chart_weekdays(client_logged):
     CountTypeFactory(title='Xxx')
     CountFactory(counter_type='xxx')
 
-    url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -312,7 +312,7 @@ def test_index_chart_months(client_logged):
     CountTypeFactory(title='Xxx')
     CountFactory(counter_type='xxx')
 
-    url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -325,7 +325,7 @@ def test_index_chart_histogram(client_logged):
     CountTypeFactory(title='Xxx')
     CountFactory(counter_type='xxx')
 
-    url = reverse('counts:counts_index', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:index', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -339,7 +339,7 @@ def test_index_info_row(client_logged):
     t = CountTypeFactory()
     CountFactory(quantity=3, counter_type=t.slug)
 
-    url = reverse('counts:counts_index', kwargs={'count_type': t.slug})
+    url = reverse('counts:index', kwargs={'count_type': t.slug})
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -359,7 +359,7 @@ def test_index_info_row_latest_form_past(client_logged):
     CountFactory(date=date(1998, 1, 1), counter_type=t.slug)
     CountFactory(date=date(1999, 1, 2), counter_type=t.slug)
 
-    url = reverse('counts:counts_index', kwargs={'count_type': t.slug})
+    url = reverse('counts:index', kwargs={'count_type': t.slug})
     response = client_logged.get(url)
     context = response.context
 
@@ -432,14 +432,14 @@ def test_list_func():
 
 
 def test_list_200(client_logged):
-    url = reverse('counts:counts_list', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:list', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_list_context(client_logged):
-    url = reverse('counts:counts_list', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:list', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
     assert 'items' in response.context
@@ -448,7 +448,7 @@ def test_list_context(client_logged):
 
 
 def test_list_context_tab_value(client_logged):
-    url = reverse('counts:counts_list', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:list', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
     assert response.context['tab'] == 'data'
@@ -457,7 +457,7 @@ def test_list_context_tab_value(client_logged):
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_list(client_logged):
     p = CountFactory(quantity=66)
-    url = reverse('counts:counts_list', kwargs={'count_type': 'count-type'})
+    url = reverse('counts:list', kwargs={'count_type': 'count-type'})
     response = client_logged.get(url)
 
     assert response.status_code == 200
@@ -469,7 +469,7 @@ def test_list(client_logged):
 
 
 def test_list_empty(client_logged):
-    url = reverse('counts:counts_list', kwargs={'count_type': 'count-type'})
+    url = reverse('counts:list', kwargs={'count_type': 'count-type'})
     response = client_logged.get(url)
 
     assert response.status_code == 200
@@ -489,14 +489,14 @@ def test_history_func():
 
 
 def test_history_200(client_logged):
-    url = reverse('counts:counts_history', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:history', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_history_context(client_logged):
-    url = reverse('counts:counts_history', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:history', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
     assert 'chart_weekdays' in response.context
@@ -508,7 +508,7 @@ def test_history_context(client_logged):
 def test_history_chart_weekdays(client_logged):
     CountFactory(counter_type='xxx')
 
-    url = reverse('counts:counts_history', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:history', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -520,7 +520,7 @@ def test_history_chart_weekdays(client_logged):
 def test_history_chart_years(client_logged):
     CountFactory(counter_type='xxx')
 
-    url = reverse('counts:counts_history', kwargs={'count_type': 'xxx'})
+    url = reverse('counts:history', kwargs={'count_type': 'xxx'})
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -544,21 +544,21 @@ def test_count_type_update_func():
 
 
 def test_count_type_new_200(client_logged):
-    url = reverse('counts:counts_type_new')
+    url = reverse('counts:type_new')
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_count_type_update_200(client_logged):
-    url = reverse('counts:counts_type_update', kwargs={'pk': 1})
+    url = reverse('counts:type_update', kwargs={'pk': 1})
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_count_type_form(client_logged):
-    url = reverse('counts:counts_type_new')
+    url = reverse('counts:type_new')
 
     response = client_logged.get(url, {}, **X_Req)
 
@@ -568,7 +568,7 @@ def test_count_type_form(client_logged):
 
 
 def test_count_type_form_fields(client_logged):
-    url = reverse('counts:counts_type_new')
+    url = reverse('counts:type_new')
 
     response = client_logged.get(url, {}, **X_Req)
     json_str = response.content
@@ -583,7 +583,7 @@ def test_count_type_form_fields(client_logged):
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_new_valid_data(client_logged):
     data = {'title': 'XXX'}
-    url = reverse('counts:counts_type_new')
+    url = reverse('counts:type_new')
     response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
@@ -596,7 +596,7 @@ def test_count_type_new_valid_data(client_logged):
 
 def test_count_type_new_invalid_data(client_logged):
     data = {'title': 'X'}
-    url = reverse('counts:counts_type_new')
+    url = reverse('counts:type_new')
     response = client_logged.post(url, data, **X_Req)
 
     json_str = response.content
@@ -613,7 +613,7 @@ def test_count_type_update(client_logged):
     assert Count.objects.first().counter_type == 'xxx'
 
     data = {'title': 'YYY'}
-    url = reverse('counts:counts_type_update', kwargs={'pk': obj.pk})
+    url = reverse('counts:type_update', kwargs={'pk': obj.pk})
     response = client_logged.post(url, data, **X_Req)
 
     assert response.status_code == 200
@@ -633,7 +633,7 @@ def test_count_type_update(client_logged):
 def test_count_type_update_not_load_other_user(client_logged, second_user):
     obj = CountTypeFactory(title='xxx', user=second_user)
 
-    url = reverse('counts:counts_type_update', kwargs={'pk': obj.pk})
+    url = reverse('counts:type_update', kwargs={'pk': obj.pk})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -658,7 +658,7 @@ def test_count_types_delete_func():
 def test_count_type_delete_200(client_logged):
     obj = CountTypeFactory()
 
-    url = reverse('counts:counts_type_delete', kwargs={'pk': obj.pk})
+    url = reverse('counts:type_delete', kwargs={'pk': obj.pk})
 
     response = client_logged.get(url)
 
@@ -669,7 +669,7 @@ def test_count_type_delete_200(client_logged):
 def test_count_type_delete_load_form(client_logged):
     obj = CountTypeFactory()
 
-    url = reverse('counts:counts_type_delete', kwargs={'pk': obj.pk})
+    url = reverse('counts:type_delete', kwargs={'pk': obj.pk})
     response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
@@ -687,7 +687,7 @@ def test_count_type_delete(mck, client_logged):
     obj = CountTypeFactory(title='XXX')
     CountFactory(counter_type=slugify('XXX'))
 
-    url = reverse('counts:counts_type_delete', kwargs={'pk': obj.pk})
+    url = reverse('counts:type_delete', kwargs={'pk': obj.pk})
 
     response = client_logged.post(url, {}, **X_Req)
 
@@ -702,7 +702,7 @@ def test_count_type_delete_no_patch(client_logged):
     obj = CountTypeFactory(title='XXX')
     CountFactory(counter_type=slugify('XXX'))
 
-    url = reverse('counts:counts_type_delete', kwargs={'pk': obj.pk})
+    url = reverse('counts:type_delete', kwargs={'pk': obj.pk})
 
     response = client_logged.post(url, {}, **X_Req)
 
@@ -716,7 +716,7 @@ def test_count_type_delete_no_patch(client_logged):
 def test_count_type_delete_other_user_get_form(client_logged, second_user):
     obj = CountTypeFactory(user=second_user)
 
-    url = reverse('counts:counts_type_delete', kwargs={'pk': obj.pk})
+    url = reverse('counts:type_delete', kwargs={'pk': obj.pk})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -732,7 +732,7 @@ def test_count_type_delete_other_user_get_form(client_logged, second_user):
 def test_count_type_delete_other_user_post_form(client_logged, second_user):
     obj = CountTypeFactory(user=second_user)
 
-    url = reverse('counts:counts_type_delete', kwargs={'pk': obj.pk})
+    url = reverse('counts:type_delete', kwargs={'pk': obj.pk})
     client_logged.post(url, **X_Req)
 
     assert CountType.objects.all().count() == 1
@@ -747,7 +747,7 @@ def test_redirect_func():
     assert views.Redirect is view.func.view_class
 
 def test_redirect_no_counts(client_logged):
-    url = reverse('counts:counts_redirect', kwargs={'count_id': 0})
+    url = reverse('counts:redirect', kwargs={'count_id': 0})
     response = client_logged.get(url, follow=True)
 
     assert response.resolver_match.func.view_class is views.CountsEmpty
@@ -757,7 +757,7 @@ def test_redirect_no_counts(client_logged):
 def test_redirect_count_first(client_logged):
     CountTypeFactory(title='XXX')
 
-    url = reverse('counts:counts_redirect', kwargs={'count_id': 999})
+    url = reverse('counts:redirect', kwargs={'count_id': 999})
     response = client_logged.get(url, follow=True)
 
     assert response.resolver_match.func.view_class is views.Index
@@ -774,7 +774,7 @@ def test_empty_func():
 
 
 def test_empty_200(client_logged):
-    url = reverse('counts:counts_empty')
+    url = reverse('counts:empty')
     response = client_logged.get(url)
 
     assert response.status_code == 200
@@ -787,7 +787,7 @@ def test_empty_200(client_logged):
 def test_empty_redirect(client_logged):
     CountTypeFactory(title='XXX')
 
-    url = reverse('counts:counts_empty')
+    url = reverse('counts:empty')
     response = client_logged.get(url, follow=True)
 
     assert 'xxx' in response.request['PATH_INFO']
@@ -795,7 +795,7 @@ def test_empty_redirect(client_logged):
 
 @pytest.mark.disable_get_user_patch
 def test_empty_user_not_logged(client):
-    url = reverse('counts:counts_empty')
+    url = reverse('counts:empty')
     response = client.get(url, follow=True)
 
     assert response.resolver_match.func.view_class is Login
