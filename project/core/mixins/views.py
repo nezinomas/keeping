@@ -51,6 +51,9 @@ class SearchMixin(LoginRequiredMixin, TemplateView):
 class CreateUpdateMixin():
     hx_trigger = 'reload'
 
+    def get_hx_trigger(self):
+        return self.hx_trigger
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
@@ -66,7 +69,7 @@ class CreateUpdateMixin():
             response.status_code = 204
             trigger_client_event(
                 response,
-                self.hx_trigger,
+                self.get_hx_trigger(),
                 {},
             )
         return response
@@ -99,6 +102,9 @@ class DeleteViewMixin(LoginRequiredMixin,
                       DeleteView):
     hx_trigger = 'reload'
 
+    def get_hx_trigger(self):
+        return self.hx_trigger
+
     def url(self):
         if self.object:
             return self.object.get_delete_url()
@@ -118,7 +124,7 @@ class DeleteViewMixin(LoginRequiredMixin,
             return HttpResponse(
                 status=204,
                 headers={
-                    'HX-Trigger': json.dumps({self.hx_trigger: None}),
+                    'HX-Trigger': json.dumps({self.get_hx_trigger(): None}),
                 },
             )
         return HttpResponse()
