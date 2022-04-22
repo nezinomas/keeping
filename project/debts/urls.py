@@ -15,7 +15,7 @@ urlpatterns = [
     path(
         'debts/<str:debt_type>/lists/',
         views.DebtLists.as_view(),
-        name='debts_list'
+        name='list'
     ),
     path(
         'debts/<str:debt_type>/new/',
