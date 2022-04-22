@@ -1,4 +1,3 @@
-import json
 from datetime import date
 from decimal import Decimal
 
@@ -37,7 +36,7 @@ def test_borrow_list_empty(client_logged):
 
 
 def test_borrow_list_with_data(client_logged):
-    obj1 = factories.BorrowFactory(closed=True)
+    obj1 = factories.BorrowFactory(closed=True, returned=25)
     obj2 = factories.LendFactory(price=666)
 
     url = reverse('debts:list', kwargs={'debt_type': 'borrow'})
@@ -214,17 +213,18 @@ def test_borrow_update_not_closed(client_logged):
 
 
 def test_borrow_update_price_smaller_then_returned(client_logged):
-    e = factories.BorrowFactory(name='XXX')
+    debt = factories.BorrowFactory(name='XXX', price=5)
+    factories.BorrowReturnFactory(debt=debt, price=4)
 
     data = {
         'name': 'XXX',
-        'price': '5',
+        'price': '1',
         'date': '1999-12-31',
         'remark': 'Pastaba',
         'account': 1,
         'closed': False
     }
-    url = reverse('debts:update', kwargs={'pk': e.pk, 'debt_type': 'borrow'})
+    url = reverse('debts:update', kwargs={'pk': debt.pk, 'debt_type': 'borrow'})
     response = client_logged.post(url, data)
     form = response.context['form']
 

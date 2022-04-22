@@ -1,4 +1,3 @@
-import json
 from datetime import date
 from decimal import Decimal
 
@@ -151,27 +150,50 @@ def test_borrow_return_load_update_form(client_logged):
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
 def test_borrow_return_update(mck, client_logged):
-    e = factories.BorrowReturnFactory()
-    l = factories.BorrowFactory()
+    debt = factories.BorrowFactory()
+    e = factories.BorrowReturnFactory(debt=debt)
     a = AccountFactory(title='AAA')
+
+    assert models.Debt.objects.items().get(pk=debt.pk).returned == Decimal('5')
 
     data = {
         'date': '1999-1-2',
         'price': '10',
         'remark': 'Pastaba',
         'account': a.pk,
-        'debt': l.pk
+        'debt': debt.pk
     }
     url = reverse('debts:return_update', kwargs={'pk': e.pk, 'debt_type': 'borrow'})
     client_logged.post(url, data)
 
     actual = models.DebtReturn.objects.get(pk=e.pk)
-    assert actual.debt == l
+    assert actual.debt == debt
     assert actual.date == date(1999, 1, 2)
     assert actual.price == Decimal('10')
     assert actual.account.title == 'AAA'
     assert actual.remark == 'Pastaba'
-    assert models.Debt.objects.items().get(pk=l.pk).returned == Decimal('30')
+    assert models.Debt.objects.items().get(pk=debt.pk).returned == Decimal('10')
+
+
+@patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
+def test_borrow_return_update_with_returns(mck, client_logged):
+    debt = factories.BorrowFactory()
+    factories.BorrowReturnFactory(debt=debt, price=40)
+    factories.BorrowReturnFactory(debt=debt, price=50)
+    e = factories.BorrowReturnFactory(debt=debt, price=5)
+    a = AccountFactory(title='AAA')
+
+    data = {
+        'date': '1999-1-2',
+        'price': '6',
+        'remark': 'Pastaba',
+        'account': a.pk,
+        'debt': debt.pk
+    }
+    url = reverse('debts:return_update', kwargs={'pk': e.pk, 'debt_type': 'borrow'})
+    response = client_logged.post(url, data, follow=True)
+
+    assert not response.context.get('form')
 
 
 def test_borrow_return_update_not_load_other_journal(client_logged, main_user, second_user):

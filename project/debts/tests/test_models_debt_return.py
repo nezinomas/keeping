@@ -92,7 +92,7 @@ def test_lend_return_year(mck):
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
 def test_lend_return_new_record_updates_debt_tbl(mck):
-    LendReturnFactory()
+    LendReturnFactory(price=30)
 
     actual = Debt.objects.items()
 
@@ -102,7 +102,7 @@ def test_lend_return_new_record_updates_debt_tbl(mck):
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
 def test_lend_return_update(mck):
-    obj = LendReturnFactory()
+    obj = LendReturnFactory(price=30)
 
     actual = Debt.objects.items()
     assert actual[0].returned == Decimal('30')
@@ -113,7 +113,7 @@ def test_lend_return_update(mck):
     assert DebtReturn.objects.items().count() == 1
 
     actual = Debt.objects.items()
-    assert actual[0].returned == Decimal('45')
+    assert actual[0].returned == Decimal('20')
 
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
@@ -131,6 +131,7 @@ def test_lend_return_new_record_updates_debt_tbl_empty_returned_field(mck):
 def test_lend_return_new_record_updates_debt_tbl_error_on_save_parent(mck, m):
     mck.side_effect = TypeError
 
+    LendFactory(returned=25)
     try:
         LendReturnFactory()
     except TypeError:
@@ -144,7 +145,7 @@ def test_lend_return_new_record_updates_debt_tbl_error_on_save_parent(mck, m):
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
 def test_lend_return_delete_record_updates_debt_tbl(mck):
-    obj = LendReturnFactory()
+    obj = LendReturnFactory(price=30)
 
     actual = Debt.objects.items()
 
@@ -156,12 +157,12 @@ def test_lend_return_delete_record_updates_debt_tbl(mck):
     actual = Debt.objects.items()
 
     assert actual.count() == 1
-    assert actual[0].returned == Decimal('25')
+    assert actual[0].returned == Decimal('0')
 
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
 def test_lend_return_delete_record_updates_debt_tbl_error_on_save(mck):
-    obj = LendReturnFactory()
+    obj = LendReturnFactory(price=30)
 
     actual = Debt.objects.items()
 
@@ -428,7 +429,7 @@ def test_lend_return_sum_one_month(mck):
 
 
 def test_lend_return_autoclose():
-    LendReturnFactory(price=75)
+    LendReturnFactory(price=100)
 
     actual = Debt.objects.first()
 

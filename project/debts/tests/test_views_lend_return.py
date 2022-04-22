@@ -1,4 +1,3 @@
-import json
 from datetime import date
 from decimal import Decimal
 
@@ -151,27 +150,50 @@ def test_lend_return_load_update_form(client_logged):
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
 def test_lend_return_update(mck, client_logged):
-    e = factories.LendReturnFactory()
-    l = factories.LendFactory()
+    debt = factories.LendFactory()
+    e = factories.LendReturnFactory(debt=debt)
     a = AccountFactory(title='AAA')
+
+    assert models.Debt.objects.get(pk=debt.pk).returned == Decimal('5')
 
     data = {
         'date': '1999-1-2',
         'price': '15',
         'remark': 'Pastaba',
         'account': a.pk,
-        'debt': l.pk
+        'debt': debt.pk
     }
     url = reverse('debts:return_update', kwargs={'pk': e.pk, 'debt_type': 'lend'})
     client_logged.post(url, data, follow=True)
 
     actual = models.DebtReturn.objects.get(pk=e.pk)
-    assert actual.debt == l
+    assert actual.debt == debt
     assert actual.date == date(1999, 1, 2)
     assert actual.price == Decimal('15')
     assert actual.account.title == 'AAA'
     assert actual.remark == 'Pastaba'
-    assert models.Debt.objects.get(pk=l.pk).returned == Decimal('35')
+    assert models.Debt.objects.get(pk=debt.pk).returned == Decimal('15')
+
+
+@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
+def test_lend_return_update_with_returns(mck, client_logged):
+    debt = factories.LendFactory()
+    factories.LendReturnFactory(debt=debt, price=40)
+    factories.LendReturnFactory(debt=debt, price=50)
+    e = factories.LendReturnFactory(debt=debt, price=5)
+    a = AccountFactory(title='AAA')
+
+    data = {
+        'date': '1999-1-2',
+        'price': '6',
+        'remark': 'Pastaba',
+        'account': a.pk,
+        'debt': debt.pk
+    }
+    url = reverse('debts:return_update', kwargs={'pk': e.pk, 'debt_type': 'lend'})
+    response = client_logged.post(url, data, follow=True)
+
+    assert not response.context.get('form')
 
 
 def test_lend_return_update_not_load_other_journal(client_logged, main_user, second_user):

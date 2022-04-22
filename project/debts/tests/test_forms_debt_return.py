@@ -184,13 +184,13 @@ def test_lend_return_price_higher(mocker):
     mocker.patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
 
     a = AccountFactory()
-    b = factories.LendFactory()
+    b = factories.LendFactory(price=1)
 
     form = forms.DebtReturnForm(
         data={
             'date': '1999-1-1',
             'debt': b.pk,
-            'price': '76',
+            'price': '2',
             'account': a.pk,
         },
     )
@@ -204,13 +204,13 @@ def test_borrow_return_price_higher(mocker):
     mocker.patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
 
     a = AccountFactory()
-    b = factories.BorrowFactory()
+    b = factories.BorrowFactory(price=1)
 
     form = forms.DebtReturnForm(
         data={
             'date': '1999-1-1',
             'debt': b.pk,
-            'price': '76',
+            'price': '2',
             'account': a.pk,
         },
     )

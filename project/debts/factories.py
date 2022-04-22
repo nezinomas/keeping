@@ -16,7 +16,6 @@ class BorrowFactory(factory.django.DjangoModelFactory):
     debt_type = 'borrow'
     name = factory.Faker('first_name')
     price = Decimal('100')
-    returned = Decimal('25')
     closed = False
     remark = 'Borrow Remark'
     account = factory.SubFactory(AccountFactory)
@@ -42,7 +41,6 @@ class LendFactory(factory.django.DjangoModelFactory):
     debt_type = 'lend'
     name = factory.Faker('first_name')
     price = Decimal('100')
-    returned = Decimal('25')
     closed = False
     remark = 'Lend Remark'
     account = factory.SubFactory(AccountFactory)
