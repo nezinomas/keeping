@@ -1,90 +1,74 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView
 
-from ..core.lib import utils
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchAjaxMixin, DispatchListsMixin,
-                                 IndexMixin, ListMixin, UpdateAjaxMixin)
+from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
+                                 ListViewMixin, TemplateViewMixin,
+                                 UpdateViewMixin)
 from . import forms, models
 
 
-def _borrow_context_to_reload(request):
-    try:
-        request.resolver_match.kwargs['debt_type'] = 'borrow'
-    except AttributeError:
-        pass
+class DebtMixin():
+    def get_success_url(self):
+        debt_type = self.kwargs.get('debt_type')
+        return reverse_lazy('debts:list', kwargs={'debt_type': debt_type})
 
-    context = {
-        'borrow': DebtLists.as_view()(request, as_string=True),
-        'borrow_return': DebtReturnLists.as_view()(request, as_string=True),
-    }
-    return context
+    def get_hx_trigger(self):
+        debt_type = self.kwargs.get('debt_type')
+        return f'after_{debt_type}'
 
 
-def _lend_context_to_reload(request):
-    try:
-        request.resolver_match.kwargs['debt_type'] = 'lend'
-    except AttributeError:
-        pass
+class DebtReturnMixin():
+    def get_success_url(self):
+        debt_type = self.kwargs.get('debt_type')
+        return reverse_lazy('debts:return_list', kwargs={'debt_type': debt_type})
 
-    context = {
-        'lend': DebtLists.as_view()(request, as_string=True),
-        'lend_return': DebtReturnLists.as_view()(request, as_string=True),
-    }
-    return context
+    def get_hx_trigger(self):
+        debt_type = self.kwargs.get('debt_type')
+        return f'after_{debt_type}_return'
 
 
-class Index(IndexMixin):
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            **_lend_context_to_reload(self.request),
-            **_borrow_context_to_reload(self.request),
-        })
-        return context
+class Index(TemplateViewMixin):
+    template_name = 'debts/index.html'
 
 
-class DebtLists(DispatchListsMixin, ListMixin):
+class DebtLists(ListViewMixin):
     model = models.Debt
-    template_name = 'debts/includes/debts_list.html'
 
 
-class DebtNew(CreateAjaxMixin):
+class DebtNew(DebtMixin, CreateViewMixin):
     model = models.Debt
     form_class = forms.DebtForm
-    list_render_output = False
+
+    def url(self):
+        debt_type = self.kwargs.get('debt_type')
+        return reverse_lazy('debts:new', kwargs={'debt_type': debt_type})
 
 
-class DebtUpdate(UpdateAjaxMixin):
+class DebtUpdate(DebtMixin, UpdateViewMixin):
     model = models.Debt
     form_class = forms.DebtForm
-    list_render_output = False
 
 
-class DebtDelete(DeleteAjaxMixin):
+class DebtDelete(DebtMixin, DeleteViewMixin):
     model = models.Debt
-    list_render_output = False
 
 
-class DebtReturnLists(DispatchListsMixin, ListMixin):
+class DebtReturnLists(ListViewMixin):
     model = models.DebtReturn
-    template_name = 'debts/includes/return_list.html'
 
 
-class DebtReturnNew(CreateAjaxMixin):
+class DebtReturnNew(DebtReturnMixin, CreateViewMixin):
     model = models.DebtReturn
     form_class = forms.DebtReturnForm
-    list_render_output = False
+
+    def url(self):
+        debt_type = self.kwargs.get('debt_type')
+        return reverse_lazy('debts:return_new', kwargs={'debt_type': debt_type})
 
 
-class DebtReturnUpdate(UpdateAjaxMixin):
+class DebtReturnUpdate(DebtReturnMixin, UpdateViewMixin):
     model = models.DebtReturn
     form_class = forms.DebtReturnForm
-    list_render_output = False
 
 
-class DebtReturnDelete(DeleteAjaxMixin):
+class DebtReturnDelete(DebtReturnMixin, DeleteViewMixin):
     model = models.DebtReturn
-    list_render_output = False

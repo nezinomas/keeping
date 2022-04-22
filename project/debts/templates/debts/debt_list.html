@@ -2,7 +2,7 @@
 {% load i18n %}
 {% load slippers %}
 
-{% if items %}
+{% if object_list %}
 
 {% var target=request.resolver_match.kwargs.debt_type %}
 
@@ -23,17 +23,17 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in items %}
-        {% url 'debts:update' target item.id as url_update %}
-        {% url 'debts:delete' target item.id as url_delete %}
+        {% for object in object_list %}
+        {% url 'debts:update' target object.id as url_update %}
+        {% url 'debts:delete' target object.id as url_delete %}
         <tr data-url="" class="dblclick">
-            <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
-            <td class="text-start">{{ item.name }}</td>
-            <td class="text-start">{{ item.price|intcomma }}</td>
-            <td class="text-start">{{ item.returned|intcomma }}</td>
-            <td class="text-start">{{ item.account }}</td>
-            <td class="text-start">{{ item.remark }}</td>
-            <td class="text-center">{% if item.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
+            <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ object.name }}</td>
+            <td class="text-start">{{ object.price|intcomma }}</td>
+            <td class="text-start">{{ object.returned|intcomma }}</td>
+            <td class="text-start">{{ object.account }}</td>
+            <td class="text-start">{{ object.remark }}</td>
+            <td class="text-center">{% if object.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
             {% edit_cell url=url_update target=target %}
             {% delete_cell url=url_delete target=target %}
         </tr>

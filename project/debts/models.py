@@ -2,9 +2,11 @@ from decimal import Decimal
 
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
+from ..core.lib import utils
 from ..core.mixins.old_values import OldValuesMixin
 from ..journals.models import Journal
 from . import managers
@@ -61,6 +63,22 @@ class Debt(OldValuesMixin, models.Model):
     def __str__(self):
         return str(self.name)
 
+    def get_absolute_url(self):
+        debt_type = utils.get_request_kwargs('debt_type')
+        return (
+            reverse_lazy(
+                'debts:update',
+                kwargs={'pk': self.pk, 'debt_type': debt_type})
+        )
+
+    def get_delete_url(self):
+        debt_type = utils.get_request_kwargs('debt_type')
+        return (
+            reverse_lazy(
+                'debts:delete',
+                kwargs={'pk': self.pk, 'debt_type': debt_type})
+        )
+
 
 class DebtReturn(OldValuesMixin, models.Model):
     date = models.DateField()
@@ -96,6 +114,21 @@ class DebtReturn(OldValuesMixin, models.Model):
         if self.debt.debt_type == 'borrow':
             return f'{_("Borrow return")} {_price}'
 
+    def get_absolute_url(self):
+        debt_type = utils.get_request_kwargs('debt_type')
+        return (
+            reverse_lazy(
+                'debts:return_update',
+                kwargs={'pk': self.pk, 'debt_type': debt_type})
+        )
+
+    def get_delete_url(self):
+        debt_type = utils.get_request_kwargs('debt_type')
+        return (
+            reverse_lazy(
+                'debts:return_delete',
+                kwargs={'pk': self.pk, 'debt_type': debt_type})
+        )
 
     def save(self, *args, **kwargs):
         qs = Debt.objects.filter(id=self.debt_id)
