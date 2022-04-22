@@ -10,12 +10,7 @@ urlpatterns = [
     path(
         'debts/',
         views.Index.as_view(),
-        name='debts_index'
-    ),
-    path(
-        'debts/<str:debt_type>/reload/',
-        views.DebtReload.as_view(),
-        name='debts_reload'
+        name='index'
     ),
     path(
         'debts/<str:debt_type>/lists/',
@@ -25,36 +20,36 @@ urlpatterns = [
     path(
         'debts/<str:debt_type>/new/',
         views.DebtNew.as_view(),
-        name='debts_new'
+        name='new'
     ),
     path(
         'debts/<str:debt_type>/update/<int:pk>/',
         views.DebtUpdate.as_view(),
-        name='debts_update'
+        name='update'
     ),
     path(
         'debts/<str:debt_type>/delete/<int:pk>/',
         views.DebtDelete.as_view(),
-        name='debts_delete'
+        name='delete'
     ),
     path(
         'debts/<str:debt_type>/return/lists/',
         views.DebtReturnLists.as_view(),
-        name='debts_return_list'
+        name='return_list'
     ),
     path(
         'debts/<str:debt_type>/return/new/',
         views.DebtReturnNew.as_view(),
-        name='debts_return_new'
+        name='return_new'
     ),
     path(
         'debts/<str:debt_type>/return/update/<int:pk>/',
         views.DebtReturnUpdate.as_view(),
-        name='debts_return_update'
+        name='return_update'
     ),
     path(
         'debts/<str:debt_type>/return/delete/<int:pk>/',
         views.DebtReturnDelete.as_view(),
-        name='debts_return_delete'
+        name='return_delete'
     ),
 ]

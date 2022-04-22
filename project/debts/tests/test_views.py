@@ -74,21 +74,21 @@ def test_debts_index_func():
 
 
 def test_debts_index_200(client_logged):
-    url = reverse('debts:debts_index')
+    url = reverse('debts:index')
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_debts_index_not_logged(client):
-    url = reverse('debts:debts_index')
+    url = reverse('debts:index')
     response = client.get(url)
 
     assert response.status_code == 302
 
 
 def test_debts_index_borrow_in_ctx(client_logged):
-    url = reverse('debts:debts_index')
+    url = reverse('debts:index')
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
 
@@ -97,7 +97,7 @@ def test_debts_index_borrow_in_ctx(client_logged):
 
 
 def test_debts_index_borrow_return_in_ctx(client_logged):
-    url = reverse('debts:debts_index')
+    url = reverse('debts:index')
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
 
@@ -106,7 +106,7 @@ def test_debts_index_borrow_return_in_ctx(client_logged):
 
 
 def test_debts_index_lend_in_ctx(client_logged):
-    url = reverse('debts:debts_index')
+    url = reverse('debts:index')
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
 
@@ -115,7 +115,7 @@ def test_debts_index_lend_in_ctx(client_logged):
 
 
 def test_debts_index_lend_return_in_ctx(client_logged):
-    url = reverse('debts:debts_index')
+    url = reverse('debts:index')
     response = client_logged.get(url)
     content = response.content.decode('utf-8')
 
@@ -124,12 +124,12 @@ def test_debts_index_lend_return_in_ctx(client_logged):
 
 
 def test_debts_index_borrow_add_button(client_logged):
-    url = reverse('debts:debts_index')
+    url = reverse('debts:index')
     response = client_logged.get(url)
 
     content = response.content.decode()
 
-    link = reverse('debts:debts_new', kwargs={'debt_type': 'borrow'})
+    link = reverse('debts:new', kwargs={'debt_type': 'borrow'})
     pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
@@ -137,12 +137,12 @@ def test_debts_index_borrow_add_button(client_logged):
 
 
 def test_debts_index_borrow_return_add_button(client_logged):
-    url = reverse('debts:debts_index')
+    url = reverse('debts:index')
     response = client_logged.get(url)
 
     content = response.content.decode()
 
-    link = reverse('debts:debts_return_new', kwargs={'debt_type': 'borrow'})
+    link = reverse('debts:return_new', kwargs={'debt_type': 'borrow'})
     pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
@@ -150,12 +150,12 @@ def test_debts_index_borrow_return_add_button(client_logged):
 
 
 def test_debts_index_lend_add_button(client_logged):
-    url = reverse('debts:debts_index')
+    url = reverse('debts:index')
     response = client_logged.get(url)
 
     content = response.content.decode()
 
-    link = reverse('debts:debts_new', kwargs={'debt_type': 'lend'})
+    link = reverse('debts:new', kwargs={'debt_type': 'lend'})
     pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
@@ -163,12 +163,12 @@ def test_debts_index_lend_add_button(client_logged):
 
 
 def test_debts_index_lend_return_add_button(client_logged):
-    url = reverse('debts:debts_index')
+    url = reverse('debts:index')
     response = client_logged.get(url)
 
     content = response.content.decode()
 
-    link = reverse('debts:debts_return_new', kwargs={'debt_type': 'lend'})
+    link = reverse('debts:return_new', kwargs={'debt_type': 'lend'})
     pattern = re.compile(fr'<button type="button".+data-url="{ link }".+<\/i>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
@@ -179,7 +179,7 @@ def test_debts_index_with_data(client_logged):
     obj1 = factories.LendFactory(price=666)
     obj2 = factories.LendFactory(price=777)
 
-    url = reverse('debts:debts_index')
+    url = reverse('debts:index')
     response = client_logged.get(url, {}, **X_Req)
     content = response.content.decode('utf-8')
 

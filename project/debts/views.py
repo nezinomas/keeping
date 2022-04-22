@@ -46,23 +46,6 @@ class Index(IndexMixin):
         return context
 
 
-class DebtReload(LoginRequiredMixin, DispatchAjaxMixin, TemplateView):
-    template_name = 'debts/index.html'
-    redirect_view = reverse_lazy('debts:debts_index')
-
-    def get(self, request, *args, **kwargs):
-        _context = {}
-        _type = self.kwargs.get('debt_type')
-
-        if _type == 'lend':
-            _context.update({**_lend_context_to_reload(self.request)})
-
-        if _type == 'borrow':
-            _context.update({**_borrow_context_to_reload(self.request)})
-
-        return JsonResponse(_context)
-
-
 class DebtLists(DispatchListsMixin, ListMixin):
     model = models.Debt
     template_name = 'debts/includes/debts_list.html'
@@ -87,7 +70,7 @@ class DebtDelete(DeleteAjaxMixin):
 
 class DebtReturnLists(DispatchListsMixin, ListMixin):
     model = models.DebtReturn
-    template_name = 'debts/includes/debts_return_list.html'
+    template_name = 'debts/includes/return_list.html'
 
 
 class DebtReturnNew(CreateAjaxMixin):

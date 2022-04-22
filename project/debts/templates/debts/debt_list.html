@@ -24,8 +24,8 @@
     </thead>
     <tbody>
         {% for item in items %}
-        {% url 'debts:debts_update' target item.id as url_update %}
-        {% url 'debts:debts_delete' target item.id as url_delete %}
+        {% url 'debts:update' target item.id as url_update %}
+        {% url 'debts:delete' target item.id as url_delete %}
         <tr data-url="" class="dblclick">
             <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ item.name }}</td>

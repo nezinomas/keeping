@@ -23,8 +23,8 @@
     </thead>
     <tbody>
         {% for item in items %}
-        {% url 'debts:debts_return_update' target item.id as url_update %}
-        {% url 'debts:debts_return_delete' target item.id as url_delete %}
+        {% url 'debts:return_update' target item.id as url_update %}
+        {% url 'debts:return_delete' target item.id as url_delete %}
         <tr data-url="" class="dblclick" {% ifchanged item.debt.name or ifchanged item.debt.closed %}{% if not forloop.first %}style="border-top: 5px #c0c0c0 solid;"{% endif %}{% endifchanged %}>
             <td class="text-start">{{ item.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ item.debt.name }}</td>

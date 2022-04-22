@@ -14,7 +14,7 @@
         <div class="row py-2">
             <div class="col"><h6>{% translate 'Borrow' %}</h6></div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'debts:debts_new' 'borrow' %}" data-target="borrow"><i class="bi bi-plus"></i>{% translate "Debt" context "debt button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'debts:new' 'borrow' %}" data-target="borrow"><i class="bi bi-plus"></i>{% translate "Debt" context "debt button" %}</button>
             </div>
         </div>
 
@@ -30,7 +30,7 @@
                 <h6>{% translate 'Lend' %}</h6>
             </div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'debts:debts_new' 'lend' %}" data-target="lend"><i class="bi bi-plus"></i>{% translate "Debt" context "debt button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'debts:new' 'lend' %}" data-target="lend"><i class="bi bi-plus"></i>{% translate "Debt" context "debt button" %}</button>
             </div>
         </div>
 
@@ -48,7 +48,7 @@
                 <h6>{% translate 'Borrow return' %}</h6>
             </div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'debts:debts_return_new' 'borrow' %}" data-target="borrow"><i class="bi bi-plus"></i>{% translate "Sum" context "sum button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'debts:return_new' 'borrow' %}" data-target="borrow"><i class="bi bi-plus"></i>{% translate "Sum" context "sum button" %}</button>
             </div>
         </div>
 
@@ -64,7 +64,7 @@
                 <h6>{% translate 'Lend return' %}</h6>
             </div>
             <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'debts:debts_return_new' 'lend' %}" data-target="lend"><i class="bi bi-plus"></i>{% translate "Sum" context "sum button" %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'debts:return_new' 'lend' %}" data-target="lend"><i class="bi bi-plus"></i>{% translate "Sum" context "sum button" %}</button>
             </div>
         </div>
 
@@ -83,7 +83,7 @@
 
     $(document).on('hidden.bs.modal', '#modal-form', function () {
         var target = $("#modal-form").attr("data-target");
-        var url = `{% url 'debts:debts_index' %}`;
+        var url = `{% url 'debts:index' %}`;
         var blocks = [];
 
 
