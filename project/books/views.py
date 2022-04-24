@@ -90,12 +90,12 @@ class InfoRow(TemplateViewMixin):
         )
         return qs['reading'] if qs else 0
 
-    def get_context_data(self, **kwargs):
+    def target(self):
         year = self.request.user.year
-        qs_target = None
+        qs = None
 
         try:
-            qs_target = (
+            qs = (
                 models.BookTarget.objects
                 .related()
                 .get(year=year)
@@ -103,12 +103,14 @@ class InfoRow(TemplateViewMixin):
         except models.BookTarget.DoesNotExist:
             pass
 
+        return qs if qs else 0
+
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'target': qs_target if qs_target else None,
+            'target': self.target(),
         })
         return context
-
 
 
 class Lists(ListViewMixin):
