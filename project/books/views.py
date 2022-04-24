@@ -4,7 +4,7 @@ from django.utils.translation import gettext as _
 
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  ListViewMixin, SearchMixin, TemplateViewMixin,
-                                 UpdateViewMixin)
+                                 UpdateViewMixin, rendered_content)
 from . import forms, models
 
 
@@ -16,9 +16,9 @@ class Index(TemplateViewMixin):
         context.update({
             'year': self.request.user.year,
             'all': self.request.GET.get('tab'),
-            'books': Lists.as_view()(self.request).rendered_content,
-            'chart': ChartReaded.as_view()(self.request).rendered_content,
-            'info': InfoRow.as_view()(self.request).rendered_content,
+            'books': rendered_content(self.request, Lists),
+            'chart': rendered_content(self.request, ChartReaded),
+            'info': rendered_content(self.request, InfoRow),
         })
         return context
 
