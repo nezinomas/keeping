@@ -16,6 +16,7 @@ from .get import GetQuerysetMixin
 def rendered_content(request, view_class, **kwargs):
     return view_class.as_view()(request, **kwargs).rendered_content
 
+
 class SearchMixin(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
