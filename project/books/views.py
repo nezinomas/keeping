@@ -93,6 +93,7 @@ class InfoRow(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         qs_target = None
+
         try:
             qs_target = (
                 models.BookTarget.objects
