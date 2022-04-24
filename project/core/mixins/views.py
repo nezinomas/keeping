@@ -14,19 +14,6 @@ from ...core.lib import search
 from .get import GetQuerysetMixin
 
 
-class DispatchMixin():
-    def dispatch(self, request, *args, **kwargs):
-        if 'as_string' in kwargs:
-            rendered = render_to_string(
-                template_name=self.get_template_names(),
-                context=self.get_context_data(),
-                request=request
-            )
-            return rendered
-
-        return super().dispatch(request, *args, **kwargs)
-
-
 class SearchMixin(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -145,13 +132,11 @@ class DeleteViewMixin(LoginRequiredMixin,
 
 
 class TemplateViewMixin(LoginRequiredMixin,
-                        DispatchMixin,
                         TemplateView):
     pass
 
 
 class ListViewMixin(LoginRequiredMixin,
-                    DispatchMixin,
                     GetQuerysetMixin,
                     ListView):
     pass
