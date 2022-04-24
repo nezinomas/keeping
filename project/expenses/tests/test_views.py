@@ -66,6 +66,15 @@ def test_expenses_update_func():
     assert expenses.Update == view.func.view_class
 
 
+def test_expenses_context(client_logged):
+    url = reverse('expenses:index')
+    response = client_logged.get(url)
+    context = response.context
+
+    assert 'types' in context
+    assert 'expenses' in context
+
+
 @freeze_time('1974-08-08')
 def test_expenses_load_new_form(get_user, client_logged):
     get_user.year = 3000
