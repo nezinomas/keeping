@@ -16,6 +16,9 @@ class Index(TemplateViewMixin):
         context.update({
             'year': self.request.user.year,
             'all': self.request.GET.get('tab'),
+            'books': Lists.as_view()(self.request).rendered_content,
+            'chart': ChartReaded.as_view()(self.request).rendered_content,
+            'info': InfoRow.as_view()(self.request).rendered_content,
         })
         return context
 
