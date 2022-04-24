@@ -76,25 +76,28 @@ class InfoRow(TemplateViewMixin):
     template_name = 'books/info_row.html'
 
     def readed(self):
+        year = self.request.user.year
         qs = (models.Book.objects
               .readed()
-              .filter(year=self.request.user.year)
+              .filter(year=year)
         )
         return qs[0]['cnt'] if qs else 0
 
     def reading(self):
+        year = self.request.user.year
         qs = (models.Book.objects
-              .reading(self.request.user.year)
+              .reading(year)
         )
         return qs['reading'] if qs else 0
 
     def get_context_data(self, **kwargs):
+        year = self.request.user.year
         qs_target = None
         try:
             qs_target = (
                 models.BookTarget.objects
                 .related()
-                .get(year=self.request.user.year)
+                .get(year=year)
             )
         except models.BookTarget.DoesNotExist:
             pass
