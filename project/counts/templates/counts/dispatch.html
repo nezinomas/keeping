@@ -7,9 +7,12 @@
 {% block content %}
 
 <div class="row my-2">
-    <div class="col text-center" id="info_row">
+    <div class="col text-center">
         <div class="mx-auto text-center alert alert-warning py-2">{% translate 'You have no counters.' %}</div>
     </div>
+</div>
+
+<div class="mx-auto text-center"><button type="button" class="btn btn-sm btn-success px-5" hx-get="{% url 'counts:type_new' %}" hx-target="#dialog">{% translate 'Add counter'%}</button>
 </div>
 
 {% endblock content %}
