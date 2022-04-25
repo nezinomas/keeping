@@ -25,7 +25,7 @@
             </div>
         </div>
         <div class="row">
-            <div id="transactions_list" class="col" hx-trigger="load, afterTransaction from:body, afterAccount from:body" hx-get="{% url 'transactions:list' %}" hx-target="this" hx-indicator="#indicator"></div>
+            <div id="transactions_list" class="col" hx-trigger="afterTransaction from:body, afterAccount from:body" hx-get="{% url 'transactions:list' %}" hx-target="this" hx-indicator="#indicator">{{transaction}}</div>
         </div>
 
         <!-- close savings -->
@@ -38,7 +38,7 @@
             </div>
         </div>
         <div class="row">
-            <div id="savings_close_list" class="col" hx-trigger="load, afterClose from:body, afterAccount from:body" hx-get="{% url 'transactions:savings_close_list' %}" hx-target="this"></div>
+            <div id="savings_close_list" class="col" hx-trigger="afterClose from:body, afterAccount from:body" hx-get="{% url 'transactions:savings_close_list' %}" hx-target="this">{{saving_close}}</div>
         </div>
 
         <!-- change savings -->
@@ -51,7 +51,7 @@
             </div>
         </div>
         <div class="row">
-            <div id="savings_change_list" class="col-lg-12" hx-trigger="load, afterChange from:body, afterAccount from:body" hx-get="{% url 'transactions:savings_change_list' %}" hx-target="this"></div>
+            <div id="savings_change_list" class="col-lg-12" hx-trigger="afterChange from:body, afterAccount from:body" hx-get="{% url 'transactions:savings_change_list' %}" hx-target="this">{{saving_change}}</div>
         </div>
     </div>
 
@@ -63,7 +63,7 @@
             </div>
         </div>
         <div class="row">
-            <div id="account_list" class="col-lg-12" hx-trigger="load, afterAccount from:body" hx-get="{% url 'accounts:list' %}" hx-target="this"></div>
+            <div id="account_list" class="col-lg-12" hx-trigger="afterAccount from:body" hx-get="{% url 'accounts:list' %}" hx-target="this">{{account}}</div>
         </div>
     </div>
 </div>

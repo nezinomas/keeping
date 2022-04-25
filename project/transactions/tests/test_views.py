@@ -44,6 +44,17 @@ def test_transactions_update_func():
     assert views.Update is view.func.view_class
 
 
+def test_transaction_index_context(client_logged):
+    url = reverse('transactions:index')
+    response = client_logged.get(url)
+    context = response.context
+
+    assert 'transactions' in context
+    assert 'saving_closes' in context
+    assert 'saving_change' in context
+    assert 'account' in context
+
+
 @freeze_time('2000-01-01')
 def test_transactions_load_form(client_logged):
     url = reverse('transactions:new')

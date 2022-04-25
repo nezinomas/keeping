@@ -31,7 +31,7 @@
             </div>
         </div>
         <div class="row">
-            <div id="income_list" class="col" hx-trigger="load, reload from:body, afterType from:body" hx-get="{% url 'incomes:list' %}" hx-target="this" hx-indicator="#indicator"></div>
+            <div id="income_list" class="col" hx-trigger="reload from:body, afterType from:body" hx-get="{% url 'incomes:list' %}" hx-target="this" hx-indicator="#indicator">{{income}}</div>
         </div>
     </div>
 
@@ -43,7 +43,7 @@
         </div>
 
         <div class="row incomes-types-col">
-            <div id="incometype_list" class="col" hx-trigger="load, afterType from:body" hx-get="{% url 'incomes:type_list' %}" hx-target="this"></div>
+            <div id="incometype_list" class="col" hx-trigger="afterType from:body" hx-get="{% url 'incomes:type_list' %}" hx-target="this">{{income_type}}</div>
         </div>
     </div>
 </div>

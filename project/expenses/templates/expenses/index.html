@@ -57,7 +57,7 @@
         </div>
 
         <div class="row">
-            <div id="list" class="col" hx-trigger="load, reload from:body, afterType from:body, afterName from:body" hx-get="{% url 'expenses:list' %}{% if current_month %}?month={{ current_month }}{% endif %}" hx-target="this" hx-indicator="#indicator"></div>
+            <div id="list" class="col" hx-trigger="reload from:body, afterType from:body, afterName from:body" hx-get="{% url 'expenses:list' %}{% if current_month %}?month={{ current_month }}{% endif %}" hx-target="this" hx-indicator="#indicator">{{expenses}}</div>
         </div>
     </div>
 
@@ -70,7 +70,7 @@
         </div>
 
         <div class="row">
-            <div id="ajax-content-categories" class="col-lg-12" hx-trigger="load, afterType from:body, afterName from:body" hx-get="{% url 'expenses:type_list' %}" hx-target="this"></div>
+            <div id="ajax-content-categories" class="col-lg-12" hx-trigger="afterType from:body, afterName from:body" hx-get="{% url 'expenses:type_list' %}" hx-target="this">{{types}}</div>
         </div>
     </div>
 </div>

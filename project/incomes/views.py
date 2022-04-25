@@ -2,12 +2,20 @@ from django.urls import reverse_lazy
 
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  ListViewMixin, SearchMixin, TemplateViewMixin,
-                                 UpdateViewMixin)
+                                 UpdateViewMixin, rendered_content)
 from . import forms, models
 
 
 class Index(TemplateViewMixin):
     template_name = 'incomes/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'income': rendered_content(self.request, Lists),
+            'income_type': rendered_content(self.request, TypeLists),
+        })
+        return context
 
 
 class Lists(ListViewMixin):

@@ -64,6 +64,17 @@ def test_books_index_search_form(client_logged):
     assert '<input type="search" name="search" id="id_search"' in response
 
 
+def test_books_index_context(client_logged):
+    url = reverse('books:index')
+    response = client_logged.get(url)
+
+    assert 'year' in response.context
+    assert 'all' in response.context
+    assert 'books' in response.context
+    assert 'chart' in response.context
+    assert 'info' in response.context
+
+
 # ----------------------------------------------------------------------------
 #                                                                     Info Row
 # ----------------------------------------------------------------------------

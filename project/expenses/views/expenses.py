@@ -6,8 +6,9 @@ from django.utils.translation import gettext as _
 
 from ...core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                   ListViewMixin, SearchMixin,
-                                  TemplateViewMixin, UpdateViewMixin)
+                                  TemplateViewMixin, UpdateViewMixin, rendered_content)
 from .. import forms, models
+from . import expenses_type
 
 
 class GetMonthMixin():
@@ -25,6 +26,14 @@ class GetMonthMixin():
 
 class Index(GetMonthMixin, TemplateViewMixin):
     template_name = 'expenses/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'types': rendered_content(self.request, expenses_type.Lists),
+            'expenses': rendered_content(self.request, Lists),
+        })
+        return context
 
 
 class Lists(GetMonthMixin, ListViewMixin):

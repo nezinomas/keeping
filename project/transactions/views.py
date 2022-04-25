@@ -1,13 +1,24 @@
 from django.urls import reverse_lazy
 
+from ..accounts import views as accounts_views
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  ListViewMixin, TemplateViewMixin,
-                                 UpdateViewMixin)
+                                 UpdateViewMixin, rendered_content)
 from . import forms, models
 
 
 class Index(TemplateViewMixin):
     template_name = 'transactions/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'transaction': rendered_content(self.request, Lists),
+            'saving_close': rendered_content(self.request, SavingsCloseLists),
+            'saving_change': rendered_content(self.request, SavingsChangeLists),
+            'account': rendered_content(self.request, accounts_views.Lists),
+        })
+        return context
 
 
 class LoadSavingType(ListViewMixin):

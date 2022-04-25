@@ -4,7 +4,7 @@ from django.utils.translation import gettext as _
 
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  ListViewMixin, SearchMixin, TemplateViewMixin,
-                                 UpdateViewMixin)
+                                 UpdateViewMixin, rendered_content)
 from . import forms, models
 
 
@@ -16,6 +16,9 @@ class Index(TemplateViewMixin):
         context.update({
             'year': self.request.user.year,
             'all': self.request.GET.get('tab'),
+            'books': rendered_content(self.request, Lists),
+            'chart': rendered_content(self.request, ChartReaded),
+            'info': rendered_content(self.request, InfoRow),
         })
         return context
 
@@ -73,24 +76,41 @@ class InfoRow(TemplateViewMixin):
     template_name = 'books/info_row.html'
 
     def readed(self):
+        year = self.request.user.year
         qs = (models.Book.objects
               .readed()
-              .filter(year=self.request.user.year)
+              .filter(year=year)
         )
         return qs[0]['cnt'] if qs else 0
 
     def reading(self):
+        year = self.request.user.year
         qs = (models.Book.objects
-              .reading(self.request.user.year)
+              .reading(year)
         )
         return qs['reading'] if qs else 0
 
     def target(self):
-        qs = (models.BookTarget.objects
-              .items()
-              .filter(year=self.request.user.year)
-        )
-        return qs[0] if qs else None
+        year = self.request.user.year
+        qs = None
+
+        try:
+            qs = (
+                models.BookTarget.objects
+                .related()
+                .get(year=year)
+            )
+        except models.BookTarget.DoesNotExist:
+            pass
+
+        return qs if qs else 0
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'target': self.target(),
+        })
+        return context
 
 
 class Lists(ListViewMixin):

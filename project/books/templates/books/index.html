@@ -27,7 +27,7 @@
     {% url 'books:list' as reset_url %}
     <div class="col-3 text-start" id="search_form_data" hx-trigger="reloadSearch from:body">{% search_form url=search_url reset_url=reset_url target="#book_list" %}</div>
 
-    <div class="col text-center" id="info_row" hx-trigger="load, reload from:body, afterTarget from:body" hx-get="{% url 'books:info_row' %}" hx-target="this" hx-indicator="#indicator"></div>
+    <div class="col text-center" id="info_row" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:info_row' %}" hx-target="this">{{info}}</div>
 
     <div class="col-3 text-end">
         <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'books:new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Book' context 'book add button' %}</button>
@@ -36,11 +36,11 @@
 </div>
 
 <div class="row">
-    <div id="book_list" class="col-lg-12" hx-trigger="load, reload from:body" hx-get="{% url 'books:list' %}{% if all %}?tab=all{% endif %}" hx-target="this"></div>
+    <div id="book_list" class="col-lg-12" hx-trigger="reload from:body" hx-get="{% url 'books:list' %}{% if all %}?tab=all{% endif %}" hx-target="this" hx-indicator="#indicator">{{books}}</div>
 </div>
 
 <div class="row my-2">
-    <div class="col-lg-12" id="chart_readed_books" hx-trigger="load, reload from:body, afterTarget from:body" hx-get="{% url 'books:chart_readed' %}" hx-target="this"></div>
+    <div class="col-lg-12" id="chart_readed_books" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:chart_readed' %}" hx-target="this">{{chart}}</div>
 </div>
 
 {% endblock content %}
