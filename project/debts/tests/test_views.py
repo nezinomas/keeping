@@ -31,6 +31,17 @@ def test_debts_index_not_logged(client):
     assert response.status_code == 302
 
 
+def test_debts_index_context(client_logged):
+    url = reverse('debts:index')
+    response = client_logged.get(url)
+    context = response.context
+
+    assert 'borrow' in context
+    assert 'borrow_return' in context
+    assert 'lend' in context
+    assert 'lend_return' in context
+
+
 def test_debts_index_borrow_add_button(client_logged):
     url = reverse('debts:index')
     response = client_logged.get(url)

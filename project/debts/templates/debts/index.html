@@ -19,7 +19,7 @@
         </div>
 
         <div class="row">
-            <div class="col" id="borrow" hx-trigger="load, after_borrow from:body, after_borrow_return from:body" hx-get="{% url 'debts:list' 'borrow' %}" hx-target="this"></div>
+            <div class="col" id="borrow" hx-trigger="after_borrow from:body, after_borrow_return from:body" hx-get="{% url 'debts:list' 'borrow' %}" hx-target="this">{{borrow}}</div>
         </div>
     </div>
 
@@ -35,7 +35,7 @@
         </div>
 
         <div class="row">
-            <div class="col" id="lend" hx-trigger="load, after_lend from:body, after_lend_return from:body" hx-get="{% url 'debts:list' 'lend' %}" hx-target="this"></div>
+            <div class="col" id="lend" hx-trigger="after_lend from:body, after_lend_return from:body" hx-get="{% url 'debts:list' 'lend' %}" hx-target="this">{{lend}}</div>
         </div>
     </div>
 </div>
@@ -53,7 +53,7 @@
         </div>
 
         <div class="row">
-            <div class="col" id="borrow_return" hx-trigger="load, after_borrow from:body, after_borrow_return from:body" hx-get="{% url 'debts:return_list' 'borrow' %}" hx-target="this"></div>
+            <div class="col" id="borrow_return" hx-trigger="after_borrow from:body, after_borrow_return from:body" hx-get="{% url 'debts:return_list' 'borrow' %}" hx-target="this">{{borrow_return}}</div>
         </div>
     </div>
 
@@ -69,7 +69,7 @@
         </div>
 
         <div class="row">
-            <div class="col" id="lend_return" hx-trigger="load, after_lend from:body, after_lend_return from:body" hx-get="{% url 'debts:return_list' 'lend' %}" hx-target="this"></div>
+            <div class="col" id="lend_return" hx-trigger="after_lend from:body, after_lend_return from:body" hx-get="{% url 'debts:return_list' 'lend' %}" hx-target="this">{{lend_return}}</div>
         </div>
     </div>
 </div>
