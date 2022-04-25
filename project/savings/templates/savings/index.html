@@ -25,7 +25,7 @@
             </div>
         </div>
         <div class="row">
-            <div id="saving_list" class="col" hx-get="{% url 'savings:list' %}" hx-trigger="load, reload from:body, afterType from:body" hx-target="this" hx-indicator="#indicator"></div>
+            <div id="saving_list" class="col" hx-get="{% url 'savings:list' %}" hx-trigger="reload from:body, afterType from:body" hx-target="this" hx-indicator="#indicator">{{saving}}</div>
         </div><!-- End Funds -->
 
         <!-- Pensions -->
@@ -38,7 +38,7 @@
             </div>
         </div>
         <div class="row">
-            <div id="pensions_list" class="col" hx-get="{% url 'pensions:list' %}" hx-trigger="load, afterPension from:body, afterPensionType from:body" hx-target="this"></div>
+            <div id="pensions_list" class="col" hx-get="{% url 'pensions:list' %}" hx-trigger="afterPension from:body, afterPensionType from:body" hx-target="this">{{pension}}</div>
         </div><!-- End Pensions -->
     </div>
 
@@ -50,7 +50,7 @@
             </div>
         </div>
         <div class="row">
-            <div id="savintype_list" class="col-lg-12" hx-get="{% url 'savings:type_list' %}" hx-trigger="load, afterType from:body" hx-target="this"></div>
+            <div id="savintype_list" class="col-lg-12" hx-get="{% url 'savings:type_list' %}" hx-trigger="afterType from:body" hx-target="this">{{saving_type}}</div>
         </div>
         <!-- End Funds Types -->
 
@@ -61,7 +61,7 @@
             </div>
         </div>
         <div class="row">
-            <div id="pensiontype_list" class="col-lg-12" hx-get="{% url 'pensions:type_list' %}" hx-trigger="load, afterPensionType from:body" hx-target="this">{{ pension_type }}</div>
+            <div id="pensiontype_list" class="col-lg-12" hx-get="{% url 'pensions:type_list' %}" hx-trigger="afterPensionType from:body" hx-target="this">{{pension_type}}</div>
         </div>
         <!-- End Pension Types -->
     </div>

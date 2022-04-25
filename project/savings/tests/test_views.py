@@ -1,4 +1,5 @@
 import json
+from urllib import response
 
 import pytest
 from django.urls import resolve, reverse
@@ -52,6 +53,17 @@ def test_types_update_func():
     view = resolve('/savings/type/update/1/')
 
     assert views.TypeUpdate == view.func.view_class
+
+
+def test_index_view_context(client_logged):
+    url = reverse('savings:index')
+    response = client_logged.get(url)
+    context = response.context
+
+    assert 'saving' in context
+    assert 'saving_type' in context
+    assert 'pension' in context
+    assert 'pension_type' in context
 
 
 @freeze_time('2000-01-01')
