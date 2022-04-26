@@ -177,19 +177,6 @@ def test_expense_name_year_02():
     assert actual[1].title == 'N1'
 
 
-def test_expense_name_parent():
-    p1 = ExpenseTypeFactory(title='P1')
-    p2 = ExpenseTypeFactory(title='P2')
-
-    ExpenseNameFactory(title='N1', parent=p1)
-    ExpenseNameFactory(title='N2', parent=p1)
-    ExpenseNameFactory(title='N3', parent=p2)
-
-    actual = ExpenseName.objects.parent(p1.pk)
-
-    assert actual.count() == 2
-
-
 @pytest.mark.django_db
 @pytest.mark.xfail(raises=Exception)
 def test_expense_name_no_dublicates():

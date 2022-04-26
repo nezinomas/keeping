@@ -103,10 +103,9 @@ def test_expenses_save(client_logged):
     }
 
     url = reverse('expenses:new')
-
     client_logged.post(url, data, follow=True)
 
-    actual = models.Expense.objects.get(pk=1)
+    actual = models.Expense.objects.last()
     assert actual.date == date(1999, 1, 1)
     assert actual.price == Decimal('1.05')
     assert actual.quantity == 33
@@ -231,8 +230,7 @@ def test_expenses_update_past_record(get_user, client_logged):
         'expense_name': 1,
     }
     url = reverse('expenses:update', kwargs={'pk': e.pk})
-
-    response = client_logged.post(url, data)
+    client_logged.post(url, data, follow=True)
 
     actual = models.Expense.objects.get(pk=e.pk)
     assert actual.date == date(1998, 12, 12)
@@ -261,6 +259,7 @@ def test_expenses_index_search_form(client_logged):
 
 @freeze_time('1999-1-1')
 def test_expenses_list_month_not_set(client_logged):
+    ExpenseFactory(date=date(1998, 1, 1))
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(1999, 2, 1))
 
@@ -273,6 +272,7 @@ def test_expenses_list_month_not_set(client_logged):
 
 @freeze_time('1999-1-1')
 def test_expenses_list_month_stringt(client_logged):
+    ExpenseFactory(date=date(1998, 1, 1))
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(1999, 2, 1))
 
@@ -285,8 +285,10 @@ def test_expenses_list_month_stringt(client_logged):
 
 @freeze_time('1999-1-1')
 def test_expenses_list_january(client_logged):
+    ExpenseFactory(date=date(1998, 1, 1))
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(1999, 2, 1))
+
 
     url = reverse('expenses:list')
     actual = client_logged.get(url, {'month': 1}).context['object_list']
@@ -297,6 +299,7 @@ def test_expenses_list_january(client_logged):
 
 @freeze_time('1999-1-1')
 def test_expenses_list_all(client_logged):
+    ExpenseFactory(date=date(1998, 1, 1))
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(1999, 2, 1))
 
@@ -308,6 +311,7 @@ def test_expenses_list_all(client_logged):
 
 @freeze_time('1999-1-1')
 def test_expenses_list_all_any_num(client_logged):
+    ExpenseFactory(date=date(1998, 1, 1))
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(1999, 2, 1))
 
@@ -367,10 +371,7 @@ def test_expenses_delete_other_journal_get_form(client_logged, second_user):
     url = reverse('expenses:delete', kwargs={'pk': i2.pk})
     response = client_logged.get(url)
 
-    form = response.content.decode('utf-8')
-
-    assert '<form method="POST" hx-post="None"' in form
-    assert 'Ar tikrai norite ištrinti: <strong>None</strong>' in form
+    assert response.status_code == 404
 
 
 def test_expenses_delete_other_journal_post_form(client_logged, second_user):

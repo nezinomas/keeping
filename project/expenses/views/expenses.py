@@ -42,7 +42,7 @@ class Lists(GetMonthMixin, ListViewMixin):
 
     def get_queryset(self):
         month = self.get_month()
-        qs = super().get_queryset()
+        qs = super().get_queryset().year(year=self.request.user.year)
 
         if month in range(1, 13):
             qs = qs.filter(date__month=month)
@@ -94,18 +94,19 @@ class LoadExpenseName(ListViewMixin):
 
     def get(self, request, *args, **kwargs):
         objects = []
-        pk = request.GET.get('expense_type')
+        expense_type_pk = request.GET.get('expense_type')
 
         try:
-            pk = int(pk)
+            expense_type_pk = int(expense_type_pk)
         except (ValueError, TypeError):
-            pk = None
+            expense_type_pk = None
 
-        if pk:
+        if expense_type_pk:
             objects = (
                 models.ExpenseName
                 .objects
-                .parent(pk)
+                .related()
+                .filter(parent=expense_type_pk)
                 .year(request.user.year)
             )
 

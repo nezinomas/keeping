@@ -44,13 +44,6 @@ class ExpenseNameQuerySet(models.QuerySet):
             ))
         return qs
 
-    def parent(self, parent_id):
-        return (
-            self
-            .related()
-            .filter(parent_id=parent_id)
-        )
-
     def items(self):
         return self.related()
 
