@@ -118,7 +118,7 @@ class Lists(ListViewMixin):
     per_page = 50
 
     def get_queryset(self):
-        return super().get_queryset().year(year=self.request.user.year)
+        return models.Book.objects.year(year=self.request.user.year)
 
     def get_context_data(self, **kwargs):
         page = self.request.GET.get('page', 1)
