@@ -8,31 +8,36 @@ app_name = App_name
 urlpatterns = [
     path(
         'counts/',
-        views.CountsEmpty.as_view(),
-        name='empty'
+        views.Dispatch.as_view(),
+        name='dispatch'
     ),
     path(
-        'counts/<slug:count_type>/',
+        'counts/index/<slug:slug>/',
         views.Index.as_view(),
         name='index'
     ),
     path(
-        'counts/lists/<slug:count_type>/',
+        'counts/lists/<slug:slug>/',
         views.Lists.as_view(),
         name='list'
     ),
     path(
-        'counts/new/<slug:count_type>/',
+        'counts/history/<slug:slug>/',
+        views.History.as_view(),
+        name='history'
+    ),
+    path(
+        'counts/new/<slug:slug>/',
         views.New.as_view(),
         name='new'
     ),
     path(
-        'counts/update/<slug:count_type>/<int:pk>/',
+        'counts/update/<slug:slug>/<int:pk>/',
         views.Update.as_view(),
         name='update'
     ),
     path(
-        'counts/delete/<slug:count_type>/<int:pk>/',
+        'counts/delete/<slug:slug>/<int:pk>/',
         views.Delete.as_view(),
         name='delete'
     ),
@@ -42,23 +47,13 @@ urlpatterns = [
         name='type_new'
     ),
     path(
-        'counts/type/update/<int:pk>/',
+        'counts/type/update/<slug:slug>/',
         views.TypeUpdate.as_view(),
         name='type_update'
     ),
     path(
-        'counts/type/delete/<int:pk>/',
+        'counts/type/delete/<slug:slug>/',
         views.TypeDelete.as_view(),
         name='type_delete'
-    ),
-    path(
-        'counts/history/<slug:count_type>/',
-        views.History.as_view(),
-        name='history'
-    ),
-    path(
-        'counts/redirect/<int:count_id>/',
-        views.Redirect.as_view(),
-        name='redirect'
     ),
 ]
