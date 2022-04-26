@@ -19,7 +19,7 @@
 
 <div class="row my-2">
     <div class="col-sm-3 text-start">
-        {% with view.kwargs.count_type as type %}
+        {% with view.kwargs.slug as type %}
         <a href="{% url 'counts:index' type %}" class="btn btn-sm {% if '/'|add:'counts'|add:'/'|add:type|add:'/' == request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Charts' %}</a>
         <a href="{% url 'counts:list' type %}" class="btn btn-sm {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Data' %}</a>
         <a href="{% url 'counts:history' type %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
@@ -27,26 +27,18 @@
     </div>
 
     <div class="col text-center" id="info_row">
-        {% if tab == 'index' or tab == 'data' %}
-            {{ info_row }}
-        {% else %}
-            <div class="info_row"><h6>{% translate 'Historical data' %}</h6></div>
-        {% endif %}
+        {% block info_row %}{% endblock %}
     </div>
 
     <div class="col-sm-3 text-end">
-        <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'counts:new' view.kwargs.count_type %}"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'counts:new' view.kwargs.slug %}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
 
-        <button type="button" class="btn btn-sm btn-success" data-url="{% url 'counts:type_update' count_type_object.pk %}"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
-        <button type="button" class="btn btn-sm btn-danger" data-url="{% url 'counts:type_delete' count_type_object.pk %}" id="delete_button"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button" class="btn btn-sm btn-success" hx-get="{% url 'counts:type_update' view.kwargs.slug %}" hx-target="#dialog"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button" class="btn btn-sm btn-danger" hx-get="{% url 'counts:type_delete' view.kwargs.slug %}" hx-target="#dialog"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
 
     </div>
 </div>
 
-{% if tab == 'index' %}{% include 'counts/includes/tab_index.html' %}{% endif %}
-
-{% if tab == 'data' %}{% include 'counts/includes/tab_data.html' %}{% endif %}
-
-{% if tab == 'history' %}{% include 'counts/includes/tab_history.html' %}{% endif %}
+{% block counts_content %}{% endblock counts_content %}
 
 {% endblock content %}
