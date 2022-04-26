@@ -55,6 +55,9 @@ class Index(TemplateViewMixin):
 class DebtLists(ListViewMixin):
     model = models.Debt
 
+    def get_queryset(self):
+        return models.Debt.objects.year(year=self.request.user.year)
+
 
 class DebtNew(DebtMixin, CreateViewMixin):
     model = models.Debt
@@ -76,6 +79,9 @@ class DebtDelete(DebtMixin, DeleteViewMixin):
 
 class DebtReturnLists(ListViewMixin):
     model = models.DebtReturn
+
+    def get_queryset(self):
+        return models.DebtReturn.objects.year(year=self.request.user.year)
 
 
 class DebtReturnNew(DebtReturnMixin, CreateViewMixin):
