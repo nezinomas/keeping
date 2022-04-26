@@ -47,6 +47,9 @@ class LoadSavingType(ListViewMixin):
 class Lists(ListViewMixin):
     model = models.Transaction
 
+    def get_queryset(self):
+        return models.Transaction.objects.year(year=self.request.user.year)
+
 
 class New(CreateViewMixin):
     model = models.Transaction
@@ -73,6 +76,9 @@ class Delete(DeleteViewMixin):
 
 class SavingsCloseLists(ListViewMixin):
     model = models.SavingClose
+
+    def get_queryset(self):
+        return models.SavingClose.objects.year(year=self.request.user.year)
 
 
 class SavingsCloseNew(CreateViewMixin):
@@ -101,6 +107,9 @@ class SavingsCloseDelete(DeleteViewMixin):
 
 class SavingsChangeLists(ListViewMixin):
     model = models.SavingChange
+
+    def get_queryset(self):
+        return models.SavingChange.objects.year(year=self.request.user.year)
 
 
 class SavingsChangeNew(CreateViewMixin):
