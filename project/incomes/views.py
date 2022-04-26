@@ -23,8 +23,8 @@ class Lists(ListViewMixin):
 
     def get_queryset(self):
         return (
-            super()
-            .get_queryset()
+            models.Income.objects
+            .year(year=self.request.user.year)
             .order_by('-date', 'price')
         )
 
