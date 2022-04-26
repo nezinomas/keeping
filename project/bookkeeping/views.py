@@ -16,7 +16,6 @@ from ..core.lib.date import years
 from ..core.lib.translation import month_names
 from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.formset import FormsetMixin
-from ..core.mixins.get import GetQuerysetMixin
 from ..core.mixins.views import CreateAjaxMixin, DispatchAjaxMixin, IndexMixin
 from ..expenses.models import Expense
 from ..incomes.models import Income
@@ -339,7 +338,7 @@ class ExpandDayExpenses(IndexMixin):
         return JsonResponse({'html': html})
 
 
-class AccountsWorthReset(LoginRequiredMixin, GetQuerysetMixin, CreateView):
+class AccountsWorthReset(LoginRequiredMixin, CreateView):
     account = None
     model = Account
     template_name = 'bookkeeping/includes/accounts_worth.html'

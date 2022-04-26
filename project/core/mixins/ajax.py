@@ -1,15 +1,14 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import FormView
 
-from .get import GetQuerysetMixin
 
 
-class AjaxCreateUpdateMixin(GetQuerysetMixin):
+class AjaxCreateUpdateMixin():
     #Todo: delete this class
     pass
 
 
-class AjaxDeleteMixin(GetQuerysetMixin):
+class AjaxDeleteMixin():
     #Todo: delete this class
     pass
 

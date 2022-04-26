@@ -2,7 +2,7 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import (CreateView, DeleteView, ListView,
@@ -10,7 +10,6 @@ from django.views.generic import (CreateView, DeleteView, ListView,
 from django_htmx.http import trigger_client_event
 
 from ...core.lib import search
-from .get import GetQuerysetMixin
 
 
 def rendered_content(request, view_class, **kwargs):
@@ -22,6 +21,19 @@ def rendered_content(request, view_class, **kwargs):
         .as_view()(request, **kwargs)
         .rendered_content
     )
+
+
+class GetQuerysetMixin():
+    object_list = 'items'
+
+    def get_queryset(self):
+        try:
+            qs = self.model.objects.related()
+        except AttributeError:
+            raise Http404(_("No %(verbose_name)s found matching the query") % {
+                          'verbose_name': qs.model._meta.verbose_name})
+
+        return qs
 
 
 class SearchMixin(LoginRequiredMixin, TemplateView):
@@ -87,6 +99,7 @@ class CreateUpdateMixin():
 
 
 class CreateViewMixin(LoginRequiredMixin,
+                      GetQuerysetMixin,
                       CreateUpdateMixin,
                       CreateView):
     form_action = 'insert'

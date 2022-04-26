@@ -117,6 +117,9 @@ class Lists(ListViewMixin):
     model = models.Book
     per_page = 50
 
+    def get_queryset(self):
+        return super().get_queryset().year(year=self.request.user.year)
+
     def get_context_data(self, **kwargs):
         page = self.request.GET.get('page', 1)
         paginator = Paginator(self.get_queryset(), self.per_page)
