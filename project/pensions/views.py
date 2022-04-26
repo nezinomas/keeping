@@ -8,6 +8,9 @@ from . import forms, models
 class Lists(ListViewMixin):
     model = models.Pension
 
+    def get_queryset(self):
+        return models.Pension.objects.year(year=self.request.user.year)
+
 
 class New(CreateViewMixin):
     model = models.Pension
