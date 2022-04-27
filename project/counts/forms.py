@@ -76,3 +76,15 @@ class CountTypeForm(forms.ModelForm):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+    def clean_title(self):
+        reserved_titles = ['none', 'type']
+        title = self.cleaned_data['title']
+
+        if title and title.lower() in reserved_titles:
+            self.add_error(
+                'title',
+                _('This title is reserved for the system.')
+            )
+
+        return title

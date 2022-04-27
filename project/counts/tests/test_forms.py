@@ -136,3 +136,21 @@ def test_count_type_blank_data():
 
     assert len(form.errors) == 1
     assert 'title' in form.errors
+
+
+@pytest.mark.parametrize(
+    'reserved_title',
+    [
+        ('none'),
+        ('None'),
+        ('type'),
+        ('Type'),
+    ]
+)
+def test_count_type_reserved_title(reserved_title):
+    form = CountTypeForm(data={'title': reserved_title})
+
+    assert not form.is_valid()
+    assert len(form.errors) == 1
+    assert 'title' in form.errors
+    assert 'Šis pavadinimas rezervuotas sistemai.' in form.errors['title']
