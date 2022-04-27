@@ -19,7 +19,7 @@ class CounterQuerySet(SumMixin, models.QuerySet):
         self.counter_type = counter_type if counter_type else self.counter_type
 
         if not self.counter_type:
-            self.counter_type = utils.get_request_kwargs('count_type')
+            self.counter_type = utils.get_request_kwargs('slug')
 
         return (
             self
