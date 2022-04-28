@@ -13,9 +13,9 @@ from .models import Count, CountType
 class CountForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Count
-        fields = ['user', 'date', 'quantity']
+        fields = ['user', 'date', 'quantity', 'count_type']
 
-    field_order = ['date', 'quantity']
+    field_order = ['date', 'count_type', 'quantity']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -40,23 +40,6 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
-
-    def clean(self):
-        counter_type = utils.get_request_kwargs("count_type")
-        qs = CountType.objects.related().filter(slug=counter_type)
-
-        if not qs.exists():
-            self.add_error(
-                '__all__',
-                _('There is no such counter')
-            )
-
-    def save(self, *args, **kwargs):
-        instance = super().save(commit=False)
-        instance.counter_type = utils.get_request_kwargs("count_type")
-        instance.save()
-
-        return instance
 
 
 class CountTypeForm(forms.ModelForm):
