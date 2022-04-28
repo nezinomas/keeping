@@ -126,7 +126,7 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu nav-link {% if '/counts/' in request.path %}active{% endif %}" href="{% url 'counts:empty' %}">{% translate 'Counter' %}</a>
+              <a class="btn btn-menu nav-link {% if '/counts/' in request.path %}active{% endif %}" href="{% url 'counts:redirect' %}">{% translate 'Counter' %}</a>
               <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/counts/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
@@ -136,7 +136,7 @@
 
                 <li class="dropdown-divider"></li>
                 <li>
-                  <button type="button" class="dropdown-item btn-sm" data-url="{% url 'counts:type_new' %}">{% translate 'Add count type' %}</button>
+                  <button type="button" class="dropdown-item btn-sm" hx-get="{% url 'counts:type_new' %}" hx-target="#dialog">{% translate 'Add count type' %}</button>
                 </li>
               </ul>
             </div>
