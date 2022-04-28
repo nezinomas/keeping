@@ -74,7 +74,7 @@ class ExpenseForm(forms.ModelForm):
         expense_name = self.fields['expense_name']
 
         account.queryset = Account.objects.items()
-        expense_type.queryset = ExpenseType.objects.filter(journal=user.journal)
+        expense_type.queryset = ExpenseType.objects.items()
 
         # expense_name query
         if not self.instance.pk:
