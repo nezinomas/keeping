@@ -17,22 +17,22 @@ urlpatterns = [
         name='empty'
     ),
     path(
-        'counts/<slug:slug>/index/',
+        'counts/index/<slug:slug>/',
         views.Index.as_view(),
         name='index'
     ),
     path(
-        'counts/<slug:slug>/list/',
+        'counts/list/<slug:slug>/',
         views.Lists.as_view(),
         name='list'
     ),
     path(
-        'counts/<slug:slug>/history/',
+        'counts/history/<slug:slug>/',
         views.History.as_view(),
         name='history'
     ),
     path(
-        'counts/<slug:slug>/new/',
+        'counts/new/<slug:slug>/',
         views.New.as_view(),
         name='new'
     ),
@@ -47,17 +47,17 @@ urlpatterns = [
         name='delete'
     ),
     path(
-        'counts/type/new/',
+        'counts-type/new/',
         views.TypeNew.as_view(),
         name='type_new'
     ),
     path(
-        'counts/type/<slug:slug>/update/',
+        'counts-type/update/<slug:slug>/',
         views.TypeUpdate.as_view(),
         name='type_update'
     ),
     path(
-        'counts/type/<slug:slug>/delete/',
+        'counts-type/delete/<slug:slug>/',
         views.TypeDelete.as_view(),
         name='type_delete'
     ),
