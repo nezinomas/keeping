@@ -60,7 +60,6 @@ class CountQuerySet(SumMixin, models.QuerySet):
             qs = qs.filter(count_type__slug=count_type)
 
         qs = qs\
-            .related()\
             .month_sum(
                 year=year,
                 month=month,
@@ -79,7 +78,6 @@ class CountQuerySet(SumMixin, models.QuerySet):
             qs = qs.filter(count_type__slug=count_type)
 
         qs = qs\
-            .related()\
             .day_sum(
                 year=year,
                 month=month,
