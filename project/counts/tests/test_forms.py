@@ -26,7 +26,7 @@ def test_form_init_fields():
     assert '<input type="text" name="date"' in form
     assert '<input type="number" name="quantity"' in form
     assert '<select name="user"' not in form
-    assert '<input type="text" name="counter_type"' not in form
+    assert '<select name="count_type"' in form
 
 
 @freeze_time('1000-01-01')
@@ -40,12 +40,12 @@ def test_form_year_initial_value():
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
-def test_form_valid_data(mck):
-    CountTypeFactory(title='xxx')
+def test_form_valid_data():
+    obj = CountTypeFactory(title='Xxx')
 
     form = CountForm(data={
         'date': '1999-01-01',
+        'count_type': obj,
         'quantity': 1.0
     })
 
@@ -56,21 +56,22 @@ def test_form_valid_data(mck):
     assert data.date == date(1999, 1, 1)
     assert data.quantity == 1.0
     assert data.user.username == 'bob'
-    assert data.counter_type == 'xxx'
+    assert data.count_type.title == 'Xxx'
+    assert data.count_type.slug == 'xxx'
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
 @freeze_time('1999-2-2')
 @pytest.mark.parametrize(
     'year',
     [1998, 2001]
 )
-def test_form_invalid_date(mck, year):
-    CountTypeFactory(title='xxx')
+def test_form_invalid_date(year):
+    obj = CountTypeFactory(title='xxx')
 
     form = CountForm(data={
         'date': f'{year}-01-01',
+        'count_type': obj,
         'quantity': 1.0
     })
 
@@ -85,13 +86,12 @@ def test_form_blank_data():
     assert not form.is_valid()
 
     assert len(form.errors) == 3
-    assert '__all__' in form.errors
     assert 'date' in form.errors
     assert 'quantity' in form.errors
+    assert 'count_type' in form.errors
 
 
-@patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
-def test_form_counter_not_exist(mck):
+def test_form_no_count_type():
     form = CountForm(data={
         'date': '1999-01-01',
         'quantity': 1.0
@@ -99,8 +99,28 @@ def test_form_counter_not_exist(mck):
 
     assert not form.is_valid()
     assert len(form.errors) == 1
-    assert '__all__' in form.errors
-    assert 'Nėra tokio skaitiklio' in form.errors['__all__']
+    assert 'count_type' in form.errors
+    assert 'Šis laukas yra privalomas.' in form.errors['count_type']
+
+
+def test_form_count_type_and_second_user(main_user, second_user):
+    CountTypeFactory(title='T1', user=main_user)
+    CountTypeFactory(title='T2', user=second_user)
+
+    form = CountForm({}).as_p()
+
+    assert '<option value="1">T1</option>' in form
+    assert '<option value="2">T2</option>' not in form
+
+
+@patch('project.core.lib.utils.get_request_kwargs', return_value='t1')
+def test_form_load_select_count_type(mck):
+    CountTypeFactory(title='T1')
+    CountTypeFactory(title='T2')
+
+    form = CountForm().as_p()
+
+    assert '<option value="1" selected>T1</option>' in form
 
 
 # ---------------------------------------------------------------------------------------

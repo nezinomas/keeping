@@ -26,6 +26,13 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
                 "locale": utils.get_user().journal.lang,
             })
 
+        self.fields['count_type'].queryset = CountType.objects.items()
+
+        slug = utils.get_request_kwargs('slug')
+        if slug:
+            obj = CountType.objects.filter(slug=slug).first()
+            self.fields['count_type'].initial = obj
+
         # user input
         self.fields['user'].initial = utils.get_user()
         self.fields['user'].disabled = True
@@ -37,6 +44,7 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
 
         self.fields['date'].label = _('Date')
         self.fields['quantity'].label = _('Quantity')
+        self.fields['count_type'].label = _('Count type')
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
