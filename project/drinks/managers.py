@@ -7,12 +7,12 @@ from django.db import models
 from ..core.lib import utils
 from ..core.lib.date import ydays
 from ..core.mixins.queryset_sum import SumMixin
-from ..counters.managers import CounterQuerySet
+from ..counts.managers import CountQuerySet
 from .apps import App_name as DrinksAppName
 from .lib.drinks_options import DrinksOptions
 
 
-class DrinkQuerySet(CounterQuerySet):
+class DrinkQuerySet(CountQuerySet):
     counter_type = DrinksAppName
 
     def sum_by_month(self, year: int, month: int = None):
