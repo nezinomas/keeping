@@ -4,6 +4,7 @@ import os
 from django.conf import settings
 from django.db import models
 from django.template.loader import render_to_string
+from django.urls import reverse_lazy
 from django.utils.text import slugify
 from project.core.models import TitleAbstract
 
@@ -24,6 +25,12 @@ class Count(Counter):
 
     class Meta:
         proxy = True
+
+    def get_absolute_url(self):
+        return reverse_lazy("counts:update", kwargs={"pk": self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy("counts:delete", kwargs={"pk": self.pk})
 
 
 class CountType(TitleAbstract):
@@ -74,6 +81,21 @@ class CountType(TitleAbstract):
 
         _generate_counts_menu()
 
+    def get_absolute_url(self):
+        slug = utils.get_request_kwargs('slug')
+        return (
+            reverse_lazy(
+                'counts:type_update',
+                kwargs={'slug': slug})
+        )
+
+    def get_delete_url(self):
+        slug = utils.get_request_kwargs('slug')
+        return (
+            reverse_lazy(
+                'counts:type_delete',
+                kwargs={'slug': slug})
+        )
 
 def _generate_counts_menu():
     journal = utils.get_user().journal
@@ -87,10 +109,10 @@ def _generate_counts_menu():
         if not os.path.isdir(folder):
             os.mkdir(folder)
 
-        template = 'counts/includes/menu.html'
+        template = 'counts/menu.html'
         content = render_to_string(
             template_name=template,
-            context={'count_types': qs},
+            context={'slugs': qs},
             request=None
         )
 
