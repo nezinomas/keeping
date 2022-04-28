@@ -26,6 +26,17 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
     def items(self, count_type=None):
         return self.related()
 
+    def sum_by_year(self, year=None):
+        qs = self\
+            .related()\
+            .year_sum(
+                year=year,
+                sum_annotation='qty',
+                sum_column='quantity')\
+            .order_by('date')
+
+        return qs
+
     def sum_by_month(self, year: int, month: int = None):
         """
         Returns
@@ -70,14 +81,7 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
         """
 
         arr = {}
-        qs = self\
-            .related()\
-            .year_sum(
-                year=year,
-                sum_annotation='qty',
-                sum_column='quantity')\
-            .order_by('date')
-
+        qs = self.sum_by_year(year=year)
         qs = list(qs)
 
         if not qs:
@@ -119,13 +123,7 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
         #Returns
         # [{'year': int, 'qty': float, 'per_day': float}]
 
-        qs = self\
-            .related()\
-            .year_sum(
-                year=None,
-                sum_annotation='qty',
-                sum_column='quantity')\
-            .order_by('date')
+        qs = self.sum_by_year()
 
         obj = DrinksOptions()
         ratio = obj.ratio
