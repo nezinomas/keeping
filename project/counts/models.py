@@ -29,35 +29,12 @@ class CountType(TitleAbstract):
     def __str__(self):
         return self.title
 
-    # __original_title = None
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-        # if self.pk:
-        #     self.__original_title = self.title
-
     def save(self, *args, **kwargs):
-        # if self.pk:
-        #     if self.title != self.__original_title:
-        #         (Count
-        #          .objects
-        #          .related(counter_type=self.__original_title)
-        #          .filter(counter_type=slugify(self.__original_title))
-        #          .update(counter_type=slugify(self.title)))
-
         super().save(*args, **kwargs)
-
         _generate_counts_menu()
 
-        # self.__original_title = self.title
-
     def delete(self, *args, **kwargs):
-        # (Count
-        #  .objects
-        #  .related(counter_type=slugify(self.title))
-        #  .delete())
-
         super().delete(*args, **kwargs)
-
         _generate_counts_menu()
 
     def get_absolute_url(self):
@@ -75,28 +52,6 @@ class CountType(TitleAbstract):
                 'counts:type_delete',
                 kwargs={'slug': slug})
         )
-
-def _generate_counts_menu():
-    journal = utils.get_user().journal
-    qs = CountType.objects.related().items()
-
-    if qs:
-        journal_pk = str(journal.pk)
-        folder = os.path.join(settings.MEDIA_ROOT, journal_pk)
-        file = os.path.join(folder, 'menu.html')
-
-        if not os.path.isdir(folder):
-            os.mkdir(folder)
-
-        template = 'counts/menu.html'
-        content = render_to_string(
-            template_name=template,
-            context={'slugs': qs},
-            request=None
-        )
-
-        with open(file, 'w+') as f:
-            f.write(content)
 
 
 class Count(models.Model):
@@ -128,3 +83,25 @@ class Count(models.Model):
 
     def get_delete_url(self):
         return reverse_lazy("counts:delete", kwargs={"pk": self.pk})
+
+
+def _generate_counts_menu():
+    journal = utils.get_user().journal
+    qs = CountType.objects.related()
+
+    if qs:
+        journal_pk = str(journal.pk)
+        folder = os.path.join(settings.MEDIA_ROOT, journal_pk)
+        file = os.path.join(folder, 'menu.html')
+
+        if not os.path.isdir(folder):
+            os.mkdir(folder)
+
+        content = render_to_string(
+            template_name='counts/menu.html',
+            context={'slugs': qs},
+            request=None
+        )
+
+        with open(file, 'w+') as f:
+            f.write(content)
