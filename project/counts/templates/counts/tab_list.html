@@ -2,7 +2,6 @@
 {% load slippers %}
 
 {% if object_list %}
-{% var count_type=request.resolver_match.kwargs.slug %}
 <table class="table table-striped table-hover stats">
     <thead class="thead-light">
         <tr class="top">
@@ -33,4 +32,8 @@
 </table>
 {% else %}
     {% if not records %}<div id="no-records">{% include 'core/no_records.html' %}</div>{% endif %}
+{% endif %}
+
+{% if request.htmx %}
+<div id="info_row" hx-swap-oob="true">{{info_row|safe}}</div>
 {% endif %}

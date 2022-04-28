@@ -16,3 +16,7 @@
 <div id="no-records"><div class="row my-2"><div class="col">{% include 'core/no_records.html' %}</div></div></div>
 
 {% endif %}
+
+{% if request.htmx %}
+<div id="info_row" hx-swap-oob="true">{{info_row|safe}}</div>
+{% endif %}

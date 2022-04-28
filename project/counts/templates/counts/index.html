@@ -16,10 +16,9 @@
 
 
 {% block content %}
-[{{ view.kwargs.slug }}] [-] title:{{object.title}} pk:{{object.pk}} [-]
+{% with object.slug as count_slug %}
 <div class="row my-2">
     <div class="col-sm-3 text-start">
-        {% with object.slug as count_slug %}
         <a href="{% url 'counts:index' count_slug %}" class="btn btn-sm {% if 'index' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Charts' %}</a>
         <a href="{% url 'counts:list' count_slug %}" class="btn btn-sm {% if 'list' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Data' %}</a>
         <a href="{% url 'counts:history' count_slug %}" class="btn btn-sm {% if 'history' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
@@ -33,18 +32,18 @@
 
         <button type="button"p class="btn btn-sm btn-success" hx-get="{% url 'counts:type_update' count_slug %}" hx-target="#dialog"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
         <button type="button" class="btn btn-sm btn-danger" hx-get="{% url 'counts:type_delete' count_slug %}" hx-target="#dialog"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
-        {% endwith %}
     </div>
 </div>
 
 <div id="tab_content">
     {% if tab == 'list' %}
-    {% include 'counts/tab_list.html' %}
+    <div hx-trigger="reload from:body" hx-get="{% url 'counts:list' count_slug  %}" hx-swap="this">{% include 'counts/tab_list.html' %}</div>
     {% elif tab == 'history' %}
-    {% include 'counts/tab_history.html' %}
+    <div hx-trigger="reload from:body" hx-get="{% url 'counts:history' count_slug  %}" hx-swap="this">{% include 'counts/tab_history.html' %}</div>
     {% else %}
-    {% include 'counts/tab_index.html' %}
+    <div hx-trigger="reload from:body" hx-get="{% url 'counts:index' count_slug  %}" hx-swap="this">{% include 'counts/tab_index.html' %}</div>
     {% endif %}
 </div>
 
+{% endwith %}
 {% endblock content %}
