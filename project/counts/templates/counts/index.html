@@ -1,9 +1,50 @@
-{% extends 'counts/index.html' %}
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
 
-{% block info_row %}Info{% endblock %}
+{% block head %}
+<script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="{% static 'js/reload_stats.js' %}"></script>
+
+<style>
+    .btn-light {
+        background-color: rgb(239, 239, 239) !important;
+    }
+</style>
+{% endblock head %}
 
 
-{% block counts_content %}
-Tab Index Content
+{% block content %}
+[{{ view.kwargs.slug }}] [-] title:{{object.title}} pk:{{object.pk}} [-]
+<div class="row my-2">
+    <div class="col-sm-3 text-start">
+        {% with object.slug as count_slug %}
+        <a href="{% url 'counts:index' count_slug %}" class="btn btn-sm {% if 'index' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Charts' %}</a>
+        <a href="{% url 'counts:list' count_slug %}" class="btn btn-sm {% if 'list' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Data' %}</a>
+        <a href="{% url 'counts:history' count_slug %}" class="btn btn-sm {% if 'history' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
 
-{% endblock counts_content %}
+    </div>
+
+    <div class="col text-center">{{info_row|safe}}</div>
+
+    <div class="col-sm-3 text-end">
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'counts:new' count_slug %}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+
+        <button type="button"p class="btn btn-sm btn-success" hx-get="{% url 'counts:type_update' count_slug %}" hx-target="#dialog"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button" class="btn btn-sm btn-danger" hx-get="{% url 'counts:type_delete' count_slug %}" hx-target="#dialog"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
+        {% endwith %}
+    </div>
+</div>
+
+<div id="tab_content">
+    {% if tab == 'list' %}
+    {% include 'counts/tab_list.html' %}
+    {% elif tab == 'history' %}
+    {% include 'counts/tab_history.html' %}
+    {% else %}
+    {% include 'counts/tab_index.html' %}
+    {% endif %}
+</div>
+
+{% endblock content %}
