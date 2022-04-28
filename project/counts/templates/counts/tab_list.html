@@ -20,8 +20,8 @@
         {% endif %}
         {% endifchanged %}
 
-        {% url 'counts:update' count_type obj.id as url_update %}
-        {% url 'counts:delete' count_type obj.id as url_delete %}
+        {% url 'counts:update' obj.id as url_update %}
+        {% url 'counts:delete' obj.id as url_delete %}
         <tr hx-get="{{ url_update }}" hx-target="#dialog" hx-trigger="dblclick">
             <td class="text-start">{{ obj.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ obj.quantity }}</td>

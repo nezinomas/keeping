@@ -5,13 +5,3 @@
     <div class="col-lg-4">{% if records %}{{ chart_years }}{% endif %}</div>
     <div class="col-lg-4">{% if records %}{{ chart_histogram }}{% endif %}</div>
 </div>
-
-<script>
-    $(document).on('hidden.bs.modal', '#modal-form', function () {
-        $.ajax({
-            success: function (data) {
-                window.location.href = '{% url 'counts:history' view.kwargs.count_type %}';
-            },
-        });
-    });
-</script>

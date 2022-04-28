@@ -1,9 +1,18 @@
-{% extends 'counts/count_base.html' %}
+{% if records %}
 
-{% block info_row %}Info{% endblock %}
+<div class="row my-2">
+    <div class="col-lg-4" id="chart_weekdays">{{ chart_weekdays }}</div>
+    <div class="col-lg-4" id="chart_months">{{ chart_months }}</div>
+    <div class="col-lg-4" id="chart_histogram">{{ chart_histogram }}</div>
+</div>
 
+<div class="row my-2">
+    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{{ chart_calendar_1H }}</div>
+    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{{ chart_calendar_2H }}</div>
+</div>
 
-{% block counts_content %}
-Tab Index Content
+{% else %}
 
-{% endblock counts_content %}
+<div id="no-records"><div class="row my-2"><div class="col">{% include 'core/no_records.html' %}</div></div></div>
+
+{% endif %}
