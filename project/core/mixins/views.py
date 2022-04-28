@@ -24,8 +24,6 @@ def rendered_content(request, view_class, **kwargs):
 
 
 class GetQuerysetMixin():
-    object_list = 'items'
-
     def get_queryset(self):
         try:
             qs = self.model.objects.related()
