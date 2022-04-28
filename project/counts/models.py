@@ -2,6 +2,7 @@
 import os
 
 from django.conf import settings
+from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
@@ -9,28 +10,8 @@ from django.utils.text import slugify
 from project.core.models import TitleAbstract
 
 from ..core.lib import utils
-from ..counters.managers import CounterQuerySet
-from ..counters.models import Counter
 from ..users.models import User
-from .managers import CountTypeQuerySet
-
-
-class CountQuerySet(CounterQuerySet, models.QuerySet):
-    # App_name = app_name
-    pass
-
-
-class Count(Counter):
-    objects = CountQuerySet.as_manager()
-
-    class Meta:
-        proxy = True
-
-    def get_absolute_url(self):
-        return reverse_lazy("counts:update", kwargs={"pk": self.pk})
-
-    def get_delete_url(self):
-        return reverse_lazy("counts:delete", kwargs={"pk": self.pk})
+from .managers import CountQuerySet, CountTypeQuerySet
 
 
 class CountType(TitleAbstract):
@@ -48,34 +29,32 @@ class CountType(TitleAbstract):
     def __str__(self):
         return self.title
 
-    __original_title = None
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if self.pk:
-            self.__original_title = self.title
+    # __original_title = None
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+        # if self.pk:
+        #     self.__original_title = self.title
 
     def save(self, *args, **kwargs):
-        if self.pk:
-            if self.title != self.__original_title:
-                (Count
-                 .objects
-                 .related(counter_type=self.__original_title)
-                 .filter(counter_type=slugify(self.__original_title))
-                 .update(counter_type=slugify(self.title)))
+        # if self.pk:
+        #     if self.title != self.__original_title:
+        #         (Count
+        #          .objects
+        #          .related(counter_type=self.__original_title)
+        #          .filter(counter_type=slugify(self.__original_title))
+        #          .update(counter_type=slugify(self.title)))
 
         super().save(*args, **kwargs)
 
         _generate_counts_menu()
 
-        self.__original_title = self.title
+        # self.__original_title = self.title
 
     def delete(self, *args, **kwargs):
-        (Count
-         .objects
-         .related(counter_type=slugify(self.title))
-         .delete())
+        # (Count
+        #  .objects
+        #  .related(counter_type=slugify(self.title))
+        #  .delete())
 
         super().delete(*args, **kwargs)
 
@@ -118,3 +97,34 @@ def _generate_counts_menu():
 
         with open(file, 'w+') as f:
             f.write(content)
+
+
+class Count(models.Model):
+    date = models.DateField()
+    quantity = models.FloatField(
+        validators=[MinValueValidator(0.1)]
+    )
+    count_type = models.ForeignKey(
+        CountType,
+        on_delete=models.CASCADE,
+        related_name='counts'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    objects = CountQuerySet.as_manager()
+
+    def __str__(self):
+        return f'{self.date}: {self.quantity}'
+
+    class Meta:
+        ordering = ['-date']
+        get_latest_by = ['date']
+
+    def get_absolute_url(self):
+        return reverse_lazy("counts:update", kwargs={"pk": self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy("counts:delete", kwargs={"pk": self.pk})
