@@ -17,11 +17,6 @@ urlpatterns = [
         name='empty'
     ),
     path(
-        'counts/<slug:slug>/',
-        views.Main.as_view(),
-        name='main'
-    ),
-    path(
         'counts/<slug:slug>/index/',
         views.Index.as_view(),
         name='index'
@@ -42,12 +37,12 @@ urlpatterns = [
         name='new'
     ),
     path(
-        'counts/<slug:slug>/update/<int:pk>/',
+        'counts/update/<int:pk>/',
         views.Update.as_view(),
         name='update'
     ),
     path(
-        'counts/<slug:slug>/delete/<int:pk>/',
+        'counts/delete/<int:pk>/',
         views.Delete.as_view(),
         name='delete'
     ),
