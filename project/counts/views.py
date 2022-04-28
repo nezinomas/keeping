@@ -1,88 +1,107 @@
-from types import SimpleNamespace
-
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse
-from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
-from django.views.generic import RedirectView, TemplateView
 
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchAjaxMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
+from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
+                                 ListViewMixin, RedirectViewMixin,
+                                 TemplateViewMixin, UpdateViewMixin,
+                                 rendered_content)
 from .forms import CountForm, CountTypeForm
 from .lib.views_helper import ContextMixin
 from .models import Count, CountType
 
 
-class Redirect(LoginRequiredMixin, RedirectView):
+class Redirect(RedirectViewMixin):
     def get_redirect_url(self, *args, **kwargs):
         qs = None
-        count_id = kwargs.get('count_id')
+        slug = kwargs.get('slug')
 
         try:
-            qs = CountType.objects.related().get(pk=count_id)
+            qs = CountType.objects\
+                .related()\
+                .exclude(slug='drinks')\
+                .get(slug=slug)
         except ObjectDoesNotExist:
-            qs = CountType.objects.related().first()
+            qs = CountType.objects\
+                .related()\
+                .exclude(slug='drinks')\
+                .first()
 
         if not qs:
             url = reverse('counts:empty')
         else:
-            url = reverse('counts:index',
-                          kwargs={'count_type': qs.slug})
+            url = reverse('counts:index', kwargs={'slug': qs.slug})
 
         return url
 
 
-class Index(ContextMixin, IndexMixin):
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return super().dispatch(request, *args, **kwargs)
+class Empty(TemplateViewMixin):
+    template_name = 'counts/empty.html'
 
-        count_type = request.resolver_match.kwargs.get("count_type")
 
-        if count_type and count_type == 'drinks':
-            return redirect(reverse('counts:empty'))
-
-        if count_type:
-            qs = CountType.objects.related().filter(slug=count_type)
-            if not qs.exists():
-                return redirect(reverse('counts:empty'))
-
-        return super().dispatch(request, *args, **kwargs)
+class Index(ContextMixin, TemplateViewMixin):
+    def get_template_names(self):
+        if self.request.htmx:
+            return ['counts/tab_index.html']
+        else:
+            return ['counts/index.html']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({
-            **self.helper.context_to_reload(
-                self.get_year(),
-                **{'count_type_object': context['count_type_object']})
-        })
+        object = context['object']
 
+        calendar_data = self.render_context.calender_data
+
+        context.update({
+            'tab': 'index',
+            'info_row': self.render_context.info_row(title=object.title),
+            'chart_calendar_1H': self.render_context.chart_calendar(calendar_data[0:6], '1H'),
+            'chart_calendar_2H': self.render_context.chart_calendar(calendar_data[6:], '2H'),
+            'chart_weekdays': self.render_context.chart_weekdays(),
+            'chart_months': self.render_context.chart_months(),
+            'chart_histogram': self.render_context.chart_histogram(),
+        })
         return context
 
 
-class Lists(ContextMixin, ListMixin):
-    template_name = 'counts/index.html'
+class Lists(ContextMixin, ListViewMixin):
     model = Count
 
-    def get_qs(self):
-        return Count.objects.year(self.get_year())
+    def get_template_names(self):
+        if self.request.htmx:
+            return ['counts/tab_list.html']
+        else:
+            return ['counts/index.html']
+
+    def get_queryset(self):
+        year = self.request.user.year
+        slug = self.kwargs.get('slug')
+
+        return \
+            Count.objects \
+            .year(year=year, count_type=slug)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        obj = {'count_type_object': context['count_type_object']}
+        object = context['object']
+
         context.update({
-            'tab': 'data',
-            'info_row': self.helper.info_row(self.get_year(),**obj),
+            'tab': 'list',
+            'info_row': self.render_context.info_row(title=object.title),
         })
         return context
 
 
-class History(ContextMixin, IndexMixin):
+class History(ContextMixin, TemplateViewMixin):
+    def get_template_names(self):
+        if self.request.htmx:
+            return ['counts/tab_history.html']
+        else:
+            return ['counts/index.html']
+
     def get_qs(self):
-        return Count.objects.items()
+        slug = self.kwargs.get('slug')
+        return Count.objects.items(count_type=slug)
 
     def get_year(self):
         return None
@@ -91,58 +110,76 @@ class History(ContextMixin, IndexMixin):
         context = super().get_context_data(**kwargs)
         context.update({
             'tab': 'history',
-            'chart_weekdays': self.helper.chart_weekdays(_('Days of week')),
-            'chart_years': self.helper.chart_years(),
-            'chart_histogram': self.helper.chart_histogram(),
+            'info_row': f'<h6>{_("Historical data")}</h6>',
+            'chart_weekdays': self.render_context.chart_weekdays(_('Days of week')),
+            'chart_years': self.render_context.chart_years(),
+            'chart_histogram': self.render_context.chart_histogram(),
         })
         return context
 
 
-class CountsEmpty(IndexMixin):
-    template_name = 'counts/empty.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return super().dispatch(request, *args, **kwargs)
-
-        qs = CountType.objects.related().exclude(slug='drinks')
-        if qs.exists():
-            return redirect(reverse('counts:index', kwargs={'count_type': qs[0].slug}))
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'count_type_object': SimpleNamespace(pk=0, title=_('Not found'), slug='counter')
-        })
-        return context
-
-
-class New(CreateAjaxMixin):
+class New(CreateViewMixin):
     model = Count
     form_class = CountForm
 
+    def url(self):
+        slug = self.kwargs.get('slug')
+        return reverse_lazy('counts:new', kwargs={'slug': slug})
 
-class Update(UpdateAjaxMixin):
+    def get_success_url(self):
+        slug = self.kwargs.get('slug')
+        url = reverse_lazy('counts:list', kwargs={'slug': slug})
+        return url
+
+
+class Update(UpdateViewMixin):
     model = Count
     form_class = CountForm
 
+    def get_success_url(self):
+        slug = self.kwargs.get('slug')
+        url = reverse_lazy('counts:list', kwargs={'slug': slug})
+        return url
 
-class Delete(DeleteAjaxMixin):
+
+class Delete(DeleteViewMixin):
     model = Count
 
+    def get_success_url(self):
+        slug = self.kwargs.get('slug')
+        url = reverse_lazy('counts:list', kwargs={'slug': slug})
+        return url
 
-class TypeNew(CreateAjaxMixin):
+
+class TypeNew(CreateViewMixin):
+    model = CountType
+    form_class = CountTypeForm
+    hx_trigger = 'afterType'
+
+    def get_success_url(self):
+        url = reverse_lazy('counts:list', kwargs={'slug': self.object.slug})
+        return url
+
+    def url(self):
+        return reverse_lazy('counts:type_new')
+
+
+class TypeUpdate(UpdateViewMixin):
     model = CountType
     form_class = CountTypeForm
 
+    def get_success_url(self):
+        url = reverse_lazy('counts:list', kwargs={'slug': self.object.slug})
+        return url
 
-class TypeUpdate(UpdateAjaxMixin):
+    hx_trigger = 'afterType'
+
+
+class TypeDelete(DeleteViewMixin):
     model = CountType
     form_class = CountTypeForm
 
+    def get_success_url(self):
+        return reverse_lazy('counts:list', kwargs={'slug': self.object.slug})
 
-class TypeDelete(DeleteAjaxMixin):
-    model = CountType
-    form_class = CountTypeForm
+    hx_trigger = 'afterType'
