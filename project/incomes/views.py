@@ -65,9 +65,7 @@ class TypeUpdate(UpdateViewMixin):
     success_url = reverse_lazy('incomes:type_list')
 
 
-
 class Search(SearchMixin):
     template_name = 'incomes/income_list.html'
     per_page = 50
     search_method = 'search_incomes'
-
