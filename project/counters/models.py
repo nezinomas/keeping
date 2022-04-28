@@ -2,8 +2,6 @@ from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 
 from ..users.models import User
-from . import managers
-
 
 
 class Counter(models.Model):
@@ -25,8 +23,6 @@ class Counter(models.Model):
         User,
         on_delete=models.CASCADE
     )
-
-    objects = managers.CounterQuerySet.as_manager()
 
     def __str__(self):
         return f'{self.date}: {self.quantity}'
