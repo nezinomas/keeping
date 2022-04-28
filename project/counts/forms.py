@@ -20,34 +20,40 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self._initial_fields_values()
+        self._overwrite_default_queries()
+        self._translate_fields()
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
+
+    def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(
             options={
                 "format": "YYYY-MM-DD",
                 "locale": utils.get_user().journal.lang,
             })
+        self.fields['date'].initial = set_year_for_form()
+        self.fields['quantity'].initial = 1
 
-        self.fields['count_type'].queryset = CountType.objects.items()
-
+        # initial value for count_type
         slug = utils.get_request_kwargs('slug')
         if slug:
             obj = CountType.objects.filter(slug=slug).first()
             self.fields['count_type'].initial = obj
 
-        # user input
+        # initial value for user field
         self.fields['user'].initial = utils.get_user()
         self.fields['user'].disabled = True
         self.fields['user'].widget = forms.HiddenInput()
 
-        # inital values
-        self.fields['date'].initial = set_year_for_form()
-        self.fields['quantity'].initial = 1
+    def _overwrite_default_queries(self):
+        self.fields['count_type'].queryset = CountType.objects.items()
 
+    def _translate_fields(self):
         self.fields['date'].label = _('Date')
         self.fields['quantity'].label = _('Quantity')
         self.fields['count_type'].label = _('Count type')
-
-        self.helper = FormHelper()
-        set_field_properties(self, self.helper)
 
 
 class CountTypeForm(forms.ModelForm):
