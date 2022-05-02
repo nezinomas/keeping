@@ -49,18 +49,18 @@ class ContextMixin():
         if self.object:
             return self.object
 
-        object = None
+        obj = None
         slug = utils.get_request_kwargs('slug')
 
         if slug:
             try:
-                object = CountType.objects\
+                obj = CountType.objects\
                     .related()\
                     .get(slug=slug)
             except ObjectDoesNotExist as e:
                 raise ObjectDoesNotExist from e
 
-        return object
+        return obj
 
     def get_statistic(self):
         year = self.get_year()
