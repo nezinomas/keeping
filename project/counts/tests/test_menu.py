@@ -11,14 +11,13 @@ pytestmark = pytest.mark.django_db
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_menu_count_type_add(client_logged):
-    obj = CountTypeFactory(title='XXX')
+    obj = CountTypeFactory()
 
     url = reverse('counts:empty')
     response = client_logged.get(url, follow=True)
-
     content = response.content.decode()
 
-    url = reverse("counts:index", kwargs={"count_type": obj.slug})
+    url = reverse("counts:index", kwargs={'slug': obj.slug})
 
     assert f'href="{url}">{obj.title}</a></li>' in content
 
@@ -33,8 +32,8 @@ def test_menu_count_type_add_two(client_logged):
 
     content = response.content.decode()
 
-    url1 = reverse("counts:index", kwargs={"count_type": obj1.slug})
-    url2 = reverse("counts:index", kwargs={"count_type": obj2.slug})
+    url1 = reverse("counts:index", kwargs={'slug': obj1.slug})
+    url2 = reverse("counts:index", kwargs={'slug': obj2.slug})
 
     assert f'href="{url1}">{obj1.title}</a></li>' in content
     assert f'href="{url2}">{obj2.title}</a></li>' in content
@@ -50,8 +49,8 @@ def test_menu_count_type_delete(client_logged):
 
     content = response.content.decode()
 
-    url1 = reverse("counts:index", kwargs={"count_type": obj1.slug})
-    url2 = reverse("counts:index", kwargs={"count_type": obj2.slug})
+    url1 = reverse("counts:index", kwargs={'slug': obj1.slug})
+    url2 = reverse("counts:index", kwargs={'slug': obj2.slug})
 
     assert f'href="{url1}">{obj1.title}</a></li>' in content
     assert f'href="{url2}">{obj2.title}</a></li>' in content

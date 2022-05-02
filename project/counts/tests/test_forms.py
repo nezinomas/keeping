@@ -7,7 +7,7 @@ from freezegun import freeze_time
 from mock import patch
 
 from ...users.factories import UserFactory
-from ..factories import CountTypeFactory
+from ..factories import CountTypeFactory, CountFactory
 from ..forms import CountForm, CountTypeForm
 
 pytestmark = pytest.mark.django_db
@@ -103,26 +103,6 @@ def test_form_no_count_type():
     assert 'Šis laukas yra privalomas.' in form.errors['count_type']
 
 
-def test_form_count_type_and_second_user(main_user, second_user):
-    CountTypeFactory(title='T1', user=main_user)
-    CountTypeFactory(title='T2', user=second_user)
-
-    form = CountForm({}).as_p()
-
-    assert '<option value="1">T1</option>' in form
-    assert '<option value="2">T2</option>' not in form
-
-
-@patch('project.core.lib.utils.get_request_kwargs', return_value='t1')
-def test_form_load_select_count_type(mck):
-    CountTypeFactory(title='T1')
-    CountTypeFactory(title='T2')
-
-    form = CountForm().as_p()
-
-    assert '<option value="1" selected>T1</option>' in form
-
-
 # ---------------------------------------------------------------------------------------
 #                                                                              Count Type
 # ---------------------------------------------------------------------------------------
@@ -178,3 +158,23 @@ def test_count_type_reserved_title(reserved_title):
     assert len(form.errors) == 1
     assert 'title' in form.errors
     assert 'Šis pavadinimas rezervuotas sistemai.' in form.errors['title']
+
+
+def test_form_count_type_and_second_user(main_user, second_user):
+    CountTypeFactory(title='T1', user=main_user)
+    CountTypeFactory(title='T2', user=second_user)
+
+    form = CountForm({}).as_p()
+
+    assert '<option value="1">T1</option>' in form
+    assert '<option value="2">T2</option>' not in form
+
+
+@patch('project.core.lib.utils.get_request_kwargs', return_value='t1')
+def test_form_load_select_count_type(mck):
+    CountTypeFactory(title='T1')
+    CountTypeFactory(title='T2')
+
+    form = CountForm().as_p()
+
+    assert '<option value="1" selected>T1</option>' in form

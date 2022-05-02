@@ -30,8 +30,8 @@
     <div class="col-sm-3 text-end">
         <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'counts:new' count_slug %}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
 
-        <button type="button"p class="btn btn-sm btn-success" hx-get="{% url 'counts:type_update' count_slug %}" hx-target="#dialog"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
-        <button type="button" class="btn btn-sm btn-danger" hx-get="{% url 'counts:type_delete' count_slug %}" hx-target="#dialog"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button"p class="btn btn-sm btn-success" hx-get="{% url 'counts:type_update' object.pk %}" hx-target="#dialog"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button" class="btn btn-sm btn-danger" hx-get="{% url 'counts:type_delete' object.pk %}" hx-target="#dialog"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
     </div>
 </div>
 

@@ -52,12 +52,12 @@ urlpatterns = [
         name='type_new'
     ),
     path(
-        'counts-type/update/<slug:slug>/',
+        'counts-type/update/<int:pk>/',
         views.TypeUpdate.as_view(),
         name='type_update'
     ),
     path(
-        'counts-type/delete/<slug:slug>/',
+        'counts-type/delete/<int:pk>/',
         views.TypeDelete.as_view(),
         name='type_delete'
     ),

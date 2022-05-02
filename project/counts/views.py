@@ -4,8 +4,7 @@ from django.utils.translation import gettext as _
 
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  ListViewMixin, RedirectViewMixin,
-                                 TemplateViewMixin, UpdateViewMixin,
-                                 rendered_content)
+                                 TemplateViewMixin, UpdateViewMixin)
 from .forms import CountForm, CountTypeForm
 from .lib.views_helper import ContextMixin
 from .models import Count, CountType
@@ -118,7 +117,14 @@ class History(ContextMixin, TemplateViewMixin):
         return context
 
 
-class New(CreateViewMixin):
+class CountUrlMixin():
+    def get_success_url(self):
+        slug = self.object.count_type.slug
+        url = reverse_lazy('counts:list', kwargs={'slug': slug})
+        return url
+
+
+class New(CountUrlMixin, CreateViewMixin):
     model = Count
     form_class = CountForm
 
@@ -126,60 +132,42 @@ class New(CreateViewMixin):
         slug = self.kwargs.get('slug')
         return reverse_lazy('counts:new', kwargs={'slug': slug})
 
-    def get_success_url(self):
-        slug = self.kwargs.get('slug')
-        url = reverse_lazy('counts:list', kwargs={'slug': slug})
-        return url
 
-
-class Update(UpdateViewMixin):
+class Update(CountUrlMixin, UpdateViewMixin):
     model = Count
     form_class = CountForm
 
-    def get_success_url(self):
-        slug = self.kwargs.get('slug')
-        url = reverse_lazy('counts:list', kwargs={'slug': slug})
-        return url
 
-
-class Delete(DeleteViewMixin):
+class Delete(CountUrlMixin, DeleteViewMixin):
     model = Count
 
+
+# ---------------------------------------------------------------------------------------
+#                                                                             Count Types
+# ---------------------------------------------------------------------------------------
+class TypeUrlMixin():
+    def get_hx_redirect(self):
+        return self.get_success_url()
+
     def get_success_url(self):
-        slug = self.kwargs.get('slug')
-        url = reverse_lazy('counts:list', kwargs={'slug': slug})
-        return url
+        slug = self.object.slug
+        return reverse_lazy('counts:list', kwargs={'slug': slug})
 
 
-class TypeNew(CreateViewMixin):
+class TypeNew(TypeUrlMixin, CreateViewMixin):
+    model = CountType
+    form_class = CountTypeForm
+    hx_trigger = 'afterType'
+    url = reverse_lazy('counts:type_new')
+
+
+class TypeUpdate(TypeUrlMixin, UpdateViewMixin):
     model = CountType
     form_class = CountTypeForm
     hx_trigger = 'afterType'
 
-    def get_success_url(self):
-        url = reverse_lazy('counts:list', kwargs={'slug': self.object.slug})
-        return url
 
-    def url(self):
-        return reverse_lazy('counts:type_new')
-
-
-class TypeUpdate(UpdateViewMixin):
+class TypeDelete(TypeUrlMixin, DeleteViewMixin):
     model = CountType
-    form_class = CountTypeForm
-
-    def get_success_url(self):
-        url = reverse_lazy('counts:list', kwargs={'slug': self.object.slug})
-        return url
-
     hx_trigger = 'afterType'
-
-
-class TypeDelete(DeleteViewMixin):
-    model = CountType
-    form_class = CountTypeForm
-
-    def get_success_url(self):
-        return reverse_lazy('counts:list', kwargs={'slug': self.object.slug})
-
-    hx_trigger = 'afterType'
+    hx_redirect = reverse_lazy('counts:redirect')
