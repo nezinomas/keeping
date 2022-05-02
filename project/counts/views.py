@@ -18,12 +18,10 @@ class Redirect(RedirectViewMixin):
         try:
             qs = CountType.objects\
                 .related()\
-                .exclude(slug='drinks')\
                 .get(slug=slug)
         except ObjectDoesNotExist:
             qs = CountType.objects\
                 .related()\
-                .exclude(slug='drinks')\
                 .first()
 
         if not qs:

@@ -56,7 +56,6 @@ class ContextMixin():
             try:
                 object = CountType.objects\
                     .related()\
-                    .exclude(slug='drinks')\
                     .get(slug=slug)
             except (AttributeError, ObjectDoesNotExist):
                 raise ObjectDoesNotExist
