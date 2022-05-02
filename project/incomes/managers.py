@@ -57,6 +57,10 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
         return qs
 
     def incomes(self):
+        '''
+        method used only in post_save signal
+        method sum prices by month
+        '''
         return (
             self
             .related()
