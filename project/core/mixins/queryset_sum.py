@@ -44,6 +44,7 @@ class SumMixin():
                   groupby='id'):
         return (
             self
+            .related()
             .year_filter(year)
             .month_filter(month)
             .annotate(cnt=Count(groupby))
@@ -53,6 +54,7 @@ class SumMixin():
             .annotate(c=Count('id'))
             .annotate(**{sum_annotation: Sum(sum_column)})
             .order_by('date')
+            .values('date', sum_annotation)
         )
 
     def day_sum(self,
@@ -70,26 +72,4 @@ class SumMixin():
             .annotate(date=TruncDay('date'))
             .annotate(**{sum_annotation: Sum(sum_column)})
             .order_by('date')
-        )
-
-    def sum_by_month(self, year: int, month: int = None) -> List[Dict[str, Any]]:
-        '''
-        year:
-            filter data by year and return sums for every month
-        month:
-            filter data by year AND month, return sum for that month
-        return:
-            {'date': datetime.date(), 'sum': Decimal()}
-        '''
-
-        sum_annotation = 'sum'
-
-        return (
-            self
-            .related()
-            .month_sum(
-                year=year,
-                month=month,
-                sum_annotation=sum_annotation)
-            .values('date', sum_annotation)
         )
