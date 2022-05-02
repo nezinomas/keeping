@@ -16,12 +16,12 @@ class Redirect(RedirectViewMixin):
         slug = kwargs.get('slug')
 
         try:
-            qs = CountType.objects\
-                .related()\
+            qs = CountType.objects \
+                .related() \
                 .get(slug=slug)
         except ObjectDoesNotExist:
-            qs = CountType.objects\
-                .related()\
+            qs = CountType.objects \
+                .related() \
                 .first()
 
         if not qs:

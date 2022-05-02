@@ -42,7 +42,7 @@ class ContextMixin():
 
     def get_queryset(self):
         return \
-            Count.objects\
+            Count.objects \
             .sum_by_day(year=self.get_year(), count_type=self.get_object().slug)
 
     def get_object(self):
@@ -54,8 +54,9 @@ class ContextMixin():
 
         if slug:
             try:
-                obj = CountType.objects\
-                    .related()\
+                obj = \
+                    CountType.objects \
+                    .related() \
                     .get(slug=slug)
             except ObjectDoesNotExist as e:
                 raise ObjectDoesNotExist from e
@@ -70,9 +71,9 @@ class ContextMixin():
         if year:
             try:
                 qs_past = \
-                    Count.objects\
-                    .related()\
-                    .filter(date__year__lt=self.get_year(), count_type=self.object)\
+                    Count.objects \
+                    .related() \
+                    .filter(date__year__lt=self.get_year(), count_type=self.object) \
                     .latest()
 
                 past_last_record = qs_past.date
