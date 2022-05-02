@@ -21,7 +21,7 @@ class SumMixin():
 
     def year_sum(self,
                  year,
-                 sum_annotation,
+                 sum_annotation='sum',
                  groupby='id',
                  sum_column='price'):
         return (
