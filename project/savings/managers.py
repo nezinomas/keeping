@@ -53,18 +53,6 @@ class SavingQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self.related()
 
-    def sum_by_month(self, year, month=None):
-        sum_annotation = 'sum'
-
-        return (
-            self
-            .related()
-            .month_sum(
-                year=year,
-                month=month,
-                sum_annotation=sum_annotation)
-            .values('date', sum_annotation)
-        )
 
     def sum_by_month_and_type(self, year):
         return (
