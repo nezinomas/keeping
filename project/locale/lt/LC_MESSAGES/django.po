@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-27 13:38+0300\n"
-"PO-Revision-Date: 2022-04-27 13:38+0300\n"
+"POT-Creation-Date: 2022-05-02 15:36+0300\n"
+"PO-Revision-Date: 2022-05-02 15:36+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -57,12 +57,12 @@ msgstr "Sąskaitos"
 msgid "closed"
 msgstr "uždaryta"
 
-#: .\project\bookkeeping\forms.py:37 .\project\counts\forms.py:38
-#: .\project\counts\templates\counts\count_list.html:15
+#: .\project\bookkeeping\forms.py:37 .\project\counts\forms.py:54
+#: .\project\counts\templates\counts\tab_list.html:8
 #: .\project\debts\forms.py:59 .\project\debts\forms.py:153
 #: .\project\debts\templates\debts\debt_list.html:12
 #: .\project\debts\templates\debts\debtreturn_list.html:12
-#: .\project\drinks\forms.py:46 .\project\expenses\forms.py:108
+#: .\project\drinks\forms.py:47 .\project\expenses\forms.py:108
 #: .\project\expenses\templates\expenses\expense_list.html:13
 #: .\project\incomes\forms.py:42
 #: .\project\incomes\templates\incomes\income_list.html:10
@@ -493,7 +493,7 @@ msgstr "Baigta skaityti"
 
 #: .\project\books\forms.py:49
 #: .\project\books\templates\books\book_list.html:11
-#: .\project\counts\forms.py:75 .\project\expenses\forms.py:185
+#: .\project\counts\forms.py:72 .\project\expenses\forms.py:185
 #: .\project\plans\templates\plans\includes\generic_list.html:10
 msgid "Title"
 msgstr "Pavadinimas"
@@ -532,7 +532,7 @@ msgstr "Data negali būti ateityje"
 msgid "Ended reading cannot precede started reading"
 msgstr "Baigta skaityti negali būti anksčiau nei pradėta skaityti"
 
-#: .\project\books\forms.py:125 .\project\drinks\forms.py:90
+#: .\project\books\forms.py:125 .\project\drinks\forms.py:91
 msgid "Year"
 msgstr "Metai"
 
@@ -543,7 +543,7 @@ msgstr "Metai"
 msgid "How many"
 msgstr "Kiek"
 
-#: .\project\books\forms.py:141 .\project\drinks\forms.py:113
+#: .\project\books\forms.py:141 .\project\drinks\forms.py:114
 msgid "already has a goal."
 msgstr "metai jau turi tikslą."
 
@@ -651,6 +651,10 @@ msgstr "Kitas mėnuo"
 msgid "Previous Month"
 msgstr "Ankstesnis mėnesis"
 
+#: .\project\core\i18n.py:13
+msgid "Insert"
+msgstr "Įrašyti"
+
 #: .\project\core\lib\translation.py:6
 msgid "January"
 msgstr "Sausis"
@@ -731,12 +735,12 @@ msgstr "Sekmadienis"
 msgid "The same accounts are selected."
 msgstr "Pasirinktos vienodos sąskaitos."
 
-#: .\project\core\mixins\views.py:33
+#: .\project\core\mixins\views.py:31
 #, python-format
 msgid "No %(verbose_name)s found matching the query"
 msgstr "%(verbose_name)s užklausos nėra"
 
-#: .\project\core\mixins\views.py:56
+#: .\project\core\mixins\views.py:54
 msgid "Found nothing"
 msgstr "Nieko nerasta"
 
@@ -802,42 +806,34 @@ msgstr "Trūksta duomenų."
 msgid "Missing data. At least two years of data are needed."
 msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 
-#: .\project\counts\forms.py:39
+#: .\project\counts\forms.py:55
 #: .\project\counts\templates\counts\chart_calendar.html:118
 #: .\project\counts\templates\counts\chart_month.html:71
-#: .\project\counts\templates\counts\count_list.html:16
 #: .\project\counts\templates\counts\info_row.html:5
-#: .\project\drinks\forms.py:48 .\project\drinks\forms.py:91
+#: .\project\counts\templates\counts\tab_list.html:9
+#: .\project\drinks\forms.py:49 .\project\drinks\forms.py:92
 #: .\project\drinks\templates\drinks\includes\chart_quantity.html:61
 #: .\project\drinks\templates\drinks\includes\drinks_list.html:12
 msgid "Quantity"
 msgstr "Kiekis"
 
-#: .\project\counts\forms.py:51
-msgid "There is no such counter"
-msgstr "Nėra tokio skaitiklio"
+#: .\project\counts\forms.py:56
+#: .\project\counts\templates\counts\counttype_form.html:3
+msgid "Count type"
+msgstr "Skaitiklis"
 
-#: .\project\counts\forms.py:88
+#: .\project\counts\forms.py:84
 msgid "This title is reserved for the system."
 msgstr "Šis pavadinimas rezervuotas sistemai."
 
-#: .\project\counts\lib\views_helper.py:24 .\project\templates\404.html:5
-msgid "Not found"
-msgstr "Nerasta"
-
-#: .\project\counts\lib\views_helper.py:155
-msgid "Frequency of gaps, in days"
-msgstr "Tarpų dažnis, dienomis"
-
-#: .\project\counts\lib\views_helper.py:183
+#: .\project\counts\lib\views_helper.py:111
 #, python-format
 msgid "Weekdays, %(year)s year"
 msgstr "Savaitės dienos, %(year)s metai"
 
-#: .\project\counts\lib\views_helper.py:184
-#, python-format
-msgid "Months, %(year)s year"
-msgstr "Mėnesiai, %(year)s metai"
+#: .\project\counts\lib\views_helper.py:177
+msgid "Frequency of gaps, in days"
+msgstr "Tarpų dažnis, dienomis"
 
 #: .\project\counts\templates\counts\chart_calendar.html:117
 #: .\project\counts\templates\counts\chart_month.html:58
@@ -857,10 +853,6 @@ msgstr "Kiek"
 msgid "Delete count type"
 msgstr "Trinti skaitiklį"
 
-#: .\project\counts\templates\counts\counttype_form.html:3
-msgid "Count type"
-msgstr "Skaitiklis"
-
 #: .\project\counts\templates\counts\empty.html:11
 msgid "You have no counters."
 msgstr "Jūs neturite skaitiklių."
@@ -868,6 +860,45 @@ msgstr "Jūs neturite skaitiklių."
 #: .\project\counts\templates\counts\empty.html:15
 msgid "Add counter"
 msgstr "Pridėti skaitiklį"
+
+#: .\project\counts\templates\counts\index.html:22
+#: .\project\drinks\templates\drinks\index.html:26
+msgid "Charts"
+msgstr "Grafikai"
+
+#: .\project\counts\templates\counts\index.html:23
+#: .\project\drinks\templates\drinks\includes\drinks_list.html:10
+#: .\project\drinks\templates\drinks\index.html:27
+#: .\project\templates\base.html:118
+msgid "Data"
+msgstr "Duomenys"
+
+#: .\project\counts\templates\counts\index.html:24
+#: .\project\drinks\templates\drinks\index.html:28
+#: .\project\templates\base.html:121
+msgid "History"
+msgstr "Istorija"
+
+#: .\project\counts\templates\counts\index.html:31
+#: .\project\plans\templates\plans\index.html:34
+#: .\project\plans\templates\plans\index.html:46
+#: .\project\plans\templates\plans\index.html:58
+#: .\project\plans\templates\plans\index.html:72
+#: .\project\plans\templates\plans\index.html:86
+#: .\project\savings\templates\savings\index.html:24
+#: .\project\savings\templates\savings\index.html:37
+#: .\project\transactions\templates\transactions\index.html:24
+#: .\project\transactions\templates\transactions\index.html:37
+#: .\project\transactions\templates\transactions\index.html:50
+msgctxt "record button"
+msgid "Record"
+msgstr "Įrašą"
+
+#: .\project\counts\templates\counts\index.html:33
+#: .\project\counts\templates\counts\index.html:34
+msgctxt "counter button"
+msgid "Counter"
+msgstr "Skaitiklį"
 
 #: .\project\counts\templates\counts\info_row.html:4
 msgid "Counter name"
@@ -886,46 +917,7 @@ msgstr "Per savaitę"
 msgid "Last time before"
 msgstr "Paskutinį sykį prieš"
 
-#: .\project\counts\templates\counts\main.html:23
-#: .\project\drinks\templates\drinks\index.html:26
-msgid "Charts"
-msgstr "Grafikai"
-
-#: .\project\counts\templates\counts\main.html:24
-#: .\project\drinks\templates\drinks\includes\drinks_list.html:10
-#: .\project\drinks\templates\drinks\index.html:27
-#: .\project\templates\base.html:118
-msgid "Data"
-msgstr "Duomenys"
-
-#: .\project\counts\templates\counts\main.html:25
-#: .\project\drinks\templates\drinks\index.html:28
-#: .\project\templates\base.html:121
-msgid "History"
-msgstr "Istorija"
-
-#: .\project\counts\templates\counts\main.html:34
-#: .\project\plans\templates\plans\index.html:34
-#: .\project\plans\templates\plans\index.html:46
-#: .\project\plans\templates\plans\index.html:58
-#: .\project\plans\templates\plans\index.html:72
-#: .\project\plans\templates\plans\index.html:86
-#: .\project\savings\templates\savings\index.html:24
-#: .\project\savings\templates\savings\index.html:37
-#: .\project\transactions\templates\transactions\index.html:24
-#: .\project\transactions\templates\transactions\index.html:37
-#: .\project\transactions\templates\transactions\index.html:50
-msgctxt "record button"
-msgid "Record"
-msgstr "Įrašą"
-
-#: .\project\counts\templates\counts\main.html:36
-#: .\project\counts\templates\counts\main.html:37
-msgctxt "counter button"
-msgid "Counter"
-msgstr "Skaitiklį"
-
-#: .\project\counts\views.py:163
+#: .\project\counts\views.py:116
 msgid "Days of week"
 msgstr "Savaitės dienos"
 
@@ -990,32 +982,32 @@ msgctxt "sum button"
 msgid "Sum"
 msgstr "Sumą"
 
-#: .\project\drinks\forms.py:47 .\project\drinks\forms.py:92
+#: .\project\drinks\forms.py:48 .\project\drinks\forms.py:93
 msgid "Drink type"
 msgstr "Gėrimo tipas"
 
-#: .\project\drinks\forms.py:50
+#: .\project\drinks\forms.py:51
 msgid "1 Beer = 0.5L"
 msgstr "1 Alus = 0.5L"
 
-#: .\project\drinks\forms.py:51
+#: .\project\drinks\forms.py:52
 msgid "1 Wine = 0.75L"
 msgstr "1 Vynas = 0.75L"
 
-#: .\project\drinks\forms.py:52
+#: .\project\drinks\forms.py:53
 msgid "1 Vodka = 1L"
 msgstr "1 Degtinė = 1L"
 
-#: .\project\drinks\forms.py:53
+#: .\project\drinks\forms.py:54
 #, python-format
 msgid "If more than %(cnt)s is entered, it will be assumed to be mL"
 msgstr "Įvedus daugiau nei %(cnt)s, bus manoma kad tai yra mL"
 
-#: .\project\drinks\forms.py:94
+#: .\project\drinks\forms.py:95
 msgid "if the type of drink is"
 msgstr "jei gėrimo tipas yra"
 
-#: .\project\drinks\forms.py:153
+#: .\project\drinks\forms.py:154
 msgid "Must be 4 digits."
 msgstr "Turi būti 4 skaitmenys."
 
@@ -1453,6 +1445,10 @@ msgstr "Priėjimas negalimas"
 msgid "Back to homepage"
 msgstr "Grįžti į pagrindinį puslapį"
 
+#: .\project\templates\404.html:5
+msgid "Not found"
+msgstr "Nerasta"
+
 #: .\project\templates\500.html:5
 msgid "Server Error"
 msgstr "Serverio klaida"
@@ -1720,11 +1716,14 @@ msgstr "Įspėjimas"
 msgid "You cannot delete yourself."
 msgstr "Negalite ištrinti savęs."
 
+#~ msgid "There is no such counter"
+#~ msgstr "Nėra tokio skaitiklio"
+
+#~ msgid "Months, %(year)s year"
+#~ msgstr "Mėnesiai, %(year)s metai"
+
 #~ msgid "Form is broken."
 #~ msgstr "Forma neveikia."
-
-#~ msgid "Insert"
-#~ msgstr "Įrašyti"
 
 #~ msgid "Reset search"
 #~ msgstr "Panaikinti paiešką"
