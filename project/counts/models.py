@@ -108,5 +108,5 @@ def _generate_counts_menu():
             request=None
         )
 
-        with open(file, 'w+') as f:
+        with open(file, 'w+', encoding='utf-8') as f:
             f.write(content)
