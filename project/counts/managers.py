@@ -5,7 +5,6 @@ from django.db import models
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
-from ..users.models import User
 
 
 class CountQuerySet(SumMixin, models.QuerySet):
@@ -45,24 +44,6 @@ class CountQuerySet(SumMixin, models.QuerySet):
         qs = qs\
             .year_sum(
                 year=year,
-                sum_annotation='qty',
-                sum_column='quantity')\
-            .order_by('date')
-
-        return qs
-
-    def sum_by_month(self, year, count_type=None, month=None) -> List[Dict[date, float]]:
-        # Returns
-        # QuerySet [{'date': datetime.date, 'qty': float}]
-        qs = self.related()
-
-        if count_type:
-            qs = qs.filter(count_type__slug=count_type)
-
-        qs = qs\
-            .month_sum(
-                year=year,
-                month=month,
                 sum_annotation='qty',
                 sum_column='quantity')\
             .order_by('date')

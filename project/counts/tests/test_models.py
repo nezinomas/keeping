@@ -112,36 +112,6 @@ def test_count_order():
     assert str(actual[1]) == '1999-01-01: 1.0'
 
 
-def test_count_months_quantity_sum(_counters):
-    actual = Count.objects\
-            .sum_by_month(1999, count_type='count-type')\
-            .values_list('qty', flat=True)
-
-    expect = [2.5, 3.0]
-
-    assert expect == pytest.approx(actual, rel=1e-2)
-
-
-def test_count_months_quantity_sum_no_records_for_current_year(second_user):
-    CountFactory(date=date(1970, 1, 1), quantity=1.0)
-    CountFactory(date=date(2000, 1, 1), quantity=1.5)
-
-    # second user
-    CountFactory(
-        date=date(1999, 1, 1),
-        quantity=1.5,
-        count_type=CountTypeFactory(title='xT'),
-        user=second_user)
-
-    actual = Count.objects\
-            .sum_by_month(1999, count_type='count-type')\
-            .values_list('qty', flat=True)
-
-    expect = []
-
-    assert expect == pytest.approx(actual, rel=1e-2)
-
-
 def test_count_quantity_for_one_year(_counters):
     actual = Count.objects\
             .sum_by_year(year=1999, count_type='count-type')
