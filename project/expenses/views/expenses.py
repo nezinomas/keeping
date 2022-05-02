@@ -91,9 +91,9 @@ class Search(SearchMixin):
 
 class LoadExpenseName(ListViewMixin):
     template_name = 'core/dropdown.html'
+    object_list = []
 
     def get(self, request, *args, **kwargs):
-        objects = []
         expense_type_pk = request.GET.get('expense_type')
 
         try:
@@ -102,12 +102,11 @@ class LoadExpenseName(ListViewMixin):
             expense_type_pk = None
 
         if expense_type_pk:
-            objects = (
-                models.ExpenseName
-                .objects
-                .related()
-                .filter(parent=expense_type_pk)
-                .year(request.user.year)
-            )
+            self.object_list = \
+                models.ExpenseName \
+                .objects \
+                .related() \
+                .filter(parent=expense_type_pk) \
+                .year(request.user.year) \
 
-        return self.render_to_response({'objects': objects})
+        return self.render_to_response({'object_list': self.object_list})

@@ -23,9 +23,9 @@ class Index(TemplateViewMixin):
 
 class LoadSavingType(ListViewMixin):
     template_name = 'core/dropdown.html'
+    object_list = []
 
     def get(self, request, *args, **kwargs):
-        objects = []
         pk = request.GET.get('from_account')
 
         try:
@@ -34,14 +34,13 @@ class LoadSavingType(ListViewMixin):
             pk = None
 
         if pk:
-            objects = (
-                models.SavingType
-                .objects
-                .items()
+            self.object_list = \
+                models.SavingType \
+                .objects \
+                .items() \
                 .exclude(pk=pk)
-            )
 
-        return self.render_to_response({'objects': objects})
+        return self.render_to_response({'object_list': self.object_list})
 
 
 class Lists(ListViewMixin):

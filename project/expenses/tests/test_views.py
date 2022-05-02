@@ -512,21 +512,21 @@ def test_load_expense_name_isnull_count(client_logged, _db_data):
     url = reverse('expenses:load_expense_name')
     response = client_logged.get(url, {'expense_type': 1})
 
-    assert response.context['objects'].count() == 1
+    assert response.context['object_list'].count() == 1
 
 
 def test_load_expense_name_all(client_logged, _db_data):
     url = reverse('expenses:load_expense_name')
     response = client_logged.get(url, {'expense_type': 1})
 
-    assert response.context['objects'].count() == 2
+    assert response.context['object_list'].count() == 2
 
 
 def test_load_expense_name_select_empty_parent(client_logged, _db_data):
     url = reverse('expenses:load_expense_name')
     response = client_logged.get(url, {'expense_type': ''})
 
-    assert response.context['objects'] == []
+    assert response.context['object_list'] == []
 
 
 def test_load_expense_name_must_logged(client):

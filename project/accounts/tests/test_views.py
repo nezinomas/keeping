@@ -118,11 +118,11 @@ def test_load_to_account(client_logged, main_user, second_user):
     url = reverse('accounts:load')
     response = client_logged.get(url, {'from_account': a1.pk})
 
-    assert len(response.context['objects']) == 1
+    assert len(response.context['object_list']) == 1
 
 
 def test_load_to_account_empty_parent(client_logged):
     url = reverse('accounts:load')
     response = client_logged.get(url, {'from_account': ''})
 
-    assert response.context['objects'] == []
+    assert response.context['object_list'] == []
