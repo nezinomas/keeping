@@ -56,6 +56,12 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
 
         return qs
 
+    def sum_by_month(self, year, month=None):
+        return \
+            self \
+            .related() \
+            .month_sum(year, month) \
+
     def sum_by_month_and_type(self, year):
         return (
             self
