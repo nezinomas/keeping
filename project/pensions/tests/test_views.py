@@ -147,10 +147,8 @@ def test_pensions_not_load_other_journal(client_logged, main_user, second_user):
 
     url = reverse('pensions:update', kwargs={'pk': i2.pk})
     response = client_logged.get(url)
-    form = response.context['form'].as_p()
 
-    assert it2.title not in form
-    assert str(i2.price) not in form
+    assert response.status_code == 404
 
 
 # ---------------------------------------------------------------------------------------
@@ -200,10 +198,8 @@ def test_pensions_delete_other_journal_get_form(client_logged, second_user):
 
     url = reverse('pensions:delete', kwargs={'pk': i2.pk})
     response = client_logged.get(url)
-    form = response.content.decode('utf-8')
 
-    assert '<form method="POST" hx-post="None"' in form
-    assert 'Ar tikrai norite ištrinti: <strong>None</strong>?' in form
+    assert response.status_code == 404
 
 
 def test_pensions_delete_other_journal_post_form(client_logged, second_user):
@@ -274,8 +270,4 @@ def test_pension_type_not_load_other_journal(client_logged, main_user, second_us
     url = reverse('pensions:type_update', kwargs={'pk': obj.pk})
     response = client_logged.get(url)
 
-    assert response.status_code == 200
-
-    form = response.context.get('form')
-
-    assert obj.title not in form
+    assert response.status_code == 404

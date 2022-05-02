@@ -209,10 +209,8 @@ def test_borrow_return_update_not_load_other_journal(client_logged, main_user, s
 
     url = reverse('debts:return_update', kwargs={'pk': obj.pk, 'debt_type': 'borrow'})
     response = client_logged.get(url)
-    form = response.context['form'].as_p()
 
-    assert d2.name not in form
-    assert str(obj.price) not in form
+    assert response.status_code == 404
 
 
 def test_borrow_return_delete_func():
@@ -261,10 +259,8 @@ def test_borrow_return_delete_other_journal_get_form(client_logged, second_user)
 
     url = reverse('debts:return_delete', kwargs={'pk': obj.pk, 'debt_type': 'borrow'})
     response = client_logged.get(url)
-    actual = response.content.decode('utf-8')
 
-    assert '<form method="POST" hx-post="None"' in actual
-    assert 'Ar tikrai norite ištrinti: <strong>None</strong>' in actual
+    assert response.status_code == 404
 
 
 def test_borrow_return_delete_other_journal_post_form(client_logged, second_user):

@@ -65,9 +65,8 @@ def test_account_not_load_other_journal(client_logged, main_user, second_user):
 
     url = reverse('accounts:update', kwargs={'pk': a2.pk})
     response = client_logged.get(url)
-    form = response.context['form']
 
-    assert a2.title not in form
+    assert response.status_code == 404
 
 
 def test_account_list_view_has_all(client_logged):

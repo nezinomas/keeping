@@ -324,10 +324,7 @@ def test_books_update_not_load_other_user(client_logged, second_user):
     url = reverse('books:update', kwargs={'pk': obj.pk})
     response = client_logged.get(url)
 
-    form = response.context['form'].as_p()
-
-    assert obj.author not in form
-    assert obj.title not in form
+    assert response.status_code == 404
 
 
 # ---------------------------------------------------------------------------------------
@@ -378,10 +375,7 @@ def test_books_delete_other_user_get_form(client_logged, second_user):
     url = reverse('books:delete', kwargs={'pk': obj.pk})
     response = client_logged.get(url)
 
-    actual = response.content.decode('utf-8')
-
-    assert '<form method="POST" hx-post="None"' in actual
-    assert f'Ar tikrai norite ištrinti: <strong>None</strong>?' in actual
+    assert response.status_code == 404
 
 
 def test_books_delete_other_user_post_form(client_logged, second_user):

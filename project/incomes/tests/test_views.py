@@ -141,10 +141,7 @@ def test_incomes_not_load_other_journal(client_logged, second_user):
     url = reverse('incomes:update', kwargs={'pk': obj.pk})
     response = client_logged.get(url)
 
-    form = response.context.get('form')
-
-    assert it.title not in form
-    assert str(obj.price) not in form
+    assert response.status_code == 404
 
 
 def test_income_update_to_another_year(client_logged):
@@ -267,10 +264,7 @@ def test_incomes_delete_other_journal_get_form(client_logged, second_user):
     url = reverse('incomes:delete', kwargs={'pk': i2.pk})
     response = client_logged.get(url)
 
-    form = response.content.decode('utf-8')
-
-    assert '<form method="POST" hx-post="None"' in form
-    assert 'Ar tikrai norite ištrinti: <strong>None</strong>' in form
+    assert response.status_code == 404
 
 
 def test_incomes_delete_other_journal_post_form(client_logged, second_user):
@@ -341,10 +335,7 @@ def test_income_type_not_load_other_journal(client_logged, main_user, second_use
     url = reverse('incomes:type_update', kwargs={'pk': obj.pk})
     response = client_logged.get(url)
 
-    form = response.content.decode('utf-8')
-
-    assert obj.title not in form
-    assert '<form method="POST" hx-post="None"' in form
+    assert response.status_code == 404
 
 
 def test_view_index_200(client_logged):
@@ -352,7 +343,8 @@ def test_view_index_200(client_logged):
 
     assert response.status_code == 200
 
-    assert 'form' in response.context
+    assert 'income' in response.context
+    assert 'income_type' in response.context
 
 
 # ---------------------------------------------------------------------------------------
