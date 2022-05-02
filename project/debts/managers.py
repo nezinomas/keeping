@@ -102,6 +102,10 @@ class DebtReturnQuerySet(SumMixin, models.QuerySet):
         return self.related().filter(date__year=year)
 
     def incomes(self):
+        '''
+        method used only in post_save signal
+        method sum prices of lend debts by month
+        '''
         return (
             self
             .related(debt_type='lend')
@@ -113,6 +117,10 @@ class DebtReturnQuerySet(SumMixin, models.QuerySet):
         )
 
     def expenses(self):
+        '''
+        method used only in post_save signal
+        method sum prices of borrow debts by month
+        '''
         return (
             self
             .related(debt_type='borrow')
