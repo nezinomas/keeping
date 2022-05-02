@@ -9,6 +9,7 @@ from django.db.models.functions import (ExtractYear, TruncDay, TruncMonth,
                                         TruncYear)
 
 from ..core.lib import utils
+from ..core.mixins.queryset_sum import SumMixin
 
 
 class ExpenseTypeQuerySet(models.QuerySet):
@@ -48,7 +49,7 @@ class ExpenseNameQuerySet(models.QuerySet):
         return self.related()
 
 
-class ExpenseQuerySet(models.QuerySet):
+class ExpenseQuerySet(SumMixin, models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
         qs = (
@@ -72,16 +73,7 @@ class ExpenseQuerySet(models.QuerySet):
         return (
             self
             .related()
-            .filter(date__year=year)
-            .annotate(d=TruncMonth('date'))
-            .values('d')
-            .annotate(c=Count('id'))
-            .annotate(sum=Sum('price'))
-            .order_by('d')
-            .values(
-                'sum',
-                date=F('d'),
-            )
+            .month_sum(year)
         )
 
     def sum_by_month_and_type(self, year):
