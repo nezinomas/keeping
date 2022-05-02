@@ -44,7 +44,6 @@ class SumMixin():
                   groupby='id'):
         return (
             self
-            .related()
             .year_filter(year)
             .month_filter(month)
             .annotate(cnt=Count(groupby))
