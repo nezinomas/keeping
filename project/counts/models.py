@@ -26,7 +26,7 @@ class CountType(TitleAbstract):
         ordering = ['title']
 
     def __str__(self):
-        return self.title
+        return str(self.title)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
