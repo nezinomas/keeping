@@ -56,21 +56,6 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
 
         return qs
 
-    def incomes(self):
-        '''
-        method used only in post_save signal
-        method sum prices by month
-        '''
-        return (
-            self
-            .related()
-            .annotate(year=ExtractYear(F('date')))
-            .values('year', 'account__title')
-            .annotate(incomes=Sum('price'))
-            .values('year', 'incomes', id=F('account__pk'))
-            .order_by('year', 'account')
-        )
-
     def sum_by_month_and_type(self, year):
         return (
             self
@@ -87,4 +72,19 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
                 'date',
                 'sum',
                 title=F('income_type__title'))
+        )
+
+    def incomes(self):
+        '''
+        method used only in post_save signal
+        method sum prices by month
+        '''
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'account__title')
+            .annotate(incomes=Sum('price'))
+            .values('year', 'incomes', id=F('account__pk'))
+            .order_by('year', 'account')
         )
