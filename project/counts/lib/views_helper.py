@@ -41,9 +41,12 @@ class ContextMixin():
         return self.request.user.year
 
     def get_queryset(self):
+        year = self.get_year()
+        count_type = self.get_object().slug
+
         return \
             Count.objects \
-            .sum_by_day(year=self.get_year(), count_type=self.get_object().slug)
+            .sum_by_day(year=year, count_type=count_type)
 
     def get_object(self):
         if self.object:
