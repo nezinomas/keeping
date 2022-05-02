@@ -40,7 +40,6 @@ class DebtQuerySet(models.QuerySet):
             self
             .related(debt_type=debt_type)
             .filter(closed=False)
-            .filter()
             .filter(date__year=year)
             .annotate(cnt=Count('id'))
             .values('id')
