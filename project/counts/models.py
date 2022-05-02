@@ -2,11 +2,10 @@
 import os
 
 from django.conf import settings
-from django.core.validators import MinLengthValidator, MinValueValidator
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
-from django.utils.text import slugify
 from project.core.models import TitleAbstract
 
 from ..core.lib import utils
