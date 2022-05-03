@@ -162,7 +162,7 @@ def test_view_delete_other_user_post_form(client_logged, second_user):
 def test_redirect_func():
     view = resolve('/counts/')
 
-    assert views.Dispatch == view.func.view_class
+    assert views.Redirect is view.func.view_class
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -189,6 +189,25 @@ def test_redirect_user_not_logged(client):
     response = client.get(url, follow=True)
 
     assert response.resolver_match.func.view_class is Login
+
+
+def test_redirect_no_counts(client_logged):
+    url = reverse('counts:redirect')
+    response = client_logged.get(url, follow=True)
+
+    assert response.resolver_match.func.view_class is views.Empty
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_redirect_count_first(client_logged):
+    CountTypeFactory(title='XXX')
+    CountTypeFactory(title='AAA')
+
+    url = reverse('counts:redirect')
+    response = client_logged.get(url, follow=True)
+
+    assert response.resolver_match.func.view_class is views.Index
+    assert '<h6 class="me-3">AAA</h6>' in response.content.decode('utf-8')
 
 
 # ---------------------------------------------------------------------------------------
@@ -218,7 +237,8 @@ def test_index_add_button(client_logged):
     response = client_logged.get(url)
     content = response.content.decode()
 
-    pattern = re.compile(r'<button type="button" class="btn.+hx-get="(.*?)".+ (\w+)<\/button>')
+    pattern = re.compile(
+        r'<button type="button" class="btn.+hx-get="(.*?)".+ (\w+)<\/button>')
     res = re.findall(pattern, content)
 
     assert len(res[0]) == 2
@@ -350,6 +370,7 @@ def test_list_func():
     assert views.Lists is view.func.view_class
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_list_200(client_logged):
     obj = CountTypeFactory()
     url = reverse('counts:list', kwargs={'slug': obj.slug})
@@ -367,6 +388,7 @@ def test_list_empty_200(client_logged):
     assert response.resolver_match.func.view_class is views.Empty
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_list_context(client_logged):
     CountFactory()
 
@@ -391,6 +413,7 @@ def test_list(client_logged):
     assert f'<a role="button" hx-get="/counts/update/{p.pk}/"' in actual
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_list_no_data(client_logged):
     CountTypeFactory()
 
@@ -410,6 +433,7 @@ def test_history_func():
     assert views.History == view.func.view_class
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_history_200(client_logged):
     obj = CountTypeFactory()
     url = reverse('counts:history', kwargs={'slug': obj.slug})
@@ -425,6 +449,7 @@ def test_history_no_count_type(client_logged):
     assert response.resolver_match.func.view_class is views.Empty
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_history_context(client_logged):
     obj = CountTypeFactory()
 
@@ -486,6 +511,7 @@ def test_count_type_new_200(client_logged):
     assert response.status_code == 200
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_load_form(client_logged):
     obj = CountTypeFactory()
 
@@ -596,7 +622,7 @@ def test_count_type_delete(client_logged):
 
     url = reverse('counts:type_delete', kwargs={'pk': _obj.pk})
 
-    response = client_logged.post(url)
+    client_logged.post(url)
 
     assert CountType.objects.count() == 0
     assert Count.objects.count() == 0
@@ -620,34 +646,6 @@ def test_count_type_delete_other_user_post_form(client_logged, second_user):
     client_logged.post(url)
 
     assert CountType.objects.all().count() == 1
-
-
-# ---------------------------------------------------------------------------------------
-#                                                                          Count Redirect
-# ---------------------------------------------------------------------------------------
-def test_redirect_func():
-    view = resolve('/counts/')
-
-    assert views.Redirect is view.func.view_class
-
-
-def test_redirect_no_counts(client_logged):
-    url = reverse('counts:redirect')
-    response = client_logged.get(url, follow=True)
-
-    assert response.resolver_match.func.view_class is views.Empty
-
-
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_redirect_count_first(client_logged):
-    CountTypeFactory(title='XXX')
-    CountTypeFactory(title='AAA')
-
-    url = reverse('counts:redirect')
-    response = client_logged.get(url, follow=True)
-
-    assert response.resolver_match.func.view_class is views.Index
-    assert '<h6 class="me-3">AAA</h6>' in response.content.decode('utf-8')
 
 
 # ---------------------------------------------------------------------------------------

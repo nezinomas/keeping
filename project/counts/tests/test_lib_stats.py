@@ -43,6 +43,7 @@ def _data():
 
 
 @pytest.fixture()
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def _data_db():
     CountFactory(date=date(1998, 1, 1), quantity=1.0)
     CountFactory(date=date(1999, 12, 3), quantity=1.0)
@@ -238,6 +239,7 @@ def test_year_totals(_data):
 
 
 @pytest.mark.django_db
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_year_totals_queryset():
     CountFactory()
     qs = Count.objects.year(1999, count_type='count-type')
@@ -287,6 +289,7 @@ def test_year_month_days_no_year_provided():
 
 
 @pytest.mark.django_db
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_items():
     CountFactory()
     qs = Count.objects.year(1999, count_type='count-type')
@@ -302,6 +305,7 @@ def test_items():
 
 
 @pytest.mark.django_db
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_items_odering():
     CountFactory(date=date(1999, 1, 1))
     CountFactory(date=date(1999, 12, 31))

@@ -18,6 +18,7 @@ pytestmark = pytest.mark.django_db
 #                                                                                   Count
 # --------------------------------------------------------------------------------------
 @pytest.fixture()
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def _counters(second_user):
     CountFactory(date=date(1999, 1, 1), quantity=1.0)
     CountFactory(date=date(1999, 1, 1), quantity=1.5)
@@ -37,6 +38,7 @@ def _counters(second_user):
 
 
 @pytest.fixture()
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def _different_users(second_user):
     CountFactory()
     CountFactory(count_type=CountTypeFactory(title='X'))
@@ -86,6 +88,7 @@ def test_count_year_with_count_type(_different_users):
     assert actual[0].user.username == 'bob'
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_quantity_float():
     p = CountFactory(quantity=0.5)
 
@@ -94,6 +97,7 @@ def test_count_quantity_float():
     assert str(p) == '1999-01-01: 0.5'
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_quantity_int():
     p = CountFactory(quantity=5)
 
@@ -102,6 +106,7 @@ def test_count_quantity_int():
     assert str(p) == '1999-01-01: 5.0'
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_order():
     CountFactory(date=date(1999, 1, 1))
     CountFactory(date=date(1999, 12, 1))
@@ -120,6 +125,7 @@ def test_count_quantity_for_one_year(_counters):
     assert actual[0]['qty'] == 5.5
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_quantity_for_all_years(_counters):
     CountFactory(date=date(2020, 1, 1), quantity=10)
     CountFactory(date=date(2020, 12, 1), quantity=5)
@@ -155,6 +161,7 @@ def test_count_days_quantity_sum_for_january(_counters):
 # ---------------------------------------------------------------------------------------
 #                                                                              Count Type
 # ---------------------------------------------------------------------------------------
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_str():
     obj = CountTypeFactory.build()
 

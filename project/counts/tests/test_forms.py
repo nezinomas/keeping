@@ -160,6 +160,7 @@ def test_count_type_reserved_title(reserved_title):
     assert 'Šis pavadinimas rezervuotas sistemai.' in form.errors['title']
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_form_count_type_and_second_user(main_user, second_user):
     CountTypeFactory(title='T1', user=main_user)
     CountTypeFactory(title='T2', user=second_user)
@@ -170,6 +171,7 @@ def test_form_count_type_and_second_user(main_user, second_user):
     assert '<option value="2">T2</option>' not in form
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @patch('project.core.lib.utils.get_request_kwargs', return_value='t1')
 def test_form_load_select_count_type(mck):
     CountTypeFactory(title='T1')

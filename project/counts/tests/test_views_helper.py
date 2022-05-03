@@ -35,6 +35,7 @@ def test_context_mixin_get_year_overwrite(fake_request):
     assert view.get_year() == 666
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @patch('project.core.lib.utils.get_request_kwargs')
 def test_context_mixin_get_qs_sum_by_day(mck, fake_request):
     mck.return_value = 'count-type'
