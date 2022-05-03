@@ -70,88 +70,74 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
         return self.related().all()
 
     def sum_by_month(self, year):
-        return (
-            self
-            .related()
+        return \
+            self \
+            .related() \
             .month_sum(year)
-        )
 
     def sum_by_month_and_type(self, year):
-        return (
-            self
-            .related()
-            .filter(date__year=year)
-            .annotate(cnt=Count('expense_type'))
-            .values('expense_type')
-            .annotate(date=TruncMonth('date'))
-            .values('date')
-            .annotate(c=Count('id'))
-            .annotate(sum=Sum('price'))
-            .order_by('date')
+        return \
+            self \
+            .related() \
+            .filter(date__year=year) \
+            .annotate(cnt=Count('expense_type')) \
+            .values('expense_type') \
+            .annotate(date=TruncMonth('date')) \
+            .values('date') \
+            .annotate(c=Count('id')) \
+            .annotate(sum=Sum('price')) \
+            .order_by('date') \
             .values(
                 'date',
                 'sum',
                 title=F('expense_type__title'))
-        )
 
     def sum_by_month_and_name(self, year):
-        return (
-            self
-            .related()
-            .filter(date__year=year)
-            .annotate(cnt=Count('expense_type'))
-            .values('expense_type')
-            .annotate(cnt=Count('expense_name'))
-            .values('expense_name')
-            .annotate(date=TruncMonth('date'))
-            .values('date')
-            .annotate(c=Count('id'))
-            .annotate(sum=Sum('price'))
-            .order_by('expense_name__title', 'date')
+        return \
+            self \
+            .related() \
+            .filter(date__year=year) \
+            .annotate(cnt=Count('expense_type')) \
+            .values('expense_type') \
+            .annotate(cnt=Count('expense_name')) \
+            .values('expense_name') \
+            .annotate(date=TruncMonth('date')) \
+            .values('date') \
+            .annotate(c=Count('id')) \
+            .annotate(sum=Sum('price')) \
+            .order_by('expense_name__title', 'date') \
             .values(
                 'date',
                 'sum',
                 title=F('expense_name__title'),
                 type_title=F('expense_type__title'))
-        )
 
     def sum_by_day_ant_type(self, year, month):
-        return (
-            self
-            .related()
-            .filter(date__year=year)
-            .filter(date__month=month)
-            .annotate(cnt_id=Count('id'))
-            .values('cnt_id')
-            .annotate(date=TruncDay('date'))
-            .values('date')
-            .annotate(sum=Sum('price'))
+        return \
+            self \
+            .related() \
+            .filter(date__year=year) \
+            .filter(date__month=month) \
+            .annotate(cnt_id=Count('id')) \
+            .values('cnt_id') \
+            .annotate(date=TruncDay('date')) \
+            .values('date') \
+            .annotate(sum=Sum('price')) \
             .annotate(
                 exception_sum=Sum(
                     Case(
                         When(exception=1, then='price'), default=Decimal(0))
                 )
-            )
-            .order_by('date')
+            ) \
+            .order_by('date') \
             .values(
                 'date',
                 'sum',
                 'exception_sum',
                 title=F('expense_type__title'))
-        )
 
     def sum_by_year(self):
-        return (
-            self
-            .related()
-            .annotate(c=Count('id'))
-            .values('c')
-            .annotate(date=TruncYear('date'))
-            .annotate(year=ExtractYear(F('date')))
-            .annotate(sum=Sum('price'))
-            .order_by('year')
-            .values('year', 'sum')
-        )
+        return self.related().year_sum()
 
     def filter_types(self, arr: List[int] = None):
         if arr:
@@ -160,22 +146,21 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
         return self
 
     def sum_by_year_type(self, expense_type: List[int] = None):
-        return (
-            self
-            .related()
-            .annotate(cnt=Count('expense_type'))
-            .values('expense_type')
-            .filter_types(expense_type)
-            .annotate(date=TruncYear('date'))
-            .annotate(year=ExtractYear(F('date')))
-            .annotate(sum=Sum('price'))
-            .order_by('year')
+        return \
+            self \
+            .related() \
+            .annotate(cnt=Count('expense_type')) \
+            .values('expense_type') \
+            .filter_types(expense_type) \
+            .annotate(date=TruncYear('date')) \
+            .annotate(year=ExtractYear(F('date'))) \
+            .annotate(sum=Sum('price')) \
+            .order_by('year') \
             .values(
                 'year',
                 'sum',
                 title=F('expense_type__title')
             )
-        )
 
     def filter_names(self, arr: List[int] = None):
         if arr:
@@ -184,23 +169,22 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
         return self
 
     def sum_by_year_name(self, expense_name: List[int] = None):
-        return (
-            self
-            .related()
-            .annotate(cnt=Count('expense_name'))
-            .values('expense_name')
-            .filter_names(expense_name)
-            .annotate(date=TruncYear('date'))
-            .annotate(year=ExtractYear(F('date')))
-            .annotate(sum=Sum('price'))
-            .order_by('year')
+        return \
+            self \
+            .related() \
+            .annotate(cnt=Count('expense_name')) \
+            .values('expense_name') \
+            .filter_names(expense_name) \
+            .annotate(date=TruncYear('date')) \
+            .annotate(year=ExtractYear(F('date'))) \
+            .annotate(sum=Sum('price')) \
+            .order_by('year') \
             .values(
                 'year',
                 'sum',
                 title=F('expense_name__title'),
                 root=F('expense_name__parent__title')
             )
-        )
 
     def last_months(self, months: int = 6) -> float:
         # previous month
@@ -222,6 +206,10 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
         return qs
 
     def expenses(self):
+        '''
+        method used only in post_save signal
+        method sum prices by year
+        '''
         return (
             self
             .related()
