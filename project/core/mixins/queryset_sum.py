@@ -1,5 +1,7 @@
 from django.db.models import Count, Sum
-from django.db.models.functions import TruncDay, TruncMonth, TruncYear
+from django.db.models import F
+from django.db.models.functions import (ExtractYear, TruncDay, TruncMonth,
+                                        TruncYear)
 
 
 class SumMixin():
@@ -18,7 +20,7 @@ class SumMixin():
     month_filter.queryset_only = True
 
     def year_sum(self,
-                 year,
+                 year=None,
                  sum_annotation='sum',
                  groupby='id',
                  sum_column='price'):
@@ -32,6 +34,8 @@ class SumMixin():
             .annotate(c=Count('id'))
             .annotate(**{sum_annotation: Sum(sum_column)})
             .order_by('date')
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', sum_annotation)
         )
 
     def month_sum(self,
