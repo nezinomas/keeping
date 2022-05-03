@@ -53,6 +53,11 @@ class SavingQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self.related()
 
+    def sum_by_month(self, year, month=None):
+        return \
+            self \
+            .related() \
+            .month_sum(year, month)
 
     def sum_by_month_and_type(self, year):
         return (
@@ -89,19 +94,10 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         )
 
     def sum_by_day(self, year, month):
-        sum_annotation = 'sum'
-
-        return (
-            self
-            .related()
-            .day_sum(
-                year=year,
-                month=month,
-                sum_annotation=sum_annotation)
-            .values(
-                sum_annotation,
-                'date')
-        )
+        return \
+            self \
+            .related() \
+            .day_sum(year=year, month=month)
 
     def last_months(self, months: int = 6) -> float:
         # previous month
@@ -116,6 +112,10 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         return qs
 
     def incomes(self):
+        '''
+        method used only in post_save signal
+        method sum prices by year
+        '''
         return (
             self
             .related()
@@ -127,6 +127,10 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         )
 
     def expenses(self):
+        '''
+        method used only in post_save signal
+        method sum prices by year
+        '''
         return (
             self
             .related()
