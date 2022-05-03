@@ -13,80 +13,73 @@ class DebtQuerySet(models.QuerySet):
         if not debt_type:
             debt_type = utils.get_request_kwargs('debt_type')
 
-        return (
-            self
-            .select_related('account', 'journal')
+        return \
+            self \
+            .select_related('account', 'journal') \
             .filter(journal=_journal, debt_type=debt_type)
-        )
 
     def items(self):
-        return (
-            self
-            .related()
+        return \
+            self \
+            .related() \
             .filter(closed=False)
-        )
 
     def year(self, year):
-        return (
-            self
-            .related()
+        return \
+            self \
+            .related() \
             .filter(
                 Q(date__year=year) | (Q(date__year__lt=year) & Q(closed=False))
             )
-        )
 
     def sum_by_month(self, year, debt_type=None):
-        return (
-            self
-            .related(debt_type=debt_type)
-            .filter(closed=False)
-            .filter(date__year=year)
-            .annotate(cnt=Count('id'))
-            .values('id')
-            .annotate(date=TruncMonth('date'))
-            .values('date')
-            .annotate(sum_debt=Sum('price'))
-            .annotate(sum_return=Sum('returned'))
-            .order_by('date')
-        )
+        return \
+            self \
+            .related(debt_type=debt_type) \
+            .filter(closed=False) \
+            .filter(date__year=year) \
+            .annotate(cnt=Count('id')) \
+            .values('id') \
+            .annotate(date=TruncMonth('date')) \
+            .values('date') \
+            .annotate(sum_debt=Sum('price')) \
+            .annotate(sum_return=Sum('returned')) \
+            .order_by('date') \
 
     def sum_all(self, debt_type=None):
-        return (
-            self
-            .related(debt_type=debt_type)
-            .filter(closed=False)
-            .aggregate(debt=Sum('price'), debt_return=Sum('returned'))
-        )
+        return \
+            self \
+            .related(debt_type=debt_type) \
+            .filter(closed=False) \
+            .aggregate(debt=Sum('price'), debt_return=Sum('returned')) \
 
     def incomes(self):
         '''
         method used only in post_save signal
         method sum prices by year
         '''
-        return (
-            self
-            .related(debt_type='borrow')
-            .annotate(year=ExtractYear(F('date')))
-            .values('year', 'account__title')
-            .annotate(incomes=Sum('price'))
-            .values('year', 'incomes', id=F('account__pk'))
+        return \
+            self \
+            .related(debt_type='borrow') \
+            .annotate(year=ExtractYear(F('date'))) \
+            .values('year', 'account__title') \
+            .annotate(incomes=Sum('price')) \
+            .values('year', 'incomes', id=F('account__pk')) \
             .order_by('year', 'account')
-        )
 
     def expenses(self):
         '''
         method used only in post_save signal
         method sum prices by year
         '''
-        return (
-            self
-            .related(debt_type='lend')
-            .annotate(year=ExtractYear(F('date')))
-            .values('year', 'account__title')
-            .annotate(expenses=Sum('price'))
-            .values('year', 'expenses', id=F('account__pk'))
+        return \
+            self \
+            .related(debt_type='lend') \
+            .annotate(year=ExtractYear(F('date'))) \
+            .values('year', 'account__title') \
+            .annotate(expenses=Sum('price')) \
+            .values('year', 'expenses', id=F('account__pk')) \
             .order_by('year', 'account')
-        )
 
 
 class DebtReturnQuerySet(SumMixin, models.QuerySet):
