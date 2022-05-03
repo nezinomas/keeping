@@ -52,7 +52,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
         return \
             self \
             .related() \
-            .month_sum(year, month) \
+            .month_sum(year, month)
 
     def sum_by_month_and_type(self, year):
         return (
@@ -75,7 +75,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
     def incomes(self):
         '''
         method used only in post_save signal
-        method sum prices by month
+        method sum prices by year
         '''
         return (
             self
