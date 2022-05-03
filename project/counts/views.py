@@ -45,18 +45,24 @@ class Index(ContextMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        object = context['object']
+        count_type_object = context['object']
 
         calendar_data = self.render_context.calender_data
 
         context.update({
             'tab': 'index',
-            'info_row': self.render_context.info_row(title=object.title),
-            'chart_calendar_1H': self.render_context.chart_calendar(calendar_data[0:6], '1H'),
-            'chart_calendar_2H': self.render_context.chart_calendar(calendar_data[6:], '2H'),
-            'chart_weekdays': self.render_context.chart_weekdays(),
-            'chart_months': self.render_context.chart_months(),
-            'chart_histogram': self.render_context.chart_histogram(),
+            'info_row': \
+                self.render_context.info_row(title=count_type_object.title),
+            'chart_calendar_1H': \
+                self.render_context.chart_calendar(calendar_data[0:6], '1H'),
+            'chart_calendar_2H': \
+                self.render_context.chart_calendar(calendar_data[6:], '2H'),
+            'chart_weekdays': \
+                self.render_context.chart_weekdays(),
+            'chart_months': \
+                self.render_context.chart_months(),
+            'chart_histogram': \
+                self.render_context.chart_histogram(),
         })
         return context
 
@@ -80,11 +86,12 @@ class Lists(ContextMixin, ListViewMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        object = context['object']
+        count_type_object = context['object']
 
         context.update({
             'tab': 'list',
-            'info_row': self.render_context.info_row(title=object.title),
+            'info_row': \
+                self.render_context.info_row(title=count_type_object.title),
         })
         return context
 
