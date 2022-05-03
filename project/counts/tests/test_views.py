@@ -330,37 +330,6 @@ def test_index_chart_histogram(client_logged):
     assert 'id="chart_histogram"><div id="chart_histogram_container"></div>' in content
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@freeze_time('1999-07-18')
-def test_index_info_row(client_logged):
-    CountFactory(quantity=3)
-
-    url = reverse('counts:index', kwargs={'slug': 'count-type'})
-    response = client_logged.get(url)
-
-    content = response.content.decode("utf-8")
-
-    pattern = re.compile(r'Kiek:.+(\d+).+Savaitė.+(\d+).+Per savaitę.+([\d,]+)')
-
-    for m in re.finditer(pattern, content):
-        assert m.group(1) == 3
-        assert m.group(2) == 28
-        assert m.group(3) == '0,1'
-
-
-@freeze_time('1999-1-1')
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_index_info_row_latest_form_past(client_logged):
-    CountFactory(date=date(1998, 1, 1))
-    CountFactory(date=date(1999, 1, 2))
-
-    url = reverse('counts:index', kwargs={'slug': 'count-type'})
-    response = client_logged.get(url)
-    context = response.context
-
-    assert "'1999-01-02', 1.0, 366.0]" in context['chart_calendar_1H']
-
-
 # ---------------------------------------------------------------------------------------
 #                                                                              List View
 # ---------------------------------------------------------------------------------------
@@ -673,3 +642,38 @@ def test_empty_user_not_logged(client):
     response = client.get(url, follow=True)
 
     assert response.resolver_match.func.view_class is Login
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                                Info Row
+# ---------------------------------------------------------------------------------------
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+@freeze_time('1999-07-18')
+def test_index_info_row(client_logged):
+    CountFactory(quantity=3)
+
+    url = reverse('counts:index', kwargs={'slug': 'count-type'})
+    response = client_logged.get(url)
+
+    content = response.content.decode("utf-8")
+
+    pattern = re.compile(
+        r'Kiek:.+(\d+).+Savaitė.+(\d+).+Per savaitę.+([\d,]+)')
+
+    for m in re.finditer(pattern, content):
+        assert m.group(1) == 3
+        assert m.group(2) == 28
+        assert m.group(3) == '0,1'
+
+
+@freeze_time('1999-1-1')
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_index_info_row_latest_form_past(client_logged):
+    CountFactory(date=date(1998, 1, 1))
+    CountFactory(date=date(1999, 1, 2))
+
+    url = reverse('counts:index', kwargs={'slug': 'count-type'})
+    response = client_logged.get(url)
+    context = response.context
+
+    assert "'1999-01-02', 1.0, 366.0]" in context['chart_calendar_1H']
