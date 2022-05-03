@@ -48,7 +48,7 @@ def test_context_mixin_get_qs_sum_by_day(mck, fake_request):
 
     view = setup_view(Dummy(), fake_request)
 
-    assert list(view.get_queryset()) == [{'c': 2, 'date': date(1999, 1, 1), 'qty': 2}]
+    assert list(view.get_queryset()) == [{'date': date(1999, 1, 1), 'qty': 2.0}]
 
 
 @patch('project.core.lib.utils.get_request_kwargs')
