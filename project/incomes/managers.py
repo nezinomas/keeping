@@ -2,7 +2,7 @@ from typing import List
 
 from django.db import models
 from django.db.models import Count, F, Sum
-from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
+from django.db.models.functions import ExtractYear, TruncMonth
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
@@ -39,33 +39,20 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
         return self.related().all()
 
     def sum_by_year(self, income_type: List[str] = None):
-        qs = (
-            self
-            .related()
-            .annotate(c=Count('id'))
-            .values('c')
-            .annotate(date=TruncYear('date'))
-            .annotate(year=ExtractYear(F('date')))
-            .annotate(sum=Sum('price'))
-            .order_by('year')
-            .values('year', 'sum')
-        )
+        qs = self.related()
 
         if income_type:
             qs = qs.filter(income_type__type__in=income_type)
 
+        qs = qs.year_sum()
+
         return qs
 
-    def incomes(self):
-        return (
-            self
-            .related()
-            .annotate(year=ExtractYear(F('date')))
-            .values('year', 'account__title')
-            .annotate(incomes=Sum('price'))
-            .values('year', 'incomes', id=F('account__pk'))
-            .order_by('year', 'account')
-        )
+    def sum_by_month(self, year, month=None):
+        return \
+            self \
+            .related() \
+            .month_sum(year, month)
 
     def sum_by_month_and_type(self, year):
         return (
@@ -83,4 +70,19 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
                 'date',
                 'sum',
                 title=F('income_type__title'))
+        )
+
+    def incomes(self):
+        '''
+        method used only in post_save signal
+        method sum prices by year
+        '''
+        return (
+            self
+            .related()
+            .annotate(year=ExtractYear(F('date')))
+            .values('year', 'account__title')
+            .annotate(incomes=Sum('price'))
+            .values('year', 'incomes', id=F('account__pk'))
+            .order_by('year', 'account')
         )
