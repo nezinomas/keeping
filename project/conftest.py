@@ -6,8 +6,7 @@ import pytz
 from .accounts.factories import AccountFactory
 from .bookkeeping.factories import (AccountWorthFactory, PensionWorthFactory,
                                     SavingWorthFactory)
-from .debts.factories import (BorrowFactory, BorrowReturnFactory, LendFactory,
-                              LendReturnFactory)
+from .debts.factories import LendFactory, LendReturnFactory
 from .expenses.factories import ExpenseFactory
 from .incomes.factories import IncomeFactory
 from .pensions.factories import PensionFactory

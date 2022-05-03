@@ -1,6 +1,5 @@
 import tempfile
 from datetime import date
-from types import SimpleNamespace
 
 import pytest
 from django.test import override_settings
@@ -8,8 +7,7 @@ from django.views.generic import TemplateView
 from mock import patch
 
 from ...core.tests.utils import setup_view
-from ...users.factories import UserFactory
-from ..factories import CountFactory, CountTypeFactory
+from ..factories import CountFactory
 from ..lib import views_helper as H
 
 pytestmark = pytest.mark.django_db

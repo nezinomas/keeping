@@ -7,7 +7,7 @@ from freezegun import freeze_time
 from mock import patch
 
 from ...users.factories import UserFactory
-from ..factories import CountTypeFactory, CountFactory
+from ..factories import CountTypeFactory
 from ..forms import CountForm, CountTypeForm
 
 pytestmark = pytest.mark.django_db

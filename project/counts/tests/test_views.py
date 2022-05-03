@@ -1,18 +1,12 @@
-import json
 import re
 import tempfile
 from datetime import date
 
 import pytest
-from django.http import JsonResponse
 from django.test import override_settings
 from django.urls import resolve, reverse
-from django.utils.text import slugify
 from freezegun import freeze_time
-from mock import patch
 
-from ...journals.factories import JournalFactory
-from ...users.factories import UserFactory
 from ...users.views import Login
 from .. import forms, views
 from ..factories import CountFactory, CountTypeFactory

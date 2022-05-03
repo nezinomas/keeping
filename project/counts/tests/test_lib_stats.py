@@ -1,11 +1,12 @@
 import calendar
 import json
+import tempfile
 from datetime import date
 
 import pandas as pd
 import pytest
+from django.test import override_settings
 from freezegun import freeze_time
-from mock import patch
 
 from ...core.exceptions import MethodInvalid
 from ..factories import CountFactory
