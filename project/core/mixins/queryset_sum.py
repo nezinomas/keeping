@@ -1,5 +1,3 @@
-from typing import Any, Dict, List
-
 from django.db.models import Count, Sum
 from django.db.models.functions import TruncDay, TruncMonth, TruncYear
 
