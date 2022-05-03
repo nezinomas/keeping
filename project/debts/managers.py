@@ -59,6 +59,10 @@ class DebtQuerySet(models.QuerySet):
         )
 
     def incomes(self):
+        '''
+        method used only in post_save signal
+        method sum prices by year
+        '''
         return (
             self
             .related(debt_type='borrow')
@@ -70,6 +74,10 @@ class DebtQuerySet(models.QuerySet):
         )
 
     def expenses(self):
+        '''
+        method used only in post_save signal
+        method sum prices by year
+        '''
         return (
             self
             .related(debt_type='lend')
