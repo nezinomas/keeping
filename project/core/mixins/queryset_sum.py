@@ -8,14 +8,12 @@ class SumMixin():
     def year_filter(self, year, field='date'):
         if year:
             return self.filter(**{f'{field}__year': year})
-
         return self
     year_filter.queryset_only = True
 
     def month_filter(self, month, field='date'):
         if month:
             return self.filter(**{f'{field}__month': month})
-
         return self
     month_filter.queryset_only = True
 
@@ -49,7 +47,7 @@ class SumMixin():
             .annotate(c=Count('id')) \
             .annotate(**{sum_annotation: Sum(sum_column)}) \
             .order_by('date') \
-            .values('date', sum_annotation) \
+            .values('date', sum_annotation)
 
     def day_sum(self, year, month=None,
                 sum_annotation='sum', sum_column='price',
