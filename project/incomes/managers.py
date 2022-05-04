@@ -11,12 +11,10 @@ from ..core.mixins.queryset_sum import SumMixin
 class IncomeTypeQuerySet(models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
-
-        return (
-            self
-            .select_related('journal')
+        return \
+            self \
+            .select_related('journal') \
             .filter(journal=journal)
-        )
 
     def items(self):
         return self.related()
@@ -25,12 +23,10 @@ class IncomeTypeQuerySet(models.QuerySet):
 class IncomeQuerySet(SumMixin, models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
-        qs = (
-            self
-            .select_related('account', 'income_type')
+        return \
+            self  \
+            .select_related('account', 'income_type') \
             .filter(income_type__journal=journal)
-        )
-        return qs
 
     def year(self, year):
         return self.related().filter(date__year=year)
@@ -55,34 +51,32 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             .month_sum(year, month)
 
     def sum_by_month_and_type(self, year):
-        return (
-            self
-            .related()
-            .filter(date__year=year)
-            .annotate(cnt=Count('income_type'))
-            .values('income_type')
-            .annotate(date=TruncMonth('date'))
-            .values('date')
-            .annotate(c=Count('id'))
-            .annotate(sum=Sum('price'))
-            .order_by('income_type__title', 'date')
+        return \
+            self \
+            .related() \
+            .filter(date__year=year) \
+            .annotate(cnt=Count('income_type')) \
+            .values('income_type') \
+            .annotate(date=TruncMonth('date')) \
+            .values('date') \
+            .annotate(c=Count('id')) \
+            .annotate(sum=Sum('price')) \
+            .order_by('income_type__title', 'date') \
             .values(
                 'date',
                 'sum',
                 title=F('income_type__title'))
-        )
 
     def incomes(self):
         '''
         method used only in post_save signal
         method sum prices by year
         '''
-        return (
-            self
-            .related()
-            .annotate(year=ExtractYear(F('date')))
-            .values('year', 'account__title')
-            .annotate(incomes=Sum('price'))
-            .values('year', 'incomes', id=F('account__pk'))
+        return \
+            self \
+            .related() \
+            .annotate(year=ExtractYear(F('date'))) \
+            .values('year', 'account__title') \
+            .annotate(incomes=Sum('price')) \
+            .values('year', 'incomes', id=F('account__pk')) \
             .order_by('year', 'account')
-        )
