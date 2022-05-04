@@ -63,4 +63,4 @@ class SumMixin():
             .annotate(date=TruncDay('date')) \
             .annotate(**{sum_annotation: Sum(sum_column)}) \
             .order_by('date') \
-            .values('date', sum_annotation) \
+            .values('date', sum_annotation)
