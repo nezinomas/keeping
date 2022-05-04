@@ -15,12 +15,11 @@ from ..core.mixins.queryset_sum import SumMixin
 class ExpenseTypeQuerySet(models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
-        return (
-            self
-            .select_related('journal')
-            .prefetch_related('expensename_set')
+        return \
+            self \
+            .select_related('journal') \
+            .prefetch_related('expensename_set') \
             .filter(journal=journal)
-        )
 
     def items(self):
         return self.related()
@@ -39,8 +38,7 @@ class ExpenseNameQuerySet(models.QuerySet):
             self \
             .related() \
             .filter(
-                Q(valid_for__isnull=True) | Q(valid_for=year)
-            )
+                Q(valid_for__isnull=True) | Q(valid_for=year))
 
     def items(self):
         return self.related()
@@ -120,9 +118,7 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
             .annotate(
                 exception_sum=Sum(
                     Case(
-                        When(exception=1, then='price'), default=Decimal(0))
-                )
-            ) \
+                        When(exception=1, then='price'), default=Decimal(0)))) \
             .order_by('date') \
             .values(
                 'date',
@@ -153,8 +149,7 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
             .values(
                 'year',
                 'sum',
-                title=F('expense_type__title')
-            )
+                title=F('expense_type__title'))
 
     def filter_names(self, arr: List[int] = None):
         if arr:
@@ -177,16 +172,16 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
                 'year',
                 'sum',
                 title=F('expense_name__title'),
-                root=F('expense_name__parent__title')
-            )
+                root=F('expense_name__parent__title'))
 
     def last_months(self, months: int = 6) -> float:
         # previous month
         # if today February, then start is 2020-01-31
-        start = date.today().replace(day=1) - timedelta(days=1)
+        one_day = timedelta(days=1)
+        start = date.today().replace(day=1) - one_day
 
         # back months to past; if months=6 then end=2019-08-01
-        end = (start + timedelta(days=1)) - relativedelta(months=months)
+        end = (start + one_day) - relativedelta(months=months)
 
         return \
             self \
