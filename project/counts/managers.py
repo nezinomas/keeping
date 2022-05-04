@@ -41,11 +41,11 @@ class CountQuerySet(SumMixin, models.QuerySet):
         if count_type:
             qs = qs.filter(count_type__slug=count_type)
 
-        qs = qs\
+        qs = qs \
             .year_sum(
                 year=year,
                 sum_annotation='qty',
-                sum_column='quantity')\
+                sum_column='quantity') \
             .order_by('date')
 
         return qs
@@ -58,12 +58,12 @@ class CountQuerySet(SumMixin, models.QuerySet):
         if count_type:
             qs = qs.filter(count_type__slug=count_type)
 
-        qs = qs\
+        qs = qs \
             .day_sum(
                 year=year,
                 month=month,
                 sum_annotation='qty',
-                sum_column='quantity')\
+                sum_column='quantity') \
             .order_by('date')
 
         return qs
@@ -73,11 +73,10 @@ class CountTypeQuerySet(models.QuerySet):
     def related(self):
         user = utils.get_user()
 
-        return (
-            self
-            .select_related('user')
+        return \
+            self \
+            .select_related('user') \
             .filter(user=user)
-        )
 
     def items(self):
         return self.related()
