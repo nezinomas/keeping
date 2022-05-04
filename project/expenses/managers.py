@@ -139,11 +139,11 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
     def sum_by_year(self):
         return self.related().year_sum()
 
-    def _filter_types(self, arr: List[int] = None):
+    def filter_types(self, arr: List[int] = None):
         if arr:
             return self.filter(expense_type__in=arr)
-
         return self
+    filter_types.queryset_only = True
 
     def sum_by_year_type(self, expense_type: List[int] = None):
         return \
@@ -151,7 +151,7 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
             .related() \
             .annotate(cnt=Count('expense_type')) \
             .values('expense_type') \
-            ._filter_types(expense_type) \
+            .filter_types(expense_type) \
             .annotate(date=TruncYear('date')) \
             .annotate(year=ExtractYear(F('date'))) \
             .annotate(sum=Sum('price')) \
@@ -162,11 +162,11 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
                 title=F('expense_type__title')
             )
 
-    def _filter_names(self, arr: List[int] = None):
+    def filter_names(self, arr: List[int] = None):
         if arr:
             return self.filter(expense_name__in=arr)
-
         return self
+    filter_names.queryset_only = True
 
     def sum_by_year_name(self, expense_name: List[int] = None):
         return \
@@ -174,7 +174,7 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
             .related() \
             .annotate(cnt=Count('expense_name')) \
             .values('expense_name') \
-            ._filter_names(expense_name) \
+            .filter_names(expense_name) \
             .annotate(date=TruncYear('date')) \
             .annotate(year=ExtractYear(F('date'))) \
             .annotate(sum=Sum('price')) \
