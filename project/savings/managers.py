@@ -34,18 +34,16 @@ class SavingTypeQuerySet(models.QuerySet):
 class SavingQuerySet(SumMixin, models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
-        qs = (
-            self
-            .select_related('account', 'saving_type')
+        return \
+            self \
+            .select_related('account', 'saving_type') \
             .filter(saving_type__journal=journal)
-        )
-        return qs
 
     def year(self, year):
-        return (
-            self
-            .related()
-            .filter(date__year=year))
+        return \
+            self \
+            .related() \
+            .filter(date__year=year)
 
     def items(self):
         return self.related()
@@ -96,8 +94,8 @@ class SavingQuerySet(SumMixin, models.QuerySet):
 
         # back months to past; if months=6 then end=2019-08-01
         end = \
-            (start + timedelta(days=1)) \
-            - relativedelta(months=months)
+            (start + timedelta(days=1)) - \
+            relativedelta(months=months)
 
         qs = self \
             .related() \
