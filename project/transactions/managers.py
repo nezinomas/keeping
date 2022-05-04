@@ -26,6 +26,10 @@ class BaseMixin(models.QuerySet):
         return self.related()
 
     def incomes(self):
+        '''
+        method used only in post_save signal
+        method sum prices by year
+        '''
         return (
             self
             .related()
@@ -46,6 +50,10 @@ class BaseMixin(models.QuerySet):
     annotate_fee.queryset_only = True
 
     def base_expenses(self, fee=False):
+        '''
+        method used only in post_save signal
+        method sum prices by year
+        '''
         values = ['year', 'expenses']
 
         if fee:
@@ -61,10 +69,15 @@ class BaseMixin(models.QuerySet):
             .values(*values, id=F('from_account__pk'))
             .order_by('year', 'id')
         )
+    base_expenses.queryset_only = True
 
 
 class TransactionQuerySet(BaseMixin):
     def expenses(self):
+        '''
+        method used only in post_save signal
+        method sum prices by year
+        '''
         return self.base_expenses()
 
 
@@ -76,9 +89,17 @@ class SavingCloseQuerySet(BaseMixin, SumMixin):
             .month_sum(year=year, month=month)
 
     def expenses(self):
+        '''
+        method used only in post_save signal
+        method sum prices by year
+        '''
         return self.base_expenses(fee=True)
 
 
 class SavingChangeQuerySet(BaseMixin):
     def expenses(self):
+        '''
+        method used only in post_save signal
+        method sum prices by year
+        '''
         return self.base_expenses(fee=True)
