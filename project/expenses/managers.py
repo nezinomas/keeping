@@ -29,21 +29,18 @@ class ExpenseTypeQuerySet(models.QuerySet):
 class ExpenseNameQuerySet(models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
-        qs = (
-            self
-            .select_related('parent')
+        return \
+            self \
+            .select_related('parent') \
             .filter(parent__journal=journal)
-        )
-        return qs
 
     def year(self, year):
-        qs = (
-            self
-            .related()
+        return \
+            self \
+            .related() \
             .filter(
                 Q(valid_for__isnull=True) | Q(valid_for=year)
-            ))
-        return qs
+            )
 
     def items(self):
         return self.related()
@@ -52,19 +49,16 @@ class ExpenseNameQuerySet(models.QuerySet):
 class ExpenseQuerySet(SumMixin, models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
-        qs = (
-            self
-            .select_related('expense_type', 'expense_name', 'account')
+        return \
+            self \
+            .select_related('expense_type', 'expense_name', 'account') \
             .filter(expense_type__journal=journal)
-        )
-        return qs
 
     def year(self, year):
-        return (
-            self
-            .related()
+        return \
+            self \
+            .related() \
             .filter(date__year=year)
-        )
 
     def items(self):
         return self.related().all()
@@ -194,28 +188,24 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
         # back months to past; if months=6 then end=2019-08-01
         end = (start + timedelta(days=1)) - relativedelta(months=months)
 
-        qs = (
-            self
-            .related()
-            .filter(date__range=(end, start))
-            .values('expense_type')
-            .annotate(sum=Sum('price'))
+        return \
+            self \
+            .related() \
+            .filter(date__range=(end, start)) \
+            .values('expense_type') \
+            .annotate(sum=Sum('price')) \
             .values('sum', title=models.F('expense_type__title'))
-        )
-
-        return qs
 
     def expenses(self):
         '''
         method used only in post_save signal
         method sum prices by year
         '''
-        return (
-            self
-            .related()
-            .annotate(year=ExtractYear(F('date')))
-            .values('year', 'account__title')
-            .annotate(expenses=Sum('price'))
-            .values('year', 'expenses', id=F('account__pk'))
+        return \
+            self \
+            .related() \
+            .annotate(year=ExtractYear(F('date'))) \
+            .values('year', 'account__title') \
+            .annotate(expenses=Sum('price')) \
+            .values('year', 'expenses', id=F('account__pk')) \
             .order_by('year', 'id')
-        )
