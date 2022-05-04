@@ -32,6 +32,7 @@ class SumMixin():
             .order_by('date') \
             .annotate(year=ExtractYear(F('date'))) \
             .values('year', sum_annotation)
+    year_sum.queryset_only = True
 
     def month_sum(self, year, month=None,
                   sum_annotation='sum', sum_column='price',
@@ -48,6 +49,7 @@ class SumMixin():
             .annotate(**{sum_annotation: Sum(sum_column)}) \
             .order_by('date') \
             .values('date', sum_annotation)
+    month_sum.queryset_only = True
 
     def day_sum(self, year, month=None,
                 sum_annotation='sum', sum_column='price',
@@ -62,3 +64,4 @@ class SumMixin():
             .annotate(**{sum_annotation: Sum(sum_column)}) \
             .order_by('date') \
             .values('date', sum_annotation)
+    day_sum.queryset_only = True
