@@ -29,7 +29,10 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             .filter(income_type__journal=journal)
 
     def year(self, year):
-        return self.related().filter(date__year=year)
+        return \
+            self \
+            .related() \
+            .filter(date__year=year)
 
     def items(self):
         return self.related().all()
@@ -40,9 +43,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
         if income_type:
             qs = qs.filter(income_type__type__in=income_type)
 
-        qs = qs.year_sum()
-
-        return qs
+        return qs.year_sum()
 
     def sum_by_month(self, year, month=None):
         return \
