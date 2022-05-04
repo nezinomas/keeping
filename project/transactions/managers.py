@@ -36,13 +36,14 @@ class BaseMixin(models.QuerySet):
             .order_by('year', 'id')
         )
 
-    def _annotate_fee(self, fee):
+    def annotate_fee(self, fee):
         if fee:
             return (
                 self
                 .annotate(fee=Sum('fee'))
             )
         return self
+    annotate_fee.queryset_only = True
 
     def base_expenses(self, fee=False):
         values = ['year', 'expenses']
@@ -56,7 +57,7 @@ class BaseMixin(models.QuerySet):
             .annotate(year=ExtractYear(F('date')))
             .values('year', 'from_account__title')
             .annotate(expenses=Sum('price'))
-            ._annotate_fee(fee=fee)
+            .annotate_fee(fee=fee)
             .values(*values, id=F('from_account__pk'))
             .order_by('year', 'id')
         )
