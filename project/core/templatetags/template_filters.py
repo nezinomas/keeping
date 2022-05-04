@@ -8,6 +8,7 @@ register = template.Library()
 def get_item(dictionary, key):
     if dictionary:
         return dictionary.get(key, 0.0)
+    return None
 
 
 @register.filter
@@ -20,7 +21,7 @@ def cellformat(value, default='-'):
 
     try:
         _value = float(value)
-    except:
+    except ValueError:
         return value
 
     # first round _value
