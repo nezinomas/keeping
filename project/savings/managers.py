@@ -12,11 +12,10 @@ from ..core.mixins.queryset_sum import SumMixin
 class SavingTypeQuerySet(models.QuerySet):
     def related(self):
         journal = utils.get_user().journal
-        return (
-            self
-            .select_related('journal')
+        return \
+            self \
+            .select_related('journal') \
             .filter(journal=journal)
-        )
 
     def items(self, year=None):
         if year:
@@ -24,14 +23,12 @@ class SavingTypeQuerySet(models.QuerySet):
         else:
             _year = utils.get_user().year
 
-        return (
-            self
-            .related()
+        return \
+            self \
+            .related() \
             .filter(
                 Q(closed__isnull=True) |
-                Q(closed__gte=_year)
-            )
-        )
+                Q(closed__gte=_year))
 
 
 class SavingQuerySet(SumMixin, models.QuerySet):
@@ -60,38 +57,31 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .month_sum(year, month)
 
     def sum_by_month_and_type(self, year):
-        return (
-            self
-            .related()
-            .filter(date__year=year)
-            .annotate(cnt=Count('saving_type'))
-            .values('saving_type')
-            .annotate(date=TruncMonth('date'))
-            .values('date')
-            .annotate(c=Count('id'))
-            .annotate(sum=Sum('price'))
-            .order_by('saving_type__title', 'date')
+        return \
+            self \
+            .related() \
+            .filter(date__year=year) \
+            .annotate(cnt=Count('saving_type')) \
+            .values('saving_type') \
+            .annotate(date=TruncMonth('date')) \
+            .values('date') \
+            .annotate(c=Count('id')) \
+            .annotate(sum=Sum('price')) \
+            .order_by('saving_type__title', 'date') \
             .values(
                 'date',
                 'sum',
                 title=F('saving_type__title'))
-        )
 
     def sum_by_day_and_type(self, year, month):
-        sum_annotation = 'sum'
-
-        return (
-            self
-            .related()
-            .day_sum(
-                year=year,
-                month=month,
-                sum_annotation=sum_annotation)
+        return \
+            self \
+            .related() \
+            .day_sum(year=year, month=month) \
             .values(
-                sum_annotation,
                 'date',
+                'sum',
                 title=F('saving_type__title'))
-        )
 
     def sum_by_day(self, year, month):
         return \
@@ -105,10 +95,14 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         start = date.today().replace(day=1) - timedelta(days=1)
 
         # back months to past; if months=6 then end=2019-08-01
-        end = (start + timedelta(days=1)) - relativedelta(months=months)
+        end = \
+            (start + timedelta(days=1)) \
+            - relativedelta(months=months)
 
-        qs = self.related().filter(date__range=(end, start)).aggregate(sum=Sum('price'))
-
+        qs = self \
+            .related() \
+            .filter(date__range=(end, start)) \
+            .aggregate(sum=Sum('price'))
         return qs
 
     def incomes(self):
@@ -116,42 +110,38 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         method used only in post_save signal
         method sum prices by year
         '''
-        return (
-            self
-            .related()
-            .annotate(year=ExtractYear(F('date')))
-            .values('year', 'saving_type__title')
-            .annotate(incomes=Sum('price'), fee=Sum('fee'))
-            .values('year', 'incomes', 'fee', id=F('saving_type__pk'))
+        return \
+            self \
+            .related() \
+            .annotate(year=ExtractYear(F('date'))) \
+            .values('year', 'saving_type__title') \
+            .annotate(incomes=Sum('price'), fee=Sum('fee')) \
+            .values('year', 'incomes', 'fee', id=F('saving_type__pk')) \
             .order_by('year', 'id')
-        )
 
     def expenses(self):
         '''
         method used only in post_save signal
         method sum prices by year
         '''
-        return (
-            self
-            .related()
-            .annotate(year=ExtractYear(F('date')))
-            .values('year', 'account__title')
-            .annotate(expenses=Sum('price'))
-            .values('year', 'expenses', id=F('account__pk'))
+        return \
+            self \
+            .related() \
+            .annotate(year=ExtractYear(F('date'))) \
+            .values('year', 'account__title') \
+            .annotate(expenses=Sum('price')) \
+            .values('year', 'expenses', id=F('account__pk')) \
             .order_by('year', 'id')
-        )
 
 
 class SavingBalanceQuerySet(models.QuerySet):
     def related(self):
         user = utils.get_user()
         journal = user.journal
-        qs = (
-            self
-            .select_related('saving_type')
+        return \
+            self \
+            .select_related('saving_type') \
             .filter(saving_type__journal=journal)
-        )
-        return qs
 
     def items(self):
         return self.related()
@@ -166,46 +156,51 @@ class SavingBalanceQuerySet(models.QuerySet):
 
         return qs.values(
             'year',
-            'past_amount', 'past_fee',
-            'fee', 'invested', 'incomes', 'market_value',
-            'profit_incomes_proc', 'profit_incomes_sum',
-            'profit_invested_proc', 'profit_invested_sum',
+            'past_amount',
+            'past_fee',
+            'fee',
+            'invested',
+            'incomes',
+            'market_value',
+            'profit_incomes_proc',
+            'profit_incomes_sum',
+            'profit_invested_proc',
+            'profit_invested_sum',
             title=F('saving_type__title'),
-            type=F('saving_type__type')
-        )
+            type=F('saving_type__type'))
 
     def sum_by_type(self):
-        return (
-            self
-            .related()
-            .annotate(cnt=Count('saving_type'))
-            .values('saving_type__type')
-            .annotate(y=F('year'))
-            .values('y')
+        return \
+            self \
+            .related() \
+            .annotate(cnt=Count('saving_type')) \
+            .values('saving_type__type') \
+            .annotate(y=F('year')) \
+            .values('y') \
             .filter(
                 Q(saving_type__closed__isnull=True) |
-                Q(saving_type__closed__gt=F('y'))
-            )
-            .annotate(invested=Sum('incomes'), profit=Sum('profit_incomes_sum'))
-            .order_by('year')
+                Q(saving_type__closed__gt=F('y'))) \
+            .annotate(
+                invested=Sum('incomes'),
+                profit=Sum('profit_incomes_sum')) \
+            .order_by('year') \
             .values(
                 'year',
                 'invested',
                 'profit',
                 type=F('saving_type__type'))
-        )
 
     def sum_by_year(self):
-        return (
-            self
-            .related()
-            .annotate(y=F('year'))
-            .values('y')
-            .annotate(invested=Sum('incomes'), profit=Sum('profit_incomes_sum'))
-            .order_by('year')
+        return \
+            self  \
+            .related() \
+            .annotate(y=F('year')) \
+            .values('y') \
+            .annotate(
+                invested=Sum('incomes'),
+                profit=Sum('profit_incomes_sum')) \
+            .order_by('year') \
             .values(
                 'year',
                 'invested',
-                'profit'
-            )
-        )
+                'profit')
