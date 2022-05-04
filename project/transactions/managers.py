@@ -69,17 +69,10 @@ class TransactionQuerySet(BaseMixin):
 
 class SavingCloseQuerySet(BaseMixin, SumMixin):
     def sum_by_month(self, year, month=None):
-        sum_annotation = 'sum'
-
-        return (
-            self
-            .related()
-            .month_sum(
-                year=year,
-                month=month,
-                sum_annotation=sum_annotation)
-            .values('date', sum_annotation)
-        )
+        return \
+            self \
+            .related() \
+            .month_sum(year=year, month=month)
 
     def expenses(self):
         return self.base_expenses(fee=True)
