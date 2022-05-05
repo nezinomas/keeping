@@ -75,7 +75,17 @@ class CountTypeForm(forms.ModelForm):
         set_field_properties(self, self.helper)
 
     def clean_title(self):
-        reserved_titles = ['none', 'type', 'delete', 'update', 'info_row']
+        reserved_titles = [
+            'none',
+            'type',
+            'delete',
+            'update',
+            'info_row',
+            'index',
+            'data',
+            'history',
+            'empty',
+        ]
         title = self.cleaned_data['title']
 
         if title and title.lower() in reserved_titles:
