@@ -1,3 +1,5 @@
+{% load i18n %}
+
 {% if not records %}<div id="no-records"><div class="row my-2"><div class="col">{% include 'core/no_records.html' with data_missing=True %}</div></div></div>{% endif %}
 
 <div class="row my-2">
@@ -5,3 +7,10 @@
     <div class="col-lg-4">{% if records %}{{ chart_years }}{% endif %}</div>
     <div class="col-lg-4">{% if records %}{{ chart_histogram }}{% endif %}</div>
 </div>
+
+
+{% if request.htmx %}
+<span id="btn-new" hx-swap-oob="true">
+<button type="button" id="btn-new" class="btn btn-sm btn-outline-success" hx-get="{% url 'counts:new' 'history' count_type_slug  %}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+</span>
+{% endif %}

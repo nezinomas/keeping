@@ -1,3 +1,5 @@
+{% load i18n %}
+
 {% if records %}
 
 <div class="row my-2">
@@ -17,6 +19,9 @@
 
 {% endif %}
 
+
 {% if request.htmx %}
-<div id="info_row" hx-swap-oob="true">{{info_row|safe}}</div>
+<span id="btn-new" hx-swap-oob="true">
+<button type="button" id="btn-new" class="btn btn-sm btn-outline-success" hx-get="{% url 'counts:new' 'index' object.slug %}"  hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+</span>
 {% endif %}
