@@ -18,16 +18,91 @@ pytestmark = pytest.mark.django_db
 # ---------------------------------------------------------------------------------------
 #                                                                     Count Create/Update
 # ---------------------------------------------------------------------------------------
+def test_view_new_func():
+    view = resolve('/counts/tab/count-type/new/')
+
+    assert views.New is view.func.view_class
+
+
+def test_view_update_func():
+    view = resolve('/counts/update/1/')
+
+    assert views.Update is view.func.view_class
+
+
+@pytest.mark.parametrize(
+    'tab_actual, tab_expected',
+    [
+        ('index', 'index'),
+        ('data', 'data'),
+        ('history', 'history'),
+        ('xxx', 'index'),
+    ]
+)
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@freeze_time('2000-01-01')
-def test_view_new_form_initial(client_logged):
+def test_view_new_url(client_logged, tab_actual, tab_expected):
     x = CountTypeFactory()
 
-    url = reverse('counts:new', kwargs={'slug': x.slug})
+    url = reverse('counts:new', kwargs={'slug': x.slug, 'tab': tab_actual})
+    response = client_logged.get(url)
+
+    assert \
+        response.context['view'].url() == \
+        reverse('counts:new', kwargs={'slug': x.slug, 'tab': tab_expected})
+
+
+@pytest.mark.parametrize(
+    'tab, expected',
+    [
+        ('index', 'reloadIndex'),
+        ('data', 'reloadData'),
+        ('history', 'reloadHistory'),
+        ('xxx', 'reloadData'),
+    ]
+)
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_view_new_get_hx_trigger(client_logged, tab, expected):
+    x = CountTypeFactory()
+
+    url = reverse('counts:new', kwargs={'slug': x.slug, 'tab': tab})
+    response = client_logged.get(url)
+
+    assert response.context['view'].get_hx_trigger() == expected
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_view_update_get_hx_trigger(client_logged):
+    x = CountFactory()
+
+    url = reverse('counts:update', kwargs={'pk': x.pk})
+    response = client_logged.get(url)
+
+    assert response.context['view'].get_hx_trigger() == 'reloadData'
+
+
+@pytest.mark.parametrize(
+    'tab_sent, tab_actual',
+    [
+        ('index', 'index'),
+        ('data', 'data'),
+        ('history', 'history'),
+        ('xxx', 'index'),
+    ]
+)
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+@freeze_time('2000-01-01')
+def test_view_new_form_initial(client_logged, tab_sent, tab_actual):
+    x = CountTypeFactory()
+
+    url = reverse('counts:new', kwargs={'slug': x.slug, 'tab': tab_sent})
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    url = reverse('counts:new', kwargs={'slug': x.slug, 'tab': tab_actual})
+
+    assert f'<form method="POST" hx-post="{url}"' in actual
     assert '<input type="text" name="date" value="1999-01-01"' in actual
+    assert '<select name="count_type"' in actual
     assert '<input type="number" name="quantity" value="1"' in actual
 
 
@@ -40,18 +115,19 @@ def test_view_new(client_logged):
         'quantity': 68,
         'count_type': obj.pk,
     }
-    url = reverse('counts:new', kwargs={'slug': 'count-type'})
+    url = reverse('counts:new', kwargs={'slug': 'count-type', 'tab': 'data'})
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode("utf-8")
 
     assert '68' in actual
     assert '<a role="button" hx-get="/counts/update/1/"' in actual
+    assert '<a role="button" hx-get="/counts/delete/1/"' in actual
 
 
 def test_view_new_invalid_data(client_logged):
     data = {'date': -2, 'quantity': 'x'}
 
-    url = reverse('counts:new', kwargs={'slug': 'count-type'})
+    url = reverse('counts:new', kwargs={'slug': 'count-type', 'tab': 'data'})
 
     response = client_logged.post(url, data)
     form = response.context['form']
@@ -73,7 +149,7 @@ def test_view_update(client_logged):
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode("utf-8")
 
-    assert response.resolver_match.func.view_class is views.Lists
+    assert response.resolver_match.func.view_class is views.TabData
 
     assert '68' in actual
     assert f'<a role="button" hx-get="/counts/update/{p.pk}/"' in actual
@@ -110,6 +186,17 @@ def test_view_delete_200(client_logged):
     response = client_logged.get(url)
 
     assert response.status_code == 200
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+@freeze_time('2000-01-01')
+def test_view_delete_get_hx_trigger(client_logged):
+    x = CountFactory()
+
+    url = reverse('counts:delete', kwargs={'pk': x.pk})
+    response = client_logged.get(url)
+
+    assert response.context['view'].get_hx_trigger() == 'reloadData'
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -176,11 +263,13 @@ def test_redirect_redirect_to_index(client_logged):
     assert views.Index == response.resolver_match.func.view_class
 
 
-def test_redirect_view_class(client_logged):
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_redirect_redirect_to_empty(client_logged):
     url = reverse('counts:redirect')
-    response = client_logged.get(url)
+    response = client_logged.get(url, follow=True)
 
-    assert views.Redirect == response.resolver_match.func.view_class
+    assert response.status_code == 200
+    assert views.Empty == response.resolver_match.func.view_class
 
 
 @pytest.mark.disable_get_user_patch
@@ -214,7 +303,7 @@ def test_redirect_count_first(client_logged):
 #                                                                              Index View
 # ---------------------------------------------------------------------------------------
 def test_index_func():
-    view = resolve('/counts/index/xxx/')
+    view = resolve('/counts/xxx/')
 
     assert views.Index == view.func.view_class
 
@@ -227,6 +316,25 @@ def test_index_200(client_logged):
     response = client_logged.get(url)
 
     assert response.status_code == 200
+
+
+def test_index_redirect_no_count_type(client_logged):
+    url = reverse('counts:index', kwargs={'slug': 'XXX'})
+    response = client_logged.get(url, follow=True)
+
+    assert views.Empty is response.resolver_match.func.view_class
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_index_redirect(client_logged):
+    obj = CountTypeFactory()
+
+    url = reverse('counts:index', kwargs={'slug': 'XXX'})
+    response = client_logged.get(url, follow=True)
+
+    assert views.Index is response.resolver_match.func.view_class
+    assert response.resolver_match.url_name == 'index'
+    assert response.resolver_match.kwargs['slug'] == obj.slug
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -242,7 +350,8 @@ def test_index_add_button(client_logged):
     res = re.findall(pattern, content)
 
     assert len(res[0]) == 2
-    assert res[0][0] == reverse('counts:new', kwargs={'slug': 'count-type'})
+    assert res[0][0] == reverse('counts:new',
+                                kwargs={'slug': 'count-type', 'tab': 'index'})
     assert res[0][1] == 'Įrašą'
 
 
@@ -253,20 +362,18 @@ def test_index_links(client_logged):
     url = reverse('counts:index', kwargs={'slug': 'xxx'})
 
     response = client_logged.get(url)
-
     content = response.content.decode()
-
-    pattern = re.compile(r'<a href="(.*?)" class="btn btn-sm.+>(\w+)<\/a>')
+    pattern = re.compile(r'<a role="button" hx-get="(.*?)".+>(\w+)<\/a>')
     res = re.findall(pattern, content)
 
     assert len(res) == 3
-    assert res[0][0] == reverse('counts:index', kwargs={'slug': 'xxx'})
+    assert res[0][0] == reverse('counts:tab_index', kwargs={'slug': 'xxx'})
     assert res[0][1] == 'Grafikai'
 
-    assert res[1][0] == reverse('counts:list', kwargs={'slug': 'xxx'})
+    assert res[1][0] == reverse('counts:tab_data', kwargs={'slug': 'xxx'})
     assert res[1][1] == 'Duomenys'
 
-    assert res[2][0] == reverse('counts:history', kwargs={'slug': 'xxx'})
+    assert res[2][0] == reverse('counts:tab_history', kwargs={'slug': 'xxx'})
     assert res[2][1] == 'Istorija'
 
 
@@ -277,30 +384,25 @@ def test_index_context(client_logged):
     url = reverse('counts:index', kwargs={'slug': 'xxx'})
     response = client_logged.get(url)
 
-    assert 'chart_weekdays' in response.context
-    assert 'chart_months' in response.context
-    assert 'chart_calendar_1H' in response.context
-    assert 'chart_calendar_2H' in response.context
-    assert 'chart_histogram' in response.context
+    assert 'object' in response.context
     assert 'info_row' in response.context
-    assert 'tab' in response.context
+    assert 'tab_content' in response.context
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                               Tab Index
+# ---------------------------------------------------------------------------------------
+def test_tab_index_func():
+    view = resolve('/counts/xxx/index/')
+
+    assert views.TabIndex == view.func.view_class
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_index_context_tab_value(client_logged):
-    CountTypeFactory(title='Xxx')
-
-    url = reverse('counts:index', kwargs={'slug': 'xxx'})
-    response = client_logged.get(url)
-
-    assert response.context['tab'] == 'index'
-
-
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_index_chart_weekdays(client_logged):
+def test_tab_index_chart_weekdays(client_logged):
     CountFactory()
 
-    url = reverse('counts:index', kwargs={'slug': 'count-type'})
+    url = reverse('counts:tab_index', kwargs={'slug': 'count-type'})
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
@@ -308,7 +410,7 @@ def test_index_chart_weekdays(client_logged):
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_index_chart_months(client_logged):
+def test_tab_index_chart_months(client_logged):
     CountFactory()
 
     url = reverse('counts:index', kwargs={'slug': 'count-type'})
@@ -319,7 +421,7 @@ def test_index_chart_months(client_logged):
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_index_chart_histogram(client_logged):
+def test_tab_index_chart_histogram(client_logged):
     CountFactory()
 
     url = reverse('counts:index', kwargs={'slug': 'count-type'})
@@ -330,63 +432,86 @@ def test_index_chart_histogram(client_logged):
     assert 'id="chart_histogram"><div id="chart_histogram_container"></div>' in content
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                              List View
-# ---------------------------------------------------------------------------------------
-def test_list_func():
-    view = resolve('/counts/list/xxx/')
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+@freeze_time('1999-07-18')
+def test_index_info_row(client_logged):
+    obj = CountFactory(quantity=3)
 
-    assert views.Lists is view.func.view_class
+    url = reverse('counts:index', kwargs={'slug': obj.count_type.slug})
+    response = client_logged.get(url)
+    content = response.content.decode("utf-8")
+
+    pattern = re.compile(
+        r'Kiek:.+(\d+).+Savaitė.+(\d+).+Per savaitę.+([\d,]+)')
+
+    for m in re.finditer(pattern, content):
+        assert m.group(1) == 3
+        assert m.group(2) == 28
+        assert m.group(3) == '0,1'
+
+
+@freeze_time('1999-1-1')
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_index_chart_calendar_gap_from_previous_year(client_logged):
+    CountFactory(date=date(1998, 1, 1))
+    CountFactory(date=date(1999, 1, 2))
+
+    url = reverse('counts:index', kwargs={'slug': 'count-type'})
+    response = client_logged.get(url)
+    context = response.context
+
+    assert "'1999-01-02', 1.0, 366.0]" in context['chart_calendar_1H']
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                                Tab List
+# ---------------------------------------------------------------------------------------
+def test_data_func():
+    view = resolve('/counts/xxx/data/')
+
+    assert views.TabData is view.func.view_class
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_list_200(client_logged):
+def test_data_200(client_logged):
     obj = CountTypeFactory()
-    url = reverse('counts:list', kwargs={'slug': obj.slug})
+    url = reverse('counts:tab_data', kwargs={'slug': obj.slug})
     response = client_logged.get(url)
 
     assert response.status_code == 200
-    assert response.resolver_match.func.view_class is views.Lists
-
-
-def test_list_empty_200(client_logged):
-    url = reverse('counts:list', kwargs={'slug': 'xxx'})
-    response = client_logged.get(url, follow=True)
-
-    assert response.status_code == 200
-    assert response.resolver_match.func.view_class is views.Empty
+    assert response.resolver_match.func.view_class is views.TabData
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_list_context(client_logged):
+def test_data_context(client_logged):
     CountFactory()
 
-    url = reverse('counts:list', kwargs={'slug': 'count-type'})
+    url = reverse('counts:tab_data', kwargs={'slug': 'count-type'})
     response = client_logged.get(url)
 
     assert 'object_list' in response.context
-    assert 'info_row' in response.context
-    assert 'tab' in response.context
-    assert 'list' == response.context['tab']
+    assert 'count_type_slug' in response.context
+    assert response.context['count_type_slug'] == 'count-type'
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_list(client_logged):
+def test_data(client_logged):
     p = CountFactory(quantity=66)
-    url = reverse('counts:list', kwargs={'slug': 'count-type'})
+    url = reverse('counts:tab_data', kwargs={'slug': 'count-type'})
     response = client_logged.get(url)
 
     actual = response.content.decode("utf-8")
 
     assert '66' in actual
     assert f'<a role="button" hx-get="/counts/update/{p.pk}/"' in actual
+    assert f'<a role="button" hx-get="/counts/delete/{p.pk}/"' in actual
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_list_no_data(client_logged):
+def test_data_no_records(client_logged):
     CountTypeFactory()
 
-    url = reverse('counts:list', kwargs={'slug': 'count-type'})
+    url = reverse('counts:tab_data', kwargs={'slug': 'count-type'})
     response = client_logged.get(url, follow=True)
     actual = response.content.decode("utf-8")
 
@@ -394,43 +519,35 @@ def test_list_no_data(client_logged):
 
 
 # ---------------------------------------------------------------------------------------
-#                                                                            History View
+#                                                                             Tab History
 # ---------------------------------------------------------------------------------------
 def test_history_func():
-    view = resolve('/counts/history/xxx/')
+    view = resolve('/counts/xxx/history/')
 
-    assert views.History == view.func.view_class
+    assert views.TabHistory == view.func.view_class
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_history_200(client_logged):
     obj = CountTypeFactory()
-    url = reverse('counts:history', kwargs={'slug': obj.slug})
+    url = reverse('counts:tab_history', kwargs={'slug': obj.slug})
     response = client_logged.get(url)
 
     assert response.status_code == 200
-
-
-def test_history_no_count_type(client_logged):
-    url = reverse('counts:history', kwargs={'slug': 'xxx'})
-    response = client_logged.get(url, follow=True)
-
-    assert response.resolver_match.func.view_class is views.Empty
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_history_context(client_logged):
     obj = CountTypeFactory()
 
-    url = reverse('counts:history', kwargs={'slug': obj.slug})
+    url = reverse('counts:tab_history', kwargs={'slug': obj.slug})
     response = client_logged.get(url)
 
-    assert 'tab' in response.context
-    assert 'history' in response.context['tab']
-    assert 'info_row' in response.context
     assert 'chart_weekdays' in response.context
     assert 'chart_years' in response.context
     assert 'chart_histogram' in response.context
+    assert 'count_type_slug' in response.context
+    assert response.context['count_type_slug'] == obj.slug
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -438,7 +555,7 @@ def test_history_chart_weekdays(client_logged):
     obj = CountTypeFactory()
     CountFactory()
 
-    url = reverse('counts:history', kwargs={'slug': obj.slug})
+    url = reverse('counts:tab_history', kwargs={'slug': obj.slug})
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
@@ -450,12 +567,22 @@ def test_history_chart_years(client_logged):
     obj = CountTypeFactory()
     CountFactory()
 
-    url = reverse('counts:history', kwargs={'slug': obj.slug})
+    url = reverse('counts:tab_history', kwargs={'slug': obj.slug})
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
 
     assert '<div id="chart_years_container"></div>' in content
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_history_get_year(client_logged):
+    obj = CountTypeFactory()
+
+    url = reverse('counts:tab_history', kwargs={'slug': obj.slug})
+    response = client_logged.get(url)
+
+    assert not response.context['view'].get_year()
 
 
 # ---------------------------------------------------------------------------------------
@@ -647,33 +774,25 @@ def test_empty_user_not_logged(client):
 # ---------------------------------------------------------------------------------------
 #                                                                                Info Row
 # ---------------------------------------------------------------------------------------
+def test_info_row_func():
+    view = resolve('/counts/xxx/info_row/')
+
+    assert views.InfoRow is view.func.view_class
+
+
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@freeze_time('1999-07-18')
-def test_index_info_row(client_logged):
-    CountFactory(quantity=3)
-
-    url = reverse('counts:index', kwargs={'slug': 'count-type'})
-    response = client_logged.get(url)
-
-    content = response.content.decode("utf-8")
-
-    pattern = re.compile(
-        r'Kiek:.+(\d+).+Savaitė.+(\d+).+Per savaitę.+([\d,]+)')
-
-    for m in re.finditer(pattern, content):
-        assert m.group(1) == 3
-        assert m.group(2) == 28
-        assert m.group(3) == '0,1'
-
-
-@freeze_time('1999-1-1')
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_index_info_row_latest_form_past(client_logged):
-    CountFactory(date=date(1998, 1, 1))
-    CountFactory(date=date(1999, 1, 2))
+@freeze_time('1999-07-12')
+def test_info_row(client_logged):
+    CountFactory(date=date(1999, 7, 8), quantity=1)
+    CountFactory(date=date(1999, 1, 1), quantity=1)
+    CountFactory(date=date(1999, 1, 1), quantity=1)
 
     url = reverse('counts:index', kwargs={'slug': 'count-type'})
     response = client_logged.get(url)
     context = response.context
 
-    assert "'1999-01-02', 1.0, 366.0]" in context['chart_calendar_1H']
+    assert context['title'] == 'Count Type'
+    assert context['week'] == 28
+    assert context['total'] == 3
+    assert round(context['ratio'], 2) == 0.11
+    assert context['current_gap'] == 4

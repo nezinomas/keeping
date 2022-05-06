@@ -1,5 +1,4 @@
 import tempfile
-from datetime import date
 
 import pytest
 from django.test import override_settings
@@ -7,6 +6,7 @@ from django.views.generic import TemplateView
 from mock import patch
 
 from ...core.tests.utils import setup_view
+from .. import models
 from ..factories import CountFactory
 from ..lib import views_helper as H
 
@@ -16,15 +16,6 @@ pytestmark = pytest.mark.django_db
 # ---------------------------------------------------------------------------------------
 #                                                                           Context Mixin
 # ---------------------------------------------------------------------------------------
-def test_context_mixin_get_year(fake_request):
-    class Dummy(H.ContextMixin):
-        pass
-
-    view = setup_view(Dummy(), fake_request)
-
-    assert view.get_year() == 1999
-
-
 def test_context_mixin_get_year_overwrite(fake_request):
     class Dummy(H.ContextMixin):
         def get_year(self):
@@ -33,22 +24,6 @@ def test_context_mixin_get_year_overwrite(fake_request):
     view = setup_view(Dummy(), fake_request)
 
     assert view.get_year() == 666
-
-
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@patch('project.core.lib.utils.get_request_kwargs')
-def test_context_mixin_get_qs_sum_by_day(mck, fake_request):
-    mck.return_value = 'count-type'
-
-    CountFactory(date=date(1999, 1, 1))
-    CountFactory(date=date(1999, 1, 1))
-
-    class Dummy(H.ContextMixin):
-        pass
-
-    view = setup_view(Dummy(), fake_request)
-
-    assert list(view.get_queryset()) == [{'date': date(1999, 1, 1), 'qty': 2.0}]
 
 
 @patch('project.core.lib.utils.get_request_kwargs')
@@ -83,12 +58,15 @@ def test_context_mixin_context(mck, fake_request):
     obj = CountFactory()
 
     class Dummy(H.ContextMixin, TemplateView):
-        pass
+        def get_year(self):
+            return 1999
+
+        def get_queryset(self):
+            return models.Count.objects.items()
 
     view = setup_view(Dummy(), fake_request)
     view.kwargs['count_type'] = obj.count_type.slug
 
     ctx = view.get_context_data()
 
-    assert ctx['object'] == obj.count_type
     assert ctx['records'] == 1
