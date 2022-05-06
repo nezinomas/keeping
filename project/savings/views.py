@@ -24,6 +24,9 @@ class Index(TemplateViewMixin):
 class Lists(ListViewMixin):
     model = models.Saving
 
+    def get_queryset(self):
+        return models.Saving.objects.year(year=self.request.user.year)
+
 
 class New(CreateViewMixin):
     model = models.Saving

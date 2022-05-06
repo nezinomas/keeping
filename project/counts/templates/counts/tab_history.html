@@ -1,3 +1,6 @@
+{% load i18n %}
+{% load counts_components %}
+
 {% if not records %}<div id="no-records"><div class="row my-2"><div class="col">{% include 'core/no_records.html' with data_missing=True %}</div></div></div>{% endif %}
 
 <div class="row my-2">
@@ -6,12 +9,8 @@
     <div class="col-lg-4">{% if records %}{{ chart_histogram }}{% endif %}</div>
 </div>
 
-<script>
-    $(document).on('hidden.bs.modal', '#modal-form', function () {
-        $.ajax({
-            success: function (data) {
-                window.location.href = '{% url 'counts:counts_history' view.kwargs.count_type %}';
-            },
-        });
-    });
-</script>
+
+{% if request.htmx %}
+{% url 'counts:new' 'history' count_type_slug as url_new %}
+{% new_count_button url=url_new hx_swap_oob="true" %}
+{% endif %}

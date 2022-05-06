@@ -23,9 +23,9 @@ class Index(TemplateViewMixin):
 
 class LoadSavingType(ListViewMixin):
     template_name = 'core/dropdown.html'
+    object_list = []
 
     def get(self, request, *args, **kwargs):
-        objects = []
         pk = request.GET.get('from_account')
 
         try:
@@ -34,18 +34,20 @@ class LoadSavingType(ListViewMixin):
             pk = None
 
         if pk:
-            objects = (
-                models.SavingType
-                .objects
-                .items()
+            self.object_list = \
+                models.SavingType \
+                .objects \
+                .items() \
                 .exclude(pk=pk)
-            )
 
-        return self.render_to_response({'objects': objects})
+        return self.render_to_response({'object_list': self.object_list})
 
 
 class Lists(ListViewMixin):
     model = models.Transaction
+
+    def get_queryset(self):
+        return models.Transaction.objects.year(year=self.request.user.year)
 
 
 class New(CreateViewMixin):
@@ -74,6 +76,9 @@ class Delete(DeleteViewMixin):
 class SavingsCloseLists(ListViewMixin):
     model = models.SavingClose
 
+    def get_queryset(self):
+        return models.SavingClose.objects.year(year=self.request.user.year)
+
 
 class SavingsCloseNew(CreateViewMixin):
     model = models.SavingClose
@@ -101,6 +106,9 @@ class SavingsCloseDelete(DeleteViewMixin):
 
 class SavingsChangeLists(ListViewMixin):
     model = models.SavingChange
+
+    def get_queryset(self):
+        return models.SavingChange.objects.year(year=self.request.user.year)
 
 
 class SavingsChangeNew(CreateViewMixin):

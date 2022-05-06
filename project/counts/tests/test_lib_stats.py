@@ -1,11 +1,12 @@
 import calendar
 import json
+import tempfile
 from datetime import date
 
 import pandas as pd
 import pytest
+from django.test import override_settings
 from freezegun import freeze_time
-from mock import patch
 
 from ...core.exceptions import MethodInvalid
 from ..factories import CountFactory
@@ -42,6 +43,7 @@ def _data():
 
 
 @pytest.fixture()
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def _data_db():
     CountFactory(date=date(1998, 1, 1), quantity=1.0)
     CountFactory(date=date(1999, 12, 3), quantity=1.0)
@@ -100,11 +102,33 @@ def test_weekdays_stats(_data):
     actual = Stats(year=1999, data=_data).weekdays_stats()
 
     expect = [
-        {'weekday': 0, 'count': 1},  # pirmadienis
+        {'weekday': 0, 'count': 2},  # pirmadienis
         {'weekday': 1, 'count': 0},  # antradienis
         {'weekday': 2, 'count': 0},  # treciadienis
         {'weekday': 3, 'count': 0},  # ketvirtadienis
-        {'weekday': 4, 'count': 3},  # pentadienis
+        {'weekday': 4, 'count': 4},  # pentadienis
+        {'weekday': 5, 'count': 0},  # šeštadienis
+        {'weekday': 6, 'count': 0},  # sekmdadienis
+    ]
+
+    assert actual == expect
+
+
+def test_weekdays_stats_new():
+    df = [
+        {'date': date(2022, 4, 6), 'qty': 1.0},
+        {'date': date(2022, 4, 13), 'qty': 2.0},
+        {'date': date(2022, 4, 20), 'qty': 10.0},
+    ]
+
+    actual = Stats(year=2022, data=df).weekdays_stats()
+
+    expect = [
+        {'weekday': 0, 'count': 0},  # pirmadienis
+        {'weekday': 1, 'count': 0},  # antradienis
+        {'weekday': 2, 'count': 13},  # treciadienis
+        {'weekday': 3, 'count': 0},  # ketvirtadienis
+        {'weekday': 4, 'count': 0},  # pentadienis
         {'weekday': 5, 'count': 0},  # šeštadienis
         {'weekday': 6, 'count': 0},  # sekmdadienis
     ]
@@ -116,11 +140,11 @@ def test_weekdays_stats_all_years(_data):
     actual = Stats(data=_data).weekdays_stats()
 
     expect = [
-        {'weekday': 0, 'count': 1},  # pirmadienis
+        {'weekday': 0, 'count': 2},  # pirmadienis
         {'weekday': 1, 'count': 0},  # antradienis
         {'weekday': 2, 'count': 0},  # treciadienis
         {'weekday': 3, 'count': 0},  # ketvirtadienis
-        {'weekday': 4, 'count': 3},  # pentadienis
+        {'weekday': 4, 'count': 4},  # pentadienis
         {'weekday': 5, 'count': 1},  # šeštadienis
         {'weekday': 6, 'count': 0},  # sekmdadienis
     ]
@@ -161,10 +185,9 @@ def test_months_stats(_data):
 
 
 @pytest.mark.django_db
-@patch('project.core.lib.utils.get_request_kwargs', return_value='count-type')
-def test_months_stats_db(mck, _data_db):
+def test_months_stats_db(_data_db):
     year = 1999
-    qs = Count.objects.sum_by_day(year=year)
+    qs = Count.objects.sum_by_day(year=year, count_type='count-type')
     actual = Stats(year=year, data=qs).months_stats()
 
     expect = [3.0, 2.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
@@ -173,10 +196,9 @@ def test_months_stats_db(mck, _data_db):
 
 
 @pytest.mark.django_db
-@patch('project.core.lib.utils.get_request_kwargs', return_value='count-type')
-def test_months_stats_db_no_data(mck):
+def test_months_stats_db_no_data():
     year = 1999
-    qs = Count.objects.sum_by_day(year=year)
+    qs = Count.objects.sum_by_day(year=year, count_type='count-type')
     actual = Stats(year=year, data=qs).months_stats()
 
     expect = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -204,10 +226,9 @@ def test_year_stats(_data, _year_stats_expect):
 
 
 @pytest.mark.django_db
-@patch('project.core.lib.utils.get_request_kwargs', return_value='count-type')
-def test_year_stats_db(mck, _year_stats_expect, _data_db):
+def test_year_stats_db(_year_stats_expect, _data_db):
     year = 1999
-    qs = Count.objects.sum_by_day(year=year)
+    qs = Count.objects.sum_by_day(year=year, count_type='count-type')
     actual = Stats(year=year, data=qs).year_stats()
 
     assert actual == _year_stats_expect
@@ -240,10 +261,10 @@ def test_year_totals(_data):
 
 
 @pytest.mark.django_db
-@patch('project.core.lib.utils.get_request_kwargs', return_value='count-type')
-def test_year_totals_queryset(mck):
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_year_totals_queryset():
     CountFactory()
-    qs = Count.objects.year(1999)
+    qs = Count.objects.year(1999, count_type='count-type')
 
     actual = Stats(year=1999, data=qs).year_totals()
 
@@ -290,10 +311,10 @@ def test_year_month_days_no_year_provided():
 
 
 @pytest.mark.django_db
-@patch('project.core.lib.utils.get_request_kwargs', return_value='count-type')
-def test_items(mck):
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_items():
     CountFactory()
-    qs = Count.objects.year(1999)
+    qs = Count.objects.year(1999, count_type='count-type')
 
     actual = Stats(year=1999, data=qs).items()
 
@@ -306,12 +327,12 @@ def test_items(mck):
 
 
 @pytest.mark.django_db
-@patch('project.core.lib.utils.get_request_kwargs', return_value='count-type')
-def test_items_odering(mck):
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_items_odering():
     CountFactory(date=date(1999, 1, 1))
     CountFactory(date=date(1999, 12, 31))
 
-    qs = Count.objects.year(1999)
+    qs = Count.objects.year(1999, count_type='count-type')
 
     actual = Stats(year=1999, data=qs).items()
 
@@ -320,9 +341,8 @@ def test_items_odering(mck):
 
 
 @pytest.mark.django_db
-@patch('project.core.lib.utils.get_request_kwargs', return_value='count-type')
-def test_items_no_data(mck):
-    qs = Count.objects.year(1999)
+def test_items_no_data():
+    qs = Count.objects.year(1999, count_type='count-type')
 
     actual = Stats(year=1999, data=qs).items()
 
@@ -468,10 +488,9 @@ def test_chart_calendar(_data, _chart_calendar_expect_january_with_data):
 
 
 @pytest.mark.django_db
-@patch('project.core.lib.utils.get_request_kwargs', return_value='count-type')
-def test_chart_calendar_db(mck, _chart_calendar_expect_january_with_data, _data_db):
+def test_chart_calendar_db(_chart_calendar_expect_january_with_data, _data_db):
     year = 1999
-    qs = Count.objects.sum_by_day(year=year)
+    qs = Count.objects.sum_by_day(year=year, count_type='count-type')
     actual = Stats(year=year, data=qs).chart_calendar()
 
     assert actual[0] == _chart_calendar_expect_january_with_data

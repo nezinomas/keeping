@@ -3,8 +3,6 @@ from django.db import models
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _l
 
-
-from ..counters.models import Counter
 from ..users.models import User
 from . import managers
 from .lib.drinks_options import DrinksOptions
@@ -19,11 +17,22 @@ class DrinkType(models.TextChoices):
     STDAV = 'stdav', 'Std Av'
 
 
-class Drink(Counter):
-    objects = managers.DrinkQuerySet.as_manager()
+class Drink(models.Model):
+    date = models.DateField()
+    quantity = models.FloatField(
+        validators=[MinValueValidator(0.1)]
+    )
+    option = models.CharField(
+        max_length=7,
+        choices=DrinkType.choices,
+        default=DrinkType.BEER,
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
 
-    class Meta:
-        proxy = True
+    objects = managers.DrinkQuerySet.as_manager()
 
     def __str__(self):
         qty = DrinksOptions().ratio

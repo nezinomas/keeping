@@ -13,50 +13,47 @@ from .models import Count, CountType
 class CountForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Count
-        fields = ['user', 'date', 'quantity']
+        fields = ['user', 'date', 'quantity', 'count_type']
 
-    field_order = ['date', 'quantity']
+    field_order = ['date', 'count_type', 'quantity']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self._initial_fields_values()
+        self._overwrite_default_queries()
+        self._translate_fields()
+
+        self.helper = FormHelper()
+        set_field_properties(self, self.helper)
+
+    def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(
             options={
                 "format": "YYYY-MM-DD",
                 "locale": utils.get_user().journal.lang,
             })
+        self.fields['date'].initial = set_year_for_form()
+        self.fields['quantity'].initial = 1
 
-        # user input
+        # initial value for count_type
+        slug = utils.get_request_kwargs('slug')
+        if slug:
+            obj = CountType.objects.filter(slug=slug).first()
+            self.fields['count_type'].initial = obj
+
+        # initial value for user field
         self.fields['user'].initial = utils.get_user()
         self.fields['user'].disabled = True
         self.fields['user'].widget = forms.HiddenInput()
 
-        # inital values
-        self.fields['date'].initial = set_year_for_form()
-        self.fields['quantity'].initial = 1
+    def _overwrite_default_queries(self):
+        self.fields['count_type'].queryset = CountType.objects.items()
 
+    def _translate_fields(self):
         self.fields['date'].label = _('Date')
         self.fields['quantity'].label = _('Quantity')
-
-        self.helper = FormHelper()
-        set_field_properties(self, self.helper)
-
-    def clean(self):
-        counter_type = utils.get_request_kwargs("count_type")
-        qs = CountType.objects.related().filter(slug=counter_type)
-
-        if not qs.exists():
-            self.add_error(
-                '__all__',
-                _('There is no such counter')
-            )
-
-    def save(self, *args, **kwargs):
-        instance = super().save(commit=False)
-        instance.counter_type = utils.get_request_kwargs("count_type")
-        instance.save()
-
-        return instance
+        self.fields['count_type'].label = _('Count type')
 
 
 class CountTypeForm(forms.ModelForm):
@@ -76,3 +73,25 @@ class CountTypeForm(forms.ModelForm):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+    def clean_title(self):
+        reserved_titles = [
+            'none',
+            'type',
+            'delete',
+            'update',
+            'info_row',
+            'index',
+            'data',
+            'history',
+            'empty',
+        ]
+        title = self.cleaned_data['title']
+
+        if title and title.lower() in reserved_titles:
+            self.add_error(
+                'title',
+                _('This title is reserved for the system.')
+            )
+
+        return title

@@ -34,9 +34,9 @@ class Update(UpdateViewMixin):
 
 class LoadAccount(ListViewMixin):
     template_name = 'core/dropdown.html'
+    object_list = []
 
     def get(self, request, *args, **kwargs):
-        objects = []
         pk = request.GET.get('from_account')
 
         try:
@@ -45,11 +45,10 @@ class LoadAccount(ListViewMixin):
             pk = None
 
         if pk:
-            objects = (
-                models.Account
-                .objects
-                .items()
+            self.object_list = \
+                models.Account \
+                .objects \
+                .items() \
                 .exclude(pk=pk)
-            )
 
-        return self.render_to_response({'objects': objects})
+        return self.render_to_response({'object_list': self.object_list})

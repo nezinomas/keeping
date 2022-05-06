@@ -65,9 +65,8 @@ def test_account_not_load_other_journal(client_logged, main_user, second_user):
 
     url = reverse('accounts:update', kwargs={'pk': a2.pk})
     response = client_logged.get(url)
-    form = response.context['form']
 
-    assert a2.title not in form
+    assert response.status_code == 404
 
 
 def test_account_list_view_has_all(client_logged):
@@ -118,11 +117,11 @@ def test_load_to_account(client_logged, main_user, second_user):
     url = reverse('accounts:load')
     response = client_logged.get(url, {'from_account': a1.pk})
 
-    assert len(response.context['objects']) == 1
+    assert len(response.context['object_list']) == 1
 
 
 def test_load_to_account_empty_parent(client_logged):
     url = reverse('accounts:load')
     response = client_logged.get(url, {'from_account': ''})
 
-    assert response.context['objects'] == []
+    assert response.context['object_list'] == []

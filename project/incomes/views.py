@@ -23,8 +23,8 @@ class Lists(ListViewMixin):
 
     def get_queryset(self):
         return (
-            super()
-            .get_queryset()
+            models.Income.objects
+            .year(year=self.request.user.year)
             .order_by('-date', 'price')
         )
 
@@ -54,21 +54,18 @@ class TypeNew(CreateViewMixin):
     model = models.IncomeType
     form_class = forms.IncomeTypeForm
     success_url = reverse_lazy('incomes:type_list')
-
-    url = reverse_lazy('incomes:type_new')
     hx_trigger = 'afterType'
+    url = reverse_lazy('incomes:type_new')
 
 
 class TypeUpdate(UpdateViewMixin):
     model = models.IncomeType
     form_class = forms.IncomeTypeForm
-    success_url = reverse_lazy('incomes:type_list')
-
     hx_trigger = 'afterType'
+    success_url = reverse_lazy('incomes:type_list')
 
 
 class Search(SearchMixin):
     template_name = 'incomes/income_list.html'
     per_page = 50
-
     search_method = 'search_incomes'

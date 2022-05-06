@@ -49,8 +49,8 @@ def test_transaction_index_context(client_logged):
     response = client_logged.get(url)
     context = response.context
 
-    assert 'transactions' in context
-    assert 'saving_closes' in context
+    assert 'transaction' in context
+    assert 'saving_close' in context
     assert 'saving_change' in context
     assert 'account' in context
 
@@ -144,11 +144,8 @@ def test_transactions_not_load_other_journal(client_logged, second_user):
 
     url = reverse('transactions:update', kwargs={'pk': obj.pk})
     response = client_logged.get(url)
-    form = response.context['form']
 
-    assert a_to.title not in form
-    assert a_from.title not in form
-    assert str(obj.price) not in form
+    assert response.status_code == 404
 
 
 # ---------------------------------------------------------------------------------------
@@ -198,10 +195,8 @@ def test_transactions_delete_other_journal_get_form(client_logged, second_user):
 
     url = reverse('transactions:delete', kwargs={'pk': obj.pk})
     response = client_logged.get(url)
-    actual = response.content.decode('utf-8')
 
-    assert '<form method="POST" hx-post="None"' in actual
-    assert 'Ar tikrai norite ištrinti: <strong>None</strong>?' in actual
+    assert response.status_code == 404
 
 
 def test_transactions_delete_other_journal_post_form(client_logged, second_user):
@@ -325,11 +320,8 @@ def test_savings_close_not_load_other_journal(client_logged, second_user):
 
     url = reverse('transactions:savings_close_update', kwargs={'pk': obj.pk})
     response = client_logged.get(url)
-    form = response.context['form']
 
-    assert a_to.title not in form
-    assert a_from.title not in form
-    assert str(obj.price) not in form
+    assert response.status_code == 404
 
 
 # ---------------------------------------------------------------------------------------
@@ -379,10 +371,8 @@ def test_savings_close_delete_other_journal_get_form(client_logged, second_user)
 
     url = reverse('transactions:savings_close_delete', kwargs={'pk': obj.pk})
     response = client_logged.get(url)
-    actual = response.content.decode('utf-8')
 
-    assert '<form method="POST" hx-post="None"' in actual
-    assert 'Ar tikrai norite ištrinti: <strong>None</strong>?' in actual
+    assert response.status_code == 404
 
 
 def test_savings_close_delete_other_journal_post_form(client_logged, second_user):
@@ -522,11 +512,8 @@ def test_savings_change_not_load_other_journal(client_logged, second_user):
 
     url = reverse('transactions:savings_change_update', kwargs={'pk': obj.pk})
     response = client_logged.get(url)
-    form = response.context['form'].as_p()
 
-    assert a_to.title not in form
-    assert a_from.title not in form
-    assert str(obj.price) not in form
+    assert response.status_code == 404
 
 
 # ----------------------------------------------------------------------------
@@ -572,7 +559,7 @@ def test_load_saving_type_empty_parent_pk(client_logged):
     response = client_logged.get(url, {'id': ''})
 
     assert response.status_code == 200
-    assert response.context['objects'] == []
+    assert response.context['object_list'] == []
 
 
 def test_load_saving_type_must_logged(client):
@@ -635,10 +622,8 @@ def test_savings_change_delete_other_journal_get_form(client_logged, second_user
 
     url = reverse('transactions:savings_change_delete', kwargs={'pk': obj.pk})
     response = client_logged.get(url)
-    actual = response.content.decode('utf-8')
 
-    assert '<form method="POST" hx-post="None"' in actual
-    assert 'Ar tikrai norite ištrinti: <strong>None</strong>?' in actual
+    assert response.status_code == 404
 
 
 def test_savings_change_delete_other_journal_post_form(client_logged, second_user):

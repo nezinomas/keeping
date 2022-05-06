@@ -28,6 +28,10 @@ class Stats():
     def weekdays() -> List[str]:
         return list(weekday_names().values())
 
+    @property
+    def number_of_recods(self):
+        return self._df.shape[0]
+
     def weekdays_stats(self) -> List[Dict[int, float]]:
         """Returns [{'weekday': int, 'count': float}]"""
 
@@ -36,7 +40,7 @@ class Stats():
         if not df.empty:
             df['weekday'] = df['date'].dt.dayofweek
 
-            df = df.groupby('weekday')['date'].count()
+            df = df.groupby('weekday')['qty'].sum()
 
         df = df.to_dict()  # {0: 1, 1: 0} == {weekday: counts, }
 

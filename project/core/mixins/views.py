@@ -2,15 +2,14 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import (CreateView, DeleteView, ListView,
-                                  TemplateView, UpdateView)
-from django_htmx.http import trigger_client_event
+                                  RedirectView, TemplateView, UpdateView)
+from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 
 from ...core.lib import search
-from .get import GetQuerysetMixin
 
 
 def rendered_content(request, view_class, **kwargs):
@@ -22,6 +21,18 @@ def rendered_content(request, view_class, **kwargs):
         .as_view()(request, **kwargs)
         .rendered_content
     )
+
+
+class GetQuerysetMixin():
+    def get_queryset(self):
+        try:
+            qs = self.model.objects.related()
+        except AttributeError:
+            raise Http404(
+                _("No %(verbose_name)s found matching the query") % \
+                {'verbose_name': self.model._meta.verbose_name})
+
+        return qs
 
 
 class SearchMixin(LoginRequiredMixin, TemplateView):
@@ -61,9 +72,13 @@ class SearchMixin(LoginRequiredMixin, TemplateView):
 
 class CreateUpdateMixin():
     hx_trigger = 'reload'
+    hx_redirect = None
 
     def get_hx_trigger(self):
         return self.hx_trigger
+
+    def get_hx_redirect(self):
+        return self.hx_redirect
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -77,16 +92,25 @@ class CreateUpdateMixin():
         response = super().form_valid(form)
 
         if self.request.htmx:
-            response.status_code = 204
-            trigger_client_event(
-                response,
-                self.get_hx_trigger(),
-                {},
-            )
+            self.hx_redirect = self.get_hx_redirect()
+            if self.hx_redirect:
+                # close form and redirect to url with hx_trigger
+                return HttpResponseClientRedirect(self.hx_redirect)
+            else:
+                # close form and reload container
+                response.status_code = 204
+                trigger_client_event(
+                    response,
+                    self.get_hx_trigger(),
+                    {},
+                )
+                return response
+
         return response
 
 
 class CreateViewMixin(LoginRequiredMixin,
+                      GetQuerysetMixin,
                       CreateUpdateMixin,
                       CreateView):
     form_action = 'insert'
@@ -112,9 +136,13 @@ class DeleteViewMixin(LoginRequiredMixin,
                       GetQuerysetMixin,
                       DeleteView):
     hx_trigger = 'reload'
+    hx_redirect = None
 
     def get_hx_trigger(self):
         return self.hx_trigger
+
+    def get_hx_redirect(self):
+        return self.hx_redirect
 
     def url(self):
         if self.object:
@@ -132,13 +160,21 @@ class DeleteViewMixin(LoginRequiredMixin,
         if self.get_object():
             super().post(*args, **kwargs)
 
-            return HttpResponse(
-                status=204,
-                headers={
-                    'HX-Trigger': json.dumps({self.get_hx_trigger(): None}),
-                },
-            )
+            hx_redirect = self.get_hx_redirect()
+            if hx_redirect:
+                return HttpResponseClientRedirect(hx_redirect)
+            else:
+                return HttpResponse(
+                    status=204,
+                    headers={
+                        'HX-Trigger': json.dumps({self.get_hx_trigger(): None}),
+                    },
+                )
         return HttpResponse()
+
+
+class RedirectViewMixin(LoginRequiredMixin, RedirectView):
+    pass
 
 
 class TemplateViewMixin(LoginRequiredMixin,

@@ -7,13 +7,35 @@ from django.db import models
 from ..core.lib import utils
 from ..core.lib.date import ydays
 from ..core.mixins.queryset_sum import SumMixin
-from ..counters.managers import CounterQuerySet
-from .apps import App_name as DrinksAppName
+
 from .lib.drinks_options import DrinksOptions
 
 
-class DrinkQuerySet(CounterQuerySet):
-    counter_type = DrinksAppName
+class DrinkQuerySet(SumMixin, models.QuerySet):
+    def related(self):
+        return (
+            self
+            .select_related('user')
+            .filter(user=utils.get_user())
+            .order_by('-date')
+        )
+
+    def year(self, year):
+        return self.related().filter(date__year=year)
+
+    def items(self, count_type=None):
+        return self.related()
+
+    def sum_by_year(self, year=None):
+        qs = self\
+            .related()\
+            .year_sum(
+                year=year,
+                sum_annotation='qty',
+                sum_column='quantity')\
+            .order_by('date')
+
+        return qs
 
     def sum_by_month(self, year: int, month: int = None):
         """
@@ -21,7 +43,14 @@ class DrinkQuerySet(CounterQuerySet):
         DrinkQuerySet [{'date': datetime.date, 'sum': float, 'month': int, 'monthlen': int, 'per_month': float}]
         """
 
-        qs = super().sum_by_month(year, month)
+        qs = self\
+            .related()\
+            .month_sum(
+                year=year,
+                month=month,
+                sum_annotation='qty',
+                sum_column='quantity')\
+            .order_by('date')
 
         obj = DrinksOptions()
         ratio = obj.ratio
@@ -52,7 +81,8 @@ class DrinkQuerySet(CounterQuerySet):
         """
 
         arr = {}
-        qs = list(super().sum_by_year(year))
+        qs = self.sum_by_year(year=year)
+        qs = list(qs)
 
         if not qs:
             return arr
@@ -73,7 +103,15 @@ class DrinkQuerySet(CounterQuerySet):
         return arr
 
     def sum_by_day(self, year: int, month: int = None) -> List[Dict[date, float]]:
-        qs = super().sum_by_day(year, month)
+        qs = self\
+            .related()\
+            .day_sum(
+                year=year,
+                month=month,
+                sum_annotation='qty',
+                sum_column='quantity')\
+            .order_by('date')
+
         ratio = DrinksOptions().ratio
 
         for q in qs:
@@ -85,7 +123,8 @@ class DrinkQuerySet(CounterQuerySet):
         #Returns
         # [{'year': int, 'qty': float, 'per_day': float}]
 
-        qs = super().sum_by_year()
+        qs = self.sum_by_year()
+
         obj = DrinksOptions()
         ratio = obj.ratio
 
