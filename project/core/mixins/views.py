@@ -28,8 +28,9 @@ class GetQuerysetMixin():
         try:
             qs = self.model.objects.related()
         except AttributeError:
-            raise Http404(_("No %(verbose_name)s found matching the query") % {
-                          'verbose_name': qs.model._meta.verbose_name})
+            raise Http404(
+                _("No %(verbose_name)s found matching the query") % \
+                {'verbose_name': self.model._meta.verbose_name})
 
         return qs
 

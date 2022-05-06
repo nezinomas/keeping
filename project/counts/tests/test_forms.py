@@ -149,6 +149,16 @@ def test_count_type_blank_data():
         ('Update'),
         ('delete'),
         ('Delete'),
+        ('info_row'),
+        ('Info_row'),
+        ('index'),
+        ('Index'),
+        ('data'),
+        ('Data'),
+        ('history'),
+        ('History'),
+        ('empty'),
+        ('Empty'),
     ]
 )
 def test_count_type_reserved_title(reserved_title):

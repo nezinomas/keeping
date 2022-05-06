@@ -17,22 +17,32 @@ urlpatterns = [
         name='empty'
     ),
     path(
-        'counts/index/<slug:slug>/',
+        'counts/<slug:slug>/info_row/',
+        views.InfoRow.as_view(),
+        name='info_row'
+    ),
+    path(
+        'counts/<slug:slug>/',
         views.Index.as_view(),
         name='index'
     ),
     path(
-        'counts/list/<slug:slug>/',
-        views.Lists.as_view(),
-        name='list'
+        'counts/<slug:slug>/index/',
+        views.TabIndex.as_view(),
+        name='tab_index'
     ),
     path(
-        'counts/history/<slug:slug>/',
-        views.History.as_view(),
-        name='history'
+        'counts/<slug:slug>/data/',
+        views.TabData.as_view(),
+        name='tab_data'
     ),
     path(
-        'counts/new/<slug:slug>/',
+        'counts/<slug:slug>/history/',
+        views.TabHistory.as_view(),
+        name='tab_history'
+    ),
+    path(
+        'counts/<slug:tab>/<slug:slug>/new/',
         views.New.as_view(),
         name='new'
     ),

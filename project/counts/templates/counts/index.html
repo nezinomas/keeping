@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load i18n %}
+{% load counts_components %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
 <script src="https://code.highcharts.com/modules/heatmap.js"></script>
-<script src="{% static 'js/reload_stats.js' %}"></script>
 
 <style>
     .btn-light {
@@ -16,34 +16,40 @@
 
 
 {% block content %}
-{% with object.slug as count_slug %}
 <div class="row my-2">
     <div class="col-sm-3 text-start">
-        <a href="{% url 'counts:index' count_slug %}" class="btn btn-sm {% if 'index' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Charts' %}</a>
-        <a href="{% url 'counts:list' count_slug %}" class="btn btn-sm {% if 'list' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Data' %}</a>
-        <a href="{% url 'counts:history' count_slug %}" class="btn btn-sm {% if 'history' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
+        <a role="button" hx-get="{% url 'counts:tab_index' object.slug %}" hx-target="#tab_content" class="btn btn-sm btn-tab btn-info">{% translate 'Charts' %}</a>
+        <a role="button" hx-get="{% url 'counts:tab_data' object.slug %}" hx-target="#tab_content" class="btn btn-sm btn-tab btn-light">{% translate 'Data' %}</a>
+        <a role="button" hx-get="{% url 'counts:tab_history' object.slug %}" hx-target="#tab_content" class="btn btn-sm btn-tab btn-light">{% translate 'History' %}</a>
 
     </div>
 
-    <div class="col text-center">{{info_row|safe}}</div>
+    <div class="col text-center" hx-get="{% url 'counts:info_row' object.slug %}" hx-trigger="reloadIndex from:body, reloadData from:body, reloadHistory from:body">{{info_row|safe}}</div>
 
     <div class="col-sm-3 text-end">
-        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'counts:new' count_slug %}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
-
+        <span id="btn-new">
+            {% url 'counts:new' 'index' object.slug  as url_new %}
+            {% new_count_button url=url_new %}
+        </span>
         <button type="button"p class="btn btn-sm btn-success" hx-get="{% url 'counts:type_update' object.pk %}" hx-target="#dialog"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
         <button type="button" class="btn btn-sm btn-danger" hx-get="{% url 'counts:type_delete' object.pk %}" hx-target="#dialog"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
     </div>
 </div>
 
 <div id="tab_content">
-    {% if tab == 'list' %}
-    <div hx-trigger="reload from:body" hx-get="{% url 'counts:list' count_slug  %}" hx-swap="this">{% include 'counts/tab_list.html' %}</div>
-    {% elif tab == 'history' %}
-    <div hx-trigger="reload from:body" hx-get="{% url 'counts:history' count_slug  %}" hx-swap="this">{% include 'counts/tab_history.html' %}</div>
-    {% else %}
-    <div hx-trigger="reload from:body" hx-get="{% url 'counts:index' count_slug  %}" hx-swap="this">{% include 'counts/tab_index.html' %}</div>
-    {% endif %}
+    {{tab_content}}
 </div>
 
-{% endwith %}
+<div hx-get="{% url 'counts:tab_data' object.slug %}" hx-target="#tab_content" hx-trigger="reloadData from:body"></div>
+<div hx-get="{% url 'counts:tab_index' object.slug %}" hx-target="#tab_content" hx-trigger="reloadIndex from:body"></div>
+<div hx-get="{% url 'counts:tab_history' object.slug %}" hx-target="#tab_content" hx-trigger="reloadHistory from:body"></div>
+
+<script>
+    $('.btn-tab').on('click', function () {
+        $('.btn-tab').removeClass('btn-info');
+        $(this).removeClass('btn-light');
+        $(this).addClass('btn-info');
+    });
+</script>
+
 {% endblock content %}

@@ -1,70 +1,38 @@
 from typing import Dict, List
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest
-from django.shortcuts import redirect
 from django.template.loader import render_to_string
-from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
 from ...core.lib import utils
-from ...core.lib.date import weeknumber
 from ..lib.stats import Stats
 from ..models import Count, CountType
 from .stats import Stats
 
 
-class ContextMixin():
+class CounTypetObjectMixin():
     object = None
-    render_context = None
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if not self.object:
-            try:
-                self.object = self.get_object()
-            except ObjectDoesNotExist:
-                self.object = None
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return super().dispatch(request, *args, **kwargs)
-
-        if not self.object:
-            return redirect(reverse('counts:redirect'))
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_year(self):
-        return self.request.user.year
-
-    def get_queryset(self):
-        year = self.get_year()
-        count_type = self.get_object().slug
-
-        return \
-            Count.objects \
-            .sum_by_day(year=year, count_type=count_type)
 
     def get_object(self):
         if self.object:
-            return self.object
+            return
 
-        obj = None
-        slug = utils.get_request_kwargs('slug')
-
-        if slug:
+        count_type_slug = utils.get_request_kwargs('slug')
+        print(f'Countype.get_object: utils.get_reqsuest_kwargs: {count_type_slug} \
+              self.kwargs.get.slug:  {self.kwargs.get("slug")}')
+        if count_type_slug:
             try:
-                obj = \
+                self.object = \
                     CountType.objects \
                     .related() \
-                    .get(slug=slug)
-            except ObjectDoesNotExist as e:
-                raise ObjectDoesNotExist from e
+                    .get(slug=count_type_slug)
+            except CountType.DoesNotExist:
+                pass
 
-        return obj
+
+class ContextMixin():
+    render_context = None
 
     def get_statistic(self):
         year = self.get_year()
@@ -80,7 +48,7 @@ class ContextMixin():
                     .latest()
 
                 past_last_record = qs_past.date
-            except Count.DoesNotExist:
+            except (Count.DoesNotExist, AttributeError):
                 pass
 
         return Stats(year=year, data=qs_data, past_latest=past_last_record)
@@ -92,7 +60,6 @@ class ContextMixin():
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'object': self.get_object(),
             'records': statistic.number_of_recods,
         })
 
@@ -179,26 +146,6 @@ class RenderContext():
                 'chart': 'chart_histogram',
                 'chart_title': _('Frequency of gaps, in days'),
                 'chart_column_color': '196, 37, 37',
-            },
-            self._request
-        )
-        return rendered
-
-    def info_row(self, year: int = None, title: str = None, **kwargs) -> str:
-        if not year:
-            year = self._year
-
-        week = weeknumber(year)
-        total = self._stats.year_totals()
-
-        rendered = render_to_string(
-            'counts/info_row.html',
-            {
-                'week': week,
-                'total': total,
-                'ratio': total / week,
-                'current_gap': self._stats.current_gap(),
-                'title': title,
             },
             self._request
         )

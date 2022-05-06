@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load slippers %}
+{% load counts_components %}
 
 {% if object_list %}
 <table class="table table-striped table-hover stats">
@@ -34,6 +35,8 @@
     {% if not records %}<div id="no-records">{% include 'core/no_records.html' %}</div>{% endif %}
 {% endif %}
 
+
 {% if request.htmx %}
-<div id="info_row" hx-swap-oob="true">{{info_row|safe}}</div>
+{% url 'counts:new' 'data' count_type_slug as url_new %}
+{% new_count_button url=url_new hx_swap_oob="true" %}
 {% endif %}
