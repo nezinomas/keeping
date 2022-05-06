@@ -5,7 +5,6 @@
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
 <script src="https://code.highcharts.com/modules/heatmap.js"></script>
-<script src="{% static 'js/reload_stats.js' %}"></script>
 
 <style>
     .btn-light {
@@ -24,7 +23,7 @@
 
     </div>
 
-    <div class="col text-center">{{info_row|safe}}</div>
+    <div class="col text-center" hx-get="{% url 'counts:info_row' object.slug %}" hx-trigger="reloadIndex from:body, reloadData from:body, reloadHistory from:body">{{info_row|safe}}</div>
 
     <div class="col-sm-3 text-end">
         <span id="btn-new">

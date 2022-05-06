@@ -42,6 +42,45 @@ class Empty(TemplateViewMixin):
     template_name = 'counts/empty.html'
 
 
+class InfoRow(CounTypetObjectMixin, TemplateViewMixin):
+    template_name = 'counts/info_row.html'
+
+    def get_context_data(self, **kwargs):
+        self.object = self.kwargs.get('object')
+        if not self.object:
+            super().get_object()
+
+        year = self.request.user.year
+        week = weeknumber(year)
+
+        qs_total = \
+            Count.objects \
+            .related() \
+            .filter(count_type=self.object, date__year=year) \
+            .aggregate(total=Sum('quantity'))
+        total = qs_total.get('total') or 0
+
+        try:
+            qs_latest = \
+                Count.objects \
+                .related() \
+                .filter(count_type=self.object) \
+                .latest()
+            gap = (datetime.now().date() - qs_latest.date).days
+        except Count.DoesNotExist:
+            gap = 0
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'title': self.object.title,
+            'week': week,
+            'total': total,
+            'ratio': total / week,
+            'current_gap': gap,
+        })
+        return context
+
+
 class Index(CounTypetObjectMixin, TemplateViewMixin):
     template_name = 'counts/index.html'
 
