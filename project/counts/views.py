@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
@@ -25,7 +24,7 @@ class Redirect(RedirectViewMixin):
             qs = CountType.objects \
                 .related() \
                 .get(slug=slug)
-        except ObjectDoesNotExist:
+        except CountType.DoesNotExist:
             qs = CountType.objects \
                 .related() \
                 .first()
