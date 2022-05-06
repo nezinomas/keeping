@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load i18n %}
+{% load counts_components %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
@@ -27,7 +28,8 @@
 
     <div class="col-sm-3 text-end">
         <span id="btn-new">
-            <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'counts:new' 'index' object.slug  %}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+            {% url 'counts:new' 'index' object.slug  as url_new %}
+            {% new_count_button url=url_new %}
         </span>
         <button type="button"p class="btn btn-sm btn-success" hx-get="{% url 'counts:type_update' object.pk %}" hx-target="#dialog"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
         <button type="button" class="btn btn-sm btn-danger" hx-get="{% url 'counts:type_delete' object.pk %}" hx-target="#dialog"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>

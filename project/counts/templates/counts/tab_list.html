@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load slippers %}
+{% load counts_components %}
 
 {% if object_list %}
 <table class="table table-striped table-hover stats">
@@ -36,7 +37,6 @@
 
 
 {% if request.htmx %}
-<span id="btn-new" hx-swap-oob="true">
-<button type="button" id="btn-new" class="btn btn-sm btn-outline-success" hx-get="{% url 'counts:new' 'data' count_type_slug  %}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
-</span>
+{% url 'counts:new' 'data' count_type_slug as url_new %}
+{% new_count_button url=url_new hx_swap_oob="true" %}
 {% endif %}

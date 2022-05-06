@@ -1,4 +1,6 @@
 {% load i18n %}
+{% load counts_components %}
+
 
 {% if records %}
 
@@ -21,7 +23,6 @@
 
 
 {% if request.htmx %}
-<span id="btn-new" hx-swap-oob="true">
-<button type="button" id="btn-new" class="btn btn-sm btn-outline-success" hx-get="{% url 'counts:new' 'index' object.slug %}"  hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
-</span>
+{% url 'counts:new' 'index' count_type_slug as url_new %}
+{% new_count_button url=url_new hx_swap_oob="true" %}
 {% endif %}
