@@ -17,7 +17,7 @@ urlpatterns = [
         name='empty'
     ),
     path(
-        'counts/info_row/',
+        'counts/<slug:slug>/info_row/',
         views.InfoRow.as_view(),
         name='info_row'
     ),
