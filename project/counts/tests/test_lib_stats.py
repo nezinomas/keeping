@@ -114,7 +114,7 @@ def test_weekdays_stats(_data):
     assert actual == expect
 
 
-def test_weekdays_stats_new():
+def test_weekdays_stats_only_thusdays():
     df = [
         {'date': date(2022, 4, 6), 'qty': 1.0},
         {'date': date(2022, 4, 13), 'qty': 2.0},
