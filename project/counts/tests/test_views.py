@@ -346,7 +346,7 @@ def test_index_add_button(client_logged):
     content = response.content.decode()
 
     pattern = re.compile(
-        r'<button type="button" class="btn.+hx-get="(.*?)".+ (\w+)<\/button>')
+        r'<button type="button" id="btn-new" .+hx-get="(.*?)".+ (\w+)<\/button>')
     res = re.findall(pattern, content)
 
     assert len(res[0]) == 2
