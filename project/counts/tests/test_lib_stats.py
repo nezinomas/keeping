@@ -100,11 +100,33 @@ def test_weekdays_stats(_data):
     actual = Stats(year=1999, data=_data).weekdays_stats()
 
     expect = [
-        {'weekday': 0, 'count': 1},  # pirmadienis
+        {'weekday': 0, 'count': 2},  # pirmadienis
         {'weekday': 1, 'count': 0},  # antradienis
         {'weekday': 2, 'count': 0},  # treciadienis
         {'weekday': 3, 'count': 0},  # ketvirtadienis
-        {'weekday': 4, 'count': 3},  # pentadienis
+        {'weekday': 4, 'count': 4},  # pentadienis
+        {'weekday': 5, 'count': 0},  # šeštadienis
+        {'weekday': 6, 'count': 0},  # sekmdadienis
+    ]
+
+    assert actual == expect
+
+
+def test_weekdays_stats_new():
+    df = [
+        {'date': date(2022, 4, 6), 'qty': 1.0},
+        {'date': date(2022, 4, 13), 'qty': 2.0},
+        {'date': date(2022, 4, 20), 'qty': 10.0},
+    ]
+
+    actual = Stats(year=2022, data=df).weekdays_stats()
+
+    expect = [
+        {'weekday': 0, 'count': 0},  # pirmadienis
+        {'weekday': 1, 'count': 0},  # antradienis
+        {'weekday': 2, 'count': 13},  # treciadienis
+        {'weekday': 3, 'count': 0},  # ketvirtadienis
+        {'weekday': 4, 'count': 0},  # pentadienis
         {'weekday': 5, 'count': 0},  # šeštadienis
         {'weekday': 6, 'count': 0},  # sekmdadienis
     ]
@@ -116,11 +138,11 @@ def test_weekdays_stats_all_years(_data):
     actual = Stats(data=_data).weekdays_stats()
 
     expect = [
-        {'weekday': 0, 'count': 1},  # pirmadienis
+        {'weekday': 0, 'count': 2},  # pirmadienis
         {'weekday': 1, 'count': 0},  # antradienis
         {'weekday': 2, 'count': 0},  # treciadienis
         {'weekday': 3, 'count': 0},  # ketvirtadienis
-        {'weekday': 4, 'count': 3},  # pentadienis
+        {'weekday': 4, 'count': 4},  # pentadienis
         {'weekday': 5, 'count': 1},  # šeštadienis
         {'weekday': 6, 'count': 0},  # sekmdadienis
     ]

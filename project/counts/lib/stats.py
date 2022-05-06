@@ -36,7 +36,7 @@ class Stats():
         if not df.empty:
             df['weekday'] = df['date'].dt.dayofweek
 
-            df = df.groupby('weekday')['date'].count()
+            df = df.groupby('weekday')['qty'].sum()
 
         df = df.to_dict()  # {0: 1, 1: 0} == {weekday: counts, }
 
