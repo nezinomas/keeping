@@ -5,7 +5,6 @@ from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
-from ...core.lib import utils
 from ..lib.stats import Stats
 from ..models import Count, CountType
 from .stats import Stats
@@ -18,9 +17,8 @@ class CounTypetObjectMixin():
         if self.object:
             return
 
-        count_type_slug = utils.get_request_kwargs('slug')
-        print(f'Countype.get_object: utils.get_reqsuest_kwargs: {count_type_slug} \
-              self.kwargs.get.slug:  {self.kwargs.get("slug")}')
+        count_type_slug = self.kwargs.get('slug')
+
         if count_type_slug:
             try:
                 self.object = \
