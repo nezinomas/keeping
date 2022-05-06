@@ -47,11 +47,6 @@ urlpatterns = [
         name='drinks_target_update'
     ),
     path(
-        'drinks/reload_stats/',
-        views.ReloadStats.as_view(),
-        name='reload_stats'
-    ),
-    path(
         'drinks/historical_data/<int:qty>/',
         views.HistoricalData.as_view(),
         name='historical_data'

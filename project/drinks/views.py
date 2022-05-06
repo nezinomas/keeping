@@ -18,20 +18,6 @@ from .lib import views_helper as H
 from .lib.drinks_options import DrinksOptions
 
 
-class ReloadStats(DispatchAjaxMixin, IndexMixin):
-    template_name = f'{App_name}/index.html'
-    redirect_view = reverse_lazy(f'{App_name}:{App_name}_index')
-
-    def get(self, request, *args, **kwargs):
-        context = {}
-        context.update({
-            'target_list': TargetLists.as_view()(self.request, as_string=True),
-            **H.RenderContext(request).context_to_reload()
-        })
-
-        return JsonResponse(context)
-
-
 class HistoricalData(IndexMixin):
     template_name = f'{App_name}/includes/chart_compare.html'
 
