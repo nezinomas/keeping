@@ -8,11 +8,10 @@ def _to_float(_str: Any) -> float:
     if isinstance(_str, str):
         _str = _str.replace('.', str())
         _str = _str.replace(',', '.')
-
     try:
         return float(_str)
     except ValueError:
-        return _str
+        return float()
 
 
 @register.filter
