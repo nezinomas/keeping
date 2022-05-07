@@ -48,11 +48,9 @@
             @click="info_row_show = false, openTab = 'history'">
             {% translate 'History' %}
         </a>
-
     </div>
 
-    <div
-        class="col text-center"
+    <div class="col text-center"
         hx-get="{% url 'counts:info_row' object.slug %}"
         hx-trigger="reloadIndex from:body, reloadData from:body, reloadHistory from:body">
         {{info_row|safe}}
