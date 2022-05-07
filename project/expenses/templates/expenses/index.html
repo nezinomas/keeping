@@ -36,13 +36,12 @@
 <div class="row gx-2">
     {% var current_month=view.get_month %}
     <div class="col-lg-8"
-            x-data="{
+        x-data="{
             openTab: '{{current_month}}',
             activeClass: 'btn-info',
             inactiveClass: 'btn-month',
         }">
-        <div class="row my-2"
->
+        <div class="row my-2">
             <div class="col">
             {% for m in context_months %}
                 {% with m|date:'n' as m_num %}
@@ -77,7 +76,7 @@
         <div class="row mb-2">
             {% url 'expenses:search' as search_url %}
             {% url 'expenses:list' as reset_url %}
-            <div id="search_form_data" class="col">{% search_form url=search_url reset_url=reset_url target="#list" %}</div>
+            <div id="search_form_data" class="col">{% search_form url=search_url reset_url=reset_url target="#list" hightlight_tab=current_month %}</div>
         </div>
 
         <div class="row">
