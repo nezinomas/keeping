@@ -59,15 +59,17 @@ class InfoRow(CounTypetObjectMixin, TemplateViewMixin):
             .aggregate(total=Sum('quantity'))
         total = qs_total.get('total') or 0
 
-        try:
-            qs_latest = \
-                Count.objects \
-                .related() \
-                .filter(count_type=self.object) \
-                .latest()
-            gap = (datetime.now().date() - qs_latest.date).days
-        except Count.DoesNotExist:
-            gap = 0
+        gap = 0
+        if year == datetime.now().year:
+            try:
+                qs_latest = \
+                    Count.objects \
+                    .related() \
+                    .filter(count_type=self.object) \
+                    .latest()
+                gap = (datetime.now().date() - qs_latest.date).days
+            except Count.DoesNotExist:
+                pass
 
         context = super().get_context_data(**kwargs)
         context.update({
