@@ -363,7 +363,12 @@ def test_index_links(client_logged):
 
     response = client_logged.get(url)
     content = response.content.decode()
-    pattern = re.compile(r'<a role="button" hx-get="(.*?)".+>(\w+)<\/a>')
+    content = content.replace('\n', '')
+    content = content.replace('           ', '')
+    content = content.replace('       ', '')
+
+    pattern = re.compile(
+        r'<a role="button".*?hx-get="(.*?)".*?> (\w+) <\/a>')
     res = re.findall(pattern, content)
 
     assert len(res) == 3
