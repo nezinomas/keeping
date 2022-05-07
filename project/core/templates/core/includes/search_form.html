@@ -1,11 +1,29 @@
 {% load i18n %}
 
-<form novalidate method="post" id="search_form" class="row d-flex gx-1 align-items-center" hx-get="{{ url }}" hx-target="{{ target }}" hx-swap="innerHTML" hx-indicator="#indicator">
+<form novalidate
+    method="post"
+    id="search_form"
+    class="row d-flex gx-1 align-items-center"
+    hx-get="{{ url }}"
+    hx-target="{{ target }}"
+    hx-swap="innerHTML"
+    hx-indicator="#indicator"
+    x-data="{ message: '' }">
     <div class="col align-self-start">
-        <input type="search" name="search" id="id_search" class="textinput textInput form-control form-control-sm"
-        placeholder="{% translate 'Search' %}..." aria-label="{% translate 'Search' %}">
+        <input type="search" name="search"
+            id="id_search"
+            class="textinput textInput form-control form-control-sm"
+            placeholder="{% translate 'Search' %}..."
+            aria-label="{% translate 'Search' %}"
+            x-model="message">
     </div>
     <div class="col-auto align-self-start">
-        <button type="button" class="btn btn-sm btn-secondary" hx-get="{{ reset_url }}" hx-target="{{ target }}" onclick="$('#id_search').val('');">{% translate 'Reset' %}</button>
+        <button type="button"
+            class="btn btn-sm btn-secondary"
+            hx-get="{{ reset_url }}"
+            hx-target="{{ target }}"
+            @click="message = ''">
+            {% translate 'Reset' %}
+        </button>
     </div>
 </form>
