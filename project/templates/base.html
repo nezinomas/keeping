@@ -171,34 +171,34 @@
               <button type="button" class="btn btn-menu dropdown-toggle nav-link" data-bs-toggle="dropdown" aria-expanded="false">{% translate 'Add' %}</button>
               <ul class="dropdown-menu">
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'incomes:new' %}">{% translate 'Incomes' context 'incomes button' %}</button>
+                  <button class="dropdown-item btn-sm" hx-get="{% url 'incomes:new' %}" hx-target="#dialog">{% translate 'Incomes' context 'incomes button' %}</button>
                 </li>
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'expenses:new' %}">{% translate "Expenses" context "expenses button" %}</button>
+                  <button class="dropdown-item btn-sm" hx-get="{% url 'expenses:new' %}" hx-target="#dialog">{% translate "Expenses" context "expenses button" %}</button>
                 </li>
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'transactions:new' %}">{% translate 'Transactions' context "transactions button" %}</button>
+                  <button class="dropdown-item btn-sm" hx-get="{% url 'transactions:new' %}" hx-target="#dialog">{% translate 'Transactions' context "transactions button" %}</button>
                 </li>
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'savings:new' %}">{% translate 'Savings' context "savings button" %}</button>
+                  <button class="dropdown-item btn-sm" hx-get="{% url 'savings:new' %}" hx-target="#dialog">{% translate 'Savings' context "savings button" %}</button>
                 </li>
                 <li>
                   <hr class="dropdown-divider">
                 </li>
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'accounts:new' %}">{% translate 'Account' context 'account button' %}</button>
+                  <button class="dropdown-item btn-sm" hx-get="{% url 'accounts:new' %}" hx-target="#dialog">{% translate 'Account' context 'account button' %}</button>
                 </li>
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'incomes:type_new' %}">{% translate 'Incomes type' context 'income type button' %}</button>
+                  <button class="dropdown-item btn-sm" hx-get="{% url 'incomes:type_new' %}" hx-target="#dialog">{% translate 'Incomes type' context 'income type button' %}</button>
                 </li>
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'expenses:type_new' %}">{% translate "Expenses type" context "expenses type button" %}</button>
+                  <button class="dropdown-item btn-sm" hx-get="{% url 'expenses:type_new' %}" hx-target="#dialog">{% translate "Expenses type" context "expenses type button" %}</button>
                 </li>
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'expenses:name_new' %}">{% translate "Expenses name" context "expenses name button" %}</button>
+                  <button class="dropdown-item btn-sm" hx-get="{% url 'expenses:name_new' %}" hx-target="#dialog">{% translate "Expenses name" context "expenses name button" %}</button>
                 </li>
                 <li>
-                  <button class="dropdown-item btn-sm" data-url="{% url 'savings:type_new' %}">{% translate 'Fund' context 'fund button' %}</button>
+                  <button class="dropdown-item btn-sm" hx-get="{% url 'savings:type_new' %}" hx-target="#dialog">{% translate 'Fund' context 'fund button' %}</button>
                 </li>
               </ul>
             </div>
