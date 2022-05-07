@@ -1,14 +1,7 @@
 {% load i18n %}
 
-
-<div id="info_row" class="info_row" x-show="info_row_show">
-    <h6 class="me-3">{{ title }}</h6>
-    <span>{% translate 'Quantity' %}:</span> <h6 class="me-3">{{ total|floatformat:0 }}</h6>
-    <span>{% translate 'Week' %}:</span> <h6 class="me-3">{{ week|floatformat:0 }}</h6>
-    <span>{% translate 'Per week' %}:</span> <h6>{{ ratio|floatformat:1 }}</h6>
-    {% if current_gap %}<span class="ms-3">{% translate 'Last time before' %}:</span> <h6>{{ current_gap|floatformat:0 }}</h6><span>d.</span>{% endif %}
-</div>
-
-<div id="info_row" class="info_row" x-show="!info_row_show">
-    <h6>{% translate 'Historical data' %}</h6>
-</div>
+<h6 class="me-3">{{ title }}</h6>
+<span>{% translate 'Quantity' %}:</span> <h6 class="me-3">{{ total|floatformat:0 }}</h6>
+<span>{% translate 'Week' %}:</span> <h6 class="me-3">{{ week|floatformat:0 }}</h6>
+<span>{% translate 'Per week' %}:</span> <h6>{{ ratio|floatformat:1 }}</h6>
+{% if current_gap %}<span class="ms-3">{% translate 'Last time before' %}:</span> <h6>{{ current_gap|floatformat:0 }}</h6><span>d.</span>{% endif %}
