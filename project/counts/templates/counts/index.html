@@ -16,7 +16,7 @@
 
 
 {% block content %}
-<div class="row my-2" x-data="{ info_row_show: true }">
+<div class="row my-2" x-data="{ dataInfoRow: true }">
     <div
         class="col-sm-3 text-start"
         x-data="{
@@ -29,7 +29,7 @@
             hx-target="#tab_content"
             class="btn btn-sm btn-tab"
             :class="openTab === 'index' ? activeClass : inactiveClass"
-            @click="info_row_show = true, openTab = 'index'">
+            @click="dataInfoRow = true, openTab = 'index'">
             {% translate 'Charts' %}
         </a>
         <a role="button"
@@ -37,7 +37,7 @@
             hx-target="#tab_content"
             class="btn btn-sm btn-tab"
             :class="openTab === 'data' ? activeClass : inactiveClass"
-            @click="info_row_show = true, openTab = 'data'">
+            @click="dataInfoRow = true, openTab = 'data'">
             {% translate 'Data' %}
         </a>
         <a role="button"
@@ -45,7 +45,7 @@
             hx-target="#tab_content"
             class="btn btn-sm btn-tab"
             :class="openTab === 'history' ? activeClass : inactiveClass"
-            @click="info_row_show = false, openTab = 'history'">
+            @click="dataInfoRow = false, openTab = 'history'">
             {% translate 'History' %}
         </a>
     </div>
@@ -55,11 +55,11 @@
             id="info_row" class="info_row"
             hx-get="{% url 'counts:info_row' object.slug %}"
             hx-trigger="reloadIndex from:body, reloadData from:body, reloadHistory from:body"
-            x-show="info_row_show">
+            x-show="dataInfoRow">
             {{info_row|safe}}
         </div>
         <div id="info_row" class="info_row"
-            x-show="!info_row_show">
+            x-show="!dataInfoRow">
             <h6>{% translate 'Historical data' %}</h6>
         </div>
     </div>
