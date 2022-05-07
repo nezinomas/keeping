@@ -15,7 +15,8 @@
             class="textinput textInput form-control form-control-sm"
             placeholder="{% translate 'Search' %}..."
             aria-label="{% translate 'Search' %}"
-            x-model="message">
+            x-model="message"
+            {% if hightlight_tab %}@keyup.enter="openTab = '13'"{% endif %}>
     </div>
     <div class="col-auto align-self-start">
         <button type="button"
