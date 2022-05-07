@@ -16,15 +16,45 @@
 
 
 {% block content %}
-<div class="row my-2">
-    <div class="col-sm-3 text-start">
-        <a role="button" hx-get="{% url 'counts:tab_index' object.slug %}" hx-target="#tab_content" class="btn btn-sm btn-tab btn-info">{% translate 'Charts' %}</a>
-        <a role="button" hx-get="{% url 'counts:tab_data' object.slug %}" hx-target="#tab_content" class="btn btn-sm btn-tab btn-light">{% translate 'Data' %}</a>
-        <a role="button" hx-get="{% url 'counts:tab_history' object.slug %}" hx-target="#tab_content" class="btn btn-sm btn-tab btn-light">{% translate 'History' %}</a>
-
+<div class="row my-2" x-data="{ info_row_show: true }">
+    <div
+        class="col-sm-3 text-start"
+        x-data="{
+            openTab: 'index',
+            activeClass: 'btn-info',
+            inactiveClass: 'btn-light',
+        }">
+        <a role="button"
+            hx-get="{% url 'counts:tab_index' object.slug %}"
+            hx-target="#tab_content"
+            class="btn btn-sm btn-tab"
+            :class="openTab === 'index' ? activeClass : inactiveClass"
+            @click="info_row_show = true, openTab = 'index'">
+            {% translate 'Charts' %}
+        </a>
+        <a role="button"
+            hx-get="{% url 'counts:tab_data' object.slug %}"
+            hx-target="#tab_content"
+            class="btn btn-sm btn-tab"
+            :class="openTab === 'data' ? activeClass : inactiveClass"
+            @click="info_row_show = true, openTab = 'data'">
+            {% translate 'Data' %}
+        </a>
+        <a role="button"
+            hx-get="{% url 'counts:tab_history' object.slug %}"
+            hx-target="#tab_content"
+            class="btn btn-sm btn-tab"
+            :class="openTab === 'history' ? activeClass : inactiveClass"
+            @click="info_row_show = false, openTab = 'history'">
+            {% translate 'History' %}
+        </a>
     </div>
 
-    <div class="col text-center" hx-get="{% url 'counts:info_row' object.slug %}" hx-trigger="reloadIndex from:body, reloadData from:body, reloadHistory from:body">{{info_row|safe}}</div>
+    <div class="col text-center"
+        hx-get="{% url 'counts:info_row' object.slug %}"
+        hx-trigger="reloadIndex from:body, reloadData from:body, reloadHistory from:body">
+        {{info_row|safe}}
+    </div>
 
     <div class="col-sm-3 text-end">
         <span id="btn-new">
@@ -43,13 +73,5 @@
 <div hx-get="{% url 'counts:tab_data' object.slug %}" hx-target="#tab_content" hx-trigger="reloadData from:body"></div>
 <div hx-get="{% url 'counts:tab_index' object.slug %}" hx-target="#tab_content" hx-trigger="reloadIndex from:body"></div>
 <div hx-get="{% url 'counts:tab_history' object.slug %}" hx-target="#tab_content" hx-trigger="reloadHistory from:body"></div>
-
-<script>
-    $('.btn-tab').on('click', function () {
-        $('.btn-tab').removeClass('btn-info');
-        $(this).removeClass('btn-light');
-        $(this).addClass('btn-info');
-    });
-</script>
 
 {% endblock content %}

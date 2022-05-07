@@ -34,16 +34,39 @@
 {% url 'expenses:type_new' as url_type_new %}
 {% url 'expenses:name_new' as url_name_new %}
 <div class="row gx-2">
-    <div class="col-lg-8">
+    {% var current_month=view.get_month %}
+    <div class="col-lg-8"
+        x-data="{
+            openTab: '{{current_month}}',
+            activeClass: 'btn-info',
+            inactiveClass: 'btn-month',
+        }">
         <div class="row my-2">
             <div class="col">
-            {% var current_month=view.get_month %}
             {% for m in context_months %}
                 {% with m|date:'n' as m_num %}
-                <button id="{{m_num}}" type="button" hx-get="{% url 'expenses:list' %}?month={{ m_num }}" hx-target="#list" hx-swap="innerHTML" hx-indicator="#indicator" class="btn btn-sm btn-month {% if current_month|slugify == m_num %}btn-info{% endif %}">{{ m|date:'F'|title }}</button>
+                <button type="button"
+                    class="btn btn-sm"
+                    hx-get="{% url 'expenses:list' %}?month={{ m_num }}"
+                    hx-target="#list"
+                    hx-swap="innerHTML"
+                    hx-indicator="#indicator"
+                    :class="openTab === '{{m_num}}' ? activeClass : inactiveClass"
+                    @click="openTab = '{{m_num}}'">
+                    {{ m|date:'F'|title }}
+                </button>
                 {% endwith %}
                 {% endfor %}
-                <button id="13" type="button" hx-get="{% url 'expenses:list' %}?month=13" hx-target="#list" hx-swap="innerHTML" hx-indicator="#indicator" class="btn btn-sm btn-month js-filter ms-2 {% if current_month == 13 %}btn-info{% endif %}">{% translate 'All records' %}</button>
+                <button type="button"
+                    class="btn btn-sm ms-2"
+                    hx-get="{% url 'expenses:list' %}?month=13"
+                    hx-target="#list"
+                    hx-swap="innerHTML"
+                    hx-indicator="#indicator"
+                    :class="openTab === '13' ? activeClass : inactiveClass"
+                    @click="openTab = '13'">
+                    {% translate 'All records' %}
+                </button>
             </div>
             <div class="col-auto text-end">
                 <button type="button" id="insert_expense" class="btn btn-sm btn-outline-success w5" hx-get="{{ url_expense_new }}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Expenses" context "expenses button" %}</button>
@@ -53,7 +76,7 @@
         <div class="row mb-2">
             {% url 'expenses:search' as search_url %}
             {% url 'expenses:list' as reset_url %}
-            <div id="search_form_data" class="col">{% search_form url=search_url reset_url=reset_url target="#list" %}</div>
+            <div id="search_form_data" class="col">{% search_form url=search_url reset_url=reset_url target="#list" hightlight_tab=current_month %}</div>
         </div>
 
         <div class="row">
@@ -74,13 +97,5 @@
         </div>
     </div>
 </div>
-
-<script>
-    $('.btn-month').on('click', function () {
-        $('.btn-month').removeClass('btn-info');
-        $(this).addClass('btn-info');
-    });
-
-</script>
 
 {% endblock content %}
