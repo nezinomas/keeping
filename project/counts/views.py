@@ -151,7 +151,7 @@ class TabIndex(CounTypetObjectMixin, ContextMixin, TemplateViewMixin):
 
 class TabData(ListViewMixin):
     model = Count
-    template_name = 'counts/tab_list.html'
+    template_name = 'counts/tab_data.html'
 
     def get_queryset(self):
         year = self.request.user.year
