@@ -363,7 +363,12 @@ def test_index_links(client_logged):
 
     response = client_logged.get(url)
     content = response.content.decode()
-    pattern = re.compile(r'<a role="button" hx-get="(.*?)".+>(\w+)<\/a>')
+    content = content.replace('\n', '')
+    content = content.replace('           ', '')
+    content = content.replace('       ', '')
+
+    pattern = re.compile(
+        r'<a role="button".*?hx-get="(.*?)".*?> (\w+) <\/a>')
     res = re.findall(pattern, content)
 
     assert len(res) == 3
@@ -796,3 +801,18 @@ def test_info_row(client_logged):
     assert context['total'] == 3
     assert round(context['ratio'], 2) == 0.11
     assert context['current_gap'] == 4
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+@freeze_time('2000-07-12')
+def test_info_row_gap_in_past_view(client_logged, get_user):
+    get_user.year = 1999
+
+    CountFactory(date=date(1999, 1, 1), quantity=1)
+    CountFactory(date=date(2000, 1, 1), quantity=1)
+
+    url = reverse('counts:index', kwargs={'slug': 'count-type'})
+    response = client_logged.get(url)
+    context = response.context
+
+    assert context['current_gap'] == 0
