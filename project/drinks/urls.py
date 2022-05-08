@@ -18,12 +18,12 @@ urlpatterns = [
     ),
     path(
         'drinks/data/',
-        views.Lists.as_view(),
+        views.TabData.as_view(),
         name='tab_data'
     ),
     path(
         'drinks/history/',
-        views.Summary.as_view(),
+        views.TabHistory.as_view(),
         name='tab_history'
     ),
     path(

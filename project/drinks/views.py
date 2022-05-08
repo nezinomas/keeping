@@ -21,8 +21,83 @@ from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  TemplateViewMixin, UpdateViewMixin,
                                  rendered_content)
 
+
+class Index(TemplateViewMixin):
+    template_name = 'drinks/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'tab': 'index',
+            'all_years': len(years()),
+            'compare_form': render_to_string(
+                template_name=f'{App_name}/includes/compare_form.html',
+                context={'form': forms.DrinkCompareForm()},
+                request=self.request
+            ),
+            'target_list': TargetLists.as_view()(self.request, as_string=True),
+            **H.drink_type_dropdown(self.request),
+            **H.RenderContext(self.request).context_to_reload(),
+        })
+        return context
+
+
 class TabIndex(TemplateViewMixin):
     template_name = 'drinks/tab_index.html'
+
+
+class TabData(ListViewMixin):
+    template_name = 'drinks/tab_data.html'
+    model = models.Drink
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'tab': 'data',
+            **H.drink_type_dropdown(self.request),
+        })
+
+        return context
+
+
+class TabHistory(TemplateViewMixin):
+    template_name = 'drinks/tab_history.html'
+
+    def get_context_data(self, **kwargs):
+        drink_years = []
+        ml = []
+        alcohol = []
+
+        qs = list(models.Drink.objects.summary())
+
+        obj = DrinksOptions()
+        ratio = obj.ratio
+
+        if qs:
+            for year in range(qs[0]['year'], datetime.now().year+1):
+                drink_years.append(year)
+
+                item = next((x for x in qs if x['year'] == year), False)
+                if item:
+                    _stdav = item['qty'] / ratio
+                    _alkohol = obj.stdav_to_alkohol(stdav=_stdav)
+
+                    alcohol.append(_alkohol)
+                    ml.append(item['per_day'])
+                else:
+                    alcohol.append(0.0)
+                    ml.append(0.0)
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'tab': 'history',
+            'drinks_categories': drink_years,
+            'drinks_data_ml': ml,
+            'drinks_data_alcohol': alcohol,
+            'records': len(drink_years) if len(drink_years) > 1 else 0,
+            **H.drink_type_dropdown(self.request),
+        })
+        return context
 
 
 class HistoricalData(IndexMixin):
@@ -64,79 +139,9 @@ class Compare(AjaxSearchMixin):
         return super().form_valid(form, **kwargs)
 
 
-class Index(IndexMixin):
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'tab': 'index',
-            'all_years': len(years()),
-            'compare_form': render_to_string(
-                template_name=f'{App_name}/includes/compare_form.html',
-                context={'form': forms.DrinkCompareForm()},
-                request=self.request
-            ),
-            'target_list': TargetLists.as_view()(self.request, as_string=True),
-            **H.drink_type_dropdown(self.request),
-            **H.RenderContext(self.request).context_to_reload(),
-        })
-        return context
-
-
-class Lists(ListMixin):
-    template_name = 'drinks/index.html'
-    model = models.Drink
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'tab': 'data',
-            **H.drink_type_dropdown(self.request),
-        })
-
-        return context
-
-
 class New(CreateAjaxMixin):
     model = models.Drink
     form_class = forms.DrinkForm
-
-
-class Summary(IndexMixin):
-    def get_context_data(self, **kwargs):
-        drink_years = []
-        ml = []
-        alcohol = []
-
-        qs = list(models.Drink.objects.summary())
-
-        obj = DrinksOptions()
-        ratio = obj.ratio
-
-        if qs:
-            for year in range(qs[0]['year'], datetime.now().year+1):
-                drink_years.append(year)
-
-                item = next((x for x in qs if x['year'] == year), False)
-                if item:
-                    _stdav = item['qty'] / ratio
-                    _alkohol = obj.stdav_to_alkohol(stdav=_stdav)
-
-                    alcohol.append(_alkohol)
-                    ml.append(item['per_day'])
-                else:
-                    alcohol.append(0.0)
-                    ml.append(0.0)
-
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'tab': 'history',
-            'drinks_categories': drink_years,
-            'drinks_data_ml': ml,
-            'drinks_data_alcohol': alcohol,
-            'records': len(drink_years) if len(drink_years) > 1 else 0,
-            **H.drink_type_dropdown(self.request),
-        })
-        return context
 
 
 class Update(UpdateAjaxMixin):
