@@ -170,6 +170,8 @@ class New(CreateViewMixin):
 class Update(UpdateViewMixin):
     model = Drink
     form_class = DrinkForm
+    success_url = reverse_lazy('drinks:tab_data')
+    hx_trigger = 'reloadData'
 
     def get_object(self):
         obj = super().get_object()
@@ -182,6 +184,8 @@ class Update(UpdateViewMixin):
 
 class Delete(DeleteViewMixin):
     model = Drink
+    success_url = reverse_lazy('drinks:tab_data')
+    hx_trigger = 'reloadData'
 
 
 class TargetLists(ListViewMixin):
@@ -208,6 +212,8 @@ class TargetNew(CreateViewMixin):
 class TargetUpdate(UpdateViewMixin):
     model = DrinkTarget
     form_class = DrinkTargetForm
+    success_url = reverse_lazy('drinks:tab_index')
+    hx_trigger = 'reloadIndex'
 
     def get_object(self):
         obj = super().get_object()
