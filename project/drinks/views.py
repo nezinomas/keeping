@@ -16,6 +16,13 @@ from . import forms, models
 from .apps import App_name
 from .lib import views_helper as H
 from .lib.drinks_options import DrinksOptions
+from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
+                                 ListViewMixin, RedirectViewMixin,
+                                 TemplateViewMixin, UpdateViewMixin,
+                                 rendered_content)
+
+class TabIndex(TemplateViewMixin):
+    template_name = 'drinks/tab_index.html'
 
 
 class HistoricalData(IndexMixin):

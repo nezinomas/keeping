@@ -12,9 +12,19 @@ urlpatterns = [
         name='index'
     ),
     path(
-        'drinks/lists/',
+        'drinks/index/',
+        views.TabIndex.as_view(),
+        name='tab_index'
+    ),
+    path(
+        'drinks/data/',
         views.Lists.as_view(),
         name='tab_data'
+    ),
+    path(
+        'drinks/history/',
+        views.Summary.as_view(),
+        name='tab_history'
     ),
     path(
         'drinks/new/',
@@ -55,11 +65,6 @@ urlpatterns = [
         'drinks/compare/',
         views.Compare.as_view(),
         name='compare'
-    ),
-    path(
-        'drinks/history/',
-        views.Summary.as_view(),
-        name='tab_history'
     ),
     path(
         'drinks/drink_type/<str:drink_type>/',
