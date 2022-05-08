@@ -27,12 +27,12 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
         return self.related()
 
     def sum_by_year(self, year=None):
-        qs = self\
-            .related()\
+        qs = self \
+            .related() \
             .year_sum(
                 year=year,
                 sum_annotation='qty',
-                sum_column='quantity')\
+                sum_column='quantity') \
             .order_by('date')
 
         return qs
