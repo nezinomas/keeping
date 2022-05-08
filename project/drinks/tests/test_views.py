@@ -22,7 +22,7 @@ pytestmark = pytest.mark.django_db
 # ---------------------------------------------------------------------------------------
 @freeze_time('2000-01-01')
 def test_new_200(client_logged):
-    url = reverse('drinks:drinks_new')
+    url = reverse('drinks:new')
 
     response = client_logged.get(url, {}, **X_Req)
 
@@ -36,7 +36,7 @@ def test_new_200(client_logged):
 def test_new(client_logged):
     data = {'date': '1999-01-01', 'quantity': 19, 'option': 'beer'}
 
-    url = reverse('drinks:drinks_new')
+    url = reverse('drinks:new')
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -51,7 +51,7 @@ def test_new(client_logged):
 def test_new_invalid_data(client_logged):
     data = {'date': -2, 'quantity': 'x'}
 
-    url = reverse('drinks:drinks_new')
+    url = reverse('drinks:new')
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -65,7 +65,7 @@ def test_update(client_logged):
     p = DrinkFactory()
 
     data = {'date': '1999-01-01', 'quantity': 0.68, 'option': 'beer'}
-    url = reverse('drinks:drinks_update', kwargs={'pk': p.pk})
+    url = reverse('drinks:update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -91,7 +91,7 @@ def test_update(client_logged):
 def test_update_load_form_convert_quantity(drink_type, expect, client_logged):
     p = DrinkFactory(quantity=10, option=drink_type)
 
-    url = reverse('drinks:drinks_update', kwargs={'pk': p.pk})
+    url = reverse('drinks:update', kwargs={'pk': p.pk})
 
     response = client_logged.get(url, **X_Req)
 
@@ -106,7 +106,7 @@ def test_drinks_update_not_load_other_user(client_logged, second_user):
     DrinkFactory()
     obj = DrinkFactory(date=date(1111, 1, 1), quantity=0.666, user=second_user)
 
-    url = reverse('drinks:drinks_update', kwargs={'pk': obj.pk})
+    url = reverse('drinks:update', kwargs={'pk': obj.pk})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -131,7 +131,7 @@ def test_view_drinks_delete_func():
 def test_view_drinks_delete_200(client_logged):
     p = DrinkFactory()
 
-    url = reverse('drinks:drinks_delete', kwargs={'pk': p.pk})
+    url = reverse('drinks:delete', kwargs={'pk': p.pk})
 
     response = client_logged.get(url)
 
@@ -141,7 +141,7 @@ def test_view_drinks_delete_200(client_logged):
 def test_view_drinks_delete_load_form(client_logged):
     p = DrinkFactory()
 
-    url = reverse('drinks:drinks_delete', kwargs={'pk': p.pk})
+    url = reverse('drinks:delete', kwargs={'pk': p.pk})
     response = client_logged.get(url, {}, **X_Req)
 
     json_str = response.content
@@ -157,7 +157,7 @@ def test_view_drinks_delete(client_logged):
     p = DrinkFactory()
 
     assert models.Drink.objects.all().count() == 1
-    url = reverse('drinks:drinks_delete', kwargs={'pk': p.pk})
+    url = reverse('drinks:delete', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, {}, **X_Req)
 
@@ -169,7 +169,7 @@ def test_view_drinks_delete(client_logged):
 def test_drinks_delete_other_user_get_form(client_logged, second_user):
     obj = DrinkFactory(user=second_user)
 
-    url = reverse('drinks:drinks_delete', kwargs={'pk': obj.pk})
+    url = reverse('drinks:delete', kwargs={'pk': obj.pk})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -184,7 +184,7 @@ def test_drinks_delete_other_user_get_form(client_logged, second_user):
 def test_drinks_delete_other_user_post_form(client_logged, second_user):
     obj = DrinkFactory(user=second_user)
 
-    url = reverse('drinks:drinks_delete', kwargs={'pk': obj.pk})
+    url = reverse('drinks:delete', kwargs={'pk': obj.pk})
     client_logged.post(url, **X_Req)
 
     assert models.Drink.objects.all().count() == 1
@@ -194,7 +194,7 @@ def test_drinks_delete_other_user_post_form(client_logged, second_user):
 #                                                                    Target Create/Update
 # ---------------------------------------------------------------------------------------
 def test_target(client_logged):
-    url = reverse('drinks:drinks_target_new')
+    url = reverse('drinks:target_new')
 
     response = client_logged.get(url, {}, **X_Req)
 
@@ -217,7 +217,7 @@ def test_target(client_logged):
 def test_target_new(type, ml, expect, client_logged):
     data = {'year': 1999, 'quantity': ml, 'drink_type': type}
 
-    url = reverse('drinks:drinks_target_new')
+    url = reverse('drinks:target_new')
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -234,7 +234,7 @@ def test_target_new(type, ml, expect, client_logged):
 def test_target_new_invalid_data(client_logged):
     data = {'year': -2, 'quantity': 'x'}
 
-    url = reverse('drinks:drinks_target_new')
+    url = reverse('drinks:target_new')
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -256,7 +256,7 @@ def test_target_new_invalid_data(client_logged):
 def test_target_update_load_form_convert_quantity(drink_type, expect, client_logged):
     p = DrinkTargetFactory(quantity=expect, drink_type=drink_type)
 
-    url = reverse('drinks:drinks_target_update', kwargs={'pk': p.pk})
+    url = reverse('drinks:target_update', kwargs={'pk': p.pk})
 
     response = client_logged.get(url, **X_Req)
 
@@ -279,7 +279,7 @@ def test_target_update(type, ml, expect, client_logged):
     p = DrinkTargetFactory()
 
     data = {'year': 1999, 'quantity': ml, 'drink_type': type}
-    url = reverse('drinks:drinks_target_update', kwargs={'pk': p.pk})
+    url = reverse('drinks:target_update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data, **X_Req)
 
@@ -313,7 +313,7 @@ def test_target_lists(user_drink_type, drink_type, ml, expect_ml, expect_pcs, ge
 
     p = DrinkTargetFactory(drink_type=drink_type, quantity=ml)
 
-    url = reverse('drinks:drinks_target_lists')
+    url = reverse('drinks:target_list')
 
     response = client_logged.get(url, **X_Req)
     actual = response.content.decode('utf-8')
@@ -326,7 +326,7 @@ def test_target_update_not_load_other_user(client_logged, second_user):
     DrinkTargetFactory()
     obj = DrinkTargetFactory(quantity=666, user=second_user)
 
-    url = reverse('drinks:drinks_target_update', kwargs={'pk': obj.pk})
+    url = reverse('drinks:target_update', kwargs={'pk': obj.pk})
     response = client_logged.get(url, **X_Req)
 
     assert response.status_code == 200
@@ -543,14 +543,14 @@ def test_index_func():
 
 
 def test_index_200(client_logged):
-    url = reverse('drinks:drinks_index')
+    url = reverse('drinks:index')
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_index_add_button(client_logged):
-    url = reverse('drinks:drinks_index')
+    url = reverse('drinks:index')
     response = client_logged.get(url)
 
     content = response.content.decode()
@@ -559,12 +559,12 @@ def test_index_add_button(client_logged):
     res = re.findall(pattern, content)
 
     assert len(res[0]) == 2
-    assert res[0][0] == reverse('drinks:drinks_new')
+    assert res[0][0] == reverse('drinks:new')
     assert res[0][1] == 'Gertynės'
 
 
 def test_index_links(client_logged):
-    url = reverse('drinks:drinks_index')
+    url = reverse('drinks:index')
     response = client_logged.get(url)
 
     content = response.content.decode()
@@ -573,18 +573,18 @@ def test_index_links(client_logged):
     res = re.findall(pattern, content)
 
     assert len(res) == 3
-    assert res[0][0] == reverse('drinks:drinks_index')
+    assert res[0][0] == reverse('drinks:index')
     assert res[0][1] == 'Grafikai'
 
-    assert res[1][0] == reverse('drinks:drinks_list')
+    assert res[1][0] == reverse('drinks:tab_data')
     assert res[1][1] == 'Duomenys'
 
-    assert res[2][0] == reverse('drinks:drinks_history')
+    assert res[2][0] == reverse('drinks:tab_history')
     assert res[2][1] == 'Istorija'
 
 
 def test_index_context(client_logged):
-    url = reverse('drinks:drinks_index')
+    url = reverse('drinks:index')
     response = client_logged.get(url)
 
     assert 'tab' in response.context
@@ -601,7 +601,7 @@ def test_index_context(client_logged):
 
 
 def test_index_context_tab_value(client_logged):
-    url = reverse('drinks:drinks_index')
+    url = reverse('drinks:index')
     response = client_logged.get(url)
 
     assert response.context['tab'] == 'index'
@@ -610,7 +610,7 @@ def test_index_context_tab_value(client_logged):
 def test_index_chart_consumption(client_logged):
     DrinkFactory()
 
-    url = reverse('drinks:drinks_index')
+    url = reverse('drinks:index')
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -623,7 +623,7 @@ def test_index_chart_consumption(client_logged):
 def test_index_chart_quantity(client_logged):
     DrinkFactory()
 
-    url = reverse('drinks:drinks_index')
+    url = reverse('drinks:index')
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -738,7 +738,7 @@ def test_index_select_drink_drop_down_title(drink_type, expect, main_user, clien
     main_user.drink_type = drink_type
     main_user.save()
 
-    url = reverse('drinks:drinks_index')
+    url = reverse('drinks:index')
     response = client_logged.get(url)
 
     content = response.content.decode('utf-8')
@@ -747,7 +747,7 @@ def test_index_select_drink_drop_down_title(drink_type, expect, main_user, clien
 
 
 def test_index_select_drink_drop_down_link_list(client_logged):
-    url = reverse('drinks:drinks_index')
+    url = reverse('drinks:index')
     response = client_logged.get(url)
 
     content = response.content.decode()
@@ -772,7 +772,7 @@ def test_index_tbl_alkohol(drink_type, qty, expect, get_user, client_logged):
 
     DrinkFactory(option=drink_type, quantity=qty)
 
-    url = reverse('drinks:drinks_index')
+    url = reverse('drinks:index')
     response = client_logged.get(url)
 
     actual = response.context.get('tbl_alcohol')
@@ -790,14 +790,14 @@ def test_list_func():
 
 
 def test_list_200(client_logged):
-    url = reverse('drinks:drinks_list')
+    url = reverse('drinks:tab_data')
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_list_context(client_logged):
-    url = reverse('drinks:drinks_list')
+    url = reverse('drinks:tab_data')
     response = client_logged.get(url)
 
     assert 'items' in response.context
@@ -805,7 +805,7 @@ def test_list_context(client_logged):
 
 
 def test_list_context_tab_value(client_logged):
-    url = reverse('drinks:drinks_list')
+    url = reverse('drinks:tab_data')
     response = client_logged.get(url)
 
     assert response.context['tab'] == 'data'
@@ -814,7 +814,7 @@ def test_list_context_tab_value(client_logged):
 def test_list_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
-    url = reverse('drinks:drinks_list')
+    url = reverse('drinks:tab_data')
     response = client_logged.get(url)
 
     assert '<b>1999</b> metais įrašų nėra.' in response.content.decode('utf-8')
@@ -822,7 +822,7 @@ def test_list_empty_current_year(client_logged):
 
 def test_list(client_logged):
     p = DrinkFactory(quantity=19)
-    response = client_logged.get(reverse('drinks:drinks_list'))
+    response = client_logged.get(reverse('drinks:tab_data'))
 
     assert response.status_code == 200
 
@@ -845,7 +845,7 @@ def test_list_select_drink_drop_down_title(drink_type, expect, main_user, client
     main_user.drink_type = drink_type
     main_user.save()
 
-    url = reverse('drinks:drinks_list')
+    url = reverse('drinks:tab_data')
     response = client_logged.get(url)
 
     content = response.content.decode('utf-8')
@@ -854,7 +854,7 @@ def test_list_select_drink_drop_down_title(drink_type, expect, main_user, client
 
 
 def test_list_select_drink_drop_down_link_list(client_logged):
-    url = reverse('drinks:drinks_list')
+    url = reverse('drinks:tab_data')
     response = client_logged.get(url)
 
     content = response.content.decode()
@@ -875,14 +875,14 @@ def test_history_func():
 
 
 def test_history_200(client_logged):
-    url = reverse('drinks:drinks_history')
+    url = reverse('drinks:tab_history')
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_history_context_tab_value(client_logged):
-    url = reverse('drinks:drinks_history')
+    url = reverse('drinks:tab_history')
     response = client_logged.get(url)
 
     assert response.context['tab'] == 'history'
@@ -891,7 +891,7 @@ def test_history_context_tab_value(client_logged):
 def test_history_context(client_logged):
     DrinkFactory()
 
-    url = reverse('drinks:drinks_history')
+    url = reverse('drinks:tab_history')
     response = client_logged.get(url)
 
     assert 'drinks_categories' in response.context
@@ -903,7 +903,7 @@ def test_history_context(client_logged):
 def test_history_chart_consumption(client_logged):
     DrinkFactory()
 
-    url = reverse('drinks:drinks_history')
+    url = reverse('drinks:tab_history')
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
@@ -916,7 +916,7 @@ def test_history_drinks_years(client_logged):
     DrinkFactory()
     DrinkFactory(date=date(1998, 1, 1))
 
-    url = reverse('drinks:drinks_history')
+    url = reverse('drinks:tab_history')
     response = client_logged.get(url)
 
     assert response.context['drinks_categories'] == [1998, 1999]
@@ -937,7 +937,7 @@ def test_history_drinks_data_ml(user_drink_type, drink_type, ml, get_user, clien
     DrinkFactory(date=date(1999, 1, 1), quantity=1, option=drink_type)
     DrinkFactory(date=date(1998, 1, 1), quantity=2, option=drink_type)
 
-    url = reverse('drinks:drinks_history')
+    url = reverse('drinks:tab_history')
     response = client_logged.get(url)
 
     assert response.context['drinks_data_ml'] == pytest.approx(ml, rel=1e-2)
@@ -958,7 +958,7 @@ def test_history_drinks_data_alcohol(user_drink_type, drink_type, expect, get_us
     DrinkFactory(quantity=1, option=drink_type)
     DrinkFactory(date=date(1998, 1, 1), quantity=2, option=drink_type)
 
-    url = reverse('drinks:drinks_history')
+    url = reverse('drinks:tab_history')
     response = client_logged.get(url)
 
     assert response.context['drinks_data_alcohol'] == pytest.approx(expect, 0.01)
@@ -1019,7 +1019,7 @@ def test_history_select_drink_drop_down_title(drink_type, expect, main_user, cli
     main_user.drink_type = drink_type
     main_user.save()
 
-    url = reverse('drinks:drinks_history')
+    url = reverse('drinks:tab_history')
     response = client_logged.get(url)
 
     content = response.content.decode('utf-8')
@@ -1028,7 +1028,7 @@ def test_history_select_drink_drop_down_title(drink_type, expect, main_user, cli
 
 
 def test_history_select_drink_drop_down_link_list(client_logged):
-    url = reverse('drinks:drinks_history')
+    url = reverse('drinks:tab_history')
     response = client_logged.get(url)
 
     content = response.content.decode()

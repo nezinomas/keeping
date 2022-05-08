@@ -23,9 +23,9 @@
 
 <div class="row my-2">
     <div class="col text-start">
-        <a href="{% url 'drinks:drinks_index' %}" class="btn btn-sm {% if '/drinks/' == request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Charts' %}</a>
-        <a href="{% url 'drinks:drinks_list' %}" class="btn btn-sm {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Data' %}</a>
-        <a href="{% url 'drinks:drinks_history' %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
+        <a href="{% url 'drinks:index' %}" class="btn btn-sm {% if '/drinks/' == request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Charts' %}</a>
+        <a href="{% url 'drinks:tab_data' %}" class="btn btn-sm {% if '/lists/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'Data' %}</a>
+        <a href="{% url 'drinks:tab_history' %}" class="btn btn-sm {% if '/history/' in request.path %}btn-info{% else %}btn-light{% endif %}">{% translate 'History' %}</a>
     </div>
 
     <div class="col text-center" id="info_row">
@@ -40,8 +40,8 @@
     </div>
 
     <div class="col text-end">
-        {% url 'drinks:drinks_new' as url_drinks %}
-        {% url 'drinks:drinks_target_new' as url_drinks_target %}
+        {% url 'drinks:new' as url_drinks %}
+        {% url 'drinks:target_new' as url_drinks_target %}
         <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_drinks }}"><i class="bi bi-plus"></i> {% translate "Drinks" context "drinks button" %}</button>
         <button type="button" class="btn btn-sm btn-info" data-url="{{ url_drinks_target }}"><i class="bi bi-plus"></i> {% translate 'Goal for the year' %}</button>
     </div>

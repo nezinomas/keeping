@@ -813,7 +813,7 @@ msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 #: .\project\counts\templates\counts\tab_list.html:9
 #: .\project\drinks\forms.py:49 .\project\drinks\forms.py:92
 #: .\project\drinks\templates\drinks\includes\chart_quantity.html:61
-#: .\project\drinks\templates\drinks\includes\drinks_list.html:12
+#: .\project\drinks\templates\drinks\includes\tab_data.html:12
 msgid "Quantity"
 msgstr "Kiekis"
 
@@ -867,7 +867,7 @@ msgid "Charts"
 msgstr "Grafikai"
 
 #: .\project\counts\templates\counts\index.html:23
-#: .\project\drinks\templates\drinks\includes\drinks_list.html:10
+#: .\project\drinks\templates\drinks\includes\tab_data.html:10
 #: .\project\drinks\templates\drinks\index.html:27
 #: .\project\templates\base.html:118
 msgid "Data"
@@ -1049,7 +1049,7 @@ msgstr "Per metus gryno alkoholio, L"
 msgid "Delete drinks"
 msgstr "Trinti gėrimus"
 
-#: .\project\drinks\templates\drinks\includes\drinks_list.html:11
+#: .\project\drinks\templates\drinks\includes\tab_data.html:11
 msgid "Dink Type"
 msgstr "Gėtimo tipas"
 

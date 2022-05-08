@@ -202,4 +202,4 @@ class SelectDrink(LoginRequiredMixin, RedirectView):
         user.drink_type = drink_type
         user.save()
 
-        return reverse_lazy('drinks:drinks_index')
+        return reverse_lazy('drinks:index')

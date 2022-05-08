@@ -9,42 +9,42 @@ urlpatterns = [
     path(
         'drinks/',
         views.Index.as_view(),
-        name='drinks_index'
+        name='index'
     ),
     path(
         'drinks/lists/',
         views.Lists.as_view(),
-        name='drinks_list'
+        name='tab_data'
     ),
     path(
         'drinks/new/',
         views.New.as_view(),
-        name='drinks_new'
+        name='new'
     ),
     path(
         'drinks/update/<int:pk>/',
         views.Update.as_view(),
-        name='drinks_update'
+        name='update'
     ),
     path(
         'drinks/delete/<int:pk>/',
         views.Delete.as_view(),
-        name='drinks_delete'
+        name='delete'
     ),
     path(
         'drinks/target/lists/',
         views.TargetLists.as_view(),
-        name='drinks_target_lists'
+        name='target_list'
     ),
     path(
         'drinks/target/new/',
         views.TargetNew.as_view(),
-        name='drinks_target_new'
+        name='target_new'
     ),
     path(
         'drinks/target/update/<int:pk>/',
         views.TargetUpdate.as_view(),
-        name='drinks_target_update'
+        name='target_update'
     ),
     path(
         'drinks/historical_data/<int:qty>/',
@@ -59,7 +59,7 @@ urlpatterns = [
     path(
         'drinks/history/',
         views.Summary.as_view(),
-        name='drinks_history'
+        name='tab_history'
     ),
     path(
         'drinks/drink_type/<str:drink_type>/',
