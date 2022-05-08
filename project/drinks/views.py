@@ -1,25 +1,21 @@
 from datetime import datetime
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
-from django.views.generic import RedirectView
 
 from ..core.lib.date import years
 from ..core.mixins.ajax import AjaxSearchMixin
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchAjaxMixin, DispatchListsMixin,
-                                 IndexMixin, ListMixin, UpdateAjaxMixin)
-from . import forms, models
-from .apps import App_name
-from .lib import views_helper as H
-from .lib.drinks_options import DrinksOptions
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  ListViewMixin, RedirectViewMixin,
                                  TemplateViewMixin, UpdateViewMixin,
                                  rendered_content)
+from ..counts.lib.stats import Stats as CountStats
+from .forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
+from .lib import views_helper as H
+from .lib.drinks_options import DrinksOptions
+from .models import Drink, DrinkTarget, DrinkType
 
 
 class Index(TemplateViewMixin):
@@ -28,16 +24,14 @@ class Index(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'tab': 'index',
             'all_years': len(years()),
+            'tab_content': rendered_content(self.request, TabIndex, **kwargs),
             'compare_form': render_to_string(
-                template_name=f'{App_name}/includes/compare_form.html',
-                context={'form': forms.DrinkCompareForm()},
+                template_name='drinks/compare_form.html',
+                context={'form': DrinkCompareForm()},
                 request=self.request
             ),
-            'target_list': TargetLists.as_view()(self.request, as_string=True),
             **H.drink_type_dropdown(self.request),
-            **H.RenderContext(self.request).context_to_reload(),
         })
         return context
 
@@ -45,19 +39,49 @@ class Index(TemplateViewMixin):
 class TabIndex(TemplateViewMixin):
     template_name = 'drinks/tab_index.html'
 
-
-class TabData(ListViewMixin):
-    template_name = 'drinks/tab_data.html'
-    model = models.Drink
-
     def get_context_data(self, **kwargs):
+        year = self.request.user.year
+
+        qs = Drink.objects.sum_by_day(year)
+        past_latest_record = None
+
+        try:
+            qs_past = \
+                Drink \
+                .objects \
+                .related() \
+                .filter(date__year__lt=year) \
+                .latest()
+            past_latest_record = qs_past.date
+        except Drink.DoesNotExist:
+            pass
+
+        stats = CountStats(year=year, data=qs, past_latest=past_latest_record)
+        data = stats.chart_calendar()
+        rendered = H.RenderContext(self.request, year)
+
         context = super().get_context_data(**kwargs)
         context.update({
-            'tab': 'data',
-            **H.drink_type_dropdown(self.request),
+            'target_list': rendered_content(self.request, TargetLists, **kwargs),
+            'chart_quantity': rendered.chart_quantity(),
+            'chart_consumption': rendered.chart_consumption(),
+            'chart_calendar_1H': rendered.chart_calendar(data[0:6], '1H'),
+            'chart_calendar_2H': rendered.chart_calendar(data[6:], '2H'),
+            'tbl_consumption': rendered.tbl_consumption(),
+            'tbl_last_day': rendered.tbl_last_day(),
+            'tbl_alcohol': rendered.tbl_alcohol(),
+            'tbl_std_av': rendered.tbl_std_av(),
+            'records': qs.count(),
         })
-
         return context
+
+class TabData(ListViewMixin):
+    model = Drink
+    template_name = 'drinks/tab_data.html'
+
+    def get_queryset(self):
+        year = self.request.user.year
+        return Drink.objects.year(year=year)
 
 
 class TabHistory(TemplateViewMixin):
@@ -68,7 +92,7 @@ class TabHistory(TemplateViewMixin):
         ml = []
         alcohol = []
 
-        qs = list(models.Drink.objects.summary())
+        qs = list(Drink.objects.summary())
 
         obj = DrinksOptions()
         ratio = obj.ratio
@@ -95,13 +119,12 @@ class TabHistory(TemplateViewMixin):
             'drinks_data_ml': ml,
             'drinks_data_alcohol': alcohol,
             'records': len(drink_years) if len(drink_years) > 1 else 0,
-            **H.drink_type_dropdown(self.request),
         })
         return context
 
 
-class HistoricalData(IndexMixin):
-    template_name = f'{App_name}/includes/chart_compare.html'
+class HistoricalData(TemplateViewMixin):
+    template_name = 'drinks/chart_compare.html'
 
     def get(self, request, *args, **kwargs):
         year = request.user.year + 1
@@ -117,8 +140,8 @@ class HistoricalData(IndexMixin):
 
 
 class Compare(AjaxSearchMixin):
-    template_name = f'{App_name}/includes/compare_form.html'
-    form_class = forms.DrinkCompareForm
+    template_name = 'drinks/compare_form.html'
+    form_class = DrinkCompareForm
     form_data_dict = {}
 
     def form_valid(self, form, **kwargs):
@@ -127,7 +150,7 @@ class Compare(AjaxSearchMixin):
         chart_serries = H.several_years_consumption(years_data)
 
         if len(chart_serries) == 2:
-            template = f'{App_name}/includes/chart_compare.html'
+            template = 'drinks/chart_compare.html'
             context = {
                 'serries': chart_serries,
                 'chart_container_name': 'compare_chart',
@@ -139,14 +162,14 @@ class Compare(AjaxSearchMixin):
         return super().form_valid(form, **kwargs)
 
 
-class New(CreateAjaxMixin):
-    model = models.Drink
-    form_class = forms.DrinkForm
+class New(CreateViewMixin):
+    model = Drink
+    form_class = DrinkForm
 
 
-class Update(UpdateAjaxMixin):
-    model = models.Drink
-    form_class = forms.DrinkForm
+class Update(UpdateViewMixin):
+    model = Drink
+    form_class = DrinkForm
 
     def get_object(self):
         obj = super().get_object()
@@ -157,19 +180,18 @@ class Update(UpdateAjaxMixin):
         return obj
 
 
-class Delete(DeleteAjaxMixin):
-    model = models.Drink
+class Delete(DeleteViewMixin):
+    model = Drink
 
 
-class TargetLists(DispatchListsMixin, ListMixin):
-    model = models.DrinkTarget
-    list_render_output = False
+class TargetLists(ListViewMixin):
+    model = DrinkTarget
 
     def get_queryset(self):
         obj = DrinksOptions()
         year = self.request.user.year
 
-        qs = models.DrinkTarget.objects.year(year)
+        qs = DrinkTarget.objects.year(year)
         for q in qs:
             _qty = q.quantity
             q.quantity = obj.stdav_to_ml(stdav=_qty)
@@ -177,16 +199,15 @@ class TargetLists(DispatchListsMixin, ListMixin):
 
         return qs
 
-class TargetNew(CreateAjaxMixin):
-    model = models.DrinkTarget
-    form_class = forms.DrinkTargetForm
-    list_render_output = False
+
+class TargetNew(CreateViewMixin):
+    model = DrinkTarget
+    form_class = DrinkTargetForm
 
 
-class TargetUpdate(UpdateAjaxMixin):
-    model = models.DrinkTarget
-    form_class = forms.DrinkTargetForm
-    list_render_output = False
+class TargetUpdate(UpdateViewMixin):
+    model = DrinkTarget
+    form_class = DrinkTargetForm
 
     def get_object(self):
         obj = super().get_object()
@@ -203,12 +224,12 @@ class TargetUpdate(UpdateAjaxMixin):
         return obj
 
 
-class SelectDrink(LoginRequiredMixin, RedirectView):
+class SelectDrink(RedirectViewMixin):
     def get_redirect_url(self, *args, **kwargs):
         drink_type = kwargs.get('drink_type')
 
-        if drink_type not in models.DrinkType.values:
-            drink_type = models.DrinkType.BEER.value
+        if drink_type not in DrinkType.values:
+            drink_type = DrinkType.BEER.value
 
         user = self.request.user
         user.drink_type = drink_type
