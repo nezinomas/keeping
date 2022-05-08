@@ -1,3 +1,4 @@
+from django.urls import reverse_lazy
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext as _
@@ -34,6 +35,9 @@ class Drink(models.Model):
 
     objects = managers.DrinkQuerySet.as_manager()
 
+    class Meta:
+        get_latest_by = ['date']
+
     def __str__(self):
         qty = DrinksOptions().ratio
         return f'{self.date}: {round(self.quantity * qty, 2)}'
@@ -50,6 +54,19 @@ class Drink(models.Model):
 
         super().save(*args, **kwargs)
 
+    def get_absolute_url(self):
+        pk = self.pk
+        kwargs = {'pk': pk}
+
+        return \
+            reverse_lazy('drinks:update', kwargs=kwargs)
+
+    def get_delete_url(self):
+        pk = self.pk
+        kwargs = {'pk': pk}
+
+        return \
+            reverse_lazy('drinks:delete', kwargs=kwargs)
 
 class DrinkTarget(models.Model):
     year = models.PositiveIntegerField(
@@ -85,3 +102,10 @@ class DrinkTarget(models.Model):
             self.quantity = obj.ml_to_stdav(drink_type=self.drink_type, ml=self.quantity)
 
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        pk = self.pk
+        kwargs = {'pk': pk}
+
+        return \
+            reverse_lazy('drinks:target_update', kwargs=kwargs)
