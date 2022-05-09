@@ -20,10 +20,36 @@
 {% block content %}
 
 <div class="row my-2">
-    <div class="col text-start">
-        <a role="button" hx-get="{% url 'drinks:tab_index' %}" hx-target="#tab_content" class="btn btn-sm">{% translate 'Charts' %}</a>
-        <a role="button" hx-get="{% url 'drinks:tab_data' %}" hx-target="#tab_content" class="btn btn-sm">{% translate 'Data' %}</a>
-        <a role="button" hx-get="{% url 'drinks:tab_history' %}" hx-target="#tab_content" class="btn btn-sm">{% translate 'History' %}</a>
+    <div class="col text-start"
+        x-data="{
+            openTab: 'index',
+            activeClass: 'btn-info',
+            inactiveClass: 'btn-light',
+        }">
+        <a role="button"
+            class="btn btn-sm"
+            :class="openTab === 'index' ? activeClass : inactiveClass"
+            @click="openTab = 'index'"
+            hx-get="{% url 'drinks:tab_index' %}"
+            hx-target="#tab_content">
+            {% translate 'Charts' %}
+        </a>
+        <a role="button"
+            class="btn btn-sm"
+            :class="openTab === 'data' ? activeClass : inactiveClass"
+            @click="openTab = 'data'"
+            hx-get="{% url 'drinks:tab_data' %}"
+            hx-target="#tab_content">
+            {% translate 'Data' %}
+        </a>
+        <a role="button"
+            class="btn btn-sm"
+            :class="openTab === 'history' ? activeClass : inactiveClass"
+            @click="openTab = 'history'"
+            hx-get="{% url 'drinks:tab_history' %}"
+            hx-target="#tab_content">
+            {% translate 'History' %}
+        </a>
     </div>
 
     <div class="col text-center" id="info_row">
