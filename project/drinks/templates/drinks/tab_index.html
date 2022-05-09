@@ -33,3 +33,10 @@
     <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{{chart_calendar_1H}}</div>
     <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{{chart_calendar_2H}}</div>
 </div>
+
+
+{% if request.htmx %}
+<span id="btn-new" hx-swap-oob="true">
+    {% include 'drinks/includes/new_buttons.html' with tab="index" hx_swap_oop="true" %}
+</span>
+{% endif %}

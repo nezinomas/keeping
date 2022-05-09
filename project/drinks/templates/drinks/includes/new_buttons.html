@@ -1,0 +1,10 @@
+{% load i18n %}
+{% load slippers %}
+
+
+{% url 'drinks:new' tab as url_drinks %}
+{% translate "Drinks" context "drinks button" as drinks_button_title %}
+{% new_button url=url_drinks title=drinks_button_title css_class="btn-outline-success" %}
+
+{% url 'drinks:target_new' tab as url_drinks_target %}
+{% new_button url=url_drinks_target title=_('Goal for the year') css_class="btn-info" %}

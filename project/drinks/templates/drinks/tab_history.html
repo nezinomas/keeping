@@ -5,12 +5,9 @@
     <div class="col">{% include 'drinks/chart_summary.html' %}</div>
 </div>
 
-<script>
-    $(document).on('hidden.bs.modal', '#modal-form', function () {
-        $.ajax({
-            success: function (data) {
-                window.location.href = '{% url 'drinks:tab_history' %}';
-            },
-        });
-    });
-</script>
+
+{% if request.htmx %}
+<span id="btn-new" hx-swap-oob="true">
+    {% include 'drinks/includes/new_buttons.html' with tab="history" hx_swap_oop="true" %}
+</span>
+{% endif %}

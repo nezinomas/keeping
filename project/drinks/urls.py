@@ -27,7 +27,7 @@ urlpatterns = [
         name='tab_history'
     ),
     path(
-        'drinks/new/',
+        'drinks/<slug:tab>/new/',
         views.New.as_view(),
         name='new'
     ),
@@ -47,7 +47,7 @@ urlpatterns = [
         name='target_list'
     ),
     path(
-        'drinks/target/new/',
+        'drinks/<slug:tab>/target/new/',
         views.TargetNew.as_view(),
         name='target_new'
     ),

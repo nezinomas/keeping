@@ -2,6 +2,7 @@
 {% load slippers %}
 {% load drinks_templatetags %}
 
+
 {% if object_list %}
 
 <table class="table table-striped table-hover stats">
@@ -35,4 +36,11 @@
 
 {% include 'core/no_records.html' %}
 
+{% endif %}
+
+
+{% if request.htmx %}
+<span id="btn-new" hx-swap-oob="true">
+    {% include 'drinks/includes/new_buttons.html' with tab="data" hx_swap_oop="true" %}
+</span>
 {% endif %}
