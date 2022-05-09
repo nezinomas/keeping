@@ -124,7 +124,7 @@ class TabHistory(TemplateViewMixin):
 
 
 class HistoricalData(TemplateViewMixin):
-    template_name = 'drinks/chart_compare.html'
+    template_name = 'drinks/includes/chart_compare.html'
 
     def get(self, request, *args, **kwargs):
         year = request.user.year + 1

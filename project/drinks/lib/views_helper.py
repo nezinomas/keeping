@@ -44,7 +44,7 @@ class RenderContext():
 
     def chart_quantity(self) -> str:
         r = render_to_string(
-            'drinks/chart_quantity.html',
+            'drinks/includes/chart_quantity.html',
             {'data': self._DrinkStats.quantity},
             self._request
         )
@@ -52,7 +52,7 @@ class RenderContext():
 
     def chart_consumption(self) -> str:
         r = render_to_string(
-            'drinks/chart_consumption.html', {
+            'drinks/includes/chart_consumption.html', {
                 'data': self._DrinkStats.consumption,
                 'target': self._target,
                 'avg': self._avg,
@@ -65,7 +65,7 @@ class RenderContext():
 
     def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
         rendered = render_to_string(
-            'counts/chart_calendar.html',
+            'counts/includes/chart_calendar.html',
             {
                 'data': data,
                 'id': chart_id,
@@ -76,7 +76,7 @@ class RenderContext():
 
     def tbl_consumption(self) -> str:
         r = render_to_string(
-            'drinks/tbl_consumption.html', {
+            'drinks/includes/tbl_consumption.html', {
                 'qty': self._qty,
                 'avg': self._avg,
                 'target': self._target,
@@ -87,7 +87,7 @@ class RenderContext():
 
     def tbl_last_day(self) -> str:
         r = render_to_string(
-            'drinks/tbl_last_day.html',
+            'drinks/includes/tbl_last_day.html',
             self._dry_days(),
             self._request
         )
@@ -98,7 +98,7 @@ class RenderContext():
         stdav = self._qty / obj.ratio
 
         r = render_to_string(
-            'drinks/tbl_alcohol.html', {
+            'drinks/includes/tbl_alcohol.html', {
                 'l': obj.stdav_to_alkohol(stdav)
             },
             self._request
@@ -107,7 +107,7 @@ class RenderContext():
 
     def tbl_std_av(self) -> str:
         r = render_to_string(
-            'drinks/tbl_std_av.html', {
+            'drinks/includes/tbl_std_av.html', {
                 'items': std_av(self._year, self._qty)
             },
             self._request
