@@ -255,10 +255,9 @@ class TargetUpdate(UpdateViewMixin):
             if obj.drink_type == 'stdav':
                 return obj
 
-            obj.quantity = (
-                DrinksOptions().stdav_to_ml(drink_type=obj.drink_type,
-                                            stdav=obj.quantity)
-            )
+            obj.quantity = \
+                DrinksOptions() \
+                .stdav_to_ml(drink_type=obj.drink_type, stdav=obj.quantity)
 
         return obj
 
