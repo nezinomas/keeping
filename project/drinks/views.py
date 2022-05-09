@@ -207,11 +207,15 @@ class TargetLists(ListViewMixin):
 class TargetNew(CreateViewMixin):
     model = DrinkTarget
     form_class = DrinkTargetForm
+    url = reverse_lazy('drinks:target_new')
+    success_url = reverse_lazy('drinks:index')
+    hx_trigger = 'afterType'
 
 
 class TargetUpdate(UpdateViewMixin):
     model = DrinkTarget
     form_class = DrinkTargetForm
+    url = reverse_lazy('drinks:target_new')
     success_url = reverse_lazy('drinks:tab_index')
     hx_trigger = 'reloadIndex'
 
