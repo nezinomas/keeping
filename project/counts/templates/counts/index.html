@@ -20,27 +20,27 @@
             inactiveClass: 'btn-light',
         }">
         <a role="button"
-            hx-get="{% url 'counts:tab_index' object.slug %}"
-            hx-target="#tab_content"
             class="btn btn-sm btn-tab"
             :class="openTab === 'index' ? activeClass : inactiveClass"
-            @click="dataInfoRow = true, openTab = 'index'">
+            @click="dataInfoRow = true, openTab = 'index'"
+            hx-get="{% url 'counts:tab_index' object.slug %}"
+            hx-target="#tab_content">
             {% translate 'Charts' %}
         </a>
         <a role="button"
-            hx-get="{% url 'counts:tab_data' object.slug %}"
-            hx-target="#tab_content"
             class="btn btn-sm btn-tab"
             :class="openTab === 'data' ? activeClass : inactiveClass"
-            @click="dataInfoRow = true, openTab = 'data'">
+            @click="dataInfoRow = true, openTab = 'data'"
+            hx-get="{% url 'counts:tab_data' object.slug %}"
+            hx-target="#tab_content">
             {% translate 'Data' %}
         </a>
         <a role="button"
-            hx-get="{% url 'counts:tab_history' object.slug %}"
-            hx-target="#tab_content"
             class="btn btn-sm btn-tab"
             :class="openTab === 'history' ? activeClass : inactiveClass"
-            @click="dataInfoRow = false, openTab = 'history'">
+            @click="dataInfoRow = false, openTab = 'history'"
+            hx-get="{% url 'counts:tab_history' object.slug %}"
+            hx-target="#tab_content">
             {% translate 'History' %}
         </a>
     </div>
