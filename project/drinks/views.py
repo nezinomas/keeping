@@ -24,13 +24,7 @@ class Index(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'all_years': len(years()),
             'tab_content': rendered_content(self.request, TabIndex, **kwargs),
-            'compare_form': render_to_string(
-                template_name='drinks/compare_form.html',
-                context={'form': DrinkCompareForm()},
-                request=self.request
-            ),
             **H.drink_type_dropdown(self.request),
         })
         return context
@@ -62,7 +56,12 @@ class TabIndex(TemplateViewMixin):
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'target_list': rendered_content(self.request, TargetLists, **kwargs),
+            'target_list': \
+                rendered_content(self.request, TargetLists, **kwargs),
+            'compare_form_and_chart': \
+                rendered_content(self.request, CompareTwo, **kwargs),
+            'all_years': len(years()),
+            'records': qs.count(),
             'chart_quantity': rendered.chart_quantity(),
             'chart_consumption': rendered.chart_consumption(),
             'chart_calendar_1H': rendered.chart_calendar(data[0:6], '1H'),
@@ -71,9 +70,9 @@ class TabIndex(TemplateViewMixin):
             'tbl_last_day': rendered.tbl_last_day(),
             'tbl_alcohol': rendered.tbl_alcohol(),
             'tbl_std_av': rendered.tbl_std_av(),
-            'records': qs.count(),
         })
         return context
+
 
 class TabData(ListViewMixin):
     model = Drink
