@@ -1,19 +1,15 @@
-import json
 import re
 from datetime import date
 
 import pytest
-from django.http import JsonResponse
 from django.urls import resolve, reverse, reverse_lazy
 from freezegun import freeze_time
-from mock import patch
 
 from ...core.tests.utils import change_profile_year, setup_view
 from ...users.factories import User
 from .. import models, views
-from ..factories import Drink, DrinkFactory, DrinkTargetFactory
+from ..factories import DrinkFactory, DrinkTargetFactory
 
-X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
 
 
