@@ -1,6 +1,8 @@
 {% load i18n %}
 {% load static %}
 
+{% if records %}
+
 <div class="row">
     <div class="col-lg-6" id="chart_consumption">{{chart_consumption}}</div>
     <div class="col-lg-6" id="chart_quantity">{{chart_quantity}}</div>
@@ -56,6 +58,11 @@
     </div>
 </div>
 
+{% else %}
+
+{% include 'core/no_records.html' %}
+
+{% endif %}
 
 {% if request.htmx %}
 <span id="btn-new" hx-swap-oob="true">
