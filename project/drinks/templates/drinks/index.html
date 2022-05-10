@@ -68,14 +68,14 @@
     </div>
 </div>
 
-<!-- tab content -->
-<div id="tab_content">
-    {{tab_content}}
-</div>
-
 <!-- htmx tab data load -->
 <div hx-get="{% url 'drinks:tab_index' %}" hx-target="#tab_content" hx-trigger="reloadIndex from:body"></div>
 <div hx-get="{% url 'drinks:tab_data' %}" hx-target="#tab_content" hx-trigger="reloadData from:body"></div>
 <div hx-get="{% url 'drinks:tab_history' %}" hx-target="#tab_content" hx-trigger="reloadHistory from:body"></div>
+
+<!-- tab content -->
+<div id="tab_content">
+    {{tab_content}}
+</div>
 
 {% endblock content %}
