@@ -5,7 +5,6 @@
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
 <script src="https://code.highcharts.com/modules/bullet.js"></script>
-<script src="{% static 'js/reload_stats.js' %}"></script>
 
 <style>
     .btn-group .btn {
@@ -133,65 +132,5 @@
         }
     }
 </script>
-
-<script>
-    $(document).on('hidden.bs.modal', '#modal-form', function () {
-        var url = `{% url 'bookkeeping:reload_month' %}`;
-
-        $.ajax({
-            url: url,
-            data: {
-                'ajax_trigger': '1'
-            },
-            success: function (data) {
-                var blocks = [
-                    'month_table',
-                    'info',
-                    'chart_expenses',
-                    'chart_targets'
-                ];
-                reload_stats(data, blocks);
-            }
-        });
-    });
-</script>
-
-<script>
-    $(function () {
-        var load_html = function () {
-            var btn = $(this);
-            var url = btn.data('url');
-            var id = btn.data('id');
-
-            if (url == undefined || !url) {
-                return;
-            }
-
-            var row = `#row-${id}`;
-            var active_class = $(`${row} td`).hasClass('active');
-
-            if(!active_class) {
-                $.ajax({
-                    url: url,
-                    type: 'get',
-                    dataType: 'json',
-                    success: function (data) {
-                        $(row).after(data['html']);
-                        $(`${row} td.panel-heading`).addClass('active');
-                    },
-                    error: function (xhr, status, error) {
-                        alert(`err: ${error}\n\nstatus: ${status}`)
-                    }
-                });
-            } else {
-                $(`${row} + tr`).remove();
-                $(`${row} td.panel-heading`).removeClass('active');
-            };
-        };
-
-        $(document).on('click', '.row_click', load_html);
-    });
-</script>
-
 
 {% endblock content%}
