@@ -78,33 +78,4 @@
 <div hx-get="{% url 'drinks:tab_index' %}" hx-target="#tab_content" hx-trigger="reloadIndex from:body"></div>
 <div hx-get="{% url 'drinks:tab_history' %}" hx-target="#tab_content" hx-trigger="reloadHistory from:body"></div>
 
-<div class="row mt-4">
-    <div class="col-lg-6">
-        <div class="row my-2">
-            <div class="col-sm-3 pt-1"><b>{% translate 'Historical data' %}</b></div>
-            <div class="col-sm-9 text-end">
-                <button type="button" class="btn btn-sm btn-info btn_click" hx-get="{% url 'drinks:historical_data' 2 %}" hx-target="#dialog">{% translate '2 years' %}</button>
-                <button type="button" class="btn btn-sm btn-info btn_click" hx-get="{% url 'drinks:historical_data' 3 %}" hx-target="#dialog">{% translate '3 years' %}</button>
-                <button type="button" class="btn btn-sm btn-info btn_click" hx-get="{% url 'drinks:historical_data' 7 %}" hx-target="#dialog">{% translate '7 years' %}</button>
-                <button type="button" class="btn btn-sm btn-info btn_click" hx-get="{% url 'drinks:historical_data' all_years %}" hx-target="#dialog">{% translate 'All years' %}</button>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col" id="historical_data"></div>
-        </div>
-    </div>
-
-    <div class="col-lg-6">
-        <div class="row my-2">
-            <div class="col-sm-4 pt-1"><b>{% translate 'Year comparison' %}</b></div>
-            <div class="col-sm-8 text-end" id="compare_form_data">{{compare_form}}</div>
-        </div>
-
-        <div class="row">
-            <div class="col" id="compare_data"></div>
-        </div>
-    </div>
-</div>
-
 {% endblock content %}

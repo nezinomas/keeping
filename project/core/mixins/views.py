@@ -96,15 +96,15 @@ class CreateUpdateMixin():
             if self.hx_redirect:
                 # close form and redirect to url with hx_trigger
                 return HttpResponseClientRedirect(self.hx_redirect)
-            else:
-                # close form and reload container
-                response.status_code = 204
-                trigger_client_event(
-                    response,
-                    self.get_hx_trigger(),
-                    {},
-                )
-                return response
+
+            # close form and reload container
+            response.status_code = 204
+            trigger_client_event(
+                response,
+                self.get_hx_trigger(),
+                {},
+            )
+            return response
 
         return response
 
