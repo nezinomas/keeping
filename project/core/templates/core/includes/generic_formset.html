@@ -2,7 +2,7 @@
 {% load i18n %}
 
 
-<form method="post" novalidate id="js_form" class="js_form" action="{{ url }}" data-action="{{ form_action }}"
+<form method="post" novalidate action="{{ url }}" data-action="{{ form_action }}"
     autocomplete="off" tabindex="-1">
     {% csrf_token %}
     {% include 'core/includes/form_date_scripts.html' %}
@@ -35,16 +35,3 @@
 
     {% include 'core/includes/form_footer.html' %}
 </form>
-
-
-<script>
-    $(document).keydown(function (event) {
-        if (event.keyCode == 27) {
-            $('#modal-form').modal("hide");
-        }
-    });
-
-    $(document).on('submit', '.js_form', function (e) {
-        e.preventDefault();
-    });
-</script>

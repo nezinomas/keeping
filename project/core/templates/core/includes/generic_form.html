@@ -1,7 +1,7 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
-<form method="POST" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-encoding="multipart/form-data" id="js_form" class="js_form modal-content" novalidate autocomplete="off" tabindex="-1">
+<form method="POST" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-encoding="multipart/form-data" class="modal-content" novalidate autocomplete="off" tabindex="-1">
     {% csrf_token %}
     {% include 'core/includes/form_date_scripts.html' %}
     <div class="modal-header">

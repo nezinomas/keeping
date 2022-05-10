@@ -318,6 +318,9 @@ tr._current_day > td, tr._current_day > td._weekend_col {
     margin-bottom: -0.45rem!important;
 }
 
+.btn-light {
+    background-color: rgb(239, 239, 239) !important;
+}
 
 /*
     Various

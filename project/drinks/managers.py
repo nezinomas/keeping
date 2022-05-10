@@ -23,16 +23,16 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
     def year(self, year):
         return self.related().filter(date__year=year)
 
-    def items(self, count_type=None):
+    def items(self):
         return self.related()
 
     def sum_by_year(self, year=None):
-        qs = self\
-            .related()\
+        qs = self \
+            .related() \
             .year_sum(
                 year=year,
                 sum_annotation='qty',
-                sum_column='quantity')\
+                sum_column='quantity') \
             .order_by('date')
 
         return qs
@@ -133,11 +133,11 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
             _qty = row.get('qty') * ratio
             _stdav = row.get('qty')
 
-            _date = row.get('date')
-            _days = ydays(_date.year)
+            _year = row.get('year')
+            _days = ydays(_year)
 
             item = {}
-            item['year'] = _date.year
+            item['year'] = _year
             item['qty'] = _qty
             item['per_day'] = obj.stdav_to_ml(drink_type=obj.drink_type, stdav=_stdav) / _days
 

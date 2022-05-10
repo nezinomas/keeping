@@ -110,16 +110,16 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu nav-link {% if '/drinks/' in request.path %}active{% endif %}" href="{% url 'drinks:drinks_index' %}">{% translate 'Drinks' %}</a>
+              <a class="btn btn-menu nav-link {% if '/drinks/' in request.path %}active{% endif %}" href="{% url 'drinks:index' %}">{% translate 'Drinks' %}</a>
               <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/drinks/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'drinks:drinks_list' %}">{% translate 'Data' %}</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'drinks:tab_data' %}">{% translate 'Data' %}</a>
                 </li>
                 <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'drinks:drinks_history' %}">{% translate 'History' %}</a>
+                  <a class="dropdown-item btn-sm" href="{% url 'drinks:tab_history' %}">{% translate 'History' %}</a>
                 </li>
               </ul>
             </div>

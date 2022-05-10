@@ -79,7 +79,7 @@ class RenderContext():
             title = _('Weekdays, %(year)s year') % ({'year': self._year})
 
         rendered = render_to_string(
-            'counts/chart_periodicity.html',
+            'counts/includes/chart_periodicity.html',
             {
                 'data': [x['count'] for x in self._stats.weekdays_stats()],
                 'categories': [x[:4] for x in Stats.weekdays()],
@@ -96,7 +96,7 @@ class RenderContext():
             title = self._year
 
         rendered = render_to_string(
-            'counts/chart_periodicity.html',
+            'counts/includes/chart_periodicity.html',
             {
                 'data': self._stats.months_stats(),
                 'categories': Stats.months(),
@@ -111,7 +111,7 @@ class RenderContext():
     def chart_years(self, title: str = _lazy('Year')) -> str:
         year_totals = self._stats.year_totals()
         rendered = render_to_string(
-            'counts/chart_periodicity.html',
+            'counts/includes/chart_periodicity.html',
             {
                 'data': list(year_totals.values()),
                 'categories': list(year_totals.keys()),
@@ -125,7 +125,7 @@ class RenderContext():
 
     def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
         rendered = render_to_string(
-            'counts/chart_calendar.html',
+            'counts/includes/chart_calendar.html',
             {
                 'data': data,
                 'id': chart_id,
@@ -137,7 +137,7 @@ class RenderContext():
     def chart_histogram(self) -> str:
         gaps = self._stats.gaps()
         rendered = render_to_string(
-            'counts/chart_periodicity.html',
+            'counts/includes/chart_periodicity.html',
             {
                 'data': list(gaps.values()),
                 'categories': [f'{x}d' for x in gaps.keys()],
