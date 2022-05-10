@@ -6,7 +6,7 @@ from django.http import Http404, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import (CreateView, DeleteView, ListView,
-                                  RedirectView, TemplateView, UpdateView)
+                                  RedirectView, TemplateView, UpdateView, FormView)
 from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 
 from ...core.lib import search
@@ -185,6 +185,11 @@ class TemplateViewMixin(LoginRequiredMixin,
 class ListViewMixin(LoginRequiredMixin,
                     GetQuerysetMixin,
                     ListView):
+    pass
+
+
+class FormViewMixin(LoginRequiredMixin,
+                    FormView):
     pass
 
 
