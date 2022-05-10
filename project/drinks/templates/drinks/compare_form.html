@@ -17,9 +17,7 @@
 
     <div class="row">
         <div class="col">
-            {% if no_data  %}
-            {% translate 'No data' %}
-            {% else %}
+            {% if serries  %}
             {% include 'drinks/includes/chart_compare.html' with chart_container_name='chart' series=serries %}
             {% endif %}
         </div>

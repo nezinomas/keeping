@@ -23,7 +23,7 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
     def year(self, year):
         return self.related().filter(date__year=year)
 
-    def items(self, count_type=None):
+    def items(self):
         return self.related()
 
     def sum_by_year(self, year=None):

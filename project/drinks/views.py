@@ -140,18 +140,15 @@ class CompareTwo(FormViewMixin):
 
     def form_valid(self, form, **kwargs):
         if form.is_valid():
-            context = {'no_data': True}
-
             year1 = form.cleaned_data['year1']
             year2 = form.cleaned_data['year2']
             chart_serries = H.several_years_consumption([year1, year2])
 
             if len(chart_serries) == 2:
-                context.update({
-                    'no_data': False,
+                context = {
                     'form': form,
                     'serries': chart_serries,
-                })
+                }
             return render(self.request, self.template_name, context)
 
         return super().form_valid(form)
@@ -160,6 +157,7 @@ class CompareTwo(FormViewMixin):
 class New(CreateViewMixin):
     model = Drink
     form_class = DrinkForm
+    success_url = reverse_lazy('drinks:tab_data')
 
     def get_hx_trigger(self):
         tab = self.kwargs.get('tab')
