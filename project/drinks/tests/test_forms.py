@@ -5,7 +5,7 @@ from freezegun import freeze_time
 from mock import patch
 
 from ...users.factories import UserFactory
-from ..factories import DrinkTargetFactory
+from ..factories import DrinkFactory, DrinkTargetFactory
 from ..forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
 
 pytestmark = pytest.mark.django_db
@@ -236,3 +236,27 @@ def test_drink_filter_form_valid(year1, year2):
     )
 
     assert form.is_valid()
+
+
+@pytest.mark.parametrize(
+    'year1, year2, valid',
+    [
+        (2000, 2001, False),
+        (2001, 2001, False),
+        (2001, 2002, False),
+        (2002, 2003, False),
+        (2000, 2003, True),
+    ]
+)
+def test_drink_filter_clean_years_fields(year1, year2, valid):
+    DrinkFactory(date=date(2000, 1, 1))
+    DrinkFactory(date=date(2003, 1, 1))
+
+    form = DrinkCompareForm(
+        data={
+            'year1': year1,
+            'year2': year2,
+        }
+    )
+
+    assert form.is_valid() == valid
