@@ -366,7 +366,7 @@ def test_historical_data_404(client_logged):
 
 
 def test_historical_data_302(client):
-    url = reverse('drinks:historical_data', kwargs={'qty': '1'})
+    url = reverse('drinks:compare', kwargs={'qty': '1'})
     response = client.get(url)
 
     assert response.status_code == 302
@@ -375,7 +375,7 @@ def test_historical_data_302(client):
 def test_historical_data_ajax(client_logged):
     DrinkFactory()
 
-    url = reverse('drinks:historical_data', kwargs={'qty': '1'})
+    url = reverse('drinks:compare', kwargs={'qty': '1'})
     response = client_logged.get(url, {}, **X_Req)
 
     actual = json.loads(response.content)

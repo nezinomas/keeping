@@ -1,10 +1,26 @@
-{% load crispy_forms_tags %}
 {% load i18n %}
+{% load crispy_forms_tags %}
 
-<form novalidate method="post" id="compare_form" class="row d-flex gx-1 align-items-center">
-    {% csrf_token %}
-    <div class="col align-self-start"></div>
-    <div class="col-3">{{ form.year1|as_crispy_field }}</div>
-    <div class="col-3 align-self-start">{{ form.year2|as_crispy_field }}</div>
-    <div class="col-auto align-self-start"><input type="button" name="date_filter" value="{% translate 'Filter' %}" class="btn btn-secondary btn-sm filter_click" hx-get="{% url 'drinks:compare' %}" hx-target="this"></div>
-</form>
+<div class="row my-2">
+    <div class="col-sm-4 pt-1"><b>{% translate 'Year comparison' %}</b></div>
+    <div class="col-sm-8 text-end">
+        <form novalidate method="post" hx-post="{% url 'drinks:compare_two' %}" hx-target="#compare_form_and_chart" class="row d-flex gx-1 align-items-center">
+        {% csrf_token %}
+            <div class="col align-self-start"></div>
+            <div class="col-3">{{ form.year1|as_crispy_field }}</div>
+            <div class="col-3 align-self-start">{{ form.year2|as_crispy_field }}</div>
+            <div class="col-auto align-self-start">
+                <input type="submit" value="{% translate 'Filter' %}" class="btn btn-secondary btn-sm">
+            </div>
+        </form>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            {% if no_data  %}
+            {% translate 'No data' %}
+            {% else %}
+            {% include 'drinks/includes/chart_compare.html' with chart_container_name='chart' series=serries %}
+            {% endif %}
+        </div>
+    </div>

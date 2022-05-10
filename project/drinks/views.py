@@ -1,16 +1,13 @@
 from datetime import datetime
 
-from django.http import JsonResponse
-from django.template.loader import render_to_string
+from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.utils.translation import gettext as _
 
 from ..core.lib.date import years
-from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
-                                 ListViewMixin, RedirectViewMixin,
-                                 TemplateViewMixin, UpdateViewMixin,
-                                 rendered_content)
+                                 FormViewMixin, ListViewMixin,
+                                 RedirectViewMixin, TemplateViewMixin,
+                                 UpdateViewMixin, rendered_content)
 from ..counts.lib.stats import Stats as CountStats
 from .forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
 from .lib import views_helper as H
@@ -122,43 +119,42 @@ class TabHistory(TemplateViewMixin):
         return context
 
 
-class HistoricalData(TemplateViewMixin):
+class Compare(TemplateViewMixin):
     template_name = 'drinks/includes/chart_compare.html'
 
-    def get(self, request, *args, **kwargs):
-        year = request.user.year + 1
+    def get_context_data(self, **kwargs):
+        year = self.request.user.year + 1
         qty = kwargs.get('qty', 0)
         chart_serries = H.several_years_consumption(range(year - qty, year))
         context = {
             'serries': chart_serries,
             'chart_container_name': 'history_chart',
         }
-        rendered = render_to_string(self.template_name, context, request)
-
-        return JsonResponse({'html': rendered})
+        return context
 
 
-class Compare(AjaxSearchMixin):
-    template_name = 'drinks/compare_form.html'
+class CompareTwo(FormViewMixin):
     form_class = DrinkCompareForm
-    form_data_dict = {}
+    template_name = 'drinks/compare_form.html'
+    success_url = reverse_lazy('drinks:compare_two')
 
     def form_valid(self, form, **kwargs):
-        html = _('No data')
-        years_data = [self.form_data_dict['year1'], self.form_data_dict['year2']]
-        chart_serries = H.several_years_consumption(years_data)
+        if form.is_valid():
+            context = {'no_data': True}
 
-        if len(chart_serries) == 2:
-            template = 'drinks/chart_compare.html'
-            context = {
-                'serries': chart_serries,
-                'chart_container_name': 'compare_chart',
-            }
-            html = render_to_string(template, context, self.request)
+            year1 = form.cleaned_data['year1']
+            year2 = form.cleaned_data['year2']
+            chart_serries = H.several_years_consumption([year1, year2])
 
-        kwargs.update({'html': html})
+            if len(chart_serries) == 2:
+                context.update({
+                    'no_data': False,
+                    'form': form,
+                    'serries': chart_serries,
+                })
+            return render(self.request, self.template_name, context)
 
-        return super().form_valid(form, **kwargs)
+        return super().form_valid(form)
 
 
 class New(CreateViewMixin):

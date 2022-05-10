@@ -57,14 +57,14 @@ urlpatterns = [
         name='target_update'
     ),
     path(
-        'drinks/historical_data/<int:qty>/',
-        views.HistoricalData.as_view(),
-        name='historical_data'
+        'drinks/compare/<int:qty>/',
+        views.Compare.as_view(),
+        name='compare'
     ),
     path(
         'drinks/compare/',
-        views.Compare.as_view(),
-        name='compare'
+        views.CompareTwo.as_view(),
+        name='compare_two'
     ),
     path(
         'drinks/drink_type/<str:drink_type>/',
