@@ -16,7 +16,30 @@ htmx.on("htmx:beforeSwap", (e) => {
         $('.is-invalid').removeClass('is-invalid');
 
         if(subbmiter == '_new') {
-            $('#modal form')[0].reset();
+            var price = document.getElementById("id_price");
+            if (price) {
+                price.value = '';
+            }
+
+            var qty = document.getElementById("id_quantity");
+            if (qty) {
+                qty.value = '1';
+            }
+
+            var title = document.getElementById("id_title");
+            if (title) {
+                title.value = ''
+            }
+
+            var remark = document.getElementById("id_remark");
+            if (remark) {
+                remark.value = ''
+            }
+
+            var exception = document.getElementById("id_exception");
+            if (exception) {
+                exception.checked = false;
+            }
         }
 
         if(subbmiter == '_close') {
