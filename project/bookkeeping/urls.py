@@ -71,11 +71,6 @@ urlpatterns = [
         name='month'
     ),
     path(
-        'month/reload/',
-        views.ReloadMonth.as_view(),
-        name='reload_month'
-    ),
-    path(
         'month/<date:date>/',
         views.ExpandDayExpenses.as_view(),
         name='expand_day_expenses'

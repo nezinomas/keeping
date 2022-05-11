@@ -404,12 +404,3 @@ class ReloadIndex(DispatchAjaxMixin, IndexMixin):
             'wealth': obj.render_wealth(to_string=True),
         }
         return JsonResponse(context)
-
-
-class ReloadMonth(DispatchAjaxMixin, IndexMixin):
-    template_name = 'bookkeeping/includes/month.html'
-    redirect_view = reverse_lazy('bookkeeping:month')
-
-    def get(self, request, *args, **kwargs):
-        context = H.month_context(request)
-        return JsonResponse(context)
