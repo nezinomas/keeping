@@ -82,23 +82,9 @@
 
 {% block content %}
 
-<div id="month_content">
+<div id="month_content" hx-ext="alpine-morph" hx-swap="morph" hx-target="this" x-data="{show_chart: true}">
     {% include 'bookkeeping/includes/month_content.html' %}
 </div>
 
 <div hx-get="{% url 'bookkeeping:month' %}" hx-target="#month_content" hx-trigger="reload from:body"></div>
-<script>
-    function myFunction() {
-        var x = document.getElementById("chart_expenses");
-        var c = document.getElementById("chart_targets");
-        if (x.style.display === "none") {
-            x.style.display = "block";
-            c.style.display = 'none';
-        } else {
-            x.style.display = "none";
-            c.style.display = "block";
-        }
-    }
-</script>
-
 {% endblock content%}

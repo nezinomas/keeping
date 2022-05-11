@@ -1,5 +1,4 @@
 {% load i18n %}
-
 <div class="row mt-2 gx-2">
     <div class="col-lg-8 table-responsive" id="month_table">
         {{ month_table|safe }}
@@ -7,8 +6,8 @@
     <div class="col-lg-4">
         <div class="d-flex flex-column align-items-start h-100">
             <div class="w-100 mb-auto">
-                <div id="chart_expenses" style="display: none;">{{ chart_expenses|safe }}</div>
-                <div id="chart_targets">{{ chart_targets|safe }}</div>
+                <div x-show="!show_chart">{{ chart_expenses|safe }}</div>
+                <div x-show="show_chart">{{ chart_targets|safe }}</div>
             </div>
             <div class="w-100" id="info">{{ info|safe }}</div>
         </div>
@@ -31,6 +30,7 @@
         <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'savings:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Savings' context "savings button" %}</button>
         <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'transactions:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Transactions' context 'transactions button' %}</button>
         <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'drinks:new' 'index' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Drinks' context 'drinks button' %}</button>
-        <button class="btn btn-sm btn-info" onclick="myFunction()">{% translate 'Show other chart' %}</button>
+        <button class="btn btn-sm btn-info" @click="show_chart = ! show_chart">{% translate 'Show other chart' %}</button>
     </div>
+</div>
 </div>
