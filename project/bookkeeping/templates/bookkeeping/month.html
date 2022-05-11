@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load i18n %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
@@ -83,40 +82,8 @@
 
 {% block content %}
 
-
-<div class="row mt-2 gx-2">
-    <div class="col-lg-8 table-responsive" id="month_table">
-        {{ month_table|safe }}
-    </div>
-    <div class="col-lg-4">
-        <div class="d-flex flex-column align-items-start h-100">
-            <div class="w-100 mb-auto">
-                <div id="chart_expenses" style="display: none;">{{ chart_expenses|safe }}</div>
-                <div id="chart_targets">{{ chart_targets|safe }}</div>
-            </div>
-            <div class="w-100" id="info">{{ info|safe }}</div>
-        </div>
-    </div>
-</div>
-
-<div class="row gx-2">
-    <div class="col-lg-8 gx-2">
-        <div class="btn-group d-flex" role="group">
-        {% with request.user.month as month %}
-        {% for m in context_months %}
-        {% with m|date:'n' as m_num %}
-        <a href="{% url 'core:set_month' m_num %}" class="btn btn-sm btn-month {% if month|slugify == m_num %}btn-primary{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</a>
-        {% endwith %}{% endfor %}{% endwith %}
-        </div>
-    </div>
-    <div class="col-lg-4 my-sm-2 my-lg-0 gx-2 text-end">
-        <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'expenses:new' %}"> <i class="bi bi-plus"></i>{% translate 'Expenses' context "expenses button" %}</button>
-        <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'incomes:new' %}"> <i class="bi bi-plus"></i>{% translate 'Incomes' context "incomes button" %}</button>
-        <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'savings:new' %}"> <i class="bi bi-plus"></i>{% translate 'Savings' context "savings button" %}</button>
-        <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'transactions:new' %}"> <i class="bi bi-plus"></i>{% translate 'Transactions' context 'transactions button' %}</button>
-        <button type="button" class="btn btn-sm btn-outline-success" data-url="{% url 'drinks:new' 'index' %}"><i class="bi bi-plus"></i>{% translate 'Drinks' context 'drinks button' %}</button>
-        <button class="btn btn-sm btn-info" onclick="myFunction()">{% translate 'Show other chart' %}</button>
-    </div>
+<div id="month_content">
+    {% include 'bookkeeping/includes/month_content.html' %}
 </div>
 
 <script>
