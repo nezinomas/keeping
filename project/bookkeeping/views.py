@@ -26,7 +26,10 @@ from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
 from .lib import summary_view_helper as SH
 from .lib import views_helpers as H
 from .models import AccountWorth, PensionWorth, SavingWorth
-
+from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
+                                 FormViewMixin, ListViewMixin,
+                                 RedirectViewMixin, TemplateViewMixin,
+                                 UpdateViewMixin, rendered_content)
 
 class Index(IndexMixin):
     template_name = 'bookkeeping/index.html'
@@ -121,13 +124,24 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
         return context
 
 
-class Month(IndexMixin):
+class Month(TemplateViewMixin):
     template_name = 'bookkeeping/month.html'
 
     def get_context_data(self, **kwargs):
+        if self.request.htmx:
+            self.template_name = 'bookkeeping/includes/month_content.html'
+
+        year = self.request.user.year
+        month = self.request.user.month
+
+        obj = H.MonthHelper(self.request, year, month)
+
         context = super().get_context_data(**kwargs)
         context.update({
-            **H.month_context(self.request, context),
+            'month_table': obj.render_month_table(),
+            'info': obj.render_info(),
+            'chart_expenses': obj.render_chart_expenses(),
+            'chart_targets': obj.render_chart_targets(),
         })
         return context
 

@@ -86,6 +86,7 @@
     {% include 'bookkeeping/includes/month_content.html' %}
 </div>
 
+<div hx-get="{% url 'bookkeeping:month' %}" hx-target="#month_content" hx-trigger="reload from:body"></div>
 <script>
     function myFunction() {
         var x = document.getElementById("chart_expenses");
