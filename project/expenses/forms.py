@@ -51,7 +51,11 @@ class ExpenseForm(forms.ModelForm):
                 "format": "YYYY-MM-DD",
                 "locale": journal.lang,
             })
-        self.fields['price'].widget.attrs = {'readonly': True, 'step': '0.01'}
+        self.fields['price'].widget.attrs = {
+            'readonly': True,
+            'step': '0.01',
+            'class': 'sum-prices-field form-control-sm'
+        }
         self.fields['remark'].widget.attrs['rows'] = 3
 
     def _initial_fields_values(self):
@@ -66,6 +70,7 @@ class ExpenseForm(forms.ModelForm):
         # add css classes to fields
         set_field_properties(self, self.helper)
         self.fields['exception'].widget.attrs['class'] = " form-check-input"
+
 
     def _overwrite_default_queries(self):
         user = utils.get_user()

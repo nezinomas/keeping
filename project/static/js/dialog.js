@@ -16,29 +16,34 @@ htmx.on("htmx:beforeSwap", (e) => {
         $('.is-invalid').removeClass('is-invalid');
 
         if(subbmiter == '_new') {
-            var price = document.getElementById("id_price");
+            var price = $('#id_price');
             if (price) {
-                price.value = '';
+                price.val('');
             }
 
-            var qty = document.getElementById("id_quantity");
+            var price_sum_field = $('.sum-prices-field');
+            if (price_sum_field) {
+                price_sum_field.val('0.0');
+            }
+
+            var qty = $('#id_quantity');
             if (qty) {
-                qty.value = '1';
+                qty.val('1');
             }
 
-            var title = document.getElementById("id_title");
+            var title = $('#id_title');
             if (title) {
-                title.value = ''
+                title.val('');
             }
 
-            var remark = document.getElementById("id_remark");
+            var remark = $('#id_remark');
             if (remark) {
-                remark.value = ''
+                remark.val('');
             }
 
-            var exception = document.getElementById("id_exception");
+            var exception = $('#id_exception');
             if (exception) {
-                exception.checked = false;
+                exception.prop('checked', false);
             }
         }
 
