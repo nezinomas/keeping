@@ -11,7 +11,6 @@ def generic_form(context, title):
     return {
         'title': title,
         'form': context['form'],
-        'submit_button': _(form_action.title()),
         'form_action': form_action,
         'url': context.get('url', ''),
         'hx_trigger_form': context.get('hx_trigger_form', ''),
