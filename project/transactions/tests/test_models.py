@@ -2,13 +2,8 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from freezegun import freeze_time
-from project.accounts.models import Account
-
-from project.journals.factories import JournalFactory
 
 from ...accounts.factories import AccountBalance, AccountFactory
-from ...core.tests.utils import equal_list_of_dictionaries as assert_
 from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from ...savings.factories import SavingFactory, SavingTypeFactory
