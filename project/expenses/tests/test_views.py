@@ -137,7 +137,6 @@ def test_expenses_load_update_form(client_logged):
     response = client_logged.get(url)
     form = response.content.decode('utf-8')
 
-    assert 'Atnaujinti</button>' in form
     assert 'Atnaujinti ir uždaryti</button>' in form
 
     assert '1999-01-01' in form

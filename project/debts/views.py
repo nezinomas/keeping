@@ -11,7 +11,7 @@ class DebtMixin():
         debt_type = self.kwargs.get('debt_type')
         return reverse_lazy('debts:list', kwargs={'debt_type': debt_type})
 
-    def get_hx_trigger(self):
+    def get_hx_trigger_django(self):
         debt_type = self.kwargs.get('debt_type')
         return f'after_{debt_type}'
 
@@ -21,7 +21,7 @@ class DebtReturnMixin():
         debt_type = self.kwargs.get('debt_type')
         return reverse_lazy('debts:return_list', kwargs={'debt_type': debt_type})
 
-    def get_hx_trigger(self):
+    def get_hx_trigger_django(self):
         debt_type = self.kwargs.get('debt_type')
         return f'after_{debt_type}_return'
 

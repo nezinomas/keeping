@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<form method="POST" hx-post="{{ url }}" class="modal-content" novalidate utocomplete="off" tabindex="-1">
+<form method="POST" class="modal-content form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted">
     {% csrf_token %}
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>

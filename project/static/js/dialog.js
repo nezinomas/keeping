@@ -46,6 +46,21 @@ htmx.on("htmx:beforeSwap", (e) => {
             $('#modal').modal('hide');
             $('#modal form')[0].reset();
         }
+
         e.detail.shouldSwap = false;
     }
+
 })
+
+$(document).on('hidden.bs.modal', '#modal', function () {
+    var form = $('.form');
+    var trigger_name = form.attr("data-hx-trigger-form");
+    var data_inserted = form.attr('data-hx-inserted');
+
+    if (trigger_name === 'None' || trigger_name == undefined) return;
+
+    if(trigger_name && data_inserted) {
+        htmx.trigger("body", trigger_name, { });
+    }
+
+});

@@ -53,24 +53,21 @@ class Lists(ListViewMixin):
 class New(CreateViewMixin):
     model = models.Transaction
     form_class = forms.TransactionForm
+    hx_trigger_form = 'afterTransaction'
     success_url = reverse_lazy('transactions:list')
-
-    hx_trigger = 'afterTransaction'
 
 
 class Update(UpdateViewMixin):
     model = models.Transaction
     form_class = forms.TransactionForm
+    hx_trigger_django = 'afterTransaction'
     success_url = reverse_lazy('transactions:list')
-
-    hx_trigger = 'afterTransaction'
 
 
 class Delete(DeleteViewMixin):
     model = models.Transaction
+    hx_trigger_django = 'afterTransaction'
     success_url = reverse_lazy('transactions:list')
-
-    hx_trigger = 'afterTransaction'
 
 
 class SavingsCloseLists(ListViewMixin):
@@ -83,25 +80,23 @@ class SavingsCloseLists(ListViewMixin):
 class SavingsCloseNew(CreateViewMixin):
     model = models.SavingClose
     form_class = forms.SavingCloseForm
-    success_url = reverse_lazy('transactions:savings_close_list')
+    hx_trigger_form = 'afterClose'
 
     url = reverse_lazy('transactions:savings_close_new')
-    hx_trigger = 'afterClose'
+    success_url = reverse_lazy('transactions:savings_close_list')
 
 
 class SavingsCloseUpdate(UpdateViewMixin):
     model = models.SavingClose
     form_class = forms.SavingCloseForm
+    hx_trigger_django = 'afterClose'
     success_url = reverse_lazy('transactions:savings_close_list')
-
-    hx_trigger = 'afterClose'
 
 
 class SavingsCloseDelete(DeleteViewMixin):
     model = models.SavingClose
+    hx_trigger_django = 'afterClose'
     success_url = reverse_lazy('transactions:savings_close_list')
-
-    hx_trigger = 'afterClose'
 
 
 class SavingsChangeLists(ListViewMixin):
@@ -114,22 +109,20 @@ class SavingsChangeLists(ListViewMixin):
 class SavingsChangeNew(CreateViewMixin):
     model = models.SavingChange
     form_class = forms.SavingChangeForm
-    success_url = reverse_lazy('transactions:savings_change_list')
+    hx_trigger_form = 'afterChange'
 
+    success_url = reverse_lazy('transactions:savings_change_list')
     url = reverse_lazy('transactions:savings_change_new')
-    hx_trigger = 'afterChange'
 
 
 class SavingsChangeUpdate(UpdateViewMixin):
     model = models.SavingChange
     form_class = forms.SavingChangeForm
+    hx_trigger_django = 'afterChange'
     success_url = reverse_lazy('transactions:savings_change_list')
-
-    hx_trigger = 'afterChange'
 
 
 class SavingsChangeDelete(DeleteViewMixin):
     model = models.SavingChange
+    hx_trigger_django = 'afterChange'
     success_url = reverse_lazy('transactions:savings_change_list')
-
-    hx_trigger = 'afterChange'
