@@ -76,11 +76,15 @@ class CreateUpdateMixin():
     hx_redirect = None
 
     def get_hx_trigger_django(self):
+        # triggers Htmx to reload container on Submit button click
+        # triggering happens many times
         if self.hx_trigger_django:
             return self.hx_trigger_django
         return None
 
     def get_hx_trigger_form(self):
+        # triggers Htmx to reload container on Close button click
+        # triggering happens once
         if self.hx_trigger_form:
             return self.hx_trigger_form
         return None
