@@ -200,7 +200,7 @@ class New(CountUrlMixin, CreateViewMixin):
     model = Count
     form_class = CountForm
 
-    def get_hx_trigger(self):
+    def get_hx_trigger_django(self):
         tab = self.kwargs.get('tab')
 
         if tab in ['index', 'data', 'history']:
@@ -221,12 +221,12 @@ class New(CountUrlMixin, CreateViewMixin):
 class Update(CountUrlMixin, UpdateViewMixin):
     model = Count
     form_class = CountForm
-    hx_trigger = 'reloadData'
+    hx_trigger_django = 'reloadData'
 
 
 class Delete(CountUrlMixin, DeleteViewMixin):
     model = Count
-    hx_trigger = 'reloadData'
+    hx_trigger_django = 'reloadData'
 
 
 # ---------------------------------------------------------------------------------------
@@ -244,17 +244,17 @@ class TypeUrlMixin():
 class TypeNew(TypeUrlMixin, CreateViewMixin):
     model = CountType
     form_class = CountTypeForm
-    hx_trigger = 'afterType'
+    hx_trigger_django = 'afterType'
     url = reverse_lazy('counts:type_new')
 
 
 class TypeUpdate(TypeUrlMixin, UpdateViewMixin):
     model = CountType
     form_class = CountTypeForm
-    hx_trigger = 'afterType'
+    hx_trigger_django = 'afterType'
 
 
 class TypeDelete(TypeUrlMixin, DeleteViewMixin):
     model = CountType
-    hx_trigger = 'afterType'
+    hx_trigger_django = 'afterType'
     hx_redirect = reverse_lazy('counts:redirect')

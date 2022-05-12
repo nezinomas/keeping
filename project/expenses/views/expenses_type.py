@@ -15,7 +15,7 @@ class New(CreateViewMixin):
     success_url = reverse_lazy('expenses:type_list')
 
     url = reverse_lazy('expenses:type_new')
-    hx_trigger = 'afterType'
+    hx_trigger_django = 'afterType'
 
 
 class Update(UpdateViewMixin):
@@ -23,4 +23,4 @@ class Update(UpdateViewMixin):
     form_class = forms.ExpenseTypeForm
     success_url = reverse_lazy('expenses:type_list')
 
-    hx_trigger = 'afterType'
+    hx_trigger_django = 'afterType'

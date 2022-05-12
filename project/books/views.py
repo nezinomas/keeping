@@ -165,11 +165,11 @@ class TargetNew(CreateViewMixin):
     model = models.BookTarget
     form_class = forms.BookTargetForm
 
-    hx_trigger = 'afterTarget'
+    hx_trigger_django = 'afterTarget'
 
 
 class TargetUpdate(UpdateViewMixin):
     model = models.BookTarget
     form_class = forms.BookTargetForm
 
-    hx_trigger = 'afterTarget'
+    hx_trigger_django = 'afterTarget'

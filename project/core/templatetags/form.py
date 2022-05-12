@@ -13,7 +13,8 @@ def generic_form(context, title):
         'form': context['form'],
         'submit_button': _(form_action.title()),
         'form_action': form_action,
-        'url': context['url'] if 'url' in context else '',
+        'url': context.get('url', ''),
+        'hx_trigger_form': context.get('hx_trigger_form', ''),
     }
 
 
@@ -23,4 +24,5 @@ def generic_delete_form(context, title):
         'title': title,
         'url': context['url'] if 'url' in context else '',
         'object': context['object'] if 'object' in context else '',
+        'hx_trigger_form': context.get('hx_trigger_form', ''),
     }

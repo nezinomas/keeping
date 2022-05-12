@@ -58,11 +58,11 @@ class TypeNew(CreateViewMixin):
     success_url = reverse_lazy('savings:type_list')
 
     url = reverse_lazy('savings:type_new')
-    hx_trigger = 'afterType'
+    hx_trigger_django = 'afterType'
 
 
 class TypeUpdate(UpdateViewMixin):
     model = models.SavingType
     form_class = forms.SavingTypeForm
 
-    hx_trigger = 'afterType'
+    hx_trigger_django = 'afterType'

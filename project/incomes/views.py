@@ -54,14 +54,14 @@ class TypeNew(CreateViewMixin):
     model = models.IncomeType
     form_class = forms.IncomeTypeForm
     success_url = reverse_lazy('incomes:type_list')
-    hx_trigger = 'afterType'
+    hx_trigger_django = 'afterType'
     url = reverse_lazy('incomes:type_new')
 
 
 class TypeUpdate(UpdateViewMixin):
     model = models.IncomeType
     form_class = forms.IncomeTypeForm
-    hx_trigger = 'afterType'
+    hx_trigger_django = 'afterType'
     success_url = reverse_lazy('incomes:type_list')
 
 
