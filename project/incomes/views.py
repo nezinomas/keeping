@@ -33,17 +33,20 @@ class New(CreateViewMixin):
     model = models.Income
     form_class = forms.IncomeForm
     success_url = reverse_lazy('incomes:list')
+    hx_trigger_form = 'reload'
 
 
 class Update(UpdateViewMixin):
     model = models.Income
     form_class = forms.IncomeForm
     success_url = reverse_lazy('incomes:list')
+    hx_trigger_django = 'reload'
 
 
 class Delete(DeleteViewMixin):
     model = models.Income
     success_url = reverse_lazy('incomes:list')
+    hx_trigger_django = 'reload'
 
 
 class TypeLists(ListViewMixin):
@@ -53,9 +56,9 @@ class TypeLists(ListViewMixin):
 class TypeNew(CreateViewMixin):
     model = models.IncomeType
     form_class = forms.IncomeTypeForm
-    success_url = reverse_lazy('incomes:type_list')
     hx_trigger_django = 'afterType'
     url = reverse_lazy('incomes:type_new')
+    success_url = reverse_lazy('incomes:type_list')
 
 
 class TypeUpdate(UpdateViewMixin):
@@ -67,5 +70,5 @@ class TypeUpdate(UpdateViewMixin):
 
 class Search(SearchMixin):
     template_name = 'incomes/income_list.html'
-    per_page = 50
     search_method = 'search_incomes'
+    per_page = 50

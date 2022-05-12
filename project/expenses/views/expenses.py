@@ -69,17 +69,20 @@ class New(CreateViewMixin):
     model = models.Expense
     form_class = forms.ExpenseForm
     success_url = reverse_lazy('expenses:list')
+    hx_trigger_form = 'reload'
 
 
 class Update(UpdateViewMixin):
     model = models.Expense
     form_class = forms.ExpenseForm
     success_url = reverse_lazy('expenses:list')
+    hx_trigger_django = 'reload'
 
 
 class Delete(DeleteViewMixin):
     model = models.Expense
     success_url = reverse_lazy('expenses:list')
+    hx_trigger_django = 'reload'
 
 
 class Search(SearchMixin):
