@@ -57,6 +57,8 @@ $(document).on('hidden.bs.modal', '#modal', function () {
     var action = form.attr("data-hx-trigger-form");
     var inserted = form.attr('data-hx-inserted');
 
+    if (action === 'None' || action == undefined) return;
+
     if(action && inserted) {
         htmx.trigger("body", action, { });
     }
