@@ -61,23 +61,23 @@ def test_view_new_url(client_logged, tab_actual, tab_expected):
     ]
 )
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_view_new_get_hx_trigger(client_logged, tab, expected):
+def test_view_new_get_hx_trigger_django(client_logged, tab, expected):
     x = CountTypeFactory()
 
     url = reverse('counts:new', kwargs={'slug': x.slug, 'tab': tab})
     response = client_logged.get(url)
 
-    assert response.context['view'].get_hx_trigger() == expected
+    assert response.context['view'].get_hx_trigger_django() == expected
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_view_update_get_hx_trigger(client_logged):
+def test_view_update_get_hx_trigger_django(client_logged):
     x = CountFactory()
 
     url = reverse('counts:update', kwargs={'pk': x.pk})
     response = client_logged.get(url)
 
-    assert response.context['view'].get_hx_trigger() == 'reloadData'
+    assert response.context['view'].get_hx_trigger_django() == 'reloadData'
 
 
 @pytest.mark.parametrize(
@@ -100,7 +100,8 @@ def test_view_new_form_initial(client_logged, tab_sent, tab_actual):
 
     url = reverse('counts:new', kwargs={'slug': x.slug, 'tab': tab_actual})
 
-    assert f'<form method="POST" hx-post="{url}"' in actual
+    assert '<form method="POST"' in actual
+    assert f'hx-post="{url}"' in actual
     assert '<input type="text" name="date" value="1999-01-01"' in actual
     assert '<select name="count_type"' in actual
     assert '<input type="number" name="quantity" value="1"' in actual
@@ -190,13 +191,13 @@ def test_view_delete_200(client_logged):
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @freeze_time('2000-01-01')
-def test_view_delete_get_hx_trigger(client_logged):
+def test_view_delete_get_hx_trigger_django(client_logged):
     x = CountFactory()
 
     url = reverse('counts:delete', kwargs={'pk': x.pk})
     response = client_logged.get(url)
 
-    assert response.context['view'].get_hx_trigger() == 'reloadData'
+    assert response.context['view'].get_hx_trigger_django() == 'reloadData'
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -207,7 +208,8 @@ def test_view_delete_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert f'<form method="POST" hx-post="{url}"' in actual
+    assert '<form method="POST"' in actual
+    assert f'hx-post="{url}"' in actual
     assert 'Ar tikrai norite ištrinti: <strong>1999-01-01: 1.0</strong>?' in actual
 
 
@@ -712,7 +714,8 @@ def test_count_type_delete_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert f'<form method="POST" hx-post="{url}"' in actual
+    assert '<form method="POST"' in actual
+    assert f'hx-post="{url}"' in actual
     assert 'Ar tikrai norite ištrinti: <strong>Count Type</strong>?' in actual
 
 
