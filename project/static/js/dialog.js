@@ -1,9 +1,20 @@
+// focus on [autofocus] attribute
+$(document).on('shown.bs.modal', '#modal', function () {
+    $(this).find('[autofocus]').focus();
+});
+
+
 htmx.on("htmx:afterSwap", (e) => {
     // Response targeting #dialog => show the modal
     if (e.detail.target.id == "dialog") {
         $("#modal").modal("show").draggable({ handle: ".modal-header" });
     }
 })
+
+
+$(document).on('shown.bs.modal', '.modal', function () {
+    $(this).find('[autofocus]').focus();
+});
 
 
 htmx.on("htmx:beforeSwap", (e) => {
@@ -56,6 +67,7 @@ htmx.on("htmx:beforeSwap", (e) => {
     }
 
 })
+
 
 $(document).on('hidden.bs.modal', '#modal', function () {
     var form = $('.form');
