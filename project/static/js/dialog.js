@@ -54,13 +54,13 @@ htmx.on("htmx:beforeSwap", (e) => {
 
 $(document).on('hidden.bs.modal', '#modal', function () {
     var form = $('.form');
-    var action = form.attr("data-hx-trigger-form");
-    var inserted = form.attr('data-hx-inserted');
+    var trigger_name = form.attr("data-hx-trigger-form");
+    var data_inserted = form.attr('data-hx-inserted');
 
-    if (action === 'None' || action == undefined) return;
+    if (trigger_name === 'None' || trigger_name == undefined) return;
 
-    if(action && inserted) {
-        htmx.trigger("body", action, { });
+    if(trigger_name && data_inserted) {
+        htmx.trigger("body", trigger_name, { });
     }
 
 });
