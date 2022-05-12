@@ -15,24 +15,21 @@ class Lists(ListViewMixin):
 class New(CreateViewMixin):
     model = models.Pension
     form_class = forms.PensionForm
+    hx_trigger_form = 'afterPension'
     success_url = reverse_lazy('pensions:list')
-
-    hx_trigger = 'afterPension'
 
 
 class Update(UpdateViewMixin):
     model = models.Pension
     form_class = forms.PensionForm
+    hx_trigger_django = 'afterPension'
     success_url = reverse_lazy('pensions:list')
-
-    hx_trigger = 'afterPension'
 
 
 class Delete(DeleteViewMixin):
     model = models.Pension
+    hx_trigger_django = 'afterPension'
     success_url = reverse_lazy('pensions:list')
-
-    hx_trigger = 'afterPension'
 
 
 class TypeLists(ListViewMixin):
@@ -42,15 +39,14 @@ class TypeLists(ListViewMixin):
 class TypeNew(CreateViewMixin):
     model = models.PensionType
     form_class = forms.PensionTypeForm
-    success_url = reverse_lazy('pensions:type_list')
+    hx_trigger_django = 'afterPensionType'
 
     url = reverse_lazy('pensions:type_new')
-    hx_trigger = 'afterPensionType'
+    success_url = reverse_lazy('pensions:type_list')
 
 
 class TypeUpdate(UpdateViewMixin):
     model = models.PensionType
     form_class = forms.PensionTypeForm
+    hx_trigger_django = 'afterPensionType'
     success_url = reverse_lazy('pensions:type_list')
-
-    hx_trigger = 'afterPensionType'

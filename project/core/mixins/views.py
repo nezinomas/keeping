@@ -71,11 +71,23 @@ class SearchMixin(LoginRequiredMixin, TemplateView):
 
 
 class CreateUpdateMixin():
-    hx_trigger = 'reload'
+    hx_trigger_django = None
+    hx_trigger_form = None
     hx_redirect = None
 
-    def get_hx_trigger(self):
-        return self.hx_trigger
+    def get_hx_trigger_django(self):
+        # triggers Htmx to reload container on Submit button click
+        # triggering happens many times
+        if self.hx_trigger_django:
+            return self.hx_trigger_django
+        return None
+
+    def get_hx_trigger_form(self):
+        # triggers Htmx to reload container on Close button click
+        # triggering happens once
+        if self.hx_trigger_form:
+            return self.hx_trigger_form
+        return None
 
     def get_hx_redirect(self):
         return self.hx_redirect
@@ -85,6 +97,7 @@ class CreateUpdateMixin():
         context.update({
             'form_action': self.form_action,
             'url': self.url,
+            'hx_trigger_form': self.get_hx_trigger_form(),
         })
         return context
 
@@ -94,16 +107,18 @@ class CreateUpdateMixin():
         if self.request.htmx:
             self.hx_redirect = self.get_hx_redirect()
             if self.hx_redirect:
-                # close form and redirect to url with hx_trigger
+                # close form and redirect to url with hx_trigger_django
                 return HttpResponseClientRedirect(self.hx_redirect)
 
             # close form and reload container
             response.status_code = 204
-            trigger_client_event(
-                response,
-                self.get_hx_trigger(),
-                {},
-            )
+            trigger = self.get_hx_trigger_django()
+            if trigger:
+                trigger_client_event(
+                    response,
+                    trigger,
+                    {},
+                )
             return response
 
         return response
@@ -135,11 +150,11 @@ class UpdateViewMixin(LoginRequiredMixin,
 class DeleteViewMixin(LoginRequiredMixin,
                       GetQuerysetMixin,
                       DeleteView):
-    hx_trigger = 'reload'
+    hx_trigger_django = 'reload'
     hx_redirect = None
 
-    def get_hx_trigger(self):
-        return self.hx_trigger
+    def get_hx_trigger_django(self):
+        return self.hx_trigger_django
 
     def get_hx_redirect(self):
         return self.hx_redirect
@@ -167,7 +182,7 @@ class DeleteViewMixin(LoginRequiredMixin,
                 return HttpResponse(
                     status=204,
                     headers={
-                        'HX-Trigger': json.dumps({self.get_hx_trigger(): None}),
+                        'HX-Trigger': json.dumps({self.get_hx_trigger_django(): None}),
                     },
                 )
         return HttpResponse()

@@ -126,22 +126,6 @@ def no_incomes_data(expenses, savings=None, not_use=None):
     return expenses_avg, cut_avg
 
 
-def month_context(request, context=None):
-    context = context if context else {}
-    year = request.user.year
-    month = request.user.month
-
-    obj = MonthHelper(request, year, month)
-
-    context.update({
-        'month_table': obj.render_month_table(),
-        'info': obj.render_info(),
-        'chart_expenses': obj.render_chart_expenses(),
-        'chart_targets': obj.render_chart_targets(),
-    })
-    return context
-
-
 def detailed_context(context, data, name):
     if not 'data' in context.keys():
         context['data'] = []

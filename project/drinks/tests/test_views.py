@@ -590,7 +590,7 @@ def test_new_load_form(client_logged, tab, expect_url):
     response = client_logged.get(url)
     actual = response.content.decode()
 
-    assert f'<form method="POST" hx-post="{expect_url}"' in actual
+    assert f'hx-post="{expect_url}"' in actual
     assert '<input type="text" name="date" value="1999-01-01"' in actual
 
 
@@ -681,7 +681,7 @@ def test_view_drinks_delete_load_form(client_logged):
     response = client_logged.get(url, {})
     actual = response.content.decode()
 
-    assert f'<form method="POST" hx-post="{url}"' in actual
+    assert f'hx-post="{url}"' in actual
     assert 'Ar tikrai norite ištrinti: <strong>1999-01-01: 1.0</strong>?' in actual
 
 
@@ -743,7 +743,7 @@ def test_target_new_load_form(client_logged, tab, expect_url):
     actual = response.content.decode()
 
     assert response.status_code == 200
-    assert f'<form method="POST" hx-post="{expect_url}"' in actual
+    assert f'hx-post="{expect_url}"' in actual
     assert '<input type="text" name="year" value="1999"' in actual
 
 

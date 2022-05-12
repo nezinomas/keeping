@@ -26,7 +26,10 @@ from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
 from .lib import summary_view_helper as SH
 from .lib import views_helpers as H
 from .models import AccountWorth, PensionWorth, SavingWorth
-
+from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
+                                 FormViewMixin, ListViewMixin,
+                                 RedirectViewMixin, TemplateViewMixin,
+                                 UpdateViewMixin, rendered_content)
 
 class Index(IndexMixin):
     template_name = 'bookkeeping/index.html'
@@ -121,13 +124,24 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
         return context
 
 
-class Month(IndexMixin):
+class Month(TemplateViewMixin):
     template_name = 'bookkeeping/month.html'
 
     def get_context_data(self, **kwargs):
+        if self.request.htmx:
+            self.template_name = 'bookkeeping/includes/month_content.html'
+
+        year = self.request.user.year
+        month = self.request.user.month
+
+        obj = H.MonthHelper(self.request, year, month)
+
         context = super().get_context_data(**kwargs)
         context.update({
-            **H.month_context(self.request, context),
+            'month_table': obj.render_month_table(),
+            'info': obj.render_info(),
+            'chart_expenses': obj.render_chart_expenses(),
+            'chart_targets': obj.render_chart_targets(),
         })
         return context
 
@@ -309,18 +323,23 @@ class SummaryExpensesData(AjaxSearchMixin):
         return super().form_valid(form, **kwargs)
 
 
-class ExpandDayExpenses(IndexMixin):
-    def get(self, request, *args, **kwargs):
+class ExpandDayExpenses(TemplateViewMixin):
+    template_name = 'bookkeeping/includes/expand_day_expenses.html'
+
+    def get_context_data(self, **kwargs):
+
         try:
             _date = kwargs.get('date')
             _year = int(_date[:4])
             _month = int(_date[4:6])
             _day = int(_date[6:8])
             dt = datetime(_year, _month, _day)
-        except Exception:  # pylint: disable=broad-except
-            dt = datetime(1970, 1, 1)
+        except ValueError:
+            _year, _month, _day = 1970, 1, 1
 
-        items = (
+        dt = datetime(_year, _month, _day)
+
+        object_list = (
             Expense
             .objects
             .items()
@@ -328,14 +347,14 @@ class ExpandDayExpenses(IndexMixin):
             .order_by('expense_type', F('expense_name').asc(), 'price')
         )
 
-        context = {
-            'items': items,
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'day': _day,
+            'object_list': object_list,
             'notice': _('No records on day %(day)s') % ({'day': f'{dt:%F}'}),
-        }
-        template = 'bookkeeping/includes/expand_day_expenses.html'
-        html = render_to_string(template, context, request)
+        })
 
-        return JsonResponse({'html': html})
+        return context
 
 
 class AccountsWorthReset(LoginRequiredMixin, CreateView):
@@ -384,13 +403,4 @@ class ReloadIndex(DispatchAjaxMixin, IndexMixin):
             'no_incomes': obj.render_no_incomes(),
             'wealth': obj.render_wealth(to_string=True),
         }
-        return JsonResponse(context)
-
-
-class ReloadMonth(DispatchAjaxMixin, IndexMixin):
-    template_name = 'bookkeeping/includes/month.html'
-    redirect_view = reverse_lazy('bookkeeping:month')
-
-    def get(self, request, *args, **kwargs):
-        context = H.month_context(request)
         return JsonResponse(context)

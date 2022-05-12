@@ -1,0 +1,36 @@
+{% load i18n %}
+<div class="row mt-2 gx-2">
+    <div class="col-lg-8 table-responsive" id="month_table">
+        {{ month_table|safe }}
+    </div>
+    <div class="col-lg-4">
+        <div class="d-flex flex-column align-items-start h-100">
+            <div class="w-100 mb-auto">
+                <div x-show="!show_chart">{{ chart_expenses|safe }}</div>
+                <div x-show="show_chart">{{ chart_targets|safe }}</div>
+            </div>
+            <div class="w-100" id="info">{{ info|safe }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row gx-2">
+    <div class="col-lg-8 gx-2">
+        <div class="btn-group d-flex" role="group">
+        {% with request.user.month as month %}
+        {% for m in context_months %}
+        {% with m|date:'n' as m_num %}
+        <a href="{% url 'core:set_month' m_num %}" class="btn btn-sm btn-month {% if month|slugify == m_num %}btn-primary{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</a>
+        {% endwith %}{% endfor %}{% endwith %}
+        </div>
+    </div>
+    <div class="col-lg-4 my-sm-2 my-lg-0 gx-2 text-end">
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'expenses:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Expenses' context "expenses button" %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'incomes:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Incomes' context "incomes button" %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'savings:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Savings' context "savings button" %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'transactions:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Transactions' context 'transactions button' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'drinks:new' 'index' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Drinks' context 'drinks button' %}</button>
+        <button class="btn btn-sm btn-info" @click="show_chart = ! show_chart">{% translate 'Show other chart' %}</button>
+    </div>
+</div>
+</div>

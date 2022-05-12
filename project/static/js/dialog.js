@@ -74,12 +74,10 @@ $(document).on('hidden.bs.modal', '#modal', function () {
     var trigger_name = form.attr("data-hx-trigger-form");
     var data_inserted = form.attr('data-hx-inserted');
 
-    alert(`Trigger: ${trigger_name} type: ${typeof (trigger_name)} | insert: ${data_inserted} type: ${typeof (data_inserted)}`);
-
     if (trigger_name === 'None' || trigger_name == undefined) return;
 
-    if (trigger_name && data_inserted) {
-        alert('Triggering event');
-        htmx.trigger("body", trigger_name, {});
+    if(trigger_name && data_inserted) {
+        htmx.trigger("body", trigger_name, { });
     }
+
 });

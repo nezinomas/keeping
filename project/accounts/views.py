@@ -18,7 +18,7 @@ class New(CreateViewMixin):
     success_url = reverse_lazy('accounts:list')
 
     url = reverse_lazy('accounts:new')
-    hx_trigger = 'afterAccount'
+    hx_trigger_django = 'afterAccount'
 
 
 class Update(UpdateViewMixin):
@@ -26,7 +26,7 @@ class Update(UpdateViewMixin):
     form_class = forms.AccountForm
     success_url = reverse_lazy('accounts:list')
 
-    hx_trigger = 'afterAccount'
+    hx_trigger_django = 'afterAccount'
 
     def get_queryset(self):
         return models.Account.objects.related()

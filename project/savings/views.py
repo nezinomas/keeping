@@ -31,17 +31,20 @@ class Lists(ListViewMixin):
 class New(CreateViewMixin):
     model = models.Saving
     form_class = forms.SavingForm
+    hx_trigger_form = 'reload'
     success_url = reverse_lazy('savings:list')
 
 
 class Update(UpdateViewMixin):
     model = models.Saving
     form_class = forms.SavingForm
+    hx_trigger_django = 'reload'
     success_url = reverse_lazy('savings:list')
 
 
 class Delete(DeleteViewMixin):
     model = models.Saving
+    hx_trigger_django = 'reload'
     success_url = reverse_lazy('savings:list')
 
 
@@ -55,14 +58,13 @@ class TypeLists(ListViewMixin):
 class TypeNew(CreateViewMixin):
     model = models.SavingType
     form_class = forms.SavingTypeForm
-    success_url = reverse_lazy('savings:type_list')
+    hx_trigger_django = 'afterType'
 
     url = reverse_lazy('savings:type_new')
-    hx_trigger = 'afterType'
+    success_url = reverse_lazy('savings:type_list')
 
 
 class TypeUpdate(UpdateViewMixin):
     model = models.SavingType
     form_class = forms.SavingTypeForm
-
-    hx_trigger = 'afterType'
+    hx_trigger_django = 'afterType'
