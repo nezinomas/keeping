@@ -40,7 +40,7 @@ class BaseMixin(models.QuerySet):
 
     def annotate_fee(self, fee):
         if fee:
-            return self.annotate(fee=F('fee'))
+            return self.annotate(fee=Sum('fee'))
         return self
     annotate_fee.queryset_only = True
 
