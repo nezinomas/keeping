@@ -8,15 +8,13 @@ from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ...accounts.models import AccountBalance
-from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ...core.lib import utils
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
-from ...core.lib.utils import sum_all, sum_col
+from ...core.lib.utils import sum_col
 from ...debts.models import Debt
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
-from ...pensions.models import PensionBalance
 from ...plans.lib.calc_day_sum import CalcDaySum
 from ...savings.models import Saving, SavingBalance
 from ...transactions.models import SavingClose
@@ -270,7 +268,6 @@ class IndexHelper():
         self._year = year
 
         self._account = [*AccountBalance.objects.year(year)]
-        self._funds = [*SavingBalance.objects.year(year)]
 
         qs_income = Income.objects.sum_by_month(year)
         qs_expenses = Expense.objects.sum_by_month(year)
@@ -334,57 +331,6 @@ class IndexHelper():
 
         return render_to_string(
             template_name='bookkeeping/includes/chart_balance.html',
-            context=context,
-            request=self._request
-        )
-
-    def render_no_incomes(self):
-        journal = utils.get_user().journal
-        expenses = Expense.objects.last_months()
-        pension = [x for x in self._funds if x['type'] in ['pensions']]
-        fund = [x for x in self._funds if x['type'] in ['shares', 'funds']]
-
-        savings = None
-        unnecessary = []
-
-        if journal.unnecessary_expenses:
-            arr = json.loads(journal.unnecessary_expenses)
-            unnecessary = list(
-                ExpenseType
-                .objects
-                .related()
-                .filter(pk__in=arr)
-                .values_list("title", flat=True)
-            )
-
-        if journal.unnecessary_savings:
-            unnecessary.append(_('Savings'))
-            savings = Saving.objects.last_months()
-
-        avg_expenses, cut_sum = (
-            no_incomes_data(
-                expenses=expenses,
-                savings=savings,
-                not_use=unnecessary)
-        )
-
-        obj = NoIncomes(
-            money=self._YearBalance.amount_end,
-            fund=sum_col(fund, 'market_value'),
-            pension=sum_col(pension, 'market_value'),
-            avg_expenses=avg_expenses,
-            cut_sum=cut_sum
-        )
-
-        context = {
-            'no_incomes': obj.summary,
-            'save_sum': cut_sum,
-            'not_use': unnecessary,
-            'avg_expenses': avg_expenses,
-        }
-
-        return render_to_string(
-            template_name='bookkeeping/includes/no_incomes.html',
             context=context,
             request=self._request
         )
