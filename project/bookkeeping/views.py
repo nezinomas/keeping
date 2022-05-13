@@ -42,19 +42,56 @@ class Index(IndexMixin):
         context = super().get_context_data(**kwargs)
         context.update({
             'year': year,
-            'accounts': obj.render_accounts(),
-            'savings': obj.render_savings(),
-            'pensions': obj.render_pensions(),
-            'year_balance': obj.render_year_balance(),
-            'year_balance_short': obj.render_year_balance_short(),
-            'year_expenses': exp.render_year_expenses(),
-            'no_incomes': obj.render_no_incomes(),
-            'averages': obj.render_averages(),
-            'wealth': obj.render_wealth(),
-            'borrow': obj.render_borrow(),
-            'lend': obj.render_lend(),
-            'chart_expenses': exp.render_chart_expenses(),
-            'chart_balance': obj.render_chart_balance(),
+            'savings': rendered_content(self.request, Savings, **kwargs),
+            'pensions': rendered_content(self.request, Pensions, **kwargs),
+            # 'accounts': obj.render_accounts(),
+            # 'year_balance': obj.render_year_balance(),
+            # 'year_balance_short': obj.render_year_balance_short(),
+            # 'year_expenses': exp.render_year_expenses(),
+            # 'no_incomes': obj.render_no_incomes(),
+            # 'averages': obj.render_averages(),
+            # 'wealth': obj.render_wealth(),
+            # 'borrow': obj.render_borrow(),
+            # 'lend': obj.render_lend(),
+            # 'chart_expenses': exp.render_chart_expenses(),
+            # 'chart_balance': obj.render_chart_balance(),
+        })
+        return context
+
+
+class Savings(TemplateViewMixin):
+    template_name = 'bookkeeping/includes/funds_table.html'
+
+    def get_context_data(self, **kwargs):
+        year = self.request.user.year
+        sum_incomes = Income.objects.year(year).aggregate(Sum('price'))['price__sum']
+
+        savings = SavingBalance.objects.year(year)
+        total_row = H.sum_all(savings)
+        sum_savings = total_row.get('invested', 0) - total_row.get('past_amount', 0)
+
+        H.add_latest_check_key(SavingWorth, savings, year)
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'title': _('Funds'),
+            'items': savings,
+            'total_row': total_row,
+            'percentage_from_incomes': (
+                H.IndexHelper.percentage_from_incomes(float(sum_incomes), sum_savings)
+            ),
+            'profit_incomes_proc': (
+                H.IndexHelper.percentage_from_incomes(
+                    total_row.get('incomes'),
+                    total_row.get('market_value')
+                ) - 100
+            ),
+            'profit_invested_proc': (
+                H.IndexHelper.percentage_from_incomes(
+                    total_row.get('invested'),
+                    total_row.get('market_value')
+                ) - 100
+            ),
         })
         return context
 

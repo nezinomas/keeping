@@ -16,9 +16,9 @@ urlpatterns = [
         name='index'
     ),
     path(
-        'bookkeeping/reload/',
-        views.ReloadIndex.as_view(),
-        name='reload_index'
+        'bookkeeping/savings/',
+        views.Savings.as_view(),
+        name='savings'
     ),
     path(
         'bookkeeping/savings_worth/new/',

@@ -357,46 +357,6 @@ class IndexHelper():
             )
         return context
 
-    def render_savings(self):
-        funds = self._funds
-        incomes = self._YearBalance.total_row.get('incomes')
-        savings = self._YearBalance.total_row.get('savings')
-        context = IndexHelper.savings_context(funds, incomes, savings, self._year)
-
-        return context if context else {}
-
-    @staticmethod
-    def savings_context(funds, incomes, savings, year):
-        total_row = sum_all(funds)
-
-        if not funds:
-            return {}
-
-        # add latest_check date to savibgs dictionary
-        add_latest_check_key(SavingWorth, funds, year)
-
-        context = {
-            'title': _('Funds'),
-            'items': funds,
-            'total_row': total_row,
-            'percentage_from_incomes': (
-                IndexHelper.percentage_from_incomes(incomes, savings)
-            ),
-            'profit_incomes_proc': (
-                IndexHelper.percentage_from_incomes(
-                    total_row.get('incomes'),
-                    total_row.get('market_value')
-                ) - 100
-            ),
-            'profit_invested_proc': (
-                IndexHelper.percentage_from_incomes(
-                    total_row.get('invested'),
-                    total_row.get('market_value')
-                ) - 100
-            ),
-        }
-        return context
-
     def render_pensions(self):
         context = IndexHelper.pensions_context(self._pensions, self._year)
 
