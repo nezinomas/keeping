@@ -123,6 +123,24 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
         return context
 
 
+class Pensions(TemplateViewMixin):
+    template_name = 'bookkeeping/includes/funds_table.html'
+
+    def get_context_data(self, **kwargs):
+        year = self.request.user.year
+        pensions = PensionBalance.objects.year(year)
+
+        H.add_latest_check_key(PensionWorth, pensions, year)
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'title': _('Pensions'),
+            'items': pensions,
+            'total_row': H.sum_all(pensions),
+        })
+        return context
+
+
 class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
     type_model = Account
     model = AccountWorth

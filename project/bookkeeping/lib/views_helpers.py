@@ -271,7 +271,6 @@ class IndexHelper():
 
         self._account = [*AccountBalance.objects.year(year)]
         self._funds = [*SavingBalance.objects.year(year)]
-        self._pensions = [*PensionBalance.objects.year(year)]
 
         qs_income = Income.objects.sum_by_month(year)
         qs_expenses = Expense.objects.sum_by_month(year)
@@ -355,27 +354,6 @@ class IndexHelper():
                 context=context,
                 request=self._request
             )
-        return context
-
-    def render_pensions(self):
-        context = IndexHelper.pensions_context(self._pensions, self._year)
-
-        return context if context else {}
-
-    @staticmethod
-    def pensions_context(pensions, year):
-        if not pensions:
-            return {}
-
-        # add latest_check date to pensions dictionary
-        add_latest_check_key(PensionWorth, pensions, year)
-
-        context = {
-            'title': _('Pensions'),
-            'items': pensions,
-            'total_row': sum_all(pensions),
-        }
-
         return context
 
     def render_no_incomes(self):
