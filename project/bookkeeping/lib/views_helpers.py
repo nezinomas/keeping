@@ -1,14 +1,13 @@
 import itertools as it
-import json
 from collections import Counter, defaultdict
 from datetime import datetime
 from typing import List
 
+from django.db.models import Sum
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ...accounts.models import AccountBalance
-from ...core.lib import utils
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...core.lib.utils import sum_col
@@ -16,11 +15,10 @@ from ...debts.models import Debt
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
 from ...plans.lib.calc_day_sum import CalcDaySum
-from ...savings.models import Saving, SavingBalance
+from ...savings.models import Saving
 from ...transactions.models import SavingClose
 from ..lib.day_spending import DaySpending
 from ..lib.expense_summary import DayExpense, MonthExpense
-from ..lib.no_incomes import NoIncomes
 from ..lib.year_balance import YearBalance
 
 
@@ -267,7 +265,12 @@ class IndexHelper():
         self._request = request
         self._year = year
 
-        self._account = [*AccountBalance.objects.year(year)]
+        account_sum = \
+            AccountBalance.objects \
+            .related() \
+            .filter(year=year) \
+            .aggregate(Sum('balance'))['balance__sum']
+        account_sum = float(account_sum) if account_sum else 0.0
 
         qs_income = Income.objects.sum_by_month(year)
         qs_expenses = Expense.objects.sum_by_month(year)
@@ -296,7 +299,7 @@ class IndexHelper():
             borrow_return=borrow_return,
             lend=lend,
             lend_return=lend_return,
-            amount_start=sum_col(self._account, 'past'))
+            amount_start=account_sum)
 
     def render_year_balance(self):
         context = {
@@ -304,8 +307,6 @@ class IndexHelper():
             'data': self._YearBalance.balance,
             'total_row': self._YearBalance.total_row,
             'avg_row': self._YearBalance.average,
-            'accounts_amount_end': sum_col(self._account, 'balance'),
-            'months_amount_end': self._YearBalance.amount_end,
         }
         return render_to_string(
             template_name='bookkeeping/includes/year_balance.html',

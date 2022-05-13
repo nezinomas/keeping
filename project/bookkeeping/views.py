@@ -10,15 +10,20 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView
-from ..core.lib.utils import sum_all
+
 from ..accounts.models import Account, AccountBalance
 from ..core.lib import utils
 from ..core.lib.date import years
 from ..core.lib.translation import month_names
+from ..core.lib.utils import sum_all
 from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.formset import FormsetMixin
-from ..core.mixins.views import CreateAjaxMixin, DispatchAjaxMixin, IndexMixin
-from ..expenses.models import Expense
+from ..core.mixins.views import (CreateAjaxMixin, CreateViewMixin,
+                                 DeleteViewMixin, DispatchAjaxMixin,
+                                 FormViewMixin, IndexMixin, ListViewMixin,
+                                 RedirectViewMixin, TemplateViewMixin,
+                                 UpdateViewMixin, rendered_content)
+from ..expenses.models import Expense, ExpenseType
 from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
 from ..savings.models import Saving, SavingBalance, SavingType
@@ -26,11 +31,9 @@ from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
                     SavingWorthForm, SummaryExpensesForm)
 from .lib import summary_view_helper as SH
 from .lib import views_helpers as H
+from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .models import AccountWorth, PensionWorth, SavingWorth
-from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
-                                 FormViewMixin, ListViewMixin,
-                                 RedirectViewMixin, TemplateViewMixin,
-                                 UpdateViewMixin, rendered_content)
+
 
 class Index(TemplateViewMixin):
     template_name = 'bookkeeping/index.html'
@@ -48,14 +51,14 @@ class Index(TemplateViewMixin):
             'pensions': rendered_content(self.request, Pensions, **kwargs),
             'wealth': rendered_content(self.request, Wealth, **kwargs),
             'no_incomes': rendered_content(self.request, NoIncomes, **kwargs),
-            # 'year_balance': obj.render_year_balance(),
-            # 'year_balance_short': obj.render_year_balance_short(),
-            # 'year_expenses': exp.render_year_expenses(),
-            # 'averages': obj.render_averages(),
-            # 'borrow': obj.render_borrow(),
-            # 'lend': obj.render_lend(),
-            # 'chart_expenses': exp.render_chart_expenses(),
-            # 'chart_balance': obj.render_chart_balance(),
+            'year_balance': obj.render_year_balance(),
+            'year_balance_short': obj.render_year_balance_short(),
+            'year_expenses': exp.render_year_expenses(),
+            'averages': obj.render_averages(),
+            'borrow': obj.render_borrow(),
+            'lend': obj.render_lend(),
+            'chart_expenses': exp.render_chart_expenses(),
+            'chart_balance': obj.render_chart_balance(),
         })
         return context
 
@@ -311,7 +314,7 @@ class NoIncomes(TemplateViewMixin):
         avg_expenses, cut_sum = \
             H.no_incomes_data(expenses=expenses, savings=savings, not_use=unnecessary)
 
-        obj = H.NoIncomes(
+        obj = LibNoIncomes(
             money=account_sum,
             fund=fund_sum,
             pension=pension_sum,
