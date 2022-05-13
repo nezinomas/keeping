@@ -407,32 +407,6 @@ class IndexHelper():
             request=self._request
         )
 
-    def render_wealth(self, to_string=False):
-        money = (
-            self._YearBalance.amount_end
-            + sum_col(self._funds, 'market_value')
-        )
-
-        wealth = (
-            self._YearBalance.amount_end
-            + sum_col(self._funds, 'market_value')
-        )
-        wealth = wealth + sum_col(self._pensions, 'market_value')
-
-        context = {
-            'title': [_('Money'), _('Wealth')],
-            'data': [money, wealth],
-        }
-
-        if to_string:
-            return render_to_string(
-                template_name='bookkeeping/includes/info_table.html',
-                context=context,
-                request=self._request
-            )
-
-        return context
-
     def render_averages(self):
         context = {
             'title': [_('Average incomes'), _('Average expenses')],

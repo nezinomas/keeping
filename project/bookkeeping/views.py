@@ -45,12 +45,12 @@ class Index(TemplateViewMixin):
             'accounts': rendered_content(self.request, Accounts, **kwargs),
             'savings': rendered_content(self.request, Savings, **kwargs),
             'pensions': rendered_content(self.request, Pensions, **kwargs),
+            'wealth': rendered_content(self.request, Wealth, **kwargs),
             # 'year_balance': obj.render_year_balance(),
             # 'year_balance_short': obj.render_year_balance_short(),
             # 'year_expenses': exp.render_year_expenses(),
             # 'no_incomes': obj.render_no_incomes(),
             # 'averages': obj.render_averages(),
-            # 'wealth': obj.render_wealth(),
             # 'borrow': obj.render_borrow(),
             # 'lend': obj.render_lend(),
             # 'chart_expenses': exp.render_chart_expenses(),
@@ -227,6 +227,38 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
                 **H.IndexHelper.pensions_context(pensions, year)
             })
 
+        return context
+
+
+class Wealth(TemplateViewMixin):
+    template_name = 'bookkeeping/includes/info_table.html'
+
+    def get_context_data(self, **kwargs):
+        year = self.request.user.year
+        account_sum = \
+            AccountBalance.objects \
+            .related() \
+            .filter(year=year) \
+            .aggregate(Sum('balance'))['balance__sum']
+        fund_sum = \
+            SavingBalance.objects \
+            .related() \
+            .filter(year=year) \
+            .aggregate(Sum('market_value'))['market_value__sum']
+        pension_sum = \
+            PensionBalance.objects \
+            .related() \
+            .filter(year=year) \
+            .aggregate(Sum('market_value'))['market_value__sum']
+
+        money = account_sum + fund_sum
+        wealth = account_sum + fund_sum + pension_sum
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'title': [_('Money'), _('Wealth')],
+            'data': [money, wealth],
+        })
         return context
 
 

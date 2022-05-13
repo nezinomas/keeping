@@ -51,6 +51,11 @@ urlpatterns = [
         name='pensions_worth_new'
     ),
     path(
+        'bookkeeping/wealth/',
+        views.Wealth.as_view(),
+        name='wealth'
+    ),
+    path(
         'detailed/',
         views.Detailed.as_view(),
         name='detailed'
