@@ -338,24 +338,6 @@ class IndexHelper():
             request=self._request
         )
 
-    def render_accounts(self, to_string = True):
-        # add latest_check date to accounts dictionary
-        add_latest_check_key(AccountWorth, self._account, self._year)
-
-        context = {
-            'items': self._account,
-            'total_row': sum_all(self._account),
-            'accounts_amount': sum_col(self._account, 'balance'),
-            'months_amount': self._YearBalance.amount_end,
-        }
-        if to_string:
-            return render_to_string(
-                template_name='bookkeeping/includes/accounts_worth_list.html',
-                context=context,
-                request=self._request
-            )
-        return context
-
     def render_no_incomes(self):
         journal = utils.get_user().journal
         expenses = Expense.objects.last_months()
