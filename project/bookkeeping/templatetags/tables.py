@@ -31,25 +31,3 @@ def info_table(_dict):
             continue
 
     return rtn
-
-
-@register.inclusion_tag('bookkeeping/includes/funds_table.html')
-def funds_table(_dict, _type=None):
-    rtn = {
-        'title': None,
-        'items': None,
-        'total_row': None,
-        'percentage_from_incomes': None,
-        'profit_incomes_proc': None,
-        'profit_invested_proc': None,
-    }
-
-    for k in rtn:
-        try:
-            rtn[k] = _dict.get(k)
-        except AttributeError:
-            continue
-
-    rtn['type'] = _type
-
-    return rtn
