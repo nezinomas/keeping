@@ -33,7 +33,7 @@ def info_table(_dict):
     return rtn
 
 
-@register.inclusion_tag('bookkeeping/includes/worth_table.html')
+@register.inclusion_tag('bookkeeping/includes/funds_table.html')
 def funds_table(_dict, _type=None):
     rtn = {
         'title': None,
