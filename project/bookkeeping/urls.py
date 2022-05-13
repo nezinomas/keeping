@@ -21,21 +21,6 @@ urlpatterns = [
         name='accounts'
     ),
     path(
-        'bookkeeping/savings/',
-        views.Savings.as_view(),
-        name='savings'
-    ),
-    path(
-        'bookkeeping/pensions/',
-        views.Pensions.as_view(),
-        name='pensions'
-    ),
-    path(
-        'bookkeeping/savings_worth/new/',
-        views.SavingsWorthNew.as_view(),
-        name='savings_worth_new'
-    ),
-    path(
         'bookkeeping/accounts_worth/new/',
         views.AccountsWorthNew.as_view(),
         name='accounts_worth_new'
@@ -44,6 +29,21 @@ urlpatterns = [
         'bookkeeping/accounts_worth/reset/<int:pk>/',
         views.AccountsWorthReset.as_view(),
         name='accounts_worth_reset'
+    ),
+    path(
+        'bookkeeping/savings/',
+        views.Savings.as_view(),
+        name='savings'
+    ),
+    path(
+        'bookkeeping/savings_worth/new/',
+        views.SavingsWorthNew.as_view(),
+        name='savings_worth_new'
+    ),
+    path(
+        'bookkeeping/pensions/',
+        views.Pensions.as_view(),
+        name='pensions'
     ),
     path(
         'bookkeeping/pensions_worth/new/',
