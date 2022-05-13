@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -23,15 +22,16 @@ from ..core.mixins.views import (CreateAjaxMixin, CreateViewMixin,
                                  FormViewMixin, IndexMixin, ListViewMixin,
                                  RedirectViewMixin, TemplateViewMixin,
                                  UpdateViewMixin, rendered_content)
-from ..expenses.models import Expense, ExpenseType
+from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
 from ..savings.models import Saving, SavingBalance, SavingType
 from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
                     SavingWorthForm, SummaryExpensesForm)
-from .lib import summary_view_helper as SH
-from .lib import views_helpers as H
+from .lib import summary_view_helper as SummaryViewHelper
+from .lib import views_helpers as Helper
 from .lib.no_incomes import NoIncomes as LibNoIncomes
+from .lib.views_helpers import ExpensesHelper, IndexHelper, MonthHelper
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 
@@ -40,8 +40,8 @@ class Index(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        obj = H.IndexHelper(self.request, year)
-        exp = H.ExpensesHelper(self.request, year)
+        obj = IndexHelper(self.request, year)
+        exp = ExpensesHelper(self.request, year)
 
         context = super().get_context_data(**kwargs)
         context.update({
@@ -89,7 +89,7 @@ class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
         context = super().get_context_data(**kwargs)
 
         if self.request.POST:
-            obj = H.IndexHelper(self.request, self.request.user.year)
+            obj = IndexHelper(self.request, self.request.user.year)
             context.update({**obj.render_accounts(to_string=False)})
 
         return context
@@ -125,7 +125,7 @@ class AccountsWorthReset(LoginRequiredMixin, CreateView):
             date=timezone.now()
         )
 
-        obj = H.IndexHelper(request, request.user.year)
+        obj = IndexHelper(request, request.user.year)
         context = {'accounts_worth': obj.render_accounts()}
 
         return JsonResponse(context)
@@ -142,7 +142,7 @@ class Savings(TemplateViewMixin):
         total_row = sum_all(savings)
         sum_savings = total_row.get('invested', 0) - total_row.get('past_amount', 0)
 
-        H.add_latest_check_key(SavingWorth, savings, year)
+        Helper.add_latest_check_key(SavingWorth, savings, year)
 
         context = super().get_context_data(**kwargs)
         context.update({
@@ -150,16 +150,16 @@ class Savings(TemplateViewMixin):
             'items': savings,
             'total_row': total_row,
             'percentage_from_incomes': (
-                H.IndexHelper.percentage_from_incomes(float(sum_incomes), sum_savings)
+                IndexHelper.percentage_from_incomes(float(sum_incomes), sum_savings)
             ),
             'profit_incomes_proc': (
-                H.IndexHelper.percentage_from_incomes(
+                IndexHelper.percentage_from_incomes(
                     total_row.get('incomes'),
                     total_row.get('market_value')
                 ) - 100
             ),
             'profit_invested_proc': (
-                H.IndexHelper.percentage_from_incomes(
+                IndexHelper.percentage_from_incomes(
                     total_row.get('invested'),
                     total_row.get('market_value')
                 ) - 100
@@ -185,7 +185,7 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
             savings = Saving.objects.year(year).aggregate(Sum('price'))
 
             context.update({
-                **H.IndexHelper.savings_context(
+                **IndexHelper.savings_context(
                     funds,
                     incomes.get('price__sum', 0),
                     savings.get('price__sum', 0),
@@ -202,7 +202,7 @@ class Pensions(TemplateViewMixin):
         year = self.request.user.year
         pensions = PensionBalance.objects.year(year)
 
-        H.add_latest_check_key(PensionWorth, pensions, year)
+        Helper.add_latest_check_key(PensionWorth, pensions, year)
 
         context = super().get_context_data(**kwargs)
         context.update({
@@ -228,7 +228,7 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
             pensions = PensionBalance.objects.year(year)
 
             context.update({
-                **H.IndexHelper.pensions_context(pensions, year)
+                **IndexHelper.pensions_context(pensions, year)
             })
 
         return context
@@ -296,7 +296,7 @@ class Month(TemplateViewMixin):
         year = self.request.user.year
         month = self.request.user.month
 
-        obj = H.MonthHelper(self.request, year, month)
+        obj = MonthHelper(self.request, year, month)
 
         context = super().get_context_data(**kwargs)
         context.update({
@@ -321,23 +321,23 @@ class Detailed(IndexMixin):
         # Incomes
         qs = Income.objects.sum_by_month_and_type(year)
         if qs.exists():
-            H.detailed_context(context, qs, _('Incomes'))
+            detailed_context(context, qs, _('Incomes'))
 
         # Savings
         qs = Saving.objects.sum_by_month_and_type(year)
         if qs.exists():
-            H.detailed_context(context, qs, _('Savings'))
+            detailed_context(context, qs, _('Savings'))
 
         # Expenses
         qs = [*Expense.objects.sum_by_month_and_name(year)]
-        expenses_types = H.expense_types()
+        expenses_types = expense_types()
         for title in expenses_types:
             filtered = [*filter(lambda x: title in x['type_title'], qs)]
 
             if not filtered:
                 continue
 
-            H.detailed_context(
+            detailed_context(
                 context=context,
                 data=filtered,
                 name=_('Expenses / %(title)s') % ({'title': title})
@@ -369,7 +369,7 @@ class Summary(IndexMixin):
         context.update({
             'balance_categories': balance_years,
             'balance_income_data': [float(x['sum']) for x in qs_inc],
-            'balance_income_avg': H.average(qs_inc),
+            'balance_income_avg': average(qs_inc),
             'balance_expense_data': [float(x['sum']) for x in qs_exp],
         })
 
@@ -379,7 +379,7 @@ class Summary(IndexMixin):
 
         context.update({
             'salary_categories': salary_years,
-            'salary_data_avg': H.average(qs),
+            'salary_data_avg': average(qs),
         })
         return context
 
@@ -402,12 +402,12 @@ class SummarySavings(IndexMixin):
         shares = qs.filter(type='shares')
         pensions3 = qs.filter(type='pensions')
 
-        context['funds'] = SH.chart_data(funds)
-        context['shares'] = SH.chart_data(shares)
-        context['funds_shares'] = SH.chart_data(funds, shares)
-        context['pensions3'] = SH.chart_data(pensions3)
-        context['pensions2'] = SH.chart_data(PensionBalance.objects.sum_by_year())
-        context['all'] = SH.chart_data(funds, shares, pensions3)
+        context['funds'] = SummaryViewHelper.chart_data(funds)
+        context['shares'] = SummaryViewHelper.chart_data(shares)
+        context['funds_shares'] = SummaryViewHelper.chart_data(funds, shares)
+        context['pensions3'] = SummaryViewHelper.chart_data(pensions3)
+        context['pensions2'] = SummaryViewHelper.chart_data(PensionBalance.objects.sum_by_year())
+        context['all'] = SummaryViewHelper.chart_data(funds, shares, pensions3)
 
         return context
 
@@ -440,7 +440,7 @@ class SummaryExpensesData(AjaxSearchMixin):
         return super().dispatch(request, *args, **kwargs)
 
     def make_form_data_dict(self):
-        self.form_data_dict = SH.make_form_data_dict(self.form_data)
+        self.form_data_dict = SummaryViewHelper.make_form_data_dict(self.form_data)
 
     def form_valid(self, form, **kwargs):
         _types = self.form_data_dict['types']
@@ -455,7 +455,7 @@ class SummaryExpensesData(AjaxSearchMixin):
             _list = _names.split(',')
             _names_qs = Expense.objects.sum_by_year_name(_list)
 
-        obj = SH.ExpenseCompareHelper(
+        obj = SummaryViewHelper.ExpenseCompareHelper(
             years=years()[:-1],
             types=_types_qs,
             names=_names_qs,
