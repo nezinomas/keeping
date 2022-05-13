@@ -350,7 +350,7 @@ class Summary(IndexMixin):
         context.update({
             'balance_categories': balance_years,
             'balance_income_data': [float(x['sum']) for x in qs_inc],
-            'balance_income_avg': average(qs_inc),
+            'balance_income_avg': Helper.average(qs_inc),
             'balance_expense_data': [float(x['sum']) for x in qs_exp],
         })
 
@@ -360,7 +360,7 @@ class Summary(IndexMixin):
 
         context.update({
             'salary_categories': salary_years,
-            'salary_data_avg': average(qs),
+            'salary_data_avg': Helper.average(qs),
         })
         return context
 
