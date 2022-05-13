@@ -56,6 +56,11 @@ urlpatterns = [
         name='wealth'
     ),
     path(
+        'bookkeeping/no_incomes/',
+        views.NoIncomes.as_view(),
+        name='no_incomes'
+    ),
+    path(
         'detailed/',
         views.Detailed.as_view(),
         name='detailed'

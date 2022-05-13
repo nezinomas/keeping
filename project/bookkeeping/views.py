@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -9,8 +10,8 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView
-
-from ..accounts.models import Account
+from ..core.lib.utils import sum_all
+from ..accounts.models import Account, AccountBalance
 from ..core.lib import utils
 from ..core.lib.date import years
 from ..core.lib.translation import month_names
@@ -46,10 +47,10 @@ class Index(TemplateViewMixin):
             'savings': rendered_content(self.request, Savings, **kwargs),
             'pensions': rendered_content(self.request, Pensions, **kwargs),
             'wealth': rendered_content(self.request, Wealth, **kwargs),
+            'no_incomes': rendered_content(self.request, NoIncomes, **kwargs),
             # 'year_balance': obj.render_year_balance(),
             # 'year_balance_short': obj.render_year_balance_short(),
             # 'year_expenses': exp.render_year_expenses(),
-            # 'no_incomes': obj.render_no_incomes(),
             # 'averages': obj.render_averages(),
             # 'borrow': obj.render_borrow(),
             # 'lend': obj.render_lend(),
@@ -69,7 +70,7 @@ class Accounts(TemplateViewMixin):
         context = super().get_context_data(**kwargs)
         context.update({
             'items': qs,
-            'total_row': H.sum_all(qs),
+            'total_row': sum_all(qs),
         })
         return context
 
@@ -135,7 +136,7 @@ class Savings(TemplateViewMixin):
         sum_incomes = Income.objects.year(year).aggregate(Sum('price'))['price__sum']
 
         savings = SavingBalance.objects.year(year)
-        total_row = H.sum_all(savings)
+        total_row = sum_all(savings)
         sum_savings = total_row.get('invested', 0) - total_row.get('past_amount', 0)
 
         H.add_latest_check_key(SavingWorth, savings, year)
@@ -204,7 +205,7 @@ class Pensions(TemplateViewMixin):
         context.update({
             'title': _('Pensions'),
             'items': pensions,
-            'total_row': H.sum_all(pensions),
+            'total_row': sum_all(pensions),
         })
         return context
 
@@ -259,6 +260,73 @@ class Wealth(TemplateViewMixin):
             'title': [_('Money'), _('Wealth')],
             'data': [money, wealth],
         })
+        return context
+
+
+class NoIncomes(TemplateViewMixin):
+    template_name = 'bookkeeping/includes/no_incomes.html'
+
+    def get_context_data(self, **kwargs):
+        year = self.request.user.year
+        journal = self.request.user.journal
+        expenses = Expense.objects.last_months()
+        account_sum = \
+            AccountBalance.objects \
+            .related() \
+            .filter(year=year) \
+            .aggregate(Sum('balance'))['balance__sum']
+        fund_sum = \
+            SavingBalance.objects \
+            .related() \
+            .filter(year=year, saving_type__type__in=['shares', 'funds']) \
+            .aggregate(Sum('market_value'))['market_value__sum']
+        pension_sum = \
+            SavingBalance.objects \
+            .related() \
+            .filter(year=year, saving_type__type='pensions') \
+            .aggregate(Sum('market_value'))['market_value__sum']
+
+        # convert decimal to float
+        account_sum = float(account_sum) if account_sum else 0
+        fund_sum = float(fund_sum) if fund_sum else 0
+        pension_sum = float(pension_sum) if pension_sum else 0
+
+        savings = None
+        unnecessary = []
+
+        if journal.unnecessary_expenses:
+            arr = json.loads(journal.unnecessary_expenses)
+            unnecessary = list(
+                ExpenseType
+                .objects
+                .related()
+                .filter(pk__in=arr)
+                .values_list("title", flat=True)
+            )
+
+        if journal.unnecessary_savings:
+            unnecessary.append(_('Savings'))
+            savings = Saving.objects.last_months()
+
+        avg_expenses, cut_sum = \
+            H.no_incomes_data(expenses=expenses, savings=savings, not_use=unnecessary)
+
+        obj = H.NoIncomes(
+            money=account_sum,
+            fund=fund_sum,
+            pension=pension_sum,
+            avg_expenses=avg_expenses,
+            cut_sum=cut_sum
+        )
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'no_incomes': obj.summary,
+            'save_sum': cut_sum,
+            'not_use': unnecessary,
+            'avg_expenses': avg_expenses,
+        })
+
         return context
 
 
