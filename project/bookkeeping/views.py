@@ -74,6 +74,59 @@ class Accounts(TemplateViewMixin):
         return context
 
 
+class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
+    type_model = Account
+    model = AccountWorth
+    form_class = AccountWorthForm
+    shared_form_class = DateForm
+    list_template_name = 'bookkeeping/includes/accounts_worth_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.POST:
+            obj = H.IndexHelper(self.request, self.request.user.year)
+            context.update({**obj.render_accounts(to_string=False)})
+
+        return context
+
+
+class AccountsWorthReset(LoginRequiredMixin, CreateView):
+    account = None
+    model = Account
+    template_name = 'bookkeeping/includes/accounts_worth.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.account = self.get_object()
+        if self.account:
+            try:
+                worth = (
+                    AccountWorth
+                    .objects
+                    .filter(account=self.account)
+                    .latest('date')
+                )
+            except ObjectDoesNotExist:
+                worth = None
+
+        if not self.account or not worth or worth.price == 0:
+            return HttpResponse(status=204)  # 204 - No Content
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        AccountWorth.objects.create(
+            price=0,
+            account=self.account,
+            date=timezone.now()
+        )
+
+        obj = H.IndexHelper(request, request.user.year)
+        context = {'accounts_worth': obj.render_accounts()}
+
+        return JsonResponse(context)
+
+
 class Savings(TemplateViewMixin):
     template_name = 'bookkeeping/includes/funds_table.html'
 
@@ -153,23 +206,6 @@ class Pensions(TemplateViewMixin):
             'items': pensions,
             'total_row': H.sum_all(pensions),
         })
-        return context
-
-
-class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
-    type_model = Account
-    model = AccountWorth
-    form_class = AccountWorthForm
-    shared_form_class = DateForm
-    list_template_name = 'bookkeeping/includes/accounts_worth_list.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        if self.request.POST:
-            obj = H.IndexHelper(self.request, self.request.user.year)
-            context.update({**obj.render_accounts(to_string=False)})
-
         return context
 
 
@@ -425,52 +461,3 @@ class ExpandDayExpenses(TemplateViewMixin):
         })
 
         return context
-
-
-class AccountsWorthReset(LoginRequiredMixin, CreateView):
-    account = None
-    model = Account
-    template_name = 'bookkeeping/includes/accounts_worth.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        self.account = self.get_object()
-        if self.account:
-            try:
-                worth = (
-                    AccountWorth
-                    .objects
-                    .filter(account=self.account)
-                    .latest('date')
-                )
-            except ObjectDoesNotExist:
-                worth = None
-
-        if not self.account or not worth or worth.price == 0:
-            return HttpResponse(status=204) # 204 - No Content
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get(self, request, *args, **kwargs):
-        AccountWorth.objects.create(
-            price=0,
-            account=self.account,
-            date=timezone.now()
-        )
-
-        obj = H.IndexHelper(request, request.user.year)
-        context = {'accounts_worth': obj.render_accounts()}
-
-        return JsonResponse(context)
-
-
-class ReloadIndex(DispatchAjaxMixin, IndexMixin):
-    template_name = 'bookkeeping/index.html'
-    redirect_view = reverse_lazy('bookkeeping:index')
-
-    def get(self, request, *args, **kwargs):
-        obj = H.IndexHelper(request, request.user.year)
-        context = {
-            'no_incomes': obj.render_no_incomes(),
-            'wealth': obj.render_wealth(to_string=True),
-        }
-        return JsonResponse(context)
