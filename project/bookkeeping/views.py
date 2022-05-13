@@ -31,7 +31,8 @@ from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
 from .lib import summary_view_helper as SummaryViewHelper
 from .lib import views_helpers as Helper
 from .lib.no_incomes import NoIncomes as LibNoIncomes
-from .lib.views_helpers import ExpensesHelper, IndexHelper, MonthHelper
+from .lib.views_helpers import (DetailedHelper, ExpensesHelper, IndexHelper,
+                                MonthHelper)
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 
@@ -318,30 +319,10 @@ class Detailed(IndexMixin):
         context['months'] = range(1, 13)
         context['month_names'] = month_names()
 
-        # Incomes
-        qs = Income.objects.sum_by_month_and_type(year)
-        if qs.exists():
-            detailed_context(context, qs, _('Incomes'))
-
-        # Savings
-        qs = Saving.objects.sum_by_month_and_type(year)
-        if qs.exists():
-            detailed_context(context, qs, _('Savings'))
-
-        # Expenses
-        qs = [*Expense.objects.sum_by_month_and_name(year)]
-        expenses_types = expense_types()
-        for title in expenses_types:
-            filtered = [*filter(lambda x: title in x['type_title'], qs)]
-
-            if not filtered:
-                continue
-
-            detailed_context(
-                context=context,
-                data=filtered,
-                name=_('Expenses / %(title)s') % ({'title': title})
-            )
+        ctx = DetailedHelper(year)
+        ctx.incomes_context(context)
+        ctx.savings_context(context)
+        ctx.expenses_context(context)
 
         return context
 
