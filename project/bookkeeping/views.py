@@ -42,9 +42,9 @@ class Index(TemplateViewMixin):
         context = super().get_context_data(**kwargs)
         context.update({
             'year': year,
+            'accounts': rendered_content(self.request, Accounts, **kwargs),
             'savings': rendered_content(self.request, Savings, **kwargs),
             'pensions': rendered_content(self.request, Pensions, **kwargs),
-            # 'accounts': obj.render_accounts(),
             # 'year_balance': obj.render_year_balance(),
             # 'year_balance_short': obj.render_year_balance_short(),
             # 'year_expenses': exp.render_year_expenses(),
@@ -55,6 +55,21 @@ class Index(TemplateViewMixin):
             # 'lend': obj.render_lend(),
             # 'chart_expenses': exp.render_chart_expenses(),
             # 'chart_balance': obj.render_chart_balance(),
+        })
+        return context
+
+
+class Accounts(TemplateViewMixin):
+    template_name = 'bookkeeping/includes/account_worth_list.html'
+
+    def get_context_data(self, **kwargs):
+        year = self.request.user.year
+        qs = AccountBalance.objects.year(year)
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'items': qs,
+            'total_row': H.sum_all(qs),
         })
         return context
 

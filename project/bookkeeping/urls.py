@@ -16,6 +16,11 @@ urlpatterns = [
         name='index'
     ),
     path(
+        'bookkeeping/accounts/',
+        views.Accounts.as_view(),
+        name='accounts'
+    ),
+    path(
         'bookkeeping/savings/',
         views.Savings.as_view(),
         name='savings'
