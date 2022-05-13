@@ -51,7 +51,6 @@ class FormsetMixin():
 
         return _list
 
-
     def get_type_model(self):
         if not self.type_model:
             return self.model
