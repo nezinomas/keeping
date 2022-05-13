@@ -31,7 +31,7 @@ from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  RedirectViewMixin, TemplateViewMixin,
                                  UpdateViewMixin, rendered_content)
 
-class Index(IndexMixin):
+class Index(TemplateViewMixin):
     template_name = 'bookkeeping/index.html'
 
     def get_context_data(self, **kwargs):
@@ -101,7 +101,7 @@ class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
     model = SavingWorth
     form_class = SavingWorthForm
     shared_form_class = DateForm
-    list_template_name = 'bookkeeping/includes/worth_table.html'
+    list_template_name = 'bookkeeping/includes/funds_table.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -163,7 +163,7 @@ class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
     model = PensionWorth
     form_class = PensionWorthForm
     shared_form_class = DateForm
-    list_template_name = 'bookkeeping/includes/worth_table.html'
+    list_template_name = 'bookkeeping/includes/funds_table.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
