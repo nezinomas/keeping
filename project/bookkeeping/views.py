@@ -272,62 +272,15 @@ class NoIncomes(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         journal = self.request.user.journal
-        expenses = Expense.objects.last_months()
-        account_sum = \
-            AccountBalance.objects \
-            .related() \
-            .filter(year=year) \
-            .aggregate(Sum('balance'))['balance__sum']
-        fund_sum = \
-            SavingBalance.objects \
-            .related() \
-            .filter(year=year, saving_type__type__in=['shares', 'funds']) \
-            .aggregate(Sum('market_value'))['market_value__sum']
-        pension_sum = \
-            SavingBalance.objects \
-            .related() \
-            .filter(year=year, saving_type__type='pensions') \
-            .aggregate(Sum('market_value'))['market_value__sum']
 
-        # convert decimal to float
-        account_sum = float(account_sum) if account_sum else 0
-        fund_sum = float(fund_sum) if fund_sum else 0
-        pension_sum = float(pension_sum) if pension_sum else 0
-
-        savings = None
-        unnecessary = []
-
-        if journal.unnecessary_expenses:
-            arr = json.loads(journal.unnecessary_expenses)
-            unnecessary = list(
-                ExpenseType
-                .objects
-                .related()
-                .filter(pk__in=arr)
-                .values_list("title", flat=True)
-            )
-
-        if journal.unnecessary_savings:
-            unnecessary.append(_('Savings'))
-            savings = Saving.objects.last_months()
-
-        avg_expenses, cut_sum = \
-            H.no_incomes_data(expenses=expenses, savings=savings, not_use=unnecessary)
-
-        obj = LibNoIncomes(
-            money=account_sum,
-            fund=fund_sum,
-            pension=pension_sum,
-            avg_expenses=avg_expenses,
-            cut_sum=cut_sum
-        )
+        obj = LibNoIncomes(journal, year)
 
         context = super().get_context_data(**kwargs)
         context.update({
             'no_incomes': obj.summary,
-            'save_sum': cut_sum,
-            'not_use': unnecessary,
-            'avg_expenses': avg_expenses,
+            'save_sum': obj.cut_sum,
+            'not_use': obj.unnecessary,
+            'avg_expenses': obj.avg_expenses,
         })
 
         return context

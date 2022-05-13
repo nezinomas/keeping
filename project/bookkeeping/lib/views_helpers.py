@@ -96,32 +96,6 @@ def add_latest_check_key(model, arr, year):
             a['latest_check'] = latest[0] if latest else None
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                             No Incomes
-# --------------------------------------------------------------------------------------
-def no_incomes_data(expenses, savings=None, not_use=None):
-    months = 6
-    not_use = not_use if not_use else []
-
-    expenses_sum = 0.0
-    cut_sum = 0.0
-    for r in expenses:
-        _sum = float(r['sum'])
-
-        expenses_sum += _sum
-
-        if r['title'] in not_use:
-            cut_sum += _sum
-
-    savings_sum = savings['sum'] if savings else 0
-    savings_sum = float(savings_sum) if savings_sum else 0.0
-
-    expenses_avg = (expenses_sum + savings_sum) / months
-    cut_avg = (cut_sum + savings_sum) / months
-
-    return expenses_avg, cut_avg
-
-
 def detailed_context(context, data, name):
     if not 'data' in context.keys():
         context['data'] = []
