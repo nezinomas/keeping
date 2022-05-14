@@ -60,7 +60,6 @@ htmx.on("htmx:beforeSwap", (e) => {
 
         e.detail.shouldSwap = false;
     }
-
 })
 
 
@@ -74,5 +73,4 @@ $(document).on('hidden.bs.modal', '#modal', function () {
     if(trigger_name && data_inserted) {
         htmx.trigger("body", trigger_name, { });
     }
-
 });
