@@ -12,11 +12,6 @@ htmx.on("htmx:afterSwap", (e) => {
 })
 
 
-$(document).on('shown.bs.modal', '.modal', function () {
-    $(this).find('[autofocus]').focus();
-});
-
-
 htmx.on("htmx:beforeSwap", (e) => {
     if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
         // find submit button id
