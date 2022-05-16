@@ -130,6 +130,7 @@ class Savings(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         sum_incomes = Income.objects.year(year).aggregate(Sum('price'))['price__sum']
+        sum_incomes = float(sum_incomes) if sum_incomes else 0
 
         savings = SavingBalance.objects.year(year)
         total_row = sum_all(savings)
@@ -143,7 +144,7 @@ class Savings(TemplateViewMixin):
             'items': savings,
             'total_row': total_row,
             'percentage_from_incomes': (
-                IndexHelper.percentage_from_incomes(float(sum_incomes), sum_savings)
+                IndexHelper.percentage_from_incomes(sum_incomes, sum_savings)
             ),
             'profit_incomes_proc': (
                 IndexHelper.percentage_from_incomes(
@@ -209,16 +210,21 @@ class Wealth(TemplateViewMixin):
             .related() \
             .filter(year=year) \
             .aggregate(Sum('balance'))['balance__sum']
+        account_sum = float(account_sum) if account_sum else 0
+
         fund_sum = \
             SavingBalance.objects \
             .related() \
             .filter(year=year) \
             .aggregate(Sum('market_value'))['market_value__sum']
+        fund_sum = float(fund_sum) if fund_sum else 0
+
         pension_sum = \
             PensionBalance.objects \
             .related() \
             .filter(year=year) \
             .aggregate(Sum('market_value'))['market_value__sum']
+        pension_sum = float(pension_sum) if pension_sum else 0
 
         money = account_sum + fund_sum
         wealth = account_sum + fund_sum + pension_sum
