@@ -16,11 +16,8 @@ from ..core.lib.translation import month_names
 from ..core.lib.utils import sum_all
 from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.formset import FormsetMixin
-from ..core.mixins.views import (CreateAjaxMixin, CreateViewMixin,
-                                 DeleteViewMixin, DispatchAjaxMixin,
-                                 FormViewMixin, IndexMixin, ListViewMixin,
-                                 RedirectViewMixin, TemplateViewMixin,
-                                 UpdateViewMixin, rendered_content)
+from ..core.mixins.views import (CreateViewMixin, IndexMixin,
+                                 TemplateViewMixin, rendered_content)
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
@@ -127,7 +124,6 @@ class AccountsWorthReset(TemplateViewMixin):
                 'HX-Trigger': json.dumps({'afterReset': None}),
             },
         )
-
 
 
 class Savings(TemplateViewMixin):
