@@ -275,7 +275,7 @@ class Month(TemplateViewMixin):
         return context
 
 
-class Detailed(IndexMixin):
+class Detailed(TemplateViewMixin):
     template_name = 'bookkeeping/detailed.html'
 
     def get_context_data(self, **kwargs):
@@ -293,7 +293,7 @@ class Detailed(IndexMixin):
         return context
 
 
-class Summary(IndexMixin):
+class Summary(TemplateViewMixin):
     template_name = 'bookkeeping/summary.html'
 
     def get_context_data(self, **kwargs):
@@ -331,7 +331,7 @@ class Summary(IndexMixin):
         return context
 
 
-class SummarySavings(IndexMixin):
+class SummarySavings(TemplateViewMixin):
     template_name = 'bookkeeping/summary_savings.html'
 
     def get_context_data(self, **kwargs):
