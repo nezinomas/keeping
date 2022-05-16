@@ -1,14 +1,13 @@
+import json
 from datetime import datetime
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import F, Sum
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.generic import CreateView
 
 from ..accounts.models import Account, AccountBalance
 from ..core.lib import utils
@@ -25,7 +24,7 @@ from ..core.mixins.views import (CreateAjaxMixin, CreateViewMixin,
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
-from ..savings.models import Saving, SavingBalance, SavingType
+from ..savings.models import SavingBalance, SavingType
 from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
                     SavingWorthForm, SummaryExpensesForm)
 from .lib import summary_view_helper as SummaryViewHelper
@@ -91,10 +90,11 @@ class AccountsWorthNew(FormsetMixin, CreateViewMixin):
     hx_trigger_django = 'afterAccountWorthNew'
 
 
-class AccountsWorthReset(LoginRequiredMixin, CreateView):
+class AccountsWorthReset(TemplateViewMixin):
     account = None
-    model = Account
-    template_name = 'bookkeeping/includes/accounts_worth.html'
+
+    def get_object(self):
+        return Account.objects.related().get(pk=self.kwargs['pk'])
 
     def dispatch(self, request, *args, **kwargs):
         self.account = self.get_object()
@@ -121,10 +121,13 @@ class AccountsWorthReset(LoginRequiredMixin, CreateView):
             date=timezone.now()
         )
 
-        obj = IndexHelper(request, request.user.year)
-        context = {'accounts_worth': obj.render_accounts()}
+        return HttpResponse(
+            status=204,
+            headers={
+                'HX-Trigger': json.dumps({'afterReset': None}),
+            },
+        )
 
-        return JsonResponse(context)
 
 
 class Savings(TemplateViewMixin):

@@ -37,7 +37,7 @@
 
 <!-- accounts stats -->
 <div class="row gx-2">
-    <div id="accounts_worth" class="col-lg-7" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body">{{ accounts|safe }}</div>
+    <div id="accounts_worth" class="col-lg-7" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body">{{ accounts|safe }}</div>
     <div class="col-lg-3">
         <div class="row">
             <div class="col-lg-12 col-md-6">
