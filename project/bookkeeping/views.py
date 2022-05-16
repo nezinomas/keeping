@@ -79,21 +79,14 @@ class Accounts(TemplateViewMixin):
         return context
 
 
-class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
+class AccountsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = Account
     model = AccountWorth
     form_class = AccountWorthForm
     shared_form_class = DateForm
-    list_template_name = 'bookkeeping/includes/accounts_worth_list.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        if self.request.POST:
-            obj = IndexHelper(self.request, self.request.user.year)
-            context.update({**obj.render_accounts(to_string=False)})
-
-        return context
+    template_name = 'bookkeeping/includes/account_worth_form.html'
+    url = reverse_lazy('bookkeeping:accounts_worth_new')
+    hx_trigger_django = 'afterAccountWorthNew'
 
 
 class AccountsWorthReset(LoginRequiredMixin, CreateView):

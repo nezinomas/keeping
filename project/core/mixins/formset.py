@@ -1,11 +1,10 @@
+import json
+
 from django.forms import ValidationError
 from django.forms.formsets import BaseFormSet
 from django.forms.models import modelformset_factory
-from django.http import JsonResponse
-from django.template.loader import render_to_string
+from django.http import HttpResponse
 from django.utils.translation import gettext as _
-
-from ...core.lib import utils
 
 
 class BaseTypeFormSet(BaseFormSet):
@@ -90,7 +89,6 @@ class FormsetMixin():
         shared_form = self.get_shared_form(request.POST or None)
 
         if formset.is_valid() and (shared_form and shared_form.is_valid()):
-            data = {}
             date = shared_form.cleaned_data.get('date')
 
             for form in formset:
@@ -101,17 +99,12 @@ class FormsetMixin():
                     form.instance.date = date
                     form.save()
 
-            context = self.get_context_data()
-
-            data['form_is_valid'] = True
-            if self.list_render_output:
-                data['html_list'] = (
-                    render_to_string(
-                        self.get_list_template_name(), context, self.request)
-                )
-
-            if utils.is_ajax(self.request):
-                return JsonResponse(data)
+            return HttpResponse(
+                status=204,
+                headers={
+                    'HX-Trigger': json.dumps({self.get_hx_trigger_django(): None}),
+                },
+            )
 
         return super().form_invalid(formset)
 
@@ -121,3 +114,5 @@ class FormsetMixin():
         context['shared_form'] = self.get_shared_form(self.request.POST or None)
 
         return context
+
+

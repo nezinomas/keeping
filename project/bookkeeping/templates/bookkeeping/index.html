@@ -26,7 +26,7 @@
 <div class="row my-4">
     <div class="col">
         {% url 'bookkeeping:accounts_worth_new' as url_accounts %}
-        <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_accounts }}"><i class="bi bi-plus"></i> {% translate 'Accounts fact' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_accounts }}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Accounts fact' %}</button>
         {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
         <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_expenses_new }}"><i class="bi bi-plus"></i> {% translate 'Funds fact' %}</button>
         {% url 'bookkeeping:pensions_worth_new' as url_pensions_new %}
@@ -37,7 +37,7 @@
 
 <!-- accounts stats -->
 <div class="row gx-2">
-    <div id="accounts_worth" class="col-lg-7">{{ accounts|safe }}</div>
+    <div id="accounts_worth" class="col-lg-7" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body">{{ accounts|safe }}</div>
     <div class="col-lg-3">
         <div class="row">
             <div class="col-lg-12 col-md-6">

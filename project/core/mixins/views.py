@@ -24,6 +24,7 @@ def rendered_content(request, view_class, **kwargs):
 
 
 class GetQuerysetMixin():
+    object = None
     def get_queryset(self):
         try:
             qs = self.model.objects.related()
@@ -103,7 +104,6 @@ class CreateUpdateMixin():
 
     def form_valid(self, form, **kwargs):
         response = super().form_valid(form)
-
         if self.request.htmx:
             self.hx_redirect = self.get_hx_redirect()
             if self.hx_redirect:
