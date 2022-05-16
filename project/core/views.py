@@ -1,13 +1,12 @@
+import json
+
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http.response import JsonResponse
+from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.urls import reverse_lazy
-from django.views.generic import View
 
 from ..core.signals_base import SignalBase
 from .lib.date import years
-from .mixins.views import DispatchAjaxMixin
+from .mixins.views import TemplateViewMixin
 from .tests.utils import timer
 
 
@@ -35,9 +34,7 @@ def set_month(request, month):
     return redirect(url)
 
 
-class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
-    redirect_view = reverse_lazy('bookkeeping:index')
-
+class RegenerateBalances(TemplateViewMixin):
     # @timer
     def get(self, request, *args, **kwargs):
         _arr = []
@@ -52,12 +49,19 @@ class RegenerateBalances(LoginRequiredMixin, DispatchAjaxMixin, View):
 
         _types = ['accounts', 'savings', 'pensions']
 
+        hx_trigger_name = 'afterSignal'
         if _type and _type in _types:
             _types = [_type]
+            hx_trigger_name += _type.title()
 
         for x in _types:
             _class_method = getattr(SignalBase, x)
             _obj = _class_method(**_kwargs)
             _obj.full_balance_update()
 
-        return JsonResponse({'redirect': self.redirect_view})
+        return HttpResponse(
+            status=204,
+            headers={
+                'HX-Trigger': json.dumps({hx_trigger_name: None}),
+            },
+        )

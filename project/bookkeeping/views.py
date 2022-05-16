@@ -141,6 +141,7 @@ class Savings(TemplateViewMixin):
         context = super().get_context_data(**kwargs)
         context.update({
             'title': _('Funds'),
+            'type': 'savings',
             'items': savings,
             'total_row': total_row,
             'percentage_from_incomes': (
@@ -184,6 +185,7 @@ class Pensions(TemplateViewMixin):
         context = super().get_context_data(**kwargs)
         context.update({
             'title': _('Pensions'),
+            'type': 'pensions',
             'items': pensions,
             'total_row': sum_all(pensions),
         })
