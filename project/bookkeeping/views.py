@@ -71,6 +71,8 @@ class Accounts(TemplateViewMixin):
         year = self.request.user.year
         qs = AccountBalance.objects.year(year)
 
+        Helper.add_latest_check_key(AccountWorth, qs, year)
+
         context = super().get_context_data(**kwargs)
         context.update({
             'items': qs,
