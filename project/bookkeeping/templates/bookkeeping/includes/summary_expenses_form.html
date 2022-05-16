@@ -3,10 +3,8 @@
     <div class="col-2 gy-2">
         <form novalidate method="post" id="search_form" hx-target="#summary_expenses">
             {% csrf_token %}
-            {% include 'core/includes/form_errors.html' %}
             <div>
                 {{ form.types|as_crispy_field }}
-
             </div>
             <div>
                 <input type="submit" name="search" value="{% translate 'Filter' %}" id="search_btn" class="btn btn-secondary btn-sm search_click text-center w-100">
@@ -14,7 +12,8 @@
         </form>
     </div>
 
-    <div class="col-10">
+    <div class="col-10 gy-2">
+        {{ form|as_crispy_errors }}
         {% if found %}
         <div class="row">
             <div class="col-12" id="chart">{% include 'bookkeeping/includes/summary_expenses_chart.html' %}</div>
