@@ -18,7 +18,7 @@
         {% if update %}{% url update item.id as url_update %}{% endif %}
         {% if delete %}{% url delete item.id as url_delete %}{% endif %}
         {% with item|get_obj_attr:type as name %}
-        <tr data-url="{{ url }}" class="dblclick{% if name == _('Residual') %} bg-warning{% endif %}">
+        <tr hx-get="{{ url }}" hx-target="#dialog" class="dblclick{% if name == _('Residual') %} bg-warning{% endif %}">
             <td class="text-start">{{ name }}{% if item.expense_type.necessary or item.saving_type or item.title %} <i class="bi bi-star plans-star"></i>{% endif %}</td>
             {% cell item.january %}
             {% cell item.february %}

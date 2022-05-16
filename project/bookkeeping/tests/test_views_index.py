@@ -61,10 +61,10 @@ def test_view_index_regenerate_buttons(client_logged):
 
     url = reverse('core:regenerate_balances')
 
-    assert f'data-url="{ url }"' in content
-    assert f'data-url="{ url }?type=accounts"' in content
-    assert f'data-url="{ url }?type=savings"' in content
-    assert f'data-url="{ url }?type=pensions"' in content
+    assert f'hx-get="{ url }"' in content
+    assert f'hx-get="{ url }?type=accounts"' in content
+    assert f'hx-get="{ url }?type=savings"' in content
+    assert f'hx-get="{ url }?type=pensions"' in content
 
     assert 'Bus atnaujinti visų metų balansai.' in content
     assert 'Bus atnaujinti tik šios lentelės balansai.' in content
