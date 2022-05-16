@@ -4,19 +4,17 @@ from datetime import datetime
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import F, Sum
 from django.http import HttpResponse
-from django.template.loader import render_to_string
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account, AccountBalance
-from ..core.lib import utils
 from ..core.lib.date import years
 from ..core.lib.translation import month_names
 from ..core.lib.utils import sum_all
-from ..core.mixins.ajax import AjaxSearchMixin
 from ..core.mixins.formset import FormsetMixin
-from ..core.mixins.views import (CreateViewMixin, IndexMixin,
+from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
                                  TemplateViewMixin, rendered_content)
 from ..expenses.models import Expense
 from ..incomes.models import Income
@@ -359,77 +357,59 @@ class SummarySavings(TemplateViewMixin):
         return context
 
 
-class SummaryExpenses(IndexMixin):
+class SummaryExpenses(FormViewMixin):
+    form_class = SummaryExpensesForm
     template_name = 'bookkeeping/summary_expenses.html'
+    success_url = reverse_lazy('bookkeeping:summary_expenses')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'form': SummaryExpensesData.as_view()(self.request, as_string=True)
+            'found': False,
         })
-
         return context
 
-
-class SummaryExpensesData(AjaxSearchMixin):
-    url = reverse_lazy('bookkeeping:summary_expenses_data')
-    template_name = 'bookkeeping/includes/summary_expenses_form.html'
-    form_class = SummaryExpensesForm
-    form_data_dict = {}
-
-    def dispatch(self, request, *args, **kwargs):
-        if 'as_string' in kwargs:
-            return self._render_form(self.get_context_data())
-
-        if not utils.is_ajax(self.request):
-            return HttpResponse(render_to_string('srsly.html'))
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def make_form_data_dict(self):
-        self.form_data_dict = SummaryViewHelper.make_form_data_dict(self.form_data)
-
     def form_valid(self, form, **kwargs):
-        _types = self.form_data_dict['types']
-        _names = self.form_data_dict['names']
-        _types_qs = None
-        _names_qs = None
+        if form.is_valid():
+            _types = []
+            _names = []
+            _types_full = form.cleaned_data.get('types')
 
-        if _types:
-            _types_qs = Expense.objects.sum_by_year_type(_types)
+            for x in _types_full:
+                if ':' in x:
+                    _names.append(x.split(':')[1])
+                else:
+                    _types.append(x)
 
-        if _names:
-            _list = _names.split(',')
-            _names_qs = Expense.objects.sum_by_year_name(_list)
+            _types_qs = None
+            _names_qs = None
 
-        obj = SummaryViewHelper.ExpenseCompareHelper(
-            years=years()[:-1],
-            types=_types_qs,
-            names=_names_qs,
-            remove_empty_columns=True
-        )
+            if _types:
+                _types_qs = Expense.objects.sum_by_year_type(_types)
 
-        if obj.serries_data:
-            context = {
-                'categories': obj.categories,
-                'data': obj.serries_data,
-                'total_col': obj.total_col,
-                'total_row': obj.total_row,
-                'total': obj.total
-            }
+            if _names:
+                _names_qs = Expense.objects.sum_by_year_name(_names)
 
-            kwargs.update({
-                'html': render_to_string(
-                    'bookkeeping/includes/summary_expenses_chart.html',
-                    context,
-                    self.request),
-                'html2': render_to_string(
-                    'bookkeeping/includes/summary_expenses_table.html',
-                    context,
-                    self.request),
-            })
+            obj = SummaryViewHelper.ExpenseCompareHelper(
+                years=years()[:-1],
+                types=_types_qs,
+                names=_names_qs,
+                remove_empty_columns=True
+            )
 
-        return super().form_valid(form, **kwargs)
+            if obj.serries_data:
+                context = {
+                    'found': True,
+                    'form': form,
+                    'categories': obj.categories,
+                    'data': obj.serries_data,
+                    'total_col': obj.total_col,
+                    'total_row': obj.total_row,
+                    'total': obj.total
+                }
+                return render(self.request, self.template_name, context)
+
+        return super().form_valid(form)
 
 
 class ExpandDayExpenses(TemplateViewMixin):
