@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -15,7 +14,7 @@ from ..core.lib.translation import month_names
 from ..core.lib.utils import sum_all
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
-                                 TemplateViewMixin, rendered_content)
+                                 TemplateViewMixin, rendered_content, httpHtmxResponse)
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
@@ -115,13 +114,7 @@ class AccountsWorthReset(TemplateViewMixin):
             account=self.account,
             date=timezone.now()
         )
-
-        return HttpResponse(
-            status=204,
-            headers={
-                'HX-Trigger': json.dumps({'afterReset': None}),
-            },
-        )
+        return httpHtmxResponse('afterReset')
 
 
 class Savings(TemplateViewMixin):

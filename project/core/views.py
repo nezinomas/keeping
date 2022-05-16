@@ -1,12 +1,10 @@
-import json
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
 from django.shortcuts import redirect
 
 from ..core.signals_base import SignalBase
 from .lib.date import years
-from .mixins.views import TemplateViewMixin
+from .mixins.views import TemplateViewMixin, httpHtmxResponse
 from .tests.utils import timer
 
 
@@ -59,9 +57,4 @@ class RegenerateBalances(TemplateViewMixin):
             _obj = _class_method(**_kwargs)
             _obj.full_balance_update()
 
-        return HttpResponse(
-            status=204,
-            headers={
-                'HX-Trigger': json.dumps({hx_trigger_name: None}),
-            },
-        )
+        return httpHtmxResponse(hx_trigger_name)

@@ -1,10 +1,10 @@
-import json
 
 from django.forms import ValidationError
 from django.forms.formsets import BaseFormSet
 from django.forms.models import modelformset_factory
-from django.http import HttpResponse
 from django.utils.translation import gettext as _
+
+from ...core.mixins.views import httpHtmxResponse
 
 
 class BaseTypeFormSet(BaseFormSet):
@@ -99,12 +99,7 @@ class FormsetMixin():
                     form.instance.date = date
                     form.save()
 
-            return HttpResponse(
-                status=204,
-                headers={
-                    'HX-Trigger': json.dumps({self.get_hx_trigger_django(): None}),
-                },
-            )
+            return httpHtmxResponse(self.get_hx_trigger_django())
 
         return super().form_invalid(formset)
 

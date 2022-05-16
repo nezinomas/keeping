@@ -23,6 +23,15 @@ def rendered_content(request, view_class, **kwargs):
     )
 
 
+def httpHtmxResponse(hx_trigger_name, status_code = 204):
+    return HttpResponse(
+        status=status_code,
+        headers={
+            'HX-Trigger': json.dumps({hx_trigger_name: None}),
+        },
+    )
+
+
 class GetQuerysetMixin():
     object = None
     def get_queryset(self):
@@ -178,13 +187,9 @@ class DeleteViewMixin(LoginRequiredMixin,
             hx_redirect = self.get_hx_redirect()
             if hx_redirect:
                 return HttpResponseClientRedirect(hx_redirect)
-            else:
-                return HttpResponse(
-                    status=204,
-                    headers={
-                        'HX-Trigger': json.dumps({self.get_hx_trigger_django(): None}),
-                    },
-                )
+
+            return httpHtmxResponse(self.get_hx_trigger_django())
+
         return HttpResponse()
 
 
