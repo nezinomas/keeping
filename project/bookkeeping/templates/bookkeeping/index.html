@@ -13,6 +13,9 @@
 
 {% block content %}
 
+<!-- Loader -->
+<div class="htmx-indicator loader loader-default is-active" id="indicator"></div>
+
 <div class="row gx-2 my-2 border-bottom border-primary">
     <div class="col-lg-5 table-responsive">{{ year_balance }}</div>
     <div class="col-lg-7 table-responsive">{{ year_expenses }}</div>
@@ -31,13 +34,13 @@
         <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_expenses_new }}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Funds fact' %}</button>
         {% url 'bookkeeping:pensions_worth_new' as url_pensions_new %}
         <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_pensions_new }}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Pensions fact' %}</button>
-        <button class="btn btn-sm btn-outline-danger recalc" hx-get="{% url 'core:regenerate_balances' %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</button>
+        <button class="btn btn-sm btn-outline-danger recalc" hx-get="{% url 'core:regenerate_balances' %}" hx-indicator="#indicator" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</button>
     </div>
 </div>
 
 <!-- accounts stats -->
 <div class="row gx-2">
-    <div id="accounts_worth" class="col-lg-7" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body">{{ accounts|safe }}</div>
+    <div id="accounts_worth" class="col-lg-7" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body" hx-indicator="#indicator">{{ accounts|safe }}</div>
     <div class="col-lg-3">
         <div class="row">
             <div class="col-lg-12 col-md-6">
@@ -77,12 +80,12 @@
 
 <!-- savings -->
 <div class="row mt-3">
-    <div id="savings_worth" class="col-lg-12" hx-get="{% url 'bookkeeping:savings' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{savings|safe}}</div>
+    <div id="savings_worth" class="col-lg-12" hx-get="{% url 'bookkeeping:savings' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body" hx-indicator="#indicator">{{savings|safe}}</div>
 </div>
 
 <!-- pensions -->
 <div class="row mt-3">
-    <div id="pensions_worth" class="col-lg-12" hx-get="{% url 'bookkeeping:pensions' %}" hx-trigger="afterPensionWorthNew from:body, afterSignalPensions from:body, afterSignal from:body">{{pensions|safe}}</div>
+    <div id="pensions_worth" class="col-lg-12" hx-get="{% url 'bookkeeping:pensions' %}" hx-trigger="afterPensionWorthNew from:body, afterSignalPensions from:body, afterSignal from:body" hx-indicator="#indicator">{{pensions|safe}}</div>
 </div>
 
 {% endblock content %}
