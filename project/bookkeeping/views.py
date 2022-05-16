@@ -190,25 +190,14 @@ class Pensions(TemplateViewMixin):
         return context
 
 
-class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
+class PensionsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = PensionType
     model = PensionWorth
     form_class = PensionWorthForm
     shared_form_class = DateForm
-    list_template_name = 'bookkeeping/includes/funds_table.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        if self.request.POST:
-            year = self.request.user.year
-            pensions = PensionBalance.objects.year(year)
-
-            context.update({
-                **IndexHelper.pensions_context(pensions, year)
-            })
-
-        return context
+    template_name = 'bookkeeping/includes/pension_worth_form.html'
+    url = reverse_lazy('bookkeeping:pensions_worth_new')
+    hx_trigger_django = 'afterPensionWorthNew'
 
 
 class Wealth(TemplateViewMixin):
