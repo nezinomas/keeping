@@ -162,31 +162,14 @@ class Savings(TemplateViewMixin):
         return context
 
 
-class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
+class SavingsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = SavingType
     model = SavingWorth
     form_class = SavingWorthForm
     shared_form_class = DateForm
-    list_template_name = 'bookkeeping/includes/funds_table.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        if self.request.POST:
-            year = self.request.user.year
-            funds = SavingBalance.objects.year(year)
-            incomes = Income.objects.year(year).aggregate(Sum('price'))
-            savings = Saving.objects.year(year).aggregate(Sum('price'))
-
-            context.update({
-                **IndexHelper.savings_context(
-                    funds,
-                    incomes.get('price__sum', 0),
-                    savings.get('price__sum', 0),
-                    year
-                )
-            })
-        return context
+    template_name = 'bookkeeping/includes/saving_worth_form.html'
+    url = reverse_lazy('bookkeeping:savings_worth_new')
+    hx_trigger_django = 'afterSavingWorthNew'
 
 
 class Pensions(TemplateViewMixin):

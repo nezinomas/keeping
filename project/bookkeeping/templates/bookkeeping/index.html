@@ -28,7 +28,7 @@
         {% url 'bookkeeping:accounts_worth_new' as url_accounts %}
         <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_accounts }}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Accounts fact' %}</button>
         {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
-        <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_expenses_new }}"><i class="bi bi-plus"></i> {% translate 'Funds fact' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_expenses_new }}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Funds fact' %}</button>
         {% url 'bookkeeping:pensions_worth_new' as url_pensions_new %}
         <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_pensions_new }}"><i class="bi bi-plus"></i> {% translate 'Pensions fact' %}</button>
         <button class="btn btn-sm btn-outline-danger recalc" data-url="{% url 'core:regenerate_balances' %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</button>
@@ -77,7 +77,7 @@
 
 <!-- savings -->
 <div class="row mt-3">
-    <div id="savings_worth" class="col-lg-12">{{savings|safe}}</div>
+    <div id="savings_worth" class="col-lg-12" hx-get="{% url 'bookkeeping:savings' %}" hx-trigger="afterSavingWorthNew from:body">{{savings|safe}}</div>
 </div>
 
 <!-- pensions -->
