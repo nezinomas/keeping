@@ -11,6 +11,11 @@ urlpatterns = [
         views.Index.as_view(),
         name='plans_index'
     ),
+    path(
+        'plans/stats/',
+        views.Stats.as_view(),
+        name='stats'
+    ),
     #------------------------------------------------------------------------------------
     #                                                                       expenses plan
     #------------------------------------------------------------------------------------
@@ -120,11 +125,6 @@ urlpatterns = [
         'plans/necessary/update/<int:pk>/',
         views.NecessaryUpdate.as_view(),
         name='necessarys_plan_update'
-    ),
-    path(
-        'plans/stats/',
-        views.plans_stats,
-        name='stats'
     ),
     path(
         'plans/necessary/delete/<int:pk>/',
