@@ -113,7 +113,7 @@ def test_render_year_balance_short(rf):
     SavingFactory(price=10)
 
     obj = IndexHelper(rf, 1999).render_year_balance_short()
-    print(obj)
+
     assert obj['title'] == ['Metų pradžioje', 'Metų pabaigoje', 'Metų balansas']
     assert obj['data'] == [5.0, 70.0, 65.0]
 

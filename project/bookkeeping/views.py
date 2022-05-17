@@ -140,7 +140,7 @@ class Savings(TemplateViewMixin):
         sum_savings = total_row.get('invested', 0) - total_row.get('past_amount', 0)
 
         Helper.add_latest_check_key(SavingWorth, savings, year)
-        print(f'sum_savings: {sum_savings} sum_incomes: {sum_incomes}')
+
         context = super().get_context_data(**kwargs)
         context.update({
             'title': _('Funds'),
