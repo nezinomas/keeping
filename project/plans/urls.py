@@ -122,9 +122,9 @@ urlpatterns = [
         name='necessarys_plan_update'
     ),
     path(
-        'plans/reload_plan_stats/',
+        'plans/stats/',
         views.plans_stats,
-        name='reload_plan_stats'
+        name='stats'
     ),
     path(
         'plans/necessary/delete/<int:pk>/',

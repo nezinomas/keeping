@@ -14,17 +14,18 @@ from . import forms, models
 from .lib.calc_day_sum import CalcDaySum
 
 
-@login_required
-def plans_stats(request):
-    ajax_trigger = request.GET.get('ajax_trigger')
-    arr = CalcDaySum(request.user.year).plans_stats
-    t_name = 'plans/includes/plans_stats.html'
-    c = {'items': arr}
+class Stats(TemplateViewMixin):
+    template_name = 'plans/includes/plans_stats.html'
 
-    if ajax_trigger:
-        return render(template_name=t_name, context=c, request=request)
+    def get_context_data(self, **kwargs):
+        year = self.request.user.year
+        arr = CalcDaySum(year).plans_stats
 
-    return render_to_string(template_name=t_name, context=c, request=request)
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'items': arr
+        })
+        return context
 
 
 class Index(IndexMixin):
