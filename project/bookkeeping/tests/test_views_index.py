@@ -1,24 +1,20 @@
-from datetime import date, datetime
-
-import pytest
-import pytz
-from django.urls import resolve, reverse
+from datetime import date
 from freezegun import freeze_time
 
-from ...accounts.factories import AccountBalanceFactory
-from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
+import pytest
+from django.urls import resolve, reverse
+
+from ...debts.factories import BorrowFactory, LendFactory
+from ...expenses.factories import ExpenseFactory
+from ...incomes.factories import IncomeFactory
 from ...pensions.factories import PensionFactory
 from ...savings.factories import SavingFactory
 from .. import views
-from ..factories import (AccountWorthFactory, PensionWorthFactory,
-                         SavingWorthFactory)
+from ..lib.views_helpers import IndexHelper
 
 pytestmark = pytest.mark.django_db
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                                   Index
-# ---------------------------------------------------------------------------------------
 def test_view_index_func():
     view = resolve('/')
 
@@ -39,12 +35,12 @@ def test_view_index_context(client_logged):
     assert 'accounts' in response.context
     assert 'savings' in response.context
     assert 'pensions' in response.context
+    assert 'wealth' in response.context
+    assert 'no_incomes' in response.context
     assert 'year_balance' in response.context
     assert 'year_balance_short' in response.context
     assert 'year_expenses' in response.context
-    assert 'no_incomes' in response.context
     assert 'averages' in response.context
-    assert 'wealth' in response.context
     assert 'borrow' in response.context
     assert 'lend' in response.context
     assert 'chart_expenses' in response.context
@@ -61,83 +57,73 @@ def test_view_index_regenerate_buttons(client_logged):
 
     url = reverse('core:regenerate_balances')
 
-    assert f'data-url="{ url }"' in content
-    assert f'data-url="{ url }?type=accounts"' in content
-    assert f'data-url="{ url }?type=savings"' in content
-    assert f'data-url="{ url }?type=pensions"' in content
+    assert f'hx-get="{ url }"' in content
+    assert f'hx-get="{ url }?type=accounts"' in content
+    assert f'hx-get="{ url }?type=savings"' in content
+    assert f'hx-get="{ url }?type=pensions"' in content
 
     assert 'Bus atnaujinti visų metų balansai.' in content
     assert 'Bus atnaujinti tik šios lentelės balansai.' in content
     assert content.count('Bus atnaujinti tik šios lentelės balansai.') == 3
 
 
-@freeze_time('1999-07-01')
-def test_no_incomes(client_logged):
-    ExpenseFactory(date=date(1999, 1, 1), price=1.0, expense_type=ExpenseTypeFactory(title='Darbas'))
-    ExpenseFactory(date=date(1999, 1, 1), price=2.0, expense_type=ExpenseTypeFactory(title='Darbas'))
-    ExpenseFactory(date=date(1999, 6, 1), price=4.0, expense_type=ExpenseTypeFactory(title='y'))
+# ---------------------------------------------------------------------------------------
+#                                                                            Index Helper
+# ---------------------------------------------------------------------------------------
+def test_render_borrow_no_data(rf):
+    obj = IndexHelper(rf, 1999)
+    actual = obj.render_borrow()
 
-    url = reverse('bookkeeping:index')
-    response = client_logged.get(url)
-
-    assert round(response.context['avg_expenses'], 2) == 1.17
-    assert round(response.context['save_sum'], 2) == 0.0
+    assert not actual
 
 
-@freeze_time('1999-07-01')
-def test_no_incomes_no_data(client_logged):
-    url = reverse('bookkeeping:index')
-    response = client_logged.get(url)
+def test_render_borrow(rf):
+    BorrowFactory()
 
-    assert round(response.context['avg_expenses'], 2) == 0
-    assert round(response.context['save_sum'], 2) == 0
+    obj = IndexHelper(rf, 1999)
+    actual = obj.render_borrow()
 
-
-def test_index_account_worth(client_logged):
-    AccountWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
-    AccountWorthFactory(date=datetime(1999, 2, 2, tzinfo=pytz.utc), price=555)
-
-    url = reverse('bookkeeping:index')
-    response = client_logged.get(url)
-
-    actual = response.context['accounts']
-    assert 'title="1999 m. vasario 2 d., 00:00"' in actual
-    assert '555,0' in actual
+    assert 'Pasiskolinta' in actual['title']
+    assert 'Grąžinau' in actual['title']
+    assert  actual['data'] == [100.0, 0.0]
 
 
-def test_index_account_worth_then_last_check_empty(client_logged):
-    AccountBalanceFactory()
+def test_render_lend_no_data(rf):
+    obj = IndexHelper(rf, 1999)
+    actual = obj.render_lend()
 
-    url = reverse('bookkeeping:index')
-    response = client_logged.get(url)
-
-    actual = response.context['accounts']
-
-    assert 'data-bs-title="Nenurodyta"' in actual
-    assert '0,2' in actual
+    assert not actual
 
 
-def test_index_savings_worth(client_logged):
-    SavingFactory()
-    SavingWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
-    SavingWorthFactory(date=datetime(1998, 2, 2, tzinfo=pytz.utc))
+def test_render_lend(rf):
+    LendFactory()
+    obj = IndexHelper(rf, 1999)
+    actual = obj.render_lend()
 
-    url = reverse('bookkeeping:index')
-    response = client_logged.get(url)
-
-    exp = [x['items'] for x in response.context if x.get('title') == 'Fondai'][0][0]
-
-    assert exp['latest_check'] == datetime(1998, 2, 2, tzinfo=pytz.utc)
+    assert 'Paskolinta' in actual['title']
+    assert 'Grąžino' in actual['title']
+    assert actual['data'] == [100.0, 0.0]
 
 
-def test_index_pension_worth(client_logged):
-    PensionFactory()
-    PensionWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
-    PensionWorthFactory(date=datetime(1998, 2, 2, tzinfo=pytz.utc))
+@freeze_time('1999-1-1')
+def test_render_year_balance_short(rf):
+    IncomeFactory(date=date(1974, 1, 1), price=5)
+    IncomeFactory(price=100)
+    ExpenseFactory(price=25)
+    SavingFactory(price=10)
 
-    url = reverse('bookkeeping:index')
-    response = client_logged.get(url)
+    obj = IndexHelper(rf, 1999).render_year_balance_short()
+    print(obj)
+    assert obj['title'] == ['Metų pradžioje', 'Metų pabaigoje', 'Metų balansas']
+    assert obj['data'] == [5.0, 70.0, 65.0]
 
-    exp = [x['items'] for x in response.context if x.get('title') == 'Pensijos'][0][0]
 
-    assert exp['latest_check'] == datetime(1998, 2, 2, tzinfo=pytz.utc)
+def test_render_year_balance_short_highlight_balance(rf):
+    IncomeFactory(date=date(1974, 1, 1), price=5)
+    IncomeFactory(price=100)
+    ExpenseFactory(price=125)
+
+    obj = IndexHelper(rf, 1999).render_year_balance_short()
+
+    assert obj['data'] == [5.0, -20.0, -25.0]
+    assert obj['highlight'] == [False, False, True]

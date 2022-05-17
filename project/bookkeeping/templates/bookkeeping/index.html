@@ -13,6 +13,9 @@
 
 {% block content %}
 
+<!-- Loader -->
+<div class="htmx-indicator loader loader-default is-active" id="indicator"></div>
+
 <div class="row gx-2 my-2 border-bottom border-primary">
     <div class="col-lg-5 table-responsive">{{ year_balance }}</div>
     <div class="col-lg-7 table-responsive">{{ year_expenses }}</div>
@@ -26,25 +29,25 @@
 <div class="row my-4">
     <div class="col">
         {% url 'bookkeeping:accounts_worth_new' as url_accounts %}
-        <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_accounts }}"><i class="bi bi-plus"></i> {% translate 'Accounts fact' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_accounts }}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Accounts fact' %}</button>
         {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
-        <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_expenses_new }}"><i class="bi bi-plus"></i> {% translate 'Funds fact' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_expenses_new }}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Funds fact' %}</button>
         {% url 'bookkeeping:pensions_worth_new' as url_pensions_new %}
-        <button type="button" class="btn btn-sm btn-outline-success" data-url="{{ url_pensions_new }}"><i class="bi bi-plus"></i> {% translate 'Pensions fact' %}</button>
-        <button class="btn btn-sm btn-outline-danger recalc" data-url="{% url 'core:regenerate_balances' %}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_pensions_new }}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Pensions fact' %}</button>
+        <button class="btn btn-sm btn-outline-danger recalc" hx-get="{% url 'core:regenerate_balances' %}" hx-indicator="#indicator" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</button>
     </div>
 </div>
 
 <!-- accounts stats -->
 <div class="row gx-2">
-    <div id="accounts_worth" class="col-lg-7">{{ accounts|safe }}</div>
+    <div id="accounts_worth" class="col-lg-7" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body" hx-indicator="#indicator">{{ accounts|safe }}</div>
     <div class="col-lg-3">
         <div class="row">
             <div class="col-lg-12 col-md-6">
                 <div>{% info_table year_balance_short %}</div>
             </div>
             <div class="col-lg-12 col-md-6">
-                <div id="no_incomes">{{ no_incomes|safe }}</div>
+                <div id="no_incomes" hx-get="{% url 'bookkeeping:no_incomes' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{no_incomes|safe}}</div>
             </div>
         </div>
     </div>
@@ -53,7 +56,7 @@
         <div class="row">
             <div class="col-lg-12 col-md-3">
                 <!-- Wealth -->
-                <div id="wealth">{% info_table wealth %}</div>
+                <div id="wealth" hx-get="{% url 'bookkeeping:wealth' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{wealth|safe}}</div>
             </div>
 
             <div class="col-lg-12 col-md-3">
@@ -77,85 +80,12 @@
 
 <!-- savings -->
 <div class="row mt-3">
-    <div id="savings_worth" class="col-lg-12">{% funds_table savings 'savings' %}</div>
+    <div id="savings_worth" class="col-lg-12" hx-get="{% url 'bookkeeping:savings' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body" hx-indicator="#indicator">{{savings|safe}}</div>
 </div>
 
 <!-- pensions -->
 <div class="row mt-3">
-    <div id="pensions_worth" class="col-lg-12">{% funds_table pensions 'pensions' %}</div>
+    <div id="pensions_worth" class="col-lg-12" hx-get="{% url 'bookkeeping:pensions' %}" hx-trigger="afterPensionWorthNew from:body, afterSignalPensions from:body, afterSignal from:body" hx-indicator="#indicator">{{pensions|safe}}</div>
 </div>
-
-<!-- Loader -->
-<div class="loader loader-default" id="loader"></div>
-
-<script>
-    $(function () {
-        var load_html = function () {
-            var btn = $(this);
-            var url = btn.data('url');
-
-            if (url == undefined || !url) {
-                return;
-            }
-
-            $.ajax({
-                url: url,
-                data: {
-                    'ajax_trigger': '1'
-                },
-                success: function (data) {
-                    if(data) {
-                        var blocks = [
-                            'accounts_worth'
-                        ];
-                        reload_stats(data, blocks);
-                    }
-                }
-            });
-        };
-
-        $(document).on('click', '.reset', load_html);
-    });
-
-    $(document).on('hidden.bs.modal', '#modal-form', function () {
-        var url = `{% url 'bookkeeping:reload_index' %}`;
-
-        $.ajax({
-            url: url,
-            data: {
-                'ajax_trigger': '1'
-            },
-            success: function (data) {
-                var blocks = [
-                    'no_incomes',
-                    'wealth'
-                ];
-                reload_stats(data, blocks);
-            }
-        });
-    });
-
-    $(document).on('click', '.recalc', function () {
-        $('#loader').addClass('is-active')
-
-        var url = $(this).data('url');
-
-        $.ajax({
-            url: url,
-            data: {
-                'ajax_trigger': '1',
-            },
-            success: function (data) {
-                if (data.redirect) {
-                    window.location.replace(data.redirect);
-                }
-            },
-            error: function (data) {
-                $('#loader').removeClass('is-active');
-            }
-        });
-    });
-</script>
-
 
 {% endblock content %}

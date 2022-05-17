@@ -7,9 +7,6 @@ from .. import views
 pytestmark = pytest.mark.django_db
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                         Savings Summary
-# ---------------------------------------------------------------------------------------
 def test_view_summary_savings_func():
     view = resolve('/summary/savings/')
 

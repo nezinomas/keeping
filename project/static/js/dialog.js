@@ -12,11 +12,6 @@ htmx.on("htmx:afterSwap", (e) => {
 })
 
 
-$(document).on('shown.bs.modal', '.modal', function () {
-    $(this).find('[autofocus]').focus();
-});
-
-
 htmx.on("htmx:beforeSwap", (e) => {
     if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
         // find submit button id
@@ -65,7 +60,6 @@ htmx.on("htmx:beforeSwap", (e) => {
 
         e.detail.shouldSwap = false;
     }
-
 })
 
 
@@ -79,5 +73,4 @@ $(document).on('hidden.bs.modal', '#modal', function () {
     if(trigger_name && data_inserted) {
         htmx.trigger("body", trigger_name, { });
     }
-
 });

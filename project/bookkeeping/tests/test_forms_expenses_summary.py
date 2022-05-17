@@ -17,7 +17,6 @@ def test_form_fields():
     form = SummaryExpensesForm().as_p()
 
     assert '<select name="types"' in form
-    assert '<input type="hidden" name="names"' in form
 
 
 def test_form_load():
