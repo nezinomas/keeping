@@ -1,4 +1,4 @@
 {% load generic_list %}
 
 {% load generic_list %}
-{% generic_list year=request.user.year items=items type='expense_type' update='plans:expenses_plan_update' delete='plans:expenses_plan_delete' %}
+{% generic_list year=request.user.year items=object_list type='expense_type' update='plans:expense_update' delete='plans:expense_delete' %}

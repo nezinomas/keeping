@@ -29,8 +29,8 @@
                 <h6>{% translate 'Incomes' %}</h6>
             </div>
             <div class="col-3 text-end">
-                {% url 'plans:incomes_plan_new' as url_new %}
-                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'plans:copy_plans' %}" hx-target="#dialog"><i class="bi bi-stickies"></i> {% translate 'Copy plans' %}</button>
+                {% url 'plans:income_new' as url_new %}
+                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'plans:copy' %}" hx-target="#dialog"><i class="bi bi-stickies"></i> {% translate 'Copy plans' %}</button>
                 <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_new }}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
@@ -42,7 +42,7 @@
         <div class="row my-2">
             <div class="col"><h6>{% translate 'Expenses' %}</h6></div>
             <div class="col-3 text-end">
-                {% url 'plans:expenses_plan_new' as url_expenses_new %}
+                {% url 'plans:expense_new' as url_expenses_new %}
                 <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_expenses_new }}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
@@ -54,7 +54,7 @@
         <div class="row my-2">
             <div class="col"><h6>{% translate 'Additional necessary expenses' %}</h6></div>
             <div class="col-3 text-end">
-                {% url 'plans:necessarys_plan_new' as url_necessary_new %}
+                {% url 'plans:necessary_new' as url_necessary_new %}
                 <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_necessary_new }}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
@@ -68,7 +68,7 @@
                 <h6>{% translate 'Savings' %}</h6>
             </div>
             <div class="col-3 text-end">
-                {% url 'plans:savings_plan_new' as url_savings_new %}
+                {% url 'plans:saving_new' as url_savings_new %}
                 <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_savings_new }}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
@@ -82,7 +82,7 @@
                 <h6>{% translate 'Sum per day' %}</h6>
             </div>
             <div class="col-3 text-end">
-                {% url 'plans:days_plan_new' as url_day_new %}
+                {% url 'plans:day_new' as url_day_new %}
                 <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_day_new }}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>

@@ -1,4 +1,4 @@
 {% load generic_list %}
 {% load i18n %}
 
-{% generic_list year=request.user.year items=items type=_('Daily') update='plans:days_plan_update'  delete='plans:days_plan_delete' %}
+{% generic_list year=request.user.year items=items type=_('Daily') update='plans:day_update'  delete='plans:day_delete' %}
