@@ -209,7 +209,7 @@ class IndexHelper():
             AccountBalance.objects \
             .related() \
             .filter(year=year) \
-            .aggregate(Sum('balance'))['balance__sum']
+            .aggregate(Sum('past'))['past__sum']
         account_sum = float(account_sum) if account_sum else 0.0
 
         qs_income = Income.objects.sum_by_month(year)
@@ -363,10 +363,18 @@ class DetailedHelper():
 
     def incomes_context(self, context):
         qs = Income.objects.sum_by_month_and_type(self._year)
+
+        if not qs:
+            return context
+
         return self._detailed_context(context, qs, _('Incomes'))
 
     def savings_context(self, context):
         qs = Saving.objects.sum_by_month_and_type(self._year)
+
+        if not qs:
+            return context
+
         return self._detailed_context(context, qs, _('Savings'))
 
     def expenses_context(self, context):
@@ -390,7 +398,7 @@ class DetailedHelper():
     def _detailed_context(self, context, data, name):
         context = context if context else {}
 
-        if not 'data' in context.keys():
+        if 'data' not in context.keys():
             context['data'] = []
 
         total_row = self._sum_detailed(data, 'date', ['sum'])

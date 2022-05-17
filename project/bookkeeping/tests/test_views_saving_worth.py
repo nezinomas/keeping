@@ -1,49 +1,47 @@
 import json
+from datetime import datetime
 
 import pytest
+import pytz
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
 from ...core.tests.utils import setup_view
-from ...savings.factories import SavingTypeFactory
+from ...incomes.factories import IncomeFactory
+from ...savings.factories import SavingFactory, SavingTypeFactory
 from .. import views
+from ..factories import SavingWorthFactory
 from ..models import SavingWorth
 
 pytestmark = pytest.mark.django_db
-X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                            Saving Worth
-# ---------------------------------------------------------------------------------------
-def test_view_savings_worth_func():
+def test_view_func():
     view = resolve('/bookkeeping/savings_worth/new/')
 
     assert views.SavingsWorthNew == view.func.view_class
 
 
-def test_view_saving_worth_200(client_logged):
-    response = client_logged.get('/bookkeeping/savings_worth/new/')
+def test_view_200(client_logged):
+    url = reverse('bookkeeping:savings_worth_new')
+    response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
-def test_view_saving_worth_formset(client_logged):
+def test_formset_load(client_logged):
     SavingTypeFactory()
 
     url = reverse('bookkeeping:savings_worth_new')
-    response = client_logged.get(url, {}, **X_Req)
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
 
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert response.status_code == 200
-    assert 'Fondų vertė' in actual['html_form']
-    assert '<option value="1" selected>Savings</option>' in actual['html_form']
+    assert 'Fondų vertė' in actual
+    assert '<option value="1" selected>Savings</option>' in actual
 
 
 @freeze_time('1999-2-3')
-def test_view_saving_worth_new(client_logged):
+def test_formset_new(client_logged):
     i = SavingTypeFactory()
     data = {
         'form-TOTAL_FORMS': 1,
@@ -53,14 +51,7 @@ def test_view_saving_worth_new(client_logged):
     }
 
     url = reverse('bookkeeping:savings_worth_new')
-
-    response = client_logged.post(url, data, **X_Req)
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
-    assert 'title="1999 m. vasario 3 d.' in actual['html_list']
+    client_logged.post(url, data)
 
     actual = SavingWorth.objects.last()
     assert actual.date.year == 1999
@@ -68,7 +59,7 @@ def test_view_saving_worth_new(client_logged):
     assert actual.date.day == 3
 
 
-def test_view_saving_worth_new_with_date(client_logged):
+def test_formset_with_date(client_logged):
     i = SavingTypeFactory()
     data = {
         'date': '1999-2-3',
@@ -79,14 +70,7 @@ def test_view_saving_worth_new_with_date(client_logged):
     }
 
     url = reverse('bookkeeping:savings_worth_new')
-
-    response = client_logged.post(url, data, **X_Req)
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
-    assert 'title="1999 m. vasario 3 d.' in actual['html_list']
+    client_logged.post(url, data)
 
     actual = SavingWorth.objects.last()
     assert actual.date.year == 1999
@@ -94,7 +78,7 @@ def test_view_saving_worth_new_with_date(client_logged):
     assert actual.date.day == 3
 
 
-def test_view_saving_worth_invalid_data(client_logged):
+def test_formset_invalid_data(client_logged):
     data = {
         'form-TOTAL_FORMS': 1,
         'form-INITIAL_FORMS': 0,
@@ -103,16 +87,13 @@ def test_view_saving_worth_invalid_data(client_logged):
     }
 
     url = reverse('bookkeeping:savings_worth_new')
+    response = client_logged.post(url, data)
+    form = response.context['formset']
 
-    response = client_logged.post(url, data, **X_Req)
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert not actual['form_is_valid']
+    assert not form.is_valid()
 
 
-def test_saving_worth_formset_saving_type_closed_in_past(get_user, fake_request):
+def test_formset_saving_type_closed_in_past(get_user, fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1000)
 
@@ -126,7 +107,7 @@ def test_saving_worth_formset_saving_type_closed_in_past(get_user, fake_request)
     assert 'S2' not in actual
 
 
-def test_saving_worth_formset_saving_type_closed_in_current(get_user, fake_request):
+def test_formset_saving_type_closed_in_current(get_user, fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1000)
 
@@ -140,7 +121,7 @@ def test_saving_worth_formset_saving_type_closed_in_current(get_user, fake_reque
     assert 'S2' in actual
 
 
-def test_saving_worth_formset_saving_type_closed_in_future(get_user, fake_request):
+def test_formset_saving_type_closed_in_future(get_user, fake_request):
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=1000)
 

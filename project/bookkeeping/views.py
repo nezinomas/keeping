@@ -88,10 +88,20 @@ class AccountsWorthReset(TemplateViewMixin):
     account = None
 
     def get_object(self):
-        return Account.objects.related().get(pk=self.kwargs['pk'])
+        account = None
+        try:
+            account = \
+                Account.objects \
+                .related() \
+                .get(pk=self.kwargs['pk'])
+        except ObjectDoesNotExist:
+            pass
+
+        return account
 
     def dispatch(self, request, *args, **kwargs):
         self.account = self.get_object()
+
         if self.account:
             try:
                 worth = (
@@ -130,7 +140,7 @@ class Savings(TemplateViewMixin):
         sum_savings = total_row.get('invested', 0) - total_row.get('past_amount', 0)
 
         Helper.add_latest_check_key(SavingWorth, savings, year)
-
+        print(f'sum_savings: {sum_savings} sum_incomes: {sum_incomes}')
         context = super().get_context_data(**kwargs)
         context.update({
             'title': _('Funds'),
@@ -327,6 +337,7 @@ class Summary(TemplateViewMixin):
             'salary_categories': salary_years,
             'salary_data_avg': Helper.average(qs),
         })
+
         return context
 
 

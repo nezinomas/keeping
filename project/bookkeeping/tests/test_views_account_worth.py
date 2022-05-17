@@ -1,49 +1,45 @@
-import json
+from datetime import datetime
 
 import pytest
+import pytz
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
-from ...accounts.factories import AccountFactory
+from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...core.tests.utils import setup_view
 from .. import views
+from ..factories import AccountWorthFactory
 from ..models import AccountWorth
 
 pytestmark = pytest.mark.django_db
-X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                           Account Worth
-# ---------------------------------------------------------------------------------------
-def test_accounts_worth_func():
+def test_func():
     view = resolve('/bookkeeping/accounts_worth/new/')
 
     assert views.AccountsWorthNew == view.func.view_class
 
 
-def test_account_worth_200(client_logged):
-    response = client_logged.get('/bookkeeping/accounts_worth/new/')
+def test_200(client_logged):
+    url = reverse('bookkeeping:accounts_worth_new')
+    response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
-def test_account_worth_formset(client_logged):
+def test_formset(client_logged):
     AccountFactory()
 
     url = reverse('bookkeeping:accounts_worth_new')
-    response = client_logged.get(url, {}, **X_Req)
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
 
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert response.status_code == 200
-    assert 'Sąskaitų vertė' in actual['html_form']
-    assert '<option value="1" selected>Account1</option>' in actual['html_form']
+    assert 'Sąskaitų vertė' in actual
+    assert '<option value="1" selected>Account1</option>' in actual
 
 
 @freeze_time('1999-9-9')
-def test_account_worth_new(client_logged):
+def test_formset_new(client_logged):
     i = AccountFactory()
     data = {
         'form-TOTAL_FORMS': 1,
@@ -53,24 +49,17 @@ def test_account_worth_new(client_logged):
     }
 
     url = reverse('bookkeeping:accounts_worth_new')
-
-    response = client_logged.post(url, data, **X_Req)
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
-    assert '999' in actual['html_list']
-    assert '-title="1999 m. rugsėjo 9 d.' in actual['html_list']
+    client_logged.post(url, data, follow=True)
 
     actual = AccountWorth.objects.last()
     assert actual.date.year == 1999
     assert actual.date.month == 9
     assert actual.date.day == 9
+    assert actual.price == 999
 
 
 @freeze_time('1999-9-9')
-def test_account_worth_dublicated(client_logged):
+def test_formset_dublicated(client_logged):
     i = AccountFactory()
     data = {
         'form-TOTAL_FORMS': 2,
@@ -82,17 +71,13 @@ def test_account_worth_dublicated(client_logged):
     }
 
     url = reverse('bookkeeping:accounts_worth_new')
+    response = client_logged.post(url, data)
+    actual = response.context['formset']
 
-    response = client_logged.post(url, data, **X_Req)
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert not actual['form_is_valid']
-    assert 'Pasirinktos vienodos sąskaitos.' in actual['html_form']
+    assert not actual.is_valid()
 
 
-def test_account_worth_new_with_date(client_logged):
+def test_formset_with_date(client_logged):
     i = AccountFactory()
     data = {
         'date': '1999-9-9',
@@ -103,23 +88,16 @@ def test_account_worth_new_with_date(client_logged):
     }
 
     url = reverse('bookkeeping:accounts_worth_new')
-
-    response = client_logged.post(url, data, **X_Req)
-
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert actual['form_is_valid']
-    assert '999' in actual['html_list']
-    assert '-title="1999 m. rugsėjo 9 d.' in actual['html_list']
+    client_logged.post(url, data)
 
     actual = AccountWorth.objects.last()
     assert actual.date.year == 1999
     assert actual.date.month == 9
     assert actual.date.day == 9
+    assert actual.price == 999
 
 
-def test_account_worth_invalid_data(client_logged):
+def test_formset_invalid_data(client_logged):
     data = {
         'form-TOTAL_FORMS': 1,
         'form-INITIAL_FORMS': 0,
@@ -129,15 +107,13 @@ def test_account_worth_invalid_data(client_logged):
 
     url = reverse('bookkeeping:accounts_worth_new')
 
-    response = client_logged.post(url, data, **X_Req)
+    response = client_logged.post(url, data)
+    actual = response.context['formset']
 
-    json_str = response.content
-    actual = json.loads(json_str)
-
-    assert not actual['form_is_valid']
+    assert not actual.is_valid()
 
 
-def test_account_worth_formset_closed_in_past(get_user, fake_request):
+def test_formset_closed_in_past(get_user, fake_request):
     AccountFactory(title='S1')
     AccountFactory(title='S2', closed=1000)
 
@@ -151,7 +127,7 @@ def test_account_worth_formset_closed_in_past(get_user, fake_request):
     assert 'S2' not in actual
 
 
-def test_account_worth_formset_closed_in_current(get_user, fake_request):
+def test_formset_closed_in_current(get_user, fake_request):
     AccountFactory(title='S1')
     AccountFactory(title='S2', closed=1000)
 
@@ -165,7 +141,7 @@ def test_account_worth_formset_closed_in_current(get_user, fake_request):
     assert 'S2' in actual
 
 
-def test_account_worth_formset_closed_in_future(get_user, fake_request):
+def test_formset_closed_in_future(get_user, fake_request):
     AccountFactory(title='S1')
     AccountFactory(title='S2', closed=1000)
 
@@ -177,3 +153,27 @@ def test_account_worth_formset_closed_in_future(get_user, fake_request):
 
     assert 'S1' in actual
     assert 'S2' in actual
+
+
+def test_view(client_logged):
+    AccountWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
+    AccountWorthFactory(date=datetime(1999, 2, 2, tzinfo=pytz.utc), price=555)
+
+    url = reverse('bookkeeping:index')
+    response = client_logged.get(url)
+
+    actual = response.context['accounts']
+    assert 'title="1999 m. vasario 2 d., 00:00"' in actual
+    assert '555,0' in actual
+
+
+def test_view_last_check_empty(client_logged):
+    AccountBalanceFactory()
+
+    url = reverse('bookkeeping:index')
+    response = client_logged.get(url)
+
+    actual = response.context['accounts']
+
+    assert 'data-bs-title="Nenurodyta"' in actual
+    assert '0,2' in actual

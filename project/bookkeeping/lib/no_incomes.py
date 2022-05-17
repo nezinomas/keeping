@@ -26,11 +26,13 @@ class NoIncomes():
             .related() \
             .filter(year=year) \
             .aggregate(Sum('balance'))['balance__sum']
+
         fund_sum = \
             SavingBalance.objects \
             .related() \
             .filter(year=year, saving_type__type__in=['shares', 'funds']) \
             .aggregate(Sum('market_value'))['market_value__sum']
+
         pension_sum = \
             SavingBalance.objects \
             .related() \
@@ -91,8 +93,11 @@ class NoIncomes():
             if r['title'] in self.unnecessary:
                 cut_sum += _sum
 
-        savings_sum = self.savings.get('sum', 0.0)
-        savings_sum = float(savings_sum)
+        try:
+            savings_sum = self.savings.get('sum', 0.0)
+            savings_sum = float(savings_sum)
+        except (AttributeError, TypeError):
+            savings_sum = 0
 
         self.avg_expenses = (expenses_sum + savings_sum) / months
         self.cut_sum = (cut_sum + savings_sum) / months
