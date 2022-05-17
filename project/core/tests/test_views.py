@@ -69,7 +69,7 @@ def test_view_regenerate_balances_status_200(client_logged):
     url = reverse('core:regenerate_balances')
     response = client_logged.get(url, follow=True)
 
-    assert response.status_code == 200
+    assert response.status_code == 204
 
 
 @freeze_time('1999-01-01')
@@ -180,4 +180,4 @@ def test_view_regenerate_no_errors(client_logged):
     url = reverse('core:regenerate_balances')
     response = client_logged.get(f'{url}?type=xxx&ajax_trigger=1', {}, **X_Req)
 
-    assert response.status_code == 200
+    assert response.status_code == 204
