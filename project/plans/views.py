@@ -212,4 +212,13 @@ class CopyPlans(FormViewMixin):
 
     def form_valid(self, form, **kwargs):
         form.save()
-        return httpHtmxResponse()
+
+        hx_trigger_django = None
+
+        year_to = form.cleaned_data.get('year_to')
+        year_user = self.request.user.year
+
+        if year_to == year_user:
+            hx_trigger_django = 'afterCopy'
+
+        return httpHtmxResponse(hx_trigger_django)
