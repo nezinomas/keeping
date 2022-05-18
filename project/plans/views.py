@@ -1,21 +1,15 @@
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
-from django.shortcuts import render
-from django.template.loader import render_to_string
 from django.urls import reverse_lazy
-from django.utils.translation import gettext as _
 
-from ..core.lib import utils
-from ..core.mixins.ajax import AjaxCustomFormMixin
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchListsMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
+from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
+                                 FormViewMixin, ListViewMixin,
+                                 TemplateViewMixin, UpdateViewMixin,
+                                 httpHtmxResponse, rendered_content)
 from . import forms, models
 from .lib.calc_day_sum import CalcDaySum
 
 
 class Stats(TemplateViewMixin):
-    template_name = 'plans/includes/plans_stats.html'
+    template_name = 'plans/stats.html'
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
@@ -28,15 +22,19 @@ class Stats(TemplateViewMixin):
         return context
 
 
-class Index(IndexMixin):
+class Index(TemplateViewMixin):
+    template_name = 'plans/index.html'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['expenses_list'] = ExpensesLists.as_view()(self.request, as_string=True)
-        context['incomes_list'] = IncomesLists.as_view()(self.request, as_string=True)
-        context['savings_list'] = SavingsLists.as_view()(self.request, as_string=True)
-        context['day_list'] = DayLists.as_view()(self.request, as_string=True)
-        context['necessary_list'] = NecessaryLists.as_view()(self.request, as_string=True)
-        context['plans_stats'] = plans_stats(self.request)
+        context.update({
+            'incomes_list': rendered_content(self.request, IncomesLists, **kwargs),
+            'expenses_list': rendered_content(self.request, ExpensesLists, **kwargs),
+            'savings_list': rendered_content(self.request, SavingsLists, **kwargs),
+            'day_list': rendered_content(self.request, DayLists, **kwargs),
+            'necessary_list': rendered_content(self.request, NecessaryLists, **kwargs),
+            'plans_stats': rendered_content(self.request, Stats, **kwargs)
+        })
 
         return context
 
@@ -44,135 +42,177 @@ class Index(IndexMixin):
 # ---------------------------------------------------------------------------------------
 #                                                                           Expense Plans
 # ---------------------------------------------------------------------------------------
-class ExpensesLists(DispatchListsMixin, ListMixin):
-    model = models.ExpensePlan
+class ExpensesLists(ListViewMixin):
+    def get_queryset(self):
+        return \
+            models.ExpensePlan.objects \
+            .year(year=self.request.user.year)
 
 
-class ExpensesNew(CreateAjaxMixin):
-    model = models.ExpensePlan
-    form_class = forms.ExpensePlanForm
-
-
-class ExpensesUpdate(UpdateAjaxMixin):
+class ExpensesNew(CreateViewMixin):
     model = models.ExpensePlan
     form_class = forms.ExpensePlanForm
+    url = reverse_lazy('plans:expense_new')
+    success_url = reverse_lazy('plans:expense_list')
+    hx_trigger_django = 'reloadExpenses'
 
 
-class ExpensesDelete(DeleteAjaxMixin):
+class ExpensesUpdate(UpdateViewMixin):
     model = models.ExpensePlan
+    form_class = forms.ExpensePlanForm
+    success_url = reverse_lazy('plans:expense_list')
+    hx_trigger_django = 'reloadExpenses'
+
+
+class ExpensesDelete(DeleteViewMixin):
+    model = models.ExpensePlan
+    success_url = reverse_lazy('plans:expense_list')
+    hx_trigger_django = 'reloadExpenses'
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                            Income Plans
 # ---------------------------------------------------------------------------------------
-class IncomesLists(DispatchListsMixin, ListMixin):
-    model = models.IncomePlan
+class IncomesLists(ListViewMixin):
+    def get_queryset(self):
+        return \
+            models.IncomePlan.objects \
+            .year(year=self.request.user.year)
 
 
-class IncomesNew(CreateAjaxMixin):
-    model = models.IncomePlan
-    form_class = forms.IncomePlanForm
-
-
-class IncomesUpdate(UpdateAjaxMixin):
+class IncomesNew(CreateViewMixin):
     model = models.IncomePlan
     form_class = forms.IncomePlanForm
+    url = reverse_lazy('plans:income_new')
+    success_url = reverse_lazy('plans:income_list')
+    hx_trigger_django = 'reloadIncomes'
 
 
-class IncomesDelete(DeleteAjaxMixin):
+class IncomesUpdate(UpdateViewMixin):
     model = models.IncomePlan
+    form_class = forms.IncomePlanForm
+    success_url = reverse_lazy('plans:income_list')
+    hx_trigger_django = 'reloadIncomes'
+
+
+class IncomesDelete(DeleteViewMixin):
+    model = models.IncomePlan
+    success_url = reverse_lazy('plans:income_list')
+    hx_trigger_django = 'reloadIncomes'
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                            Saving Plans
 # ---------------------------------------------------------------------------------------
-class SavingsLists(DispatchListsMixin, ListMixin):
-    model = models.SavingPlan
+class SavingsLists(ListViewMixin):
+    def get_queryset(self):
+        return \
+            models.SavingPlan.objects \
+            .year(year=self.request.user.year)
 
 
-class SavingsNew(CreateAjaxMixin):
-    model = models.SavingPlan
-    form_class = forms.SavingPlanForm
-
-
-class SavingsUpdate(UpdateAjaxMixin):
+class SavingsNew(CreateViewMixin):
     model = models.SavingPlan
     form_class = forms.SavingPlanForm
+    url = reverse_lazy('plans:saving_new')
+    success_url = reverse_lazy('plans:saving_list')
+    hx_trigger_django = 'reloadSavings'
 
 
-class SavingsDelete(DeleteAjaxMixin):
+class SavingsUpdate(UpdateViewMixin):
     model = models.SavingPlan
+    form_class = forms.SavingPlanForm
+    success_url = reverse_lazy('plans:saving_list')
+    hx_trigger_django = 'reloadSavings'
+
+
+class SavingsDelete(DeleteViewMixin):
+    model = models.SavingPlan
+    success_url = reverse_lazy('plans:saving_list')
+    hx_trigger_django = 'reloadSavings'
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                               Day Plans
 # ---------------------------------------------------------------------------------------
-class DayLists(DispatchListsMixin, ListMixin):
-    model = models.DayPlan
+class DayLists(ListViewMixin):
+    def get_queryset(self):
+        return \
+            models.DayPlan.objects \
+            .year(year=self.request.user.year)
 
 
-class DayNew(CreateAjaxMixin):
-    model = models.DayPlan
-    form_class = forms.DayPlanForm
-
-
-class DayUpdate(UpdateAjaxMixin):
+class DayNew(CreateViewMixin):
     model = models.DayPlan
     form_class = forms.DayPlanForm
+    url = reverse_lazy('plans:day_new')
+    success_url = reverse_lazy('plans:day_list')
+    hx_trigger_django = 'reloadDay'
 
 
-class DayDelete(DeleteAjaxMixin):
+class DayUpdate(UpdateViewMixin):
     model = models.DayPlan
+    form_class = forms.DayPlanForm
+    success_url = reverse_lazy('plans:day_list')
+    hx_trigger_django = 'reloadDay'
+
+
+class DayDelete(DeleteViewMixin):
+    model = models.DayPlan
+    success_url = reverse_lazy('plans:day_list')
+    hx_trigger_django = 'reloadDay'
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                         Necessary Plans
 # ---------------------------------------------------------------------------------------
-class NecessaryLists(DispatchListsMixin, ListMixin):
-    model = models.NecessaryPlan
+class NecessaryLists(ListViewMixin):
+    def get_queryset(self):
+        return \
+            models.NecessaryPlan.objects \
+            .year(year=self.request.user.year)
 
 
-class NecessaryNew(CreateAjaxMixin):
-    model = models.NecessaryPlan
-    form_class = forms.NecessaryPlanForm
-
-
-class NecessaryUpdate(UpdateAjaxMixin):
+class NecessaryNew(CreateViewMixin):
     model = models.NecessaryPlan
     form_class = forms.NecessaryPlanForm
+    url = reverse_lazy('plans:necessary_new')
+    success_url = reverse_lazy('plans:necessary_list')
+    hx_trigger_django = 'reloadNecessary'
 
 
-class NecessaryDelete(DeleteAjaxMixin):
+class NecessaryUpdate(UpdateViewMixin):
     model = models.NecessaryPlan
+    form_class = forms.NecessaryPlanForm
+    success_url = reverse_lazy('plans:necessary_list')
+    hx_trigger_django = 'reloadNecessary'
+
+
+class NecessaryDelete(DeleteViewMixin):
+    model = models.NecessaryPlan
+    success_url = reverse_lazy('plans:necessary_list')
+    hx_trigger_django = 'reloadNecessary'
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                              Copy Plans
 # ---------------------------------------------------------------------------------------
-class CopyPlans(AjaxCustomFormMixin):
+class CopyPlans(FormViewMixin):
     form_class = forms.CopyPlanForm
-    template_name = 'plans/includes/copy_plans_form.html'
-    url = reverse_lazy('plans:copy_plans')
+    template_name = 'plans/copyplan_form.html'
+    success_url = reverse_lazy('plans:index')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        context['form_action'] = 'insert'
-        context['title'] = _('Copy plans')
-
+        context.update({
+            'url': reverse_lazy('plans:copy'),
+            'form_action': 'insert_close',
+        })
         return context
 
-    def dispatch(self, request, *args, **kwargs):
-        if not utils.is_ajax(self.request):
-            return HttpResponse(render_to_string('srsly.html'))
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        form = self.form_class(data=(request.POST or None))
-
-        if form.is_valid():
+    def form_valid(self, form, **kwargs):
+        if self.request.htmx:
             form.save()
-            return super().form_valid(form)
+            return httpHtmxResponse()
 
-        return self.form_invalid(form)
+        return super().form_valid(form, **kwargs)

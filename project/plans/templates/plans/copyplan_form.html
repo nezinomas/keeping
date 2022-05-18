@@ -1,24 +1,4 @@
-{% load crispy_forms_tags %}
+{% load form %}
 {% load i18n %}
 
-<form method="post" novalidate action="{{ url }}" data-action="{{ action }}"  autocomplete="off" tabindex="-1">
-    {% csrf_token %}
-    {% include 'core/includes/form_date_scripts.html' %}
-    <div class="modal-header">
-        <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
-    </div>
-    <div class="modal-body">
-        {% include 'core/includes/form_errors.html' %}
-
-        {% for field in form %}
-        <div class="row gx-1 align-items-center my-2 copy-plans">
-            <div class="col-4">{{ field.label_tag }}</div>
-            <div class="col-8">{{ field|as_crispy_field }}</div>
-        </div>
-        {% endfor %}
-
-        {% include 'core/includes/form_footer.html' %}
-</form>
-
-{% include 'core/includes/modal_form_js.html' %}
+{% generic_form title=_('Copy plans') %}
