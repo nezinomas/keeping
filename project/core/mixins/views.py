@@ -23,12 +23,14 @@ def rendered_content(request, view_class, **kwargs):
     )
 
 
-def httpHtmxResponse(hx_trigger_name, status_code = 204):
+def httpHtmxResponse(hx_trigger_name = None, status_code = 204):
+    headers = {}
+    if hx_trigger_name:
+        headers = {'HX-Trigger': json.dumps({hx_trigger_name: None})}
+
     return HttpResponse(
         status=status_code,
-        headers={
-            'HX-Trigger': json.dumps({hx_trigger_name: None}),
-        },
+        headers=headers,
     )
 
 
@@ -115,6 +117,7 @@ class CreateUpdateMixin():
         response = super().form_valid(form)
         if self.request.htmx:
             self.hx_redirect = self.get_hx_redirect()
+
             if self.hx_redirect:
                 # close form and redirect to url with hx_trigger_django
                 return HttpResponseClientRedirect(self.hx_redirect)
