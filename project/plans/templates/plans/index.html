@@ -29,37 +29,37 @@
                 <h6>{% translate 'Incomes' %}</h6>
             </div>
             <div class="col-3 text-end">
-                {% url 'plans:incomes_plan_new' as url_new %}
-                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'plans:copy_plans' %}" hx-target="#dialog"><i class="bi bi-stickies"></i> {% translate 'Copy plans' %}</button>
+                {% url 'plans:income_new' as url_new %}
+                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'plans:copy' %}" hx-target="#dialog"><i class="bi bi-stickies"></i> {% translate 'Copy plans' %}</button>
                 <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_new }}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
         <div class="row">
-            <div id="list" class="col-lg-12">{{ list }}</div>
+            <div id="list" class="col-lg-12" hx-get="{% url 'plans:income_list' %}" hx-trigger="reloadIncomes from:body, afterCopy from:body">{{incomes_list|safe}}</div>
         </div>
 
         <!-- expenses plans -->
         <div class="row my-2">
             <div class="col"><h6>{% translate 'Expenses' %}</h6></div>
             <div class="col-3 text-end">
-                {% url 'plans:expenses_plan_new' as url_expenses_new %}
+                {% url 'plans:expense_new' as url_expenses_new %}
                 <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_expenses_new }}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
         <div class="row">
-            <div id="expenses_list" class="col-lg-12">{{ expenses_list }}</div>
+            <div id="expenses_list" class="col-lg-12" hx-get="{% url 'plans:expense_list' %}" hx-trigger="reloadExpenses from:body, afterCopy from:body">{{expenses_list|safe}}</div>
         </div>
 
         <!-- necessary expenses plans -->
         <div class="row my-2">
             <div class="col"><h6>{% translate 'Additional necessary expenses' %}</h6></div>
             <div class="col-3 text-end">
-                {% url 'plans:necessarys_plan_new' as url_necessary_new %}
+                {% url 'plans:necessary_new' as url_necessary_new %}
                 <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_necessary_new }}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
         <div class="row">
-            <div id="necessary_list" class="col-lg-12">{{ necessary_list }}</div>
+            <div id="necessary_list" class="col-lg-12" hx-get="{% url 'plans:necessary_list' %}" hx-trigger="reloadNecessary from:body, afterCopy from:body">{{necessary_list|safe}}</div>
         </div>
 
         <!-- savings plans -->
@@ -68,12 +68,12 @@
                 <h6>{% translate 'Savings' %}</h6>
             </div>
             <div class="col-3 text-end">
-                {% url 'plans:savings_plan_new' as url_savings_new %}
+                {% url 'plans:saving_new' as url_savings_new %}
                 <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_savings_new }}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
         <div class="row">
-            <div id="savings_list" class="col-lg-12">{{ savings_list }}</div>
+            <div id="savings_list" class="col-lg-12" hx-get="{% url 'plans:saving_list' %}" hx-trigger="reloadSavings from:body, afterCopy from:body">{{savings_list|safe}}</div>
         </div>
 
         <!-- day plans -->
@@ -82,12 +82,12 @@
                 <h6>{% translate 'Sum per day' %}</h6>
             </div>
             <div class="col-3 text-end">
-                {% url 'plans:days_plan_new' as url_day_new %}
+                {% url 'plans:day_new' as url_day_new %}
                 <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_day_new }}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
             </div>
         </div>
         <div class="row">
-            <div id="day_list" class="col-lg-12">{{ day_list }}</div>
+            <div id="day_list" class="col-lg-12" hx-get="{% url 'plans:day_list' %}" hx-trigger="reloadDay from:body, afterCopy from:body">{{day_list|safe}}</div>
         </div>
 
         <!-- stats plans -->
@@ -96,7 +96,7 @@
             <div class="col-3 text-end"></div>
         </div>
         <div class="row">
-            <div id="plans_stats" class="col-lg-12">{{ plans_stats }}</div>
+            <div id="plans_stats" class="col-lg-12" hx-get="{% url 'plans:stats' %}" hx-trigger="reloadIncomes from:body, reloadExpenses from:body, reloadSavings from:body, reloadDay from:body, reloadNecessary from:body, afterCopy from:body">{{plans_stats|safe}}</div>
         </div>
     </div>
 </div>
