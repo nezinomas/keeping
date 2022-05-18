@@ -211,8 +211,5 @@ class CopyPlans(FormViewMixin):
         return context
 
     def form_valid(self, form, **kwargs):
-        if self.request.htmx:
-            form.save()
-            return httpHtmxResponse()
-
-        return super().form_valid(form, **kwargs)
+        form.save()
+        return httpHtmxResponse()
