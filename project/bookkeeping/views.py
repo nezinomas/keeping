@@ -382,46 +382,44 @@ class SummaryExpenses(FormViewMixin):
         return context
 
     def form_valid(self, form, **kwargs):
-        if form.is_valid():
-            _types = []
-            _names = []
-            _types_full = form.cleaned_data.get('types')
+        context = {}
+        _types = []
+        _names = []
+        _types_full = form.cleaned_data.get('types')
 
-            for x in _types_full:
-                if ':' in x:
-                    _names.append(x.split(':')[1])
-                else:
-                    _types.append(x)
+        for x in _types_full:
+            if ':' in x:
+                _names.append(x.split(':')[1])
+            else:
+                _types.append(x)
 
-            _types_qs = None
-            _names_qs = None
+        _types_qs = None
+        _names_qs = None
 
-            if _types:
-                _types_qs = Expense.objects.sum_by_year_type(_types)
+        if _types:
+            _types_qs = Expense.objects.sum_by_year_type(_types)
 
-            if _names:
-                _names_qs = Expense.objects.sum_by_year_name(_names)
+        if _names:
+            _names_qs = Expense.objects.sum_by_year_name(_names)
 
-            obj = SummaryViewHelper.ExpenseCompareHelper(
-                years=years()[:-1],
-                types=_types_qs,
-                names=_names_qs,
-                remove_empty_columns=True
-            )
+        obj = SummaryViewHelper.ExpenseCompareHelper(
+            years=years()[:-1],
+            types=_types_qs,
+            names=_names_qs,
+            remove_empty_columns=True
+        )
 
-            if obj.serries_data:
-                context = {
-                    'found': True,
-                    'form': form,
-                    'categories': obj.categories,
-                    'data': obj.serries_data,
-                    'total_col': obj.total_col,
-                    'total_row': obj.total_row,
-                    'total': obj.total
-                }
-                return render(self.request, self.template_name, context)
-
-        return super().form_valid(form)
+        if obj.serries_data:
+            context.update({
+                'found': True,
+                'form': form,
+                'categories': obj.categories,
+                'data': obj.serries_data,
+                'total_col': obj.total_col,
+                'total_row': obj.total_row,
+                'total': obj.total
+            })
+        return render(self.request, self.template_name, context)
 
 
 class ExpandDayExpenses(TemplateViewMixin):
