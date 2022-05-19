@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from django.urls import reverse
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
@@ -40,6 +41,12 @@ def test_saving_type_str():
     i = SavingFactory.build()
 
     assert str(i) == '1999-01-01: Savings'
+
+
+def test_saving_type_get_absolute_url():
+    obj = SavingTypeFactory()
+
+    assert obj.get_absolute_url() == reverse('savings:type_update', kwargs={'pk': obj.pk})
 
 
 def test_saving_type_items_user(main_user, second_user):
@@ -128,6 +135,12 @@ def test_saving_str():
     actual = SavingTypeFactory.build()
 
     assert str(actual) == 'Savings'
+
+
+def test_saving_get_absolute_url():
+    obj = SavingFactory()
+
+    assert obj.get_absolute_url() == reverse('savings:update', kwargs={'pk': obj.pk})
 
 
 def test_saving_related(main_user, second_user):

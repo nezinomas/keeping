@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from django.urls import reverse
 from freezegun import freeze_time
 
 from ..factories import (PensionBalanceFactory, PensionFactory,
@@ -18,6 +19,12 @@ def test_pension_type_str():
     p = PensionTypeFactory.build()
 
     assert str(p) == 'PensionType'
+
+
+def test_pension_type_get_absolute_url():
+    obj = PensionTypeFactory()
+
+    assert obj.get_absolute_url() == reverse('pensions:type_update', kwargs={'pk': obj.pk})
 
 
 def test_pension_type_items_user(main_user, second_user):
@@ -48,6 +55,12 @@ def test_pension_str():
     p = PensionFactory.build()
 
     assert str(p) == '1999-01-01: PensionType'
+
+
+def test_pension_get_absolute_url():
+    obj = PensionFactory()
+
+    assert obj.get_absolute_url() == reverse('pensions:update', kwargs={'pk': obj.pk})
 
 
 def test_pension_object():

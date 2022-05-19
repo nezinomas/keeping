@@ -1,4 +1,5 @@
 import pytest
+from django.urls import reverse
 
 from ...journals.factories import JournalFactory
 from ..factories import AccountBalanceFactory, AccountFactory
@@ -14,6 +15,12 @@ def test_account_model_str():
     actual = AccountFactory.build()
 
     assert str(actual) == 'Account1'
+
+
+def test_get_absolute_url():
+    obj = AccountFactory()
+
+    assert obj.get_absolute_url() == reverse('accounts:update', kwargs={'pk': obj.pk})
 
 
 def test_account_items_current_journal(main_user, second_user):
