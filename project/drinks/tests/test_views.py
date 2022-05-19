@@ -1,3 +1,5 @@
+from requests import request
+from ...core.tests.utils import setup_view
 import re
 from datetime import date
 
@@ -575,6 +577,25 @@ def test_update_func():
     assert views.Update is view.func.view_class
 
 
+@pytest.mark.parametrize(
+    'tab, trigger',
+    [
+        ('index', 'reloadIndex'),
+        ('data', 'reloadData'),
+        ('history', 'reloadHistory'),
+        ('xxx', 'reloadData'),
+    ]
+)
+def test_trigger_name(tab, trigger, rf):
+    request = rf.get(reverse('drinks:new', kwargs={'tab': tab}))
+
+    view = setup_view(views.New(), request)
+    view.kwargs = {'tab': tab}
+    actual = view.get_hx_trigger_django()
+
+    assert actual == trigger
+
+
 @freeze_time('2000-01-01')
 @pytest.mark.parametrize(
     'tab, expect_url',
@@ -716,7 +737,7 @@ def test_drinks_delete_other_user_post_form(client_logged, second_user):
 # ---------------------------------------------------------------------------------------
 #                                                                    Target Create/Update
 # ---------------------------------------------------------------------------------------
-def test_target_new_func():
+def test_target_func():
     view = resolve('/drinks/index/target/new/')
 
     assert views.TargetNew is view.func.view_class
@@ -726,6 +747,25 @@ def test_target_update_func():
     view = resolve('/drinks/target/update/1/')
 
     assert views.TargetUpdate is view.func.view_class
+
+
+@pytest.mark.parametrize(
+    'tab, trigger',
+    [
+        ('index', 'reloadIndex'),
+        ('data', 'reloadData'),
+        ('history', 'reloadHistory'),
+        ('xxx', 'reloadIndex'),
+    ]
+)
+def test_target_get_trigger_name(tab, trigger, rf):
+    request = rf.get(reverse('drinks:target_new', kwargs={'tab': tab}))
+
+    view = setup_view(views.TargetNew(), request)
+    view.kwargs = {'tab': tab}
+    actual = view.get_hx_trigger_django()
+
+    assert actual == trigger
 
 
 @pytest.mark.parametrize(
