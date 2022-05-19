@@ -22,10 +22,6 @@ def get_request_kwargs(name):
     return request
 
 
-def is_ajax(request):
-    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
-
-
 def get_value_from_dict(arr: Dict, month: int) -> float:
     return float(arr.get(monthname(month), 0.0)) if arr else 0.0
 

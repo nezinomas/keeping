@@ -5,6 +5,7 @@ import mock
 import pytest
 from django.core.files import File
 from django.db import models
+from django.urls import reverse
 from freezegun import freeze_time
 from override_storage import override_storage
 
@@ -36,6 +37,12 @@ def test_expense_type_str():
     e = ExpenseTypeFactory.build()
 
     assert str(e) == 'Expense Type'
+
+
+def test_expense_type_get_absolute_url():
+    obj = ExpenseTypeFactory()
+
+    assert obj.get_absolute_url() == reverse('expenses:type_update', kwargs={'pk': obj.pk})
 
 
 def test_month_expense_type(expenses):
@@ -123,6 +130,11 @@ def test_expnese_name_str():
     e = ExpenseNameFactory.build()
 
     assert str(e) == 'Expense Name'
+
+def test_expense_name_get_absolute_url():
+    obj = ExpenseNameFactory()
+
+    assert obj.get_absolute_url() == reverse('expenses:name_update', kwargs={'pk': obj.pk})
 
 
 def test_expense_name_items():

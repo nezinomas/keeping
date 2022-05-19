@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from django.urls import reverse
 
 from ...accounts.factories import AccountBalance, AccountFactory
 from ...expenses.factories import ExpenseFactory
@@ -22,6 +23,12 @@ def test_transaction_str():
     t = TransactionFactory.build()
 
     assert str(t) == '1999-01-01 Account1->Account2: 200'
+
+
+def test_transaction_get_absolute_url():
+    obj = TransactionFactory()
+
+    assert obj.get_absolute_url() == reverse('transactions:update', kwargs={'pk': obj.pk})
 
 
 def test_transaction_related(main_user, second_user):
@@ -479,6 +486,12 @@ def test_saving_close_str():
     assert str(s) == '1999-01-01 Savings From->Account To: 10'
 
 
+def test_saving_close_get_absolute_url():
+    obj = SavingCloseFactory()
+
+    assert obj.get_absolute_url() == reverse('transactions:savings_close_update', kwargs={'pk': obj.pk})
+
+
 def test_saving_close_related(main_user, second_user):
     a1 = AccountFactory(title='A1', journal=main_user.journal)
     a2 = AccountFactory(title='A2', journal=second_user.journal)
@@ -915,6 +928,12 @@ def test_savings_change_str():
     assert str(s) == '1999-01-01 Savings From->Savings To: 10'
 
 
+def test_savings_change_get_absolute_url():
+    obj = SavingChangeFactory()
+
+    assert obj.get_absolute_url() == reverse('transactions:savings_change_update', kwargs={'pk': obj.pk})
+
+
 def test_saving_change_related(main_user, second_user):
     f1 = SavingTypeFactory(title='F1', journal=main_user.journal)
     f2 = SavingTypeFactory(title='F2', journal=second_user.journal)
@@ -1219,136 +1238,6 @@ def test_saving_change_post_save_changed_to_and_from():
     except SavingBalance.DoesNotExist:
         fail = True
 
-    assert fail
-
-    actual = SavingBalance.objects.get(saving_type_id=_from_new.pk)
-    assert actual.saving_type.title == 'From-New'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.25
-    assert actual.invested == 0.0
-    assert actual.incomes == -1.0
-
-
-def test_saving_change_post_save_changed_to_and_from():
-    _to = SavingTypeFactory(title='To')
-    _to_new = SavingTypeFactory(title='To-New')
-    _from = SavingTypeFactory(title='From')
-    _from_new = SavingTypeFactory(title='From-New')
-
-    obj = SavingChangeFactory(to_account=_to, from_account=_from, price=1)
-
-    actual = SavingBalance.objects.get(saving_type_id=_to.pk)
-    assert actual.saving_type.title == 'To'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 1.0
-    assert actual.incomes == 1.0
-
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk)
-    assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.25
-    assert actual.invested == 0.0
-    assert actual.incomes == -1.0
-
-    # update
-    obj_update = SavingChange.objects.get(pk=obj.pk)
-    obj_update.to_account = _to_new
-    obj_update.from_account = _from_new
-    obj_update.save()
-
-    fail = False
-    try:
-        actual = SavingBalance.objects.get(saving_type_id=_to.pk)
-    except SavingBalance.DoesNotExist:
-        fail = True
-
-    assert fail
-
-    actual = SavingBalance.objects.get(saving_type_id=_to_new.pk)
-    assert actual.saving_type.title == 'To-New'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 1.0
-    assert actual.incomes == 1.0
-
-    fail = False
-    try:
-        actual = SavingBalance.objects.get(saving_type_id=_from.pk)
-    except SavingBalance.DoesNotExist:
-        fail = True
-
-    assert fail
-    assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
-
-    actual = SavingBalance.objects.get(saving_type_id=_from_new.pk)
-    assert actual.saving_type.title == 'From-New'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.25
-    assert actual.invested == 0.0
-    assert actual.incomes == -1.0
-
-
-def test_saving_change_post_save_changed_to_and_from():
-    _to = SavingTypeFactory(title='To')
-    _to_new = SavingTypeFactory(title='To-New')
-    _from = SavingTypeFactory(title='From')
-    _from_new = SavingTypeFactory(title='From-New')
-
-    obj = SavingChangeFactory(to_account=_to, from_account=_from, price=1)
-
-    actual = SavingBalance.objects.get(saving_type_id=_to.pk)
-    assert actual.saving_type.title == 'To'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 1.0
-    assert actual.incomes == 1.0
-
-    actual = SavingBalance.objects.get(saving_type_id=_from.pk)
-    assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.25
-    assert actual.invested == 0.0
-    assert actual.incomes == -1.0
-
-    # update
-    obj_update = SavingChange.objects.get(pk=obj.pk)
-    obj_update.to_account = _to_new
-    obj_update.from_account = _from_new
-    obj_update.save()
-
-    fail = False
-    try:
-        actual = SavingBalance.objects.get(saving_type_id=_to.pk)
-    except SavingBalance.DoesNotExist:
-        fail = True
-    assert fail
-
-    actual = SavingBalance.objects.get(saving_type_id=_to_new.pk)
-    assert actual.saving_type.title == 'To-New'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 1.0
-    assert actual.incomes == 1.0
-
-    fail = False
-    try:
-        actual = SavingBalance.objects.get(saving_type_id=_from.pk)
-    except SavingBalance.DoesNotExist:
-        fail = True
     assert fail
 
     actual = SavingBalance.objects.get(saving_type_id=_from_new.pk)

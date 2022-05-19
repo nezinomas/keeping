@@ -655,6 +655,28 @@ def test_invite_body(client_logged, get_user):
 
 
 # ---------------------------------------------------------------------------------------
+#                                                                             Invite Done
+# ---------------------------------------------------------------------------------------
+def test_invite_done_func():
+    view = resolve('/invite/done/')
+    assert view.func.view_class is views.InviteDone
+
+
+def test_invite_done_200(client_logged):
+    url = reverse('users:invite_done')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_invite_done_context(client_logged):
+    url = reverse('users:invite_done')
+    response = client_logged.get(url)
+
+    assert response.context['send']
+
+
+# ---------------------------------------------------------------------------------------
 #                                                                           Invite Signup
 # ---------------------------------------------------------------------------------------
 @pytest.fixture()

@@ -788,3 +788,18 @@ def test_copy_fails(client_logged):
     form = response.context['form']
 
     assert not form.is_valid()
+
+
+def test_copy_year_to_same_as_user_year(get_user, client_logged):
+    IncomePlanFactory(year=1999)
+
+    get_user.year = 2000
+    get_user.save()
+
+    data = {'year_from': '1999', 'year_to': '2000', 'income': True}
+
+    url = reverse('plans:copy')
+    response = client_logged.post(url, data)
+
+    assert response.headers['HX-Trigger']
+    assert 'afterCopy' in response.headers['HX-Trigger']

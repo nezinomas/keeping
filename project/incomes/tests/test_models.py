@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from django.urls import reverse
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
@@ -19,6 +20,11 @@ def test_income_type_str():
     i = IncomeTypeFactory.build()
 
     assert str(i) == 'Income Type'
+
+def test_income_type_get_absolute_url():
+    obj = IncomeTypeFactory()
+
+    assert obj.get_absolute_url() == reverse('incomes:type_update', kwargs={'pk': obj.pk})
 
 
 def test_income_type_items_journal(main_user, second_user):

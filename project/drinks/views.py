@@ -139,19 +139,17 @@ class CompareTwo(FormViewMixin):
     success_url = reverse_lazy('drinks:compare_two')
 
     def form_valid(self, form, **kwargs):
-        if form.is_valid():
-            year1 = form.cleaned_data['year1']
-            year2 = form.cleaned_data['year2']
-            chart_serries = H.several_years_consumption([year1, year2])
+        context = {}
+        year1 = form.cleaned_data['year1']
+        year2 = form.cleaned_data['year2']
+        chart_serries = H.several_years_consumption([year1, year2])
 
-            if len(chart_serries) == 2:
-                context = {
-                    'form': form,
-                    'serries': chart_serries,
-                }
-            return render(self.request, self.template_name, context)
-
-        return super().form_valid(form)
+        if len(chart_serries) == 2:
+            context.update({
+                'form': form,
+                'serries': chart_serries,
+            })
+        return render(self.request, self.template_name, context)
 
 
 class New(CreateViewMixin):

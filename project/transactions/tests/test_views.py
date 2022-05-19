@@ -528,7 +528,7 @@ def test_load_saving_type_func():
 
 def test_load_saving_type_status_code(client_logged):
     url = reverse('transactions:load_saving_type')
-    response = client_logged.get(url, {'id': 1})
+    response = client_logged.get(url, {'from_account': 1})
 
     assert response.status_code == 200
 
@@ -538,10 +538,11 @@ def test_load_saving_type_closed_in_past(client_logged):
     SavingTypeFactory(title='S2', closed=1000)
 
     url = reverse('transactions:load_saving_type')
-    response = client_logged.get(url, {'id': s1.pk})
+    response = client_logged.get(url, {'from_account': s1.pk})
+    actual = response.content.decode('utf-8')
 
-    assert 'S1' not in str(response.content)
-    assert 'S2' not in str(response.content)
+    assert 'S1' not in str(actual)
+    assert 'S2' not in str(actual)
 
 
 def test_load_saving_type_for_current_user(client_logged, second_user):
@@ -549,15 +550,16 @@ def test_load_saving_type_for_current_user(client_logged, second_user):
     SavingTypeFactory(title='S2', journal=second_user.journal)
 
     url = reverse('transactions:load_saving_type')
-    response = client_logged.get(url, {'id': s1.pk})
+    response = client_logged.get(url, {'from_account': s1.pk})
+    actual = response.content.decode('utf-8')
 
-    assert 'S1' not in str(response.content)
-    assert 'S2' not in str(response.content)
+    assert 'S1' not in str(actual)
+    assert 'S2' not in str(actual)
 
 
 def test_load_saving_type_empty_parent_pk(client_logged):
     url = reverse('transactions:load_saving_type')
-    response = client_logged.get(url, {'id': ''})
+    response = client_logged.get(url, {'from_account': ''})
 
     assert response.status_code == 200
     assert response.context['object_list'] == []
