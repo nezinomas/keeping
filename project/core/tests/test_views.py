@@ -13,7 +13,6 @@ from ...users.factories import UserFactory
 from .. import views
 from .utils import setup_view
 
-X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
 
 
@@ -96,7 +95,7 @@ def test_view_regenerate_balances_all_year(client_logged, get_user):
 
     url = reverse('core:regenerate_balances')
 
-    client_logged.get(url, {'ajax_trigger': 1}, follow=True, **X_Req)
+    client_logged.get(url, {'ajax_trigger': 1}, follow=True)
 
     assert AccountBalance.objects.all().count() == 2
     assert SavingBalance.objects.all().count() == 1
@@ -178,6 +177,6 @@ def test_view_regenerate_pension_balances(mocker, rf):
 
 def test_view_regenerate_no_errors(client_logged):
     url = reverse('core:regenerate_balances')
-    response = client_logged.get(f'{url}?type=xxx&ajax_trigger=1', {}, **X_Req)
+    response = client_logged.get(f'{url}?type=xxx&ajax_trigger=1', {})
 
     assert response.status_code == 204
