@@ -246,8 +246,10 @@ class IndexHelper():
             'year': self._year,
             'data': self._YearBalance.balance,
             'total_row': self._YearBalance.total_row,
+            'amount_end': self._YearBalance.amount_end,
             'avg_row': self._YearBalance.average,
         }
+
         return render_to_string(
             template_name='bookkeeping/includes/year_balance.html',
             context=context,

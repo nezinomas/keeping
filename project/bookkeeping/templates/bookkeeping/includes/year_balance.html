@@ -67,11 +67,7 @@
             {% cell total_row.borrow_return tag="th" css_class="toggleDisplay" %}
             {% cell total_row.lend tag="th" css_class="toggleDisplay" %}
             {% cell total_row.lend_return tag="th" css_class="br toggleDisplay" %}
-            {% if accounts_amount_end|floatformat:2 != months_amount_end|floatformat:2 %}
-                {% cell months_amount_end tag="th" css_class='bad' text_before='!' text_after='!' %}
-            {% else %}
-                {% cell months_amount_end tag='th' highlight_value=True %}
-            {% endif %}
+            {% cell amount_end tag='th' highlight_value=True %}
         </tr>
     </tfoot>
 </table>
