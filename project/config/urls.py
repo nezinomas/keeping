@@ -5,7 +5,7 @@ from django.views.defaults import (page_not_found, permission_denied,
 
 urlpatterns = [
     path('', include('project.users.urls')),
-    path('', include('project.accounts.urls')),
+    path('accounts/', include('project.accounts.urls')),
     path('', include('project.bookkeeping.urls')),
     path('books/', include('project.books.urls')),
     path('', include('project.core.urls')),
