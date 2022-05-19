@@ -196,7 +196,7 @@ class InviteDone(TemplateViewMixin):
         return context
 
 
-class InviteSignup(CreateViewMixin):
+class InviteSignup(CreateView):
     template_name = 'users/login.html'
     form_class = forms.SignUpForm
     valid_link = False

@@ -21,7 +21,6 @@ from ...users.factories import UserFactory
 from ...users.models import User
 from .. import forms, views
 
-X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 pytestmark = pytest.mark.django_db
 
 
@@ -617,8 +616,7 @@ def test_invite_contains_form(client_logged):
 def test_invite_form_inputs(client_logged):
     url = reverse('users:invite')
     response = client_logged.get(url)
-
-    form = json.loads(response.content)['html_form']
+    form = response.content.decode('utf-8')
 
     assert form.count('<input') == 2
     assert form.count('type="hidden" name="csrfmiddlewaretoken"') == 1
@@ -800,19 +798,13 @@ def test_invite_signup_journals(_invite_client):
 # ---------------------------------------------------------------------------------------
 def test_user_delete_other_user_get_form(client_logged, second_user):
     url = reverse('users:settings_users_delete', kwargs={'pk': second_user.pk})
-    response = client_logged.get(url, **X_Req)
+    response = client_logged.get(url)
 
-    assert response.status_code == 200
-
-    json_str = response.content
-    actual = json.loads(json_str)
-    form = actual['html_form']
-
-    assert 'SRSLY' in form
+    assert response.status_code == 404
 
 
 def test_user_delete_other_user_post_form(client_logged, second_user):
     url = reverse('users:settings_users_delete', kwargs={'pk': second_user.pk})
-    client_logged.post(url, **X_Req)
+    client_logged.post(url)
 
     assert User.objects.all().count() == 2
