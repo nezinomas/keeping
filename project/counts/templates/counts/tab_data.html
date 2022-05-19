@@ -1,0 +1,42 @@
+{% load i18n %}
+{% load slippers %}
+{% load counts_components %}
+
+{% if object_list %}
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th>{% translate 'Date' %}</th>
+            <th>{% translate 'Quantity' %}</th>
+            <th colspan="2"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for obj in object_list %}
+
+        {% ifchanged obj.date|date:"F" %}
+        {% if not forloop.first %}
+        <tr><td colspan="4" class="table-active"></td></tr>
+        {% endif %}
+        {% endifchanged %}
+
+        {% url 'counts:update' obj.id as url_update %}
+        {% url 'counts:delete' obj.id as url_delete %}
+        <tr hx-get="{{ url_update }}" hx-target="#dialog" hx-trigger="dblclick">
+            <td class="text-start">{{ obj.date|date:"Y-m-d" }}</td>
+            <td class="text-start">{{ obj.quantity }}</td>
+            {% edit_cell url=url_update %}
+            {% delete_cell url=url_delete %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+    {% if not records %}<div id="no-records">{% include 'core/no_records.html' %}</div>{% endif %}
+{% endif %}
+
+
+{% if request.htmx %}
+{% url 'counts:new' 'data' count_type_slug as url_new %}
+{% new_count_button url=url_new hx_swap_oob="true" %}
+{% endif %}

@@ -9,7 +9,22 @@ from ...expenses.models import Expense
 from ...incomes.models import Income
 
 
+def sanitize_search_str(search_str):
+    if search_str:
+        search_str = re.sub("[^\w\d\.\- ]", "", search_str)
+
+    return search_str
+
+
 def parse_search_input(search_str):
+    _date = None
+    _search = []
+
+    search_str = sanitize_search_str(search_str)
+
+    if not search_str:
+        return _date, _search
+
     # find all 2000 or 2000-01 or 2000.01 inputs
     rgx = re.compile(r'\d{4}-{0,1}\.{0,1}\d{0,2}')
 
@@ -23,7 +38,7 @@ def parse_search_input(search_str):
         if word in match:
             continue
 
-        if len(word) >= 4:
+        if len(word) >= 2:
             _search.append(word)
 
     return _date, _search
@@ -78,17 +93,19 @@ def search_incomes(search_str):
 
 def search_books(search_str):
     _date, _search = parse_search_input(search_str)
+    sql = None
 
-    sql = Book.objects.items()
-    sql = filter_dates(_date, sql, 'started')
+    if _search or _date:
+        sql = Book.objects.items()
+        sql = filter_dates(_date, sql, 'started')
 
-    if _search:
-        sql = sql.filter(
-            reduce(or_, (Q(author__icontains=q) for q in _search)) |
-            reduce(or_, (Q(title__icontains=q) for q in _search)) |
-            reduce(or_, (Q(remark__icontains=q) for q in _search))
-        )
+        if _search:
+            sql = sql.filter(
+                reduce(or_, (Q(author__icontains=q) for q in _search)) |
+                reduce(or_, (Q(title__icontains=q) for q in _search)) |
+                reduce(or_, (Q(remark__icontains=q) for q in _search))
+            )
 
-    sql = sql.order_by('-started')
+        sql = sql.order_by('-started')
 
     return sql

@@ -1,203 +1,177 @@
 from django.core.paginator import Paginator
-from django.http import JsonResponse
-from django.template.loader import render_to_string
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 
-from ..core.forms import SearchForm
-from ..core.lib import search
-from ..core.mixins.ajax import AjaxSearchMixin
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchAjaxMixin, DispatchListsMixin,
-                                 IndexMixin, ListMixin, UpdateAjaxMixin)
+from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
+                                 ListViewMixin, SearchMixin, TemplateViewMixin,
+                                 UpdateViewMixin, rendered_content)
 from . import forms, models
-from .lib.views_helper import BookRenderer
 
 
-#----------------------------------------------------------------------------------------
-#                                                                            Local Mixins
-#----------------------------------------------------------------------------------------
-def context_update(request, tab):
-    context = {
-        'tab': tab,
-        'book_list': Lists.as_view()(request, as_string=True, tab=tab)
-    }
-    return context
+class Index(TemplateViewMixin):
+    template_name = 'books/index.html'
 
-
-class BookTabMixin():
-    def get_tab(self):
-        tab = self.request.GET.get("tab")
-
-        if not tab:
-            tab = self.kwargs.get('tab')
-
-        tab = tab if tab in ['index', 'all'] else 'index'
-
-        return tab
-
-    def get_queryset(self):
-        tab = self.get_tab()
-
-        if tab == 'all':
-            items = models.Book.objects.items()
-        else:
-            items = super().get_queryset()
-
-        return items
-
-
-class BookListMixin():
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update(**context_update(self.request, self.get_tab()))
-
-        return context
-
-
-#----------------------------------------------------------------------------------------
-#                                                                                   Views
-#----------------------------------------------------------------------------------------
-class Index(IndexMixin):
-    def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        obj = BookRenderer(self.request, year)
         context = super().get_context_data(**kwargs)
         context.update({
-            'year': year,
-            'search': Search.as_view()(self.request, as_string=True),
-            **obj.context_to_reload(),
-            **context_update(self.request, 'index'),
+            'year': self.request.user.year,
+            'all': self.request.GET.get('tab'),
+            'books': rendered_content(self.request, Lists),
+            'chart': rendered_content(self.request, ChartReaded),
+            'info': rendered_content(self.request, InfoRow),
         })
         return context
 
 
-class All(IndexMixin):
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update(**context_update(self.request, 'all'))
-        return context
-
-
-class Lists(DispatchListsMixin, BookTabMixin, ListMixin):
-    model = models.Book
+class ChartReaded(TemplateViewMixin):
+    template_name = 'books/chart_readed_books.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({'tab': self.kwargs.get('tab')})
-        return context
+        _qs_readed = models.Book.objects.readed()
 
+        if not _qs_readed.count():
+            self.template_name = 'empty.html'
+            return {}
 
-class New(BookListMixin, BookTabMixin, CreateAjaxMixin):
-    model = models.Book
-    form_class = forms.BookForm
+        _qs_targets = models.BookTarget.objects.items().values_list('year', 'quantity')
 
+        _targets = {k: v for k, v in _qs_targets}
 
-class Update(BookListMixin, BookTabMixin, UpdateAjaxMixin):
-    model = models.Book
-    form_class = forms.BookForm
+        categories = []
+        targets = []
+        data = []
 
+        for readed in _qs_readed:
+            _year = readed['year']
 
-class Delete(BookListMixin, BookTabMixin, DeleteAjaxMixin):
-    model = models.Book
+            # chart categories
+            categories.append(_year)
 
+            # chart targets
+            _target = _targets.get(_year, 0)
+            targets.append(_target)
 
-class ReloadStats(DispatchAjaxMixin, BookTabMixin, IndexMixin):
-    template_name = 'books/index.html'
-    redirect_view = reverse_lazy('books:books_index')
-
-    def get(self, request, *args, **kwargs):
-        tab = self.get_tab()
-        context = context_update(self.request, tab)
-
-        if tab == 'index':
-            obj = BookRenderer(request)
-            context.update(**obj.context_to_reload())
-
-        return JsonResponse(context)
-
-
-class Search(AjaxSearchMixin):
-    template_name = 'core/includes/search_form.html'
-    list_template = 'books/includes/books_list.html'
-    form_class = SearchForm
-    form_data_dict = {}
-    update_container = 'book_list'
-    url = reverse_lazy('books:books_search')
-    update_container = 'book_list'
-    per_page = 25
-
-    def dispatch(self, request, *args, **kwargs):
-        if 'as_string' in kwargs:
-            return self._render_form(self.get_context_data())
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form, **kwargs):
-        search_str = self.form_data_dict['search']
-        context = { 'tab': 'index' }
-        sql = search.search_books(search_str)
-        paginator = Paginator(sql, self.per_page)
-        page_range = paginator.get_elided_page_range(number=1)
-
-        if sql:
-            context.update({
-                'items': paginator.get_page(1),
-                'search': search_str,
-                'page_range': page_range,
-                'url': self.url,
-                'update_container': self.update_container,
-            })
-        else:
-            context.update({
-                'items': None,
-                'notice': _('Found nothing'),
-            })
-
-
-        html = render_to_string(self.list_template, context, self.request)
-
-        kwargs.update({'container': self.update_container, 'html': html})
-
-        return super().form_valid(form, **kwargs)
-
-    def get(self, request, *args, **kwargs):
-        _page = request.GET.get('page')
-        _search = request.GET.get('search')
-
-        if _page and _search:
-            sql = search.search_books(_search)
-            paginator = Paginator(sql, self.per_page)
-            page_range = paginator.get_elided_page_range(number=_page)
-
-            context = {
-                'tab': 'index',
-                'items': paginator.get_page(_page),
-                'search': _search,
-                'page_range': page_range,
-                'url': self.url,
-                'update_container': self.update_container,
+            # chart serries data
+            _data = {
+                'y': readed['cnt'],
+                'target': _target,
             }
+            data.append(_data)
 
-            return JsonResponse(
-                {self.update_container: render_to_string(self.list_template, context, self.request)}
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'readed': _qs_readed.count(),
+            'categories': categories,
+            'data': data,
+            'targets': targets,
+            'chart': 'chart_readed_books',
+            'chart_title': _('Readed books'),
+            'chart_column_color': '70, 171, 157',
+        })
+
+        return context
+
+
+class InfoRow(TemplateViewMixin):
+    template_name = 'books/info_row.html'
+
+    def readed(self):
+        year = self.request.user.year
+        qs = (models.Book.objects
+              .readed()
+              .filter(year=year)
+        )
+        return qs[0]['cnt'] if qs else 0
+
+    def reading(self):
+        year = self.request.user.year
+        qs = (models.Book.objects
+              .reading(year)
+        )
+        return qs['reading'] if qs else 0
+
+    def target(self):
+        year = self.request.user.year
+        qs = None
+
+        try:
+            qs = (
+                models.BookTarget.objects
+                .related()
+                .get(year=year)
             )
+        except models.BookTarget.DoesNotExist:
+            pass
 
-        return super().get(request, *args, **kwargs)
+        return qs if qs else 0
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'target': self.target(),
+        })
+        return context
+
+
+class Lists(ListViewMixin):
+    model = models.Book
+    per_page = 50
+
+    def get_queryset(self):
+        return models.Book.objects.year(year=self.request.user.year)
+
+    def get_context_data(self, **kwargs):
+        page = self.request.GET.get('page', 1)
+        paginator = Paginator(self.get_queryset(), self.per_page)
+        page_range = paginator.get_elided_page_range(number=page)
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'object_list': paginator.get_page(page),
+            'url': reverse("books:list"),
+            'page_range': page_range,
+        })
+        return context
+
+
+class New(CreateViewMixin):
+    model = models.Book
+    form_class = forms.BookForm
+    hx_trigger_django = 'reload'
+    success_url = reverse_lazy('books:list')
+
+
+class Update(UpdateViewMixin):
+    model = models.Book
+    form_class = forms.BookForm
+    hx_trigger_django = 'reload'
+    success_url = reverse_lazy('books:list')
+
+
+class Delete(DeleteViewMixin):
+    model = models.Book
+    hx_trigger_django = 'reload'
+    success_url = reverse_lazy('books:list')
+
+
+class Search(SearchMixin):
+    template_name = 'books/book_list.html'
+    per_page = 50
+
+    search_method = 'search_books'
 
 
 #----------------------------------------------------------------------------------------
 #                                                                            Target Views
 #----------------------------------------------------------------------------------------
-class TargetLists(DispatchListsMixin, ListMixin):
+class TargetNew(CreateViewMixin):
     model = models.BookTarget
-
-
-class TargetNew(CreateAjaxMixin):
-    model = models.BookTarget
+    hx_trigger_django = 'afterTarget'
     form_class = forms.BookTargetForm
+    url = reverse_lazy('books:target_new')
 
 
-class TargetUpdate(UpdateAjaxMixin):
+class TargetUpdate(UpdateViewMixin):
     model = models.BookTarget
+    hx_trigger_django = 'afterTarget'
     form_class = forms.BookTargetForm

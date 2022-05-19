@@ -1,28 +1,24 @@
 import itertools as it
-import json
 from collections import Counter, defaultdict
 from datetime import datetime
 from typing import List
 
+from django.db.models import Sum
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ...accounts.models import AccountBalance
-from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
-from ...core.lib import utils
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
-from ...core.lib.utils import sum_all, sum_col
+from ...core.lib.utils import sum_col
 from ...debts.models import Debt
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
-from ...pensions.models import PensionBalance
 from ...plans.lib.calc_day_sum import CalcDaySum
-from ...savings.models import Saving, SavingBalance
+from ...savings.models import Saving
 from ...transactions.models import SavingClose
 from ..lib.day_spending import DaySpending
 from ..lib.expense_summary import DayExpense, MonthExpense
-from ..lib.no_incomes import NoIncomes
 from ..lib.year_balance import YearBalance
 
 
@@ -59,23 +55,6 @@ def necessary_expense_types(*args: str) -> List[str]:
     return qs
 
 
-def sum_detailed(dataset, group_by_key, sum_value_keys):
-    container = defaultdict(Counter)
-
-    for item in dataset:
-        key = item[group_by_key]
-        values = {k: item[k] for k in sum_value_keys}
-        container[key].update(values)
-
-    new_dataset = []
-    for item in container.items():
-        new_dataset.append({group_by_key: item[0], **item[1]})
-
-    new_dataset.sort(key=lambda item: item[group_by_key])
-
-    return new_dataset
-
-
 def average(qs):
     now = datetime.now()
     arr = []
@@ -98,65 +77,6 @@ def add_latest_check_key(model, arr, year):
         for a in arr:
             latest = [x['latest_check'] for x in items if x.get('title') == a['title']]
             a['latest_check'] = latest[0] if latest else None
-
-
-# ---------------------------------------------------------------------------------------
-#                                                                             No Incomes
-# --------------------------------------------------------------------------------------
-def no_incomes_data(expenses, savings=None, not_use=None):
-    months = 6
-    not_use = not_use if not_use else []
-
-    expenses_sum = 0.0
-    cut_sum = 0.0
-    for r in expenses:
-        _sum = float(r['sum'])
-
-        expenses_sum += _sum
-
-        if r['title'] in not_use:
-            cut_sum += _sum
-
-    savings_sum = savings['sum'] if savings else 0
-    savings_sum = float(savings_sum) if savings_sum else 0.0
-
-    expenses_avg = (expenses_sum + savings_sum) / months
-    cut_avg = (cut_sum + savings_sum) / months
-
-    return expenses_avg, cut_avg
-
-
-def month_context(request, context=None):
-    context = context if context else {}
-    year = request.user.year
-    month = request.user.month
-
-    obj = MonthHelper(request, year, month)
-
-    context.update({
-        'month_table': obj.render_month_table(),
-        'info': obj.render_info(),
-        'chart_expenses': obj.render_chart_expenses(),
-        'chart_targets': obj.render_chart_targets(),
-    })
-    return context
-
-
-def detailed_context(context, data, name):
-    if not 'data' in context.keys():
-        context['data'] = []
-
-    total_row = sum_detailed(data, 'date', ['sum'])
-    total_col = sum_detailed(data, 'title', ['sum'])
-    total = sum_col(total_col, 'sum')
-
-    context['data'].append({
-        'name': name,
-        'data': data,
-        'total_row': total_row,
-        'total_col': total_col,
-        'total': total,
-    })
 
 
 class MonthHelper():
@@ -285,9 +205,12 @@ class IndexHelper():
         self._request = request
         self._year = year
 
-        self._account = [*AccountBalance.objects.year(year)]
-        self._funds = [*SavingBalance.objects.year(year)]
-        self._pensions = [*PensionBalance.objects.year(year)]
+        account_sum = \
+            AccountBalance.objects \
+            .related() \
+            .filter(year=year) \
+            .aggregate(Sum('past'))['past__sum']
+        account_sum = float(account_sum) if account_sum else 0.0
 
         qs_income = Income.objects.sum_by_month(year)
         qs_expenses = Expense.objects.sum_by_month(year)
@@ -316,17 +239,17 @@ class IndexHelper():
             borrow_return=borrow_return,
             lend=lend,
             lend_return=lend_return,
-            amount_start=sum_col(self._account, 'past'))
+            amount_start=account_sum)
 
     def render_year_balance(self):
         context = {
             'year': self._year,
             'data': self._YearBalance.balance,
             'total_row': self._YearBalance.total_row,
+            'amount_end': self._YearBalance.amount_end,
             'avg_row': self._YearBalance.average,
-            'accounts_amount_end': sum_col(self._account, 'balance'),
-            'months_amount_end': self._YearBalance.amount_end,
         }
+
         return render_to_string(
             template_name='bookkeeping/includes/year_balance.html',
             context=context,
@@ -354,162 +277,6 @@ class IndexHelper():
             context=context,
             request=self._request
         )
-
-    def render_accounts(self, to_string = True):
-        # add latest_check date to accounts dictionary
-        add_latest_check_key(AccountWorth, self._account, self._year)
-
-        context = {
-            'items': self._account,
-            'total_row': sum_all(self._account),
-            'accounts_amount': sum_col(self._account, 'balance'),
-            'months_amount': self._YearBalance.amount_end,
-        }
-        if to_string:
-            return render_to_string(
-                template_name='bookkeeping/includes/accounts_worth_list.html',
-                context=context,
-                request=self._request
-            )
-        return context
-
-    def render_savings(self):
-        funds = self._funds
-        incomes = self._YearBalance.total_row.get('incomes')
-        savings = self._YearBalance.total_row.get('savings')
-        context = IndexHelper.savings_context(funds, incomes, savings, self._year)
-
-        return context if context else {}
-
-    @staticmethod
-    def savings_context(funds, incomes, savings, year):
-        total_row = sum_all(funds)
-
-        if not funds:
-            return {}
-
-        # add latest_check date to savibgs dictionary
-        add_latest_check_key(SavingWorth, funds, year)
-
-        context = {
-            'title': _('Funds'),
-            'items': funds,
-            'total_row': total_row,
-            'percentage_from_incomes': (
-                IndexHelper.percentage_from_incomes(incomes, savings)
-            ),
-            'profit_incomes_proc': (
-                IndexHelper.percentage_from_incomes(
-                    total_row.get('incomes'),
-                    total_row.get('market_value')
-                ) - 100
-            ),
-            'profit_invested_proc': (
-                IndexHelper.percentage_from_incomes(
-                    total_row.get('invested'),
-                    total_row.get('market_value')
-                ) - 100
-            ),
-        }
-        return context
-
-    def render_pensions(self):
-        context = IndexHelper.pensions_context(self._pensions, self._year)
-
-        return context if context else {}
-
-    @staticmethod
-    def pensions_context(pensions, year):
-        if not pensions:
-            return {}
-
-        # add latest_check date to pensions dictionary
-        add_latest_check_key(PensionWorth, pensions, year)
-
-        context = {
-            'title': _('Pensions'),
-            'items': pensions,
-            'total_row': sum_all(pensions),
-        }
-
-        return context
-
-    def render_no_incomes(self):
-        journal = utils.get_user().journal
-        expenses = Expense.objects.last_months()
-        pension = [x for x in self._funds if x['type'] in ['pensions']]
-        fund = [x for x in self._funds if x['type'] in ['shares', 'funds']]
-
-        savings = None
-        unnecessary = []
-
-        if journal.unnecessary_expenses:
-            arr = json.loads(journal.unnecessary_expenses)
-            unnecessary = list(
-                ExpenseType
-                .objects
-                .related()
-                .filter(pk__in=arr)
-                .values_list("title", flat=True)
-            )
-
-        if journal.unnecessary_savings:
-            unnecessary.append(_('Savings'))
-            savings = Saving.objects.last_months()
-
-        avg_expenses, cut_sum = (
-            no_incomes_data(
-                expenses=expenses,
-                savings=savings,
-                not_use=unnecessary)
-        )
-
-        obj = NoIncomes(
-            money=self._YearBalance.amount_end,
-            fund=sum_col(fund, 'market_value'),
-            pension=sum_col(pension, 'market_value'),
-            avg_expenses=avg_expenses,
-            cut_sum=cut_sum
-        )
-
-        context = {
-            'no_incomes': obj.summary,
-            'save_sum': cut_sum,
-            'not_use': unnecessary,
-            'avg_expenses': avg_expenses,
-        }
-
-        return render_to_string(
-            template_name='bookkeeping/includes/no_incomes.html',
-            context=context,
-            request=self._request
-        )
-
-    def render_wealth(self, to_string=False):
-        money = (
-            self._YearBalance.amount_end
-            + sum_col(self._funds, 'market_value')
-        )
-
-        wealth = (
-            self._YearBalance.amount_end
-            + sum_col(self._funds, 'market_value')
-        )
-        wealth = wealth + sum_col(self._pensions, 'market_value')
-
-        context = {
-            'title': [_('Money'), _('Wealth')],
-            'data': [money, wealth],
-        }
-
-        if to_string:
-            return render_to_string(
-                template_name='bookkeeping/includes/info_table.html',
-                context=context,
-                request=self._request
-            )
-
-        return context
 
     def render_averages(self):
         context = {
@@ -590,3 +357,78 @@ class ExpensesHelper():
             context=context,
             request=self._request
         )
+
+
+class DetailedHelper():
+    def __init__(self, year, *args, **kwargs):
+        self._year = year
+
+    def incomes_context(self, context):
+        qs = Income.objects.sum_by_month_and_type(self._year)
+
+        if not qs:
+            return context
+
+        return self._detailed_context(context, qs, _('Incomes'))
+
+    def savings_context(self, context):
+        qs = Saving.objects.sum_by_month_and_type(self._year)
+
+        if not qs:
+            return context
+
+        return self._detailed_context(context, qs, _('Savings'))
+
+    def expenses_context(self, context):
+        qs = Expense.objects.sum_by_month_and_name(self._year)
+        expenses_types = expense_types()
+
+        for title in expenses_types:
+            filtered = [*filter(lambda x: title in x['type_title'], qs)]
+
+            if not filtered:
+                continue
+
+            self._detailed_context(
+                context=context,
+                data=filtered,
+                name=_('Expenses / %(title)s') % ({'title': title})
+            )
+
+        return context
+
+    def _detailed_context(self, context, data, name):
+        context = context if context else {}
+
+        if 'data' not in context.keys():
+            context['data'] = []
+
+        total_row = self._sum_detailed(data, 'date', ['sum'])
+        total_col = self._sum_detailed(data, 'title', ['sum'])
+        total = sum_col(total_col, 'sum')
+
+        context['data'].append({
+            'name': name,
+            'data': data,
+            'total_row': total_row,
+            'total_col': total_col,
+            'total': total,
+        })
+
+        return context
+
+    def _sum_detailed(self, dataset, group_by_key, sum_value_keys):
+        container = defaultdict(Counter)
+
+        for item in dataset:
+            key = item[group_by_key]
+            values = {k: item[k] for k in sum_value_keys}
+            container[key].update(values)
+
+        new_dataset = []
+        for item in container.items():
+            new_dataset.append({group_by_key: item[0], **item[1]})
+
+        new_dataset.sort(key=lambda item: item[group_by_key])
+
+        return new_dataset

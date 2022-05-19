@@ -2,8 +2,7 @@
 {% load i18n %}
 
 
-<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ form_action }}"
-    autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}">
+<form method="post" class="modal-content form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted" >
     {% csrf_token %}
     {% include 'core/includes/form_date_scripts.html' %}
     {{ formset.management_form|crispy }}
@@ -35,16 +34,3 @@
 
     {% include 'core/includes/form_footer.html' %}
 </form>
-
-
-<script>
-    $(document).keydown(function (event) {
-        if (event.keyCode == 27) {
-            $('#modal-form').modal("hide");
-        }
-    });
-
-    $(document).on('submit', '.js-form', function (e) {
-        e.preventDefault();
-    });
-</script>

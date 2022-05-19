@@ -1,0 +1,53 @@
+{% load form %}
+{% load i18n %}
+
+{% translate "Expenses" context "expenses form title" as form_title %}
+
+
+{% generic_form title=form_title %}
+
+
+<script>
+    // sum prices
+    function sum_prices() {
+        var input_total = document.getElementById("id_price")
+        var input_price = document.getElementById("id_total_sum")
+        var price = String(input_price.value).replaceAll(',', '.')
+        var total = eval(input_total.value);
+
+        price = eval(price.replace(/[^\d\-\.\+\/\*]/g, ''));
+
+        if (!price || price === Infinity) {
+            price = 0;
+        }
+
+        var res = total + price;
+        if (!res || res <= 0) {
+            res = 0;
+        }
+
+        input_total.value = res.toFixed(2);
+        input_price.value = ''
+    };
+
+    $("#add_price").click(function () {
+        sum_prices();
+    });
+
+    // Enter key on price field
+    var input = document.getElementById("id_total_sum");
+    input.addEventListener("keyup", function (event) {
+        event.preventDefault();
+        if (event.keyCode === 13) {
+            sum_prices();
+        }
+    });
+
+    // disable Enter key on form
+    document.addEventListener('keypress', function (e) {
+        if (e.keyCode === 13 || e.which === 13) {
+            e.preventDefault();
+            return false;
+        }
+    });
+</script>

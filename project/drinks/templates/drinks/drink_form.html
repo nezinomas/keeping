@@ -1,0 +1,19 @@
+{% load form %}
+{% load i18n %}
+
+{% generic_form title=_('Drinks') %}
+
+<script>
+    $(document).ready(function () {
+        document.getElementById('id_quantity').type = 'text';
+    });
+
+    var input = document.getElementById("id_quantity");
+    input.addEventListener("keyup", function (event) {
+        event.preventDefault();
+
+        var val = String(input.value).replaceAll(',', '.')
+
+        input.value = val;
+    });
+</script>

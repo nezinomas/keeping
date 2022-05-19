@@ -7,7 +7,7 @@
     <thead class="thead-light">
         <tr class="top">
             <th></th>
-            {% for cat in expense_types %}<th class="text-end" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ cat }}">{{ cat|truncatechars:8 }}</th>{% endfor %}
+            {% for cat in expense_types %}<th class="text-end" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{cat}}">{{cat|truncatechars:8}}</th>{% endfor %}
             <th class="bl text-end no-right-border">{% translate 'Total' %}</th>
             <th class="empty"></th>
             <th class="no-left-border"></th>
@@ -15,23 +15,38 @@
             <th class="text-end">{% translate 'Total' %}</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody x-data="make_x_data()">
         {% for row, sp in expenses %}
         {% with row.date|date:'w'|weekend:'_weekend_col' as weekend_col %}
         {% with row.date|date:'w'|weekend:'_weekend_row' as weekend_row %}
-        {% with row.date|date:'d' as day_int %}
-
-        <tr id="row-{{ day_int }}" class="{% if day|slugify == row.date|date:'j' %}_current_day{% endif %} {{ weekend_row }}">
-            <td class="text-start {{ weekend_col }} panel-heading">
-                <a class="row_click btn btn-super-sm" role="button" data-bs-toggle="collapse" aria-expanded="true" data-url="{% url 'bookkeeping:expand_day_expenses' row.date|date:"Ymd" %}" data-id="{{ day_int }}">{{ day_int }}</a>
+        {% with row.date|date:'j' as day_int %}
+        {% url 'bookkeeping:expand_day_expenses' row.date|date:'Ymd' as url_expand %}
+        <tr
+            id="row{{day_int}}"
+            class="{% if day|slugify == day_int %}_current_day{% endif %} {{weekend_row}}">
+            <td class="text-start {{weekend_col}} panel-heading" :class="open{{day_int}} ? 'active' : ''">
+                <a
+                    role="button"
+                    class="btn btn-super-sm"
+                    data-bs-toggle="collapse"
+                    aria-expanded="true"
+                    hx-get="{{url_expand}}"
+                    hx-target="#row{{day_int}}"
+                    hx-swap="afterend"
+                    hx-trigger="click once"
+                    @click="open{{day_int}} = !open{{day_int}}"
+                    >
+                    {{row.date|date:'d'}}
+                </a>
             </td>
             {% for cat in expense_types %}
             {% cell row|get_item:cat css_class=weekend_col %}
             {% endfor %}
             {% cell row.total css_class=weekend_col|add:' bl'|add:' no-right-border' %}
             <td class="empty"></td>
-            <td class="text-start {{ weekend_col }} no-left-border">{{ sp.date|date:'l' }}</td>
-            {% cell sp.day css_class=sp.day|negative %}{% cell sp.full css_class=sp.full|negative|add:' -full' %}
+            <td class="text-start {{weekend_col}} no-left-border">{{sp.date|date:'l'}}</td>
+            {% cell sp.day css_class=sp.day|negative %}
+            {% cell sp.full css_class=sp.full|negative|add:' -full' %}
         </tr>{% endwith %}{% endwith %}{% endwith %}
         {% endfor %}
     </tbody>
@@ -48,3 +63,12 @@
     </tfoot>
 </table>
 
+<script>
+    function make_x_data() {
+        var dict = {};
+        for (var i = 1; i <= 31; i++) {
+            dict['open' + i] = false;
+        }
+        return dict;
+    }
+</script>

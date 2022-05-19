@@ -9,7 +9,12 @@ urlpatterns = [
     path(
         'plans/',
         views.Index.as_view(),
-        name='plans_index'
+        name='index'
+    ),
+    path(
+        'plans/stats/',
+        views.Stats.as_view(),
+        name='stats'
     ),
     #------------------------------------------------------------------------------------
     #                                                                       expenses plan
@@ -17,22 +22,22 @@ urlpatterns = [
     path(
         'plans/expenses/',
         views.ExpensesLists.as_view(),
-        name='expenses_plan_list'
+        name='expense_list'
     ),
     path(
         'plans/expenses/new/',
         views.ExpensesNew.as_view(),
-        name='expenses_plan_new'
+        name='expense_new'
     ),
     path(
         'plans/expenses/update/<int:pk>/',
         views.ExpensesUpdate.as_view(),
-        name='expenses_plan_update'
+        name='expense_update'
     ),
     path(
         'plans/expenses/delete/<int:pk>/',
         views.ExpensesDelete.as_view(),
-        name='expenses_plan_delete'
+        name='expense_delete'
     ),
     #------------------------------------------------------------------------------------
     #                                                                         income plan
@@ -40,22 +45,22 @@ urlpatterns = [
     path(
         'plans/incomes/',
         views.IncomesLists.as_view(),
-        name='incomes_plan_list'
+        name='income_list'
     ),
     path(
         'plans/incomes/new/',
         views.IncomesNew.as_view(),
-        name='incomes_plan_new'
+        name='income_new'
     ),
     path(
         'plans/incomes/update/<int:pk>/',
         views.IncomesUpdate.as_view(),
-        name='incomes_plan_update'
+        name='income_update'
     ),
     path(
         'plans/incomes/delete/<int:pk>/',
         views.IncomesDelete.as_view(),
-        name='incomes_plan_delete'
+        name='income_delete'
     ),
     #------------------------------------------------------------------------------------
     #                                                                         saving plan
@@ -63,22 +68,22 @@ urlpatterns = [
     path(
         'plans/savings/',
         views.SavingsLists.as_view(),
-        name='savings_plan_list'
+        name='saving_list'
     ),
     path(
         'plans/savings/new/',
         views.SavingsNew.as_view(),
-        name='savings_plan_new'
+        name='saving_new'
     ),
     path(
         'plans/savings/update/<int:pk>/',
         views.SavingsUpdate.as_view(),
-        name='savings_plan_update'
+        name='saving_update'
     ),
     path(
         'plans/savings/delete/<int:pk>/',
         views.SavingsDelete.as_view(),
-        name='savings_plan_delete'
+        name='saving_delete'
     ),
     #------------------------------------------------------------------------------------
     #                                                                            day plan
@@ -86,22 +91,22 @@ urlpatterns = [
     path(
         'plans/day/',
         views.DayLists.as_view(),
-        name='days_plan_list'
+        name='day_list'
     ),
     path(
         'plans/day/new/',
         views.DayNew.as_view(),
-        name='days_plan_new'
+        name='day_new'
     ),
     path(
         'plans/day/update/<int:pk>/',
         views.DayUpdate.as_view(),
-        name='days_plan_update'
+        name='day_update'
     ),
     path(
         'plans/day/delete/<int:pk>/',
         views.DayDelete.as_view(),
-        name='days_plan_delete'
+        name='day_delete'
     ),
     #------------------------------------------------------------------------------------
     #                                                                      necessary plan
@@ -109,27 +114,22 @@ urlpatterns = [
     path(
         'plans/necessary/',
         views.NecessaryLists.as_view(),
-        name='necessarys_plan_list'
+        name='necessary_list'
     ),
     path(
         'plans/necessary/new/',
         views.NecessaryNew.as_view(),
-        name='necessarys_plan_new'
+        name='necessary_new'
     ),
     path(
         'plans/necessary/update/<int:pk>/',
         views.NecessaryUpdate.as_view(),
-        name='necessarys_plan_update'
-    ),
-    path(
-        'plans/reload_plan_stats/',
-        views.plans_stats,
-        name='reload_plan_stats'
+        name='necessary_update'
     ),
     path(
         'plans/necessary/delete/<int:pk>/',
         views.NecessaryDelete.as_view(),
-        name='necessarys_plan_delete'
+        name='necessary_delete'
     ),
     #------------------------------------------------------------------------------------
     #                                                                          copy plans
@@ -137,6 +137,6 @@ urlpatterns = [
     path(
         'plans/copy/',
         views.CopyPlans.as_view(),
-        name='copy_plans'
+        name='copy'
     ),
 ]

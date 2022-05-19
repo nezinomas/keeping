@@ -1,0 +1,46 @@
+{% load i18n %}
+{% load slippers %}
+{% load drinks_templatetags %}
+
+
+{% if object_list %}
+
+<table class="table table-striped table-hover stats">
+    <thead class="thead-light">
+        <tr class="top">
+            <th>{% translate 'Data' %}</th>
+            <th class="text-end">{% translate 'Dink Type' %}</th>
+            <th class="text-end">{% translate 'Quantity' %}</th>
+            <th colspan="2"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for obj in object_list %}
+        {% url 'drinks:update' obj.id as url_update %}
+        {% url 'drinks:delete' obj.id as url_delete %}
+        {% ifchanged obj.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="5" class="table-active"></td></tr>{% endif %}
+        {% endifchanged %}
+        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#dialog">
+            <td class="text-start">{{ obj.date|date:"Y-m-d" }}</td>
+            {% var drink_type=obj.option|title %}
+            <td>{% translate drink_type %}</td>
+            <td>{{ obj.quantity|convert:obj.option|floatformat:2 }}</td>
+            {% edit_cell url=url_update %}
+            {% delete_cell url=url_delete %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+
+{% include 'core/no_records.html' %}
+
+{% endif %}
+
+
+{% if request.htmx %}
+<span id="btn-new" hx-swap-oob="true">
+    {% include 'drinks/includes/new_buttons.html' with tab="data" hx_swap_oop="true" %}
+</span>
+{% endif %}

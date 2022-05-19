@@ -1,5 +1,6 @@
 {% load i18n %}
-<form method="post" novalidate id="js-form" class="js-form" action="{{ url }}" data-action="{{ form_action }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}">
+
+<form method="POST" class="modal-content form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted">
     {% csrf_token %}
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
@@ -11,8 +12,7 @@
         </p>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-sm btn-danger" id="save_close">{% translate 'Delete' %}</button>
+        <button type="submit" id="_close" class="btn btn-sm btn-danger" autofocus>{% translate 'Delete' %}</button>
         <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">{% translate 'Close' %}</button>
     </div>
 </form>
-{% include 'core/includes/modal_form_js.html' %}

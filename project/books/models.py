@@ -1,6 +1,7 @@
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
                                     MinValueValidator)
 from django.db import models
+from django.urls import reverse_lazy
 
 from ..users.models import User
 from .managers import BooksQuerySet, BookTargetQuerySet
@@ -30,7 +31,6 @@ class Book(models.Model):
         related_name='books'
     )
 
-    # objects = BookManager()
     objects = BooksQuerySet.as_manager()
 
     class Meta:
@@ -38,6 +38,12 @@ class Book(models.Model):
 
     def __str__(self):
         return str(self.title)
+
+    def get_absolute_url(self):
+        return reverse_lazy("books:update", kwargs={"pk": self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy("books:delete", kwargs={"pk": self.pk})
 
 
 class BookTarget(models.Model):
@@ -53,9 +59,12 @@ class BookTarget(models.Model):
 
     objects = BookTargetQuerySet.as_manager()
 
-    def __str__(self):
-        return f'{self.year}: {self.quantity}'
-
     class Meta:
         ordering = ['-year']
         unique_together = ['year', 'user']
+
+    def __str__(self):
+        return f'{self.year}: {self.quantity}'
+
+    def get_absolute_url(self):
+        return reverse_lazy("books:target_update", kwargs={"pk": self.pk})

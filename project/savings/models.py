@@ -2,9 +2,11 @@ from decimal import Decimal
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from ..core.mixins.old_values import OldValuesMixin
+
 from ..accounts.models import Account
+from ..core.mixins.old_values import OldValuesMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from . import managers
@@ -41,6 +43,8 @@ class SavingType(TitleAbstract):
         unique_together = ['journal', 'title']
         ordering = ['type', 'title']
 
+    def get_absolute_url(self):
+        return reverse_lazy("savings:type_update", kwargs={"pk": self.pk})
 
 class Saving(OldValuesMixin, models.Model):
     date = models.DateField()
@@ -69,6 +73,9 @@ class Saving(OldValuesMixin, models.Model):
         related_name='savings'
     )
 
+    # Managers
+    objects = managers.SavingQuerySet.as_manager()
+
     class Meta:
         ordering = ['-date', 'saving_type']
         indexes = [
@@ -79,8 +86,11 @@ class Saving(OldValuesMixin, models.Model):
     def __str__(self):
         return f'{self.date}: {self.saving_type}'
 
-    # Managers
-    objects = managers.SavingQuerySet.as_manager()
+    def get_absolute_url(self):
+        return reverse_lazy("savings:update", kwargs={"pk": self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy("savings:delete", kwargs={"pk": self.pk})
 
 
 class SavingBalance(models.Model):

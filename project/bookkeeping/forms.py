@@ -120,10 +120,6 @@ class SummaryExpensesForm(forms.Form):
     types = forms.MultipleChoiceField(
         required=False
     )
-    names = forms.CharField(
-        widget=forms.HiddenInput(),
-        required=False,
-    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -144,9 +140,8 @@ class SummaryExpensesForm(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
         _types = cleaned_data.get('types')
-        _names = cleaned_data.get('names')
 
-        if not _types and not _names:
+        if not _types:
             raise forms.ValidationError(
                 _('At least one category needs to be selected.')
             )

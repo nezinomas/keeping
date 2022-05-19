@@ -318,15 +318,13 @@ tr._current_day > td, tr._current_day > td._weekend_col {
     margin-bottom: -0.45rem!important;
 }
 
+.btn-light {
+    background-color: rgb(239, 239, 239) !important;
+}
 
 /*
     Various
 */
-.bad {
-    background-color: #fec2c6;
-    color: #dc3545;
-}
-
 .modal-dialog.modal-650 {
     max-width: 650px!important;
     margin: auto;
@@ -430,4 +428,18 @@ table.stats tr > .expense-ordinary {
 .page-link {
     padding-left: .75rem!important;
     padding-right: .75rem!important;
+}
+
+
+/* ajax request load indicator */
+.htmx-indicator {
+    display: none;
+}
+
+.htmx-request .htmx-indicator {
+    display: inline;
+}
+
+.htmx-request.htmx-indicator {
+    display: inline;
 }

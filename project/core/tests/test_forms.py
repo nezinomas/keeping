@@ -30,7 +30,7 @@ def test_search_fields():
         ('xxx ^'), ('xxx &'), ('xxx *'),
         ('xxx ('), ('xxx )'), ('xxx +'),
         ('xxx ='), ('xxx ;'), ('xxx ,'),
-        ('xxx /'), ('x'*3), ('x'*51),
+        ('xxx /'), ('x'), ('x'*51),
     ]
 )
 def test_search_form_invalid(search):

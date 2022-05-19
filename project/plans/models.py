@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.utils.translation import pgettext
 
@@ -41,6 +42,12 @@ class IncomePlan(MonthAbstract):
         except ValidationError:
             raise ValidationError(_('%(year)s year already has %(title)s plan.') % ({'year': self.year, 'title': self.income_type.title}))
 
+    def get_absolute_url(self):
+        return reverse_lazy('plans:income_update', kwargs={'pk': self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy('plans:income_delete', kwargs={'pk': self.pk})
+
 
 class ExpensePlan(MonthAbstract):
     year = models.PositiveIntegerField(
@@ -70,6 +77,12 @@ class ExpensePlan(MonthAbstract):
             super().validate_unique()
         except ValidationError:
             raise ValidationError(_('%(year)s year already has %(title)s plan.') % ({'year': self.year, 'title': self.expense_type.title}))
+
+    def get_absolute_url(self):
+        return reverse_lazy('plans:expense_update', kwargs={'pk': self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy('plans:expense_delete', kwargs={'pk': self.pk})
 
 
 class SavingPlan(MonthAbstract):
@@ -101,6 +114,12 @@ class SavingPlan(MonthAbstract):
         except ValidationError:
             raise ValidationError(_('%(year)s year already has %(title)s plan.') % ({'year': self.year, 'title': self.saving_type.title}))
 
+    def get_absolute_url(self):
+        return reverse_lazy('plans:saving_update', kwargs={'pk': self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy('plans:saving_delete', kwargs={'pk': self.pk})
+
 
 class DayPlan(MonthAbstract):
     year = models.PositiveIntegerField(
@@ -128,6 +147,12 @@ class DayPlan(MonthAbstract):
             title = pgettext('plans day error', 'Day')
             raise ValidationError(_('%(year)s year already has %(title)s plan.') % ({'year': self.year, 'title': title}))
 
+    def get_absolute_url(self):
+        return reverse_lazy('plans:day_update', kwargs={'pk': self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy('plans:day_delete', kwargs={'pk': self.pk})
+
 
 class NecessaryPlan(MonthAbstract):
     year = models.PositiveIntegerField(
@@ -154,3 +179,9 @@ class NecessaryPlan(MonthAbstract):
             super().validate_unique()
         except ValidationError:
             raise ValidationError(_('%(year)s year already has %(title)s plan.') % ({'year': self.year, 'title': self.title}))
+
+    def get_absolute_url(self):
+        return reverse_lazy('plans:necessary_update', kwargs={'pk': self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy('plans:necessary_delete', kwargs={'pk': self.pk})

@@ -6,8 +6,7 @@ from django.contrib.auth import views as auth_views
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
 from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
-from django.http import HttpResponseRedirect
-from django.http.response import JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls.base import reverse, reverse_lazy
@@ -16,8 +15,9 @@ from django.utils.translation import gettext as _
 from django.views.generic import CreateView
 from project.users import models
 
-from ..core.mixins.ajax import AjaxCustomFormMixin
-from ..core.mixins.views import DeleteAjaxMixin, IndexMixin, ListMixin
+from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
+                                 FormViewMixin, ListViewMixin,
+                                 TemplateViewMixin, rendered_content)
 from ..journals.forms import SettingsForm, UnnecessaryForm
 from ..users.models import User
 from . import forms
@@ -145,9 +145,10 @@ class PasswordChangeDone(auth_views.PasswordChangeDoneView):
     template_name = 'users/password_change_done.html'
 
 
-class Invite(AjaxCustomFormMixin):
+class Invite(FormViewMixin):
     template_name = 'users/invite.html'
     form_class = forms.InviteForm
+    success_url = reverse_lazy('users:invite_done')
 
     def dispatch(self, request, *args, **kwargs):
         user = request.user
@@ -156,6 +157,11 @@ class Invite(AjaxCustomFormMixin):
             return redirect('bookkeeping:index')
 
         return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["send"] = False
+        return context
 
     def form_valid(self, form):
         user = self.request.user
@@ -178,11 +184,16 @@ class Invite(AjaxCustomFormMixin):
                 to=[to_]
             ).send()
 
-        json_data = {
-            'html_form': self._render_form({'form': None}),
-        }
+        return super().form_valid(form)
 
-        return JsonResponse(json_data)
+
+class InviteDone(TemplateViewMixin):
+    template_name = 'users/invite.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["send"] = True
+        return context
 
 
 class InviteSignup(CreateView):
@@ -232,7 +243,7 @@ class InviteSignup(CreateView):
         return HttpResponseRedirect(reverse('users:login'))
 
 
-class SettingsIndex(IndexMixin):
+class SettingsIndex(TemplateViewMixin):
     template_name = 'users/settings_index.html'
 
     def dispatch(self, request, *args, **kwargs):
@@ -244,13 +255,14 @@ class SettingsIndex(IndexMixin):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        template_name = 'users/includes/settings_form.html'
-
         context = super().get_context_data(**kwargs)
         context.update({
-            'users':  SettingsUsers.as_view()(self.request, as_string=True),
-            'settings_unnecessary': render_unnecessary_form(self.request, template_name),
-            'settings_journal': render_journal_form(self.request, template_name),
+            'users': \
+                rendered_content(self.request, SettingsUsers, **kwargs),
+            'settings_unnecessary': \
+                rendered_content(self.request, SettingsUnnecessary, **kwargs),
+            'settings_journal': \
+                rendered_content(self.request, SettingsJournal, **kwargs),
         })
 
         return context
@@ -260,124 +272,58 @@ class SettingsQueryMixin():
     def get_queryset(self):
         user = self.request.user
 
-        return (
-            models
-            .User
-            .objects
-            .related()
+        return \
+            models.User.objects \
+            .related() \
             .exclude(pk=user.pk)
-        )
 
 
-class SettingsUsers(SettingsQueryMixin, ListMixin):
+class SettingsUsers(SettingsQueryMixin, ListViewMixin):
     model = models.User
     template_name = 'users/includes/users_lists.html'
 
 
-class SettingsUsersDelete(SettingsQueryMixin, DeleteAjaxMixin):
+class SettingsUsersDelete(SettingsQueryMixin, DeleteViewMixin):
     model = models.User
     template_name = 'users/includes/users_delete.html'
-    list_template_name = 'users/includes/users_lists.html'
-
-    def _render_warning(self, request):
-        json_data = {}
-        self.object = self.get_object()
-
-        if self.object:
-            if self.object.pk == request.user.pk:
-                rdnr = render_to_string(
-                    request=request,
-                    template_name='core/includes/generic_modal.html',
-                    context={
-                        'title': _('Warning'),
-                        'text': _('You cannot delete yourself.')
-                    },
-                )
-                json_data = {
-                    'form_is_valid': False,
-                    'html_form': rdnr
-                }
-
-        return json_data
-
-    def get(self, request, *args, **kwargs):
-        json_data = self._render_warning(request)
-        if json_data:
-            return JsonResponse(json_data)
-
-        return super().get(request, *args, **kwargs)
-
-    def post(self, *args, **kwargs):
-        json_data = self._render_warning(self.request)
-        if json_data:
-            return JsonResponse(json_data)
-
-        return super().post(*args, **kwargs)
+    hx_trigger_django = 'delete_user'
+    success_url = reverse_lazy('users:settings_users')
 
 
-class SettingsUnnecessary(AjaxCustomFormMixin):
+class SettingsUnnecessary(FormViewMixin):
     form_class = UnnecessaryForm
     template_name = 'users/includes/settings_form.html'
+    url = reverse_lazy('users:settings_unnecessary')
+    success_url = reverse_lazy('users:settings_unnecessary')
 
     def form_valid(self, form, **kwargs):
         form.save()
-        json_data = {
-            'form_is_valid': True,
-            'html_form': render_unnecessary_form(self.request, self.get_template_names()),
-            **kwargs,
-        }
-
-        return JsonResponse(json_data)
+        return super().form_valid(form)
 
 
-
-class SettingsJournal(AjaxCustomFormMixin):
+class SettingsJournal(FormViewMixin):
     form_class = SettingsForm
-    success_url = reverse_lazy('users:settings_index')
     template_name = 'users/includes/settings_form.html'
+    url = reverse_lazy('users:settings_journal')
+    success_url = reverse_lazy('users:settings_index')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["reload_site"] = True
+        return context
+
 
     def form_valid(self, form, **kwargs):
         form.save()
-        json_data = {
-            'form_is_valid': True,
-            'html_form': render_journal_form(self.request, self.get_template_names()),
-            'redirect': self.get_success_url(),
-            **kwargs,
-        }
+
+        response = HttpResponse(
+            status=200,
+            headers={'HX-Redirect': self.success_url}
+        )
 
         lang = form.cleaned_data.get('lang')
-
         activate(lang)
 
-        response = JsonResponse(json_data)
         response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang)
 
         return response
-
-
-def render_unnecessary_form(request, template_name):
-    context = {
-        'form': UnnecessaryForm(),
-        'update_container': 'unnecessary_ajax',
-        'form_name': 'unnecessary',
-        'url': reverse('users:settings_unnecessary')
-    }
-
-    form = render_to_string(template_name=template_name,
-                            request=request,
-                            context=context)
-    return form
-
-
-def render_journal_form(request, template_name):
-    context = {
-        'form': SettingsForm(),
-        'update_container': 'journal_ajax',
-        'form_name': 'journal',
-        'url': reverse('users:settings_journal'),
-    }
-
-    form = render_to_string(template_name=template_name,
-                            request=request,
-                            context=context)
-    return form

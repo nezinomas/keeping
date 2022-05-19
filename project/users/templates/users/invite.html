@@ -1,14 +1,16 @@
+{% load crispy_forms_tags %}
 {% load i18n %}
 
-<form method="post" novalidate id="js-form" class="js-form" action="{% url 'users:invite' %}">
+<form method="post" class="modal-content form" novalidate autocomplete="off" tabindex="-1" hx-post="{% url 'users:invite' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'>
     {% csrf_token %}
     <div class="modal-header">
         <h5 class="modal-title">{% translate 'Invitation' %}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body">
-        {% if form %}
-        {% include 'core/includes/form.html' %}
+        {% if not send %}
+        {{ form|as_crispy_errors }}
+        {% for field in form %}{{ field|as_crispy_field }}{% endfor %}
         <button type="submit" id="submit" class="btn btn-primary btn-sm">{% translate 'Send invitation' %}</button>
         {% else %}
         <p>{% translate 'Email sent' %}</p>

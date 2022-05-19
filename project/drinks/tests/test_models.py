@@ -13,7 +13,7 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture()
-def _drinks():
+def _drinks(second_user):
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
     DrinkFactory(date=date(1999, 1, 1), quantity=1.5)
     DrinkFactory(date=date(1999, 2, 1), quantity=2.0)
@@ -22,59 +22,54 @@ def _drinks():
     DrinkFactory(
         date=date(1999, 2, 1),
         quantity=100.0,
-        counter_type='Z',
-        user=UserFactory(username='XXX', email='x@x.x')
+        user=second_user
     )
-
-
-@pytest.fixture()
-def _second_user():
-    return DrinkFactory(counter_type='Z', user=UserFactory(username='XXX', email='x@x.x'))
-
-
-@pytest.fixture()
-def _different_users(_second_user):
-    DrinkFactory()
-    DrinkFactory(counter_type=_second_user)
-
 
 # ----------------------------------------------------------------------------
 #                                                                        Drink
 # ----------------------------------------------------------------------------
-def test_drink_related(_different_users):
+def test_drink_related(main_user, second_user):
+    DrinkFactory(user=main_user)
+    DrinkFactory(user=second_user)
+
     actual = Drink.objects.related()
 
     assert len(actual) == 1
     assert actual[0].user.username == 'bob'
 
 
-def test_drink_items(_different_users):
+def test_drink_items(main_user, second_user):
+    DrinkFactory(user=main_user)
+    DrinkFactory(user=second_user)
+
     actual = Drink.objects.items()
 
     assert len(actual) == 1
     assert actual[0].user.username == 'bob'
 
 
-@patch('project.drinks.managers.DrinkQuerySet.counter_type', 'X')
-def test_drink_items_different_counters():
-    DrinkFactory(counter_type='x')
-    DrinkFactory(counter_type='z')
+def test_drink_items_different_counters(main_user, second_user):
+    DrinkFactory(user=main_user)
+    DrinkFactory(user=second_user)
 
     actual = Drink.objects.items()
 
     assert len(actual) == 1
 
 
-def test_drink_items_different_counters_default_value():
-    DrinkFactory(counter_type='drinks')
-    DrinkFactory(counter_type='z')
+def test_drink_items_different_counters_default_value(main_user, second_user):
+    DrinkFactory(user=main_user)
+    DrinkFactory(user=second_user)
 
     actual = Drink.objects.items()
 
     assert len(actual) == 1
 
 
-def test_drink_year(_different_users):
+def test_drink_year(main_user, second_user):
+    DrinkFactory(user=main_user)
+    DrinkFactory(user=second_user)
+
     actual = list(Drink.objects.year(1999))
 
     assert len(actual) == 1
@@ -157,10 +152,10 @@ def test_drink_months_quantity_sum(user_drink_type, target_drink_type, expect, g
     assert expect == pytest.approx(actual, rel=1e-1)
 
 
-def test_drink_months_quantity_sum_no_records_for_current_year(_second_user):
+def test_drink_months_quantity_sum_no_records_for_current_year(second_user):
     DrinkFactory(date=date(1970, 1, 1), quantity=1.0)
     DrinkFactory(date=date(2000, 1, 1), quantity=1.5)
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.5, counter_type=_second_user)
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.5, user=second_user)
 
     actual = Drink.objects.sum_by_month(1999)
 
@@ -200,7 +195,7 @@ def test_drink_months_month_len(_drinks):
         ('vodka', 'beer', 0.16, 0.51),
     ]
 )
-def test_drink_days_sum(user_drink_type, target_drink_type, qty, per_day, get_user, _second_user):
+def test_drink_days_sum(user_drink_type, target_drink_type, qty, per_day, get_user, second_user):
     get_user.drink_type = user_drink_type
 
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0,
@@ -208,7 +203,7 @@ def test_drink_days_sum(user_drink_type, target_drink_type, qty, per_day, get_us
     DrinkFactory(date=date(1999, 11, 1), quantity=1.5,
                  option=target_drink_type)
     DrinkFactory(date=date(1999, 11, 1), quantity=111,
-                 option=target_drink_type, counter_type=_second_user)
+                 option=target_drink_type, user=second_user)
 
     actual = Drink.objects.drink_day_sum(1999)
 
@@ -217,9 +212,9 @@ def test_drink_days_sum(user_drink_type, target_drink_type, qty, per_day, get_us
 
 
 @freeze_time('1999-01-03')
-def test_drink_days_sum_no_records_for_selected_year(_second_user):
+def test_drink_days_sum_no_records_for_selected_year(second_user):
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.0, counter_type=_second_user)
+    DrinkFactory(date=date(1999, 1, 1), quantity=1.0, user=second_user)
     DrinkFactory(date=date(1999, 11, 1), quantity=1.5)
 
     actual = Drink.objects.drink_day_sum(1998)

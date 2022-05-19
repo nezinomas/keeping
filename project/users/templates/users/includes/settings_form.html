@@ -1,7 +1,9 @@
+{% load crispy_forms_tags %}
 {% load i18n %}
 
-<form method="POST" novalidate id="js_{{ form_name }}" class="js_{{ form_name }}" autocomplete="off" tabindex="-1" data-update-container="{{ update_container }}" action="{{ url }}">
+<form method="POST" novalidate autocomplete="off" tabindex="-1" hx-post="{{ view.url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'>
     {% csrf_token %}
-    {% include 'core/includes/form.html' %}
-    <button type="button" class="btn btn-sm btn-primary" data-form="{{ form_name }}" id="settings_submit">{% translate 'Update' %}</button>
+    {{ form|as_crispy_errors }}
+    {% for field in form %}{{ field|as_crispy_field }}{% endfor %}
+    <button type="submit" class="btn btn-sm btn-primary">{% translate 'Update' %}</button>
 </form>

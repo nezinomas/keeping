@@ -1,5 +1,3 @@
-from django.core.validators import (MaxValueValidator, MinLengthValidator,
-                                    MinValueValidator)
 from django.db import models
 from django.db.models import Count, F, Q
 from django.db.models.functions import ExtractYear, TruncYear

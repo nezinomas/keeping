@@ -11,6 +11,7 @@ from ..forms import IncomeForm, IncomeTypeForm
 
 pytestmark = pytest.mark.django_db
 
+
 # ----------------------------------------------------------------------------
 #                                                                  Income Type
 # ----------------------------------------------------------------------------
@@ -86,6 +87,16 @@ def test_income_type_unique_name():
     )
 
     assert not form.is_valid()
+
+
+def test_form_income_type_and_second_user(main_user, second_user):
+    IncomeTypeFactory(title='T1', journal=main_user.journal)
+    IncomeTypeFactory(title='T2', journal=second_user.journal)
+
+    form = IncomeForm().as_p()
+
+    assert '<option value="1">T1</option>' in form
+    assert '<option value="2">T2</option>' not in form
 
 
 # ----------------------------------------------------------------------------

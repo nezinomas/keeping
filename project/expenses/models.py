@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 from django.db.models import F
+from django.urls import reverse_lazy
 
 from ..accounts.models import Account
 from ..core.lib import utils
@@ -30,6 +31,9 @@ class ExpenseType(TitleAbstract):
         unique_together = ['journal', 'title']
         ordering = ['title']
 
+    def get_absolute_url(self):
+        return reverse_lazy("expenses:type_update", kwargs={"pk": self.pk})
+
 
 class ExpenseName(TitleAbstract):
     title = models.CharField(
@@ -52,6 +56,9 @@ class ExpenseName(TitleAbstract):
 
     # Managers
     objects = ExpenseNameQuerySet.as_manager()
+
+    def get_absolute_url(self):
+        return reverse_lazy("expenses:name_update", kwargs={"pk": self.pk})
 
 
 class Expense(OldValuesMixin, models.Model):
@@ -101,6 +108,12 @@ class Expense(OldValuesMixin, models.Model):
 
     def __str__(self):
         return f'{(self.date)}/{self.expense_type}/{self.expense_name}'
+
+    def get_absolute_url(self):
+        return reverse_lazy("expenses:update", kwargs={"pk": self.pk})
+
+    def get_delete_url(self):
+        return reverse_lazy("expenses:delete", kwargs={"pk": self.pk})
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

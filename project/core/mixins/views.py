@@ -1,151 +1,216 @@
+import json
+
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
-from django.shortcuts import redirect, reverse
-from django.template.loader import render_to_string
+from django.core.paginator import Paginator
+from django.http import Http404, HttpResponse
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import (CreateView, DeleteView, ListView,
-                                  TemplateView, UpdateView)
+                                  RedirectView, TemplateView, UpdateView, FormView)
+from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 
-from ...core.lib import utils
-from . import helpers as H
-from .ajax import AjaxCreateUpdateMixin, AjaxDeleteMixin
-from .get import GetQuerysetMixin
+from ...core.lib import search
 
 
-class IndexMixin(LoginRequiredMixin, TemplateView):
-    def get_template_names(self):
-        if self.template_name is None:
-            app = H.app_name(self)
-            return [f'{app}/index.html']
+def rendered_content(request, view_class, **kwargs):
+    # update request kwargs
+    request.resolver_match.kwargs.update({**kwargs})
 
-        return [self.template_name]
-
-
-class ListMixin(
-        LoginRequiredMixin,
-        GetQuerysetMixin,
-        ListView):
-
-    def dispatch(self, request, *args, **kwargs):
-        if 'as_string' in kwargs:
-            rendered = render_to_string(
-                template_name=self.get_template_names(),
-                context=self.get_context_data(),
-                request=request
-            )
-            return rendered
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_template_names(self):
-        if self.template_name is None:
-            return [H.template_name(self, 'list')]
-
-        return [self.template_name]
+    return (
+        view_class
+        .as_view()(request, **kwargs)
+        .rendered_content
+    )
 
 
-class CreateAjaxMixin(
-        LoginRequiredMixin,
-        AjaxCreateUpdateMixin,
-        CreateView):
+def httpHtmxResponse(hx_trigger_name = None, status_code = 204):
+    headers = {}
+    if hx_trigger_name:
+        headers = {'HX-Trigger': json.dumps({hx_trigger_name: None})}
 
-    def dispatch(self, request, *args, **kwargs):
-        if not utils.is_ajax(self.request):
-            return HttpResponse(render_to_string('srsly.html'))
+    return HttpResponse(
+        status=status_code,
+        headers=headers,
+    )
 
-        return super().dispatch(request, *args, **kwargs)
 
+class GetQuerysetMixin():
+    object = None
+    def get_queryset(self):
+        try:
+            qs = self.model.objects.related()
+        except AttributeError:
+            raise Http404(
+                _("No %(verbose_name)s found matching the query") % \
+                {'verbose_name': self.model._meta.verbose_name})
+
+        return qs
+
+
+class SearchMixin(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
-        app = H.app_name(self)
-        model = H.model_plural_name(self)
-        view_name = f'{app}:{model}_new'
-
         context = super().get_context_data(**kwargs)
-        context['submit_button'] = _('Insert')
-        context['form_action'] = 'insert'
-
-        # tweak for url resolver for count types
-        _dict = {}
-        if self.kwargs.get('count_type'):
-            _dict['count_type'] = self.kwargs.get('count_type')
-
-        # tweak for url resolver for Debt types
-        if self.kwargs.get('debt_type'):
-            _dict['debt_type'] = self.kwargs.get('debt_type')
-
-        context['url'] = reverse(view_name, kwargs={**_dict})
+        context.update({**self.search()})
 
         return context
 
+    def get_search_method(self):
+        return getattr(search, self.search_method)
 
-class UpdateAjaxMixin(
-        LoginRequiredMixin,
-        AjaxCreateUpdateMixin,
-        UpdateView):
+    def search(self):
+        search_str = self.request.GET.get('search')
+        page = self.request.GET.get('page', 1)
+        sql = self.get_search_method()(search_str)
 
-    def dispatch(self, request, *args, **kwargs):
-        if not utils.is_ajax(self.request):
-            return HttpResponse(render_to_string('srsly.html'))
+        context = {
+            'object_list': None,
+            'notice': _('Found nothing'),
+        }
 
-        return super().dispatch(request, *args, **kwargs)
+        if sql:
+            paginator = Paginator(sql, self.per_page)
+            page_range = paginator.get_elided_page_range(number=page)
+
+            app = self.request.resolver_match.app_name
+
+            context.update({
+                'object_list': paginator.get_page(page),
+                'search': search_str,
+                'url': reverse(f"{app}:search"),
+                'page_range': page_range,
+            })
+        return context
+
+
+class CreateUpdateMixin():
+    hx_trigger_django = None
+    hx_trigger_form = None
+    hx_redirect = None
+
+    def get_hx_trigger_django(self):
+        # triggers Htmx to reload container on Submit button click
+        # triggering happens many times
+        if self.hx_trigger_django:
+            return self.hx_trigger_django
+        return None
+
+    def get_hx_trigger_form(self):
+        # triggers Htmx to reload container on Close button click
+        # triggering happens once
+        if self.hx_trigger_form:
+            return self.hx_trigger_form
+        return None
+
+    def get_hx_redirect(self):
+        return self.hx_redirect
 
     def get_context_data(self, **kwargs):
-        # app = H.app_name(self)
-        # model = H.model_plural_name(self)
-
         context = super().get_context_data(**kwargs)
         context.update({
-            'submit_button': _('Update'),
-            'form_action': 'update'
+            'form_action': self.form_action,
+            'url': self.url,
+            'hx_trigger_form': self.get_hx_trigger_form(),
         })
-
         return context
 
+    def form_valid(self, form, **kwargs):
+        response = super().form_valid(form)
+        if self.request.htmx:
+            self.hx_redirect = self.get_hx_redirect()
 
-class DeleteAjaxMixin(
-        LoginRequiredMixin,
-        AjaxDeleteMixin,
-        DeleteView):
+            if self.hx_redirect:
+                # close form and redirect to url with hx_trigger_django
+                return HttpResponseClientRedirect(self.hx_redirect)
 
-    def dispatch(self, request, *args, **kwargs):
-        if not utils.is_ajax(self.request):
-            return HttpResponse(render_to_string('srsly.html'))
+            # close form and reload container
+            response.status_code = 204
+            trigger = self.get_hx_trigger_django()
+            if trigger:
+                trigger_client_event(
+                    response,
+                    trigger,
+                    {},
+                )
+            return response
 
-        return super().dispatch(request, *args, **kwargs)
+        return response
+
+
+class CreateViewMixin(LoginRequiredMixin,
+                      GetQuerysetMixin,
+                      CreateUpdateMixin,
+                      CreateView):
+    form_action = 'insert'
+
+    def url(self):
+        app = self.request.resolver_match.app_name
+        return reverse_lazy(f'{app}:new')
+
+
+class UpdateViewMixin(LoginRequiredMixin,
+                      GetQuerysetMixin,
+                      CreateUpdateMixin,
+                      UpdateView):
+    form_action = 'update'
+
+    def url(self):
+        if self.object:
+            return self.object.get_absolute_url()
+        return None
+
+
+class DeleteViewMixin(LoginRequiredMixin,
+                      GetQuerysetMixin,
+                      DeleteView):
+    hx_trigger_django = 'reload'
+    hx_redirect = None
+
+    def get_hx_trigger_django(self):
+        return self.hx_trigger_django
+
+    def get_hx_redirect(self):
+        return self.hx_redirect
+
+    def url(self):
+        if self.object:
+            return self.object.get_delete_url()
+        return None
 
     def get_context_data(self, **kwargs):
-        # app = H.app_name(self)
-        # model = H.model_plural_name(self)
-        try:
-            pk = self.object.pk
-        except AttributeError:
-            pk = None
-
         context = super().get_context_data(**kwargs)
-
-        if pk:
-            context.update({
-                'submit_button': _('Delete'),
-                'form_action': 'delete'
-            })
-
+        context.update({
+            'url': self.url,
+        })
         return context
 
+    def post(self, *args, **kwargs):
+        if self.get_object():
+            super().post(*args, **kwargs)
 
-class DispatchAjaxMixin():
-    def dispatch(self, request, *args, **kwargs):
-        try:
-            request.GET['ajax_trigger']
-        except KeyError:
-            return redirect(self.redirect_view)
+            hx_redirect = self.get_hx_redirect()
+            if hx_redirect:
+                return HttpResponseClientRedirect(hx_redirect)
 
-        return super().dispatch(request, *args, **kwargs)
+            return httpHtmxResponse(self.get_hx_trigger_django())
+
+        return HttpResponse()
 
 
-class DispatchListsMixin():
-    def dispatch(self, request, *args, **kwargs):
-        if not utils.is_ajax(self.request):
-            if 'as_string' not in kwargs and not self.request.user.is_anonymous:
-                return HttpResponse(render_to_string('srsly.html'))
+class RedirectViewMixin(LoginRequiredMixin, RedirectView):
+    pass
 
-        return super().dispatch(request, *args, **kwargs)
+
+class TemplateViewMixin(LoginRequiredMixin,
+                        TemplateView):
+    pass
+
+
+class ListViewMixin(LoginRequiredMixin,
+                    GetQuerysetMixin,
+                    ListView):
+    pass
+
+
+class FormViewMixin(LoginRequiredMixin,
+                    FormView):
+    pass

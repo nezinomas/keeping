@@ -41,13 +41,35 @@ def test_get_strings_no_strings():
     assert not _str
 
 
-def test_get_nothing():
-    search = '300 xxx'
+def test_get_strings_no_data():
+    search = None
 
-    _d, _s = H.parse_search_input(search)
+    _d, _str = H.parse_search_input(search)
 
-    assert not _s
     assert not _d
+    assert _str == []
+
+
+def test_search_min_word_length():
+    search = 'xx'
+
+    _, _s = H.parse_search_input(search)
+
+    assert _s == ['xx']
+
+
+def test_sanitize_search_str():
+    search = '~!@#$%^&*()_+-=[]{}|;:,./<>?\\ x1'
+    actual = H.sanitize_search_str(search)
+
+    assert actual == '_-. x1'
+
+
+def test_sanitize_search_str_empty():
+    search = None
+    actual = H.sanitize_search_str(search)
+
+    assert not actual
 
 
 # ---------------------------------------------------------------------------------------
@@ -120,7 +142,7 @@ def test_expense_search_ordering():
         ('1999-1 type', 1, 'Income Type'),
     ]
 )
-def test_incomes_search(search, cnt, income_type):
+def test_search(search, cnt, income_type):
     IncomeFactory()
     IncomeFactory(
         date=date(3333, 1, 1),
@@ -139,7 +161,7 @@ def test_incomes_search(search, cnt, income_type):
 
 
 @pytest.mark.django_db
-def test_incomes_search_ordering():
+def test_search_ordering():
     IncomeFactory(date=date(1000, 1, 1))
     IncomeFactory()
 
@@ -169,7 +191,7 @@ def test_incomes_search_ordering():
         ('1999-1 titl', 'Author', 'Book Title', 'Remark'),
     ]
 )
-def test_books_search(search, author, title, remark):
+def test_search(search, author, title, remark):
     BookFactory()
     BookFactory(
         started=date(3333, 1, 1),
@@ -190,7 +212,7 @@ def test_books_search(search, author, title, remark):
 
 
 @pytest.mark.django_db
-def test_books_search_ordering():
+def test_search_ordering():
     BookFactory(started=date(1000, 1, 1))
     BookFactory()
 

@@ -10,56 +10,51 @@ urlpatterns = [
     path(
         'books/',
         views.Index.as_view(),
-        name='books_index'
+        name='index'
+    ),
+    path(
+        'books/info_row/',
+        views.InfoRow.as_view(),
+        name='info_row'
+    ),
+    path(
+        'books/chart_readed/',
+        views.ChartReaded.as_view(),
+        name='chart_readed'
     ),
     path(
         'books/lists/',
         views.Lists.as_view(),
-        name='books_list'
-    ),
-    path(
-        'books/all/',
-        views.All.as_view(),
-        name='books_all'
+        name='list'
     ),
     path(
         'books/new/',
         views.New.as_view(),
-        name='books_new'
+        name='new'
     ),
     path(
         'books/update/<int:pk>/',
         views.Update.as_view(),
-        name='books_update'
+        name='update'
     ),
     path(
         'books/delete/<int:pk>/',
         views.Delete.as_view(),
-        name='books_delete'
-    ),
-    path(
-        'books/target/lists/',
-        views.TargetLists.as_view(),
-        name='books_target_lists'
+        name='delete'
     ),
     path(
         'books/target/new/',
         views.TargetNew.as_view(),
-        name='books_target_new'
+        name='target_new'
     ),
     path(
         'books/target/update/<int:pk>/',
         views.TargetUpdate.as_view(),
-        name='books_target_update'
-    ),
-    path(
-        'books/reload_stats/',
-        views.ReloadStats.as_view(),
-        name='reload_stats'
+        name='target_update'
     ),
     path(
         'books/search/',
         views.Search.as_view(),
-        name='books_search'
+        name='search'
     ),
 ]

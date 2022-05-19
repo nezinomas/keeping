@@ -1,114 +1,128 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
-from django.template.loader import render_to_string
-from django.views.generic.base import TemplateView
+from django.urls import reverse_lazy
 
-from ..accounts.views import Lists as accounts_list
-from ..core.lib import utils
-from ..core.mixins.views import (CreateAjaxMixin, DeleteAjaxMixin,
-                                 DispatchListsMixin, IndexMixin, ListMixin,
-                                 UpdateAjaxMixin)
+from ..accounts import views as accounts_views
+from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
+                                 ListViewMixin, TemplateViewMixin,
+                                 UpdateViewMixin, rendered_content)
 from . import forms, models
 
 
-class Index(IndexMixin):
+class Index(TemplateViewMixin):
+    template_name = 'transactions/index.html'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        context['categories'] = accounts_list.as_view()(
-            self.request, as_string=True)
-        context['transactions'] = Lists.as_view()(
-            self.request, as_string=True)
-        context['savings_close'] = SavingsCloseLists.as_view()(
-            self.request, as_string=True)
-        context['savings_change'] = SavingsChangeLists.as_view()(
-            self.request, as_string=True)
-
+        context.update({
+            'transaction': rendered_content(self.request, Lists),
+            'saving_close': rendered_content(self.request, SavingsCloseLists),
+            'saving_change': rendered_content(self.request, SavingsChangeLists),
+            'account': rendered_content(self.request, accounts_views.Lists),
+        })
         return context
 
 
-# SavingType dropdown
-class LoadSavingType(LoginRequiredMixin, TemplateView):
+class LoadSavingType(ListViewMixin):
     template_name = 'core/dropdown.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        if not utils.is_ajax(self.request):
-            return HttpResponse(render_to_string('srsly.html'))
-
-        return super().dispatch(request, *args, **kwargs)
+    object_list = []
 
     def get(self, request, *args, **kwargs):
-        objects = []
-        pk = request.GET.get('id')
+        pk = request.GET.get('from_account')
+
+        try:
+            pk = int(pk)
+        except (ValueError, TypeError):
+            pk = None
 
         if pk:
-            objects = (models
-                       .SavingType
-                       .objects
-                       .items()
-                       .exclude(pk=pk))
+            self.object_list = \
+                models.SavingType \
+                .objects \
+                .items() \
+                .exclude(pk=pk)
 
-        return self.render_to_response({'objects': objects})
+        return self.render_to_response({'object_list': self.object_list})
 
 
-#----------------------------------------------------------------------------------------
-#                                                           Transactions between Accounts
-#----------------------------------------------------------------------------------------
-class Lists(DispatchListsMixin, ListMixin):
+class Lists(ListViewMixin):
     model = models.Transaction
 
-
-class New(CreateAjaxMixin):
-    model = models.Transaction
-    form_class = forms.TransactionForm
+    def get_queryset(self):
+        return models.Transaction.objects.year(year=self.request.user.year)
 
 
-class Update(UpdateAjaxMixin):
+class New(CreateViewMixin):
     model = models.Transaction
     form_class = forms.TransactionForm
+    hx_trigger_form = 'afterTransaction'
+    success_url = reverse_lazy('transactions:list')
 
 
-class Delete(DeleteAjaxMixin):
+class Update(UpdateViewMixin):
     model = models.Transaction
+    form_class = forms.TransactionForm
+    hx_trigger_django = 'afterTransaction'
+    success_url = reverse_lazy('transactions:list')
 
 
-#----------------------------------------------------------------------------------------
-#                                   Savings Transactions from Savings to regular Accounts
-#----------------------------------------------------------------------------------------
-class SavingsCloseLists(DispatchListsMixin, ListMixin):
+class Delete(DeleteViewMixin):
+    model = models.Transaction
+    hx_trigger_django = 'afterTransaction'
+    success_url = reverse_lazy('transactions:list')
+
+
+class SavingsCloseLists(ListViewMixin):
     model = models.SavingClose
 
+    def get_queryset(self):
+        return models.SavingClose.objects.year(year=self.request.user.year)
 
-class SavingsCloseNew(CreateAjaxMixin):
+
+class SavingsCloseNew(CreateViewMixin):
     model = models.SavingClose
     form_class = forms.SavingCloseForm
+    hx_trigger_form = 'afterClose'
+
+    url = reverse_lazy('transactions:savings_close_new')
+    success_url = reverse_lazy('transactions:savings_close_list')
 
 
-class SavingsCloseUpdate(UpdateAjaxMixin):
+class SavingsCloseUpdate(UpdateViewMixin):
     model = models.SavingClose
     form_class = forms.SavingCloseForm
+    hx_trigger_django = 'afterClose'
+    success_url = reverse_lazy('transactions:savings_close_list')
 
 
-class SavingsCloseDelete(DeleteAjaxMixin):
+class SavingsCloseDelete(DeleteViewMixin):
     model = models.SavingClose
+    hx_trigger_django = 'afterClose'
+    success_url = reverse_lazy('transactions:savings_close_list')
 
 
-#----------------------------------------------------------------------------------------
-#                                           Savings Transactions between Savings accounts
-#----------------------------------------------------------------------------------------
-class SavingsChangeLists(DispatchListsMixin, ListMixin):
+class SavingsChangeLists(ListViewMixin):
     model = models.SavingChange
 
-
-class SavingsChangeNew(CreateAjaxMixin):
-    model = models.SavingChange
-    form_class = forms.SavingChangeForm
+    def get_queryset(self):
+        return models.SavingChange.objects.year(year=self.request.user.year)
 
 
-class SavingsChangeUpdate(UpdateAjaxMixin):
+class SavingsChangeNew(CreateViewMixin):
     model = models.SavingChange
     form_class = forms.SavingChangeForm
+    hx_trigger_form = 'afterChange'
+
+    success_url = reverse_lazy('transactions:savings_change_list')
+    url = reverse_lazy('transactions:savings_change_new')
 
 
-class SavingsChangeDelete(DeleteAjaxMixin):
+class SavingsChangeUpdate(UpdateViewMixin):
     model = models.SavingChange
+    form_class = forms.SavingChangeForm
+    hx_trigger_django = 'afterChange'
+    success_url = reverse_lazy('transactions:savings_change_list')
+
+
+class SavingsChangeDelete(DeleteViewMixin):
+    model = models.SavingChange
+    hx_trigger_django = 'afterChange'
+    success_url = reverse_lazy('transactions:savings_change_list')

@@ -1,52 +1,54 @@
 from datetime import datetime
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import F, Sum
-from django.http import HttpResponse, JsonResponse
-from django.template.loader import render_to_string
+from django.http import HttpResponse
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.generic import CreateView
 
-from ..accounts.models import Account
-from ..core.lib import utils
+from ..accounts.models import Account, AccountBalance
 from ..core.lib.date import years
 from ..core.lib.translation import month_names
-from ..core.mixins.ajax import AjaxSearchMixin
+from ..core.lib.utils import sum_all
 from ..core.mixins.formset import FormsetMixin
-from ..core.mixins.get import GetQuerysetMixin
-from ..core.mixins.views import CreateAjaxMixin, DispatchAjaxMixin, IndexMixin
+from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
+                                 TemplateViewMixin, rendered_content, httpHtmxResponse)
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
-from ..savings.models import Saving, SavingBalance, SavingType
+from ..savings.models import SavingBalance, SavingType
 from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
                     SavingWorthForm, SummaryExpensesForm)
-from .lib import summary_view_helper as SH
-from .lib import views_helpers as H
+from .lib import summary_view_helper as SummaryViewHelper
+from .lib import views_helpers as Helper
+from .lib.no_incomes import NoIncomes as LibNoIncomes
+from .lib.views_helpers import (DetailedHelper, ExpensesHelper, IndexHelper,
+                                MonthHelper)
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 
-class Index(IndexMixin):
+class Index(TemplateViewMixin):
+    template_name = 'bookkeeping/index.html'
+
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        obj = H.IndexHelper(self.request, year)
-        exp = H.ExpensesHelper(self.request, year)
+        obj = IndexHelper(self.request, year)
+        exp = ExpensesHelper(self.request, year)
 
         context = super().get_context_data(**kwargs)
         context.update({
             'year': year,
-            'accounts': obj.render_accounts(),
-            'savings': obj.render_savings(),
-            'pensions': obj.render_pensions(),
+            'accounts': rendered_content(self.request, Accounts, **kwargs),
+            'savings': rendered_content(self.request, Savings, **kwargs),
+            'pensions': rendered_content(self.request, Pensions, **kwargs),
+            'wealth': rendered_content(self.request, Wealth, **kwargs),
+            'no_incomes': rendered_content(self.request, NoIncomes, **kwargs),
             'year_balance': obj.render_year_balance(),
             'year_balance_short': obj.render_year_balance_short(),
             'year_expenses': exp.render_year_expenses(),
-            'no_incomes': obj.render_no_incomes(),
             'averages': obj.render_averages(),
-            'wealth': obj.render_wealth(),
             'borrow': obj.render_borrow(),
             'lend': obj.render_lend(),
             'chart_expenses': exp.render_chart_expenses(),
@@ -55,83 +57,234 @@ class Index(IndexMixin):
         return context
 
 
-class SavingsWorthNew(FormsetMixin, CreateAjaxMixin):
-    type_model = SavingType
-    model = SavingWorth
-    form_class = SavingWorthForm
-    shared_form_class = DateForm
-    list_template_name = 'bookkeeping/includes/worth_table.html'
+class Accounts(TemplateViewMixin):
+    template_name = 'bookkeeping/includes/account_worth_list.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        year = self.request.user.year
+        qs = AccountBalance.objects.year(year)
 
-        if self.request.POST:
-            year = self.request.user.year
-            funds = SavingBalance.objects.year(year)
-            incomes = Income.objects.year(year).aggregate(Sum('price'))
-            savings = Saving.objects.year(year).aggregate(Sum('price'))
+        Helper.add_latest_check_key(AccountWorth, qs, year)
 
-            context.update({
-                **H.IndexHelper.savings_context(
-                    funds,
-                    incomes.get('price__sum', 0),
-                    savings.get('price__sum', 0),
-                    year
-                )
-            })
-        return context
-
-
-class AccountsWorthNew(FormsetMixin, CreateAjaxMixin):
-    type_model = Account
-    model = AccountWorth
-    form_class = AccountWorthForm
-    shared_form_class = DateForm
-    list_template_name = 'bookkeeping/includes/accounts_worth_list.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        if self.request.POST:
-            obj = H.IndexHelper(self.request, self.request.user.year)
-            context.update({**obj.render_accounts(to_string=False)})
-
-        return context
-
-
-class PensionsWorthNew(FormsetMixin, CreateAjaxMixin):
-    type_model = PensionType
-    model = PensionWorth
-    form_class = PensionWorthForm
-    shared_form_class = DateForm
-    list_template_name = 'bookkeeping/includes/worth_table.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        if self.request.POST:
-            year = self.request.user.year
-            pensions = PensionBalance.objects.year(year)
-
-            context.update({
-                **H.IndexHelper.pensions_context(pensions, year)
-            })
-
-        return context
-
-
-class Month(IndexMixin):
-    template_name = 'bookkeeping/month.html'
-
-    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            **H.month_context(self.request, context),
+            'items': qs,
+            'total_row': sum_all(qs),
         })
         return context
 
 
-class Detailed(IndexMixin):
+class AccountsWorthNew(FormsetMixin, CreateViewMixin):
+    type_model = Account
+    model = AccountWorth
+    form_class = AccountWorthForm
+    shared_form_class = DateForm
+    template_name = 'bookkeeping/includes/account_worth_form.html'
+    url = reverse_lazy('bookkeeping:accounts_worth_new')
+    hx_trigger_django = 'afterAccountWorthNew'
+
+
+class AccountsWorthReset(TemplateViewMixin):
+    account = None
+
+    def get_object(self):
+        account = None
+        try:
+            account = \
+                Account.objects \
+                .related() \
+                .get(pk=self.kwargs['pk'])
+        except ObjectDoesNotExist:
+            pass
+
+        return account
+
+    def dispatch(self, request, *args, **kwargs):
+        self.account = self.get_object()
+
+        if self.account:
+            try:
+                worth = (
+                    AccountWorth
+                    .objects
+                    .filter(account=self.account)
+                    .latest('date')
+                )
+            except ObjectDoesNotExist:
+                worth = None
+
+        if not self.account or not worth or worth.price == 0:
+            return HttpResponse(status=204)  # 204 - No Content
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        AccountWorth.objects.create(
+            price=0,
+            account=self.account,
+            date=timezone.now()
+        )
+        return httpHtmxResponse('afterReset')
+
+
+class Savings(TemplateViewMixin):
+    template_name = 'bookkeeping/includes/funds_table.html'
+
+    def get_context_data(self, **kwargs):
+        year = self.request.user.year
+        sum_incomes = Income.objects.year(year).aggregate(Sum('price'))['price__sum']
+        sum_incomes = float(sum_incomes) if sum_incomes else 0
+
+        savings = SavingBalance.objects.year(year)
+        total_row = sum_all(savings)
+        sum_savings = total_row.get('invested', 0) - total_row.get('past_amount', 0)
+
+        Helper.add_latest_check_key(SavingWorth, savings, year)
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'title': _('Funds'),
+            'type': 'savings',
+            'items': savings,
+            'total_row': total_row,
+            'percentage_from_incomes': (
+                IndexHelper.percentage_from_incomes(sum_incomes, sum_savings)
+            ),
+            'profit_incomes_proc': (
+                IndexHelper.percentage_from_incomes(
+                    total_row.get('incomes'),
+                    total_row.get('market_value')
+                ) - 100
+            ),
+            'profit_invested_proc': (
+                IndexHelper.percentage_from_incomes(
+                    total_row.get('invested'),
+                    total_row.get('market_value')
+                ) - 100
+            ),
+        })
+        return context
+
+
+class SavingsWorthNew(FormsetMixin, CreateViewMixin):
+    type_model = SavingType
+    model = SavingWorth
+    form_class = SavingWorthForm
+    shared_form_class = DateForm
+    template_name = 'bookkeeping/includes/saving_worth_form.html'
+    url = reverse_lazy('bookkeeping:savings_worth_new')
+    hx_trigger_django = 'afterSavingWorthNew'
+
+
+class Pensions(TemplateViewMixin):
+    template_name = 'bookkeeping/includes/funds_table.html'
+
+    def get_context_data(self, **kwargs):
+        year = self.request.user.year
+        pensions = PensionBalance.objects.year(year)
+
+        Helper.add_latest_check_key(PensionWorth, pensions, year)
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'title': _('Pensions'),
+            'type': 'pensions',
+            'items': pensions,
+            'total_row': sum_all(pensions),
+        })
+        return context
+
+
+class PensionsWorthNew(FormsetMixin, CreateViewMixin):
+    type_model = PensionType
+    model = PensionWorth
+    form_class = PensionWorthForm
+    shared_form_class = DateForm
+    template_name = 'bookkeeping/includes/pension_worth_form.html'
+    url = reverse_lazy('bookkeeping:pensions_worth_new')
+    hx_trigger_django = 'afterPensionWorthNew'
+
+
+class Wealth(TemplateViewMixin):
+    template_name = 'bookkeeping/includes/info_table.html'
+
+    def get_context_data(self, **kwargs):
+        year = self.request.user.year
+        account_sum = \
+            AccountBalance.objects \
+            .related() \
+            .filter(year=year) \
+            .aggregate(Sum('balance'))['balance__sum']
+        account_sum = float(account_sum) if account_sum else 0
+
+        fund_sum = \
+            SavingBalance.objects \
+            .related() \
+            .filter(year=year) \
+            .aggregate(Sum('market_value'))['market_value__sum']
+        fund_sum = float(fund_sum) if fund_sum else 0
+
+        pension_sum = \
+            PensionBalance.objects \
+            .related() \
+            .filter(year=year) \
+            .aggregate(Sum('market_value'))['market_value__sum']
+        pension_sum = float(pension_sum) if pension_sum else 0
+
+        money = account_sum + fund_sum
+        wealth = account_sum + fund_sum + pension_sum
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'title': [_('Money'), _('Wealth')],
+            'data': [money, wealth],
+        })
+        return context
+
+
+class NoIncomes(TemplateViewMixin):
+    template_name = 'bookkeeping/includes/no_incomes.html'
+
+    def get_context_data(self, **kwargs):
+        year = self.request.user.year
+        journal = self.request.user.journal
+
+        obj = LibNoIncomes(journal, year)
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'no_incomes': obj.summary,
+            'save_sum': obj.cut_sum,
+            'not_use': obj.unnecessary,
+            'avg_expenses': obj.avg_expenses,
+        })
+
+        return context
+
+
+class Month(TemplateViewMixin):
+    template_name = 'bookkeeping/month.html'
+
+    def get_context_data(self, **kwargs):
+        if self.request.htmx:
+            self.template_name = 'bookkeeping/includes/month_content.html'
+
+        year = self.request.user.year
+        month = self.request.user.month
+
+        obj = MonthHelper(self.request, year, month)
+
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'month_table': obj.render_month_table(),
+            'info': obj.render_info(),
+            'chart_expenses': obj.render_chart_expenses(),
+            'chart_targets': obj.render_chart_targets(),
+        })
+        return context
+
+
+class Detailed(TemplateViewMixin):
     template_name = 'bookkeeping/detailed.html'
 
     def get_context_data(self, **kwargs):
@@ -141,35 +294,15 @@ class Detailed(IndexMixin):
         context['months'] = range(1, 13)
         context['month_names'] = month_names()
 
-        # Incomes
-        qs = Income.objects.sum_by_month_and_type(year)
-        if qs.exists():
-            H.detailed_context(context, qs, _('Incomes'))
-
-        # Savings
-        qs = Saving.objects.sum_by_month_and_type(year)
-        if qs.exists():
-            H.detailed_context(context, qs, _('Savings'))
-
-        # Expenses
-        qs = [*Expense.objects.sum_by_month_and_name(year)]
-        expenses_types = H.expense_types()
-        for title in expenses_types:
-            filtered = [*filter(lambda x: title in x['type_title'], qs)]
-
-            if not filtered:
-                continue
-
-            H.detailed_context(
-                context=context,
-                data=filtered,
-                name=_('Expenses / %(title)s') % ({'title': title})
-            )
+        ctx = DetailedHelper(year)
+        ctx.incomes_context(context)
+        ctx.savings_context(context)
+        ctx.expenses_context(context)
 
         return context
 
 
-class Summary(IndexMixin):
+class Summary(TemplateViewMixin):
     template_name = 'bookkeeping/summary.html'
 
     def get_context_data(self, **kwargs):
@@ -192,7 +325,7 @@ class Summary(IndexMixin):
         context.update({
             'balance_categories': balance_years,
             'balance_income_data': [float(x['sum']) for x in qs_inc],
-            'balance_income_avg': H.average(qs_inc),
+            'balance_income_avg': Helper.average(qs_inc),
             'balance_expense_data': [float(x['sum']) for x in qs_exp],
         })
 
@@ -202,12 +335,13 @@ class Summary(IndexMixin):
 
         context.update({
             'salary_categories': salary_years,
-            'salary_data_avg': H.average(qs),
+            'salary_data_avg': Helper.average(qs),
         })
+
         return context
 
 
-class SummarySavings(IndexMixin):
+class SummarySavings(TemplateViewMixin):
     template_name = 'bookkeeping/summary_savings.html'
 
     def get_context_data(self, **kwargs):
@@ -225,101 +359,88 @@ class SummarySavings(IndexMixin):
         shares = qs.filter(type='shares')
         pensions3 = qs.filter(type='pensions')
 
-        context['funds'] = SH.chart_data(funds)
-        context['shares'] = SH.chart_data(shares)
-        context['funds_shares'] = SH.chart_data(funds, shares)
-        context['pensions3'] = SH.chart_data(pensions3)
-        context['pensions2'] = SH.chart_data(PensionBalance.objects.sum_by_year())
-        context['all'] = SH.chart_data(funds, shares, pensions3)
+        context['funds'] = SummaryViewHelper.chart_data(funds)
+        context['shares'] = SummaryViewHelper.chart_data(shares)
+        context['funds_shares'] = SummaryViewHelper.chart_data(funds, shares)
+        context['pensions3'] = SummaryViewHelper.chart_data(pensions3)
+        context['pensions2'] = SummaryViewHelper.chart_data(PensionBalance.objects.sum_by_year())
+        context['all'] = SummaryViewHelper.chart_data(funds, shares, pensions3)
 
         return context
 
 
-class SummaryExpenses(IndexMixin):
+class SummaryExpenses(FormViewMixin):
+    form_class = SummaryExpensesForm
     template_name = 'bookkeeping/summary_expenses.html'
+    success_url = reverse_lazy('bookkeeping:summary_expenses')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'form': SummaryExpensesData.as_view()(self.request, as_string=True)
+            'found': False,
         })
-
         return context
 
-
-class SummaryExpensesData(AjaxSearchMixin):
-    url = reverse_lazy('bookkeeping:summary_expenses_data')
-    template_name = 'bookkeeping/includes/summary_expenses_form.html'
-    form_class = SummaryExpensesForm
-    form_data_dict = {}
-
-    def dispatch(self, request, *args, **kwargs):
-        if 'as_string' in kwargs:
-            return self._render_form(self.get_context_data())
-
-        if not utils.is_ajax(self.request):
-            return HttpResponse(render_to_string('srsly.html'))
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def make_form_data_dict(self):
-        self.form_data_dict = SH.make_form_data_dict(self.form_data)
-
     def form_valid(self, form, **kwargs):
-        _types = self.form_data_dict['types']
-        _names = self.form_data_dict['names']
-        _types_qs = None
-        _names_qs = None
+        if form.is_valid():
+            _types = []
+            _names = []
+            _types_full = form.cleaned_data.get('types')
 
-        if _types:
-            _types_qs = Expense.objects.sum_by_year_type(_types)
+            for x in _types_full:
+                if ':' in x:
+                    _names.append(x.split(':')[1])
+                else:
+                    _types.append(x)
 
-        if _names:
-            _list = _names.split(',')
-            _names_qs = Expense.objects.sum_by_year_name(_list)
+            _types_qs = None
+            _names_qs = None
 
-        obj = SH.ExpenseCompareHelper(
-            years=years()[:-1],
-            types=_types_qs,
-            names=_names_qs,
-            remove_empty_columns=True
-        )
+            if _types:
+                _types_qs = Expense.objects.sum_by_year_type(_types)
 
-        if obj.serries_data:
-            context = {
-                'categories': obj.categories,
-                'data': obj.serries_data,
-                'total_col': obj.total_col,
-                'total_row': obj.total_row,
-                'total': obj.total
-            }
+            if _names:
+                _names_qs = Expense.objects.sum_by_year_name(_names)
 
-            kwargs.update({
-                'html': render_to_string(
-                    'bookkeeping/includes/summary_expenses_chart.html',
-                    context,
-                    self.request),
-                'html2': render_to_string(
-                    'bookkeeping/includes/summary_expenses_table.html',
-                    context,
-                    self.request),
-            })
+            obj = SummaryViewHelper.ExpenseCompareHelper(
+                years=years()[:-1],
+                types=_types_qs,
+                names=_names_qs,
+                remove_empty_columns=True
+            )
 
-        return super().form_valid(form, **kwargs)
+            if obj.serries_data:
+                context = {
+                    'found': True,
+                    'form': form,
+                    'categories': obj.categories,
+                    'data': obj.serries_data,
+                    'total_col': obj.total_col,
+                    'total_row': obj.total_row,
+                    'total': obj.total
+                }
+                return render(self.request, self.template_name, context)
+
+        return super().form_valid(form)
 
 
-class ExpandDayExpenses(IndexMixin):
-    def get(self, request, *args, **kwargs):
+class ExpandDayExpenses(TemplateViewMixin):
+    template_name = 'bookkeeping/includes/expand_day_expenses.html'
+
+    def get_context_data(self, **kwargs):
+
         try:
             _date = kwargs.get('date')
             _year = int(_date[:4])
             _month = int(_date[4:6])
             _day = int(_date[6:8])
             dt = datetime(_year, _month, _day)
-        except Exception:  # pylint: disable=broad-except
-            dt = datetime(1970, 1, 1)
+        except ValueError:
+            _year, _month, _day = 1970, 1, 1
 
-        items = (
+        dt = datetime(_year, _month, _day)
+
+        object_list = (
             Expense
             .objects
             .items()
@@ -327,69 +448,11 @@ class ExpandDayExpenses(IndexMixin):
             .order_by('expense_type', F('expense_name').asc(), 'price')
         )
 
-        context = {
-            'items': items,
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'day': _day,
+            'object_list': object_list,
             'notice': _('No records on day %(day)s') % ({'day': f'{dt:%F}'}),
-        }
-        template = 'bookkeeping/includes/expand_day_expenses.html'
-        html = render_to_string(template, context, request)
+        })
 
-        return JsonResponse({'html': html})
-
-
-class AccountsWorthReset(LoginRequiredMixin, GetQuerysetMixin, CreateView):
-    account = None
-    model = Account
-    template_name = 'bookkeeping/includes/accounts_worth.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        self.account = self.get_object()
-        if self.account:
-            try:
-                worth = (
-                    AccountWorth
-                    .objects
-                    .filter(account=self.account)
-                    .latest('date')
-                )
-            except ObjectDoesNotExist:
-                worth = None
-
-        if not self.account or not worth or worth.price == 0:
-            return HttpResponse(status=204) # 204 - No Content
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get(self, request, *args, **kwargs):
-        AccountWorth.objects.create(
-            price=0,
-            account=self.account,
-            date=timezone.now()
-        )
-
-        obj = H.IndexHelper(request, request.user.year)
-        context = {'accounts_worth': obj.render_accounts()}
-
-        return JsonResponse(context)
-
-
-class ReloadIndex(DispatchAjaxMixin, IndexMixin):
-    template_name = 'bookkeeping/index.html'
-    redirect_view = reverse_lazy('bookkeeping:index')
-
-    def get(self, request, *args, **kwargs):
-        obj = H.IndexHelper(request, request.user.year)
-        context = {
-            'no_incomes': obj.render_no_incomes(),
-            'wealth': obj.render_wealth(to_string=True),
-        }
-        return JsonResponse(context)
-
-
-class ReloadMonth(DispatchAjaxMixin, IndexMixin):
-    template_name = 'bookkeeping/includes/month.html'
-    redirect_view = reverse_lazy('bookkeeping:month')
-
-    def get(self, request, *args, **kwargs):
-        context = H.month_context(request)
-        return JsonResponse(context)
+        return context

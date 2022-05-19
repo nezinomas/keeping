@@ -1,5 +1,3 @@
-import json
-
 import pytest
 from django.urls import resolve, reverse
 
@@ -7,7 +5,6 @@ from ...expenses.factories import ExpenseFactory
 from .. import views
 
 pytestmark = pytest.mark.django_db
-X_Req = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
 
 # ---------------------------------------------------------------------------------------
@@ -56,28 +53,18 @@ def test_view_expand_day_expenses_str_in_url(client_logged):
 def test_view_expand_day_expenses_wrong_dates(dt, expect, client_logged):
     url = reverse('bookkeeping:expand_day_expenses', kwargs={'date': dt})
     response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
 
-    actual = json.loads(response.content)
-
-    assert expect in actual['html']
-
-
-def test_view_expand_day_expenses_302(client):
-    url = reverse('bookkeeping:expand_day_expenses', kwargs={'date': '19700101'})
-    response = client.get(url)
-
-    assert response.status_code == 302
+    assert expect in actual
 
 
 def test_view_expand_day_expenses_ajax(client_logged):
     ExpenseFactory()
 
     url = reverse('bookkeeping:expand_day_expenses', kwargs={'date': '19990101'})
-    response = client_logged.get(url, {}, **X_Req)
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
 
-    actual = json.loads(response.content)
-
-    assert response.status_code == 200
-    assert '1999-01-01' in actual['html']
-    assert 'Expense Type' in actual['html']
-    assert 'Expense Name' in actual['html']
+    assert '1999-01-01' in actual
+    assert 'Expense Type' in actual
+    assert 'Expense Name' in actual

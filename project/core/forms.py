@@ -12,7 +12,7 @@ class SearchForm(forms.Form):
     re_alphanumeric = re.compile(r"^[ _\w\d\.\-]+$", re.UNICODE)
 
     search = forms.CharField(validators=[
-        MinLengthValidator(4),
+        MinLengthValidator(2),
         MaxLengthValidator(50),
         RegexValidator(re_alphanumeric, 'Only alphabetic')
     ])

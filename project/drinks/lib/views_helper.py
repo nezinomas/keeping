@@ -3,9 +3,7 @@ from typing import Dict, List, Tuple
 
 from django.http import HttpRequest
 from django.template.loader import render_to_string
-from django.utils.translation import gettext as _
 
-from ...counts.lib.stats import Stats as CountStats
 from .. import models
 from .drinks_options import DrinksOptions
 from .drinks_stats import DrinkStats, std_av
@@ -35,46 +33,14 @@ def several_years_consumption(years):
 
 
 class RenderContext():
-    def __init__(self, request: HttpRequest):
+    def __init__(self, request: HttpRequest, year: int):
         self._request = request
-        self._year = self._request.user.year
+        self._year = year
 
         self._target = self._get_target()
 
         self._avg, self._qty = self._get_avg_qty()
         self._DrinkStats = self._get_drink_stats()
-
-    def context_to_reload(self) -> Dict[str, str]:
-        qs = models.Drink.objects.sum_by_day(self._year)
-        past_latest_record = None
-
-        try:
-            qs_past = (
-                models
-                .Drink
-                .objects
-                .related()
-                .filter(date__year__lt=self._year)
-                .latest()
-            )
-            past_latest_record = qs_past.date
-        except models.Drink.DoesNotExist:
-            pass
-
-        stats = CountStats(year=self._year, data=qs, past_latest=past_latest_record)
-        data = stats.chart_calendar()
-        context = {
-            'chart_quantity': self.chart_quantity(),
-            'chart_consumption': self.chart_consumption(),
-            'chart_calendar_1H': self.chart_calendar(data[0:6], '1H'),
-            'chart_calendar_2H': self.chart_calendar(data[6:], '2H'),
-            'tbl_consumption': self.tbl_consumption(),
-            'tbl_last_day': self.tbl_last_day(),
-            'tbl_alcohol': self.tbl_alcohol(),
-            'tbl_std_av': self.tbl_std_av(),
-            'records': qs.count(),
-        }
-        return context
 
     def chart_quantity(self) -> str:
         r = render_to_string(
