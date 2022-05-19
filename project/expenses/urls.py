@@ -8,62 +8,62 @@ app_name = App_name
 
 urlpatterns = [
     path(
-        'expenses/',
+        '',
         expenses.Index.as_view(),
         name='index'
     ),
     path(
-        'expenses/list/',
+        'list/',
         expenses.Lists.as_view(),
         name='list'
     ),
     path(
-        'expenses/new/',
+        'new/',
         expenses.New.as_view(),
         name='new'
     ),
     path(
-        'expenses/update/<int:pk>/',
+        'update/<int:pk>/',
         expenses.Update.as_view(),
         name='update'
     ),
     path(
-        'expenses/delete/<int:pk>/',
+        'delete/<int:pk>/',
         expenses.Delete.as_view(),
         name='delete'
     ),
     path(
-        'expenses/load_expense_name/',
+        'load_expense_name/',
         expenses.LoadExpenseName.as_view(),
         name='load_expense_name'
     ),
     path(
-        'expenses/search/',
+        'search/',
         expenses.Search.as_view(),
         name='search'
     ),
     path(
-        'expenses/type/new/',
+        'type/new/',
         expenses_type.New.as_view(),
         name='type_new'
     ),
     path(
-        'expenses/type/',
+        'type/',
         expenses_type.Lists.as_view(),
         name='type_list'
     ),
     path(
-        'expenses/type/update/<int:pk>/',
+        'type/update/<int:pk>/',
         expenses_type.Update.as_view(),
         name='type_update'
     ),
     path(
-        'expenses/name/new/',
+        'name/new/',
         expenses_name.New.as_view(),
         name='name_new'
     ),
     path(
-        'expenses/name/update/<int:pk>/',
+        'name/update/<int:pk>/',
         expenses_name.Update.as_view(),
         name='name_update'
     ),
