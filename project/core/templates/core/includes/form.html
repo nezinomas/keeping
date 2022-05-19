@@ -1,7 +1,0 @@
-{% load crispy_forms_tags %}
-
-{% include 'core/includes/form_errors.html' %}
-
-{% for field in form %}
-    {{ field|as_crispy_field }}
-{% endfor %}
