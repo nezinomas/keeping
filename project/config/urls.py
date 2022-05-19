@@ -9,15 +9,15 @@ urlpatterns = [
     path('', include('project.bookkeeping.urls')),
     path('', include('project.transactions.urls')),
     path('accounts/', include('project.accounts.urls')),
-    path('books/', include('project.books.urls')),
-    path('debts/', include('project.debts.urls')),
-    path('drinks/', include('project.drinks.urls')),
-    path('expenses/', include('project.expenses.urls')),
     path('incomes/', include('project.incomes.urls')),
-    path('counts/', include('project.counts.urls')),
+    path('expenses/', include('project.expenses.urls')),
     path('savings/', include('project.savings.urls')),
-    path('plans/', include('project.plans.urls')),
     path('pensions/', include('project.pensions.urls')),
+    path('debts/', include('project.debts.urls')),
+    path('books/', include('project.books.urls')),
+    path('drinks/', include('project.drinks.urls')),
+    path('counts/', include('project.counts.urls')),
+    path('plans/', include('project.plans.urls')),
 ]
 
 
