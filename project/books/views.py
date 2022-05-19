@@ -168,6 +168,7 @@ class TargetNew(CreateViewMixin):
     model = models.BookTarget
     hx_trigger_django = 'afterTarget'
     form_class = forms.BookTargetForm
+    url = reverse_lazy('books:target_new')
 
 
 class TargetUpdate(UpdateViewMixin):

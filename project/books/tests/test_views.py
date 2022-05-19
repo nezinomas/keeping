@@ -454,12 +454,26 @@ def test_search_pagination_second_page(client_logged):
 # ---------------------------------------------------------------------------------------
 #                                                                    Target Create/Update
 # ---------------------------------------------------------------------------------------
-def test_target(client_logged):
+def test_target_func():
+    view = resolve('/books/target/new/')
+
+    assert views.TargetNew is view.func.view_class
+
+
+def test_target_200(client_logged):
+    url = reverse('books:target_new')
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_target_load_form(client_logged):
     url = reverse('books:target_new')
 
-    response = client_logged.get(url, {})
+    response = client_logged.get(url)
     actual = response.content.decode('utf-8')
 
+    assert f'hx-post="{url}"' in actual
     assert '<input type="text" name="year" value="1999"' in actual
 
 
