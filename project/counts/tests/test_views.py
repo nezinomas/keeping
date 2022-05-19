@@ -19,7 +19,7 @@ pytestmark = pytest.mark.django_db
 #                                                                     Count Create/Update
 # ---------------------------------------------------------------------------------------
 def test_view_new_func():
-    view = resolve('/counts/tab/count-type/new/')
+    view = resolve('/counts/tab/xxx/new/')
 
     assert views.New is view.func.view_class
 
@@ -596,13 +596,13 @@ def test_history_get_year(client_logged):
 #                                                                 CountType Create/Update
 # ---------------------------------------------------------------------------------------
 def test_count_type_new_func():
-    view = resolve('/counts-type/new/')
+    view = resolve('/counts/type/new/')
 
     assert views.TypeNew is view.func.view_class
 
 
 def test_count_type_update_func():
-    view = resolve('/counts-type/update/1/')
+    view = resolve('/counts/type/update/1/')
 
     assert views.TypeUpdate is view.func.view_class
 
@@ -690,7 +690,7 @@ def test_count_type_update_not_load_other_user(client_logged, second_user):
 #                                                                        CountType Delete
 # ---------------------------------------------------------------------------------------
 def test_count_types_delete_func():
-    view = resolve('/counts-type/delete/1/')
+    view = resolve('/counts/type/delete/1/')
 
     assert views.TypeDelete is view.func.view_class
 
