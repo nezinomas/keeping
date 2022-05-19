@@ -325,11 +325,6 @@ tr._current_day > td, tr._current_day > td._weekend_col {
 /*
     Various
 */
-.bad {
-    background-color: #fec2c6;
-    color: #dc3545;
-}
-
 .modal-dialog.modal-650 {
     max-width: 650px!important;
     margin: auto;

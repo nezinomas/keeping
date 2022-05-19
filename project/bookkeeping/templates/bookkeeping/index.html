@@ -88,4 +88,21 @@
     <div id="pensions_worth" class="col-lg-12" hx-get="{% url 'bookkeeping:pensions' %}" hx-trigger="afterPensionWorthNew from:body, afterSignalPensions from:body, afterSignal from:body" hx-indicator="#indicator">{{pensions|safe}}</div>
 </div>
 
+<script>
+    function compareValues() {
+        var c = $('.check');
+        c.removeClass('bg-danger text-white')
+        if (c[0].outerText != c[1].outerText) {
+            c.addClass('bg-danger text-white')
+        }
+    }
+
+    // check on page load
+    $(document).ready(compareValues);
+
+    // check on ajax reload
+    htmx.on("htmx:afterSwap", (e) => {
+        compareValues();
+    });
+</script>
 {% endblock content %}
