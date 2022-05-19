@@ -16,7 +16,7 @@ urlpatterns = [
     path('counts/', include('project.counts.urls')),
     path('savings/', include('project.savings.urls')),
     path('plans/', include('project.plans.urls')),
-    path('', include('project.pensions.urls')),
+    path('pensions/', include('project.pensions.urls')),
     path('', include('project.transactions.urls')),
 ]
 
