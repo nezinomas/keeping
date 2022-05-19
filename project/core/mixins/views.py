@@ -214,38 +214,3 @@ class ListViewMixin(LoginRequiredMixin,
 class FormViewMixin(LoginRequiredMixin,
                     FormView):
     pass
-
-
-class ListMixin(ListView):
-    # TODO: delete this class
-    pass
-
-
-class IndexMixin(TemplateView):
-    # TODO: delete this class
-    pass
-
-
-class CreateAjaxMixin(CreateView):
-    # TODO: delete this class
-    pass
-
-
-class UpdateAjaxMixin(UpdateView):
-    # TODO: delete this class
-    pass
-
-
-class DeleteAjaxMixin(DeleteView):
-    # TODO: delete this class
-    pass
-
-
-class DispatchAjaxMixin():
-    # TODO: delete this class
-    pass
-
-
-class DispatchListsMixin():
-    # TODO: delete this class
-    pass
