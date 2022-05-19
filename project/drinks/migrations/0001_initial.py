@@ -13,26 +13,27 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Count',
+            name='Drink',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('date', models.DateField()),
                 ('quantity', models.FloatField(validators=[django.core.validators.MinValueValidator(0.1)])),
+                ('option', models.CharField(choices=[('beer', 'Beer'), ('wine', 'Wine'), ('vodka', 'Vodka'), ('stdav', 'Std Av')], default='beer', max_length=7)),
             ],
             options={
-                'ordering': ['-date'],
                 'get_latest_by': ['date'],
             },
         ),
         migrations.CreateModel(
-            name='CountType',
+            name='DrinkTarget',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=25, validators=[django.core.validators.MinLengthValidator(3)])),
-                ('slug', models.SlugField(editable=False, max_length=25)),
+                ('year', models.PositiveIntegerField(validators=[django.core.validators.MinValueValidator(1974), django.core.validators.MaxValueValidator(2050)])),
+                ('quantity', models.FloatField()),
+                ('drink_type', models.CharField(choices=[('beer', 'Beer'), ('wine', 'Wine'), ('vodka', 'Vodka'), ('stdav', 'Std Av')], default='beer', max_length=7)),
             ],
             options={
-                'ordering': ['title'],
+                'ordering': ['-year'],
             },
         ),
     ]
