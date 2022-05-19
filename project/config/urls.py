@@ -4,11 +4,12 @@ from django.views.defaults import (page_not_found, permission_denied,
                                    server_error)
 
 urlpatterns = [
-    path('', include('project.users.urls')),
-    path('accounts/', include('project.accounts.urls')),
-    path('', include('project.bookkeeping.urls')),
-    path('books/', include('project.books.urls')),
     path('', include('project.core.urls')),
+    path('', include('project.users.urls')),
+    path('', include('project.bookkeeping.urls')),
+    path('', include('project.transactions.urls')),
+    path('accounts/', include('project.accounts.urls')),
+    path('books/', include('project.books.urls')),
     path('debts/', include('project.debts.urls')),
     path('drinks/', include('project.drinks.urls')),
     path('expenses/', include('project.expenses.urls')),
@@ -17,7 +18,6 @@ urlpatterns = [
     path('savings/', include('project.savings.urls')),
     path('plans/', include('project.plans.urls')),
     path('pensions/', include('project.pensions.urls')),
-    path('', include('project.transactions.urls')),
 ]
 
 
