@@ -12,7 +12,6 @@ PROJECT_APPS = [
     'bookkeeping',
     'books',
     'core',
-    'counters',
     'debts',
     'drinks',
     'expenses',
