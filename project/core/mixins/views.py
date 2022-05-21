@@ -59,11 +59,13 @@ class SearchMixin(LoginRequiredMixin, TemplateView):
 
     def search(self):
         search_str = self.request.GET.get('search')
-        page = self.request.GET.get('page', 1)
+
         sql = self.get_search_method()(search_str)
 
+        page = self.request.GET.get('page', 1)
         paginator = Paginator(sql, self.per_page)
         page_range = paginator.get_elided_page_range(number=page)
+
         app = self.request.resolver_match.app_name
 
         context = {
