@@ -456,6 +456,16 @@ def test_expense_name_save_invalid_data(client_logged):
     assert not actual.is_valid()
 
 
+def test_expense_name_load_for_form_for_update(client_logged):
+    e = ExpenseNameFactory(title='XXX')
+
+    url = reverse('expenses:name_update', kwargs={'pk': e.pk})
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    assert '<input type="text" name="title" value="XXX"' in actual
+
+
 def test_expense_name_update(client_logged):
     e = ExpenseNameFactory()
 

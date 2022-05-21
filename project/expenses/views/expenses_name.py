@@ -6,7 +6,7 @@ from .. import forms, models
 
 class QuerySetMixin():
     def get_queryset(self):
-        return models.ExpenseType.objects.items()
+        return models.ExpenseName.objects.items()
 
 
 class New(QuerySetMixin, CreateViewMixin):
