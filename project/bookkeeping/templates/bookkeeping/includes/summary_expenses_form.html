@@ -22,5 +22,7 @@
         <div class="row mt-5">
             <div class="col-12 table-responsive" id="table">{% include 'bookkeeping/includes/summary_expenses_table.html' %}</div>
         </div>
+        {% elif not found and error %}
+        <div class="alert alert-block alert-danger">{{error}}</div>
         {% endif %}
     </div>

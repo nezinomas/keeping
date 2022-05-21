@@ -64,7 +64,7 @@ class SearchMixin(LoginRequiredMixin, TemplateView):
 
         context = {
             'object_list': None,
-            'notice': _('Found nothing'),
+            'notice': _('No data found'),
         }
 
         if sql:
