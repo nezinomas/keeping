@@ -382,7 +382,7 @@ class SummaryExpenses(FormViewMixin):
         return context
 
     def form_valid(self, form, **kwargs):
-        context = {}
+        context = {'found': False, 'form': form}
         _types = []
         _names = []
         _types_full = form.cleaned_data.get('types')
@@ -402,23 +402,27 @@ class SummaryExpenses(FormViewMixin):
         if _names:
             _names_qs = Expense.objects.sum_by_year_name(_names)
 
-        obj = SummaryViewHelper.ExpenseCompareHelper(
-            years=years()[:-1],
-            types=_types_qs,
-            names=_names_qs,
-            remove_empty_columns=True
-        )
+        if _types_qs or _names_qs:
+            obj = SummaryViewHelper.ExpenseCompareHelper(
+                years=years()[:-1],
+                types=_types_qs,
+                names=_names_qs,
+                remove_empty_columns=True
+            )
 
-        if obj.serries_data:
             context.update({
                 'found': True,
-                'form': form,
                 'categories': obj.categories,
                 'data': obj.serries_data,
                 'total_col': obj.total_col,
                 'total_row': obj.total_row,
                 'total': obj.total
             })
+        else:
+            context.update({
+                'error': _('No data found')
+            })
+
         return render(self.request, self.template_name, context)
 
 

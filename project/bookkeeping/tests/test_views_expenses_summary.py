@@ -65,6 +65,19 @@ def test_view(client_logged):
     assert 'id="table">' in actual
 
 
+def test_view_no_records_for_selected_expense_name(client_logged):
+    obj = ExpenseNameFactory()
+
+    data = {'types': [obj.pk]}
+
+    url = reverse('bookkeeping:summary_expenses')
+    response = client_logged.post(url, data)
+    actual = response.content.decode('utf-8')
+
+    assert 'id="chart">' not in actual
+    assert 'id="table">' not in actual
+
+
 def test_view_context_found(client_logged):
     t = ExpenseTypeFactory()
     n = ExpenseNameFactory()
