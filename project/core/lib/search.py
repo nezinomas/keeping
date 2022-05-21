@@ -11,7 +11,7 @@ from ...incomes.models import Income
 
 def sanitize_search_str(search_str):
     if search_str:
-        search_str = re.sub("[^\w\d\.\- ]", "", search_str)
+        search_str = re.sub(r"[^\w\d\.\- ]", "", search_str)
 
     return search_str
 
