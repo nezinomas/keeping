@@ -57,55 +57,59 @@ def filter_dates(_date, sql, field='date'):
 
 
 def search_expenses(search_str):
+    _sql = Expense.objects.none()
     _date, _search = parse_search_input(search_str)
 
-    sql = Expense.objects.items()
-    sql = filter_dates(_date, sql)
+    if _date or _search:
+        _sql = Expense.objects.items()
+        _sql = filter_dates(_date, _sql)
 
-    if _search:
-        sql = sql.filter(
-            reduce(or_, (Q(expense_type__title__icontains=q) for q in _search)) |
-            reduce(or_, (Q(expense_name__title__icontains=q) for q in _search)) |
-            reduce(or_, (Q(remark__icontains=q) for q in _search))
-        )
+        if _search:
+            _sql = _sql.filter(
+                reduce(or_, (Q(expense_type__title__icontains=q) for q in _search)) |
+                reduce(or_, (Q(expense_name__title__icontains=q) for q in _search)) |
+                reduce(or_, (Q(remark__icontains=q) for q in _search))
+            )
 
-    sql = sql.order_by('-date')
+        _sql = _sql.order_by('-date')
 
-    return sql
+    return _sql
 
 
 def search_incomes(search_str):
+    _sql = Income.objects.none()
     _date, _search = parse_search_input(search_str)
 
-    sql = Income.objects.items()
-    sql = filter_dates(_date, sql)
+    if _date or _search:
+        _sql = Income.objects.items()
+        _sql = filter_dates(_date, _sql)
 
-    if _search:
-        sql = sql.filter(
-            reduce(or_, (Q(income_type__title__icontains=q) for q in _search)) |
-            reduce(or_, (Q(remark__icontains=q) for q in _search))
-        )
+        if _search:
+            _sql = _sql.filter(
+                reduce(or_, (Q(income_type__title__icontains=q) for q in _search)) |
+                reduce(or_, (Q(remark__icontains=q) for q in _search))
+            )
 
-    sql = sql.order_by('-date')
+        _sql = _sql.order_by('-date')
 
-    return sql
+    return _sql
 
 
 def search_books(search_str):
+    _sql = Book.objects.none()
     _date, _search = parse_search_input(search_str)
-    sql = None
 
-    if _search or _date:
-        sql = Book.objects.items()
-        sql = filter_dates(_date, sql, 'started')
+    if _date or _search:
+        _sql = Book.objects.items()
+        _sql = filter_dates(_date, _sql, 'started')
 
         if _search:
-            sql = sql.filter(
+            _sql = _sql.filter(
                 reduce(or_, (Q(author__icontains=q) for q in _search)) |
                 reduce(or_, (Q(title__icontains=q) for q in _search)) |
                 reduce(or_, (Q(remark__icontains=q) for q in _search))
             )
 
-        sql = sql.order_by('-started')
+        _sql = _sql.order_by('-started')
 
-    return sql
+    return _sql
