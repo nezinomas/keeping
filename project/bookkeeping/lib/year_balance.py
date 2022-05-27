@@ -175,7 +175,7 @@ class YearBalance(BalanceBase):
         df = df_months_of_year(year)
 
         # append necessary columns
-        dict = {
+        arr = {
             'incomes': incomes,
             'expenses': expenses,
             'savings': savings,
@@ -186,7 +186,7 @@ class YearBalance(BalanceBase):
             'lend_return': lend_return,
         }
 
-        for name, arr in dict.items():
+        for name, arr in arr.items():
             # create column and assign 0 for all cells
             df.loc[:, name] = 0.0
             if arr:
