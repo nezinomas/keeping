@@ -55,7 +55,7 @@ class Lists(GetMonthMixin, ListViewMixin):
         month = self.get_month()
 
         notice = _('There are no records for month <b>%(month)s</b>.') % {'month': month}
-        if month == '13' or not month:
+        if month == 13 or not month:
             notice = _('No records in <b>%(year)s</b>.') % {'year': self.request.user.year}
 
         context = super().get_context_data(**kwargs)
