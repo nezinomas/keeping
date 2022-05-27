@@ -66,11 +66,24 @@ class Accounts(TemplateViewMixin):
 
         Helper.add_latest_check_key(AccountWorth, qs, year)
 
+        total_row = {
+            'past': 0,
+            'incomes': 0,
+            'expenses': 0,
+            'balance': 0,
+            'have': 0,
+            'delta': 0,
+        }
+
+        if qs:
+            total_row = sum_all(qs)
+
         context = super().get_context_data(**kwargs)
         context.update({
             'items': qs,
-            'total_row': sum_all(qs),
+            'total_row': total_row,
         })
+
         return context
 
 
