@@ -275,6 +275,7 @@ def test_saving_post_save_update():
     # update price
     obj_update = Saving.objects.get(pk=obj.pk)
     obj_update.price = 10
+    obj_update.fee = 1
     obj_update.save()
 
     actual = AccountBalance.objects.get(account_id=obj.account.pk)
@@ -282,8 +283,8 @@ def test_saving_post_save_update():
     assert actual.balance == -10.0
 
     actual = SavingBalance.objects.get(saving_type_id=obj.saving_type.pk)
-    assert actual.invested == 4.45
-    assert actual.fee == 5.55
+    assert actual.invested == 9.0
+    assert actual.fee == 1.0
     assert actual.incomes == 10.0
 
 
