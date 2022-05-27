@@ -66,7 +66,6 @@ DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TEMPLATE_CONTEXT': True,
     'INTERCEPT_REDIRECTS': False,
     'SHOW_TOOLBAR_CALLBACK': lambda request: True,
-    'SHOW_TEMPLATE_CONTEXT': True,
     # 'INSERT_BEFORE': '</head>',
 }
 
