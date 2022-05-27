@@ -799,7 +799,9 @@ def test_sum_by_type_pensions():
 
     actual = list(SavingBalance.objects.sum_by_type())
 
-    assert actual == [{'year': 1999, 'invested': 11.0, 'profit': -11.0, 'type': 'pensions'}]
+    assert actual == [
+        {'year': 1999, 'invested': 11.0, 'profit': -11.0, 'type': 'pensions'}
+    ]
 
 
 @freeze_time('1999-1-1')
