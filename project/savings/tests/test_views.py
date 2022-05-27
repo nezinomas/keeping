@@ -1,12 +1,8 @@
-import json
-from urllib import response
-
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
-from ...core.tests.utils import setup_view
 from .. import models, views
 from ..factories import Saving, SavingFactory, SavingTypeFactory
 
