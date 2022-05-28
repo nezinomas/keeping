@@ -68,6 +68,7 @@ class Drink(models.Model):
         return \
             reverse_lazy('drinks:delete', kwargs=kwargs)
 
+
 class DrinkTarget(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
