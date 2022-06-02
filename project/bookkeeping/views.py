@@ -160,6 +160,7 @@ class Savings(TemplateViewMixin):
         total_savings_current_year = total_invested - total_past
 
         Helper.add_latest_check_key(SavingWorth, savings, year)
+        calculate_percent = IndexHelper.percentage_from_incomes
 
         context = super().get_context_data(**kwargs)
         context.update({
@@ -167,23 +168,18 @@ class Savings(TemplateViewMixin):
             'type': 'savings',
             'items': savings,
             'total_row': total_row,
-            'percentage_from_incomes': (
-                IndexHelper.percentage_from_incomes(
+            'percentage_from_incomes': \
+                calculate_percent(
                     total_incomes,
-                    total_savings_current_year)
-            ),
-            'profit_incomes_proc': (
-                IndexHelper.percentage_from_incomes(
+                    total_savings_current_year),
+            'profit_incomes_proc': \
+                calculate_percent(
                     total_savings,
-                    total_market
-                ) - 100
-            ),
-            'profit_invested_proc': (
-                IndexHelper.percentage_from_incomes(
+                    total_market) - 100,
+            'profit_invested_proc': \
+                calculate_percent(
                     total_invested,
-                    total_market
-                ) - 100
-            ),
+                    total_market) - 100,
         })
         return context
 
