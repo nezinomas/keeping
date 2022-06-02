@@ -154,8 +154,7 @@ class Savings(TemplateViewMixin):
         total_past = total_row.get('past', 0)
         total_incomes = total_row.get('incomes', 0)
         total_market = total_row.get('market_value', 0)
-
-        sum_savings = total_invested - total_past
+        total_savings = total_invested - total_past
 
         Helper.add_latest_check_key(SavingWorth, savings, year)
 
@@ -166,7 +165,7 @@ class Savings(TemplateViewMixin):
             'items': savings,
             'total_row': total_row,
             'percentage_from_incomes': (
-                IndexHelper.percentage_from_incomes(sum_incomes, sum_savings)
+                IndexHelper.percentage_from_incomes(sum_incomes, total_savings)
             ),
             'profit_incomes_proc': (
                 IndexHelper.percentage_from_incomes(
