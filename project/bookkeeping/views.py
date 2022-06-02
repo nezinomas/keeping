@@ -234,14 +234,16 @@ class Wealth(TemplateViewMixin):
             SavingBalance.objects \
             .related() \
             .filter(year=year) \
-            .aggregate(Sum('market_value'))['market_value__sum']
+            .aggregate(Sum('market_value')) \
+            ['market_value__sum']
         fund_sum = float(fund_sum) if fund_sum else 0
 
         pension_sum = \
             PensionBalance.objects \
             .related() \
             .filter(year=year) \
-            .aggregate(Sum('market_value'))['market_value__sum']
+            .aggregate(Sum('market_value')) \
+            ['market_value__sum']
         pension_sum = float(pension_sum) if pension_sum else 0
 
         money = account_sum + fund_sum
@@ -371,12 +373,13 @@ class SummarySavings(TemplateViewMixin):
         funds = qs.filter(type='funds')
         shares = qs.filter(type='shares')
         pensions3 = qs.filter(type='pensions')
+        pensions2 = PensionBalance.objects.sum_by_year()
 
         context['funds'] = SummaryViewHelper.chart_data(funds)
         context['shares'] = SummaryViewHelper.chart_data(shares)
         context['funds_shares'] = SummaryViewHelper.chart_data(funds, shares)
         context['pensions3'] = SummaryViewHelper.chart_data(pensions3)
-        context['pensions2'] = SummaryViewHelper.chart_data(PensionBalance.objects.sum_by_year())
+        context['pensions2'] = SummaryViewHelper.chart_data(pensions2)
         context['all'] = SummaryViewHelper.chart_data(funds, shares, pensions3)
 
         return context
@@ -443,7 +446,6 @@ class ExpandDayExpenses(TemplateViewMixin):
     template_name = 'bookkeeping/includes/expand_day_expenses.html'
 
     def get_context_data(self, **kwargs):
-
         try:
             _date = kwargs.get('date')
             _year = int(_date[:4])
