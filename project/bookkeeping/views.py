@@ -150,7 +150,12 @@ class Savings(TemplateViewMixin):
 
         savings = SavingBalance.objects.year(year)
         total_row = sum_all(savings)
-        sum_savings = total_row.get('invested', 0) - total_row.get('past_amount', 0)
+        total_invested = total_row.get('invested', 0)
+        total_past = total_row.get('past', 0)
+        total_incomes = total_row.get('incomes', 0)
+        total_market = total_row.get('market_value', 0)
+
+        sum_savings = total_invested - total_past
 
         Helper.add_latest_check_key(SavingWorth, savings, year)
 
@@ -165,14 +170,14 @@ class Savings(TemplateViewMixin):
             ),
             'profit_incomes_proc': (
                 IndexHelper.percentage_from_incomes(
-                    total_row.get('incomes'),
-                    total_row.get('market_value')
+                    total_incomes,
+                    total_market
                 ) - 100
             ),
             'profit_invested_proc': (
                 IndexHelper.percentage_from_incomes(
-                    total_row.get('invested'),
-                    total_row.get('market_value')
+                    total_invested,
+                    total_market
                 ) - 100
             ),
         })
@@ -227,7 +232,8 @@ class Wealth(TemplateViewMixin):
             AccountBalance.objects \
             .related() \
             .filter(year=year) \
-            .aggregate(Sum('balance'))['balance__sum']
+            .aggregate(Sum('balance')) \
+            ['balance__sum']
         account_sum = float(account_sum) if account_sum else 0
 
         fund_sum = \
