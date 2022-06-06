@@ -47,12 +47,12 @@ class Index(TemplateViewMixin):
             'no_incomes': rendered_content(self.request, NoIncomes, **kwargs),
             'year_balance': ind.render_year_balance(),
             'year_balance_short': ind.render_year_balance_short(),
-            'year_expenses': exp.render_year_expenses(),
             'averages': ind.render_averages(),
             'borrow': ind.render_borrow(),
             'lend': ind.render_lend(),
-            'chart_expenses': exp.render_chart_expenses(),
             'chart_balance': ind.render_chart_balance(),
+            'chart_expenses': exp.render_chart_expenses(),
+            'year_expenses': exp.render_year_expenses(),
         })
         return context
 
