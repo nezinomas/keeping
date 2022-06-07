@@ -1,41 +1,29 @@
 {% load i18n %}
 <div class="accordion" id="accordion">
 {% for e_type in object_list %}
-    <div class="accordion-item mb-2">
-        <div class="accordion-header" id="heading_{{e_type.id}}">
-            <span class="expenses-edit-icon">
-                <button type="button" hx-get="{% url 'expenses:type_update' e_type.id %}" hx-target="#dialog" class="btn btn-sm edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></button>
-            </span>
-            <button class="accordion-button collapsed btn-sm rounded-top" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{e_type.id}}" aria-expanded="false" aria-controls="collapse_{{e_type.id}}">
-                {{e_type.title}}
-                {% if e_type.necessary %}
-                <span class="badge rounded-pill text-dark mx-2"><i class="bi bi-star"></i></span>{% endif %}
-            </button>
+    <div class="accordion-header mb-2" id="heading_{{e_type.id}}">
+        <span class="expenses-edit-icon">
+            <button type="button" hx-get="{% url 'expenses:type_update' e_type.id %}" hx-target="#dialog" class="btn btn-sm edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></button>
+        </span>
+        <button class="accordion-button collapsed btn-sm rounded-top" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{e_type.id}}" aria-expanded="false" aria-controls="collapse_{{e_type.id}}">
+            {{e_type.title}}
+            {% if e_type.necessary %}
+            <span class="badge rounded-pill text-dark mx-2"><i class="bi bi-star"></i></span>{% endif %}
+        </button>
 
-        </div>
-        <div id="collapse_{{e_type.id}}" class="accordion-collapse collapse" aria-labelledby="heading_{{e_type.id}}"
-            data-bs-parent="#accordion">
-            <div class="accordion-body">
-                {% for e_name in e_type.expensename_set.all %}
-                <div class="list-group-item">{{e_name.title}}
-                    {% if e_name.valid_for %}<span class="ms-2 badge rounded-pill bg-info text-dark">{{e_name.valid_for|safe}}</span>{% endif %}
-                    <span class="expenses-edit-icon">
-                        <button type="button" hx-get="{% url 'expenses:name_update' e_name.id %}" hx-target="#dialog" class="btn btn-super-sm edit"><i class="bi bi-pencil-fill"></i></button>
-                    </span>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
     </div>
+    <div id="collapse_{{e_type.id}}" class="accordion-collapse collapse" aria-labelledby="heading_{{e_type.id}}"
+        data-bs-parent="#accordion">
+        <div class="accordion-body list-group list-group-flush mb-4">
+            {% for e_name in e_type.expensename_set.all %}
+            <div class="list-group-item list-group-item-action">{{e_name.title}}
+                {% if e_name.valid_for %}<span class="ms-2 badge rounded-pill bg-info text-dark">{{e_name.valid_for|safe}}</span>{% endif %}
+                <span class="edit-icon">
+                    <button type="button" hx-get="{% url 'expenses:name_update' e_name.id %}" hx-target="#dialog" class="btn btn-super-sm edit"><i class="bi bi-pencil-fill"></i></button>
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        </div>
 {% endfor %}
 </div>
-
-<script>
-    $('.panel-collapse').on('show.bs.collapse', function () {
-        $(this).siblings('.panel-heading').addClass('active');
-    });
-
-    $('.panel-collapse').on('hide.bs.collapse', function () {
-        $(this).siblings('.panel-heading').removeClass('active');
-    });
-</script>
