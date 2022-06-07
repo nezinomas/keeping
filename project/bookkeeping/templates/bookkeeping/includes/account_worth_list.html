@@ -23,7 +23,7 @@
             <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="{{ item.latest_check|default:_('Not specified') }}" class="text-start no-right-border">
                 {{ item.title }}
             </td>
-            <td class="no-left-border w3"><button type="button" hx-get="{% url 'bookkeeping:accounts_worth_reset' item.account_pk %}" class="btn btn-super-sm btn-outline-info reset">{% translate 'Reset' %}</button></td>
+            <td class="no-left-border w5"><button type="button" hx-get="{% url 'bookkeeping:accounts_worth_reset' item.account_pk %}" class="btn btn-super-sm btn-outline-info reset">{% translate 'Reset' %} {% translate 'Have' %}</button></td>
             {% cell item.past css_class='w7' %}
             {% cell item.incomes css_class='w7' %}
             {% cell item.expenses css_class='w7' %}
