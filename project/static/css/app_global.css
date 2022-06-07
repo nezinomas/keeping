@@ -331,6 +331,7 @@ tr._current_day > td, tr._current_day > td._weekend_col {
 
 .no-hover, .no-hover:hover {
     text-decoration: none!important;
+    border: 0!important;
 }
 
 .plans-star {
