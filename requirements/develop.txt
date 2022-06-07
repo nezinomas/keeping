@@ -1,6 +1,7 @@
 -r base.txt
 django-debug-toolbar==3.2.4
 django-override-storage==0.3.2
+django-test-without-migrations==0.6
 django-webtest==1.9.10
 factory-boy==3.2.1
 freezegun==1.2.1
