@@ -325,6 +325,7 @@ caption {
 }
 
 .page-link {
+    font-size: var(--font-size-sm);
     padding-left: .75rem !important;
     padding-right: .75rem !important;
 }
