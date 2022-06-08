@@ -1,17 +1,17 @@
 {% load i18n %}
 
-<table class="table table-hover stats">
-    <thead class="thead-light">
-        <tr class="top-text"><th colspan="2">{% translate 'Last time I had a drink' %}</th></tr>
-        <tr class="top">
-            <th>Data</th>
-            <th class="text-end">{% translate 'Number of days' %}</th>
+<table class="table table-sm caption-top">
+    <caption>{% translate 'Last time I had a drink' %}</caption>
+    <thead>
+        <tr>
+            <th class="text-start">Data</th>
+            <th>{% translate 'Number of days' %}</th>
         </tr>
     </thead>
-    <tfoot>
+    <tbody>
         <tr>
             <td class="text-start">{% if date %}{{ date|date:"Y-m-d" }}{% else %}{% translate 'No data' %}{% endif %}</td>
             <td>{{ delta }}</td>
         </tr>
-    </tfoot>
+    </tbody>
 </table>

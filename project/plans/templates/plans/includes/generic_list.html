@@ -4,9 +4,9 @@
 {% load i18n %}
 {% load slippers %}
 
-<table class="table table-striped table-hover stats">
-    <thead class="thead-light">
-        <tr class="top">
+<table class="table table-sm table-striped table-hover">
+    <thead>
+        <tr>
             <th>{% translate 'Title' %}</th>
             {% for month in months %}<th class="w7p text-end">{{ month }}</th>{% endfor %}
             <th colspan="2"></th>
@@ -36,7 +36,7 @@
             {% delete_cell url=url_delete %}
         </tr>{% endwith %}
         {% empty %}
-        <tr class="table-warning text-center">
+        <tr class="table table-sm-warning text-center">
             <td colspan="13" class="py-2">
                 {% blocktranslate with year=year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
             <td></td>

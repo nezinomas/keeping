@@ -1,15 +1,15 @@
 {% load i18n %}
 
-<table class="table table-hover stats">
-    <thead class="thead-light">
-        <tr class="top-text"><th>C<sub>2</sub>H<sub>5</sub>OH</th></tr>
-        <tr class="top">
-            <th class="text-end">{% translate 'Litres' %}</th>
+<table class="table table-sm caption-top">
+    <caption>C<sub>2</sub>H<sub>5</sub>OH</caption>
+    <thead>
+        <tr>
+            <th>{% translate 'Litres' %}</th>
         </tr>
     </thead>
-    <tfoot>
+    <tbody>
         <tr>
             <td>{{ l|floatformat:2 }}</td>
         </tr>
-    </tfoot>
+    </tbody>
 </table>

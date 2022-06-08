@@ -3,9 +3,9 @@
 {% load counts_components %}
 
 {% if object_list %}
-<table class="table table-striped table-hover stats">
-    <thead class="thead-light">
-        <tr class="top">
+<table class="table table-sm table-striped table-hover">
+    <thead>
+        <tr>
             <th>{% translate 'Date' %}</th>
             <th>{% translate 'Quantity' %}</th>
             <th colspan="2"></th>
@@ -16,7 +16,7 @@
 
         {% ifchanged obj.date|date:"F" %}
         {% if not forloop.first %}
-        <tr><td colspan="4" class="table-active"></td></tr>
+        <tr><td colspan="4" class="table table-sm-active"></td></tr>
         {% endif %}
         {% endifchanged %}
 

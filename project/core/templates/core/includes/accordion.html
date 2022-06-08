@@ -11,7 +11,7 @@
             <div class="list-group-item list-group-item-action" hx-get="{{url_update}}" hx-target="#dialog">
                 {% if object.closed %}<s>{{ object.title }}</s> <i>{% translate 'closed' %} {{ object.closed|safe }}</i>{% else %}{{ object.title }}{% endif %}
                 <span class="edit-icon">
-                    <button type="button" hx-get="{{url_update}}" hx-target="#dialog" class="btn btn-super-sm edit no-hover"><i class="bi bi-pencil-fill"></i></button>
+                    <button type="button" hx-get="{{url_update}}" hx-target="#dialog" class="btn btn-xs edit no-hover"><i class="bi bi-pencil-fill"></i></button>
                 </span>
             </div>
             {% endfor %}

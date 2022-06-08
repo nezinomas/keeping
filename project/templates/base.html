@@ -58,8 +58,8 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu nav-link {% if '/expenses/' in request.path and not '/summary/' in request.path %}active{% endif %}" href="{% url 'expenses:index' %}">{% translate 'Expenses' %}</a>
-              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/expenses/' in request.path and not '/summary/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="btn nav-link {% if '/expenses/' in request.path and not '/summary/' in request.path %}active{% endif %}" href="{% url 'expenses:index' %}">{% translate 'Expenses' %}</a>
+              <button type="button" class="btn dropdown-toggle dropdown-toggle-split nav-link {% if '/expenses/' in request.path and not '/summary/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
@@ -97,8 +97,8 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu nav-link {% if '/books/' in request.path %}active{% endif %}" href="{% url 'books:index' %}">{% translate 'Books' %}</a>
-              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/books/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="btn nav-link {% if '/books/' in request.path %}active{% endif %}" href="{% url 'books:index' %}">{% translate 'Books' %}</a>
+              <button type="button" class="btn dropdown-toggle dropdown-toggle-split nav-link {% if '/books/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
@@ -115,8 +115,8 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu nav-link {% if '/counts/' in request.path %}active{% endif %}" href="{% url 'counts:redirect' %}">{% translate 'Counter' %}</a>
-              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/counts/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="btn nav-link {% if '/counts/' in request.path %}active{% endif %}" href="{% url 'counts:redirect' %}">{% translate 'Counter' %}</a>
+              <button type="button" class="btn dropdown-toggle dropdown-toggle-split nav-link {% if '/counts/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
@@ -137,8 +137,8 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn btn-menu nav-link {% if 'summary' in request.path %}active{% endif %}" href="{% url 'bookkeeping:summary' %}">{% translate 'Summary' %}</a>
-              <button type="button" class="btn btn-menu dropdown-toggle dropdown-toggle-split nav-link {% if '/summary/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="btn nav-link {% if 'summary' in request.path %}active{% endif %}" href="{% url 'bookkeeping:summary' %}">{% translate 'Summary' %}</a>
+              <button type="button" class="btn dropdown-toggle dropdown-toggle-split nav-link {% if '/summary/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
@@ -157,7 +157,7 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <button type="button" class="btn btn-menu dropdown-toggle nav-link" data-bs-toggle="dropdown" aria-expanded="false">{% translate 'Add' %}</button>
+              <button type="button" class="btn dropdown-toggle nav-link" data-bs-toggle="dropdown" aria-expanded="false">{% translate 'Add' %}</button>
               <ul class="dropdown-menu">
                 <li>
                   <button class="dropdown-item btn-sm" hx-get="{% url 'incomes:new' %}" hx-target="#dialog">{% translate 'Incomes' context 'incomes button' %}</button>
