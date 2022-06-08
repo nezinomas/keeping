@@ -2,18 +2,17 @@
 {% load i18n %}
 {% load slippers %}
 
-<table class="table table-hover stats">
-    <thead class="thead-light">
-        <tr class="top-text">
-            {% var drink_type=request.user.drink_type|title %}
-            <th colspan="2">{% translate drink_type %}</th>
-        </tr>
-        <tr class="top">
-            <th>{% translate 'Total' %}, {% translate 'pcs' %}</th>
-            <th class="text-end">{% translate 'Per day' %} avg, ml</th>
+{% var drink_type=request.user.drink_type|title %}
+
+<table class="table table-sm caption-top">
+    <caption>{% translate drink_type %}</caption>
+    <thead>
+        <tr>
+            <th class="text-start">{% translate 'Total' %}, {% translate 'pcs' %}</th>
+            <th>{% translate 'Per day' %} avg, ml</th>
         </tr>
     </thead>
-    <tfoot>
+    <tbody>
         <tr>
             {% if qty %}
             <td class="text-start">{{ qty|floatformat:1 }}</td>
@@ -22,5 +21,5 @@
             <td colspan="2">{% translate 'No data' %}</td>
             {% endif %}
         </tr>
-    </tfoot>
+    </tbody>
 </table>

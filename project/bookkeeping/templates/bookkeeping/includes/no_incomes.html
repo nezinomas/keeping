@@ -1,8 +1,8 @@
 {% load i18n %}
 
-<table class="table table-striped table-hover table-sm stats">
+<table class="table table-sm table-striped">
     <thead>
-        <tr class="top">
+        <tr>
             <th data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" title="<p>{% translate 'Unnecessary expenses that can be avoided' %}:<br />{% for i in not_use %}- {{ i }}<br />{% endfor %}</p>" class="text-start exception">{{ save_sum|floatformat:0 }}</th>
             <th class="text-end">€ + F</th>
             <th class="text-end">€ + F + P</th>
