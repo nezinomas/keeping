@@ -6,11 +6,11 @@
 <table class="table table-sm table-striped table-hover">
     <thead>
         <tr>
-            <th>{% translate 'Date' %}</th>
-            <th>{% translate 'From account' %}</th>
-            <th>{% translate 'To account' %}</th>
-            <th class="text-end">{% translate 'Amount' %}</th>
-            {% if fee %}<th class="text-end">{% translate 'Fees' %}</th>{% endif %}
+            <th class="text-start">{% translate 'Date' %}</th>
+            <th class="text-start">{% translate 'From account' %}</th>
+            <th class="text-start">{% translate 'To account' %}</th>
+            <th>{% translate 'Amount' %}</th>
+            {% if fee %}<th>{% translate 'Fees' %}</th>{% endif %}
             <th colspan="2"></th>
         </tr>
     </thead>
