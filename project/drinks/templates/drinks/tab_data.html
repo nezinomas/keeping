@@ -9,8 +9,8 @@
     <thead>
         <tr>
             <th class="text-start">{% translate 'Data' %}</th>
-            <th class="text-end">{% translate 'Dink Type' %}</th>
-            <th class="text-end">{% translate 'Quantity' %}</th>
+            <th class="text-start">{% translate 'Dink Type' %}</th>
+            <th class="text-start">{% translate 'Quantity' %}</th>
             <th colspan="2"></th>
         </tr>
     </thead>
@@ -22,8 +22,8 @@
         <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#dialog" class="{% ifchanged obj.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
             <td class="text-start">{{ obj.date|date:"Y-m-d" }}</td>
             {% var drink_type=obj.option|title %}
-            <td>{% translate drink_type %}</td>
-            <td>{{ obj.quantity|convert:obj.option|floatformat:2 }}</td>
+            <td class="text-start">{% translate drink_type %}</td>
+            <td class="text-start">{{ obj.quantity|convert:obj.option|floatformat:2 }}</td>
             {% edit_cell url=url_update %}
             {% delete_cell url=url_delete %}
         </tr>
