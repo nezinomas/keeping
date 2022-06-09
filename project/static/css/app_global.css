@@ -154,6 +154,10 @@ div[class*="col"]>h6 {
     font-weight: normal;
 }
 
+.table .table-group-divider {
+    border-top: 0.15rem solid #c8c7c7;
+}
+
 .table td, .table th {
     text-align: right;
     vertical-align: middle !important;
