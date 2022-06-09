@@ -9,15 +9,15 @@
 <table class="table table-sm table-striped table-hover">
     <thead>
         <tr>
-            <th class="w5">{% translate 'Date' %}</th>
-            <th class="w8">
+            <th class="w5 text-start">{% translate 'Date' %}</th>
+            <th class="w8 text-start">
                 {% if target == 'lend' %}{% translate 'Borrower' %}{% endif %}
                 {% if target == 'borrow' %}{% translate 'Lender' %}{% endif %}
             </th>
-            <th class="w5">{% translate 'Sum' %}</th>
-            <th class="w5">{% translate 'Returned' %}</th>
-            <th class="w10">{% translate 'Account' %}</th>
-            <th>{% translate 'Remark' %}</th>
+            <th class="w5 text-start">{% translate 'Sum' %}</th>
+            <th class="w5 text-start">{% translate 'Returned' %}</th>
+            <th class="w10 text-start">{% translate 'Account' %}</th>
+            <th class="text-start">{% translate 'Remark' %}</th>
             <th class="text-center w3">{% translate 'Closed' %}</th>
             <th colspan="2"></th>
         </tr>
