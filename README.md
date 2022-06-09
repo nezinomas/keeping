@@ -16,6 +16,8 @@ cp .env___TEMPLATE .env
 ```
 SECRET_KEY=django_secrect_key
 SALT=some_password_for_additional_security
+MEDIA_ROOT="\PATH\TO\MEDIA_FOLDER\"
+ALLOWED_HOSTS=127.0.0.1,localhost
 DJANGO_SETTINGS_MODULE=project.config.settings.develop
 ```
 
@@ -45,19 +47,12 @@ pip install -r requirements/develop.txt
 python manage.py migrate
 ```
 
-8. Create a folder for media uploads:
+8. Create a folder for media uploads if it is not created. Set permissions:
 ```
 mkdir media; chmod -R 755 media
 ```
 
-9. Tell the project to use that folder in `base.py` (around line 50):
-```
-# ================   MEDIA CONFIGURATION
-MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media/')
-MEDIA_URL = "/media/"
-```
-
-10. Run tests:
+9. Run tests:
 ```
 pytest -n auto -k "not webtest"
 ```

@@ -46,7 +46,7 @@ LOGIN_URL = 'users:login'
 
 
 # ================   MEDIA CONFIGURATION
-MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media/')
+MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(PROJECT_ROOT, 'media'))
 MEDIA_URL = "/media/"
 
 
