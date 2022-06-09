@@ -84,7 +84,7 @@ def _expect():
             'borrow_return': 0.15,
             'lend': 1.0,
             'lend_return': 0.5,
-            'money_flow': 4.65
+            'money_flow': 3.85
         }, {
             'date': pdTime(date(1999, 2, 1)),
             'incomes': 1.25,
@@ -96,7 +96,7 @@ def _expect():
             'borrow_return': 0.0,
             'lend': 0.0,
             'lend_return': 0.0,
-            'money_flow': 5.9
+            'money_flow': 5.1
         }
     ]
 
@@ -113,7 +113,7 @@ def _expect():
             'borrow_return': 0.0,
             'lend': 0.0,
             'lend_return': 0.0,
-            'money_flow': 5.9
+            'money_flow': 5.1
         }
         val.append(item)
 
@@ -197,14 +197,14 @@ def test_months_balance_only_borrow(_incomes, _expenses,
     ).balance
 
     assert actual[0]['borrow'] == 0.25
-    assert actual[0]['money_flow'] == 4.5
+    assert actual[0]['money_flow'] == 5.0
 
     assert actual[1]['borrow'] == 0.0
-    assert actual[1]['money_flow'] == 5.75
+    assert actual[1]['money_flow'] == 6.25
 
     for i in range(3, 12):
         assert actual[i]['borrow'] == 0.0
-        assert actual[i]['money_flow'] == 5.75
+        assert actual[i]['money_flow'] == 6.25
 
 
 def test_months_balance_only_borrow_return(_incomes, _expenses,
@@ -219,14 +219,14 @@ def test_months_balance_only_borrow_return(_incomes, _expenses,
     ).balance
 
     assert actual[0]['borrow_return'] == 0.15
-    assert actual[0]['money_flow'] == 4.9
+    assert actual[0]['money_flow'] == 4.6
 
     assert actual[1]['borrow_return'] == 0.0
-    assert actual[1]['money_flow'] == 6.15
+    assert actual[1]['money_flow'] == 5.85
 
     for i in range(3, 12):
         assert actual[i]['borrow_return'] == 0.0
-        assert actual[i]['money_flow'] == 6.15
+        assert actual[i]['money_flow'] == 5.85
 
 
 def test_months_balance_only_lend(_incomes, _expenses,
@@ -241,14 +241,14 @@ def test_months_balance_only_lend(_incomes, _expenses,
     ).balance
 
     assert actual[0]['lend'] == 1.0
-    assert actual[0]['money_flow'] == 5.75
+    assert actual[0]['money_flow'] == 3.75
 
     assert actual[1]['lend'] == 0.0
-    assert actual[1]['money_flow'] == 7.0
+    assert actual[1]['money_flow'] == 5.0
 
     for i in range(3, 12):
         assert actual[i]['lend'] == 0.0
-        assert actual[i]['money_flow'] == 7.0
+        assert actual[i]['money_flow'] == 5.0
 
 
 def test_months_balance_only_lend_return(_incomes, _expenses,
@@ -263,14 +263,14 @@ def test_months_balance_only_lend_return(_incomes, _expenses,
     ).balance
 
     assert actual[0]['lend_return'] == 0.5
-    assert actual[0]['money_flow'] == 4.25
+    assert actual[0]['money_flow'] == 5.25
 
     assert actual[1]['lend_return'] == 0.0
-    assert actual[1]['money_flow'] == 5.5
+    assert actual[1]['money_flow'] == 6.5
 
     for i in range(3, 12):
         assert actual[i]['lend_return'] == 0.0
-        assert actual[i]['money_flow'] == 5.5
+        assert actual[i]['money_flow'] == 6.5
 
 
 def test_months_balance_total_row(_incomes, _expenses,
@@ -301,7 +301,7 @@ def test_months_balance_total_row(_incomes, _expenses,
         'borrow_return': 0.15,
         'lend': 1.0,
         'lend_return': 0.5,
-        'money_flow': 69.55
+        'money_flow': 59.95
     }
 
     assert actual == expect
@@ -335,7 +335,7 @@ def test_months_balance_average(_incomes, _expenses,
         'borrow_return': 0.15,
         'lend': 1.0,
         'lend_return': 0.5,
-        'money_flow': 5.8
+        'money_flow': 5.0
     }
 
     assert expect == pytest.approx(actual, rel=1e-2)
@@ -381,7 +381,7 @@ def test_amount_end(_incomes, _expenses,
         amount_start=_money_flow
     ).amount_end
 
-    assert actual == 5.9
+    assert actual == 5.1
 
 
 def test_amount_end_no_money_flow(_incomes, _expenses):
