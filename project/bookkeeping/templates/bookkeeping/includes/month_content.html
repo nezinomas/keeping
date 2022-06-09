@@ -16,7 +16,7 @@
 
 <div class="row gx-2">
     <div class="col-lg-8 gx-2">
-        <div class="btn-group d-flex" role="group">
+        <div class="btn-group d-flex btn-group-month" role="group">
         {% with request.user.month as month %}
         {% for m in context_months %}
         {% with m|date:'n' as m_num %}

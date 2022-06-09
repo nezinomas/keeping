@@ -2,21 +2,21 @@
 {% load table_cell %}
 {% load get_item %}
 
-<table class="table table-striped table-hover table-sm stats">
+<table class="table table-sm">
     <thead>
-        <tr class="top">
+        <tr>
             {% for t in title %}
             <th class="text-end text-nowrap" style="width: calc(100%/{{ title|length }});">
                 {{ t }}
             </th>{% endfor %}
         </tr>
     </thead>
-    <tfoot>
+    <tbody>
         <tr>
             {% for d in data %}
-            {% cell d tag='th' highlight_value=highlight|get_list_val:forloop.counter0 %}
+            {% cell d highlight_value=highlight|get_list_val:forloop.counter0 %}
             {% endfor %}
         </tr>
-    </tfoot>
+    </tbody>
 </table>
 {% endif %}

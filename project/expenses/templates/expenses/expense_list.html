@@ -7,9 +7,9 @@
 {% if object_list %}
 
 <script src="{% static 'js/sticky-table-headers.js' %}"></script>
-<table class="table table-hover stats sticky-table">
-    <thead class="thead-light">
-        <tr class="top">
+<table class="table table-sm table-hover sticky-table">
+    <thead>
+        <tr>
             <th class="expense-ordinary">{% translate 'Date' %}</th>
             <th>{% translate 'Expense type' %}</th>
             <th>{% translate 'Expense name' %}</th>
@@ -25,7 +25,7 @@
         {% for object in object_list %}
         {% url 'expenses:update' object.id as url_update %}
         {% url 'expenses:delete' object.id as url_delete %}
-        {% ifchanged object.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="10" class="table-active"></td></tr>{% endif %}{% endifchanged %}
+        {% ifchanged object.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="10" class="table table-sm-active"></td></tr>{% endif %}{% endifchanged %}
         <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#dialog" class="{{ object.expense_type.pk|bg_color }}">
             <td class="text-start {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ object.expense_type }}</td>
@@ -35,9 +35,9 @@
             <td class="text-start">{{ object.remark|linebreaksbr }}</td>
             <td>{% if object.attachment %}
                 {% if not 'pdf' in object.attachment.url %}
-                <button type="button" class="btn btn-outline-primary btn-super-sm" data-bs-toggle="modal" data-bs-target="#imgModal" data-bs-url="{{ object.attachment.url }}">{% translate 'Image' %}</button>
+                <button type="button" class="btn btn-outline-primary btn-xs" data-bs-toggle="modal" data-bs-target="#imgModal" data-bs-url="{{ object.attachment.url }}">{% translate 'Image' %}</button>
                 {% else %}
-                <a role="button" class="btn btn-outline-primary btn-super-sm" href="{{ object.attachment.url }}" target="_blank">{% translate 'Pdf file' %}</a>
+                <a role="button" class="btn btn-outline-primary btn-xs" href="{{ object.attachment.url }}" target="_blank">{% translate 'Pdf file' %}</a>
                 {% endif %}
                 {% endif %}
             </td>

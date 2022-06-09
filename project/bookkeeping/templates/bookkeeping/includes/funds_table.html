@@ -3,15 +3,15 @@
 {% load i18n %}
 {% load slippers %}
 
-<table class="table table-striped table-hover stats">
-    <thead class="thead-light">
-        <tr class="top">
-            <th colspan="4" rowspan="2">{% regenerate_balances type=type %} {{ title }}</th>
-            <th colspan="3" rowspan="2" class="br text-end">{% if percentage_from_incomes %} {% translate 'From incomes' %}: {{ percentage_from_incomes|floatformat:1 }}%{% endif %}</th>
+<table class="table table-sm table-striped table-hover">
+    <thead>
+        <tr>
+            <th colspan="4" rowspan="2" class="text-start">{% regenerate_balances type=type %} {{ title }}</th>
+            <th colspan="3" rowspan="2" class="br">{% if percentage_from_incomes %} {% translate 'From incomes' %}: {{ percentage_from_incomes|floatformat:1 }}%{% endif %}</th>
             <th colspan="4" class="text-center">{% translate 'Profit' %}/{% translate 'Loss' %}</th>
         </tr>
-        <tr class="top">
-            <th colspan="2" class="text-center br_s">{% translate 'Transferred' %}</th>
+        <tr>
+            <th colspan="2" class="text-center">{% translate 'Transferred' %}</th>
             <th colspan="2" class="text-center">{% translate 'Purchased' %}</th>
         </tr>
         <tr>
@@ -23,7 +23,7 @@
             <th>{% translate 'Purchased' %}</th>
             <th class="br">{% translate 'Market value' %}</th>
             <th>{% translate 'Sum' %}</th>
-            <th class="br_s">%</th>
+            <th>%</th>
             <th>{% translate 'Sum' %}</th>
             <th>%</th>
         </tr>
@@ -39,14 +39,14 @@
             {% cell item.invested css_class='w8' %}
             {% cell item.market_value css_class='br w8' %}
             {% cell item.profit_incomes_sum text_after='€' highlight_value=True css_class='w8' %}
-            {% cell item.profit_incomes_proc text_after='%' highlight_value=True css_class='br_s w8' %}
+            {% cell item.profit_incomes_proc text_after='%' highlight_value=True css_class='w8' %}
             {% cell item.profit_invested_sum text_after='€' highlight_value=True css_class='w8' %}
             {% cell item.profit_invested_proc text_after='%' highlight_value=True css_class='w8' %}
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
-        <tr class="total">
+        <tr >
             <th class="text-start">{% translate 'Total' %}</th>
             {% cell total_row.past_amount tag='th' %}
             {% cell total_row.past_fee tag='th' %}
@@ -55,7 +55,7 @@
             {% cell total_row.invested tag='th' %}
             {% cell total_row.market_value tag='th' css_class='br' %}
             {% cell total_row.profit_incomes_sum text_after='€' highlight_value=True tag='th' %}
-            {% cell profit_incomes_proc text_after='%' highlight_value=True css_class='br_s' tag='th' %}
+            {% cell profit_incomes_proc text_after='%' highlight_value=True tag='th' %}
             {% cell total_row.profit_invested_sum text_after='€' highlight_value=True tag='th' %}
             {% cell profit_invested_proc text_after='%' highlight_value=True tag='th' %}
         </tr>

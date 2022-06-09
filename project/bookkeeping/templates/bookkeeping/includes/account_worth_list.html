@@ -2,13 +2,10 @@
 {% load i18n %}
 {% load slippers %}
 
-<table class="table table-striped table-hover stats">
-    <thead class="thead-light">
-        <tr class="top">
-            <th colspan="8">{% regenerate_balances type='accounts' %}{% translate 'Accounts' %}</th>
-        </tr>
+<table class="table table-sm table-striped table-hover">
+    <thead>
         <tr>
-            <th class="text-start" colspan="2">{% translate 'Account' %}</th>
+            <th class="text-start" colspan="2">{% regenerate_balances type='accounts' %} {% translate 'Accounts' %}</th>
             <th>01.01</th>
             <th>{% translate 'Incomes' %}</th>
             <th>{% translate 'Expenses' %}</th>
@@ -23,7 +20,7 @@
             <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="{{ item.latest_check|default:_('Not specified') }}" class="text-start no-right-border">
                 {{ item.title }}
             </td>
-            <td class="no-left-border w5"><button type="button" hx-get="{% url 'bookkeeping:accounts_worth_reset' item.account_pk %}" class="btn btn-super-sm btn-outline-info reset">{% translate 'Reset' %} {% translate 'Have' %}</button></td>
+            <td class="no-left-border w5"><button type="button" hx-get="{% url 'bookkeeping:accounts_worth_reset' item.account_pk %}" class="btn btn-xs btn-outline-info rounded-1">{% translate 'Reset' %} {% translate 'Have' %}</button></td>
             {% cell item.past css_class='w7' %}
             {% cell item.incomes css_class='w7' %}
             {% cell item.expenses css_class='w7' %}
@@ -34,7 +31,7 @@
         {% endfor %}
     </tbody>
     <tfoot>
-        <tr  class="total">
+        <tr>
             <th class="text-start" colspan="2">{% translate 'Total' %}</th>
             {% cell total_row.past tag="th" %}
             {% cell total_row.incomes tag="th" %}

@@ -4,9 +4,9 @@
 
 {% if object_list %}
 
-<table class="table table-striped table-hover stats">
-    <thead class="thead-light">
-        <tr class="top">
+<table class="table table-sm table-striped table-hover">
+    <thead>
+        <tr>
             <th>{% translate 'Date' %}</th>
             <th>{% translate 'Incomes type' %}</th>
             <th>{% translate 'Account' %}</th>
@@ -19,7 +19,7 @@
         {% for object in object_list %}
         {% url 'incomes:update' object.id as url_update %}
         {% url 'incomes:delete' object.id as url_delete %}
-        {% ifchanged object.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="7" class="table-active"></td></tr>{% endif %}
+        {% ifchanged object.date|date:"F" %}{% if not forloop.first %}<tr><td colspan="7" class="table table-sm-active"></td></tr>{% endif %}
         {% endifchanged %}
         <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#dialog">
             <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>

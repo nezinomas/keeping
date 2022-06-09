@@ -3,9 +3,9 @@
 {% load cell_format %}
 {% load i18n %}
 
-<table class="table table-borderless table-striped table-hover stats">
-    <thead class="thead-light">
-        <tr class="top">
+<table class="table table-sm table-striped table-hover">
+    <thead>
+        <tr>
             <th></th>
             {% for cat in expense_types %}<th class="text-end" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{cat}}">{{cat|truncatechars:8}}</th>{% endfor %}
             <th class="bl text-end no-right-border">{% translate 'Total' %}</th>
@@ -27,7 +27,7 @@
             <td class="text-start {{weekend_col}} panel-heading" :class="open{{day_int}} ? 'active' : ''">
                 <a
                     role="button"
-                    class="btn btn-super-sm"
+                    class="btn btn-xs no-hover"
                     data-bs-toggle="collapse"
                     aria-expanded="true"
                     hx-get="{{url_expand}}"
@@ -51,7 +51,7 @@
         {% endfor %}
     </tbody>
     <tfoot>
-        <tr class="total">
+        <tr>
             <th class="text-start">&#8721;</th>
             {% for cat in expense_types %}{% cell total_row|get_item:cat tag='th' %}{% endfor %}
             {% cell total_row.total tag='th' css_class="bl no-right-border" %}

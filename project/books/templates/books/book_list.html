@@ -3,9 +3,9 @@
 
 {% if object_list %}
 
-<table class="table table-striped table-hover stats">
-    <thead class="thead-light">
-        <tr class="top">
+<table class="table table-sm table-striped table-hover">
+    <thead>
+        <tr>
             <th>Nr</th>
             <th>{% translate 'Author' %}</th>
             <th>{% translate 'Title' %}</th>
@@ -19,7 +19,7 @@
         {% for object in object_list %}
         {% url 'books:update' object.id as url_update %}
         {% url 'books:delete' object.id as url_delete %}
-        {% ifchanged object.started|date:"Y" %}{% if not forloop.first %}<tr><td colspan="8" class="table-active"></td></tr>{% endif %}
+        {% ifchanged object.started|date:"Y" %}{% if not forloop.first %}<tr><td colspan="8" class="table table-sm-active"></td></tr>{% endif %}
         {% endifchanged %}
         <tr hx-get="{{ url_update }}{% if tab %}?tab={{ tab }}{% endif %}" hx-trigger="dblclick" hx-target="#dialog" class="{% if not object.ended %} teal{% endif %}">
             <td class="text-start">{{ forloop.revcounter }}</td>

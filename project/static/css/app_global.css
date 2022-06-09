@@ -1,21 +1,34 @@
-body, .tooltip {
-  font-size: .7rem!important;
+:root {
+    --bs-body-font-size: 0.7rem;
+    --font-size-xs: .65rem;
+    --font-size-sm: .7rem;
 }
 
-.btn-sm,
-.form-control-sm,
+.tooltip,
 .form-control,
-.page-link {
-    font-size: .7rem!important;
+.form-control-sm {
+    font-size: var(--font-size-sm);
 }
 
-div[class*="col"] > h6 {
-    font-size: 1rem;
+.btn-xs {
+    font-size: var(--font-size-xs);
+    line-height: 0.25rem !important;
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+    margin-top: -0.65rem !important;
+    margin-bottom: -0.45rem !important;
+}
+
+.btn-sm {
+    font-size: var(--font-size-sm);
+    padding: .2rem .3rem;
 }
 
 
 /*
-    Top Menu
+                                                                    Top Menu
 */
 .dropdown-menu a.dropdown-item {
     padding: .2rem .5rem;
@@ -24,6 +37,7 @@ div[class*="col"] > h6 {
 .nav-item {
     margin: 0 .15rem;
 }
+
 .nav-link {
     padding: .2rem .35rem;
 }
@@ -32,16 +46,15 @@ div[class*="col"] > h6 {
     padding-left: 0;
 }
 
-
 /*
-    Right Menu
+                                                                    Right Menu
 */
-.accordion-item {
-    border: none!important;
-}
-
 .accordion-header {
     position: relative;
+}
+
+.accordion-item {
+    border: none !important;
 }
 
 .accordion-body {
@@ -49,10 +62,8 @@ div[class*="col"] > h6 {
     margin: 0;
 }
 
-/* accordion child */
-.accordion-body > .list-group-item {
-    padding: .25rem 0 .25rem 1.25rem;
-    margin: 0;
+.accordion-body>.list-group-item {
+    padding: .35rem;
 }
 
 .accordion-body .edit-icon {
@@ -63,14 +74,15 @@ div[class*="col"] > h6 {
 }
 
 .accordion-button {
-    padding: 0.15rem 0.3rem;
+    padding-top: .25rem !important;
+    padding-bottom: .25rem !important;
     color: #004085;
     background-color: #9fcdff;
-    border: 1px solid rgba(0,0,0,.125);
+    border: 1px solid rgba(0, 0, 0, .125);
 }
 
 .accordion-button::after {
-    padding-top: 0.15rem!important;
+    padding-top: 0.15rem !important;
     text-align: center;
     font-family: 'Glyphicons Halflings';
     content: "\e114";
@@ -83,270 +95,239 @@ div[class*="col"] > h6 {
 
 
 /*
-    Info Row
+                                                                    Info Row
 */
 .info_row {
     font-weight: normal;
     font-size: 0.8rem;
 }
 
-.info_row > span {
+.info_row>span {
     vertical-align: middle;
     display: inline-block;
-    margin-top: 0.25rem!important;
+    margin-top: 0.25rem !important;
 }
 
-.info_row > h6 {
+.info_row>h6 {
     font-size: 1.5rem;
     display: inline;
 }
 
-.info_row > h6, div[class*="col"] > h6 {
+.info_row>h6,
+div[class*="col"]>h6 {
     vertical-align: middle;
-    margin-bottom: 0!important;
+    margin-bottom: 0 !important;
     padding-top: .25rem;
 }
 
 
 /*
-    Table Stats
+                                                                    Table
 */
-table.stats h1 {
-    font-size: .75rem;
-    padding: .15rem 0;
-    margin: 0;
+.table {
+    font-size: var(--font-size-xs);
 }
 
-table.stats {
-    border-collapse: collapse;
-    font-size: .67rem;
+.table thead th {
+    padding-top: .25rem !important;
+    padding-bottom: .25rem !important;
 }
 
-table.stats tfoot {
+.table thead tr:not(:last-child) {
+    background-color: #f9f9f9;
+}
+
+.table thead tr:last-child {
+    background-color: #add8e6
+}
+
+.table thead  {
+    border-bottom: #000 solid .15rem !important;
+}
+
+.table tfoot {
     background-color: #f8f9fa;
+    border-top: double #0359b0 !important;
 }
 
-table.stats td, table.stats th {
-    border-width: 0.5px!important;
-    border-style: solid!important;
-    border-color: #cacac9!important;
-    border-collapse: collapse!important;
-    vertical-align: middle!important;
-    padding-top: .09rem!important;
-    padding-bottom: .09rem!important;
-    padding-left: .20rem!important;
-    padding-right: .20rem!important;
-}
-
-table.stats tr td:first-child, table.stats tr th:first-child {
-    border-left: 0!important;
-}
-
-table.stats tr td:last-child, table.stats tr th:last-child {
-    border-right: 0!important;
-}
-
-table.stats tfoot tr:last-child th {
-    border-bottom: 0!important;
-}
-
-table.stats td, table.stats th {
-    text-align: right;
-}
-
-table.stats > tfoot > tr > th {
-    border-top: double #0359b0!important;
-}
-
-table.stats > tfoot > tr > th {
+.table tfoot tr:not(:last-child) th{
     font-weight: normal;
 }
 
-table.stats > thead > tr > th {
-    padding-top: .25rem!important;
-    padding-bottom: .25rem!important;
+.table td, .table th {
+    text-align: right;
+    vertical-align: middle !important;
+    border-width: 0.5px !important;
+    border-color: #cacac9 !important;
+    padding-top: .09rem !important;
+    padding-bottom: .09rem !important;
+    padding-left: .20rem !important;
+    padding-right: .20rem !important;
 }
 
-table.stats td.w-edit {
-    width: 35px!important;
-    text-align: center!important;
-    border-right: 0!important;
+.table tr td:first-child,
+.table tr th:first-child {
+    border-left: 0 !important;
 }
 
-table.stats td.w-delete {
-    width:  25px!important;
-    text-align: center!important;
-    border-left: 0!important;
+.table tr td:last-child,
+.table tr th:last-child {
+    border-right: 0 !important;
 }
 
-table.stats tr > td.exception, table.stats tr > th.exception {
-    padding-left:.4rem!important;
-    border-left: 5px solid red!important;
+.table tfoot tr:last-child th {
+    border-bottom: 0 !important;
 }
 
-tr.total th {
-    font-weight: bold!important;
+.table .br {
+    border-right: .15rem solid #0359b0 !important;
 }
 
-.top > th {
-    background-color: lightblue !important;
-    text-align: left!important;
+.table .bl {
+    border-left: .15rem solid #0359b0 !important;
 }
 
-.top > th.text-end {
-    text-align: right!important;
+.table .no-left-border {
+    border-left: 0 !important;
 }
 
-.top > th.text-center {
-    text-align: center!important;
+.table .no-right-border {
+    border-right: 0 !important;
 }
 
-tr.top-text, tr.top-text th {
-    text-align: left!important;
-    background-color: white!important;
-    border-top: 0px!important;
+.table .dash {
+    color: #b7b7b6 !important;
 }
 
-.stats .br {
-    border-right: .15rem solid #0359b0!important;
+.table td.w-edit {
+    width: 35px !important;
+    text-align: center !important;
+    border-right: 0 !important;
 }
 
-.stats .bl {
-    border-left: .15rem solid #0359b0!important;
+.table td.w-delete {
+    width: 25px !important;
+    text-align: center !important;
+    border-left: 0 !important;
 }
 
-.dash {
-    color: #b7b7b6!important;
+.table tr>td.exception,
+.table tr>th.exception {
+    padding-left: .4rem !important;
+    border-left: 5px solid red !important;
 }
 
-tr:hover td,
-tr._weekend_row:hover td,
-tr._current_day:hover td {
-    --bs-table-accent-bg: #f9f6cf!important;
-}
 
-tr.tr_expand_day_expenses:hover,
-tr.tr_expand_day_expenses:hover td
+/*
+                                                                    Month View
+*/
+.table .empty
  {
-    --bs-table-accent-bg: transparent!important;
+    --bs-table-accent-bg: white !important;
+    border: none!important;
 }
 
-.stats .no-left-border {
-    border-left: 0!important;
+.table th.empty {
+    border-bottom: #fff solid .15rem !important;
+    border-top: #fff double !important;
 }
 
-.stats .no-right-border {
-    border-right: 0!important;
+._weekend_col {
+    --bs-table-accent-bg: rgb(202, 235, 204) !important;
 }
 
-.trash, .trash:hover {
+tr._current_day>td,
+tr._current_day>td._weekend_col {
+    --bs-table-accent-bg: #ffc107 !important;
+}
+
+.table-hover tr:hover td,
+.table-hover tr._weekend_row:hover td,
+.table-hover tr._current_day:hover td {
+    --bs-table-accent-bg: #f9f6cf !important;
+}
+
+.table-hover tr.tr_expand_day_expenses:hover,
+.table-hover tr.tr_expand_day_expenses:hover td {
+    --bs-table-accent-bg: transparent !important;
+}
+
+
+.table .td_expand_day_expenses {
+    padding-top: .35rem !important;
+    padding-left: .3rem !important;
+    padding-right: .3rem !important;
+    padding-bottom: 1rem !important;
+    background-color: white !important;
+}
+
+.table .panel-heading a:before {
+    font-family: 'Glyphicons Halflings';
+    content: "\e114";
+    float: right;
+    transition: all 0.5s;
+    margin-left: .3rem !important;
+    color: #fe536a;
+}
+
+.table .panel-heading.active a:before {
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    transform: rotate(180deg);
+}
+
+.table-danger {
+    --bs-table-accent-bg: #f8d7da !important;
+}
+
+.table-danger.-full {
+    --bs-table-accent-bg: #fe536a !important;
+}
+
+.btn-group-month .btn {
+    margin-right: 5px !important;
+    border-radius: 0.2rem !important;
+}
+
+.btn-group-month .btn:last-child {
+    margin-right: 0 !important;
+}
+
+
+/*
+                                                                    Various
+*/
+caption {
+    font-weight: bold;
+}
+
+.modal-dialog.modal-650 {
+    max-width: 650px !important;
+    margin: auto;
+}
+
+.no-hover,
+.no-hover:hover {
+    text-decoration: none !important;
+    border: 0 !important;
+}
+
+.trash,
+.trash:hover {
     color: #dc3545;
     width: 100%;
 }
 
-.edit, .edit:hover {
-    color: green;
+.edit,
+.edit:hover {
+    color: #008000;
     width: 100%;
 }
 
-._weekend_col {
-    --bs-table-accent-bg:rgb(202, 235, 204)!important;
-}
-
-tr._current_day > td, tr._current_day > td._weekend_col {
-    --bs-table-accent-bg:#ffc107!important;
-}
-
-.table-active {
-    height: 0.5rem;
-    background-color: #e2dfdf;
-}
-
-.w3 {
-    width: 3rem!important;
-}
-
-.w5 {
-    width: 5rem!important;
-}
-
-.w6 {
-    width: 6rem!important;
-}
-
-.w7 {
-    width: 7rem!important;
-}
-
-.w7p {
-    width: 7%!important;
-}
-
-.w8 {
-    width: 8rem!important;
-}
-
-.w10 {
-    width: 10rem!important;
-}
-
-.w16 {
-    width: 16rem!important;
-}
-
-
-/*
-    Buttons
-*/
-.btn-sm {
-  padding: .2rem .3rem;
-}
-
-.btn-menu {
-    font-size: .7rem!important;
-    color: #007bff;
-}
-
-.btn-super-sm {
-    font-size: .65rem;
-    line-height: 0.25rem!important;
-    padding-top: 0.25rem!important;
-    padding-bottom: 0.25rem!important;
-    padding-left: 0.25rem!important;
-    padding-right: 0.25rem!important;
-    margin-top: -0.65rem!important;
-    margin-bottom: -0.45rem!important;
-}
-
-.btn-light {
-    background-color: rgb(239, 239, 239) !important;
-}
-
-/*
-    Various
-*/
-.modal-dialog.modal-650 {
-    max-width: 650px!important;
-    margin: auto;
-}
-
-.no-hover, .no-hover:hover {
-    text-decoration: none!important;
-}
-
-.plans-star {
-    color: #e83e8c;
-    padding-left: .5rem;
-    font-weight: bold;
-}
-
-#search_btn {
-    margin: 0!important;
-    padding: .25rem .5rem;
-}
-
-#div_id_search {
-    margin-bottom: 0!important;
+.page-link {
+    font-size: var(--font-size-sm);
+    padding-left: .75rem !important;
+    padding-right: .75rem !important;
 }
 
 .tooltip.show p {
@@ -354,7 +335,7 @@ tr._current_day > td, tr._current_day > td._weekend_col {
 }
 
 #imgModal .modal-dialog {
-    max-width: 800px!important;
+    max-width: 800px !important;
 }
 
 #imgModal img {
@@ -370,31 +351,54 @@ tr._current_day > td, tr._current_day > td._weekend_col {
     display: table-cell;
 }
 
+.w3 {
+    width: 3rem !important;
+}
+
+.w5 {
+    width: 5rem !important;
+}
+
+.w6 {
+    width: 6rem !important;
+}
+
+.w7 {
+    width: 7rem !important;
+}
+
+.w7p {
+    width: 7% !important;
+}
+
+.w8 {
+    width: 8rem !important;
+}
+
+.w10 {
+    width: 10rem !important;
+}
+
+.w16 {
+    width: 16rem !important;
+}
+
 
 /*
-    Bootstrap Hacks
+                                                                    Search
 */
-/* CheckBox input normal width */
-input.form-check-input,
-input.form-check-input.is-invalid,
-input.form-check-input.is-invalid:checked {
-    height: 1em!important;
-    padding: 0;
-    margin-top: .35rem;
+#search_btn {
+    margin: 0 !important;
+    padding: .25rem .5rem;
 }
 
-/* overwrite  bootstrap  class */
-.invalid-feedback {
-    display: block!important;
-}
-
-.formset-price-input {
-    padding-top: .1rem;
+#div_id_search {
+    margin-bottom: 0 !important;
 }
 
 
 /*
-    Expenses
+                                                                    Expenses
 */
 .badge {
     padding: 0.25rem .25rem;
@@ -421,17 +425,24 @@ input.form-check-input.is-invalid:checked {
     background-color: #fff0c1;
 }
 
-table.stats tr > .expense-ordinary {
-    padding-left:.55rem!important;
-}
-
-.page-link {
-    padding-left: .75rem!important;
-    padding-right: .75rem!important;
+.table tr>.expense-ordinary {
+    padding-left: .55rem !important;
 }
 
 
-/* ajax request load indicator */
+/*
+                                                                    Plans
+*/
+.plans-star {
+    color: #e83e8c;
+    padding-left: .5rem;
+    font-weight: bold;
+}
+
+
+/*
+                                                                    Ajax indicator
+*/
 .htmx-indicator {
     display: none;
 }
@@ -442,4 +453,16 @@ table.stats tr > .expense-ordinary {
 
 .htmx-request.htmx-indicator {
     display: inline;
+}
+
+
+/*
+                                                                    Bootstrap Hacks
+*/
+.invalid-feedback {
+    display: block !important;
+}
+
+.formset-price-input {
+    padding-top: .1rem;
 }
