@@ -6,7 +6,7 @@
 <table class="table table-sm table-striped table-hover">
     <thead>
         <tr>
-            <th></th>
+            <th class="expand_column_width"></th>
             {% for cat in expense_types %}<th class="text-end" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{cat}}">{{cat|truncatechars:8}}</th>{% endfor %}
             <th class="bl text-end no-right-border">{% translate 'Total' %}</th>
             <th class="empty"></th>

@@ -266,6 +266,11 @@ tr._current_day>td._weekend_col {
     background-color: white !important;
 }
 
+.expand_column_width {
+    width: 2.6rem !important;
+    min-width: 2.6rem !important;
+}
+
 .table .panel-heading a:before {
     font-family: 'Glyphicons Halflings';
     content: "\e114";
@@ -358,6 +363,7 @@ caption {
 
 .w3 {
     width: 3rem !important;
+    min-width: 3rem !important;
 }
 
 .w5 {
