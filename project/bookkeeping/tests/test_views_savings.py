@@ -47,7 +47,7 @@ def test_percentage_from_incomes(client_logged):
     response = client_logged.get(url)
     actual = response.context
 
-    assert actual['percentage_from_incomes'] == 144.5
+    assert actual['percentage_from_incomes'] == 200.0
 
 
 def test_latest_check(client_logged):
