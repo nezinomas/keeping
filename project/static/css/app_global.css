@@ -225,17 +225,6 @@ div[class*="col"]>h6 {
 /*
                                                                     Month View
 */
-.table .empty
- {
-    --bs-table-accent-bg: white !important;
-    border: none!important;
-}
-
-.table th.empty {
-    border-bottom: #fff solid .15rem !important;
-    border-top: #fff double !important;
-}
-
 ._weekend_col {
     --bs-table-accent-bg: rgb(202, 235, 204) !important;
 }
@@ -303,6 +292,9 @@ tr._current_day>td._weekend_col {
     margin-right: 0 !important;
 }
 
+.table .empty_column {
+    border-right: #fff solid .5rem !important;
+}
 
 /*
                                                                     Various
