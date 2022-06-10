@@ -1,14 +1,14 @@
 {% load table_cell %}
 {% load i18n %}
 
-<table class="table table-sm table-striped table-hover">
+<table class="table table-sm table-striped table-hover" x-data="{ open:false }">
     <thead>
         <tr>
             <th colspan="4" class="text-start">{% translate 'Balance' %}</th>
             <th colspan="2" class="left-blue-border right-blue-border text-start">{% translate 'Savings' %}</th>
-            <th colspan="4" class="left-blue-border right-blue-border toggleDisplay text-start">{% translate 'Debts' %}</th>
+            <th colspan="4" class="left-blue-border right-blue-border text-start" x-show="open">{% translate 'Debts' %}</th>
             <th class="text-nowrap">
-                <button onclick="toggleDebts()" id="toggle_debts" class="btn btn-xs no-hover" style="font-weight: bold; color: #0d6efd; padding-right: 0!important;">{% translate 'Show debts' %}</button>
+                <button class="btn btn-xs no-hover" style="font-weight: bold; color: #0d6efd; padding-right: 0!important;" @click="open = ! open" x-text="open ? '{% translate "Hide debts" %}' : '{% translate "Show debts" %}' "></button>
             </th>
         </tr>
         <tr>
@@ -18,10 +18,10 @@
             <th>{% translate 'Balance' %}</th>
             <th class="left-blue-border">{% translate 'Invested' %}</th>
             <th class="right-blue-border">{% translate 'Sold' %}</th>
-            <th class="left-blue-border toggleDisplay">{% translate 'Borrow' %}</th>
-            <th class="toggleDisplay">{% translate 'Borrow return' %}</th>
-            <th class="toggleDisplay">{% translate 'Lend' %}</th>
-            <th class="right-blue-border toggleDisplay">{% translate 'Lend return' %}</th>
+            <th class="left-blue-border" x-show="open">{% translate 'Borrow' %}</th>
+            <th x-show="open">{% translate 'Borrow return' %}</th>
+            <th x-show="open">{% translate 'Lend' %}</th>
+            <th class="right-blue-border" x-show="open">{% translate 'Lend return' %}</th>
             <th class="text-nowrap">{% translate 'Money flow' %}</th>
         </tr>
     </thead>
@@ -34,10 +34,10 @@
             {% cell item.balance highlight_value=True  %}
             {% cell item.savings css_class="left-blue-border" %}
             {% cell item.savings_close css_class="right-blue-border"  %}
-            {% cell item.borrow css_class="left-blue-border toggleDisplay" %}
-            {% cell item.borrow_return css_class="toggleDisplay" %}
-            {% cell item.lend css_class="toggleDisplay" %}
-            {% cell item.lend_return css_class="right-blue-border toggleDisplay" %}
+            {% cell item.borrow css_class="left-blue-border" alpinejs='x-show="open"' %}
+            {% cell item.borrow_return alpinejs='x-show="open"' %}
+            {% cell item.lend alpinejs='x-show="open"' %}
+            {% cell item.lend_return css_class="right-blue-border" alpinejs='x-show="open"' %}
             {% cell item.money_flow %}
         </tr>
         {% endfor %}
@@ -50,10 +50,10 @@
             <th></th>
             {% cell avg_row.savings tag='th' css_class="left-blue-border" %}
             {% cell avg_row.savings_close tag='th' css_class="right-blue-border" %}
-            <th class="left-blue-border toggleDisplay">{{ avg_row.borrow }}</th>
-            <th class="toggleDisplay">{{ avg_row.borrow_return }}</th>
-            <th class="toggleDisplay">{{ avg_row.lend }}</th>
-            <th class="right-blue-border toggleDisplay">{{ avg_row.lend_return }}</th>
+            <th class="left-blue-border" x-show="open">{{ avg_row.borrow }}</th>
+            <th x-show="open">{{ avg_row.borrow_return }}</th>
+            <th x-show="open">{{ avg_row.lend }}</th>
+            <th class="right-blue-border" x-show="open">{{ avg_row.lend_return }}</th>
             <th><b>{% translate "End of year" %}</b></th>
         </tr>
         <tr >
@@ -63,25 +63,11 @@
             {% cell total_row.balance tag='th' highlight_value=True %}
             {% cell total_row.savings tag='th' css_class="left-blue-border" %}
             {% cell total_row.savings_close tag='th' css_class="right-blue-border" %}
-            {% cell total_row.borrow tag='th' css_class="left-blue-border toggleDisplay" %}
-            {% cell total_row.borrow_return tag="th" css_class="toggleDisplay" %}
-            {% cell total_row.lend tag="th" css_class="toggleDisplay" %}
-            {% cell total_row.lend_return tag="th" css_class="right-blue-border toggleDisplay" %}
+            {% cell total_row.borrow tag='th' css_class="left-blue-border" alpinejs='x-show="open"' %}
+            {% cell total_row.borrow_return tag="th" alpinejs='x-show="open"' %}
+            {% cell total_row.lend tag="th" alpinejs='x-show="open"' %}
+            {% cell total_row.lend_return tag="th" css_class="right-blue-border" alpinejs='x-show="open"' %}
             {% cell amount_end tag='th' css_class="check" highlight_value=True %}
         </tr>
     </tfoot>
 </table>
-
-<script>
-    function toggleDebts() {
-        $(".table .toggleDisplay").toggleClass("in");
-
-        var btn = document.getElementById('toggle_debts');
-        if (btn.textContent === '{% translate "Show debts" %}') {
-            btn.textContent = '{% translate "Hide debts" %}'
-        }
-        else {
-            btn.textContent = '{% translate "Show debts" %}'
-        }
-    }
-</script>
