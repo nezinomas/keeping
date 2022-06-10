@@ -7,7 +7,7 @@
     <thead>
         <tr>
             <th colspan="3" rowspan="2" class="text-start">{% regenerate_balances type=type %} {{ title }}</th>
-            <th colspan="4" rowspan="2" class="br">{% if percentage_from_incomes %} {% translate 'From incomes' %}: {{ percentage_from_incomes|floatformat:1 }}%{% endif %}</th>
+            <th colspan="4" rowspan="2" class="right-blue-border">{% if percentage_from_incomes %} {% translate 'From incomes' %}: {{ percentage_from_incomes|floatformat:1 }}%{% endif %}</th>
             <th colspan="4" class="text-center">{% translate 'Profit' %}/{% translate 'Loss' %}</th>
         </tr>
         <tr>
@@ -21,7 +21,7 @@
             <th>{% translate 'Transferred' %}</th>
             <th>{% translate 'Fees' %}</th>
             <th>{% translate 'Purchased' %}</th>
-            <th class="br">{% translate 'Market value' %}</th>
+            <th class="right-blue-border">{% translate 'Market value' %}</th>
             <th>{% translate 'Sum' %}</th>
             <th>%</th>
             <th>{% translate 'Sum' %}</th>
@@ -37,7 +37,7 @@
             {% cell item.incomes css_class='w8' %}
             {% cell item.fee css_class='w8' %}
             {% cell item.invested css_class='w8' %}
-            {% cell item.market_value css_class='br w8' %}
+            {% cell item.market_value css_class='right-blue-border w8' %}
             {% cell item.profit_incomes_sum text_after='€' highlight_value=True css_class='w8' %}
             {% cell item.profit_incomes_proc text_after='%' highlight_value=True css_class='w8' %}
             {% cell item.profit_invested_sum text_after='€' highlight_value=True css_class='w8' %}
@@ -53,7 +53,7 @@
             {% cell total_row.incomes tag='th' %}
             {% cell total_row.fee tag='th' %}
             {% cell total_row.invested tag='th' %}
-            {% cell total_row.market_value tag='th' css_class='br' %}
+            {% cell total_row.market_value tag='th' css_class='right-blue-border' %}
             {% cell total_row.profit_incomes_sum text_after='€' highlight_value=True tag='th' %}
             {% cell profit_incomes_proc text_after='%' highlight_value=True tag='th' %}
             {% cell total_row.profit_invested_sum text_after='€' highlight_value=True tag='th' %}
