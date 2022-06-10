@@ -7,9 +7,9 @@
         <tr>
             <th class="text-start">{% translate 'Expense' %}</th>
             {% for year in categories %}
-            <th class="text-end">{{ year|title }}</th>
+            <th>{{ year|title }}</th>
             {% endfor %}
-            <th class="text-end">{% translate 'Total' %}</th>
+            <th>{% translate 'Total' %}</th>
         </tr>
     </thead>
     <tbody>

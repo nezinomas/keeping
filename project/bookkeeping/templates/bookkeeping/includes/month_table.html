@@ -7,11 +7,11 @@
     <thead>
         <tr>
             <th class="expand_column_width"></th>
-            {% for cat in expense_types %}<th class="text-end" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{cat}}">{{cat|truncatechars:8}}</th>{% endfor %}
-            <th class="bl text-end empty_column">{% translate 'Total' %}</th>
+            {% for cat in expense_types %}<th data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{cat}}">{{cat|truncatechars:8}}</th>{% endfor %}
+            <th class="bl empty_column">{% translate 'Total' %}</th>
             <th></th>
-            <th class="text-end">{% translate 'Day' %}</th>
-            <th class="text-end">{% translate 'Total' %}</th>
+            <th>{% translate 'Day' %}</th>
+            <th>{% translate 'Total' %}</th>
         </tr>
     </thead>
     <tbody x-data="make_x_data()">
