@@ -10,7 +10,7 @@
             <th>{% translate 'Incomes' %}</th>
             <th>{% translate 'Expenses' %}</th>
             <th>{% translate 'Balance' %}</th>
-            <th class="text-end bl">{% translate 'Have' %}</th>
+            <th class="left-blue-border">{% translate 'Have' %}</th>
             <th>{% translate 'Delta' %}</th>
         </tr>
     </thead>
@@ -25,7 +25,7 @@
             {% cell item.incomes css_class='w7' %}
             {% cell item.expenses css_class='w7' %}
             {% cell item.balance css_class='w7' %}
-            {% cell item.have css_class='bl w7' %}
+            {% cell item.have css_class='left-blue-border w7' %}
             {% cell item.delta css_class='w7' highlight_value=True default_if_empty='ok' %}
         </tr>
         {% endfor %}
@@ -37,7 +37,7 @@
             {% cell total_row.incomes tag="th" %}
             {% cell total_row.expenses tag="th" %}
             {% cell total_row.balance css_class="check" tag="th" %}
-            {% cell total_row.have tag="th" css_class='bl' %}
+            {% cell total_row.have tag="th" css_class='left-blue-border' %}
             {% cell total_row.delta tag="th" %}
         </tr>
     </tfoot>

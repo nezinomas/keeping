@@ -5,9 +5,9 @@
     <thead>
         <tr>
             <th colspan="4" class="text-start">{% translate 'Balance' %}</th>
-            <th colspan="2" class="bl br text-start">{% translate 'Savings' %}</th>
-            <th colspan="4" class="bl br toggleDisplay text-start">{% translate 'Debts' %}</th>
-            <th class="text-end text-nowrap">
+            <th colspan="2" class="left-blue-border right-blue-border text-start">{% translate 'Savings' %}</th>
+            <th colspan="4" class="left-blue-border right-blue-border toggleDisplay text-start">{% translate 'Debts' %}</th>
+            <th class="text-nowrap">
                 <button onclick="toggleDebts()" id="toggle_debts" class="btn btn-xs no-hover" style="font-weight: bold; color: #0d6efd; padding-right: 0!important;">{% translate 'Show debts' %}</button>
             </th>
         </tr>
@@ -16,12 +16,12 @@
             <th>{% translate 'Incomes' %}</th>
             <th>{% translate 'Expenses' %}</th>
             <th>{% translate 'Balance' %}</th>
-            <th class="bl">{% translate 'Invested' %}</th>
-            <th class="br">{% translate 'Sold' %}</th>
-            <th class="bl toggleDisplay">{% translate 'Borrow' %}</th>
+            <th class="left-blue-border">{% translate 'Invested' %}</th>
+            <th class="right-blue-border">{% translate 'Sold' %}</th>
+            <th class="left-blue-border toggleDisplay">{% translate 'Borrow' %}</th>
             <th class="toggleDisplay">{% translate 'Borrow return' %}</th>
             <th class="toggleDisplay">{% translate 'Lend' %}</th>
-            <th class="br toggleDisplay">{% translate 'Lend return' %}</th>
+            <th class="right-blue-border toggleDisplay">{% translate 'Lend return' %}</th>
             <th class="text-nowrap">{% translate 'Money flow' %}</th>
         </tr>
     </thead>
@@ -32,12 +32,12 @@
             {% cell item.incomes %}
             {% cell item.expenses %}
             {% cell item.balance highlight_value=True  %}
-            {% cell item.savings css_class="bl" %}
-            {% cell item.savings_close css_class="br"  %}
-            {% cell item.borrow css_class="bl toggleDisplay" %}
+            {% cell item.savings css_class="left-blue-border" %}
+            {% cell item.savings_close css_class="right-blue-border"  %}
+            {% cell item.borrow css_class="left-blue-border toggleDisplay" %}
             {% cell item.borrow_return css_class="toggleDisplay" %}
             {% cell item.lend css_class="toggleDisplay" %}
-            {% cell item.lend_return css_class="br toggleDisplay" %}
+            {% cell item.lend_return css_class="right-blue-border toggleDisplay" %}
             {% cell item.money_flow %}
         </tr>
         {% endfor %}
@@ -48,12 +48,12 @@
             {% cell avg_row.incomes tag='th' %}
             {% cell avg_row.expenses tag='th' %}
             <th></th>
-            {% cell avg_row.savings tag='th' css_class="bl" %}
-            {% cell avg_row.savings_close tag='th' css_class="br" %}
-            <th class="bl toggleDisplay">{{ avg_row.borrow }}</th>
+            {% cell avg_row.savings tag='th' css_class="left-blue-border" %}
+            {% cell avg_row.savings_close tag='th' css_class="right-blue-border" %}
+            <th class="left-blue-border toggleDisplay">{{ avg_row.borrow }}</th>
             <th class="toggleDisplay">{{ avg_row.borrow_return }}</th>
             <th class="toggleDisplay">{{ avg_row.lend }}</th>
-            <th class="br toggleDisplay">{{ avg_row.lend_return }}</th>
+            <th class="right-blue-border toggleDisplay">{{ avg_row.lend_return }}</th>
             <th><b>{% translate "End of year" %}</b></th>
         </tr>
         <tr >
@@ -61,12 +61,12 @@
             {% cell total_row.incomes tag='th' %}
             {% cell total_row.expenses tag='th' %}
             {% cell total_row.balance tag='th' highlight_value=True %}
-            {% cell total_row.savings tag='th' css_class="bl" %}
-            {% cell total_row.savings_close tag='th' css_class="br" %}
-            {% cell total_row.borrow tag='th' css_class="bl toggleDisplay" %}
+            {% cell total_row.savings tag='th' css_class="left-blue-border" %}
+            {% cell total_row.savings_close tag='th' css_class="right-blue-border" %}
+            {% cell total_row.borrow tag='th' css_class="left-blue-border toggleDisplay" %}
             {% cell total_row.borrow_return tag="th" css_class="toggleDisplay" %}
             {% cell total_row.lend tag="th" css_class="toggleDisplay" %}
-            {% cell total_row.lend_return tag="th" css_class="br toggleDisplay" %}
+            {% cell total_row.lend_return tag="th" css_class="right-blue-border toggleDisplay" %}
             {% cell amount_end tag='th' css_class="check" highlight_value=True %}
         </tr>
     </tfoot>
