@@ -246,7 +246,6 @@ tr.current-day>td.weekend-col {
     --bs-table-accent-bg: transparent !important;
 }
 
-
 .table td.expand-expenses {
     padding-top: .35rem !important;
     padding-left: .3rem !important;
