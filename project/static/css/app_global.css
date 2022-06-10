@@ -344,14 +344,6 @@ caption {
     height: auto;
 }
 
-.toggleDisplay {
-    display: none;
-}
-
-.toggleDisplay.in {
-    display: table-cell;
-}
-
 .w3 {
     width: 3rem !important;
     min-width: 3rem !important;
