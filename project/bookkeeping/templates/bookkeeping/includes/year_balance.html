@@ -28,7 +28,7 @@
     <tbody>
         {% for item in data %}
         <tr>
-            <td class="text-start">{{ item.date|date:"F"|title }}</td>
+            {% cell item.date|date:"F"|title css_class="text-start" %}
             {% cell item.incomes %}
             {% cell item.expenses %}
             {% cell item.balance highlight_value=True  %}
@@ -47,7 +47,7 @@
             <th class="text-start">Avg</th>
             {% cell avg_row.incomes tag='th' %}
             {% cell avg_row.expenses tag='th' %}
-            <th></th>
+            {% cell '' tag='th' %}
             {% cell avg_row.savings tag='th' css_class="left-blue-border" %}
             {% cell avg_row.savings_close tag='th' css_class="right-blue-border" %}
             {% cell avg_row.borrow tag='th' css_class="left-blue-border" alpinejs='x-show="open"' %}
@@ -56,7 +56,7 @@
             {% cell avg_row.lend_return tag="th" css_class="right-blue-border" alpinejs='x-show="open"' %}
             <th><b>{% translate "End of year" %}</b></th>
         </tr>
-        <tr >
+        <tr>
             <th class="text-start">{% translate 'Total' %}</th>
             {% cell total_row.incomes tag='th' %}
             {% cell total_row.expenses tag='th' %}
