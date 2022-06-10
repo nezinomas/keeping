@@ -50,10 +50,10 @@
             <th></th>
             {% cell avg_row.savings tag='th' css_class="left-blue-border" %}
             {% cell avg_row.savings_close tag='th' css_class="right-blue-border" %}
-            <th class="left-blue-border" x-show="open">{{ avg_row.borrow }}</th>
-            <th x-show="open">{{ avg_row.borrow_return }}</th>
-            <th x-show="open">{{ avg_row.lend }}</th>
-            <th class="right-blue-border" x-show="open">{{ avg_row.lend_return }}</th>
+            {% cell avg_row.borrow tag='th' css_class="left-blue-border" alpinejs='x-show="open"' %}
+            {% cell avg_row.borrow_return tag="th" alpinejs='x-show="open"' %}
+            {% cell avg_row.lend tag="th" alpinejs='x-show="open"' %}
+            {% cell avg_row.lend_return tag="th" css_class="right-blue-border" alpinejs='x-show="open"' %}
             <th><b>{% translate "End of year" %}</b></th>
         </tr>
         <tr >
