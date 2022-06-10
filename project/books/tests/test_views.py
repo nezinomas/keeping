@@ -70,7 +70,7 @@ def test_books_index_context(client_logged):
     response = client_logged.get(url)
 
     assert 'year' in response.context
-    assert 'all' in response.context
+    assert 'tab' in response.context
     assert 'books' in response.context
     assert 'chart' in response.context
     assert 'info' in response.context

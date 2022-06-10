@@ -251,8 +251,9 @@ tr._current_day>td._weekend_col {
     --bs-table-accent-bg: #f9f6cf !important;
 }
 
-.table-hover tr.tr_expand_day_expenses:hover,
-.table-hover tr.tr_expand_day_expenses:hover td {
+.table-hover .tr_expand_day_expenses:hover,
+.table-hover .tr_expand_day_expenses:hover td
+{
     --bs-table-accent-bg: transparent !important;
 }
 
@@ -263,6 +264,11 @@ tr._current_day>td._weekend_col {
     padding-right: .3rem !important;
     padding-bottom: 1rem !important;
     background-color: white !important;
+}
+
+.expand_column_width {
+    width: 2.6rem !important;
+    min-width: 2.6rem !important;
 }
 
 .table .panel-heading a:before {
@@ -357,6 +363,7 @@ caption {
 
 .w3 {
     width: 3rem !important;
+    min-width: 3rem !important;
 }
 
 .w5 {

@@ -213,10 +213,10 @@ class YearBalance(BalanceBase):
                 + df.loc[idx, 'balance']
                 + df.loc[idx, 'savings_close']
                 - df.loc[idx, 'savings']
-                - df.loc[idx, 'borrow']
-                + df.loc[idx, 'borrow_return']
-                + df.loc[idx, 'lend']
-                - df.loc[idx, 'lend_return']
+                + df.loc[idx, 'borrow']
+                - df.loc[idx, 'borrow_return']
+                - df.loc[idx, 'lend']
+                + df.loc[idx, 'lend_return']
             )
 
             cell = (idx, 'money_flow')

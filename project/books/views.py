@@ -15,7 +15,7 @@ class Index(TemplateViewMixin):
         context = super().get_context_data(**kwargs)
         context.update({
             'year': self.request.user.year,
-            'all': self.request.GET.get('tab'),
+            'tab': self.request.GET.get('tab'),
             'books': rendered_content(self.request, Lists),
             'chart': rendered_content(self.request, ChartReaded),
             'info': rendered_content(self.request, InfoRow),
@@ -118,7 +118,16 @@ class Lists(ListViewMixin):
     per_page = 50
 
     def get_queryset(self):
-        return models.Book.objects.year(year=self.request.user.year)
+        tab = self.request.GET.get('tab')
+
+        if tab:
+            return\
+                models.Book.objects \
+                .items()
+
+        return \
+            models.Book.objects \
+            .year(year=self.request.user.year)
 
     def get_context_data(self, **kwargs):
         page = self.request.GET.get('page', 1)
@@ -130,6 +139,7 @@ class Lists(ListViewMixin):
             'object_list': paginator.get_page(page),
             'url': reverse("books:list"),
             'page_range': page_range,
+            'tab': self.request.GET.get('tab'),
         })
         return context
 

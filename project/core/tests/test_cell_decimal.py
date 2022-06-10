@@ -26,7 +26,7 @@ def test_cell_positive_and_negative_neg(_template_positive_and_negative):
     context = Context({'value': '-0,5'})
 
     actual = _template_positive_and_negative.render(context)
-    expect = '<td class="table table-sm-danger">-0,5</td>'
+    expect = '<td class="table-danger">-0,5</td>'
 
     assert _remove_line_end(actual) == expect
 
@@ -37,7 +37,7 @@ def test_cell_positive_and_negative_pos(_template_positive_and_negative):
     actual = _template_positive_and_negative.render(context)
     actual = actual.replace('\n', '')
 
-    expect = '<td class="table table-sm-success">0,5</td>'
+    expect = '<td class="table-success">0,5</td>'
 
     assert actual == expect
 

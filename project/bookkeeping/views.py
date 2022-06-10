@@ -153,11 +153,12 @@ class Savings(TemplateViewMixin):
 
         savings = SavingBalance.objects.year(year)
         total_row = sum_all(savings)
-        total_past = total_row.get('past', 0)
+
+        total_past = total_row.get('past_amount', 0)
         total_savings = total_row.get('incomes', 0)
         total_invested = total_row.get('invested', 0)
         total_market = total_row.get('market_value', 0)
-        total_savings_current_year = total_invested - total_past
+        total_savings_current_year = total_savings - total_past
 
         Helper.add_latest_check_key(SavingWorth, savings, year)
         calculate_percent = IndexHelper.percentage_from_incomes
