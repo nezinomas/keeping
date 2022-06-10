@@ -6,12 +6,12 @@
     <thead>
         <tr>
             <th class="text-start" colspan="{{ categories|length|add:1 }}" {% if not categories|length %}style="width: 90%"{% endif %}>{% translate 'Expenses statistic' %}</th>
-            <th class="bl top"></th>
+            <th class="left-blue-border top"></th>
         </tr>
         <tr>
             <th class="text-start w5">{{ year|title }}</th>
             {% for cat in categories %}<th data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ cat }}">{{ cat|truncatechars:8 }}</th>{% endfor %}
-            <th class="bl">{% translate 'Total' %}</th>
+            <th class="left-blue-border">{% translate 'Total' %}</th>
         </tr>
     </thead>
     <tbody>
@@ -21,7 +21,7 @@
             {% for cat in categories %}
             {% cell item|get_item:cat %}
             {% endfor %}
-            {% cell item.total css_class="bl" %}
+            {% cell item.total css_class="left-blue-border" %}
         </tr>
         {% endfor %}
     </tbody>
@@ -29,12 +29,12 @@
         <tr>
             <th class="text-start">Avg</th>
             {% for cat in categories %}{% cell avg_row|get_item:cat tag='th' %}{% endfor %}
-            {% cell avg_row.total tag='th' css_class="bl" %}
+            {% cell avg_row.total tag='th' css_class="left-blue-border" %}
         </tr>
         <tr >
             <th class="text-start">{% translate 'Total' %}</th>
             {% for cat in categories %}{% cell total_row|get_item:cat tag='th' %}{% endfor %}
-            {% cell total_row.total tag='th' css_class="bl" %}
+            {% cell total_row.total tag='th' css_class="left-blue-border" %}
         </tr>
     </tfoot>
 </table>

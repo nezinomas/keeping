@@ -8,7 +8,7 @@
         <tr>
             <th class="expand_column_width"></th>
             {% for cat in expense_types %}<th data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{cat}}">{{cat|truncatechars:8}}</th>{% endfor %}
-            <th class="bl empty_column">{% translate 'Total' %}</th>
+            <th class="left-blue-border empty_column">{% translate 'Total' %}</th>
             <th></th>
             <th>{% translate 'Day' %}</th>
             <th>{% translate 'Total' %}</th>
@@ -41,7 +41,7 @@
             {% for cat in expense_types %}
             {% cell row|get_item:cat css_class=weekend_col %}
             {% endfor %}
-            {% cell row.total css_class=weekend_col|add:' bl'|add:' empty_column' %}
+            {% cell row.total css_class=weekend_col|add:' left-blue-border'|add:' empty_column' %}
 
             <td class="text-start {{weekend_col}}">{{sp.date|date:'l'}}</td>
             {% cell sp.day css_class=sp.day|negative %}
@@ -53,7 +53,7 @@
         <tr>
             <th class="text-start">&#8721;</th>
             {% for cat in expense_types %}{% cell total_row|get_item:cat tag='th' %}{% endfor %}
-            {% cell total_row.total tag='th' css_class="bl empty_column" %}
+            {% cell total_row.total tag='th' css_class="left-blue-border empty_column" %}
             <th></th>
             <th></th>
             <th></th>
