@@ -11,7 +11,8 @@ def cell(value,
          width=None,
          tag='td',
          css_class=None,
-         default_if_empty=None):
+         default_if_empty=None,
+         alpinejs=None):
     return {
         'value': value,
         'highlight_value': highlight_value,
@@ -21,4 +22,5 @@ def cell(value,
         'tag': tag,
         'css_class': css_class,
         'default_if_empty': default_if_empty,
+        'alpinejs': alpinejs,
     }

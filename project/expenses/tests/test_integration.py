@@ -189,7 +189,7 @@ class Expenses(LiveServerTestCase):
             EC.presence_of_element_located((By.ID, 'id_search'))
         ).send_keys('xxxx')
 
-        self.browser.find_element_by_id('search_btn').click()
+        self.browser.find_element_by_id('search-btn').click()
 
         sleep(0.5)
 
