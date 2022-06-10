@@ -97,23 +97,23 @@
 /*
                                                                     Info Row
 */
-.info_row {
+.info-row {
     font-weight: normal;
     font-size: 0.8rem;
 }
 
-.info_row>span {
+.info-row>span {
     vertical-align: middle;
     display: inline-block;
     margin-top: 0.25rem !important;
 }
 
-.info_row>h6 {
+.info-row>h6 {
     font-size: 1.5rem;
     display: inline;
 }
 
-.info_row>h6,
+.info-row>h6,
 div[class*="col"]>h6 {
     vertical-align: middle;
     margin-bottom: 0 !important;
@@ -225,29 +225,29 @@ div[class*="col"]>h6 {
 /*
                                                                     Month View
 */
-._weekend_col {
+.weekend-col {
     --bs-table-accent-bg: rgb(202, 235, 204) !important;
 }
 
-tr._current_day>td,
-tr._current_day>td._weekend_col {
+tr.current-day>td,
+tr.current-day>td.weekend-col {
     --bs-table-accent-bg: #ffc107 !important;
 }
 
 .table-hover tr:hover td,
-.table-hover tr._weekend_row:hover td,
-.table-hover tr._current_day:hover td {
+.table-hover tr.weekend-row:hover td,
+.table-hover tr.current-day:hover td {
     --bs-table-accent-bg: #f9f6cf !important;
 }
 
-.table-hover .tr_expand_day_expenses:hover,
-.table-hover .tr_expand_day_expenses:hover td
+.table-hover .tr-expand-day-expenses:hover,
+.table-hover .tr-expand-day-expenses:hover td
 {
     --bs-table-accent-bg: transparent !important;
 }
 
 
-.table .td_expand_day_expenses {
+.table .td-expand-day-expenses {
     padding-top: .35rem !important;
     padding-left: .3rem !important;
     padding-right: .3rem !important;
@@ -255,7 +255,7 @@ tr._current_day>td._weekend_col {
     background-color: white !important;
 }
 
-.expand_column_width {
+.expand-column-width {
     width: 2.6rem !important;
     min-width: 2.6rem !important;
 }
@@ -292,7 +292,7 @@ tr._current_day>td._weekend_col {
     margin-right: 0 !important;
 }
 
-.table .empty_column {
+.table .empty-column {
     border-right: #fff solid .5rem !important;
 }
 
@@ -390,13 +390,9 @@ caption {
 /*
                                                                     Search
 */
-#search_btn {
+#search-btn {
     margin: 0 !important;
     padding: .25rem .5rem;
-}
-
-#div_id_search {
-    margin-bottom: 0 !important;
 }
 
 

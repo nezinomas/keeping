@@ -47,13 +47,13 @@
 
     <div class="col text-center">
         <div
-            id="info_row" class="info_row"
+            id="info-row" class="info-row"
             hx-get="{% url 'counts:info_row' object.slug %}"
             hx-trigger="reloadIndex from:body, reloadData from:body, reloadHistory from:body"
             x-show="dataInfoRow">
             {{info_row|safe}}
         </div>
-        <div id="info_row" class="info_row"
+        <div id="info-row" class="info-row"
             x-show="!dataInfoRow">
             <h6>{% translate 'Historical data' %}</h6>
         </div>
