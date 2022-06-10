@@ -283,6 +283,10 @@ tr.current-day>td.weekend-col {
     --bs-table-accent-bg: #fe536a !important;
 }
 
+.table .empty-column {
+    border-right: #fff solid .5rem !important;
+}
+
 .btn-group-month .btn {
     margin-right: 5px !important;
     border-radius: 0.2rem !important;
@@ -290,10 +294,6 @@ tr.current-day>td.weekend-col {
 
 .btn-group-month .btn:last-child {
     margin-right: 0 !important;
-}
-
-.table .empty-column {
-    border-right: #fff solid .5rem !important;
 }
 
 /*
