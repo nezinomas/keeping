@@ -1,4 +1,4 @@
-{% load table_cell %}
+{% load slippers %}
 {% load i18n %}
 
 <table class="table table-sm table-striped table-hover caption-top">
@@ -16,10 +16,10 @@
         {% for item in items %}
         <tr {% if 'Av' in item.title %}class="table table-sm table-warning bor"{% endif %}>
             <td class="text-start"><span class="ms-2">{{ item.title }}</span></td>
-            {% cell item.total %}
-            {% cell item.per_day %}
-            {% cell item.per_week %}
-            {% cell item.per_month %}
+            {% table_cell value=item.total %}
+            {% table_cell value=item.per_day %}
+            {% table_cell value=item.per_week %}
+            {% table_cell value=item.per_month %}
         </tr>
         {% empty %}
         <tr><td colspan="5">{% translate 'No data' %}</td></tr>

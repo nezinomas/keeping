@@ -1,5 +1,5 @@
 {% load cell_format %}
-{% load table_cell %}
+{% load slippers %}
 {% load i18n %}
 
 <table class="table table-sm table-hover">
@@ -14,16 +14,16 @@
     <tbody>
         {% for item in items %}
         <tr>
-            {% cell item.title %}
-            {% cell item.plan|floatformat:2 %}
+            {% table_cell value=item.title %}
+            {% table_cell value=item.plan|floatformat:2 %}
 
             {% if item.title == _('Incomes') or item.title == _('Balance') %}
-                {% cell item.fact css_class=item.fact|compare:item.plan %}
+                {% table_cell value=item.fact css_class=item.fact|compare:item.plan %}
             {% else %}
-                {% cell item.fact css_class=item.plan|compare:item.fact %}
+                {% table_cell value=item.fact css_class=item.plan|compare:item.fact %}
             {% endif %}
 
-            {% cell item.delta highlight_value=True %}
+            {% table_cell value=item.delta highlight_value=True %}
         </tr>
         {% endfor %}
 
