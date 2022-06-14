@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from django.template import Context, Template
 
@@ -28,16 +30,20 @@ def test_cell_positive_and_negative_neg(_template_positive_and_negative):
     actual = _template_positive_and_negative.render(context)
     expect = '<td class="table-danger">-0,5</td>'
 
-    assert _remove_line_end(actual) == expect
+    actual = _remove_line_end(actual)
+    actual = re.sub(r'\s{2,}', '', actual)
+
+    assert actual == expect
 
 
 def test_cell_positive_and_negative_pos(_template_positive_and_negative):
     context = Context({'value': '0,5'})
 
-    actual = _template_positive_and_negative.render(context)
-    actual = actual.replace('\n', '')
-
     expect = '<td class="table-success">0,5</td>'
+
+    actual = _template_positive_and_negative.render(context)
+    actual = _remove_line_end(actual)
+    actual = re.sub(r'\s{2,}', '', actual)
 
     assert actual == expect
 
@@ -45,37 +51,49 @@ def test_cell_positive_and_negative_pos(_template_positive_and_negative):
 def test_cell_intcomma(_template):
     context = Context({'value': '1200'})
 
-    actual = _template.render(context)
     expect = '<td class="">1.200,00</td>'
 
-    assert _remove_line_end(actual) == expect
+    actual = _template.render(context)
+    actual = _remove_line_end(actual)
+    actual = re.sub(r'\s{2,}', '', actual)
+
+    assert actual == expect
 
 
 def test_cell_empty(_template):
     context = Context({'value': None})
 
     actual = _template.render(context)
-    expect = '<td class=" dash">-</td>'
+    expect = '<td class=" dash ">-</td>'
 
-    assert _remove_line_end(actual) == expect
+    actual = _remove_line_end(actual)
+    actual = re.sub(r'\s{2,}', '', actual)
+
+    assert actual == expect
 
 
 def test_cell_float_zero(_template):
     context = Context({'value': 0.0})
 
     actual = _template.render(context)
-    expect = '<td class=" dash">-</td>'
+    expect = '<td class=" dash ">-</td>'
 
-    assert _remove_line_end(actual) == expect
+    actual = _remove_line_end(actual)
+    actual = re.sub(r'\s{2,}', '', actual)
+
+    assert actual == expect
 
 
 def test_cell_string_zero(_template):
     context = Context({'value': '0'})
 
     actual = _template.render(context)
-    expect = '<td class=" dash">-</td>'
+    expect = '<td class=" dash ">-</td>'
 
-    assert _remove_line_end(actual) == expect
+    actual = _remove_line_end(actual)
+    actual = re.sub(r'\s{2,}', '', actual)
+
+    assert actual == expect
 
 
 def test_cell_tag_th():
@@ -88,8 +106,10 @@ def test_cell_tag_th():
     expect = '<th class="">1,00</th>'
 
     actual = tmpl.render(context)
+    actual = _remove_line_end(actual)
+    actual = re.sub(r'\s{2,}', '', actual)
 
-    assert _remove_line_end(actual) == expect
+    assert actual == expect
 
 
 def test_cell_tag_td():
@@ -102,8 +122,10 @@ def test_cell_tag_td():
     expect = '<td class="">1,00</td>'
 
     actual = tmpl.render(context)
+    actual = _remove_line_end(actual)
+    actual = re.sub(r'\s{2,}', '', actual)
 
-    assert _remove_line_end(actual) == expect
+    assert actual == expect
 
 
 def test_cell_css_class_one():
@@ -113,11 +135,13 @@ def test_cell_css_class_one():
     )
     context = Context({'value': 1})
 
-    expect = '<td class=" X">1,00</td>'
+    expect = '<td class="X">1,00</td>'
 
     actual = tmpl.render(context)
+    actual = _remove_line_end(actual)
+    actual = re.sub(r'\s{2,}', '', actual)
 
-    assert _remove_line_end(actual) == expect
+    assert actual == expect
 
 
 def test_cell_css_class_many():
@@ -127,8 +151,10 @@ def test_cell_css_class_many():
     )
     context = Context({'value': 1})
 
-    expect = '<td class=" X Y Z">1,00</td>'
+    expect = '<td class="X Y Z">1,00</td>'
 
     actual = tmpl.render(context)
+    actual = _remove_line_end(actual)
+    actual = re.sub(r'\s{2,}', '', actual)
 
-    assert _remove_line_end(actual) == expect
+    assert actual == expect
