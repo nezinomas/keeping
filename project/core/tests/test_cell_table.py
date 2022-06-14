@@ -1,14 +1,14 @@
 import pytest
 from django.template import Context, Template
 
-from ...core.tests.utils import _remove_line_end
+from .utils import _remove_line_end
 
 
 @pytest.fixture()
 def _template():
     template_to_render = Template(
-        '{% load table_cell %}'
-        '{% cell value %}'
+        '{% load slippers %}'
+        '{% table_cell value=value %}'
     )
     return template_to_render
 
@@ -16,8 +16,8 @@ def _template():
 @pytest.fixture()
 def _template_positive_and_negative():
     template_to_render = Template(
-        '{% load table_cell %}'
-        '{% cell value highlight_value=True %}'
+        '{% load slippers %}'
+        '{% table_cell value=value highlight_value=True %}'
     )
     return template_to_render
 
@@ -80,8 +80,8 @@ def test_cell_string_zero(_template):
 
 def test_cell_tag_th():
     tmpl = Template(
-        '{% load table_cell %}'
-        '{% cell value tag="th" %}'
+        '{% load slippers %}'
+        '{% table_cell value=value tag="th" %}'
     )
     context = Context({'value': 1})
 
@@ -94,8 +94,8 @@ def test_cell_tag_th():
 
 def test_cell_tag_td():
     tmpl = Template(
-        '{% load table_cell %}'
-        '{% cell value %}'
+        '{% load slippers %}'
+        '{% table_cell value=value %}'
     )
     context = Context({'value': 1})
 
@@ -108,8 +108,8 @@ def test_cell_tag_td():
 
 def test_cell_css_class_one():
     tmpl = Template(
-        '{% load table_cell %}'
-        '{% cell value css_class="X" %}'
+        '{% load slippers %}'
+        '{% table_cell value=value css_class="X" %}'
     )
     context = Context({'value': 1})
 
@@ -122,8 +122,8 @@ def test_cell_css_class_one():
 
 def test_cell_css_class_many():
     tmpl = Template(
-        '{% load table_cell %}'
-        '{% cell value css_class="X Y Z" %}'
+        '{% load slippers %}'
+        '{% table_cell value=value css_class="X Y Z" %}'
     )
     context = Context({'value': 1})
 
