@@ -1,0 +1,13 @@
+{% load cell_format %}
+{% load template_filters %}
+{% load slippers %}
+
+{% if tag %}{% var column_tag=tag %}{% else %}{% var column_tag='td' %}{% endif %}
+
+{% with value|cellformat:None as cell_value %}
+<{{column_tag}} class="{% if highlight_value %}{{ cell_value|positive_negative }}{% endif %}{% if css_class %} {{ css_class }}{% endif %}{% if cell_value == '-' %} dash{% endif %}"{% if width %} width="{{ width }}"{% endif %}{% if alpinejs %} {{alpinejs|safe}}{% endif %}>
+{% if text_before %}{{ text_before }}{% endif %}
+{{ cell_value }}
+{% if text_after %}{{ text_after }}{% endif %}
+</{{column_tag}}>
+{% endwith %}

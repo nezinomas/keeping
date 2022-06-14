@@ -17,7 +17,7 @@ def test_info_table_no_data(_info_table, arr):
 
     actual = _info_table.render(ctx)
 
-    assert actual == '\n'
+    assert actual == '\n\n\n\n'
 
 
 def test_info_table_with_data(_info_table):

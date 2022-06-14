@@ -1,6 +1,6 @@
-{% load table_cell %}
-{% load template_filters %}
 {% load i18n %}
+{% load slippers %}
+{% load template_filters %}
 
 <table class="table table-sm table-striped table-hover">
     <thead>
@@ -19,22 +19,22 @@
         <tr>
             <td class="text-start">{{ item.date|date:"F"|title }}</td>
             {% for cat in categories %}
-            {% cell item|get_item:cat %}
+            {% table_cell value=item|get_item:cat %}
             {% endfor %}
-            {% cell item.total css_class="left-blue-border" %}
+            {% table_cell value=item.total css_class="left-blue-border" %}
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
             <th class="text-start">Avg</th>
-            {% for cat in categories %}{% cell avg_row|get_item:cat tag='th' %}{% endfor %}
-            {% cell avg_row.total tag='th' css_class="left-blue-border" %}
+            {% for cat in categories %}{% table_cell value=avg_row|get_item:cat tag='th' %}{% endfor %}
+            {% table_cell value=avg_row.total tag='th' css_class="left-blue-border" %}
         </tr>
         <tr >
             <th class="text-start">{% translate 'Total' %}</th>
-            {% for cat in categories %}{% cell total_row|get_item:cat tag='th' %}{% endfor %}
-            {% cell total_row.total tag='th' css_class="left-blue-border" %}
+            {% for cat in categories %}{% table_cell value=total_row|get_item:cat tag='th' %}{% endfor %}
+            {% table_cell value=total_row.total tag='th' css_class="left-blue-border" %}
         </tr>
     </tfoot>
 </table>

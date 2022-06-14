@@ -1,4 +1,3 @@
-{% load table_cell %}
 {% load i18n %}
 {% load slippers %}
 
@@ -21,24 +20,24 @@
                 {{ item.title }}
             </td>
             <td class="no-left-border w5"><button type="button" hx-get="{% url 'bookkeeping:accounts_worth_reset' item.account_pk %}" class="btn btn-xs btn-outline-info rounded-1">{% translate 'Reset' %} {% translate 'Have' %}</button></td>
-            {% cell item.past css_class='w7' %}
-            {% cell item.incomes css_class='w7' %}
-            {% cell item.expenses css_class='w7' %}
-            {% cell item.balance css_class='w7' %}
-            {% cell item.have css_class='left-blue-border w7' %}
-            {% cell item.delta css_class='w7' highlight_value=True default_if_empty='ok' %}
+            {% table_cell value=item.past css_class='w7' %}
+            {% table_cell value=item.incomes css_class='w7' %}
+            {% table_cell value=item.expenses css_class='w7' %}
+            {% table_cell value=item.balance css_class='w7' %}
+            {% table_cell value=item.have css_class='left-blue-border w7' %}
+            {% table_cell value=item.delta css_class='w7' highlight_value=True default_if_empty='ok' %}
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
             <th class="text-start" colspan="2">{% translate 'Total' %}</th>
-            {% cell total_row.past tag="th" %}
-            {% cell total_row.incomes tag="th" %}
-            {% cell total_row.expenses tag="th" %}
-            {% cell total_row.balance css_class="check" tag="th" %}
-            {% cell total_row.have tag="th" css_class='left-blue-border' %}
-            {% cell total_row.delta tag="th" %}
+            {% table_cell value=total_row.past tag="th" %}
+            {% table_cell value=total_row.incomes tag="th" %}
+            {% table_cell value=total_row.expenses tag="th" %}
+            {% table_cell value=total_row.balance css_class="check" tag="th" %}
+            {% table_cell value=total_row.have tag="th" css_class='left-blue-border' %}
+            {% table_cell value=total_row.delta tag="th" %}
         </tr>
     </tfoot>
 </table>

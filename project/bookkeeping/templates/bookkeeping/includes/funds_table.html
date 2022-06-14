@@ -1,8 +1,7 @@
-{% if items %}
-{% load table_cell %}
 {% load i18n %}
 {% load slippers %}
 
+{% if items %}
 <table class="table table-sm table-striped table-hover">
     <thead>
         <tr>
@@ -32,32 +31,32 @@
         {% for item in items %}
         <tr>
             <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" title="{{ item.latest_check }}" class="text-start">{{ item.title }}</td>
-            {% cell item.past_amount css_class='w8' %}
-            {% cell item.past_fee css_class='w8' %}
-            {% cell item.incomes css_class='w8' %}
-            {% cell item.fee css_class='w8' %}
-            {% cell item.invested css_class='w8' %}
-            {% cell item.market_value css_class='right-blue-border w8' %}
-            {% cell item.profit_incomes_sum text_after='€' highlight_value=True css_class='w8' %}
-            {% cell item.profit_incomes_proc text_after='%' highlight_value=True css_class='w8' %}
-            {% cell item.profit_invested_sum text_after='€' highlight_value=True css_class='w8' %}
-            {% cell item.profit_invested_proc text_after='%' highlight_value=True css_class='w8' %}
+            {% table_cell value=item.past_amount css_class='w8' %}
+            {% table_cell value=item.past_fee css_class='w8' %}
+            {% table_cell value=item.incomes css_class='w8' %}
+            {% table_cell value=item.fee css_class='w8' %}
+            {% table_cell value=item.invested css_class='w8' %}
+            {% table_cell value=item.market_value css_class='right-blue-border w8' %}
+            {% table_cell value=item.profit_incomes_sum text_after='€' highlight_value=True css_class='w8' %}
+            {% table_cell value=item.profit_incomes_proc text_after='%' highlight_value=True css_class='w8' %}
+            {% table_cell value=item.profit_invested_sum text_after='€' highlight_value=True css_class='w8' %}
+            {% table_cell value=item.profit_invested_proc text_after='%' highlight_value=True css_class='w8' %}
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr >
             <th class="text-start">{% translate 'Total' %}</th>
-            {% cell total_row.past_amount tag='th' %}
-            {% cell total_row.past_fee tag='th' %}
-            {% cell total_row.incomes tag='th' %}
-            {% cell total_row.fee tag='th' %}
-            {% cell total_row.invested tag='th' %}
-            {% cell total_row.market_value tag='th' css_class='right-blue-border' %}
-            {% cell total_row.profit_incomes_sum text_after='€' highlight_value=True tag='th' %}
-            {% cell profit_incomes_proc text_after='%' highlight_value=True tag='th' %}
-            {% cell total_row.profit_invested_sum text_after='€' highlight_value=True tag='th' %}
-            {% cell profit_invested_proc text_after='%' highlight_value=True tag='th' %}
+            {% table_cell value=total_row.past_amount tag='th' %}
+            {% table_cell value=total_row.past_fee tag='th' %}
+            {% table_cell value=total_row.incomes tag='th' %}
+            {% table_cell value=total_row.fee tag='th' %}
+            {% table_cell value=total_row.invested tag='th' %}
+            {% table_cell value=total_row.market_value tag='th' css_class='right-blue-border' %}
+            {% table_cell value=total_row.profit_incomes_sum text_after='€' highlight_value=True tag='th' %}
+            {% table_cell value=profit_incomes_proc text_after='%' highlight_value=True tag='th' %}
+            {% table_cell value=total_row.profit_invested_sum text_after='€' highlight_value=True tag='th' %}
+            {% table_cell value=profit_invested_proc text_after='%' highlight_value=True tag='th' %}
         </tr>
     </tfoot>
 </table>
