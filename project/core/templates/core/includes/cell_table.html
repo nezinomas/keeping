@@ -2,14 +2,11 @@
 {% load template_filters %}
 {% load slippers %}
 
+{% var cell_value=value|cellformat:None %}
 {% var column_tag=tag|default:"td" %}
 {% var before_value=before_text|default:'' %}
 {% var after_value=after_text|default:'' %}
 {% var alpine_js=alpinejs|default:'' %}
 {% var css=css_class|default:'' %}
 
-{% with value|cellformat:None as cell_value %}
-<{{column_tag}} class="{% if highlight_value %}{{cell_value|positive_negative}}{% endif %} {% if cell_value == '-' %}dash{% endif %} {{css}}" {% if width %}width="{{width}}"{% endif %} {{alpine_js|safe}}>
-{{before_value}}{{cell_value}}{{after_value}}
-</{{column_tag}}>
-{% endwith %}
+<{{column_tag}} class="{% if highlight_value %}{{cell_value|positive_negative}}{% endif %} {% if cell_value == '-' %}dash{% endif %} {{css}}" {% if width %}width="{{width}}"{% endif %} {{alpine_js|safe}}>{{before_value}}{{cell_value}}{{after_value}}</{{column_tag}}>
