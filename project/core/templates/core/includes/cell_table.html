@@ -2,7 +2,7 @@
 {% load template_filters %}
 {% load slippers %}
 
-{% var cell_value=value|cellformat:None %}
+{% var cell_value=value|cellformat %}
 {% var column_tag=tag|default:"td" %}
 {% var before_value=before_text|default:'' %}
 {% var after_value=after_text|default:'' %}
