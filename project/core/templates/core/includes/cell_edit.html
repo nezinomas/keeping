@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<td class="w-edit">
+<td class="edit-cell">
     {% if url %}
     <a role="button" hx-get="{{ url }}" hx-target="#dialog" class="edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></a>
     {% endif %}
