@@ -135,6 +135,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
     'crequest.middleware.CrequestMiddleware',
+    'django_minify_html.middleware.MinifyHtmlMiddleware',
 ]
 
 
@@ -156,6 +157,7 @@ INSTALLED_APPS = [
     'slippers',
     'django_htmx',
     'widget_tweaks',
+    'django_minify_html',
 ]
 
 for app in PROJECT_APPS:
