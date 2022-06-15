@@ -32,24 +32,6 @@ def test_attr_object_none():
     assert actual == 'X'
 
 
-def test_dict_val_key_exists(_dict):
-    actual = get_item.get_dict_val(_dict, 'key')
-
-    assert actual == 'value'
-
-
-def test_dict_val_key_not_exists(_dict):
-    actual = get_item.get_dict_val(_dict, 'X')
-
-    assert actual == 'X'
-
-
-def test_dict_val_then_dictionary_none():
-    actual = get_item.get_dict_val(None, 'X')
-
-    assert actual == 'X'
-
-
 @pytest.fixture()
 def _date():
     return [
@@ -102,22 +84,20 @@ def test_get_sum_by_title_list_empty():
     assert not actual
 
 
-@pytest.mark.parametrize(
-    'lst, expect',
-    [
-        ([[1]], 1),
-        ([], None),
-        ([[]], None),
-    ]
-    )
-def test_get_nested_list_val(lst, expect):
-    actual = get_item.get_nested_list_val(arr=lst, parent=0, nested=0)
-
-    assert actual == expect
-
-
 @pytest.mark.parametrize('lst, expect', [([1], 1), ([], None)])
 def test_get_list_val(lst, expect):
     actual = get_item.get_list_val(arr=lst, key=0)
 
     assert actual == expect
+
+
+@pytest.mark.parametrize(
+    'dictionary, key, expect',
+    [
+        ({'x': 'val'}, 'x', 'val'),
+        ({'x': 'val'}, 'y', 0.0),
+        (None, 'y', None),
+        ({}, 'y', None),
+    ])
+def test_get_item(dictionary, key, expect):
+    assert get_item.get_item(dictionary, key) == expect

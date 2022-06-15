@@ -1,4 +1,5 @@
-{% load table_cell %}
+{% load slippers %}
+{% load get_item %}
 {% load template_filters %}
 {% load cell_format %}
 {% load i18n %}
@@ -39,21 +40,21 @@
                 </a>
             </td>
             {% for cat in expense_types %}
-            {% cell row|get_item:cat css_class=weekend_col %}
+            {% table_cell value=row|get_item:cat css_class=weekend_col %}
             {% endfor %}
-            {% cell row.total css_class=weekend_col|add:' left-blue-border'|add:' empty-column' %}
+            {% table_cell value=row.total css_class=weekend_col|add:' left-blue-border'|add:' empty-column' %}
 
             <td class="text-start {{weekend_col}}">{{sp.date|date:'l'}}</td>
-            {% cell sp.day css_class=sp.day|negative %}
-            {% cell sp.full css_class=sp.full|negative|add:' -full' %}
+            {% table_cell value=sp.day css_class=sp.day|negative %}
+            {% table_cell value=sp.full css_class=sp.full|negative|add:' -full' %}
         </tr>{% endwith %}{% endwith %}{% endwith %}
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
             <th class="text-start">&#8721;</th>
-            {% for cat in expense_types %}{% cell total_row|get_item:cat tag='th' %}{% endfor %}
-            {% cell total_row.total tag='th' css_class="left-blue-border empty-column" %}
+            {% for cat in expense_types %}{% table_cell value=total_row|get_item:cat tag='th' %}{% endfor %}
+            {% table_cell value=total_row.total tag='th' css_class="left-blue-border empty-column" %}
             <th></th>
             <th></th>
             <th></th>

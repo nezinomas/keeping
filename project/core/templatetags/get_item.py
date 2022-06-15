@@ -1,8 +1,15 @@
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from django import template
 
 register = template.Library()
+
+
+@register.filter
+def get_item(dictionary, key):
+    if dictionary:
+        return dictionary.get(key, 0.0)
+    return None
 
 
 @register.filter
@@ -14,17 +21,6 @@ def get_obj_attr(obj, attr):
         _attr = attr
 
     return _attr
-
-
-@register.filter
-def get_dict_val(obj: Dict, key: Any):
-    _key = None
-    try:
-        _key = obj.get(key, key)
-    except Exception as ex:
-        _key = key
-
-    return _key
 
 
 @register.filter
@@ -42,16 +38,6 @@ def get_sum_by_title(lst: List[Dict], title: str):
         _title = _dict.get('title')
         if _title == title:
             return _dict.get('sum')
-
-
-@register.simple_tag
-def get_nested_list_val(arr: List, parent: int, nested: int):
-    try:
-        val = arr[parent][nested]
-    except:
-        val = None
-
-    return val
 
 
 @register.filter

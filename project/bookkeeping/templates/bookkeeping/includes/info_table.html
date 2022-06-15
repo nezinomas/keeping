@@ -1,6 +1,7 @@
-{% if data %}
-{% load table_cell %}
+{% load slippers %}
 {% load get_item %}
+
+{% if data %}
 
 <table class="table table-sm">
     <thead>
@@ -14,7 +15,7 @@
     <tbody>
         <tr>
             {% for d in data %}
-            {% cell d highlight_value=highlight|get_list_val:forloop.counter0 %}
+            {% table_cell value=d highlight_value=highlight|get_list_val:forloop.counter0 %}
             {% endfor %}
         </tr>
     </tbody>

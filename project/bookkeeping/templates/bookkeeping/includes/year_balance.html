@@ -1,5 +1,5 @@
-{% load table_cell %}
 {% load i18n %}
+{% load slippers %}
 
 <table class="table table-sm table-striped table-hover" x-data="{ open:false }">
     <thead>
@@ -28,46 +28,46 @@
     <tbody>
         {% for item in data %}
         <tr>
-            <td class="text-start">{{ item.date|date:"F"|title }}</td>
-            {% cell item.incomes %}
-            {% cell item.expenses %}
-            {% cell item.balance highlight_value=True  %}
-            {% cell item.savings css_class="left-blue-border" %}
-            {% cell item.savings_close css_class="right-blue-border"  %}
-            {% cell item.borrow css_class="left-blue-border" alpinejs='x-show="open"' %}
-            {% cell item.borrow_return alpinejs='x-show="open"' %}
-            {% cell item.lend alpinejs='x-show="open"' %}
-            {% cell item.lend_return css_class="right-blue-border" alpinejs='x-show="open"' %}
-            {% cell item.money_flow %}
+            {% table_cell value=item.date|date:"F"|title css_class="text-start" %}
+            {% table_cell value=item.incomes %}
+            {% table_cell value=item.expenses %}
+            {% table_cell value=item.balance highlight_value=True  %}
+            {% table_cell value=item.savings css_class="left-blue-border" %}
+            {% table_cell value=item.savings_close css_class="right-blue-border"  %}
+            {% table_cell value=item.borrow css_class="left-blue-border" alpinejs='x-show="open"' %}
+            {% table_cell value=item.borrow_return alpinejs='x-show="open"' %}
+            {% table_cell value=item.lend alpinejs='x-show="open"' %}
+            {% table_cell value=item.lend_return css_class="right-blue-border" alpinejs='x-show="open"' %}
+            {% table_cell value=item.money_flow %}
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
             <th class="text-start">Avg</th>
-            {% cell avg_row.incomes tag='th' %}
-            {% cell avg_row.expenses tag='th' %}
-            <th></th>
-            {% cell avg_row.savings tag='th' css_class="left-blue-border" %}
-            {% cell avg_row.savings_close tag='th' css_class="right-blue-border" %}
-            <th class="left-blue-border" x-show="open">{{ avg_row.borrow }}</th>
-            <th x-show="open">{{ avg_row.borrow_return }}</th>
-            <th x-show="open">{{ avg_row.lend }}</th>
-            <th class="right-blue-border" x-show="open">{{ avg_row.lend_return }}</th>
+            {% table_cell value=avg_row.incomes tag='th' %}
+            {% table_cell value=avg_row.expenses tag='th' %}
+            {% table_cell value='' tag='th' %}
+            {% table_cell value=avg_row.savings tag='th' css_class="left-blue-border" %}
+            {% table_cell value=avg_row.savings_close tag='th' css_class="right-blue-border" %}
+            {% table_cell value=avg_row.borrow tag='th' css_class="left-blue-border" alpinejs='x-show="open"' %}
+            {% table_cell value=avg_row.borrow_return tag="th" alpinejs='x-show="open"' %}
+            {% table_cell value=avg_row.lend tag="th" alpinejs='x-show="open"' %}
+            {% table_cell value=avg_row.lend_return tag="th" css_class="right-blue-border" alpinejs='x-show="open"' %}
             <th><b>{% translate "End of year" %}</b></th>
         </tr>
-        <tr >
+        <tr>
             <th class="text-start">{% translate 'Total' %}</th>
-            {% cell total_row.incomes tag='th' %}
-            {% cell total_row.expenses tag='th' %}
-            {% cell total_row.balance tag='th' highlight_value=True %}
-            {% cell total_row.savings tag='th' css_class="left-blue-border" %}
-            {% cell total_row.savings_close tag='th' css_class="right-blue-border" %}
-            {% cell total_row.borrow tag='th' css_class="left-blue-border" alpinejs='x-show="open"' %}
-            {% cell total_row.borrow_return tag="th" alpinejs='x-show="open"' %}
-            {% cell total_row.lend tag="th" alpinejs='x-show="open"' %}
-            {% cell total_row.lend_return tag="th" css_class="right-blue-border" alpinejs='x-show="open"' %}
-            {% cell amount_end tag='th' css_class="check" highlight_value=True %}
+            {% table_cell value=total_row.incomes tag='th' %}
+            {% table_cell value=total_row.expenses tag='th' %}
+            {% table_cell value=total_row.balance tag='th' highlight_value=True %}
+            {% table_cell value=total_row.savings tag='th' css_class="left-blue-border" %}
+            {% table_cell value=total_row.savings_close tag='th' css_class="right-blue-border" %}
+            {% table_cell value=total_row.borrow tag='th' css_class="left-blue-border" alpinejs='x-show="open"' %}
+            {% table_cell value=total_row.borrow_return tag="th" alpinejs='x-show="open"' %}
+            {% table_cell value=total_row.lend tag="th" alpinejs='x-show="open"' %}
+            {% table_cell value=total_row.lend_return tag="th" css_class="right-blue-border" alpinejs='x-show="open"' %}
+            {% table_cell value=amount_end tag='th' css_class="check" highlight_value=True %}
         </tr>
     </tfoot>
 </table>

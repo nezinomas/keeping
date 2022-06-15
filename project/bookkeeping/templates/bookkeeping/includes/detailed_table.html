@@ -1,4 +1,4 @@
-{% load table_cell %}
+{% load slippers %}
 {% load get_item %}
 {% load i18n %}
 
@@ -18,7 +18,7 @@
         <tr>
             <td class="text-start">{{ title.grouper }}</td>
             {% for i in months %}
-                {% with title.list|get_sum_by_month:i as sum %}{% cell sum %}{% endwith %}
+                {% with title.list|get_sum_by_month:i as sum %}{% table_cell value=sum %}{% endwith %}
             {% endfor %}
             {% with total_col|get_sum_by_title:title.grouper as col_value %}
             <td>{{ col_value }}</td>{% endwith %}
@@ -28,7 +28,7 @@
     <tfoot>
         <tr>
             <th class="text-start">{% translate 'Total' %}</th>
-            {% for i in months %}{% with total_row|get_sum_by_month:i as sum %}{% cell sum tag='th' %}{% endwith %}{% endfor %}
+            {% for i in months %}{% with total_row|get_sum_by_month:i as sum %}{% table_cell value=sum tag='th' %}{% endwith %}{% endfor %}
             <th>{{ total }}</th>
         </tr>
     </tfoot>

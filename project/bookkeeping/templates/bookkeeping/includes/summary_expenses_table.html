@@ -1,5 +1,5 @@
-{% load table_cell %}
-{% load template_filters %}
+{% load slippers %}
+{% load get_item %}
 {% load i18n %}
 
 <table class="table table-sm table-striped table-hover">
@@ -17,9 +17,9 @@
         <tr>
             <td class="text-start">{{ row.name }}</td>
             {% for i in row.data %}
-            {% cell i %}
+            {% table_cell value=i %}
             {% endfor %}
-            {% cell total_col|get_item:row.name%}
+            {% table_cell value=total_col|get_item:row.name%}
         </tr>
         {% endfor %}
     </tbody>
@@ -27,7 +27,7 @@
         <tr>
             <th class="text-start">{% translate 'Total' %}</th>
             {% for x in total_row %}
-            {% cell x tag='th' %}
+            {% table_cell value=x tag='th' %}
             {% endfor %}
             <th>{{ total|floatformat:2 }}</th>
         </tr>
