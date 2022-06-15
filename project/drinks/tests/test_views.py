@@ -380,6 +380,7 @@ def test_tab_history_context(client_logged):
 @freeze_time('1999-1-1')
 def test_tab_history_chart_consumption(client_logged):
     DrinkFactory()
+    DrinkFactory(date=date(1988, 1, 1))
 
     url = reverse('drinks:tab_history')
     response = client_logged.get(url)
