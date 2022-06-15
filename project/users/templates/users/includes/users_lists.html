@@ -1,4 +1,6 @@
 {% load i18n %}
+{% load slippers %}
+
 
 {% if object_list %}
 
@@ -18,9 +20,7 @@
             <td class="text-start">{{ item.username }}</td>
             <td class="text-start">{{ item.email }}</td>
             <td class="text-center">{% if item.is_superuser %}<i class="bi bi-check-circle" style="color: #198754;"></i>{% else %}<i class="bi bi-dash-circle-fill" style="color: #dc3545;"></i>{% endif %}</td>
-            <td class="delete-cell">
-                <a role="button" hx-get="{{ url_delete }}" hx-target="#dialog" class="trash" title="{% translate 'Delete' %}"><i class="bi bi-trash-fill"></i></a>
-            </td>
+            {% delete_cell url=url_delete %}
         </tr>
         {% endfor %}
     </tbody>
