@@ -6,6 +6,13 @@ register = template.Library()
 
 
 @register.filter
+def get_item(dictionary, key):
+    if dictionary:
+        return dictionary.get(key, 0.0)
+    return None
+
+
+@register.filter
 def get_obj_attr(obj, attr):
     _attr = None
     try:

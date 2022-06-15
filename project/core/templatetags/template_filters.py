@@ -5,13 +5,6 @@ register = template.Library()
 
 
 @register.filter
-def get_item(dictionary, key):
-    if dictionary:
-        return dictionary.get(key, 0.0)
-    return None
-
-
-@register.filter
 def cellformat(value, default='-'):
     if not default:
         default = '-'
