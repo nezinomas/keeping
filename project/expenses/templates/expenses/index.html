@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
+
+{% load i18n %}
 {% load static %}
 {% load slippers %}
-{% load i18n %}
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
@@ -16,10 +17,6 @@
     }
     .accordion-body .expenses-edit-icon {
         top: .25rem;
-    }
-
-    .form-check-input.necessary_check {
-        margin-left: 0;
     }
 </style>
 

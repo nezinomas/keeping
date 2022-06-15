@@ -203,13 +203,13 @@ div[class*="col"]>h6 {
     color: #b7b7b6 !important;
 }
 
-.table td.w-edit {
+.table td.edit-cell {
     width: 35px !important;
     text-align: center !important;
     border-right: 0 !important;
 }
 
-.table td.w-delete {
+.table td.delete-cell {
     width: 25px !important;
     text-align: center !important;
     border-left: 0 !important;
@@ -449,10 +449,6 @@ caption {
 /*
                                                                     Bootstrap Hacks
 */
-.invalid-feedback {
-    display: block !important;
-}
-
 .formset-price-input {
     padding-top: .1rem;
 }

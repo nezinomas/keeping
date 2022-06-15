@@ -34,8 +34,8 @@
             <td class="text-start">{{ object.account }}</td>
             <td class="text-start">{{ object.remark }}</td>
             <td class="text-center">{% if object.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
-            {% edit_cell url=url_update target=target %}
-            {% delete_cell url=url_delete target=target %}
+            {% edit_cell url=url_update %}
+            {% delete_cell url=url_delete %}
         </tr>
         {% endfor %}
     </tbody>

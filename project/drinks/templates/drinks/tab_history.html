@@ -1,9 +1,15 @@
 
-{% if not records %}<div id="no-records">{% include 'core/no_records.html' with two_years=True %}</div>{% endif %}
+{% if records %}
 
-<div class="row _hidden" {% if not records %}style="display: none"{% endif %}>
+<div class="row">
     <div class="col">{% include 'drinks/includes/chart_summary.html' %}</div>
 </div>
+
+{% else %}
+
+{% include 'core/no_records.html' with two_years=True %}
+
+{% endif %}
 
 
 {% if request.htmx %}
