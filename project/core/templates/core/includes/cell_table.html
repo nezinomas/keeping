@@ -2,12 +2,11 @@
 {% load template_filters %}
 {% load slippers %}
 
-{% if tag %}{% var column_tag=tag %}{% else %}{% var column_tag='td' %}{% endif %}
+{% var cell_value=value|cellformat %}
+{% var column_tag=tag|default:"td" %}
+{% var before_value=before_text|default:'' %}
+{% var after_value=after_text|default:'' %}
+{% var alpine_js=alpinejs|default:'' %}
+{% var css=css_class|default:'' %}
 
-{% with value|cellformat:None as cell_value %}
-<{{column_tag}} class="{% if highlight_value %}{{ cell_value|positive_negative }}{% endif %}{% if css_class %} {{ css_class }}{% endif %}{% if cell_value == '-' %} dash{% endif %}"{% if width %} width="{{ width }}"{% endif %}{% if alpinejs %} {{alpinejs|safe}}{% endif %}>
-{% if text_before %}{{ text_before }}{% endif %}
-{{ cell_value }}
-{% if text_after %}{{ text_after }}{% endif %}
-</{{column_tag}}>
-{% endwith %}
+<{{column_tag}} class="{% if highlight_value %}{{cell_value|positive_negative}}{% endif %} {% if cell_value == '-' %}dash{% endif %} {{css}}" {% if width %}width="{{width}}"{% endif %} {{alpine_js|safe}}>{{before_value}}{{cell_value}}{{after_value}}</{{column_tag}}>
