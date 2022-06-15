@@ -10,7 +10,7 @@
         </tr>
         <tr>
             <th class="text-start w5">{{ year|title }}</th>
-            {% for cat in categories %}<th data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ cat }}">{{ cat|truncatechars:8 }}</th>{% endfor %}
+            {% for category in categories %}<th data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ category }}">{{ category|truncatechars:8 }}</th>{% endfor %}
             <th class="left-blue-border">{% translate 'Total' %}</th>
         </tr>
     </thead>
@@ -18,8 +18,8 @@
         {% for item in data  %}
         <tr>
             <td class="text-start">{{ item.date|date:"F"|title }}</td>
-            {% for cat in categories %}
-            {% table_cell value=item|get_item:cat %}
+            {% for category in categories %}
+            {% table_cell value=item|get_item:category %}
             {% endfor %}
             {% table_cell value=item.total css_class="left-blue-border" %}
         </tr>
@@ -28,12 +28,12 @@
     <tfoot>
         <tr>
             <th class="text-start">Avg</th>
-            {% for cat in categories %}{% table_cell value=avg_row|get_item:cat tag='th' %}{% endfor %}
+            {% for category in categories %}{% table_cell value=avg_row|get_item:category tag='th' %}{% endfor %}
             {% table_cell value=avg_row.total tag='th' css_class="left-blue-border" %}
         </tr>
         <tr >
             <th class="text-start">{% translate 'Total' %}</th>
-            {% for cat in categories %}{% table_cell value=total_row|get_item:cat tag='th' %}{% endfor %}
+            {% for category in categories %}{% table_cell value=total_row|get_item:category tag='th' %}{% endfor %}
             {% table_cell value=total_row.total tag='th' css_class="left-blue-border" %}
         </tr>
     </tfoot>
