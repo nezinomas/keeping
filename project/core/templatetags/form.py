@@ -1,17 +1,14 @@
 from django import template
-from django.utils.translation import gettext as _
 
 register = template.Library()
 
 
 @register.inclusion_tag('core/includes/generic_form.html', takes_context=True)
 def generic_form(context, title):
-    form_action = context.get('form_action', 'insert')
-
     return {
         'title': title,
-        'form': context['form'],
-        'form_action': form_action,
+        'form': context.get('form'),
+        'form_action': context.get('form_action', 'insert'),
         'url': context.get('url', ''),
         'hx_trigger_form': context.get('hx_trigger_form', ''),
     }
@@ -21,7 +18,7 @@ def generic_form(context, title):
 def generic_delete_form(context, title):
     return {
         'title': title,
-        'url': context['url'] if 'url' in context else '',
-        'object': context['object'] if 'object' in context else '',
+        'url': context.get('url'),
+        'object': context.get('object'),
         'hx_trigger_form': context.get('hx_trigger_form', ''),
     }

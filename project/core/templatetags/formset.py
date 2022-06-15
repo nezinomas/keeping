@@ -7,9 +7,9 @@ register = template.Library()
 def generic_formset(context, title):
     return {
         'title': title,
-        'formset': context['formset'],
-        'shared_form': context['shared_form'],
-        'form_action': context['form_action'],
+        'formset': context.get('formset'),
+        'shared_form': context.get('shared_form'),
+        'form_action': context.get('form_action'),
         'submit_button': context.get('submit_button'),
-        'url': context['url'],
+        'url': context.get('url'),
     }
