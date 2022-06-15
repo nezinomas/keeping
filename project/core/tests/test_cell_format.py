@@ -1,7 +1,9 @@
 from decimal import Decimal
 
-from ..templatetags.cell_format import (compare, negative, positive,
-                                        positive_negative)
+import pytest
+
+from ..templatetags.cell_format import (cellformat, compare, negative,
+                                        positive, positive_negative)
 
 
 def test_value_positive_str():
@@ -129,3 +131,24 @@ def test_positive_negative_negative():
     actual = positive_negative('-1')
 
     assert actual == 'table-danger'
+
+
+@pytest.mark.parametrize(
+    'value, default, expect',
+    [
+        (1, '-', '1,00'),
+        (1.0, '-', '1,00'),
+        ('1,00', '-', '1,00'),
+        ('xx', '-', 'xx'),
+        (None, '-', '-'),
+        (1.0111, '-', '1,01'),
+        (1.049, '-', '1,05'),
+        (0.0, '-', '-'),
+        (0, '-', '-'),
+        ('0', '-', '-'),
+        ('-0.0001', '-', '-'),
+        (-0.0001, '-', '-'),
+        (None, 'ok', 'ok'),
+    ])
+def test_cellformat(value, default, expect):
+    assert cellformat(value, default) == expect
