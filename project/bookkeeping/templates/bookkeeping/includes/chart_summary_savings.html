@@ -74,23 +74,6 @@
             },
             stackLabels: {
                 enabled: false,
-                // style: {
-                //     fontWeight: 'bold',
-                //     textOutline: false,
-                // },
-                // formatter: function () {
-                //     var sum = 0;
-                //     var serries = this.axis.series;
-                //     for (i in [1,2]) {
-                //         sum += serries[i].yData[this.x];
-                //     }
-                //     if (this.isNegative) {
-                //         return '';
-                //     } else {
-                //         return `${Highcharts.numberFormat(sum, 0)}`
-                //     }
-                // },
-                // verticalAlign: 'top'
             }
         },
         legend: {
@@ -152,7 +135,7 @@
                 enabled: true,
                 verticalAlign: 'top',
                 formatter: function () {
-                    return `${Highcharts.numberFormat(this.y, 0)}`
+                    return `${Highcharts.numberFormat(this.y, 0)}`;
                 },
                 style: {
                     fontWeight: 'bold',
@@ -167,8 +150,8 @@
             $.each(series.data, function (i, point) {
                  if (point.negative) {
                     var c = '#c0504d';
-                    point.color = c; // + tooltip border color
-                    point.graphic.css({stroke: c, color: 'rgba(192,80,77,0.5)'})
+                    point.color = c; /* + tooltip border color */
+                    point.graphic.css({stroke: c, color: 'rgba(192,80,77,0.5)'});
                     point.dataLabel.css({ color: c });
                 }
             });

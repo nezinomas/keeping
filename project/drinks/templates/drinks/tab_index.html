@@ -42,8 +42,11 @@
             <div class="col-sm-3 pt-1"><b>{% translate 'Historical data' %}</b></div>
             <div class="col-sm-9 text-end">
                 <button type="button" class="btn btn-sm btn-info btn_click" hx-get="{% url 'drinks:compare' 2 %}" hx-target="#historical_data">{% translate '2 years' %}</button>
+                {{" "}}
                 <button type="button" class="btn btn-sm btn-info btn_click" hx-get="{% url 'drinks:compare' 3 %}" hx-target="#historical_data">{% translate '3 years' %}</button>
+                {{" "}}
                 <button type="button" class="btn btn-sm btn-info btn_click" hx-get="{% url 'drinks:compare' 7 %}" hx-target="#historical_data">{% translate '7 years' %}</button>
+                {{" "}}
                 <button type="button" class="btn btn-sm btn-info btn_click" hx-get="{% url 'drinks:compare' all_years %}" hx-target="#historical_data">{% translate 'All years' %}</button>
             </div>
         </div>
