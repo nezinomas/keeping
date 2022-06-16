@@ -27,7 +27,7 @@
             },
             labels: {
                 formatter: function () {
-                    if (this.value >= 100) return Highcharts.numberFormat(this.value / 1000, 1) + "k";
+                    if (this.value >= 100) { return Highcharts.numberFormat(this.value / 1000, 1) + "k"; }
                     return Highcharts.numberFormat(this.value, 0);
                 },
                 style: {
@@ -42,12 +42,12 @@
         tooltip: {
             shared: true,
             formatter: function () {
-                var rtn = ''
+                var rtn = '';
                 var pcnt = ((this.points[0].y / this.points[0].series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100);
                 rtn = '<b>' + this.points[0].key + '</b>';
                 rtn += '<br>' + Highcharts.numberFormat(this.points[0].y, 0) + '€<br>';
                 rtn += Highcharts.numberFormat(pcnt, 1) + '%';
-                return rtn
+                return rtn;
             }
         },
         plotOptions: {
