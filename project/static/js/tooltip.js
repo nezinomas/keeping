@@ -1,10 +1,9 @@
+
 $(document).ready(function () {
     setUpToolTip();
 });
 
 function setUpToolTip() {
-    var e = $('body').tooltip({selector: '[data-bs-toggle="tooltip"]'});
-    e.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    })
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 }
