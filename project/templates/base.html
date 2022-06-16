@@ -208,8 +208,7 @@
           </ul>
         </div>
       </nav>
-
-      {% block content %}{% endblock content %}
+      {% spaceless %}{% block content %}{% endblock content %}{% endspaceless %}
     </div>
     {% endblock body %}
 
