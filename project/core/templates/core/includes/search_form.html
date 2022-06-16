@@ -23,7 +23,7 @@
             class="btn btn-sm btn-secondary"
             hx-get="{{ reset_url }}"
             hx-target="{{ target }}"
-            @click="message = '', {% if hightlight_tab %}openTab = '{{hightlight_tab}}'{% endif %}">
+            @click="message = ''; {% if hightlight_tab %}openTab = '{{hightlight_tab}}';{% endif %}">
             {% translate 'Reset' %}
         </button>
     </div>
