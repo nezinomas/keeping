@@ -63,7 +63,7 @@ $(function () {
                 color: '#000',
                 x: -3,
                 y: -15,
-                format: '{point.y:.0f}', // one decimal
+                format: '{point.y:.0f}', /* one decimal */
                 style: {
                     fontSize: '7px',
                     fontWeight: 'bold',
@@ -99,7 +99,7 @@ $(function () {
         }
     ]
     }, function (chartObj) {
-            // align datalabels for expenses that exceeds targets
+            /* align datalabels for expenses that exceeds targets */
             var series = chartObj.series[1];
             $.each(series.data, function (i, point) {
                 var max = chartObj.series[0].data[point.x].y;

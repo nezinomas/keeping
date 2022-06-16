@@ -10,8 +10,10 @@ Highcharts.chart('clander_{{ id }}_container', {
         plotBorderWidth: 0,
         height: 200,
         events: {
-        		// show the month name (series.name) as label of every block
-            // add text element to the BBox - using SVGRenderer
+        		/*
+            show the month name (series.name) as label of every block
+            add text element to the BBox - using SVGRenderer
+            */
             load: function() {
                 var series = this.series;
                 var bbox;
@@ -51,8 +53,10 @@ Highcharts.chart('clander_{{ id }}_container', {
         tickWidth: 0,
     		opposite: true,
         labels: {
-        	// don't show the axis label : it's the category id
-          // see plotOptions -> dataLabels to show the week number
+        	/*
+          don't show the axis label : it's the category id
+          see plotOptions -> dataLabels to show the week number
+          */
         	enabled: false
         }
     },
@@ -76,14 +80,12 @@ Highcharts.chart('clander_{{ id }}_container', {
     colorAxis: {
         min: 0,
         max: 10,
-        // tickInterval: 1,
-        // tickmarkPlacement: 'on',
         stops: [
-            [0,   '#ffffff'],	 // empty cell
-            [0.001, '#f4f4f4'],  // day without record
-            [0.002, '#dfdfdf'],  // saturday
-            [0.003, '#c3c4c2'],  //	sunday
-            [0.005, '#c9edff'],  //	current day
+            [0,   '#ffffff'],	 /* empty cell */
+            [0.001, '#f4f4f4'],  /* day without record */
+            [0.002, '#dfdfdf'],  /* saturday */
+            [0.003, '#c3c4c2'],  /*	sunday */
+            [0.005, '#c9edff'],  /*	current day */
             [0.01, '#58a70f'],
             [0.4, '#FFFE55'],
             [0.6, '#F5C142'],
@@ -123,8 +125,10 @@ Highcharts.chart('clander_{{ id }}_container', {
 
     plotOptions: {
       series: {
-        // show the week number under the calendar blocks
-        // use the datas of last block row and move it down
+        /*
+        show the week number under the calendar blocks
+        use the datas of last block row and move it down
+        */
         dataLabels: {
           enabled: true,
           y: 20,

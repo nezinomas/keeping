@@ -1,11 +1,11 @@
-// focus on [autofocus] attribute
+/* focus on [autofocus] attribute */
 $(document).on('shown.bs.modal', '#modal', function () {
     $(this).find('[autofocus]').focus();
 });
 
 
 htmx.on("htmx:afterSwap", (e) => {
-    // Response targeting #dialog => show the modal
+    /* Response targeting #dialog => show the modal */
     if (e.detail.target.id == "dialog") {
         $("#modal").modal("show").draggable({ handle: ".modal-header" });
     }
@@ -14,10 +14,10 @@ htmx.on("htmx:afterSwap", (e) => {
 
 htmx.on("htmx:beforeSwap", (e) => {
     if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
-        // find submit button id
+        /* find submit button id */
         var subbmiter = e.detail.requestConfig.triggeringEvent.submitter.id
 
-        // remove error messages
+        /* remove error messages */
         $('.invalid-feedback').remove();
         $('.is-invalid').removeClass('is-invalid');
 

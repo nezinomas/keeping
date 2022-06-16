@@ -96,10 +96,10 @@
         }
     }
 
-    // check on page load
+    /* check on page load */
     $(document).ready(compareValues);
 
-    // check on ajax reload
+    /* check on ajax reload */
     htmx.on("htmx:afterSwap", (e) => {
         compareValues();
     });
