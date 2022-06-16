@@ -15,7 +15,7 @@
         var len = fields.length;
         for(i = 0; i < len; i++) {
             var field = fields[i];
-            var year = $(`#id_${field}:text`).attr('value')
+            var year = $(`#id_${field}:text`).attr('value');
             if (year) {
                 year = year.replace(".", "");
                 year = year.replace(",", "");

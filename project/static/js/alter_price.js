@@ -7,7 +7,7 @@ var price_input = document.getElementById("id_price");
 price_input.addEventListener("keyup", function (event) {
     event.preventDefault();
 
-    var price = String(price_input.value).replaceAll(',', '.')
+    var price = String(price_input.value).replaceAll(',', '.');
 
     price_input.value = price;
 });
@@ -17,7 +17,7 @@ if(fee_input) {
     fee_input.addEventListener("keyup", function (event) {
         event.preventDefault();
 
-        var fee = String(fee_input.value).replaceAll(',', '.')
+        var fee = String(fee_input.value).replaceAll(',', '.');
 
         fee_input.value = fee;
     });
