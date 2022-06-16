@@ -64,7 +64,7 @@ def test_cell_empty(_template):
     context = Context({'value': None})
 
     actual = _template.render(context)
-    expect = '<td class=" dash ">-</td>'
+    expect = '<td class=" dash">-</td>'
 
     actual = _remove_line_end(actual)
     actual = re.sub(r'\s{2,}', '', actual)
@@ -76,7 +76,7 @@ def test_cell_float_zero(_template):
     context = Context({'value': 0.0})
 
     actual = _template.render(context)
-    expect = '<td class=" dash ">-</td>'
+    expect = '<td class=" dash">-</td>'
 
     actual = _remove_line_end(actual)
     actual = re.sub(r'\s{2,}', '', actual)
@@ -88,7 +88,7 @@ def test_cell_string_zero(_template):
     context = Context({'value': '0'})
 
     actual = _template.render(context)
-    expect = '<td class=" dash ">-</td>'
+    expect = '<td class=" dash">-</td>'
 
     actual = _remove_line_end(actual)
     actual = re.sub(r'\s{2,}', '', actual)
@@ -135,7 +135,7 @@ def test_cell_css_class_one():
     )
     context = Context({'value': 1})
 
-    expect = '<td class="X">1,00</td>'
+    expect = '<td class=" X">1,00</td>'
 
     actual = tmpl.render(context)
     actual = _remove_line_end(actual)
@@ -151,7 +151,7 @@ def test_cell_css_class_many():
     )
     context = Context({'value': 1})
 
-    expect = '<td class="X Y Z">1,00</td>'
+    expect = '<td class=" X Y Z">1,00</td>'
 
     actual = tmpl.render(context)
     actual = _remove_line_end(actual)
