@@ -25,19 +25,7 @@
             id="row{{day_int}}"
             class="{% if day|slugify == day_int %}current-day{% endif %} {{weekend_row}}">
             <td class="text-start {{weekend_col}} panel-heading" :class="open{{day_int}} ? 'active' : ''">
-                <a
-                    role="button"
-                    class="btn btn-xs no-hover"
-                    data-bs-toggle="collapse"
-                    aria-expanded="true"
-                    hx-get="{{url_expand}}"
-                    hx-target="#row{{day_int}}"
-                    hx-swap="afterend"
-                    hx-trigger="click once"
-                    @click="open{{day_int}} = !open{{day_int}}"
-                    >
-                    {{row.date|date:'d'}}
-                </a>
+                <a role="button" class="btn btn-xs no-hover" data-bs-toggle="collapse" aria-expanded="true" hx-get="{{url_expand}}" hx-target="#row{{day_int}}" hx-swap="afterend" hx-trigger="click once" @click="open{{day_int}} = !open{{day_int}}">{{row.date|date:'d'}}</a>
             </td>
             {% for cat in expense_types %}
             {% table_cell value=row|get_item:cat css_class=weekend_col %}
