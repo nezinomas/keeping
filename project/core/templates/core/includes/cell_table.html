@@ -5,7 +5,5 @@
 {% var column_tag=tag|default:"td" %}
 {% var before_value=before_text|default:'' %}
 {% var after_value=after_text|default:'' %}
-{% var alpine_js=alpinejs|default:'' %}
-{% var css=css_class|default:'' %}
 
-<{{column_tag}} class="{% if highlight_value %}{{cell_value|positive_negative}}{% endif %} {% if cell_value == '-' %}dash{% endif %} {{css}}" {% if width %}width="{{width}}"{% endif %} {{alpine_js|safe}}>{{before_value}}{{cell_value}}{{after_value}}</{{column_tag}}>
+<{{column_tag}} class="{% if highlight_value %}{{cell_value|positive_negative}}{% endif %}{% if cell_value == '-' %}{{" "}}dash{% endif %}{% if css_class %}{{" "}}{{css_class}}{% endif %}"{% if width %}{{" "}}width="{{width}}"{% endif %}{% if alpinejs %}{{" "}}{{alpinejs|safe}}{% endif %}>{{before_value}}{{cell_value}}{{after_value}}</{{column_tag}}>

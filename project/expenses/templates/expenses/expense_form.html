@@ -8,7 +8,7 @@
 
 
 <script>
-    // sum prices
+    /* sum prices */
     function sum_prices() {
         var input_total = document.getElementById("id_price")
         var input_price = document.getElementById("id_total_sum")
@@ -34,7 +34,7 @@
         sum_prices();
     });
 
-    // Enter key on price field
+    /* Enter key on price field */
     var input = document.getElementById("id_total_sum");
     input.addEventListener("keyup", function (event) {
         event.preventDefault();
@@ -43,7 +43,7 @@
         }
     });
 
-    // disable Enter key on form
+    /* disable Enter key on form */
     document.addEventListener('keypress', function (e) {
         if (e.keyCode === 13 || e.which === 13) {
             e.preventDefault();

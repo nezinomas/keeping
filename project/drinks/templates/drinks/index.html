@@ -34,6 +34,7 @@
             hx-target="#tab_content">
             {% translate 'Charts' %}
         </a>
+        {{" "}}
         <a role="button"
             class="btn btn-sm"
             :class="openTab === 'data' ? activeClass : inactiveClass"
@@ -42,6 +43,7 @@
             hx-target="#tab_content">
             {% translate 'Data' %}
         </a>
+        {{" "}}
         <a role="button"
             class="btn btn-sm"
             :class="openTab === 'history' ? activeClass : inactiveClass"

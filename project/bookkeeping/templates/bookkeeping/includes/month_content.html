@@ -25,11 +25,11 @@
         </div>
     </div>
     <div class="col-lg-4 my-sm-2 my-lg-0 gx-2 text-end">
-        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'expenses:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Expenses' context "expenses button" %}</button>
-        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'incomes:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Incomes' context "incomes button" %}</button>
-        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'savings:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Savings' context "savings button" %}</button>
-        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'transactions:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Transactions' context 'transactions button' %}</button>
-        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'drinks:new' 'index' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Drinks' context 'drinks button' %}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'expenses:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Expenses' context "expenses button" %}</button>{{" "}}
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'incomes:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Incomes' context "incomes button" %}</button>{{" "}}
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'savings:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Savings' context "savings button" %}</button>{{" "}}
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'transactions:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Transactions' context 'transactions button' %}</button>{{" "}}
+        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'drinks:new' 'index' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Drinks' context 'drinks button' %}</button>{{" "}}
         <button class="btn btn-sm btn-info" @click="show_chart = ! show_chart">{% translate 'Show other chart' %}</button>
     </div>
 </div>
