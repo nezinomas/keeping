@@ -15,8 +15,7 @@ from django.utils.translation import gettext as _
 from django.views.generic import CreateView
 from project.users import models
 
-from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
-                                 FormViewMixin, ListViewMixin,
+from ..core.mixins.views import (DeleteViewMixin, FormViewMixin, ListViewMixin,
                                  TemplateViewMixin, rendered_content)
 from ..journals.forms import SettingsForm, UnnecessaryForm
 from ..users.models import User
