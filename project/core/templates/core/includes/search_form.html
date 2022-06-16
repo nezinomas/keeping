@@ -9,7 +9,7 @@
     hx-swap="innerHTML"
     hx-indicator="#indicator"
     x-data="{ message: '' }">
-    <div class="col align-self-start">
+    <div class="col">
         <input type="search" name="search"
             id="id_search"
             class="textinput textInput form-control form-control-sm"
@@ -18,7 +18,7 @@
             x-model="message"
             {% if hightlight_tab %}@keyup.enter="openTab = '13'"{% endif %}>
     </div>
-    <div class="col-auto align-self-start">
+    <div class="col-auto">
         <button type="button"
             class="btn btn-sm btn-secondary"
             hx-get="{{ reset_url }}"
