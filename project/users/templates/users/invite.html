@@ -11,7 +11,7 @@
         {% if not send %}
         {{ form|as_crispy_errors }}
         {% for field in form %}{{ field|as_crispy_field }}{% endfor %}
-        <button type="submit" id="submit" class="btn btn-primary btn-sm">{% translate 'Send invitation' %}</button>
+        <button type="submit" id="submit" class="btn btn-primary btn-sm">{% translate 'Send invitation' %}</button>{{" "}}
         {% else %}
         <p>{% translate 'Email sent' %}</p>
         {% endif %}

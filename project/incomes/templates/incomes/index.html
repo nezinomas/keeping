@@ -27,7 +27,7 @@
             {% url 'incomes:list' as reset_url %}
             <div class="col" id="search_form_data" hx-trigger="reloadSearch from:body">{% search_form url=search_url reset_url=reset_url target="#income_list" %}</div>
             <div class="col-auto text-end">
-                <button type="button" class="btn btn-sm btn-outline-success w5" hx-get="{% url 'incomes:new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Incomes' context 'incomes button' %}</button>
+                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'incomes:new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Incomes' context 'incomes button' %}</button>
             </div>
         </div>
         <div class="row">
