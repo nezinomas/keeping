@@ -334,7 +334,7 @@ class Summary(TemplateViewMixin):
         qs_inc = Income.objects.sum_by_year()
         qs_exp = Expense.objects.sum_by_year()
 
-        # generae balance_categories
+        # generate balance_categories
         _arr = qs_inc if qs_inc else qs_exp
         balance_years = [x['year'] for x in _arr]
 
