@@ -171,7 +171,7 @@ class YearBalance(BalanceBase):
         for name, arr in data.items():
             if not arr:
                 continue
-            print(f'arr: {arr}, type: {type(arr)}')
+
             # copy values from input arrays to df
             for d in arr:
                 df.at[to_datetime(d['date']), name] = float(d['sum'])
