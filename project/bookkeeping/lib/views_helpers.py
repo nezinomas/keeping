@@ -229,16 +229,20 @@ class IndexHelper():
             lend.append({'date': x['date'], 'sum': x['sum_debt']})
             lend_return.append({'date': x['date'], 'sum': x['sum_return']})
 
+        data = {
+            'incomes': qs_income,
+            'expenses': qs_expenses,
+            'savings': qs_savings,
+            'savings_close': qs_savings_close,
+            'borrow': borrow,
+            'borrow_return': borrow_return,
+            'lend': lend,
+            'lend_return': lend_return,
+        }
+
         self._YearBalance = YearBalance(
             year=year,
-            incomes=qs_income,
-            expenses=qs_expenses,
-            savings=qs_savings,
-            savings_close=qs_savings_close,
-            borrow=borrow,
-            borrow_return=borrow_return,
-            lend=lend,
-            lend_return=lend_return,
+            data=data,
             amount_start=account_sum)
 
     def render_year_balance(self):
