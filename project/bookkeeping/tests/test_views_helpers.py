@@ -46,18 +46,6 @@ def test_expenses_types_args_as_list(qs):
     assert ['A', 'T', 'X'] == actual
 
 
-def test_percentage_from_incomes():
-    actual = T.IndexHelper.percentage_from_incomes(10, 1.5)
-
-    assert actual == 15
-
-
-def test_percentage_from_incomes_saving_none():
-    actual = T.IndexHelper.percentage_from_incomes(10, None)
-
-    assert not actual
-
-
 def test_add_latest_check_key_date_found():
     model = Mock()
     model.objects.items.return_value = [{'title': 'x', 'latest_check': 'a'}]

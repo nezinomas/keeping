@@ -14,7 +14,8 @@ from ..core.lib.translation import month_names
 from ..core.lib.utils import sum_all
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
-                                 TemplateViewMixin, rendered_content, httpHtmxResponse)
+                                 TemplateViewMixin, httpHtmxResponse,
+                                 rendered_content)
 from ..expenses.models import Expense
 from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
@@ -24,8 +25,8 @@ from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
 from .lib import summary_view_helper as SummaryViewHelper
 from .lib import views_helpers as Helper
 from .lib.no_incomes import NoIncomes as LibNoIncomes
-from .lib.views_helpers import (DetailedHelper, ExpensesHelper, IndexHelper,
-                                MonthHelper)
+from .lib.view_index_helper import IndexHelper
+from .lib.views_helpers import DetailedHelper, ExpensesHelper, MonthHelper
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 
