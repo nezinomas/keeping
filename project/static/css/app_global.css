@@ -239,7 +239,6 @@ tr.current-day>td.weekend-col {
 }
 
 .table-hover tr:hover td,
-.table-hover tr.weekend-row:hover td,
 .table-hover tr.current-day:hover td {
     --bs-table-accent-bg: #f9f6cf !important;
 }

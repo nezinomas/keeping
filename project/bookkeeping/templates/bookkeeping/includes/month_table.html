@@ -18,12 +18,11 @@
     <tbody x-data="make_x_data()">
         {% for row, sp in expenses %}
         {% with row.date|date:'w'|weekend:'weekend-col' as weekend_col %}
-        {% with row.date|date:'w'|weekend:'weekend-row' as weekend_row %}
         {% with row.date|date:'j' as day_int %}
         {% url 'bookkeeping:expand_day_expenses' row.date|date:'Ymd' as url_expand %}
         <tr
             id="row{{day_int}}"
-            class="{% if day|slugify == day_int %}current-day{% endif %}{{' '}}{{weekend_row}}">
+            {% if day|slugify == day_int %}class="current-day"{% endif %}>
             <td class="text-start {{weekend_col}} panel-heading" :class="open{{day_int}} ? 'active' : ''">
                 <a role="button" class="btn btn-xs no-hover" data-bs-toggle="collapse" aria-expanded="true" hx-get="{{url_expand}}" hx-target="#row{{day_int}}" hx-swap="afterend" hx-trigger="click once" @click="open{{day_int}} = !open{{day_int}}">{{row.date|date:'d'}}</a>
             </td>
@@ -35,7 +34,7 @@
             <td class="text-start {{weekend_col}}">{{sp.date|date:'l'}}</td>
             {% table_cell value=sp.day css_class=sp.day|negative %}
             {% table_cell value=sp.full css_class=sp.full|negative|add:' -full' %}
-        </tr>{% endwith %}{% endwith %}{% endwith %}
+        </tr>{% endwith %}{% endwith %}
         {% endfor %}
     </tbody>
     <tfoot>
