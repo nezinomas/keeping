@@ -212,6 +212,12 @@ class IndexHelper():
             .aggregate(Sum('past'))['past__sum']
         account_sum = float(account_sum) if account_sum else 0.0
 
+        self._YearBalance = YearBalance(
+            year=year,
+            data=self._collect_data(year),
+            amount_start=account_sum)
+
+    def _collect_data(self, year):
         qs_borrow = Debt.objects.sum_by_month(year, debt_type='borrow')
         qs_lend = Debt.objects.sum_by_month(year, debt_type='lend')
 
@@ -236,10 +242,7 @@ class IndexHelper():
             'lend_return': lend_return,
         }
 
-        self._YearBalance = YearBalance(
-            year=year,
-            data=data,
-            amount_start=account_sum)
+        return data
 
     def render_year_balance(self):
         context = {
