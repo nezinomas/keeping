@@ -209,13 +209,15 @@ class IndexHelper():
             AccountBalance.objects \
             .related() \
             .filter(year=year) \
-            .aggregate(Sum('past'))['past__sum']
+            .aggregate(Sum('past')) \
+            ['past__sum']
         account_sum = float(account_sum) if account_sum else 0.0
 
         self._YearBalance = YearBalance(
             year=year,
             data=self._collect_data(year),
-            amount_start=account_sum)
+            amount_start=account_sum
+        )
 
     def _collect_data(self, year):
         qs_borrow = Debt.objects.sum_by_month(year, debt_type='borrow')
