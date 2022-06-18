@@ -43,12 +43,8 @@ class YearBalance(BalanceBase):
 
         self._amount_start = amount_start
         self._year = year
-        # ToDo: delete after some time (commented on 2021.08.26)
-        # if not incomes and not expenses:
-        #     return
 
         self._balance = self._make_df(year=year, data=data)
-
         self._balance = self._calc(self._balance)
 
     @property
