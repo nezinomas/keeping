@@ -8,16 +8,20 @@ from ...core.lib.balance_base import BalanceBase, df_months_of_year
 
 
 class YearBalance(BalanceBase):
+    columns = (
+        'incomes',
+        'expenses',
+        'savings',
+        'savings_close',
+        'borrow',
+        'borrow_return',
+        'lend',
+        'lend_return'
+    )
+
     def __init__(self,
                  year: int,
-                 incomes: List[Dict],
-                 expenses: List[Dict],
-                 savings: List[Dict] = None,
-                 savings_close: List[Dict] = None,
-                 borrow: List[Dict] = None,
-                 borrow_return: List[Dict] = None,
-                 lend: List[Dict] = None,
-                 lend_return: List[Dict] = None,
+                 data: Dict[str, Dict],
                  amount_start: float = 0.0):
 
         '''
@@ -46,17 +50,7 @@ class YearBalance(BalanceBase):
         # if not incomes and not expenses:
         #     return
 
-        self._balance = self._make_df(
-            year=year,
-            incomes=incomes,
-            expenses=expenses,
-            savings=savings,
-            savings_close=savings_close,
-            borrow=borrow,
-            borrow_return=borrow_return,
-            lend=lend,
-            lend_return=lend_return,
-        )
+        self._balance = self._make_df(year=year, data=data)
 
         self._balance = self._calc(self._balance)
 
@@ -161,41 +155,26 @@ class YearBalance(BalanceBase):
 
         return rtn
 
-    def _make_df(self,
-                 year: int,
-                 incomes: List[Dict],
-                 expenses: List[Dict],
-                 savings: List[Dict],
-                 savings_close: List[Dict],
-                 borrow: List[Dict],
-                 borrow_return: List[Dict],
-                 lend: List[Dict],
-                 lend_return: List[Dict]) -> DF:
-
+    def _make_df(self, year: int, data: Dict[str, Dict]) -> DF:
         df = df_months_of_year(year)
 
-        # append necessary columns
-        arr = {
-            'incomes': incomes,
-            'expenses': expenses,
-            'savings': savings,
-            'savings_close': savings_close,
-            'borrow': borrow,
-            'borrow_return': borrow_return,
-            'lend': lend,
-            'lend_return': lend_return,
-        }
+        # create columns with 0 values
+        for col in self.columns:
+            df[col] = 0.0
 
-        for name, arr in arr.items():
-            # create column and assign 0 for all cells
-            df.loc[:, name] = 0.0
-            if arr:
-                # copy values from input arrays to df
-                for d in arr:
-                    df.at[to_datetime(d['date']), name] = float(d['sum'])
+        df['balance'] = 0
+        df['money_flow'] = 0
 
-        df.loc[:, 'balance'] = 0.0
-        df.loc[:, 'money_flow'] = self._amount_start
+        if not data:
+            return df
+
+        for name, arr in data.items():
+            if not arr:
+                continue
+            print(f'arr: {arr}, type: {type(arr)}')
+            # copy values from input arrays to df
+            for d in arr:
+                df.at[to_datetime(d['date']), name] = float(d['sum'])
 
         return df
 
