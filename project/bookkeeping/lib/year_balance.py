@@ -94,59 +94,31 @@ class YearBalance(BalanceBase):
 
     @property
     def income_data(self) -> List[float]:
-        rtn = []
-        if 'incomes' in self._balance:
-            rtn = self._balance.incomes.tolist()
-
-        return rtn
+        return self._balance.incomes.tolist()
 
     @property
     def expense_data(self) -> List[float]:
-        rtn = []
-        if 'expenses' in self._balance:
-            rtn = self._balance.expenses.tolist()
-
-        return rtn
+        return self._balance.expenses.tolist()
 
     @property
     def borrow_data(self) -> List[float]:
-        rtn = []
-        if 'borrow' in self._balance:
-            rtn = self._balance.borrow.tolist()
-
-        return rtn
+        return self._balance.borrow.tolist()
 
     @property
     def borrow_return_data(self) -> List[float]:
-        rtn = []
-        if 'borrow_return' in self._balance:
-            rtn = self._balance.borrow_return.tolist()
-
-        return rtn
+        return self._balance.borrow_return.tolist()
 
     @property
     def lend_data(self) -> List[float]:
-        rtn = []
-        if 'lend' in self._balance:
-            rtn = self._balance.lend.tolist()
-
-        return rtn
+        return self._balance.lend.tolist()
 
     @property
     def lend_return_data(self) -> List[float]:
-        rtn = []
-        if 'lend_return' in self._balance:
-            rtn = self._balance.lend_return.tolist()
-
-        return rtn
+        return self._balance.lend_return.tolist()
 
     @property
     def money_flow(self) -> List[float]:
-        rtn = []
-        if 'money_flow' in self._balance:
-            rtn = self._balance.money_flow.tolist()
-
-        return rtn
+        return self._balance.money_flow.tolist()
 
     def _make_df(self, year: int, data: Dict[str, Dict]) -> DF:
         df = df_months_of_year(year)
