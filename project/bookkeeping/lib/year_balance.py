@@ -45,7 +45,7 @@ class YearBalance(BalanceBase):
         self._year = year
 
         self._balance = self._make_df(year=year, data=data)
-        self._balance = self._calc(self._balance)
+        self._balance = self._calc_balance_and_money_flow(self._balance)
 
     @property
     def amount_start(self) -> float:
@@ -143,7 +143,7 @@ class YearBalance(BalanceBase):
 
         return df
 
-    def _calc(self, df: DF) -> DF:
+    def _calc_balance_and_money_flow(self, df: DF) -> DF:
         # calculate balance
         df['balance'] = df.incomes - df.expenses
 
