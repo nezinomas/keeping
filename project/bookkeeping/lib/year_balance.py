@@ -137,8 +137,12 @@ class YearBalance(BalanceBase):
             if not data_arr:
                 continue
 
+            if not col_name in self.columns:
+                continue
+
             # copy values from input arrays to df
             for row in data_arr:
+
                 df.at[to_datetime(row['date']), col_name] = float(row['sum'])
 
         return df

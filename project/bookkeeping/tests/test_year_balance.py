@@ -145,6 +145,20 @@ def test_months_balance(_incomes, _expenses,
     assert actual == _expect
 
 
+def test_balance_when_wrong_data_column_names():
+    data = {
+        'xxx': [{'date': date(1999, 1, 1), 'sum': Decimal(5.5)}],
+    }
+
+    actual = YearBalance(
+        year=1999,
+        data=data,
+        amount_start=None
+    ).balance
+
+    assert 'xxx' not in actual[0].keys()
+
+
 def test_months_balance_only_saving_close(_incomes, _expenses,
                                           _savings_close,
                                           _money_flow):
