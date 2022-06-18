@@ -26,15 +26,12 @@ class YearBalance(BalanceBase):
 
         '''
         year: int
-        incomes: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        expenses: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        savings: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        savings_close: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        borrow: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        borrow_return: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        lend: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        lend_return: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
+
+        data: {'incomes': [{'date': datetime.date(), 'sum': Decimal()}, ... ]}
+
         amount_start: year start worth amount
+
+        awailable keys in data: incomes, expenses, savings, savings_close, borrow, borrow_return, lend, lend_return
         '''
 
         super().__init__()
