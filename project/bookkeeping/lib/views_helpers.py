@@ -212,10 +212,6 @@ class IndexHelper():
             .aggregate(Sum('past'))['past__sum']
         account_sum = float(account_sum) if account_sum else 0.0
 
-        qs_income = Income.objects.sum_by_month(year)
-        qs_expenses = Expense.objects.sum_by_month(year)
-        qs_savings = Saving.objects.sum_by_month(year)
-        qs_savings_close = SavingClose.objects.sum_by_month(year)
         qs_borrow = Debt.objects.sum_by_month(year, debt_type='borrow')
         qs_lend = Debt.objects.sum_by_month(year, debt_type='lend')
 
@@ -230,10 +226,10 @@ class IndexHelper():
             lend_return.append({'date': x['date'], 'sum': x['sum_return']})
 
         data = {
-            'incomes': qs_income,
-            'expenses': qs_expenses,
-            'savings': qs_savings,
-            'savings_close': qs_savings_close,
+            'incomes': Income.objects.sum_by_month(year),
+            'expenses': Expense.objects.sum_by_month(year),
+            'savings': Saving.objects.sum_by_month(year),
+            'savings_close': SavingClose.objects.sum_by_month(year),
             'borrow': borrow,
             'borrow_return': borrow_return,
             'lend': lend,
