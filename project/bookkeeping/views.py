@@ -28,7 +28,7 @@ from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .services.index import IndexService
 from .services.month import MonthService
 from .services.expenses import ExpensesService
-from .lib.views_helpers import DetailedHelper
+from .services.detailed import DetailedHelper
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 

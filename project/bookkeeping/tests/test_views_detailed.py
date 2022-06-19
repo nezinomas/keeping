@@ -9,7 +9,7 @@ from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory, IncomeTypeFactory
 from ...savings.factories import SavingFactory
 from .. import views
-from ..lib.views_helpers import DetailedHelper
+from ..services.detailed import DetailedHelper
 
 pytestmark = pytest.mark.django_db
 
