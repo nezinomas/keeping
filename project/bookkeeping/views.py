@@ -6,7 +6,6 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account, AccountBalance
-from ..core.lib.date import years
 from ..core.lib.translation import month_names
 from ..core.lib.utils import sum_all
 from ..core.mixins.formset import FormsetMixin
@@ -347,7 +346,6 @@ class SummaryExpenses(FormViewMixin):
 
         if _types_qs or _names_qs:
             obj = ChartSummaryExpensesService(
-                years=years()[:-1],
                 types=_types_qs,
                 names=_names_qs,
                 remove_empty_columns=True

@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 import pytest
+from mock import patch
 
 from ..services.chart_summary_expenses import ChartSummaryExpensesService
 
@@ -26,18 +27,18 @@ def _names():
         {'year': 2002, 'sum': Decimal('15'), 'title': 'A', 'root': 'X'},
     ]
 
-
-def test_helper_compare_categories():
-    obj = ChartSummaryExpensesService(years=[1, 2])
+@patch('project.bookkeeping.services.chart_summary_expenses.ChartSummaryExpensesService._get_years', return_value=[1, 2])
+def test_categories(mock_years):
+    obj = ChartSummaryExpensesService()
 
     actual = obj.categories
 
     assert actual == [1, 2]
 
 
-def test_helper_compare_serries_data__types(_types):
+@patch('project.bookkeeping.services.chart_summary_expenses.ChartSummaryExpensesService._get_years', return_value=[2000, 2001, 2002])
+def test_serries_data__types(mock_years, _types):
     obj = ChartSummaryExpensesService(
-        years=[2000, 2001, 2002],
         types=_types
     )
 
@@ -50,11 +51,12 @@ def test_helper_compare_serries_data__types(_types):
     assert actual == expect
 
 
-def test_helper_compare_serries_data__types_year_out_of_range(_types):
+
+@patch('project.bookkeeping.services.chart_summary_expenses.ChartSummaryExpensesService._get_years', return_value=[2000, 2001, 2002])
+def test_serries_data__types_year_out_of_range(mock_years, _types):
     _types.append({'year': 2003, 'sum': Decimal('25'), 'title': 'XXX'})
 
     obj = ChartSummaryExpensesService(
-        years=[2000, 2001, 2002],
         types=_types
     )
 
@@ -66,19 +68,18 @@ def test_helper_compare_serries_data__types_year_out_of_range(_types):
     assert actual == expect
 
 
-def test_helper_compare_serries_data__types_no_data():
-    obj = ChartSummaryExpensesService(
-        years=[2000, 2001, 2002]
-    )
+@patch('project.bookkeeping.services.chart_summary_expenses.ChartSummaryExpensesService._get_years', return_value=[2000, 2001, 2002])
+def test_serries_data__types_no_data(mock_years):
+    obj = ChartSummaryExpensesService()
 
     actual = obj.serries_data
 
     assert actual == []
 
 
-def test_helper_compare_serries_data_names(_names):
+@patch('project.bookkeeping.services.chart_summary_expenses.ChartSummaryExpensesService._get_years', return_value=[2000, 2001, 2002])
+def test_serries_data_names(mock_years, _names):
     obj = ChartSummaryExpensesService(
-        years=[2000, 2001, 2002],
         names=_names
     )
 
@@ -91,11 +92,11 @@ def test_helper_compare_serries_data_names(_names):
     assert actual == expect
 
 
-def test_helper_compare_serries_data_names_year_out_of_range(_names):
+@patch('project.bookkeeping.services.chart_summary_expenses.ChartSummaryExpensesService._get_years', return_value=[2000, 2001, 2002])
+def test_serries_data_names_year_out_of_range(mock_years, _names):
     _names.append({'year': 2003, 'sum': Decimal('25'), 'title': 'XXX'})
 
     obj = ChartSummaryExpensesService(
-        years=[2000, 2001, 2002],
         names=_names
     )
 
@@ -107,9 +108,9 @@ def test_helper_compare_serries_data_names_year_out_of_range(_names):
     assert actual == expect
 
 
-def test_helper_compare_serries_data_full(_types, _names):
+@patch('project.bookkeeping.services.chart_summary_expenses.ChartSummaryExpensesService._get_years', return_value=[2000, 2001, 2002])
+def test_serries_data_full(mock_years, _types, _names):
     obj = ChartSummaryExpensesService(
-        years=[2000, 2001, 2002],
         types=_types,
         names=_names
     )
@@ -124,7 +125,8 @@ def test_helper_compare_serries_data_full(_types, _names):
     assert actual == expect
 
 
-def test_helper_compare_serries_data_remove_empty_columns():
+@patch('project.bookkeeping.services.chart_summary_expenses.ChartSummaryExpensesService._get_years', return_value=[1, 2, 3, 4])
+def test_serries_data_remove_empty_columns(mock_years):
     _types = [
         {'year': 1, 'sum': Decimal('1'), 'title': 'X'},
         {'year': 1, 'sum': Decimal('2'), 'title': 'Y'},
@@ -137,7 +139,6 @@ def test_helper_compare_serries_data_remove_empty_columns():
     ]
 
     obj = ChartSummaryExpensesService(
-        years=[1, 2, 3, 4],
         types=_types,
         remove_empty_columns=True
     )
@@ -149,9 +150,9 @@ def test_helper_compare_serries_data_remove_empty_columns():
     ]
 
 
-def test_helper_compare_serries_data_remove_empty_columns_no_data():
+@patch('project.bookkeeping.services.chart_summary_expenses.ChartSummaryExpensesService._get_years', return_value=[1, 2])
+def test_serries_data_remove_empty_columns_no_data(mock_years):
     obj = ChartSummaryExpensesService(
-        years=[1, 2],
         remove_empty_columns=True
     )
 
@@ -159,9 +160,9 @@ def test_helper_compare_serries_data_remove_empty_columns_no_data():
     assert obj.serries_data == []
 
 
-def test_helper_compare_serries_data_remove_empty_columns_no_data_all():
+@patch('project.bookkeeping.services.chart_summary_expenses.ChartSummaryExpensesService._get_years', return_value=[])
+def test_serries_data_remove_empty_columns_no_data_all(mock_years):
     obj = ChartSummaryExpensesService(
-        years=[],
         remove_empty_columns=True
     )
 
@@ -169,9 +170,9 @@ def test_helper_compare_serries_data_remove_empty_columns_no_data_all():
     assert obj.serries_data == []
 
 
-def test_helper_compare_serries_total_column(_types):
+@patch('project.bookkeeping.services.chart_summary_expenses.ChartSummaryExpensesService._get_years', return_value=[2000, 2001, 2002])
+def test_serries_total_column(mock_years, _types):
     obj = ChartSummaryExpensesService(
-        years=[2000, 2001, 2002],
         types=_types
     )
 
@@ -181,9 +182,9 @@ def test_helper_compare_serries_total_column(_types):
     assert actual == expect
 
 
-def test_helper_compare_serries_total_row(_types):
+@patch('project.bookkeeping.services.chart_summary_expenses.ChartSummaryExpensesService._get_years', return_value=[2000, 2001, 2002])
+def test_serries_total_row(mock_years, _types):
     obj = ChartSummaryExpensesService(
-        years=[2000, 2001, 2002],
         types=_types
     )
 
@@ -193,9 +194,9 @@ def test_helper_compare_serries_total_row(_types):
     assert actual == expect
 
 
-def test_helper_compare_serries_total(_types):
+@patch('project.bookkeeping.services.chart_summary_expenses.ChartSummaryExpensesService._get_years', return_value=[2000, 2001, 2002])
+def test_serries_total(mock_years, _types):
     obj = ChartSummaryExpensesService(
-        years=[2000, 2001, 2002],
         types=_types
     )
 

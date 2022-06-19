@@ -2,15 +2,16 @@ from typing import Dict, List
 
 import numpy as np
 
+from ...core.lib.date import years
+
 
 class ChartSummaryExpensesService():
     def __init__(self,
-                 years: List,
                  types: List[Dict] = None,
                  names: List[Dict] = None,
                  remove_empty_columns: bool = None):
 
-        self._years = years
+        self._years = self._get_years()
         self._serries_data = []
 
         if not self._years:
@@ -43,6 +44,9 @@ class ChartSummaryExpensesService():
     @property
     def total(self) -> float:
         return self._total
+
+    def _get_years(self) -> List:
+        return years()[:-1]
 
     def _make_serries_data(self, data):
         _items = []
