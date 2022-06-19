@@ -1,20 +1,10 @@
-import json
-from datetime import date
 from decimal import Decimal
 
 import pytest
 from freezegun import freeze_time
 from mock import Mock, patch
 
-from ...core.tests.utils import setup_view
-from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
-from ...incomes.factories import IncomeFactory
-from ...pensions.factories import (PensionBalance, PensionFactory,
-                                   PensionTypeFactory)
-from ...savings.factories import (SavingBalance, SavingFactory,
-                                  SavingTypeFactory)
 from ..lib import views_helpers as T
-from ..views import Summary
 
 pytestmark = pytest.mark.django_db
 
