@@ -140,7 +140,7 @@ def test_helper_chart_data_db1():
 
 
 def test_helper_compare_categories():
-    obj = Helper.ExpenseCompareHelper(years=[1, 2])
+    obj = Helper.ChartSummaryExpensesService(years=[1, 2])
 
     actual = obj.categories
 
@@ -148,7 +148,7 @@ def test_helper_compare_categories():
 
 
 def test_helper_compare_serries_data_types(types):
-    obj = Helper.ExpenseCompareHelper(
+    obj = Helper.ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
         types=types
     )
@@ -165,7 +165,7 @@ def test_helper_compare_serries_data_types(types):
 def test_helper_compare_serries_data_types_year_out_of_range(types):
     types.append({'year': 2003, 'sum': Decimal('25'), 'title': 'XXX'})
 
-    obj = Helper.ExpenseCompareHelper(
+    obj = Helper.ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
         types=types
     )
@@ -179,7 +179,7 @@ def test_helper_compare_serries_data_types_year_out_of_range(types):
 
 
 def test_helper_compare_serries_data_types_no_data():
-    obj = Helper.ExpenseCompareHelper(
+    obj = Helper.ChartSummaryExpensesService(
         years=[2000, 2001, 2002]
     )
 
@@ -189,7 +189,7 @@ def test_helper_compare_serries_data_types_no_data():
 
 
 def test_helper_compare_serries_data_names(names):
-    obj = Helper.ExpenseCompareHelper(
+    obj = Helper.ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
         names=names
     )
@@ -206,7 +206,7 @@ def test_helper_compare_serries_data_names(names):
 def test_helper_compare_serries_data_names_year_out_of_range(names):
     names.append({'year': 2003, 'sum': Decimal('25'), 'title': 'XXX'})
 
-    obj = Helper.ExpenseCompareHelper(
+    obj = Helper.ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
         names=names
     )
@@ -220,7 +220,7 @@ def test_helper_compare_serries_data_names_year_out_of_range(names):
 
 
 def test_helper_compare_serries_data_full(types, names):
-    obj = Helper.ExpenseCompareHelper(
+    obj = Helper.ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
         types=types,
         names=names
@@ -248,7 +248,7 @@ def test_helper_compare_serries_data_remove_empty_columns():
         {'year': 4, 'sum': Decimal('0'), 'title': 'Y'},
     ]
 
-    obj = Helper.ExpenseCompareHelper(
+    obj = Helper.ChartSummaryExpensesService(
         years=[1, 2, 3, 4],
         types=types,
         remove_empty_columns=True
@@ -262,7 +262,7 @@ def test_helper_compare_serries_data_remove_empty_columns():
 
 
 def test_helper_compare_serries_data_remove_empty_columns_no_data():
-    obj = Helper.ExpenseCompareHelper(
+    obj = Helper.ChartSummaryExpensesService(
         years=[1, 2],
         remove_empty_columns=True
     )
@@ -272,7 +272,7 @@ def test_helper_compare_serries_data_remove_empty_columns_no_data():
 
 
 def test_helper_compare_serries_data_remove_empty_columns_no_data_all():
-    obj = Helper.ExpenseCompareHelper(
+    obj = Helper.ChartSummaryExpensesService(
         years=[],
         remove_empty_columns=True
     )
@@ -282,7 +282,7 @@ def test_helper_compare_serries_data_remove_empty_columns_no_data_all():
 
 
 def test_helper_compare_serries_total_column(types):
-    obj = Helper.ExpenseCompareHelper(
+    obj = Helper.ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
         types=types
     )
@@ -294,7 +294,7 @@ def test_helper_compare_serries_total_column(types):
 
 
 def test_helper_compare_serries_total_row(types):
-    obj = Helper.ExpenseCompareHelper(
+    obj = Helper.ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
         types=types
     )
@@ -306,7 +306,7 @@ def test_helper_compare_serries_total_row(types):
 
 
 def test_helper_compare_serries_total(types):
-    obj = Helper.ExpenseCompareHelper(
+    obj = Helper.ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
         types=types
     )

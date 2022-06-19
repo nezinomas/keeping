@@ -345,7 +345,7 @@ class SummaryExpenses(FormViewMixin):
             _names_qs = Expense.objects.sum_by_year_name(_names)
 
         if _types_qs or _names_qs:
-            obj = SummaryService.ExpenseCompareHelper(
+            obj = SummaryService.ChartSummaryExpensesService(
                 years=years()[:-1],
                 types=_types_qs,
                 names=_names_qs,

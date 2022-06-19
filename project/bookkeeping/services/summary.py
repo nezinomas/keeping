@@ -44,7 +44,7 @@ def chart_data(*args):
     return items
 
 
-class ExpenseCompareHelper():
+class ChartSummaryExpensesService():
     def __init__(self,
                  years: List,
                  types: List[Dict] = None,
