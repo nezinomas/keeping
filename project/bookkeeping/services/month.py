@@ -11,9 +11,10 @@ from ...plans.lib.calc_day_sum import CalcDaySum
 from ...savings.models import Saving
 from ..lib.day_spending import DaySpending
 from ..lib.expense_summary import DayExpense
-from ..lib.views_helpers import necessary_expense_types, expense_types
+from ..lib.views_helpers import expense_types, necessary_expense_types
 
-class MonthHelper():
+
+class MonthService():
     def __init__(self, request, year, month):
         self._request = request
         self._year = year

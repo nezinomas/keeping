@@ -26,7 +26,7 @@ from .lib import summary_view_helper as SummaryViewHelper
 from .lib import views_helpers as Helper
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .services.index import IndexService
-from .services.month import MonthHelper
+from .services.month import MonthService
 from .lib.views_helpers import DetailedHelper, ExpensesHelper
 from .models import AccountWorth, PensionWorth, SavingWorth
 
@@ -296,7 +296,7 @@ class Month(TemplateViewMixin):
         year = self.request.user.year
         month = self.request.user.month
 
-        obj = MonthHelper(self.request, year, month)
+        obj = MonthService(self.request, year, month)
 
         context = super().get_context_data(**kwargs)
         context.update({
