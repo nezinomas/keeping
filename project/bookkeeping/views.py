@@ -22,7 +22,7 @@ from ..pensions.models import PensionBalance, PensionType
 from ..savings.models import SavingBalance, SavingType
 from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
                     SavingWorthForm, SummaryExpensesForm)
-from .lib import summary_view_helper as SummaryViewHelper
+from .services import summary_view_helper as SummaryViewHelper
 from .lib import views_helpers as Helper
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .services.index import IndexService
