@@ -14,7 +14,6 @@ from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
                                  TemplateViewMixin, httpHtmxResponse,
                                  rendered_content)
 from ..expenses.models import Expense
-from ..incomes.models import Income
 from ..pensions.models import PensionBalance, PensionType
 from ..savings.models import SavingBalance, SavingType
 from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
@@ -23,6 +22,7 @@ from .lib import views_helpers as Helper
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .models import AccountWorth, PensionWorth, SavingWorth
 from .services import summary as SummaryService
+from .services.chart_summary import ChartSummaryService
 from .services.detailed import DetailedService
 from .services.expand_day import ExpandDayService
 from .services.expenses import ExpensesService
@@ -278,39 +278,9 @@ class Summary(TemplateViewMixin):
     template_name = 'bookkeeping/summary.html'
 
     def get_context_data(self, **kwargs):
+        obj = ChartSummaryService()
         context = super().get_context_data(**kwargs)
-
-        # data for balance summary
-        qs_inc = Income.objects.sum_by_year()
-        qs_exp = Expense.objects.sum_by_year()
-
-        # generate balance_categories
-        _arr = qs_inc if qs_inc else qs_exp
-        balance_years = [x['year'] for x in _arr]
-
-        records = len(balance_years)
-        context['records'] = records
-
-        if not records or records < 1:
-            return context
-
-        context.update({
-            'balance_categories': balance_years,
-            'balance_income_data': [float(x['sum']) for x in qs_inc],
-            'balance_income_avg': Helper.average(qs_inc),
-            'balance_expense_data': [float(x['sum']) for x in qs_exp],
-        })
-
-        # data for salary summary
-        qs = list(Income.objects.sum_by_year(['salary']))
-        salary_years = [x['year'] for x in qs]
-
-        context.update({
-            'salary_categories': salary_years,
-            'salary_data_avg': Helper.average(qs),
-        })
-
-        return context
+        return obj.context(context)
 
 
 class SummarySavings(TemplateViewMixin):
