@@ -38,7 +38,7 @@ def test_helper_compare_categories():
 def test_helper_compare_serries_data__types(_types):
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        _types=_types
+        types=_types
     )
 
     actual = obj.serries_data
@@ -55,7 +55,7 @@ def test_helper_compare_serries_data__types_year_out_of_range(_types):
 
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        _types=_types
+        types=_types
     )
 
     actual = obj.serries_data
@@ -79,7 +79,7 @@ def test_helper_compare_serries_data__types_no_data():
 def test_helper_compare_serries_data_names(_names):
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        _names=_names
+        names=_names
     )
 
     actual = obj.serries_data
@@ -96,7 +96,7 @@ def test_helper_compare_serries_data_names_year_out_of_range(_names):
 
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        _names=_names
+        names=_names
     )
 
     actual = obj.serries_data
@@ -110,8 +110,8 @@ def test_helper_compare_serries_data_names_year_out_of_range(_names):
 def test_helper_compare_serries_data_full(_types, _names):
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        _types=_types,
-        _names=_names
+        types=_types,
+        names=_names
     )
 
     actual = obj.serries_data
@@ -138,7 +138,7 @@ def test_helper_compare_serries_data_remove_empty_columns():
 
     obj = ChartSummaryExpensesService(
         years=[1, 2, 3, 4],
-        _types=_types,
+        types=_types,
         remove_empty_columns=True
     )
 
@@ -172,7 +172,7 @@ def test_helper_compare_serries_data_remove_empty_columns_no_data_all():
 def test_helper_compare_serries_total_column(_types):
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        _types=_types
+        types=_types
     )
 
     actual = obj.total_col
@@ -184,7 +184,7 @@ def test_helper_compare_serries_total_column(_types):
 def test_helper_compare_serries_total_row(_types):
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        _types=_types
+        types=_types
     )
 
     actual = obj.total_row
@@ -196,7 +196,7 @@ def test_helper_compare_serries_total_row(_types):
 def test_helper_compare_serries_total(_types):
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        _types=_types
+        types=_types
     )
 
     actual = obj.total
