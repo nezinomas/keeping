@@ -28,7 +28,7 @@ from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .services.index import IndexService
 from .services.month import MonthService
 from .services.expenses import ExpensesService
-from .services.detailed import DetailedHelper
+from .services.detailed import DetailedService
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 
@@ -319,7 +319,7 @@ class Detailed(TemplateViewMixin):
         context['months'] = range(1, 13)
         context['month_names'] = month_names()
 
-        ctx = DetailedHelper(year)
+        ctx = DetailedService(year)
         ctx.incomes_context(context)
         ctx.savings_context(context)
         ctx.expenses_context(context)

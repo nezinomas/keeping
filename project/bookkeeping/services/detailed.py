@@ -9,7 +9,7 @@ from ...savings.models import Saving
 from ..lib.views_helpers import expense_types
 
 
-class DetailedHelper():
+class DetailedService():
     def __init__(self, year, *args, **kwargs):
         self._year = year
 

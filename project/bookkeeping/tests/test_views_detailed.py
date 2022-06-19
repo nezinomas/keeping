@@ -9,7 +9,7 @@ from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory, IncomeTypeFactory
 from ...savings.factories import SavingFactory
 from .. import views
-from ..services.detailed import DetailedHelper
+from ..services.detailed import DetailedService
 
 pytestmark = pytest.mark.django_db
 
@@ -200,7 +200,7 @@ def test_sum_detailed_rows(_income):
         {'date': date(1999, 1, 1), 'sum': Decimal(5)},
         {'date': date(1999, 6, 1), 'sum': Decimal(2)},
     ]
-    actual = DetailedHelper(1999)._sum_detailed(_income, 'date', ['sum'])
+    actual = DetailedService(1999)._sum_detailed(_income, 'date', ['sum'])
 
     assert expect == actual
 
@@ -211,6 +211,6 @@ def test_sum_detailed_columns(_income):
         {'title': 'B', 'sum': Decimal(2)},
     ]
 
-    actual = DetailedHelper(1999)._sum_detailed(_income, 'title', ['sum'])
+    actual = DetailedService(1999)._sum_detailed(_income, 'title', ['sum'])
 
     assert expect == actual
