@@ -1,7 +1,4 @@
-from datetime import datetime
-
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -27,6 +24,7 @@ from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .models import AccountWorth, PensionWorth, SavingWorth
 from .services import summary as SummaryService
 from .services.detailed import DetailedService
+from .services.expand_day import ExpandDayService
 from .services.expenses import ExpensesService
 from .services.index import IndexService
 from .services.month import MonthService
@@ -405,30 +403,9 @@ class ExpandDayExpenses(TemplateViewMixin):
     template_name = 'bookkeeping/includes/expand_day_expenses.html'
 
     def get_context_data(self, **kwargs):
-        try:
-            _date = kwargs.get('date')
-            _year = int(_date[:4])
-            _month = int(_date[4:6])
-            _day = int(_date[6:8])
-            dt = datetime(_year, _month, _day)
-        except ValueError:
-            _year, _month, _day = 1970, 1, 1
-
-        dt = datetime(_year, _month, _day)
-
-        object_list = (
-            Expense
-            .objects
-            .items()
-            .filter(date=dt)
-            .order_by('expense_type', F('expense_name').asc(), 'price')
-        )
+        obj = ExpandDayService(kwargs.get('date'))
 
         context = super().get_context_data(**kwargs)
-        context.update({
-            'day': _day,
-            'object_list': object_list,
-            'notice': _('No records on day %(day)s') % ({'day': f'{dt:%F}'}),
-        })
+        context.update(**obj.context())
 
         return context
