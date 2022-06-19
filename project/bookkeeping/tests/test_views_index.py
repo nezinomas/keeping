@@ -10,7 +10,7 @@ from ...incomes.factories import IncomeFactory
 from ...pensions.factories import PensionFactory
 from ...savings.factories import SavingFactory
 from .. import views
-from ..lib.index_helper import IndexHelper
+from ..services.index_helper import IndexHelper
 
 pytestmark = pytest.mark.django_db
 

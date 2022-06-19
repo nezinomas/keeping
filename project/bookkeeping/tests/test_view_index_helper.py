@@ -1,4 +1,4 @@
-from ..lib.index_helper import IndexHelper
+from ..services.index_helper import IndexHelper
 
 
 def test_percentage_from_incomes():

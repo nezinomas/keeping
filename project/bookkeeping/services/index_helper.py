@@ -8,7 +8,7 @@ from ...expenses.models import Expense
 from ...incomes.models import Income
 from ...savings.models import Saving
 from ...transactions.models import SavingClose
-from .year_balance import YearBalance
+from ..lib.year_balance import YearBalance
 
 
 class IndexHelper():

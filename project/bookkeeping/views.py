@@ -25,7 +25,7 @@ from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
 from .lib import summary_view_helper as SummaryViewHelper
 from .lib import views_helpers as Helper
 from .lib.no_incomes import NoIncomes as LibNoIncomes
-from .lib.index_helper import IndexHelper
+from .services.index_helper import IndexHelper
 from .lib.views_helpers import DetailedHelper, ExpensesHelper, MonthHelper
 from .models import AccountWorth, PensionWorth, SavingWorth
 
