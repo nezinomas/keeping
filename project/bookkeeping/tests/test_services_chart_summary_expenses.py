@@ -8,7 +8,7 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture
-def types():
+def _types():
     return [
         {'year': 2000, 'sum': Decimal('5'), 'title': 'X'},
         {'year': 2000, 'sum': Decimal('2'), 'title': 'Y'},
@@ -18,7 +18,7 @@ def types():
 
 
 @pytest.fixture
-def names():
+def _names():
     return [
         {'year': 2000, 'sum': Decimal('5'), 'title': 'A', 'root': 'X'},
         {'year': 2000, 'sum': Decimal('2'), 'title': 'B', 'root': 'Y'},
@@ -35,10 +35,10 @@ def test_helper_compare_categories():
     assert actual == [1, 2]
 
 
-def test_helper_compare_serries_data_types(types):
+def test_helper_compare_serries_data__types(_types):
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        types=types
+        _types=_types
     )
 
     actual = obj.serries_data
@@ -50,12 +50,12 @@ def test_helper_compare_serries_data_types(types):
     assert actual == expect
 
 
-def test_helper_compare_serries_data_types_year_out_of_range(types):
-    types.append({'year': 2003, 'sum': Decimal('25'), 'title': 'XXX'})
+def test_helper_compare_serries_data__types_year_out_of_range(_types):
+    _types.append({'year': 2003, 'sum': Decimal('25'), 'title': 'XXX'})
 
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        types=types
+        _types=_types
     )
 
     actual = obj.serries_data
@@ -66,7 +66,7 @@ def test_helper_compare_serries_data_types_year_out_of_range(types):
     assert actual == expect
 
 
-def test_helper_compare_serries_data_types_no_data():
+def test_helper_compare_serries_data__types_no_data():
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002]
     )
@@ -76,10 +76,10 @@ def test_helper_compare_serries_data_types_no_data():
     assert actual == []
 
 
-def test_helper_compare_serries_data_names(names):
+def test_helper_compare_serries_data_names(_names):
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        names=names
+        _names=_names
     )
 
     actual = obj.serries_data
@@ -91,12 +91,12 @@ def test_helper_compare_serries_data_names(names):
     assert actual == expect
 
 
-def test_helper_compare_serries_data_names_year_out_of_range(names):
-    names.append({'year': 2003, 'sum': Decimal('25'), 'title': 'XXX'})
+def test_helper_compare_serries_data_names_year_out_of_range(_names):
+    _names.append({'year': 2003, 'sum': Decimal('25'), 'title': 'XXX'})
 
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        names=names
+        _names=_names
     )
 
     actual = obj.serries_data
@@ -107,11 +107,11 @@ def test_helper_compare_serries_data_names_year_out_of_range(names):
     assert actual == expect
 
 
-def test_helper_compare_serries_data_full(types, names):
+def test_helper_compare_serries_data_full(_types, _names):
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        types=types,
-        names=names
+        _types=_types,
+        _names=_names
     )
 
     actual = obj.serries_data
@@ -125,7 +125,7 @@ def test_helper_compare_serries_data_full(types, names):
 
 
 def test_helper_compare_serries_data_remove_empty_columns():
-    types = [
+    _types = [
         {'year': 1, 'sum': Decimal('1'), 'title': 'X'},
         {'year': 1, 'sum': Decimal('2'), 'title': 'Y'},
         {'year': 2, 'sum': Decimal('0'), 'title': 'X'},
@@ -138,7 +138,7 @@ def test_helper_compare_serries_data_remove_empty_columns():
 
     obj = ChartSummaryExpensesService(
         years=[1, 2, 3, 4],
-        types=types,
+        _types=_types,
         remove_empty_columns=True
     )
 
@@ -169,10 +169,10 @@ def test_helper_compare_serries_data_remove_empty_columns_no_data_all():
     assert obj.serries_data == []
 
 
-def test_helper_compare_serries_total_column(types):
+def test_helper_compare_serries_total_column(_types):
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        types=types
+        _types=_types
     )
 
     actual = obj.total_col
@@ -181,10 +181,10 @@ def test_helper_compare_serries_total_column(types):
     assert actual == expect
 
 
-def test_helper_compare_serries_total_row(types):
+def test_helper_compare_serries_total_row(_types):
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        types=types
+        _types=_types
     )
 
     actual = obj.total_row
@@ -193,10 +193,10 @@ def test_helper_compare_serries_total_row(types):
     assert actual == expect
 
 
-def test_helper_compare_serries_total(types):
+def test_helper_compare_serries_total(_types):
     obj = ChartSummaryExpensesService(
         years=[2000, 2001, 2002],
-        types=types
+        _types=_types
     )
 
     actual = obj.total
