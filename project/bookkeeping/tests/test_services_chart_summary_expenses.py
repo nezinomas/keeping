@@ -8,9 +8,8 @@ from ..services.chart_summary_expenses import ChartSummaryExpensesService
 pytestmark = pytest.mark.django_db
 
 GET_YEARS = \
-    'project.bookkeeping.services.chart_summary_expenses.\
-    ChartSummaryExpensesService.\
-    _get_years'
+    'project.bookkeeping.services.chart_summary_expenses.' \
+    'ChartSummaryExpensesService._get_years'
 
 
 @pytest.fixture
