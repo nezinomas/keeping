@@ -4,7 +4,7 @@ from ...expenses.models import Expense
 from ..lib.expense_summary import MonthExpense
 
 
-class ExpensesHelper():
+class ExpensesService():
     def __init__(self, request, year):
         self._request = request
         self._year = year

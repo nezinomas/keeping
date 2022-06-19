@@ -27,7 +27,7 @@ from .lib import views_helpers as Helper
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .services.index import IndexService
 from .services.month import MonthService
-from .services.expenses import ExpensesHelper
+from .services.expenses import ExpensesService
 from .lib.views_helpers import DetailedHelper
 from .models import AccountWorth, PensionWorth, SavingWorth
 
@@ -38,7 +38,7 @@ class Index(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         ind = IndexService(self.request, year)
-        exp = ExpensesHelper(self.request, year)
+        exp = ExpensesService(self.request, year)
 
         context = super().get_context_data(**kwargs)
         context.update({
