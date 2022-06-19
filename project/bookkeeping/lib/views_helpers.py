@@ -21,22 +21,6 @@ def expense_types(*args: str) -> List[str]:
     return arr
 
 
-def necessary_expense_types(*args: str) -> List[str]:
-    qs = list(
-        ExpenseType
-        .objects
-        .items()
-        .filter(necessary=True)
-        .values_list('title', flat=True)
-    )
-
-    list(qs.append(x) for x in args)
-
-    qs.sort()
-
-    return qs
-
-
 def average(qs):
     now = datetime.now()
     arr = []

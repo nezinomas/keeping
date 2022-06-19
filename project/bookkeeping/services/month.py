@@ -1,17 +1,18 @@
 import itertools as it
+from typing import List
 
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
-from ...expenses.models import Expense
+from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
 from ...plans.lib.calc_day_sum import CalcDaySum
 from ...savings.models import Saving
 from ..lib.day_spending import DaySpending
 from ..lib.expense_summary import DayExpense
-from ..lib.views_helpers import expense_types, necessary_expense_types
+from ..lib.views_helpers import expense_types
 
 
 class MonthService():
@@ -37,7 +38,7 @@ class MonthService():
             month=month,
             month_df=self._day.expenses,
             exceptions=self._day.exceptions,
-            necessary=necessary_expense_types(_('Savings')),
+            necessary=self._necessary_expense_types(_('Savings')),
             plan_day_sum=get_val(self._day_plans.day_input, month),
             plan_free_sum=get_val(self._day_plans.expenses_free, month),
         )
@@ -133,3 +134,18 @@ class MonthService():
             context=context,
             request=self._request
         )
+
+    def _necessary_expense_types(self, *args: str) -> List[str]:
+        qs = list(
+            ExpenseType
+            .objects
+            .items()
+            .filter(necessary=True)
+            .values_list('title', flat=True)
+        )
+
+        list(qs.append(x) for x in args)
+
+        qs.sort()
+
+        return qs
