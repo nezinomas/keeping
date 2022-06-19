@@ -10,7 +10,7 @@ from ...incomes.factories import IncomeFactory
 from ...pensions.factories import PensionFactory
 from ...savings.factories import SavingFactory
 from .. import views
-from ..services.index import IndexHelper
+from ..services.index import IndexService
 
 pytestmark = pytest.mark.django_db
 
@@ -71,7 +71,7 @@ def test_view_index_regenerate_buttons(client_logged):
 #                                                                            Index Helper
 # ---------------------------------------------------------------------------------------
 def test_render_borrow_no_data(rf):
-    obj = IndexHelper(rf, 1999)
+    obj = IndexService(rf, 1999)
     actual = obj.render_borrow()
 
     assert not actual
@@ -80,7 +80,7 @@ def test_render_borrow_no_data(rf):
 def test_render_borrow(rf):
     BorrowFactory()
 
-    obj = IndexHelper(rf, 1999)
+    obj = IndexService(rf, 1999)
     actual = obj.render_borrow()
 
     assert 'Pasiskolinta' in actual['title']
@@ -89,7 +89,7 @@ def test_render_borrow(rf):
 
 
 def test_render_lend_no_data(rf):
-    obj = IndexHelper(rf, 1999)
+    obj = IndexService(rf, 1999)
     actual = obj.render_lend()
 
     assert not actual
@@ -97,7 +97,7 @@ def test_render_lend_no_data(rf):
 
 def test_render_lend(rf):
     LendFactory()
-    obj = IndexHelper(rf, 1999)
+    obj = IndexService(rf, 1999)
     actual = obj.render_lend()
 
     assert 'Paskolinta' in actual['title']
@@ -112,7 +112,7 @@ def test_render_year_balance_short(rf):
     ExpenseFactory(price=25)
     SavingFactory(price=10)
 
-    obj = IndexHelper(rf, 1999).render_year_balance_short()
+    obj = IndexService(rf, 1999).render_year_balance_short()
 
     assert obj['title'] == ['Metų pradžioje', 'Metų pabaigoje', 'Metų balansas']
     assert obj['data'] == [5.0, 70.0, 65.0]
@@ -123,7 +123,7 @@ def test_render_year_balance_short_highlight_balance(rf):
     IncomeFactory(price=100)
     ExpenseFactory(price=125)
 
-    obj = IndexHelper(rf, 1999).render_year_balance_short()
+    obj = IndexService(rf, 1999).render_year_balance_short()
 
     assert obj['data'] == [5.0, -20.0, -25.0]
     assert obj['highlight'] == [False, False, True]

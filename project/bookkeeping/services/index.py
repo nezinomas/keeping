@@ -11,7 +11,7 @@ from ...transactions.models import SavingClose
 from ..lib.year_balance import YearBalance
 
 
-class IndexHelper():
+class IndexService():
     def __init__(self, request, year):
         self._request = request
         self._year = year

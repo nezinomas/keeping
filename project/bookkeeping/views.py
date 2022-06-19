@@ -25,7 +25,7 @@ from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
 from .lib import summary_view_helper as SummaryViewHelper
 from .lib import views_helpers as Helper
 from .lib.no_incomes import NoIncomes as LibNoIncomes
-from .services.index import IndexHelper
+from .services.index import IndexService
 from .lib.views_helpers import DetailedHelper, ExpensesHelper, MonthHelper
 from .models import AccountWorth, PensionWorth, SavingWorth
 
@@ -35,7 +35,7 @@ class Index(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        ind = IndexHelper(self.request, year)
+        ind = IndexService(self.request, year)
         exp = ExpensesHelper(self.request, year)
 
         context = super().get_context_data(**kwargs)
@@ -162,7 +162,7 @@ class Savings(TemplateViewMixin):
         total_savings_current_year = total_savings - total_past
 
         Helper.add_latest_check_key(SavingWorth, savings, year)
-        calculate_percent = IndexHelper.percentage_from_incomes
+        calculate_percent = IndexService.percentage_from_incomes
 
         context = super().get_context_data(**kwargs)
         context.update({
