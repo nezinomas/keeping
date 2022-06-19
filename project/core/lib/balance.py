@@ -3,8 +3,66 @@ from functools import reduce
 import pandas as pd
 from pandas import DataFrame as DF
 
-from ...bookkeeping.lib import helpers as calc
 from ...core.lib.balance_base import BalanceBase
+
+
+def calc_percent(args):
+    market = args[0]
+    invested = args[1]
+
+    rtn = 0.0
+    if market and invested:
+        rtn = ((market * 100) / invested) - 100
+
+    return rtn
+
+
+def calc_balance(args) -> float:
+    """[summary]
+
+    Args:
+        args[0] = past: [float]
+
+        args[1] = incomes: [float]
+
+        args[2] = expenses: [float]
+
+    Returns:
+        float:
+    """
+
+    past = args[0]
+    incomes = args[1]
+    expenses = args[2]
+
+    return (
+        0.0
+        + past
+        + incomes
+        - expenses
+    )
+
+
+def calc_delta(args) -> float:
+    """[summary]
+
+    Args:
+        args[0] = have: [float]
+
+        args[1] = balance: [float]
+
+    Returns:
+        float
+    """
+
+    have = args[0]
+    balance = args[1]
+
+    return (
+        0.0
+        + have
+        - balance
+    )
 
 
 class Balance(BalanceBase):
@@ -101,10 +159,10 @@ class Balance(BalanceBase):
         # update values for saving/pension
         if self.id_field != 'account_id':
             arr['profit_incomes_proc'] = (
-                calc.calc_percent(arr[['market_value', 'incomes']])
+                calc_percent(arr[['market_value', 'incomes']])
             )
             arr['profit_invested_proc'] = (
-                calc.calc_percent(arr[['market_value', 'invested']])
+                calc_percent(arr[['market_value', 'invested']])
             )
 
         return arr.to_dict()
@@ -217,8 +275,8 @@ class Balance(BalanceBase):
     @staticmethod
     def recalc_accounts(_df: DF) -> DF:
         # recalclate balance with past
-        _df['balance'] = (_df[['past', 'incomes', 'expenses']].apply(calc.calc_balance, axis=1))
-        _df['delta'] = _df[['have', 'balance']].apply(calc.calc_delta, axis=1)
+        _df['balance'] = (_df[['past', 'incomes', 'expenses']].apply(calc_balance, axis=1))
+        _df['delta'] = _df[['have', 'balance']].apply(calc_delta, axis=1)
 
         return _df
 
@@ -289,12 +347,12 @@ class Balance(BalanceBase):
 
         _df['profit_incomes_proc'] = (
             _df[['market_value', 'incomes']]
-            .apply(calc.calc_percent, axis=1)
+            .apply(calc_percent, axis=1)
         )
 
         _df['profit_invested_proc'] = (
             _df[['market_value', 'invested']]
-            .apply(calc.calc_percent, axis=1)
+            .apply(calc_percent, axis=1)
         )
 
         return _df
