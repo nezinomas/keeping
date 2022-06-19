@@ -22,7 +22,7 @@ from ..pensions.models import PensionBalance, PensionType
 from ..savings.models import SavingBalance, SavingType
 from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
                     SavingWorthForm, SummaryExpensesForm)
-from .services import summary_view_helper as SummaryViewHelper
+from .services import summary as SummaryService
 from .lib import views_helpers as Helper
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .services.index import IndexService
@@ -385,12 +385,12 @@ class SummarySavings(TemplateViewMixin):
         pensions3 = qs.filter(type='pensions')
         pensions2 = PensionBalance.objects.sum_by_year()
 
-        context['funds'] = SummaryViewHelper.chart_data(funds)
-        context['shares'] = SummaryViewHelper.chart_data(shares)
-        context['funds_shares'] = SummaryViewHelper.chart_data(funds, shares)
-        context['pensions3'] = SummaryViewHelper.chart_data(pensions3)
-        context['pensions2'] = SummaryViewHelper.chart_data(pensions2)
-        context['all'] = SummaryViewHelper.chart_data(funds, shares, pensions3)
+        context['funds'] = SummaryService.chart_data(funds)
+        context['shares'] = SummaryService.chart_data(shares)
+        context['funds_shares'] = SummaryService.chart_data(funds, shares)
+        context['pensions3'] = SummaryService.chart_data(pensions3)
+        context['pensions2'] = SummaryService.chart_data(pensions2)
+        context['all'] = SummaryService.chart_data(funds, shares, pensions3)
 
         return context
 
@@ -429,7 +429,7 @@ class SummaryExpenses(FormViewMixin):
             _names_qs = Expense.objects.sum_by_year_name(_names)
 
         if _types_qs or _names_qs:
-            obj = SummaryViewHelper.ExpenseCompareHelper(
+            obj = SummaryService.ExpenseCompareHelper(
                 years=years()[:-1],
                 types=_types_qs,
                 names=_names_qs,

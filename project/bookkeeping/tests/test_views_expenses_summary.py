@@ -1,9 +1,6 @@
-import json
-
 import pytest
 from django.urls import resolve, reverse
 
-from ...core.tests.utils import setup_view
 from ...expenses.factories import (ExpenseFactory, ExpenseNameFactory,
                                    ExpenseTypeFactory)
 from .. import views
