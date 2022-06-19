@@ -37,9 +37,9 @@ class ChartSummaryService:
 
         context.update({
             'balance_categories': balance_years,
-            'balance_income_data': [float(x['sum']) for x in self._incomes],
+            'balance_income_data': [*map(lambda x: float(x['sum']), self._incomes)],
             'balance_income_avg': average(self._incomes),
-            'balance_expense_data': [float(x['sum']) for x in self._expenses],
+            'balance_expense_data': [*map(lambda x: float(x['sum']), self._expenses)],
         })
 
         # data for salary summary
