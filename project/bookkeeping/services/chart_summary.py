@@ -18,6 +18,10 @@ class ChartSummaryService:
         return \
             Expense.objects.sum_by_year()
 
+    def _get_salary(self) -> Dict:
+        return \
+            self._incomes.filter(income_type__type="salary")
+
     def context(self, context) -> Dict:
         context = context if context else {}
 
@@ -39,12 +43,12 @@ class ChartSummaryService:
         })
 
         # data for salary summary
-        qs = list(Income.objects.sum_by_year(['salary']))
-        salary_years = [x['year'] for x in qs]
+        salary = self._get_salary()
+        salary_years = [x['year'] for x in salary]
 
         context.update({
             'salary_categories': salary_years,
-            'salary_data_avg': average(qs),
+            'salary_data_avg': average(salary),
         })
 
         return context
