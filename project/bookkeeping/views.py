@@ -22,14 +22,15 @@ from ..pensions.models import PensionBalance, PensionType
 from ..savings.models import SavingBalance, SavingType
 from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
                     SavingWorthForm, SummaryExpensesForm)
-from .services import summary as SummaryService
 from .lib import views_helpers as Helper
 from .lib.no_incomes import NoIncomes as LibNoIncomes
+from .models import AccountWorth, PensionWorth, SavingWorth
+from .services import summary as SummaryService
+from .services.detailed import DetailedService
+from .services.expenses import ExpensesService
 from .services.index import IndexService
 from .services.month import MonthService
-from .services.expenses import ExpensesService
-from .services.detailed import DetailedService
-from .models import AccountWorth, PensionWorth, SavingWorth
+from .services.wealth import WealthService
 
 
 class Index(TemplateViewMixin):
@@ -232,37 +233,12 @@ class Wealth(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        account_sum = \
-            AccountBalance.objects \
-            .related() \
-            .filter(year=year) \
-            .aggregate(Sum('balance')) \
-            ['balance__sum']
-        account_sum = float(account_sum) if account_sum else 0
-
-        fund_sum = \
-            SavingBalance.objects \
-            .related() \
-            .filter(year=year) \
-            .aggregate(Sum('market_value')) \
-            ['market_value__sum']
-        fund_sum = float(fund_sum) if fund_sum else 0
-
-        pension_sum = \
-            PensionBalance.objects \
-            .related() \
-            .filter(year=year) \
-            .aggregate(Sum('market_value')) \
-            ['market_value__sum']
-        pension_sum = float(pension_sum) if pension_sum else 0
-
-        money = account_sum + fund_sum
-        wealth = account_sum + fund_sum + pension_sum
+        obj = WealthService(year)
 
         context = super().get_context_data(**kwargs)
         context.update({
             'title': [_('Money'), _('Wealth')],
-            'data': [money, wealth],
+            'data': [obj.money, obj.wealth],
         })
         return context
 
