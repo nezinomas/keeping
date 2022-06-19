@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import F, Sum
+from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -30,6 +30,7 @@ from .services.detailed import DetailedService
 from .services.expenses import ExpensesService
 from .services.index import IndexService
 from .services.month import MonthService
+from .services.savings import SavingsService
 from .services.wealth import WealthService
 
 
@@ -148,43 +149,15 @@ class Savings(TemplateViewMixin):
     template_name = 'bookkeeping/includes/funds_table.html'
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        total_incomes = Income.objects \
-            .year(year) \
-            .aggregate(Sum('price')) \
-            ['price__sum']
-        total_incomes = float(total_incomes) if total_incomes else 0
-
-        savings = SavingBalance.objects.year(year)
-        total_row = sum_all(savings)
-
-        total_past = total_row.get('past_amount', 0)
-        total_savings = total_row.get('incomes', 0)
-        total_invested = total_row.get('invested', 0)
-        total_market = total_row.get('market_value', 0)
-        total_savings_current_year = total_savings - total_past
-
-        Helper.add_latest_check_key(SavingWorth, savings, year)
-        calculate_percent = IndexService.percentage_from_incomes
-
         context = super().get_context_data(**kwargs)
+
+        year = self.request.user.year
+        obj = SavingsService(year)
+
         context.update({
             'title': _('Funds'),
             'type': 'savings',
-            'items': savings,
-            'total_row': total_row,
-            'percentage_from_incomes': \
-                calculate_percent(
-                    total_incomes,
-                    total_savings_current_year),
-            'profit_incomes_proc': \
-                calculate_percent(
-                    total_savings,
-                    total_market) - 100,
-            'profit_invested_proc': \
-                calculate_percent(
-                    total_invested,
-                    total_market) - 100,
+            **obj.context()
         })
         return context
 
