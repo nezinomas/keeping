@@ -2,14 +2,12 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from typing import List
 
-from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ...core.lib.utils import sum_col
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
 from ...savings.models import Saving
-from ..lib.expense_summary import MonthExpense
 
 
 def expense_types(*args: str) -> List[str]:
@@ -67,46 +65,6 @@ def add_latest_check_key(model, arr, year):
         for a in arr:
             latest = [x['latest_check'] for x in items if x.get('title') == a['title']]
             a['latest_check'] = latest[0] if latest else None
-
-
-class ExpensesHelper():
-    def __init__(self, request, year):
-        self._request = request
-        self._year = year
-
-        self._expense_types = expense_types()
-        qs_expenses = Expense.objects.sum_by_month_and_type(year)
-
-        self._MonthExpense = MonthExpense(
-            year=year,
-            expenses=qs_expenses,
-            expenses_types=self._expense_types)
-
-    def render_chart_expenses(self):
-        context = {
-            'data': self._MonthExpense.chart_data
-        }
-        return render_to_string(
-            template_name='bookkeeping/includes/chart_expenses.html',
-            context=context,
-            request=self._request
-        )
-
-    def render_year_expenses(self):
-        _expense_types = self._expense_types
-
-        context = {
-            'year': self._year,
-            'data': self._MonthExpense.balance,
-            'categories': _expense_types,
-            'total_row': self._MonthExpense.total_row,
-            'avg_row': self._MonthExpense.average,
-        }
-        return render_to_string(
-            template_name='bookkeeping/includes/year_expenses.html',
-            context=context,
-            request=self._request
-        )
 
 
 class DetailedHelper():
