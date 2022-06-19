@@ -23,6 +23,7 @@ from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .models import AccountWorth, PensionWorth, SavingWorth
 from .services import summary as SummaryService
 from .services.chart_summary import ChartSummaryService
+from .services.chart_summary_expenses import ChartSummaryExpensesService
 from .services.detailed import DetailedService
 from .services.expand_day import ExpandDayService
 from .services.expenses import ExpensesService
@@ -345,7 +346,7 @@ class SummaryExpenses(FormViewMixin):
             _names_qs = Expense.objects.sum_by_year_name(_names)
 
         if _types_qs or _names_qs:
-            obj = SummaryService.ChartSummaryExpensesService(
+            obj = ChartSummaryExpensesService(
                 years=years()[:-1],
                 types=_types_qs,
                 names=_names_qs,
