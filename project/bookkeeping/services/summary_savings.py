@@ -35,6 +35,10 @@ class SummarySavingsService():
         return self._saving_data.filter(type='pensions')
 
     def make_chart_data(self, *attr_names: str) -> List[Dict]:
+        '''
+        attr_names
+        available: funds, shares, pensions2, pensions3
+        '''
         data = []
 
         for attr in attr_names:
