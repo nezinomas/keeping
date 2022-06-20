@@ -1,25 +1,15 @@
-import json
-from datetime import date
 from decimal import Decimal
 
 import pytest
 from freezegun import freeze_time
 from mock import Mock, patch
 
-from ...core.tests.utils import setup_view
-from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
-from ...incomes.factories import IncomeFactory
-from ...pensions.factories import (PensionBalance, PensionFactory,
-                                   PensionTypeFactory)
-from ...savings.factories import (SavingBalance, SavingFactory,
-                                  SavingTypeFactory)
-from ..lib import views_helpers as T
-from ..views import Summary
+from ..services import common as T
 
 pytestmark = pytest.mark.django_db
 
 
-@patch('project.bookkeeping.lib.views_helpers.ExpenseType.objects.items')
+@patch('project.bookkeeping.services.common.ExpenseType.objects.items')
 def test_expenses_types_no_args(qs):
     qs.return_value.values_list.return_value = ['T']
 
@@ -28,7 +18,7 @@ def test_expenses_types_no_args(qs):
     assert ['T'] == actual
 
 
-@patch('project.bookkeeping.lib.views_helpers.ExpenseType.objects.items')
+@patch('project.bookkeeping.services.common.ExpenseType.objects.items')
 def test_expenses_types(qs):
     qs.return_value.values_list.return_value = ['T']
 
@@ -37,25 +27,13 @@ def test_expenses_types(qs):
     assert ['A', 'T'] == actual
 
 
-@patch('project.bookkeeping.lib.views_helpers.ExpenseType.objects.items')
+@patch('project.bookkeeping.services.common.ExpenseType.objects.items')
 def test_expenses_types_args_as_list(qs):
     qs.return_value.values_list.return_value = ['T']
 
     actual = T.expense_types(*['X', 'A'])
 
     assert ['A', 'T', 'X'] == actual
-
-
-def test_percentage_from_incomes():
-    actual = T.IndexHelper.percentage_from_incomes(10, 1.5)
-
-    assert actual == 15
-
-
-def test_percentage_from_incomes_saving_none():
-    actual = T.IndexHelper.percentage_from_incomes(10, None)
-
-    assert not actual
 
 
 def test_add_latest_check_key_date_found():
