@@ -9,12 +9,11 @@ from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
                                  TemplateViewMixin, rendered_content)
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
-from . import services
+from . import models, services
 from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
                     SavingWorthForm, SummaryExpensesForm)
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .mixins.account_worth_reset import AccountWorthResetMixin
-from .models import AccountWorth, PensionWorth, SavingWorth
 
 
 class Index(TemplateViewMixin):
@@ -62,7 +61,7 @@ class Accounts(TemplateViewMixin):
 
 class AccountsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = Account
-    model = AccountWorth
+    model = models.AccountWorth
     form_class = AccountWorthForm
     shared_form_class = DateForm
     template_name = 'bookkeeping/includes/account_worth_form.html'
@@ -91,7 +90,7 @@ class Savings(TemplateViewMixin):
 
 class SavingsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = SavingType
-    model = SavingWorth
+    model = models.SavingWorth
     form_class = SavingWorthForm
     shared_form_class = DateForm
     template_name = 'bookkeeping/includes/saving_worth_form.html'
@@ -117,7 +116,7 @@ class Pensions(TemplateViewMixin):
 
 class PensionsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = PensionType
-    model = PensionWorth
+    model = models.PensionWorth
     form_class = PensionWorthForm
     shared_form_class = DateForm
     template_name = 'bookkeeping/includes/pension_worth_form.html'
