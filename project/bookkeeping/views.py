@@ -9,9 +9,8 @@ from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
                                  TemplateViewMixin, rendered_content)
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
-from . import forms, models, services
+from . import forms, mixins, models, services
 from .lib.no_incomes import NoIncomes as LibNoIncomes
-from .mixins.account_worth_reset import AccountWorthResetMixin
 
 
 class Index(TemplateViewMixin):
@@ -67,7 +66,7 @@ class AccountsWorthNew(FormsetMixin, CreateViewMixin):
     hx_trigger_django = 'afterAccountWorthNew'
 
 
-class AccountsWorthReset(AccountWorthResetMixin):
+class AccountsWorthReset(mixins.AccountWorthResetMixin):
     pass
 
 
