@@ -16,8 +16,8 @@ from ..pensions.models import PensionBalance, PensionType
 from ..savings.models import SavingType
 from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
                     SavingWorthForm, SummaryExpensesForm)
-from .lib import views_helpers as Helper
 from .lib.no_incomes import NoIncomes as LibNoIncomes
+from .lib.views_helpers import add_latest_check_key
 from .models import AccountWorth, PensionWorth, SavingWorth
 from .services.chart_summary import ChartSummaryService
 from .services.chart_summary_expenses import ChartSummaryExpensesService
@@ -66,7 +66,7 @@ class Accounts(TemplateViewMixin):
         year = self.request.user.year
         qs = AccountBalance.objects.year(year)
 
-        Helper.add_latest_check_key(AccountWorth, qs, year)
+        add_latest_check_key(AccountWorth, qs, year)
 
         total_row = {
             'past': 0,
@@ -176,7 +176,7 @@ class Pensions(TemplateViewMixin):
         year = self.request.user.year
         pensions = PensionBalance.objects.year(year)
 
-        Helper.add_latest_check_key(PensionWorth, pensions, year)
+        add_latest_check_key(PensionWorth, pensions, year)
 
         context = super().get_context_data(**kwargs)
         context.update({
