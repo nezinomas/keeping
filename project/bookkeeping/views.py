@@ -119,12 +119,10 @@ class AccountsWorthReset(TemplateViewMixin):
 
         if self.account:
             try:
-                worth = (
-                    AccountWorth
-                    .objects
-                    .filter(account=self.account)
+                worth = \
+                    AccountWorth.objects \
+                    .filter(account=self.account) \
                     .latest('date')
-                )
             except ObjectDoesNotExist:
                 worth = None
 
