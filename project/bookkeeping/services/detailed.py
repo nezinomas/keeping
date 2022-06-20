@@ -6,7 +6,7 @@ from ...core.lib.utils import sum_col
 from ...expenses.models import Expense
 from ...incomes.models import Income
 from ...savings.models import Saving
-from ..lib.views_helpers import expense_types
+from .views_helpers import expense_types
 
 
 class DetailedService():

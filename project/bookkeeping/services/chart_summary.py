@@ -2,7 +2,7 @@ from typing import Dict
 
 from ...expenses.models import Expense
 from ...incomes.models import Income
-from ..lib.views_helpers import average
+from .views_helpers import average
 
 
 class ChartSummaryService:
