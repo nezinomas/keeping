@@ -9,7 +9,7 @@ from ..services import common as T
 pytestmark = pytest.mark.django_db
 
 
-@patch('project.bookkeeping.lib.views_helpers.ExpenseType.objects.items')
+@patch('project.bookkeeping.services.common.ExpenseType.objects.items')
 def test_expenses_types_no_args(qs):
     qs.return_value.values_list.return_value = ['T']
 
@@ -18,7 +18,7 @@ def test_expenses_types_no_args(qs):
     assert ['T'] == actual
 
 
-@patch('project.bookkeeping.lib.views_helpers.ExpenseType.objects.items')
+@patch('project.bookkeeping.services.common.ExpenseType.objects.items')
 def test_expenses_types(qs):
     qs.return_value.values_list.return_value = ['T']
 
@@ -27,7 +27,7 @@ def test_expenses_types(qs):
     assert ['A', 'T'] == actual
 
 
-@patch('project.bookkeeping.lib.views_helpers.ExpenseType.objects.items')
+@patch('project.bookkeeping.services.common.ExpenseType.objects.items')
 def test_expenses_types_args_as_list(qs):
     qs.return_value.values_list.return_value = ['T']
 
