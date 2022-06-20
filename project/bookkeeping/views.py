@@ -1,21 +1,18 @@
-from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.lib.translation import month_names
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
-                                 TemplateViewMixin, httpHtmxResponse,
-                                 rendered_content)
+                                 TemplateViewMixin, rendered_content)
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
                     SavingWorthForm, SummaryExpensesForm)
 from .lib.no_incomes import NoIncomes as LibNoIncomes
+from .mixins.account_worth_reset import AccountWorthResetMixin
 from .models import AccountWorth, PensionWorth, SavingWorth
 from .services.accounts import AccountService
 from .services.chart_summary import ChartSummaryService
@@ -84,48 +81,8 @@ class AccountsWorthNew(FormsetMixin, CreateViewMixin):
     hx_trigger_django = 'afterAccountWorthNew'
 
 
-class AccountsWorthReset(TemplateViewMixin):
-    account = None
-
-    def get_object(self):
-        account = None
-        try:
-            account = \
-                Account.objects \
-                .related() \
-                .get(pk=self.kwargs['pk'])
-        except ObjectDoesNotExist:
-            pass
-
-        return account
-
-    def dispatch(self, request, *args, **kwargs):
-        self.account = self.get_object()
-        worth = None
-
-        if self.account:
-            try:
-                worth = \
-                    AccountWorth.objects \
-                    .filter(account=self.account) \
-                    .latest('date')
-            except ObjectDoesNotExist:
-                pass
-
-        worth_price  = worth.price if worth else 0
-
-        if not all((self.account, worth, worth_price)):
-            return HttpResponse(status=204)  # 204 - No Content
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get(self, request, *args, **kwargs):
-        AccountWorth.objects.create(
-            price=0,
-            account=self.account,
-            date=timezone.now()
-        )
-        return httpHtmxResponse('afterReset')
+class AccountsWorthReset(AccountWorthResetMixin):
+    pass
 
 
 class Savings(TemplateViewMixin):
