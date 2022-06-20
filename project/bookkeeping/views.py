@@ -7,12 +7,11 @@ from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.lib.translation import month_names
-from ..core.lib.utils import sum_all
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
                                  TemplateViewMixin, httpHtmxResponse,
                                  rendered_content)
-from ..pensions.models import PensionBalance, PensionType
+from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
                     SavingWorthForm, SummaryExpensesForm)
@@ -21,12 +20,12 @@ from .models import AccountWorth, PensionWorth, SavingWorth
 from .services.accounts import AccountService
 from .services.chart_summary import ChartSummaryService
 from .services.chart_summary_expenses import ChartSummaryExpensesService
-from .services.common import add_latest_check_key
 from .services.detailed import DetailedService
 from .services.expand_day import ExpandDayService
 from .services.expenses import ExpensesService
 from .services.index import IndexService
 from .services.month import MonthService
+from .services.pensions import PensionsService
 from .services.savings import SavingsService
 from .services.summary_savings import SummarySavingsService
 from .services.wealth import WealthService
@@ -158,17 +157,14 @@ class Pensions(TemplateViewMixin):
     template_name = 'bookkeeping/includes/funds_table.html'
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        pensions = PensionBalance.objects.year(year)
-
-        add_latest_check_key(PensionWorth, pensions, year)
+        obj = PensionsService(self.request.user.year)
 
         context = super().get_context_data(**kwargs)
         context.update({
             'title': _('Pensions'),
             'type': 'pensions',
-            'items': pensions,
-            'total_row': sum_all(pensions),
+            'items': obj.data,
+            'total_row': obj.total_row,
         })
         return context
 
