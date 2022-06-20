@@ -2,7 +2,7 @@ import pytest
 from freezegun import freeze_time
 
 from ...savings.factories import SavingBalance, SavingBalanceFactory
-from ..services import summary as Helper
+from ..services.summary_savings import SummarySavingsService
 
 pytestmark = pytest.mark.django_db
 
@@ -25,8 +25,8 @@ def _b():
     ])
 
 
-def test_helper_chart_data_1(_a):
-    actual = Helper.chart_data(_a)
+def test_chart_data_1(_a):
+    actual = SummarySavingsService.chart_data(_a)
 
     assert actual['categories'] == [2000, 2001]
     assert actual['invested'] == [1.0, 2.0]
@@ -35,8 +35,8 @@ def test_helper_chart_data_1(_a):
 
 
 @freeze_time('2000-1-1')
-def test_helper_chart_data_2(_a):
-    actual = Helper.chart_data(_a)
+def test_chart_data_2(_a):
+    actual = SummarySavingsService.chart_data(_a)
 
     assert actual['categories'] == [2000]
     assert actual['invested'] == [1.0]
@@ -44,8 +44,8 @@ def test_helper_chart_data_2(_a):
     assert actual['total'] == [1.1]
 
 
-def test_helper_chart_data_3(_a, _b):
-    actual = Helper.chart_data(_a, _b)
+def test_chart_data_3(_a, _b):
+    actual = SummarySavingsService.chart_data(_a, _b)
 
     assert actual['categories'] == [2000, 2001]
     assert actual['invested'] == [5.0, 7.0]
@@ -53,8 +53,8 @@ def test_helper_chart_data_3(_a, _b):
     assert actual['total'] == [5.5, 7.7]
 
 
-def test_helper_chart_data_5(_a):
-    actual = Helper.chart_data(_a, [])
+def test_chart_data_5(_a):
+    actual = SummarySavingsService.chart_data(_a, [])
 
     assert actual['categories'] == [2000, 2001]
     assert actual['invested'] == [1.0, 2.0]
@@ -62,8 +62,8 @@ def test_helper_chart_data_5(_a):
     assert actual['total'] == [1.1, 2.2]
 
 
-def test_helper_chart_data_6():
-    actual = Helper.chart_data([])
+def test_chart_data_6():
+    actual = SummarySavingsService.chart_data([])
 
     assert not actual['categories']
     assert not actual['invested']
@@ -71,8 +71,8 @@ def test_helper_chart_data_6():
     assert not actual['total']
 
 
-def test_helper_chart_data_7():
-    actual = Helper.chart_data('x')
+def test_chart_data_7():
+    actual = SummarySavingsService.chart_data('x')
 
     assert not actual['categories']
     assert not actual['invested']
@@ -81,8 +81,8 @@ def test_helper_chart_data_7():
 
 
 @freeze_time('2000-1-1')
-def test_helper_chart_data_4(_a, _b):
-    actual = Helper.chart_data(_a, _b)
+def test_chart_data_4(_a, _b):
+    actual = SummarySavingsService.chart_data(_a, _b)
 
     assert actual['categories'] == [2000]
     assert actual['invested'] == [5.0]
@@ -90,26 +90,26 @@ def test_helper_chart_data_4(_a, _b):
     assert actual['total'] == [5.5]
 
 
-def test_helper_chart_data_max_value(_a, _b):
-    actual = Helper.chart_data(_a, _b)
+def test_chart_data_max_value(_a, _b):
+    actual = SummarySavingsService.chart_data(_a, _b)
 
     assert actual['max'] == 7.7
 
 
-def test_helper_chart_data_max_value_empty():
-    actual = Helper.chart_data([])
+def test_chart_data_max_value_empty():
+    actual = SummarySavingsService.chart_data([])
 
     assert actual['max'] == 0
 
 
 @pytest.mark.django_db
-def test_helper_chart_data_db1():
+def test_chart_data_db1():
     SavingBalanceFactory(year=1999, incomes=0, profit_incomes_sum=0)
     SavingBalanceFactory(year=2000, incomes=1, profit_incomes_sum=0.1)
     SavingBalanceFactory(year=2001, incomes=2, profit_incomes_sum=0.2)
 
     qs = SavingBalance.objects.sum_by_type()
-    actual = Helper.chart_data(qs.filter(type='funds'))
+    actual = SummarySavingsService.chart_data(qs.filter(type='funds'))
 
     assert actual['categories'] == [2000, 2001]
     assert actual['invested'] == [1.0, 2.0]
