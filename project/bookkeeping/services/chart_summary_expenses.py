@@ -3,11 +3,12 @@ from typing import Dict, List
 import numpy as np
 
 from ...core.lib.date import years
+from ...expenses.models import Expense
 
 
 class ChartSummaryExpensesService():
     def __init__(self,
-                 types: List[Dict] = None,
+                 types: List[Dict],
                  names: List[Dict] = None,
                  remove_empty_columns: bool = None):
 
@@ -17,7 +18,11 @@ class ChartSummaryExpensesService():
         if not self._years:
             return
 
-        self._serries_data += self._make_serries_data(types)
+        if types:
+            data = self._get_type_sum_by_year(types)
+            self._serries_data += self._make_serries_data(data)
+
+
         self._serries_data += self._make_serries_data(names)
 
         if remove_empty_columns and self._serries_data:
@@ -47,6 +52,9 @@ class ChartSummaryExpensesService():
 
     def _get_years(self) -> List:
         return years()[:-1]
+
+    def _get_type_sum_by_year(self, expense_type: List) -> List[Dict]:
+        return Expense.objects.sum_by_year_type(expense_type)
 
     def _make_serries_data(self, data):
         _items = []
