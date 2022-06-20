@@ -8,9 +8,8 @@ from ...expenses.models import Expense
 
 class ChartSummaryExpensesService():
     def __init__(self,
-                 types: List[Dict],
-                 names: List[Dict] = None,
-                 remove_empty_columns: bool = None):
+                 form_data: List[Dict] = None,
+                 remove_empty_columns: bool = False):
 
         self._years = self._get_years()
         self._serries_data = []
@@ -18,14 +17,20 @@ class ChartSummaryExpensesService():
         if not self._years:
             return
 
+        types, names = self._parse_form_data(form_data)
+
         if types:
             data = self._get_type_sum_by_year(types)
             self._serries_data += self._make_serries_data(data)
 
+        if names:
+            data = self._get_name_sum_by_year(names)
+            self._serries_data += self._make_serries_data(data)
 
-        self._serries_data += self._make_serries_data(names)
+        if not self._serries_data:
+            return
 
-        if remove_empty_columns and self._serries_data:
+        if remove_empty_columns:
             self._remove_empty_columns()
 
         self._calc_totals()
@@ -55,6 +60,21 @@ class ChartSummaryExpensesService():
 
     def _get_type_sum_by_year(self, expense_type: List) -> List[Dict]:
         return Expense.objects.sum_by_year_type(expense_type)
+
+    def _get_name_sum_by_year(self, expense_name: List) -> List[Dict]:
+        return Expense.objects.sum_by_year_name(expense_name)
+
+    def _parse_form_data(self, data):
+        types, names = [], []
+
+        if data:
+            for x in data:
+                if ':' in x:
+                    names.append(x.split(':')[1])
+                else:
+                    types.append(x)
+
+        return types, names
 
     def _make_serries_data(self, data):
         _items = []

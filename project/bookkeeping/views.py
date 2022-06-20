@@ -12,7 +12,6 @@ from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
                                  TemplateViewMixin, httpHtmxResponse,
                                  rendered_content)
-from ..expenses.models import Expense
 from ..pensions.models import PensionBalance, PensionType
 from ..savings.models import SavingBalance, SavingType
 from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
@@ -324,33 +323,12 @@ class SummaryExpenses(FormViewMixin):
         return context
 
     def form_valid(self, form, **kwargs):
+        data = form.cleaned_data.get('types')
+        obj = ChartSummaryExpensesService(form_data=data, remove_empty_columns=True)
+
         context = {'found': False, 'form': form}
-        _types = []
-        _names = []
-        _types_full = form.cleaned_data.get('types')
 
-        for x in _types_full:
-            if ':' in x:
-                _names.append(x.split(':')[1])
-            else:
-                _types.append(x)
-
-        _types_qs = None
-        _names_qs = None
-
-        if _types:
-            _types_qs = Expense.objects.sum_by_year_type(_types)
-
-        if _names:
-            _names_qs = Expense.objects.sum_by_year_name(_names)
-
-        if _types_qs or _names_qs:
-            obj = ChartSummaryExpensesService(
-                types=_types_qs,
-                names=_names_qs,
-                remove_empty_columns=True
-            )
-
+        if obj.serries_data:
             context.update({
                 'found': True,
                 'categories': obj.categories,

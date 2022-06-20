@@ -15,6 +15,10 @@ GET_TYPES = \
     'project.bookkeeping.services.chart_summary_expenses.' \
     'ChartSummaryExpensesService._get_type_sum_by_year'
 
+GET_NAMES = \
+    'project.bookkeeping.services.chart_summary_expenses.' \
+    'ChartSummaryExpensesService._get_name_sum_by_year'
+
 
 def _types():
     return [
@@ -25,7 +29,6 @@ def _types():
     ]
 
 
-@pytest.fixture
 def _names():
     return [
         {'year': 2000, 'sum': Decimal('5'), 'title': 'A', 'root': 'X'},
@@ -35,9 +38,10 @@ def _names():
     ]
 
 
+@patch(GET_NAMES, return_value=None)
 @patch(GET_TYPES, return_value=None)
 @patch(GET_YEARS, return_value=[1, 2])
-def test_categories(mock_years, mock_types):
+def test_categories(mock_years, mock_types, mock_names):
     obj = ChartSummaryExpensesService()
 
     actual = obj.categories
@@ -45,12 +49,11 @@ def test_categories(mock_years, mock_types):
     assert actual == [1, 2]
 
 
+@patch(GET_NAMES, return_value=None)
 @patch(GET_TYPES, return_value=_types())
 @patch(GET_YEARS, return_value=[2000, 2001, 2002])
-def test_serries_data__types(mock_years, mock_types):
-    obj = ChartSummaryExpensesService(
-        types=_types
-    )
+def test_serries_data_types(mock_years, mock_types, mock_names):
+    obj = ChartSummaryExpensesService(['1'])
 
     actual = obj.serries_data
     expect = [
@@ -61,16 +64,15 @@ def test_serries_data__types(mock_years, mock_types):
     assert actual == expect
 
 
+@patch(GET_NAMES, return_value=None)
 @patch(GET_TYPES)
 @patch(GET_YEARS, return_value=[2000, 2001, 2002])
-def test_serries_data__types_year_out_of_range(mock_years, mock_types):
+def test_serries_data_types_year_out_of_range(mock_years, mock_types, mock_names):
     types = _types()
     types.append({'year': 2003, 'sum': Decimal('25'), 'title': 'XXX'})
     mock_types.return_value = types
 
-    obj = ChartSummaryExpensesService(
-        types=_types
-    )
+    obj = ChartSummaryExpensesService(['1'])
 
     actual = obj.serries_data
     expect = [
@@ -80,22 +82,22 @@ def test_serries_data__types_year_out_of_range(mock_years, mock_types):
     assert actual == expect
 
 
+@patch(GET_NAMES, return_value=None)
 @patch(GET_TYPES, return_value=None)
 @patch(GET_YEARS, return_value=[2000, 2001, 2002])
-def test_serries_data__types_no_data(mock_years, mock_types):
-    obj = ChartSummaryExpensesService()
+def test_serries_data_types_no_data(mock_years, mock_types, mock_names):
+    obj = ChartSummaryExpensesService(['1'])
 
     actual = obj.serries_data
 
     assert actual == []
 
 
+@patch(GET_NAMES, return_value=_names())
 @patch(GET_TYPES, return_value=None)
 @patch(GET_YEARS, return_value=[2000, 2001, 2002])
-def test_serries_data_names(mock_years, mock_types, _names):
-    obj = ChartSummaryExpensesService(
-        names=_names
-    )
+def test_serries_data_names(mock_years, mock_types, mock_names):
+    obj = ChartSummaryExpensesService(['1:1'])
 
     actual = obj.serries_data
     expect = [
@@ -106,14 +108,15 @@ def test_serries_data_names(mock_years, mock_types, _names):
     assert actual == expect
 
 
+@patch(GET_NAMES)
 @patch(GET_TYPES, return_value=None)
 @patch(GET_YEARS, return_value=[2000, 2001, 2002])
-def test_serries_data_names_year_out_of_range(mock_years, mock_types, _names):
-    _names.append({'year': 2003, 'sum': Decimal('25'), 'title': 'XXX'})
+def test_serries_data_names_year_out_of_range(mock_years, mock_types, mock_names):
+    names = _names()
+    names.append({'year': 2003, 'sum': Decimal('25'), 'title': 'XXX'})
+    mock_names.return_value = names
 
-    obj = ChartSummaryExpensesService(
-        names=_names
-    )
+    obj = ChartSummaryExpensesService(['1:1'])
 
     actual = obj.serries_data
     expect = [
@@ -123,13 +126,11 @@ def test_serries_data_names_year_out_of_range(mock_years, mock_types, _names):
     assert actual == expect
 
 
+@patch(GET_NAMES, return_value=_names())
 @patch(GET_TYPES, return_value=_types())
 @patch(GET_YEARS, return_value=[2000, 2001, 2002])
-def test_serries_data_full(mock_years, mock_types, _names):
-    obj = ChartSummaryExpensesService(
-        types=_types,
-        names=_names
-    )
+def test_serries_data_full(mock_years, mock_types, mock_names):
+    obj = ChartSummaryExpensesService(['1', '1:1'])
 
     actual = obj.serries_data
     expect = [
@@ -141,9 +142,10 @@ def test_serries_data_full(mock_years, mock_types, _names):
     assert actual == expect
 
 
+@patch(GET_NAMES, return_value=None)
 @patch(GET_TYPES)
 @patch(GET_YEARS, return_value=[1, 2, 3, 4])
-def test_serries_data_remove_empty_columns(mock_years, mock_types):
+def test_serries_data_remove_empty_columns(mock_years, mock_types, mock_names):
     _types = [
         {'year': 1, 'sum': Decimal('1'), 'title': 'X'},
         {'year': 1, 'sum': Decimal('2'), 'title': 'Y'},
@@ -156,10 +158,7 @@ def test_serries_data_remove_empty_columns(mock_years, mock_types):
     ]
     mock_types.return_value = _types
 
-    obj = ChartSummaryExpensesService(
-        types=_types,
-        remove_empty_columns=True
-    )
+    obj = ChartSummaryExpensesService(['1'], remove_empty_columns=True)
 
     assert obj.categories == [1, 3]
     assert obj.serries_data == [
@@ -168,34 +167,31 @@ def test_serries_data_remove_empty_columns(mock_years, mock_types):
     ]
 
 
+@patch(GET_NAMES, return_value=None)
 @patch(GET_TYPES, return_value=None)
 @patch(GET_YEARS, return_value=[1, 2])
-def test_serries_data_remove_empty_columns_no_data(mock_years, mock_types):
-    obj = ChartSummaryExpensesService(
-        remove_empty_columns=True
-    )
+def test_serries_data_remove_empty_columns_no_data(mock_years, mock_types, mock_names):
+    obj = ChartSummaryExpensesService(remove_empty_columns=True)
 
     assert obj.categories == [1, 2]
     assert obj.serries_data == []
 
 
+@patch(GET_NAMES, return_value=None)
 @patch(GET_TYPES, return_value=None)
 @patch(GET_YEARS, return_value=[])
-def test_serries_data_remove_empty_columns_no_data_all(mock_years, mock_types):
-    obj = ChartSummaryExpensesService(
-        remove_empty_columns=True
-    )
+def test_serries_data_remove_empty_columns_no_data_all(mock_years, mock_types, mock_names):
+    obj = ChartSummaryExpensesService(remove_empty_columns=True)
 
     assert obj.categories == []
     assert obj.serries_data == []
 
 
+@patch(GET_NAMES, return_value=None)
 @patch(GET_TYPES, return_value=_types())
 @patch(GET_YEARS, return_value=[2000, 2001, 2002])
-def test_serries_total_column(mock_years, mock_types):
-    obj = ChartSummaryExpensesService(
-        types=_types
-    )
+def test_serries_total_column(mock_years, mock_types, mock_names):
+    obj = ChartSummaryExpensesService(['1'])
 
     actual = obj.total_col
     expect = {'X': 20.0, 'Y': 14.0}
@@ -203,12 +199,11 @@ def test_serries_total_column(mock_years, mock_types):
     assert actual == expect
 
 
+@patch(GET_NAMES, return_value=None)
 @patch(GET_TYPES, return_value=_types())
 @patch(GET_YEARS, return_value=[2000, 2001, 2002])
-def test_serries_total_row(mock_years, mock_types):
-    obj = ChartSummaryExpensesService(
-        types=_types
-    )
+def test_serries_total_row(mock_years, mock_types, mock_names):
+    obj = ChartSummaryExpensesService(['1'])
 
     actual = obj.total_row
     expect = [7.0, 12.0, 15.0]
@@ -216,12 +211,11 @@ def test_serries_total_row(mock_years, mock_types):
     assert actual == expect
 
 
+@patch(GET_NAMES, return_value=None)
 @patch(GET_TYPES, return_value=_types())
 @patch(GET_YEARS, return_value=[2000, 2001, 2002])
-def test_serries_total(mock_years, mock_types):
-    obj = ChartSummaryExpensesService(
-        types=_types
-    )
+def test_serries_total(mock_years, mock_types, mock_names):
+    obj = ChartSummaryExpensesService(['1'])
 
     actual = obj.total
 
