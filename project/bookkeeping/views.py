@@ -13,13 +13,12 @@ from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
                                  TemplateViewMixin, httpHtmxResponse,
                                  rendered_content)
 from ..pensions.models import PensionBalance, PensionType
-from ..savings.models import SavingBalance, SavingType
+from ..savings.models import SavingType
 from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
                     SavingWorthForm, SummaryExpensesForm)
 from .lib import views_helpers as Helper
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .models import AccountWorth, PensionWorth, SavingWorth
-from .services import summary as SummaryService
 from .services.chart_summary import ChartSummaryService
 from .services.chart_summary_expenses import ChartSummaryExpensesService
 from .services.detailed import DetailedService
@@ -28,6 +27,7 @@ from .services.expenses import ExpensesService
 from .services.index import IndexService
 from .services.month import MonthService
 from .services.savings import SavingsService
+from .services.summary_savings import SummarySavingsService
 from .services.wealth import WealthService
 
 
@@ -285,27 +285,22 @@ class SummarySavings(TemplateViewMixin):
     template_name = 'bookkeeping/summary_savings.html'
 
     def get_context_data(self, **kwargs):
+        obj = SummarySavingsService()
+
         context = super().get_context_data(**kwargs)
+        context['records'] = obj.records
 
-        qs = SavingBalance.objects.sum_by_type()
-
-        records = qs.count()
-        context['records'] = records
-
-        if not records or records < 1:
+        if not obj.records or obj.records < 1:
             return context
 
-        funds = qs.filter(type='funds')
-        shares = qs.filter(type='shares')
-        pensions3 = qs.filter(type='pensions')
-        pensions2 = PensionBalance.objects.sum_by_year()
-
-        context['funds'] = SummaryService.chart_data(funds)
-        context['shares'] = SummaryService.chart_data(shares)
-        context['funds_shares'] = SummaryService.chart_data(funds, shares)
-        context['pensions3'] = SummaryService.chart_data(pensions3)
-        context['pensions2'] = SummaryService.chart_data(pensions2)
-        context['all'] = SummaryService.chart_data(funds, shares, pensions3)
+        context.update({
+            'funds': obj.make_chart_data('funds'),
+            'shares': obj.make_chart_data('shares'),
+            'funds_shares': obj.make_chart_data('funds', 'shares'),
+            'pensions3': obj.make_chart_data('pensions3'),
+            'pensions2': obj.make_chart_data('pensions2'),
+            'all': obj.make_chart_data('funds', 'shares', 'pensions3'),
+        })
 
         return context
 
