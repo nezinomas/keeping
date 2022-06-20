@@ -70,25 +70,25 @@ class SummarySavingsService():
 
             cnt = len(arr)
             for i in range(0, cnt):
-                _y = arr[i]['year']
-                _i = arr[i]['invested']
-                _p = arr[i]['profit']
-                _t = _i + _p
+                _year = arr[i]['year']
+                _invested = arr[i]['invested']
+                _profit = arr[i]['profit']
+                _total_sum = _invested + _profit
 
-                if _y > datetime.now().year:
+                if _year > datetime.now().year:
                     continue
 
-                if _i or _p:
-                    if _y not in items['categories']:
-                        items['categories'].append(_y)
-                        items['invested'].append(_i)
-                        items['profit'].append(_p)
-                        items['total'].append(_t)
+                if _invested or _profit:
+                    if _year not in items['categories']:
+                        items['categories'].append(_year)
+                        items['invested'].append(_invested)
+                        items['profit'].append(_profit)
+                        items['total'].append(_total_sum)
                     else:
-                        ix = items['categories'].index(_y)  # category index
-                        items['invested'][ix] += _i
-                        items['profit'][ix] += _p
-                        items['total'][ix] += _t
+                        ix = items['categories'].index(_year)  # category index
+                        items['invested'][ix] += _invested
+                        items['profit'][ix] += _profit
+                        items['total'][ix] += _total_sum
 
         # max value
         if items['profit'] or items['invested']:
