@@ -30,7 +30,6 @@ def test_view_context_no_data(client_logged):
     context = response.context
 
     assert 'form' in context
-    assert not context['found']
 
 
 def test_view_load_form(client_logged):

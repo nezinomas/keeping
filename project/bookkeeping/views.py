@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from ..accounts.models import Account, AccountBalance
+from ..accounts.models import Account
 from ..core.lib.translation import month_names
 from ..core.lib.utils import sum_all
 from ..core.mixins.formset import FormsetMixin
@@ -18,6 +18,7 @@ from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
                     SavingWorthForm, SummaryExpensesForm)
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .models import AccountWorth, PensionWorth, SavingWorth
+from .services.accounts import AccountService
 from .services.chart_summary import ChartSummaryService
 from .services.chart_summary_expenses import ChartSummaryExpensesService
 from .services.common import add_latest_check_key
@@ -63,27 +64,12 @@ class Accounts(TemplateViewMixin):
     template_name = 'bookkeeping/includes/account_worth_list.html'
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        qs = AccountBalance.objects.year(year)
-
-        add_latest_check_key(AccountWorth, qs, year)
-
-        total_row = {
-            'past': 0,
-            'incomes': 0,
-            'expenses': 0,
-            'balance': 0,
-            'have': 0,
-            'delta': 0,
-        }
-
-        if qs:
-            total_row = sum_all(qs)
+        obj = AccountService(self.request.user.year)
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'items': qs,
-            'total_row': total_row,
+            'items': obj.data,
+            'total_row': obj.total_row,
         })
 
         return context
@@ -310,13 +296,6 @@ class SummaryExpenses(FormViewMixin):
     form_class = SummaryExpensesForm
     template_name = 'bookkeeping/summary_expenses.html'
     success_url = reverse_lazy('bookkeeping:summary_expenses')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'found': False,
-        })
-        return context
 
     def form_valid(self, form, **kwargs):
         data = form.cleaned_data.get('types')
