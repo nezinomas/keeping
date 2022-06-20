@@ -4,7 +4,7 @@ import pytest
 from freezegun import freeze_time
 from mock import Mock, patch
 
-from ..services import views_helpers as T
+from ..services import common as T
 
 pytestmark = pytest.mark.django_db
 

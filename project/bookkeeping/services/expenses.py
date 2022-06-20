@@ -1,5 +1,5 @@
 from django.template.loader import render_to_string
-from .views_helpers import expense_types
+from .common import expense_types
 from ...expenses.models import Expense
 from ..lib.expense_summary import MonthExpense
 
