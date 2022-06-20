@@ -116,6 +116,7 @@ class AccountsWorthReset(TemplateViewMixin):
 
     def dispatch(self, request, *args, **kwargs):
         self.account = self.get_object()
+        worth = None
 
         if self.account:
             try:
@@ -124,9 +125,11 @@ class AccountsWorthReset(TemplateViewMixin):
                     .filter(account=self.account) \
                     .latest('date')
             except ObjectDoesNotExist:
-                worth = None
+                pass
 
-        if not self.account or not worth or worth.price == 0:
+        worth_price  = worth.price if worth else 0
+
+        if not all((self.account, worth, worth_price)):
             return HttpResponse(status=204)  # 204 - No Content
 
         return super().dispatch(request, *args, **kwargs)
