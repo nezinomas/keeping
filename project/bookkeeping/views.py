@@ -9,9 +9,7 @@ from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
                                  TemplateViewMixin, rendered_content)
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
-from . import models, services
-from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
-                    SavingWorthForm, SummaryExpensesForm)
+from . import forms, models, services
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .mixins.account_worth_reset import AccountWorthResetMixin
 
@@ -62,8 +60,8 @@ class Accounts(TemplateViewMixin):
 class AccountsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = Account
     model = models.AccountWorth
-    form_class = AccountWorthForm
-    shared_form_class = DateForm
+    form_class = forms.AccountWorthForm
+    shared_form_class = forms.DateForm
     template_name = 'bookkeeping/includes/account_worth_form.html'
     url = reverse_lazy('bookkeeping:accounts_worth_new')
     hx_trigger_django = 'afterAccountWorthNew'
@@ -91,8 +89,8 @@ class Savings(TemplateViewMixin):
 class SavingsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = SavingType
     model = models.SavingWorth
-    form_class = SavingWorthForm
-    shared_form_class = DateForm
+    form_class = forms.SavingWorthForm
+    shared_form_class = forms.DateForm
     template_name = 'bookkeeping/includes/saving_worth_form.html'
     url = reverse_lazy('bookkeeping:savings_worth_new')
     hx_trigger_django = 'afterSavingWorthNew'
@@ -117,8 +115,8 @@ class Pensions(TemplateViewMixin):
 class PensionsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = PensionType
     model = models.PensionWorth
-    form_class = PensionWorthForm
-    shared_form_class = DateForm
+    form_class = forms.PensionWorthForm
+    shared_form_class = forms.DateForm
     template_name = 'bookkeeping/includes/pension_worth_form.html'
     url = reverse_lazy('bookkeeping:pensions_worth_new')
     hx_trigger_django = 'afterPensionWorthNew'
@@ -233,7 +231,7 @@ class SummarySavings(TemplateViewMixin):
 
 
 class SummaryExpenses(FormViewMixin):
-    form_class = SummaryExpensesForm
+    form_class = forms.SummaryExpensesForm
     template_name = 'bookkeeping/summary_expenses.html'
     success_url = reverse_lazy('bookkeeping:summary_expenses')
 
