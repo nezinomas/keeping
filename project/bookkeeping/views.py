@@ -17,10 +17,10 @@ from ..savings.models import SavingType
 from .forms import (AccountWorthForm, DateForm, PensionWorthForm,
                     SavingWorthForm, SummaryExpensesForm)
 from .lib.no_incomes import NoIncomes as LibNoIncomes
-from .services.common import add_latest_check_key
 from .models import AccountWorth, PensionWorth, SavingWorth
 from .services.chart_summary import ChartSummaryService
 from .services.chart_summary_expenses import ChartSummaryExpensesService
+from .services.common import add_latest_check_key
 from .services.detailed import DetailedService
 from .services.expand_day import ExpandDayService
 from .services.expenses import ExpensesService

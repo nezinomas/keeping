@@ -1,7 +1,8 @@
 from django.template.loader import render_to_string
-from .common import expense_types
+
 from ...expenses.models import Expense
 from ..lib.expense_summary import MonthExpense
+from .common import expense_types
 
 
 class ExpensesService():

@@ -5,8 +5,8 @@ from django.db.models import Sum
 from ...core.lib.utils import sum_all
 from ...incomes.models import Income
 from ...savings.models import SavingBalance
-from .common import add_latest_check_key
 from ..models import SavingWorth
+from .common import add_latest_check_key
 from .index import IndexService
 
 
