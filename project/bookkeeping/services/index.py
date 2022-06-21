@@ -16,6 +16,9 @@ class IndexService():
         self._request = request
         self._year = year
 
+        self._make_year_balance_object(year)
+
+    def _make_year_balance_object(self, year):
         account_sum = \
             AccountBalance.objects \
             .related() \
