@@ -12,11 +12,11 @@ from ...core.lib.colors import CHART
 
 class ExpenseBase():
     def __init__(self, df: DF, expenses: List[Dict], **kwargs):
-        _expenses = self._expenses_df(df, expenses)
-        _savings = self._savings_df(df, kwargs)
+        _expenses = self._make_expenses_df(df, expenses)
+        _savings = self._make_savings_df(df, kwargs)
 
         self._exceptions = self._exception_df(df, expenses)
-        self._expenses = self._calc(_expenses, _savings)
+        self._expenses = self._calc_total_column(_expenses, _savings)
 
     @property
     def exceptions(self) -> DF:
@@ -26,14 +26,14 @@ class ExpenseBase():
     def expenses(self) -> DF:
         return self._expenses
 
-    def _calc(self, expenses: DF, savings: DF) -> DF:
+    def _calc_total_column(self, expenses: DF, savings: DF) -> DF:
         df = expenses.copy()
         df = expenses.join(savings)
         df['total'] = df.sum(axis=1)
 
         return df
 
-    def _expenses_df(self, df: DF, lst: List[Dict]) -> DF:
+    def _make_expenses_df(self, df: DF, lst: List[Dict]) -> DF:
         df = df.copy()
         if not lst:
             return df
@@ -45,7 +45,7 @@ class ExpenseBase():
 
         return df
 
-    def _savings_df(self, df: DF, lst: Dict[str, Dict]) -> DF:
+    def _make_savings_df(self, df: DF, lst: Dict[str, Dict]) -> DF:
         df = df.copy()
         if not lst:
             return df
