@@ -188,3 +188,7 @@ class MonthExpense(BalanceBase, ExpenseBase):
             df = df[['date', 'sum']]
 
         return df.to_dict('records')
+
+    @property
+    def expense_types(self):
+        return self._expenses_types

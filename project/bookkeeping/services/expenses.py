@@ -10,13 +10,15 @@ class ExpensesService():
         self._request = request
         self._year = year
 
-        self._expense_types = expense_types()
+        self._make_month_expense_object(year)
+
+    def _make_month_expense_object(self, year: int) -> None:
         qs_expenses = Expense.objects.sum_by_month_and_type(year)
 
         self._MonthExpense = MonthExpense(
             year=year,
             expenses=qs_expenses,
-            expenses_types=self._expense_types)
+            expenses_types=expense_types())
 
     def render_chart_expenses(self):
         context = {
@@ -29,12 +31,10 @@ class ExpensesService():
         )
 
     def render_year_expenses(self):
-        _expense_types = self._expense_types
-
         context = {
             'year': self._year,
             'data': self._MonthExpense.balance,
-            'categories': _expense_types,
+            'categories': self._MonthExpense.expense_types,
             'total_row': self._MonthExpense.total_row,
             'avg_row': self._MonthExpense.average,
         }
