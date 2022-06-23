@@ -90,37 +90,16 @@ class ExpenseBase(BalanceBase):
         return df
 
 
-class DayExpense(BalanceBase, ExpenseBase):
-    def __init__(self, year: int, month: int, expenses: List[Dict], **kwargs):
-        """
-        Make month expenses charts
-
-        Args:
-            year (int): user selected year
-            month (int): user selected month
-            expenses (List[Dict]): expenses list
-
-            [{'date': datetime.date, 'sum': Decimal, 'exeption_sum': Decimal, 'title': str}]
-        """
-        self._balance = df_days_of_month(year, month)
-
-        ExpenseBase.__init__(self, self._balance, expenses, **kwargs)
-
-        self._balance = self.expenses
-
-    @property
-    def total(self):
-        t = super().total_row
-
-        return t.get('total', 0.0)
+class DayExpense():
+    def __init__(self, total_row: Dict, **kwargs):
+        self._total_row = total_row
 
     def chart_expenses(self, expenses_types: List[str]) -> List[Dict]:
-        total_row = super().total_row
         rtn = []
 
         # make List[Dict] from expenses_types and total_row
         for name in expenses_types:
-            value = total_row.get(name, 0.0)
+            value = self._total_row.get(name, 0.0)
             arr = {'name': name.upper(), 'y': value}
             rtn.append(arr)
 
@@ -137,12 +116,11 @@ class DayExpense(BalanceBase, ExpenseBase):
                       expenses_types: List[str],
                       targets: Dict
                       ) -> Tuple[List[str], List[float], List[Dict]]:
-        total_row = super().total_row
         tmp = []
 
         # make List[Dict] from expenses_types and total_row
         for name in expenses_types:
-            value = total_row.get(name, 0.0)
+            value = self._total_row.get(name, 0.0)
             arr = {'name': name, 'y': value}
             tmp.append(arr)
 
