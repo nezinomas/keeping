@@ -1,7 +1,9 @@
+from typing import Dict, List
+
 from django.template.loader import render_to_string
 
 from ...expenses.models import Expense
-from ..lib.expense_summary import MonthExpense
+from ..lib.expense_summary import ExpenseBase
 from .common import expense_types
 
 
@@ -15,14 +17,12 @@ class ExpensesService():
     def _make_month_expense_object(self, year: int) -> None:
         qs_expenses = Expense.objects.sum_by_month_and_type(year)
 
-        self._MonthExpense = MonthExpense(
-            year=year,
-            expenses=qs_expenses,
-            expenses_types=expense_types())
+        self.E = ExpenseBase.months_of_year(year, qs_expenses)
+
 
     def render_chart_expenses(self):
         context = {
-            'data': self._MonthExpense.chart_data
+            'data': self._chart_data(self.E.total_row)
         }
         return render_to_string(
             template_name='bookkeeping/includes/chart_expenses.html',
@@ -33,10 +33,10 @@ class ExpensesService():
     def render_year_expenses(self):
         context = {
             'year': self._year,
-            'data': self._MonthExpense.balance,
-            'categories': self._MonthExpense.expense_types,
-            'total_row': self._MonthExpense.total_row,
-            'avg_row': self._MonthExpense.average,
+            'data': self.E.balance,
+            'categories': expense_types(),
+            'total_row': self.E.total_row,
+            'avg_row': self.E.average,
         }
         return render_to_string(
             template_name='bookkeeping/includes/year_expenses.html',
