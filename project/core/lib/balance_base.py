@@ -40,8 +40,8 @@ def df_months_of_year(year: int) -> DF:
 
 
 class BalanceBase():
-    def __init__(self):
-        self._balance = DF()
+    def __init__(self, balance: DF = DF()):
+        self._balance = balance
 
     @property
     def balance(self) -> List[Dict]:
