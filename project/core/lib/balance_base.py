@@ -78,12 +78,10 @@ class BalanceBase():
             return {}
 
         df = self._balance.copy()
+        df['total'] = df.sum(axis=1)
 
         df = df.reset_index()
-        df = df.rename(columns={'total': 'sum'})
-        df = df[['date', 'sum']]
-
-        return df.to_dict('records')
+        return df[['date', 'total']].to_dict('records')
 
     @property
     def total_row(self) -> Dict[str, float]:
