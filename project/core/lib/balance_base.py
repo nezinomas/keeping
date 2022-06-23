@@ -57,6 +57,19 @@ class BalanceBase():
         return arr.to_dict('records')
 
     @property
+    def total(self) -> float:
+        '''
+        Return total sum of all columns
+        '''
+        if not isinstance(self._balance, DF):
+            return 0.0
+
+        if self._balance.empty:
+            return 0.0
+
+        return self._balance.sum().sum()
+
+    @property
     def total_column(self) -> Dict[str, float]:
         if not isinstance(self._balance, DF):
             return {}
