@@ -82,6 +82,16 @@ class ExpenseBase():
 
 class DayExpense(BalanceBase, ExpenseBase):
     def __init__(self, year: int, month: int, expenses: List[Dict], **kwargs):
+        """
+        Make month expenses charts
+
+        Args:
+            year (int): user selected year
+            month (int): user selected month
+            expenses (List[Dict]): expenses list
+
+            [{'date': datetime.date, 'sum': Decimal, 'exeption_sum': Decimal, 'title': str}]
+        """
         self._balance = df_days_of_month(year, month)
 
         ExpenseBase.__init__(self, self._balance, expenses, **kwargs)
