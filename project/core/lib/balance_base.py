@@ -57,6 +57,22 @@ class BalanceBase():
         return arr.to_dict('records')
 
     @property
+    def total_column(self) -> Dict[str, float]:
+        if not isinstance(self._balance, DF):
+            return {}
+
+        if self._balance.empty:
+            return {}
+
+        df = self._balance.copy()
+
+        df = df.reset_index()
+        df = df.rename(columns={'total': 'sum'})
+        df = df[['date', 'sum']]
+
+        return df.to_dict('records')
+
+    @property
     def total_row(self) -> Dict[str, float]:
         if not isinstance(self._balance, DF):
             return {}
