@@ -43,3 +43,28 @@ class ExpensesService():
             context=context,
             request=self._request
         )
+
+    def _chart_data(self, total_row) -> List[Dict[str, float]]:
+        rtn = []
+        arr = total_row.copy()
+
+        if arr:
+            # delete total cell
+            del arr['total']
+
+        if arr:
+            # sort dictionary
+            arr = dict(sorted(arr.items(), key=lambda x: x[1], reverse=True))
+
+            # transfort arr for pie chart
+            rtn = [{'name': key[:11], 'y': value}
+                   for key, value in arr.items()]
+
+        else:
+            if self._expenses_types:
+                rtn = [{'name': name[:11], 'y': 0}
+                       for name in self._expenses_types]
+            else:
+                rtn = [{'name': _('No expenses'), 'y': 0}]
+
+        return rtn
