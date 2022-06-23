@@ -10,13 +10,23 @@ from ...core.lib.balance_base import (BalanceBase, df_days_of_month,
 from ...core.lib.colors import CHART
 
 
-class ExpenseBase():
+class ExpenseBase(BalanceBase):
     def __init__(self, df: DF, expenses: List[Dict], **kwargs):
         _expenses = self._make_expenses_df(df, expenses)
         _savings = self._make_savings_df(df, kwargs)
 
         self._exceptions = self._exception_df(df, expenses)
         self._expenses = self._calc_total_column(_expenses, _savings)
+
+        super().__init__(self._expenses)
+
+    @classmethod
+    def days_of_month(cls, year, month, expenses, **kwargs) -> DF:
+        return cls(df_days_of_month(year, month), expenses, **kwargs)
+
+    @classmethod
+    def months_of_year(cls, year, expenses, **kwargs) -> DF:
+        return cls(df_months_of_year(year), expenses, **kwargs)
 
     @property
     def exceptions(self) -> DF:
