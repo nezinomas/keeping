@@ -69,19 +69,33 @@ class BalanceBase():
 
         return self._balance.sum().sum()
 
-    @property
-    def total_column(self) -> Dict[str, float]:
-        if not isinstance(self._balance, DF):
-            return {}
+    def make_total_column(self, df = DF()) -> DF:
+        '''
+        calculate total column for balance DataFrame
 
-        if self._balance.empty:
-            return {}
+        return filtered DataFrame with date and total column
+        '''
 
-        df = self._balance.copy()
+        df = self._balance if df.empty else df
+
+        if not isinstance(df, DF):
+            return DF()
+
+        if df.empty:
+            return DF()
+
+        df = df.copy()
+
         df['total'] = df.sum(axis=1)
 
         df = df.reset_index()
-        return df[['date', 'total']].to_dict('records')
+        df = df[['date', 'total']]
+
+        return df
+
+    @property
+    def total_column(self) -> Dict[str, float]:
+        return self.make_total_column().to_dict('records')
 
     @property
     def total_row(self) -> Dict[str, float]:
