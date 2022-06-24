@@ -1,7 +1,6 @@
 from operator import itemgetter
 from typing import Dict, List, Tuple
 
-from django.utils.translation import gettext as _
 from pandas import DataFrame as DF
 from pandas import to_datetime
 
@@ -12,20 +11,20 @@ from ...core.lib.colors import CHART
 
 class ExpenseBase(BalanceBase):
     def __init__(self, df: DF, expenses: List[Dict], **kwargs):
-        _expenses = self._make_expenses_df(df, expenses)
-        _savings = self._make_savings_df(df, kwargs)
+        self._expenses = self._make_expenses_df(df, expenses)
+        self._savings = self._make_savings_df(df, kwargs)
 
         self._exceptions = self._exception_df(df, expenses)
-        self._expenses = self._calc_total_column(_expenses, _savings)
+        self._expenses_with_savings = self._join_df(self._expenses, self._savings)
 
-        super().__init__(self._expenses)
+        super().__init__(self._expenses_with_savings)
 
     @classmethod
-    def days_of_month(cls, year, month, expenses, **kwargs) -> DF:
+    def days_of_month(cls, year, month, expenses, **kwargs):
         return cls(df_days_of_month(year, month), expenses, **kwargs)
 
     @classmethod
-    def months_of_year(cls, year, expenses, **kwargs) -> DF:
+    def months_of_year(cls, year, expenses, **kwargs):
         return cls(df_months_of_year(year), expenses, **kwargs)
 
     @property
@@ -34,12 +33,11 @@ class ExpenseBase(BalanceBase):
 
     @property
     def expenses(self) -> DF:
-        return self._expenses
+        return self._expenses_with_savings
 
-    def _calc_total_column(self, expenses: DF, savings: DF) -> DF:
+    def _join_df(self, expenses: DF, savings: DF) -> DF:
         df = expenses.copy()
         df = expenses.join(savings)
-        df['total'] = df.sum(axis=1)
 
         return df
 
@@ -63,7 +61,7 @@ class ExpenseBase(BalanceBase):
         for title, arr in lst.items():
             for row in arr:
                 _title = row.get('title', title)
-                df.at[to_datetime(row['date']), title] = float(row['sum'])
+                df.at[to_datetime(row['date']), _title] = float(row['sum'])
 
         df.fillna(0.0, inplace=True)
 
