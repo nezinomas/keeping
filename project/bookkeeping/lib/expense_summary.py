@@ -11,11 +11,11 @@ from ...core.lib.colors import CHART
 
 class ExpenseBase(BalanceBase):
     def __init__(self, df: DF, expenses: List[Dict], **kwargs):
-        _expenses = self._make_expenses_df(df, expenses)
-        _savings = self._make_savings_df(df, kwargs)
+        self._expenses = self._make_expenses_df(df, expenses)
+        self._savings = self._make_savings_df(df, kwargs)
 
         self._exceptions = self._exception_df(df, expenses)
-        self._expenses_with_savings = self._join_df(_expenses, _savings)
+        self._expenses_with_savings = self._join_df(self._expenses, self._savings)
 
         super().__init__(self._expenses_with_savings)
 
