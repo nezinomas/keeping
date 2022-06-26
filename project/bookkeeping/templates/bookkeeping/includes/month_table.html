@@ -16,7 +16,7 @@
         </tr>
     </thead>
     <tbody x-data="make_x_data()">
-        {% for row, sp in expenses %}
+        {% for row, total, sp in expenses %}
         {% with row.date|date:'w'|weekend:'weekend-col' as weekend_col %}
         {% with row.date|date:'j' as day_int %}
         {% url 'bookkeeping:expand_day_expenses' row.date|date:'Ymd' as url_expand %}
@@ -29,7 +29,7 @@
             {% for cat in expense_types %}
             {% table_cell value=row|get_item:cat css_class=weekend_col %}
             {% endfor %}
-            {% table_cell value=row.total css_class=weekend_col|add:' left-blue-border'|add:' empty-column' %}
+            {% table_cell value=total.total css_class=weekend_col|add:' left-blue-border'|add:' empty-column' %}
 
             <td class="text-start {{weekend_col}}">{{sp.date|date:'l'}}</td>
             {% table_cell value=sp.day css_class=sp.day|negative %}
@@ -41,7 +41,7 @@
         <tr>
             <th class="text-start">&#8721;</th>
             {% for cat in expense_types %}{% table_cell value=total_row|get_item:cat tag='th' %}{% endfor %}
-            {% table_cell value=total_row.total tag='th' css_class="left-blue-border empty-column" %}
+            {% table_cell value=total tag='th' css_class="left-blue-border empty-column" %}
             <th></th>
             <th></th>
             <th></th>
