@@ -11,7 +11,7 @@ from ...incomes.models import Income
 from ...plans.lib.calc_day_sum import CalcDaySum
 from ...savings.models import Saving
 from ..lib.day_spending import DaySpending
-from ..lib.expense_summary import DayExpense
+from ..lib.expense_summary import DayExpense, ExpenseBase
 from .common import expense_types
 
 
@@ -24,20 +24,21 @@ class MonthService():
         qs_expenses = Expense.objects.sum_by_day_ant_type(year, month)
         qs_savings = Saving.objects.sum_by_day(year, month)
 
-        self._day = DayExpense(
-            year=year,
-            month=month,
-            expenses=qs_expenses,
-            **{_('Savings'): qs_savings}
-        )
+        self.E = \
+            ExpenseBase.days_of_month(
+                year,
+                month,
+                qs_expenses,
+                **{_('Savings'): qs_savings})
+
+        self._day = DayExpense(self.E.total_row)
 
         self._day_plans = CalcDaySum(year)
 
         self._spending = DaySpending(
             year=year,
             month=month,
-            month_df=self._day.expenses,
-            exceptions=self._day.exceptions,
+            expenses=qs_expenses,
             necessary=self._necessary_expense_types(_('Savings')),
             plan_day_sum=get_val(self._day_plans.day_input, month),
             plan_free_sum=get_val(self._day_plans.expenses_free, month),
@@ -76,9 +77,9 @@ class MonthService():
     def render_info(self):
         fact_incomes = Income.objects.sum_by_month(self._year, self._month)
         fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
-        fact_savings = self._day.total_row.get(_('Savings'))
+        fact_savings = self.E.total_row.get(_('Savings'))
         fact_savings = fact_savings if fact_savings else 0.0
-        fact_expenses = self._day.total_row.get('total') - fact_savings
+        fact_expenses = self.E.total - fact_savings
         fact_per_day = self._spending.avg_per_day
         fact_balance = fact_incomes - fact_expenses - fact_savings
 
@@ -123,8 +124,11 @@ class MonthService():
 
     def render_month_table(self):
         context = {
-            'expenses': it.zip_longest(self._day.balance, self._spending.spending),
-            'total_row': self._day.total_row,
+            'expenses': it.zip_longest(self.E.balance,
+                                       self.E.total_column,
+                                       self._spending.spending),
+            'total': self.E.total,
+            'total_row': self.E.total_row,
             'expense_types': self._expenses_types,
             'day': current_day(self._year, self._month, False),
         }
