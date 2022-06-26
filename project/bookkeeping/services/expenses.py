@@ -19,7 +19,6 @@ class ExpensesService():
 
         self.E = ExpenseBase.months_of_year(year, qs_expenses)
 
-
     def render_chart_expenses(self):
         context = {
             'data': self._chart_data(self.E.total_row)
@@ -48,7 +47,7 @@ class ExpensesService():
         rtn = []
         arr = total_row.copy()
 
-        if arr:
+        if arr and arr.get('total'):
             # delete total cell
             del arr['total']
 
