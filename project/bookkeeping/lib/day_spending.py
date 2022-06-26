@@ -1,29 +1,24 @@
 from typing import Dict, List
 
 from pandas import DataFrame as DF
+from project.bookkeeping.lib.expense_summary import ExpenseBase
 
-from ...core.lib.balance_base import BalanceBase
+from ...core.lib.date import current_day
 
 
-class DaySpending(BalanceBase):
+class DaySpending(ExpenseBase):
     _balance = DF()
-    _avg_per_day = DF()
-    _spending = DF()
 
     def __init__(self,
                  year: int,
                  month: int,
-                 month_df: DF,
+                 expenses: List[Dict],
                  necessary: List[str],
                  plan_day_sum: float,
                  plan_free_sum: float,
-                 exceptions: DF = DF()):
+                 ):
 
-        if not isinstance(month_df, DF):
-            return
-
-        if month_df.empty:
-            return
+        self.E = ExpenseBase.days_of_month(year, month, expenses)
 
         self._year = year
         self._month = month
@@ -31,26 +26,23 @@ class DaySpending(BalanceBase):
 
         self._plan_day_sum = float(plan_day_sum) if plan_day_sum else 0.0
         self._plan_free_sum = float(plan_free_sum) if plan_free_sum else 0.0
-        self._exceptions = exceptions
+        self._exceptions = self.E.exceptions
 
-        self._balance = self._calc_spending(month_df)
-        self._avg_per_day = self._get_avg_per_day()
-
-        self._spending = self._balance
-
-    @property
-    def avg_per_day(self):
-        return self._avg_per_day
+        self._balance = self._calc_spending(self.E.expenses)
 
     @property
     def spending(self) -> List[Dict]:
-        if self._spending.empty:
-            return self._spending
+        if self._balance.empty:
+            return self._balance
 
-        df = self._spending.copy()
+        df = self._balance.copy()
         df.reset_index(inplace=True)
 
         return df.to_dict('records')
+
+    @property
+    def avg_per_day(self):
+        return self._get_avg_per_day().get('total', 0.0)
 
     def _filter(self, df: DF) -> DF:
         col_name_list = [*df.columns]
@@ -58,14 +50,24 @@ class DaySpending(BalanceBase):
 
         df = df.loc[:, col_name_leave]
 
-        df.drop('total', axis=1, inplace=True)
-
         return df
 
     def _get_avg_per_day(self) -> float:
-        avg = super().average_month(self._year, self._month)
+        if not isinstance(self._balance, DF):
+            return {}
 
-        return avg.get('total', 0.0)
+        if self._balance.empty:
+            return {}
+
+        day = current_day(self._year, self._month)
+
+        df = self._balance.copy()
+        df = self._calc_avg(df, self._year, self._month, day)
+
+        # select onvly last row for returning
+        row = df.loc['total', :]
+
+        return row.to_dict()
 
     def _calc_spending(self, df: DF) -> DF:
         # filter dateframe

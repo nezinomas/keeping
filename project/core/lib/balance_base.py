@@ -5,8 +5,6 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame as DF
 
-from ...core.lib.date import current_day
-
 
 def df_days_of_month(year: int, month: int) -> DF:
     try:
@@ -129,23 +127,6 @@ class BalanceBase():
         arr = arr.fillna(0.0)
 
         return arr.to_dict()
-
-    def average_month(self, year: int, month: int) -> Dict[str, float]:
-        if not isinstance(self._balance, DF):
-            return {}
-
-        if self._balance.empty:
-            return {}
-
-        day = current_day(year, month)
-
-        df = self._balance.copy()
-        df = self._calc_avg(df, year, month, day)
-
-        # select onvly last row for returning
-        row = df.loc['total', :]
-
-        return row.to_dict()
 
     def _calc_avg(self, df: DF,
                   year: int, month: int, day: int) -> DF:
