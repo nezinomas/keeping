@@ -8,22 +8,19 @@ from ...core.lib.balance_base import (BalanceBase, df_days_of_month,
 
 
 class ExpenseBase(BalanceBase):
-    def __init__(self, df: DF, expenses: List[Dict], **kwargs):
-        self._expenses = self._make_expenses_df(df, expenses)
-        self._savings = self._make_savings_df(df, kwargs)
-
+    def __init__(self, df: DF, expenses: List[Dict], types: List[str]):
+        self._expenses = self._make_expenses_df(df, expenses, types)
         self._exceptions = self._exception_df(df, expenses)
-        self._expenses_with_savings = self._join_df(self._expenses, self._savings)
 
-        super().__init__(self._expenses_with_savings)
-
-    @classmethod
-    def days_of_month(cls, year, month, expenses, **kwargs):
-        return cls(df_days_of_month(year, month), expenses, **kwargs)
+        super().__init__(self._expenses)
 
     @classmethod
-    def months_of_year(cls, year, expenses, **kwargs):
-        return cls(df_months_of_year(year), expenses, **kwargs)
+    def days_of_month(cls, year, month, expenses, types, **kwargs):
+        return cls(df_days_of_month(year, month), expenses, types, **kwargs)
+
+    @classmethod
+    def months_of_year(cls, year, expenses, types, **kwargs):
+        return cls(df_months_of_year(year), expenses, types, **kwargs)
 
     @property
     def exceptions(self) -> DF:
@@ -47,21 +44,8 @@ class ExpenseBase(BalanceBase):
             return df
 
         for row in lst:
-            df.at[to_datetime(row['date']), row['title']] = float(row['sum'])
-
-        df.fillna(0.0, inplace=True)
-
-        return df
-
-    def _make_savings_df(self, df: DF, lst: Dict[str, Dict]) -> DF:
-        df = df.copy()
-        if not lst:
-            return df
-
-        for title, arr in lst.items():
-            for row in arr:
-                _title = row.get('title', title)
-                df.at[to_datetime(row['date']), _title] = float(row['sum'])
+            title = row.get('title', 'sum')
+            df.at[to_datetime(row['date']), title] = float(row['sum'])
 
         df.fillna(0.0, inplace=True)
 
@@ -74,8 +58,10 @@ class ExpenseBase(BalanceBase):
             return df
 
         for row in lst:
+            title = row.get('title', 'sum')
             val = row.get('exception_sum', 0.0)
-            df.at[to_datetime(row['date']), row['title']] = float(val)
+
+            df.at[to_datetime(row['date']), title] = float(val)
 
         df.fillna(0.0, inplace=True)
 
