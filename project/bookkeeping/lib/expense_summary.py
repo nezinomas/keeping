@@ -78,7 +78,7 @@ class ExpenseBase(BalanceBase):
         # sum all title columns
         df['sum'] = df.sum(axis=1)
 
-        # select oncly index and sum columns
+        # select only index and sum columns
         df = df.loc[:, ['sum']]
 
         return df
