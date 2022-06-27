@@ -6,7 +6,7 @@ from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ...core.lib.colors import CHART
-from ...core.lib.date import current_day
+from ...core.lib.date import current_day, monthname
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
@@ -23,32 +23,48 @@ class MonthService():
         self._year = year
         self._month = month
 
-        qs_expenses = Expense.objects.sum_by_day_ant_type(year, month)
+        self._expense_types = expense_types()
+        self._plans = PlanCalculateDaySum(year)
+        self._spending = self._day_spending_object(year, month, self._plans)
+
+        self._savings = self._saving_object(year, month)
+
+    def _saving_object(self, year: int, month: int) -> ExpenseBase:
         qs_savings = Saving.objects.sum_by_day(year, month)
 
-        self.E = \
+        return \
             ExpenseBase.days_of_month(
                 year,
                 month,
-                qs_expenses,
-                **{_('Savings'): qs_savings})
+                qs_savings,
+                [_('Savings')]
+            )
 
-        self._plans = PlanCalculateDaySum(year)
+    def _day_spending_object(self, year: int, month: int, plans: PlanCalculateDaySum) -> DaySpending:
+        qs_expenses = Expense.objects.sum_by_day_ant_type(year, month)
 
-        self._spending = DaySpending(
-            year=year,
-            month=month,
-            expenses=qs_expenses,
-            necessary=self._necessary_expense_types(_('Savings')),
-            plan_day_sum=get_val(self._plans.day_input, month),
-            plan_free_sum=get_val(self._plans.expenses_free, month),
-        )
-
-        self._expenses_types = expense_types(_('Savings'))
+        return \
+            DaySpending(
+                year=year,
+                month=month,
+                expenses=qs_expenses,
+                types=self._expense_types,
+                necessary=self._necessary_expense_types(),
+                plans=plans
+            )
 
     def render_chart_targets(self):
-        targets = self._plans.targets(self._month, _('Savings'))
-        (categories, data_target, data_fact) = self._chart_targets(self._expenses_types, targets)
+        types = self._expense_types.copy()
+        types.append(_('Savings'))
+
+        total_row = self._spending.total_row
+        total_row.update({_('Savings'): self._savings.total})
+
+        targets = self._plans.targets(self._month)
+        targets.update({
+            _('Savings'): self._plans.savings.get(monthname(self._month), 0.0)})
+
+        (categories, data_target, data_fact) = self._chart_targets(types, total_row, targets)
 
         context = {
             'chart_targets_categories': categories,
@@ -63,8 +79,14 @@ class MonthService():
         )
 
     def render_chart_expenses(self):
+        types = self._expense_types.copy()
+        types.append(_('Savings'))
+
+        total_row = self._spending.total_row
+        total_row[_('Savings')] = self._savings.total
+
         context = {
-            'expenses': self._chart_expenses(self._expenses_types)
+            'expenses': self._chart_expenses(types, total_row)
         }
 
         return render_to_string(
@@ -76,9 +98,8 @@ class MonthService():
     def render_info(self):
         fact_incomes = Income.objects.sum_by_month(self._year, self._month)
         fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
-        fact_savings = self.E.total_row.get(_('Savings'))
-        fact_savings = fact_savings if fact_savings else 0.0
-        fact_expenses = self.E.total - fact_savings
+        fact_savings = self._savings.total
+        fact_expenses = self._spending.total - fact_savings
         fact_per_day = self._spending.avg_per_day
         fact_balance = fact_incomes - fact_expenses - fact_savings
 
@@ -123,13 +144,15 @@ class MonthService():
 
     def render_month_table(self):
         context = {
-            'expenses': it.zip_longest(self.E.balance,
-                                       self.E.total_column,
-                                       self._spending.spending),
-            'total': self.E.total,
-            'total_row': self.E.total_row,
-            'expense_types': self._expenses_types,
+            'expenses': it.zip_longest(self._spending.balance,
+                                       self._spending.total_column,
+                                       self._spending.spending,
+                                       self._savings.total_column),
+            'total': self._spending.total,
+            'total_row': self._spending.total_row,
+            'expense_types': self._expense_types,
             'day': current_day(self._year, self._month, False),
+            'total_savings': float(self._savings.total)
         }
 
         return render_to_string(
@@ -153,12 +176,12 @@ class MonthService():
 
         return qs
 
-    def _chart_expenses(self, expenses_types: List[str]) -> List[Dict]:
+    def _chart_expenses(self, types: List[str], total_row: Dict) -> List[Dict]:
         rtn = []
 
-        # make List[Dict] from expenses_types and total_row
-        for name in expenses_types:
-            value = self.E.total_row.get(name, 0.0)
+        # make List[Dict] from types and total_row
+        for name in types:
+            value = total_row.get(name, 0.0)
             arr = {'name': name.upper(), 'y': value}
             rtn.append(arr)
 
@@ -172,14 +195,15 @@ class MonthService():
         return rtn
 
     def _chart_targets(self,
-                      expenses_types: List[str],
+                      types: List[str],
+                      total_row: Dict,
                       targets: Dict
                       ) -> Tuple[List[str], List[float], List[Dict]]:
         tmp = []
 
-        # make List[Dict] from expenses_types and total_row
-        for name in expenses_types:
-            value = self.E.total_row.get(name, 0.0)
+        # make List[Dict] from types and total_row
+        for name in types:
+            value = total_row.get(name, 0.0)
             arr = {'name': name, 'y': value}
             tmp.append(arr)
 
