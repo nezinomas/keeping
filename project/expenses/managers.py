@@ -68,6 +68,13 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
             .month_sum(year)
 
     def sum_by_month_and_type(self, year):
+        """
+        Sums expense_types by month
+
+        return:
+        list of dictionaries: {'date': date.datete, 'sum': Decimal, 'title': str}
+        """
+
         return \
             self \
             .related() \
