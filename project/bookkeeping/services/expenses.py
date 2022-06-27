@@ -55,7 +55,7 @@ class ExpensesService():
             # sort dictionary
             arr = dict(sorted(arr.items(), key=lambda x: x[1], reverse=True))
 
-            # transfort arr for bar chart
+            # transform arr for bar chart
             rtn = [{'name': key[:11], 'y': value} for key, value in arr.items()]
 
         else:
