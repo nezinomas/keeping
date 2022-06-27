@@ -33,21 +33,21 @@ class MonthService():
                 qs_expenses,
                 **{_('Savings'): qs_savings})
 
-        self._day_plans = PlanCalculateDaySum(year)
+        self._plans = PlanCalculateDaySum(year)
 
         self._spending = DaySpending(
             year=year,
             month=month,
             expenses=qs_expenses,
             necessary=self._necessary_expense_types(_('Savings')),
-            plan_day_sum=get_val(self._day_plans.day_input, month),
-            plan_free_sum=get_val(self._day_plans.expenses_free, month),
+            plan_day_sum=get_val(self._plans.day_input, month),
+            plan_free_sum=get_val(self._plans.expenses_free, month),
         )
 
         self._expenses_types = expense_types(_('Savings'))
 
     def render_chart_targets(self):
-        targets = self._day_plans.targets(self._month, _('Savings'))
+        targets = self._plans.targets(self._month, _('Savings'))
         (categories, data_target, data_fact) = self._chart_targets(self._expenses_types, targets)
 
         context = {
@@ -82,11 +82,11 @@ class MonthService():
         fact_per_day = self._spending.avg_per_day
         fact_balance = fact_incomes - fact_expenses - fact_savings
 
-        plan_incomes = get_val(self._day_plans.incomes, self._month)
-        plan_savings = get_val(self._day_plans.savings, self._month)
+        plan_incomes = get_val(self._plans.incomes, self._month)
+        plan_savings = get_val(self._plans.savings, self._month)
         plan_expenses = plan_incomes - plan_savings
-        plan_per_day = get_val(self._day_plans.day_input, self._month)
-        plan_balance = get_val(self._day_plans.remains, self._month)
+        plan_per_day = get_val(self._plans.day_input, self._month)
+        plan_balance = get_val(self._plans.remains, self._month)
 
         items = [{
                 'title': _('Incomes'),
