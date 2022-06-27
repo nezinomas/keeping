@@ -286,7 +286,7 @@ tr.current-day>td.weekend-col {
 }
 
 .table .empty-column {
-    border-right: #fff solid .5rem !important;
+    border-left: #fff solid .5rem !important;
 }
 
 .btn-group-month .btn {
