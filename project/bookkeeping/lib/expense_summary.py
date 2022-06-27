@@ -31,15 +31,13 @@ class ExpenseBase(BalanceBase):
 
     @property
     def expenses(self) -> DF:
-        return self._expenses_with_savings
+        return self._expenses
 
-    def _join_df(self, expenses: DF, savings: DF) -> DF:
-        df = expenses.copy()
-        df = expenses.join(savings)
+    @property
+    def types(self) -> List:
+        return self._expenses.columns.tolist()
 
-        return df
-
-    def _make_expenses_df(self, df: DF, lst: List[Dict]) -> DF:
+    def _make_expenses_df(self, df: DF, lst: List[Dict], types: List) -> DF:
         df = df.copy()
         if not lst:
             return df
