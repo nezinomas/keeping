@@ -11,7 +11,7 @@ from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
                       SavingPlan)
 
 
-class CollectData:
+class PlanCollectData:
     _incomes: List[Dict[str, Decimal]] = []
     _expenses: List[Dict[str, Decimal]] = []
     _savings: List[Dict[str, Decimal]] = []
@@ -66,7 +66,7 @@ class CollectData:
         return self._necessary
 
 
-class CalcDaySum():
+class PlanCalculateDaySum():
     def __init__(self, year: int):
         self._year = year
         self._data = self._get_data()
@@ -137,7 +137,7 @@ class CalcDaySum():
         return rtn
 
     def _get_data(self):
-        return CollectData(self._year)
+        return PlanCollectData(self._year)
 
     def _sum(self, arr: List, row_name: str, necessary: int = -1):
         df = pd.DataFrame(arr)

@@ -8,7 +8,7 @@ from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
-from ...plans.lib.calc_day_sum import CalcDaySum
+from ...plans.lib.calc_day_sum import PlanCalculateDaySum
 from ...savings.models import Saving
 from ..lib.day_spending import DaySpending
 from ..lib.expense_summary import DayExpense, ExpenseBase
@@ -33,7 +33,7 @@ class MonthService():
 
         self._day = DayExpense(self.E.total_row)
 
-        self._day_plans = CalcDaySum(year)
+        self._day_plans = PlanCalculateDaySum(year)
 
         self._spending = DaySpending(
             year=year,
