@@ -117,22 +117,16 @@ class PlanCalculateDaySum():
         # list of dictionaries convert to list of objects
         return [namedtuple("Items", item.keys())(*item.values()) for item in dicts]
 
-    def targets(self,
-                month: int,
-                saving_title: str = None) -> Dict[str, float]:
+    def targets(self, month: int) -> Dict[str, float]:
         rtn = {}
 
         month = monthname(month)
-        arr = self._data._expenses
+        arr = self._data.expenses
 
         for lst in arr:
             val = lst.get(month, 0.0)
             val = val if val else 0.0
             rtn[lst.get('title', 'unknown')] = float(val)
-
-        if saving_title:
-            savings = self.savings
-            rtn[saving_title] = float(savings.get(month, 0.0))
 
         return rtn
 
