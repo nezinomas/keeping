@@ -1,9 +1,11 @@
 import itertools as it
-from typing import List
+from operator import itemgetter
+from typing import Dict, List, Tuple
 
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
+from ...core.lib.colors import CHART
 from ...core.lib.date import current_day
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...expenses.models import Expense, ExpenseType
@@ -11,7 +13,7 @@ from ...incomes.models import Income
 from ...plans.lib.calc_day_sum import PlanCalculateDaySum
 from ...savings.models import Saving
 from ..lib.day_spending import DaySpending
-from ..lib.expense_summary import DayExpense, ExpenseBase
+from ..lib.expense_summary import ExpenseBase
 from .common import expense_types
 
 
@@ -31,8 +33,6 @@ class MonthService():
                 qs_expenses,
                 **{_('Savings'): qs_savings})
 
-        self._day = DayExpense(self.E.total_row)
-
         self._day_plans = PlanCalculateDaySum(year)
 
         self._spending = DaySpending(
@@ -48,8 +48,7 @@ class MonthService():
 
     def render_chart_targets(self):
         targets = self._day_plans.targets(self._month, _('Savings'))
-        (categories, data_target, data_fact) = self._day.chart_targets(
-            self._expenses_types, targets)
+        (categories, data_target, data_fact) = self._chart_targets(self._expenses_types, targets)
 
         context = {
             'chart_targets_categories': categories,
@@ -65,7 +64,7 @@ class MonthService():
 
     def render_chart_expenses(self):
         context = {
-            'expenses': self._day.chart_expenses(self._expenses_types)
+            'expenses': self._chart_expenses(self._expenses_types)
         }
 
         return render_to_string(
@@ -153,3 +152,51 @@ class MonthService():
         qs.sort()
 
         return qs
+
+    def _chart_expenses(self, expenses_types: List[str]) -> List[Dict]:
+        rtn = []
+
+        # make List[Dict] from expenses_types and total_row
+        for name in expenses_types:
+            value = self.E.total_row.get(name, 0.0)
+            arr = {'name': name.upper(), 'y': value}
+            rtn.append(arr)
+
+        # sort List[Dict] by y
+        rtn = sorted(rtn, key=itemgetter('y'), reverse=True)
+
+        # add to List[Dict] colors
+        for key, arr in enumerate(rtn):
+            rtn[key]['color'] = CHART[key]
+
+        return rtn
+
+    def _chart_targets(self,
+                      expenses_types: List[str],
+                      targets: Dict
+                      ) -> Tuple[List[str], List[float], List[Dict]]:
+        tmp = []
+
+        # make List[Dict] from expenses_types and total_row
+        for name in expenses_types:
+            value = self.E.total_row.get(name, 0.0)
+            arr = {'name': name, 'y': value}
+            tmp.append(arr)
+
+        # sort List[Dict] by y
+        tmp = sorted(tmp, key=itemgetter('y'), reverse=True)
+
+        rtn_categories = []
+        rtn_data_fact = []
+        rtn_data_target = []
+
+        for arr in tmp:
+            category = arr['name']
+            target = float(targets.get(category, 0.0))
+            fact = float(arr['y'])
+
+            rtn_categories.append(category.upper())
+            rtn_data_target.append(target)
+            rtn_data_fact.append({'y': fact, 'target': target})
+
+        return (rtn_categories, rtn_data_target, rtn_data_fact)

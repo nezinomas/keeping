@@ -1,12 +1,10 @@
-from operator import itemgetter
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 from pandas import DataFrame as DF
 from pandas import to_datetime
 
 from ...core.lib.balance_base import (BalanceBase, df_days_of_month,
                                       df_months_of_year)
-from ...core.lib.colors import CHART
 
 
 class ExpenseBase(BalanceBase):
@@ -86,56 +84,3 @@ class ExpenseBase(BalanceBase):
         df = df.loc[:, ['sum']]
 
         return df
-
-
-class DayExpense():
-    def __init__(self, total_row: Dict, **kwargs):
-        self._total_row = total_row
-
-    def chart_expenses(self, expenses_types: List[str]) -> List[Dict]:
-        rtn = []
-
-        # make List[Dict] from expenses_types and total_row
-        for name in expenses_types:
-            value = self._total_row.get(name, 0.0)
-            arr = {'name': name.upper(), 'y': value}
-            rtn.append(arr)
-
-        # sort List[Dict] by y
-        rtn = sorted(rtn, key=itemgetter('y'), reverse=True)
-
-        # add to List[Dict] colors
-        for key, arr in enumerate(rtn):
-            rtn[key]['color'] = CHART[key]
-
-        return rtn
-
-    def chart_targets(self,
-                      expenses_types: List[str],
-                      targets: Dict
-                      ) -> Tuple[List[str], List[float], List[Dict]]:
-        tmp = []
-
-        # make List[Dict] from expenses_types and total_row
-        for name in expenses_types:
-            value = self._total_row.get(name, 0.0)
-            arr = {'name': name, 'y': value}
-            tmp.append(arr)
-
-        # sort List[Dict] by y
-        tmp = sorted(tmp, key=itemgetter('y'), reverse=True)
-
-        rtn_categories = []
-        rtn_data_fact = []
-        rtn_data_target = []
-
-        for arr in tmp:
-            category = arr['name']
-            target = float(targets.get(category, 0.0))
-            fact = float(arr['y'])
-
-            rtn_categories.append(category.upper())
-            rtn_data_target.append(target)
-            rtn_data_fact.append({'y': fact, 'target': target})
-
-        return (rtn_categories, rtn_data_target, rtn_data_fact)
