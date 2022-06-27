@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 
 from ...expenses.models import Expense
 from ..lib.expense_summary import ExpenseBase
@@ -12,12 +13,12 @@ class ExpensesService():
         self._request = request
         self._year = year
 
-        self._make_month_expense_object(year)
+        self.E = self._make_month_expense_object(year)
 
-    def _make_month_expense_object(self, year: int) -> None:
+    def _make_month_expense_object(self, year: int) -> ExpenseBase:
         qs_expenses = Expense.objects.sum_by_month_and_type(year)
 
-        self.E = ExpenseBase.months_of_year(year, qs_expenses)
+        return ExpenseBase.months_of_year(year, qs_expenses)
 
     def render_chart_expenses(self):
         context = {
@@ -56,13 +57,12 @@ class ExpensesService():
             arr = dict(sorted(arr.items(), key=lambda x: x[1], reverse=True))
 
             # transfort arr for pie chart
-            rtn = [{'name': key[:11], 'y': value}
-                   for key, value in arr.items()]
+            rtn = [{'name': key[:11], 'y': value} for key, value in arr.items()]
 
         else:
-            if self._expenses_types:
-                rtn = [{'name': name[:11], 'y': 0}
-                       for name in self._expenses_types]
+            _expense_types = expense_types()
+            if _expense_types:
+                rtn = [{'name': name[:11], 'y': 0} for name in _expense_types]
             else:
                 rtn = [{'name': _('No expenses'), 'y': 0}]
 
