@@ -39,6 +39,10 @@ class ExpenseBase(BalanceBase):
 
     def _make_expenses_df(self, df: DF, lst: List[Dict], types: List) -> DF:
         df = df.copy()
+
+        # create column for each type
+        df[types] = 0.0
+
         if not lst:
             return df
 
