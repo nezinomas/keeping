@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
@@ -166,14 +167,26 @@ class Month(TemplateViewMixin):
         year = self.request.user.year
         month = self.request.user.month
 
-        obj = services.MonthService(self.request, year, month)
+        obj = services.MonthService(year, month)
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'month_table': obj.render_month_table(),
-            'info': obj.render_info(),
-            'chart_expenses': obj.render_chart_expenses(),
-            'chart_targets': obj.render_chart_targets(),
+            'month_table': render_to_string(
+                'bookkeeping/includes/month_table.html',
+                obj.month_table_context(),
+                self.request),
+            'info': render_to_string(
+                'bookkeeping/includes/spending_info.html',
+                {'items': obj.info_context},
+                self.request),
+            'chart_expenses': render_to_string(
+                'bookkeeping/includes/chart_month_expenses.html',
+                obj.chart_expenses_context(),
+                self.request),
+            'chart_targets': render_to_string(
+                'bookkeeping/includes/chart_month_targets.html',
+                obj.chart_targets_context(),
+                self.request),
         })
         return context
 

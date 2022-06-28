@@ -2,7 +2,6 @@ import itertools as it
 from operator import itemgetter
 from typing import Dict, List, Tuple
 
-from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ...core.lib.colors import CHART
@@ -18,8 +17,7 @@ from .common import expense_types
 
 
 class MonthService():
-    def __init__(self, request, year, month):
-        self._request = request
+    def __init__(self, year, month):
         self._year = year
         self._month = month
 
@@ -53,7 +51,7 @@ class MonthService():
                 plans=plans
             )
 
-    def render_chart_targets(self):
+    def chart_targets_context(self):
         types = self._expense_types.copy()
         types.append(_('Savings'))
 
@@ -64,42 +62,30 @@ class MonthService():
         targets.update({
             _('Savings'): self._plans.savings.get(monthname(self._month), 0.0)})
 
-        (categories, data_target, data_fact) = self._chart_targets(types, total_row, targets)
+        categories, data_target, data_fact = self._chart_targets(types, total_row, targets)
 
-        context = {
+        return {
             'chart_targets_categories': categories,
             'chart_targets_data_target': data_target,
             'chart_targets_data_fact': data_fact,
         }
 
-        return render_to_string(
-            template_name='bookkeeping/includes/chart_month_targets.html',
-            context=context,
-            request=self._request
-        )
-
-    def render_chart_expenses(self):
+    def chart_expenses_context(self):
         types = self._expense_types.copy()
         types.append(_('Savings'))
 
         total_row = self._spending.total_row
         total_row[_('Savings')] = self._savings.total
 
-        context = {
+        return {
             'expenses': self._chart_expenses(types, total_row)
         }
 
-        return render_to_string(
-            template_name='bookkeeping/includes/chart_month_expenses.html',
-            context=context,
-            request=self._request
-        )
-
-    def render_info(self):
+    def info_context(self):
         fact_incomes = Income.objects.sum_by_month(self._year, self._month)
         fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
         fact_savings = self._savings.total
-        fact_expenses = self._spending.total - fact_savings
+        fact_expenses = self._spending.total
         fact_per_day = self._spending.avg_per_day
         fact_balance = fact_incomes - fact_expenses - fact_savings
 
@@ -109,7 +95,7 @@ class MonthService():
         plan_per_day = get_val(self._plans.day_input, self._month)
         plan_balance = get_val(self._plans.remains, self._month)
 
-        items = [{
+        return [{
                 'title': _('Incomes'),
                 'plan': plan_incomes,
                 'fact': fact_incomes,
@@ -136,30 +122,18 @@ class MonthService():
                 'delta': fact_balance - plan_balance,
             },]
 
-        return render_to_string(
-            template_name='bookkeeping/includes/spending_info.html',
-            context={'items': items},
-            request=self._request
-        )
-
-    def render_month_table(self):
-        context = {
+    def month_table_context(self) -> Dict:
+        return {
+            'day': current_day(self._year, self._month, False),
             'expenses': it.zip_longest(self._spending.balance,
                                        self._spending.total_column,
                                        self._spending.spending,
                                        self._savings.total_column),
+            'expense_types': self._expense_types,
             'total': self._spending.total,
             'total_row': self._spending.total_row,
-            'expense_types': self._expense_types,
-            'day': current_day(self._year, self._month, False),
             'total_savings': float(self._savings.total)
         }
-
-        return render_to_string(
-            template_name='bookkeeping/includes/month_table.html',
-            context=context,
-            request=self._request
-        )
 
     def _necessary_expense_types(self, *args: str) -> List[str]:
         qs = list(
@@ -178,6 +152,9 @@ class MonthService():
 
     def _chart_expenses(self, types: List[str], total_row: Dict) -> List[Dict]:
         rtn = []
+
+        if not types:
+            return rtn
 
         # make List[Dict] from types and total_row
         for name in types:
