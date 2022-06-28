@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from pandas import DataFrame as DF
-from project.bookkeeping.lib.expense_summary import (ExpenseBalance,
+from project.bookkeeping.lib.expense_balance import (ExpenseBalance,
                                                      df_days_of_month)
 
 from ...core.lib.date import current_day

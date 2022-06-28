@@ -4,7 +4,7 @@ from django.db.models.query import QuerySet
 from django.utils.translation import gettext as _
 
 from ...expenses.models import Expense
-from ..lib.expense_summary import ExpenseBalance
+from ..lib.expense_balance import ExpenseBalance
 from .common import expense_types
 
 

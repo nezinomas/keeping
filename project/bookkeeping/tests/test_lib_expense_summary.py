@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from ...core.lib.balance_base import df_months_of_year
-from ..lib.expense_summary import ExpenseBalance
+from ..lib.expense_balance import ExpenseBalance
 
 
 @pytest.fixture
