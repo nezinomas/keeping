@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+from django.db.models.query import QuerySet
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
@@ -19,9 +20,29 @@ class ExpensesService():
         self._average = obj.average
 
     def _make_month_expense_object(self, year: int) -> ExpenseBase:
-        qs_expenses = Expense.objects.sum_by_month_and_type(year)
+        qs = Expense.objects.sum_by_month_and_type(year)
 
-        return ExpenseBase.months_of_year(year, qs_expenses)
+        self._expense_types = self._get_types(qs)
+
+        return \
+            ExpenseBase.months_of_year(year, qs, self._expense_types)
+
+    def _get_types(self, qs: QuerySet) -> List:
+        if qs.exists():
+            # filter unique expense types
+            types = []
+            for row in qs:
+                for key, value in row.items():
+                    if key == 'title' and value not in types:
+                        types.append(value)
+
+            # sort expense types
+            types.sort()
+
+            return types
+
+        # if no expenses get types from db
+        return expense_types()
 
     def render_chart_expenses(self):
         context = {
@@ -37,7 +58,7 @@ class ExpensesService():
         context = {
             'year': self._year,
             'data': self._balance,
-            'categories': expense_types(),
+            'categories': self._expense_types,
             'total_row': self._total_row,
             'avg_row': self._average,
         }
@@ -48,7 +69,9 @@ class ExpensesService():
         )
 
     def _chart_data(self) -> List[Dict[str, float]]:
-        rtn = []
+        if not self._expense_types:
+            return [{'name': _('No expenses'), 'y': 0}]
+
         arr = self._total_row.copy()
 
         if arr:
@@ -56,14 +79,8 @@ class ExpensesService():
             arr = dict(sorted(arr.items(), key=lambda x: x[1], reverse=True))
 
             # transform arr for bar chart
-            rtn = [{'name': key[:11], 'y': value} for key, value in arr.items()]
+            return \
+                [{'name': key[:11], 'y': value} for key, value in arr.items()]
 
-        else:
-            _expense_types = expense_types()
-
-            if _expense_types:
-                rtn = [{'name': name[:11], 'y': 0} for name in _expense_types]
-            else:
-                rtn = [{'name': _('No expenses'), 'y': 0}]
-
-        return rtn
+        return \
+            [{'name': name[:11], 'y': 0} for name in self._expense_types]
