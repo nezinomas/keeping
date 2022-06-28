@@ -20,7 +20,7 @@ class Index(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         ind = services.IndexService(self.request, year)
-        exp = services.ExpensesService(year)
+        exp = services.ExpenseService(year)
 
         context = super().get_context_data(**kwargs)
         context.update({

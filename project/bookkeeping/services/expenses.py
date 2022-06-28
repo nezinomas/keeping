@@ -8,8 +8,8 @@ from ..lib.expense_summary import ExpenseBase
 from .common import expense_types
 
 
-class ExpensesService():
-    def __init__(self, year):
+class ExpenseService():
+    def __init__(self, year: int) -> None:
         obj = self._make_month_expense_object(year)
 
         self._year = year
