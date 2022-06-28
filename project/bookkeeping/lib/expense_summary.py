@@ -32,7 +32,7 @@ class ExpenseBase(BalanceBase):
 
     @property
     def types(self) -> List:
-        return self._expenses.columns.tolist()
+        return sorted(self._expenses.columns.tolist())
 
     def _make_expenses_df(self, df: DF, lst: List[Dict], types: List) -> DF:
         df = df.copy()
