@@ -7,7 +7,7 @@ from ...core.lib.balance_base import (BalanceBase, df_days_of_month,
                                       df_months_of_year)
 
 
-class ExpenseBase(BalanceBase):
+class ExpenseBalance(BalanceBase):
     def __init__(self, df: DF, expenses: List[Dict], types: List[str]):
         self._expenses = self._make_expenses_df(df, expenses, types)
         self._exceptions = self._exception_df(df, expenses)

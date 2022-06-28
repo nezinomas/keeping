@@ -12,7 +12,7 @@ from ...incomes.models import Income
 from ...plans.lib.calc_day_sum import PlanCalculateDaySum
 from ...savings.models import Saving
 from ..lib.day_spending import DaySpending
-from ..lib.expense_summary import ExpenseBase
+from ..lib.expense_summary import ExpenseBalance
 from .common import expense_types
 
 
@@ -27,11 +27,11 @@ class MonthService():
 
         self._savings = self._saving_object(year, month)
 
-    def _saving_object(self, year: int, month: int) -> ExpenseBase:
+    def _saving_object(self, year: int, month: int) -> ExpenseBalance:
         qs_savings = Saving.objects.sum_by_day(year, month)
 
         return \
-            ExpenseBase.days_of_month(
+            ExpenseBalance.days_of_month(
                 year,
                 month,
                 qs_savings,

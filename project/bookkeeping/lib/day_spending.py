@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from pandas import DataFrame as DF
-from project.bookkeeping.lib.expense_summary import (ExpenseBase,
+from project.bookkeeping.lib.expense_summary import (ExpenseBalance,
                                                      df_days_of_month)
 
 from ...core.lib.date import current_day
@@ -9,7 +9,7 @@ from ...core.lib.utils import get_value_from_dict
 from ...plans.lib.calc_day_sum import PlanCalculateDaySum
 
 
-class DaySpending(ExpenseBase):
+class DaySpending(ExpenseBalance):
     def __init__(self,
                  year: int,
                  month: int,

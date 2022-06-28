@@ -4,7 +4,7 @@ from django.db.models.query import QuerySet
 from django.utils.translation import gettext as _
 
 from ...expenses.models import Expense
-from ..lib.expense_summary import ExpenseBase
+from ..lib.expense_summary import ExpenseBalance
 from .common import expense_types
 
 
@@ -17,13 +17,13 @@ class ExpenseService():
         self._total_row = obj.total_row
         self._average = obj.average
 
-    def _make_month_expense_object(self, year: int) -> ExpenseBase:
+    def _make_month_expense_object(self, year: int) -> ExpenseBalance:
         qs = Expense.objects.sum_by_month_and_type(year)
 
         self._expense_types = self._get_types(qs)
 
         return \
-            ExpenseBase.months_of_year(year, qs, self._expense_types)
+            ExpenseBalance.months_of_year(year, qs, self._expense_types)
 
     def _get_types(self, qs: QuerySet) -> List:
         if qs.exists():
