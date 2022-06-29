@@ -17,27 +17,27 @@
         </tr>
     </thead>
     <tbody x-data="make_x_data()">
-        {% for row, total, sp, savings in expenses %}
-        {% with row.date|date:'w'|weekend:'weekend-col' as weekend_col %}
-        {% with row.date|date:'j' as day_int %}
-        {% url 'bookkeeping:expand_day_expenses' row.date|date:'Ymd' as url_expand %}
+        {% for balance, balance_total_column, spending, saving_total_column in expenses %}
+        {% with balance.date|date:'w'|weekend:'weekend-col' as weekend_col %}
+        {% with balance.date|date:'j' as day_int %}
+        {% url 'bookkeeping:expand_day_expenses' balance.date|date:'Ymd' as url_expand %}
         <tr
-            id="row{{day_int}}"
+            id="balance{{day_int}}"
             {% if day|slugify == day_int %}class="current-day"{% endif %}>
             <td class="text-start {{weekend_col}} panel-heading" :class="open{{day_int}} ? 'active' : ''">
-                <a role="button" class="btn btn-xs no-hover" data-bs-toggle="collapse" aria-expanded="true" hx-get="{{url_expand}}" hx-target="#row{{day_int}}" hx-swap="afterend" hx-trigger="click once" @click="open{{day_int}} = !open{{day_int}}">{{row.date|date:'d'}}</a>
+                <a role="button" class="btn btn-xs no-hover" data-bs-toggle="collapse" aria-expanded="true" hx-get="{{url_expand}}" hx-target="#balance{{day_int}}" hx-swap="afterend" hx-trigger="click once" @click="open{{day_int}} = !open{{day_int}}">{{balance.date|date:'d'}}</a>
             </td>
             {% for cat in expense_types %}
-            {% table_cell value=row|get_item:cat css_class=weekend_col %}
+            {% table_cell value=balance|get_item:cat css_class=weekend_col %}
             {% endfor %}
             <!-- total expenses -->
-            {% table_cell value=total.total css_class=weekend_col|add:' left-blue-border right-blue-border' %}
+            {% table_cell value=balance_total_column.balance_total_column css_class=weekend_col|add:' left-blue-border right-blue-border' %}
             <!-- savings -->
-            {% table_cell value=savings.total css_class=weekend_col %}
+            {% table_cell value=saving_total_column.balance_total_column css_class=weekend_col %}
 
-            <td class="text-start {{weekend_col}} empty-column">{{sp.date|date:'l'}}</td>
-            {% table_cell value=sp.day css_class=sp.day|negative %}
-            {% table_cell value=sp.full css_class=sp.full|negative|add:' -full'|add:' empty-column-wide' %}
+            <td class="text-start {{weekend_col}} empty-column">{{spending.date|date:'l'}}</td>
+            {% table_cell value=spending.day css_class=spending.day|negative %}
+            {% table_cell value=spending.full css_class=spending.full|negative|add:' -full'|add:' empty-column-wide' %}
         </tr>{% endwith %}{% endwith %}
         {% endfor %}
     </tbody>
@@ -45,7 +45,7 @@
         <tr>
             <th class="text-start">&#8721;</th>
             {% for cat in expense_types %}{% table_cell value=total_row|get_item:cat tag='th' %}{% endfor %}
-            {% table_cell value=total tag='th' css_class="left-blue-border right-blue-border" %}
+            {% table_cell value=balance_total_column tag='th' css_class="left-blue-border right-blue-border" %}
             {% table_cell value=total_savings tag='th' %}
             <th class="empty-column"></th>
             <th></th>
