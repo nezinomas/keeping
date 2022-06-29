@@ -132,7 +132,7 @@ class MonthService():
             'expense_types': self._expense_types,
             'total': self._spending.total,
             'total_row': self._spending.total_row,
-            'total_savings': float(self._savings.total)
+            'total_savings': self._savings.total
         }
 
     def _necessary_expense_types(self, *args: str) -> List[str]:
