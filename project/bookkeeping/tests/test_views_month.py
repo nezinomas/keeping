@@ -17,7 +17,8 @@ def test_view_month_func():
 
 
 def test_view_month_200(client_logged):
-    response = client_logged.get('/month/')
+    url = reverse('bookkeeping:month')
+    response = client_logged.get(url)
 
     assert response.status_code == 200
 
@@ -32,7 +33,8 @@ def test_view_expand_day_expenses_func():
 
 
 def test_view_expand_day_expenses_200(client_logged):
-    response = client_logged.get('/month/')
+    url = reverse('bookkeeping:expand_day_expenses', kwargs={'date': '19990101'})
+    response = client_logged.get(url)
 
     assert response.status_code == 200
 
