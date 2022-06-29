@@ -42,6 +42,19 @@ def _plans():
     return SimpleNamespace(day_input={'january': 0.25}, expenses_free={'january': 20})
 
 
+@pytest.fixture()
+def _df_for_average_calculation():
+    df = pd.DataFrame([
+        {'total': 1.1, 'date': datetime(1999, 1, 1)},
+        {'total': 2.1, 'date': datetime(1999, 1, 2)},
+        {'total': 3.1, 'date': datetime(1999, 1, 3)},
+        {'total': 4.1, 'date': datetime(1999, 1, 31)},
+    ])
+    df.set_index('date', inplace=True)
+
+    return df
+
+
 @freeze_time('1999-01-02')
 def test_avg_per_day(_expenses, _necessary, _types, _plans):
     obj = DaySpending(
@@ -163,3 +176,81 @@ def test_spending_balance_expenses_empty(_types):
         assert x['real'] == 0.0
         assert x['day'] == 0.0
         assert x['full'] == 0.0
+
+
+@freeze_time("1999-01-02")
+def test_average_month_two_days(_df_for_average_calculation):
+    o = DaySpending(
+        year=1999,
+        month=1,
+        expenses=[],
+        necessary=[],
+        types=[],
+        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+
+    o._spending = _df_for_average_calculation
+
+    actual = o.avg_per_day
+    assert 1.6 == round(actual, 2)
+
+
+@freeze_time("1999-01-31")
+def test_average_month_last_day(_df_for_average_calculation):
+    o = DaySpending(
+        year=1999,
+        month=1,
+        expenses=[],
+        necessary=[],
+        types=[],
+        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+
+    o._spending = _df_for_average_calculation
+    actual = o.avg_per_day
+
+    assert round(actual, 2) == 0.34
+
+
+@freeze_time("1970-01-01")
+def test_average_month_other_year(_df_for_average_calculation):
+    o = DaySpending(
+        year=1999,
+        month=1,
+        expenses=[],
+        necessary=[],
+        types=[],
+        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+
+    o._spending = _df_for_average_calculation
+    actual = o.avg_per_day
+
+    assert round(actual, 2) == 0.34
+
+
+def test_average_month_empty_dataframe():
+    o = DaySpending(
+        year=1999,
+        month=1,
+        expenses=[],
+        necessary=[],
+        types=[],
+        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+
+    o._spending = pd.DataFrame()
+    actual = o.avg_per_day
+
+    assert actual == 0.0
+
+
+def test_average_month_no_dataframe():
+    o = DaySpending(
+        year=1999,
+        month=1,
+        expenses=[],
+        necessary=[],
+        types=[],
+        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+
+    o._spending = None
+    actual = o.avg_per_day
+
+    assert actual == 0.0
