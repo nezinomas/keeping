@@ -37,8 +37,8 @@ def test_view_index_context(client_logged):
     assert 'pensions' in response.context
     assert 'wealth' in response.context
     assert 'no_incomes' in response.context
-    assert 'year_balance' in response.context
-    assert 'year_balance_short' in response.context
+    assert 'balance' in response.context
+    assert 'balance_short' in response.context
     assert 'expenses' in response.context
     assert 'averages' in response.context
     assert 'borrow' in response.context
