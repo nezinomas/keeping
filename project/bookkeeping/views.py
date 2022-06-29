@@ -40,7 +40,7 @@ class Index(TemplateViewMixin):
                 'bookkeeping/includes/chart_expenses.html',
                 exp.chart_context(),
                 self.request),
-            'year_expenses': render_to_string(
+            'expenses': render_to_string(
                 'bookkeeping/includes/year_expenses.html',
                 exp.table_context(),
                 self.request
