@@ -128,7 +128,7 @@ def test_chart_data_truncate_long_title():
 def test_chart_expenses_context():
     obj = ExpenseService(year=1999)
 
-    actual = obj.chart_expenses_context()
+    actual = obj.chart_context()
 
     assert 'data' in actual
 
@@ -136,7 +136,7 @@ def test_chart_expenses_context():
 def test_year_expenses_context():
     obj = ExpenseService(year=1999)
 
-    actual = obj.year_expenses_context()
+    actual = obj.table_context()
 
     assert 'year' in actual
     assert 'data' in actual

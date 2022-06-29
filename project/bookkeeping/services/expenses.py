@@ -24,12 +24,12 @@ class ExpenseService():
         return \
             ExpenseBalance.months_of_year(year, qs, self._expense_types)
 
-    def chart_expenses_context(self):
+    def chart_context(self):
         return {
             'data': self._chart_data()
         }
 
-    def year_expenses_context(self):
+    def table_context(self):
         return {
             'year': self._year,
             'data': self._balance,
