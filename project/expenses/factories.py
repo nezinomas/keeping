@@ -31,10 +31,10 @@ class ExpenseFactory(factory.django.DjangoModelFactory):
         model = Expense
 
     date = dt(1999, 1, 1)
-    price = Decimal(1.12)
-    quantity = 13
+    account = factory.SubFactory(AccountFactory)
     expense_type = factory.SubFactory(ExpenseTypeFactory)
     expense_name = factory.SubFactory(ExpenseNameFactory)
+    price = Decimal(1.12)
+    quantity = 13
     remark = 'Remark'
     exception = False
-    account = factory.SubFactory(AccountFactory)
