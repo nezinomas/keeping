@@ -19,7 +19,7 @@ class Index(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        ind = services.IndexService(self.request, year)
+        ind = services.IndexService(year)
         exp = services.ExpenseService(year)
 
         context = super().get_context_data(**kwargs)
@@ -30,12 +30,18 @@ class Index(TemplateViewMixin):
             'pensions': rendered_content(self.request, Pensions, **kwargs),
             'wealth': rendered_content(self.request, Wealth, **kwargs),
             'no_incomes': rendered_content(self.request, NoIncomes, **kwargs),
-            'balance': ind.render_year_balance(),
-            'balance_short': ind.render_year_balance_short(),
-            'averages': ind.render_averages(),
-            'borrow': ind.render_borrow(),
-            'lend': ind.render_lend(),
-            'chart_balance': ind.render_chart_balance(),
+            'averages': ind.averages_context(),
+            'borrow': ind.borrow_context(),
+            'lend': ind.lend_context(),
+            'balance_short': ind.balance_short_context(),
+            'balance': render_to_string(
+                'bookkeeping/includes/year_balance.html',
+                ind.balance_context(),
+                self.request),
+            'chart_balance': render_to_string(
+                'bookkeeping/includes/chart_balance.html',
+                ind.chart_balance_context(),
+                self.request),
             'chart_expenses': render_to_string(
                 'bookkeeping/includes/chart_expenses.html',
                 exp.chart_context(),
