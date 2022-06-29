@@ -9,7 +9,7 @@
         <tr>
             <th class="expand-column-width"></th>
             {% for cat in expense_types %}<th data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{cat}}">{{cat|truncatechars:8}}</th>{% endfor %}
-            <th class="left-blue-border right-blue-border">{% translate 'Total' %}</th>
+            <th class="left-blue-border right-blue-double-border">{% translate 'Total' %}</th>
             <th>{% translate 'Savings' %}</th>
             <th class="empty-column"></th>
             <th>{% translate 'Day' %}</th>
@@ -31,7 +31,7 @@
             {% table_cell value=balance|get_item:cat css_class=weekend_col %}
             {% endfor %}
             <!-- total expenses -->
-            {% table_cell value=balance_total_column.total css_class=weekend_col|add:' left-blue-border right-blue-border' %}
+            {% table_cell value=balance_total_column.total css_class=weekend_col|add:' left-blue-border right-blue-double-border' %}
             <!-- savings -->
             {% table_cell value=saving_total_column.total css_class=weekend_col %}
 
@@ -45,7 +45,7 @@
         <tr>
             <th class="text-start">&#8721;</th>
             {% for cat in expense_types %}{% table_cell value=total_row|get_item:cat tag='th' %}{% endfor %}
-            {% table_cell value=total tag='th' css_class="left-blue-border right-blue-border" %}
+            {% table_cell value=total tag='th' css_class="left-blue-border right-blue-double-border" %}
             {% table_cell value=total_savings tag='th' %}
             <th class="empty-column"></th>
             <th></th>
