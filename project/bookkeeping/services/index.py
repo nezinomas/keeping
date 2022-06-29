@@ -88,8 +88,8 @@ class IndexService():
 
     def render_chart_balance(self):
         context = {
-            'e': self._YearBalance.expense_data,
-            'i': self._YearBalance.income_data,
+            'expenses': self._YearBalance.expense_data,
+            'incomes': self._YearBalance.income_data,
         }
 
         return render_to_string(
