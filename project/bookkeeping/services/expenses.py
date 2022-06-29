@@ -1,6 +1,5 @@
 from typing import Dict, List
 
-from django.db.models.query import QuerySet
 from django.utils.translation import gettext as _
 
 from ...expenses.models import Expense
@@ -10,9 +9,11 @@ from .common import expense_types
 
 class ExpenseService():
     def __init__(self, year: int) -> None:
+        self._year = year
+        self._expense_types = expense_types()
+
         obj = self._make_month_expense_object(year)
 
-        self._year = year
         self._balance = obj.balance
         self._total_row = obj.total_row
         self._average = obj.average
@@ -20,27 +21,8 @@ class ExpenseService():
     def _make_month_expense_object(self, year: int) -> ExpenseBalance:
         qs = Expense.objects.sum_by_month_and_type(year)
 
-        self._expense_types = self._get_types(qs)
-
         return \
             ExpenseBalance.months_of_year(year, qs, self._expense_types)
-
-    def _get_types(self, qs: QuerySet) -> List:
-        if qs.exists():
-            # filter unique expense types
-            types = []
-            for row in qs:
-                for key, value in row.items():
-                    if key == 'title' and value not in types:
-                        types.append(value)
-
-            # sort expense types
-            types.sort()
-
-            return types
-
-        # if no expenses get types from db
-        return expense_types()
 
     def chart_expenses_context(self):
         return {

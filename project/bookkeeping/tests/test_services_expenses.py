@@ -3,7 +3,8 @@ from datetime import date
 import pandas as pd
 import pytest
 
-from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
+from ...expenses.factories import (ExpenseFactory, ExpenseNameFactory,
+                                   ExpenseTypeFactory)
 from ..services.expenses import ExpenseService
 
 pytestmark = pytest.mark.django_db
@@ -14,11 +15,14 @@ def _expenses():
     t1 = ExpenseTypeFactory(title='T1')
     t2 = ExpenseTypeFactory(title='T2')
 
-    ExpenseFactory(date=date(1999, 1, 1), expense_type=t1, price=0.25)
-    ExpenseFactory(date=date(1999, 12, 1), expense_type=t1, price=0.75)
+    n1  = ExpenseNameFactory(title='N1', parent=t1)
+    n2  = ExpenseNameFactory(title='N1', parent=t2)
 
-    ExpenseFactory(date=date(1999, 1, 1), expense_type=t2, price=0.5)
-    ExpenseFactory(date=date(1999, 12, 1), expense_type=t2, price=0.35)
+    ExpenseFactory(date=date(1999, 1, 1), expense_type=t1, expense_name=n1, price=0.25)
+    ExpenseFactory(date=date(1999, 12, 1), expense_type=t1, expense_name=n1, price=0.75)
+
+    ExpenseFactory(date=date(1999, 1, 1), expense_type=t2, expense_name=n2, price=0.5)
+    ExpenseFactory(date=date(1999, 12, 1), expense_type=t2, expense_name=n2, price=0.35)
 
 
 def test_balance(_expenses):
