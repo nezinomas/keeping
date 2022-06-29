@@ -45,7 +45,9 @@
         <tr>
             <th class="text-start">&#8721;</th>
             {% for cat in expense_types %}{% table_cell value=total_row|get_item:cat tag='th' %}{% endfor %}
+            <!-- total expenses -->
             {% table_cell value=total tag='th' css_class="left-blue-double-border right-blue-double-border" %}
+            <!-- savings -->
             {% table_cell value=total_savings tag='th' %}
             <th class="empty-column"></th>
             <th></th>
