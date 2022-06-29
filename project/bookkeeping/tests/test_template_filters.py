@@ -12,6 +12,7 @@ from ..templatetags import template_filters as T
         (6, 'X', 'X'), # sunday
         ('1', 'X', ''),
         (1, 'X', ''),
+        ('', 'X', ''),
     ])
 def test_weekend(value, css_class, expect):
     assert T.weekend(value, css_class) == expect

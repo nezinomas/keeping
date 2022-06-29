@@ -1,46 +1,30 @@
 from typing import Dict, List
 
 from pandas import DataFrame as DF
+from project.bookkeeping.lib.expense_balance import (ExpenseBalance,
+                                                     df_days_of_month)
 
-from ...core.lib.balance_base import BalanceBase
+from ...core.lib.date import current_day
+from ...core.lib.utils import get_value_from_dict
+from ...plans.lib.calc_day_sum import PlanCalculateDaySum
 
 
-class DaySpending(BalanceBase):
-    _balance = DF()
-    _avg_per_day = DF()
-    _spending = DF()
-
+class DaySpending(ExpenseBalance):
     def __init__(self,
                  year: int,
                  month: int,
-                 month_df: DF,
+                 expenses: List[Dict],
+                 types: List[str],
                  necessary: List[str],
-                 plan_day_sum: float,
-                 plan_free_sum: float,
-                 exceptions: DF = DF()):
+                 plans: PlanCalculateDaySum):
 
-        if not isinstance(month_df, DF):
-            return
-
-        if month_df.empty:
-            return
+        super().__init__(df_days_of_month(year, month), expenses, types)
 
         self._year = year
         self._month = month
         self._necessary = necessary if necessary else []
 
-        self._plan_day_sum = float(plan_day_sum) if plan_day_sum else 0.0
-        self._plan_free_sum = float(plan_free_sum) if plan_free_sum else 0.0
-        self._exceptions = exceptions
-
-        self._balance = self._calc_spending(month_df)
-        self._avg_per_day = self._get_avg_per_day()
-
-        self._spending = self._balance
-
-    @property
-    def avg_per_day(self):
-        return self._avg_per_day
+        self._spending = self._calc_spending(self.expenses, self.exceptions, plans)
 
     @property
     def spending(self) -> List[Dict]:
@@ -52,24 +36,38 @@ class DaySpending(BalanceBase):
 
         return df.to_dict('records')
 
-    def _filter(self, df: DF) -> DF:
+    @property
+    def avg_per_day(self):
+        return self._get_avg_per_day().get('total', 0.0)
+
+    def _delete_columns_marked_as_necessary(self, df: DF) -> DF:
         col_name_list = [*df.columns]
         col_name_leave = [*set(col_name_list).difference(set(self._necessary))]
 
         df = df.loc[:, col_name_leave]
 
-        df.drop('total', axis=1, inplace=True)
-
         return df
 
     def _get_avg_per_day(self) -> float:
-        avg = super().average_month(self._year, self._month)
+        if not isinstance(self._spending, DF):
+            return {}
 
-        return avg.get('total', 0.0)
+        if self._spending.empty:
+            return {}
 
-    def _calc_spending(self, df: DF) -> DF:
+        day = current_day(self._year, self._month)
+
+        df = self._spending.copy()
+        df = self._calc_avg(df, self._year, self._month, day)
+
+        # select onvly last row for returning
+        row = df.loc['total', :]
+
+        return row.to_dict()
+
+    def _calc_spending(self, df: DF, exceptions: DF, plans: PlanCalculateDaySum) -> DF:
         # filter dateframe
-        df = self._filter(df)
+        df = self._delete_columns_marked_as_necessary(df)
 
         # calculate total_row for filtered dataframe
         df.loc[:, 'total'] = df.sum(axis=1)
@@ -78,28 +76,28 @@ class DaySpending(BalanceBase):
         df = df.loc[:, ['total']]
 
         # remove exceptions sums from total_row
-        if not self._exceptions.empty:
-            df['total'] = df['total'] - self._exceptions['sum']
+        if not exceptions.empty:
+            df['total'] = df['total'] - exceptions['sum']
 
         df.loc[:, 'teoretical'] = 0.0
         df.loc[:, 'real'] = 0.0
         df.loc[:, 'day'] = 0.0
         df.loc[:, 'full'] = 0.0
 
-        df.day = (
-            self._plan_day_sum
-            - df.total)
+        plan_day_sum = get_value_from_dict(plans.day_input, self._month)
+        plan_free_sum = get_value_from_dict(plans.expenses_free, self._month)
 
-        df.teoretical = (
-            self._plan_free_sum
-            - (self._plan_day_sum * df.index.to_series().dt.day))
+        df.day = \
+            plan_day_sum - df.total
 
-        df.real = (
-            self._plan_free_sum
-            - df.total.cumsum())
+        df.teoretical = \
+            plan_free_sum - \
+            (plan_day_sum * df.index.to_series().dt.day)
 
-        df.full = (
-            df.real
-            - df.teoretical)
+        df.real = \
+            plan_free_sum - df.total.cumsum()
+
+        df.full = \
+            df.real - df.teoretical
 
         return df

@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
@@ -18,8 +19,8 @@ class Index(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        ind = services.IndexService(self.request, year)
-        exp = services.ExpensesService(self.request, year)
+        ind = services.IndexService(year)
+        exp = services.ExpenseService(year)
 
         context = super().get_context_data(**kwargs)
         context.update({
@@ -29,14 +30,26 @@ class Index(TemplateViewMixin):
             'pensions': rendered_content(self.request, Pensions, **kwargs),
             'wealth': rendered_content(self.request, Wealth, **kwargs),
             'no_incomes': rendered_content(self.request, NoIncomes, **kwargs),
-            'year_balance': ind.render_year_balance(),
-            'year_balance_short': ind.render_year_balance_short(),
-            'averages': ind.render_averages(),
-            'borrow': ind.render_borrow(),
-            'lend': ind.render_lend(),
-            'chart_balance': ind.render_chart_balance(),
-            'chart_expenses': exp.render_chart_expenses(),
-            'year_expenses': exp.render_year_expenses(),
+            'averages': ind.averages_context(),
+            'borrow': ind.borrow_context(),
+            'lend': ind.lend_context(),
+            'balance_short': ind.balance_short_context(),
+            'balance': render_to_string(
+                'bookkeeping/includes/year_balance.html',
+                ind.balance_context(),
+                self.request),
+            'chart_balance': render_to_string(
+                'bookkeeping/includes/chart_balance.html',
+                ind.chart_balance_context(),
+                self.request),
+            'chart_expenses': render_to_string(
+                'bookkeeping/includes/chart_expenses.html',
+                exp.chart_context(),
+                self.request),
+            'expenses': render_to_string(
+                'bookkeeping/includes/year_expenses.html',
+                exp.table_context(),
+                self.request)
         })
         return context
 
@@ -166,14 +179,26 @@ class Month(TemplateViewMixin):
         year = self.request.user.year
         month = self.request.user.month
 
-        obj = services.MonthService(self.request, year, month)
+        obj = services.MonthService(year, month)
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'month_table': obj.render_month_table(),
-            'info': obj.render_info(),
-            'chart_expenses': obj.render_chart_expenses(),
-            'chart_targets': obj.render_chart_targets(),
+            'month_table': render_to_string(
+                'bookkeeping/includes/month_table.html',
+                obj.month_table_context(),
+                self.request),
+            'info': render_to_string(
+                'bookkeeping/includes/spending_info.html',
+                {'items': obj.info_context},
+                self.request),
+            'chart_expenses': render_to_string(
+                'bookkeeping/includes/chart_month_expenses.html',
+                obj.chart_expenses_context(),
+                self.request),
+            'chart_targets': render_to_string(
+                'bookkeeping/includes/chart_month_targets.html',
+                obj.chart_targets_context(),
+                self.request),
         })
         return context
 

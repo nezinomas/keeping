@@ -1,5 +1,4 @@
 from django.db.models import Sum
-from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ...accounts.models import AccountBalance
@@ -12,13 +11,12 @@ from ..lib.year_balance import YearBalance
 
 
 class IndexService():
-    def __init__(self, request, year):
-        self._request = request
+    def __init__(self, year):
         self._year = year
 
-        self._make_year_balance_object(year)
+        self._YearBalance = self._make_year_balance_object(year)
 
-    def _make_year_balance_object(self, year):
+    def _make_year_balance_object(self, year: int) -> YearBalance:
         account_sum = \
             AccountBalance.objects \
             .related() \
@@ -27,11 +25,12 @@ class IndexService():
             ['past__sum']
         account_sum = float(account_sum) if account_sum else 0.0
 
-        self._YearBalance = YearBalance(
-            year=year,
-            data=self._collect_data(year),
-            amount_start=account_sum
-        )
+        return \
+            YearBalance(
+                year=year,
+                data=self._collect_data(year),
+                amount_start=account_sum
+            )
 
     def _collect_data(self, year):
         qs_borrow = Debt.objects.sum_by_month(year, debt_type='borrow')
@@ -60,8 +59,8 @@ class IndexService():
 
         return data
 
-    def render_year_balance(self):
-        context = {
+    def balance_context(self):
+        return {
             'year': self._year,
             'data': self._YearBalance.balance,
             'total_row': self._YearBalance.total_row,
@@ -69,13 +68,7 @@ class IndexService():
             'avg_row': self._YearBalance.average,
         }
 
-        return render_to_string(
-            template_name='bookkeeping/includes/year_balance.html',
-            context=context,
-            request=self._request
-        )
-
-    def render_year_balance_short(self):
+    def balance_short_context(self):
         start = self._YearBalance.amount_start
         end = self._YearBalance.amount_end
         context = {
@@ -85,26 +78,19 @@ class IndexService():
         }
         return context
 
-    def render_chart_balance(self):
-        context = {
-            'e': self._YearBalance.expense_data,
-            'i': self._YearBalance.income_data,
+    def chart_balance_context(self):
+        return {
+            'expenses': self._YearBalance.expense_data,
+            'incomes': self._YearBalance.income_data,
         }
 
-        return render_to_string(
-            template_name='bookkeeping/includes/chart_balance.html',
-            context=context,
-            request=self._request
-        )
-
-    def render_averages(self):
-        context = {
+    def averages_context(self):
+        return {
             'title': [_('Average incomes'), _('Average expenses')],
             'data': [self._YearBalance.avg_incomes, self._YearBalance.avg_expenses],
         }
-        return context
 
-    def render_borrow(self):
+    def borrow_context(self):
         borrow = sum(self._YearBalance.borrow_data)
         borrow_return = sum(self._YearBalance.borrow_return_data)
 
@@ -117,7 +103,7 @@ class IndexService():
 
         return {}
 
-    def render_lend(self):
+    def lend_context(self):
         lend = sum(self._YearBalance.lend_data)
         lend_return = sum(self._YearBalance.lend_return_data)
 

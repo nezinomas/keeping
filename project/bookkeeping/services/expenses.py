@@ -1,45 +1,56 @@
-from django.template.loader import render_to_string
+from typing import Dict, List
+
+from django.utils.translation import gettext as _
 
 from ...expenses.models import Expense
-from ..lib.expense_summary import MonthExpense
+from ..lib.expense_balance import ExpenseBalance
 from .common import expense_types
 
 
-class ExpensesService():
-    def __init__(self, request, year):
-        self._request = request
+class ExpenseService():
+    def __init__(self, year: int) -> None:
         self._year = year
+        self._expense_types = expense_types()
 
-        self._make_month_expense_object(year)
+        obj = self._make_month_expense_object(year)
 
-    def _make_month_expense_object(self, year: int) -> None:
-        qs_expenses = Expense.objects.sum_by_month_and_type(year)
+        self._balance = obj.balance
+        self._total_row = obj.total_row
+        self._average = obj.average
 
-        self._MonthExpense = MonthExpense(
-            year=year,
-            expenses=qs_expenses,
-            expenses_types=expense_types())
+    def _make_month_expense_object(self, year: int) -> ExpenseBalance:
+        qs = Expense.objects.sum_by_month_and_type(year)
 
-    def render_chart_expenses(self):
-        context = {
-            'data': self._MonthExpense.chart_data
+        return \
+            ExpenseBalance.months_of_year(year, qs, self._expense_types)
+
+    def chart_context(self):
+        return {
+            'data': self._chart_data()
         }
-        return render_to_string(
-            template_name='bookkeeping/includes/chart_expenses.html',
-            context=context,
-            request=self._request
-        )
 
-    def render_year_expenses(self):
-        context = {
+    def table_context(self):
+        return {
             'year': self._year,
-            'data': self._MonthExpense.balance,
-            'categories': self._MonthExpense.expense_types,
-            'total_row': self._MonthExpense.total_row,
-            'avg_row': self._MonthExpense.average,
+            'data': self._balance,
+            'categories': self._expense_types,
+            'total_row': self._total_row,
+            'avg_row': self._average,
         }
-        return render_to_string(
-            template_name='bookkeeping/includes/year_expenses.html',
-            context=context,
-            request=self._request
-        )
+
+    def _chart_data(self) -> List[Dict[str, float]]:
+        if not self._expense_types:
+            return [{'name': _('No expenses'), 'y': 0}]
+
+        arr = self._total_row.copy()
+
+        if arr:
+            # sort dictionary
+            arr = dict(sorted(arr.items(), key=lambda x: x[1], reverse=True))
+
+            # transform arr for bar chart
+            return \
+                [{'name': key[:11], 'y': value} for key, value in arr.items()]
+
+        return \
+            [{'name': name[:11], 'y': 0} for name in self._expense_types]
