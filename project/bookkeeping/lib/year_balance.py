@@ -16,7 +16,9 @@ class YearBalance(BalanceBase):
         'borrow',
         'borrow_return',
         'lend',
-        'lend_return'
+        'lend_return',
+        'balance',
+        'money_flow',
     )
 
     def __init__(self,
@@ -55,7 +57,7 @@ class YearBalance(BalanceBase):
     def amount_end(self) -> float:
         try:
             val = self._balance['money_flow'].values[-1]
-        except KeyError:
+        except (KeyError, IndexError):
             val = 0.0
 
         return val
@@ -127,10 +129,7 @@ class YearBalance(BalanceBase):
         for col in self.columns:
             df[col] = 0.0
 
-        df['balance'] = 0
-        df['money_flow'] = 0
-
-        if not data:
+        if not data or not any(data.values()):
             return df
 
         for col_name, data_arr in data.items():
