@@ -43,8 +43,7 @@ class Index(TemplateViewMixin):
             'expenses': render_to_string(
                 'bookkeeping/includes/year_expenses.html',
                 exp.table_context(),
-                self.request
-            )
+                self.request)
         })
         return context
 
