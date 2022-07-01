@@ -6,12 +6,11 @@ from ..models import Book, BookTarget
 
 
 class ChartReaded():
-    _readed = 0
-    _years = []
-    _targets = []
-    _data = []
-
     def __init__(self):
+        self._years = []
+        self._targets = []
+        self._data = []
+
         self._readed = self._get_readed()
 
     @property

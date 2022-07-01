@@ -69,14 +69,16 @@ class Lists(ListViewMixin):
         paginator = Paginator(self.get_queryset(), self.per_page)
         page_range = paginator.get_elided_page_range(number=page)
 
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'object_list': paginator.get_page(page),
             'url': reverse("books:list"),
             'page_range': page_range,
             'tab': self.request.GET.get('tab'),
-        })
-        return context
+        }
+
+        return \
+            super().get_context_data(**kwargs) \
+            | context
 
 
 class New(CreateViewMixin):
