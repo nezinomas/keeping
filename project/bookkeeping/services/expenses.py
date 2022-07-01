@@ -47,7 +47,7 @@ class ExpenseService():
         values = self._total_row.values()
 
         if values:
-            return sum(values) / len(values)
+            return sum(values) / 12
 
         return 0
 
