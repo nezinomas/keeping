@@ -35,12 +35,12 @@ class ExpenseService():
     def table_context(self):
         return {
             'year': self._year,
+            'categories': self._expense_types,
             'data': it.zip_longest(self._balance, self._total_column),
             'total': self._total,
-            'categories': self._expense_types,
             'total_row': self._total_row,
-            'avg_row': self._average,
             'avg': self._calc_total_avg(),
+            'avg_row': self._average,
         }
 
     def _calc_total_avg(self) -> float:

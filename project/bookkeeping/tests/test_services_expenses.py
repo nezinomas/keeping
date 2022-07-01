@@ -142,7 +142,6 @@ def test_year_expenses_context():
     assert 'categories' in actual
     assert 'data' in actual
     assert 'total' in actual
-    assert 'total_column' in actual
     assert 'total_row' in actual
     assert 'avg' in actual
     assert 'avg_row' in actual
