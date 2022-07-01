@@ -4,14 +4,14 @@ from ..models import Book, BookTarget
 class InfoRow():
     def __init__(self, year):
         self._year = year
-        
+
     def context(self):
         return {
             'readed': self.readed(),
             'reading': self.reading(),
             'target': self.target(),
         }
-    
+
     def readed(self):
         qs = \
             Book.objects \
