@@ -1,6 +1,5 @@
 from django.core.paginator import Paginator
 from django.urls import reverse, reverse_lazy
-from django.utils.translation import gettext as _
 
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  ListViewMixin, SearchMixin, TemplateViewMixin,
@@ -27,49 +26,15 @@ class ChartReaded(TemplateViewMixin):
     template_name = 'books/chart_readed_books.html'
 
     def get_context_data(self, **kwargs):
-        _qs_readed = models.Book.objects.readed()
+        obj = services.ChartReaded()
 
-        if not _qs_readed.count():
+        if not obj.readed:
             self.template_name = 'empty.html'
             return {}
 
-        _qs_targets = models.BookTarget.objects.items().values_list('year', 'quantity')
-
-        _targets = {k: v for k, v in _qs_targets}
-
-        categories = []
-        targets = []
-        data = []
-
-        for readed in _qs_readed:
-            _year = readed['year']
-
-            # chart categories
-            categories.append(_year)
-
-            # chart targets
-            _target = _targets.get(_year, 0)
-            targets.append(_target)
-
-            # chart serries data
-            _data = {
-                'y': readed['cnt'],
-                'target': _target,
-            }
-            data.append(_data)
-
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'readed': _qs_readed.count(),
-            'categories': categories,
-            'data': data,
-            'targets': targets,
-            'chart': 'chart_readed_books',
-            'chart_title': _('Readed books'),
-            'chart_column_color': '70, 171, 157',
-        })
-
-        return context
+        return \
+            super().get_context_data(**kwargs) \
+            | obj.context()
 
 
 class InfoRow(TemplateViewMixin):

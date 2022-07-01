@@ -55,11 +55,11 @@
         },
         series: [{
             data: {{ data|safe }},
-            color: 'rgba({{ chart_column_color }}, 0.65)',
-            borderColor: 'rgba({{ chart_column_color }}, 1)',
+            color: 'rgba({{ chart_column_color|safe }}, 0.65)',
+            borderColor: 'rgba({{ chart_column_color|safe }}, 1)',
             dataLabels: [{
                 enabled: true,
-                color: 'rgba({{ chart_column_color }}, 1)',
+                color: 'rgba({{ chart_column_color|safe }}, 1)',
                 style: {
                     fontSize: '7px',
                     fontWeight: 'bold',
