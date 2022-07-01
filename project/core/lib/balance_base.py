@@ -5,8 +5,6 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame as DF
 
-from ...core.lib.date import current_day
-
 
 def df_days_of_month(year: int, month: int) -> DF:
     try:
@@ -40,8 +38,8 @@ def df_months_of_year(year: int) -> DF:
 
 
 class BalanceBase():
-    def __init__(self):
-        self._balance = DF()
+    def __init__(self, balance: DF = DF()):
+        self._balance = balance
 
     @property
     def balance(self) -> List[Dict]:
@@ -55,6 +53,47 @@ class BalanceBase():
         arr.reset_index(inplace=True)
 
         return arr.to_dict('records')
+
+    @property
+    def total(self) -> float:
+        '''
+        Return total sum of all columns
+        '''
+        if not isinstance(self._balance, DF):
+            return 0.0
+
+        if self._balance.empty:
+            return 0.0
+
+        return self._balance.sum().sum()
+
+    def make_total_column(self, df = DF()) -> DF:
+        '''
+        calculate total column for balance DataFrame
+
+        return filtered DataFrame with date and total column
+        '''
+
+        df = self._balance if df.empty else df
+
+        if not isinstance(df, DF):
+            return DF()
+
+        if df.empty:
+            return DF()
+
+        df = df.copy()
+
+        df['total'] = df.sum(axis=1)
+
+        df = df.reset_index()
+        df = df[['date', 'total']]
+
+        return df
+
+    @property
+    def total_column(self) -> Dict[str, float]:
+        return self.make_total_column().to_dict('records')
 
     @property
     def total_row(self) -> Dict[str, float]:
@@ -88,23 +127,6 @@ class BalanceBase():
         arr = arr.fillna(0.0)
 
         return arr.to_dict()
-
-    def average_month(self, year: int, month: int) -> Dict[str, float]:
-        if not isinstance(self._balance, DF):
-            return {}
-
-        if self._balance.empty:
-            return {}
-
-        day = current_day(year, month)
-
-        df = self._balance.copy()
-        df = self._calc_avg(df, year, month, day)
-
-        # select onvly last row for returning
-        row = df.loc['total', :]
-
-        return row.to_dict()
 
     def _calc_avg(self, df: DF,
                   year: int, month: int, day: int) -> DF:

@@ -1,116 +1,50 @@
 from django.core.paginator import Paginator
 from django.urls import reverse, reverse_lazy
-from django.utils.translation import gettext as _
 
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  ListViewMixin, SearchMixin, TemplateViewMixin,
                                  UpdateViewMixin, rendered_content)
-from . import forms, models
+from . import forms, models, services
 
 
 class Index(TemplateViewMixin):
     template_name = 'books/index.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'year': self.request.user.year,
             'tab': self.request.GET.get('tab'),
             'books': rendered_content(self.request, Lists),
             'chart': rendered_content(self.request, ChartReaded),
             'info': rendered_content(self.request, InfoRow),
-        })
-        return context
+        }
+
+        return \
+            super().get_context_data(**kwargs) | context
 
 
 class ChartReaded(TemplateViewMixin):
     template_name = 'books/chart_readed_books.html'
 
     def get_context_data(self, **kwargs):
-        _qs_readed = models.Book.objects.readed()
+        obj = services.ChartReaded()
 
-        if not _qs_readed.count():
+        if not obj.readed:
             self.template_name = 'empty.html'
             return {}
 
-        _qs_targets = models.BookTarget.objects.items().values_list('year', 'quantity')
-
-        _targets = {k: v for k, v in _qs_targets}
-
-        categories = []
-        targets = []
-        data = []
-
-        for readed in _qs_readed:
-            _year = readed['year']
-
-            # chart categories
-            categories.append(_year)
-
-            # chart targets
-            _target = _targets.get(_year, 0)
-            targets.append(_target)
-
-            # chart serries data
-            _data = {
-                'y': readed['cnt'],
-                'target': _target,
-            }
-            data.append(_data)
-
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'readed': _qs_readed.count(),
-            'categories': categories,
-            'data': data,
-            'targets': targets,
-            'chart': 'chart_readed_books',
-            'chart_title': _('Readed books'),
-            'chart_column_color': '70, 171, 157',
-        })
-
-        return context
+        return \
+            super().get_context_data(**kwargs) | obj.context()
 
 
 class InfoRow(TemplateViewMixin):
     template_name = 'books/info_row.html'
 
-    def readed(self):
-        year = self.request.user.year
-        qs = (models.Book.objects
-              .readed()
-              .filter(year=year)
-        )
-        return qs[0]['cnt'] if qs else 0
-
-    def reading(self):
-        year = self.request.user.year
-        qs = (models.Book.objects
-              .reading(year)
-        )
-        return qs['reading'] if qs else 0
-
-    def target(self):
-        year = self.request.user.year
-        qs = None
-
-        try:
-            qs = (
-                models.BookTarget.objects
-                .related()
-                .get(year=year)
-            )
-        except models.BookTarget.DoesNotExist:
-            pass
-
-        return qs if qs else 0
-
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'target': self.target(),
-        })
-        return context
+        obj = services.InfoRow(self.request.user.year)
+
+        return \
+            super().get_context_data(**kwargs) | obj.context()
 
 
 class Lists(ListViewMixin):
@@ -134,14 +68,15 @@ class Lists(ListViewMixin):
         paginator = Paginator(self.get_queryset(), self.per_page)
         page_range = paginator.get_elided_page_range(number=page)
 
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'object_list': paginator.get_page(page),
             'url': reverse("books:list"),
             'page_range': page_range,
             'tab': self.request.GET.get('tab'),
-        })
-        return context
+        }
+
+        return \
+            super().get_context_data(**kwargs) | context
 
 
 class New(CreateViewMixin):

@@ -8,29 +8,32 @@ from ...core.lib.balance_base import BalanceBase, df_months_of_year
 
 
 class YearBalance(BalanceBase):
+    columns = (
+        'incomes',
+        'expenses',
+        'savings',
+        'savings_close',
+        'borrow',
+        'borrow_return',
+        'lend',
+        'lend_return',
+        'balance',
+        'money_flow',
+    )
+
     def __init__(self,
                  year: int,
-                 incomes: List[Dict],
-                 expenses: List[Dict],
-                 savings: List[Dict] = None,
-                 savings_close: List[Dict] = None,
-                 borrow: List[Dict] = None,
-                 borrow_return: List[Dict] = None,
-                 lend: List[Dict] = None,
-                 lend_return: List[Dict] = None,
+                 data: Dict[str, Dict],
                  amount_start: float = 0.0):
 
         '''
         year: int
-        incomes: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        expenses: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        savings: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        savings_close: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        borrow: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        borrow_return: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        lend: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
-        lend_return: [{'date': datetime.date(), 'sum': Decimal()}, ... ]
+
+        data: {'incomes': [{'date': datetime.date(), 'sum': Decimal()}, ... ]}
+
         amount_start: year start worth amount
+
+        awailable keys in data: incomes, expenses, savings, savings_close, borrow, borrow_return, lend, lend_return
         '''
 
         super().__init__()
@@ -42,23 +45,9 @@ class YearBalance(BalanceBase):
 
         self._amount_start = amount_start
         self._year = year
-        # ToDo: delete after some time (commented on 2021.08.26)
-        # if not incomes and not expenses:
-        #     return
 
-        self._balance = self._make_df(
-            year=year,
-            incomes=incomes,
-            expenses=expenses,
-            savings=savings,
-            savings_close=savings_close,
-            borrow=borrow,
-            borrow_return=borrow_return,
-            lend=lend,
-            lend_return=lend_return,
-        )
-
-        self._balance = self._calc(self._balance)
+        self._balance = self._make_df(year=year, data=data)
+        self._balance = self._calc_balance_and_money_flow(self._balance)
 
     @property
     def amount_start(self) -> float:
@@ -68,7 +57,7 @@ class YearBalance(BalanceBase):
     def amount_end(self) -> float:
         try:
             val = self._balance['money_flow'].values[-1]
-        except KeyError:
+        except (KeyError, IndexError):
             val = 0.0
 
         return val
@@ -107,99 +96,56 @@ class YearBalance(BalanceBase):
 
     @property
     def income_data(self) -> List[float]:
-        rtn = []
-        if 'incomes' in self._balance:
-            rtn = self._balance.incomes.tolist()
-
-        return rtn
+        return self._balance.incomes.tolist()
 
     @property
     def expense_data(self) -> List[float]:
-        rtn = []
-        if 'expenses' in self._balance:
-            rtn = self._balance.expenses.tolist()
-
-        return rtn
+        return self._balance.expenses.tolist()
 
     @property
     def borrow_data(self) -> List[float]:
-        rtn = []
-        if 'borrow' in self._balance:
-            rtn = self._balance.borrow.tolist()
-
-        return rtn
+        return self._balance.borrow.tolist()
 
     @property
     def borrow_return_data(self) -> List[float]:
-        rtn = []
-        if 'borrow_return' in self._balance:
-            rtn = self._balance.borrow_return.tolist()
-
-        return rtn
+        return self._balance.borrow_return.tolist()
 
     @property
     def lend_data(self) -> List[float]:
-        rtn = []
-        if 'lend' in self._balance:
-            rtn = self._balance.lend.tolist()
-
-        return rtn
+        return self._balance.lend.tolist()
 
     @property
     def lend_return_data(self) -> List[float]:
-        rtn = []
-        if 'lend_return' in self._balance:
-            rtn = self._balance.lend_return.tolist()
-
-        return rtn
+        return self._balance.lend_return.tolist()
 
     @property
     def money_flow(self) -> List[float]:
-        rtn = []
-        if 'money_flow' in self._balance:
-            rtn = self._balance.money_flow.tolist()
+        return self._balance.money_flow.tolist()
 
-        return rtn
-
-    def _make_df(self,
-                 year: int,
-                 incomes: List[Dict],
-                 expenses: List[Dict],
-                 savings: List[Dict],
-                 savings_close: List[Dict],
-                 borrow: List[Dict],
-                 borrow_return: List[Dict],
-                 lend: List[Dict],
-                 lend_return: List[Dict]) -> DF:
-
+    def _make_df(self, year: int, data: Dict[str, Dict]) -> DF:
         df = df_months_of_year(year)
 
-        # append necessary columns
-        arr = {
-            'incomes': incomes,
-            'expenses': expenses,
-            'savings': savings,
-            'savings_close': savings_close,
-            'borrow': borrow,
-            'borrow_return': borrow_return,
-            'lend': lend,
-            'lend_return': lend_return,
-        }
+        # create columns with 0 values
+        for col in self.columns:
+            df[col] = 0.0
 
-        for name, arr in arr.items():
-            # create column and assign 0 for all cells
-            df.loc[:, name] = 0.0
-            if arr:
-                # copy values from input arrays to df
-                for d in arr:
-                    df.at[to_datetime(d['date']), name] = float(d['sum'])
+        if not data or not any(data.values()):
+            return df
 
-        df.loc[:, 'balance'] = 0.0
-        df.loc[:, 'money_flow'] = self._amount_start
+        for col_name, data_arr in data.items():
+            if not data_arr:
+                continue
+
+            if not col_name in self.columns:
+                continue
+
+            # copy values from input arrays to df
+            for row in data_arr:
+                df.at[to_datetime(row['date']), col_name] = float(row['sum'])
 
         return df
 
-    def _calc(self, df: DF) -> DF:
+    def _calc_balance_and_money_flow(self, df: DF) -> DF:
         # calculate balance
         df['balance'] = df.incomes - df.expenses
 

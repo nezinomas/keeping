@@ -125,30 +125,53 @@ def test_months_balance(_incomes, _expenses,
                         _borrow, _borrow_return,
                         _lend, _lend_return,
                         _money_flow, _expect):
+    data = {
+        'incomes':_incomes,
+        'expenses':_expenses,
+        'savings':_savings,
+        'savings_close':_savings_close,
+        'borrow':_borrow,
+        'borrow_return':_borrow_return,
+        'lend':_lend,
+        'lend_return':_lend_return,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses,
-        savings=_savings,
-        savings_close=_savings_close,
-        borrow=_borrow,
-        borrow_return=_borrow_return,
-        lend=_lend,
-        lend_return=_lend_return,
+        data=data,
         amount_start=_money_flow
     ).balance
 
     assert actual == _expect
 
 
+def test_balance_when_wrong_data_column_names():
+    data = {
+        'xxx': [{'date': date(1999, 1, 1), 'sum': Decimal(5.5)}],
+    }
+
+    actual = YearBalance(
+        year=1999,
+        data=data,
+        amount_start=None
+    ).balance
+
+    assert 'xxx' not in actual[0].keys()
+
+
 def test_months_balance_only_saving_close(_incomes, _expenses,
                                           _savings_close,
                                           _money_flow):
+
+    data = {
+        'incomes': _incomes,
+        'expenses': _expenses,
+        'savings_close': _savings_close,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses,
-        savings_close=_savings_close,
+        data=data,
         amount_start=_money_flow
     ).balance
 
@@ -166,11 +189,15 @@ def test_months_balance_only_saving_close(_incomes, _expenses,
 def test_months_balance_only_savings(_incomes, _expenses,
                                      _savings,
                                      _money_flow):
+    data = {
+        'incomes': _incomes,
+        'expenses': _expenses,
+        'savings': _savings,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses,
-        savings=_savings,
+        data=data,
         amount_start=_money_flow
     ).balance
 
@@ -188,11 +215,15 @@ def test_months_balance_only_savings(_incomes, _expenses,
 def test_months_balance_only_borrow(_incomes, _expenses,
                                      _borrow,
                                      _money_flow):
+    data = {
+        'incomes':_incomes,
+        'expenses':_expenses,
+        'borrow':_borrow,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses,
-        borrow=_borrow,
+        data=data,
         amount_start=_money_flow
     ).balance
 
@@ -210,11 +241,15 @@ def test_months_balance_only_borrow(_incomes, _expenses,
 def test_months_balance_only_borrow_return(_incomes, _expenses,
                                      _borrow_return,
                                      _money_flow):
+    data = {
+        'incomes': _incomes,
+        'expenses': _expenses,
+        'borrow_return': _borrow_return,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses,
-        borrow_return=_borrow_return,
+        data=data,
         amount_start=_money_flow
     ).balance
 
@@ -232,11 +267,15 @@ def test_months_balance_only_borrow_return(_incomes, _expenses,
 def test_months_balance_only_lend(_incomes, _expenses,
                                      _lend,
                                      _money_flow):
+    data = {
+        'incomes': _incomes,
+        'expenses': _expenses,
+        'lend': _lend,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses,
-        lend=_lend,
+        data=data,
         amount_start=_money_flow
     ).balance
 
@@ -254,11 +293,15 @@ def test_months_balance_only_lend(_incomes, _expenses,
 def test_months_balance_only_lend_return(_incomes, _expenses,
                                      _lend_return,
                                      _money_flow):
+    data = {
+        'incomes':_incomes,
+        'expenses':_expenses,
+        'lend_return':_lend_return,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses,
-        lend_return=_lend_return,
+        data=data,
         amount_start=_money_flow
     ).balance
 
@@ -278,16 +321,20 @@ def test_months_balance_total_row(_incomes, _expenses,
                                   _borrow, _borrow_return,
                                   _lend, _lend_return,
                                   _money_flow):
+    data = {
+        'incomes': _incomes,
+        'expenses': _expenses,
+        'savings': _savings,
+        'savings_close': _savings_close,
+        'borrow': _borrow,
+        'borrow_return': _borrow_return,
+        'lend': _lend,
+        'lend_return': _lend_return,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses,
-        savings=_savings,
-        savings_close=_savings_close,
-        borrow=_borrow,
-        borrow_return=_borrow_return,
-        lend=_lend,
-        lend_return=_lend_return,
+        data=data,
         amount_start=_money_flow
     ).total_row
 
@@ -312,16 +359,20 @@ def test_months_balance_average(_incomes, _expenses,
                                 _borrow, _borrow_return,
                                 _lend, _lend_return,
                                 _money_flow):
+    data = {
+        'incomes': _incomes,
+        'expenses': _expenses,
+        'savings': _savings,
+        'savings_close': _savings_close,
+        'borrow': _borrow,
+        'borrow_return': _borrow_return,
+        'lend': _lend,
+        'lend_return': _lend_return,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses,
-        savings=_savings,
-        savings_close=_savings_close,
-        borrow=_borrow,
-        borrow_return=_borrow_return,
-        lend=_lend,
-        lend_return=_lend_return,
+        data=data,
         amount_start=_money_flow
     ).average
 
@@ -344,8 +395,7 @@ def test_months_balance_average(_incomes, _expenses,
 def test_amount_start():
     actual = YearBalance(
         year=1999,
-        incomes=None,
-        expenses=None,
+        data=None,
         amount_start=10
     ).amount_start
 
@@ -355,8 +405,7 @@ def test_amount_start():
 def test_amount_start_none():
     actual = YearBalance(
         year=1999,
-        incomes=None,
-        expenses=None,
+        data=None,
         amount_start=None
     ).amount_start
 
@@ -368,16 +417,20 @@ def test_amount_end(_incomes, _expenses,
                     _borrow, _borrow_return,
                     _lend, _lend_return,
                     _money_flow):
+    data = {
+        'incomes': _incomes,
+        'expenses': _expenses,
+        'savings': _savings,
+        'savings_close': _savings_close,
+        'borrow': _borrow,
+        'borrow_return': _borrow_return,
+        'lend': _lend,
+        'lend_return': _lend_return,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses,
-        savings=_savings,
-        savings_close=_savings_close,
-        borrow=_borrow,
-        borrow_return=_borrow_return,
-        lend=_lend,
-        lend_return=_lend_return,
+        data=data,
         amount_start=_money_flow
     ).amount_end
 
@@ -385,10 +438,14 @@ def test_amount_end(_incomes, _expenses,
 
 
 def test_amount_end_no_money_flow(_incomes, _expenses):
+    data = {
+        'incomes': _incomes,
+        'expenses': _expenses,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses
+        data=data,
     )
     del actual._balance['money_flow']
 
@@ -398,8 +455,7 @@ def test_amount_end_no_money_flow(_incomes, _expenses):
 def test_amount_end_none():
     actual = YearBalance(
         year=1999,
-        incomes=None,
-        expenses=None,
+        data=None,
         amount_start=None
     ).amount_end
 
@@ -407,10 +463,14 @@ def test_amount_end_none():
 
 
 def test_amount_balance(_incomes, _expenses, _money_flow):
+    data = {
+        'incomes': _incomes,
+        'expenses': _expenses,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses,
+        data=data,
         amount_start=_money_flow
     ).amount_balance
 
@@ -418,10 +478,14 @@ def test_amount_balance(_incomes, _expenses, _money_flow):
 
 
 def test_balance_none():
+    data = {
+        'incomes': [],
+        'expenses': [],
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=[],
-        expenses=[],
+        data=data,
         amount_start=None
     ).amount_balance
 
@@ -429,10 +493,14 @@ def test_balance_none():
 
 
 def test_balance_income_data(_incomes, _expect):
+    data = {
+        'incomes': _incomes,
+        'expenses': [],
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=[],
+        data=data,
         amount_start=None
     ).income_data
 
@@ -442,10 +510,14 @@ def test_balance_income_data(_incomes, _expect):
 
 
 def test_balance_expense_data(_expenses, _expect):
+    data = {
+        'incomes': [],
+        'expenses': _expenses,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=[],
-        expenses=_expenses,
+        data=data,
         amount_start=None
     ).expense_data
 
@@ -455,11 +527,15 @@ def test_balance_expense_data(_expenses, _expect):
 
 
 def test_balance_borrow_data(_incomes, _borrow, _expect):
+    data = {
+        'incomes':_incomes,
+        'expenses':[],
+        'borrow':_borrow,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=[],
-        borrow=_borrow,
+        data=data,
         amount_start=None
     ).borrow_data
 
@@ -469,11 +545,15 @@ def test_balance_borrow_data(_incomes, _borrow, _expect):
 
 
 def test_balance_borrow_return_data(_incomes, _borrow_return, _expect):
+    data = {
+        'incomes': _incomes,
+        'expenses': [],
+        'borrow_return': _borrow_return,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=[],
-        borrow_return=_borrow_return,
+        data=data,
         amount_start=None
     ).borrow_return_data
 
@@ -483,11 +563,15 @@ def test_balance_borrow_return_data(_incomes, _borrow_return, _expect):
 
 
 def test_balance_lend_data(_incomes, _lend, _expect):
+    data = {
+        'incomes':_incomes,
+        'expenses':[],
+        'lend':_lend,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=[],
-        lend=_lend,
+        data=data,
         amount_start=None
     ).lend_data
 
@@ -497,11 +581,15 @@ def test_balance_lend_data(_incomes, _lend, _expect):
 
 
 def test_balance_lend_return_data(_incomes, _lend_return, _expect):
+    data = {
+        'incomes': _incomes,
+        'expenses': [],
+        'lend_return': _lend_return,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=[],
-        lend_return=_lend_return,
+        data=data,
         amount_start=None
     ).lend_return_data
 
@@ -515,16 +603,20 @@ def test_balance_money_flow(_incomes, _expenses,
                             _borrow, _borrow_return,
                             _lend, _lend_return,
                             _money_flow, _expect):
+    data = {
+        'incomes': _incomes,
+        'expenses': _expenses,
+        'savings': _savings,
+        'savings_close': _savings_close,
+        'borrow': _borrow,
+        'borrow_return': _borrow_return,
+        'lend': _lend,
+        'lend_return': _lend_return,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses,
-        savings=_savings,
-        savings_close=_savings_close,
-        borrow=_borrow,
-        borrow_return=_borrow_return,
-        lend=_lend,
-        lend_return=_lend_return,
+        data=data,
         amount_start=_money_flow
     ).money_flow
 
@@ -534,10 +626,14 @@ def test_balance_money_flow(_incomes, _expenses,
 
 
 def test_avg_incomes(_incomes, _expenses):
+    data = {
+        'incomes': _incomes,
+        'expenses': _expenses,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses,
+        data=data,
         amount_start=None
     ).avg_incomes
 
@@ -545,10 +641,14 @@ def test_avg_incomes(_incomes, _expenses):
 
 
 def test_avg_incomes_none():
+    data = {
+        'incomes': None,
+        'expenses': None,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=None,
-        expenses=None,
+        data=data,
         amount_start=None
     ).avg_incomes
 
@@ -556,10 +656,14 @@ def test_avg_incomes_none():
 
 
 def test_avg_expenses(_incomes, _expenses):
+    data = {
+        'incomes': _incomes,
+        'expenses': _expenses,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=_incomes,
-        expenses=_expenses,
+        data=data,
         amount_start=None
     ).avg_expenses
 
@@ -567,10 +671,14 @@ def test_avg_expenses(_incomes, _expenses):
 
 
 def test_avg_expenses_none():
+    data = {
+        'incomes':None,
+        'expenses':None,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=None,
-        expenses=None,
+        data=data,
         amount_start=None
     ).avg_expenses
 
@@ -585,10 +693,14 @@ def test_avg_expenses_current_year():
         {'date': date(1999, 3, 1), 'sum': Decimal('3')},
     ]
 
+    data = {
+        'incomes': None,
+        'expenses': expenses,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=None,
-        expenses=expenses,
+        data=data,
         amount_start=None
     ).avg_expenses
 
@@ -603,10 +715,14 @@ def test_avg_expenses_not_current_year():
         {'date': date(1999, 3, 1), 'sum': Decimal('3')},
     ]
 
+    data = {
+        'incomes': None,
+        'expenses': expenses,
+    }
+
     actual = YearBalance(
         year=1999,
-        incomes=None,
-        expenses=expenses,
+        data=data,
         amount_start=None
     ).avg_expenses
 

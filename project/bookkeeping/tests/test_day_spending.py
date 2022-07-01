@@ -1,5 +1,6 @@
-from datetime import date, datetime
+from datetime import datetime
 from decimal import Decimal
+from types import SimpleNamespace
 
 import pandas as pd
 import pytest
@@ -9,33 +10,45 @@ from ..lib.day_spending import DaySpending
 
 
 @pytest.fixture()
-def balance_df():
-    # N expense type marked as necessary
-    # O1, O2 ordinary expense type
-    df = pd.DataFrame([
-        {'date': datetime(1999, 1, 1), 'N': 9.99,
-         'O1': 1.0, 'O2': 1.25, 'total': 12.24},
-        {'date': datetime(1999, 1, 2), 'N': 9.99,
-         'O1': 0.0, 'O2': 1.05, 'total': 11.04},
-        {'date': datetime(1999, 1, 3), 'N': 9.99,
-         'O1': 0.0, 'O2': 0.0, 'total': 9.99},
-    ])
-    df.set_index('date', inplace=True)
+def _expenses():
+    return \
+    [
+        {'date': datetime(1999, 1, 1), 'title': 'N', 'sum': Decimal('9.99'), 'exception_sum': Decimal('0.0')},
+        {'date': datetime(1999, 1, 1), 'title': 'O1', 'sum': Decimal('1.0'), 'exception_sum': Decimal('0.0')},
+        {'date': datetime(1999, 1, 1), 'title': 'O2', 'sum': Decimal('1.25'), 'exception_sum': Decimal('1.0')},
 
-    return df
+        {'date': datetime(1999, 1, 2), 'title': 'N', 'sum': Decimal('9.99'), 'exception_sum': Decimal('0.0')},
+        {'date': datetime(1999, 1, 2), 'title': 'O1', 'sum': Decimal('0.0'), 'exception_sum': Decimal('0.0')},
+        {'date': datetime(1999, 1, 2), 'title': 'O2', 'sum': Decimal('1.05'), 'exception_sum': Decimal('0.0')},
+
+        {'date': datetime(1999, 1, 3), 'title': 'N', 'sum': Decimal('9.99'), 'exception_sum': Decimal('0.0')},
+        {'date': datetime(1999, 1, 3), 'title': 'O1', 'sum': Decimal('0.0'), 'exception_sum': Decimal('0.0')},
+        {'date': datetime(1999, 1, 3), 'title': 'O2', 'sum': Decimal('0.0'), 'exception_sum': Decimal('0.0')},
+    ]
 
 
 @pytest.fixture()
-def necessary():
+def _necessary():
     return ['N']
 
 
 @pytest.fixture()
-def exceptions():
+def _types():
+    return ['N', 'O1', 'O2']
+
+
+@pytest.fixture()
+def _plans():
+    return SimpleNamespace(day_input={'january': 0.25}, expenses_free={'january': 20})
+
+
+@pytest.fixture()
+def _df_for_average_calculation():
     df = pd.DataFrame([
-        {'date': date(1999, 1, 1), 'sum': 1.0},
-        {'date': date(1999, 1, 2), 'sum': 0.0},
-        {'date': date(1999, 1, 3), 'sum': 0.0},
+        {'total': 1.1, 'date': datetime(1999, 1, 1)},
+        {'total': 2.1, 'date': datetime(1999, 1, 2)},
+        {'total': 3.1, 'date': datetime(1999, 1, 3)},
+        {'total': 4.1, 'date': datetime(1999, 1, 31)},
     ])
     df.set_index('date', inplace=True)
 
@@ -43,147 +56,201 @@ def exceptions():
 
 
 @freeze_time('1999-01-02')
-def test_avg_per_day(balance_df, necessary):
-    actual = DaySpending(year=1999,
-                         month=1,
-                         month_df=balance_df,
-                         necessary=necessary,
-                         plan_day_sum=Decimal(0.25),
-                         plan_free_sum=Decimal(20)).avg_per_day
+def test_avg_per_day(_expenses, _necessary, _types, _plans):
+    obj = DaySpending(
+        year=1999,
+        month=1,
+        expenses=_expenses,
+        necessary=_necessary,
+        types=_types,
+        plans=_plans
+    )
 
-    assert 1.65 == actual
+    actual = obj.avg_per_day
 
-
-def test_spending_first_day(balance_df, necessary):
-    actual = DaySpending(year=1999,
-                         month=1,
-                         month_df=balance_df,
-                         necessary=necessary,
-                         plan_day_sum=Decimal(0.25),
-                         plan_free_sum=Decimal(20)).spending
-
-    assert datetime(1999, 1, 1) == actual[0]['date']
-    assert -2.0 == actual[0]['day']
-    assert -2.0 == actual[0]['full']
+    assert 1.15 == actual
 
 
-def test_spending_second_day(balance_df, necessary):
-    actual = DaySpending(year=1999, month=1, month_df=balance_df,
-                         necessary=necessary, plan_day_sum=Decimal(0.25),
-                         plan_free_sum=Decimal(20)).spending
+def test_spending_first_day(_expenses, _necessary, _types, _plans):
+    obj = DaySpending(
+        year=1999,
+        month=1,
+        expenses=_expenses,
+        necessary=_necessary,
+        types=_types,
+        plans=_plans
+    )
 
-    assert datetime(1999, 1, 2) == actual[1]['date']
-    assert -0.8 == actual[1]['day']
-    assert -2.8 == pytest.approx(actual[1]['full'], rel=1e-2)
+    actual = obj.spending
 
-
-def test_spending_first_day_necessary_empty(balance_df):
-    actual = DaySpending(year=1999, month=1, month_df=balance_df,
-                         necessary=[], plan_day_sum=Decimal(0.25),
-                         plan_free_sum=Decimal(20)).spending
-
-    assert datetime(1999, 1, 1) == actual[0]['date']
-    assert -11.99 == actual[0]['day']
-    assert -11.99 == actual[0]['full']
+    assert actual[0]['date'] == datetime(1999, 1, 1)
+    assert actual[0]['day'] == -1.0
+    assert actual[0]['full'] == -1.0
 
 
-def test_spending_first_day_necessary_none(balance_df):
-    actual = DaySpending(year=1999, month=1, month_df=balance_df,
-                         necessary=None, plan_day_sum=Decimal(0.25),
-                         plan_free_sum=Decimal(20)).spending
+def test_spending_second_day(_expenses, _necessary, _types, _plans):
+    obj = DaySpending(
+        year=1999,
+        month=1,
+        expenses=_expenses,
+        necessary=_necessary,
+        types=_types,
+        plans=_plans
+    )
 
-    assert datetime(1999, 1, 1) == actual[0]['date']
-    assert -11.99 == actual[0]['day']
-    assert -11.99 == actual[0]['full']
+    actual = obj.spending
 
-
-def test_spending_first_day_all_empty(balance_df):
-    actual = DaySpending(year=1999, month=1, month_df=balance_df,
-                         necessary=[], plan_day_sum=0,
-                         plan_free_sum=0).spending
-
-    assert datetime(1999, 1, 1) == actual[0]['date']
-    assert -12.24 == actual[0]['day']
-    assert -12.24 == actual[0]['full']
+    assert actual[1]['date'] == datetime(1999, 1, 2)
+    assert actual[1]['day'] == -0.80
+    assert round(actual[1]['full'], 2) == -1.80
 
 
-def test_spending_first_day_all_none(balance_df):
-    actual = DaySpending(year=1999, month=1, month_df=balance_df,
-                         necessary=None, plan_day_sum=None,
-                         plan_free_sum=None).spending
+def test_spending_first_day_necessary_empty(_expenses, _types, _plans):
+    obj = DaySpending(
+        year=1999,
+        month=1,
+        expenses=_expenses,
+        necessary=[],
+        types=_types,
+        plans=_plans
+    )
 
-    assert datetime(1999, 1, 1) == actual[0]['date']
-    assert -12.24 == actual[0]['day']
-    assert -12.24 == actual[0]['full']
+    actual = obj.spending
 
-
-def test_spending_balance_not_dataframe(balance_df):
-    actual = DaySpending(year=1999, month=1, month_df=balance_df,
-                         necessary=None, plan_day_sum=None,
-                         plan_free_sum=None)
-    actual._spending = 'X'
-
-    assert 'X' == actual.spending
+    assert actual[0]['date'] == datetime(1999, 1, 1)
+    assert actual[0]['day'] == -10.99
+    assert actual[0]['full'] == -10.99
 
 
-def test_spending_balance_not_dataframe():
-    actual = DaySpending(year=1999, month=1, month_df=None,
-                         necessary=None, plan_day_sum=None,
-                         plan_free_sum=None).spending
+def test_spending_first_day_necessary_none(_expenses, _types, _plans):
+    obj = DaySpending(
+        year=1999,
+        month=1,
+        expenses=_expenses,
+        necessary=None,
+        types=_types,
+        plans=_plans
+    )
 
-    assert actual.empty
+    actual = obj.spending
 
-
-def test_spending_balance_empty_dataframe():
-    actual = DaySpending(year=1999, month=1, month_df=pd.DataFrame(),
-                         necessary=None, plan_day_sum=None,
-                         plan_free_sum=None).spending
-
-    assert actual.empty
-
-
-def test_spending_avg_balance_not_dataframe():
-    actual = DaySpending(year=1999, month=1, month_df=None,
-                         necessary=None, plan_day_sum=None,
-                         plan_free_sum=None).avg_per_day
-
-    assert actual.empty
+    assert actual[0]['date'] == datetime(1999, 1, 1)
+    assert actual[0]['day'] == -10.99
+    assert actual[0]['full'] == -10.99
 
 
-def test_spending_avg_balance_empty_dataframe():
-    actual = DaySpending(year=1999, month=1, month_df=pd.DataFrame(),
-                         necessary=None, plan_day_sum=None,
-                         plan_free_sum=None).avg_per_day
+def test_spending_first_day_all_empty(_expenses, _types):
+    obj = DaySpending(
+        year=1999,
+        month=1,
+        expenses=_expenses,
+        necessary=None,
+        types=_types,
+        plans=SimpleNamespace(
+            day_input={'january': 0}, expenses_free={'january': 0})
+    )
 
-    assert actual.empty
+    actual = obj.spending
 
-
-def test_spending_balace_empty_dataframe(balance_df):
-    actual = DaySpending(year=1999, month=1, month_df=balance_df,
-                         necessary=None, plan_day_sum=None,
-                         plan_free_sum=None)
-    actual._spending = pd.DataFrame()
-
-    assert actual.spending.empty
-
-
-def test_spending_with_exceptions_first_day(balance_df, necessary, exceptions):
-    actual = DaySpending(year=1999, month=1, month_df=balance_df,
-                         necessary=necessary, plan_day_sum=Decimal(0.25),
-                         plan_free_sum=Decimal(20),
-                         exceptions=exceptions).spending
-
-    assert datetime(1999, 1, 1) == actual[0]['date']
-    assert -1.0 == actual[0]['day']
-    assert -1.0 == actual[0]['full']
+    assert actual[0]['date'] == datetime(1999, 1, 1)
+    assert actual[0]['day'] == -11.24
+    assert actual[0]['full'] == -11.24
 
 
-def test_spending_with_exceptions_second_day(balance_df, necessary, exceptions):
-    actual = DaySpending(year=1999, month=1, month_df=balance_df,
-                         necessary=necessary, plan_day_sum=Decimal(0.25),
-                         plan_free_sum=Decimal(20),
-                         exceptions=exceptions).spending
+def test_spending_balance_expenses_empty(_types):
+    obj = DaySpending(
+        year=1999,
+        month=1,
+        expenses=[],
+        necessary=[],
+        types=_types,
+        plans=SimpleNamespace(
+            day_input={'january': 0}, expenses_free={'january': 0})
+    )
 
-    assert datetime(1999, 1, 2) == actual[1]['date']
-    assert -0.8 == actual[1]['day']
-    assert -1.8 == pytest.approx(actual[1]['full'], rel=1e-2)
+    actual = obj.spending
+
+    for x in actual:
+        assert x['total'] == 0.0
+        assert x['teoretical'] == 0.0
+        assert x['real'] == 0.0
+        assert x['day'] == 0.0
+        assert x['full'] == 0.0
+
+
+@freeze_time("1999-01-02")
+def test_average_month_two_days(_df_for_average_calculation):
+    o = DaySpending(
+        year=1999,
+        month=1,
+        expenses=[],
+        necessary=[],
+        types=[],
+        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+
+    o._spending = _df_for_average_calculation
+
+    actual = o.avg_per_day
+    assert 1.6 == round(actual, 2)
+
+
+@freeze_time("1999-01-31")
+def test_average_month_last_day(_df_for_average_calculation):
+    o = DaySpending(
+        year=1999,
+        month=1,
+        expenses=[],
+        necessary=[],
+        types=[],
+        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+
+    o._spending = _df_for_average_calculation
+    actual = o.avg_per_day
+
+    assert round(actual, 2) == 0.34
+
+
+@freeze_time("1970-01-01")
+def test_average_month_other_year(_df_for_average_calculation):
+    o = DaySpending(
+        year=1999,
+        month=1,
+        expenses=[],
+        necessary=[],
+        types=[],
+        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+
+    o._spending = _df_for_average_calculation
+    actual = o.avg_per_day
+
+    assert round(actual, 2) == 0.34
+
+
+def test_average_month_empty_dataframe():
+    o = DaySpending(
+        year=1999,
+        month=1,
+        expenses=[],
+        necessary=[],
+        types=[],
+        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+
+    o._spending = pd.DataFrame()
+    actual = o.avg_per_day
+
+    assert actual == 0.0
+
+
+def test_average_month_no_dataframe():
+    o = DaySpending(
+        year=1999,
+        month=1,
+        expenses=[],
+        necessary=[],
+        types=[],
+        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+
+    o._spending = None
+    actual = o.avg_per_day
+
+    assert actual == 0.0

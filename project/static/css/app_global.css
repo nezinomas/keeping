@@ -195,6 +195,14 @@ div[class*="col"]>h6 {
     border-left: .15rem solid #0359b0 !important;
 }
 
+.table .right-blue-double-border {
+    border-right: double #0359b0 !important;
+
+}
+.table .left-blue-double-border {
+    border-left: double #0359b0 !important;
+}
+
 .table .no-left-border {
     border-left: 0 !important;
 }
@@ -239,7 +247,6 @@ tr.current-day>td.weekend-col {
 }
 
 .table-hover tr:hover td,
-.table-hover tr.weekend-row:hover td,
 .table-hover tr.current-day:hover td {
     --bs-table-accent-bg: #f9f6cf !important;
 }
@@ -287,7 +294,7 @@ tr.current-day>td.weekend-col {
 }
 
 .table .empty-column {
-    border-right: #fff solid .5rem !important;
+    border-left: #fff solid .5rem !important;
 }
 
 .btn-group-month .btn {

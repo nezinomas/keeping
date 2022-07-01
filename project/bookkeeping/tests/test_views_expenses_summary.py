@@ -1,9 +1,6 @@
-import json
-
 import pytest
 from django.urls import resolve, reverse
 
-from ...core.tests.utils import setup_view
 from ...expenses.factories import (ExpenseFactory, ExpenseNameFactory,
                                    ExpenseTypeFactory)
 from .. import views
@@ -33,7 +30,6 @@ def test_view_context_no_data(client_logged):
     context = response.context
 
     assert 'form' in context
-    assert not context['found']
 
 
 def test_view_load_form(client_logged):
