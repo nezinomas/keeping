@@ -11,15 +11,16 @@ class Index(TemplateViewMixin):
     template_name = 'books/index.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'year': self.request.user.year,
             'tab': self.request.GET.get('tab'),
             'books': rendered_content(self.request, Lists),
             'chart': rendered_content(self.request, ChartReaded),
             'info': rendered_content(self.request, InfoRow),
-        })
-        return context
+        }
+
+        return \
+            super().get_context_data(**kwargs) | context
 
 
 class ChartReaded(TemplateViewMixin):
@@ -33,8 +34,7 @@ class ChartReaded(TemplateViewMixin):
             return {}
 
         return \
-            super().get_context_data(**kwargs) \
-            | obj.context()
+            super().get_context_data(**kwargs) | obj.context()
 
 
 class InfoRow(TemplateViewMixin):
@@ -44,8 +44,7 @@ class InfoRow(TemplateViewMixin):
         obj = services.InfoRow(self.request.user.year)
 
         return \
-            super().get_context_data(**kwargs) \
-            | obj.context()
+            super().get_context_data(**kwargs) | obj.context()
 
 
 class Lists(ListViewMixin):
@@ -77,8 +76,7 @@ class Lists(ListViewMixin):
         }
 
         return \
-            super().get_context_data(**kwargs) \
-            | context
+            super().get_context_data(**kwargs) | context
 
 
 class New(CreateViewMixin):
