@@ -1,3 +1,4 @@
+import itertools as it
 from typing import Dict, List
 
 from django.utils.translation import gettext as _
@@ -15,6 +16,8 @@ class ExpenseService():
         obj = self._make_month_expense_object(year)
 
         self._balance = obj.balance
+        self._total_column = obj.total_column
+        self._total = obj.total
         self._total_row = obj.total_row
         self._average = obj.average
 
@@ -32,11 +35,21 @@ class ExpenseService():
     def table_context(self):
         return {
             'year': self._year,
-            'data': self._balance,
+            'data': it.zip_longest(self._balance, self._total_column),
+            'total': self._total,
             'categories': self._expense_types,
             'total_row': self._total_row,
             'avg_row': self._average,
+            'avg': self._calc_total_avg(),
         }
+
+    def _calc_total_avg(self) -> float:
+        values = self._total_row.values()
+
+        if values:
+            return sum(values) / len(values)
+
+        return 0
 
     def _chart_data(self) -> List[Dict[str, float]]:
         if not self._expense_types:

@@ -139,7 +139,10 @@ def test_year_expenses_context():
     actual = obj.table_context()
 
     assert 'year' in actual
-    assert 'data' in actual
     assert 'categories' in actual
+    assert 'data' in actual
+    assert 'total' in actual
+    assert 'total_column' in actual
     assert 'total_row' in actual
+    assert 'avg' in actual
     assert 'avg_row' in actual
