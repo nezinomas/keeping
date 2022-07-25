@@ -42,5 +42,3 @@ class User(AbstractUser):
 
     def get_delete_url(self):
         return reverse_lazy("users:settings_users_delete", kwargs={"pk": self.pk})
-
-
