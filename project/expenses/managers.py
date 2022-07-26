@@ -137,9 +137,7 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
         return self.related().year_sum()
 
     def filter_types(self, arr: List[int] = None):
-        if arr:
-            return self.filter(expense_type__in=arr)
-        return self
+        return self.filter(expense_type__in=arr) if arr else self
     filter_types.queryset_only = True
 
     def sum_by_year_type(self, expense_type: List[int] = None):
@@ -159,9 +157,7 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
                 title=F('expense_type__title'))
 
     def filter_names(self, arr: List[int] = None):
-        if arr:
-            return self.filter(expense_name__in=arr)
-        return self
+        return self.filter(expense_name__in=arr) if arr else self
     filter_names.queryset_only = True
 
     def sum_by_year_name(self, expense_name: List[int] = None):
