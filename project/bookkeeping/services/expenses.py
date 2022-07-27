@@ -44,20 +44,14 @@ class ExpenseService():
         }
 
     def _calc_total_avg(self) -> float:
-        values = self._total_row.values()
-
-        if values:
-            return sum(values) / 12
-
-        return 0
+        return \
+            sum(values) / 12 if (values := self._total_row.values()) else 0
 
     def _chart_data(self) -> List[Dict[str, float]]:
         if not self._expense_types:
             return [{'name': _('No expenses'), 'y': 0}]
 
-        arr = self._total_row.copy()
-
-        if arr:
+        if arr := self._total_row.copy():
             # sort dictionary
             arr = dict(sorted(arr.items(), key=lambda x: x[1], reverse=True))
 

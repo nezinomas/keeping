@@ -75,9 +75,7 @@ class DetailedService():
             values = {k: item[k] for k in sum_value_keys}
             container[key].update(values)
 
-        new_dataset = []
-        for item in container.items():
-            new_dataset.append({group_by_key: item[0], **item[1]})
+        new_dataset = [{group_by_key: item[0], **item[1]} for item in container.items()]
 
         new_dataset.sort(key=lambda item: item[group_by_key])
 
