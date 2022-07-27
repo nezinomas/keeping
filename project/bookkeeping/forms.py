@@ -46,7 +46,8 @@ class DateForm(forms.Form):
         if not date:
             date = datetime.now()
 
-        cleaned['date'] = datetime.combine(date, datetime.now().time(), tzinfo=ZoneInfo(key='UTC'))
+        cleaned['date'] = \
+            datetime.combine(date, datetime.now().time(), tzinfo=ZoneInfo(key='UTC'))
 
         return cleaned
 
@@ -128,8 +129,10 @@ class SummaryExpensesForm(forms.Form):
         for _type in ExpenseType.objects.items():
             choices.append((_type.id, _type.title))
 
-            for _name in _type.expensename_set.all():
-                choices.append((f'{_type.id}:{_name.id}', _name.title))
+            choices.extend(
+                (f'{_type.id}:{_name.id}', _name.title)
+                for _name in _type.expensename_set.all()
+            )
 
         self.fields['types'].choices = choices
         self.fields['types'].label = None
