@@ -48,7 +48,7 @@ class DetailedService():
         return context
 
     def _detailed_context(self, context, data, name):
-        context = context if context else {}
+        context = context or {}
 
         if 'data' not in context.keys():
             context['data'] = []
