@@ -23,10 +23,10 @@ class ChartSummaryService:
             self._incomes.filter(income_type__type="salary")
 
     def context(self, context) -> Dict:
-        context = context if context else {}
+        context = context or {}
 
         # generate balance_categories
-        _arr = self._incomes if self._incomes else self._expenses
+        _arr = self._incomes or self._expenses
         balance_years = [x['year'] for x in _arr]
 
         records = len(balance_years)
