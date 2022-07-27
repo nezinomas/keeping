@@ -1,3 +1,4 @@
+import contextlib
 from datetime import datetime
 from typing import Dict, List
 
@@ -42,10 +43,8 @@ class SummarySavingsService():
         data = []
 
         for attr in attr_names:
-            try:
+            with contextlib.suppress(AttributeError):
                 data.append(getattr(self, attr))
-            except AttributeError:
-                pass
 
         return __class__.chart_data(*data)
 
@@ -73,7 +72,7 @@ class SummarySavingsService():
                 continue
 
             cnt = len(arr)
-            for i in range(0, cnt):
+            for i in range(cnt):
                 _year = arr[i]['year']
                 _invested = arr[i]['invested']
                 _profit = arr[i]['profit']
