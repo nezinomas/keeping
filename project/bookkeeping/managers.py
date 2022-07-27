@@ -34,17 +34,14 @@ class QsMixin():
         if not items:
             return None
 
-        qs = (
-            self
-            .filter(reduce(or_, items))
+        return \
+            self \
+            .filter(reduce(or_, items)) \
             .values(
                 title=F(f'{field}__title'),
                 have=F('price'),
                 latest_check=F('date')
             )
-        )
-
-        return qs
 
     def latest_have(self, field):
         qs = [*(
@@ -66,114 +63,97 @@ class QsMixin():
         if not items:
             return None
 
-        qs = (
-            self
-            .filter(reduce(or_, items))
-            .annotate(c=Count('id'))
-            .values('c')
-            .annotate(year=ExtractYear(F('date')))
+        return \
+            self \
+            .filter(reduce(or_, items)) \
+            .annotate(c=Count('id')) \
+            .values('c') \
+            .annotate(year=ExtractYear(F('date'))) \
             .values(
                 'year',
                 id=F(f'{field}__id'),
-                have=F('price'),
-            )
-        )
-
-        return qs
+                have=F('price'))
 
 
 class AccountWorthQuerySet(QsMixin, models.QuerySet):
     def filter_created_and_closed(self, year):
         if year:
-            return self.filter(
-                Q(account__closed__isnull=True) |
-                Q(account__closed__gte=year) &
-                Q(account__created__year__lte=year)
-            )
+            return \
+                self.filter(
+                    Q(account__closed__isnull=True) |
+                    Q(account__closed__gte=year) &
+                    Q(account__created__year__lte=year))
 
         return self
 
     def related(self):
         journal = utils.get_user().journal
-        return (
-            self
-            .select_related('account')
+        return \
+            self \
+            .select_related('account') \
             .filter(account__journal=journal)
-        )
 
     def items(self, year=None):
-        return (
-            self
-            .filter_created_and_closed(year)
+        return \
+            self \
+            .filter_created_and_closed(year) \
             .latest_check(field='account', year=year)
-        )
 
     def have(self):
-        return (
-            self
+        return \
+            self \
             .latest_have(field='account')
-        )
 
 
 class SavingWorthQuerySet(QsMixin, models.QuerySet):
     def filter_created_and_closed(self, year):
         if year:
-            return self.filter(
-                Q(saving_type__closed__isnull=True) |
-                Q(saving_type__closed__gte=year) &
-                Q(saving_type__created__year__lte=year)
-            )
+            return \
+                self.filter(
+                    Q(saving_type__closed__isnull=True) |
+                    Q(saving_type__closed__gte=year) &
+                    Q(saving_type__created__year__lte=year))
 
         return self
 
     def related(self):
         journal = utils.get_user().journal
-        return (
-            self
-            .select_related('saving_type')
+        return \
+            self \
+            .select_related('saving_type') \
             .filter(saving_type__journal=journal)
-        )
 
     def items(self, year=None):
-        return (
-            self
-            .filter_created_and_closed(year)
+        return \
+            self \
+            .filter_created_and_closed(year) \
             .latest_check(field='saving_type', year=year)
-        )
 
     def have(self):
-        return (
-            self
+        return \
+            self \
             .latest_have(field='saving_type')
-        )
 
 
 class PensionWorthQuerySet(QsMixin, models.QuerySet):
     def filter_created(self, year):
-        if year:
-            return self.filter(
-                Q(pension_type__created__year__lte=year)
-            )
-
-        return self
+        return \
+            self.filter(Q(pension_type__created__year__lte=year)) if year else self
 
     def related(self):
         journal = utils.get_user().journal
-        return (
-            self
-            .select_related('pension_type')
+        return \
+            self \
+            .select_related('pension_type') \
             .filter(pension_type__journal=journal)
-        )
 
     def items(self, year=None):
-        return (
-            self
-            .filter_created(year)
+        return \
+            self \
+            .filter_created(year) \
             .latest_check(field='pension_type', year=year)
-        )
 
     def have(self):
-        return (
-            self
+        return \
+            self \
             .latest_have(field='pension_type')
-        )
