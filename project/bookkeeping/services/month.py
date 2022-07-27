@@ -144,11 +144,10 @@ class MonthService():
             .values_list('title', flat=True)
         )
 
-        list(qs.append(x) for x in args)
+        arr = [qs.append(x) for x in args]
+        arr.sort()
 
-        qs.sort()
-
-        return qs
+        return arr
 
     def _chart_expenses(self, types: List[str], total_row: Dict) -> List[Dict]:
         rtn = []
