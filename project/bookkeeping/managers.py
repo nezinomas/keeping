@@ -24,12 +24,10 @@ class QsMixin():
             .order_by('-latest_date')
         )]
 
-        items = []
-        for x in qs:
-            items.append(
-                Q(date=x['latest_date'])
-                & Q(**{f'{field}_id': x[f'{field}_id']})
-            )
+        # items = [ <Q AND( ('date': datetime), ('field_id': int) )>, ... ]
+        items = [
+            Q(date=x['latest_date']) & Q(**{f'{field}_id': x[f'{field}_id']})
+            for x in qs]
 
         if not items:
             return None
@@ -53,12 +51,10 @@ class QsMixin():
             .order_by('year')
         )]
 
-        items = []
-        for x in qs:
-            items.append(
-                Q(date=x['latest_date'])
-                & Q(**{f'{field}_id': x[f'{field}_id']})
-            )
+        # items = [ <Q AND( ('date': datetime), ('field_id': int) )>, ... ]
+        items = [
+            Q(date=x['latest_date']) & Q(**{f'{field}_id': x[f'{field}_id']})
+            for x in qs]
 
         if not items:
             return None
