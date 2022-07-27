@@ -9,4 +9,3 @@ class bookkeepingConfig(AppConfig):
     def ready(self):
         from ..core.signals import (accounts_post_save, pensions_post_save,
                                     savings_post_save)
-
