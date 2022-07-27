@@ -12,10 +12,7 @@ def expense_types(*args: str) -> List[str]:
         .values_list('title', flat=True)
     )
 
-    arr = []
-    [arr.append(x) for x in qs]
-    [arr.append(x) for x in args]
-
+    arr = list(qs) + list(args)
     arr.sort()
 
     return arr
