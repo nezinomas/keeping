@@ -52,16 +52,14 @@ class Lists(ListViewMixin):
     per_page = 50
 
     def get_queryset(self):
-        tab = self.request.GET.get('tab')
-
-        if tab:
-            return\
-                models.Book.objects \
-                .items()
+        if self.request.GET.get('tab'):
+            return \
+                    models.Book.objects \
+                    .items()
 
         return \
-            models.Book.objects \
-            .year(year=self.request.user.year)
+                models.Book.objects \
+                .year(year=self.request.user.year)
 
     def get_context_data(self, **kwargs):
         page = self.request.GET.get('page', 1)
