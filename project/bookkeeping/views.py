@@ -267,18 +267,17 @@ class SummaryExpenses(FormViewMixin):
         context = {'found': False, 'form': form}
 
         if obj.serries_data:
-            context.update({
+            context |= {
                 'found': True,
                 'categories': obj.categories,
                 'data': obj.serries_data,
                 'total_col': obj.total_col,
                 'total_row': obj.total_row,
                 'total': obj.total
-            })
+            }
+
         else:
-            context.update({
-                'error': _('No data found')
-            })
+            context['error'] = _('No data found')
 
         return render(self.request, self.template_name, context)
 
