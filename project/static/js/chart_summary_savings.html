@@ -31,16 +31,7 @@
                 y: -8,
             },
             labels: [
-                {% for i in items.total %}
-                {
-                    point: {
-                        xAxis: 0,
-                        yAxis: 0,
-                        x: {{ forloop.counter0 }},
-                        y: '{{ i|stringformat:"f" }}'
-                    },
-                    text: '{{ i|floatformat:0}}'
-                },{% endfor %}
+
             ]
         }],
         xAxis: {
