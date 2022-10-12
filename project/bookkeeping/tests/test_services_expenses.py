@@ -72,7 +72,7 @@ def test_chart_data(_expenses):
     ]
 
     obj = ExpenseService(year=1999)
-    actual = obj.chart_context()
+    actual = obj.chart_expenses_context()
 
     assert expect == actual
 
@@ -81,7 +81,7 @@ def test_chart_data_none():
     expect = [{'name': 'Išlaidų nėra', 'y': 0}]
 
     obj = ExpenseService(year=1999)
-    actual = obj.chart_context()
+    actual = obj.chart_expenses_context()
 
     assert expect == actual
 
@@ -90,7 +90,7 @@ def test_chart_data_empty():
     expect = [{'name': 'Išlaidų nėra', 'y': 0}]
 
     obj = ExpenseService(year=1999)
-    actual = obj.chart_context()
+    actual = obj.chart_expenses_context()
 
     assert expect == actual
 
@@ -101,7 +101,7 @@ def test_chart_no_data():
     expect = [{'name': 'X', 'y': 0}]
 
     obj = ExpenseService(year=1999)
-    actual = obj.chart_context()
+    actual = obj.chart_expenses_context()
 
     assert expect == actual
 
@@ -110,7 +110,7 @@ def test_chart_no_data_truncate_long_title():
     ExpenseTypeFactory(title='X'*12)
 
     obj = ExpenseService(year=1999)
-    actual = obj.chart_context()
+    actual = obj.chart_expenses_context()
 
     assert len(actual[0]['name']) == 11
 
@@ -120,7 +120,7 @@ def test_chart_data_truncate_long_title():
     ExpenseFactory(date=date(1999, 1, 1), expense_type=t1, price=0.25)
 
     obj = ExpenseService(year=1999)
-    actual = obj.chart_context()
+    actual = obj.chart_expenses_context()
 
     assert len(actual[0]['name']) == 11
 

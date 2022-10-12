@@ -27,7 +27,7 @@ class ExpenseService():
         return \
             ExpenseBalance.months_of_year(year, qs, self._expense_types)
 
-    def chart_context(self):
+    def chart_expenses_context(self):
         if not self._expense_types:
             return [{'name': _('No expenses'), 'y': 0}]
 
