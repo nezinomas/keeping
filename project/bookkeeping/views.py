@@ -22,8 +22,7 @@ class Index(TemplateViewMixin):
         ind = services.IndexService(year)
         exp = services.ExpenseService(year)
 
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'year': year,
             'accounts': rendered_content(self.request, Accounts, **kwargs),
             'savings': rendered_content(self.request, Savings, **kwargs),
@@ -50,8 +49,8 @@ class Index(TemplateViewMixin):
                 'bookkeeping/includes/year_expenses.html',
                 exp.table_context(),
                 self.request)
-        })
-        return context
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class Accounts(TemplateViewMixin):
@@ -60,13 +59,12 @@ class Accounts(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         obj = services.AccountService(self.request.user.year)
 
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'items': obj.data,
             'total_row': obj.total_row,
-        })
+        }
 
-        return context
+        return super().get_context_data(**kwargs) | context
 
 
 class AccountsWorthNew(FormsetMixin, CreateViewMixin):
@@ -89,13 +87,12 @@ class Savings(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         obj = services.SavingsService(self.request.user.year)
 
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'title': _('Funds'),
             'type': 'savings',
             **obj.context()
-        })
-        return context
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class SavingsWorthNew(FormsetMixin, CreateViewMixin):
@@ -114,14 +111,13 @@ class Pensions(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         obj = services.PensionsService(self.request.user.year)
 
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'title': _('Pensions'),
             'type': 'pensions',
             'items': obj.data,
             'total_row': obj.total_row,
-        })
-        return context
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class PensionsWorthNew(FormsetMixin, CreateViewMixin):
@@ -141,12 +137,11 @@ class Wealth(TemplateViewMixin):
         year = self.request.user.year
         obj = services.WealthService(year)
 
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'title': [_('Money'), _('Wealth')],
             'data': [obj.money, obj.wealth],
-        })
-        return context
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class NoIncomes(TemplateViewMixin):
@@ -158,15 +153,13 @@ class NoIncomes(TemplateViewMixin):
 
         obj = LibNoIncomes(journal, year)
 
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'no_incomes': obj.summary,
             'save_sum': obj.cut_sum,
             'not_use': obj.unnecessary,
             'avg_expenses': obj.avg_expenses,
-        })
-
-        return context
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class Month(TemplateViewMixin):
@@ -181,8 +174,7 @@ class Month(TemplateViewMixin):
 
         obj = services.MonthService(year, month)
 
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'month_table': render_to_string(
                 'bookkeeping/includes/month_table.html',
                 obj.month_table_context(),
@@ -199,8 +191,8 @@ class Month(TemplateViewMixin):
                 'bookkeeping/includes/chart_month_targets.html',
                 obj.chart_targets_context(),
                 self.request),
-        })
-        return context
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class Detailed(TemplateViewMixin):
@@ -209,16 +201,18 @@ class Detailed(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
 
-        context = super().get_context_data(**kwargs)
-        context['months'] = range(1, 13)
-        context['month_names'] = month_names()
+        context = {
+            'months': range(1, 13),
+            'month_names': month_names(),
+        }
 
         ctx = services.DetailedService(year)
+
         ctx.incomes_context(context)
         ctx.savings_context(context)
         ctx.expenses_context(context)
 
-        return context
+        return super().get_context_data(**kwargs) | context
 
 
 class Summary(TemplateViewMixin):
@@ -275,7 +269,6 @@ class SummaryExpenses(FormViewMixin):
                 'total_row': obj.total_row,
                 'total': obj.total
             }
-
         else:
             context['error'] = _('No data found')
 
@@ -288,7 +281,4 @@ class ExpandDayExpenses(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         obj = services.ExpandDayService(kwargs.get('date'))
 
-        context = super().get_context_data(**kwargs)
-        context.update(**obj.context())
-
-        return context
+        return super().get_context_data(**kwargs) | obj.context()
