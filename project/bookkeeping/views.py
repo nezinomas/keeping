@@ -206,9 +206,10 @@ class Summary(TemplateViewMixin):
     template_name = 'bookkeeping/summary.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return \
-            services.ChartSummaryService().context(context)
+        context = {
+            'chart_balance': services.ChartSummaryService().chart_balance()
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class SummarySavings(TemplateViewMixin):
