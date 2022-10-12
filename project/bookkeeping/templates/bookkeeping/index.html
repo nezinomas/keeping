@@ -24,7 +24,7 @@
 </div>
 
 <div class="row gx-2 my-2 border-bottom border-primary">
-    <div class="col-lg-5">{{ chart_expenses }}</div>
+    <div class="col-lg-5"><div id="chart-expenses-container"></div></div>
     <div class="col-lg-7"><div id="chart-balance"></div></div>
 </div>
 
@@ -113,5 +113,7 @@
 
 <script src="/static/js/chart_index_balance.js" defer></script>
 {{ chart_balance|json_script:"chart-balance-data" }}
+<script src="/static/js/chart_index_expenses.js" defer></script>
+{{ chart_expenses|json_script:"chart-expenses-data" }}
 
 {% endblock content %}

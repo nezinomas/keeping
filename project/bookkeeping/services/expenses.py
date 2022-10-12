@@ -28,9 +28,20 @@ class ExpenseService():
             ExpenseBalance.months_of_year(year, qs, self._expense_types)
 
     def chart_context(self):
-        return {
-            'data': self._chart_data()
-        }
+        if not self._expense_types:
+            return [{'name': _('No expenses'), 'y': 0}]
+
+        if arr := self._total_row.copy():
+            # sort dictionary
+            arr = dict(sorted(arr.items(), key=lambda x: x[1], reverse=True))
+
+            # transform arr for bar chart
+            return \
+                [{'name': key[:11], 'y': value} for key, value in arr.items()]
+
+        return \
+            [{'name': name[:11], 'y': 0} for name in self._expense_types]
+
 
     def table_context(self):
         return {
@@ -46,18 +57,3 @@ class ExpenseService():
     def _calc_total_avg(self) -> float:
         return \
             sum(values) / 12 if (values := self._total_row.values()) else 0
-
-    def _chart_data(self) -> List[Dict[str, float]]:
-        if not self._expense_types:
-            return [{'name': _('No expenses'), 'y': 0}]
-
-        if arr := self._total_row.copy():
-            # sort dictionary
-            arr = dict(sorted(arr.items(), key=lambda x: x[1], reverse=True))
-
-            # transform arr for bar chart
-            return \
-                [{'name': key[:11], 'y': value} for key, value in arr.items()]
-
-        return \
-            [{'name': name[:11], 'y': 0} for name in self._expense_types]
