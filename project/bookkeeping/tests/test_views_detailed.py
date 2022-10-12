@@ -132,7 +132,7 @@ def test_view_summary_balance_years(client_logged):
     url = reverse('bookkeeping:summary')
     response = client_logged.get(url)
 
-    assert response.context['balance_categories'] == [1998, 1999]
+    assert response.context['categories'] == [1998, 1999]
 
 
 @freeze_time('1999-01-01')
@@ -161,7 +161,8 @@ def test_view_summary_incomes_avg(client_logged):
     url = reverse('bookkeeping:summary')
     response = client_logged.get(url)
 
-    assert response.context['balance_income_avg'] == [2.0, 12.0]
+    assert 'chart_balance' in response.context
+    assert 'chart_incomes' in response.context
 
 
 def test_view_summary_no_data(client_logged):
