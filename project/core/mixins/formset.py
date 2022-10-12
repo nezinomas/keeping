@@ -45,16 +45,12 @@ class FormsetMixin():
 
         model = self.get_type_model()
         _objects = model.objects.items()
-        for _object in _objects:
-            _list.append({'price': 0, foreign_key[0]: _object})
+        _list.extend({'price': 0, foreign_key[0]: _object} for _object in _objects)
 
         return _list
 
     def get_type_model(self):
-        if not self.type_model:
-            return self.model
-
-        return self.type_model
+        return self.type_model or self.model
 
     def get_formset(self, post=None):
         form = self.get_form_class()
@@ -68,21 +64,11 @@ class FormsetMixin():
             )
         )
 
-        if post:
-            _formset = __formset(post)
-        else:
-            initial = self.formset_initial()
-            _formset = __formset(initial=initial)
-
-        return _formset
+        return \
+            __formset(post) if post else __formset(initial=self.formset_initial())
 
     def get_shared_form(self, post=None):
-        form = None
-
-        if self.shared_form_class:
-            form = self.shared_form_class(post)
-
-        return form
+        return self.shared_form_class(post) if self.shared_form_class else None
 
     def post(self, request, *args, **kwargs):
         formset = self.get_formset(request.POST or None)
@@ -104,10 +90,8 @@ class FormsetMixin():
         return super().form_invalid(formset)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['formset'] = self.get_formset(self.request.POST or None)
-        context['shared_form'] = self.get_shared_form(self.request.POST or None)
-
-        return context
-
-
+        context = {
+            'formset': self.get_formset(self.request.POST or None),
+            'shared_form': self.get_shared_form(self.request.POST or None)
+        }
+        return super().get_context_data(**kwargs) | context
