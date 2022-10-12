@@ -1,9 +1,9 @@
-{% load i18n %}
-
-<div id="container-for-expenses-with-target"></div>
-<script>
 $(function () {
-    Highcharts.chart('container-for-expenses-with-target', {
+    const chartData = JSON.parse(
+        document.getElementById('chart-targets-data').textContent
+    );
+
+    Highcharts.chart('chart-targets-container', {
         chart: {
             type: 'bar',
             height: '485'
@@ -12,7 +12,7 @@ $(function () {
             text: ''
         },
         xAxis: {
-            categories: {{ chart_targets_categories|safe }},
+            categories: chartData.categories,
             lineColor: '#000',
             lineWidth: 2,
             labels: {
@@ -52,10 +52,10 @@ $(function () {
             },
         },
         series: [{
-            name: '{% translate "Plan" %}',
+            name: chartData.targetTitle,
             type: 'bar',
             color: 'rgba(0,0,0,0.07)',
-            data: {{ chart_targets_data_target|safe }},
+            data: chartData.target,
             pointWidth: 19,
             dataLabels: {
                 enabled: true,
@@ -72,10 +72,10 @@ $(function () {
                 }
             }
         }, {
-            name: '{% translate "Fact" %}',
+            name: chartData.factTitle,
             type: 'bullet',
             opacity: '0.7',
-            data: {{ chart_targets_data_fact|safe }},
+            data: chartData.fact,
             pointWidth: 13,
             targetOptions: {
                 borderWidth: 0,
@@ -138,4 +138,3 @@ $(function () {
             });
         });
 });
-</script>

@@ -25,4 +25,7 @@
 <script src="/static/js/chart_month_expenses.js" defer></script>
 {{ chart_expenses|json_script:"chart-expenses-data" }}
 
+<script src="/static/js/chart_month_targets.js" defer></script>
+{{ chart_targets|json_script:"chart-targets-data" }}
+
 {% endblock content%}
