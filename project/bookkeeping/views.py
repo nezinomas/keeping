@@ -63,7 +63,6 @@ class Accounts(TemplateViewMixin):
             'items': obj.data,
             'total_row': obj.total_row,
         }
-
         return super().get_context_data(**kwargs) | context
 
 
