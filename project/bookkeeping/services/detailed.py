@@ -21,8 +21,8 @@ class DetailedService():
 
     def expenses_context(self, context):
         qs = Expense.objects.sum_by_month_and_name(self._year)
-        expenses_types = expense_types()
 
+        expenses_types = expense_types()
         for title in expenses_types:
             if filtered := [*filter(lambda x: title in x['type_title'], qs)]:
                 self._detailed_context(
