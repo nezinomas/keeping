@@ -72,8 +72,11 @@ def test_chart_balance_context():
     obj = IndexService(1999)
     actual = obj.chart_balance_context()
 
-    assert 'expenses' in actual
+    assert 'categories' in actual
     assert 'incomes' in actual
+    assert 'incomes_title' in actual
+    assert 'expenses' in actual
+    assert 'expenses_title' in actual
 
 
 def test_averages_context():

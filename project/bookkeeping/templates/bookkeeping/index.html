@@ -25,7 +25,7 @@
 
 <div class="row gx-2 my-2 border-bottom border-primary">
     <div class="col-lg-5">{{ chart_expenses }}</div>
-    <div class="col-lg-7">{{ chart_balance }}</div>
+    <div class="col-lg-7"><div id="container-for-balance"></div></div>
 </div>
 
 <div class="row my-4">
@@ -110,4 +110,8 @@
         compareValues();
     });
 </script>
+
+<script src="/static/js/chart_index_balance.js" defer></script>
+{{ chart_balance|json_script:"chart-balance-data" }}
+
 {% endblock content %}

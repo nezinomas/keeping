@@ -1,10 +1,7 @@
-{% load charts %}
-{% load i18n %}
-
-<div id="container-for-balance"></div>
-<script>
-    $(function () {
-        var categoryLabels = {% months %};
+$(function () {
+    const chartData = JSON.parse(
+        document.getElementById('chart-balance-data').textContent
+    );
 
     Highcharts.setOptions({
         lang: {
@@ -29,8 +26,8 @@
         },
         xAxis: {
             min: 0.49,
-            max: categoryLabels.length - 1.49,
-            categories: categoryLabels,
+            max: chartData.categories.length - 1.49,
+            categories: chartData.categories,
             type: 'category',
             lineColor: '#000',
             lineWidth: 2,
@@ -77,15 +74,14 @@
         },
         series: [{
             type: 'area',
-            name: '{% translate "Incomes" %}',
-            data: {{ incomes }},
+            name: chartData.incomes_title,
+            data: chartData.incomes,
             color: '#77933c'
         }, {
             type: 'area',
-            name: '{% translate "Expenses" %}',
-            data: {{ expenses }},
+            name: chartData.expenses_title,
+            data: chartData.expenses,
             color: '#c0504d'
         }]
     });
-    });
-</script>
+});

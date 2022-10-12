@@ -37,10 +37,7 @@ class Index(TemplateViewMixin):
                 'bookkeeping/includes/year_balance.html',
                 ind.balance_context(),
                 self.request),
-            'chart_balance': render_to_string(
-                'bookkeeping/includes/chart_balance.html',
-                ind.chart_balance_context(),
-                self.request),
+            'chart_balance': ind.chart_balance_context(),
             'chart_expenses': render_to_string(
                 'bookkeeping/includes/chart_expenses.html',
                 exp.chart_context(),
