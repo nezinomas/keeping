@@ -39,10 +39,10 @@ class GetQuerysetMixin():
     def get_queryset(self):
         try:
             qs = self.model.objects.related()
-        except AttributeError:
+        except AttributeError as e:
             raise Http404(
                 _("No %(verbose_name)s found matching the query") % \
-                {'verbose_name': self.model._meta.verbose_name})
+                {'verbose_name': self.model._meta.verbose_name}) from e
 
         return qs
 
@@ -68,14 +68,13 @@ class SearchMixin(LoginRequiredMixin, TemplateView):
 
         app = self.request.resolver_match.app_name
 
-        context = {
+        return {
             'notice': _('No data found'),
             'object_list': paginator.get_page(page),
             'search': search_str,
             'url': reverse(f"{app}:search"),
             'page_range': page_range,
         }
-        return context
 
 
 class CreateUpdateMixin():
@@ -86,16 +85,12 @@ class CreateUpdateMixin():
     def get_hx_trigger_django(self):
         # triggers Htmx to reload container on Submit button click
         # triggering happens many times
-        if self.hx_trigger_django:
-            return self.hx_trigger_django
-        return None
+        return self.hx_trigger_django or None
 
     def get_hx_trigger_form(self):
         # triggers Htmx to reload container on Close button click
         # triggering happens once
-        if self.hx_trigger_form:
-            return self.hx_trigger_form
-        return None
+        return self.hx_trigger_form or None
 
     def get_hx_redirect(self):
         return self.hx_redirect
@@ -120,8 +115,7 @@ class CreateUpdateMixin():
 
             # close form and reload container
             response.status_code = 204
-            trigger = self.get_hx_trigger_django()
-            if trigger:
+            if trigger := self.get_hx_trigger_django():
                 trigger_client_event(
                     response,
                     trigger,
@@ -150,9 +144,7 @@ class UpdateViewMixin(LoginRequiredMixin,
     form_action = 'update'
 
     def url(self):
-        if self.object:
-            return self.object.get_absolute_url()
-        return None
+        return self.object.get_absolute_url() if self.object else None
 
 
 class DeleteViewMixin(LoginRequiredMixin,
@@ -168,9 +160,7 @@ class DeleteViewMixin(LoginRequiredMixin,
         return self.hx_redirect
 
     def url(self):
-        if self.object:
-            return self.object.get_delete_url()
-        return None
+        return self.object.get_delete_url() if self.object else None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -183,8 +173,7 @@ class DeleteViewMixin(LoginRequiredMixin,
         if self.get_object():
             super().post(*args, **kwargs)
 
-            hx_redirect = self.get_hx_redirect()
-            if hx_redirect:
+            if hx_redirect := self.get_hx_redirect():
                 return HttpResponseClientRedirect(hx_redirect)
 
             return httpHtmxResponse(self.get_hx_trigger_django())
