@@ -34,17 +34,12 @@ class DetailedService():
         expenses_types = expense_types()
 
         for title in expenses_types:
-            filtered = [*filter(lambda x: title in x['type_title'], qs)]
-
-            if not filtered:
-                continue
-
-            self._detailed_context(
-                context=context,
-                data=filtered,
-                name=_('Expenses / %(title)s') % ({'title': title})
-            )
-
+            if filtered := [*filter(lambda x: title in x['type_title'], qs)]:
+                self._detailed_context(
+                    context=context,
+                    data=filtered,
+                    name=_('Expenses / %(title)s') % ({'title': title})
+                )
         return context
 
     def _detailed_context(self, context, data, name):
