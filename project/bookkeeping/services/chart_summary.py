@@ -45,24 +45,23 @@ class ChartSummaryService:
 
         return context
 
-    def chart_incomes(self, context) -> Dict:
-        context = context or {}
-
+    def chart_incomes(self) -> Dict:
         # data for salary summary
         salary = self._get_salary()
         salary_years = [x['year'] for x in salary]
 
         records = len(salary_years)
-        context['records'] = records
-
+        context = {'records': records}
         if not records or records < 1:
             return context
 
         context |= {
+            'chart_title': _('Incomes'),
             'categories': salary_years,
-            'chart_title': _('Incomes/Expenses'),
             'incomes': average(self._incomes),
+            'incomes_title': _('Average incomes'),
             'salary': average(salary),
+            'salary_title': _('Average salary') + ', €',
         }
 
         return context

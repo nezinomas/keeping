@@ -1,23 +1,21 @@
-{% load i18n %}
+$(function () {
+    const chartData = JSON.parse(
+        document.getElementById('chart-incomes-data').textContent
+    );
 
-<div id="container-salary-summary"></div>
-<script>
-    $(function () {
-        var categoryLabels = {{ salary_categories }};
-
-        Highcharts.setOptions({
+    Highcharts.setOptions({
         lang: {
             thousandsSep: '.',
             decimalPoint: ',',
         }
     });
 
-    Highcharts.chart('container-salary-summary', {
+    Highcharts.chart('chart-incomes-container', {
         chart: {
             spacingRight: 25,
         },
         title: {
-            text: '{% translate "Incomes" %}',
+            text: chartData.chart_title,
         },
         legend: {
             layout: 'horizontal',
@@ -29,8 +27,8 @@
         },
         xAxis: {
             min: 0.49,
-            max: categoryLabels.length - 1.49,
-            categories: categoryLabels,
+            max: chartData.categories.length - 1.49,
+            categories: chartData.categories,
             type: 'category',
             lineColor: '#000',
             lineWidth: 2,
@@ -93,19 +91,16 @@
                 enableMouseTracking: false,
             }
         },
-        series: [
-        {
-            name: '{% translate "Average salary" %}, €',
-            data: {{ salary_data_avg|safe }},
+        series: [{
+            name: chartData.salary_title,
+            data: chartData.salary,
             type: 'area',
             color: '#98bc62',
         }, {
-            name: '{% translate "Average incomes" %}, €',
-            data: {{ balance_income_avg|safe }},
+            name: chartData.incomes_title,
+            data: chartData.incomes,
             type: 'line',
             color: '#2d5f2e',
-        },
-        ],
+        }],
     });
-    });
-</script>
+});
