@@ -6,15 +6,11 @@ from django.db.models.functions import (ExtractYear, TruncDay, TruncMonth,
 
 class SumMixin():
     def year_filter(self, year, field='date'):
-        if year:
-            return self.filter(**{f'{field}__year': year})
-        return self
+        return self.filter(**{f'{field}__year': year}) if year else self
     year_filter.queryset_only = True
 
     def month_filter(self, month, field='date'):
-        if month:
-            return self.filter(**{f'{field}__month': month})
-        return self
+        return self.filter(**{f'{field}__month': month}) if month else self
     month_filter.queryset_only = True
 
     def year_sum(self, year=None,
