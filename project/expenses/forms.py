@@ -95,10 +95,10 @@ class ExpenseForm(forms.ModelForm):
 
         if expense_type_pk:
             # overwrite ForeignKey expense_type queryset
-            expense_name_qs = ExpenseName\
-                .objects\
-                .related()\
-                .filter(parent=expense_type_pk)\
+            expense_name_qs = \
+                ExpenseName.objects \
+                .related() \
+                .filter(parent=expense_type_pk) \
                 .year(user.year)
             expense_name.queryset = expense_name_qs
 
@@ -129,8 +129,9 @@ class ExpenseForm(forms.ModelForm):
         _expense_type = data.get('expense_type')
 
         if _exception and _expense_type.necessary:
-            msg = _("The %(title)s is 'Necessary', so it can't be marked as 'Exeption'") % {
-                'title': _expense_type.title}
+            msg = \
+                _("The %(title)s is 'Necessary', so it can't be marked as 'Exeption'") \
+                % {'title': _expense_type.title}
             raise forms.ValidationError(msg)
 
         return _exception
@@ -157,8 +158,8 @@ class ExpenseForm(forms.ModelForm):
                 year_msg = year_user - diff
                 self.add_error(
                     'date',
-                    _('Year cannot be less than %(year)s') % (
-                        {'year': year_msg})
+                    _('Year cannot be less than %(year)s') \
+                    % ({'year': year_msg})
                 )
 
             diff = 1
