@@ -77,9 +77,7 @@ class MonthService():
         total_row = self._spending.total_row
         total_row[_('Savings')] = self._savings.total
 
-        return {
-            'expenses': self._chart_expenses(types, total_row)
-        }
+        return self._chart_expenses(types, total_row)
 
     def info_context(self):
         fact_incomes = Income.objects.sum_by_month(self._year, self._month)

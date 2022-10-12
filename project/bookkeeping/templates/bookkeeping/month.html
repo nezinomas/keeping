@@ -22,4 +22,7 @@
 
 <div hx-get="{% url 'bookkeeping:month' %}" hx-target="#month_content" hx-trigger="reload from:body"></div>
 
+<script src="/static/js/chart_month_expenses.js" defer></script>
+{{ chart_expenses|json_script:"chart-expenses-data" }}
+
 {% endblock content%}

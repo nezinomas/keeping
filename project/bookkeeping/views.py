@@ -176,10 +176,7 @@ class Month(TemplateViewMixin):
                 'bookkeeping/includes/spending_info.html',
                 {'items': obj.info_context},
                 self.request),
-            'chart_expenses': render_to_string(
-                'bookkeeping/includes/chart_month_expenses.html',
-                obj.chart_expenses_context(),
-                self.request),
+            'chart_expenses': obj.chart_expenses_context(),
             'chart_targets': render_to_string(
                 'bookkeeping/includes/chart_month_targets.html',
                 obj.chart_targets_context(),
