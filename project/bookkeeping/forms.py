@@ -142,10 +142,10 @@ class SummaryExpensesForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        _types = cleaned_data.get('types')
 
-        if not _types:
+        if cleaned_data.get('types'):
+            return cleaned_data
+        else:
             raise forms.ValidationError(
                 _('At least one category needs to be selected.')
             )
-        return cleaned_data
