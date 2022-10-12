@@ -10,7 +10,7 @@ $(function () {
         }
     });
 
-    Highcharts.chart('chart-balance', {
+    Highcharts.chart('chart-balance-container', {
         chart: {
             marginBottom: 67,
         },
