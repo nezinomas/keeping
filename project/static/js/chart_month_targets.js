@@ -99,42 +99,42 @@ $(function () {
         }
     ]
     }, function (chartObj) {
-            /* align datalabels for expenses that exceeds targets */
-            var series = chartObj.series[1];
-            $.each(series.data, function (i, point) {
-                var max = chartObj.series[0].data[point.x].y;
-                var y = point.y;
+        /* align datalabels for expenses that exceeds targets */
+        var series = chartObj.series[1];
+        $.each(series.data, function (i, point) {
+            var max = chartObj.series[0].data[point.x].y;
+            var y = point.y;
 
-                max = parseFloat(max.toFixed(1));
-                y = parseFloat(y.toFixed(1));
+            max = parseFloat(max.toFixed(1));
+            y = parseFloat(y.toFixed(1));
 
-                if (y <= max) {
-                    var clr = 'green';
+            if (y <= max) {
+                var clr = 'green';
 
-                    point.dataLabel.css({color: clr });
+                point.dataLabel.css({color: clr });
 
-                    point.color = clr;
-                    point.graphic.attr({ fill: clr });
+                point.color = clr;
+                point.graphic.attr({ fill: clr });
+            }
+            else {
+                var p = 28;
+                if (y < 100) { p = 21; }
+                if (y < 10) { p = -2; }
+
+                var clr_bar = 'red';
+                var clr_label = '#b4010d';
+
+                if(y <= max * 1.1) {
+                    clr_bar = '#ffcc00';
+                    clr_label = '#efbf00';
                 }
-                else {
-                    var p = 28;
-                    if (y < 100) { p = 21; }
-                    if (y < 10) { p = -2; }
 
-                    var clr_bar = 'red';
-                    var clr_label = '#b4010d';
+                point.dataLabel.attr({ x: point.dataLabel.x + p });
+                point.dataLabel.css({color: clr_label });
 
-                    if(y <= max * 1.1) {
-                        clr_bar = '#ffcc00';
-                        clr_label = '#efbf00';
-                    }
-
-                    point.dataLabel.attr({ x: point.dataLabel.x + p });
-                    point.dataLabel.css({color: clr_label });
-
-                    point.color = clr_bar;
-                    point.graphic.attr({ fill: clr_bar });
-                }
-            });
+                point.color = clr_bar;
+                point.graphic.attr({ fill: clr_bar });
+            }
         });
+    });
 });
