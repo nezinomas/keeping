@@ -124,66 +124,6 @@ def test_view_detailed_with_savings(client_logged):
     assert "Savings</td>" in content
 
 
-@freeze_time('1999-01-01')
-def test_view_summary_balance_years(client_logged):
-    ExpenseFactory(date=date(1998, 1, 1))
-    ExpenseFactory(date=date(1999, 1, 1))
-
-    url = reverse('bookkeeping:summary')
-    response = client_logged.get(url)
-
-    assert response.context['categories'] == [1998, 1999]
-
-
-@freeze_time('1999-01-01')
-def test_view_summary_incomes_avg(client_logged):
-    IncomeFactory(
-        date=date(1998, 1, 1),
-        price=12.0,
-        income_type=IncomeTypeFactory(title='Atlyginimas')
-    )
-    IncomeFactory(
-        date=date(1998, 1, 1),
-        price=12.0,
-        income_type=IncomeTypeFactory(title='Kita')
-    )
-    IncomeFactory(
-        date=date(1999, 1, 1),
-        price=10.0,
-        income_type=IncomeTypeFactory(title='Atlyginimas')
-    )
-    IncomeFactory(
-        date=date(1999, 1, 1),
-        price=2.0,
-        income_type=IncomeTypeFactory(title='Kt')
-    )
-
-    url = reverse('bookkeeping:summary')
-    response = client_logged.get(url)
-
-    assert 'chart_balance' in response.context
-    assert 'chart_incomes' in response.context
-
-
-def test_view_summary_no_data(client_logged):
-    url = reverse('bookkeeping:summary')
-    response = client_logged.get(url)
-    actual = response.content.decode('utf-8')
-
-    assert 'Trūksta duomenų. Reikia bent dviejų metų duomenų.' in actual
-
-
-def test_view_summary_one_year_data(client_logged):
-    IncomeFactory()
-    ExpenseFactory()
-
-    url = reverse('bookkeeping:summary')
-    response = client_logged.get(url)
-    actual = response.content.decode('utf-8')
-
-    assert 'Trūksta duomenų. Reikia bent dviejų metų duomenų.' in actual
-
-
 # ---------------------------------------------------------------------------------------
 #                                                                         Detailed Helper
 # ---------------------------------------------------------------------------------------
