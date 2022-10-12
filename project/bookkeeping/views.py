@@ -235,14 +235,14 @@ class SummarySavings(TemplateViewMixin):
         if not obj.records or obj.records < 1:
             return context
 
-        context.update({
+        context |= {
             'funds': obj.make_chart_data('funds'),
             'shares': obj.make_chart_data('shares'),
             'funds_shares': obj.make_chart_data('funds', 'shares'),
             'pensions3': obj.make_chart_data('pensions3'),
             'pensions2': obj.make_chart_data('pensions2'),
             'all': obj.make_chart_data('funds', 'shares', 'pensions3'),
-        })
+        }
 
         return context
 
