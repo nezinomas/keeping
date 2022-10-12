@@ -10,9 +10,10 @@ from ..core.lib import utils
 
 class QsMixin():
     def filter_by_year(self, year):
-        if year:
-            return self.filter(**{'date__year__gte': (year - 1), 'date__year__lte': year})
-        return self
+        return \
+            self \
+            .filter(**{'date__year__gte': (year - 1), 'date__year__lte': year}) \
+            if year else self
 
     def latest_check(self, field, year=None):
         qs = [*(
@@ -25,12 +26,9 @@ class QsMixin():
         )]
 
         # items = [ <Q AND( ('date': datetime), ('field_id': int) )>, ... ]
+        fld = f'{field}_id'
         items = [
-            Q(date=x['latest_date']) & Q(**{f'{field}_id': x[f'{field}_id']})
-            for x in qs]
-
-        if not items:
-            return None
+            Q(date=x['latest_date']) & Q(**{fld: x[fld]}) for x in qs]
 
         return \
             self \
@@ -38,8 +36,8 @@ class QsMixin():
             .values(
                 title=F(f'{field}__title'),
                 have=F('price'),
-                latest_check=F('date')
-            )
+                latest_check=F('date')) \
+            if items else None
 
     def latest_have(self, field):
         qs = [*(
@@ -52,12 +50,9 @@ class QsMixin():
         )]
 
         # items = [ <Q AND( ('date': datetime), ('field_id': int) )>, ... ]
+        fld = f'{field}_id'
         items = [
-            Q(date=x['latest_date']) & Q(**{f'{field}_id': x[f'{field}_id']})
-            for x in qs]
-
-        if not items:
-            return None
+            Q(date=x['latest_date']) & Q(**{fld: x[fld]}) for x in qs]
 
         return \
             self \
@@ -68,19 +63,18 @@ class QsMixin():
             .values(
                 'year',
                 id=F(f'{field}__id'),
-                have=F('price'))
+                have=F('price')) \
+            if items else None
 
 
 class AccountWorthQuerySet(QsMixin, models.QuerySet):
     def filter_created_and_closed(self, year):
-        if year:
-            return \
-                self.filter(
-                    Q(account__closed__isnull=True) |
-                    Q(account__closed__gte=year) &
-                    Q(account__created__year__lte=year))
-
-        return self
+        return \
+            self.filter(
+                Q(account__closed__isnull=True) |
+                Q(account__closed__gte=year) &
+                Q(account__created__year__lte=year)) \
+            if year else self
 
     def related(self):
         journal = utils.get_user().journal
@@ -103,14 +97,12 @@ class AccountWorthQuerySet(QsMixin, models.QuerySet):
 
 class SavingWorthQuerySet(QsMixin, models.QuerySet):
     def filter_created_and_closed(self, year):
-        if year:
-            return \
-                self.filter(
-                    Q(saving_type__closed__isnull=True) |
-                    Q(saving_type__closed__gte=year) &
-                    Q(saving_type__created__year__lte=year))
-
-        return self
+        return \
+            self.filter(
+                Q(saving_type__closed__isnull=True) |
+                Q(saving_type__closed__gte=year) &
+                Q(saving_type__created__year__lte=year)) \
+            if year else self
 
     def related(self):
         journal = utils.get_user().journal
