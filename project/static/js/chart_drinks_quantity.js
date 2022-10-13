@@ -1,12 +1,9 @@
-{% load i18n %}
-{% load charts %}
+$(function () {
+    const chartData = JSON.parse(
+        document.getElementById('chart-quantity-data').textContent
+    );
 
-<div id="chart_quantity_container"></div>
-<script>
-    $(function () {
-        var categoryLabels = {% months %};
-
-       Highcharts.chart('chart_quantity_container', {
+    Highcharts.chart('chart-quantity-container', {
         chart: {
             type: 'column',
             height: '350px',
@@ -15,7 +12,7 @@
             text: ''
         },
         xAxis: {
-            categories: categoryLabels,
+            categories: chartData.categories,
             type: 'category',
             lineColor: '#000',
             lineWidth: 2,
@@ -58,10 +55,10 @@
             }
         },
         series: [{
-            name: '{% translate "Quantity" %}',
+            name: chartData.text.quantity,
             color: 'rgba(70, 171, 157,0.65)',
             borderColor: 'rgba(70, 171, 157, 1)',
-            data: {{ data|safe }},
+            data: chartData.data,
             pointPadding: 0,
             pointPlacement: 0,
             dataLabels: {
@@ -79,4 +76,3 @@
         }]
     });
 });
-</script>

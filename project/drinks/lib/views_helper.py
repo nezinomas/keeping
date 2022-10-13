@@ -3,7 +3,9 @@ from typing import Dict, List, Tuple
 
 from django.http import HttpRequest
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 
+from ...core.lib.translation import month_names
 from .. import models
 from .drinks_options import DrinksOptions
 from .drinks_stats import DrinkStats, std_av
@@ -42,13 +44,12 @@ class RenderContext():
         self._avg, self._qty = self._get_avg_qty()
         self._DrinkStats = self._get_drink_stats()
 
-    def chart_quantity(self) -> str:
-        r = render_to_string(
-            'drinks/includes/chart_quantity.html',
-            {'data': self._DrinkStats.quantity},
-            self._request
-        )
-        return r
+    def chart_quantity(self) -> List[Dict]:
+        return {
+            'data' : self._DrinkStats.quantity,
+            'categories' : list(month_names().values()),
+            'text' : {'quantity': ('Quantity')}
+        }
 
     def chart_consumption(self) -> str:
         r = render_to_string(
