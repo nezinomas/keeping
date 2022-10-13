@@ -213,29 +213,51 @@ class Summary(TemplateViewMixin):
             'chart_incomes': obj.chart_incomes()
         }
 
-
+import json
 class SummarySavings(TemplateViewMixin):
     template_name = 'bookkeeping/summary_savings.html'
 
     def get_context_data(self, **kwargs):
         obj = services.SummarySavingsService()
 
-        context = super().get_context_data(**kwargs)
-        context['records'] = obj.records
-
+        super_context = super().get_context_data(**kwargs)
+        context = dict(records=obj.records)
         if not obj.records or obj.records < 1:
-            return context
+            return super_context | context
 
-        context |= {
-            'funds': obj.make_chart_data('funds'),
-            'shares': obj.make_chart_data('shares'),
-            'funds_shares': obj.make_chart_data('funds', 'shares'),
-            'pensions3': obj.make_chart_data('pensions3'),
-            'pensions2': obj.make_chart_data('pensions2'),
-            'all': obj.make_chart_data('funds', 'shares', 'pensions3'),
-        }
+        common_text = dict(
+            text_total=_('Total'),
+            text_profit=_('Profit'),
+            text_invested=_('Invested'),
+        )
+        context |= dict(
+            funds=
+                obj.make_chart_data('funds')
+                | common_text
+                | dict(chart_title=_('Funds')),
+            shares=
+                obj.make_chart_data('shares')
+                | common_text
+                | dict(chart_title=_('Shares')),
+            funds_shares=
+                obj.make_chart_data('funds', 'shares')
+                | common_text
+                | dict(chart_title=f"{_('Funds')} {_('Shares')}"),
+            pensions3=
+                obj.make_chart_data('pensions3')
+                | common_text
+                | dict(chart_title=f"{_('Pensions')} III"),
+            pensions2=
+                obj.make_chart_data('pensions2')
+                | common_text
+                | dict(chart_title=f"{_('Pensions')} II"),
+            all=
+                obj.make_chart_data('funds', 'shares', 'pensions3')
+                | common_text
+                | dict(chart_title=f"{_('Funds')}, {_('Shares')}, {_('Pensions')}"),
+        )
 
-        return context
+        return super_context | context
 
 
 class SummaryExpenses(FormViewMixin):
