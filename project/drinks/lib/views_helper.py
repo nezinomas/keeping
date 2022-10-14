@@ -52,17 +52,15 @@ class RenderContext():
         }
 
     def chart_consumption(self) -> str:
-        r = render_to_string(
-            'drinks/includes/chart_consumption.html', {
-                'data': self._DrinkStats.consumption,
-                'target': self._target,
-                'avg': self._avg,
-                'avg_label_y': self._avg_label_position(self._avg, self._target),
-                'target_label_y': self._target_label_position(self._avg, self._target),
-            },
-            self._request
-        )
-        return r
+        return {
+            'categories' : list(month_names().values()),
+            'data': self._DrinkStats.consumption,
+            'target': self._target,
+            'avg': self._avg,
+            'avg_label_y': self._avg_label_position(self._avg, self._target),
+            'target_label_y': self._target_label_position(self._avg, self._target),
+            'text': {},
+        }
 
     def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
         rendered = render_to_string(
