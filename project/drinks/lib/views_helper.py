@@ -46,8 +46,8 @@ class RenderContext():
 
     def chart_quantity(self) -> List[Dict]:
         return {
-            'data' : self._DrinkStats.quantity,
             'categories' : list(month_names().values()),
+            'data' : self._DrinkStats.quantity,
             'text' : {'quantity': ('Quantity')}
         }
 
