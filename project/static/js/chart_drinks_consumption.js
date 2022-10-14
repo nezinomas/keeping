@@ -52,7 +52,7 @@ $(function () {
                 width: 2,
                 value: chartData.target,
                 label: {
-                    text: `${chartData.text.limit}: ${Math.round(chartData.target, 0)}`,
+                    text: `${chartData.text.limit}: ${chartData.target.toFixed()}`,
                     align: 'right',
                     x: -5,
                     y: chartData.target_label_y,
@@ -66,7 +66,7 @@ $(function () {
                 width: 2,
                 value: chartData.avg,
                 label: {
-                    text: `Avg: ${Math.round(chartData.avg, 0)}`,
+                    text: `Avg: ${chartData.avg.toFixed()}`,
                     align: 'right',
                     x: -5,
                     y: chartData.avg_label_y,

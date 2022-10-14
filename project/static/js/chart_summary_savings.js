@@ -1,6 +1,6 @@
 function annotationLabels(list) {
     list.forEach(function (element, index, list) {
-        var val = Math.round(element)
+        var val = element.toFixed();
         list[index] = {
             point: {xAxis: 0, yAxis:0, x: index, y: val},
             text: val,
