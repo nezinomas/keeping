@@ -100,7 +100,7 @@ class TabHistory(TemplateViewMixin):
                 item = next((x for x in qs if x['year'] == year), False)
                 if item:
                     _stdav = item['qty'] / ratio
-                    _alkohol = obj.stdav_to_alkohol(stdav=_stdav)
+                    _alkohol = obj.stdav_to_alcohol(stdav=_stdav)
 
                     alcohol.append(_alkohol)
                     ml.append(item['per_day'])

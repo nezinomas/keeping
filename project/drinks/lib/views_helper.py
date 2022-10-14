@@ -101,7 +101,7 @@ class RenderContext():
 
         r = render_to_string(
             'drinks/includes/tbl_alcohol.html', {
-                'l': obj.stdav_to_alkohol(stdav)
+                'l': obj.stdav_to_alcohol(stdav)
             },
             self._request
         )
