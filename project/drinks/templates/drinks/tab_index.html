@@ -4,16 +4,18 @@
 {% if records %}
 
 <div class="row">
-    <div class="col-lg-6" id="chart_consumption">{{chart_consumption}}</div>
+    <div class="col-lg-6"><div id="chart-consumption-container"></div></div>
     <div class="col-lg-6"><div id="chart-quantity-container"></div></div>
-    {{ chart_quantity|json_script:"chart-quantity-data" }}
-    <script src="/static/js/chart_drinks_quantity.js" defer data-labels></script>
+    {{chart_quantity|json_script:"chart-quantity-data"}}
+    {{chart_consumption|json_script:"chart-consumption-data"}}
+    <script src="/static/js/chart_drinks_quantity.js" defer></script>
+    <script src="/static/js/chart_drinks_consumption.js" defer></script>
 </div>
 
 <div class="row my-2">
     <div class="col-lg-6">
         <div class="row gx-2">
-            <div id="tbl_consumption" class="col-lg-3 col-md-3"><{{tbl_consumption}}></div>
+            <div id="tbl_consumption" class="col-lg-3 col-md-3">{{tbl_consumption}}</div>
             <div id="tbl_last_day" class="col-lg-4 col-md-3">{{tbl_last_day}}</div>
             <div id="tbl_alcohol" class="col-lg-2 col-md-3">{{tbl_alcohol}}</div>
             <div id="target_list" class="col-lg-3 col-md-3">{{target_list}}</div>

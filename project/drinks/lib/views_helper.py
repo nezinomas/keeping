@@ -59,7 +59,10 @@ class RenderContext():
             'avg': self._avg,
             'avg_label_y': self._avg_label_position(self._avg, self._target),
             'target_label_y': self._target_label_position(self._avg, self._target),
-            'text': {},
+            'text': {
+                'limit': _('Limit'),
+                'alcohol': _('Alcohol consumption per day, ml'),
+            },
         }
 
     def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
