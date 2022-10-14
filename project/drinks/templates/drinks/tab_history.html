@@ -2,7 +2,9 @@
 {% if records %}
 
 <div class="row">
-    <div class="col">{% include 'drinks/includes/chart_summary.html' %}</div>
+    <div class="col"><div id="chart-summary-container"></div></div>
+    {{chart|json_script:"chart-summary-data"}}
+    <script src="/static/js/chart_drinks_summary.js" defer></script>
 </div>
 
 {% else %}

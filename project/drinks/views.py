@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
 
 from ..core.lib.date import years
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
@@ -97,8 +98,7 @@ class TabHistory(TemplateViewMixin):
             for year in range(qs[0]['year'], datetime.now().year+1):
                 drink_years.append(year)
 
-                item = next((x for x in qs if x['year'] == year), False)
-                if item:
+                if item := next((x for x in qs if x['year'] == year), False):
                     _stdav = item['qty'] / ratio
                     _alkohol = obj.stdav_to_alcohol(stdav=_stdav)
 
@@ -108,15 +108,21 @@ class TabHistory(TemplateViewMixin):
                     alcohol.append(0.0)
                     ml.append(0.0)
 
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'tab': 'history',
-            'drinks_categories': drink_years,
-            'drinks_data_ml': ml,
-            'drinks_data_alcohol': alcohol,
             'records': len(drink_years) if len(drink_years) > 1 else 0,
-        })
-        return context
+            'chart': {
+                'categories': drink_years,
+                'data_ml': ml,
+                'data_alcohol': alcohol,
+                'text': {
+                    'title': _('Drinks'),
+                    'per_day': _('Average per day, ml'),
+                    'per_year': _('Pure alcohol per year, L'),
+                }
+            }
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class Compare(TemplateViewMixin):
