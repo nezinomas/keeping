@@ -5,7 +5,7 @@ from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
-from ...core.lib.translation import month_names
+from ...core.lib.translation import month_names, weekday_names
 from .. import models
 from .drinks_options import DrinksOptions
 from .drinks_stats import DrinkStats, std_av
@@ -65,16 +65,15 @@ class RenderContext():
             },
         }
 
-    def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
-        rendered = render_to_string(
-            'counts/includes/chart_calendar.html',
-            {
-                'data': data,
-                'id': chart_id,
-            },
-            self._request
-        )
-        return rendered
+    def chart_calendar(self, data: List[Dict]) -> str:
+        return {
+            'data': data,
+            'categories': [x[0] for x in list(weekday_names().values())],
+            'text' : {
+                'gap': _('Gap'),
+                'quantity': _('Quantity'),
+            }
+        }
 
     def tbl_consumption(self) -> str:
         r = render_to_string(

@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from django.shortcuts import render
@@ -62,8 +63,8 @@ class TabIndex(TemplateViewMixin):
             'records': qs.count(),
             'chart_quantity': rendered.chart_quantity(),
             'chart_consumption': rendered.chart_consumption(),
-            'chart_calendar_1H': rendered.chart_calendar(data[0:6], '1H'),
-            'chart_calendar_2H': rendered.chart_calendar(data[6:], '2H'),
+            'chart_calendar_1H': rendered.chart_calendar(data[0:6]),
+            'chart_calendar_2H': rendered.chart_calendar(data[6:]),
             'tbl_consumption': rendered.tbl_consumption(),
             'tbl_last_day': rendered.tbl_last_day(),
             'tbl_alcohol': rendered.tbl_alcohol(),
