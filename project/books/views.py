@@ -24,7 +24,7 @@ class Index(TemplateViewMixin):
 
 
 class ChartReaded(TemplateViewMixin):
-    template_name = 'books/chart_readed_books.html'
+    template_name = 'books/readed_books.html'
 
     def get_context_data(self, **kwargs):
         obj = services.ChartReaded()
