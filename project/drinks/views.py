@@ -128,7 +128,7 @@ class TabHistory(TemplateViewMixin):
 
 
 class Compare(TemplateViewMixin):
-    template_name = 'drinks/history.html'
+    template_name = 'drinks/includes/history.html'
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year + 1
@@ -145,7 +145,7 @@ class Compare(TemplateViewMixin):
 
 class CompareTwo(FormViewMixin):
     form_class = DrinkCompareForm
-    template_name = 'drinks/compare_form.html'
+    template_name = 'drinks/includes/compare_form.html'
     success_url = reverse_lazy('drinks:compare_two')
 
     def form_valid(self, form, **kwargs):
