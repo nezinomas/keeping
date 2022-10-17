@@ -21,12 +21,14 @@ class ChartReaded():
         self._chart_data()
 
         return {
-            'categories': self._years,
-            'data': self._data,
-            'targets': self._targets,
-            'chart': 'chart_readed_books',
-            'chart_title': _('Readed books'),
-            'chart_column_color': '70, 171, 157'
+            'chart': {
+                'categories': self._years,
+                'data': self._data,
+                'targets': self._targets,
+                'chart': 'chart_readed_books',
+                'chart_title': _('Readed books'),
+                'chart_column_color': '70, 171, 157'
+            }
         }
 
     def _chart_data(self):
