@@ -120,7 +120,6 @@ class Stats():
             for day in monthdays:
                 val = 0
                 dt = None
-                gap = None
                 qty = None
 
                 if y >= 6:
@@ -129,11 +128,8 @@ class Stats():
                 else:
                     y += 1
 
-                try:
+                with contextlib.suppress(ValueError):
                     dt = date(self._year, month, day)
-                except ValueError:
-                    pass
-
                 row = []
                 if dt:
                     # set values for saturday and sunday
@@ -152,14 +148,10 @@ class Stats():
                         val = 0.05  # highlight current day
 
                     # get gap and duration
-                    try:
+                    with contextlib.suppress(KeyError):
                         _f = df.loc[dt]
-                        gap = _f.duration
                         qty = val = _f.qty
-                        row = [qty, gap]
-                    except KeyError:
-                        pass
-
+                        row = [qty, _f.duration]
                 data.append([x, y, val, week, str(dt), *row])
 
             x += 1
