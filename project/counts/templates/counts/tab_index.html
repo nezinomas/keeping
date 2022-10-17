@@ -11,8 +11,14 @@
 </div>
 
 <div class="row my-2">
-    <div class="col-lg-6 col-md-12" id="chart_calendar_1H">{{ chart_calendar_1H }}</div>
-    <div class="col-lg-6 col-md-12" id="chart_calendar_2H">{{ chart_calendar_2H }}</div>
+    <div class="col-lg-6 col-md-12"><div id="chart-calendar-1H-container"></div></div>
+    <div class="col-lg-6 col-md-12"><div id="chart-calendar-2H-container"></div></div>
+    {{chart_calendar_1H|json_script:"chart-calendar-1H-data"}}
+    {{chart_calendar_2H|json_script:"chart-calendar-2H-data"}}
+    <script>
+        chartCalender('chart-calendar-1H-data', 'chart-calendar-1H-container');
+        chartCalender('chart-calendar-2H-data', 'chart-calendar-2H-container');
+    </script>
 </div>
 
 {% else %}

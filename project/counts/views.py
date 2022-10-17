@@ -136,9 +136,9 @@ class TabIndex(CounTypetObjectMixin, ContextMixin, TemplateViewMixin):
         context.update({
             'object': self.object,
             'chart_calendar_1H': \
-                self.render_context.chart_calendar(calendar_data[0:6], '1H'),
+                self.render_context.chart_calendar(calendar_data[:6]),
             'chart_calendar_2H': \
-                self.render_context.chart_calendar(calendar_data[6:], '2H'),
+                self.render_context.chart_calendar(calendar_data[6:]),
             'chart_weekdays': \
                 self.render_context.chart_weekdays(),
             'chart_months': \

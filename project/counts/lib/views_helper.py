@@ -121,18 +121,16 @@ class RenderContext():
             },
             self._request
         )
-        return rendered
 
-    def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
-        rendered = render_to_string(
-            'counts/includes/chart_calendar.html',
-            {
-                'data': data,
-                'id': chart_id,
-            },
-            self._request
-        )
-        return rendered
+    def chart_calendar(self, data: List[Dict]) -> str:
+        return {
+            'data': data,
+            'categories': [x[0] for x in list(weekday_names().values())],
+            'text': {
+                'gap': _('Gap'),
+                'quantity': _('Quantity'),
+            }
+        }
 
     def chart_histogram(self) -> str:
         gaps = self._stats.gaps()
