@@ -6,6 +6,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import years
+from ..core.lib.translation import month_names
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  FormViewMixin, ListViewMixin,
                                  RedirectViewMixin, TemplateViewMixin,
@@ -127,15 +128,17 @@ class TabHistory(TemplateViewMixin):
 
 
 class Compare(TemplateViewMixin):
-    template_name = 'drinks/includes/chart_compare.html'
+    template_name = 'drinks/history.html'
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year + 1
         qty = kwargs.get('qty', 0)
         chart_serries = H.several_years_consumption(range(year - qty, year))
         context = {
-            'serries': chart_serries,
-            'chart_container_name': 'history_chart',
+            'chart': {
+                'categories': list(month_names().values()),
+                'serries': chart_serries,
+            },
         }
         return context
 
@@ -154,7 +157,10 @@ class CompareTwo(FormViewMixin):
         if len(chart_serries) == 2:
             context.update({
                 'form': form,
-                'serries': chart_serries,
+                'chart': {
+                    'categories': list(month_names().values()),
+                    'serries': chart_serries,
+                },
             })
         return render(self.request, self.template_name, context)
 

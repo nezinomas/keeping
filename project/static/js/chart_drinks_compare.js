@@ -1,14 +1,15 @@
-{% load charts %}
+function chartCompare(idData, idContainer) {
+    const chartData = JSON.parse(
+        document.getElementById(idData).textContent
+    );
 
-<div id="{{ chart_container_name }}"></div>
-<script>
     Highcharts.setOptions({
         lang: {
             thousandsSep: '.',
             decimalPoint: ',',
         }
     });
-    Highcharts.chart('{{ chart_container_name }}', {
+    Highcharts.chart(idContainer, {
         chart: {
             height: '350px',
         },
@@ -29,7 +30,7 @@
             lineWidth: 2,
             gridLineWidth: 1,
             tickmarkPlacement: 'on',
-            categories: {% months %},
+            categories: chartData.categories,
             labels: {
                 style: {
                     fontSize: '10px',
@@ -68,6 +69,6 @@
                 fillOpacity: 0.4
             }
         },
-        series: {{ serries|safe }}
+        series: chartData.serries
     });
-</script>
+};
