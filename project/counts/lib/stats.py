@@ -1,4 +1,5 @@
 import calendar
+import contextlib
 from datetime import date, datetime
 from typing import Dict, List
 
@@ -45,9 +46,7 @@ class Stats():
         df = df.to_dict()  # {0: 1, 1: 0} == {weekday: counts, }
 
         # return list with zeros
-        arr = []
-        for i in range(0, 7):
-            arr.append({'weekday': i, 'count': 0})
+        arr = [{'weekday': i, 'count': 0} for i in range(7)]
 
         # update return list with counts
         for k, v in df.items():
@@ -187,10 +186,7 @@ class Stats():
 
         arr = df.to_dict()
 
-        if self._year:
-            return arr.get(self._year, 0)
-
-        return arr
+        return arr.get(self._year, 0) if self._year else arr
 
     def month_days(self):
         if not self._year:
@@ -199,10 +195,7 @@ class Stats():
         arr = []
         for i in range(1, 13):
             month_len = calendar.monthrange(self._year, i)[1]
-            items = []
-            for day in range(0, month_len):
-                items.append(day + 1)
-            arr.append(items)
+            arr.append([day + 1 for day in range(month_len)])
 
         return arr
 
@@ -248,15 +241,14 @@ class Stats():
 
         if isinstance(data, QuerySet):
             first = None
-            try:
+
+            with contextlib.suppress(IndexError):
                 first = data[0]
-            except IndexError:
-                pass
 
             if first and isinstance(first, models.Model):
                 data = data.values()
 
-        df = pd.DataFrame(data if data else [])
+        df = pd.DataFrame(data or [])
 
         if not df.empty:
             df['date'] = pd.to_datetime(df['date'])
@@ -275,10 +267,7 @@ class Stats():
         arr = []
         for i in range(1, 13):
             month_len = calendar.monthrange(self._year, i)[1]
-            items = []
-            for _ in range(0, month_len):
-                items.append({'y': 0, 'gap': 0})
-            arr.append(items)
+            arr.apped([{'y': 0, 'gap': 0} for _ in range(month_len)])
 
         return arr
 
