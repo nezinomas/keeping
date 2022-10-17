@@ -1,3 +1,4 @@
+import contextlib
 from datetime import datetime
 from typing import Dict, List, Tuple
 
@@ -76,7 +77,7 @@ class RenderContext():
         }
 
     def tbl_consumption(self) -> str:
-        r = render_to_string(
+        return render_to_string(
             'drinks/includes/tbl_consumption.html', {
                 'qty': self._qty,
                 'avg': self._avg,
@@ -84,36 +85,32 @@ class RenderContext():
             },
             self._request
         )
-        return r
 
     def tbl_last_day(self) -> str:
-        r = render_to_string(
+        return render_to_string(
             'drinks/includes/tbl_last_day.html',
             self._dry_days(),
             self._request
         )
-        return r
 
     def tbl_alcohol(self) -> str:
         obj = DrinksOptions()
         stdav = self._qty / obj.ratio
 
-        r = render_to_string(
+        return render_to_string(
             'drinks/includes/tbl_alcohol.html', {
                 'l': obj.stdav_to_alcohol(stdav)
             },
             self._request
         )
-        return r
 
     def tbl_std_av(self) -> str:
-        r = render_to_string(
+        return render_to_string(
             'drinks/includes/tbl_std_av.html', {
                 'items': std_av(self._year, self._qty)
             },
             self._request
         )
-        return r
 
     def _get_target(self):
         obj = DrinksOptions()
@@ -141,18 +138,15 @@ class RenderContext():
 
     def _dry_days(self) -> Dict:
         qs = None
-        try:
+
+        with contextlib.suppress(models.Drink.DoesNotExist):
             qs = models.Drink.objects.year(self._year).latest()
-        except models.Drink.DoesNotExist:
-            pass
 
         # if current year has no record
         # try get latest record
         if not qs:
-            try:
+            with contextlib.suppress(models.Drink.DoesNotExist):
                 qs = models.Drink.objects.related().latest()
-            except models.Drink.DoesNotExist:
-                pass
 
         if qs:
             latest = qs.date
