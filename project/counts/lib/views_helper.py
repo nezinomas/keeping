@@ -73,47 +73,32 @@ class RenderContext():
         if not title:
             title = _('Weekdays, %(year)s year') % ({'year': self._year})
 
-        return render_to_string(
-            'counts/includes/chart_periodicity.html',
-            {
-                'data': [x['count'] for x in self._stats.weekdays_stats()],
-                'categories': [x[:4] for x in Stats.weekdays()],
-                'chart': 'chart_weekdays',
-                'chart_title': title,
-                'chart_column_color': '70, 171, 157',
-            },
-            self._request
-        )
+        return {
+            'data': [x['count'] for x in self._stats.weekdays_stats()],
+            'categories': [x[:4] for x in Stats.weekdays()],
+            'chart_title': title,
+            'chart_column_color': '70, 171, 157',
+        }
 
     def chart_months(self, title: str = None) -> str:
         if not title:
             title = self._year
 
-        return render_to_string(
-            'counts/includes/chart_periodicity.html',
-            {
-                'data': self._stats.months_stats(),
-                'categories': Stats.months(),
-                'chart': 'chart_months',
-                'chart_title': title,
-                'chart_column_color': '70, 171, 157',
-            },
-            self._request
-        )
+        return {
+            'data': self._stats.months_stats(),
+            'categories': Stats.months(),
+            'chart_title': title,
+            'chart_column_color': '70, 171, 157',
+        }
 
     def chart_years(self, title: str = _lazy('Year')) -> str:
         year_totals = self._stats.year_totals()
-        return render_to_string(
-            'counts/includes/chart_periodicity.html',
-            {
-                'data': list(year_totals.values()),
-                'categories': list(year_totals.keys()),
-                'chart': 'chart_years',
-                'chart_title': title,
-                'chart_column_color': '70, 171, 157',
-            },
-            self._request
-        )
+        return {
+            'data': list(year_totals.values()),
+            'categories': list(year_totals.keys()),
+            'chart_title': title,
+            'chart_column_color': '70, 171, 157',
+        }
 
     def chart_calendar(self, data: List[Dict]) -> str:
         return {
@@ -127,14 +112,9 @@ class RenderContext():
 
     def chart_histogram(self) -> str:
         gaps = self._stats.gaps()
-        return render_to_string(
-            'counts/includes/chart_periodicity.html',
-            {
-                'data': list(gaps.values()),
-                'categories': [f'{x}d' for x in gaps.keys()],
-                'chart': 'chart_histogram',
-                'chart_title': _('Frequency of gaps, in days'),
-                'chart_column_color': '196, 37, 37',
-            },
-            self._request
-        )
+        return {
+            'data': list(gaps.values()),
+            'categories': [f'{x}d' for x in gaps.keys()],
+            'chart_title': _('Frequency of gaps, in days'),
+            'chart_column_color': '196, 37, 37',
+        }

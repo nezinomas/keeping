@@ -1,13 +1,15 @@
-<div id="{{ chart }}_container"></div>
-<script>
-    $(function () {
-       Highcharts.chart('{{ chart }}_container', {
+function chartPeriodicity(idData, idContainer) {
+    const chartData = JSON.parse(
+        document.getElementById(idData).textContent
+    );
+
+    Highcharts.chart(idContainer, {
         chart: {
             type: 'column',
             height: '300px',
         },
         title: {
-            text: '{{ chart_title|safe }}',
+            text: chartData.title,
             style: {
                 fontSize: '16px',
                 fontFamily: 'Calibri, Verdana',
@@ -16,7 +18,7 @@
         xAxis: {
             lineColor: '#000',
             lineWidth: 2,
-            categories: {{ categories|safe }},
+            categories: chartData.categories,
             crosshair: true,
             labels: {
                 useHTML: true,
@@ -61,13 +63,13 @@
         },
         series: [{
             name: 'Kiekis',
-            data: {{ data|safe }},
-            color: 'rgba({{ chart_column_color }}, 0.65)',
-            borderColor: 'rgba({{ chart_column_color }}, 1)',
+            data: chartData.data,
+            color: `rgba(${chartData.chart_column_color}, 0.65)`,
+            borderColor: `rgba(${chartData.chart_column_color}, 1)`,
             dataLabels: {
                 enabled: true,
                 rotation: 0,
-                color: 'rgba({{ chart_column_color }}, 1)',
+                color: `rgba(${chartData.chart_column_color}, 1)`,
                 formatter: function () {
                     return (this.y != 0) ? this.y : "";
                 },
@@ -80,5 +82,4 @@
             }
         }]
     });
-});
-</script>
+};

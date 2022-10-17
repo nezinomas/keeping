@@ -5,9 +5,17 @@
 {% if records %}
 
 <div class="row my-2">
-    <div class="col-lg-4" id="chart_weekdays">{{ chart_weekdays }}</div>
-    <div class="col-lg-4" id="chart_months">{{ chart_months }}</div>
-    <div class="col-lg-4" id="chart_histogram">{{ chart_histogram }}</div>
+    <div class="col-lg-4" id="chart_weekdays"><div id="chart-weekdays-container"></div></div>
+    <div class="col-lg-4" id="chart_months"><div id="chart-months-container"></div></div>
+    <div class="col-lg-4" id="chart_histogram"><div id="chart-histogram-container"></div></div>
+    {{chart_weekdays|json_script:"chart-weekdays-data"}}
+    {{chart_months|json_script:"chart-months-data"}}
+    {{chart_histogram|json_script:"chart-histogram-data"}}
+    <script>
+        chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container');
+        chartPeriodicity('chart-months-data', 'chart-months-container');
+        chartPeriodicity('chart-histogram-data', 'chart-histogram-container');
+    </script>
 </div>
 
 <div class="row my-2">
