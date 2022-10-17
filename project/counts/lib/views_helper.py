@@ -1,3 +1,4 @@
+import contextlib
 from typing import Dict, List
 
 from django.http import HttpRequest
@@ -5,6 +6,7 @@ from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
+from ...core.lib.translation import month_names, weekday_names
 from ..lib.stats import Stats
 from ..models import Count, CountType
 from .stats import Stats
@@ -17,16 +19,12 @@ class CounTypetObjectMixin():
         if self.object:
             return
 
-        count_type_slug = self.kwargs.get('slug')
-
-        if count_type_slug:
-            try:
+        if count_type_slug := self.kwargs.get('slug'):
+            with contextlib.suppress(CountType.DoesNotExist):
                 self.object = \
-                    CountType.objects \
-                    .related() \
-                    .get(slug=count_type_slug)
-            except CountType.DoesNotExist:
-                pass
+                        CountType.objects \
+                        .related() \
+                        .get(slug=count_type_slug)
 
 
 class ContextMixin():
@@ -38,17 +36,14 @@ class ContextMixin():
         past_last_record = None
 
         if year:
-            try:
+            with contextlib.suppress(Count.DoesNotExist, AttributeError):
                 qs_past = \
-                    Count.objects \
-                    .related() \
-                    .filter(date__year__lt=self.get_year(), count_type=self.object) \
-                    .latest()
+                        Count.objects \
+                        .related() \
+                        .filter(date__year__lt=self.get_year(), count_type=self.object) \
+                        .latest()
 
                 past_last_record = qs_past.date
-            except (Count.DoesNotExist, AttributeError):
-                pass
-
         return Stats(year=year, data=qs_data, past_latest=past_last_record)
 
     def get_context_data(self, **kwargs):
@@ -78,7 +73,7 @@ class RenderContext():
         if not title:
             title = _('Weekdays, %(year)s year') % ({'year': self._year})
 
-        rendered = render_to_string(
+        return render_to_string(
             'counts/includes/chart_periodicity.html',
             {
                 'data': [x['count'] for x in self._stats.weekdays_stats()],
@@ -89,13 +84,12 @@ class RenderContext():
             },
             self._request
         )
-        return rendered
 
     def chart_months(self, title: str = None) -> str:
         if not title:
             title = self._year
 
-        rendered = render_to_string(
+        return render_to_string(
             'counts/includes/chart_periodicity.html',
             {
                 'data': self._stats.months_stats(),
@@ -106,11 +100,10 @@ class RenderContext():
             },
             self._request
         )
-        return rendered
 
     def chart_years(self, title: str = _lazy('Year')) -> str:
         year_totals = self._stats.year_totals()
-        rendered = render_to_string(
+        return render_to_string(
             'counts/includes/chart_periodicity.html',
             {
                 'data': list(year_totals.values()),
@@ -134,7 +127,7 @@ class RenderContext():
 
     def chart_histogram(self) -> str:
         gaps = self._stats.gaps()
-        rendered = render_to_string(
+        return render_to_string(
             'counts/includes/chart_periodicity.html',
             {
                 'data': list(gaps.values()),
@@ -145,4 +138,3 @@ class RenderContext():
             },
             self._request
         )
-        return rendered
