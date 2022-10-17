@@ -1,4 +1,4 @@
-import json
+import contextlib
 from datetime import datetime
 
 from django.shortcuts import render
@@ -39,39 +39,35 @@ class TabIndex(TemplateViewMixin):
         qs = Drink.objects.sum_by_day(year)
         past_latest_record = None
 
-        try:
+        with contextlib.suppress(Drink.DoesNotExist):
             qs_past = \
-                Drink \
-                .objects \
-                .related() \
-                .filter(date__year__lt=year) \
-                .latest()
+                    Drink \
+                    .objects \
+                    .related() \
+                    .filter(date__year__lt=year) \
+                    .latest()
             past_latest_record = qs_past.date
-        except Drink.DoesNotExist:
-            pass
 
         stats = CountStats(year=year, data=qs, past_latest=past_latest_record)
         data = stats.chart_calendar()
         rendered = H.RenderContext(self.request, year)
-
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'target_list': \
-                rendered_content(self.request, TargetLists, **kwargs),
+                    rendered_content(self.request, TargetLists, **kwargs),
             'compare_form_and_chart': \
-                rendered_content(self.request, CompareTwo, **kwargs),
+                    rendered_content(self.request, CompareTwo, **kwargs),
             'all_years': len(years()),
             'records': qs.count(),
             'chart_quantity': rendered.chart_quantity(),
             'chart_consumption': rendered.chart_consumption(),
-            'chart_calendar_1H': rendered.chart_calendar(data[0:6]),
+            'chart_calendar_1H': rendered.chart_calendar(data[:6]),
             'chart_calendar_2H': rendered.chart_calendar(data[6:]),
             'tbl_consumption': rendered.tbl_consumption(),
             'tbl_last_day': rendered.tbl_last_day(),
             'tbl_alcohol': rendered.tbl_alcohol(),
             'tbl_std_av': rendered.tbl_std_av(),
-        })
-        return context
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class TabData(ListViewMixin):
@@ -134,13 +130,13 @@ class Compare(TemplateViewMixin):
         year = self.request.user.year + 1
         qty = kwargs.get('qty', 0)
         chart_serries = H.several_years_consumption(range(year - qty, year))
-        context = {
+
+        return {
             'chart': {
                 'categories': list(month_names().values()),
                 'serries': chart_serries,
             },
         }
-        return context
 
 
 class CompareTwo(FormViewMixin):
@@ -155,13 +151,13 @@ class CompareTwo(FormViewMixin):
         chart_serries = H.several_years_consumption([year1, year2])
 
         if len(chart_serries) == 2:
-            context.update({
+            context |= {
                 'form': form,
                 'chart': {
                     'categories': list(month_names().values()),
                     'serries': chart_serries,
                 },
-            })
+            }
         return render(self.request, self.template_name, context)
 
 
