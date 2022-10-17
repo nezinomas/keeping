@@ -26,7 +26,9 @@ def rendered_content(request, view_class, **kwargs):
 def httpHtmxResponse(hx_trigger_name = None, status_code = 204):
     headers = {}
     if hx_trigger_name:
-        headers = {'HX-Trigger': json.dumps({hx_trigger_name: None})}
+        headers = {
+            'HX-Trigger': json.dumps({hx_trigger_name: None}),
+        }
 
     return HttpResponse(
         status=status_code,
@@ -49,10 +51,7 @@ class GetQuerysetMixin():
 
 class SearchMixin(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({**self.search()})
-
-        return context
+        return super().get_context_data(**kwargs) | self.search()
 
     def get_search_method(self):
         return getattr(search, self.search_method)
@@ -96,13 +95,12 @@ class CreateUpdateMixin():
         return self.hx_redirect
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'form_action': self.form_action,
             'url': self.url,
             'hx_trigger_form': self.get_hx_trigger_form(),
-        })
-        return context
+        }
+        return super().get_context_data(**kwargs) | context
 
     def form_valid(self, form, **kwargs):
         response = super().form_valid(form)
@@ -163,11 +161,7 @@ class DeleteViewMixin(LoginRequiredMixin,
         return self.object.get_delete_url() if self.object else None
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'url': self.url,
-        })
-        return context
+        return super().get_context_data(**kwargs) | {'url': self.url}
 
     def post(self, *args, **kwargs):
         if self.get_object():
