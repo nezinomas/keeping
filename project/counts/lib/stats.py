@@ -259,7 +259,7 @@ class Stats():
         arr = []
         for i in range(1, 13):
             month_len = calendar.monthrange(self._year, i)[1]
-            arr.apped([{'y': 0, 'gap': 0} for _ in range(month_len)])
+            arr.append([{'y': 0, 'gap': 0} for _ in range(month_len)])
 
         return arr
 
