@@ -165,7 +165,9 @@ def test_chart_expenses_context(_month_data):
     obj = MonthService(year=1999, month=1)
     actual = obj.chart_expenses_context()
 
-    assert 'expenses' in actual
+    assert len(actual) == 2
+    assert actual[0]['name'] == 'EXPENSE TYPE'
+    assert actual[1]['name'] == 'TAUPYMAS'
 
 
 @pytest.mark.freeze_time('1999-1-21')
@@ -173,9 +175,11 @@ def test_chart_targets_context(_month_data):
     obj = MonthService(year=1999, month=1)
     actual = obj.chart_targets_context()
 
-    assert 'chart_targets_categories' in actual
-    assert 'chart_targets_data_target' in actual
-    assert 'chart_targets_data_fact' in actual
+    assert 'categories' in actual
+    assert 'target' in actual
+    assert 'targetTitle' in actual
+    assert 'fact' in actual
+    assert 'factTitle' in actual
 
 
 def test_chart_expenses():

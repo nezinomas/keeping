@@ -4,10 +4,17 @@
 {% if records %}
 
 <div class="row my-2">
-    <div class="col-lg-4">{% if records %}{{ chart_weekdays }}{% endif %}</div>
-    <div class="col-lg-4">{% if records %}{{ chart_years }}{% endif %}</div>
-    <div class="col-lg-4">{% if records %}{{ chart_histogram }}{% endif %}</div>
-</div>
+    <div class="col-lg-4" id="chart_weekdays"><div id="chart-weekdays-container"></div></div>
+    <div class="col-lg-4" id="chart_years"><div id="chart-years-container"></div></div>
+    <div class="col-lg-4" id="chart_histogram"><div id="chart-histogram-container"></div></div>
+    {{chart_weekdays|json_script:"chart-weekdays-data"}}
+    {{chart_years|json_script:"chart-years-data"}}
+    {{chart_histogram|json_script:"chart-histogram-data"}}
+    <script>
+        chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container');
+        chartPeriodicity('chart-years-data', 'chart-years-container');
+        chartPeriodicity('chart-histogram-data', 'chart-histogram-container');
+    </script>
 
 {% else %}
 

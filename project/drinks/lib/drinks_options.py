@@ -53,7 +53,7 @@ class DrinksOptions():
 
         return _converted
 
-    def stdav_to_alkohol(self, stdav: float) -> float:
+    def stdav_to_alcohol(self, stdav: float) -> float:
         # one stdav = 10g pure alkohol (100%)
         return stdav * 0.01
 

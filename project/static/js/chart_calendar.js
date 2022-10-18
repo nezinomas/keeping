@@ -1,10 +1,9 @@
-{% load i18n %}
-{% load chart_calendar %}
+function chartCalender (idData, idContainer) {
+  const chartData = JSON.parse(
+    document.getElementById(idData).textContent
+  );
 
-<div id="clander_{{ id }}_container"></div>
-<script>
-Highcharts.chart('clander_{{ id }}_container', {
-
+  Highcharts.chart(idContainer, {
     chart: {
         type: 'heatmap',
         plotBorderWidth: 0,
@@ -36,14 +35,12 @@ Highcharts.chart('clander_{{ id }}_container', {
             }
         }
     },
-
     title: {
         text: '-',
         style: {
           color: 'white',
         }
     },
-
     xAxis: {
     		type: 'category',
         title: null,
@@ -63,7 +60,7 @@ Highcharts.chart('clander_{{ id }}_container', {
 
     yAxis: {
     		type: 'category',
-        categories: {% first_letters %},
+        categories: chartData.categories,
         title: null,
         reversed: true,
         lineWidth: 0,
@@ -116,8 +113,8 @@ Highcharts.chart('clander_{{ id }}_container', {
         var s = this.point.date;
         if(this.point.value >= 0.1)
         {
-        	s += '<div class="gap">{% translate "Gap" %} '+ this.point.gap +'d.</div>';
-        	s += '<div class="qty">{% translate "Quantity" %} '+ Highcharts.numberFormat(this.point.qty, 1) +'</div>';
+        	s += `<div class="gap">${chartData.text.gap} ${this.point.gap}d.</div>`;
+          s += `<div class="qty">${chartData.text.quantity} ${this.point.qty.toFixed(1)}</div>`;
         }
         return s;
       }
@@ -151,7 +148,6 @@ Highcharts.chart('clander_{{ id }}_container', {
         borderWidth: 2
       }
     },
-
-    series: {{ data|safe }}
-});
-</script>
+    series: chartData.data
+  });
+};

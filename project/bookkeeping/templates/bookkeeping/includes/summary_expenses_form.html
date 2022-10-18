@@ -17,7 +17,12 @@
         {{ form|as_crispy_errors }}
         {% if found %}
         <div class="row">
-            <div class="col-12" id="chart">{% include 'bookkeeping/includes/summary_expenses_chart.html' %}</div>
+            <div class="col-12" id="chart"><div id="chart-container"></div></div>
+            {{chart|json_script:"chart-data"}}
+            <script src="/static/js/chart_summary_expenses.js"></script>
+            <script>
+                chartExpenses('chart-data', 'chart-container');
+            </script>
         </div>
         <div class="row mt-5">
             <div class="col-12 table-responsive" id="table">{% include 'bookkeeping/includes/summary_expenses_table.html' %}</div>

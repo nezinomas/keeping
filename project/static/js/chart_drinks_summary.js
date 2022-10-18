@@ -1,10 +1,7 @@
-{% load i18n %}
-{% load charts %}
-
-<div id="chart_summary_container"></div>
-<script>
-    $(function () {
-        var categoryLabels = {{ drinks_categories }};
+$(function () {
+    const chartData = JSON.parse(
+        document.getElementById('chart-summary-data').textContent
+    );
 
     Highcharts.setOptions({
         lang: {
@@ -13,12 +10,12 @@
         }
     });
 
-    Highcharts.chart('chart_summary_container', {
+    Highcharts.chart('chart-summary-container', {
         chart: {
             marginBottom: 67,
         },
         title: {
-            text: '{% translate "Drinks" %}',
+            text: chartData.text.title,
         },
         legend: {
             layout: 'horizontal',
@@ -30,14 +27,13 @@
         },
         xAxis: {
             min: 0.49,
-            max: categoryLabels.length - 1.49,
-            categories: categoryLabels,
+            max: chartData.categories.length - 1.49,
+            categories: chartData.categories,
             type: 'category',
             lineColor: '#000',
             lineWidth: 2,
             gridLineWidth: 1,
             tickmarkPlacement: 'on',
-
             labels: {
                 style: {
                     fontSize: '10px',
@@ -60,7 +56,6 @@
                     color: '#46ab9d',
                 }
             },
-
         }, {
             opposite: true,
             labels: {
@@ -77,7 +72,6 @@
                     color: '#d13572',
                 }
             },
-
         }],
         tooltip: {
             pointFormat: '<b>{point.y:,.0f} ml</b><br/>',
@@ -87,9 +81,9 @@
                 },
         },
         series: [{
-            name: '{% translate "Average per day, ml" %}',
+            name: chartData.text.per_day,
             yAxis: 0,
-            data: {{ drinks_data_ml|safe }},
+            data: chartData.data_ml,
             color: '#46ab9d',
             type: 'area',
             dataLabels: {
@@ -105,9 +99,9 @@
             enableMouseTracking: false,
             fillOpacity: 0.65,
         }, {
-            name: '{% translate "Pure alcohol per year, L" %}',
+            name: chartData.text.per_year,
             yAxis: 1,
-            data: {{ drinks_data_alcohol|safe }},
+            data: chartData.data_alcohol,
             color: '#d13572',
             type: 'line',
             dataLabels: {
@@ -122,5 +116,4 @@
             enableMouseTracking: false,
         }],
     });
-    });
-</script>
+});

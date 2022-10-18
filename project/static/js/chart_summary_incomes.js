@@ -1,10 +1,7 @@
-{% load charts %}
-{% load i18n %}
-
-<div id="container-for-balance"></div>
-<script>
-    $(function () {
-        var categoryLabels = {% months %};
+$(function () {
+    const chartData = JSON.parse(
+        document.getElementById('chart-incomes-data').textContent
+    );
 
     Highcharts.setOptions({
         lang: {
@@ -13,12 +10,12 @@
         }
     });
 
-    Highcharts.chart('container-for-balance', {
+    Highcharts.chart('chart-incomes-container', {
         chart: {
-            marginBottom: 67,
+            spacingRight: 25,
         },
         title: {
-            text: '',
+            text: chartData.chart_title,
         },
         legend: {
             layout: 'horizontal',
@@ -26,11 +23,12 @@
             verticalAlign: 'top',
             floating: true,
             borderWidth: 0,
+            x: -10
         },
         xAxis: {
             min: 0.49,
-            max: categoryLabels.length - 1.49,
-            categories: categoryLabels,
+            max: chartData.categories.length - 1.49,
+            categories: chartData.categories,
             type: 'category',
             lineColor: '#000',
             lineWidth: 2,
@@ -41,7 +39,6 @@
                     fontSize: '10px',
                     fontFamily: 'Calibri, Verdana',
                 },
-                rotation: -45,
             },
         },
         yAxis: {
@@ -58,34 +55,52 @@
             title: {
                 text: ''
             },
+
         },
         tooltip: {
-            split: true,
-            pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br/>',
+            pointFormat: '<b>{point.y:,.0f}</b><br/>',
                 style: {
                     fontSize: '13px',
                     fontFamily: 'Calibri, Verdana',
                 },
         },
-        credits: {
-            enabled: false
-        },
         plotOptions: {
             area: {
-                fillOpacity: 0.5
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.y:.0f}',
+                    verticalAlign:'top',
+                    color: '#77933c',
+                    style: {
+                        textOutline: 0,
+                    },
+                },
+                enableMouseTracking: false,
+                fillOpacity: 0.65,
+            },
+            line: {
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.y:.0f}',
+                    y: -5,
+                    color: '#2d5f2e',
+                    style: {
+                        textOutline: 0,
+                    },
+                },
+                enableMouseTracking: false,
             }
         },
         series: [{
+            name: chartData.salary_title,
+            data: chartData.salary,
             type: 'area',
-            name: '{% translate "Incomes" %}',
-            data: {{ incomes }},
-            color: '#77933c'
+            color: '#98bc62',
         }, {
-            type: 'area',
-            name: '{% translate "Expenses" %}',
-            data: {{ expenses }},
-            color: '#c0504d'
-        }]
+            name: chartData.incomes_title,
+            data: chartData.incomes,
+            type: 'line',
+            color: '#2d5f2e',
+        }],
     });
-    });
-</script>
+});

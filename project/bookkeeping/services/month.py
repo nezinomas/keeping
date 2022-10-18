@@ -65,9 +65,11 @@ class MonthService():
         categories, data_target, data_fact = self._chart_targets(types, total_row, targets)
 
         return {
-            'chart_targets_categories': categories,
-            'chart_targets_data_target': data_target,
-            'chart_targets_data_fact': data_fact,
+            'categories': categories,
+            'target': data_target,
+            'targetTitle': _('Plan'),
+            'fact': data_fact,
+            'factTitle': _('Fact'),
         }
 
     def chart_expenses_context(self):
@@ -77,9 +79,7 @@ class MonthService():
         total_row = self._spending.total_row
         total_row[_('Savings')] = self._savings.total
 
-        return {
-            'expenses': self._chart_expenses(types, total_row)
-        }
+        return self._chart_expenses(types, total_row)
 
     def info_context(self):
         fact_incomes = Income.objects.sum_by_month(self._year, self._month)

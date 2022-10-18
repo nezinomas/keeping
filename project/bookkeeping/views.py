@@ -37,14 +37,8 @@ class Index(TemplateViewMixin):
                 'bookkeeping/includes/year_balance.html',
                 ind.balance_context(),
                 self.request),
-            'chart_balance': render_to_string(
-                'bookkeeping/includes/chart_balance.html',
-                ind.chart_balance_context(),
-                self.request),
-            'chart_expenses': render_to_string(
-                'bookkeeping/includes/chart_expenses.html',
-                exp.chart_context(),
-                self.request),
+            'chart_balance': ind.chart_balance_context(),
+            'chart_expenses': exp.chart_expenses_context(),
             'expenses': render_to_string(
                 'bookkeeping/includes/year_expenses.html',
                 exp.table_context(),
@@ -182,14 +176,8 @@ class Month(TemplateViewMixin):
                 'bookkeeping/includes/spending_info.html',
                 {'items': obj.info_context},
                 self.request),
-            'chart_expenses': render_to_string(
-                'bookkeeping/includes/chart_month_expenses.html',
-                obj.chart_expenses_context(),
-                self.request),
-            'chart_targets': render_to_string(
-                'bookkeeping/includes/chart_month_targets.html',
-                obj.chart_targets_context(),
-                self.request),
+            'chart_expenses': obj.chart_expenses_context(),
+            'chart_targets': obj.chart_targets_context(),
         }
         return super().get_context_data(**kwargs) | context
 
@@ -218,9 +206,12 @@ class Summary(TemplateViewMixin):
     template_name = 'bookkeeping/summary.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return \
-            services.ChartSummaryService().context(context)
+        obj = services.ChartSummaryService()
+
+        return {
+            'chart_balance': obj.chart_balance(),
+            'chart_incomes': obj.chart_incomes()
+        }
 
 
 class SummarySavings(TemplateViewMixin):
@@ -229,22 +220,44 @@ class SummarySavings(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         obj = services.SummarySavingsService()
 
-        context = super().get_context_data(**kwargs)
-        context['records'] = obj.records
-
+        super_context = super().get_context_data(**kwargs)
+        context = dict(records=obj.records)
         if not obj.records or obj.records < 1:
-            return context
+            return super_context | context
 
-        context |= {
-            'funds': obj.make_chart_data('funds'),
-            'shares': obj.make_chart_data('shares'),
-            'funds_shares': obj.make_chart_data('funds', 'shares'),
-            'pensions3': obj.make_chart_data('pensions3'),
-            'pensions2': obj.make_chart_data('pensions2'),
-            'all': obj.make_chart_data('funds', 'shares', 'pensions3'),
-        }
+        common_text = dict(
+            text_total=_('Total'),
+            text_profit=_('Profit'),
+            text_invested=_('Invested'),
+        )
+        context |= dict(
+            funds=
+                obj.make_chart_data('funds')
+                | common_text
+                | dict(chart_title=_('Funds')),
+            shares=
+                obj.make_chart_data('shares')
+                | common_text
+                | dict(chart_title=_('Shares')),
+            funds_shares=
+                obj.make_chart_data('funds', 'shares')
+                | common_text
+                | dict(chart_title=f"{_('Funds')} {_('Shares')}"),
+            pensions3=
+                obj.make_chart_data('pensions3')
+                | common_text
+                | dict(chart_title=f"{_('Pensions')} III"),
+            pensions2=
+                obj.make_chart_data('pensions2')
+                | common_text
+                | dict(chart_title=f"{_('Pensions')} II"),
+            all=
+                obj.make_chart_data('funds', 'shares', 'pensions3')
+                | common_text
+                | dict(chart_title=f"{_('Funds')}, {_('Shares')}, {_('Pensions')}"),
+        )
 
-        return context
+        return super_context | context
 
 
 class SummaryExpenses(FormViewMixin):
@@ -262,11 +275,13 @@ class SummaryExpenses(FormViewMixin):
         if obj.serries_data:
             context |= {
                 'found': True,
-                'categories': obj.categories,
-                'data': obj.serries_data,
                 'total_col': obj.total_col,
                 'total_row': obj.total_row,
-                'total': obj.total
+                'total': obj.total,
+                'chart': {
+                    'categories': obj.categories,
+                    'data': obj.serries_data,
+                }
             }
         else:
             context['error'] = _('No data found')

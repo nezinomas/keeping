@@ -1,9 +1,12 @@
+import contextlib
 from datetime import datetime
 from typing import Dict, List, Tuple
 
 from django.http import HttpRequest
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 
+from ...core.lib.translation import month_names, weekday_names
 from .. import models
 from .drinks_options import DrinksOptions
 from .drinks_stats import DrinkStats, std_av
@@ -42,40 +45,39 @@ class RenderContext():
         self._avg, self._qty = self._get_avg_qty()
         self._DrinkStats = self._get_drink_stats()
 
-    def chart_quantity(self) -> str:
-        r = render_to_string(
-            'drinks/includes/chart_quantity.html',
-            {'data': self._DrinkStats.quantity},
-            self._request
-        )
-        return r
+    def chart_quantity(self) -> List[Dict]:
+        return {
+            'categories' : list(month_names().values()),
+            'data' : self._DrinkStats.quantity,
+            'text' : {'quantity': ('Quantity')}
+        }
 
     def chart_consumption(self) -> str:
-        r = render_to_string(
-            'drinks/includes/chart_consumption.html', {
-                'data': self._DrinkStats.consumption,
-                'target': self._target,
-                'avg': self._avg,
-                'avg_label_y': self._avg_label_position(self._avg, self._target),
-                'target_label_y': self._target_label_position(self._avg, self._target),
+        return {
+            'categories' : list(month_names().values()),
+            'data': self._DrinkStats.consumption,
+            'target': self._target,
+            'avg': self._avg,
+            'avg_label_y': self._avg_label_position(self._avg, self._target),
+            'target_label_y': self._target_label_position(self._avg, self._target),
+            'text': {
+                'limit': _('Limit'),
+                'alcohol': _('Alcohol consumption per day, ml'),
             },
-            self._request
-        )
-        return r
+        }
 
-    def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
-        rendered = render_to_string(
-            'counts/includes/chart_calendar.html',
-            {
-                'data': data,
-                'id': chart_id,
-            },
-            self._request
-        )
-        return rendered
+    def chart_calendar(self, data: List[Dict]) -> str:
+        return {
+            'data': data,
+            'categories': [x[0] for x in list(weekday_names().values())],
+            'text' : {
+                'gap': _('Gap'),
+                'quantity': _('Quantity'),
+            }
+        }
 
     def tbl_consumption(self) -> str:
-        r = render_to_string(
+        return render_to_string(
             'drinks/includes/tbl_consumption.html', {
                 'qty': self._qty,
                 'avg': self._avg,
@@ -83,36 +85,32 @@ class RenderContext():
             },
             self._request
         )
-        return r
 
     def tbl_last_day(self) -> str:
-        r = render_to_string(
+        return render_to_string(
             'drinks/includes/tbl_last_day.html',
             self._dry_days(),
             self._request
         )
-        return r
 
     def tbl_alcohol(self) -> str:
         obj = DrinksOptions()
         stdav = self._qty / obj.ratio
 
-        r = render_to_string(
+        return render_to_string(
             'drinks/includes/tbl_alcohol.html', {
-                'l': obj.stdav_to_alkohol(stdav)
+                'l': obj.stdav_to_alcohol(stdav)
             },
             self._request
         )
-        return r
 
     def tbl_std_av(self) -> str:
-        r = render_to_string(
+        return render_to_string(
             'drinks/includes/tbl_std_av.html', {
                 'items': std_av(self._year, self._qty)
             },
             self._request
         )
-        return r
 
     def _get_target(self):
         obj = DrinksOptions()
@@ -140,18 +138,15 @@ class RenderContext():
 
     def _dry_days(self) -> Dict:
         qs = None
-        try:
+
+        with contextlib.suppress(models.Drink.DoesNotExist):
             qs = models.Drink.objects.year(self._year).latest()
-        except models.Drink.DoesNotExist:
-            pass
 
         # if current year has no record
         # try get latest record
         if not qs:
-            try:
+            with contextlib.suppress(models.Drink.DoesNotExist):
                 qs = models.Drink.objects.related().latest()
-            except models.Drink.DoesNotExist:
-                pass
 
         if qs:
             latest = qs.date
