@@ -89,8 +89,7 @@ class ChartSummaryExpensesService():
         for i in data:
             _title = i['title']
 
-            _root = i.get('root')
-            if _root:
+            if _root := i.get('root'):
                 _title = f'{_root}/{_title}'
 
             _sum = float(i['sum'])

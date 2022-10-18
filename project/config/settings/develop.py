@@ -36,8 +36,8 @@ MIDDLEWARE = [
 # Overwriten TEMPLATE OPTION
 # disabled template cashing
 TEMPLATES[0]['OPTIONS']['loaders'] = [
-    'django_spaceless_templates.loaders.filesystem.Loader',
-    'django_spaceless_templates.loaders.app_directories.Loader', ]
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader', ]
 
 
 INTERNAL_IPS = ('127.0.0.1', 'localhost', )

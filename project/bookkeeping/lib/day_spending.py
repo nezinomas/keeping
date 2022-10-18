@@ -22,7 +22,7 @@ class DaySpending(ExpenseBalance):
 
         self._year = year
         self._month = month
-        self._necessary = necessary if necessary else []
+        self._necessary = necessary or []
 
         self._spending = self._calc_spending(self.expenses, self.exceptions, plans)
 

@@ -1,12 +1,14 @@
-<div id="{{ chart }}_container"></div>
-<script>
-    $(function () {
-       Highcharts.chart('{{ chart }}_container', {
+function chartReaded(idData, idContainer) {
+    const chartData = JSON.parse(
+        document.getElementById(idData).textContent
+    );
+
+    Highcharts.chart(idContainer, {
         chart: {
             type: 'bullet'
         },
         title: {
-            text: '{{ chart_title|safe }}',
+            text: chartData.chart_title,
             style: {
                 fontSize: '16px',
                 fontFamily: 'Calibri, Verdana',
@@ -15,7 +17,7 @@
         xAxis: {
             lineColor: '#000',
             lineWidth: 2,
-            categories: {{ categories|safe }},
+            categories: chartData.categories,
             labels: {
                 useHTML: true,
                 style: {
@@ -54,12 +56,12 @@
             },
         },
         series: [{
-            data: {{ data|safe }},
-            color: 'rgba({{ chart_column_color|safe }}, 0.65)',
-            borderColor: 'rgba({{ chart_column_color|safe }}, 1)',
+            data: chartData.data,
+            color: `rgba(${chartData.chart_column_color}, 0.65)`,
+            borderColor: `rgba(${chartData.chart_column_color}, 1)`,
             dataLabels: [{
                 enabled: true,
-                color: 'rgba({{ chart_column_color|safe }}, 1)',
+                color: `rgba(${chartData.chart_column_color}, 1)`,
                 style: {
                     fontSize: '7px',
                     fontWeight: 'bold',
@@ -70,7 +72,7 @@
         }, {
             type: 'column',
             borderWidth: 0,
-            data: {{ targets|safe }},
+            data: chartData.targets,
             color: 'rgba(0,0,0,0)',
             dataLabels: [{
                 enabled: true,
@@ -88,5 +90,4 @@
             }]
         }]
     });
-});
-</script>
+};

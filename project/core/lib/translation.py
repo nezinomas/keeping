@@ -2,7 +2,7 @@ from django.utils.translation import gettext as _
 
 
 def month_names():
-    arr = {
+    return {
         'January': _('January'),
         'February': _('February'),
         'March': _('March'),
@@ -16,10 +16,9 @@ def month_names():
         'November': _('November'),
         'December': _('December')
     }
-    return arr
 
 def weekday_names():
-    arr = {
+    return {
         'Monday': _('Monday'),
         'Tuesday': _('Tuesday'),
         'Wednesday': _('Wednesday'),
@@ -28,4 +27,3 @@ def weekday_names():
         'Saturday': _('Saturday'),
         'Sunday': _('Sunday'),
     }
-    return arr

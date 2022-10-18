@@ -1,7 +1,9 @@
-<div id="container-for-expenses"></div>
-<script>
-    /* Build the chart */
-    Highcharts.chart('container-for-expenses', {
+$(function () {
+    const chartData = JSON.parse(
+        document.getElementById('chart-expenses-data').textContent
+    );
+
+    Highcharts.chart('chart-expenses-container', {
         chart: {
             type: 'column',
         },
@@ -76,7 +78,7 @@
             '#8dc7d6',
         ],
         series: [{
-            data: {{ data|safe }},
+            data: chartData,
             dataLabels: {
                 enabled: true,
                 rotation: -90,
@@ -96,7 +98,4 @@
             }
         }]
     });
-
-</script>
-
-
+});

@@ -11,7 +11,7 @@ pytestmark = pytest.mark.django_db
 
 def test_context_contains():
     obj = ChartReaded()
-    actual = obj.context()
+    actual = obj.context()['chart']
 
     assert 'categories' in actual
     assert 'data' in actual
@@ -39,7 +39,7 @@ def test_categories(mck_get_readed, mck_targets_list):
     obj = ChartReaded()
     actual = obj.context()
 
-    assert actual['categories'] == [1, 2]
+    assert actual['chart']['categories'] == [1, 2]
 
 
 @patch('project.books.services.chart_readed.ChartReaded._targets_list')
@@ -51,7 +51,7 @@ def test_targets(mck_get_readed, mck_targets_list):
     obj = ChartReaded()
     actual = obj.context()
 
-    assert actual['targets'] == [30, 0]
+    assert actual['chart']['targets'] == [30, 0]
 
 
 @patch('project.books.services.chart_readed.ChartReaded._targets_list')
@@ -63,7 +63,7 @@ def test_data(mck_get_readed, mck_targets_list):
     obj = ChartReaded()
     actual = obj.context()
 
-    assert actual['data'] == [{'y': 1, 'target': 30}, {'y': 2, 'target': 40}]
+    assert actual['chart']['data'] == [{'y': 1, 'target': 30}, {'y': 2, 'target': 40}]
 
 
 @patch('project.books.services.chart_readed.ChartReaded._targets_list')
@@ -72,7 +72,7 @@ def test_chart_title(mck_get_readed, mck_targets_list):
     obj = ChartReaded()
     actual = obj.context()
 
-    assert actual['chart_title'] == 'Perskaitytos knygos'
+    assert actual['chart']['chart_title'] == 'Perskaitytos knygos'
 
 
 def test_target_list_returns_dict():

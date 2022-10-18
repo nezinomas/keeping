@@ -2,6 +2,7 @@ from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from ...accounts.models import AccountBalance
+from ...core.lib.translation import month_names
 from ...debts.models import Debt
 from ...expenses.models import Expense
 from ...incomes.models import Income
@@ -46,7 +47,7 @@ class IndexService():
             lend.append({'date': x['date'], 'sum': x['sum_debt']})
             lend_return.append({'date': x['date'], 'sum': x['sum_return']})
 
-        data = {
+        return {
             'incomes': Income.objects.sum_by_month(year),
             'expenses': Expense.objects.sum_by_month(year),
             'savings': Saving.objects.sum_by_month(year),
@@ -56,8 +57,6 @@ class IndexService():
             'lend': lend,
             'lend_return': lend_return,
         }
-
-        return data
 
     def balance_context(self):
         return {
@@ -71,17 +70,19 @@ class IndexService():
     def balance_short_context(self):
         start = self._YearBalance.amount_start
         end = self._YearBalance.amount_end
-        context = {
+        return {
             'title': [_('Start of year'), _('End of year'), _('Year balance')],
             'data': [start, end, (end - start)],
             'highlight': [False, False, True],
         }
-        return context
 
     def chart_balance_context(self):
         return {
-            'expenses': self._YearBalance.expense_data,
+            'categories': [*month_names().values()],
             'incomes': self._YearBalance.income_data,
+            'incomes_title': _('Incomes'),
+            'expenses': self._YearBalance.expense_data,
+            'expenses_title': _('Expenses'),
         }
 
     def averages_context(self):
@@ -91,34 +92,26 @@ class IndexService():
         }
 
     def borrow_context(self):
-        borrow = sum(self._YearBalance.borrow_data)
-        borrow_return = sum(self._YearBalance.borrow_return_data)
-
-        if borrow:
-            context = {
+        if borrow := sum(self._YearBalance.borrow_data):
+            borrow_return = sum(self._YearBalance.borrow_return_data)
+            return {
                 'title': [_('Borrow'), _('Borrow return')],
                 'data': [borrow, borrow_return],
             }
-            return context
-
         return {}
 
     def lend_context(self):
-        lend = sum(self._YearBalance.lend_data)
-        lend_return = sum(self._YearBalance.lend_return_data)
-
-        if lend:
-            context = {
+        if lend := sum(self._YearBalance.lend_data):
+            lend_return = sum(self._YearBalance.lend_return_data)
+            return {
                 'title': [_('Lend'), _('Lend return')],
                 'data': [lend, lend_return],
             }
-            return context
 
         return {}
 
     @staticmethod
     def percentage_from_incomes(incomes, savings):
-        if incomes and savings:
-            return (savings * 100) / incomes
-
-        return 0
+        return \
+            (savings * 100) / incomes \
+            if incomes and savings else 0

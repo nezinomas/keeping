@@ -1,10 +1,7 @@
-{% load i18n %}
-{% load charts %}
-
-<div id="chart_consumption_container"></div>
-<script>
-    $(function () {
-        var categoryLabels = {% months %};
+$(function () {
+    const chartData = JSON.parse(
+        document.getElementById('chart-consumption-data').textContent
+    );
 
     Highcharts.setOptions({
         lang: {
@@ -13,7 +10,7 @@
         }
     });
 
-    Highcharts.chart('chart_consumption_container', {
+    Highcharts.chart('chart-consumption-container', {
         chart: {
             height: '350px',
         },
@@ -29,8 +26,8 @@
         },
         xAxis: {
             min: 0.49,
-            max: categoryLabels.length - 1.49,
-            categories: categoryLabels,
+            max: chartData.categories.length - 1.49,
+            categories: chartData.categories,
             type: 'category',
             lineColor: '#000',
             lineWidth: 2,
@@ -53,26 +50,26 @@
             plotLines: [{
                 color: '#04a41f',
                 width: 2,
-                value: {{ target|safe }},
+                value: chartData.target,
                 label: {
-                    text: '{% translate "Limit" %}: {{ target|floatformat:0|safe }}',
+                    text: `${chartData.text.limit}: ${chartData.target.toFixed()}`,
                     align: 'right',
                     x: -5,
-                    y: {{ target_label_y|safe }},
+                    y: chartData.target_label_y,
                     style: {
-                            color: '#04a41f',
-                            fontWeight: 'bold'
-                        }
+                        color: '#04a41f',
+                        fontWeight: 'bold'
+                    }
                 }
             }, {
                 color: '#ffc000',
                 width: 2,
-                value: {{ avg|safe }},
+                value: chartData.avg,
                 label: {
-                    text: 'Avg: {{ avg|floatformat:0|safe }}',
+                    text: `Avg: ${chartData.avg.toFixed()}`,
                     align: 'right',
                     x: -5,
-                    y: {{ avg_label_y|safe }},
+                    y: chartData.avg_label_y,
                     style: {
                         color: '#ffc000',
                         fontWeight: 'bold'
@@ -100,9 +97,9 @@
         },
         series: [{
             type: 'area',
-            name: '{% translate "Alcohol consumption per day, ml" %}',
+            name: chartData.text.alcohol,
             showInLegend: false,
-            data: {{ data|safe }},
+            data: chartData.data,
             color: '#c0504d',
                 dataLabels: {
                 enabled: true,
@@ -118,5 +115,4 @@
             }
         }]
     });
-    });
-</script>
+});

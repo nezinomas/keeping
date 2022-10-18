@@ -30,7 +30,5 @@ class AccountService:
             'delta': 0,
         }
 
-        if self._data:
-            total_row = sum_all(self.data)
-
-        return total_row
+        return \
+            sum_all(self.data) if self._data else total_row

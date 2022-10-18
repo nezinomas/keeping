@@ -14,41 +14,34 @@ class DetailedService():
         self._year = year
 
     def incomes_context(self, context):
-        qs = Income.objects.sum_by_month_and_type(self._year)
-
-        if not qs:
-            return context
-
-        return self._detailed_context(context, qs, _('Incomes'))
+        return self._get_context(Income, _('Incomes'), context)
 
     def savings_context(self, context):
-        qs = Saving.objects.sum_by_month_and_type(self._year)
-
-        if not qs:
-            return context
-
-        return self._detailed_context(context, qs, _('Savings'))
+        return self._get_context(Saving, _('Savings'), context)
 
     def expenses_context(self, context):
         qs = Expense.objects.sum_by_month_and_name(self._year)
+
         expenses_types = expense_types()
-
         for title in expenses_types:
-            filtered = [*filter(lambda x: title in x['type_title'], qs)]
-
-            if not filtered:
-                continue
-
-            self._detailed_context(
-                context=context,
-                data=filtered,
-                name=_('Expenses / %(title)s') % ({'title': title})
-            )
-
+            if filtered := [*filter(lambda x: title in x['type_title'], qs)]:
+                self._detailed_context(
+                    context=context,
+                    data=filtered,
+                    name=_('Expenses / %(title)s') % ({'title': title})
+                )
         return context
 
+    def _get_context(self, model, title, context):
+        qs = \
+            model.objects \
+            .sum_by_month_and_type(self._year)
+
+        updated_context = self._detailed_context(context, qs, title)
+        return updated_context if qs else context
+
     def _detailed_context(self, context, data, name):
-        context = context if context else {}
+        context = context or {}
 
         if 'data' not in context.keys():
             context['data'] = []
@@ -75,9 +68,7 @@ class DetailedService():
             values = {k: item[k] for k in sum_value_keys}
             container[key].update(values)
 
-        new_dataset = []
-        for item in container.items():
-            new_dataset.append({group_by_key: item[0], **item[1]})
+        new_dataset = [{group_by_key: item[0], **item[1]} for item in container.items()]
 
         new_dataset.sort(key=lambda item: item[group_by_key])
 

@@ -88,8 +88,8 @@ def test_view_context_found(client_logged):
 
     assert response.context['found']
     assert 'form' in response.context
-    assert 'categories' in response.context
-    assert 'data' in response.context
+    assert 'categories' in response.context['chart']
+    assert 'data' in response.context['chart']
     assert 'total_col' in response.context
     assert 'total_row' in response.context
     assert 'total' in response.context

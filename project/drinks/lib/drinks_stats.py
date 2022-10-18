@@ -9,7 +9,7 @@ from .drinks_options import DrinksOptions
 
 class DrinkStats():
     def __init__(self, arr: List[Dict]):
-        _list = [0.0 for x in range(0, 12)]
+        _list = [0.0 for _ in range(12)]
 
         self._consumption = _list.copy()
         self._quantity = _list.copy()
@@ -50,7 +50,7 @@ def std_av(year: int, qty: float) -> List[Dict]:
 
     obj = DrinksOptions()
 
-    arr = [
+    return [
         {
             'title': _('Beer') + ', 0.5L',
             **{k: obj.convert(v, 'beer') for k, v in a.items()}
@@ -69,13 +69,10 @@ def std_av(year: int, qty: float) -> List[Dict]:
         },
     ]
 
-    return arr
-
 
 def _dates(year: int) -> Tuple[int, int, int]:
     now = datetime.now().date()
-
-    year = year if year else now.year
+    year = year or now.year
 
     _year = now.year
     _month = now.month

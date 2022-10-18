@@ -4,6 +4,7 @@ import pytest
 from freezegun import freeze_time
 from mock import Mock, patch
 
+from ...expenses.factories import ExpenseTypeFactory
 from ..services import common as T
 
 pytestmark = pytest.mark.django_db
@@ -21,6 +22,14 @@ def test_expenses_types_no_args(qs):
 @patch('project.bookkeeping.services.common.ExpenseType.objects.items')
 def test_expenses_types(qs):
     qs.return_value.values_list.return_value = ['T']
+
+    actual = T.expense_types('A')
+
+    assert ['A', 'T'] == actual
+
+
+def test_expenses_types_from_db():
+    ExpenseTypeFactory(title='T')
 
     actual = T.expense_types('A')
 
