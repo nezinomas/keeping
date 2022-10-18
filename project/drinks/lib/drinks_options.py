@@ -37,9 +37,7 @@ class DrinksOptions():
         _ml = _node.get('ml', 1)
         _stdav = _node.get('stdav', 1)
 
-        _converted = (ml * _stdav) / _ml
-
-        return _converted
+        return (ml * _stdav) / _ml
 
     def stdav_to_ml(self, stdav: float, drink_type: str = None) -> float:
         if not drink_type:
@@ -49,9 +47,7 @@ class DrinksOptions():
         _ml = _node.get('ml', 1)
         _stdav = _node.get('stdav', 1)
 
-        _converted = (stdav * _ml) / _stdav
-
-        return _converted
+        return (stdav * _ml) / _stdav
 
     def stdav_to_alcohol(self, stdav: float) -> float:
         # one stdav = 10g pure alkohol (100%)
