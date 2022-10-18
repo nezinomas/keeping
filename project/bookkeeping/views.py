@@ -213,7 +213,7 @@ class Summary(TemplateViewMixin):
             'chart_incomes': obj.chart_incomes()
         }
 
-import json
+
 class SummarySavings(TemplateViewMixin):
     template_name = 'bookkeeping/summary_savings.html'
 
