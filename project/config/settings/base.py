@@ -158,9 +158,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
 ]
 
-for app in PROJECT_APPS:
-    INSTALLED_APPS.append(f'project.{app}')
-
+INSTALLED_APPS.extend(f'project.{app}' for app in PROJECT_APPS)
 
 # ================   URL CONFIGURATION
 ROOT_URLCONF = 'project.config.urls'
