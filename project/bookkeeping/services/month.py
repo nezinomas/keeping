@@ -47,7 +47,7 @@ class MonthService():
                 month=month,
                 expenses=qs_expenses,
                 types=self._expense_types,
-                necessary=self._necessary_expense_types(),
+                necessary=self.necessary_expense_types(),
                 plans=plans
             )
 
@@ -135,7 +135,7 @@ class MonthService():
             'total_savings': self._savings.total
         }
 
-    def _necessary_expense_types(self) -> List[str]:
+    def necessary_expense_types(self) -> List[str]:
         return \
             ExpenseType.objects \
             .items() \
