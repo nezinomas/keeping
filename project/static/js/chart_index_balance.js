@@ -1,12 +1,7 @@
-{% load i18n %}
-
-{% translate 'Incomes/Expenses' as chart_title %}
-
-<div id="container-balance-summary"></div>
-
-<script>
-    $(function () {
-        var categoryLabels = {{ balance_categories }};
+$(function () {
+    const chartData = JSON.parse(
+        document.getElementById('chart-balance-data').textContent
+    );
 
     Highcharts.setOptions({
         lang: {
@@ -15,12 +10,12 @@
         }
     });
 
-    Highcharts.chart('container-balance-summary', {
+    Highcharts.chart('chart-balance-container', {
         chart: {
-            spacingRight: 25,
+            marginBottom: 67,
         },
         title: {
-            text: '{{ chart_title }}',
+            text: '',
         },
         legend: {
             layout: 'horizontal',
@@ -28,12 +23,11 @@
             verticalAlign: 'top',
             floating: true,
             borderWidth: 0,
-            x: -10,
         },
         xAxis: {
             min: 0.49,
-            max: categoryLabels.length - 1.49,
-            categories: categoryLabels,
+            max: chartData.categories.length - 1.49,
+            categories: chartData.categories,
             type: 'category',
             lineColor: '#000',
             lineWidth: 2,
@@ -44,6 +38,7 @@
                     fontSize: '10px',
                     fontFamily: 'Calibri, Verdana',
                 },
+                rotation: -45,
             },
         },
         yAxis: {
@@ -60,7 +55,6 @@
             title: {
                 text: ''
             },
-
         },
         tooltip: {
             split: true,
@@ -70,18 +64,24 @@
                     fontFamily: 'Calibri, Verdana',
                 },
         },
+        credits: {
+            enabled: false
+        },
         plotOptions: {
             area: {
                 fillOpacity: 0.5
-            },
-            area: {
-                fillOpacity: 0.5,
             }
         },
-        series: [
-            {'name': '{% translate "Incomes" %}', 'data': {{ balance_income_data|safe }}, color: '#77933c', 'type': 'area'},
-            {'name': '{% translate "Expenses" %}', 'data': {{ balance_expense_data|safe }}, color: '#c0504d', 'type': 'area'},
-        ]
+        series: [{
+            type: 'area',
+            name: chartData.incomes_title,
+            data: chartData.incomes,
+            color: '#77933c'
+        }, {
+            type: 'area',
+            name: chartData.expenses_title,
+            data: chartData.expenses,
+            color: '#c0504d'
+        }]
     });
-    });
-</script>
+});

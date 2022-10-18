@@ -7,8 +7,8 @@
     <div class="col-lg-4">
         <div class="d-flex flex-column align-items-start h-100">
             <div class="w-100 mb-auto">
-                <div x-show="!show_chart">{{ chart_expenses|safe }}</div>
-                <div x-show="show_chart">{{ chart_targets|safe }}</div>
+                <div x-show="!show_chart"><div id="chart-expenses-container"></div></div>
+                <div x-show="show_chart"><div id="chart-targets-container"></div></div>
             </div>
             <div class="w-100" id="info">{{ info|safe }}</div>
         </div>

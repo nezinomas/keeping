@@ -1,3 +1,4 @@
+import contextlib
 from datetime import datetime
 
 from django.db.models import Sum
@@ -29,12 +30,9 @@ class Redirect(RedirectViewMixin):
                 .related() \
                 .first()
 
-        if not qs:
-            url = reverse('counts:empty')
-        else:
-            url = reverse('counts:index', kwargs={'slug': qs.slug})
-
-        return url
+        return \
+            reverse('counts:index', kwargs={'slug': qs.slug}) \
+            if qs else reverse('counts:empty')
 
 
 class Empty(TemplateViewMixin):
@@ -53,33 +51,30 @@ class InfoRow(CounTypetObjectMixin, TemplateViewMixin):
         week = weeknumber(year)
 
         qs_total = \
-            Count.objects \
-            .related() \
-            .filter(count_type=self.object, date__year=year) \
-            .aggregate(total=Sum('quantity'))
+                Count.objects \
+                .related() \
+                .filter(count_type=self.object, date__year=year) \
+                .aggregate(total=Sum('quantity'))
         total = qs_total.get('total') or 0
 
         gap = 0
         if year == datetime.now().year:
-            try:
+            with contextlib.suppress(Count.DoesNotExist):
                 qs_latest = \
                     Count.objects \
                     .related() \
                     .filter(count_type=self.object) \
                     .latest()
                 gap = (datetime.now().date() - qs_latest.date).days
-            except Count.DoesNotExist:
-                pass
 
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'title': self.object.title,
             'week': week,
             'total': total,
             'ratio': total / week,
             'current_gap': gap,
-        })
-        return context
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class Index(CounTypetObjectMixin, TemplateViewMixin):
@@ -136,9 +131,9 @@ class TabIndex(CounTypetObjectMixin, ContextMixin, TemplateViewMixin):
         context.update({
             'object': self.object,
             'chart_calendar_1H': \
-                self.render_context.chart_calendar(calendar_data[0:6], '1H'),
+                self.render_context.chart_calendar(calendar_data[:6]),
             'chart_calendar_2H': \
-                self.render_context.chart_calendar(calendar_data[6:], '2H'),
+                self.render_context.chart_calendar(calendar_data[6:]),
             'chart_weekdays': \
                 self.render_context.chart_weekdays(),
             'chart_months': \

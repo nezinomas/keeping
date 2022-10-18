@@ -28,12 +28,11 @@ class Index(GetMonthMixin, TemplateViewMixin):
     template_name = 'expenses/index.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'types': rendered_content(self.request, expenses_type.Lists),
             'expenses': rendered_content(self.request, Lists),
-        })
-        return context
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class Lists(GetMonthMixin, ListViewMixin):
@@ -60,11 +59,8 @@ class Lists(GetMonthMixin, ListViewMixin):
                 _('No records in <b>%(year)s</b>.') \
                 % {'year': self.request.user.year}
 
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'notice': notice,
-        })
-        return context
+        context = {'notice': notice}
+        return super().get_context_data(**kwargs) | context
 
 
 class New(CreateViewMixin):

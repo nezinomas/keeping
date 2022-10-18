@@ -170,7 +170,7 @@ def test_books_index_chart_year(client_logged):
 
     content = response.content.decode("utf-8")
 
-    assert '<div id="chart_readed_books_container"></div>' in content
+    assert '<div id="chart-readed-container"></div>' in content
 
 
 # ----------------------------------------------------------------------------

@@ -1,9 +1,12 @@
+import contextlib
 from datetime import datetime
 
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
 
 from ..core.lib.date import years
+from ..core.lib.translation import month_names
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  FormViewMixin, ListViewMixin,
                                  RedirectViewMixin, TemplateViewMixin,
@@ -36,39 +39,35 @@ class TabIndex(TemplateViewMixin):
         qs = Drink.objects.sum_by_day(year)
         past_latest_record = None
 
-        try:
+        with contextlib.suppress(Drink.DoesNotExist):
             qs_past = \
-                Drink \
-                .objects \
-                .related() \
-                .filter(date__year__lt=year) \
-                .latest()
+                    Drink \
+                    .objects \
+                    .related() \
+                    .filter(date__year__lt=year) \
+                    .latest()
             past_latest_record = qs_past.date
-        except Drink.DoesNotExist:
-            pass
 
         stats = CountStats(year=year, data=qs, past_latest=past_latest_record)
         data = stats.chart_calendar()
         rendered = H.RenderContext(self.request, year)
-
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'target_list': \
-                rendered_content(self.request, TargetLists, **kwargs),
+                    rendered_content(self.request, TargetLists, **kwargs),
             'compare_form_and_chart': \
-                rendered_content(self.request, CompareTwo, **kwargs),
+                    rendered_content(self.request, CompareTwo, **kwargs),
             'all_years': len(years()),
             'records': qs.count(),
             'chart_quantity': rendered.chart_quantity(),
             'chart_consumption': rendered.chart_consumption(),
-            'chart_calendar_1H': rendered.chart_calendar(data[0:6], '1H'),
-            'chart_calendar_2H': rendered.chart_calendar(data[6:], '2H'),
+            'chart_calendar_1H': rendered.chart_calendar(data[:6]),
+            'chart_calendar_2H': rendered.chart_calendar(data[6:]),
             'tbl_consumption': rendered.tbl_consumption(),
             'tbl_last_day': rendered.tbl_last_day(),
             'tbl_alcohol': rendered.tbl_alcohol(),
             'tbl_std_av': rendered.tbl_std_av(),
-        })
-        return context
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class TabData(ListViewMixin):
@@ -97,45 +96,52 @@ class TabHistory(TemplateViewMixin):
             for year in range(qs[0]['year'], datetime.now().year+1):
                 drink_years.append(year)
 
-                item = next((x for x in qs if x['year'] == year), False)
-                if item:
+                if item := next((x for x in qs if x['year'] == year), False):
                     _stdav = item['qty'] / ratio
-                    _alkohol = obj.stdav_to_alkohol(stdav=_stdav)
+                    _alcohol = obj.stdav_to_alcohol(stdav=_stdav)
 
-                    alcohol.append(_alkohol)
+                    alcohol.append(_alcohol)
                     ml.append(item['per_day'])
                 else:
                     alcohol.append(0.0)
                     ml.append(0.0)
 
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'tab': 'history',
-            'drinks_categories': drink_years,
-            'drinks_data_ml': ml,
-            'drinks_data_alcohol': alcohol,
             'records': len(drink_years) if len(drink_years) > 1 else 0,
-        })
-        return context
+            'chart': {
+                'categories': drink_years,
+                'data_ml': ml,
+                'data_alcohol': alcohol,
+                'text': {
+                    'title': _('Drinks'),
+                    'per_day': _('Average per day, ml'),
+                    'per_year': _('Pure alcohol per year, L'),
+                }
+            }
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class Compare(TemplateViewMixin):
-    template_name = 'drinks/includes/chart_compare.html'
+    template_name = 'drinks/includes/history.html'
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year + 1
         qty = kwargs.get('qty', 0)
         chart_serries = H.several_years_consumption(range(year - qty, year))
-        context = {
-            'serries': chart_serries,
-            'chart_container_name': 'history_chart',
+
+        return {
+            'chart': {
+                'categories': list(month_names().values()),
+                'serries': chart_serries,
+            },
         }
-        return context
 
 
 class CompareTwo(FormViewMixin):
     form_class = DrinkCompareForm
-    template_name = 'drinks/compare_form.html'
+    template_name = 'drinks/includes/compare_form.html'
     success_url = reverse_lazy('drinks:compare_two')
 
     def form_valid(self, form, **kwargs):
@@ -145,10 +151,13 @@ class CompareTwo(FormViewMixin):
         chart_serries = H.several_years_consumption([year1, year2])
 
         if len(chart_serries) == 2:
-            context.update({
+            context |= {
                 'form': form,
-                'serries': chart_serries,
-            })
+                'chart': {
+                    'categories': list(month_names().values()),
+                    'serries': chart_serries,
+                },
+            }
         return render(self.request, self.template_name, context)
 
 

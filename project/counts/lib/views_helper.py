@@ -1,3 +1,4 @@
+import contextlib
 from typing import Dict, List
 
 from django.http import HttpRequest
@@ -5,6 +6,7 @@ from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
+from ...core.lib.translation import month_names, weekday_names
 from ..lib.stats import Stats
 from ..models import Count, CountType
 from .stats import Stats
@@ -17,16 +19,12 @@ class CounTypetObjectMixin():
         if self.object:
             return
 
-        count_type_slug = self.kwargs.get('slug')
-
-        if count_type_slug:
-            try:
+        if count_type_slug := self.kwargs.get('slug'):
+            with contextlib.suppress(CountType.DoesNotExist):
                 self.object = \
-                    CountType.objects \
-                    .related() \
-                    .get(slug=count_type_slug)
-            except CountType.DoesNotExist:
-                pass
+                        CountType.objects \
+                        .related() \
+                        .get(slug=count_type_slug)
 
 
 class ContextMixin():
@@ -38,17 +36,14 @@ class ContextMixin():
         past_last_record = None
 
         if year:
-            try:
+            with contextlib.suppress(Count.DoesNotExist, AttributeError):
                 qs_past = \
-                    Count.objects \
-                    .related() \
-                    .filter(date__year__lt=self.get_year(), count_type=self.object) \
-                    .latest()
+                        Count.objects \
+                        .related() \
+                        .filter(date__year__lt=self.get_year(), count_type=self.object) \
+                        .latest()
 
                 past_last_record = qs_past.date
-            except (Count.DoesNotExist, AttributeError):
-                pass
-
         return Stats(year=year, data=qs_data, past_latest=past_last_record)
 
     def get_context_data(self, **kwargs):
@@ -78,73 +73,48 @@ class RenderContext():
         if not title:
             title = _('Weekdays, %(year)s year') % ({'year': self._year})
 
-        rendered = render_to_string(
-            'counts/includes/chart_periodicity.html',
-            {
-                'data': [x['count'] for x in self._stats.weekdays_stats()],
-                'categories': [x[:4] for x in Stats.weekdays()],
-                'chart': 'chart_weekdays',
-                'chart_title': title,
-                'chart_column_color': '70, 171, 157',
-            },
-            self._request
-        )
-        return rendered
+        return {
+            'data': [x['count'] for x in self._stats.weekdays_stats()],
+            'categories': [x[:4] for x in Stats.weekdays()],
+            'chart_title': title,
+            'chart_column_color': '70, 171, 157',
+        }
 
     def chart_months(self, title: str = None) -> str:
         if not title:
             title = self._year
 
-        rendered = render_to_string(
-            'counts/includes/chart_periodicity.html',
-            {
-                'data': self._stats.months_stats(),
-                'categories': Stats.months(),
-                'chart': 'chart_months',
-                'chart_title': title,
-                'chart_column_color': '70, 171, 157',
-            },
-            self._request
-        )
-        return rendered
+        return {
+            'data': self._stats.months_stats(),
+            'categories': Stats.months(),
+            'chart_title': title,
+            'chart_column_color': '70, 171, 157',
+        }
 
     def chart_years(self, title: str = _lazy('Year')) -> str:
         year_totals = self._stats.year_totals()
-        rendered = render_to_string(
-            'counts/includes/chart_periodicity.html',
-            {
-                'data': list(year_totals.values()),
-                'categories': list(year_totals.keys()),
-                'chart': 'chart_years',
-                'chart_title': title,
-                'chart_column_color': '70, 171, 157',
-            },
-            self._request
-        )
-        return rendered
+        return {
+            'data': list(year_totals.values()),
+            'categories': list(year_totals.keys()),
+            'chart_title': title,
+            'chart_column_color': '70, 171, 157',
+        }
 
-    def chart_calendar(self, data: List[Dict], chart_id='F') -> str:
-        rendered = render_to_string(
-            'counts/includes/chart_calendar.html',
-            {
-                'data': data,
-                'id': chart_id,
-            },
-            self._request
-        )
-        return rendered
+    def chart_calendar(self, data: List[Dict]) -> str:
+        return {
+            'data': data,
+            'categories': [x[0] for x in list(weekday_names().values())],
+            'text': {
+                'gap': _('Gap'),
+                'quantity': _('Quantity'),
+            }
+        }
 
     def chart_histogram(self) -> str:
         gaps = self._stats.gaps()
-        rendered = render_to_string(
-            'counts/includes/chart_periodicity.html',
-            {
-                'data': list(gaps.values()),
-                'categories': [f'{x}d' for x in gaps.keys()],
-                'chart': 'chart_histogram',
-                'chart_title': _('Frequency of gaps, in days'),
-                'chart_column_color': '196, 37, 37',
-            },
-            self._request
-        )
-        return rendered
+        return {
+            'data': list(gaps.values()),
+            'categories': [f'{x}d' for x in gaps.keys()],
+            'chart_title': _('Frequency of gaps, in days'),
+            'chart_column_color': '196, 37, 37',
+        }

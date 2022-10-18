@@ -187,7 +187,7 @@ def test_convert_from_user(qty, from_, to, expect, get_user):
 def test_stdav_to_alkohol(drink_type, stdav, expect, get_user):
     get_user.drink_type = drink_type
 
-    actual = DrinksOptions().stdav_to_alkohol(stdav)
+    actual = DrinksOptions().stdav_to_alcohol(stdav)
 
     assert actual == expect
 
@@ -202,7 +202,7 @@ def test_stdav_to_alkohol(drink_type, stdav, expect, get_user):
     ]
 )
 def test_stdav_to_alkohol_01(drink_type, stdav, expect):
-    actual = DrinksOptions(drink_type).stdav_to_alkohol(stdav)
+    actual = DrinksOptions(drink_type).stdav_to_alcohol(stdav)
 
     assert actual == expect
 

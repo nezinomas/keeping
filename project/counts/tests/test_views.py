@@ -413,7 +413,7 @@ def test_tab_index_chart_weekdays(client_logged):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    assert 'id="chart_weekdays"><div id="chart_weekdays_container"></div>' in content
+    assert 'id="chart_weekdays"><div id="chart-weekdays-container"></div>' in content
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -424,7 +424,7 @@ def test_tab_index_chart_months(client_logged):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    assert 'id="chart_months"><div id="chart_months_container"></div>' in content
+    assert 'id="chart_months"><div id="chart-months-container"></div>' in content
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -436,7 +436,7 @@ def test_tab_index_chart_histogram(client_logged):
 
     content = response.content.decode("utf-8")
 
-    assert 'id="chart_histogram"><div id="chart_histogram_container"></div>' in content
+    assert 'id="chart_histogram"><div id="chart-histogram-container"></div>' in content
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -466,8 +466,10 @@ def test_index_chart_calendar_gap_from_previous_year(client_logged):
     url = reverse('counts:index', kwargs={'slug': 'count-type'})
     response = client_logged.get(url)
     context = response.context
+    chart_data = context['chart_calendar_1H']['data'][0]['data']
 
-    assert "'1999-01-02', 1.0, 366.0]" in context['chart_calendar_1H']
+    assert chart_data[4] == [0, 4, 0.05, 53, '1999-01-01']
+    assert chart_data[5] == [0, 5, 1.0, 53, '1999-01-02', 1.0, 366.0]
 
 
 # ---------------------------------------------------------------------------------------
@@ -566,7 +568,7 @@ def test_history_chart_weekdays(client_logged):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    assert '<div id="chart_weekdays_container"></div>' in content
+    assert '<div id="chart-weekdays-container"></div>' in content
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -579,7 +581,7 @@ def test_history_chart_years(client_logged):
 
     content = response.content.decode("utf-8")
 
-    assert '<div id="chart_years_container"></div>' in content
+    assert '<div id="chart-years-container"></div>' in content
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())

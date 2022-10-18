@@ -161,7 +161,7 @@ def test_tab_index_chart_consumption(client_logged):
     content = response.content.decode("utf-8")
     content = content.replace('\n', '')
 
-    assert 'id="chart_consumption"><div id="chart_consumption_container"></div>' in content
+    assert '<div id="chart-consumption-container"></div>' in content
 
 
 @freeze_time('1999-1-1')
@@ -173,7 +173,7 @@ def test_tab_index_chart_quantity(client_logged):
     content = response.content.decode("utf-8")
     content = content.replace('\n', '')
 
-    assert 'id="chart_quantity"><div id="chart_quantity_container"></div>' in content
+    assert '<div id="chart-quantity-container"></div>' in content
 
 
 def test_tab_index_drinked_date(client_logged):
@@ -207,9 +207,9 @@ def test_tab_index_tbl_consumption_empty_current_year(client_logged):
 @pytest.mark.parametrize(
     'user_drink_type, drink_type, expect',
     [
-        ('beer', 'beer', 'Avg: 14'),
-        ('beer', 'wine', 'Avg: 44'),
-        ('beer', 'vodka', 'Avg: 219'),
+        ('beer', 'beer', 14),
+        ('beer', 'wine', 44),
+        ('beer', 'vodka', 219),
     ]
 )
 def test_tab_index_chart_consumption_avg(user_drink_type, drink_type, expect, get_user, client_logged):
@@ -221,15 +221,15 @@ def test_tab_index_chart_consumption_avg(user_drink_type, drink_type, expect, ge
     response = client_logged.get(url)
     actual = response.context["chart_consumption"]
 
-    assert expect in actual
+    assert expect == round(actual['avg'])
 
 
 @pytest.mark.parametrize(
     'user_drink_type, drink_type, expect',
     [
-        ('beer', 'beer', 'Riba: 500'),
-        ('beer', 'wine', 'Riba: 1.067'),
-        ('beer', 'vodka', 'Riba: 4.000'),
+        ('beer', 'beer', 500),
+        ('beer', 'wine', 1067),
+        ('beer', 'vodka', 4000),
     ]
 )
 def test_tab_index_chart_consumption_limit(user_drink_type, drink_type, expect, get_user, client_logged):
@@ -239,9 +239,9 @@ def test_tab_index_chart_consumption_limit(user_drink_type, drink_type, expect, 
 
     url = reverse('drinks:tab_index')
     response = client_logged.get(url)
-    actual = response.context["chart_consumption"]
+    actual = response.context["chart_consumption"]["target"]
 
-    assert expect in actual
+    assert expect == round(actual, 0)
 
 
 def test_tab_index_tbl_std_av_empty_current_year(client_logged):
@@ -260,9 +260,10 @@ def test_tab_index_first_record_with_gap_from_previous_year(client_logged):
 
     url = reverse('drinks:tab_index')
     response = client_logged.get(url)
-    context = response.context
+    context = response.context['chart_calendar_1H']['data'][0]['data']
 
-    assert "'1999-01-02', 1.0, 366.0]" in context['chart_calendar_1H']
+    assert context[4] == [0, 4, 0.05, 53, '1999-01-01']
+    assert context[5] == [0, 5, 1.0, 53, '1999-01-02', 1.0, 366.0]
 
 
 @freeze_time('1999-1-1')
@@ -372,9 +373,9 @@ def test_tab_history_context(client_logged):
     url = reverse('drinks:tab_history')
     response = client_logged.get(url)
 
-    assert 'drinks_categories' in response.context
-    assert 'drinks_data_ml' in response.context
-    assert 'drinks_data_alcohol' in response.context
+    assert 'categories' in response.context['chart']
+    assert 'data_ml' in response.context['chart']
+    assert 'data_alcohol' in response.context['chart']
 
 
 @freeze_time('1999-1-1')
@@ -386,7 +387,7 @@ def test_tab_history_chart_consumption(client_logged):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    assert '<div id="chart_summary_container"></div>' in content
+    assert '<div id="chart-summary-container"></div>' in content
 
 
 @freeze_time('1999-01-01')
@@ -397,7 +398,7 @@ def test_tab_history_drinks_years(client_logged):
     url = reverse('drinks:tab_history')
     response = client_logged.get(url)
 
-    assert response.context['drinks_categories'] == [1998, 1999]
+    assert response.context['chart']['categories'] == [1998, 1999]
 
 
 @freeze_time('1999-01-01')
@@ -418,7 +419,7 @@ def test_tab_history_drinks_data_ml(user_drink_type, drink_type, ml, get_user, c
     url = reverse('drinks:tab_history')
     response = client_logged.get(url)
 
-    assert response.context['drinks_data_ml'] == pytest.approx(ml, rel=1e-2)
+    assert response.context['chart']['data_ml'] == pytest.approx(ml, rel=1e-2)
 
 
 @freeze_time('1999-01-01')
@@ -439,7 +440,7 @@ def test_tab_history_drinks_data_alcohol(user_drink_type, drink_type, expect, ge
     url = reverse('drinks:tab_history')
     response = client_logged.get(url)
 
-    assert response.context['drinks_data_alcohol'] == pytest.approx(expect, 0.01)
+    assert response.context['chart']['data_alcohol'] == pytest.approx(expect, 0.01)
 
 
 @freeze_time('1999-1-1')
@@ -454,9 +455,9 @@ def test_tab_history_categories_with_empty_year_in_between(fake_request):
     view = setup_view(Dummy(), fake_request)
     actual = view.get_context_data()
 
-    assert actual['drinks_categories'] == [1997, 1998, 1999]
-    assert pytest.approx(actual['drinks_data_ml'], 0.01) == [20.55, 0.0, 41.1]
-    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == [0.38, 0.0, 0.75]
+    assert actual['chart']['categories'] == [1997, 1998, 1999]
+    assert pytest.approx(actual['chart']['data_ml'], 0.01) == [20.55, 0.0, 41.1]
+    assert pytest.approx(actual['chart']['data_alcohol'], rel=1e-1) == [0.38, 0.0, 0.75]
 
 
 @freeze_time('1999-1-1')
@@ -479,9 +480,9 @@ def test_tab_history_categories_with_empty_current_year(user_drink_type, drink_t
     view = setup_view(Dummy(), fake_request)
     actual = view.get_context_data()
 
-    assert actual['drinks_categories'] == [1998, 1999]
-    assert pytest.approx(actual['drinks_data_ml'], rel=1e-1) == ml
-    assert pytest.approx(actual['drinks_data_alcohol'], rel=1e-1) == alkohol
+    assert actual['chart']['categories'] == [1998, 1999]
+    assert pytest.approx(actual['chart']['data_ml'], rel=1e-1) == ml
+    assert pytest.approx(actual['chart']['data_alcohol'], rel=1e-1) == alkohol
 
 
 # ---------------------------------------------------------------------------------------
@@ -507,11 +508,11 @@ def test_compare_data_chart(client_logged):
 
     url = reverse('drinks:compare', kwargs={'qty': 2})
     response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
+    actual = response.context['chart']
 
     assert response.status_code == 200
-    assert "'name': 1999" in actual
-    assert "'data': [16.129032258064516, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" in actual
+    assert actual['serries'][0]['name'] == 1999
+    assert round(actual['serries'][0]['data'][0], 2) == 16.13
 
 
 # ---------------------------------------------------------------------------------------
@@ -554,13 +555,13 @@ def test_comparetwo_chart_data(client_logged):
 
     url = reverse('drinks:compare_two')
     response = client_logged.post(url, {'year1': '1999', 'year2': '2020'})
-    actual = response.content.decode()
+    actual = response.context['chart']
 
-    assert "'name': 1999" in actual
-    assert "'data': [16.129032258064516, 0.0" in actual
+    assert actual['serries'][0]['name'] == 1999
+    assert round(actual['serries'][0]['data'][0], 2) == 16.13
 
-    assert "'name': 2020" in actual
-    assert "'data': [161.29032258064515, 0.0" in actual
+    assert actual['serries'][1]['name'] == 2020
+    assert round(actual['serries'][1]['data'][0], 2) == 161.29
 
 
 # ---------------------------------------------------------------------------------------

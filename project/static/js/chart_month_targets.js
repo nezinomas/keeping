@@ -1,9 +1,9 @@
-{% load i18n %}
-
-<div id="container-for-expenses-with-target"></div>
-<script>
 $(function () {
-    Highcharts.chart('container-for-expenses-with-target', {
+    const chartData = JSON.parse(
+        document.getElementById('chart-targets-data').textContent
+    );
+
+    Highcharts.chart('chart-targets-container', {
         chart: {
             type: 'bar',
             height: '485'
@@ -12,7 +12,7 @@ $(function () {
             text: ''
         },
         xAxis: {
-            categories: {{ chart_targets_categories|safe }},
+            categories: chartData.categories,
             lineColor: '#000',
             lineWidth: 2,
             labels: {
@@ -52,10 +52,10 @@ $(function () {
             },
         },
         series: [{
-            name: '{% translate "Plan" %}',
+            name: chartData.targetTitle,
             type: 'bar',
             color: 'rgba(0,0,0,0.07)',
-            data: {{ chart_targets_data_target|safe }},
+            data: chartData.target,
             pointWidth: 19,
             dataLabels: {
                 enabled: true,
@@ -72,10 +72,10 @@ $(function () {
                 }
             }
         }, {
-            name: '{% translate "Fact" %}',
+            name: chartData.factTitle,
             type: 'bullet',
             opacity: '0.7',
-            data: {{ chart_targets_data_fact|safe }},
+            data: chartData.fact,
             pointWidth: 13,
             targetOptions: {
                 borderWidth: 0,
@@ -99,43 +99,42 @@ $(function () {
         }
     ]
     }, function (chartObj) {
-            /* align datalabels for expenses that exceeds targets */
-            var series = chartObj.series[1];
-            $.each(series.data, function (i, point) {
-                var max = chartObj.series[0].data[point.x].y;
-                var y = point.y;
+        /* align datalabels for expenses that exceeds targets */
+        var series = chartObj.series[1];
+        $.each(series.data, function (i, point) {
+            var max = chartObj.series[0].data[point.x].y;
+            var y = point.y;
 
-                max = parseFloat(max.toFixed(1));
-                y = parseFloat(y.toFixed(1));
+            max = parseFloat(max.toFixed(1));
+            y = parseFloat(y.toFixed(1));
 
-                if (y <= max) {
-                    var clr = 'green';
+            if (y <= max) {
+                var clr = 'green';
 
-                    point.dataLabel.css({color: clr });
+                point.dataLabel.css({color: clr });
 
-                    point.color = clr;
-                    point.graphic.attr({ fill: clr });
+                point.color = clr;
+                point.graphic.attr({ fill: clr });
+            }
+            else {
+                var p = 28;
+                if (y < 100) { p = 21; }
+                if (y < 10) { p = -2; }
+
+                var clr_bar = 'red';
+                var clr_label = '#b4010d';
+
+                if(y <= max * 1.1) {
+                    clr_bar = '#ffcc00';
+                    clr_label = '#efbf00';
                 }
-                else {
-                    var p = 28;
-                    if (y < 100) { p = 21; }
-                    if (y < 10) { p = -2; }
 
-                    var clr_bar = 'red';
-                    var clr_label = '#b4010d';
+                point.dataLabel.attr({ x: point.dataLabel.x + p });
+                point.dataLabel.css({color: clr_label });
 
-                    if(y <= max * 1.1) {
-                        clr_bar = '#ffcc00';
-                        clr_label = '#efbf00';
-                    }
-
-                    point.dataLabel.attr({ x: point.dataLabel.x + p });
-                    point.dataLabel.css({color: clr_label });
-
-                    point.color = clr_bar;
-                    point.graphic.attr({ fill: clr_bar });
-                }
-            });
+                point.color = clr_bar;
+                point.graphic.attr({ fill: clr_bar });
+            }
         });
+    });
 });
-</script>

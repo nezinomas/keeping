@@ -2,6 +2,7 @@ from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from ...accounts.models import AccountBalance
+from ...core.lib.translation import month_names
 from ...debts.models import Debt
 from ...expenses.models import Expense
 from ...incomes.models import Income
@@ -77,8 +78,11 @@ class IndexService():
 
     def chart_balance_context(self):
         return {
-            'expenses': self._YearBalance.expense_data,
+            'categories': [*month_names().values()],
             'incomes': self._YearBalance.income_data,
+            'incomes_title': _('Incomes'),
+            'expenses': self._YearBalance.expense_data,
+            'expenses_title': _('Expenses'),
         }
 
     def averages_context(self):

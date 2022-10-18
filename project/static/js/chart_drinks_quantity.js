@@ -1,31 +1,25 @@
-<div id="{{ chart }}_container"></div>
-<script>
-    $(function () {
-       Highcharts.chart('{{ chart }}_container', {
+$(function () {
+    const chartData = JSON.parse(
+        document.getElementById('chart-quantity-data').textContent
+    );
+
+    Highcharts.chart('chart-quantity-container', {
         chart: {
             type: 'column',
-            height: '300px',
+            height: '350px',
         },
         title: {
-            text: '{{ chart_title|safe }}',
-            style: {
-                fontSize: '16px',
-                fontFamily: 'Calibri, Verdana',
-            },
+            text: ''
         },
         xAxis: {
+            categories: chartData.categories,
+            type: 'category',
             lineColor: '#000',
             lineWidth: 2,
-            categories: {{ categories|safe }},
-            crosshair: true,
             labels: {
-                useHTML: true,
                 style: {
                     fontSize: '10px',
                     fontFamily: 'Calibri, Verdana',
-                },
-                formatter: function () { /* use formatter to break word. */
-                    return '<div style="word-wrap: break-word; word-break:break-all; width:40px; text-align: right">' + this.value + '</div>';
                 },
                 rotation: -45,
             }
@@ -47,7 +41,7 @@
         tooltip: {
             shared: true,
             headerFormat: '',
-            pointFormat: '<b>{point.y:.0f}</b>',
+            pointFormat: '{series.name}: <b>{point.y:.1f}</b><br/>',
             style: {
                 fontSize: '12px',
                 fontFamily: 'Calibri, Verdana',
@@ -57,20 +51,21 @@
             bar: {
                 grouping: false,
                 shadow: false,
+                pointWidth: 13,
             }
         },
         series: [{
-            name: 'Kiekis',
-            data: {{ data|safe }},
-            color: 'rgba({{ chart_column_color }}, 0.65)',
-            borderColor: 'rgba({{ chart_column_color }}, 1)',
+            name: chartData.text.quantity,
+            color: 'rgba(70, 171, 157,0.65)',
+            borderColor: 'rgba(70, 171, 157, 1)',
+            data: chartData.data,
+            pointPadding: 0,
+            pointPlacement: 0,
             dataLabels: {
                 enabled: true,
                 rotation: 0,
-                color: 'rgba({{ chart_column_color }}, 1)',
-                formatter: function () {
-                    return (this.y != 0) ? this.y : "";
-                },
+                color: '#000',
+                format: '{point.y:.1f}',
                 style: {
                     fontSize: '9px',
                     fontWeight: 'bold',
@@ -81,4 +76,3 @@
         }]
     });
 });
-</script>
