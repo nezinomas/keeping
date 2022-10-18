@@ -275,11 +275,13 @@ class SummaryExpenses(FormViewMixin):
         if obj.serries_data:
             context |= {
                 'found': True,
-                'categories': obj.categories,
-                'data': obj.serries_data,
                 'total_col': obj.total_col,
                 'total_row': obj.total_row,
-                'total': obj.total
+                'total': obj.total,
+                'chart': {
+                    'categories': obj.categories,
+                    'data': obj.serries_data,
+                }
             }
         else:
             context['error'] = _('No data found')
