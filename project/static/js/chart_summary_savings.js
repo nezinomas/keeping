@@ -3,7 +3,7 @@ function annotationLabels(list) {
         var val = element.toFixed();
         list[index] = {
             point: {xAxis: 0, yAxis:0, x: index, y: val},
-            text: val,
+            text: Highcharts.numberFormat(val, 0),
         };
     });
     return list;
