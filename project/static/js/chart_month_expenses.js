@@ -1,9 +1,7 @@
-$(function () {
-    const chartData = JSON.parse(
-        document.getElementById('chart-expenses-data').textContent
-    );
+function chartExpensesOnly(idData, idContainer) {
+    const chartData = JSON.parse(document.getElementById(idData).textContent);
 
-    Highcharts.chart('chart-expenses-container', {
+    Highcharts.chart(idContainer, {
         chart: {
             type: 'bar',
             height: 485,
@@ -76,4 +74,4 @@ $(function () {
             },
         ],
     });
-});
+};

@@ -9,6 +9,12 @@
             <div class="w-100 mb-auto">
                 <div x-show="!show_chart"><div id="chart-expenses-container"></div></div>
                 <div x-show="show_chart"><div id="chart-targets-container"></div></div>
+                {{ chart_targets|json_script:"chart-targets-data" }}
+                {{ chart_expenses|json_script:"chart-expenses-data" }}
+                <script>
+                    chartExpensesTarget('chart-targets-data', 'chart-targets-container');
+                    chartExpensesOnly('chart-expenses-data', 'chart-expenses-container');
+                </script>
             </div>
             <div class="w-100" id="info">{{ info|safe }}</div>
         </div>
