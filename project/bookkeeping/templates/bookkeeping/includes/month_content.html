@@ -7,8 +7,8 @@
     <div class="col-lg-4">
         <div class="d-flex flex-column align-items-start h-100">
             <div class="w-100 mb-auto">
-                <div x-show="!show_chart"><div id="chart-expenses-container"></div></div>
                 <div x-show="show_chart"><div id="chart-targets-container"></div></div>
+                <div x-show="!show_chart"><div id="chart-expenses-container"></div></div>
                 {{ chart_targets|json_script:"chart-targets-data" }}
                 {{ chart_expenses|json_script:"chart-expenses-data" }}
                 <script>
