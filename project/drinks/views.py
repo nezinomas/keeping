@@ -41,11 +41,11 @@ class TabIndex(TemplateViewMixin):
 
         with contextlib.suppress(Drink.DoesNotExist):
             qs_past = \
-                    Drink \
-                    .objects \
-                    .related() \
-                    .filter(date__year__lt=year) \
-                    .latest()
+                Drink \
+                .objects \
+                .related() \
+                .filter(date__year__lt=year) \
+                .latest()
             past_latest_record = qs_past.date
 
         stats = CountStats(year=year, data=qs, past_latest=past_latest_record)
