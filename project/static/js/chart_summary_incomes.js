@@ -68,7 +68,7 @@ $(function () {
             area: {
                 dataLabels: {
                     enabled: true,
-                    format: '{point.y:.0f}',
+                    format: '{point.y:,.0f}',
                     verticalAlign:'top',
                     color: '#77933c',
                     style: {
@@ -81,7 +81,7 @@ $(function () {
             line: {
                 dataLabels: {
                     enabled: true,
-                    format: '{point.y:.0f}',
+                    format: '{point.y:,.0f}',
                     y: -5,
                     color: '#2d5f2e',
                     style: {
