@@ -117,33 +117,6 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
 
         return qs
 
-    def summary(self):
-        #Returns
-        # [{'year': int, 'qty': float, 'per_day': float}]
-
-        qs = self.sum_by_year()
-
-        obj = DrinksOptions()
-        ratio = obj.ratio
-
-        arr = []
-        for row in qs:
-            _qty = row.get('qty') * ratio
-            _stdav = row.get('qty')
-
-            _year = row.get('year')
-            _days = ydays(_year)
-
-            item = {}
-            item['year'] = _year
-            item['qty'] = _qty
-            item['per_day'] = obj.stdav_to_ml(drink_type=obj.drink_type, stdav=_stdav) / _days
-
-            if item:
-                arr.append(item)
-
-        return arr
-
 
 class DrinkTargetQuerySet(SumMixin, models.QuerySet):
     def related(self):

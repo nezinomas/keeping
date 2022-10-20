@@ -223,33 +223,6 @@ def test_drink_days_sum_no_records_for_selected_year(second_user):
 
 
 @pytest.mark.parametrize(
-    'user_drink_type, target_drink_type, qty, per_day',
-    [
-        ('beer', 'beer', 3.0, 4.11),
-        ('wine', 'beer', 0.94, 1.93),
-        ('vodka', 'beer', 0.19, 0.51),
-    ]
-)
-def test_drink_summary(user_drink_type, target_drink_type, qty, per_day, get_user):
-    get_user.drink_type = user_drink_type
-
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option=target_drink_type)
-    DrinkFactory(date=date(1999, 1, 2), quantity=2.0, option=target_drink_type)
-
-    actual = Drink.objects.summary()
-
-    assert actual[0]['year'] == 1999
-    assert round(actual[0]['qty'], 2) == qty
-    assert round(actual[0]['per_day'], 2) == per_day
-
-
-def test_drink_summary_no_records():
-    actual = list(Drink.objects.summary())
-
-    assert not actual
-
-
-@pytest.mark.parametrize(
     'ml, drink_type, expect',
     [
         (20, 'beer', 50),
