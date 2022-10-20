@@ -67,7 +67,10 @@ def test_per_day(drink_type, qty, expect, get_user):
 def test_per_day_adjusted_for_current_year(drink_type, qty, expect, get_user):
     get_user.drink_type = drink_type
 
-    qs = [{'year': 1999, 'qty': qty}, {'year': 2000, 'qty': qty}]
+    qs = [
+        {'year': 1999, 'qty': qty},
+        {'year': 2000, 'qty': qty},
+    ]
 
     actual = T.HistoryService(qs).per_day
 
