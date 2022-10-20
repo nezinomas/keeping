@@ -26,23 +26,21 @@ class HistoryService:
         _last_year = datetime.now().year + 1
 
         for _year in range(_first_year, _last_year):
-            self.years.append(_year)
+            _quantity = 0.0
+            _alcohol = 0.0
+            _per_day = 0.0
 
             if item := next((x for x in self.data if x['year'] == _year), False):
                 _days = ydays(_year)
-                _stdav = item['qty']
 
-                self.quantity.append(
-                    self.drink_options.ratio * _stdav
-                )
-                self.alcohol.append(
-                    self.drink_options.stdav_to_alcohol(_stdav)
-                )
-                self.per_day.append(
-                    self.drink_options.stdav_to_ml(
-                        _stdav, self.drink_options.drink_type) / _days
-                )
-            else:
-                self.quantity.append(0.0)
-                self.alcohol.append(0.0)
-                self.per_day.append(0.0)
+                _stdav = item['qty']
+                _ml = self.drink_options.stdav_to_ml(_stdav, self.drink_options.drink_type)
+
+                _quantity = self.drink_options.ratio * _stdav
+                _alcohol = self.drink_options.stdav_to_alcohol(_stdav)
+                _per_day = _ml / _days
+
+            self.years.append(_year)
+            self.quantity.append(_quantity)
+            self.alcohol.append(_alcohol)
+            self.per_day.append(_per_day)
