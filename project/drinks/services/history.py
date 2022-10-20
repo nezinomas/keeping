@@ -6,7 +6,7 @@ from ..lib.drinks_options import DrinksOptions
 from ..managers import DrinkQuerySet
 
 
-@dataclass(frozen=True)
+@dataclass()
 class HistoryService:
     data: DrinkQuerySet.sum_by_year = None
 
@@ -16,8 +16,12 @@ class HistoryService:
         field(init=False, default_factory=list)
     per_day: list[float] = \
         field(init=False, default_factory=list)
+    current_year_per_day: float = \
+        field(init=False, default=0.0)
     quantity: list[float] = \
         field(init=False, default_factory=list)
+    current_year_quantity: float = \
+        field(init=False, default=0.0)
     drink_options: DrinksOptions = \
         field(init=False, default_factory=DrinksOptions)
 
@@ -26,6 +30,7 @@ class HistoryService:
             return
 
         self._calc()
+        self._get_current_year_values()
 
     def _calc(self) -> None:
         _first_year = self.data[0]['year']
@@ -56,3 +61,10 @@ class HistoryService:
             self.quantity.append(_quantity)
             self.alcohol.append(_alcohol)
             self.per_day.append(_per_day)
+
+    def _get_current_year_values(self):
+        _year = datetime.now().date().year
+        _idx =  self.years.index(_year)
+
+        self.current_year_quantity = self.quantity[_idx]
+        self.current_year_per_day = self.per_day[_idx]
