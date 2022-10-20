@@ -48,7 +48,7 @@ def test_per_day(drink_type, qty, expect, get_user):
     get_user.drink_type = drink_type
 
     qs = [{'year': 1999, 'qty': qty}]
-    print(User.objects.values())
+
     actual = T.HistoryService(qs).per_day
 
     assert actual == expect
@@ -68,7 +68,7 @@ def test_quantity(drink_type, qty, expect, get_user):
     get_user.drink_type = drink_type
 
     qs = [{'year': 1999, 'qty': qty}]
-    print(User.objects.values())
+
     actual = T.HistoryService(qs).quantity
 
     assert actual == expect
