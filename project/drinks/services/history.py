@@ -30,7 +30,7 @@ class HistoryService:
             return
 
         self._calc()
-        self._get_current_year_values()
+        self._set_current_year_values()
 
     def _calc(self) -> None:
         _first_year = self.data[0]['year']
@@ -62,7 +62,7 @@ class HistoryService:
             self.alcohol.append(_alcohol)
             self.per_day.append(_per_day)
 
-    def _get_current_year_values(self):
+    def _set_current_year_values(self):
         _year = datetime.now().date().year
         _idx =  self.years.index(_year)
 
