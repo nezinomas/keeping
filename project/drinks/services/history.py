@@ -12,6 +12,7 @@ class HistoryService:
     years: list[int] = field(init=False, default_factory=list)
     alcohol: list[float] = field(init=False, default_factory=list)
     per_day: list[float] = field(init=False, default_factory=list)
+    quantity: list[float] = field(init=False, default_factory=list)
     drink_options: DrinksOptions = field(init=False, default_factory=DrinksOptions)
 
     def __post_init__(self):
@@ -31,6 +32,9 @@ class HistoryService:
                 _days = ydays(_year)
                 _stdav = item['qty']
 
+                self.quantity.append(
+                    self.drink_options.ratio * _stdav
+                )
                 self.alcohol.append(
                     self.drink_options.stdav_to_alcohol(_stdav)
                 )
@@ -39,5 +43,6 @@ class HistoryService:
                         _stdav, self.drink_options.drink_type) / _days
                 )
             else:
+                self.quantity.append(0.0)
                 self.alcohol.append(0.0)
                 self.per_day.append(0.0)
