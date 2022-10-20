@@ -1,5 +1,4 @@
 import contextlib
-from datetime import datetime
 
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -16,6 +15,7 @@ from .forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
 from .lib import views_helper as H
 from .lib.drinks_options import DrinksOptions
 from .models import Drink, DrinkTarget, DrinkType
+from .services.history import HistoryService
 
 
 class Index(TemplateViewMixin):
@@ -83,36 +83,15 @@ class TabHistory(TemplateViewMixin):
     template_name = 'drinks/tab_history.html'
 
     def get_context_data(self, **kwargs):
-        drink_years = []
-        ml = []
-        alcohol = []
-
-        qs = list(Drink.objects.summary())
-
-        obj = DrinksOptions()
-        ratio = obj.ratio
-
-        if qs:
-            for year in range(qs[0]['year'], datetime.now().year+1):
-                drink_years.append(year)
-
-                if item := next((x for x in qs if x['year'] == year), False):
-                    _stdav = item['qty'] / ratio
-                    _alcohol = obj.stdav_to_alcohol(stdav=_stdav)
-
-                    alcohol.append(_alcohol)
-                    ml.append(item['per_day'])
-                else:
-                    alcohol.append(0.0)
-                    ml.append(0.0)
+        obj = HistoryService(Drink.objects.sum_by_year())
 
         context = {
             'tab': 'history',
-            'records': len(drink_years) if len(drink_years) > 1 else 0,
+            'records': len(obj.years) if len(obj.years) > 1 else 0,
             'chart': {
-                'categories': drink_years,
-                'data_ml': ml,
-                'data_alcohol': alcohol,
+                'categories': obj.years,
+                'data_ml': obj.per_day,
+                'data_alcohol': obj.alcohol,
                 'text': {
                     'title': _('Drinks'),
                     'per_day': _('Average per day, ml'),
