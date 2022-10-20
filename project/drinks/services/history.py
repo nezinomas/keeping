@@ -31,13 +31,12 @@ class HistoryService:
             _per_day = 0.0
 
             if item := next((x for x in self.data if x['year'] == _year), False):
-                _days = ydays(_year)
-
                 _stdav = item['qty']
                 _ml = self.drink_options.stdav_to_ml(_stdav, self.drink_options.drink_type)
-
                 _quantity = self.drink_options.ratio * _stdav
                 _alcohol = self.drink_options.stdav_to_alcohol(_stdav)
+
+                _days = ydays(_year)
                 _per_day = _ml / _days
 
             self.years.append(_year)
