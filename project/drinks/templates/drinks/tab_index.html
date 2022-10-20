@@ -8,6 +8,10 @@
     <div class="col-lg-6"><div id="chart-quantity-container"></div></div>
     {{chart_quantity|json_script:"chart-quantity-data"}}
     {{chart_consumption|json_script:"chart-consumption-data"}}
+    <script>
+        chartConsumption('chart-consumption-data', 'chart-consumption-container');
+        chartQuantity('chart-quantity-data', 'chart-quantity-container');
+    </script>
 </div>
 
 <div class="row my-2">

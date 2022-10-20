@@ -1,9 +1,7 @@
-$(function () {
-    const chartData = JSON.parse(
-        document.getElementById('chart-quantity-data').textContent
-    );
+function chartQuantity(idData, idContainer) {
+    const chartData = JSON.parse(document.getElementById(idData).textContent);
 
-    Highcharts.chart('chart-quantity-container', {
+    Highcharts.chart(idContainer, {
         chart: {
             type: 'column',
             height: '350px',
@@ -75,4 +73,4 @@ $(function () {
             }
         }]
     });
-});
+};

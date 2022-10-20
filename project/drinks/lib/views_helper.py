@@ -49,7 +49,7 @@ class RenderContext():
         return {
             'categories' : list(month_names().values()),
             'data' : self._DrinkStats.quantity,
-            'text' : {'quantity': ('Quantity')}
+            'text' : {'quantity': _('Quantity')}
         }
 
     def chart_consumption(self) -> str:
