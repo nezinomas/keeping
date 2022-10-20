@@ -27,15 +27,13 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
         return self.related()
 
     def sum_by_year(self, year=None):
-        qs = self \
+        return self \
             .related() \
             .year_sum(
                 year=year,
                 sum_annotation='qty',
                 sum_column='quantity') \
             .order_by('date')
-
-        return qs
 
     def sum_by_month(self, year: int, month: int = None):
         """
@@ -103,8 +101,8 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
         return arr
 
     def sum_by_day(self, year: int, month: int = None) -> List[Dict[date, float]]:
-        qs = self\
-            .related()\
+        qs = self \
+            .related() \
             .day_sum(
                 year=year,
                 month=month,
@@ -150,20 +148,16 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
 class DrinkTargetQuerySet(SumMixin, models.QuerySet):
     def related(self):
         user = utils.get_user()
-        return (
-            self
-            .select_related('user')
+        return \
+            self \
+            .select_related('user') \
             .filter(user=user)
-        )
 
     def year(self, year):
-        qs = (
-            self
-            .related()
+        return \
+            self \
+            .related() \
             .filter(year=year)
-        )
-
-        return qs
 
     def items(self):
         return self.related()
