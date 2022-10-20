@@ -1,10 +1,10 @@
 import pytest
 
+from ...users.models import User
 from ..services import history as T
 
 pytestmark = pytest.mark.django_db
 
-from ...users.models import User
 
 @pytest.mark.freeze_time('2000-01-01')
 def test_years():
