@@ -36,8 +36,15 @@ class HistoryService:
                 _quantity = self.drink_options.ratio * _stdav
                 _alcohol = self.drink_options.stdav_to_alcohol(_stdav)
 
-                _days = ydays(_year)
-                _per_day = _ml / _days
+                # mililitres per day
+                # for current year get day number, else 365 or 366
+                _date = datetime.now().date()
+                if _year == _date.year:
+                    _day_of_year = _date.timetuple().tm_yday
+                else:
+                    _day_of_year = ydays(_year)
+
+                _per_day = _ml / _day_of_year
 
             self.years.append(_year)
             self.quantity.append(_quantity)
