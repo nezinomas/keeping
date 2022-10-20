@@ -1,51 +1,43 @@
+from dataclasses import dataclass, field
 from datetime import datetime
 
 from ...core.lib.date import ydays
 from ..lib.drinks_options import DrinksOptions
+from ..managers import DrinkQuerySet
 
 
+@dataclass(frozen=True)
 class HistoryService:
-    def __init__(self, data):
-        self._drink_options = DrinksOptions()
-        self._calc(data)
+    data: DrinkQuerySet.sum_by_year = None
+    years: list[int] = field(default_factory=list)
+    alcohol: list[float] = field(default_factory=list)
+    per_day: list[float] = field(default_factory=list)
+    drink_options: DrinksOptions = field(default_factory=DrinksOptions)
 
-    @property
-    def years(self):
-        return self._years
+    def __post_init__(self):
+        if not self.data:
+            return
 
-    @property
-    def alcohol(self):
-        return self._alcohol
+        self._calc()
 
-    @property
-    def per_day(self):
-        return self._per_day
+    def _calc(self) -> None:
+        _first_year = self.data[0]['year']
+        _last_year = datetime.now().year + 1
 
-    def _calc(self, data):
-        years = []
-        alcohol = []
-        per_day = []
+        for _year in range(_first_year, _last_year):
+            self.years.append(_year)
 
-        if data:
-            _range = range(data[0]['year'], datetime.now().year + 1)
-            for _year in _range:
-                years.append(_year)
+            if item := next((x for x in self.data if x['year'] == _year), False):
+                _days = ydays(_year)
+                _stdav = item['qty']
 
-                if item := next((x for x in data if x['year'] == _year), False):
-                    _days = ydays(_year)
-                    _stdav = item['qty']
-
-                    alcohol.append(
-                        self._drink_options.stdav_to_alcohol(_stdav)
-                    )
-                    per_day.append(
-                        self._drink_options.stdav_to_ml(
-                            _stdav, self._drink_options.drink_type) / _days
-                    )
-                else:
-                    alcohol.append(0.0)
-                    per_day.append(0.0)
-
-        self._years = years
-        self._alcohol = alcohol
-        self._per_day = per_day
+                self.alcohol.append(
+                    self.drink_options.stdav_to_alcohol(_stdav)
+                )
+                self.per_day.append(
+                    self.drink_options.stdav_to_ml(
+                        _stdav, self.drink_options.drink_type) / _days
+                )
+            else:
+                self.alcohol.append(0.0)
+                self.per_day.append(0.0)
