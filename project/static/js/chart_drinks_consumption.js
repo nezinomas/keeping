@@ -1,7 +1,5 @@
-$(function () {
-    const chartData = JSON.parse(
-        document.getElementById('chart-consumption-data').textContent
-    );
+function chartConsumption(idData, idContainer) {
+    const chartData = JSON.parse(document.getElementById(idData).textContent);
 
     Highcharts.setOptions({
         lang: {
@@ -10,7 +8,7 @@ $(function () {
         }
     });
 
-    Highcharts.chart('chart-consumption-container', {
+    Highcharts.chart(idContainer, {
         chart: {
             height: '350px',
         },
@@ -115,4 +113,4 @@ $(function () {
             }
         }]
     });
-});
+};
