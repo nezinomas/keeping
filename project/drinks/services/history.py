@@ -9,10 +9,10 @@ from ..managers import DrinkQuerySet
 @dataclass(frozen=True)
 class HistoryService:
     data: DrinkQuerySet.sum_by_year = None
-    years: list[int] = field(default_factory=list)
-    alcohol: list[float] = field(default_factory=list)
-    per_day: list[float] = field(default_factory=list)
-    drink_options: DrinksOptions = field(default_factory=DrinksOptions)
+    years: list[int] = field(init=False, default_factory=list)
+    alcohol: list[float] = field(init=False, default_factory=list)
+    per_day: list[float] = field(init=False, default_factory=list)
+    drink_options: DrinksOptions = field(init=False, default_factory=DrinksOptions)
 
     def __post_init__(self):
         if not self.data:
