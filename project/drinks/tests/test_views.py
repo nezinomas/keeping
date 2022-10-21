@@ -287,7 +287,7 @@ def test_tab_index_no_data_dry_days(client_logged):
         ('stdav', 10, '0,10'),
     ]
 )
-def test_tab_index_tbl_alkohol(drink_type, qty, expect, get_user, client_logged):
+def test_tab_index_tbl_alcohol(drink_type, qty, expect, get_user, client_logged):
     get_user.drink_type = drink_type
 
     DrinkFactory(option=drink_type, quantity=qty)
@@ -462,14 +462,14 @@ def test_tab_history_categories_with_empty_year_in_between(fake_request):
 
 @freeze_time('1999-1-1')
 @pytest.mark.parametrize(
-    'user_drink_type, drink_type, ml, alkohol',
+    'user_drink_type, drink_type, ml, alcohol',
     [
         ('beer', 'beer', [1.37, 0.0], [0.025, 0.0]),
         ('beer', 'wine', [4.38, 0.0], [0.08, 0.0]),
         ('beer', 'vodka', [21.92, 0.0], [0.4, 0.0]),
     ]
 )
-def test_tab_history_categories_with_empty_current_year(user_drink_type, drink_type, ml, alkohol, get_user, fake_request):
+def test_tab_history_categories_with_empty_current_year(user_drink_type, drink_type, ml, alcohol, get_user, fake_request):
     get_user.drink_type = user_drink_type
 
     DrinkFactory(date=date(1998, 1, 1), quantity=1, option=drink_type)
@@ -482,7 +482,7 @@ def test_tab_history_categories_with_empty_current_year(user_drink_type, drink_t
 
     assert actual['chart']['categories'] == [1998, 1999]
     assert pytest.approx(actual['chart']['data_ml'], rel=1e-1) == ml
-    assert pytest.approx(actual['chart']['data_alcohol'], rel=1e-1) == alkohol
+    assert pytest.approx(actual['chart']['data_alcohol'], rel=1e-1) == alcohol
 
 
 # ---------------------------------------------------------------------------------------
