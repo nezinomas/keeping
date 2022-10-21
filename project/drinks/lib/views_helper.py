@@ -8,6 +8,7 @@ from django.utils.translation import gettext as _
 
 from ...core.lib.translation import month_names, weekday_names
 from .. import models
+from ..services.history import HistoryService
 from .drinks_options import DrinksOptions
 from .drinks_stats import DrinkStats, std_av
 
@@ -127,11 +128,10 @@ class RenderContext():
         return DrinkStats(qs)
 
     def _get_avg_qty(self) -> Tuple[float, float]:
-        qs = models.Drink.objects.drink_day_sum(self._year)
-        avg = qs.get('per_day', 0) if qs else 0
-        qty = qs.get('qty', 0) if qs else 0
+        qs = models.Drink.objects.sum_by_year(self._year)
+        obj = HistoryService(qs)
 
-        return (avg, qty)
+        return (obj.current_year_per_day, obj.current_year_quantity)
 
     def _avg_label_position(self, avg: float, target: float) -> int:
         return 15 if target - 50 <= avg <= target else -5

@@ -51,33 +51,6 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
                 sum_column='quantity')\
             .order_by('date')
 
-    def drink_day_sum(self, year: int) -> Dict[float, float]:
-        """
-        Returns {'qty': float, 'per_day': float}
-        """
-
-        arr = {}
-        qs = self.sum_by_year(year=year)
-        qs = list(qs)
-
-        if not qs:
-            return arr
-
-        _date = datetime.now().date()
-        if year == _date.year:
-            _day_of_year = _date.timetuple().tm_yday
-        else:
-            _day_of_year = ydays(year)
-
-        _obj = DrinksOptions()
-        _qty = qs[0].get('qty') * _obj.ratio
-        _stdav = qs[0].get('qty')
-
-        arr['qty'] = _qty
-        arr['per_day'] = _obj.stdav_to_ml(stdav=_stdav) / _day_of_year
-
-        return arr
-
     def sum_by_day(self, year: int, month: int = None) -> List[Dict[date, float]]:
         qs = self \
             .related() \
