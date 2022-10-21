@@ -1,4 +1,5 @@
 import calendar
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Dict, List, Tuple
 
@@ -6,46 +7,44 @@ from django.utils.translation import gettext as _
 
 from ...core.lib.date import ydays
 from ..lib.drinks_options import DrinksOptions
+from ..managers import DrinkQuerySet
 from .drinks_options import DrinksOptions
 
 
-class DrinkStats():
-    def __init__(self, arr: List[Dict]):
-        _list = [0.0 for _ in range(12)]
+def empty_list():
+    return [0.0 for _ in range(12)]
 
-        self._consumption = _list.copy()
-        self._quantity = _list.copy()
 
-        self._calc(arr)
+@dataclass
+class DrinkStats:
+    data: DrinkQuerySet.sum_by_month = None
+    consumption: list[float] = \
+        field(init=False, default_factory=empty_list)
+    quantity: list[float] = \
+        field(init=False, default_factory=empty_list)
+    options: DrinksOptions = \
+        field(init=False, default_factory=DrinksOptions)
 
-    @property
-    def consumption(self) -> List[float]:
-        return self._consumption
-
-    @property
-    def quantity(self) -> List[float]:
-        return self._quantity
-
-    def _calc(self, arr: List[Dict]) -> None:
-        if not arr:
+    def __post_init__(self):
+        if not self.data:
             return
 
-        obj = DrinksOptions()
-        ratio = obj.ratio
+        self._calc()
 
-        for row in arr:
+    def _calc(self) -> None:
+        for row in self.data:
+            _stdav = row.get('qty')
+
             _date = row.get('date')
             _year = _date.year
             _month = _date.month
             _monthlen = calendar.monthrange(_year, _month)[1]
-            _stdav = row.get('qty')
-            _qty = _stdav * ratio
-            _consumption = obj.stdav_to_ml(stdav=_stdav) / _monthlen
 
             idx = _month - 1
 
-            self._consumption[idx] = _consumption
-            self._quantity[idx] = _qty
+            self.consumption[idx] = self.options.stdav_to_ml(
+                _stdav) / _monthlen
+            self.quantity[idx] = _stdav * self.options.ratio
 
 
 def std_av(year: int, qty: float) -> List[Dict]:
