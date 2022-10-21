@@ -1,101 +1,97 @@
-from datetime import date
+from datetime import date, datetime
 
 import pytest
 from freezegun import freeze_time
 
 from ..lib.drinks_stats import DrinkStats, std_av
 
+pytestmark = pytest.mark.django_db
 
-@pytest.fixture
-def _month_sum():
-    return [
-        {
-            'date': date(2019, 5, 1),
-            'sum': 14.0,
-            'per_month': 100.0,
-            'month': 5,
-            'monthlen': 31
-        }, {
-            'date': date(2019, 8, 1),
-            'sum': 47.0,
-            'per_month': 200.0,
-            'month': 8,
-            'monthlen': 31
-        }, {
-            'date': date(2019, 10, 1),
-            'sum': 1.0,
-            'per_month': 160.0,
-            'month': 10,
-            'monthlen': 31
-        },
+
+@pytest.mark.parametrize(
+    'drink_type, expect',
+    [
+        ('beer', [1/2.5, 2/2.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('wine', [1/8, 2/8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('vodka', [1/40, 2/40, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('stdav', [1.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+    ]
+)
+@freeze_time('1999-12-01')
+def test_quantity(drink_type, expect, get_user):
+    get_user.drink_type = drink_type
+
+    data = [
+        {'date': date(1999, 1, 1), 'qty': 1},
+        {'date': date(1999, 2, 1), 'qty': 2},
     ]
 
+    actual = DrinkStats(data).quantity
 
-def test_per_month_consumption(_month_sum):
-    actual = DrinkStats(_month_sum).consumption
-
-    assert len(actual) == 12
-
-    assert actual[0] == 0
-    assert actual[4] == 100.0
-    assert actual[7] == 200.0
-    assert actual[9] == 160.0
+    assert actual == expect
 
 
-def test_per_month_consumption_empty():
-    actual = DrinkStats([]).consumption
+@pytest.mark.parametrize(
+    'drink_type, expect',
+    [
+        ('beer', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('wine', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('vodka', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('stdav', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+    ]
+)
+@freeze_time('1999-12-01')
+def test_quantity_no_data(drink_type, expect, get_user):
+    get_user.drink_type = drink_type
 
-    assert len(actual) == 12
+    data = []
 
-    assert actual[0] == 0
-    assert actual[11] == 0
+    actual = DrinkStats(data).quantity
 
-
-def test_per_month_consumption_invalid_data01():
-    actual = DrinkStats([{'x': 'X'}]).consumption
-
-    assert len(actual) == 12
-
-    assert actual[0] == 0
-    assert actual[11] == 0
-
-
-def test_per_month_consumption_invalid_data02():
-    actual = DrinkStats([{'month': 12}]).consumption
-
-    assert len(actual) == 12
-
-    assert actual[0] == 0
-    assert actual[11] == 0
+    assert actual == expect
 
 
-def test_per_month_quantity(_month_sum):
-    actual = DrinkStats(_month_sum).quantity
+@pytest.mark.parametrize(
+    'drink_type, expect',
+    [
+        ('beer', [6.45, 14.23, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('wine', [3.02, 6.7, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('vodka', [0.81, 1.79, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('stdav', [0.32, 0.71, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+    ]
+)
+@freeze_time('1999-12-01')
+def test_consumption(drink_type, expect, get_user):
+    get_user.drink_type = drink_type
 
-    assert len(actual) == 12
+    data = [
+        {'date': date(1999, 1, 1), 'qty': 1},
+        {'date': date(1999, 2, 1), 'qty': 2},
+    ]
 
-    assert actual[0] == 0
-    assert actual[4] == 14.0
-    assert actual[7] == 47.0
-    assert actual[9] == 1.0
+    actual = DrinkStats(data).consumption
 
-
-def test_per_month_quantity_empty():
-    actual = DrinkStats([]).quantity
-
-    assert len(actual) == 12
-
-    assert actual[0] == 0
-    assert actual[11] == 0
+    assert pytest.approx(actual, 0.01) == expect
 
 
-def test_per_month_quantity_invalid_data():
-    actual = DrinkStats([{'x': 'X'}]).quantity
+@pytest.mark.parametrize(
+    'drink_type, expect',
+    [
+        ('beer', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('wine', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('vodka', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('stdav', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+    ]
+)
+@freeze_time('1999-12-01')
+def test_consumption_no_data(drink_type, expect, get_user):
+    get_user.drink_type = drink_type
 
-    assert len(actual) == 12
+    data = []
 
-    assert actual[0] == 0
-    assert actual[11] == 0
+    actual = DrinkStats(data).consumption
+
+    assert actual == expect
 
 
 @freeze_time('2019-10-10')

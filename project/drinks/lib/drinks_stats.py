@@ -1,9 +1,11 @@
+import calendar
 from datetime import date, datetime
 from typing import Dict, List, Tuple
 
 from django.utils.translation import gettext as _
 
 from ...core.lib.date import ydays
+from ..lib.drinks_options import DrinksOptions
 from .drinks_options import DrinksOptions
 
 
@@ -28,11 +30,22 @@ class DrinkStats():
         if not arr:
             return
 
-        for a in arr:
-            idx = a.get('month', 1) - 1
+        obj = DrinksOptions()
+        ratio = obj.ratio
 
-            self._consumption[idx] = a.get('per_month', 0)
-            self._quantity[idx] = a.get('sum', 0)
+        for row in arr:
+            _date = row.get('date')
+            _year = _date.year
+            _month = _date.month
+            _monthlen = calendar.monthrange(_year, _month)[1]
+            _stdav = row.get('qty')
+            _qty = _stdav * ratio
+            _consumption = obj.stdav_to_ml(stdav=_stdav) / _monthlen
+
+            idx = _month - 1
+
+            self._consumption[idx] = _consumption
+            self._quantity[idx] = _qty
 
 
 def std_av(year: int, qty: float) -> List[Dict]:
