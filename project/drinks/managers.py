@@ -41,8 +41,9 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
         DrinkQuerySet [{'date': datetime.date, 'sum': float, 'month': int, 'monthlen': int, 'per_month': float}]
         """
 
-        qs = self\
-            .related()\
+        return \
+            self \
+            .related() \
             .month_sum(
                 year=year,
                 month=month,

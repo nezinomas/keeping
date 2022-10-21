@@ -83,7 +83,8 @@ class TabHistory(TemplateViewMixin):
     template_name = 'drinks/tab_history.html'
 
     def get_context_data(self, **kwargs):
-        obj = HistoryService(Drink.objects.sum_by_year())
+        data = Drink.objects.sum_by_year()
+        obj = HistoryService(data)
 
         context = {
             'tab': 'history',
