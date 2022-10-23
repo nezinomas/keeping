@@ -42,9 +42,10 @@ class DrinkStats:
 
             idx = _month - 1
 
-            self.consumption[idx] = self.options.stdav_to_ml(
-                _stdav) / _monthlen
-            self.quantity[idx] = _stdav * self.options.ratio
+            self.consumption[idx] = \
+                self.options.stdav_to_ml(_stdav) / _monthlen
+            self.quantity[idx] = \
+                self.options.ratio * _stdav
 
 
 def std_av(year: int, qty: float) -> List[Dict]:
