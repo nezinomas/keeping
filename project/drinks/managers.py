@@ -1,11 +1,9 @@
-import calendar
-from datetime import date, datetime
+from datetime import date
 from typing import Dict, List
 
 from django.db import models
 
 from ..core.lib import utils
-from ..core.lib.date import ydays
 from ..core.mixins.queryset_sum import SumMixin
 
 from .lib.drinks_options import DrinksOptions
