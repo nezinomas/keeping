@@ -16,11 +16,11 @@ class HistoryService:
         field(init=False, default_factory=list)
     per_day: list[float] = \
         field(init=False, default_factory=list)
-    current_year_per_day: float = \
+    current_ml_per_day: float = \
         field(init=False, default=0.0)
     quantity: list[float] = \
         field(init=False, default_factory=list)
-    current_year_quantity: float = \
+    current_quantity: float = \
         field(init=False, default=0.0)
     drink_options: DrinksOptions = \
         field(init=False, default_factory=DrinksOptions)
@@ -66,5 +66,5 @@ class HistoryService:
         _year = datetime.now().date().year
         _idx =  self.years.index(_year)
 
-        self.current_year_quantity = self.quantity[_idx]
-        self.current_year_per_day = self.per_day[_idx]
+        self.current_quantity = self.quantity[_idx]
+        self.current_ml_per_day = self.per_day[_idx]
