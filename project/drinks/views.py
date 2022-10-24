@@ -14,6 +14,7 @@ from ..counts.lib.stats import Stats as CountStats
 from .forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
 from .lib import views_helper as H
 from .lib.drinks_options import DrinksOptions
+from .lib.drinks_stats import DrinkStats
 from .models import Drink, DrinkTarget, DrinkType
 from .services.history import HistoryService
 
@@ -50,7 +51,10 @@ class TabIndex(TemplateViewMixin):
 
         stats = CountStats(year=year, data=qs, past_latest=past_latest_record)
         data = stats.chart_calendar()
-        rendered = H.RenderContext(self.request, year)
+
+        month_sums = Drink.objects.sum_by_month(year)
+
+        rendered = H.RenderContext(self.request, year, DrinkStats(month_sums))
         context = {
             'target_list': \
                     rendered_content(self.request, TargetLists, **kwargs),

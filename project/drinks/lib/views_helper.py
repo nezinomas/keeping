@@ -40,14 +40,14 @@ def several_years_consumption(years):
 
 
 class RenderContext():
-    def __init__(self, request: HttpRequest, year: int):
+    def __init__(self, request: HttpRequest, year: int, drink_stats: DrinkStats):
         self._request = request
         self._year = year
 
         self._target = self._get_target()
 
         self._avg, self._qty = self._get_avg_qty()
-        self._DrinkStats = self._get_drink_stats()
+        self._DrinkStats = drink_stats
 
     def chart_quantity(self) -> List[Dict]:
         return {
@@ -121,11 +121,6 @@ class RenderContext():
         qs = models.DrinkTarget.objects.year(self._year)
 
         return obj.stdav_to_ml(qs[0].quantity) if qs else 0
-
-    def _get_drink_stats(self):
-        qs = models.Drink.objects.sum_by_month(self._year)
-
-        return DrinkStats(qs)
 
     def _get_avg_qty(self) -> Tuple[float, float]:
         qs = models.Drink.objects.sum_by_year(self._year)
