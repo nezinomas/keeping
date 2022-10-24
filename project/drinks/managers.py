@@ -85,10 +85,14 @@ class DrinkTargetQuerySet(SumMixin, models.QuerySet):
             .filter(user=user)
 
     def year(self, year):
+        obj = DrinksOptions()
         return \
             self \
             .related() \
-            .filter(year=year)
+            .filter(year=year) \
+            .annotate(stdav=F('quantity')) \
+            .annotate(qty=obj.stdav_to_ml(stdav=F('stdav'))) \
+            .annotate(max_bottles=obj.stdav_to_bottles(year, F('stdav')))
 
     def items(self):
         return self.related()

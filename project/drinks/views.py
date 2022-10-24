@@ -210,16 +210,8 @@ class TargetLists(ListViewMixin):
     model = DrinkTarget
 
     def get_queryset(self):
-        obj = DrinksOptions()
         year = self.request.user.year
-
-        qs = DrinkTarget.objects.year(year)
-        for q in qs:
-            _qty = q.quantity
-            q.quantity = obj.stdav_to_ml(stdav=_qty)
-            q.max_bottles = obj.stdav_to_bottles(year=year, max_stdav=_qty)
-
-        return qs
+        return super().get_queryset().year(year)
 
 
 class TargetNew(CreateViewMixin):
