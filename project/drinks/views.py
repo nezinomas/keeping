@@ -69,7 +69,7 @@ class TabIndex(TemplateViewMixin):
             'compare_form_and_chart': \
                     rendered_content(self.request, CompareTwo, **kwargs),
             'all_years': len(years()),
-            'records': qs.count(),
+            'records': month_sums.count(),
             'chart_quantity': rendered.chart_quantity(),
             'chart_consumption': rendered.chart_consumption(),
             'chart_calendar_1H': rendered.chart_calendar(data[:6]),
