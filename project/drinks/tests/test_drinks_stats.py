@@ -9,21 +9,21 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.mark.parametrize(
-    'drink_type, expect',
+    'drink_type, stdav, qty, expect',
     [
-        ('beer', [1/2.5, 2/2.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ('wine', [1/8, 2/8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ('vodka', [1/40, 2/40, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ('stdav', [1.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('beer', 2.5, 1, [1, 2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('wine', 8, 1, [1, 2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('vodka', 40, 1, [1, 2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('stdav', 1, 1, [1.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
     ]
 )
 @freeze_time('1999-12-01')
-def test_quantity(drink_type, expect, get_user):
+def test_quantity(drink_type, stdav, qty, expect, get_user):
     get_user.drink_type = drink_type
 
     data = [
-        {'date': date(1999, 1, 1), 'qty': 1},
-        {'date': date(1999, 2, 1), 'qty': 2},
+        {'date': date(1999, 1, 1), 'qty': qty, 'stdav': stdav},
+        {'date': date(1999, 2, 1), 'qty': qty * 2, 'stdav': stdav * 2},
     ]
 
     actual = DrinkStats(data).quantity
@@ -52,21 +52,21 @@ def test_quantity_no_data(drink_type, expect, get_user):
 
 
 @pytest.mark.parametrize(
-    'drink_type, expect',
+    'drink_type, qty, stdav, expect',
     [
-        ('beer', [6.45, 14.23, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ('wine', [3.02, 6.7, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ('vodka', [0.81, 1.79, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ('stdav', [0.32, 0.71, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('beer', 1, 2.5, [16.13, 35.71, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('wine', 1, 8, [24.19, 53.57, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('vodka', 1, 40, [32.23, 71.43, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ('stdav', 1, 1, [0.32, 0.71, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
     ]
 )
 @freeze_time('1999-12-01')
-def test_consumption(drink_type, expect, get_user):
+def test_consumption(drink_type, qty, stdav, expect, get_user):
     get_user.drink_type = drink_type
 
     data = [
-        {'date': date(1999, 1, 1), 'qty': 1},
-        {'date': date(1999, 2, 1), 'qty': 2},
+        {'date': date(1999, 1, 1), 'qty': qty, 'stdav': stdav},
+        {'date': date(1999, 2, 1), 'qty': qty * 2, 'stdav': stdav * 2},
     ]
 
     actual = DrinkStats(data).consumption
