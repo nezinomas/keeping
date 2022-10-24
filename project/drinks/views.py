@@ -16,6 +16,7 @@ from .lib import views_helper as H
 from .lib.drinks_options import DrinksOptions
 from .lib.drinks_stats import DrinkStats
 from .models import Drink, DrinkTarget, DrinkType
+from .services.calendar_chart import CalendarChart
 from .services.history import HistoryService
 
 
@@ -56,10 +57,8 @@ class TabIndex(TemplateViewMixin):
                 .latest() \
                 .date
 
-        stats = CountStats(year=year, data=qs_by_day, past_latest=latest_past_date)
-        data = stats.chart_calendar()
-
         qs_by_month = Drink.objects.sum_by_month(year)
+        calendar_chart = CalendarChart(year, qs_by_day, latest_past_date).chart_data
 
         rendered = H.RenderContext(self.request, year, DrinkStats(
             qs_by_month), latest_past_date, latest_current_date)
@@ -72,8 +71,8 @@ class TabIndex(TemplateViewMixin):
             'records': qs_by_month.count(),
             'chart_quantity': rendered.chart_quantity(),
             'chart_consumption': rendered.chart_consumption(),
-            'chart_calendar_1H': rendered.chart_calendar(data[:6]),
-            'chart_calendar_2H': rendered.chart_calendar(data[6:]),
+            'chart_calendar_1H': rendered.chart_calendar(calendar_chart[:6]),
+            'chart_calendar_2H': rendered.chart_calendar(calendar_chart[6:]),
             'tbl_consumption': rendered.tbl_consumption(),
             'tbl_last_day': rendered.tbl_last_day(),
             'tbl_alcohol': rendered.tbl_alcohol(),
