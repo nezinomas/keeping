@@ -39,6 +39,7 @@ class TabIndex(TemplateViewMixin):
         year = self.request.user.year
 
         qs_by_day = Drink.objects.sum_by_day(year)
+        qs_by_month = Drink.objects.sum_by_month(year)
 
         latest_past_date = None
         latest_current_date = None
@@ -57,11 +58,22 @@ class TabIndex(TemplateViewMixin):
                 .latest() \
                 .date
 
-        qs_by_month = Drink.objects.sum_by_month(year)
-        calendar_service = CalendarChart(year, qs_by_day, latest_past_date)
+        calendar_service = \
+            CalendarChart(
+                year=year,
+                data=qs_by_day,
+                latest_past_date=latest_past_date
+            )
 
-        rendered = H.RenderContext(self.request, year, DrinkStats(
-            qs_by_month), latest_past_date, latest_current_date)
+        rendered = \
+            H.RenderContext(
+                request=self.request,
+                year=year,
+                drink_stats=DrinkStats(qs_by_month),
+                latest_past_date=latest_past_date,
+                latest_current_date=latest_current_date
+            )
+
         context = {
             'target_list': \
                     rendered_content(self.request, TargetLists, **kwargs),
