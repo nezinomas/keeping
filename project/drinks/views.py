@@ -78,8 +78,6 @@ class TabIndex(TemplateViewMixin):
                 latest_current_date=latest_current_date
             )
 
-        print(f'this year target: {target}')
-
         context = {
             'target_list': \
                     rendered_content(self.request, TargetLists, **kwargs),
