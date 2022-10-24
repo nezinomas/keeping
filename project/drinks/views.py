@@ -38,11 +38,7 @@ class TabIndex(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
 
-        qs_by_day = Drink.objects.sum_by_day(year)
-        qs_by_month = Drink.objects.sum_by_month(year)
-
         latest_past_date = None
-        latest_current_date = None
         with contextlib.suppress(Drink.DoesNotExist):
             latest_past_date = \
                 Drink.objects \
@@ -51,6 +47,7 @@ class TabIndex(TemplateViewMixin):
                 .latest() \
                 .date
 
+        latest_current_date = None
         with contextlib.suppress(Drink.DoesNotExist):
             latest_current_date = \
                 Drink.objects \
@@ -58,6 +55,7 @@ class TabIndex(TemplateViewMixin):
                 .latest() \
                 .date
 
+        qs_by_day = Drink.objects.sum_by_day(year)
         calendar_service = \
             CalendarChart(
                 year=year,
@@ -65,6 +63,7 @@ class TabIndex(TemplateViewMixin):
                 latest_past_date=latest_past_date
             )
 
+        qs_by_month = Drink.objects.sum_by_month(year)
         rendered = \
             H.RenderContext(
                 request=self.request,
