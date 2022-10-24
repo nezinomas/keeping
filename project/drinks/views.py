@@ -37,7 +37,7 @@ class TabIndex(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
 
-        qs = Drink.objects.sum_by_day(year)
+        qs_by_day = Drink.objects.sum_by_day(year)
 
         latest_past_date = None
         latest_current_date = None
@@ -56,20 +56,20 @@ class TabIndex(TemplateViewMixin):
                 .latest() \
                 .date
 
-        stats = CountStats(year=year, data=qs, past_latest=latest_past_date)
+        stats = CountStats(year=year, data=qs_by_day, past_latest=latest_past_date)
         data = stats.chart_calendar()
 
-        month_sums = Drink.objects.sum_by_month(year)
+        qs_by_month = Drink.objects.sum_by_month(year)
 
         rendered = H.RenderContext(self.request, year, DrinkStats(
-            month_sums), latest_past_date, latest_current_date)
+            qs_by_month), latest_past_date, latest_current_date)
         context = {
             'target_list': \
                     rendered_content(self.request, TargetLists, **kwargs),
             'compare_form_and_chart': \
                     rendered_content(self.request, CompareTwo, **kwargs),
             'all_years': len(years()),
-            'records': month_sums.count(),
+            'records': qs_by_month.count(),
             'chart_quantity': rendered.chart_quantity(),
             'chart_consumption': rendered.chart_consumption(),
             'chart_calendar_1H': rendered.chart_calendar(data[:6]),
