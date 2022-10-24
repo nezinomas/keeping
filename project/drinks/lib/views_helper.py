@@ -21,7 +21,6 @@ def drink_type_dropdown(request):
         'current_drink_type': models.DrinkType(drink_type).label,
     }
 
-
 def several_years_consumption(years):
     serries = []
     for y in years:
@@ -70,16 +69,6 @@ class RenderContext():
                 'limit': _('Limit'),
                 'alcohol': _('Alcohol consumption per day, ml'),
             },
-        }
-
-    def chart_calendar(self, data: List[Dict]) -> str:
-        return {
-            'data': data,
-            'categories': [x[0] for x in list(weekday_names().values())],
-            'text' : {
-                'gap': _('Gap'),
-                'quantity': _('Quantity'),
-            }
         }
 
     def tbl_consumption(self) -> str:
