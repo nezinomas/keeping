@@ -183,5 +183,3 @@ class DrinkCompareForm(forms.Form):
     def _validation_error(self, field):
         if len(str(abs(field))) != 4:
             raise forms.ValidationError(_('Must be 4 digits.'))
-
-
