@@ -40,7 +40,12 @@ def several_years_consumption(years):
 
 
 class RenderContext():
-    def __init__(self, request: HttpRequest, year: int, drink_stats: DrinkStats, latest_past_date: date = None, latest_current_date: date = None):
+    def __init__(self,
+                 request: HttpRequest,
+                 year: int,
+                 drink_stats: DrinkStats,
+                 latest_past_date: date = None,
+                 latest_current_date: date = None):
         self._request = request
         self._year = year
 
