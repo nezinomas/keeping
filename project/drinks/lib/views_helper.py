@@ -44,12 +44,13 @@ class RenderContext():
                  request: HttpRequest,
                  year: int,
                  drink_stats: DrinkStats,
+                 target: float = 0.0,
                  latest_past_date: date = None,
                  latest_current_date: date = None):
         self._request = request
         self._year = year
 
-        self._target = self._get_target()
+        self._target = target
 
         self._avg, self._qty = self._get_avg_qty()
         self._DrinkStats = drink_stats
@@ -112,12 +113,6 @@ class RenderContext():
             },
             self._request
         )
-
-    def _get_target(self):
-        obj = DrinksOptions()
-        qs = models.DrinkTarget.objects.year(self._year)
-
-        return obj.stdav_to_ml(qs[0].quantity) if qs else 0
 
     def _get_avg_qty(self) -> Tuple[float, float]:
         qs = models.Drink.objects.sum_by_year(self._year)
