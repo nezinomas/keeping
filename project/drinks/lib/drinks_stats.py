@@ -33,7 +33,7 @@ class DrinkStats:
 
     def _calc(self) -> None:
         for row in self.data:
-            _stdav = row.get('qty')
+            _stdav = row.get('stdav')
 
             _date = row.get('date')
             _year = _date.year
@@ -44,8 +44,7 @@ class DrinkStats:
 
             self.consumption[idx] = \
                 self.options.stdav_to_ml(_stdav) / _monthlen
-            self.quantity[idx] = \
-                self.options.ratio * _stdav
+            self.quantity[idx] = row.get('qty')
 
 
 def std_av(year: int, qty: float) -> List[Dict]:
