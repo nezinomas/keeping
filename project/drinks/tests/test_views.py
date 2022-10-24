@@ -1,4 +1,3 @@
-from requests import request
 from ...core.tests.utils import setup_view
 import re
 from datetime import date
