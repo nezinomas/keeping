@@ -1,11 +1,8 @@
-from datetime import date
-from typing import Dict, List
-
 from django.db import models
+from django.db.models import F
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
-
 from .lib.drinks_options import DrinksOptions
 
 
@@ -24,20 +21,30 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self.related()
 
-    def sum_by_year(self, year=None):
+    def sum_by_year(self, year=None) -> list[dict]:
+        """
+        Returns
+        DrinkQuerySet [{'date': datetime.date, 'stdav': float, 'qty': float}]
+        """
+
+        ratio = DrinksOptions().ratio
+
         return self \
             .related() \
             .year_sum(
                 year=year,
-                sum_annotation='qty',
+                sum_annotation='stdav',
                 sum_column='quantity') \
+            .annotate(qty=F('stdav') * ratio) \
             .order_by('date')
 
-    def sum_by_month(self, year: int, month: int = None):
+    def sum_by_month(self, year: int, month: int = None) -> list[dict]:
         """
         Returns
-        DrinkQuerySet [{'date': datetime.date, 'sum': float, 'month': int, 'monthlen': int, 'per_month': float}]
+        DrinkQuerySet [{'date': datetime.date, 'stdav': float, 'qty': float}]
         """
+
+        ratio = DrinksOptions().ratio
 
         return \
             self \
@@ -45,26 +52,28 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
             .month_sum(
                 year=year,
                 month=month,
-                sum_annotation='qty',
-                sum_column='quantity')\
+                sum_annotation='stdav',
+                sum_column='quantity') \
+            .annotate(qty=F('stdav') * ratio) \
             .order_by('date')
 
-    def sum_by_day(self, year: int, month: int = None) -> List[Dict[date, float]]:
-        qs = self \
+    def sum_by_day(self, year: int, month: int = None) -> list[dict]:
+        """
+        Returns
+        DrinkQuerySet [{'date': datetime.date, 'stdav': float, 'qty': float}]
+        """
+
+        ratio = DrinksOptions().ratio
+
+        return self \
             .related() \
             .day_sum(
                 year=year,
                 month=month,
-                sum_annotation='qty',
-                sum_column='quantity')\
+                sum_annotation='stdav',
+                sum_column='quantity') \
+            .annotate(qty=F('stdav') * ratio) \
             .order_by('date')
-
-        ratio = DrinksOptions().ratio
-
-        for q in qs:
-            q['qty'] = q['qty'] * ratio
-
-        return qs
 
 
 class DrinkTargetQuerySet(SumMixin, models.QuerySet):
