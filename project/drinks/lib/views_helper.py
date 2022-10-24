@@ -1,5 +1,5 @@
 import contextlib
-from datetime import datetime
+from datetime import datetime, date
 from typing import Dict, List, Tuple
 
 from django.http import HttpRequest
@@ -40,7 +40,7 @@ def several_years_consumption(years):
 
 
 class RenderContext():
-    def __init__(self, request: HttpRequest, year: int, drink_stats: DrinkStats):
+    def __init__(self, request: HttpRequest, year: int, drink_stats: DrinkStats, latest_past_date: date = None, latest_current_date: date = None):
         self._request = request
         self._year = year
 
@@ -48,6 +48,8 @@ class RenderContext():
 
         self._avg, self._qty = self._get_avg_qty()
         self._DrinkStats = drink_stats
+        self.latest_past_date = latest_past_date
+        self.latest_current_date = latest_current_date
 
     def chart_quantity(self) -> List[Dict]:
         return {
@@ -135,20 +137,10 @@ class RenderContext():
         return 15 if avg - 50 <= target <= avg else -5
 
     def _dry_days(self) -> Dict:
-        qs = None
+        _dict = {}
 
-        with contextlib.suppress(models.Drink.DoesNotExist):
-            qs = models.Drink.objects.year(self._year).latest()
-
-        # if current year has no record
-        # try get latest record
-        if not qs:
-            with contextlib.suppress(models.Drink.DoesNotExist):
-                qs = models.Drink.objects.related().latest()
-
-        if qs:
-            latest = qs.date
+        if latest := self.latest_current_date or self.latest_past_date:
             delta = (datetime.now().date() - latest).days
-            return {'date': latest, 'delta': delta}
+            _dict = {'date': latest, 'delta': delta}
 
-        return {}
+        return _dict

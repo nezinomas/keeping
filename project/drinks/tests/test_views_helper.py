@@ -9,13 +9,39 @@ from ..lib import views_helper as T
 pytestmark = pytest.mark.django_db
 
 
+@pytest.mark.parametrize(
+    'past, current, expect',
+    [
+        (
+            date(1998, 1, 1),
+            None,
+            {'date': date(1998, 1, 1), 'delta': 367}
+        ),
+        (
+            None,
+            date(1999, 1, 1),
+            {'date': date(1999, 1, 1), 'delta': 2}
+        ),
+        (
+            date(1998, 1, 1),
+            date(1999, 1, 1),
+            {'date': date(1999, 1, 1), 'delta': 2}
+        ),
+        (None, None, {}),
+    ]
+)
 @freezegun.freeze_time('1999-01-03')
-def test_dry_days(fake_request):
+def test_dry_days(fake_request, past, current, expect):
     DrinkFactory()
 
-    actual = T.RenderContext(fake_request, 1999, None)._dry_days()
+    actual = T.RenderContext(
+        fake_request,
+        1999,
+        None,
+        latest_past_date=past,
+        latest_current_date=current)._dry_days()
 
-    assert actual == {'date': date(1999, 1, 1), 'delta': 2}
+    assert actual == expect
 
 
 def test_dry_days_no_records(fake_request):

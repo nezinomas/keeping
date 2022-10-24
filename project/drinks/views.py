@@ -38,23 +38,31 @@ class TabIndex(TemplateViewMixin):
         year = self.request.user.year
 
         qs = Drink.objects.sum_by_day(year)
-        past_latest_record = None
 
+        latest_past_date = None
+        latest_current_date = None
         with contextlib.suppress(Drink.DoesNotExist):
-            qs_past = \
-                Drink \
-                .objects \
+            latest_past_date = \
+                Drink.objects \
                 .related() \
                 .filter(date__year__lt=year) \
-                .latest()
-            past_latest_record = qs_past.date
+                .latest() \
+                .date
 
-        stats = CountStats(year=year, data=qs, past_latest=past_latest_record)
+        with contextlib.suppress(Drink.DoesNotExist):
+            latest_current_date = \
+                Drink.objects \
+                .year(year) \
+                .latest() \
+                .date
+
+        stats = CountStats(year=year, data=qs, past_latest=latest_past_date)
         data = stats.chart_calendar()
 
         month_sums = Drink.objects.sum_by_month(year)
 
-        rendered = H.RenderContext(self.request, year, DrinkStats(month_sums))
+        rendered = H.RenderContext(self.request, year, DrinkStats(
+            month_sums), latest_past_date, latest_current_date)
         context = {
             'target_list': \
                     rendered_content(self.request, TargetLists, **kwargs),
