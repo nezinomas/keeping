@@ -37,7 +37,9 @@ class TabIndex(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
+
         qs_by_month = Drink.objects.sum_by_month(year)
+
         records = qs_by_month.count()
         context = {
             'records': records,
