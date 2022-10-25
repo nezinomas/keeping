@@ -28,7 +28,7 @@ class DrinkStats:
     options: DrinksOptions = \
         field(init=False, default_factory=DrinksOptions)
 
-    _year: int = \
+    year: int = \
         field(init=False, default=None)
 
     def __post_init__(self):
@@ -48,8 +48,8 @@ class DrinkStats:
             _month = _date.month
             _monthlen = calendar.monthrange(_year, _month)[1]
 
-            if not self._year:
-                self._year = _year
+            if not self.year:
+                self.year = _year
 
             idx = _month - 1
 
@@ -60,11 +60,10 @@ class DrinkStats:
     def _calc_year(self):
         _date = datetime.now().date()
         _month = _date.month
-        if self._year == _date.year:
+        if self.year == _date.year:
             _day_of_year = _date.timetuple().tm_yday
         else:
-            _day_of_year = ydays(self._year)
+            _day_of_year = ydays(self.year)
 
         self.qty_of_year = sum(self.qty_of_month)
         self.per_day_of_year = sum(self.per_month[:_month]) / _day_of_year
-

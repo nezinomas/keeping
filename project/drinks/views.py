@@ -69,7 +69,6 @@ class TabIndex(TemplateViewMixin):
         rendered = \
             H.RenderContext(
                 request=self.request,
-                year=year,
                 drink_stats=DrinkStats(qs_by_month),
                 target=target,
                 latest_past_date=latest_past_date,
