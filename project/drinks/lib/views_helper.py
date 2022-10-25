@@ -52,7 +52,7 @@ class RenderContext():
 
         self._target = target
 
-        self._avg, self._qty = self._get_avg_qty()
+        self._per_day_of_year, self._quantity_of_year = self._get_avg_qty()
         self._DrinkStats = drink_stats
         self.latest_past_date = latest_past_date
         self.latest_current_date = latest_current_date
@@ -69,9 +69,9 @@ class RenderContext():
             'categories' : list(month_names().values()),
             'data': self._DrinkStats.consumption,
             'target': self._target,
-            'avg': self._avg,
-            'avg_label_y': self._avg_label_position(self._avg, self._target),
-            'target_label_y': self._target_label_position(self._avg, self._target),
+            'avg': self._per_day_of_year,
+            'avg_label_y': self._avg_label_position(self._per_day_of_year, self._target),
+            'target_label_y': self._target_label_position(self._per_day_of_year, self._target),
             'text': {
                 'limit': _('Limit'),
                 'alcohol': _('Alcohol consumption per day, ml'),
@@ -81,8 +81,8 @@ class RenderContext():
     def tbl_consumption(self) -> str:
         return render_to_string(
             'drinks/includes/tbl_consumption.html', {
-                'qty': self._qty,
-                'avg': self._avg,
+                'qty': self._quantity_of_year,
+                'avg': self._per_day_of_year,
                 'target': self._target,
             },
             self._request
@@ -97,7 +97,7 @@ class RenderContext():
 
     def tbl_alcohol(self) -> str:
         obj = DrinksOptions()
-        stdav = self._qty / obj.ratio
+        stdav = self._quantity_of_year / obj.ratio
 
         return render_to_string(
             'drinks/includes/tbl_alcohol.html', {
@@ -109,7 +109,7 @@ class RenderContext():
     def tbl_std_av(self) -> str:
         return render_to_string(
             'drinks/includes/tbl_std_av.html', {
-                'items': self.std_av(self._year, self._qty)
+                'items': self.std_av(self._year, self._quantity_of_year)
             },
             self._request
         )
