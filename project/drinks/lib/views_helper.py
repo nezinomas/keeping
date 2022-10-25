@@ -49,33 +49,32 @@ class RenderContext():
                  latest_current_date: date = None):
         self._request = request
         self._year = year
+        self._options = DrinksOptions()
 
-        self._target = target
-
-        self._per_day_of_year = per_day_of_year
-        self._quantity_of_year = quantity_of_year
-
-        self._DrinkStats = drink_stats
+        self.drink_stats = drink_stats
+        self.target = target
+        self.per_day_of_year = per_day_of_year
+        self.quantity_of_year = quantity_of_year
         self.latest_past_date = latest_past_date
         self.latest_current_date = latest_current_date
 
     def chart_quantity(self) -> List[Dict]:
         return {
             'categories' : list(month_names().values()),
-            'data' : self._DrinkStats.quantity,
+            'data' : self.drink_stats.quantity,
             'text' : {'quantity': _('Quantity')}
         }
 
     def chart_consumption(self) -> str:
         return {
             'categories' : list(month_names().values()),
-            'data': self._DrinkStats.consumption,
-            'target': self._target,
-            'avg': self._per_day_of_year,
+            'data': self.drink_stats.consumption,
+            'target': self.target,
+            'avg': self.per_day_of_year,
             'avg_label_y':
-                self._avg_label_position(self._per_day_of_year, self._target),
+                self._avg_label_position(self.per_day_of_year, self.target),
             'target_label_y':
-                self._target_label_position(self._per_day_of_year, self._target),
+                self._target_label_position(self.per_day_of_year, self.target),
             'text': {
                 'limit': _('Limit'),
                 'alcohol': _('Alcohol consumption per day, ml'),
@@ -85,9 +84,9 @@ class RenderContext():
     def tbl_consumption(self) -> str:
         return render_to_string(
             'drinks/includes/tbl_consumption.html', {
-                'qty': self._quantity_of_year,
-                'avg': self._per_day_of_year,
-                'target': self._target,
+                'qty': self.quantity_of_year,
+                'avg': self.per_day_of_year,
+                'target': self.target,
             },
             self._request
         )
@@ -100,12 +99,11 @@ class RenderContext():
         )
 
     def tbl_alcohol(self) -> str:
-        obj = DrinksOptions()
-        stdav = self._quantity_of_year / obj.ratio
+        stdav = self.quantity_of_year / self._options.ratio
 
         return render_to_string(
             'drinks/includes/tbl_alcohol.html', {
-                'l': obj.stdav_to_alcohol(stdav)
+                'l': self._options.stdav_to_alcohol(stdav)
             },
             self._request
         )
@@ -113,7 +111,7 @@ class RenderContext():
     def tbl_std_av(self) -> str:
         return render_to_string(
             'drinks/includes/tbl_std_av.html', {
-                'items': self._std_av(self._year, self._quantity_of_year)
+                'items': self._std_av(self._year, self.quantity_of_year)
             },
             self._request
         )
@@ -146,21 +144,19 @@ class RenderContext():
             'per_month': qty / month
         }
 
-        obj = DrinksOptions()
-
         return [
             {
                 'title': _('Beer') + ', 0.5L',
-                **{k: obj.convert(v, 'beer') for k, v in a.items()}
+                **{k: self._options.convert(v, 'beer') for k, v in a.items()}
             }, {
                 'title': _('Wine') + ', 0.75L',
-                **{k: obj.convert(v, 'wine') for k, v in a.items()}
+                **{k: self._options.convert(v, 'wine') for k, v in a.items()}
             }, {
                 'title': _('Vodka') + ', 1L',
-                **{k: obj.convert(v, 'vodka') for k, v in a.items()}
+                **{k: self._options.convert(v, 'vodka') for k, v in a.items()}
             }, {
                 'title': 'Std Av',
-                **{k: v * obj.stdav for k, v in a.items()}
+                **{k: v * self._options.stdav for k, v in a.items()}
             },
         ]
 
