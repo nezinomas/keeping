@@ -17,14 +17,24 @@
 <div class="row my-2">
     <div class="col-lg-6">
         <div class="row gx-2">
-            <div id="tbl_consumption" class="col-lg-3 col-md-3">{% include 'drinks/includes/tbl_consumption.html' with ctx=tbl_consumption %}</div>
-            <div id="tbl_last_day" class="col-lg-4 col-md-3">{% include 'drinks/includes/tbl_last_day.html' with ctx=tbl_dray_days %}</div>
-            <div id="tbl_alcohol" class="col-lg-2 col-md-3">{% include 'drinks/includes/tbl_alcohol.html' with ctx=tbl_alcohol %}</div>
-            <div id="target_list" class="col-lg-3 col-md-3">{{target_list}}</div>
+            <div id="tbl_consumption" class="col-lg-3 col-md-3">
+                {% include 'drinks/includes/tbl_consumption.html' with ctx=tbl_consumption %}
+            </div>
+            <div id="tbl_last_day" class="col-lg-4 col-md-3">
+                {% include 'drinks/includes/tbl_last_day.html' with ctx=tbl_dray_days %}
+            </div>
+            <div id="tbl_alcohol" class="col-lg-2 col-md-3">
+                {% include 'drinks/includes/tbl_alcohol.html' with ctx=tbl_alcohol %}
+            </div>
+            <div id="target_list" class="col-lg-3 col-md-3">
+                {{target_list}}
+            </div>
         </div>
 
         <div class="row">
-            <div class="col" id="tbl_std_av">{% include 'drinks/includes/tbl_std_av.html' with ctx=tbl_std_av %}</div>
+            <div class="col" id="tbl_std_av">
+                {% include 'drinks/includes/tbl_std_av.html' with ctx=tbl_std_av %}
+            </div>
         </div>
     </div>
 
