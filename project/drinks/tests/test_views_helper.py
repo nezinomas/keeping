@@ -5,7 +5,7 @@ import pytest
 from project.drinks.lib.drinks_stats import DrinkStats
 
 from ..factories import DrinkFactory
-from ..services import index_tab as T
+from ..services import index as T
 
 pytestmark = pytest.mark.django_db
 
@@ -36,7 +36,7 @@ def test_dry_days(past, current, expect):
     DrinkFactory()
 
     actual = \
-        T.RenderContext(
+        T.IndexService(
             drink_stats=DrinkStats(),
             latest_past_date=past,
             latest_current_date=current
@@ -47,7 +47,7 @@ def test_dry_days(past, current, expect):
 
 def test_dry_days_no_records():
     actual = \
-        T.RenderContext(
+        T.IndexService(
             drink_stats=DrinkStats()
         ).tbl_dry_days()
 
@@ -56,7 +56,7 @@ def test_dry_days_no_records():
 
 def test_target_label_position_between():
     actual = \
-        T.RenderContext(
+        T.IndexService(
             drink_stats=DrinkStats()
         )._target_label_position(avg=55, target=50)
 
@@ -65,7 +65,7 @@ def test_target_label_position_between():
 
 def test_target_label_position_higher():
     actual = \
-        T.RenderContext(
+        T.IndexService(
             drink_stats=DrinkStats()
         )._target_label_position(avg=55, target=500)
 
@@ -74,7 +74,7 @@ def test_target_label_position_higher():
 
 def test_target_label_position_lower():
     actual = \
-        T.RenderContext(
+        T.IndexService(
             drink_stats=DrinkStats()
         )._target_label_position(avg=500, target=50)
 
@@ -83,7 +83,7 @@ def test_target_label_position_lower():
 
 def test_avg_label_position_between():
     actual = \
-        T.RenderContext(
+        T.IndexService(
             drink_stats=DrinkStats()
         )._avg_label_position(avg=50, target=55)
 
@@ -92,7 +92,7 @@ def test_avg_label_position_between():
 
 def test_avg_label_position_higher():
     actual = \
-        T.RenderContext(
+        T.IndexService(
             drink_stats=DrinkStats()
         )._avg_label_position(avg=55, target=500)
 
@@ -101,7 +101,7 @@ def test_avg_label_position_higher():
 
 def test_avg_label_position_lower():
     actual = \
-        T.RenderContext(
+        T.IndexService(
             drink_stats=DrinkStats()
         )._avg_label_position(avg=500, target=50)
 
@@ -111,7 +111,7 @@ def test_avg_label_position_lower():
 @pytest.mark.freeze_time('2019-10-10')
 def test_std_av():
     actual = \
-        T.RenderContext(
+        T.IndexService(
             drink_stats=DrinkStats()
         )._std_av(2019, 273.5)
 
@@ -156,7 +156,7 @@ def test_std_av():
 @pytest.mark.freeze_time('2019-10-10')
 def test_std_av_past_recods():
     actual = \
-        T.RenderContext(
+        T.IndexService(
             drink_stats=DrinkStats()
         )._std_av(1999, 273.5)
 
@@ -216,6 +216,6 @@ def test_tbl_alcohol(drink_type, qty, expect, get_user):
         per_day_of_year=0.0,
     )
 
-    actual = T.RenderContext(drink_stats=stats).tbl_alcohol()
+    actual = T.IndexService(drink_stats=stats).tbl_alcohol()
 
     assert actual['liters'] == expect

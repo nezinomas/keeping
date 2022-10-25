@@ -3,6 +3,7 @@ import contextlib
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
+
 from ..core.lib.date import years
 from ..core.lib.translation import month_names
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
@@ -10,13 +11,13 @@ from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  RedirectViewMixin, TemplateViewMixin,
                                  UpdateViewMixin, rendered_content)
 from .forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
-from .services import index_tab as H
 from .lib.drinks_options import DrinksOptions
 from .lib.drinks_stats import DrinkStats
 from .models import Drink, DrinkTarget, DrinkType
 from .services import helper as H
 from .services.calendar_chart import CalendarChart
 from .services.history import HistoryService
+from .services.index import IndexService
 
 
 class Index(TemplateViewMixin):
@@ -72,8 +73,8 @@ class TabIndex(TemplateViewMixin):
                 .qty
 
         # Index Tab service
-        rendered = \
-            H.RenderContext(
+        index_service = \
+            IndexService(
                 drink_stats=DrinkStats(qs_by_month),
                 target=target,
                 latest_past_date=latest_past_date,
@@ -95,14 +96,14 @@ class TabIndex(TemplateViewMixin):
             'compare_form_and_chart':
                 rendered_content(self.request, CompareTwo, **kwargs),
             'all_years': len(years()),
-            'chart_quantity': rendered.chart_quantity(),
-            'chart_consumption': rendered.chart_consumption(),
+            'chart_quantity': index_service.chart_quantity(),
+            'chart_consumption': index_service.chart_consumption(),
             'chart_calendar_1H': calendar_service.first_half_of_year(),
             'chart_calendar_2H': calendar_service.second_half_of_year(),
-            'tbl_consumption': rendered.tbl_consumption(),
-            'tbl_dray_days': rendered.tbl_dry_days(),
-            'tbl_alcohol': rendered.tbl_alcohol(),
-            'tbl_std_av': rendered.tbl_std_av(),
+            'tbl_consumption': index_service.tbl_consumption(),
+            'tbl_dray_days': index_service.tbl_dry_days(),
+            'tbl_alcohol': index_service.tbl_alcohol(),
+            'tbl_std_av': index_service.tbl_std_av(),
         }
 
         return super().get_context_data(**kwargs) | context
