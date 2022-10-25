@@ -67,6 +67,9 @@ class TabIndex(TemplateViewMixin):
         with contextlib.suppress(DrinkTarget.DoesNotExist):
             target = DrinkTarget.objects.year(year).get(year=year).qty
 
+        qs_by_year = Drink.objects.sum_by_year(year)
+        history = HistoryService(data=qs_by_year)
+
         qs_by_month = Drink.objects.sum_by_month(year)
         rendered = \
             H.RenderContext(
@@ -74,6 +77,8 @@ class TabIndex(TemplateViewMixin):
                 year=year,
                 drink_stats=DrinkStats(qs_by_month),
                 target=target,
+                per_day_of_year=history.per_day_of_year,
+                quantity_of_year=history.quantity_of_year,
                 latest_past_date=latest_past_date,
                 latest_current_date=latest_current_date
             )

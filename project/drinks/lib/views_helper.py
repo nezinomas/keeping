@@ -45,6 +45,8 @@ class RenderContext():
                  year: int,
                  drink_stats: DrinkStats,
                  target: float = 0.0,
+                 per_day_of_year: float = 0.0,
+                 quantity_of_year: float = 0.0,
                  latest_past_date: date = None,
                  latest_current_date: date = None):
         self._request = request
@@ -52,7 +54,9 @@ class RenderContext():
 
         self._target = target
 
-        self._per_day_of_year, self._quantity_of_year = self._get_avg_qty()
+        self._per_day_of_year = per_day_of_year
+        self._quantity_of_year = quantity_of_year
+
         self._DrinkStats = drink_stats
         self.latest_past_date = latest_past_date
         self.latest_current_date = latest_current_date
@@ -113,12 +117,6 @@ class RenderContext():
             },
             self._request
         )
-
-    def _get_avg_qty(self) -> Tuple[float, float]:
-        qs = models.Drink.objects.sum_by_year(self._year)
-        obj = HistoryService(qs)
-
-        return (obj.per_day_of_year, obj.quantity_of_year)
 
     def _avg_label_position(self, avg: float, target: float) -> int:
         return 15 if target - 50 <= avg <= target else -5
