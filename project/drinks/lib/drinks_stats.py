@@ -2,8 +2,6 @@ import calendar
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from django.utils.translation import gettext as _
-
 from ...core.lib.date import ydays
 from ..lib.drinks_options import DrinksOptions
 from ..managers import DrinkQuerySet

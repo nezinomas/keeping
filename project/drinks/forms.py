@@ -1,11 +1,10 @@
-from django.db.models import F
-from django.db.models.functions import (ExtractYear, TruncDay, TruncMonth,
-                                        TruncYear)
 from datetime import datetime
 
 from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.db.models import F
+from django.db.models.functions import ExtractYear
 from django.utils.translation import gettext as _
 
 from ..core.helpers.helper_forms import set_field_properties
