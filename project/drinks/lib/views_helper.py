@@ -27,7 +27,7 @@ def several_years_consumption(years):
         if not qs_drinks:
             continue
 
-        data = DrinkStats(qs_drinks).consumption
+        data = DrinkStats(qs_drinks).per_day_of_month
 
         if not any(data):
             continue
@@ -61,14 +61,14 @@ class RenderContext():
     def chart_quantity(self) -> List[Dict]:
         return {
             'categories' : list(month_names().values()),
-            'data' : self.drink_stats.quantity,
+            'data' : self.drink_stats.qty_of_month,
             'text' : {'quantity': _('Quantity')}
         }
 
     def chart_consumption(self) -> str:
         return {
             'categories' : list(month_names().values()),
-            'data': self.drink_stats.consumption,
+            'data': self.drink_stats.per_day_of_month,
             'target': self.target,
             'avg': self.per_day_of_year,
             'avg_label_y':

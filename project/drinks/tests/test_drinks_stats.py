@@ -26,7 +26,7 @@ def test_quantity(drink_type, stdav, qty, expect, get_user):
         {'date': date(1999, 2, 1), 'qty': qty * 2, 'stdav': stdav * 2},
     ]
 
-    actual = DrinkStats(data).quantity
+    actual = DrinkStats(data).qty_of_month
 
     assert actual == expect
 
@@ -46,7 +46,7 @@ def test_quantity_no_data(drink_type, expect, get_user):
 
     data = []
 
-    actual = DrinkStats(data).quantity
+    actual = DrinkStats(data).qty_of_month
 
     assert actual == expect
 
@@ -69,7 +69,7 @@ def test_consumption(drink_type, qty, stdav, expect, get_user):
         {'date': date(1999, 2, 1), 'qty': qty * 2, 'stdav': stdav * 2},
     ]
 
-    actual = DrinkStats(data).consumption
+    actual = DrinkStats(data).per_day_of_month
 
     assert pytest.approx(actual, 0.01) == expect
 
@@ -89,6 +89,6 @@ def test_consumption_no_data(drink_type, expect, get_user):
 
     data = []
 
-    actual = DrinkStats(data).consumption
+    actual = DrinkStats(data).per_day_of_month
 
     assert actual == expect

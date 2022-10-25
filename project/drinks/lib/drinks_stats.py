@@ -15,9 +15,9 @@ def empty_list():
 @dataclass
 class DrinkStats:
     data: DrinkQuerySet.sum_by_month = None
-    consumption: list[float] = \
+    per_day_of_month: list[float] = \
         field(init=False, default_factory=empty_list)
-    quantity: list[float] = \
+    qty_of_month: list[float] = \
         field(init=False, default_factory=empty_list)
     options: DrinksOptions = \
         field(init=False, default_factory=DrinksOptions)
@@ -39,6 +39,6 @@ class DrinkStats:
 
             idx = _month - 1
 
-            self.consumption[idx] = \
+            self.per_day_of_month[idx] = \
                 self.options.stdav_to_ml(_stdav) / _monthlen
-            self.quantity[idx] = row.get('qty')
+            self.qty_of_month[idx] = row.get('qty')
