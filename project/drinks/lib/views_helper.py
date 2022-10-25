@@ -118,7 +118,7 @@ class RenderContext():
         qs = models.Drink.objects.sum_by_year(self._year)
         obj = HistoryService(qs)
 
-        return (obj.year_per_day, obj.year_quantity)
+        return (obj.per_day_of_year, obj.quantity_of_year)
 
     def _avg_label_position(self, avg: float, target: float) -> int:
         return 15 if target - 50 <= avg <= target else -5

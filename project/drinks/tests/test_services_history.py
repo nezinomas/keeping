@@ -95,7 +95,7 @@ def test_current_year_per_day(drink_type, qty, stdav, expect, get_user):
         {'year': 2000, 'qty': qty, 'stdav': stdav},
     ]
 
-    actual = T.HistoryService(qs).year_per_day
+    actual = T.HistoryService(qs).per_day_of_year
 
     assert actual == expect[1]
 
@@ -138,6 +138,6 @@ def test_current_year_quantity(drink_type, qty, stdav, expect, get_user):
         {'year': 2000, 'qty': qty, 'stdav': stdav},
     ]
 
-    actual = T.HistoryService(qs).year_quantity
+    actual = T.HistoryService(qs).quantity_of_year
 
     assert actual == expect
