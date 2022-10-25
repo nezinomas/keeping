@@ -6,8 +6,8 @@ from django.utils.translation import gettext as _
 from ...core.lib.date import ydays
 from ...core.lib.translation import month_names
 from .. import models
-from .drinks_options import DrinksOptions
-from .drinks_stats import DrinkStats
+from ..lib.drinks_options import DrinksOptions
+from ..lib.drinks_stats import DrinkStats
 
 
 def drink_type_dropdown(request):
