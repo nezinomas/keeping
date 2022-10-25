@@ -118,7 +118,7 @@ def test_per_month():
 
     actual = DrinkStats(data).per_month
 
-    assert actual == [500.0, 500.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    assert actual == [500.0, 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 
 @pytest.mark.parametrize(
