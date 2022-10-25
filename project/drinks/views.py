@@ -14,6 +14,7 @@ from .services import index_tab as H
 from .lib.drinks_options import DrinksOptions
 from .lib.drinks_stats import DrinkStats
 from .models import Drink, DrinkTarget, DrinkType
+from .services import helper as H
 from .services.calendar_chart import CalendarChart
 from .services.history import HistoryService
 
