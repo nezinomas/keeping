@@ -62,14 +62,18 @@ class TabIndex(TemplateViewMixin):
                 latest_past_date=latest_past_date
             )
 
-        target = 0.0
-        with contextlib.suppress(DrinkTarget.DoesNotExist):
-            target = DrinkTarget.objects.year(year).get(year=year).qty
 
         qs_by_year = Drink.objects.sum_by_year(year)
-        history = HistoryService(data=qs_by_year)
-
         qs_by_month = Drink.objects.sum_by_month(year)
+        history = HistoryService(data=qs_by_year)
+        target = 0.0
+        with contextlib.suppress(DrinkTarget.DoesNotExist):
+            target = \
+                DrinkTarget.objects \
+                .year(year) \
+                .get(year=year) \
+                .qty
+
         rendered = \
             H.RenderContext(
                 request=self.request,

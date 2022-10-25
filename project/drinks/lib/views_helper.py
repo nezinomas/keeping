@@ -72,8 +72,10 @@ class RenderContext():
             'data': self._DrinkStats.consumption,
             'target': self._target,
             'avg': self._per_day_of_year,
-            'avg_label_y': self._avg_label_position(self._per_day_of_year, self._target),
-            'target_label_y': self._target_label_position(self._per_day_of_year, self._target),
+            'avg_label_y':
+                self._avg_label_position(self._per_day_of_year, self._target),
+            'target_label_y':
+                self._target_label_position(self._per_day_of_year, self._target),
             'text': {
                 'limit': _('Limit'),
                 'alcohol': _('Alcohol consumption per day, ml'),
