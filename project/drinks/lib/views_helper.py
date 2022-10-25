@@ -113,7 +113,7 @@ class RenderContext():
     def tbl_std_av(self) -> str:
         return render_to_string(
             'drinks/includes/tbl_std_av.html', {
-                'items': self.std_av(self._year, self._quantity_of_year)
+                'items': self._std_av(self._year, self._quantity_of_year)
             },
             self._request
         )
@@ -133,7 +133,7 @@ class RenderContext():
 
         return _dict
 
-    def std_av(self, year: int, qty: float) -> List[Dict]:
+    def _std_av(self, year: int, qty: float) -> List[Dict]:
         if not qty:
             return {}
 

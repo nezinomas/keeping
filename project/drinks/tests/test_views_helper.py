@@ -130,7 +130,7 @@ def test_std_av(fake_request):
             request=fake_request,
             year=1999,
             drink_stats=None
-        ).std_av(2019, 273.5)
+        )._std_av(2019, 273.5)
 
     expect = [
         {
@@ -177,7 +177,7 @@ def test_std_av_past_recods(fake_request):
             request=fake_request,
             year=1999,
             drink_stats=None
-        ).std_av(1999, 273.5)
+        )._std_av(1999, 273.5)
 
     expect = [
         {
