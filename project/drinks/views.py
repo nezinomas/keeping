@@ -84,10 +84,10 @@ class TabIndex(TemplateViewMixin):
             )
 
         context = {
-            'target_list': \
-                    rendered_content(self.request, TargetLists, **kwargs),
-            'compare_form_and_chart': \
-                    rendered_content(self.request, CompareTwo, **kwargs),
+            'target_list':
+                rendered_content(self.request, TargetLists, **kwargs),
+            'compare_form_and_chart':
+                rendered_content(self.request, CompareTwo, **kwargs),
             'all_years': len(years()),
             'records': qs_by_month.count(),
             'chart_quantity': rendered.chart_quantity(),
