@@ -1,4 +1,3 @@
-import contextlib
 from datetime import date, datetime
 from typing import Dict, List, Tuple
 
@@ -7,9 +6,8 @@ from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ...core.lib.date import ydays
-from ...core.lib.translation import month_names, weekday_names
+from ...core.lib.translation import month_names
 from .. import models
-from ..services.history import HistoryService
 from .drinks_options import DrinksOptions
 from .drinks_stats import DrinkStats
 
