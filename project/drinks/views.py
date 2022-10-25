@@ -10,7 +10,7 @@ from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  RedirectViewMixin, TemplateViewMixin,
                                  UpdateViewMixin, rendered_content)
 from .forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
-from .services import views_helper as H
+from .services import index_tab as H
 from .lib.drinks_options import DrinksOptions
 from .lib.drinks_stats import DrinkStats
 from .models import Drink, DrinkTarget, DrinkType

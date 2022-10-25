@@ -5,7 +5,7 @@ import pytest
 from project.drinks.lib.drinks_stats import DrinkStats
 
 from ..factories import DrinkFactory
-from ..services import views_helper as T
+from ..services import index_tab as T
 
 pytestmark = pytest.mark.django_db
 
