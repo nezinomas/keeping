@@ -135,7 +135,7 @@ def test_tab_index_context(client_logged):
     assert 'chart_calendar_1H' in response.context
     assert 'chart_calendar_2H' in response.context
     assert 'tbl_consumption' in response.context
-    assert 'tbl_last_day' in response.context
+    assert 'tbl_dray_days' in response.context
     assert 'tbl_alcohol' in response.context
     assert 'tbl_std_av' in response.context
 
@@ -183,23 +183,7 @@ def test_tab_index_drinked_date(client_logged):
     url = reverse('drinks:tab_index')
     response = client_logged.get(url)
 
-    assert '1998-01-02' in response.context["tbl_last_day"]
-
-
-def test_tab_index_drinked_date_empty_db(client_logged):
-    url = reverse('drinks:tab_index')
-    response = client_logged.get(url)
-
-    assert 'Nėra duomenų' in response.context["tbl_last_day"]
-
-
-def test_tab_index_tbl_consumption_empty_current_year(client_logged):
-    DrinkFactory(date=date(2020, 1, 2))
-
-    url = reverse('drinks:tab_index')
-    response = client_logged.get(url)
-
-    assert 'Nėra duomenų' in response.context["tbl_consumption"]
+    assert date(1998, 1, 2) == response.context["tbl_dray_days"]['date']
 
 
 @pytest.mark.parametrize(
@@ -243,15 +227,6 @@ def test_tab_index_chart_consumption_limit(user_drink_type, drink_type, expect, 
     assert expect == round(actual, 0)
 
 
-def test_tab_index_tbl_std_av_empty_current_year(client_logged):
-    DrinkFactory(date=date(2020, 1, 2))
-
-    url = reverse('drinks:tab_index')
-    response = client_logged.get(url)
-
-    assert 'Nėra duomenų' in response.context["tbl_std_av"]
-
-
 @pytest.mark.freeze_time('1999-1-1')
 def test_tab_index_first_record_with_gap_from_previous_year(client_logged):
     DrinkFactory(date=date(1999, 1, 2))
@@ -263,40 +238,6 @@ def test_tab_index_first_record_with_gap_from_previous_year(client_logged):
 
     assert context[4] == [0, 4, 0.05, 53, '1999-01-01']
     assert context[5] == [0, 5, 1.0, 53, '1999-01-02', 1.0, 366.0]
-
-
-@pytest.mark.freeze_time('1999-1-1')
-def test_tab_index_no_data_dry_days(client_logged):
-    DrinkFactory(date=date(1998, 1, 1))
-
-    url=reverse('drinks:tab_index')
-    response=client_logged.get(url)
-    context = response.context
-
-    assert "1998-01-01" in context['tbl_last_day']
-    assert "365" in context['tbl_last_day']
-
-
-@pytest.mark.parametrize(
-    'drink_type, qty, expect',
-    [
-        ('beer', 4, '0,10'),
-        ('wine', 1.25, '0,10'),
-        ('vodka', 0.25, '0,10'),
-        ('stdav', 10, '0,10'),
-    ]
-)
-@pytest.mark.freeze_time('1999-12-31')
-def test_tab_index_tbl_alcohol(drink_type, qty, expect, get_user, client_logged):
-    get_user.drink_type = drink_type
-
-    DrinkFactory(option=drink_type, quantity=qty)
-
-    url = reverse('drinks:index')
-    response = client_logged.get(url)
-    actual = response.context.get('tbl_alcohol')
-
-    assert f'<td>{expect}</td>' in actual
 
 
 # ---------------------------------------------------------------------------------------

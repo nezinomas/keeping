@@ -1,8 +1,6 @@
 from datetime import date, datetime
 from typing import Dict, List, Tuple
 
-from django.http import HttpRequest
-from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
 from ...core.lib.date import ydays
@@ -39,12 +37,10 @@ def several_years_consumption(years):
 
 class RenderContext():
     def __init__(self,
-                 request: HttpRequest,
                  drink_stats: DrinkStats,
                  target: float = 0.0,
                  latest_past_date: date = None,
                  latest_current_date: date = None):
-        self._request = request
         self._options = DrinksOptions()
 
         self.drink_stats = drink_stats
@@ -79,39 +75,23 @@ class RenderContext():
         }
 
     def tbl_consumption(self) -> str:
-        return render_to_string(
-            'drinks/includes/tbl_consumption.html', {
-                'qty': self.quantity_of_year,
-                'avg': self.per_day_of_year,
-                'target': self.target,
-            },
-            self._request
-        )
-
-    def tbl_last_day(self) -> str:
-        return render_to_string(
-            'drinks/includes/tbl_last_day.html',
-            self._dry_days(),
-            self._request
-        )
+        return {
+            'qty': self.quantity_of_year,
+            'avg': self.per_day_of_year,
+            'target': self.target,
+        }
 
     def tbl_alcohol(self) -> str:
         stdav = self.quantity_of_year / self._options.ratio
 
-        return render_to_string(
-            'drinks/includes/tbl_alcohol.html', {
-                'l': self._options.stdav_to_alcohol(stdav)
-            },
-            self._request
-        )
+        return {
+            'liters': self._options.stdav_to_alcohol(stdav)
+        }
 
     def tbl_std_av(self) -> str:
-        return render_to_string(
-            'drinks/includes/tbl_std_av.html', {
-                'items': self._std_av(self._year, self.quantity_of_year)
-            },
-            self._request
-        )
+        return {
+            'items': self._std_av(self._year, self.quantity_of_year)
+        }
 
     def _avg_label_position(self, avg: float, target: float) -> int:
         return 15 if target - 50 <= avg <= target else -5
@@ -119,7 +99,7 @@ class RenderContext():
     def _target_label_position(self, avg: float, target: float) -> int:
         return 15 if avg - 50 <= target <= avg else -5
 
-    def _dry_days(self) -> Dict:
+    def tbl_dry_days(self) -> Dict:
         _dict = {}
 
         if latest := self.latest_current_date or self.latest_past_date:

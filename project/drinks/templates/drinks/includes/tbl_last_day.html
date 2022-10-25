@@ -10,8 +10,8 @@
     </thead>
     <tbody>
         <tr>
-            <td class="text-start">{% if date %}{{ date|date:"Y-m-d" }}{% else %}{% translate 'No data' %}{% endif %}</td>
-            <td>{{ delta }}</td>
+            <td class="text-start">{% if ctx.date %}{{ ctx.date|date:"Y-m-d" }}{% else %}{% translate 'No data' %}{% endif %}</td>
+            <td>{{ ctx.delta }}</td>
         </tr>
     </tbody>
 </table>

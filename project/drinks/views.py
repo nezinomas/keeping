@@ -68,7 +68,6 @@ class TabIndex(TemplateViewMixin):
         # Index Tab service
         rendered = \
             H.RenderContext(
-                request=self.request,
                 drink_stats=DrinkStats(qs_by_month),
                 target=target,
                 latest_past_date=latest_past_date,
@@ -95,7 +94,7 @@ class TabIndex(TemplateViewMixin):
             'chart_calendar_1H': calendar_service.first_half_of_year(),
             'chart_calendar_2H': calendar_service.second_half_of_year(),
             'tbl_consumption': rendered.tbl_consumption(),
-            'tbl_last_day': rendered.tbl_last_day(),
+            'tbl_dray_days': rendered.tbl_dry_days(),
             'tbl_alcohol': rendered.tbl_alcohol(),
             'tbl_std_av': rendered.tbl_std_av(),
         }

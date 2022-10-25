@@ -1,8 +1,7 @@
 from datetime import date
+from types import SimpleNamespace
 
-import freezegun
 import pytest
-
 from project.drinks.lib.drinks_stats import DrinkStats
 
 from ..factories import DrinkFactory
@@ -32,85 +31,77 @@ pytestmark = pytest.mark.django_db
         (None, None, {}),
     ]
 )
-@freezegun.freeze_time('1999-01-03')
-def test_dry_days(fake_request, past, current, expect):
+@pytest.mark.freeze_time('1999-01-03')
+def test_dry_days(past, current, expect):
     DrinkFactory()
 
     actual = \
         T.RenderContext(
-            request=fake_request,
             drink_stats=DrinkStats(),
             latest_past_date=past,
             latest_current_date=current
-        )._dry_days()
+        ).tbl_dry_days()
 
     assert actual == expect
 
 
-def test_dry_days_no_records(fake_request):
+def test_dry_days_no_records():
     actual = \
         T.RenderContext(
-            request=fake_request,
             drink_stats=DrinkStats()
-        )._dry_days()
+        ).tbl_dry_days()
 
     assert not actual
 
 
-def test_target_label_position_between(fake_request):
+def test_target_label_position_between():
     actual = \
         T.RenderContext(
-            request=fake_request,
             drink_stats=DrinkStats()
         )._target_label_position(avg=55, target=50)
 
     assert actual == 15
 
 
-def test_target_label_position_higher(fake_request):
+def test_target_label_position_higher():
     actual = \
         T.RenderContext(
-            request=fake_request,
             drink_stats=DrinkStats()
         )._target_label_position(avg=55, target=500)
 
     assert actual == -5
 
 
-def test_target_label_position_lower(fake_request):
+def test_target_label_position_lower():
     actual = \
         T.RenderContext(
-            request=fake_request,
             drink_stats=DrinkStats()
         )._target_label_position(avg=500, target=50)
 
     assert actual == -5
 
 
-def test_avg_label_position_between(fake_request):
+def test_avg_label_position_between():
     actual = \
         T.RenderContext(
-            request=fake_request,
             drink_stats=DrinkStats()
         )._avg_label_position(avg=50, target=55)
 
     assert actual == 15
 
 
-def test_avg_label_position_higher(fake_request):
+def test_avg_label_position_higher():
     actual = \
         T.RenderContext(
-            request=fake_request,
             drink_stats=DrinkStats()
         )._avg_label_position(avg=55, target=500)
 
     assert actual == -5
 
 
-def test_avg_label_position_lower(fake_request):
+def test_avg_label_position_lower():
     actual = \
         T.RenderContext(
-            request=fake_request,
             drink_stats=DrinkStats()
         )._avg_label_position(avg=500, target=50)
 
@@ -118,10 +109,9 @@ def test_avg_label_position_lower(fake_request):
 
 
 @pytest.mark.freeze_time('2019-10-10')
-def test_std_av(fake_request):
+def test_std_av():
     actual = \
         T.RenderContext(
-            request=fake_request,
             drink_stats=DrinkStats()
         )._std_av(2019, 273.5)
 
@@ -164,10 +154,9 @@ def test_std_av(fake_request):
 
 
 @pytest.mark.freeze_time('2019-10-10')
-def test_std_av_past_recods(fake_request):
+def test_std_av_past_recods():
     actual = \
         T.RenderContext(
-            request=fake_request,
             drink_stats=DrinkStats()
         )._std_av(1999, 273.5)
 
@@ -207,3 +196,26 @@ def test_std_av_past_recods(fake_request):
                 assert expect[i][k] == v
             else:
                 assert expect[i][k] == round(v, 2)
+
+
+@pytest.mark.parametrize(
+    'drink_type, qty, expect',
+    [
+        ('beer', 4, 0.1),
+        ('wine', 1.25, 0.1),
+        ('vodka', 0.25, 0.1),
+        ('stdav', 10, 0.1),
+    ]
+)
+def test_tbl_alcohol(drink_type, qty, expect, get_user):
+    get_user.drink_type = drink_type
+
+    stats = SimpleNamespace(
+        year=1999,
+        qty_of_year=qty,
+        per_day_of_year=0.0,
+    )
+
+    actual = T.RenderContext(drink_stats=stats).tbl_alcohol()
+
+    assert actual['liters'] == expect
