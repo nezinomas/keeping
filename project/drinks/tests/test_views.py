@@ -122,6 +122,8 @@ def test_tab_index_200(client_logged):
 
 
 def test_tab_index_context(client_logged):
+    DrinkFactory()
+
     url = reverse('drinks:tab_index')
     response = client_logged.get(url)
 
@@ -217,6 +219,7 @@ def test_tab_index_chart_consumption_avg(user_drink_type, drink_type, expect, ge
 def test_tab_index_chart_consumption_limit(user_drink_type, drink_type, expect, get_user, client_logged):
     get_user.drink_type = user_drink_type
 
+    DrinkFactory()
     DrinkTargetFactory(quantity=500, drink_type=drink_type)
 
     url = reverse('drinks:tab_index')
@@ -834,6 +837,8 @@ def test_target_update_not_load_other_user(client_logged, second_user):
 
 
 def test_target_empty_db(client_logged):
+    DrinkFactory()
+
     response = client_logged.get('/drinks/')
 
     assert 'Neįvestas tikslas' in response.context["target_list"]

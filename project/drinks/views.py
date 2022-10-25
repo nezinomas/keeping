@@ -35,6 +35,14 @@ class TabIndex(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
+        qs_by_month = Drink.objects.sum_by_month(year)
+        records = qs_by_month.count()
+        context = {
+            'records': records,
+        }
+
+        if not records:
+            return super().get_context_data(**kwargs) | context
 
         # Queries
         latest_past_date = None
@@ -62,9 +70,6 @@ class TabIndex(TemplateViewMixin):
                 .get(year=year) \
                 .qty
 
-        qs_by_month = Drink.objects.sum_by_month(year)
-        qs_by_day = Drink.objects.sum_by_day(year)
-
         # Index Tab service
         rendered = \
             H.RenderContext(
@@ -75,6 +80,7 @@ class TabIndex(TemplateViewMixin):
             )
 
         # calendar chart service
+        qs_by_day = Drink.objects.sum_by_day(year)
         calendar_service = \
             CalendarChart(
                 year=year,
@@ -82,13 +88,12 @@ class TabIndex(TemplateViewMixin):
                 latest_past_date=latest_past_date
             )
 
-        context = {
+        context |= {
             'target_list':
                 rendered_content(self.request, TargetLists, **kwargs),
             'compare_form_and_chart':
                 rendered_content(self.request, CompareTwo, **kwargs),
             'all_years': len(years()),
-            'records': qs_by_month.count(),
             'chart_quantity': rendered.chart_quantity(),
             'chart_consumption': rendered.chart_consumption(),
             'chart_calendar_1H': calendar_service.first_half_of_year(),
@@ -98,6 +103,7 @@ class TabIndex(TemplateViewMixin):
             'tbl_alcohol': rendered.tbl_alcohol(),
             'tbl_std_av': rendered.tbl_std_av(),
         }
+
         return super().get_context_data(**kwargs) | context
 
 
