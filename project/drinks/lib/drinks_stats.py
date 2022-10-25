@@ -35,10 +35,10 @@ class DrinkStats:
         if not self.data:
             return
 
-        self._calc()
+        self._calc_month()
         self._calc_year()
 
-    def _calc(self) -> None:
+    def _calc_month(self) -> None:
         for row in self.data:
             _stdav = row.get('stdav')
             _ml = self.options.stdav_to_ml(_stdav)
@@ -60,6 +60,7 @@ class DrinkStats:
     def _calc_year(self):
         _date = datetime.now().date()
         _month = _date.month
+
         if self.year == _date.year:
             _day_of_year = _date.timetuple().tm_yday
         else:
