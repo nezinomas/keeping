@@ -16,12 +16,8 @@ class HistoryService:
         field(init=False, default_factory=list)
     per_day: list[float] = \
         field(init=False, default_factory=list)
-    per_day_of_year: float = \
-        field(init=False, default=0.0)
     quantity: list[float] = \
         field(init=False, default_factory=list)
-    quantity_of_year: float = \
-        field(init=False, default=0.0)
     drink_options: DrinksOptions = \
         field(init=False, default_factory=DrinksOptions)
 
@@ -30,7 +26,6 @@ class HistoryService:
             return
 
         self._calc()
-        self._set_current_year_values()
 
     def _calc(self) -> None:
         _first_year = self.data[0]['year']
@@ -61,10 +56,3 @@ class HistoryService:
             self.quantity.append(_quantity)
             self.alcohol.append(_alcohol)
             self.per_day.append(_per_day)
-
-    def _set_current_year_values(self):
-        _year = datetime.now().date().year
-        _idx =  self.years.index(_year)
-
-        self.quantity_of_year = self.quantity[_idx]
-        self.per_day_of_year = self.per_day[_idx]
