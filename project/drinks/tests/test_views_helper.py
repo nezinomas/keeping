@@ -3,6 +3,8 @@ from datetime import date
 import freezegun
 import pytest
 
+from project.drinks.lib.drinks_stats import DrinkStats
+
 from ..factories import DrinkFactory
 from ..lib import views_helper as T
 
@@ -38,7 +40,7 @@ def test_dry_days(fake_request, past, current, expect):
         T.RenderContext(
             request=fake_request,
             year=1999,
-            drink_stats=None,
+            drink_stats=DrinkStats(),
             latest_past_date=past,
             latest_current_date=current
         )._dry_days()
@@ -51,7 +53,7 @@ def test_dry_days_no_records(fake_request):
         T.RenderContext(
             request=fake_request,
             year=1999,
-            drink_stats=None
+            drink_stats=DrinkStats()
         )._dry_days()
 
     assert not actual
@@ -62,7 +64,7 @@ def test_target_label_position_between(fake_request):
         T.RenderContext(
             request=fake_request,
             year=1999,
-            drink_stats=None
+            drink_stats=DrinkStats()
         )._target_label_position(avg=55, target=50)
 
     assert actual == 15
@@ -73,7 +75,7 @@ def test_target_label_position_higher(fake_request):
         T.RenderContext(
             request=fake_request,
             year=1999,
-            drink_stats=None
+            drink_stats=DrinkStats()
         )._target_label_position(avg=55, target=500)
 
     assert actual == -5
@@ -84,7 +86,7 @@ def test_target_label_position_lower(fake_request):
         T.RenderContext(
             request=fake_request,
             year=1999,
-            drink_stats=None
+            drink_stats=DrinkStats()
         )._target_label_position(avg=500, target=50)
 
     assert actual == -5
@@ -95,7 +97,7 @@ def test_avg_label_position_between(fake_request):
         T.RenderContext(
             request=fake_request,
             year=1999,
-            drink_stats=None
+            drink_stats=DrinkStats()
         )._avg_label_position(avg=50, target=55)
 
     assert actual == 15
@@ -106,7 +108,7 @@ def test_avg_label_position_higher(fake_request):
         T.RenderContext(
             request=fake_request,
             year=1999,
-            drink_stats=None
+            drink_stats=DrinkStats()
         )._avg_label_position(avg=55, target=500)
 
     assert actual == -5
@@ -117,7 +119,7 @@ def test_avg_label_position_lower(fake_request):
         T.RenderContext(
             request=fake_request,
             year=1999,
-            drink_stats=None
+            drink_stats=DrinkStats()
         )._avg_label_position(avg=500, target=50)
 
     assert actual == -5
@@ -129,7 +131,7 @@ def test_std_av(fake_request):
         T.RenderContext(
             request=fake_request,
             year=1999,
-            drink_stats=None
+            drink_stats=DrinkStats()
         )._std_av(2019, 273.5)
 
     expect = [
@@ -176,7 +178,7 @@ def test_std_av_past_recods(fake_request):
         T.RenderContext(
             request=fake_request,
             year=1999,
-            drink_stats=None
+            drink_stats=DrinkStats()
         )._std_av(1999, 273.5)
 
     expect = [

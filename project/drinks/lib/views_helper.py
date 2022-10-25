@@ -43,8 +43,6 @@ class RenderContext():
                  year: int,
                  drink_stats: DrinkStats,
                  target: float = 0.0,
-                 per_day_of_year: float = 0.0,
-                 quantity_of_year: float = 0.0,
                  latest_past_date: date = None,
                  latest_current_date: date = None):
         self._request = request
@@ -53,8 +51,8 @@ class RenderContext():
 
         self.drink_stats = drink_stats
         self.target = target
-        self.per_day_of_year = per_day_of_year
-        self.quantity_of_year = quantity_of_year
+        self.per_day_of_year = drink_stats.per_day_of_year
+        self.quantity_of_year = drink_stats.qty_of_year
         self.latest_past_date = latest_past_date
         self.latest_current_date = latest_current_date
 

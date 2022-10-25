@@ -3,7 +3,6 @@ import contextlib
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
-
 from ..core.lib.date import years
 from ..core.lib.translation import month_names
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
@@ -63,12 +62,8 @@ class TabIndex(TemplateViewMixin):
                 .get(year=year) \
                 .qty
 
-        qs_by_year = Drink.objects.sum_by_year(year)
         qs_by_month = Drink.objects.sum_by_month(year)
         qs_by_day = Drink.objects.sum_by_day(year)
-
-        # History service
-        history = HistoryService(data=qs_by_year)
 
         # Index Tab service
         rendered = \
@@ -77,8 +72,6 @@ class TabIndex(TemplateViewMixin):
                 year=year,
                 drink_stats=DrinkStats(qs_by_month),
                 target=target,
-                per_day_of_year=history.per_day_of_year,
-                quantity_of_year=history.quantity_of_year,
                 latest_past_date=latest_past_date,
                 latest_current_date=latest_current_date
             )
