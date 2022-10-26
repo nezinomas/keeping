@@ -166,11 +166,7 @@ class TabData(ListViewMixin):
             .year(year=year, count_type=slug)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'count_type_slug': self.kwargs.get('slug'),
-        })
-        return context
+        return super().get_context_data(**self.kwargs)
 
 
 class TabHistory(TemplateViewMixin):
@@ -182,14 +178,13 @@ class TabHistory(TemplateViewMixin):
         srv = IndexService(self.request.user.year, Stats(data=qs))
 
         context = {
-            'count_type_slug': slug,
             'records': srv.records,
             'chart_weekdays': srv.chart_weekdays(_('Days of week')),
             'chart_years': srv.chart_years(),
             'chart_histogram': srv.chart_histogram(),
         }
 
-        return super().get_context_data(**kwargs) | context
+        return super().get_context_data(**self.kwargs) | context
 
 
 class CountUrlMixin():
@@ -217,7 +212,9 @@ class New(CountUrlMixin, CreateViewMixin):
         if tab not in ['index', 'data', 'history']:
             tab = 'index'
 
-        return reverse_lazy('counts:new', kwargs={'slug': count_type_slug, 'tab': tab})
+        return \
+            reverse_lazy('counts:new',
+                         kwargs={'slug': count_type_slug, 'tab': tab})
 
 
 class Update(CountUrlMixin, UpdateViewMixin):
