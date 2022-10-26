@@ -30,7 +30,7 @@ class Stats():
         return list(weekday_names().values())
 
     @property
-    def number_of_recods(self):
+    def number_of_records(self):
         return self._df.shape[0]
 
     def weekdays_stats(self) -> List[Dict[int, float]]:

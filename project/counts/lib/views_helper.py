@@ -37,7 +37,7 @@ class RenderContext():
 
     @property
     def records(self):
-        return self._stats.number_of_recods
+        return self._stats.number_of_records
 
     @property
     def calender_data(self):
