@@ -1,5 +1,6 @@
+import contextlib
 from datetime import datetime
-from os import path
+from pathlib import Path
 
 from django.conf import settings
 from django.utils.safestring import mark_safe
@@ -18,10 +19,9 @@ def years(context):
 
 def yday(context):
     _year = datetime.now().year
-    try:
+
+    with contextlib.suppress(AttributeError):
         _year = utils.get_user().year
-    except AttributeError:
-        pass
 
     _yday, _ydays = Yday(_year)
 
