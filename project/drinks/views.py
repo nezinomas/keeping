@@ -1,5 +1,3 @@
-import contextlib
-
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
