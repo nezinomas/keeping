@@ -149,6 +149,7 @@ def test_positive_negative_negative():
         ('-0.0001', '-', '-'),
         (-0.0001, '-', '-'),
         (None, 'ok', 'ok'),
+        ('None', 'ok', 'ok'),
     ])
 def test_cellformat(value, default, expect):
     assert cellformat(value, default) == expect

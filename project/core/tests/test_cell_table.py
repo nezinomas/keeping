@@ -72,6 +72,26 @@ def test_cell_empty(_template):
     assert actual == expect
 
 
+@pytest.mark.parametrize(
+    'value',
+    [None, 'None', '0.0', 0, '0']
+)
+def test_cell_empty_with_default_if_empty(value):
+    template = Template(
+        '{% load slippers %}'
+        '{% table_cell value=value default_if_empty="OK" %}'
+    )
+    context = Context({'value': value})
+
+    actual = template.render(context)
+    expect = '<td class="">OK</td>'
+
+    actual = _remove_line_end(actual)
+    actual = re.sub(r'\s{2,}', '', actual)
+
+    assert actual == expect
+
+
 def test_cell_float_zero(_template):
     context = Context({'value': 0.0})
 

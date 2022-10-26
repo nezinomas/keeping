@@ -17,27 +17,20 @@ def _to_float(_str: Any) -> float:
 
 
 @register.filter
-def cellformat(value, default='-'):
-    if not default:
-        default = '-'
-
-    if value is None:
-        return default
+def cellformat(value, default: str = '-'):
+    value = None if value == 'None' else value
 
     try:
         _value = float(value)
+    except TypeError:
+        return default
     except ValueError:
         return value
 
-    # first round _value
-    _value = round(_value, 2)
+    # round value and convert to str
+    _value = floatformat(_value, 2)
 
-    if _value == 0.0:
-        _value = default
-    else:
-        _value = floatformat(_value, 2)
-
-    return _value
+    return default if _value == '0,00' else _value
 
 
 @register.filter
@@ -47,10 +40,7 @@ def negative(value):
     except ValueError:
         return str()
 
-    if value < 0:
-        return 'table-danger'
-
-    return str()
+    return 'table-danger' if value < 0 else str()
 
 
 @register.filter
@@ -60,10 +50,7 @@ def positive(value):
     except ValueError:
         return str()
 
-    if value >= 0:
-        return 'table-success'
-
-    return str()
+    return 'table-success' if value >= 0 else str()
 
 
 @register.filter
@@ -73,10 +60,7 @@ def positive_negative(value):
     except ValueError:
         return str()
 
-    if value >= 0:
-        return 'table-success'
-
-    return 'table-danger'
+    return 'table-success' if value >= 0 else 'table-danger'
 
 
 @register.filter
@@ -87,7 +71,4 @@ def compare(value: str, args: str) -> str:
     except (TypeError, ValueError):
         return str()
 
-    if _value >= _compare:
-        return 'table-success'
-
-    return 'table-danger'
+    return 'table-success' if _value >= _compare else 'table-danger'
