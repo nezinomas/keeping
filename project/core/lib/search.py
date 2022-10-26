@@ -46,7 +46,7 @@ def parse_search_input(search_str):
 
 def filter_dates(_date, sql, field='date'):
     if _date:
-        year = _date[0:4]
+        year = _date[:4]
         sql = sql.filter(**{f'{field}__year': year})
 
         if len(_date) > 4:
