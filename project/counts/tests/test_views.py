@@ -584,16 +584,6 @@ def test_history_chart_years(client_logged):
     assert '<div id="chart-years-container"></div>' in content
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_history_get_year(client_logged):
-    obj = CountTypeFactory()
-
-    url = reverse('counts:tab_history', kwargs={'slug': obj.slug})
-    response = client_logged.get(url)
-
-    assert not response.context['view'].get_year()
-
-
 # ---------------------------------------------------------------------------------------
 #                                                                 CountType Create/Update
 # ---------------------------------------------------------------------------------------

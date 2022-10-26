@@ -29,38 +29,6 @@ class CounTypetObjectMixin():
                         .get(slug=count_type_slug)
 
 
-class ContextMixin():
-    render_context = None
-
-    def get_statistic(self):
-        year = self.get_year()
-        qs_data = self.get_queryset()
-        past_last_record = None
-
-        if year:
-            with contextlib.suppress(Count.DoesNotExist, AttributeError):
-                qs_past = \
-                        Count.objects \
-                        .related() \
-                        .filter(date__year__lt=self.get_year(), count_type=self.object) \
-                        .latest()
-
-                past_last_record = qs_past.date
-        return Stats(year=year, data=qs_data, past_latest=past_last_record)
-
-    def get_context_data(self, **kwargs):
-        statistic = self.get_statistic()
-
-        self.render_context = RenderContext(self.request, statistic)
-
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'records': statistic.number_of_recods,
-        })
-
-        return context
-
-
 class RenderContext():
     def __init__(self, request: HttpRequest, stats: Stats = None):
         self._request = request

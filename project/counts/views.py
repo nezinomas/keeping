@@ -12,7 +12,8 @@ from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  TemplateViewMixin, UpdateViewMixin,
                                  rendered_content)
 from .forms import CountForm, CountTypeForm
-from .lib.views_helper import ContextMixin, CounTypetObjectMixin
+from .lib.stats import Stats
+from .lib.views_helper import CounTypetObjectMixin, RenderContext
 from .models import Count, CountType
 
 
@@ -90,54 +91,61 @@ class Index(CounTypetObjectMixin, TemplateViewMixin):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
         super().get_object(**self.kwargs)
-        kwargs['object'] = self.object
 
-        context.update({
-            'object': self.object,
+        kwargs |= {'object': self.object}
+
+        context = {
             'info_row': rendered_content(self.request, InfoRow, **kwargs),
             'tab_content': rendered_content(self.request, TabIndex, **kwargs),
-        })
-        return context
+        }
+        return super().get_context_data(**kwargs) | context
 
 
-class TabIndex(CounTypetObjectMixin, ContextMixin, TemplateViewMixin):
+class TabIndex(CounTypetObjectMixin, TemplateViewMixin):
     template_name = 'counts/tab_index.html'
 
-    def get_year(self):
-        return self.request.user.year
+    def get_context_data(self, **kwargs):
+        self.get_object(**self.kwargs)
 
-    def get_queryset(self):
-        super().get_object(**self.kwargs)
-
-        year = self.get_year()
+        year = self.request.user.year
         count_type = self.object.slug
 
-        return \
+        qs = \
             Count.objects \
             .sum_by_day(year=year, count_type=count_type)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        past_last_record = None
+        with contextlib.suppress(Count.DoesNotExist, AttributeError):
+            past_last_record = \
+                Count.objects \
+                .related() \
+                .filter(
+                    date__year__lt=year,
+                    count_type=self.object) \
+                .latest() \
+                .date
 
-        calendar_data = self.render_context.calender_data
+        stats = Stats(year=year, data=qs, past_latest=past_last_record)
+        srv = RenderContext(self.request, stats)
 
-        context.update({
+        calendar_data = srv.calender_data
+
+        context = {
             'object': self.object,
+            'records': stats.number_of_recods,
             'chart_calendar_1H': \
-                self.render_context.chart_calendar(calendar_data[:6]),
+                srv.chart_calendar(calendar_data[:6]),
             'chart_calendar_2H': \
-                self.render_context.chart_calendar(calendar_data[6:]),
+                srv.chart_calendar(calendar_data[6:]),
             'chart_weekdays': \
-                self.render_context.chart_weekdays(),
+                srv.chart_weekdays(),
             'chart_months': \
-                self.render_context.chart_months(),
+                srv.chart_months(),
             'chart_histogram': \
-                self.render_context.chart_histogram(),
-        })
-        return context
+                srv.chart_histogram(),
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class TabData(ListViewMixin):
@@ -160,25 +168,24 @@ class TabData(ListViewMixin):
         return context
 
 
-class TabHistory(ContextMixin, TemplateViewMixin):
+class TabHistory(TemplateViewMixin):
     template_name = 'counts/tab_history.html'
 
-    def get_queryset(self):
-        slug = self.kwargs.get('slug')
-        return Count.objects.items(count_type=slug)
-
-    def get_year(self):
-        return None
-
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'count_type_slug': self.kwargs.get('slug'),
-            'chart_weekdays': self.render_context.chart_weekdays(_('Days of week')),
-            'chart_years': self.render_context.chart_years(),
-            'chart_histogram': self.render_context.chart_histogram(),
-        })
-        return context
+        slug = self.kwargs.get('slug')
+        qs = Count.objects.items(count_type=slug)
+        stats = Stats(data=qs)
+        srv = RenderContext(self.request, stats)
+
+        context = {
+            'count_type_slug': slug,
+            'records': stats.number_of_recods,
+            'chart_weekdays': srv.chart_weekdays(_('Days of week')),
+            'chart_years': srv.chart_years(),
+            'chart_histogram': srv.chart_histogram(),
+        }
+
+        return super().get_context_data(**kwargs) | context
 
 
 class CountUrlMixin():
