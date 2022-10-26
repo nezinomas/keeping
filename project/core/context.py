@@ -33,17 +33,12 @@ def context_months(context):
 
 
 def context_counts_menu(context):
-    menu = ''
     file = None
 
-    try:
+    with contextlib.suppress(AttributeError):
         journal_pk = context.user.journal.pk
-        file = path.join(settings.MEDIA_ROOT, str(journal_pk), 'menu.html')
-    except AttributeError:
-        pass
+        file = Path(settings.MEDIA_ROOT, str(journal_pk), 'menu.html')
 
-    if file and path.exists(file):
-        with open(file) as f:
-            menu = f.read()
+    menu = file.read_text(encoding='utf-8') if file and file.exists() else ''
 
     return {'counts_menu': mark_safe(menu) }
