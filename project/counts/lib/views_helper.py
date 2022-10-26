@@ -28,6 +28,9 @@ class CounTypetObjectMixin():
                         .related() \
                         .get(slug=count_type_slug)
 
+                # push self.object to self.kwargs
+                self.kwargs['object'] = self.object
+
 
 class RenderContext():
     def __init__(self, request: HttpRequest, stats: Stats = None):
