@@ -32,9 +32,12 @@ class Redirect(RedirectViewMixin):
                 .related() \
                 .first()
 
+        if not qs:
+            return \
+                reverse('counts:empty')
+
         return \
-            reverse('counts:index', kwargs={'slug': qs.slug}) \
-            if qs else reverse('counts:empty')
+            reverse('counts:index', kwargs={'slug': qs.slug})
 
 
 class Empty(TemplateViewMixin):
