@@ -7,9 +7,7 @@ register = template.Library()
 
 @register.filter
 def get_item(dictionary, key):
-    if dictionary:
-        return dictionary.get(key, 0.0)
-    return None
+    return dictionary.get(key, 0.0) if dictionary else None
 
 
 @register.filter
@@ -17,7 +15,7 @@ def get_obj_attr(obj, attr):
     _attr = None
     try:
         _attr = getattr(obj, attr)
-    except Exception as ex:
+    except (AttributeError, TypeError):
         _attr = attr
 
     return _attr
@@ -26,8 +24,7 @@ def get_obj_attr(obj, attr):
 @register.filter
 def get_sum_by_month(lst: List[Dict], month: int):
     for _dict in lst:
-        dt = _dict.get('date')
-        if dt:
+        if dt := _dict.get('date'):
             if dt.month == month:
                 return _dict.get('sum')
 
@@ -44,7 +41,7 @@ def get_sum_by_title(lst: List[Dict], title: str):
 def get_list_val(arr: List, key: int):
     try:
         val = arr[key]
-    except:
+    except (KeyError, IndexError, TypeError):
         val = None
 
     return val
