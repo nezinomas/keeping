@@ -24,6 +24,6 @@
 
 
 {% if request.htmx %}
-{% url 'counts:new' 'history' count_type_slug as url_new %}
+{% url 'counts:new' 'history' slug as url_new %}
 {% new_count_button url=url_new hx_swap_oob="true" %}
 {% endif %}

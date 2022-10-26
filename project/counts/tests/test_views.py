@@ -499,8 +499,8 @@ def test_data_context(client_logged):
     response = client_logged.get(url)
 
     assert 'object_list' in response.context
-    assert 'count_type_slug' in response.context
-    assert response.context['count_type_slug'] == 'count-type'
+    assert 'slug' in response.context
+    assert response.context['slug'] == 'count-type'
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -555,8 +555,8 @@ def test_history_context(client_logged):
     assert 'chart_weekdays' in response.context
     assert 'chart_years' in response.context
     assert 'chart_histogram' in response.context
-    assert 'count_type_slug' in response.context
-    assert response.context['count_type_slug'] == obj.slug
+    assert 'slug' in response.context
+    assert response.context['slug'] == obj.slug
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -582,16 +582,6 @@ def test_history_chart_years(client_logged):
     content = response.content.decode("utf-8")
 
     assert '<div id="chart-years-container"></div>' in content
-
-
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_history_get_year(client_logged):
-    obj = CountTypeFactory()
-
-    url = reverse('counts:tab_history', kwargs={'slug': obj.slug})
-    response = client_logged.get(url)
-
-    assert not response.context['view'].get_year()
 
 
 # ---------------------------------------------------------------------------------------
