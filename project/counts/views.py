@@ -13,8 +13,9 @@ from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  rendered_content)
 from .forms import CountForm, CountTypeForm
 from .lib.stats import Stats
-from .lib.views_helper import CountTypetObjectMixin, RenderContext
+from .lib.views_helper import CountTypetObjectMixin
 from .models import Count, CountType
+from .services.index import RenderContext
 
 
 class Redirect(RedirectViewMixin):
