@@ -15,7 +15,7 @@ from .forms import CountForm, CountTypeForm
 from .lib.stats import Stats
 from .lib.views_helper import CountTypetObjectMixin
 from .models import Count, CountType
-from .services.index import RenderContext
+from .services.index import IndexService
 
 
 class Redirect(RedirectViewMixin):
@@ -128,7 +128,7 @@ class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
                 .date
 
         stats = Stats(year=year, data=qs, past_latest=past_last_record)
-        srv = RenderContext(year, stats)
+        srv = IndexService(year, stats)
 
         # cash calendar data
         calendar_data = srv.calendar_data
@@ -177,7 +177,7 @@ class TabHistory(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         slug = self.kwargs.get('slug')
         qs = Count.objects.items(count_type=slug)
-        srv = RenderContext(self.request.user.year, Stats(data=qs))
+        srv = IndexService(self.request.user.year, Stats(data=qs))
 
         context = {
             'count_type_slug': slug,

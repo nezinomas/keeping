@@ -1,4 +1,3 @@
-import contextlib
 from typing import Dict, List
 
 from django.utils.translation import gettext as _
@@ -8,7 +7,7 @@ from ...core.lib.translation import weekday_names
 from ..lib.stats import Stats
 
 
-class RenderContext():
+class IndexService:
     def __init__(self, year: int, stats: Stats = None):
         self._year = year
         self._stats = stats
