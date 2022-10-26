@@ -129,15 +129,13 @@ class TabIndex(CounTypetObjectMixin, TemplateViewMixin):
         stats = Stats(year=year, data=qs, past_latest=past_last_record)
         srv = RenderContext(year, stats)
 
-        calendar_data = srv.calender_data
-
         context = {
             'object': self.object,
             'records': stats.number_of_recods,
             'chart_calendar_1H': \
-                srv.chart_calendar(calendar_data[:6]),
+                srv.chart_calendar(srv.calendar_data[:6]),
             'chart_calendar_2H': \
-                srv.chart_calendar(calendar_data[6:]),
+                srv.chart_calendar(srv.calendar_data[6:]),
             'chart_weekdays': \
                 srv.chart_weekdays(),
             'chart_months': \
