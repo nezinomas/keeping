@@ -93,6 +93,15 @@ class IndexService:
             },
         }
 
+    def tbl_dry_days(self) -> Dict:
+        _dict = {}
+
+        if latest := self.latest_current_date or self.latest_past_date:
+            delta = (datetime.now().date() - latest).days
+            _dict = {'date': latest, 'delta': delta}
+
+        return _dict
+
     def tbl_consumption(self) -> str:
         return {
             'qty': self.quantity_of_year,
@@ -117,15 +126,6 @@ class IndexService:
 
     def _target_label_position(self, avg: float, target: float) -> int:
         return 15 if avg - 50 <= target <= avg else -5
-
-    def tbl_dry_days(self) -> Dict:
-        _dict = {}
-
-        if latest := self.latest_current_date or self.latest_past_date:
-            delta = (datetime.now().date() - latest).days
-            _dict = {'date': latest, 'delta': delta}
-
-        return _dict
 
     def _std_av(self, year: int, qty: float) -> List[Dict]:
         if not qty:
