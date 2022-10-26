@@ -8,20 +8,18 @@ from .utils import _remove_line_end
 
 @pytest.fixture()
 def _template():
-    template_to_render = Template(
+    return Template(
         '{% load slippers %}'
         '{% table_cell value=value %}'
     )
-    return template_to_render
 
 
 @pytest.fixture()
 def _template_positive_and_negative():
-    template_to_render = Template(
+    return Template(
         '{% load slippers %}'
         '{% table_cell value=value highlight_value=True %}'
     )
-    return template_to_render
 
 
 def test_cell_positive_and_negative_neg(_template_positive_and_negative):
