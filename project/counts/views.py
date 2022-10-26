@@ -127,7 +127,7 @@ class TabIndex(CounTypetObjectMixin, TemplateViewMixin):
                 .date
 
         stats = Stats(year=year, data=qs, past_latest=past_last_record)
-        srv = RenderContext(self.request, stats)
+        srv = RenderContext(year, stats)
 
         calendar_data = srv.calender_data
 
@@ -175,7 +175,7 @@ class TabHistory(TemplateViewMixin):
         slug = self.kwargs.get('slug')
         qs = Count.objects.items(count_type=slug)
         stats = Stats(data=qs)
-        srv = RenderContext(self.request, stats)
+        srv = RenderContext(self.request.user.year, stats)
 
         context = {
             'count_type_slug': slug,

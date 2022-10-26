@@ -1,14 +1,12 @@
 import contextlib
 from typing import Dict, List
 
-from django.http import HttpRequest
-from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
-from ...core.lib.translation import month_names, weekday_names
+from ...core.lib.translation import weekday_names
 from ..lib.stats import Stats
-from ..models import Count, CountType
+from ..models import CountType
 from .stats import Stats
 
 
@@ -33,9 +31,8 @@ class CounTypetObjectMixin():
 
 
 class RenderContext():
-    def __init__(self, request: HttpRequest, stats: Stats = None):
-        self._request = request
-        self._year = request.user.year
+    def __init__(self, year: int, stats: Stats = None):
+        self._year = year
         self._stats = stats
 
     @property
