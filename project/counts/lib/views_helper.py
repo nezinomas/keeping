@@ -40,7 +40,7 @@ class RenderContext():
         return self._stats.number_of_records
 
     @property
-    def calender_data(self):
+    def calendar_data(self):
         return self._stats.chart_calendar()
 
     def chart_weekdays(self, title: str = None) -> str:
