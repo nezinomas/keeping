@@ -1,3 +1,4 @@
+import contextlib
 from collections import Counter
 from typing import Any, Dict, List
 
@@ -13,13 +14,14 @@ def get_user():
 
 
 def get_request_kwargs(name):
-    request = None
-    try:
-        request = CrequestMiddleware.get_request().resolver_match.kwargs.get(name)
-    except:
-        pass
+    crequest = CrequestMiddleware.get_request()
+    if not crequest:
+        return None
 
-    return request
+    try:
+        return crequest.resolver_match.kwargs.get(name)
+    except KeyError:
+        return None
 
 
 def get_value_from_dict(arr: Dict, month: int) -> float:
@@ -33,11 +35,8 @@ def sum_all(arr: List[Dict]) -> Dict:
     rtn = Counter()
 
     for row in arr:
-        try:
+        with contextlib.suppress(TypeError):
             rtn.update(row)
-        except TypeError:
-            pass
-
     return {**rtn}
 
 
