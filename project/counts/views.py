@@ -44,7 +44,7 @@ class InfoRow(CounTypetObjectMixin, TemplateViewMixin):
     template_name = 'counts/info_row.html'
 
     def get_context_data(self, **kwargs):
-        super().get_object(**self.kwargs)
+        super().get_object()
 
         year = self.request.user.year
         week = weeknumber(year)
@@ -83,7 +83,7 @@ class Index(CounTypetObjectMixin, TemplateViewMixin):
         if not request.user.is_authenticated:
             return super().dispatch(request, *args, **kwargs)
 
-        super().get_object(**self.kwargs)
+        super().get_object()
 
         if not self.object:
             return redirect(reverse('counts:redirect'))
@@ -91,7 +91,7 @@ class Index(CounTypetObjectMixin, TemplateViewMixin):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        super().get_object(**self.kwargs)
+        super().get_object()
 
         kwargs |= {'object': self.object}
 
@@ -106,7 +106,7 @@ class TabIndex(CounTypetObjectMixin, TemplateViewMixin):
     template_name = 'counts/tab_index.html'
 
     def get_context_data(self, **kwargs):
-        self.get_object(**self.kwargs)
+        self.get_object()
 
         year = self.request.user.year
         count_type = self.object.slug
