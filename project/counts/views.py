@@ -106,7 +106,7 @@ class TabIndex(CounTypetObjectMixin, TemplateViewMixin):
     template_name = 'counts/tab_index.html'
 
     def get_context_data(self, **kwargs):
-        self.get_object()
+        super().get_object()
 
         year = self.request.user.year
         count_type = self.object.slug

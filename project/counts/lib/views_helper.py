@@ -13,7 +13,7 @@ from .stats import Stats
 class CounTypetObjectMixin():
     object = None
 
-    def get_object(self, **kwargs):
+    def get_object(self):
         self.object = self.kwargs.get('object')
 
         if self.object:
