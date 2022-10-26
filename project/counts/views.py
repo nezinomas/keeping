@@ -131,7 +131,7 @@ class TabIndex(CounTypetObjectMixin, TemplateViewMixin):
 
         context = {
             'object': self.object,
-            'records': stats.number_of_recods,
+            'records': srv.records,
             'chart_calendar_1H': \
                 srv.chart_calendar(srv.calendar_data[:6]),
             'chart_calendar_2H': \
@@ -143,6 +143,7 @@ class TabIndex(CounTypetObjectMixin, TemplateViewMixin):
             'chart_histogram': \
                 srv.chart_histogram(),
         }
+
         return super().get_context_data(**kwargs) | context
 
 
@@ -172,12 +173,11 @@ class TabHistory(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         slug = self.kwargs.get('slug')
         qs = Count.objects.items(count_type=slug)
-        stats = Stats(data=qs)
-        srv = RenderContext(self.request.user.year, stats)
+        srv = RenderContext(self.request.user.year, Stats(data=qs))
 
         context = {
             'count_type_slug': slug,
-            'records': stats.number_of_recods,
+            'records': srv.records,
             'chart_weekdays': srv.chart_weekdays(_('Days of week')),
             'chart_years': srv.chart_years(),
             'chart_histogram': srv.chart_histogram(),

@@ -36,6 +36,10 @@ class RenderContext():
         self._stats = stats
 
     @property
+    def records(self):
+        return self._stats.number_of_recods
+
+    @property
     def calender_data(self):
         return self._stats.chart_calendar()
 
