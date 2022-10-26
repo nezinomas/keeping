@@ -15,11 +15,13 @@ from .stats import Stats
 class CounTypetObjectMixin():
     object = None
 
-    def get_object(self):
+    def get_object(self, **kwargs):
+        self.object = kwargs.get('object')
+
         if self.object:
             return
 
-        if count_type_slug := self.kwargs.get('slug'):
+        if count_type_slug := kwargs.get('slug'):
             with contextlib.suppress(CountType.DoesNotExist):
                 self.object = \
                         CountType.objects \
