@@ -54,7 +54,7 @@ class IndexServiceData:
         return cls
 
 
-class IndexService():
+class IndexService:
     def __init__(self,
                  drink_stats: DrinkStats,
                  target: float = 0.0,
