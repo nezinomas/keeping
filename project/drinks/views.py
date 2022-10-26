@@ -1,5 +1,4 @@
 import contextlib
-from datetime import datetime
 
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -11,11 +10,14 @@ from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  FormViewMixin, ListViewMixin,
                                  RedirectViewMixin, TemplateViewMixin,
                                  UpdateViewMixin, rendered_content)
-from ..counts.lib.stats import Stats as CountStats
 from .forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
-from .lib import views_helper as H
 from .lib.drinks_options import DrinksOptions
+from .lib.drinks_stats import DrinkStats
 from .models import Drink, DrinkTarget, DrinkType
+from .services import helper as H
+from .services.calendar_chart import CalendarChart
+from .services.history import HistoryService
+from .services.index import IndexService
 
 
 class Index(TemplateViewMixin):
@@ -36,37 +38,76 @@ class TabIndex(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
 
-        qs = Drink.objects.sum_by_day(year)
-        past_latest_record = None
+        qs_by_month = Drink.objects.sum_by_month(year)
 
-        with contextlib.suppress(Drink.DoesNotExist):
-            qs_past = \
-                    Drink \
-                    .objects \
-                    .related() \
-                    .filter(date__year__lt=year) \
-                    .latest()
-            past_latest_record = qs_past.date
-
-        stats = CountStats(year=year, data=qs, past_latest=past_latest_record)
-        data = stats.chart_calendar()
-        rendered = H.RenderContext(self.request, year)
+        records = qs_by_month.count()
         context = {
-            'target_list': \
-                    rendered_content(self.request, TargetLists, **kwargs),
-            'compare_form_and_chart': \
-                    rendered_content(self.request, CompareTwo, **kwargs),
-            'all_years': len(years()),
-            'records': qs.count(),
-            'chart_quantity': rendered.chart_quantity(),
-            'chart_consumption': rendered.chart_consumption(),
-            'chart_calendar_1H': rendered.chart_calendar(data[:6]),
-            'chart_calendar_2H': rendered.chart_calendar(data[6:]),
-            'tbl_consumption': rendered.tbl_consumption(),
-            'tbl_last_day': rendered.tbl_last_day(),
-            'tbl_alcohol': rendered.tbl_alcohol(),
-            'tbl_std_av': rendered.tbl_std_av(),
+            'records': records,
         }
+
+        if not records:
+            return super().get_context_data(**kwargs) | context
+
+        # Queries
+        latest_past_date = None
+        with contextlib.suppress(Drink.DoesNotExist):
+            latest_past_date = \
+                Drink.objects \
+                .related() \
+                .filter(date__year__lt=year) \
+                .latest() \
+                .date
+
+        latest_current_date = None
+        with contextlib.suppress(Drink.DoesNotExist):
+            latest_current_date = \
+                Drink.objects \
+                .year(year) \
+                .latest() \
+                .date
+
+        target = 0.0
+        with contextlib.suppress(DrinkTarget.DoesNotExist):
+            target = \
+                DrinkTarget.objects \
+                .year(year) \
+                .get(year=year) \
+                .qty
+
+        # Index Tab service
+        index_service = \
+            IndexService(
+                drink_stats=DrinkStats(qs_by_month),
+                target=target,
+                latest_past_date=latest_past_date,
+                latest_current_date=latest_current_date
+            )
+
+        # calendar chart service
+        qs_by_day = Drink.objects.sum_by_day(year)
+        calendar_service = \
+            CalendarChart(
+                year=year,
+                data=qs_by_day,
+                latest_past_date=latest_past_date
+            )
+
+        context |= {
+            'target_list':
+                rendered_content(self.request, TargetLists, **kwargs),
+            'compare_form_and_chart':
+                rendered_content(self.request, CompareTwo, **kwargs),
+            'all_years': len(years()),
+            'chart_quantity': index_service.chart_quantity(),
+            'chart_consumption': index_service.chart_consumption(),
+            'chart_calendar_1H': calendar_service.first_half_of_year(),
+            'chart_calendar_2H': calendar_service.second_half_of_year(),
+            'tbl_consumption': index_service.tbl_consumption(),
+            'tbl_dray_days': index_service.tbl_dry_days(),
+            'tbl_alcohol': index_service.tbl_alcohol(),
+            'tbl_std_av': index_service.tbl_std_av(),
+        }
+
         return super().get_context_data(**kwargs) | context
 
 
@@ -83,36 +124,16 @@ class TabHistory(TemplateViewMixin):
     template_name = 'drinks/tab_history.html'
 
     def get_context_data(self, **kwargs):
-        drink_years = []
-        ml = []
-        alcohol = []
-
-        qs = list(Drink.objects.summary())
-
-        obj = DrinksOptions()
-        ratio = obj.ratio
-
-        if qs:
-            for year in range(qs[0]['year'], datetime.now().year+1):
-                drink_years.append(year)
-
-                if item := next((x for x in qs if x['year'] == year), False):
-                    _stdav = item['qty'] / ratio
-                    _alcohol = obj.stdav_to_alcohol(stdav=_stdav)
-
-                    alcohol.append(_alcohol)
-                    ml.append(item['per_day'])
-                else:
-                    alcohol.append(0.0)
-                    ml.append(0.0)
+        data = Drink.objects.sum_by_year()
+        obj = HistoryService(data)
 
         context = {
             'tab': 'history',
-            'records': len(drink_years) if len(drink_years) > 1 else 0,
+            'records': len(obj.years) if len(obj.years) > 1 else 0,
             'chart': {
-                'categories': drink_years,
-                'data_ml': ml,
-                'data_alcohol': alcohol,
+                'categories': obj.years,
+                'data_ml': obj.per_day,
+                'data_alcohol': obj.alcohol,
                 'text': {
                     'title': _('Drinks'),
                     'per_day': _('Average per day, ml'),
@@ -208,16 +229,8 @@ class TargetLists(ListViewMixin):
     model = DrinkTarget
 
     def get_queryset(self):
-        obj = DrinksOptions()
         year = self.request.user.year
-
-        qs = DrinkTarget.objects.year(year)
-        for q in qs:
-            _qty = q.quantity
-            q.quantity = obj.stdav_to_ml(stdav=_qty)
-            q.max_bottles = obj.stdav_to_bottles(year=year, max_stdav=_qty)
-
-        return qs
+        return super().get_queryset().year(year)
 
 
 class TargetNew(CreateViewMixin):

@@ -1,4 +1,5 @@
 import calendar
+import contextlib
 from datetime import date, datetime
 from typing import List, Tuple
 
@@ -6,8 +7,8 @@ from . import utils
 
 
 def current_day(year: int, month: int, return_past_day: bool = True) -> int:
-    year = year if year else datetime.now().year
-    month = month if month else datetime.now().month
+    year = year or datetime.now().year
+    month = month or datetime.now().month
 
     _year = datetime.now().year
     _month = datetime.now().month
@@ -16,10 +17,7 @@ def current_day(year: int, month: int, return_past_day: bool = True) -> int:
     if _year == year and _month == month:
         return _day
 
-    if return_past_day:
-        return calendar.monthrange(year, month)[1]
-
-    return None
+    return calendar.monthrange(year, month)[1] if return_past_day else None
 
 
 def year_month_list(year: int = None) -> List[date]:
@@ -27,13 +25,8 @@ def year_month_list(year: int = None) -> List[date]:
     returns: list of months for selected year e.g.
     [datetime.date(1970, 1, 1), datetime.date(1970, 2, 1), ...]
     '''
-    year = year if year else datetime.now().year
-    months = []
-
-    for i in range(1, 13):
-        months.append(date(year, i, 1))
-
-    return months
+    year = year or datetime.now().year
+    return [date(year, i, 1) for i in range(1, 13)]
 
 
 def monthname(month: int) -> str:
@@ -62,14 +55,10 @@ def years() -> List[int]:
     now = datetime.now().year
     start = now
 
-    try:
+    with contextlib.suppress(AttributeError):
         start = utils.get_user().journal.first_record.year
-    except AttributeError:
-        pass
 
-    _years = [x for x in range(start, now + 2)]
-
-    return _years
+    return list(range(start, now + 2))
 
 
 def set_year_for_form():
@@ -96,7 +85,7 @@ def weeknumber(year: int):
 
 def yday(year: int) -> Tuple[int, int]:
     now = datetime.now().date()
-    year = year if year else now.year
+    year = year or now.year
 
     _year = now.year
     _days = ydays(year)

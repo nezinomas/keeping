@@ -1,11 +1,10 @@
-from django.db.models import F
-from django.db.models.functions import (ExtractYear, TruncDay, TruncMonth,
-                                        TruncYear)
 from datetime import datetime
 
 from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.db.models import F
+from django.db.models.functions import ExtractYear
 from django.utils.translation import gettext as _
 
 from ..core.helpers.helper_forms import set_field_properties
@@ -95,9 +94,9 @@ class DrinkTargetForm(forms.ModelForm):
         self.fields['quantity'].label = _('Quantity')
         self.fields['drink_type'].label = _('Drink type')
 
-        type = _("if the type of drink is")
-        h1 = f'<b>ml</b> - {type} {_("Beer")} / {_("Wine")} / {_("Vodka")}'
-        h2 = f'<b>{_("pcs")}</b> - {type} Std Av'
+        _type = _("if the _type of drink is")
+        h1 = f'<b>ml</b> - {_type} {_("Beer")} / {_("Wine")} / {_("Vodka")}'
+        h2 = f'<b>{_("pcs")}</b> - {_type} Std Av'
         help_text = f'{h1}</br>{h2}'
         self.fields['quantity'].help_text = help_text
 
@@ -183,5 +182,3 @@ class DrinkCompareForm(forms.Form):
     def _validation_error(self, field):
         if len(str(abs(field))) != 4:
             raise forms.ValidationError(_('Must be 4 digits.'))
-
-

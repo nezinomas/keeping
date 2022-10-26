@@ -1,9 +1,9 @@
 function annotationLabels(list) {
     list.forEach(function (element, index, list) {
-        var val = element.toFixed();
+        var val = Math.round(element);
         list[index] = {
             point: {xAxis: 0, yAxis:0, x: index, y: val},
-            text: val,
+            text: Highcharts.numberFormat(val, 0),
         };
     });
     return list;

@@ -1,88 +1,70 @@
-from datetime import date, datetime
-from typing import Dict, List, Tuple
-
-from django.utils.translation import gettext as _
+import calendar
+from dataclasses import dataclass, field
+from datetime import datetime
 
 from ...core.lib.date import ydays
+from ..lib.drinks_options import DrinksOptions
+from ..managers import DrinkQuerySet
 from .drinks_options import DrinksOptions
 
 
-class DrinkStats():
-    def __init__(self, arr: List[Dict]):
-        _list = [0.0 for _ in range(12)]
+def empty_list():
+    return [0.0 for _ in range(12)]
 
-        self._consumption = _list.copy()
-        self._quantity = _list.copy()
 
-        self._calc(arr)
+@dataclass
+class DrinkStats:
+    data: DrinkQuerySet.sum_by_month = None
+    per_month: list[float] = \
+        field(init=False, default_factory=empty_list)
+    per_day_of_month: list[float] = \
+        field(init=False, default_factory=empty_list)
+    per_day_of_year: float = \
+        field(init=False, default=0.0)
+    qty_of_month: list[float] = \
+        field(init=False, default_factory=empty_list)
+    qty_of_year: float = \
+        field(init=False, default=0.0)
+    options: DrinksOptions = \
+        field(init=False, default_factory=DrinksOptions)
 
-    @property
-    def consumption(self) -> List[float]:
-        return self._consumption
+    year: int = \
+        field(init=False, default=None)
 
-    @property
-    def quantity(self) -> List[float]:
-        return self._quantity
-
-    def _calc(self, arr: List[Dict]) -> None:
-        if not arr:
+    def __post_init__(self):
+        if not self.data:
             return
 
-        for a in arr:
-            idx = a.get('month', 1) - 1
+        self._calc_month()
+        self._calc_year()
 
-            self._consumption[idx] = a.get('per_month', 0)
-            self._quantity[idx] = a.get('sum', 0)
+    def _calc_month(self) -> None:
+        for row in self.data:
+            _stdav = row.get('stdav')
+            _ml = self.options.stdav_to_ml(_stdav)
 
+            _date = row.get('date')
+            _year = _date.year
+            _month = _date.month
+            _monthlen = calendar.monthrange(_year, _month)[1]
 
-def std_av(year: int, qty: float) -> List[Dict]:
-    if not qty:
-        return {}
+            if not self.year:
+                self.year = _year
 
-    (day, week, month) = _dates(year)
+            idx = _month - 1
 
-    a = {
-        'total': qty,
-        'per_day': qty / day,
-        'per_week': qty / week,
-        'per_month': qty / month
-    }
+            self.per_month[idx] = _ml
+            self.per_day_of_month[idx] = _ml / _monthlen
+            self.qty_of_month[idx] = row.get('qty')
 
-    obj = DrinksOptions()
+    def _calc_year(self):
+        _date = datetime.now().date()
+        _month = _date.month
 
-    return [
-        {
-            'title': _('Beer') + ', 0.5L',
-            **{k: obj.convert(v, 'beer') for k, v in a.items()}
-        },
-        {
-            'title': _('Wine') + ', 0.75L',
-            **{k: obj.convert(v, 'wine') for k, v in a.items()}
-        },
-        {
-            'title': _('Vodka') + ', 1L',
-            **{k: obj.convert(v, 'vodka') for k, v in a.items()}
-        },
-        {
-            'title': 'Std Av',
-            **{k: v * obj.stdav for k, v in a.items()}
-        },
-    ]
+        if self.year == _date.year:
+            _day_of_year = _date.timetuple().tm_yday
+        else:
+            _day_of_year = ydays(self.year)
 
-
-def _dates(year: int) -> Tuple[int, int, int]:
-    now = datetime.now().date()
-    year = year or now.year
-
-    _year = now.year
-    _month = now.month
-    _week = int(now.strftime("%V"))
-    _day = now.timetuple().tm_yday
-
-    if _year == year:
-        return (_day, _week, _month)
-
-    _days = ydays(year)
-    _weeks = date(year, 12, 28).isocalendar()[1]
-
-    return (_days, _weeks, 12)
+        self.qty_of_year = sum(self.qty_of_month)
+        self.per_day_of_year = sum(self.per_month[:_month]) / _day_of_year

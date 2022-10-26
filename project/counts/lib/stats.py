@@ -97,7 +97,7 @@ class Stats():
 
         return arr
 
-    def chart_calendar(self):
+    def chart_calendar(self) -> list[dict]:
         if not self._year:
             raise MethodInvalid('class Stats must be called with specified year.')
 

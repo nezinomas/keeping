@@ -1,13 +1,8 @@
-import calendar
-from datetime import date, datetime
-from typing import Dict, List
-
 from django.db import models
+from django.db.models import F
 
 from ..core.lib import utils
-from ..core.lib.date import ydays
 from ..core.mixins.queryset_sum import SumMixin
-
 from .lib.drinks_options import DrinksOptions
 
 
@@ -26,144 +21,78 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self.related()
 
-    def sum_by_year(self, year=None):
-        qs = self \
-            .related() \
-            .year_sum(
-                year=year,
-                sum_annotation='qty',
-                sum_column='quantity') \
-            .order_by('date')
-
-        return qs
-
-    def sum_by_month(self, year: int, month: int = None):
+    def sum_by_year(self, year=None) -> list[dict]:
         """
         Returns
-        DrinkQuerySet [{'date': datetime.date, 'sum': float, 'month': int, 'monthlen': int, 'per_month': float}]
+        DrinkQuerySet [{'date': datetime.date, 'stdav': float, 'qty': float}]
         """
-
-        qs = self\
-            .related()\
-            .month_sum(
-                year=year,
-                month=month,
-                sum_annotation='qty',
-                sum_column='quantity')\
-            .order_by('date')
-
-        obj = DrinksOptions()
-        ratio = obj.ratio
-
-        arr = []
-        for row in qs:
-            _date = row.get('date')
-            _month = _date.month
-            _monthlen = calendar.monthrange(year, _month)[1]
-            _qty = row.get('qty') * ratio
-            _stdav = row.get('qty')
-
-            item = {}
-            item['date'] = _date
-            item['sum'] = _qty
-            item['month'] = _month
-            item['monthlen'] = _monthlen
-            item['per_month'] = obj.stdav_to_ml(stdav=_stdav) / _monthlen
-
-            if item:
-                arr.append(item)
-
-        return arr
-
-    def drink_day_sum(self, year: int) -> Dict[float, float]:
-        """
-        Returns {'qty': float, 'per_day': float}
-        """
-
-        arr = {}
-        qs = self.sum_by_year(year=year)
-        qs = list(qs)
-
-        if not qs:
-            return arr
-
-        _date = datetime.now().date()
-        if year == _date.year:
-            _day_of_year = _date.timetuple().tm_yday
-        else:
-            _day_of_year = ydays(year)
-
-        _obj = DrinksOptions()
-        _qty = qs[0].get('qty') * _obj.ratio
-        _stdav = qs[0].get('qty')
-
-        arr['qty'] = _qty
-        arr['per_day'] = _obj.stdav_to_ml(stdav=_stdav) / _day_of_year
-
-        return arr
-
-    def sum_by_day(self, year: int, month: int = None) -> List[Dict[date, float]]:
-        qs = self\
-            .related()\
-            .day_sum(
-                year=year,
-                month=month,
-                sum_annotation='qty',
-                sum_column='quantity')\
-            .order_by('date')
 
         ratio = DrinksOptions().ratio
 
-        for q in qs:
-            q['qty'] = q['qty'] * ratio
+        return self \
+            .related() \
+            .year_sum(
+                year=year,
+                sum_annotation='stdav',
+                sum_column='quantity') \
+            .annotate(qty=F('stdav') * ratio) \
+            .order_by('date')
 
-        return qs
+    def sum_by_month(self, year: int, month: int = None) -> list[dict]:
+        """
+        Returns
+        DrinkQuerySet [{'date': datetime.date, 'stdav': float, 'qty': float}]
+        """
 
-    def summary(self):
-        #Returns
-        # [{'year': int, 'qty': float, 'per_day': float}]
+        ratio = DrinksOptions().ratio
 
-        qs = self.sum_by_year()
+        return \
+            self \
+            .related() \
+            .month_sum(
+                year=year,
+                month=month,
+                sum_annotation='stdav',
+                sum_column='quantity') \
+            .annotate(qty=F('stdav') * ratio) \
+            .order_by('date')
 
-        obj = DrinksOptions()
-        ratio = obj.ratio
+    def sum_by_day(self, year: int, month: int = None) -> list[dict]:
+        """
+        Returns
+        DrinkQuerySet [{'date': datetime.date, 'stdav': float, 'qty': float}]
+        """
 
-        arr = []
-        for row in qs:
-            _qty = row.get('qty') * ratio
-            _stdav = row.get('qty')
+        ratio = DrinksOptions().ratio
 
-            _year = row.get('year')
-            _days = ydays(_year)
-
-            item = {}
-            item['year'] = _year
-            item['qty'] = _qty
-            item['per_day'] = obj.stdav_to_ml(drink_type=obj.drink_type, stdav=_stdav) / _days
-
-            if item:
-                arr.append(item)
-
-        return arr
+        return self \
+            .related() \
+            .day_sum(
+                year=year,
+                month=month,
+                sum_annotation='stdav',
+                sum_column='quantity') \
+            .annotate(qty=F('stdav') * ratio) \
+            .order_by('date')
 
 
 class DrinkTargetQuerySet(SumMixin, models.QuerySet):
     def related(self):
         user = utils.get_user()
-        return (
-            self
-            .select_related('user')
+        return \
+            self \
+            .select_related('user') \
             .filter(user=user)
-        )
 
     def year(self, year):
-        qs = (
-            self
-            .related()
-            .filter(year=year)
-        )
-
-        return qs
+        obj = DrinksOptions()
+        return \
+            self \
+            .related() \
+            .filter(year=year) \
+            .annotate(stdav=F('quantity')) \
+            .annotate(qty=obj.stdav_to_ml(stdav=F('stdav'))) \
+            .annotate(max_bottles=obj.stdav_to_bottles(year, F('stdav')))
 
     def items(self):
         return self.related()

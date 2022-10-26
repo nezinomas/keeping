@@ -13,7 +13,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in items %}
+        {% for item in ctx.items %}
         <tr {% if 'Av' in item.title %}class="table table-sm table-warning std-av-border"{% endif %}>
             <td class="text-start"><span class="ms-2">{{ item.title }}</span></td>
             {% table_cell value=item.total %}
