@@ -10,7 +10,7 @@ from ..models import CountType
 from .stats import Stats
 
 
-class CounTypetObjectMixin():
+class CountTypetObjectMixin():
     object = None
 
     def get_object(self):

@@ -13,7 +13,7 @@ from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  rendered_content)
 from .forms import CountForm, CountTypeForm
 from .lib.stats import Stats
-from .lib.views_helper import CounTypetObjectMixin, RenderContext
+from .lib.views_helper import CountTypetObjectMixin, RenderContext
 from .models import Count, CountType
 
 
@@ -40,7 +40,7 @@ class Empty(TemplateViewMixin):
     template_name = 'counts/empty.html'
 
 
-class InfoRow(CounTypetObjectMixin, TemplateViewMixin):
+class InfoRow(CountTypetObjectMixin, TemplateViewMixin):
     template_name = 'counts/info_row.html'
 
     def get_context_data(self, **kwargs):
@@ -76,7 +76,7 @@ class InfoRow(CounTypetObjectMixin, TemplateViewMixin):
         return super().get_context_data(**kwargs) | context
 
 
-class Index(CounTypetObjectMixin, TemplateViewMixin):
+class Index(CountTypetObjectMixin, TemplateViewMixin):
     template_name = 'counts/index.html'
 
     def dispatch(self, request, *args, **kwargs):
@@ -102,7 +102,7 @@ class Index(CounTypetObjectMixin, TemplateViewMixin):
         return super().get_context_data(**kwargs) | context
 
 
-class TabIndex(CounTypetObjectMixin, TemplateViewMixin):
+class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
     template_name = 'counts/tab_index.html'
 
     def get_context_data(self, **kwargs):
