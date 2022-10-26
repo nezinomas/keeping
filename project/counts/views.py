@@ -21,12 +21,11 @@ from .services.index import IndexService
 class Redirect(RedirectViewMixin):
     def get_redirect_url(self, *args, **kwargs):
         qs = None
-        slug = kwargs.get('slug')
 
         try:
             qs = CountType.objects \
                 .related() \
-                .get(slug=slug)
+                .get(slug=kwargs.get('slug'))
         except CountType.DoesNotExist:
             qs = CountType.objects \
                 .related() \
