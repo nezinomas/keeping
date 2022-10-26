@@ -1,3 +1,4 @@
+import contextlib
 from datetime import date, datetime
 from typing import Dict, List, Tuple
 
@@ -7,9 +8,53 @@ from ...core.lib.date import ydays
 from ...core.lib.translation import month_names
 from ..lib.drinks_options import DrinksOptions
 from ..lib.drinks_stats import DrinkStats
+from ..managers import DrinkQuerySet
+from ..models import Drink, DrinkTarget
 
 
-class IndexService():
+class IndexServiceData:
+    sum_by_month: DrinkQuerySet.sum_by_month
+    sum_by_day: DrinkQuerySet.sum_by_day
+
+    target: float = 0.0
+    latest_past_date: date = None
+    latest_current_date: date = None
+
+    @classmethod
+    def main_query(cls, year):
+        cls.sum_by_month = Drink.objects.sum_by_month(year)
+        return cls
+
+    @classmethod
+    def rest_queries(cls, year):
+        cls.sum_by_day = Drink.objects.sum_by_day(year)
+
+        with contextlib.suppress(Drink.DoesNotExist):
+            cls.latest_past_date = \
+                Drink.objects \
+                .related() \
+                .filter(date__year__lt=year) \
+                .latest() \
+                .date
+
+        with contextlib.suppress(Drink.DoesNotExist):
+            cls.latest_current_date = \
+                Drink.objects \
+                .year(year) \
+                .latest() \
+                .date
+
+        with contextlib.suppress(DrinkTarget.DoesNotExist):
+            cls.target = \
+                DrinkTarget.objects \
+                .year(year) \
+                .get(year=year) \
+                .qty
+
+        return cls
+
+
+class IndexService:
     def __init__(self,
                  drink_stats: DrinkStats,
                  target: float = 0.0,
@@ -48,6 +93,15 @@ class IndexService():
             },
         }
 
+    def tbl_dry_days(self) -> Dict:
+        _dict = {}
+
+        if latest := self.latest_current_date or self.latest_past_date:
+            delta = (datetime.now().date() - latest).days
+            _dict = {'date': latest, 'delta': delta}
+
+        return _dict
+
     def tbl_consumption(self) -> str:
         return {
             'qty': self.quantity_of_year,
@@ -72,15 +126,6 @@ class IndexService():
 
     def _target_label_position(self, avg: float, target: float) -> int:
         return 15 if avg - 50 <= target <= avg else -5
-
-    def tbl_dry_days(self) -> Dict:
-        _dict = {}
-
-        if latest := self.latest_current_date or self.latest_past_date:
-            delta = (datetime.now().date() - latest).days
-            _dict = {'date': latest, 'delta': delta}
-
-        return _dict
 
     def _std_av(self, year: int, qty: float) -> List[Dict]:
         if not qty:
