@@ -96,13 +96,14 @@ class Index(CountTypetObjectMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         super().get_object()
 
-        kwargs |= {'object': self.object}
-
         context = {
-            'info_row': rendered_content(self.request, InfoRow, **kwargs),
-            'tab_content': rendered_content(self.request, TabIndex, **kwargs),
+            'info_row': \
+                rendered_content(self.request, InfoRow, **self.kwargs),
+            'tab_content': \
+                rendered_content(self.request, TabIndex, **self.kwargs),
         }
-        return super().get_context_data(**kwargs) | context
+
+        return super().get_context_data(**self.kwargs) | context
 
 
 class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
