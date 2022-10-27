@@ -131,18 +131,10 @@ class DrinkCompareForm(forms.Form):
         set_field_properties(self, self.helper)
 
     def clean_year1(self):
-        year = self.cleaned_data['year1']
-
-        self._validation_error(year)
-
-        return year
+        return self._clean_year_field('year1')
 
     def clean_year2(self):
-        year = self.cleaned_data['year2']
-
-        self._validation_error(year)
-
-        return year
+        return self._clean_year_field('year2')
 
     def clean(self):
         cleaned = super().clean()
@@ -175,3 +167,8 @@ class DrinkCompareForm(forms.Form):
     def _validation_error(self, field):
         if len(str(abs(field))) != 4:
             raise forms.ValidationError(_('Must be 4 digits.'))
+
+    def _clean_year_field(self, field_name):
+        year = self.cleaned_data[field_name]
+        self._validation_error(year)
+        return year
