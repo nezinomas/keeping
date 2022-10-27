@@ -149,13 +149,11 @@ class DrinkCompareForm(forms.Form):
             .values_list('year', flat=True)
 
         msg_no_records = _('No records this year')
-        if year1 not in years:
-            if not self.errors.get('year1'):
-                self.add_error('year1', msg_no_records)
+        if year1 not in years and not self.errors.get('year1'):
+            self.add_error('year1', msg_no_records)
 
-        if year2 not in years:
-            if not self.errors.get('year2'):
-                self.add_error('year2', msg_no_records)
+        if year2 not in years and not self.errors.get('year2'):
+            self.add_error('year2', msg_no_records)
 
         msg_different = _('Years must be different')
         if year1 == year2:
