@@ -13,8 +13,8 @@ from ..models import Drink, DrinkTarget
 
 
 class IndexServiceData:
-    sum_by_month: DrinkQuerySet.sum_by_month
-    sum_by_day: DrinkQuerySet.sum_by_day
+    sum_by_month: DrinkQuerySet.sum_by_month = None
+    sum_by_day: DrinkQuerySet.sum_by_day = None
 
     target: float = 0.0
     latest_past_date: date = None
