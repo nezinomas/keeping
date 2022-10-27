@@ -37,9 +37,9 @@ class TabIndex(TemplateViewMixin):
         year = self.request.user.year
 
         # main query
-        qs_month = IndexServiceData.main_query(year).sum_by_month
+        IndexServiceData.main_query(year)
 
-        records = qs_month.count()
+        records = IndexServiceData.sum_by_month.count()
         context = {
             'records': records,
         }
@@ -48,23 +48,23 @@ class TabIndex(TemplateViewMixin):
             return super().get_context_data(**kwargs) | context
 
         # rest queries
-        qs = IndexServiceData.rest_queries(year)
+        IndexServiceData.rest_queries(year)
 
         # Index Tab service
         index_service = \
             IndexService(
-                drink_stats=DrinkStats(qs_month),
-                target=qs.target,
-                latest_past_date=qs.latest_past_date,
-                latest_current_date=qs.latest_current_date
+                drink_stats=DrinkStats(IndexServiceData.sum_by_month),
+                target=IndexServiceData.target,
+                latest_past_date=IndexServiceData.latest_past_date,
+                latest_current_date=IndexServiceData.latest_current_date
             )
 
         # calendar chart service
         calendar_service = \
             CalendarChart(
                 year=year,
-                data=qs.sum_by_day,
-                latest_past_date=qs.latest_past_date
+                data=IndexServiceData.sum_by_day,
+                latest_past_date=IndexServiceData.latest_past_date
             )
 
         context |= {
