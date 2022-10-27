@@ -1,14 +1,5 @@
-from datetime import date
-
-import pytest
-
-from ...debts.factories import BorrowFactory, LendFactory
-from ...expenses.factories import ExpenseFactory
-from ...incomes.factories import IncomeFactory
-from ...savings.factories import SavingFactory
+from mock import MagicMock
 from ..services.index import IndexService
-
-pytestmark = pytest.mark.django_db
 
 
 def test_percentage_from_incomes():
@@ -24,7 +15,7 @@ def test_percentage_from_incomes_saving_none():
 
 
 def test_balance_context():
-    obj = IndexService(1999)
+    obj = IndexService(balance=MagicMock())
     actual = obj.balance_context()
 
     assert 'data' in actual
@@ -34,7 +25,7 @@ def test_balance_context():
 
 
 def test_balance_short_context():
-    obj = IndexService(1999)
+    obj = IndexService(balance=MagicMock())
     actual = obj.balance_short_context()
 
     assert 'title' in actual
@@ -43,12 +34,7 @@ def test_balance_short_context():
 
 
 def test_balance_short_context_data():
-    IncomeFactory(date=date(1974, 1, 1), price=5)
-    IncomeFactory(price=100)
-    ExpenseFactory(price=25)
-    SavingFactory(price=10)
-
-    obj = IndexService(1999)
+    obj = IndexService(balance=MagicMock(amount_start=5, amount_end=70))
     actual = obj.balance_short_context()
 
     assert actual['title'] == ['Metų pradžioje', 'Metų pabaigoje', 'Metų balansas']
@@ -56,11 +42,7 @@ def test_balance_short_context_data():
 
 
 def test_balance_short_highlighted():
-    IncomeFactory(date=date(1974, 1, 1), price=5)
-    IncomeFactory(price=100)
-    ExpenseFactory(price=125)
-
-    obj = IndexService(1999)
+    obj = IndexService(balance=MagicMock(amount_start=5, amount_end=-20))
     actual = obj.balance_short_context()
 
     assert actual['data'] == [5.0, -20.0, -25.0]
@@ -68,7 +50,7 @@ def test_balance_short_highlighted():
 
 
 def test_chart_balance_context():
-    obj = IndexService(1999)
+    obj = IndexService(balance=MagicMock())
     actual = obj.chart_balance_context()
 
     assert 'categories' in actual
@@ -79,7 +61,7 @@ def test_chart_balance_context():
 
 
 def test_averages_context():
-    obj = IndexService(1999)
+    obj = IndexService(balance=MagicMock())
     actual = obj.averages_context()
 
     assert 'title' in actual
@@ -87,9 +69,7 @@ def test_averages_context():
 
 
 def test_borrow_context():
-    BorrowFactory()
-
-    obj = IndexService(1999)
+    obj = IndexService(balance=MagicMock(borrow_data=[99], borrow_return_data=[66]))
     actual = obj.borrow_context()
 
     assert 'title' in actual
@@ -97,27 +77,25 @@ def test_borrow_context():
 
     assert 'Pasiskolinta' in actual['title']
     assert 'Grąžinau' in actual['title']
-    assert actual['data'] == [100.0, 0.0]
+    assert actual['data'] == [99.0, 66.0]
 
 
 def test_borrow_context_no_data():
-    obj = IndexService(1999)
+    obj = IndexService(balance=MagicMock())
     actual = obj.borrow_context()
 
     assert actual == {}
 
 
 def test_lend_context_no_data():
-    obj = IndexService(1999)
+    obj = IndexService(balance=MagicMock())
     actual = obj.lend_context()
 
     assert actual == {}
 
 
 def test_lend_context():
-    LendFactory()
-
-    obj = IndexService(1999)
+    obj = IndexService(balance=MagicMock(lend_data=[4, 5], lend_return_data=[1, 2]))
     actual = obj.lend_context()
 
     assert 'title' in actual
@@ -125,4 +103,4 @@ def test_lend_context():
 
     assert 'Paskolinta' in actual['title']
     assert 'Grąžino' in actual['title']
-    assert actual['data'] == [100.0, 0.0]
+    assert actual['data'] == [9.0, 3.0]

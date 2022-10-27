@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
@@ -12,6 +11,7 @@ from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from . import forms, mixins, models, services
 from .lib.no_incomes import NoIncomes as LibNoIncomes
+from .lib.year_balance import YearBalance
 
 
 class Index(TemplateViewMixin):
@@ -19,7 +19,12 @@ class Index(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        ind = services.IndexService(year)
+
+        year_balance = YearBalance(
+            year=year,
+            data=services.IndexServiceData.data(year),
+            amount_start=services.IndexServiceData.amount_start(year))
+        ind = services.IndexService(year_balance)
         exp = services.ExpenseService(year)
 
         context = {

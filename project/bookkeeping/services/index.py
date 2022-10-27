@@ -11,29 +11,19 @@ from ...transactions.models import SavingClose
 from ..lib.year_balance import YearBalance
 
 
-class IndexService():
-    def __init__(self, year):
-        self._year = year
-
-        self._YearBalance = self._make_year_balance_object(year)
-
-    def _make_year_balance_object(self, year: int) -> YearBalance:
-        account_sum = \
+class IndexServiceData:
+    @staticmethod
+    def amount_start(year):
+        _sum = \
             AccountBalance.objects \
             .related() \
             .filter(year=year) \
-            .aggregate(Sum('past')) \
-            ['past__sum']
-        account_sum = float(account_sum) if account_sum else 0.0
+            .aggregate(Sum('past'))['past__sum']
 
-        return \
-            YearBalance(
-                year=year,
-                data=self._collect_data(year),
-                amount_start=account_sum
-            )
+        return float(_sum) if _sum else 0.0
 
-    def _collect_data(self, year):
+    @staticmethod
+    def data(year: int) -> list[dict]:
         qs_borrow = Debt.objects.sum_by_month(year, debt_type='borrow')
         qs_lend = Debt.objects.sum_by_month(year, debt_type='lend')
 
@@ -58,6 +48,11 @@ class IndexService():
             'lend_return': lend_return,
         }
 
+
+class IndexService():
+    def __init__(self, balance: YearBalance):
+        self._YearBalance = balance
+
     def balance_context(self):
         return {
             'data': self._YearBalance.balance,
@@ -69,6 +64,7 @@ class IndexService():
     def balance_short_context(self):
         start = self._YearBalance.amount_start
         end = self._YearBalance.amount_end
+        print(f'{start=} {end=}')
         return {
             'title': [_('Start of year'), _('End of year'), _('Year balance')],
             'data': [start, end, (end - start)],
