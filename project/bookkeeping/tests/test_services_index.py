@@ -27,7 +27,6 @@ def test_balance_context():
     obj = IndexService(1999)
     actual = obj.balance_context()
 
-    assert 'year' in actual
     assert 'data' in actual
     assert 'total_row' in actual
     assert 'amount_end' in actual
