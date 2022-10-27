@@ -16,13 +16,6 @@ from .models import MAX_BOTTLES, Drink, DrinkTarget
 
 
 class DrinkForm(YearBetweenMixin, forms.ModelForm):
-    # option = forms.ChoiceField(
-    #     choices=DrinkType.choices,
-    #     initial=DrinkType.BEER,
-    #     widget=forms.Select(),
-    #     required=True
-    # )
-
     class Meta:
         model = Drink
         fields = ['user', 'date', 'quantity', 'option']
