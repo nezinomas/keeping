@@ -12,7 +12,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in items %}
+        {% for item in ctx %}
         <tr>
             {% table_cell value=item.title %}
             {% table_cell value=item.plan|floatformat:2 %}

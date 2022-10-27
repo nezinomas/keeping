@@ -163,14 +163,8 @@ class Month(TemplateViewMixin):
         obj = services.MonthService(year, month)
 
         context = {
-            'month_table': render_to_string(
-                'bookkeeping/includes/month_table.html',
-                obj.month_table_context(),
-                self.request),
-            'info': render_to_string(
-                'bookkeeping/includes/spending_info.html',
-                {'items': obj.info_context},
-                self.request),
+            'month_table': obj.month_table_context(),
+            'info': obj.info_context(),
             'chart_expenses': obj.chart_expenses_context(),
             'chart_targets': obj.chart_targets_context(),
         }
