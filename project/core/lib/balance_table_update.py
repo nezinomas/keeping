@@ -1,3 +1,5 @@
+import contextlib
+
 from django.apps import apps
 
 from ..conf import Conf
@@ -39,14 +41,11 @@ class UpdatetBalanceTable():
                 continue
 
             for _hook in _hooks:
-                try:
+                with contextlib.suppress(AttributeError):
                     _method = getattr(model.objects, _hook['method'])
-                    _qs = _method()
-                    if _qs:
+                    if _qs := _method():
                         _data.append(_qs)
 
-                except AttributeError:
-                    pass
         return _data
 
 
