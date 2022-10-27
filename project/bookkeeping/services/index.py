@@ -12,8 +12,17 @@ from ..lib.year_balance import YearBalance
 
 
 class IndexServiceData:
-    @staticmethod
-    def amount_start(year):
+    amount_start: float = 0.0
+    data: list[dict] = None
+
+    @classmethod
+    def collect_data(cls, year):
+        cls.amount_start = cls.get_amount_start(cls, year)
+        cls.data = cls.get_data(cls, year)
+
+        return cls
+
+    def get_amount_start(self, year):
         _sum = \
             AccountBalance.objects \
             .related() \
@@ -22,20 +31,13 @@ class IndexServiceData:
 
         return float(_sum) if _sum else 0.0
 
-    @staticmethod
-    def data(year: int) -> list[dict]:
+    def get_data(self, year: int) -> list[dict]:
         qs_borrow = Debt.objects.sum_by_month(year, debt_type='borrow')
         qs_lend = Debt.objects.sum_by_month(year, debt_type='lend')
 
         # generate debts and debts_return arrays
-        borrow, borrow_return, lend, lend_return = [], [], [], []
-        for x in qs_borrow:
-            borrow.append({'date': x['date'], 'sum': x['sum_debt']})
-            borrow_return.append({'date': x['date'], 'sum': x['sum_return']})
-
-        for x in qs_lend:
-            lend.append({'date': x['date'], 'sum': x['sum_debt']})
-            lend_return.append({'date': x['date'], 'sum': x['sum_return']})
+        borrow, borrow_return = IndexServiceData.get_debt_data(qs_borrow)
+        lend, lend_return = IndexServiceData.get_debt_data(qs_lend)
 
         return {
             'incomes': Income.objects.sum_by_month(year),
@@ -47,6 +49,19 @@ class IndexServiceData:
             'lend': lend,
             'lend_return': lend_return,
         }
+
+    @staticmethod
+    def get_debt_data(data):
+        debt, debt_return = [], []
+
+        for row in data:
+            date = row['date']
+            debt.append(
+                {'date': date, 'sum': row['sum_debt']})
+            debt_return.append(
+                {'date': date, 'sum': row['sum_return']})
+
+        return debt, debt_return
 
 
 class IndexService():
@@ -64,7 +79,7 @@ class IndexService():
     def balance_short_context(self):
         start = self._YearBalance.amount_start
         end = self._YearBalance.amount_end
-        print(f'{start=} {end=}')
+
         return {
             'title': [_('Start of year'), _('End of year'), _('Year balance')],
             'data': [start, end, (end - start)],
