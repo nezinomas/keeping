@@ -5,20 +5,20 @@
 <table class="table table-sm table-striped table-hover">
     <thead>
         <tr>
-            <th class="text-start" colspan="{{ categories|length|add:1 }}" {% if not categories|length %}style="width: 90%"{% endif %}>{% translate 'Expenses statistic' %}</th>
+            <th class="text-start" colspan="{{ ctx.categories|length|add:1 }}" {% if not ctx.categories|length %}style="width: 90%"{% endif %}>{% translate 'Expenses statistic' %}</th>
             <th class="left-blue-border top"></th>
         </tr>
         <tr>
             <th class="text-start w5">{{ year|title }}</th>
-            {% for category in categories %}<th data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ category }}">{{ category|truncatechars:8 }}</th>{% endfor %}
+            {% for category in ctx.categories %}<th data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ category }}">{{ category|truncatechars:8 }}</th>{% endfor %}
             <th class="left-blue-border">{% translate 'Total' %}</th>
         </tr>
     </thead>
     <tbody>
-        {% for item, total_column in data  %}
+        {% for item, total_column in ctx.data  %}
         <tr>
             <td class="text-start">{{ item.date|date:"F"|title }}</td>
-            {% for category in categories %}
+            {% for category in ctx.categories %}
             {% table_cell value=item|get_item:category %}
             {% endfor %}
             {% table_cell value=total_column.total css_class="left-blue-border" %}
@@ -28,13 +28,13 @@
     <tfoot>
         <tr>
             <th class="text-start">Avg</th>
-            {% for category in categories %}{% table_cell value=avg_row|get_item:category tag='th' %}{% endfor %}
-            {% table_cell value=avg tag='th' css_class="left-blue-border" %}
+            {% for category in ctx.categories %}{% table_cell value=ctx.avg_row|get_item:category tag='th' %}{% endfor %}
+            {% table_cell value=ctx.avg tag='th' css_class="left-blue-border" %}
         </tr>
         <tr >
             <th class="text-start">{% translate 'Total' %}</th>
-            {% for category in categories %}{% table_cell value=total_row|get_item:category tag='th' %}{% endfor %}
-            {% table_cell value=total tag='th' css_class="left-blue-border" %}
+            {% for category in ctx.categories %}{% table_cell value=ctx.total_row|get_item:category tag='th' %}{% endfor %}
+            {% table_cell value=ctx.total tag='th' css_class="left-blue-border" %}
         </tr>
     </tfoot>
 </table>

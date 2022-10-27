@@ -19,8 +19,12 @@
 <div class="htmx-indicator loader loader-default is-active" id="indicator"></div>
 
 <div class="row gx-2 my-2 border-bottom border-primary">
-    <div class="col-lg-5 table-responsive">{{ balance }}</div>
-    <div class="col-lg-7 table-responsive">{{ expenses }}</div>
+    <div class="col-lg-5 table-responsive">
+        {% include 'bookkeeping/includes/year_balance.html' with ctx=balance %}
+    </div>
+    <div class="col-lg-7 table-responsive">
+        {% include 'bookkeeping/includes/year_expenses.html' with ctx=expenses %}
+    </div>
 </div>
 
 <div class="row gx-2 my-2 border-bottom border-primary">

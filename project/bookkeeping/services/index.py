@@ -60,7 +60,6 @@ class IndexService():
 
     def balance_context(self):
         return {
-            'year': self._year,
             'data': self._YearBalance.balance,
             'total_row': self._YearBalance.total_row,
             'amount_end': self._YearBalance.amount_end,

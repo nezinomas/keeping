@@ -45,7 +45,6 @@ class ExpenseService():
 
     def table_context(self):
         return {
-            'year': self._year,
             'categories': self._expense_types,
             'data': it.zip_longest(self._balance, self._total_column),
             'total': self._total,

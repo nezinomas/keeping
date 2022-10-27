@@ -33,17 +33,12 @@ class Index(TemplateViewMixin):
             'borrow': ind.borrow_context(),
             'lend': ind.lend_context(),
             'balance_short': ind.balance_short_context(),
-            'balance': render_to_string(
-                'bookkeeping/includes/year_balance.html',
-                ind.balance_context(),
-                self.request),
+            'balance': ind.balance_context(),
             'chart_balance': ind.chart_balance_context(),
             'chart_expenses': exp.chart_expenses_context(),
-            'expenses': render_to_string(
-                'bookkeeping/includes/year_expenses.html',
-                exp.table_context(),
-                self.request)
+            'expenses': exp.table_context(),
         }
+
         return super().get_context_data(**kwargs) | context
 
 
