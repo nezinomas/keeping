@@ -151,19 +151,18 @@ class Balance(BalanceBase):
         if self._balance.empty:
             return {}
 
-        year = self._balance.index.max() if not self._year else self._year
+        year = self._year or self._balance.index.max()
 
         arr = self._balance.loc[year]
         arr = arr.sum()
 
         # update values for saving/pension
         if self.id_field != 'account_id':
-            arr['profit_incomes_proc'] = (
+            arr['profit_incomes_proc'] = \
                 calc_percent(arr[['market_value', 'incomes']])
-            )
-            arr['profit_invested_proc'] = (
+
+            arr['profit_invested_proc'] = \
                 calc_percent(arr[['market_value', 'invested']])
-            )
 
         return arr.to_dict()
 
@@ -229,9 +228,7 @@ class Balance(BalanceBase):
 
         # create columns if not exists
         _columns = df.columns.to_list()
-        diff = list(set(self.columns) - set(_columns))
-
-        if diff:
+        if diff := list(set(self.columns) - set(_columns)):
             for _column_name in diff:
                 df[_column_name] = 0.0
 
@@ -289,10 +286,10 @@ class Balance(BalanceBase):
         _arr = []
 
         # if no expenses column create it
-        if not 'expenses' in df.columns.to_list():
+        if 'expenses' not in df.columns.to_list():
             df['expenses'] = 0.0
 
-        if not 'have' in df.columns.to_list():
+        if 'have' not in df.columns.to_list():
             df['have'] = 0.0
 
         # account_id list from df index.level[0]
@@ -342,18 +339,17 @@ class Balance(BalanceBase):
         _df['invested'] = _df['invested'].mask(_df['invested'] < 0, 0.0)
 
         # # calc profit/loss sum and %
-        _df['profit_incomes_sum'] = _df['market_value'] - _df['incomes']
-        _df['profit_invested_sum'] = _df['market_value'] - _df['invested']
+        _df['profit_incomes_sum'] = \
+            _df['market_value'] - _df['incomes']
 
-        _df['profit_incomes_proc'] = (
-            _df[['market_value', 'incomes']]
-            .apply(calc_percent, axis=1)
-        )
+        _df['profit_invested_sum'] = \
+            _df['market_value'] - _df['invested']
 
-        _df['profit_invested_proc'] = (
-            _df[['market_value', 'invested']]
-            .apply(calc_percent, axis=1)
-        )
+        _df['profit_incomes_proc'] = \
+            _df[['market_value', 'incomes']].apply(calc_percent, axis=1)
+
+        _df['profit_invested_proc'] = \
+            _df[['market_value', 'invested']].apply(calc_percent, axis=1)
 
         return _df
 
