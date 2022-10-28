@@ -126,8 +126,7 @@ class PlanCalculateDaySum():
         arr = self._data.expenses
 
         for lst in arr:
-            val = lst.get(month, 0.0)
-            val = val if val else 0.0
+            val = lst.get(month, 0.0) or 0.0
             rtn[lst.get('title', 'unknown')] = float(val)
 
         return rtn
