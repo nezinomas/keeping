@@ -9,7 +9,7 @@ from ...core.lib.date import current_day, monthname
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
-from ...plans.lib.calc_day_sum import PlanCalculateDaySum
+from ...plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ...savings.models import Saving
 from ..lib.day_spending import DaySpending
 from ..lib.expense_balance import ExpenseBalance
@@ -22,7 +22,10 @@ class MonthService():
         self._month = month
 
         self._expense_types = expense_types()
-        self._plans = PlanCalculateDaySum(year)
+
+        self._plans = \
+            PlanCalculateDaySum(PlanCollectData(year))
+
         self._spending = self._day_spending_object(year, month, self._plans)
 
         self._savings = self._saving_object(year, month)

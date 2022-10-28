@@ -5,7 +5,7 @@ from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  TemplateViewMixin, UpdateViewMixin,
                                  httpHtmxResponse, rendered_content)
 from . import forms, models
-from .lib.calc_day_sum import PlanCalculateDaySum
+from .lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 
 
 class Stats(TemplateViewMixin):
@@ -13,7 +13,8 @@ class Stats(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        arr = PlanCalculateDaySum(year).plans_stats
+
+        arr = PlanCalculateDaySum(PlanCollectData(year)).plans_stats
 
         context = super().get_context_data(**kwargs)
         context.update({
