@@ -20,17 +20,17 @@ def data_dummy(mocker):
 
 @pytest.fixture()
 def data(mocker):
-    debts = [
-        [{'date': 'xxxx', 'sum_debt': 2, 'sum_return': 1}],  # borrow
-        [{'date': 'xxxx', 'sum_debt': 7, 'sum_return': 5}],  # lend
-    ]
-
     module = 'project.bookkeeping.services.index'
-    mocker.patch(f'{module}.Debt.objects.sum_by_month', side_effect=debts)
     mocker.patch(f'{module}.Income.objects.sum_by_month', side_effect=['Income sum_by_month data'])
     mocker.patch(f'{module}.Expense.objects.sum_by_month', side_effect=['Expense sum_by_month data'])
     mocker.patch(f'{module}.Saving.objects.sum_by_month', side_effect=['Saving sum_by_month data'])
     mocker.patch(f'{module}.SavingClose.objects.sum_by_month', side_effect=['SavingClose sum_by_month data'])
+
+    debts = [
+        [{'date': 'xxxx', 'sum_debt': 2, 'sum_return': 1}],  # borrow
+        [{'date': 'xxxx', 'sum_debt': 7, 'sum_return': 5}],  # lend
+    ]
+    mocker.patch(f'{module}.Debt.objects.sum_by_month', side_effect=debts)
 
 
 def test_init(amount_start, data_dummy):
