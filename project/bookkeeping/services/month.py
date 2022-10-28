@@ -1,4 +1,5 @@
 import itertools as it
+from dataclasses import dataclass, field
 from operator import itemgetter
 from typing import Dict, List, Tuple
 
@@ -13,57 +14,88 @@ from ...plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ...savings.models import Saving
 from ..lib.day_spending import DaySpending
 from ..lib.expense_balance import ExpenseBalance
-from .common import expense_types
+
+
+@dataclass
+class MonthServiceData:
+    year: int
+    month: int
+
+    incomes: list[dict] = \
+        field(init=False, default_factory=list)
+
+    expenses: list[dict] = \
+        field(init=False, default_factory=list)
+
+    expense_types: list = \
+        field(init=False, default_factory=list)
+
+    necessary_expense_types: list = \
+        field(init=False, default_factory=list)
+
+    savings: list = \
+        field(init=False, default_factory=list)
+
+    def __post_init__(self):
+        self.incomes = \
+            Income.objects \
+            .sum_by_month(self.year, self.month)
+
+        self.expenses = \
+            Expense.objects \
+            .sum_by_day_ant_type(self.year, self.month)
+
+        self.expense_types = \
+            list(
+                ExpenseType.objects \
+                .items() \
+                .values_list('title', flat=True)
+            )
+
+        self.necessary_expense_types =  \
+            ExpenseType.objects \
+            .items() \
+            .filter(necessary=True) \
+            .values_list('title', flat=True)
+
+        self.savings = \
+            Saving.objects \
+            .sum_by_day(self.year, self.month)
 
 
 class MonthService():
-    def __init__(self, year, month):
-        self._year = year
-        self._month = month
+    def __init__(self, data: MonthServiceData, plans: PlanCalculateDaySum):
+        self._data = data
+        self._plans = plans
 
-        self._expense_types = expense_types()
+        self._spending = \
+            DaySpending(
+                year=self._data.year,
+                month=self._data.month,
+                expenses=self._data.expenses,
+                types=self._data.expense_types,
+                necessary=self._data.necessary_expense_types,
+                plans=self._plans
+            )
 
-        plans_data = PlanCollectData(year)
-        self._plans = PlanCalculateDaySum(plans_data)
-
-        self._spending = self._day_spending_object(year, month, self._plans)
-
-        self._savings = self._saving_object(year, month)
-
-    def _saving_object(self, year: int, month: int) -> ExpenseBalance:
-        qs_savings = Saving.objects.sum_by_day(year, month)
-
-        return \
+        self._savings =  \
             ExpenseBalance.days_of_month(
-                year,
-                month,
-                qs_savings,
+                self._data.year,
+                self._data.month,
+                self._data.savings,
                 [_('Savings')]
             )
 
-    def _day_spending_object(self, year: int, month: int, plans: PlanCalculateDaySum) -> DaySpending:
-        qs_expenses = Expense.objects.sum_by_day_ant_type(year, month)
-
-        return \
-            DaySpending(
-                year=year,
-                month=month,
-                expenses=qs_expenses,
-                types=self._expense_types,
-                necessary=self.necessary_expense_types(),
-                plans=plans
-            )
-
     def chart_targets_context(self):
-        types = self._expense_types.copy()
+        types = self._data.expense_types.copy()
         types.append(_('Savings'))
 
         total_row = self._spending.total_row
         total_row.update({_('Savings'): self._savings.total})
 
-        targets = self._plans.targets(self._month)
+        targets = self._plans.targets(self._data.month)
         targets.update({
-            _('Savings'): self._plans.savings.get(monthname(self._month), 0.0)})
+            _('Savings'): self._plans.savings.get(monthname(self._data.month), 0.0)})
 
         categories, data_target, data_fact = self._chart_targets(types, total_row, targets)
 
@@ -76,7 +108,7 @@ class MonthService():
         }
 
     def chart_expenses_context(self):
-        types = self._expense_types.copy()
+        types = self._data.expense_types.copy()
         types.append(_('Savings'))
 
         total_row = self._spending.total_row
@@ -85,18 +117,18 @@ class MonthService():
         return self._chart_expenses(types, total_row)
 
     def info_context(self):
-        fact_incomes = Income.objects.sum_by_month(self._year, self._month)
+        fact_incomes = self._data.incomes
         fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
         fact_savings = self._savings.total
         fact_expenses = self._spending.total
         fact_per_day = self._spending.avg_per_day
         fact_balance = fact_incomes - fact_expenses - fact_savings
 
-        plan_incomes = get_val(self._plans.incomes, self._month)
-        plan_savings = get_val(self._plans.savings, self._month)
+        plan_incomes = get_val(self._plans.incomes, self._data.month)
+        plan_savings = get_val(self._plans.savings, self._data.month)
         plan_expenses = plan_incomes - plan_savings
-        plan_per_day = get_val(self._plans.day_input, self._month)
-        plan_balance = get_val(self._plans.remains, self._month)
+        plan_per_day = get_val(self._plans.day_input, self._data.month)
+        plan_balance = get_val(self._plans.remains, self._data.month)
 
         return [{
                 'title': _('Incomes'),
@@ -127,23 +159,16 @@ class MonthService():
 
     def month_table_context(self) -> Dict:
         return {
-            'day': current_day(self._year, self._month, False),
+            'day': current_day(self._data.year, self._data.month, False),
             'expenses': it.zip_longest(self._spending.balance,
                                        self._spending.total_column,
                                        self._spending.spending,
                                        self._savings.total_column),
-            'expense_types': self._expense_types,
+            'expense_types': self._data.expense_types,
             'total': self._spending.total,
             'total_row': self._spending.total_row,
             'total_savings': self._savings.total
         }
-
-    def necessary_expense_types(self) -> List[str]:
-        return \
-            ExpenseType.objects \
-            .items() \
-            .filter(necessary=True) \
-            .values_list('title', flat=True)
 
     def _chart_expenses(self, types: List[str], total_row: Dict) -> List[Dict]:
         rtn = []

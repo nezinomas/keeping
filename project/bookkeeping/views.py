@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
+from project.bookkeeping.services.month import MonthServiceData
 
 from ..accounts.models import Account
 from ..core.lib.translation import month_names
@@ -8,6 +9,7 @@ from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
                                  TemplateViewMixin, rendered_content)
 from ..pensions.models import PensionType
+from ..plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ..savings.models import SavingType
 from . import forms, mixins, models, services
 from .lib.no_incomes import NoIncomes as LibNoIncomes
@@ -167,7 +169,9 @@ class Month(TemplateViewMixin):
         year = self.request.user.year
         month = self.request.user.month
 
-        obj = services.MonthService(year, month)
+        data = MonthServiceData(year, month)
+        plans = PlanCalculateDaySum(PlanCollectData(year))
+        obj = services.MonthService(data=data, plans=plans)
 
         context = {
             'month_table': obj.month_table_context(),
