@@ -39,13 +39,13 @@ class ExpenseBalance(BalanceBase):
 
         # create column for each type
         df[types] = 0.0
-
         if not lst:
             return df
 
         for row in lst:
             title = row.get('title', 'sum')
-            df.at[to_datetime(row['date']), title] = float(row['sum'])
+            dt = to_datetime(row['date'])
+            df.at[dt, title] = float(row['sum'])
 
         df.fillna(0.0, inplace=True)
 
