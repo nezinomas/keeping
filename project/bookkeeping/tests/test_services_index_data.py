@@ -3,18 +3,18 @@ from ..services.index import IndexServiceData as I
 
 
 @pytest.fixture()
-def amount_start(monkeypatch):
-    monkeypatch.setattr(
+def amount_start(mocker):
+    mocker.patch(
         'project.bookkeeping.services.index.IndexServiceData.get_amount_start',
-        lambda x, y: 8
+        side_effect=[8]
     )
 
 
 @pytest.fixture()
-def data_dummy(monkeypatch):
-    monkeypatch.setattr(
+def data_dummy(mocker):
+    mocker.patch(
         'project.bookkeeping.services.index.IndexServiceData.get_data',
-        lambda x, y: {'foo': 'bar'}
+        side_effect=[{'foo': 'bar'}]
     )
 
 
@@ -31,7 +31,6 @@ def data(mocker):
     mocker.patch(f'{module}.Expense.objects.sum_by_month', side_effect=['Expense sum_by_month data'])
     mocker.patch(f'{module}.Saving.objects.sum_by_month', side_effect=['Saving sum_by_month data'])
     mocker.patch(f'{module}.SavingClose.objects.sum_by_month', side_effect=['SavingClose sum_by_month data'])
-
 
 
 def test_init(amount_start, data_dummy):
