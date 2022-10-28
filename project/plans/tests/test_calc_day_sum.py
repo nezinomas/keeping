@@ -65,12 +65,6 @@ def data_empty():
         'necessary': [],})
 
 
-def test_year(data_empty):
-    actual = PlanCalculateDaySum(data_empty).year
-
-    assert actual == 2020
-
-
 def test_incomes(data):
     actual = PlanCalculateDaySum(data).incomes
 

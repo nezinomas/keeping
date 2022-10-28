@@ -69,9 +69,9 @@ class PlanCollectData:
 
 
 class PlanCalculateDaySum():
-    def __init__(self, year: int):
-        self._year = year
-        self._data = self._get_data()
+    def __init__(self, data: PlanCollectData):
+        self._data = data
+        self._year = data.year
 
         self._calc_df()
 
@@ -169,7 +169,7 @@ class PlanCalculateDaySum():
         df.loc['remains', :] = 0.0
 
         df.loc['m', :] = df.apply(
-            lambda x: monthlen(self._data.year, x.name), axis=0)
+            lambda x: monthlen(self._year, x.name), axis=0)
 
         return df
 
