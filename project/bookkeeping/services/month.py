@@ -23,8 +23,8 @@ class MonthService():
 
         self._expense_types = expense_types()
 
-        self._plans = \
-            PlanCalculateDaySum(PlanCollectData(year))
+        plans_data = PlanCollectData(year)
+        self._plans = PlanCalculateDaySum(plans_data)
 
         self._spending = self._day_spending_object(year, month, self._plans)
 
