@@ -8,7 +8,7 @@
     <thead>
         <tr>
             <th class="expand-column-width"></th>
-            {% for cat in expense_types %}<th data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{cat}}">{{cat|truncatechars:8}}</th>{% endfor %}
+            {% for cat in ctx.expense_types %}<th data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{cat}}">{{cat|truncatechars:8}}</th>{% endfor %}
             <th class="left-blue-double-border right-blue-double-border">{% translate 'Total' %}</th>
             <th>{% translate 'Savings' %}</th>
             <th class="empty-column"></th>
@@ -17,7 +17,7 @@
         </tr>
     </thead>
     <tbody x-data="make_x_data()">
-        {% for balance, balance_total_column, spending, saving_total_column in expenses %}
+        {% for balance, balance_total_column, spending, saving_total_column in ctx.expenses %}
         {% with balance.date|date:'w'|weekend:'weekend-col' as weekend_col %}
         {% with balance.date|date:'j' as day_int %}
         {% url 'bookkeeping:expand_day_expenses' balance.date|date:'Ymd' as url_expand %}
@@ -27,7 +27,7 @@
             <td class="text-start {{weekend_col}} panel-heading" :class="open{{day_int}} ? 'active' : ''">
                 <a role="button" class="btn btn-xs no-hover" data-bs-toggle="collapse" aria-expanded="true" hx-get="{{url_expand}}" hx-target="#balance{{day_int}}" hx-swap="afterend" hx-trigger="click once" @click="open{{day_int}} = !open{{day_int}}">{{balance.date|date:'d'}}</a>
             </td>
-            {% for cat in expense_types %}
+            {% for cat in ctx.expense_types %}
             {% table_cell value=balance|get_item:cat css_class=weekend_col %}
             {% endfor %}
             <!-- total expenses -->
@@ -44,11 +44,11 @@
     <tfoot>
         <tr>
             <th class="text-start">&#8721;</th>
-            {% for cat in expense_types %}{% table_cell value=total_row|get_item:cat tag='th' %}{% endfor %}
+            {% for cat in ctx.expense_types %}{% table_cell value=ctx.total_row|get_item:cat tag='th' %}{% endfor %}
             <!-- total expenses -->
-            {% table_cell value=total tag='th' css_class="left-blue-double-border right-blue-double-border" %}
+            {% table_cell value=ctx.total tag='th' css_class="left-blue-double-border right-blue-double-border" %}
             <!-- savings -->
-            {% table_cell value=total_savings tag='th' %}
+            {% table_cell value=ctx.total_savings tag='th' %}
             <th class="empty-column"></th>
             <th></th>
             <th></th>

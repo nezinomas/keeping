@@ -5,7 +5,7 @@ from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  TemplateViewMixin, UpdateViewMixin,
                                  httpHtmxResponse, rendered_content)
 from . import forms, models
-from .lib.calc_day_sum import PlanCalculateDaySum
+from .lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 
 
 class Stats(TemplateViewMixin):
@@ -13,30 +13,27 @@ class Stats(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        arr = PlanCalculateDaySum(year).plans_stats
+        data = PlanCollectData(year)
+        obj = PlanCalculateDaySum(data)
+        context = {'items': obj.plans_stats,}
 
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'items': arr
-        })
-        return context
+        return super().get_context_data(**kwargs) | context
 
 
 class Index(TemplateViewMixin):
     template_name = 'plans/index.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'incomes_list': rendered_content(self.request, IncomesLists, **kwargs),
             'expenses_list': rendered_content(self.request, ExpensesLists, **kwargs),
             'savings_list': rendered_content(self.request, SavingsLists, **kwargs),
             'day_list': rendered_content(self.request, DayLists, **kwargs),
             'necessary_list': rendered_content(self.request, NecessaryLists, **kwargs),
             'plans_stats': rendered_content(self.request, Stats, **kwargs)
-        })
+        }
 
-        return context
+        return super().get_context_data(**kwargs) | context
 
 
 # ---------------------------------------------------------------------------------------
@@ -203,22 +200,19 @@ class CopyPlans(FormViewMixin):
     success_url = reverse_lazy('plans:index')
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'url': reverse_lazy('plans:copy'),
             'form_action': 'insert_close',
-        })
-        return context
+        }
+
+        return super().get_context_data(**kwargs) | context
 
     def form_valid(self, form, **kwargs):
         form.save()
 
-        hx_trigger_django = None
-
         year_to = form.cleaned_data.get('year_to')
         year_user = self.request.user.year
 
-        if year_to == year_user:
-            hx_trigger_django = 'afterCopy'
+        hx_trigger_django = 'afterCopy' if year_to == year_user else None
 
         return httpHtmxResponse(hx_trigger_django)

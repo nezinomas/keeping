@@ -12,38 +12,40 @@ from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
 
 
 class PlanCollectData:
-    _incomes: List[Dict[str, Decimal]] = []
-    _expenses: List[Dict[str, Decimal]] = []
-    _savings: List[Dict[str, Decimal]] = []
-    _days: List[Dict[str, Decimal]] = []
-    _necessary: List[Dict[str, Decimal]] = []
-
     def __init__(self, year: int = 1970):
         self._year = year
 
-        self._incomes = (
-            IncomePlan.objects.year(self._year)
-            .values(*monthnames()))
+        self._incomes = \
+            IncomePlan.objects \
+            .year(year) \
+            .values(*monthnames())
 
-        self._expenses = (
-            ExpensePlan.objects.year(self._year)
+        self._expenses = \
+            ExpensePlan.objects \
+            .year(year) \
             .values(
                 *monthnames(),
                 necessary=F('expense_type__necessary'),
-                title=F('expense_type__title')
-            ))
+                title=F('expense_type__title'))
 
-        self._savings = (
-            SavingPlan.objects.year(self._year)
-            .values(*monthnames()))
+        self._savings = \
+            SavingPlan.objects \
+            .year(year) \
+            .values(*monthnames())
 
-        self._days = (
-            DayPlan.objects.year(self._year)
-            .values(*monthnames()))
+        self._days = \
+            DayPlan.objects \
+            .year(year) \
+            .values(*monthnames())
 
-        self._necessary = (
-            NecessaryPlan.objects.year(self._year)
-            .values(*monthnames()))
+        self._necessary = \
+            NecessaryPlan.objects \
+            .year(year) \
+            .values(*monthnames())
+
+    @property
+    def year(self) -> int:
+        return self._year
 
     @property
     def incomes(self) -> List[Dict[str, Decimal]]:
@@ -67,9 +69,9 @@ class PlanCollectData:
 
 
 class PlanCalculateDaySum():
-    def __init__(self, year: int):
-        self._year = year
-        self._data = self._get_data()
+    def __init__(self, data: PlanCollectData):
+        self._data = data
+        self._year = data.year
 
         self._calc_df()
 
@@ -123,15 +125,11 @@ class PlanCalculateDaySum():
         month = monthname(month)
         arr = self._data.expenses
 
-        for lst in arr:
-            val = lst.get(month, 0.0)
-            val = val if val else 0.0
-            rtn[lst.get('title', 'unknown')] = float(val)
+        for item in arr:
+            val = item.get(month, 0.0) or 0.0
+            rtn[item.get('title', 'unknown')] = float(val)
 
         return rtn
-
-    def _get_data(self):
-        return PlanCollectData(self._year)
 
     def _sum(self, arr: List, row_name: str, necessary: int = -1):
         df = pd.DataFrame(arr)

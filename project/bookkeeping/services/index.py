@@ -11,41 +11,33 @@ from ...transactions.models import SavingClose
 from ..lib.year_balance import YearBalance
 
 
-class IndexService():
-    def __init__(self, year):
-        self._year = year
+class IndexServiceData:
+    amount_start: float = 0.0
+    data: list[dict] = None
 
-        self._YearBalance = self._make_year_balance_object(year)
+    @classmethod
+    def collect_data(cls, year):
+        cls.amount_start = cls.get_amount_start(cls, year)
+        cls.data = cls.get_data(cls, year)
 
-    def _make_year_balance_object(self, year: int) -> YearBalance:
-        account_sum = \
+        return cls
+
+    def get_amount_start(self, year):
+        _sum = \
             AccountBalance.objects \
             .related() \
             .filter(year=year) \
-            .aggregate(Sum('past')) \
-            ['past__sum']
-        account_sum = float(account_sum) if account_sum else 0.0
+            .aggregate(Sum('past'))['past__sum']
 
-        return \
-            YearBalance(
-                year=year,
-                data=self._collect_data(year),
-                amount_start=account_sum
-            )
+        return float(_sum) if _sum else 0.0
 
-    def _collect_data(self, year):
+    def get_data(self, year: int) -> list[dict]:
         qs_borrow = Debt.objects.sum_by_month(year, debt_type='borrow')
         qs_lend = Debt.objects.sum_by_month(year, debt_type='lend')
 
         # generate debts and debts_return arrays
-        borrow, borrow_return, lend, lend_return = [], [], [], []
-        for x in qs_borrow:
-            borrow.append({'date': x['date'], 'sum': x['sum_debt']})
-            borrow_return.append({'date': x['date'], 'sum': x['sum_return']})
-
-        for x in qs_lend:
-            lend.append({'date': x['date'], 'sum': x['sum_debt']})
-            lend_return.append({'date': x['date'], 'sum': x['sum_return']})
+        borrow, borrow_return = IndexServiceData.get_debt_data(qs_borrow)
+        lend, lend_return = IndexServiceData.get_debt_data(qs_lend)
 
         return {
             'incomes': Income.objects.sum_by_month(year),
@@ -58,18 +50,36 @@ class IndexService():
             'lend_return': lend_return,
         }
 
+    @staticmethod
+    def get_debt_data(data):
+        debt, debt_return = [], []
+
+        for row in data:
+            date = row['date']
+            debt.append(
+                {'date': date, 'sum': row['sum_debt']})
+            debt_return.append(
+                {'date': date, 'sum': row['sum_return']})
+
+        return debt, debt_return
+
+
+class IndexService():
+    def __init__(self, balance: YearBalance):
+        self._balance = balance
+
     def balance_context(self):
         return {
-            'year': self._year,
-            'data': self._YearBalance.balance,
-            'total_row': self._YearBalance.total_row,
-            'amount_end': self._YearBalance.amount_end,
-            'avg_row': self._YearBalance.average,
+            'data': self._balance.balance,
+            'total_row': self._balance.total_row,
+            'amount_end': self._balance.amount_end,
+            'avg_row': self._balance.average,
         }
 
     def balance_short_context(self):
-        start = self._YearBalance.amount_start
-        end = self._YearBalance.amount_end
+        start = self._balance.amount_start
+        end = self._balance.amount_end
+
         return {
             'title': [_('Start of year'), _('End of year'), _('Year balance')],
             'data': [start, end, (end - start)],
@@ -79,21 +89,21 @@ class IndexService():
     def chart_balance_context(self):
         return {
             'categories': [*month_names().values()],
-            'incomes': self._YearBalance.income_data,
+            'incomes': self._balance.income_data,
             'incomes_title': _('Incomes'),
-            'expenses': self._YearBalance.expense_data,
+            'expenses': self._balance.expense_data,
             'expenses_title': _('Expenses'),
         }
 
     def averages_context(self):
         return {
             'title': [_('Average incomes'), _('Average expenses')],
-            'data': [self._YearBalance.avg_incomes, self._YearBalance.avg_expenses],
+            'data': [self._balance.avg_incomes, self._balance.avg_expenses],
         }
 
     def borrow_context(self):
-        if borrow := sum(self._YearBalance.borrow_data):
-            borrow_return = sum(self._YearBalance.borrow_return_data)
+        if borrow := sum(self._balance.borrow_data):
+            borrow_return = sum(self._balance.borrow_return_data)
             return {
                 'title': [_('Borrow'), _('Borrow return')],
                 'data': [borrow, borrow_return],
@@ -101,8 +111,8 @@ class IndexService():
         return {}
 
     def lend_context(self):
-        if lend := sum(self._YearBalance.lend_data):
-            lend_return = sum(self._YearBalance.lend_return_data)
+        if lend := sum(self._balance.lend_data):
+            lend_return = sum(self._balance.lend_return_data)
             return {
                 'title': [_('Lend'), _('Lend return')],
                 'data': [lend, lend_return],

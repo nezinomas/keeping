@@ -2,7 +2,7 @@
 
 <div class="row mt-2 gx-2">
     <div class="col-lg-8 table-responsive" id="month_table">
-        {{ month_table|safe }}
+        {% include 'bookkeeping/includes/month_table.html' with ctx=month_table %}
     </div>
     <div class="col-lg-4">
         <div class="d-flex flex-column align-items-start h-100">
@@ -16,7 +16,9 @@
                     chartExpensesOnly('chart-expenses-data', 'chart-expenses-container');
                 </script>
             </div>
-            <div class="w-100" id="info">{{ info|safe }}</div>
+            <div class="w-100" id="info">
+                {% include 'bookkeeping/includes/spending_info.html' with ctx=info %}
+            </div>
         </div>
     </div>
 </div>

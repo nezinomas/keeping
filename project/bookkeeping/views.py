@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
@@ -12,6 +11,7 @@ from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from . import forms, mixins, models, services
 from .lib.no_incomes import NoIncomes as LibNoIncomes
+from .lib.year_balance import YearBalance
 
 
 class Index(TemplateViewMixin):
@@ -19,7 +19,14 @@ class Index(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        ind = services.IndexService(year)
+        services.IndexServiceData.collect_data(year)
+
+        year_balance = YearBalance(
+            year=year,
+            data=services.IndexServiceData.data,
+            amount_start=services.IndexServiceData.amount_start)
+
+        ind = services.IndexService(year_balance)
         exp = services.ExpenseService(year)
 
         context = {
@@ -33,17 +40,12 @@ class Index(TemplateViewMixin):
             'borrow': ind.borrow_context(),
             'lend': ind.lend_context(),
             'balance_short': ind.balance_short_context(),
-            'balance': render_to_string(
-                'bookkeeping/includes/year_balance.html',
-                ind.balance_context(),
-                self.request),
+            'balance': ind.balance_context(),
             'chart_balance': ind.chart_balance_context(),
             'chart_expenses': exp.chart_expenses_context(),
-            'expenses': render_to_string(
-                'bookkeeping/includes/year_expenses.html',
-                exp.table_context(),
-                self.request)
+            'expenses': exp.table_context(),
         }
+
         return super().get_context_data(**kwargs) | context
 
 
@@ -168,14 +170,8 @@ class Month(TemplateViewMixin):
         obj = services.MonthService(year, month)
 
         context = {
-            'month_table': render_to_string(
-                'bookkeeping/includes/month_table.html',
-                obj.month_table_context(),
-                self.request),
-            'info': render_to_string(
-                'bookkeeping/includes/spending_info.html',
-                {'items': obj.info_context},
-                self.request),
+            'month_table': obj.month_table_context(),
+            'info': obj.info_context(),
             'chart_expenses': obj.chart_expenses_context(),
             'chart_targets': obj.chart_targets_context(),
         }
