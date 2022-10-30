@@ -85,7 +85,7 @@ class YearBalance(BalanceBase):
             avg = 0.0
             arr = super().balance
 
-            for x in range(0, _month):
+            for x in range(_month):
                 avg += arr[x]['expenses']
 
             return avg / _month
@@ -136,7 +136,7 @@ class YearBalance(BalanceBase):
             if not data_arr:
                 continue
 
-            if not col_name in self.columns:
+            if col_name not in self.columns:
                 continue
 
             # copy values from input arrays to df
@@ -150,10 +150,8 @@ class YearBalance(BalanceBase):
         df['balance'] = df.incomes - df.expenses
 
         #  calculate money_flow
-        for i in range(0, 12):
+        for i in range(12):
             idx = df.index[i]
-            idx_prev = df.index[i - 1]
-
             val = (
                 0.0
                 + df.loc[idx, 'balance']
@@ -173,8 +171,9 @@ class YearBalance(BalanceBase):
                     val
                     + self._amount_start
                 )
-            # february - december
             else:
+                idx_prev = df.index[i - 1]
+
                 df.loc[cell] = (
                     val
                     + df.loc[idx_prev, 'money_flow']
