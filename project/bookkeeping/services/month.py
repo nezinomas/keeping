@@ -10,7 +10,7 @@ from ...core.lib.date import current_day, monthname
 from ...core.lib.utils import get_value_from_dict as get_val
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
-from ...plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
+from ...plans.lib.calc_day_sum import PlanCalculateDaySum
 from ...savings.models import Saving
 from ..lib.day_spending import DaySpending
 from ..lib.expense_balance import ExpenseBalance
