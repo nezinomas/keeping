@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Dict, List
 
 from pandas import DataFrame as DF
 from pandas import to_datetime
@@ -23,7 +22,7 @@ class YearBalance(BalanceBase):
 
     def __init__(self,
                  year: int,
-                 data: Dict[str, Dict],
+                 data: dict[str, dict],
                  amount_start: float = 0.0):
 
         '''
@@ -95,34 +94,34 @@ class YearBalance(BalanceBase):
         return avg.get('expenses', 0.0)
 
     @property
-    def income_data(self) -> List[float]:
+    def income_data(self) -> list[float]:
         return self._balance.incomes.tolist()
 
     @property
-    def expense_data(self) -> List[float]:
+    def expense_data(self) -> list[float]:
         return self._balance.expenses.tolist()
 
     @property
-    def borrow_data(self) -> List[float]:
+    def borrow_data(self) -> list[float]:
         return self._balance.borrow.tolist()
 
     @property
-    def borrow_return_data(self) -> List[float]:
+    def borrow_return_data(self) -> list[float]:
         return self._balance.borrow_return.tolist()
 
     @property
-    def lend_data(self) -> List[float]:
+    def lend_data(self) -> list[float]:
         return self._balance.lend.tolist()
 
     @property
-    def lend_return_data(self) -> List[float]:
+    def lend_return_data(self) -> list[float]:
         return self._balance.lend_return.tolist()
 
     @property
-    def money_flow(self) -> List[float]:
+    def money_flow(self) -> list[float]:
         return self._balance.money_flow.tolist()
 
-    def _make_df(self, year: int, data: Dict[str, Dict]) -> DF:
+    def _make_df(self, year: int, data: dict[str, dict]) -> DF:
         df = df_months_of_year(year)
 
         # create columns with 0 values
