@@ -43,6 +43,9 @@ class BalanceBase():
 
     @property
     def balance(self) -> List[Dict]:
+        '''
+        Return [{'date': datetime.datetime, 'title': float}]
+        '''
         if not isinstance(self._balance, DF):
             return []
 
