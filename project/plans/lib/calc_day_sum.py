@@ -9,63 +9,52 @@ from django.utils.translation import gettext as _
 from ...core.lib.date import monthlen, monthname, monthnames
 from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
                       SavingPlan)
+from dataclasses import dataclass, field
 
 
+@dataclass
 class PlanCollectData:
-    def __init__(self, year: int = 1970):
-        self._year = year
+    year: int = 1970
 
-        self._incomes = \
+    incomes: list[dict] = \
+        field(init=False, default_factory=list)
+    expenses: list[dict] = \
+        field(init=False, default_factory=list)
+    savings: list[dict] = \
+        field(init=False, default_factory=list)
+    days: list[dict] = \
+        field(init=False, default_factory=list)
+    necessary: list[dict] = \
+        field(init=False, default_factory=list)
+
+    def __post_init__(self):
+        self.incomes = \
             IncomePlan.objects \
-            .year(year) \
+            .year(self.year) \
             .values(*monthnames())
 
-        self._expenses = \
+        self.expenses = \
             ExpensePlan.objects \
-            .year(year) \
+            .year(self.year) \
             .values(
                 *monthnames(),
                 necessary=F('expense_type__necessary'),
                 title=F('expense_type__title'))
 
-        self._savings = \
+        self.savings = \
             SavingPlan.objects \
-            .year(year) \
+            .year(self.year) \
             .values(*monthnames())
 
-        self._days = \
+        self.days = \
             DayPlan.objects \
-            .year(year) \
+            .year(self.year) \
             .values(*monthnames())
 
-        self._necessary = \
+        self.necessary = \
             NecessaryPlan.objects \
-            .year(year) \
+            .year(self.year) \
             .values(*monthnames())
-
-    @property
-    def year(self) -> int:
-        return self._year
-
-    @property
-    def incomes(self) -> List[Dict[str, Decimal]]:
-        return self._incomes
-
-    @property
-    def expenses(self) -> List[Dict[str, Decimal]]:
-        return self._expenses
-
-    @property
-    def savings(self) -> List[Dict[str, Decimal]]:
-        return self._savings
-
-    @property
-    def days(self) -> List[Dict[str, Decimal]]:
-        return self._days
-
-    @property
-    def necessary(self) -> List[Dict[str, Decimal]]:
-        return self._necessary
 
 
 class PlanCalculateDaySum():
@@ -124,7 +113,7 @@ class PlanCalculateDaySum():
 
         month = monthname(month)
         arr = self._data.expenses
-
+        print(f'{arr=}')
         for item in arr:
             val = item.get(month, 0.0) or 0.0
             rtn[item.get('title', 'unknown')] = float(val)
