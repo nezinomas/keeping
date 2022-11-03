@@ -1,6 +1,4 @@
 from collections import namedtuple
-from decimal import Decimal
-from typing import Dict, List
 
 import pandas as pd
 from django.db.models import F
@@ -65,35 +63,35 @@ class PlanCalculateDaySum():
         self._calc_df()
 
     @property
-    def incomes(self) -> Dict[str, float]:
+    def incomes(self) -> dict[str, float]:
         return self._df.loc['incomes'].to_dict()
 
     @property
-    def savings(self) -> Dict[str, float]:
+    def savings(self) -> dict[str, float]:
         return self._df.loc['savings'].to_dict()
 
     @property
-    def expenses_free(self) -> Dict[str, float]:
+    def expenses_free(self) -> dict[str, float]:
         return self._df.loc['expenses_free'].to_dict()
 
     @property
-    def expenses_necessary(self) -> Dict[str, float]:
+    def expenses_necessary(self) -> dict[str, float]:
         return self._df.loc['expenses_necessary'].to_dict()
 
     @property
-    def day_calced(self) -> Dict[str, float]:
+    def day_calced(self) -> dict[str, float]:
         return self._df.loc['day_calced'].to_dict()
 
     @property
-    def day_input(self) -> Dict[str, float]:
+    def day_input(self) -> dict[str, float]:
         return self._df.loc['day_input'].to_dict()
 
     @property
-    def remains(self) -> Dict[str, float]:
+    def remains(self) -> dict[str, float]:
         return self._df.loc['remains'].to_dict()
 
     @property
-    def necessary(self) -> Dict[str, float]:
+    def necessary(self) -> dict[str, float]:
         return self._df.loc['necessary'].to_dict()
 
     @property
@@ -108,7 +106,7 @@ class PlanCalculateDaySum():
         # list of dictionaries convert to list of objects
         return [namedtuple("Items", item.keys())(*item.values()) for item in dicts]
 
-    def targets(self, month: int) -> Dict[str, float]:
+    def targets(self, month: int) -> dict[str, float]:
         rtn = {}
 
         month = monthname(month)
@@ -120,7 +118,7 @@ class PlanCalculateDaySum():
 
         return rtn
 
-    def _sum(self, arr: List, row_name: str, necessary: int = -1):
+    def _sum(self, arr: list, row_name: str, necessary: int = -1):
         df = pd.DataFrame(arr)
 
         if df.empty:
