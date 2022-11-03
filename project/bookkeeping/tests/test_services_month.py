@@ -215,15 +215,13 @@ def test_chart_expenses():
         savings=MagicMock(),
         spending=MagicMock()
     )
-    types = ['T1', 'T2', 'T3']
     total_row = {'T1': 0.25, 'T2': 0.5}
 
-    actual = obj._chart_expenses(types, total_row)
+    actual = obj._chart_expenses(total_row)
 
     expect = [
         {'name': 'T2', 'y': 0.5, 'color': '#6994c7'},
         {'name': 'T1', 'y': 0.25, 'color': '#c86967'},
-        {'name': 'T3', 'y': 0., 'color': '#a9c471'},
     ]
 
     assert actual == expect
@@ -236,16 +234,10 @@ def test_chart_expenses_no_expenes_data():
         savings=MagicMock(),
         spending=MagicMock()
     )
-    types = ['T1']
-    total_row = {}
 
-    actual = obj._chart_expenses(types, total_row)
+    actual = obj._chart_expenses(total_row={})
 
-    expect = [
-        {'name': 'T1', 'y': 0.0, 'color': '#6994c7'},
-    ]
-
-    assert actual == expect
+    assert actual == []
 
 
 def test_chart_expenses_no_types_and_no_expenes_data():
@@ -269,10 +261,7 @@ def test_chart_expenses_no_types_and_no_expenes_data():
         savings=MagicMock(),
         spending=MagicMock()
     )
-    types = []
-    total_row = {}
-
-    actual = obj._chart_expenses(types, total_row)
+    actual = obj._chart_expenses({})
 
     assert actual == []
 
@@ -285,13 +274,12 @@ def test_chart_targets_categories():
         spending=MagicMock()
     )
 
-    types = ['T1', 'T2', 'T3']
     total_row = {'T1': 0.25, 'T2': 0.5}
     targets = {'T1': 0.3, 'T2': 0.4}
 
-    actual, _, _ = obj._chart_targets(types, total_row, targets)
+    actual, _, _ = obj._chart_targets(total_row, targets)
 
-    expect = ['T2', 'T1', 'T3']
+    expect = ['T2', 'T1']
 
     assert actual == expect
 
@@ -303,13 +291,13 @@ def test_chart_targets_data_target():
         savings=MagicMock(),
         spending=MagicMock()
     )
-    types = ['T1', 'T2', 'T3']
+
     total_row = {'T1': 0.25, 'T2': 0.5}
     targets = {'T1': 0.3, 'T2': 0.4}
 
-    _, actual, _ = obj._chart_targets(types, total_row, targets)
+    _, actual, _ = obj._chart_targets(total_row, targets)
 
-    expect = [0.4, 0.3, 0.0]
+    expect = [0.4, 0.3]
 
     assert actual == expect
 
@@ -321,13 +309,13 @@ def test_chart_targets_data_target_empty():
         savings=MagicMock(),
         spending=MagicMock()
     )
-    types = ['T1', 'T2', 'T3']
+
     total_row = {'T1': 0.25, 'T2': 0.5}
     targets = {}
 
-    _, actual, _ = obj._chart_targets(types, total_row, targets)
+    _, actual, _ = obj._chart_targets(total_row, targets)
 
-    expect = [0.0, 0.0, 0.0]
+    expect = [0.0, 0.0]
 
     assert actual == expect
 
@@ -339,38 +327,14 @@ def test_chart_targets_data_fact():
         savings=MagicMock(),
         spending=MagicMock()
     )
-    types = ['T1', 'T2', 'T3']
     total_row = {'T1': 0.25, 'T2': 0.5}
     targets = {'T1': 0.3, 'T2': 0.4}
 
-    _, _, actual = obj._chart_targets(types, total_row, targets)
+    _, _, actual = obj._chart_targets(total_row, targets)
 
     expect = [
         {'y': 0.5, 'target': 0.4},
         {'y': 0.25, 'target': 0.3},
-        {'y': 0.0, 'target': 0.0},
-    ]
-
-    assert actual == expect
-
-
-def test_chart_targets_data_fact_no_data():
-    obj = MonthService(
-        data=MagicMock(),
-        plans=MagicMock(),
-        savings=MagicMock(),
-        spending=MagicMock()
-    )
-    types = ['T1', 'T2', 'T3']
-    total_row = {}
-    targets = {'T1': 0.3, 'T2': 0.4}
-
-    _, _, actual = obj._chart_targets(types, total_row, targets)
-
-    expect = [
-        {'y': 0.0, 'target': 0.3},
-        {'y': 0.0, 'target': 0.4},
-        {'y': 0.0, 'target': 0.0},
     ]
 
     assert actual == expect
@@ -383,38 +347,15 @@ def test_chart_targets_data_fact_no_target():
         savings=MagicMock(),
         spending=MagicMock()
     )
-    types = ['T1', 'T2', 'T3']
+
     total_row = {'T1': 0.25, 'T2': 0.5}
     targets = {}
 
-    _, _, actual = obj._chart_targets(types, total_row, targets)
+    _, _, actual = obj._chart_targets(total_row, targets)
 
     expect = [
         {'y': 0.5, 'target': 0.0},
         {'y': 0.25, 'target': 0.0},
-        {'y': 0.0, 'target': 0.0},
-    ]
-
-    assert actual == expect
-
-
-def test_chart_targets_data_fact_no_data_and_no_target():
-    obj = MonthService(
-        data=MagicMock(),
-        plans=MagicMock(),
-        savings=MagicMock(),
-        spending=MagicMock()
-    )
-    types = ['T1', 'T2', 'T3']
-    total_row = {}
-    targets = {}
-
-    _, _, actual = obj._chart_targets(types, total_row, targets)
-
-    expect = [
-        {'y': 0.0, 'target': 0.0},
-        {'y': 0.0, 'target': 0.0},
-        {'y': 0.0, 'target': 0.0},
     ]
 
     assert actual == expect
@@ -439,3 +380,23 @@ def test_append_savings(data, value, expect):
     obj._append_savings(data, value)
 
     assert data == expect
+
+
+@pytest.mark.parametrize(
+    'data, expect',
+    [
+        ({}, []),
+        ({'x': 1}, [{'name': 'X', 'y': 1}]),
+        ({'a': 1, 'x': 2}, [{'name': 'X', 'y': 2}, {'name': 'A', 'y': 1}]),
+    ]
+)
+def test_make_chart_data(data, expect):
+    obj = MonthService(
+        data=MagicMock(),
+        plans=MagicMock(),
+        savings=MagicMock(),
+        spending=MagicMock()
+    )
+    actual = obj._make_chart_data(data)
+
+    assert actual == expect

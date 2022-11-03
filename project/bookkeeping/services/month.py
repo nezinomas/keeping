@@ -75,16 +75,14 @@ class MonthService():
         self._savings =  savings
 
     def chart_targets_context(self):
-        types = self._data.expense_types.copy()
         total_row = self._spending.total_row.copy()
         targets = self._plans.targets(self._data.month)
 
         # append savings
-        self._append_savings(types)
         self._append_savings(total_row, self._savings.total)
         self._append_savings(targets, self._plans.savings.get(monthname(self._data.month)))
 
-        categories, data_target, data_fact = self._chart_targets(types, total_row, targets)
+        categories, data_target, data_fact = self._chart_targets(total_row, targets)
 
         return {
             'categories': categories,
@@ -95,14 +93,12 @@ class MonthService():
         }
 
     def chart_expenses_context(self):
-        types = self._data.expense_types.copy()
         total_row = self._spending.total_row.copy()
 
         # append savings
-        self._append_savings(types)
         self._append_savings(total_row, self._savings.total)
 
-        return self._chart_expenses(types, total_row)
+        return self._chart_expenses(total_row)
 
     def info_context(self):
         fact_incomes = self._data.incomes
@@ -158,53 +154,32 @@ class MonthService():
             'total_savings': self._savings.total
         }
 
-    def _chart_expenses(self, types: List[str], total_row: Dict) -> List[Dict]:
-        rtn = []
-
-        if not types:
-            return rtn
-
-        # make List[Dict] from types and total_row
-        for name in types:
-            value = total_row.get(name, 0.0)
-            arr = {'name': name.upper(), 'y': value}
-            rtn.append(arr)
-
-        # sort List[Dict] by y
-        rtn = sorted(rtn, key=itemgetter('y'), reverse=True)
+    def _chart_expenses(self, total_row: Dict) -> List[Dict]:
+        data = self._make_chart_data(total_row)
 
         # add to List[Dict] colors
-        for key, arr in enumerate(rtn):
-            rtn[key]['color'] = CHART[key]
+        for key, _ in enumerate(data):
+            data[key]['color'] = CHART[key]
 
-        return rtn
+        return data
 
     def _chart_targets(self,
-                      types: List[str],
                       total_row: Dict,
                       targets: Dict
                       ) -> Tuple[List[str], List[float], List[Dict]]:
-        tmp = []
 
-        # make List[Dict] from types and total_row
-        for name in types:
-            value = total_row.get(name, 0.0)
-            arr = {'name': name, 'y': value}
-            tmp.append(arr)
-
-        # sort List[Dict] by y
-        tmp = sorted(tmp, key=itemgetter('y'), reverse=True)
+        data = self._make_chart_data(total_row)
 
         rtn_categories = []
         rtn_data_fact = []
         rtn_data_target = []
 
-        for arr in tmp:
+        for arr in data:
             category = arr['name']
             target = float(targets.get(category, 0.0))
             fact = float(arr['y'])
 
-            rtn_categories.append(category.upper())
+            rtn_categories.append(category)
             rtn_data_target.append(target)
             rtn_data_fact.append({'y': fact, 'target': target})
 
@@ -221,3 +196,13 @@ class MonthService():
             data[title] = value
 
         return data
+
+    def _make_chart_data(self, data: dict) -> list[dict]:
+        rtn = []
+        for key, val in data.items():
+            rtn.append({'name': key.upper(), 'y': val})
+
+        if rtn:
+            rtn = sorted(rtn, key=itemgetter('y'), reverse=True)
+
+        return rtn
