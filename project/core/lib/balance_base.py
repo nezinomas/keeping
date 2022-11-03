@@ -59,10 +59,7 @@ class BalanceBase():
         '''
         Return total sum of all columns
         '''
-        if not isinstance(self._balance, DF):
-            return 0.0
-
-        if self._balance.empty:
+        if not isinstance(self._balance, DF) or self._balance.empty:
             return 0.0
 
         return self._balance.sum().sum()
