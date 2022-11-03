@@ -15,20 +15,16 @@ class YearManager(models.Manager):
         if self._prefetch:
             related.append(self._prefetch)
 
-        qs = (
-            self
-            .select_related(*related)
+        return \
+            self \
+            .select_related(*related) \
             .filter(journal=journal)
-        )
-
-        return qs
 
     def year(self, year):
-        return(
-            self
-            .related()
+        return \
+            self \
+            .related() \
             .filter(year=year)
-        )
 
     def items(self):
         return self.related()
