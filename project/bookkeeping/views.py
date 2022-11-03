@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
+
 from project.bookkeeping.services.month import MonthServiceData
 
 from ..accounts.models import Account
@@ -12,6 +13,8 @@ from ..pensions.models import PensionType
 from ..plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ..savings.models import SavingType
 from . import forms, mixins, models, services
+from .lib.day_spending import DaySpending
+from .lib.expense_balance import ExpenseBalance
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .lib.year_balance import YearBalance
 
@@ -171,13 +174,31 @@ class Month(TemplateViewMixin):
 
         data = MonthServiceData(year, month)
         plans = PlanCalculateDaySum(PlanCollectData(year))
-        obj = services.MonthService(data=data, plans=plans)
-
+        spending = DaySpending(
+            year=data.year,
+            month=data.month,
+            expenses=data.expenses,
+            types=data.expense_types,
+            necessary=data.necessary_expense_types,
+            plans=plans
+        )
+        savings = ExpenseBalance.days_of_month(
+            year=data.year,
+            month=data.month,
+            expenses=data.savings,
+            types=[_('Savings')]
+        )
+        service = services.MonthService(
+            data=data,
+            plans=plans,
+            savings=savings,
+            spending=spending
+        )
         context = {
-            'month_table': obj.month_table_context(),
-            'info': obj.info_context(),
-            'chart_expenses': obj.chart_expenses_context(),
-            'chart_targets': obj.chart_targets_context(),
+            'month_table': service.month_table_context(),
+            'info': service.info_context(),
+            'chart_expenses': service.chart_expenses_context(),
+            'chart_targets': service.chart_targets_context(),
         }
         return super().get_context_data(**kwargs) | context
 

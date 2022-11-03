@@ -64,27 +64,15 @@ class MonthServiceData:
 
 
 class MonthService():
-    def __init__(self, data: MonthServiceData, plans: PlanCalculateDaySum):
+    def __init__(self,
+                 data: MonthServiceData,
+                 plans: PlanCalculateDaySum,
+                 savings: ExpenseBalance,
+                 spending: DaySpending):
         self._data = data
         self._plans = plans
-
-        self._spending = \
-            DaySpending(
-                year=self._data.year,
-                month=self._data.month,
-                expenses=self._data.expenses,
-                types=self._data.expense_types,
-                necessary=self._data.necessary_expense_types,
-                plans=self._plans
-            )
-
-        self._savings =  \
-            ExpenseBalance.days_of_month(
-                self._data.year,
-                self._data.month,
-                self._data.savings,
-                [_('Savings')]
-            )
+        self._spending = spending
+        self._savings =  savings
 
     def chart_targets_context(self):
         types = self._data.expense_types.copy()
