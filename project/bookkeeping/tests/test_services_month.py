@@ -359,7 +359,7 @@ def test_chart_targets_data_fact_no_target():
     'data, value, expect',
     [
         ('x', None, 'x'),
-        (['x'], None, ['x', 'Taupymas']),
+        (['x'], None, ['x']),
         ({'x': 1}, None, {'x': 1, 'Taupymas': 0.0}),
         ({'x': 1}, 2, {'x': 1, 'Taupymas': 2}),
     ]

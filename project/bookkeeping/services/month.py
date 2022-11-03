@@ -157,12 +157,12 @@ class MonthService():
     def _chart_expenses(self, total_row: Dict, colors: list) -> List[Dict]:
         data = self._make_chart_data(total_row)
 
-        for key, _ in enumerate(data):
+        for key, item in enumerate(data):
             # if colors is shorter then categories
             if key >= len(colors):
                 colors *= 2
 
-            data[key]['color'] = colors[key]
+            item['color'] = colors[key]
 
         return data
 
@@ -188,11 +188,8 @@ class MonthService():
 
         return (rtn_categories, rtn_data_target, rtn_data_fact)
 
-    def _append_savings(self, data: Union[list, dict], value: float = 0.0):
+    def _append_savings(self, data: dict, value: float = 0.0):
         title = _('Savings')
-
-        if isinstance(data, list):
-            data.append(title)
 
         if isinstance(data, dict):
             value = value or 0.0
