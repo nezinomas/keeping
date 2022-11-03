@@ -192,6 +192,58 @@ def test_chart_expenses_context():
     assert actual[1]['name'] == 'TAUPYMAS'
 
 
+def test_chart_expenses():
+    obj=MonthService(
+        data=MagicMock(),
+        plans=MagicMock(),
+        savings=MagicMock(),
+        spending=MagicMock()
+    )
+    total_row = {'T1': 0.25, 'T2': 0.5}
+
+    actual = obj._chart_expenses(total_row, ['#1', '#2'])
+
+    expect = [
+        {'name': 'T2', 'y': 0.5, 'color': '#1'},
+        {'name': 'T1', 'y': 0.25, 'color': '#2'},
+    ]
+
+    assert actual == expect
+
+
+def test_chart_expenses_colors_shorter_then_data():
+    obj=MonthService(
+        data=MagicMock(),
+        plans=MagicMock(),
+        savings=MagicMock(),
+        spending=MagicMock()
+    )
+    total_row = {'T1': 0.25, 'T2': 0.5, 'T3': 0.1}
+
+    actual = obj._chart_expenses(total_row, ['#1', '#2'])
+
+    expect = [
+        {'name': 'T2', 'y': 0.5, 'color': '#1'},
+        {'name': 'T1', 'y': 0.25, 'color': '#2'},
+        {'name': 'T3', 'y': 0.1, 'color': '#1'},
+    ]
+
+    assert actual == expect
+
+
+def test_chart_expenses_no_expenes_data():
+    obj = MonthService(
+        data=MagicMock(),
+        plans=MagicMock(),
+        savings=MagicMock(),
+        spending=MagicMock()
+    )
+
+    actual = obj._chart_expenses(total_row={}, colors=[])
+
+    assert actual == []
+
+
 def test_chart_targets_context():
     obj = MonthService(
         data=MagicMock(),
@@ -206,64 +258,6 @@ def test_chart_targets_context():
     assert 'targetTitle' in actual
     assert 'fact' in actual
     assert 'factTitle' in actual
-
-
-def test_chart_expenses():
-    obj=MonthService(
-        data=MagicMock(),
-        plans=MagicMock(),
-        savings=MagicMock(),
-        spending=MagicMock()
-    )
-    total_row = {'T1': 0.25, 'T2': 0.5}
-
-    actual = obj._chart_expenses(total_row)
-
-    expect = [
-        {'name': 'T2', 'y': 0.5, 'color': '#6994c7'},
-        {'name': 'T1', 'y': 0.25, 'color': '#c86967'},
-    ]
-
-    assert actual == expect
-
-
-def test_chart_expenses_no_expenes_data():
-    obj = MonthService(
-        data=MagicMock(),
-        plans=MagicMock(),
-        savings=MagicMock(),
-        spending=MagicMock()
-    )
-
-    actual = obj._chart_expenses(total_row={})
-
-    assert actual == []
-
-
-def test_chart_expenses_no_types_and_no_expenes_data():
-    obj = MonthService(
-        data=MagicMock(),
-        plans=MagicMock(),
-        savings=MagicMock(),
-        spending=MagicMock()
-    )
-    types = []
-    total_row = {}
-
-    actual = obj._chart_expenses(types, total_row)
-
-    assert actual == []
-
-def test_chart_expenses_no_types_and_no_expenes_data():
-    obj = MonthService(
-        data=MagicMock(),
-        plans=MagicMock(),
-        savings=MagicMock(),
-        spending=MagicMock()
-    )
-    actual = obj._chart_expenses({})
-
-    assert actual == []
 
 
 def test_chart_targets_categories():

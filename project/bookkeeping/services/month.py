@@ -1,6 +1,7 @@
 import itertools as it
 from dataclasses import dataclass, field
 from operator import itemgetter
+from turtle import color
 from typing import Dict, List, Tuple, Union
 
 from django.utils.translation import gettext as _
@@ -92,13 +93,13 @@ class MonthService():
             'factTitle': _('Fact'),
         }
 
-    def chart_expenses_context(self):
+    def chart_expenses_context(self, color: list = CHART):
         total_row = self._spending.total_row.copy()
 
         # append savings
         self._append_savings(total_row, self._savings.total)
 
-        return self._chart_expenses(total_row)
+        return self._chart_expenses(total_row, color)
 
     def info_context(self):
         fact_incomes = self._data.incomes
@@ -154,12 +155,15 @@ class MonthService():
             'total_savings': self._savings.total
         }
 
-    def _chart_expenses(self, total_row: Dict) -> List[Dict]:
+    def _chart_expenses(self, total_row: Dict, colors: list) -> List[Dict]:
         data = self._make_chart_data(total_row)
 
-        # add to List[Dict] colors
         for key, _ in enumerate(data):
-            data[key]['color'] = CHART[key]
+            # if colors is shorter then categories
+            if key >= len(colors):
+                colors *= 2
+
+            data[key]['color'] = colors[key]
 
         return data
 
