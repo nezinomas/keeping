@@ -1,7 +1,6 @@
 import itertools as it
 from dataclasses import dataclass, field
 from operator import itemgetter
-from turtle import color
 from typing import Dict, List, Tuple, Union
 
 from django.utils.translation import gettext as _
