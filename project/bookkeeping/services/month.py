@@ -75,7 +75,7 @@ class MonthService():
         self._savings =  savings
 
     def chart_targets_context(self):
-        total_row = self._spending.total_row.copy()
+        total_row = self._spending.total_row
         targets = self._plans.targets(self._data.month)
 
         # append savings
@@ -93,7 +93,7 @@ class MonthService():
         }
 
     def chart_expenses_context(self, color: list = CHART):
-        total_row = self._spending.total_row.copy()
+        total_row = self._spending.total_row
 
         # append savings
         self._append_savings(total_row, self._savings.total)
