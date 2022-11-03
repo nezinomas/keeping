@@ -418,3 +418,24 @@ def test_chart_targets_data_fact_no_data_and_no_target():
     ]
 
     assert actual == expect
+
+
+@pytest.mark.parametrize(
+    'data, value, expect',
+    [
+        ('x', None, 'x'),
+        (['x'], None, ['x', 'Taupymas']),
+        ({'x': 1}, None, {'x': 1, 'Taupymas': 0.0}),
+        ({'x': 1}, 2, {'x': 1, 'Taupymas': 2}),
+    ]
+)
+def test_append_savings(data, value, expect):
+    obj = MonthService(
+        data=MagicMock(),
+        plans=MagicMock(),
+        savings=MagicMock(),
+        spending=MagicMock()
+    )
+    obj._append_savings(data, value)
+
+    assert data == expect

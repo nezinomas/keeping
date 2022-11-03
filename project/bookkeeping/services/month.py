@@ -1,7 +1,7 @@
 import itertools as it
 from dataclasses import dataclass, field
 from operator import itemgetter
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 from django.utils.translation import gettext as _
 
@@ -76,14 +76,13 @@ class MonthService():
 
     def chart_targets_context(self):
         types = self._data.expense_types.copy()
-        types.append(_('Savings'))
-
-        total_row = self._spending.total_row
-        total_row.update({_('Savings'): self._savings.total})
-
+        total_row = self._spending.total_row.copy()
         targets = self._plans.targets(self._data.month)
-        targets.update({
-            _('Savings'): self._plans.savings.get(monthname(self._data.month), 0.0)})
+
+        # append savings
+        self._append_savings(types)
+        self._append_savings(total_row, self._savings.total)
+        self._append_savings(targets, self._plans.savings.get(monthname(self._data.month)))
 
         categories, data_target, data_fact = self._chart_targets(types, total_row, targets)
 
@@ -97,10 +96,11 @@ class MonthService():
 
     def chart_expenses_context(self):
         types = self._data.expense_types.copy()
-        types.append(_('Savings'))
+        total_row = self._spending.total_row.copy()
 
-        total_row = self._spending.total_row
-        total_row[_('Savings')] = self._savings.total
+        # append savings
+        self._append_savings(types)
+        self._append_savings(total_row, self._savings.total)
 
         return self._chart_expenses(types, total_row)
 
@@ -209,3 +209,15 @@ class MonthService():
             rtn_data_fact.append({'y': fact, 'target': target})
 
         return (rtn_categories, rtn_data_target, rtn_data_fact)
+
+    def _append_savings(self, data: Union[list, dict], value: float = 0.0):
+        title = _('Savings')
+
+        if isinstance(data, list):
+            data.append(title)
+
+        if isinstance(data, dict):
+            value = value or 0.0
+            data[title] = value
+
+        return data
