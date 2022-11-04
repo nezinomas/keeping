@@ -11,12 +11,9 @@ from ...savings.models import SavingBalance
 class WealthServiceData:
     year: int
 
-    account_balance: list[dict] = \
-        field(init=False, default_factory=list)
-    saving_balance: list[dict] = \
-        field(init=False, default_factory=list)
-    pension_balance: list[dict] = \
-        field(init=False, default_factory=list)
+    account_balance: float = field(init=False, default=0.0)
+    saving_balance: float = field(init=False, default=0.0)
+    pension_balance: float = field(init=False, default=0.0)
 
     def __post_init__(self):
         self.account_balance = \
