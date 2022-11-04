@@ -1,5 +1,5 @@
 import pytest
-from ..services.index import IndexServiceData as I
+from ..services.index import IndexServiceData
 
 
 @pytest.fixture()
@@ -44,33 +44,33 @@ def data(mocker):
 
 
 def test_init(amount_start, data_dummy):
-    I.collect_data(1999)
+    actual = IndexServiceData(1999)
 
-    assert I.amount_start == 8
-    assert I.data == {'foo': 'bar'}
+    assert actual.amount_start == 8
+    assert actual.data == {'foo': 'bar'}
 
 
-def test_get_debt_data():
-    data = [
+def test_get_debt_data(amount_start, data):
+    data_ = [
         {'date': 'xxxx-yy-zz', 'sum_debt': 999, 'sum_return': 111}
     ]
 
-    debt, debt_return = I.get_debt_data(data)
+    debt, debt_return = IndexServiceData(1111).get_debt_data(data_)
 
     assert debt == [{'date': 'xxxx-yy-zz', 'sum': 999}]
     assert debt_return == [{'date': 'xxxx-yy-zz', 'sum': 111}]
 
 
 def test_data(amount_start, data):
-    I.collect_data(1999)
+    actual = IndexServiceData(1999)
 
-    assert I.data['incomes'] == 'Income sum_by_month data'
-    assert I.data['expenses'] == 'Expense sum_by_month data'
-    assert I.data['savings'] == 'Saving sum_by_month data'
-    assert I.data['savings_close'] == 'SavingClose sum_by_month data'
+    assert actual.data['incomes'] == 'Income sum_by_month data'
+    assert actual.data['expenses'] == 'Expense sum_by_month data'
+    assert actual.data['savings'] == 'Saving sum_by_month data'
+    assert actual.data['savings_close'] == 'SavingClose sum_by_month data'
 
-    assert I.data['borrow'] == [{'date': 'xxxx', 'sum': 2}]
-    assert I.data['borrow_return'] == [{'date': 'xxxx', 'sum': 1}]
+    assert actual.data['borrow'] == [{'date': 'xxxx', 'sum': 2}]
+    assert actual.data['borrow_return'] == [{'date': 'xxxx', 'sum': 1}]
 
-    assert I.data['lend'] == [{'date': 'xxxx', 'sum': 7}]
-    assert I.data['lend_return'] == [{'date': 'xxxx', 'sum': 5}]
+    assert actual.data['lend'] == [{'date': 'xxxx', 'sum': 7}]
+    assert actual.data['lend_return'] == [{'date': 'xxxx', 'sum': 5}]
