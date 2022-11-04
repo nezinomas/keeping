@@ -2,7 +2,7 @@ from decimal import Decimal
 
 import pytest
 
-from ..lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
+from ..lib.calc_day_sum import PlanCalculateDaySum
 
 
 @pytest.fixture()
@@ -10,6 +10,8 @@ def data():
     obj = type('PlanCollectData', (object,), {})
 
     obj.year = 2020
+    obj.month = 0
+
     obj.incomes = [
         {'january': Decimal(400.01), 'february': Decimal(500.02)},
         {'january': Decimal(500.02), 'february': Decimal(500.02)},
@@ -58,6 +60,7 @@ def data():
 def data_empty():
     return type('PlanCollectData', (object,), {
         'year': 2020,
+        'month': 0,
         'incomes': [],
         'expenses': [],
         'savings': [],
@@ -65,11 +68,20 @@ def data_empty():
         'necessary': [],})
 
 
+
 def test_incomes(data):
     actual = PlanCalculateDaySum(data).incomes
 
+    assert len(actual) == 12
     assert round(actual['january'], 2) == 900.03
     assert actual['december'] == 0.0
+
+
+def test_incomes_with_month(data):
+    data.month = 1
+    actual = PlanCalculateDaySum(data).incomes
+
+    assert round(actual, 2) == 900.03
 
 
 def test_incomes_no_data(data_empty):
@@ -82,50 +94,154 @@ def test_incomes_no_data(data_empty):
 def test_savings(data):
     actual = PlanCalculateDaySum(data).savings
 
+    assert len(actual) == 12
     assert round(actual['january'], 2) == 64.66
     assert round(actual['february'], 2) == 64.66
+
+
+def test_savings_with_month(data):
+    data.month = 1
+    actual = PlanCalculateDaySum(data).savings
+
+    assert round(actual, 2) == 64.66
 
 
 def test_expenses_free(data):
     actual = PlanCalculateDaySum(data).expenses_free
 
+    assert len(actual) == 12
     assert round(actual['january'], 2) == 775.31
     assert round(actual['february'], 2) == 775.32
+
+
+@pytest.mark.parametrize(
+    'month, expect',
+    [
+        (1, 775.31),
+        (2, 775.32),
+        (3, 0.0),
+    ]
+)
+def test_expenses_free_with_month(month, expect, data):
+    data.month = month
+    actual = PlanCalculateDaySum(data).expenses_free
+
+    assert round(actual, 2) == expect
 
 
 def test_expenses_necessary(data):
     actual = PlanCalculateDaySum(data).expenses_necessary
 
+    assert len(actual) == 12
     assert actual['january'] == 124.72
     assert actual['february'] == 224.72
+
+
+@pytest.mark.parametrize(
+    'month, expect',
+    [
+        (1, 124.72),
+        (2, 224.72),
+        (3, 0.0),
+    ]
+)
+def test_expenses_necessary_with_month(month, expect, data):
+    data.month = month
+    actual = PlanCalculateDaySum(data).expenses_necessary
+
+    assert actual == expect
 
 
 def test_day_calced(data):
     actual = PlanCalculateDaySum(data).day_calced
 
+    assert len(actual) == 12
     assert round(actual['january'], 2) == 25.01
     assert round(actual['february'], 2) == 26.74
+
+
+@pytest.mark.parametrize(
+    'month, expect',
+    [
+        (1, 25.01),
+        (2, 26.74),
+        (3, 0.0),
+    ]
+)
+def test_day_calced_with_month(month, expect, data):
+    data.month = month
+    actual = PlanCalculateDaySum(data).day_calced
+
+    assert round(actual, 2)  == expect
 
 
 def test_day_input(data):
     actual = PlanCalculateDaySum(data).day_input
 
+    assert len(actual) == 12
     assert round(actual['january'], 2) == 25.0
     assert round(actual['february'], 2) == 26.0
+
+
+@pytest.mark.parametrize(
+    'month, expect',
+    [
+        (1, 25.0),
+        (2, 26.0),
+        (3, 0.0),
+    ]
+)
+def test_day_input_with_month(month, expect, data):
+    data.month = month
+    actual = PlanCalculateDaySum(data).day_input
+
+    assert round(actual, 2) == expect
 
 
 def test_remains(data):
     actual = PlanCalculateDaySum(data).remains
 
+    assert len(actual) == 12
     assert round(actual['january'], 2) == 0.31
     assert round(actual['february'], 2) == 21.32
+
+
+@pytest.mark.parametrize(
+    'month, expect',
+    [
+        (1, 0.31),
+        (2, 21.32),
+        (3, 0.0),
+    ]
+)
+def test_remains_with_month(month, expect, data):
+    data.month = month
+    actual = PlanCalculateDaySum(data).remains
+
+    assert round(actual, 2) == expect
 
 
 def test_additional_necessary(data):
     actual = PlanCalculateDaySum(data).necessary
 
+    assert len(actual) == 12
     assert round(actual['january'], 2) == 0.0
     assert round(actual['february'], 2) == 100.0
+
+
+@pytest.mark.parametrize(
+    'month, expect',
+    [
+        (1, 0.0),
+        (2, 100.0),
+        (3, 0.0),
+    ]
+)
+def test_additional_necessary_with_month(month, expect, data):
+    data.month = month
+    actual = PlanCalculateDaySum(data).necessary
+
+    assert round(actual, 2) == expect
 
 
 def test_plans_stats_list(data):
@@ -167,21 +283,31 @@ def test_plans_stats_remains(data):
 
 
 def test_targets(data):
+    data.month = 1
     obj = PlanCalculateDaySum(data)
 
-    actual = obj.targets(1)
+    actual = obj.targets
 
     expect = {'T1': 10.01, 'T2': 20.02, 'T3': 30.03, 'T4': 40.04}
 
     assert actual == expect
 
 
+def test_targets_no_month(data):
+    obj = PlanCalculateDaySum(data)
+
+    actual = obj.targets
+
+    assert not actual
+
+
 def test_target_with_nones(data_empty):
+    data_empty.month = 1
     data_empty.expenses = [{'january': None, 'necessary': False, 'title': 'T1'}]
 
     obj = PlanCalculateDaySum(data_empty)
 
-    actual = obj.targets(1)
+    actual = obj.targets
 
     expect = {'T1': 0.0}
 

@@ -1,4 +1,6 @@
 from collections import namedtuple
+from dataclasses import dataclass, field
+from typing import Union
 
 import pandas as pd
 from django.db.models import F
@@ -7,12 +9,12 @@ from django.utils.translation import gettext as _
 from ...core.lib.date import monthlen, monthname, monthnames
 from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
                       SavingPlan)
-from dataclasses import dataclass, field
 
 
 @dataclass
 class PlanCollectData:
     year: int = 1970
+    month: int = 0
 
     incomes: list[dict] = \
         field(init=False, default_factory=list)
@@ -62,37 +64,50 @@ class PlanCalculateDaySum():
 
         self._calc_df()
 
+        # filter data for current month
+        if self._data.month:
+            month = monthname(data.month)  # convert int to month name
+            self._df = self._df.loc[:, month]
+
     @property
     def incomes(self) -> dict[str, float]:
-        return self._df.loc['incomes'].to_dict()
+        data = self._df.loc['incomes']
+        return self._return_data(data)
 
     @property
     def savings(self) -> dict[str, float]:
-        return self._df.loc['savings'].to_dict()
+        data = self._df.loc['savings']
+        return self._return_data(data)
 
     @property
     def expenses_free(self) -> dict[str, float]:
-        return self._df.loc['expenses_free'].to_dict()
+        data = self._df.loc['expenses_free']
+        return self._return_data(data)
 
     @property
     def expenses_necessary(self) -> dict[str, float]:
-        return self._df.loc['expenses_necessary'].to_dict()
+        data = self._df.loc['expenses_necessary']
+        return self._return_data(data)
 
     @property
     def day_calced(self) -> dict[str, float]:
-        return self._df.loc['day_calced'].to_dict()
+        data = self._df.loc['day_calced']
+        return self._return_data(data)
 
     @property
     def day_input(self) -> dict[str, float]:
-        return self._df.loc['day_input'].to_dict()
+        data = self._df.loc['day_input']
+        return self._return_data(data)
 
     @property
     def remains(self) -> dict[str, float]:
-        return self._df.loc['remains'].to_dict()
+        data = self._df.loc['remains']
+        return self._return_data(data)
 
     @property
     def necessary(self) -> dict[str, float]:
-        return self._df.loc['necessary'].to_dict()
+        data = self._df.loc['necessary']
+        return self._return_data(data)
 
     @property
     def plans_stats(self):
@@ -106,17 +121,25 @@ class PlanCalculateDaySum():
         # list of dictionaries convert to list of objects
         return [namedtuple("Items", item.keys())(*item.values()) for item in dicts]
 
-    def targets(self, month: int) -> dict[str, float]:
-        rtn = {}
+    @property
+    def targets(self) -> dict[str, float]:
+        if not self._data.month:
+            return
 
-        month = monthname(month)
+        rtn = {}
+        month = monthname(self._data.month)
         arr = self._data.expenses
-        print(f'{arr=}')
+
         for item in arr:
             val = item.get(month, 0.0) or 0.0
             rtn[item.get('title', 'unknown')] = float(val)
 
         return rtn
+
+    def _return_data(self, data: Union[pd.Series, float]) -> Union[dict, float]:
+        ''' If data is pandas Serries convert data to dictionary '''
+
+        return data.to_dict() if isinstance(data, pd.Series) else data
 
     def _sum(self, arr: list, row_name: str, necessary: int = -1):
         df = pd.DataFrame(arr)
