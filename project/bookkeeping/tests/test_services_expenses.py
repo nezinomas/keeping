@@ -22,7 +22,7 @@ def test_chart_data(balance):
     ]
 
     obj = ExpenseService(data=balance)
-    actual = obj.chart_expenses_context()
+    actual = obj.chart_context()
 
     assert expect == actual
 
@@ -32,7 +32,7 @@ def test_chart_data_none():
     expect = [{'name': 'Išlaidų nėra', 'y': 0}]
 
     obj = ExpenseService(data=balance)
-    actual = obj.chart_expenses_context()
+    actual = obj.chart_context()
 
     assert expect == actual
 
@@ -42,7 +42,7 @@ def test_chart_data_empty():
     expect = [{'name': 'Išlaidų nėra', 'y': 0}]
 
     obj = ExpenseService(data=balance)
-    actual = obj.chart_expenses_context()
+    actual = obj.chart_context()
 
     assert expect == actual
 
@@ -56,7 +56,7 @@ def test_chart_no_data():
     expect = [{'name': 'X', 'y': 0}]
 
     obj = ExpenseService(data=balance)
-    actual = obj.chart_expenses_context()
+    actual = obj.chart_context()
 
     assert expect == actual
 
@@ -68,7 +68,7 @@ def test_chart_no_data_truncate_long_title():
     )
 
     obj = ExpenseService(data=balance)
-    actual = obj.chart_expenses_context()
+    actual = obj.chart_context()
 
     assert len(actual[0]['name']) == 11
 
@@ -80,7 +80,7 @@ def test_chart_data_truncate_long_title():
     )
 
     obj = ExpenseService(data=balance)
-    actual = obj.chart_expenses_context()
+    actual = obj.chart_context()
 
     assert len(actual[0]['name']) == 11
 

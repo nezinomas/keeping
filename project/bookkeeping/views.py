@@ -54,7 +54,7 @@ class Index(TemplateViewMixin):
             'balance_short': ind.balance_short_context(),
             'balance': ind.balance_context(),
             'chart_balance': ind.chart_balance_context(),
-            'chart_expenses': exp.chart_expenses_context(),
+            'chart_expenses': exp.chart_context(),
             'expenses': exp.table_context(),
         }
 

@@ -30,7 +30,7 @@ class ExpenseService():
     def __init__(self, data: ExpenseBalance):
         self._data = data
 
-    def chart_expenses_context(self):
+    def chart_context(self):
         if not self._data.types:
             return [{'name': _('No expenses'), 'y': 0}]
 
