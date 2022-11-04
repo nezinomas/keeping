@@ -25,6 +25,8 @@ class Index(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
+
+        # index service
         data = services.IndexServiceData(year)
         year_balance = YearBalance(
             year=year,
@@ -32,7 +34,12 @@ class Index(TemplateViewMixin):
             amount_start=data.amount_start)
 
         ind = services.IndexService(year_balance)
-        exp = services.ExpenseService(year)
+
+        # expenses service
+        data = services.ExpenseServiceData(year)
+        balance = ExpenseBalance.months_of_year(
+            year=year, expenses=data.expenses, types=data.expense_types)
+        exp = services.ExpenseService(data=balance)
 
         context = {
             'year': year,

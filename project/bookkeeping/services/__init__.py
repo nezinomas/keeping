@@ -4,7 +4,7 @@ from .chart_summary_expenses import ChartSummaryExpensesService
 from .common import add_latest_check_key, expense_types
 from .detailed import DetailedService
 from .expand_day import ExpandDayService
-from .expenses import ExpenseService
+from .expenses import ExpenseService, ExpenseServiceData
 from .index import IndexService, IndexServiceData
 from .month import MonthService, MonthServiceData
 from .pensions import PensionsService
