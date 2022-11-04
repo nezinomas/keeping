@@ -17,7 +17,7 @@ from ..lib.year_balance import YearBalance
 class IndexServiceData:
     year: int
     amount_start: float = 0.0
-    data: list = field(default_factory=list)
+    data: dict = field(default_factory=dict)
 
     def __post_init__(self):
         self.amount_start = self.get_amount_start()
