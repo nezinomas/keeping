@@ -1,5 +1,4 @@
 import itertools as it
-from typing import Dict, List
 
 from django.utils.translation import gettext as _
 
