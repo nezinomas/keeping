@@ -1,27 +1,26 @@
-# pylint: disable=redefined-outer-name
 import pytest
 
 from ..services.index import IndexServiceData
 
 
-@pytest.fixture()
-def amount_start(mocker):
+@pytest.fixture(name='amount_start')
+def fixture_amount_start(mocker):
     mocker.patch(
         'project.bookkeeping.services.index.IndexServiceData.get_amount_start',
         side_effect=[8]
     )
 
 
-@pytest.fixture()
-def data_dummy(mocker):
+@pytest.fixture(name='data_dummy')
+def fixture_data_dummy(mocker):
     mocker.patch(
         'project.bookkeeping.services.index.IndexServiceData.get_data',
         side_effect=[{'foo': 'bar'}]
     )
 
 
-@pytest.fixture()
-def data(mocker):
+@pytest.fixture(name='data')
+def fixture_data(mocker):
     module = 'project.bookkeeping.services.index'
     mocker.patch(
         f'{module}.Income.objects.sum_by_month',
