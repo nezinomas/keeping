@@ -16,6 +16,7 @@ from . import forms, mixins, models, services
 from .lib.day_spending import DaySpending
 from .lib.expense_balance import ExpenseBalance
 from .lib.no_incomes import NoIncomes as LibNoIncomes
+from .lib.no_incomes import NoIncomesData
 from .lib.year_balance import YearBalance
 
 
@@ -151,14 +152,17 @@ class NoIncomes(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         journal = self.request.user.journal
-
-        obj = LibNoIncomes(journal, year)
+        data = NoIncomesData(
+            year=year,
+            unnecessary_expenses=journal.unnecessary_expenses,
+            unnecessary_savings=journal.unnecessary_savings)
+        service = LibNoIncomes(data)
 
         context = {
-            'no_incomes': obj.summary,
-            'save_sum': obj.cut_sum,
-            'not_use': obj.unnecessary,
-            'avg_expenses': obj.avg_expenses,
+            'no_incomes': service.summary,
+            'save_sum': service.cut_sum,
+            'not_use': service.unnecessary,
+            'avg_expenses': service.avg_expenses,
         }
         return super().get_context_data(**kwargs) | context
 
