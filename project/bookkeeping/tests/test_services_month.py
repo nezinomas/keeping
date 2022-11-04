@@ -131,10 +131,10 @@ def test_info_context():
             incomes=[{'date': 'x', 'sum': Decimal('15')}]
         ),
         plans=MagicMock(
-            incomes={'january': 10},
-            savings={'january': 1.2},
-            day_input={'january': 3},
-            remains={'january': -85.3}
+            incomes=10,
+            savings=1.2,
+            day_input=3,
+            remains=-85.3
         ),
         savings=MagicMock(
             total=0.2

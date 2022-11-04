@@ -173,14 +173,15 @@ class Month(TemplateViewMixin):
         month = self.request.user.month
 
         data = MonthServiceData(year, month)
-        plans = PlanCalculateDaySum(PlanCollectData(year))
+        plans = PlanCalculateDaySum(PlanCollectData(year, month))
         spending = DaySpending(
             year=data.year,
             month=data.month,
             expenses=data.expenses,
             types=data.expense_types,
             necessary=data.necessary_expense_types,
-            plans=plans
+            day_input=plans.day_input,
+            expenses_free=plans.expenses_free
         )
         savings = ExpenseBalance.days_of_month(
             year=data.year,

@@ -1,13 +1,12 @@
 import itertools as it
 from dataclasses import dataclass, field
 from operator import itemgetter
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple
 
 from django.utils.translation import gettext as _
 
 from ...core.lib.colors import CHART
-from ...core.lib.date import current_day, monthname
-from ...core.lib.utils import get_value_from_dict as get_val
+from ...core.lib.date import current_day
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
 from ...plans.lib.calc_day_sum import PlanCalculateDaySum
@@ -76,11 +75,11 @@ class MonthService():
 
     def chart_targets_context(self):
         total_row = self._spending.total_row
-        targets = self._plans.targets(self._data.month)
+        targets = self._plans.targets
 
         # append savings
         self._append_savings(total_row, self._savings.total)
-        self._append_savings(targets, self._plans.savings.get(monthname(self._data.month)))
+        self._append_savings(targets, self._plans.savings)
 
         categories, data_target, data_fact = self._chart_targets(total_row, targets)
 
@@ -108,11 +107,11 @@ class MonthService():
         fact_per_day = self._spending.avg_per_day
         fact_balance = fact_incomes - fact_expenses - fact_savings
 
-        plan_incomes = get_val(self._plans.incomes, self._data.month)
-        plan_savings = get_val(self._plans.savings, self._data.month)
+        plan_incomes = self._plans.incomes
+        plan_savings = self._plans.savings
         plan_expenses = plan_incomes - plan_savings
-        plan_per_day = get_val(self._plans.day_input, self._data.month)
-        plan_balance = get_val(self._plans.remains, self._data.month)
+        plan_per_day = self._plans.day_input
+        plan_balance = self._plans.remains
 
         return [{
                 'title': _('Incomes'),
