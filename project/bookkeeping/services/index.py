@@ -32,8 +32,12 @@ class IndexServiceData:
         return float(_sum) if _sum else 0.0
 
     def get_data(self, year: int) -> list[dict]:
-        qs_borrow = Debt.objects.sum_by_month(year, debt_type='borrow')
-        qs_lend = Debt.objects.sum_by_month(year, debt_type='lend')
+        qs_borrow = \
+            Debt.objects \
+            .sum_by_month(year, debt_type='borrow')
+        qs_lend = \
+            Debt.objects \
+            .sum_by_month(year, debt_type='lend')
 
         # generate debts and debts_return arrays
         borrow, borrow_return = IndexServiceData.get_debt_data(qs_borrow)
