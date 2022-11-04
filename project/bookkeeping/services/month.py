@@ -90,7 +90,7 @@ class MonthService():
             'factTitle': _('Fact'),
         }
 
-    def chart_expenses_context(self, color: list = CHART):
+    def chart_expenses_context(self, color: tuple = CHART):
         total_row = self._spending.total_row
 
         # append savings
@@ -152,7 +152,7 @@ class MonthService():
             'total_savings': self._savings.total
         }
 
-    def _chart_expenses(self, total_row: dict, colors: list) -> list[dict]:
+    def _chart_expenses(self, total_row: dict, colors: tuple) -> list[dict]:
         data = self._make_chart_data(total_row)
 
         # add colors
