@@ -1,7 +1,6 @@
 import itertools as it
 from dataclasses import dataclass, field
 from operator import itemgetter
-from typing import Dict, List, Tuple
 
 from django.utils.translation import gettext as _
 
@@ -140,7 +139,7 @@ class MonthService():
                 'delta': fact_balance - plan_balance,
             },]
 
-    def month_table_context(self) -> Dict:
+    def month_table_context(self) -> dict:
         return {
             'day': current_day(self._data.year, self._data.month, False),
             'expenses': it.zip_longest(self._spending.balance,
@@ -153,7 +152,7 @@ class MonthService():
             'total_savings': self._savings.total
         }
 
-    def _chart_expenses(self, total_row: Dict, colors: list) -> List[Dict]:
+    def _chart_expenses(self, total_row: dict, colors: list) -> list[dict]:
         data = self._make_chart_data(total_row)
 
         # add colors
@@ -171,9 +170,9 @@ class MonthService():
         return data
 
     def _chart_targets(self,
-                      total_row: Dict,
-                      targets: Dict
-                      ) -> Tuple[List[str], List[float], List[Dict]]:
+                      total_row: dict,
+                      targets: dict
+                      ) -> tuple[list[str], list[float], list[dict]]:
 
         data = self._make_chart_data(total_row)
 
