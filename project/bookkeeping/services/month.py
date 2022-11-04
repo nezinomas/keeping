@@ -156,12 +156,17 @@ class MonthService():
     def _chart_expenses(self, total_row: Dict, colors: list) -> List[Dict]:
         data = self._make_chart_data(total_row)
 
+        # add colors
         for key, item in enumerate(data):
             # if colors is shorter then categories
             if key >= len(colors):
                 colors *= 2
 
             item['color'] = colors[key]
+
+        # categories upper case
+        for x in data:
+            x['name'] = x['name'].upper()
 
         return data
 
@@ -181,7 +186,7 @@ class MonthService():
             target = float(targets.get(category, 0.0))
             fact = float(arr['y'])
 
-            rtn_categories.append(category)
+            rtn_categories.append(category.upper())
             rtn_data_target.append(target)
             rtn_data_fact.append({'y': fact, 'target': target})
 
@@ -199,7 +204,7 @@ class MonthService():
     def _make_chart_data(self, data: dict) -> list[dict]:
         rtn = []
         for key, val in data.items():
-            rtn.append({'name': key.upper(), 'y': val})
+            rtn.append({'name': key, 'y': val})
 
         if rtn:
             rtn = sorted(rtn, key=itemgetter('y'), reverse=True)

@@ -380,8 +380,8 @@ def test_append_savings(data, value, expect):
     'data, expect',
     [
         ({}, []),
-        ({'x': 1}, [{'name': 'X', 'y': 1}]),
-        ({'a': 1, 'x': 2}, [{'name': 'X', 'y': 2}, {'name': 'A', 'y': 1}]),
+        ({'x': 1}, [{'name': 'x', 'y': 1}]),
+        ({'a': 1, 'x': 2}, [{'name': 'x', 'y': 2}, {'name': 'a', 'y': 1}]),
     ]
 )
 def test_make_chart_data(data, expect):
