@@ -135,11 +135,12 @@ class Wealth(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        obj = services.WealthService(year)
+        data = services.WealthServiceData(year)
+        service = services.WealthService(data)
 
         context = {
             'title': [_('Money'), _('Wealth')],
-            'data': [obj.money, obj.wealth],
+            'data': [service.money, service.wealth],
         }
         return super().get_context_data(**kwargs) | context
 

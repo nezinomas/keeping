@@ -1,3 +1,5 @@
+from dataclasses import dataclass, field
+
 from django.db.models import Sum
 
 from ...accounts.models import AccountBalance
@@ -5,42 +7,50 @@ from ...pensions.models import PensionBalance
 from ...savings.models import SavingBalance
 
 
-class WealthService():
-    def __init__(self, year: int):
-        self.account_sum = self._get_account_sum(year)
-        self.saving_sum = self._get_saving_sum(year)
-        self.pension_sum = self._get_pension_sum(year)
+@dataclass
+class WealthServiceData:
+    year: int
 
-    def _get_account_sum(self, year: int) -> float:
-        return \
+    account_balance: list[dict] = \
+        field(init=False, default_factory=list)
+    saving_balance: list[dict] = \
+        field(init=False, default_factory=list)
+    pension_balance: list[dict] = \
+        field(init=False, default_factory=list)
+
+    def __post_init__(self):
+        self.account_balance = \
             AccountBalance.objects \
             .related() \
-            .filter(year=year) \
-            .aggregate(Sum('balance')) \
-            ['balance__sum'] or 0.0
+            .filter(year=self.year) \
+            .aggregate(Sum('balance'))['balance__sum'] or 0.0
 
-    def _get_saving_sum(self, year: int) -> float:
-        return \
+        self.saving_balance = \
             SavingBalance.objects \
             .related() \
-            .filter(year=year) \
-            .aggregate(Sum('market_value')) \
-            ['market_value__sum'] or 0.0
+            .filter(year=self.year) \
+            .aggregate(Sum('market_value'))['market_value__sum'] or 0.0
 
-    def _get_pension_sum(self, year: int) -> float:
-        return \
+        self.pension_balance = \
             PensionBalance.objects \
             .related() \
-            .filter(year=year) \
-            .aggregate(Sum('market_value')) \
-            ['market_value__sum'] or 0.0
+            .filter(year=self.year) \
+            .aggregate(Sum('market_value'))['market_value__sum'] or 0.0
+
+
+@dataclass
+class WealthService:
+    data: WealthServiceData
 
     @property
     def money(self):
-        return \
-            self.account_sum + self.saving_sum
+        return 0.0 \
+            + self.data.account_balance \
+            + self.data.saving_balance
 
     @property
     def wealth(self):
-        return \
-            self.account_sum + self.saving_sum + self.pension_sum
+        return 0.0 \
+            + self.data.account_balance \
+            + self.data.saving_balance \
+            + self.data.pension_balance

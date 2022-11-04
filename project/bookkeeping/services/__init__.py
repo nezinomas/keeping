@@ -10,4 +10,4 @@ from .month import MonthService, MonthServiceData
 from .pensions import PensionsService
 from .savings import SavingsService
 from .summary_savings import SummarySavingsService
-from .wealth import WealthService
+from .wealth import WealthService, WealthServiceData
