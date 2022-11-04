@@ -112,32 +112,33 @@ class MonthService():
         plan_per_day = self._plans.day_input
         plan_balance = self._plans.remains
 
-        return [{
-                'title': _('Incomes'),
-                'plan': plan_incomes,
-                'fact': fact_incomes,
-                'delta': fact_incomes - plan_incomes,
-            }, {
-                'title': _('Expenses'),
-                'plan': plan_expenses,
-                'fact': fact_expenses,
-                'delta': plan_expenses - fact_expenses,
-            }, {
-                'title': _('Savings'),
-                'plan': plan_savings,
-                'fact': fact_savings,
-                'delta': plan_savings - fact_savings,
-            }, {
-                'title': _('Money for a day'),
-                'plan': plan_per_day,
-                'fact': fact_per_day,
-                'delta': plan_per_day - fact_per_day,
-            }, {
-                'title': _('Balance'),
-                'plan': plan_balance,
-                'fact': fact_balance,
-                'delta': fact_balance - plan_balance,
-            },]
+        return [
+            dict(
+                title=_('Incomes'),
+                plan=plan_incomes,
+                fact=fact_incomes,
+                delta=fact_incomes - plan_incomes),
+            dict(
+                title=_('Expenses'),
+                plan=plan_expenses,
+                fact=fact_expenses,
+                delta=plan_expenses - fact_expenses),
+            dict(
+                title=_('Savings'),
+                plan=plan_savings,
+                fact=fact_savings,
+                delta=plan_savings - fact_savings),
+            dict(
+                title=_('Money for a day'),
+                plan=plan_per_day,
+                fact=fact_per_day,
+                delta=plan_per_day - fact_per_day),
+            dict(
+                title=_('Balance'),
+                plan=plan_balance,
+                fact=fact_balance,
+                delta=fact_balance - plan_balance),
+        ]
 
     def month_table_context(self) -> dict:
         return {
