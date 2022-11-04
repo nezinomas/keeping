@@ -27,9 +27,9 @@ class PlanCollectData:
 
     def __post_init__(self):
         self.incomes = \
-            IncomePlan.objects \
-            .year(self.year) \
-            .values(*monthnames())
+                IncomePlan.objects \
+                .year(self.year) \
+                .values(*monthnames())
 
         self.expenses = \
             ExpensePlan.objects \
@@ -40,19 +40,19 @@ class PlanCollectData:
                 title=F('expense_type__title'))
 
         self.savings = \
-            SavingPlan.objects \
-            .year(self.year) \
-            .values(*monthnames())
+                SavingPlan.objects \
+                .year(self.year) \
+                .values(*monthnames())
 
         self.days = \
-            DayPlan.objects \
-            .year(self.year) \
-            .values(*monthnames())
+                DayPlan.objects \
+                .year(self.year) \
+                .values(*monthnames())
 
         self.necessary = \
-            NecessaryPlan.objects \
-            .year(self.year) \
-            .values(*monthnames())
+                NecessaryPlan.objects \
+                .year(self.year) \
+                .values(*monthnames())
 
 
 class PlanCalculateDaySum():
