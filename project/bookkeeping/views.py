@@ -176,7 +176,6 @@ class Month(TemplateViewMixin):
 
         year = self.request.user.year
         month = self.request.user.month
-
         data = MonthServiceData(year, month)
         plans = PlanCalculateDaySum(PlanCollectData(year, month))
         spending = DaySpending(
