@@ -38,11 +38,10 @@ class YearBalance(BalanceBase):
         super().__init__()
 
         try:
-            amount_start = float(amount_start)
+            self._amount_start = float(amount_start)
         except TypeError:
-            amount_start = 0.0
+            self._amount_start = 0.0
 
-        self._amount_start = amount_start
         self._year = year
 
         self._balance = self._make_df(year=year, data=data)
