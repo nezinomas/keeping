@@ -10,7 +10,10 @@ def fixture_balance():
     return \
         SimpleNamespace(
             types=['T1', 'T2'],
+            total=0.0,
             total_row={'T1': 1.0, 'T2': 0.85},
+            total_column={},
+            balance=[],
             average={'T1': 0.5, 'T2': 0.425},
         )
 
@@ -27,8 +30,10 @@ def test_chart_data(balance):
     assert expect == actual
 
 
-def test_chart_data_none():
-    balance = SimpleNamespace(types=[], total_row={})
+def test_chart_data_none(balance):
+    balance.types=[]
+    balance.total_row={}
+
     expect = [{'name': 'Išlaidų nėra', 'y': 0}]
 
     obj = ExpenseService(data=balance)
@@ -37,8 +42,10 @@ def test_chart_data_none():
     assert expect == actual
 
 
-def test_chart_data_empty():
-    balance = SimpleNamespace(types=[], total_row={})
+def test_chart_data_empty(balance):
+    balance.types = []
+    balance.total_row = {}
+
     expect = [{'name': 'Išlaidų nėra', 'y': 0}]
 
     obj = ExpenseService(data=balance)
@@ -47,11 +54,9 @@ def test_chart_data_empty():
     assert expect == actual
 
 
-def test_chart_no_data():
-    balance = SimpleNamespace(
-        types=['X'],
-        total_row={},
-    )
+def test_chart_no_data(balance):
+    balance.types=['X']
+    balance.total_row={}
 
     expect = [{'name': 'X', 'y': 0}]
 
@@ -61,11 +66,9 @@ def test_chart_no_data():
     assert expect == actual
 
 
-def test_chart_no_data_truncate_long_title():
-    balance = SimpleNamespace(
-        types=['X'*12],
-        total_row={},
-    )
+def test_chart_no_data_truncate_long_title(balance):
+    balance.types = ['X'*12]
+    balance.total_row={}
 
     obj = ExpenseService(data=balance)
     actual = obj.chart_context()
@@ -73,11 +76,9 @@ def test_chart_no_data_truncate_long_title():
     assert len(actual[0]['name']) == 11
 
 
-def test_chart_data_truncate_long_title():
-    balance = SimpleNamespace(
-        types=['X'*12],
-        total_row={'X'*12: 0.25}
-    )
+def test_chart_data_truncate_long_title(balance):
+    balance.types = ['X'*12]
+    balance.total_row = {'X'*12: 0.25}
 
     obj = ExpenseService(data=balance)
     actual = obj.chart_context()

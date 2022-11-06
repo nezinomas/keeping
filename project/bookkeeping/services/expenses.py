@@ -28,13 +28,18 @@ class ExpenseServiceData:
 
 class ExpenseService():
     def __init__(self, data: ExpenseBalance):
-        self._data = data
+        self._types = data.types
+        self._total = data.total
+        self._total_row = data.total_row
+        self._total_column = data.total_column
+        self._balance = data.balance
+        self._average = data.average
 
     def chart_context(self):
-        if not self._data.types:
+        if not self._types:
             return [{'name': _('No expenses'), 'y': 0}]
 
-        if arr := self._data.total_row.copy():
+        if arr := self._total_row.copy():
             # sort dictionary
             arr = dict(sorted(arr.items(), key=lambda x: x[1], reverse=True))
 
@@ -43,17 +48,17 @@ class ExpenseService():
                 [{'name': key[:11], 'y': value} for key, value in arr.items()]
 
         return \
-            [{'name': name[:11], 'y': 0} for name in self._data.types]
+            [{'name': name[:11], 'y': 0} for name in self._types]
 
 
     def table_context(self):
         return {
-            'categories': self._data.types,
-            'data': it.zip_longest(self._data.balance, self._data.total_column),
-            'total': self._data.total,
-            'total_row': self._data.total_row,
-            'avg': self._calc_total_avg(self._data.total_row),
-            'avg_row': self._data.average,
+            'categories': self._types,
+            'data': it.zip_longest(self._balance, self._total_column),
+            'total': self._total,
+            'total_row': self._total_row,
+            'avg': self._calc_total_avg(self._total_row),
+            'avg_row': self._average,
         }
 
     def _calc_total_avg(self, data: dict) -> float:
