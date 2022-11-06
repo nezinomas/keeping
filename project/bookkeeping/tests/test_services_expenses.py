@@ -32,7 +32,7 @@ def test_chart_data(balance):
 
 def test_chart_data_none(balance):
     balance.types=[]
-    balance.total_row={}
+    balance.total_row = {}
 
     expect = [{'name': 'Išlaidų nėra', 'y': 0}]
 
@@ -56,7 +56,7 @@ def test_chart_data_empty(balance):
 
 def test_chart_no_data(balance):
     balance.types=['X']
-    balance.total_row={}
+    balance.total_row = {}
 
     expect = [{'name': 'X', 'y': 0}]
 
@@ -68,7 +68,7 @@ def test_chart_no_data(balance):
 
 def test_chart_no_data_truncate_long_title(balance):
     balance.types = ['X'*12]
-    balance.total_row={}
+    balance.total_row = {}
 
     obj = ExpenseService(data=balance)
     actual = obj.chart_context()
