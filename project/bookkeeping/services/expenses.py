@@ -52,10 +52,10 @@ class ExpenseService():
             'data': it.zip_longest(self._data.balance, self._data.total_column),
             'total': self._data.total,
             'total_row': self._data.total_row,
-            'avg': self._calc_total_avg(),
+            'avg': self._calc_total_avg(self._data.total_row),
             'avg_row': self._data.average,
         }
 
-    def _calc_total_avg(self) -> float:
+    def _calc_total_avg(self, data: dict) -> float:
         return \
-            sum(values) / 12 if (values := self._data.total_row.values()) else 0
+            sum(values) / 12 if (values := data.values()) else 0
