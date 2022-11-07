@@ -14,9 +14,15 @@ class ChartSummaryServiceData:
     salary: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = Income.objects.sum_by_year()
-        self.salary = self.incomes.filter(income_type__type="salary")
-        self.expenses = Expense.objects.sum_by_year()
+        self.incomes = \
+            Income.objects \
+            .sum_by_year()
+        self.salary = \
+            Income.objects \
+            .sum_by_year() \
+            .filter(income_type__type="salary")
+        self.expenses = \
+            Expense.objects.sum_by_year()
 
 
 class ChartSummaryService:
