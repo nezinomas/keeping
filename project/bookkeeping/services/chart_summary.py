@@ -4,7 +4,7 @@ from django.utils.translation import gettext as _
 
 from ...expenses.models import Expense
 from ...incomes.models import Income
-from .common import average
+from . import common
 
 
 @dataclass
@@ -60,9 +60,9 @@ class ChartSummaryService:
         context |= {
             'chart_title': _('Incomes'),
             'categories': salary_years,
-            'incomes': average(self._incomes),
+            'incomes': common.average(self._incomes),
             'incomes_title': _('Average incomes'),
-            'salary': average(self._salary),
+            'salary': common.average(self._salary),
             'salary_title': _('Average salary') + ', €',
         }
 
