@@ -241,7 +241,8 @@ class Summary(TemplateViewMixin):
     template_name = 'bookkeeping/summary.html'
 
     def get_context_data(self, **kwargs):
-        obj = services.ChartSummaryService()
+        data = services.ChartSummaryServiceData()
+        obj = services.ChartSummaryService(data)
 
         return {
             'chart_balance': obj.chart_balance(),

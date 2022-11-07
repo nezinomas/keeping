@@ -1,4 +1,4 @@
-from typing import Dict
+from dataclasses import dataclass, field
 
 from django.utils.translation import gettext as _
 
@@ -7,30 +7,32 @@ from ...incomes.models import Income
 from .common import average
 
 
+@dataclass
+class ChartSummaryServiceData:
+    incomes: list = field(init=False, default_factory=list)
+    expenses: list = field(init=False, default_factory=list)
+    salary: list = field(init=False, default_factory=list)
+
+    def __post_init__(self):
+        self.incomes = Income.objects.sum_by_year()
+        self.salary = self.incomes.filter(income_type__type="salary")
+        self.expenses = Expense.objects.sum_by_year()
+
+
 class ChartSummaryService:
-    def __init__(self):
-        self._incomes = self._get_incomes()
-        self._expenses = self._get_expenses()
+    def __init__(self, data: ChartSummaryServiceData):
+        self._incomes = data.incomes
+        self._salary = data.salary
+        self._expenses = data.expenses
 
-    def _get_incomes(self) -> Dict:
-        return \
-            Income.objects.sum_by_year()
-
-    def _get_expenses(self) -> Dict:
-        return \
-            Expense.objects.sum_by_year()
-
-    def _get_salary(self) -> Dict:
-        return \
-            self._incomes.filter(income_type__type="salary")
-
-    def chart_balance(self) -> Dict:
+    def chart_balance(self) -> dict:
         # generate balance_categories
-        _arr = self._incomes or self._expenses
-        balance_years = [x['year'] for x in _arr]
+        data = self._incomes or self._expenses
+        balance_years = [x['year'] for x in data]
 
         records = len(balance_years)
         context = {'records': records}
+
         if not records or records < 1:
             return context
 
@@ -45,13 +47,13 @@ class ChartSummaryService:
 
         return context
 
-    def chart_incomes(self) -> Dict:
+    def chart_incomes(self) -> dict:
         # data for salary summary
-        salary = self._get_salary()
-        salary_years = [x['year'] for x in salary]
+        salary_years = [x['year'] for x in self._salary]
 
         records = len(salary_years)
         context = {'records': records}
+
         if not records or records < 1:
             return context
 
@@ -60,7 +62,7 @@ class ChartSummaryService:
             'categories': salary_years,
             'incomes': average(self._incomes),
             'incomes_title': _('Average incomes'),
-            'salary': average(salary),
+            'salary': average(self._salary),
             'salary_title': _('Average salary') + ', €',
         }
 
