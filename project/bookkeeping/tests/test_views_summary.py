@@ -5,6 +5,8 @@ from ...expenses.factories import ExpenseFactory
 from ...incomes.factories import IncomeFactory
 from .. import views
 
+pytestmark = pytest.mark.django_db
+
 
 def test_func():
     view = resolve('/summary/')
@@ -12,7 +14,6 @@ def test_func():
     assert views.Summary == view.func.view_class
 
 
-@pytest.mark.django_db
 def test_200(client_logged):
     url = reverse('bookkeeping:summary')
     response = client_logged.get(url)
