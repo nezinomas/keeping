@@ -1,26 +1,31 @@
-from typing import Dict, List
+from dataclasses import dataclass, field
 
-from ...pensions.models import PensionBalance
 from ...core.lib.utils import sum_all
+from ...pensions.models import PensionBalance
 from ..models import PensionWorth
 from ..services.common import add_latest_check_key
 
 
+@dataclass
+class PensionServiceData:
+    year: int
+
+    data: list = field(init=False, default_factory=list)
+
+    def __post_init__(self):
+        # data
+        balance_data = PensionBalance.objects.year(self.year)
+        worth_data = PensionWorth.objects.items(self.year)
+
+        self.data = add_latest_check_key(worth_data, balance_data)
+
+
 class PensionsService:
-    def __init__(self, year: int):
-        self._data = self._get_data(year)
-
-        add_latest_check_key(PensionWorth, self._data, year)
-
-    def _get_data(self, year: int) -> List[Dict]:
-        return PensionBalance.objects.year(year)
+    def __init__(self, data: PensionServiceData):
+        self.data = data.data
 
     @property
-    def data(self) -> List[Dict]:
-        return self._data
-
-    @property
-    def total_row(self) -> Dict:
+    def total_row(self) -> dict:
         total_row = {
             'past_amount': 0,
             'past_fee': 0,
@@ -34,4 +39,4 @@ class PensionsService:
             'profit_invested_proc': 0,
         }
 
-        return sum_all(self.data) if self._data else total_row
+        return sum_all(self.data) if self.data else total_row
