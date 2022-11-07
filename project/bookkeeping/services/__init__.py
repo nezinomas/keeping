@@ -1,4 +1,4 @@
-from .accounts import AccountService
+from .accounts import AccountService, AccountServiceData
 from .chart_summary import ChartSummaryService
 from .chart_summary_expenses import ChartSummaryExpensesService
 from .common import add_latest_check_key, expense_types

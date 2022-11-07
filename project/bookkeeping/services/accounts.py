@@ -1,4 +1,4 @@
-from typing import Dict, List
+from dataclasses import dataclass, field
 
 from ...accounts.models import AccountBalance
 from ...core.lib.utils import sum_all
@@ -6,21 +6,25 @@ from ..models import AccountWorth
 from ..services.common import add_latest_check_key
 
 
+@dataclass
+class AccountServiceData:
+    year: int
+
+    data: list = field(init=False, default_factory=list)
+
+    def __post_init__(self):
+        balance_data = AccountBalance.objects.year(self.year)
+        worth_data = AccountWorth.objects.items(self.year)
+
+        self.data = add_latest_check_key(worth_data, balance_data)
+
+
 class AccountService:
-    def __init__(self, year: int):
-        self._data = self._get_data(year)
-
-        add_latest_check_key(AccountWorth, self._data, year)
-
-    def _get_data(self, year: int) -> List[Dict]:
-        return AccountBalance.objects.year(year)
+    def __init__(self, data: AccountServiceData):
+        self.data = data.data
 
     @property
-    def data(self) -> List[Dict]:
-        return self._data
-
-    @property
-    def total_row(self) -> Dict:
+    def total_row(self) -> dict:
         total_row = {
             'past': 0,
             'incomes': 0,
@@ -31,4 +35,4 @@ class AccountService:
         }
 
         return \
-            sum_all(self.data) if self._data else total_row
+            sum_all(self.data) if self.data else total_row
