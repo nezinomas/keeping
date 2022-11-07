@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 
-from ...core.lib.utils import sum_all
+from ...core.lib import utils
 from ...pensions.models import PensionBalance
 from ..models import PensionWorth
-from ..services.common import add_latest_check_key
+from . import common
 
 
 @dataclass
@@ -17,7 +17,7 @@ class PensionServiceData:
         balance_data = PensionBalance.objects.year(self.year)
         worth_data = PensionWorth.objects.items(self.year)
 
-        self.data = add_latest_check_key(worth_data, balance_data)
+        self.data = common.add_latest_check_key(worth_data, balance_data)
 
 
 class PensionsService:
@@ -39,4 +39,4 @@ class PensionsService:
             'profit_invested_proc': 0,
         }
 
-        return sum_all(self.data) if self.data else total_row
+        return utils.sum_all(self.data) if self.data else total_row

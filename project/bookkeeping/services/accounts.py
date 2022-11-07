@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 
 from ...accounts.models import AccountBalance
-from ...core.lib.utils import sum_all
+from ...core.lib import utils
 from ..models import AccountWorth
-from ..services.common import add_latest_check_key
+from . import common
 
 
 @dataclass
@@ -16,7 +16,7 @@ class AccountServiceData:
         balance_data = AccountBalance.objects.year(self.year)
         worth_data = AccountWorth.objects.items(self.year)
 
-        self.data = add_latest_check_key(worth_data, balance_data)
+        self.data = common.add_latest_check_key(worth_data, balance_data)
 
 
 class AccountService:
@@ -35,4 +35,4 @@ class AccountService:
         }
 
         return \
-            sum_all(self.data) if self.data else total_row
+            utils.sum_all(self.data) if self.data else total_row

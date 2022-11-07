@@ -4,11 +4,11 @@ from typing import Dict
 from django.db.models import Sum
 from django.db.models.fields import FloatField
 
-from ...core.lib.utils import sum_all
+from ...core.lib import utils
 from ...incomes.models import Income
 from ...savings.models import SavingBalance
 from ..models import SavingWorth
-from .common import add_latest_check_key
+from . import common
 from .index import IndexService
 
 
@@ -33,7 +33,7 @@ class SavingServiceData:
         balance_data = SavingBalance.objects.year(self.year)
         worth_data = SavingWorth.objects.items(self.year)
 
-        self.data = add_latest_check_key(worth_data, balance_data)
+        self.data = common.add_latest_check_key(worth_data, balance_data)
 
 
 class SavingsService:
@@ -42,7 +42,7 @@ class SavingsService:
         self.incomes = data.incomes
 
     def context(self) -> Dict:
-        total_row = sum_all(self.data)
+        total_row = utils.sum_all(self.data)
 
         total_past = total_row.get('past_amount', 0)
         total_savings = total_row.get('incomes', 0)
