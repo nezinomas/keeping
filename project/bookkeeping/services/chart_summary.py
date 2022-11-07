@@ -15,11 +15,9 @@ class ChartSummaryServiceData:
 
     def __post_init__(self):
         self.incomes = \
-            Income.objects \
-            .sum_by_year()
+            Income.objects.sum_by_year()
         self.salary = \
-            Income.objects \
-            .sum_by_year() \
+            Income.objects.sum_by_year() \
             .filter(income_type__type="salary")
         self.expenses = \
             Expense.objects.sum_by_year()
