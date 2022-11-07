@@ -7,7 +7,7 @@ from .expand_day import ExpandDayService
 from .expenses import ExpenseService, ExpenseServiceData
 from .index import IndexService, IndexServiceData
 from .month import MonthService, MonthServiceData
-from .pensions import PensionsService, PensionServiceData
-from .savings import SavingsService, SavingServiceData
-from .summary_savings import SummarySavingsService
+from .pensions import PensionServiceData, PensionsService
+from .savings import SavingServiceData, SavingsService
+from .summary_savings import SummarySavingsService, SummarySavingsServiceData
 from .wealth import WealthService, WealthServiceData

@@ -1,41 +1,49 @@
 import contextlib
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List
 
 from django.db.models.query import QuerySet
+from django.utils.translation import gettext as _
 
 from ...pensions.models import PensionBalance
 from ...savings.models import SavingBalance
 
 
-class SummarySavingsService():
-    def __init__(self):
-        self._saving_data = self._get_saving_data()
-        self._pension_data = self._get_pension_data()
+@dataclass
+class SummarySavingsServiceData:
+    funds: list = field(init=False, default_factory=list)
+    shares: list = field(init=False, default_factory=list)
+    pensions2: list = field(init=False, default_factory=list)
+    pensions3: list = field(init=False, default_factory=list)
+
+    def __post_init__(self):
+        self.funds = \
+            list(SavingBalance.objects.sum_by_type().filter(type='funds'))
+        self.shares = \
+            list(SavingBalance.objects.sum_by_type().filter(type='shares'))
+        self.pensions2 = \
+            list(PensionBalance.objects.sum_by_year())
+        self.pensions3 = \
+            list(SavingBalance.objects.sum_by_type().filter(type='pensions'))
+
+
+class SummarySavingsService:
+    def __init__(self, data: SummarySavingsServiceData):
+        self.funds = data.funds
+        self.shares = data.shares
+        self.pensions2 = data.pensions2
+        self.pensions3 = data.pensions3
 
     @property
     def records(self):
         return \
-            self._saving_data.count() + \
-            self._pension_data.count()
+            0 \
+            + len(self.funds) \
+            + len(self.shares) \
+            + len(self.pensions2) \
+            + len(self.pensions3) \
 
-    @property
-    def funds(self):
-        return self._saving_data.filter(type='funds')
-
-    @property
-    def shares(self):
-        return self._saving_data.filter(type='shares')
-
-    @property
-    def pensions2(self):
-        return self._pension_data
-
-    @property
-    def pensions3(self):
-        return self._saving_data.filter(type='pensions')
-
-    def make_chart_data(self, *attr_names: str) -> List[Dict]:
+    def make_chart_data(self, *attr_names: str) -> list[dict]:
         '''
         attr_names
         available: funds, shares, pensions2, pensions3
@@ -48,20 +56,17 @@ class SummarySavingsService():
 
         return __class__.chart_data(*data)
 
-    def _get_saving_data(self):
-        return SavingBalance.objects.sum_by_type()
-
-    def _get_pension_data(self):
-        return PensionBalance.objects.sum_by_year()
-
     @staticmethod
     def chart_data(*args):
         items = {
+            'text_total': _('Total'),
+            'text_profit': _('Profit'),
+            'text_invested': _('Invested'),
             'categories': [],
             'invested': [],
             'profit': [],
             'total': [],
-            'max': 0
+            'max': 0,
         }
 
         for arr in args:
