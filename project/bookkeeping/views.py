@@ -93,7 +93,8 @@ class Savings(TemplateViewMixin):
     template_name = 'bookkeeping/includes/funds_table.html'
 
     def get_context_data(self, **kwargs):
-        obj = services.SavingsService(self.request.user.year)
+        data = services.SavingServiceData(self.request.user.year)
+        obj = services.SavingsService(data)
 
         context = {
             'title': _('Funds'),

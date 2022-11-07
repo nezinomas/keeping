@@ -8,6 +8,6 @@ from .expenses import ExpenseService, ExpenseServiceData
 from .index import IndexService, IndexServiceData
 from .month import MonthService, MonthServiceData
 from .pensions import PensionsService, PensionServiceData
-from .savings import SavingsService
+from .savings import SavingsService, SavingServiceData
 from .summary_savings import SummarySavingsService
 from .wealth import WealthService, WealthServiceData
