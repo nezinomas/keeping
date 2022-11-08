@@ -71,15 +71,6 @@ def test_chart_data_6():
     assert not actual['total']
 
 
-def test_chart_data_7():
-    actual = SummarySavingsService.chart_data('x')
-
-    assert not actual['categories']
-    assert not actual['invested']
-    assert not actual['profit']
-    assert not actual['total']
-
-
 @freeze_time('2000-1-1')
 def test_chart_data_4(_a, _b):
     actual = SummarySavingsService.chart_data(_a, _b)
@@ -109,7 +100,7 @@ def test_chart_data_db1():
     SavingBalanceFactory(year=2001, incomes=2, profit_incomes_sum=0.2)
 
     qs = SavingBalance.objects.sum_by_type()
-    actual = SummarySavingsService.chart_data(qs.filter(type='funds'))
+    actual = SummarySavingsService.chart_data(list(qs.filter(type='funds')))
 
     assert actual['categories'] == [2000, 2001]
     assert actual['invested'] == [1.0, 2.0]

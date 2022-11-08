@@ -1,8 +1,8 @@
 import contextlib
+import itertools
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from django.db.models.query import QuerySet
 from django.utils.translation import gettext as _
 
 from ...pensions.models import PensionBalance
@@ -66,40 +66,37 @@ class SummarySavingsService:
             'invested': [],
             'profit': [],
             'total': [],
-            'max': 0,
+            'max': 0.0,
         }
 
-        for arr in args:
-            if isinstance(arr, QuerySet):
-                arr = list(arr)
+        # from tuple[list[dict]] make list[dict]
+        data = itertools.chain.from_iterable(args)
 
-            if not arr or not isinstance(arr, list):
+        for row in data:
+            _year = row.get('year')
+            _invested = row.get('invested')
+            _profit = row.get('profit')
+            _total_sum = _invested + _profit
+
+            if _year > datetime.now().year:
                 continue
 
-            cnt = len(arr)
-            for i in range(cnt):
-                _year = arr[i]['year']
-                _invested = arr[i]['invested']
-                _profit = arr[i]['profit']
-                _total_sum = _invested + _profit
+            if not _invested and not _profit:
+                continue
 
-                if _year > datetime.now().year:
-                    continue
-
-                if _invested or _profit:
-                    if _year not in items['categories']:
-                        items['categories'].append(_year)
-                        items['invested'].append(_invested)
-                        items['profit'].append(_profit)
-                        items['total'].append(_total_sum)
-                    else:
-                        ix = items['categories'].index(_year)  # category index
-                        items['invested'][ix] += _invested
-                        items['profit'][ix] += _profit
-                        items['total'][ix] += _total_sum
+            if _year not in items['categories']:
+                items['categories'].append(_year)
+                items['invested'].append(_invested)
+                items['profit'].append(_profit)
+                items['total'].append(_total_sum)
+            else:
+                ix = items['categories'].index(_year)  # category index
+                items['invested'][ix] += _invested
+                items['profit'][ix] += _profit
+                items['total'][ix] += _total_sum
 
         # max value
-        if items['profit'] or items['invested']:
-            items['max'] = (max(items['profit']) + max(items['invested']))
+        with contextlib.suppress(ValueError):
+            items['max'] = (max(items.get('profit')) + max(items.get('invested')))
 
         return items
