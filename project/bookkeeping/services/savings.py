@@ -1,38 +1,48 @@
+from dataclasses import dataclass, field
 from typing import Dict
 
 from django.db.models import Sum
+from django.db.models.fields import FloatField
 
-from ...core.lib.utils import sum_all
+from ...core.lib import utils
 from ...incomes.models import Income
 from ...savings.models import SavingBalance
 from ..models import SavingWorth
-from .common import add_latest_check_key
+from . import common
 from .index import IndexService
 
 
-class SavingsService:
-    def __init__(self, year: int):
-        self.total_incomes = self._get_total_incomes(year)
-        self.savings = self._get_savings(year)
+@dataclass
+class SavingServiceData:
+    year: int
 
-        add_latest_check_key(SavingWorth, self.savings, year)
+    incomes: float = field(init=False, default=0.0)
+    savings: list = field(init=False, default_factory=list)
+    data: list = field(init=False, default_factory=list)
 
-    def _get_total_incomes(self, year: int) -> float:
-        val = \
+    def __post_init__(self):
+        # incomes
+        self.incomes = \
             Income.objects \
             .related() \
-            .year(year=year) \
-            .aggregate(Sum('price')) \
+            .year(year=self.year) \
+            .aggregate(Sum('price', output_field=FloatField())) \
             ['price__sum']
 
-        return float(val) if val else 0.0
+        # data
+        balance_data = SavingBalance.objects.year(self.year)
+        worth_data = SavingWorth.objects.items(self.year)
 
-    def _get_savings(self, year: int) -> Dict:
-        return \
-            SavingBalance.objects.year(year)
+        self.data = common.add_latest_check_key(worth_data, balance_data)
+
+
+class SavingsService:
+    def __init__(self, data: SavingServiceData):
+        self.data = data.data
+        self.incomes = data.incomes
 
     def context(self) -> Dict:
-        total_row = sum_all(self.savings)
+        total_row = utils.sum_all(self.data)
 
         total_past = total_row.get('past_amount', 0)
         total_savings = total_row.get('incomes', 0)
@@ -43,10 +53,10 @@ class SavingsService:
         calculate_percent = IndexService.percentage_from_incomes
 
         return {
-            'items': self.savings,
+            'items': self.data,
             'total_row': total_row,
             'percentage_from_incomes': \
-                calculate_percent(self.total_incomes, total_savings_current_year),
+                calculate_percent(self.incomes, total_savings_current_year),
             'profit_incomes_proc': \
                 calculate_percent(total_savings, total_market) - 100,
             'profit_invested_proc': \

@@ -7,64 +7,78 @@ from django.utils.translation import gettext_lazy as _
 from ...accounts.models import AccountBalance
 from ...expenses.models import Expense, ExpenseType
 from ...savings.models import Saving, SavingBalance
+from dataclasses import dataclass, field
 
 
-class NoIncomes():
-    cut_sum = 0.0
-    avg_expenses = 0.0
-    savings = None
-    unnecessary = []
+@dataclass
+class NoIncomesData:
+    year: int
+    months: int = field(default=6)
+    unnecessary_expenses: list = field(default_factory=list)
+    unnecessary_savings: bool = field(default=False)
 
-    def __init__(self, journal, year):
-        self._journal = journal
-        self._year = year
+    account_sum: float = field(init=False, default=0.0)
+    fund_sum: float = field(init=False, default=0.0)
+    pension_sum: float = field(init=False, default=0.0)
 
-        self._expenses = Expense.objects.last_months()
+    expenses: list = \
+        field(init=False, default_factory=list)
+    savings: dict = \
+        field(init=False, default_factory=dict)
+    unnecessary: list = \
+        field(init=False, default_factory=list)
 
-        account_sum = \
+    def __post_init__(self):
+        self.expenses = Expense.objects.last_months(months=self.months)
+        self.account_sum = \
             AccountBalance.objects \
             .related() \
-            .filter(year=year) \
-            .aggregate(Sum('balance'))['balance__sum']
+            .filter(year=self.year) \
+            .aggregate(Sum('balance'))['balance__sum'] or 0.0
 
-        fund_sum = \
+        self.fund_sum = \
             SavingBalance.objects \
             .related() \
-            .filter(year=year, saving_type__type__in=['shares', 'funds']) \
-            .aggregate(Sum('market_value'))['market_value__sum']
+            .filter(year=self.year, saving_type__type__in=['shares', 'funds']) \
+            .aggregate(Sum('market_value'))['market_value__sum'] or 0.0
 
-        pension_sum = \
+        self.pension_sum = \
             SavingBalance.objects \
             .related() \
-            .filter(year=year, saving_type__type='pensions') \
-            .aggregate(Sum('market_value'))['market_value__sum']
+            .filter(year=self.year, saving_type__type='pensions') \
+            .aggregate(Sum('market_value'))['market_value__sum'] or 0.0
 
-        # convert decimal to float
-        self._account_sum = float(account_sum) if account_sum else 0
-        self._fund_sum = float(fund_sum) if fund_sum else 0
-        self._pension_sum = float(pension_sum) if pension_sum else 0
-
-        if journal.unnecessary_expenses:
-            arr = json.loads(journal.unnecessary_expenses)
+        if self.unnecessary_expenses:
+            arr = json.loads(self.unnecessary_expenses)
             self.unnecessary = list(
-                ExpenseType
-                .objects
+                ExpenseType.objects
                 .related()
                 .filter(pk__in=arr)
                 .values_list("title", flat=True)
             )
 
-        if journal.unnecessary_savings:
+        if self.unnecessary_savings:
             self.unnecessary.append(_('Savings'))
-            self.savings = Saving.objects.last_months()
+            self.savings = Saving.objects.last_months(months=self.months)
 
-        self._no_incomes_data()
+
+@dataclass
+class NoIncomes:
+    data: NoIncomesData
+    cut_sum: float = field(init=False, default=0.0)
+    avg_expenses: float = field(init=False, default=0.0)
+
+    def __post_init__(self):
+        self._calc()
+
+    @property
+    def unnecessary(self):
+        return self.data.unnecessary
 
     @property
     def summary(self) -> List[Dict[str, float]]:
-        i1 = self._account_sum + self._fund_sum
-        i2 = self._account_sum + self._fund_sum + self._pension_sum
-        # cut_sum = 0 if not self.cut_sum else self.cut_sum
+        i1 = self.data.account_sum + self.data.fund_sum
+        i2 = self.data.account_sum + self.data.fund_sum + self.data.pension_sum
 
         return [{
             'label': 'money',
@@ -80,33 +94,27 @@ class NoIncomes():
             'money_fund_pension': self._div(i2, (self.avg_expenses - self.cut_sum))
         }]
 
-    def _no_incomes_data(self):
-        months = 6
-
+    def _calc(self):
         expenses_sum = 0.0
         cut_sum = 0.0
-        for r in self._expenses:
+        for r in self.data.expenses:
             _sum = float(r['sum'])
 
             expenses_sum += _sum
 
-            if r['title'] in self.unnecessary:
+            if r['title'] in self.data.unnecessary:
                 cut_sum += _sum
 
         try:
-            savings_sum = self.savings.get('sum', 0.0)
+            savings_sum = self.data.savings.get('sum', 0.0)
             savings_sum = float(savings_sum)
         except (AttributeError, TypeError):
             savings_sum = 0
 
-        self.avg_expenses = (expenses_sum + savings_sum) / months
-        self.cut_sum = (cut_sum + savings_sum) / months
+        self.avg_expenses = (expenses_sum + savings_sum) / self.data.months
+        self.cut_sum = (cut_sum + savings_sum) / self.data.months
 
 
     def _div(self, incomes: float, expenses: float) -> float:
-        _val = 0.0
-
-        if expenses:
-            _val = incomes / expenses
-
-        return _val
+        return \
+            incomes / expenses if expenses else 0.0

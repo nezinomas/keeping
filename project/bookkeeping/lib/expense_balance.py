@@ -34,34 +34,35 @@ class ExpenseBalance(BalanceBase):
     def types(self) -> List:
         return sorted(self._expenses.columns.tolist())
 
-    def _make_expenses_df(self, df: DF, lst: List[Dict], types: List) -> DF:
+    def _make_expenses_df(self, df: DF, data: List[Dict], types: List) -> DF:
         df = df.copy()
 
         # create column for each type
         df[types] = 0.0
-
-        if not lst:
+        if not data:
             return df
 
-        for row in lst:
+        for row in data:
             title = row.get('title', 'sum')
-            df.at[to_datetime(row['date']), title] = float(row['sum'])
+            val = row.get('sum', 0.0)
+            dt = to_datetime(row['date'])
+            df.at[dt, title] = float(val)
 
         df.fillna(0.0, inplace=True)
 
         return df
 
-    def _exception_df(self, df: DF, lst: List[Dict]) -> DF:
+    def _exception_df(self, df: DF, data: List[Dict]) -> DF:
         df = df.copy()
 
-        if not lst:
+        if not data:
             return df
 
-        for row in lst:
+        for row in data:
             title = row.get('title', 'sum')
             val = row.get('exception_sum', 0.0)
-
-            df.at[to_datetime(row['date']), title] = float(val)
+            dt = to_datetime(row['date'])
+            df.at[dt, title] = float(val)
 
         df.fillna(0.0, inplace=True)
 

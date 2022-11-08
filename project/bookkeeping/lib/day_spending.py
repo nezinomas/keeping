@@ -5,8 +5,6 @@ from project.bookkeeping.lib.expense_balance import (ExpenseBalance,
                                                      df_days_of_month)
 
 from ...core.lib.date import current_day
-from ...core.lib.utils import get_value_from_dict
-from ...plans.lib.calc_day_sum import PlanCalculateDaySum
 
 
 class DaySpending(ExpenseBalance):
@@ -16,7 +14,8 @@ class DaySpending(ExpenseBalance):
                  expenses: List[Dict],
                  types: List[str],
                  necessary: List[str],
-                 plans: PlanCalculateDaySum):
+                 day_input: float,
+                 expenses_free: float):
 
         super().__init__(df_days_of_month(year, month), expenses, types)
 
@@ -24,7 +23,7 @@ class DaySpending(ExpenseBalance):
         self._month = month
         self._necessary = necessary or []
 
-        self._spending = self._calc_spending(self.expenses, self.exceptions, plans)
+        self._spending = self._calc_spending(self.expenses, self.exceptions, day_input, expenses_free)
 
     @property
     def spending(self) -> List[Dict]:
@@ -65,7 +64,7 @@ class DaySpending(ExpenseBalance):
 
         return row.to_dict()
 
-    def _calc_spending(self, df: DF, exceptions: DF, plans: PlanCalculateDaySum) -> DF:
+    def _calc_spending(self, df: DF, exceptions: DF, day_input: float, expenses_free: float) -> DF:
         # filter dateframe
         df = self._delete_columns_marked_as_necessary(df)
 
@@ -84,18 +83,15 @@ class DaySpending(ExpenseBalance):
         df.loc[:, 'day'] = 0.0
         df.loc[:, 'full'] = 0.0
 
-        plan_day_sum = get_value_from_dict(plans.day_input, self._month)
-        plan_free_sum = get_value_from_dict(plans.expenses_free, self._month)
-
         df.day = \
-            plan_day_sum - df.total
+            day_input - df.total
 
         df.teoretical = \
-            plan_free_sum - \
-            (plan_day_sum * df.index.to_series().dt.day)
+            expenses_free - \
+            (day_input * df.index.to_series().dt.day)
 
         df.real = \
-            plan_free_sum - df.total.cumsum()
+            expenses_free - df.total.cumsum()
 
         df.full = \
             df.real - df.teoretical

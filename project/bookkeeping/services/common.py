@@ -33,8 +33,10 @@ def average(qs):
     return arr
 
 
-def add_latest_check_key(model, arr, year):
-    if items := model.objects.items(year):
-        for a in arr:
-            latest = [x['latest_check'] for x in items if x.get('title') == a['title']]
-            a['latest_check'] = latest[0] if latest else None
+def add_latest_check_key(worth_data, balance_data):
+    if worth_data:
+        for row in balance_data:
+            latest = [x['latest_check'] for x in worth_data if x.get('title') == row['title']]
+            row['latest_check'] = latest[0] if latest else None
+
+    return balance_data

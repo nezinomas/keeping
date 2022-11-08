@@ -1,6 +1,6 @@
 from collections import namedtuple
-from decimal import Decimal
-from typing import Dict, List
+from dataclasses import dataclass, field
+from typing import Union
 
 import pandas as pd
 from django.db.models import F
@@ -11,61 +11,50 @@ from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
                       SavingPlan)
 
 
+@dataclass
 class PlanCollectData:
-    def __init__(self, year: int = 1970):
-        self._year = year
+    year: int = 1970
+    month: int = 0
 
-        self._incomes = \
-            IncomePlan.objects \
-            .year(year) \
-            .values(*monthnames())
+    incomes: list[dict] = \
+        field(init=False, default_factory=list)
+    expenses: list[dict] = \
+        field(init=False, default_factory=list)
+    savings: list[dict] = \
+        field(init=False, default_factory=list)
+    days: list[dict] = \
+        field(init=False, default_factory=list)
+    necessary: list[dict] = \
+        field(init=False, default_factory=list)
 
-        self._expenses = \
+    def __post_init__(self):
+        self.incomes = \
+                IncomePlan.objects \
+                .year(self.year) \
+                .values(*monthnames())
+
+        self.expenses = \
             ExpensePlan.objects \
-            .year(year) \
+            .year(self.year) \
             .values(
                 *monthnames(),
                 necessary=F('expense_type__necessary'),
                 title=F('expense_type__title'))
 
-        self._savings = \
-            SavingPlan.objects \
-            .year(year) \
-            .values(*monthnames())
+        self.savings = \
+                SavingPlan.objects \
+                .year(self.year) \
+                .values(*monthnames())
 
-        self._days = \
-            DayPlan.objects \
-            .year(year) \
-            .values(*monthnames())
+        self.days = \
+                DayPlan.objects \
+                .year(self.year) \
+                .values(*monthnames())
 
-        self._necessary = \
-            NecessaryPlan.objects \
-            .year(year) \
-            .values(*monthnames())
-
-    @property
-    def year(self) -> int:
-        return self._year
-
-    @property
-    def incomes(self) -> List[Dict[str, Decimal]]:
-        return self._incomes
-
-    @property
-    def expenses(self) -> List[Dict[str, Decimal]]:
-        return self._expenses
-
-    @property
-    def savings(self) -> List[Dict[str, Decimal]]:
-        return self._savings
-
-    @property
-    def days(self) -> List[Dict[str, Decimal]]:
-        return self._days
-
-    @property
-    def necessary(self) -> List[Dict[str, Decimal]]:
-        return self._necessary
+        self.necessary = \
+                NecessaryPlan.objects \
+                .year(self.year) \
+                .values(*monthnames())
 
 
 class PlanCalculateDaySum():
@@ -75,37 +64,50 @@ class PlanCalculateDaySum():
 
         self._calc_df()
 
-    @property
-    def incomes(self) -> Dict[str, float]:
-        return self._df.loc['incomes'].to_dict()
+        # filter data for current month
+        if self._data.month:
+            month = monthname(data.month)  # convert int to month name
+            self._df = self._df.loc[:, month]
 
     @property
-    def savings(self) -> Dict[str, float]:
-        return self._df.loc['savings'].to_dict()
+    def incomes(self) -> dict[str, float]:
+        data = self._df.loc['incomes']
+        return self._return_data(data)
 
     @property
-    def expenses_free(self) -> Dict[str, float]:
-        return self._df.loc['expenses_free'].to_dict()
+    def savings(self) -> dict[str, float]:
+        data = self._df.loc['savings']
+        return self._return_data(data)
 
     @property
-    def expenses_necessary(self) -> Dict[str, float]:
-        return self._df.loc['expenses_necessary'].to_dict()
+    def expenses_free(self) -> dict[str, float]:
+        data = self._df.loc['expenses_free']
+        return self._return_data(data)
 
     @property
-    def day_calced(self) -> Dict[str, float]:
-        return self._df.loc['day_calced'].to_dict()
+    def expenses_necessary(self) -> dict[str, float]:
+        data = self._df.loc['expenses_necessary']
+        return self._return_data(data)
 
     @property
-    def day_input(self) -> Dict[str, float]:
-        return self._df.loc['day_input'].to_dict()
+    def day_calced(self) -> dict[str, float]:
+        data = self._df.loc['day_calced']
+        return self._return_data(data)
 
     @property
-    def remains(self) -> Dict[str, float]:
-        return self._df.loc['remains'].to_dict()
+    def day_input(self) -> dict[str, float]:
+        data = self._df.loc['day_input']
+        return self._return_data(data)
 
     @property
-    def necessary(self) -> Dict[str, float]:
-        return self._df.loc['necessary'].to_dict()
+    def remains(self) -> dict[str, float]:
+        data = self._df.loc['remains']
+        return self._return_data(data)
+
+    @property
+    def necessary(self) -> dict[str, float]:
+        data = self._df.loc['necessary']
+        return self._return_data(data)
 
     @property
     def plans_stats(self):
@@ -119,10 +121,13 @@ class PlanCalculateDaySum():
         # list of dictionaries convert to list of objects
         return [namedtuple("Items", item.keys())(*item.values()) for item in dicts]
 
-    def targets(self, month: int) -> Dict[str, float]:
-        rtn = {}
+    @property
+    def targets(self) -> dict[str, float]:
+        if not self._data.month:
+            return
 
-        month = monthname(month)
+        rtn = {}
+        month = monthname(self._data.month)
         arr = self._data.expenses
 
         for item in arr:
@@ -131,7 +136,12 @@ class PlanCalculateDaySum():
 
         return rtn
 
-    def _sum(self, arr: List, row_name: str, necessary: int = -1):
+    def _return_data(self, data: Union[pd.Series, float]) -> Union[dict, float]:
+        ''' If data is pandas Serries convert data to dictionary '''
+
+        return data.to_dict() if isinstance(data, pd.Series) else data
+
+    def _sum(self, arr: list, row_name: str, necessary: int = -1):
         df = pd.DataFrame(arr)
 
         if df.empty:

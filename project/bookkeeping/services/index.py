@@ -1,3 +1,5 @@
+from dataclasses import dataclass, field
+
 from django.db.models import Sum
 from django.utils.translation import gettext as _
 
@@ -11,47 +13,49 @@ from ...transactions.models import SavingClose
 from ..lib.year_balance import YearBalance
 
 
+@dataclass
 class IndexServiceData:
+    year: int
     amount_start: float = 0.0
-    data: list[dict] = None
+    data: dict = field(default_factory=dict)
 
-    @classmethod
-    def collect_data(cls, year):
-        cls.amount_start = cls.get_amount_start(cls, year)
-        cls.data = cls.get_data(cls, year)
+    def __post_init__(self):
+        self.amount_start = self.get_amount_start()
+        self.data = self.get_data()
 
-        return cls
-
-    def get_amount_start(self, year):
+    def get_amount_start(self):
         _sum = \
             AccountBalance.objects \
             .related() \
-            .filter(year=year) \
-            .aggregate(Sum('past'))['past__sum']
+            .filter(year=self.year) \
+            .aggregate(Sum('past'))['past__sum'] or 0.0
 
-        return float(_sum) if _sum else 0.0
+        return float(_sum)
 
-    def get_data(self, year: int) -> list[dict]:
-        qs_borrow = Debt.objects.sum_by_month(year, debt_type='borrow')
-        qs_lend = Debt.objects.sum_by_month(year, debt_type='lend')
+    def get_data(self) -> list[dict]:
+        qs_borrow = \
+            Debt.objects \
+            .sum_by_month(self.year, debt_type='borrow')
+        qs_lend = \
+            Debt.objects \
+            .sum_by_month(self.year, debt_type='lend')
 
         # generate debts and debts_return arrays
-        borrow, borrow_return = IndexServiceData.get_debt_data(qs_borrow)
-        lend, lend_return = IndexServiceData.get_debt_data(qs_lend)
+        borrow, borrow_return = self.get_debt_data(qs_borrow)
+        lend, lend_return = self.get_debt_data(qs_lend)
 
         return {
-            'incomes': Income.objects.sum_by_month(year),
-            'expenses': Expense.objects.sum_by_month(year),
-            'savings': Saving.objects.sum_by_month(year),
-            'savings_close': SavingClose.objects.sum_by_month(year),
+            'incomes': Income.objects.sum_by_month(self.year),
+            'expenses': Expense.objects.sum_by_month(self.year),
+            'savings': Saving.objects.sum_by_month(self.year),
+            'savings_close': SavingClose.objects.sum_by_month(self.year),
             'borrow': borrow,
             'borrow_return': borrow_return,
             'lend': lend,
             'lend_return': lend_return,
         }
 
-    @staticmethod
-    def get_debt_data(data):
+    def get_debt_data(self, data):
         debt, debt_return = [], []
 
         for row in data:

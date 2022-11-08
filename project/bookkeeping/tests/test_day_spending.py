@@ -4,7 +4,6 @@ from types import SimpleNamespace
 
 import pandas as pd
 import pytest
-from freezegun import freeze_time
 
 from ..lib.day_spending import DaySpending
 
@@ -38,11 +37,6 @@ def _types():
 
 
 @pytest.fixture()
-def _plans():
-    return SimpleNamespace(day_input={'january': 0.25}, expenses_free={'january': 20})
-
-
-@pytest.fixture()
 def _df_for_average_calculation():
     df = pd.DataFrame([
         {'total': 1.1, 'date': datetime(1999, 1, 1)},
@@ -55,15 +49,16 @@ def _df_for_average_calculation():
     return df
 
 
-@freeze_time('1999-01-02')
-def test_avg_per_day(_expenses, _necessary, _types, _plans):
+@pytest.mark.freeze_time('1999-01-02')
+def test_avg_per_day(_expenses, _necessary, _types):
     obj = DaySpending(
         year=1999,
         month=1,
         expenses=_expenses,
         necessary=_necessary,
         types=_types,
-        plans=_plans
+        day_input=0.25,
+        expenses_free=20.0,
     )
 
     actual = obj.avg_per_day
@@ -71,14 +66,15 @@ def test_avg_per_day(_expenses, _necessary, _types, _plans):
     assert 1.15 == actual
 
 
-def test_spending_first_day(_expenses, _necessary, _types, _plans):
+def test_spending_first_day(_expenses, _necessary, _types):
     obj = DaySpending(
         year=1999,
         month=1,
         expenses=_expenses,
         necessary=_necessary,
         types=_types,
-        plans=_plans
+        day_input=0.25,
+        expenses_free=20.0,
     )
 
     actual = obj.spending
@@ -88,14 +84,15 @@ def test_spending_first_day(_expenses, _necessary, _types, _plans):
     assert actual[0]['full'] == -1.0
 
 
-def test_spending_second_day(_expenses, _necessary, _types, _plans):
+def test_spending_second_day(_expenses, _necessary, _types):
     obj = DaySpending(
         year=1999,
         month=1,
         expenses=_expenses,
         necessary=_necessary,
         types=_types,
-        plans=_plans
+        day_input=0.25,
+        expenses_free=20.0,
     )
 
     actual = obj.spending
@@ -105,14 +102,15 @@ def test_spending_second_day(_expenses, _necessary, _types, _plans):
     assert round(actual[1]['full'], 2) == -1.80
 
 
-def test_spending_first_day_necessary_empty(_expenses, _types, _plans):
+def test_spending_first_day_necessary_empty(_expenses, _types):
     obj = DaySpending(
         year=1999,
         month=1,
         expenses=_expenses,
         necessary=[],
         types=_types,
-        plans=_plans
+        day_input=0.25,
+        expenses_free=20.0,
     )
 
     actual = obj.spending
@@ -122,14 +120,15 @@ def test_spending_first_day_necessary_empty(_expenses, _types, _plans):
     assert actual[0]['full'] == -10.99
 
 
-def test_spending_first_day_necessary_none(_expenses, _types, _plans):
+def test_spending_first_day_necessary_none(_expenses, _types):
     obj = DaySpending(
         year=1999,
         month=1,
         expenses=_expenses,
         necessary=None,
         types=_types,
-        plans=_plans
+        day_input=0.25,
+        expenses_free=20.0,
     )
 
     actual = obj.spending
@@ -146,8 +145,8 @@ def test_spending_first_day_all_empty(_expenses, _types):
         expenses=_expenses,
         necessary=None,
         types=_types,
-        plans=SimpleNamespace(
-            day_input={'january': 0}, expenses_free={'january': 0})
+        day_input=0,
+        expenses_free=0,
     )
 
     actual = obj.spending
@@ -164,8 +163,8 @@ def test_spending_balance_expenses_empty(_types):
         expenses=[],
         necessary=[],
         types=_types,
-        plans=SimpleNamespace(
-            day_input={'january': 0}, expenses_free={'january': 0})
+        day_input=0,
+        expenses_free=0,
     )
 
     actual = obj.spending
@@ -178,7 +177,7 @@ def test_spending_balance_expenses_empty(_types):
         assert x['full'] == 0.0
 
 
-@freeze_time("1999-01-02")
+@pytest.mark.freeze_time("1999-01-02")
 def test_average_month_two_days(_df_for_average_calculation):
     o = DaySpending(
         year=1999,
@@ -186,7 +185,9 @@ def test_average_month_two_days(_df_for_average_calculation):
         expenses=[],
         necessary=[],
         types=[],
-        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+        day_input=0,
+        expenses_free=0
+    )
 
     o._spending = _df_for_average_calculation
 
@@ -194,7 +195,7 @@ def test_average_month_two_days(_df_for_average_calculation):
     assert 1.6 == round(actual, 2)
 
 
-@freeze_time("1999-01-31")
+@pytest.mark.freeze_time("1999-01-31")
 def test_average_month_last_day(_df_for_average_calculation):
     o = DaySpending(
         year=1999,
@@ -202,7 +203,9 @@ def test_average_month_last_day(_df_for_average_calculation):
         expenses=[],
         necessary=[],
         types=[],
-        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+        day_input=0,
+        expenses_free=0
+    )
 
     o._spending = _df_for_average_calculation
     actual = o.avg_per_day
@@ -210,7 +213,7 @@ def test_average_month_last_day(_df_for_average_calculation):
     assert round(actual, 2) == 0.34
 
 
-@freeze_time("1970-01-01")
+@pytest.mark.freeze_time("1970-01-01")
 def test_average_month_other_year(_df_for_average_calculation):
     o = DaySpending(
         year=1999,
@@ -218,7 +221,9 @@ def test_average_month_other_year(_df_for_average_calculation):
         expenses=[],
         necessary=[],
         types=[],
-        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+        day_input=0,
+        expenses_free=0
+    )
 
     o._spending = _df_for_average_calculation
     actual = o.avg_per_day
@@ -233,7 +238,9 @@ def test_average_month_empty_dataframe():
         expenses=[],
         necessary=[],
         types=[],
-        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+        day_input=0,
+        expenses_free=0
+    )
 
     o._spending = pd.DataFrame()
     actual = o.avg_per_day
@@ -248,7 +255,9 @@ def test_average_month_no_dataframe():
         expenses=[],
         necessary=[],
         types=[],
-        plans=SimpleNamespace(day_input={'january': 0}, expenses_free={'january': 0}))
+        day_input=0,
+        expenses_free=0,
+    )
 
     o._spending = None
     actual = o.avg_per_day

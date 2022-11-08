@@ -1,132 +1,101 @@
-from datetime import date
+from types import SimpleNamespace
 
-import pandas as pd
 import pytest
 
-from ...expenses.factories import (ExpenseFactory, ExpenseNameFactory,
-                                   ExpenseTypeFactory)
 from ..services.expenses import ExpenseService
 
-pytestmark = pytest.mark.django_db
+
+@pytest.fixture(name='balance')
+def fixture_balance():
+    return \
+        SimpleNamespace(
+            types=['T1', 'T2'],
+            total=0.0,
+            total_row={'T1': 1.0, 'T2': 0.85},
+            total_column={},
+            balance=[],
+            average={'T1': 0.5, 'T2': 0.425},
+        )
 
 
-@pytest.fixture()
-def _expenses():
-    t1 = ExpenseTypeFactory(title='T1')
-    t2 = ExpenseTypeFactory(title='T2')
-
-    n1  = ExpenseNameFactory(title='N1', parent=t1)
-    n2  = ExpenseNameFactory(title='N1', parent=t2)
-
-    ExpenseFactory(date=date(1999, 1, 1), expense_type=t1, expense_name=n1, price=0.25)
-    ExpenseFactory(date=date(1999, 12, 1), expense_type=t1, expense_name=n1, price=0.75)
-
-    ExpenseFactory(date=date(1999, 1, 1), expense_type=t2, expense_name=n2, price=0.5)
-    ExpenseFactory(date=date(1999, 12, 1), expense_type=t2, expense_name=n2, price=0.35)
-
-
-def test_balance(_expenses):
-    expect = [
-        {'date': pd.Timestamp(1999, 1, 1), 'T1': 0.25, 'T2': 0.5},
-        {'date': pd.Timestamp(1999, 2, 1), 'T1': 0.0, 'T2': 0.0},
-        {'date': pd.Timestamp(1999, 3, 1), 'T1': 0.0, 'T2': 0.0},
-        {'date': pd.Timestamp(1999, 4, 1), 'T1': 0.0, 'T2': 0.0},
-        {'date': pd.Timestamp(1999, 5, 1), 'T1': 0.0, 'T2': 0.0},
-        {'date': pd.Timestamp(1999, 6, 1), 'T1': 0.0, 'T2': 0.0},
-        {'date': pd.Timestamp(1999, 7, 1), 'T1': 0.0, 'T2': 0.0},
-        {'date': pd.Timestamp(1999, 8, 1), 'T1': 0.0, 'T2': 0.0},
-        {'date': pd.Timestamp(1999, 9, 1), 'T1': 0.0, 'T2': 0.0},
-        {'date': pd.Timestamp(1999, 10, 1), 'T1': 0.0, 'T2': 0.0},
-        {'date': pd.Timestamp(1999, 11, 1), 'T1': 0.0, 'T2': 0.0},
-        {'date': pd.Timestamp(1999, 12, 1), 'T1': 0.75, 'T2': 0.35},
-    ]
-
-    obj = ExpenseService(year=1999)
-    actual = obj._balance
-
-    assert expect == actual
-
-
-def test_total_row(_expenses):
-    expect = {'T1': 1.0, 'T2': 0.85}
-
-    obj = ExpenseService(year=1999)
-    actual = obj._total_row
-
-    assert expect == actual
-
-
-def test_average(_expenses):
-    expect = {'T1': 0.5, 'T2': 0.425}
-
-    obj = ExpenseService(year=1999)
-    actual = obj._average
-
-    assert expect == actual
-
-
-def test_chart_data(_expenses):
+def test_chart_data(balance):
     expect = [
         {'name': 'T1', 'y': 1.0},
         {'name': 'T2', 'y': 0.85}
     ]
 
-    obj = ExpenseService(year=1999)
-    actual = obj.chart_expenses_context()
+    obj = ExpenseService(data=balance)
+    actual = obj.chart_context()
 
     assert expect == actual
 
 
-def test_chart_data_none():
+def test_chart_data_none(balance):
+    balance.types=[]
+    balance.total_row = {}
+
     expect = [{'name': 'Išlaidų nėra', 'y': 0}]
 
-    obj = ExpenseService(year=1999)
-    actual = obj.chart_expenses_context()
+    obj = ExpenseService(data=balance)
+    actual = obj.chart_context()
 
     assert expect == actual
 
 
-def test_chart_data_empty():
+def test_chart_data_empty(balance):
+    balance.types = []
+    balance.total_row = {}
+
     expect = [{'name': 'Išlaidų nėra', 'y': 0}]
 
-    obj = ExpenseService(year=1999)
-    actual = obj.chart_expenses_context()
+    obj = ExpenseService(data=balance)
+    actual = obj.chart_context()
 
     assert expect == actual
 
 
-def test_chart_no_data():
-    ExpenseTypeFactory(title='X')
+def test_chart_no_data(balance):
+    balance.types=['X']
+    balance.total_row = {}
 
     expect = [{'name': 'X', 'y': 0}]
 
-    obj = ExpenseService(year=1999)
-    actual = obj.chart_expenses_context()
+    obj = ExpenseService(data=balance)
+    actual = obj.chart_context()
 
     assert expect == actual
 
 
-def test_chart_no_data_truncate_long_title():
-    ExpenseTypeFactory(title='X'*12)
+def test_chart_no_data_truncate_long_title(balance):
+    balance.types = ['X'*12]
+    balance.total_row = {}
 
-    obj = ExpenseService(year=1999)
-    actual = obj.chart_expenses_context()
-
-    assert len(actual[0]['name']) == 11
-
-
-def test_chart_data_truncate_long_title():
-    t1 = ExpenseTypeFactory(title='X'*12)
-    ExpenseFactory(date=date(1999, 1, 1), expense_type=t1, price=0.25)
-
-    obj = ExpenseService(year=1999)
-    actual = obj.chart_expenses_context()
+    obj = ExpenseService(data=balance)
+    actual = obj.chart_context()
 
     assert len(actual[0]['name']) == 11
 
 
-def test_year_expenses_context():
-    obj = ExpenseService(year=1999)
+def test_chart_data_truncate_long_title(balance):
+    balance.types = ['X'*12]
+    balance.total_row = {'X'*12: 0.25}
+
+    obj = ExpenseService(data=balance)
+    actual = obj.chart_context()
+
+    assert len(actual[0]['name']) == 11
+
+
+def test_yearbalance_context():
+    balance = SimpleNamespace(
+        types=[],
+        total=0.0,
+        total_row={},
+        total_column={},
+        average={},
+        balance=[],
+    )
+    obj = ExpenseService(data=balance)
 
     actual = obj.table_context()
 

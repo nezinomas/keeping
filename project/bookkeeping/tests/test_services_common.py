@@ -46,23 +46,19 @@ def test_expenses_types_args_as_list(qs):
 
 
 def test_add_latest_check_key_date_found():
-    model = Mock()
-    model.objects.items.return_value = [{'title': 'x', 'latest_check': 'a'}]
+    worth_data = [{'title': 'x', 'latest_check': 'a'}]
+    balance_data = [{'title': 'x'}]
 
-    actual = [{'title': 'x'}]
-
-    T.add_latest_check_key(model, actual,666)
+    actual = T.add_latest_check_key(worth_data, balance_data)
 
     assert actual == [{'title': 'x', 'latest_check': 'a'}]
 
 
 def test_add_latest_check_key_date_not_found():
-    model = Mock()
-    model.objects.items.return_value = [{'title': 'z', 'latest_check': 'a'}]
+    worth_data = [{'title': 'z', 'latest_check': 'a'}]
+    balance_data = [{'title': 'x'}]
 
-    actual = [{'title': 'x'}]
-
-    T.add_latest_check_key(model, actual, 666)
+    actual = T.add_latest_check_key(worth_data, balance_data)
 
     assert actual == [{'title': 'x', 'latest_check': None}]
 

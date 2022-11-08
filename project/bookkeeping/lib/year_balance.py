@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Dict, List
 
 from pandas import DataFrame as DF
 from pandas import to_datetime
@@ -23,7 +22,7 @@ class YearBalance(BalanceBase):
 
     def __init__(self,
                  year: int,
-                 data: Dict[str, Dict],
+                 data: dict[str, dict],
                  amount_start: float = 0.0):
 
         '''
@@ -39,11 +38,10 @@ class YearBalance(BalanceBase):
         super().__init__()
 
         try:
-            amount_start = float(amount_start)
+            self._amount_start = float(amount_start)
         except TypeError:
-            amount_start = 0.0
+            self._amount_start = 0.0
 
-        self._amount_start = amount_start
         self._year = year
 
         self._balance = self._make_df(year=year, data=data)
@@ -85,7 +83,7 @@ class YearBalance(BalanceBase):
             avg = 0.0
             arr = super().balance
 
-            for x in range(0, _month):
+            for x in range(_month):
                 avg += arr[x]['expenses']
 
             return avg / _month
@@ -95,34 +93,34 @@ class YearBalance(BalanceBase):
         return avg.get('expenses', 0.0)
 
     @property
-    def income_data(self) -> List[float]:
+    def income_data(self) -> list[float]:
         return self._balance.incomes.tolist()
 
     @property
-    def expense_data(self) -> List[float]:
+    def expense_data(self) -> list[float]:
         return self._balance.expenses.tolist()
 
     @property
-    def borrow_data(self) -> List[float]:
+    def borrow_data(self) -> list[float]:
         return self._balance.borrow.tolist()
 
     @property
-    def borrow_return_data(self) -> List[float]:
+    def borrow_return_data(self) -> list[float]:
         return self._balance.borrow_return.tolist()
 
     @property
-    def lend_data(self) -> List[float]:
+    def lend_data(self) -> list[float]:
         return self._balance.lend.tolist()
 
     @property
-    def lend_return_data(self) -> List[float]:
+    def lend_return_data(self) -> list[float]:
         return self._balance.lend_return.tolist()
 
     @property
-    def money_flow(self) -> List[float]:
+    def money_flow(self) -> list[float]:
         return self._balance.money_flow.tolist()
 
-    def _make_df(self, year: int, data: Dict[str, Dict]) -> DF:
+    def _make_df(self, year: int, data: dict[str, dict]) -> DF:
         df = df_months_of_year(year)
 
         # create columns with 0 values
@@ -136,7 +134,7 @@ class YearBalance(BalanceBase):
             if not data_arr:
                 continue
 
-            if not col_name in self.columns:
+            if col_name not in self.columns:
                 continue
 
             # copy values from input arrays to df
@@ -150,10 +148,8 @@ class YearBalance(BalanceBase):
         df['balance'] = df.incomes - df.expenses
 
         #  calculate money_flow
-        for i in range(0, 12):
+        for i in range(12):
             idx = df.index[i]
-            idx_prev = df.index[i - 1]
-
             val = (
                 0.0
                 + df.loc[idx, 'balance']
@@ -173,8 +169,9 @@ class YearBalance(BalanceBase):
                     val
                     + self._amount_start
                 )
-            # february - december
             else:
+                idx_prev = df.index[i - 1]
+
                 df.loc[cell] = (
                     val
                     + df.loc[idx_prev, 'money_flow']

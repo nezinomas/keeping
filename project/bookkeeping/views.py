@@ -2,15 +2,21 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
+from project.bookkeeping.services.month import MonthServiceData
+
 from ..accounts.models import Account
 from ..core.lib.translation import month_names
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
                                  TemplateViewMixin, rendered_content)
 from ..pensions.models import PensionType
+from ..plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ..savings.models import SavingType
 from . import forms, mixins, models, services
+from .lib.day_spending import DaySpending
+from .lib.expense_balance import ExpenseBalance
 from .lib.no_incomes import NoIncomes as LibNoIncomes
+from .lib.no_incomes import NoIncomesData
 from .lib.year_balance import YearBalance
 
 
@@ -19,15 +25,21 @@ class Index(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        services.IndexServiceData.collect_data(year)
 
+        # index service
+        data = services.IndexServiceData(year)
         year_balance = YearBalance(
             year=year,
-            data=services.IndexServiceData.data,
-            amount_start=services.IndexServiceData.amount_start)
+            data=data.data,
+            amount_start=data.amount_start)
 
         ind = services.IndexService(year_balance)
-        exp = services.ExpenseService(year)
+
+        # expenses service
+        data = services.ExpenseServiceData(year)
+        balance = ExpenseBalance.months_of_year(
+            year=year, expenses=data.expenses, types=data.expense_types)
+        exp = services.ExpenseService(data=balance)
 
         context = {
             'year': year,
@@ -42,7 +54,7 @@ class Index(TemplateViewMixin):
             'balance_short': ind.balance_short_context(),
             'balance': ind.balance_context(),
             'chart_balance': ind.chart_balance_context(),
-            'chart_expenses': exp.chart_expenses_context(),
+            'chart_expenses': exp.chart_context(),
             'expenses': exp.table_context(),
         }
 
@@ -53,7 +65,8 @@ class Accounts(TemplateViewMixin):
     template_name = 'bookkeeping/includes/account_worth_list.html'
 
     def get_context_data(self, **kwargs):
-        obj = services.AccountService(self.request.user.year)
+        data = services.AccountServiceData(self.request.user.year)
+        obj = services.AccountService(data=data)
 
         context = {
             'items': obj.data,
@@ -80,7 +93,8 @@ class Savings(TemplateViewMixin):
     template_name = 'bookkeeping/includes/funds_table.html'
 
     def get_context_data(self, **kwargs):
-        obj = services.SavingsService(self.request.user.year)
+        data = services.SavingServiceData(self.request.user.year)
+        obj = services.SavingsService(data)
 
         context = {
             'title': _('Funds'),
@@ -104,7 +118,8 @@ class Pensions(TemplateViewMixin):
     template_name = 'bookkeeping/includes/funds_table.html'
 
     def get_context_data(self, **kwargs):
-        obj = services.PensionsService(self.request.user.year)
+        data = services.PensionServiceData(self.request.user.year)
+        obj = services.PensionsService(data)
 
         context = {
             'title': _('Pensions'),
@@ -130,11 +145,12 @@ class Wealth(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        obj = services.WealthService(year)
+        data = services.WealthServiceData(year)
+        service = services.WealthService(data)
 
         context = {
             'title': [_('Money'), _('Wealth')],
-            'data': [obj.money, obj.wealth],
+            'data': [service.money, service.wealth],
         }
         return super().get_context_data(**kwargs) | context
 
@@ -145,14 +161,17 @@ class NoIncomes(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         journal = self.request.user.journal
-
-        obj = LibNoIncomes(journal, year)
+        data = NoIncomesData(
+            year=year,
+            unnecessary_expenses=journal.unnecessary_expenses,
+            unnecessary_savings=journal.unnecessary_savings)
+        service = LibNoIncomes(data)
 
         context = {
-            'no_incomes': obj.summary,
-            'save_sum': obj.cut_sum,
-            'not_use': obj.unnecessary,
-            'avg_expenses': obj.avg_expenses,
+            'no_incomes': service.summary,
+            'save_sum': service.cut_sum,
+            'not_use': service.unnecessary,
+            'avg_expenses': service.avg_expenses,
         }
         return super().get_context_data(**kwargs) | context
 
@@ -166,14 +185,34 @@ class Month(TemplateViewMixin):
 
         year = self.request.user.year
         month = self.request.user.month
-
-        obj = services.MonthService(year, month)
-
+        data = MonthServiceData(year, month)
+        plans = PlanCalculateDaySum(PlanCollectData(year, month))
+        spending = DaySpending(
+            year=data.year,
+            month=data.month,
+            expenses=data.expenses,
+            types=data.expense_types,
+            necessary=data.necessary_expense_types,
+            day_input=plans.day_input,
+            expenses_free=plans.expenses_free
+        )
+        savings = ExpenseBalance.days_of_month(
+            year=data.year,
+            month=data.month,
+            expenses=data.savings,
+            types=[_('Savings')]
+        )
+        service = services.MonthService(
+            data=data,
+            plans=plans,
+            savings=savings,
+            spending=spending
+        )
         context = {
-            'month_table': obj.month_table_context(),
-            'info': obj.info_context(),
-            'chart_expenses': obj.chart_expenses_context(),
-            'chart_targets': obj.chart_targets_context(),
+            'month_table': service.month_table_context(),
+            'info': service.info_context(),
+            'chart_expenses': service.chart_expenses_context(),
+            'chart_targets': service.chart_targets_context(),
         }
         return super().get_context_data(**kwargs) | context
 
@@ -202,7 +241,8 @@ class Summary(TemplateViewMixin):
     template_name = 'bookkeeping/summary.html'
 
     def get_context_data(self, **kwargs):
-        obj = services.ChartSummaryService()
+        data = services.ChartSummaryServiceData()
+        obj = services.ChartSummaryService(data)
 
         return {
             'chart_balance': obj.chart_balance(),
@@ -214,42 +254,32 @@ class SummarySavings(TemplateViewMixin):
     template_name = 'bookkeeping/summary_savings.html'
 
     def get_context_data(self, **kwargs):
-        obj = services.SummarySavingsService()
+        data = services.SummarySavingsServiceData()
+        obj = services.SummarySavingsService(data)
 
         super_context = super().get_context_data(**kwargs)
         context = dict(records=obj.records)
         if not obj.records or obj.records < 1:
             return super_context | context
 
-        common_text = dict(
-            text_total=_('Total'),
-            text_profit=_('Profit'),
-            text_invested=_('Invested'),
-        )
         context |= dict(
             funds=
                 obj.make_chart_data('funds')
-                | common_text
                 | dict(chart_title=_('Funds')),
             shares=
                 obj.make_chart_data('shares')
-                | common_text
                 | dict(chart_title=_('Shares')),
             funds_shares=
                 obj.make_chart_data('funds', 'shares')
-                | common_text
                 | dict(chart_title=f"{_('Funds')} {_('Shares')}"),
             pensions3=
                 obj.make_chart_data('pensions3')
-                | common_text
                 | dict(chart_title=f"{_('Pensions')} III"),
             pensions2=
                 obj.make_chart_data('pensions2')
-                | common_text
                 | dict(chart_title=f"{_('Pensions')} II"),
             all=
                 obj.make_chart_data('funds', 'shares', 'pensions3')
-                | common_text
                 | dict(chart_title=f"{_('Funds')}, {_('Shares')}, {_('Pensions')}"),
         )
 
