@@ -35,7 +35,6 @@ def set_month(request, month):
 class RegenerateBalances(TemplateViewMixin):
     # @timer
     def get(self, request, *args, **kwargs):
-        _arr = []
         _type = request.GET.get('type')
         _kwargs = {
             'sender': None,
@@ -52,8 +51,8 @@ class RegenerateBalances(TemplateViewMixin):
             _types = [_type]
             hx_trigger_name += _type.title()
 
-        for x in _types:
-            _class_method = getattr(SignalBase, x)
+        for _type in _types:
+            _class_method = getattr(SignalBase, _type)
             _obj = _class_method(**_kwargs)
             _obj.full_balance_update()
 

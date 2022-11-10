@@ -34,9 +34,7 @@ class Conf():
     def get_hook(self):
         _app = self.sender.__module__.split('.')[1]
         _model = self.sender.__name__
-        _hook = self.hooks.get(f'{_app}.{_model}')
-
-        return _hook
+        return self.hooks.get(f'{_app}.{_model}')
 
     def get_old_values(self, name):
         return self.old_values.get(name, 0.0)
