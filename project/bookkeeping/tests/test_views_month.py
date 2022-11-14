@@ -48,8 +48,8 @@ def test_view_expand_day_expenses_str_in_url(client_logged):
 @pytest.mark.parametrize(
     'dt, expect',
     [
-        ('19701301', '1970-01-01 dieną įrašų nėra'),
-        ('19701232', '1970-01-01 dieną įrašų nėra'),
+        ('19701301', '1974-01-01 dieną įrašų nėra'),
+        ('19701232', '1974-01-01 dieną įrašų nėra'),
     ]
 )
 def test_view_expand_day_expenses_wrong_dates(dt, expect, client_logged):
