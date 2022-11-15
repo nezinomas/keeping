@@ -18,10 +18,10 @@ def fixure_types():
 @pytest.fixture(name="names")
 def fixture_names():
     return [
-        {'year': 2000, 'sum': Decimal('5'), 'title': 'A', 'root': 'X'},
-        {'year': 2000, 'sum': Decimal('2'), 'title': 'B', 'root': 'Y'},
-        {'year': 2001, 'sum': Decimal('12'), 'title': 'B', 'root': 'Y'},
-        {'year': 2002, 'sum': Decimal('15'), 'title': 'A', 'root': 'X'},
+        {'year': 2000, 'sum': Decimal('5'), 'title': 'X / A'},
+        {'year': 2000, 'sum': Decimal('2'), 'title': 'Y / B'},
+        {'year': 2001, 'sum': Decimal('12'), 'title': 'Y / B'},
+        {'year': 2002, 'sum': Decimal('15'), 'title': 'X / A'},
     ]
 
 
@@ -81,8 +81,8 @@ def test_serries_data_names(names):
 
     actual = obj.serries_data
     expect = [
-        {'name': 'X/A', 'data': [5.0, 0.0, 15.0]},
-        {'name': 'Y/B', 'data': [2.0, 12.0, 0.0]},
+        {'name': 'X / A', 'data': [5.0, 0.0, 15.0]},
+        {'name': 'Y / B', 'data': [2.0, 12.0, 0.0]},
     ]
 
     assert actual == expect
@@ -95,9 +95,9 @@ def test_serries_data_full(types, names):
     actual = obj.serries_data
     expect = [
         {'name': 'X', 'data': [5.0, 0.0, 15.0]},
+        {'name': 'X / A', 'data': [5.0, 0.0, 15.0]},
         {'name': 'Y', 'data': [2.0, 12.0, 0.0]},
-        {'name': 'X/A', 'data': [5.0, 0.0, 15.0]},
-        {'name': 'Y/B', 'data': [2.0, 12.0, 0.0]},
+        {'name': 'Y / B', 'data': [2.0, 12.0, 0.0]},
     ]
     assert actual == expect
 

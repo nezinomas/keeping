@@ -1,3 +1,5 @@
+import itertools
+import operator
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -59,33 +61,23 @@ class ChartSummaryExpensesService:
 
     def _make_serries_data(self, categories, data):
         _items = []
-        _titles = []
-        _titles_hooks = {}
-        _years_hooks = {v: k for k, v in enumerate(categories)}
+        _year_hooks = {v: k for k, v in enumerate(categories)}
 
-        for i in data:
-            _title = i['title']
+        # sort data by title and year
+        data = sorted(data, key=operator.itemgetter("title", 'year'))
 
-            if _root := i.get('root'):
-                _title = f'{_root}/{_title}'
+        for title, group in itertools.groupby(data, key=operator.itemgetter("title")):
+            # make empty data list for each title
+            _item = {'name': title, 'data': [0.0] * len(categories)}
 
-            _sum = float(i['sum'])
-            _year = i['year']
-            _year_index = _years_hooks.get(_year)
+            # fill data
+            for x in group:
+                _year = x['year']
+                _sum = float(x['sum'])
+                _year_idx = _year_hooks.get(_year)
+                _item['data'][_year_idx] = _sum
 
-            if _year_index is None:
-                continue
-
-            if _title not in _titles:
-                _titles.append(_title)
-                _items.append({
-                    'name': _title,
-                    'data': [0.0] * len(categories)
-                })
-                _titles_hooks = {v: k for k, v in enumerate(_titles)}
-
-            _title_index = _titles_hooks[_title]
-            _items[_title_index]['data'][_year_index] = _sum
+            _items.append(_item)
 
         return _items
 
