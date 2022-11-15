@@ -292,9 +292,9 @@ class SummaryExpenses(FormViewMixin):
     success_url = reverse_lazy('bookkeeping:summary_expenses')
 
     def form_valid(self, form, **kwargs):
-        data = form.cleaned_data.get('types')
-        obj = services.ChartSummaryExpensesService(form_data=data,
-                                                   remove_empty_columns=True)
+        form_data = form.cleaned_data.get('types')
+        data = services.ChartSummaryExpensesServiceData(form_data)
+        obj = services.ChartSummaryExpensesService(data=data)
 
         context = {'found': False, 'form': form}
 
