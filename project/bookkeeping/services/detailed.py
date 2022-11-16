@@ -2,7 +2,6 @@ import itertools
 import operator
 from dataclasses import dataclass, field
 
-
 from django.utils.translation import gettext as _
 
 from ...expenses.models import Expense, ExpenseType
