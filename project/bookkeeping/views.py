@@ -224,7 +224,6 @@ class Detailed(TemplateViewMixin):
         year = self.request.user.year
 
         context = {
-            'months': range(1, 13),
             'month_names': month_names(),
             'data': [],
         }

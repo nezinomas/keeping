@@ -7,11 +7,10 @@ register = template.Library()
                         takes_context=True)
 def detailed_table(context, name, items, total_row):
     return {
-        'months': context['months'],
-        'month_names': context['month_names'],
         'name': name,
         'items': items,
         'total_row': total_row,
+        'month_names': context.get('month_names'),
     }
 
 
