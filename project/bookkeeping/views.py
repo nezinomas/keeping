@@ -224,15 +224,16 @@ class Detailed(TemplateViewMixin):
         year = self.request.user.year
 
         context = {
-            'months': range(1, 13),
             'month_names': month_names(),
+            'data': [],
         }
 
-        ctx = services.DetailedService(year)
+        data = services.DetailerServiceData(year)
+        ctx = services.DetailedService(data)
 
-        ctx.incomes_context(context)
-        ctx.savings_context(context)
-        ctx.expenses_context(context)
+        context['data'] += ctx.incomes_context()
+        context['data'] += ctx.savings_context()
+        context['data'] += ctx.expenses_context()
 
         return super().get_context_data(**kwargs) | context
 
@@ -292,9 +293,9 @@ class SummaryExpenses(FormViewMixin):
     success_url = reverse_lazy('bookkeeping:summary_expenses')
 
     def form_valid(self, form, **kwargs):
-        data = form.cleaned_data.get('types')
-        obj = services.ChartSummaryExpensesService(form_data=data,
-                                                   remove_empty_columns=True)
+        form_data = form.cleaned_data.get('types')
+        data = services.ChartSummaryExpensesServiceData(form_data)
+        obj = services.ChartSummaryExpensesService(data=data)
 
         context = {'found': False, 'form': form}
 

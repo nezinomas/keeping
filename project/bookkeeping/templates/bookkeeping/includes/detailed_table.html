@@ -1,35 +1,30 @@
 {% load slippers %}
-{% load get_item %}
 {% load i18n %}
 
 <table class="table table-sm table-striped table-hover">
     <thead>
         <tr>
             <th class="text-start">{{ name }}</th>
-            {% for name in month_names %}
-            <th class="w7p">{% translate name %}</th>
+            {% for month_name in month_names %}
+            <th class="w7p">{% translate month_name %}</th>
             {% endfor %}
             <th class="w7p">{% translate 'Total' %}</th>
         </tr>
     </thead>
     <tbody>
-        {% regroup items by title as grouped %}
-        {% for title in grouped %}
+        {% for item in items %}
         <tr>
-            <td class="text-start">{{ title.grouper }}</td>
-            {% for i in months %}
-                {% with title.list|get_sum_by_month:i as sum %}{% table_cell value=sum %}{% endwith %}
+            <td class="text-start">{{ item.title }}</td>
+            {% for i in item.data %}
+                {% table_cell value=i %}
             {% endfor %}
-            {% with total_col|get_sum_by_title:title.grouper as col_value %}
-            <td>{{ col_value }}</td>{% endwith %}
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
             <th class="text-start">{% translate 'Total' %}</th>
-            {% for i in months %}{% with total_row|get_sum_by_month:i as sum %}{% table_cell value=sum tag='th' %}{% endwith %}{% endfor %}
-            <th>{{ total }}</th>
+            {% for i in total_row %}{% table_cell value=i tag='th' %}{% endfor %}
         </tr>
     </tfoot>
 </table>

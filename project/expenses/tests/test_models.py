@@ -625,12 +625,11 @@ def test_expense_sum_by_year_name():
     actual = Expense.objects.sum_by_year_name()
 
     assert actual[0]['year'] == 1111
-    assert actual[0]['title'] == 'Expense Name'
-    assert actual[0]['root'] == 'Expense Type'
+    assert actual[0]['title'] == 'Expense Type / Expense Name'
     assert actual[0]['sum'] == Decimal('5')
+
     assert actual[1]['year'] == 1999
-    assert actual[1]['title'] == 'Expense Name'
-    assert actual[1]['root'] == 'Expense Type'
+    assert actual[1]['title'] == 'Expense Type / Expense Name'
     assert actual[1]['sum'] == Decimal('12')
 
 
@@ -651,12 +650,11 @@ def test_expense_sum_by_year_name_filtering():
     actual = Expense.objects.sum_by_year_name(expense_name=[t1.pk])
 
     assert actual[0]['year'] == 1111
-    assert actual[0]['title'] == 'X'
-    assert actual[0]['root'] == 'Expense Type'
+    assert actual[0]['title'] == 'Expense Type / X'
     assert actual[0]['sum'] == Decimal('5')
+
     assert actual[1]['year'] == 1999
-    assert actual[1]['title'] == 'X'
-    assert actual[1]['root'] == 'Expense Type'
+    assert actual[1]['title'] == 'Expense Type / X'
     assert actual[1]['sum'] == Decimal('12')
 
 

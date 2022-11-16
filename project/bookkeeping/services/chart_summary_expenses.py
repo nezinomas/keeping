@@ -1,68 +1,25 @@
-from typing import Dict, List
+import itertools
+import operator
+from dataclasses import dataclass, field
 
 import numpy as np
 
-from ...core.lib.date import years
 from ...expenses.models import Expense
 
 
-class ChartSummaryExpensesService():
-    def __init__(self,
-                 form_data: List[Dict] = None,
-                 remove_empty_columns: bool = False):
+@dataclass
+class ChartSummaryExpensesServiceData:
+    form_data: list[dict] = field(default_factory=list)
+    data: list[dict] = field(init=False, default_factory=list)
 
-        self._years = self._get_years()
-        self._serries_data = []
-
-        if not self._years:
-            return
-
-        types, names = self._parse_form_data(form_data)
+    def __post_init__(self):
+        types, names = self._parse_form_data(self.form_data)
 
         if types:
-            data = self._get_type_sum_by_year(types)
-            self._serries_data += self._make_serries_data(data)
+            self.data += self._get_types(types)
 
         if names:
-            data = self._get_name_sum_by_year(names)
-            self._serries_data += self._make_serries_data(data)
-
-        if not self._serries_data:
-            return
-
-        if remove_empty_columns:
-            self._remove_empty_columns()
-
-        self._calc_totals()
-
-    @property
-    def categories(self) -> List:
-        return self._years
-
-    @property
-    def serries_data(self) -> List[Dict]:
-        return self._serries_data
-
-    @property
-    def total_col(self) -> Dict:
-        return self._total_col
-
-    @property
-    def total_row(self) -> List:
-        return self._total_row
-
-    @property
-    def total(self) -> float:
-        return self._total
-
-    def _get_years(self) -> List:
-        return years()[:-1]
-
-    def _get_type_sum_by_year(self, expense_type: List) -> List[Dict]:
-        return Expense.objects.sum_by_year_type(expense_type)
-
-    def _get_name_sum_by_year(self, expense_name: List) -> List[Dict]:
-        return Expense.objects.sum_by_year_name(expense_name)
+            self.data += self._get_names(names)
 
     def _parse_form_data(self, data):
         types, names = [], []
@@ -76,70 +33,62 @@ class ChartSummaryExpensesService():
 
         return types, names
 
-    def _make_serries_data(self, data):
+    def _get_types(self, types: list) -> list[dict]:
+        return Expense.objects.sum_by_year_type(types)
+
+    def _get_names(self, names: list) -> list[dict]:
+        return Expense.objects.sum_by_year_name(names)
+
+
+@dataclass
+class ChartSummaryExpensesService:
+    data: ChartSummaryExpensesServiceData = field(default_factory=list)
+
+    categories: list = field(init=False, default_factory=list)
+    total: float = field(init=False, default=0.0)
+    total_col: dict = field(init=False, default_factory=dict)
+    total_row: list = field(init=False, default_factory=list)
+    serries_data: list = field(init=False, default_factory=list)
+
+    def __post_init__(self):
+        if not self.data.data:
+            return
+
+        self.categories = sorted({r['year'] for r in self.data.data})
+        self.serries_data = self._make_serries_data(self.categories, self.data.data)
+
+        self._calc_totals(self.serries_data)
+
+    def _make_serries_data(self, categories, data):
         _items = []
+        _year_hooks = {v: k for k, v in enumerate(categories)}
 
-        if not data:
-            return _items
+        # sort data by title and year
+        data = sorted(data, key=operator.itemgetter("title", 'year'))
 
-        _titles = []
-        _titles_hooks = {}
-        _years_hooks = {v: k for k, v in enumerate(self._years)}
+        for title, group in itertools.groupby(data, key=operator.itemgetter("title")):
+            # make empty data list for each title
+            _item = {'name': title, 'data': [0.0] * len(categories)}
 
-        for i in data:
-            _title = i['title']
+            # fill data
+            for x in group:
+                _year = x['year']
+                _sum = float(x['sum'])
+                _year_idx = _year_hooks.get(_year)
+                _item['data'][_year_idx] = _sum
 
-            if _root := i.get('root'):
-                _title = f'{_root}/{_title}'
-
-            _sum = float(i['sum'])
-            _year = i['year']
-            _year_index = _years_hooks.get(_year)
-
-            if _year_index is None:
-                continue
-
-            if _title not in _titles:
-                _titles.append(_title)
-                _items.append({
-                    'name': _title,
-                    'data': [0.0] * len(self._years)
-                })
-                _titles_hooks = {v: k for k, v in enumerate(_titles)}
-
-            _title_index = _titles_hooks[_title]
-            _items[_title_index]['data'][_year_index] = _sum
+            _items.append(_item)
 
         return _items
 
-    def _remove_empty_columns(self):
-        _matrix = np.array([x['data'] for x in self._serries_data])
-        _idx = np.argwhere(np.all(_matrix[..., :] == 0, axis=0))
-        _clean = np.delete(_matrix, _idx, axis=1).tolist()
+    def _calc_totals(self, data):
+        _matrix = np.array([x['data'] for x in data])
+        _col = _matrix.sum(axis=1)
+        _row = _matrix.sum(axis=0)
 
-        # year list
-        # flatten and reverse indexes
-        _idx = _idx.flatten().tolist()[::-1]
-        for _i in _idx:
-            del self._years[_i]
+        for _i, _v in enumerate(_col):
+            self.total_col[data[_i]['name']] = _v
 
-        # clean serries data
-        for _i, _list in enumerate(_clean):
-            self._serries_data[_i]['data'] = _list
+        self.total_row = _row.tolist()
 
-    def _calc_totals(self):
-        self._total = 0.0
-        self._total_col = {}
-        self._total_row = []
-
-        if self._serries_data:
-            _matrix = np.array([x['data'] for x in self._serries_data])
-            _col = _matrix.sum(axis=1)
-            _row = _matrix.sum(axis=0)
-
-            for _i, _v in enumerate(_col):
-                self._total_col[self._serries_data[_i]['name']] = _v
-
-            self._total_row = _row.tolist()
-
-            self._total = _row.sum()
+        self.total = _row.sum()

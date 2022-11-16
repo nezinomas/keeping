@@ -1,8 +1,9 @@
 from .accounts import AccountService, AccountServiceData
 from .chart_summary import ChartSummaryService, ChartSummaryServiceData
-from .chart_summary_expenses import ChartSummaryExpensesService
-from .common import add_latest_check_key, expense_types
-from .detailed import DetailedService
+from .chart_summary_expenses import (ChartSummaryExpensesService,
+                                     ChartSummaryExpensesServiceData)
+from .common import add_latest_check_key
+from .detailed import DetailedService, DetailerServiceData
 from .expand_day import ExpandDayService
 from .expenses import ExpenseService, ExpenseServiceData
 from .index import IndexService, IndexServiceData

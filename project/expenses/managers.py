@@ -4,9 +4,9 @@ from typing import List
 
 from dateutil.relativedelta import relativedelta
 from django.db import models
-from django.db.models import Case, Count, F, Q, Sum, When
-from django.db.models.functions import (ExtractYear, TruncDay, TruncMonth,
-                                        TruncYear)
+from django.db.models import Case, Count, F, Q, Sum, Value, When
+from django.db.models.functions import (Concat, ExtractYear, TruncDay,
+                                        TruncMonth, TruncYear)
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
@@ -174,8 +174,12 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
             .values(
                 'year',
                 'sum',
-                title=F('expense_name__title'),
-                root=F('expense_name__parent__title'))
+                title=Concat(
+                    'expense_name__parent__title',
+                    Value(' / '),
+                    'expense_name__title'
+                )
+            )
 
     def last_months(self, months: int = 6) -> float:
         # previous month

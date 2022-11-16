@@ -1,75 +1,76 @@
-from collections import Counter, defaultdict
+import itertools
+import operator
+from dataclasses import dataclass, field
+
 
 from django.utils.translation import gettext as _
 
-from ...core.lib.utils import sum_col
-from ...expenses.models import Expense
+from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
 from ...savings.models import Saving
-from .common import expense_types
+
+
+@dataclass
+class DetailerServiceData:
+    year: int
+    incomes: list[dict] = field(init=False, default_factory=list)
+    expenses: list[dict] = field(init=False, default_factory=list)
+    savings: list[dict] = field(init=False, default_factory=list)
+    expenses_types: list = field(init=False, default_factory=list)
+
+    def __post_init__(self):
+        self.incomes = Income.objects.sum_by_month_and_type(self.year)
+        self.savings = Saving.objects.sum_by_month_and_type(self.year)
+        self.expenses = Expense.objects.sum_by_month_and_name(self.year)
+        self.expenses_types = list(
+            ExpenseType.objects
+            .items()
+            .values_list('title', flat=True)
+        )
 
 
 class DetailedService():
-    def __init__(self, year, *args, **kwargs):
-        self._year = year
+    def __init__(self, data: DetailerServiceData):
+        self._incomes = data.incomes
+        self._expenses = data.expenses
+        self._savings = data.savings
+        self._expenses_types = data.expenses_types
 
-    def incomes_context(self, context):
-        return self._get_context(Income, _('Incomes'), context)
+    def incomes_context(self) -> list[dict]:
+        return [self._context(_('Incomes'), self._incomes)]
 
-    def savings_context(self, context):
-        return self._get_context(Saving, _('Savings'), context)
+    def savings_context(self) -> list[dict]:
+        return [self._context(_('Savings'), self._savings)]
 
-    def expenses_context(self, context):
-        qs = Expense.objects.sum_by_month_and_name(self._year)
-
-        expenses_types = expense_types()
-        for title in expenses_types:
-            if filtered := [*filter(lambda x: title in x['type_title'], qs)]:
-                self._detailed_context(
-                    context=context,
-                    data=filtered,
-                    name=_('Expenses / %(title)s') % ({'title': title})
-                )
+    def expenses_context(self) -> list[dict]:
+        context = []
+        for title in self._expenses_types:
+            if filtered := [*filter(lambda x: title in x['type_title'], self._expenses)]:
+                context.append(
+                    self._context(
+                        name=_('Expenses / %(title)s') % ({'title': title}),
+                        data=filtered))
         return context
 
-    def _get_context(self, model, title, context):
-        qs = \
-            model.objects \
-            .sum_by_month_and_type(self._year)
+    def _context(self, name, data) -> dict:
+        items = dict(name=name, items=[], total_row=[0.0] * 13)
 
-        updated_context = self._detailed_context(context, qs, title)
-        return updated_context if qs else context
+        # sort data by title and date
+        data = sorted(data, key=operator.itemgetter("title", 'date'))
 
-    def _detailed_context(self, context, data, name):
-        context = context or {}
+        # group data by title and calculate totals
+        for title, group in itertools.groupby(data, key=operator.itemgetter("title")):
+            items['items'].append({'title': title, 'data': [0.0] * 13})
 
-        if 'data' not in context.keys():
-            context['data'] = []
+            for i, r in enumerate(group):
+                sum_ = float(r['sum'])
 
-        total_row = self._sum_detailed(data, 'date', ['sum'])
-        total_col = self._sum_detailed(data, 'title', ['sum'])
-        total = sum_col(total_col, 'sum')
+                # last array
+                item = items['items'][-1]
+                item['data'][i] = sum_
+                item['data'][12] += sum_  # total column
 
-        context['data'].append({
-            'name': name,
-            'data': data,
-            'total_row': total_row,
-            'total_col': total_col,
-            'total': total,
-        })
+                items['total_row'][i] += sum_
+                items['total_row'][12] += sum_  # total column
 
-        return context
-
-    def _sum_detailed(self, dataset, group_by_key, sum_value_keys):
-        container = defaultdict(Counter)
-
-        for item in dataset:
-            key = item[group_by_key]
-            values = {k: item[k] for k in sum_value_keys}
-            container[key].update(values)
-
-        new_dataset = [{group_by_key: item[0], **item[1]} for item in container.items()]
-
-        new_dataset.sort(key=lambda item: item[group_by_key])
-
-        return new_dataset
+        return items
