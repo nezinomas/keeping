@@ -53,9 +53,6 @@ class DetailedService():
         return context
 
     def _context(self, name, data) -> dict:
-        if not data:
-            return {}
-
         items = dict(name=name, items=[], total_row=[0.0] * 13)
 
         # sort data by title and date
