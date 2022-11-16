@@ -34,6 +34,17 @@ def test_incomes_context_data(data):
     assert actual[0]['items'][1]['data'] == [4, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12.0]
 
 
+def test_incomes_context_data_empty_month():
+    data = [
+        {'date': date(1999, 1, 1), 'sum': Decimal('4'), 'title': 'X'},
+        {'date': date(1999, 12, 1), 'sum': Decimal('8'), 'title': 'X'},
+    ]
+    d = SimpleNamespace(incomes=data, expenses=[], savings=[], expenses_types=[])
+    actual = DetailedService(data=d).incomes_context()
+
+    assert actual[0]['items'][0]['data'] == [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8.0, 12.0]
+
+
 def test_incomes_context_total_row(data):
     d = SimpleNamespace(incomes=data, expenses=[], savings=[], expenses_types=[])
     actual = DetailedService(data=d).incomes_context()

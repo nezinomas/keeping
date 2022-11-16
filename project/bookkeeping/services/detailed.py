@@ -62,7 +62,8 @@ class DetailedService():
         for title, group in itertools.groupby(data, key=operator.itemgetter("title")):
             items['items'].append({'title': title, 'data': [0.0] * 13})
 
-            for i, r in enumerate(group):
+            for r in group:
+                i = r['date'].month - 1
                 sum_ = float(r['sum'])
 
                 # last array
