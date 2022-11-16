@@ -1,21 +1,4 @@
 from datetime import datetime
-from typing import List
-
-from ...expenses.models import ExpenseType
-
-
-def expense_types(*args: str) -> List[str]:
-    qs = (
-        ExpenseType
-        .objects
-        .items()
-        .values_list('title', flat=True)
-    )
-
-    arr = list(qs) + list(args)
-    arr.sort()
-
-    return arr
 
 
 def average(qs):

@@ -2,47 +2,10 @@ from decimal import Decimal
 
 import pytest
 from freezegun import freeze_time
-from mock import Mock, patch
 
-from ...expenses.factories import ExpenseTypeFactory
 from ..services import common as T
 
 pytestmark = pytest.mark.django_db
-
-
-@patch('project.bookkeeping.services.common.ExpenseType.objects.items')
-def test_expenses_types_no_args(qs):
-    qs.return_value.values_list.return_value = ['T']
-
-    actual = T.expense_types()
-
-    assert ['T'] == actual
-
-
-@patch('project.bookkeeping.services.common.ExpenseType.objects.items')
-def test_expenses_types(qs):
-    qs.return_value.values_list.return_value = ['T']
-
-    actual = T.expense_types('A')
-
-    assert ['A', 'T'] == actual
-
-
-def test_expenses_types_from_db():
-    ExpenseTypeFactory(title='T')
-
-    actual = T.expense_types('A')
-
-    assert ['A', 'T'] == actual
-
-
-@patch('project.bookkeeping.services.common.ExpenseType.objects.items')
-def test_expenses_types_args_as_list(qs):
-    qs.return_value.values_list.return_value = ['T']
-
-    actual = T.expense_types(*['X', 'A'])
-
-    assert ['A', 'T', 'X'] == actual
 
 
 def test_add_latest_check_key_date_found():
