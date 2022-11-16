@@ -10,23 +10,21 @@ class Index(TemplateViewMixin):
     template_name = 'incomes/index.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
+        context = {
             'income': rendered_content(self.request, Lists),
             'income_type': rendered_content(self.request, TypeLists),
-        })
-        return context
+        }
+        return super().get_context_data(**kwargs) | context
 
 
 class Lists(ListViewMixin):
     model = models.Income
 
     def get_queryset(self):
-        return (
-            models.Income.objects
-            .year(year=self.request.user.year)
+        return \
+            models.Income.objects \
+            .year(year=self.request.user.year) \
             .order_by('-date', 'price')
-        )
 
 
 class New(CreateViewMixin):
