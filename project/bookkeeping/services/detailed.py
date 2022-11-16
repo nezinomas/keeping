@@ -1,9 +1,10 @@
-from collections import Counter, defaultdict
+import itertools
+import operator
 from dataclasses import dataclass, field
+
 
 from django.utils.translation import gettext as _
 
-from ...core.lib.utils import sum_col
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
 from ...savings.models import Saving
@@ -18,7 +19,7 @@ class DetailerServiceData:
     expenses_types: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.icomes = Income.objects.sum_by_month_and_type(self.year)
+        self.incomes = Income.objects.sum_by_month_and_type(self.year)
         self.savings = Saving.objects.sum_by_month_and_type(self.year)
         self.expenses = Expense.objects.sum_by_month_and_name(self.year)
         self.expenses_types = list(
@@ -30,8 +31,7 @@ class DetailerServiceData:
 
 class DetailedService():
     def __init__(self, data: DetailerServiceData):
-        self._year = data.year
-        self._incomes = data.icomes
+        self._incomes = data.incomes
         self._expenses = data.expenses
         self._savings = data.savings
         self._expenses_types = data.expenses_types
@@ -56,28 +56,23 @@ class DetailedService():
         if not data:
             return {}
 
-        total_row = self._sum_detailed(data, 'date', ['sum'])
-        total_col = self._sum_detailed(data, 'title', ['sum'])
-        total = sum_col(total_col, 'sum')
+        items = dict(name=name, items=[], total_row=[0.0] * 13)
 
-        return  {
-            'name': name,
-            'data': data,
-            'total_row': total_row,
-            'total_col': total_col,
-            'total': total,
-        }
+        # sort data by title and year
+        data = sorted(data, key=operator.itemgetter("title", 'date'))
 
-    def _sum_detailed(self, dataset, group_by_key, sum_value_keys):
-        container = defaultdict(Counter)
+        for title, group in itertools.groupby(data, key=operator.itemgetter("title")):
+            items['items'].append({'title': title, 'data': [0.0] * 13})
 
-        for item in dataset:
-            key = item[group_by_key]
-            values = {k: item[k] for k in sum_value_keys}
-            container[key].update(values)
+            for i, r in enumerate(group):
+                sum_ = float(r['sum'])
 
-        new_dataset = [{group_by_key: item[0], **item[1]} for item in container.items()]
+                # last array
+                item = items['items'][-1]
+                item['data'][i] = sum_
+                item['data'][12] += sum_  # total column
 
-        new_dataset.sort(key=lambda item: item[group_by_key])
+                items['total_row'][i] += sum_
+                items['total_row'][12] += sum_  # total column
 
-        return new_dataset
+        return items

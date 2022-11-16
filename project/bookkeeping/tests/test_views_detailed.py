@@ -1,22 +1,14 @@
-from datetime import date
-from decimal import Decimal
-
 import pytest
 from django.urls import resolve, reverse
-from freezegun import freeze_time
 
-from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
-from ...incomes.factories import IncomeFactory, IncomeTypeFactory
+from ...expenses.factories import ExpenseTypeFactory
+from ...incomes.factories import IncomeFactory
 from ...savings.factories import SavingFactory
 from .. import views
-from ..services.detailed import DetailedService
 
 pytestmark = pytest.mark.django_db
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                                Detailed
-# ---------------------------------------------------------------------------------------
 def test_view_detailed_func():
     view = resolve('/detailed/')
 
@@ -122,36 +114,3 @@ def test_view_detailed_with_savings(client_logged):
 
     assert "Taupymas</th>" in content
     assert "Savings</td>" in content
-
-
-# ---------------------------------------------------------------------------------------
-#                                                                         Detailed Helper
-# ---------------------------------------------------------------------------------------
-@pytest.fixture
-def _income():
-    return [
-        {'date': date(1999, 1, 1), 'title': 'A', 'sum': Decimal(1)},
-        {'date': date(1999, 1, 1), 'title': 'A', 'sum': Decimal(4)},
-        {'date': date(1999, 6, 1), 'title': 'B', 'sum': Decimal(2)},
-    ]
-
-
-def test_sum_detailed_rows(_income):
-    expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(5)},
-        {'date': date(1999, 6, 1), 'sum': Decimal(2)},
-    ]
-    actual = DetailedService(1999)._sum_detailed(_income, 'date', ['sum'])
-
-    assert expect == actual
-
-
-def test_sum_detailed_columns(_income):
-    expect = [
-        {'title': 'A', 'sum': Decimal(5)},
-        {'title': 'B', 'sum': Decimal(2)},
-    ]
-
-    actual = DetailedService(1999)._sum_detailed(_income, 'title', ['sum'])
-
-    assert expect == actual
