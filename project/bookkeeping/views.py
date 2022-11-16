@@ -226,13 +226,15 @@ class Detailed(TemplateViewMixin):
         context = {
             'months': range(1, 13),
             'month_names': month_names(),
+            'data': [],
         }
 
-        ctx = services.DetailedService(year)
+        data = services.DetailerServiceData(year)
+        ctx = services.DetailedService(data)
 
-        ctx.incomes_context(context)
-        ctx.savings_context(context)
-        ctx.expenses_context(context)
+        context['data'] += ctx.incomes_context()
+        context['data'] += ctx.savings_context()
+        context['data'] += ctx.expenses_context()
 
         return super().get_context_data(**kwargs) | context
 
