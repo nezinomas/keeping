@@ -58,9 +58,10 @@ class DetailedService():
 
         items = dict(name=name, items=[], total_row=[0.0] * 13)
 
-        # sort data by title and year
+        # sort data by title and date
         data = sorted(data, key=operator.itemgetter("title", 'date'))
 
+        # group data by title and calculate totals
         for title, group in itertools.groupby(data, key=operator.itemgetter("title")):
             items['items'].append({'title': title, 'data': [0.0] * 13})
 
