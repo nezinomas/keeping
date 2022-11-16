@@ -17,6 +17,14 @@ def fixture_data():
     ]
 
 
+@pytest.fixture(name="expenses_data")
+def fixture_expenses_data():
+    return [
+        {'date': date(1999, 1, 1), 'sum': Decimal('1'), 'title': 'X', 'type_title': 'T'},
+        {'date': date(1999, 3, 1), 'sum': Decimal('2'), 'title': 'X', 'type_title': 'T'},
+    ]
+
+
 def test_incomes_context_name(data):
     d = SimpleNamespace(incomes=data, expenses=[], savings=[], expenses_types=[])
     actual = DetailedService(data=d).incomes_context()
@@ -50,3 +58,25 @@ def test_incomes_context_total_row(data):
     actual = DetailedService(data=d).incomes_context()
 
     assert actual[0]['total_row'] == [5.0, 10.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15.0]
+
+
+def test_savings_context_name(data):
+    d = SimpleNamespace(incomes=[], expenses=[], savings=data, expenses_types=[])
+    actual = DetailedService(data=d).savings_context()
+
+    assert actual[0]['name'] == 'Taupymas'
+
+
+def test_expenses_context_name(expenses_data):
+    d = SimpleNamespace(incomes=[], expenses=expenses_data, savings=[], expenses_types=['T'])
+    actual = DetailedService(data=d).expenses_context()
+    print(f'{actual=}')
+    assert actual[0]['name'] == 'Išlaidos / T'
+
+
+def test_expenses_context_data(expenses_data):
+    d = SimpleNamespace(incomes=[], expenses=expenses_data, savings=[], expenses_types=['T'])
+    actual = DetailedService(data=d).expenses_context()
+
+    assert actual[0]['items'][0]['title'] == 'X'
+    assert actual[0]['items'][0]['data'] == [1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3.0]
