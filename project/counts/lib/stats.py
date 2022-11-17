@@ -1,5 +1,6 @@
 import calendar
 import contextlib
+from collections import Counter
 from datetime import date, datetime
 from typing import Dict, List
 
@@ -40,19 +41,12 @@ class Stats():
 
         if not df.empty:
             df['weekday'] = df['date'].dt.dayofweek
-
             df = df.groupby('weekday')['qty'].sum()
 
-        df = df.to_dict()  # {0: 1, 1: 0} == {weekday: counts, }
+        # {0: 1, 1: 0} == {weekday: counts, }; weekday[0] = monday
+        df = df.to_dict()
 
-        # return list with zeros
-        arr = [{'weekday': i, 'count': 0} for i in range(7)]
-
-        # update return list with counts
-        for k, v in df.items():
-            arr[k]['count'] = v
-
-        return arr
+        return [{'weekday': i, 'count': df.get(i) or 0} for i in range(7)]
 
     def months_stats(self) -> List[float]:
         """Returns  [float] * 12"""
