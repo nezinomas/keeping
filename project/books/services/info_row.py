@@ -18,20 +18,11 @@ class InfoRow():
             .readed() \
             .filter(year=self._year)
 
-        if qs.exists():
-            return qs[0]['cnt']
-
-        return 0
+        return qs[0]['cnt'] if qs.exists() else 0
 
     def reading(self):
-        qs = \
-            Book.objects \
-            .reading(self._year)
-
-        if qs:
-            return qs['reading']
-
-        return 0
+        return \
+            qs['reading'] if (qs := Book.objects.reading(self._year)) else 0
 
     def target(self):
         try:

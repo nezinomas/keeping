@@ -27,9 +27,10 @@ class ChartReaded(TemplateViewMixin):
     template_name = 'books/readed_books.html'
 
     def get_context_data(self, **kwargs):
-        obj = services.ChartReaded()
+        data = services.ChartReadedData()
+        obj = services.ChartReaded(data)
 
-        if not obj.readed:
+        if not data.readed:
             self.template_name = 'empty.html'
             return {}
 

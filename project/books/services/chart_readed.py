@@ -1,63 +1,46 @@
-from typing import Dict
+import operator
+from dataclasses import dataclass, field
 
 from django.utils.translation import gettext as _
 
 from ..models import Book, BookTarget
 
 
+@dataclass
+class ChartReadedData:
+    targets: dict = field(init=False, default_factory=dict)
+    readed: dict = field(init=False, default_factory=dict)
+
+    def __post_init__(self):
+        self.targets = dict(
+            BookTarget.objects.items().values_list('year', 'quantity')
+        )
+        self.readed = dict(
+            Book.objects.readed().values_list('year', 'cnt')
+        )
+
+
 class ChartReaded():
-    def __init__(self):
-        self._years = []
-        self._targets = []
-        self._data = []
-
-        self._readed = self._get_readed()
-
-    @property
-    def readed(self):
-        return self._readed.count()
+    def __init__(self, data: ChartReadedData):
+        self._readed = data.readed
+        self._targets = data.targets
 
     def context(self):
-        self._chart_data()
+        data = self._make_serries_data()
 
         return {
             'chart': {
-                'categories': self._years,
-                'data': self._data,
-                'targets': self._targets,
+                'categories': list(self._readed.keys()),
+                'data': data,
+                'targets': list(map(operator.itemgetter('target'), data)),
                 'chart': 'chart_readed_books',
                 'chart_title': _('Readed books'),
                 'chart_column_color': '70, 171, 157'
             }
         }
 
-    def _chart_data(self):
-        targets = self._targets_list()
-
-        for readed in self._readed:
-            year = readed['year']
-
-            # chart categories
-            self._years.append(year)
-
-            # chart targets
-            target = targets.get(year, 0)
-            self._targets.append(target)
-
-            # chart serries data
-            data = {
-                'y': readed['cnt'],
-                'target': target,
-            }
-            self._data.append(data)
-
-    def _get_readed(self):
-        return Book.objects.readed()
-
-    def _targets_list(self) -> Dict:
-        qs = BookTarget.objects.items().values_list('year', 'quantity')
-
-        # reverse keys and values
-        arr = {k: v for k, v in qs}
-
-        return arr
+    def _make_serries_data(self):
+        return [
+            {'y': cnt, 'target': self._targets.get(year, 0),}
+            for year, cnt in self._readed.items()
+        ]
