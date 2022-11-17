@@ -43,9 +43,13 @@ class InfoRow(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         obj = services.InfoRow(self.request.user.year)
-
+        context = {
+            'readed': obj.readed,
+            'reading': obj.reading,
+            'target': obj.target,
+        }
         return \
-            super().get_context_data(**kwargs) | obj.context()
+            super().get_context_data(**kwargs) | context
 
 
 class Lists(ListViewMixin):
