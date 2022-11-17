@@ -1,17 +1,68 @@
 from datetime import date
+from types import SimpleNamespace
 
 import pytest
-from mock import patch
 
 from ..factories import BookFactory, BookTargetFactory
-from ..services.chart_readed import ChartReaded
+from ..services.chart_readed import ChartReaded, ChartReadedData
 
 pytestmark = pytest.mark.django_db
 
 
-def test_context_contains():
-    obj = ChartReaded()
-    actual = obj.context()['chart']
+# ---------------------------------------------------------------------------------------
+#                                                                         ChartReadedData
+# ---------------------------------------------------------------------------------------
+def test_data_targets_no_data():
+    actual = ChartReadedData().targets
+
+    assert actual == {}
+
+
+def test_data_targets():
+    BookTargetFactory(year=1, quantity=10)
+    BookTargetFactory(year=2, quantity=20)
+
+    actual = ChartReadedData().targets
+
+    assert actual == {1: 10, 2: 20}
+
+
+def test_data_readed_no_data():
+    actual = ChartReadedData().readed
+
+    assert actual == {}
+
+
+def test_data_readed():
+    BookFactory(started=date(2000, 1, 1))
+    BookFactory(started=date(2000, 1, 1), ended=date(2000, 1, 31))
+    BookFactory(started=date(2000, 1, 1), ended=date(2000, 1, 31))
+    BookFactory(started=date(1998, 1, 1))
+    BookFactory(started=date(1998, 1, 1), ended=date(1998, 1, 31))
+
+    actual = ChartReadedData().readed
+
+    assert actual == {1998: 1, 2000: 2}
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                             ChartReaded
+# ---------------------------------------------------------------------------------------
+@pytest.fixture(name="readed")
+def fixture_readed():
+    return {1111: 1, 2222: 2, 3333: 3}
+
+
+@pytest.fixture(name="targets")
+def fixture_targets():
+    return {1111: 11, 3333: 33}
+
+
+def test_chart_context():
+    data = SimpleNamespace(readed={}, targets={})
+
+    actual = ChartReaded(data).context()
+    actual = actual['chart']
 
     assert 'categories' in actual
     assert 'data' in actual
@@ -21,66 +72,39 @@ def test_context_contains():
     assert 'chart_column_color' in actual
 
 
-def test_readed_property():
-    BookFactory(started=date(1999, 1, 1), ended=date(1999, 1, 31))
-    BookFactory(started=date(1999, 1, 1), ended=date(1999, 1, 31))
+def test_chart_context_categories(readed, targets):
+    data = SimpleNamespace(readed=readed, targets=targets)
 
-    obj = ChartReaded()
-    actual = obj.readed
+    actual = ChartReaded(data).context()
+    actual = actual['chart']['categories']
 
-    assert actual == 1
-
-
-@patch('project.books.services.chart_readed.ChartReaded._targets_list')
-@patch('project.books.services.chart_readed.ChartReaded._get_readed')
-def test_categories(mck_get_readed, mck_targets_list):
-    mck_get_readed.return_value = [{'year': 1, 'cnt': 1}, {'year': 2, 'cnt': 2}]
-
-    obj = ChartReaded()
-    actual = obj.context()
-
-    assert actual['chart']['categories'] == [1, 2]
+    assert actual == [1111, 2222, 3333]
 
 
-@patch('project.books.services.chart_readed.ChartReaded._targets_list')
-@patch('project.books.services.chart_readed.ChartReaded._get_readed')
-def test_targets(mck_get_readed, mck_targets_list):
-    mck_get_readed.return_value = [{'year': 11, 'cnt': 1}, {'year': 22, 'cnt': 2}]
-    mck_targets_list.return_value = {11: 30}
+def test_chart_context_targets(readed, targets):
+    data = SimpleNamespace(readed=readed, targets=targets)
 
-    obj = ChartReaded()
-    actual = obj.context()
+    actual = ChartReaded(data).context()
+    actual = actual['chart']['targets']
 
-    assert actual['chart']['targets'] == [30, 0]
+    assert actual == [11, 0, 33]
 
 
-@patch('project.books.services.chart_readed.ChartReaded._targets_list')
-@patch('project.books.services.chart_readed.ChartReaded._get_readed')
-def test_data(mck_get_readed, mck_targets_list):
-    mck_get_readed.return_value = [{'year': 11, 'cnt': 1}, {'year': 22, 'cnt': 2}]
-    mck_targets_list.return_value = {11: 30, 22: 40}
+def test_chart_context_data(readed, targets):
+    data = SimpleNamespace(readed=readed, targets=targets)
 
-    obj = ChartReaded()
-    actual = obj.context()
+    actual = ChartReaded(data).context()
 
-    assert actual['chart']['data'] == [{'y': 1, 'target': 30}, {'y': 2, 'target': 40}]
+    assert actual['chart']['data'] == [
+        {'y': 1, 'target': 11},
+        {'y': 2, 'target': 0},
+        {'y': 3, 'target': 33},
+    ]
 
 
-@patch('project.books.services.chart_readed.ChartReaded._targets_list')
-@patch('project.books.services.chart_readed.ChartReaded._get_readed')
-def test_chart_title(mck_get_readed, mck_targets_list):
-    obj = ChartReaded()
-    actual = obj.context()
+def test_chart_context_chart_title(readed, targets):
+    data = SimpleNamespace(readed=readed, targets=targets)
+
+    actual = ChartReaded(data).context()
 
     assert actual['chart']['chart_title'] == 'Perskaitytos knygos'
-
-
-def test_target_list_returns_dict():
-    BookTargetFactory(year=1, quantity=10)
-    BookTargetFactory(year=2, quantity=20)
-
-    obj = ChartReaded()
-    actual = obj._targets_list()
-
-    assert isinstance(actual, dict)
-    assert actual == {1: 10, 2: 20}
