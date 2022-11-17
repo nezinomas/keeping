@@ -179,7 +179,7 @@ def test_months():
 def test_months_stats(_data):
     actual = Stats(year=1999, data=_data).months_stats()
 
-    expect = [3.0, 2.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+    expect = [3.0, 2.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.0]
 
     assert actual == expect
 

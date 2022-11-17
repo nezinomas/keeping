@@ -51,23 +51,30 @@ class Stats():
     def months_stats(self) -> List[float]:
         """Returns  [float] * 12"""
 
+        return_data = [0.0] * 12
         df = self._df.copy()
 
-        if not df.empty:
-            df.loc[:, 'YearMonth'] = df['date'].dt.to_period('M').astype(str)
+        if df.empty:
+            return return_data
 
-            df = df.groupby('YearMonth')['qty'].sum()
+        # make YearMonth (e.g. 2000-01) column
+        df.loc[:, 'YearMonth'] = df['date'].dt.to_period('M').astype(str)
 
-        df = df.reset_index().to_dict('records')
+        # group and sum by YearMonth
+        df = df.groupby('YearMonth')['qty'].sum().to_frame()
 
-        arr = [0] * 12  # return list filled with zeros
+        # make month digit column and make it as index
+        df.loc[:, 'month'] = df.index.str[5:7].astype(int)
+        df.set_index('month', inplace=True)
 
-        # copy values from DataFrame to list
-        for row in df:
-            key = int(row['YearMonth'][5:7])
-            arr[key - 1] = row['qty']
+        # convert DataFrame to Serries
+        df = df.qty.squeeze()
 
-        return arr
+        # fill return_data array with counted qty from df
+        for i in range(12):
+            return_data[i] = df.get(i + 1) or 0.0
+
+        return return_data
 
     def year_stats(self):
         if not self._year:
