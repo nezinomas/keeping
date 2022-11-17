@@ -30,21 +30,20 @@ month_days_2000 = [
 ]
 
 
-@pytest.fixture()
-def _data():
-    df = [
+@pytest.fixture(name="data")
+def fixture_data():
+    return [
         {'date': date(1999, 12, 3), 'qty': 1.0},
         {'date': date(1999, 2, 1), 'qty': 2.0},
         {'date': date(1999, 1, 15), 'qty': 2.0},
         {'date': date(1999, 1, 8), 'qty': 1.0},
         {'date': date(2000, 1, 8), 'qty': 1.0},
     ]
-    return df
 
 
 @pytest.fixture()
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def _data_db():
+def data_db():
     CountFactory(date=date(1998, 1, 1), quantity=1.0)
     CountFactory(date=date(1999, 12, 3), quantity=1.0)
     CountFactory(date=date(1999, 2, 1), quantity=1.0)
@@ -55,22 +54,20 @@ def _data_db():
     CountFactory(date=date(2000, 1, 8), quantity=1.0)
 
 
-@pytest.fixture()
-def _year_stats_expect_empty():
+@pytest.fixture(name="year_stats_expect_empty")
+def fixture_year_stats_expect_empty():
     arr = []
     for i in range(1, 13):
         monthlen = calendar.monthrange(1999, i)[1]
-        items = []
-        for _ in range(0, monthlen):
-            items.append({'y': 0, 'gap': 0})
+        items = [{'y': 0, 'gap': 0} for _ in range(monthlen)]
         arr.append(items)
 
     return arr
 
 
-@pytest.fixture()
-def _year_stats_expect(_year_stats_expect_empty):
-    arr = _year_stats_expect_empty
+@pytest.fixture(name="year_stats_expect")
+def year_stats_expect(year_stats_expect_empty):
+    arr = year_stats_expect_empty
     # 1999-01-08
     arr[0][7]['y'] = 1.0
     arr[0][7]['gap'] = 7.0
@@ -98,8 +95,8 @@ def test_weekdays():
     assert actual[6] == 'Sekmadienis'
 
 
-def test_weekdays_stats(_data):
-    actual = Stats(year=1999, data=_data).weekdays_stats()
+def test_weekdays_stats(data):
+    actual = Stats(year=1999, data=data).weekdays_stats()
 
     expect = [
         {'weekday': 0, 'count': 2},  # pirmadienis
@@ -136,8 +133,8 @@ def test_weekdays_stats_only_thusdays():
     assert actual == expect
 
 
-def test_weekdays_stats_all_years(_data):
-    actual = Stats(data=_data).weekdays_stats()
+def test_weekdays_stats_all_years(data):
+    actual = Stats(data=data).weekdays_stats()
 
     expect = [
         {'weekday': 0, 'count': 2},  # pirmadienis
@@ -152,7 +149,7 @@ def test_weekdays_stats_all_years(_data):
     assert actual == expect
 
 
-def test_weekdays_stats_no_data():
+def test_weekdays_stats_nodata():
     actual = Stats(year=1999, data=[]).weekdays_stats()
 
     expect = [
@@ -176,8 +173,8 @@ def test_months():
     assert actual[11] == 'Gruodis'
 
 
-def test_months_stats(_data):
-    actual = Stats(year=1999, data=_data).months_stats()
+def test_months_stats(data):
+    actual = Stats(year=1999, data=data).months_stats()
 
     expect = [3.0, 2.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.0]
 
@@ -185,7 +182,7 @@ def test_months_stats(_data):
 
 
 @pytest.mark.django_db
-def test_months_stats_db(_data_db):
+def test_months_stats_db(data_db):
     year = 1999
     qs = Count.objects.sum_by_day(year=year, count_type='count-type')
     actual = Stats(year=year, data=qs).months_stats()
@@ -196,7 +193,7 @@ def test_months_stats_db(_data_db):
 
 
 @pytest.mark.django_db
-def test_months_stats_db_no_data():
+def test_months_stats_db_nodata():
     year = 1999
     qs = Count.objects.sum_by_day(year=year, count_type='count-type')
     actual = Stats(year=year, data=qs).months_stats()
@@ -206,7 +203,7 @@ def test_months_stats_db_no_data():
     assert actual == expect
 
 
-def test_months_stats_no_data():
+def test_months_stats_nodata():
     actual = Stats(year=1999, data=[]).months_stats()
 
     expect = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -215,29 +212,29 @@ def test_months_stats_no_data():
 
 
 @pytest.mark.xfail(raises=MethodInvalid)
-def test_year_stats_no_year_provided(_data):
-    Stats(data=_data).year_stats()
+def test_year_stats_no_year_provided(data):
+    Stats(data=data).year_stats()
 
 
-def test_year_stats(_data, _year_stats_expect):
-    actual = Stats(year=1999, data=_data).year_stats()
+def test_year_stats(data, year_stats_expect):
+    actual = Stats(year=1999, data=data).year_stats()
 
-    assert actual == _year_stats_expect
+    assert actual == year_stats_expect
 
 
 @pytest.mark.django_db
-def test_year_stats_db(_year_stats_expect, _data_db):
+def test_year_stats_db(year_stats_expect, data_db):
     year = 1999
     qs = Count.objects.sum_by_day(year=year, count_type='count-type')
     actual = Stats(year=year, data=qs).year_stats()
 
-    assert actual == _year_stats_expect
+    assert actual == year_stats_expect
 
 
-def test_year_stats_no_data(_year_stats_expect_empty):
+def test_year_stats_nodata(year_stats_expect_empty):
     actual = Stats(year=1999, data=[]).year_stats()
 
-    assert actual == _year_stats_expect_empty
+    assert actual == year_stats_expect_empty
 
 
 @pytest.mark.parametrize('month, days', month_days_1999)
@@ -254,8 +251,8 @@ def test_year_stats_months_len_leap_year(month, days):
     assert len(actual[month - 1]) == days
 
 
-def test_year_totals(_data):
-    actual = Stats(year=1999, data=_data).year_totals()
+def test_year_totals(data):
+    actual = Stats(year=1999, data=data).year_totals()
 
     assert actual == 6
 
@@ -271,19 +268,19 @@ def test_year_totals_queryset():
     assert actual == 1
 
 
-def test_year_totals_all_years(_data):
-    actual = Stats(data=_data).year_totals()
+def test_year_totals_all_years(data):
+    actual = Stats(data=data).year_totals()
 
     assert actual == {1999: 6.0, 2000: 1.0}
 
 
-def test_year_totals_year_not_exists_in_data(_data):
-    actual = Stats(year=2010, data=_data).year_totals()
+def test_year_totals_year_not_exists_indata(data):
+    actual = Stats(year=2010, data=data).year_totals()
 
     assert actual == 0
 
 
-def test_year_totals_year_no_data():
+def test_year_totals_year_nodata():
     actual = Stats(data=[]).year_totals()
 
     assert actual == {}
@@ -301,7 +298,7 @@ def test_month_days(month, days):
 
     assert len(actual[month - 1]) == days
 
-    for day in range(0, days):
+    for day in range(days):
         assert actual[month - 1][day] == day + 1
 
 
@@ -341,7 +338,7 @@ def test_items_odering():
 
 
 @pytest.mark.django_db
-def test_items_no_data():
+def test_items_nodata():
     qs = Count.objects.year(1999, count_type='count-type')
 
     actual = Stats(year=1999, data=qs).items()
@@ -349,36 +346,36 @@ def test_items_no_data():
     assert actual == []
 
 
-def test_gaps_for_current_year(_data):
-    _data.append({'date': date(1999, 2, 2), 'qty': 1.0})
+def test_gaps_for_current_year(data):
+    data.append({'date': date(1999, 2, 2), 'qty': 1.0})
 
-    actual = Stats(year=1999, data=_data).gaps()
+    actual = Stats(year=1999, data=data).gaps()
 
     assert json.dumps(actual) == json.dumps({1: 1, 7: 2, 17: 1, 304: 1})
 
 
-def test_gaps_for_current_year_with_latest(_data):
-    _data.append({'date': date(1999, 2, 2), 'qty': 1.0})
+def test_gaps_for_current_year_with_latest(data):
+    data.append({'date': date(1999, 2, 2), 'qty': 1.0})
 
-    actual = Stats(year=1999, data=_data, past_latest=date(1998, 1, 1)).gaps()
+    actual = Stats(year=1999, data=data, past_latest=date(1998, 1, 1)).gaps()
 
     assert json.dumps(actual) == json.dumps({1: 1, 7: 1, 17: 1, 304: 1, 372: 1})
 
 
-def test_gaps_for_all_years(_data):
-    actual = Stats(data=_data).gaps()
+def test_gaps_for_all_years(data):
+    actual = Stats(data=data).gaps()
 
     assert json.dumps(actual) == json.dumps({7: 2, 17: 1, 36: 1, 305: 1})
 
 
-def test_gaps_no_data():
+def test_gaps_nodata():
     actual = Stats(year=1999, data=[]).gaps()
 
     assert actual == {}
 
 
 @freeze_time('1999-1-3')
-def test_current_gap_no_data_current_year():
+def test_current_gap_nodata_current_year():
     actual = Stats(year=1999, data=[]).current_gap()
 
     assert not actual
@@ -390,24 +387,24 @@ def test_current_gap_no_year_provided():
 
 
 @freeze_time('1999-1-9')
-def test_current_gap(_data):
-    actual = Stats(year=1999, data=_data).current_gap()
+def test_current_gap(data):
+    actual = Stats(year=1999, data=data).current_gap()
 
     assert actual == -328
 
 
 @freeze_time('2000-1-9')
 def test_current_gap_only_one_record():
-    _data = [{'date': date(2000, 1, 8), 'qty': 1.0}]
+    data = [{'date': date(2000, 1, 8), 'qty': 1.0}]
 
-    actual = Stats(year=2000, data=_data).current_gap()
+    actual = Stats(year=2000, data=data).current_gap()
 
     assert actual == 1
 
 
 @freeze_time('2000-1-9')
-def test_current_gap_if_user_look_past_records(_data):
-    actual = Stats(year=1999, data=_data).current_gap()
+def test_current_gap_if_user_look_past_records(data):
+    actual = Stats(year=1999, data=data).current_gap()
 
     assert not actual
 
@@ -415,9 +412,9 @@ def test_current_gap_if_user_look_past_records(_data):
 # ---------------------------------------------------------------------------------------
 # chart_calendar
 # ---------------------------------------------------------------------------------------
-@pytest.fixture
-def _chart_calendar_expect_january_no_data():
-    arr = {
+@pytest.fixture(name="chart_calendar_expect_january_nodata")
+def fixture_chart_calendar_expect_january_nodata():
+    return {
         'name': 'Sausis',
         'keys': ['x', 'y', 'value', 'week', 'date', 'qty', 'gap'],
         'data': [
@@ -459,21 +456,19 @@ def _chart_calendar_expect_january_no_data():
         ]
     }
 
-    return arr
+
+@pytest.fixture(name="chart_calendar_expect_january_withdata")
+def fixture_chart_calendar_expect_january_withdata(chart_calendar_expect_january_nodata):
+    chart_calendar_expect_january_nodata['data'][11].append(1.0) #1999-01-08 qty
+    chart_calendar_expect_january_nodata['data'][11].append(7.0) #1999-01-08 gap
+    chart_calendar_expect_january_nodata['data'][11][2] = 1.0
 
 
-@pytest.fixture
-def _chart_calendar_expect_january_with_data(_chart_calendar_expect_january_no_data):
-    _chart_calendar_expect_january_no_data['data'][11].append(1.0) #1999-01-08 qty
-    _chart_calendar_expect_january_no_data['data'][11].append(7.0) #1999-01-08 gap
-    _chart_calendar_expect_january_no_data['data'][11][2] = 1.0
+    chart_calendar_expect_january_nodata['data'][18].append(2.0) #1999-01-15 qty
+    chart_calendar_expect_january_nodata['data'][18].append(7.0) #1999-01-15 gap
+    chart_calendar_expect_january_nodata['data'][18][2] = 2.0
 
-
-    _chart_calendar_expect_january_no_data['data'][18].append(2.0) #1999-01-15 qty
-    _chart_calendar_expect_january_no_data['data'][18].append(7.0) #1999-01-15 gap
-    _chart_calendar_expect_january_no_data['data'][18][2] = 2.0
-
-    return _chart_calendar_expect_january_no_data
+    return chart_calendar_expect_january_nodata
 
 
 @pytest.mark.xfail(raises=MethodInvalid)
@@ -481,44 +476,44 @@ def test_chart_calendar_no_year_provided():
     Stats(data=[]).chart_calendar()
 
 
-def test_chart_calendar(_data, _chart_calendar_expect_january_with_data):
-    actual = Stats(year=1999, data=_data).chart_calendar()
+def test_chart_calendar(data, chart_calendar_expect_january_withdata):
+    actual = Stats(year=1999, data=data).chart_calendar()
 
-    assert actual[0] == _chart_calendar_expect_january_with_data
+    assert actual[0] == chart_calendar_expect_january_withdata
 
 
 @pytest.mark.django_db
-def test_chart_calendar_db(_chart_calendar_expect_january_with_data, _data_db):
+def test_chart_calendar_db(chart_calendar_expect_january_withdata, data_db):
     year = 1999
     qs = Count.objects.sum_by_day(year=year, count_type='count-type')
     actual = Stats(year=year, data=qs).chart_calendar()
 
-    assert actual[0] == _chart_calendar_expect_january_with_data
+    assert actual[0] == chart_calendar_expect_january_withdata
 
 
-def test_chart_calendar_no_data(_data, _chart_calendar_expect_january_no_data):
+def test_chart_calendar_nodata(chart_calendar_expect_january_nodata):
     actual = Stats(year=1999, data=[]).chart_calendar()
 
-    assert actual[0] == _chart_calendar_expect_january_no_data
+    assert actual[0] == chart_calendar_expect_january_nodata
 
 
 @freeze_time('1999-01-02')
-def test_chart_calendar_current_day_no_data(_chart_calendar_expect_january_no_data):
-    _chart_calendar_expect_january_no_data['data'][5][2] = 0.05
+def test_chart_calendar_current_day_nodata(chart_calendar_expect_january_nodata):
+    chart_calendar_expect_january_nodata['data'][5][2] = 0.05
 
     actual = Stats(year=1999, data=[]).chart_calendar()
 
-    assert actual[0] == _chart_calendar_expect_january_no_data
+    assert actual[0] == chart_calendar_expect_january_nodata
 
 
 @freeze_time('1999-01-01')
-def test_chart_calendar_first_day_of_year_with_record(_chart_calendar_expect_january_no_data):
-    _data = [{'date': date(1999, 1, 1), 'qty': 1.0},]
+def test_chart_calendar_first_day_of_year_with_record(chart_calendar_expect_january_nodata):
+    data = [{'date': date(1999, 1, 1), 'qty': 1.0},]
 
-    _chart_calendar_expect_january_no_data['data'][4].append(1.0) #1999-01-08 qty
-    _chart_calendar_expect_january_no_data['data'][4].append(0) #1999-01-08 gap
-    _chart_calendar_expect_january_no_data['data'][4][2] = 1.0
+    chart_calendar_expect_january_nodata['data'][4].append(1.0) #1999-01-08 qty
+    chart_calendar_expect_january_nodata['data'][4].append(0) #1999-01-08 gap
+    chart_calendar_expect_january_nodata['data'][4][2] = 1.0
 
-    actual = Stats(year=1999, data=_data).chart_calendar()
+    actual = Stats(year=1999, data=data).chart_calendar()
 
-    assert actual[0] == _chart_calendar_expect_january_no_data
+    assert actual[0] == chart_calendar_expect_january_nodata
