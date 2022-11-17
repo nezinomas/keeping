@@ -8,7 +8,7 @@ class InfoRow():
     year: int
     readed: int = 0
     reading: int = 0
-    target: int = 0
+    target: BookTarget = 0
 
     def __post_init__(self):
         self.readed = self._readed()
