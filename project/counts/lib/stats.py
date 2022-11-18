@@ -52,8 +52,8 @@ class Stats():
         """Returns  [float] * 12"""
 
         return_data = [0.0] * 12
-        df = self._df.copy()
 
+        df = self._df.copy()
         if df.empty:
             return return_data
 
@@ -131,6 +131,7 @@ class Stats():
 
                 with contextlib.suppress(ValueError):
                     dt = date(self._year, month, day)
+
                 row = []
                 if dt:
                     # set values for saturday and sunday
@@ -153,6 +154,7 @@ class Stats():
                         _f = df.loc[dt]
                         qty = val = _f.qty
                         row = [qty, _f.duration]
+
                 data.append([x, y, val, week, str(dt), *row])
 
             x += 1
