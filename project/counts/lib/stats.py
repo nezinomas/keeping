@@ -78,8 +78,8 @@ class Stats():
             raise MethodInvalid('class Stats must be called with specified year.')
 
         arr = self._empty_list()
-        df = self._df.copy()
 
+        df = self._df.copy()
         if df.empty:
             return arr
 
