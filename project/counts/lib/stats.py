@@ -67,11 +67,8 @@ class Stats():
         df.loc[:, 'month'] = df.index.str[5:7].astype(int)
         df.set_index('month', inplace=True)
 
-        # shrink DataFrame [index, qty]
-        df = df.qty
-
         # fill return_data array with counted qty from df
-        for month, qty in df.items():
+        for month, qty in df.qty.items():
             return_data[month - 1] = qty or 0.0
 
         return return_data
