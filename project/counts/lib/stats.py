@@ -71,8 +71,8 @@ class Stats():
         df = df.qty
 
         # fill return_data array with counted qty from df
-        for i in range(12):
-            return_data[i] = df.get(i + 1) or 0.0
+        for month, qty in df.items():
+            return_data[month - 1] = qty or 0.0
 
         return return_data
 
