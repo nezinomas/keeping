@@ -31,10 +31,12 @@ class Redirect(RedirectViewMixin):
                     .related() \
                     .first()
 
-        index = reverse_lazy('counts:index', kwargs={'slug': qs.slug})
-        empty = reverse_lazy('counts:empty')
+        if qs:
+            url = reverse_lazy('counts:index', kwargs={'slug': qs.slug})
+        else:
+            url = reverse_lazy('counts:empty')
 
-        return index if qs else empty
+        return url
 
 
 class Empty(TemplateViewMixin):
