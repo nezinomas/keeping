@@ -24,19 +24,17 @@ class Redirect(RedirectViewMixin):
 
         try:
             qs = CountType.objects \
-                .related() \
-                .get(slug=kwargs.get('slug'))
+                    .related() \
+                    .get(slug=kwargs.get('slug'))
         except CountType.DoesNotExist:
             qs = CountType.objects \
-                .related() \
-                .first()
+                    .related() \
+                    .first()
 
-        if not qs:
-            return \
-                reverse('counts:empty')
+        index = reverse_lazy('counts:index', kwargs={'slug': qs.slug})
+        empty = reverse_lazy('counts:empty')
 
-        return \
-            reverse('counts:index', kwargs={'slug': qs.slug})
+        return index if qs else empty
 
 
 class Empty(TemplateViewMixin):
