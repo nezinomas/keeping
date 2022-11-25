@@ -23,13 +23,9 @@ class Redirect(RedirectViewMixin):
         qs = None
 
         try:
-            qs = CountType.objects \
-                    .related() \
-                    .get(slug=kwargs.get('slug'))
+            qs = CountType.objects.related().get(slug=kwargs.get('slug'))
         except CountType.DoesNotExist:
-            qs = CountType.objects \
-                    .related() \
-                    .first()
+            qs = CountType.objects.related().first()
 
         if qs:
             url = reverse_lazy('counts:index', kwargs={'slug': qs.slug})
