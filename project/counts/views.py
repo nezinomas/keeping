@@ -130,16 +130,11 @@ class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
 
         context = {
             'records': srv.records,
-            'chart_calendar_1H': \
-                srv.chart_calendar(calendar_data[:6]),
-            'chart_calendar_2H': \
-                srv.chart_calendar(calendar_data[6:]),
-            'chart_weekdays': \
-                srv.chart_weekdays(),
-            'chart_months': \
-                srv.chart_months(),
-            'chart_histogram': \
-                srv.chart_histogram(),
+            'chart_calendar_1H': srv.chart_calendar(calendar_data[:6]),
+            'chart_calendar_2H': srv.chart_calendar(calendar_data[6:]),
+            'chart_weekdays': srv.chart_weekdays(),
+            'chart_months': srv.chart_months(),
+            'chart_histogram': srv.chart_histogram(),
         }
 
         return super().get_context_data(**self.kwargs) | context
