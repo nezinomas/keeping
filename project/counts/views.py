@@ -26,9 +26,9 @@ class Redirect(RedirectViewMixin):
             qs = CountType.objects.related().first()
 
         if qs:
-            return reverse_lazy('counts:index', kwargs={'slug': qs.slug})
+            return reverse('counts:index', kwargs={'slug': qs.slug})
 
-        return reverse_lazy('counts:empty')
+        return reverse('counts:empty')
 
 
 class Empty(TemplateViewMixin):
