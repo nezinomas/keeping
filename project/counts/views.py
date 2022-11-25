@@ -20,8 +20,6 @@ from .services.index import IndexService
 
 class Redirect(RedirectViewMixin):
     def get_redirect_url(self, *args, **kwargs):
-        qs = None
-
         try:
             qs = CountType.objects.related().get(slug=kwargs.get('slug'))
         except CountType.DoesNotExist:
