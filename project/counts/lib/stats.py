@@ -190,14 +190,6 @@ class Stats():
 
         return arr
 
-    def items(self):
-        df = self._df.copy()
-
-        if not df.empty:
-            df = df.sort_values(by=['date'], ascending=False)
-
-        return df.to_dict('records')
-
     def gaps(self) -> Dict[int, int]:
         """
         returns dictionary(int: int) = {gap: count}

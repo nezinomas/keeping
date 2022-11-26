@@ -307,45 +307,6 @@ def test_year_month_days_no_year_provided():
     Stats(data=[]).month_days()
 
 
-@pytest.mark.django_db
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_items():
-    CountFactory()
-    qs = Count.objects.year(1999, count_type='count-type')
-
-    actual = Stats(year=1999, data=qs).items()
-
-    assert len(actual) == 1
-
-    actual = actual[0]
-
-    assert actual['quantity'] == 1
-    assert actual['date'] == pd.Timestamp(1999, 1, 1)
-
-
-@pytest.mark.django_db
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_items_odering():
-    CountFactory(date=date(1999, 1, 1))
-    CountFactory(date=date(1999, 12, 31))
-
-    qs = Count.objects.year(1999, count_type='count-type')
-
-    actual = Stats(year=1999, data=qs).items()
-
-    assert actual[0]['date'] == pd.Timestamp(1999, 12, 31)
-    assert actual[1]['date'] == pd.Timestamp(1999, 1, 1)
-
-
-@pytest.mark.django_db
-def test_items_nodata():
-    qs = Count.objects.year(1999, count_type='count-type')
-
-    actual = Stats(year=1999, data=qs).items()
-
-    assert actual == []
-
-
 def test_gaps_for_current_year(data):
     data.append({'date': date(1999, 2, 2), 'qty': 1.0})
 
