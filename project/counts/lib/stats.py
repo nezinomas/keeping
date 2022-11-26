@@ -1,6 +1,5 @@
 import calendar
 import contextlib
-from collections import Counter
 from datetime import date, datetime
 from typing import Dict, List
 
