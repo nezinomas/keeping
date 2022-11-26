@@ -1,7 +1,4 @@
 import contextlib
-from datetime import datetime
-
-from django.db.models import Sum
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
@@ -13,7 +10,7 @@ from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  rendered_content)
 from .forms import CountForm, CountTypeForm
 from .lib.stats import Stats
-from .lib.views_helper import CountTypetObjectMixin
+from .lib.views_helper import CountTypetObjectMixin, InfoRowData
 from .models import Count, CountType
 from .services.index import IndexService
 
@@ -42,31 +39,15 @@ class InfoRow(CountTypetObjectMixin, TemplateViewMixin):
         super().get_object()
 
         year = self.request.user.year
+        data = InfoRowData(year, self.object.slug)
         week = weeknumber(year)
-
-        qs_total = \
-                Count.objects \
-                .related() \
-                .filter(count_type=self.object, date__year=year) \
-                .aggregate(total=Sum('quantity'))
-        total = qs_total.get('total') or 0
-
-        gap = 0
-        if year == datetime.now().year:
-            with contextlib.suppress(Count.DoesNotExist):
-                qs_latest = \
-                    Count.objects \
-                    .related() \
-                    .filter(count_type=self.object) \
-                    .latest()
-                gap = (datetime.now().date() - qs_latest.date).days
 
         context = {
             'title': self.object.title,
             'week': week,
-            'total': total,
-            'ratio': total / week,
-            'current_gap': gap,
+            'total': data.total,
+            'ratio': data.total / week,
+            'current_gap': data.gap,
         }
         return super().get_context_data(**kwargs) | context
 
