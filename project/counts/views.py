@@ -39,8 +39,8 @@ class InfoRow(CountTypetObjectMixin, TemplateViewMixin):
         super().get_object()
 
         year = self.request.user.year
-        data = InfoRowData(year, self.object.slug)
         week = weeknumber(year)
+        data = InfoRowData(year, self.object.slug)
 
         context = {
             'title': self.object.title,
