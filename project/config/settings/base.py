@@ -190,3 +190,12 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 SALT = env('SALT')
+
+
+BOOTSTRAP_DATEPICKER_PLUS = {
+    "variant_options": {
+        "date": {
+            "format": "YYYY-MM-DD",
+        },
+    }
+}
