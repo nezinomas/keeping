@@ -1,11 +1,13 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load i18n %}
 {% block head %}
 
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
 <script src="https://code.highcharts.com/modules/bullet.js"></script>
-<script src="/static/js/chart_month_expenses.js"></script>
-<script src="/static/js/chart_month_targets.js"></script>
+<script src="{% static 'js/chart_month_expenses.js' %}"></script>
+<script src="{% static 'js/chart_month_targets.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/expand_table_row.css' %}" />
 <style>
 .table-danger {
     font-weight: bold;
