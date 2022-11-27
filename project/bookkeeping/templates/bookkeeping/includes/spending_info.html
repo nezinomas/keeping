@@ -15,7 +15,7 @@
         {% for item in ctx %}
         <tr>
             {% table_cell value=item.title %}
-            {% table_cell value=item.plan|floatformat:2 %}
+            {% table_cell value=item.plan|floatformat:'2g' %}
 
             {% if item.title == _('Incomes') or item.title == _('Balance') %}
                 {% table_cell value=item.fact css_class=item.fact|compare:item.plan %}

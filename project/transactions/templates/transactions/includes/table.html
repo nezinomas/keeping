@@ -22,7 +22,7 @@
             <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ object.from_account }}</td>
             <td class="text-start">{{ object.to_account }}</td>
-            <td>{{ object.price }}</td>
+            <td>{{ object.price|floatformat:'2g' }}</td>
             {% if fee %}<td>{{ object.fee }}</td>{% endif %}
             {% edit_cell url=url__update %}
             {% delete_cell url=url__delete %}

@@ -23,7 +23,7 @@
             <td class="text-start">{{ obj.date|date:"Y-m-d" }}</td>
             {% var drink_type=obj.option|title %}
             <td class="text-start">{% translate drink_type %}</td>
-            <td class="text-start">{{ obj.quantity|convert:obj.option|floatformat:2 }}</td>
+            <td class="text-start">{{ obj.quantity|convert:obj.option|floatformat:'2g' }}</td>
             {% edit_cell url=url_update %}
             {% delete_cell url=url_delete %}
         </tr>

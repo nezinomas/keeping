@@ -28,7 +28,7 @@ def cellformat(value, default: str = '-'):
         return value
 
     # round value and convert to str
-    _value = floatformat(_value, 2)
+    _value = floatformat(_value, '2g')
 
     return default if _value == '0,00' else _value
 

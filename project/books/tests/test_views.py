@@ -506,3 +506,15 @@ def test_target_update(client_logged):
     client_logged.post(url, data)
 
     assert models.BookTarget.objects.first().quantity == 66
+
+
+def test_target_load_update_form(client_logged):
+    p = BookTargetFactory()
+
+    data = {'year': 1999, 'quantity': 66}
+    url = reverse('books:target_update', kwargs={'pk': p.pk})
+
+    response = client_logged.get(url, data)
+    actual = response.content.decode('utf-8')
+
+    assert '<input type="text" name="year" value="1999"' in actual

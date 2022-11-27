@@ -6,7 +6,7 @@
     <thead>
         <tr>
             <th colspan="3" rowspan="2" class="text-start">{% regenerate_balances type=type %} {{ title }}</th>
-            <th colspan="4" rowspan="2" class="right-blue-border">{% if percentage_from_incomes %} {% translate 'From incomes' %}: {{ percentage_from_incomes|floatformat:1 }}%{% endif %}</th>
+            <th colspan="4" rowspan="2" class="right-blue-border">{% if percentage_from_incomes %} {% translate 'From incomes' %}: {{ percentage_from_incomes|floatformat:'1g' }}%{% endif %}</th>
             <th colspan="4" class="text-center">{% translate 'Profit' %}/{% translate 'Loss' %}</th>
         </tr>
         <tr>

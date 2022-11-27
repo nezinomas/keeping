@@ -15,8 +15,8 @@
     <tbody>
         <tr>
             {% if ctx.qty %}
-            <td class="text-start">{{ ctx.qty|floatformat:1 }}</td>
-            <td class="{{ ctx.target|compare:ctx.avg }}">{{ ctx.avg|floatformat:1 }}</td>
+            <td class="text-start">{{ ctx.qty|floatformat:'1g' }}</td>
+            <td class="{{ ctx.target|compare:ctx.avg }}">{{ ctx.avg|floatformat:'1g' }}</td>
             {% else %}
             <td colspan="2">{% translate 'No data' %}</td>
             {% endif %}
