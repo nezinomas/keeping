@@ -22,10 +22,8 @@ class PensionForm(YearBetweenMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['date'].widget = DatePickerInput(
-            options={
-                "format": "YYYY-MM-DD",
-                "locale": utils.get_user().journal.lang,
-            })
+            options={"locale": utils.get_user().journal.lang,}
+        )
 
         # form inputs settings
         self.fields['price'].widget.attrs = {'step': '0.01'}

@@ -42,7 +42,7 @@ class IncomePlanForm(forms.ModelForm):
         fields = ['journal', 'year', 'income_type'] + monthnames()
 
         widgets = {
-            'year': YearPickerInput(format='%Y'),
+            'year': YearPickerInput(),
         }
 
     field_order = ['year', 'income_type'] + monthnames()
@@ -54,7 +54,7 @@ class IncomePlanForm(forms.ModelForm):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields['year'].initial = set_year_for_form()
+        self.fields['year'].initial = str(set_year_for_form().year)
 
         # overwrite ForeignKey expense_type queryset
         self.fields['income_type'].queryset = IncomeType.objects.items()
@@ -76,7 +76,7 @@ class ExpensePlanForm(forms.ModelForm):
         fields = ['journal', 'year', 'expense_type'] + monthnames()
 
         widgets = {
-            'year': YearPickerInput(format='%Y'),
+            'year': YearPickerInput(),
         }
 
     field_order = ['year', 'expense_type'] + monthnames()
@@ -88,7 +88,7 @@ class ExpensePlanForm(forms.ModelForm):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields['year'].initial = set_year_for_form()
+        self.fields['year'].initial = str(set_year_for_form().year)
 
         # overwrite ForeignKey expense_type queryset
         self.fields['expense_type'].queryset = ExpenseType.objects.items()
@@ -110,7 +110,7 @@ class SavingPlanForm(forms.ModelForm):
         fields = ['journal', 'year', 'saving_type'] + monthnames()
 
         widgets = {
-            'year': YearPickerInput(format='%Y'),
+            'year': YearPickerInput(),
         }
 
     field_order = ['year', 'saving_type'] + monthnames()
@@ -125,7 +125,7 @@ class SavingPlanForm(forms.ModelForm):
         self.fields['saving_type'].queryset = SavingType.objects.items()
 
         # inital values
-        self.fields['year'].initial = set_year_for_form()
+        self.fields['year'].initial = str(set_year_for_form().year)
 
         # field translation
         self.fields['saving_type'].label = _('Saving type')
@@ -146,7 +146,7 @@ class DayPlanForm(forms.ModelForm):
         fields = ['journal', 'year'] + monthnames()
 
         widgets = {
-            'year': YearPickerInput(format='%Y'),
+            'year': YearPickerInput(),
         }
 
     field_order = ['year'] + monthnames()
@@ -158,7 +158,7 @@ class DayPlanForm(forms.ModelForm):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields['year'].initial = set_year_for_form()
+        self.fields['year'].initial = str(set_year_for_form().year)
 
         # field translation
         common_field_transalion(self)
@@ -176,7 +176,7 @@ class NecessaryPlanForm(forms.ModelForm):
         fields = ['journal', 'year', 'title'] + monthnames()
 
         widgets = {
-            'year': YearPickerInput(format='%Y'),
+            'year': YearPickerInput(),
         }
 
     field_order = ['year', 'title'] + monthnames()
@@ -188,7 +188,7 @@ class NecessaryPlanForm(forms.ModelForm):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields['year'].initial = set_year_for_form()
+        self.fields['year'].initial = str(set_year_for_form().year)
 
         # field translation
         common_field_transalion(self)
@@ -202,13 +202,13 @@ class NecessaryPlanForm(forms.ModelForm):
 # ----------------------------------------------------------------------------
 class CopyPlanForm(forms.Form):
     year_from = forms.IntegerField(
-        widget=YearPickerInput(format='%Y'),
+        widget=YearPickerInput(),
         validators=[
             MinValueValidator(1974),
             MaxValueValidator(2050)],
     )
     year_to = forms.IntegerField(
-        widget=YearPickerInput(format='%Y'),
+        widget=YearPickerInput(),
         validators=[
             MinValueValidator(1974),
             MaxValueValidator(2050)],

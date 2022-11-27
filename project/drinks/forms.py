@@ -26,10 +26,8 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['date'].widget = DatePickerInput(
-            options={
-                "format": "YYYY-MM-DD",
-                "locale": utils.get_user().journal.lang,
-            })
+            options={"locale": utils.get_user().journal.lang,}
+        )
 
         # user input
         self.fields['user'].initial = utils.get_user()
@@ -67,7 +65,7 @@ class DrinkTargetForm(forms.ModelForm):
         fields = ['user', 'year', 'drink_type', 'quantity']
 
         widgets = {
-            'year': YearPickerInput(format='%Y'),
+            'year': YearPickerInput(),
         }
 
     field_order = ['year', 'drink_type', 'quantity']
@@ -81,7 +79,7 @@ class DrinkTargetForm(forms.ModelForm):
         self.fields['user'].widget = forms.HiddenInput()
 
         # inital values
-        self.fields['year'].initial = set_year_for_form()
+        self.fields['year'].initial = str(set_year_for_form().year)
 
         self.fields['year'].label = _('Year')
         self.fields['quantity'].label = _('Quantity')

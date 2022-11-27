@@ -35,10 +35,8 @@ class TransactionForm(YearBetweenMixin, forms.ModelForm):
 
     def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(
-            options={
-                "format": "YYYY-MM-DD",
-                "locale": utils.get_user().journal.lang,
-            })
+            options={"locale": utils.get_user().journal.lang,}
+        )
 
         # initial values
         self.fields['price'].widget.attrs = {'step': '0.01'}
@@ -101,10 +99,8 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
 
     def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(
-            options={
-                "format": "YYYY-MM-DD",
-                "locale": utils.get_user().journal.lang,
-            })
+            options={"locale": utils.get_user().journal.lang,}
+        )
 
         self.fields['price'].widget.attrs = {'step': '0.01'}
         self.fields['fee'].widget.attrs = {'step': '0.01'}
@@ -161,10 +157,8 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
 
     def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(
-            options={
-                "format": "YYYY-MM-DD",
-                "locale": utils.get_user().journal.lang,
-            })
+            options={"locale": utils.get_user().journal.lang,}
+        )
 
         # form input settings
         self.fields['price'].widget.attrs = {'step': '0.01'}

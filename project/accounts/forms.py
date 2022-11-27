@@ -21,10 +21,8 @@ class AccountForm(forms.ModelForm):
         journal = utils.get_user().journal
 
         self.fields['closed'].widget = YearPickerInput(
-            options={
-                "format": "YYYY",
-                "locale": journal.lang,
-            })
+            options={"locale": journal.lang,}
+        )
 
         # journal input
         self.fields['journal'].initial = journal
