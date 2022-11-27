@@ -29,10 +29,8 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
 
     def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(
-            options={
-                "format": "YYYY-MM-DD",
-                "locale": utils.get_user().journal.lang,
-            })
+            options={"locale": utils.get_user().journal.lang,}
+        )
         self.fields['date'].initial = set_year_for_form()
         self.fields['quantity'].initial = 1
 

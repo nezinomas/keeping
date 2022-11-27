@@ -463,3 +463,10 @@ caption {
 .formset-price-input {
     padding-top: .1rem;
 }
+
+
+/* DatePicker icon and input size */
+.bi-calendar {
+    margin-top: -.35rem;
+    height: 1.35em;
+}

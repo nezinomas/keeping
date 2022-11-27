@@ -25,16 +25,13 @@ class BookForm(forms.ModelForm):
         lang = user.journal.lang
 
         self.fields['started'].widget = DatePickerInput(
-            options={
-                "format": "YYYY-MM-DD",
-                "locale": lang,
-            }).start_of('event days')
+            options={'locale': lang,}
+        )
 
         self.fields['ended'].widget = DatePickerInput(
-            options={
-                "format": "YYYY-MM-DD",
-                "locale": lang,
-            }).end_of('event days')
+            range_from='started',
+            options={'locale': lang,}
+        )
 
         # user input
         self.fields['user'].initial = user
@@ -106,7 +103,7 @@ class BookTargetForm(forms.ModelForm):
         fields = ['user', 'year', 'quantity']
 
         widgets = {
-            'year': YearPickerInput(format='%Y'),
+            'year': YearPickerInput()
         }
 
     field_order = ['year', 'quantity']
@@ -120,7 +117,7 @@ class BookTargetForm(forms.ModelForm):
         self.fields['user'].widget = forms.HiddenInput()
 
         # inital values
-        self.fields['year'].initial = set_year_for_form()
+        self.fields['year'].initial = str(set_year_for_form().year)
 
         self.fields['year'].label = _('Year')
         self.fields['quantity'].label = _('How many')

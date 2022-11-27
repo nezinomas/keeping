@@ -25,10 +25,8 @@ class DateForm(forms.Form):
         lang = user.journal.lang
 
         self.fields['date'].widget = DatePickerInput(
-            options={
-                "format": "YYYY-MM-DD",
-                "locale": lang,
-            })
+            options={"locale": lang,}
+        )
 
         # inital values
         self.fields['date'].initial = datetime.now()

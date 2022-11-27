@@ -26,10 +26,8 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['date'].widget = DatePickerInput(
-            options={
-                "format": "YYYY-MM-DD",
-                "locale": utils.get_user().journal.lang,
-            })
+            options={"locale": utils.get_user().journal.lang,}
+        )
 
         # form inputs settings
         self.fields['remark'].widget.attrs['rows'] = 3
@@ -124,10 +122,8 @@ class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['date'].widget = DatePickerInput(
-            options={
-                "format": "YYYY-MM-DD",
-                "locale": utils.get_user().journal.lang,
-            })
+            options={"locale": utils.get_user().journal.lang,}
+        )
 
         # form inputs settings
         self.fields['remark'].widget.attrs['rows'] = 3

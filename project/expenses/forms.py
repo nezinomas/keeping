@@ -47,10 +47,8 @@ class ExpenseForm(forms.ModelForm):
 
         # form inputs settings
         self.fields['date'].widget = DatePickerInput(
-            options={
-                "format": "YYYY-MM-DD",
-                "locale": journal.lang,
-            })
+            options={"locale": journal.lang,}
+        )
         self.fields['price'].widget.attrs = {
             'readonly': True,
             'step': '0.01',
