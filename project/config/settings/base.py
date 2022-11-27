@@ -132,7 +132,7 @@ MIDDLEWARE = [
 ]
 
 
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 
 
 # ================   APP CONFIGURATION
