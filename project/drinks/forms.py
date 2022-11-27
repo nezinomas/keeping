@@ -79,7 +79,7 @@ class DrinkTargetForm(forms.ModelForm):
         self.fields['user'].widget = forms.HiddenInput()
 
         # inital values
-        self.fields['year'].initial = str(set_year_for_form().year)
+        self.fields['year'].initial = set_year_for_form().year
 
         self.fields['year'].label = _('Year')
         self.fields['quantity'].label = _('Quantity')

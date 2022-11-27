@@ -54,7 +54,7 @@ class IncomePlanForm(forms.ModelForm):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields['year'].initial = str(set_year_for_form().year)
+        self.fields['year'].initial = set_year_for_form().year
 
         # overwrite ForeignKey expense_type queryset
         self.fields['income_type'].queryset = IncomeType.objects.items()
@@ -88,7 +88,7 @@ class ExpensePlanForm(forms.ModelForm):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields['year'].initial = str(set_year_for_form().year)
+        self.fields['year'].initial = set_year_for_form().year
 
         # overwrite ForeignKey expense_type queryset
         self.fields['expense_type'].queryset = ExpenseType.objects.items()
@@ -125,7 +125,7 @@ class SavingPlanForm(forms.ModelForm):
         self.fields['saving_type'].queryset = SavingType.objects.items()
 
         # inital values
-        self.fields['year'].initial = str(set_year_for_form().year)
+        self.fields['year'].initial = set_year_for_form().year
 
         # field translation
         self.fields['saving_type'].label = _('Saving type')
@@ -158,7 +158,7 @@ class DayPlanForm(forms.ModelForm):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields['year'].initial = str(set_year_for_form().year)
+        self.fields['year'].initial = set_year_for_form().year
 
         # field translation
         common_field_transalion(self)
@@ -188,7 +188,7 @@ class NecessaryPlanForm(forms.ModelForm):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields['year'].initial = str(set_year_for_form().year)
+        self.fields['year'].initial = set_year_for_form().year
 
         # field translation
         common_field_transalion(self)
