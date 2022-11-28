@@ -105,15 +105,15 @@ class Stats():
             df['date'] = pd.to_datetime(df.date).dt.date
             df.set_index('date', inplace=True)
 
-        x = 0
-        y = -1
 
         items = []
-        _calendar = calendar.Calendar(0)
+        calendar_ = calendar.Calendar(0)
 
+        x = 0
+        y = -1
         for month in range(1, 13):
             data = []
-            monthdays = _calendar.itermonthdays(year=self._year, month=month)
+            monthdays = calendar_.itermonthdays(year=self._year, month=month)
 
             for day in monthdays:
                 dt = None
