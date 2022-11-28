@@ -106,7 +106,6 @@ class Stats():
         for month in range(1, 13):
             data = []
             monthdays = calendar_.itermonthdays(year=self._year, month=month)
-
             for day in monthdays:
                 dt = None
                 with contextlib.suppress(ValueError):
@@ -119,7 +118,6 @@ class Stats():
                     y += 1
 
                 data.append([x, y, *self._day_info(dt, df).values()])
-
             x += 1
 
             items.append({
