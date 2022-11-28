@@ -3,8 +3,8 @@
 
 ### Demo
 
-https://stats.unknownbug.net
-username: *demo*
+https://stats.unknownbug.net  
+username: *demo*  
 password: *9J4wj#^zD0eFwS*
 
 ***
