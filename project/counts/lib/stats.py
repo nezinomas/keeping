@@ -112,7 +112,7 @@ class Stats():
                 with contextlib.suppress(ValueError):
                     dt = date(self._year, month, day)
 
-                if y >= 6:
+                if y == 6:
                     y = 0
                     x += 1
                 else:
