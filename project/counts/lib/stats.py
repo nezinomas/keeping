@@ -114,21 +114,16 @@ class Stats():
         for month in range(1, 13):
             data = []
             monthdays = _calendar.itermonthdays(year=self._year, month=month)
+
             for day in monthdays:
-                color_code = 0
-                dt = None
                 qty = None
+                color_code = 0
+                row = []
 
-                if y >= 6:
-                    y = 0
-                    x += 1
-                else:
-                    y += 1
-
+                dt = None
                 with contextlib.suppress(ValueError):
                     dt = date(self._year, month, day)
 
-                row = []
                 if dt:
                     # set values for saturday and sunday
                     week = dt.isocalendar()[1]
@@ -136,9 +131,15 @@ class Stats():
 
                     # get gap and duration
                     with contextlib.suppress(KeyError):
-                        _f = df.loc[dt]
+                        _f = df.loc[dt]  # .loc returns pd.serries -> stdav, qty, duration
                         qty = color_code = _f.qty
                         row = [qty, _f.duration]
+
+                if y >= 6:
+                    y = 0
+                    x += 1
+                else:
+                    y += 1
 
                 data.append([x, y, color_code, week, str(dt), *row])
 
