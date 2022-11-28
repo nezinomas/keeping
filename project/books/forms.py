@@ -74,12 +74,11 @@ class BookForm(forms.ModelForm):
     def clean_ended(self):
         dt = self.cleaned_data['ended']
 
-        if dt:
-            if dt > datetime.now().date():
-                self.add_error(
-                    'ended',
-                    _('Date cannot be in the future')
-                )
+        if dt and dt > datetime.now().date():
+            self.add_error(
+                'ended',
+                _('Date cannot be in the future')
+            )
 
         return dt
 
@@ -87,9 +86,7 @@ class BookForm(forms.ModelForm):
         cleaned = super().clean()
 
         started = cleaned.get('started')
-        ended = cleaned.get('ended')
-
-        if ended:
+        if ended := cleaned.get('ended'):
             if ended < started:
                 self.add_error(
                     'ended',
