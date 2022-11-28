@@ -98,17 +98,9 @@ class Stats():
         if not self._year:
             raise MethodInvalid('class Stats must be called with specified year.')
 
-        df = self._df.copy()
-
-        if not df.empty:
-            df = self._calc_gaps(df)
-            df['date'] = pd.to_datetime(df.date).dt.date
-            df.set_index('date', inplace=True)
-
-
         items = []
         calendar_ = calendar.Calendar(0)
-
+        df = self._make_calendar_dataframe(self._df)
         x = 0
         y = -1
         for month in range(1, 13):
@@ -277,3 +269,13 @@ class Stats():
             val = 0.05  # highlight current day
 
         return val
+
+    def _make_calendar_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = self._df.copy()
+
+        if not df.empty:
+            df = self._calc_gaps(df)
+            df['date'] = pd.to_datetime(df.date).dt.date
+            df.set_index('date', inplace=True)
+
+        return df
