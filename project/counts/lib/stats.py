@@ -98,24 +98,22 @@ class Stats():
         if not self._year:
             raise MethodInvalid('class Stats must be called with specified year.')
 
-        items = []
         calendar_ = calendar.Calendar(0)
         df = self._make_calendar_dataframe(self._df)
+
         x = 0  # heatmap chart x coordinate
         y = -1  # heatmap chart y coordinate
+        items = []
         for month in range(1, 13):
             data = []
             monthdays = calendar_.itermonthdays(year=self._year, month=month)
             for day in monthdays:
-                dt = date(self._year, month, day) if day else None
-
                 if y == 6:
                     y = 0
                     x += 1
                 else:
                     y += 1
-
-                data.append([x, y, *self._day_info(dt, df).values()])
+                data.append([x, y, *self._day_info(self._year, month, day, df).values()])
             x += 1
 
             items.append({
@@ -235,7 +233,8 @@ class Stats():
 
         return df
 
-    def _day_info(self, dt: date, df: pd.DataFrame) -> dict:
+    def _day_info(self, year: int, month: int, day: int, df: pd.DataFrame) -> dict:
+        dt = date(year, month, day) if day else None
         row = {'color_value': 0, 'week': 1, 'date': str(dt)}
 
         if dt:
