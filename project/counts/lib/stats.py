@@ -101,8 +101,8 @@ class Stats():
         items = []
         calendar_ = calendar.Calendar(0)
         df = self._make_calendar_dataframe(self._df)
-        x = 0
-        y = -1
+        x = 0  # heatmap chart x coordinate
+        y = -1  # heatmap chart y coordinate
         for month in range(1, 13):
             data = []
             monthdays = calendar_.itermonthdays(year=self._year, month=month)
