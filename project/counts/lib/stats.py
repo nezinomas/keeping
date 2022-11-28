@@ -107,7 +107,7 @@ class Stats():
 
         x = 0
         y = -1
-        week = 1
+
         items = []
         _calendar = calendar.Calendar(0)
 
@@ -116,24 +116,9 @@ class Stats():
             monthdays = _calendar.itermonthdays(year=self._year, month=month)
 
             for day in monthdays:
-                qty = None
-                color_code = 0
-                row = []
-
                 dt = None
                 with contextlib.suppress(ValueError):
                     dt = date(self._year, month, day)
-
-                if dt:
-                    # set values for saturday and sunday
-                    week = dt.isocalendar()[1]
-                    color_code = self._cell_color(dt)
-
-                    # get gap and duration
-                    with contextlib.suppress(KeyError):
-                        _f = df.loc[dt]  # .loc returns pd.serries -> stdav, qty, duration
-                        qty = color_code = _f.qty
-                        row = [qty, _f.duration]
 
                 if y >= 6:
                     y = 0
@@ -141,7 +126,7 @@ class Stats():
                 else:
                     y += 1
 
-                data.append([x, y, color_code, week, str(dt), *row])
+                data.append([x, y, *self._day_info(dt, df).values()])
 
             x += 1
 
@@ -261,6 +246,23 @@ class Stats():
         df['duration'] = df['duration'].astype(int)
 
         return df
+
+    def _day_info(self, dt: date, df: pd.DataFrame) -> dict:
+        row = {'color_value': 0, 'week': 1, 'date': str(dt)}
+
+        if dt:
+            # set values for saturday and sunday
+            row['week'] = dt.isocalendar()[1]
+            row['color_value'] = self._cell_color(dt)
+
+            # get gap and duration
+            with contextlib.suppress(KeyError):
+                # .loc returns pd.serries -> stdav, qty, duration
+                _f = df.loc[dt]
+                row['color_value'] = row['qty'] = _f.qty
+                row['gap'] = _f.duration
+
+        return row
 
     def _cell_color(self, dt: date) -> float:
         # colors for 5(saturday) -> #dfdfdf 6(sunday) -> #c3c4c2
