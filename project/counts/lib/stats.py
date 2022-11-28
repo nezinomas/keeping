@@ -234,8 +234,14 @@ class Stats():
         return df
 
     def _day_info(self, year: int, month: int, day: int, df: pd.DataFrame) -> dict:
+        # calculate week for last month date
+        last_day = calendar.monthrange(year, month)[1]
+        week = date(year, month, last_day).isocalendar()[1]
+
+        # create date
         dt = date(year, month, day) if day else None
-        row = {'color_value': 0, 'week': 1, 'date': str(dt)}
+
+        row = {'color_value': 0, 'week': week, 'date': str(dt)}
 
         if dt:
             # set values for saturday and sunday
