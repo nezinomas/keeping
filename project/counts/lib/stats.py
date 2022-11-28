@@ -115,7 +115,7 @@ class Stats():
             data = []
             monthdays = _calendar.itermonthdays(year=self._year, month=month)
             for day in monthdays:
-                val = 0
+                color_code = 0
                 dt = None
                 qty = None
 
@@ -132,26 +132,15 @@ class Stats():
                 if dt:
                     # set values for saturday and sunday
                     week = dt.isocalendar()[1]
-                    weekday = dt.weekday()
-
-                    if weekday == 5:
-                        val = 0.02  # saturday value for chart
-                    elif weekday == 6:
-                        val = 0.03  # sunday
-                    else:
-                        val = 0.01  # monday-friday
-
-                    # current day
-                    if dt == datetime.now().date():
-                        val = 0.05  # highlight current day
+                    color_code = self._cell_color(dt)
 
                     # get gap and duration
                     with contextlib.suppress(KeyError):
                         _f = df.loc[dt]
-                        qty = val = _f.qty
+                        qty = color_code = _f.qty
                         row = [qty, _f.duration]
 
-                data.append([x, y, val, week, str(dt), *row])
+                data.append([x, y, color_code, week, str(dt), *row])
 
             x += 1
 
@@ -271,3 +260,17 @@ class Stats():
         df['duration'] = df['duration'].astype(int)
 
         return df
+
+    def _cell_color(self, dt: date) -> float:
+        # colors for 5(saturday) -> #dfdfdf 6(sunday) -> #c3c4c2
+        # other days 0-5 -> #f4f4f4
+        # float convert to color code in chart_calendar.js
+        d = {5: 0.02, 6: 0.03}
+        weekday = dt.weekday()
+        val = d.get(weekday, 0.01)
+
+        # current day -> #c9edff
+        if dt == datetime.now().date():
+            val = 0.05  # highlight current day
+
+        return val
