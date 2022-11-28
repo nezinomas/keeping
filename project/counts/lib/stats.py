@@ -107,9 +107,7 @@ class Stats():
             data = []
             monthdays = calendar_.itermonthdays(year=self._year, month=month)
             for day in monthdays:
-                dt = None
-                with contextlib.suppress(ValueError):
-                    dt = date(self._year, month, day)
+                dt = date(self._year, month, day) if day else None
 
                 if y == 6:
                     y = 0
