@@ -1,15 +1,15 @@
 # Keeping
 
-Demo
+### Demo
 
 https://stats.unknownbug.net
 
-username: demo
+username: *demo*
 
-password: 9J4wj#^zD0eFwS
+password: *9J4wj#^zD0eFwS*
 
 
-Setting up development:
+#### Setting up development:
 
 1. Clone the repo
 ```
