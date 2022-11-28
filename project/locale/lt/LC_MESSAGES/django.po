@@ -350,8 +350,6 @@ msgid "After spending cuts, month"
 msgstr "Sumažinus išlaidas, mėn"
 
 #: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:22
-#, fuzzy
-#| msgid "money in accounts"
 msgid "Money in accounts"
 msgstr "Sąskaitose esantys pinigai"
 
