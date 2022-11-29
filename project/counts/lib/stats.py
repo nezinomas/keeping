@@ -104,9 +104,10 @@ class Stats():
 
         items = []
         month_day_arr = []
+        months = self.months()
         for i in range(1, 13):
             items.append({
-                'name': self.months()[i - 1],
+                'name': months[i - 1],
                 'keys': ['x', 'y', 'value', 'week', 'date', 'qty', 'gap'],
                 'data': []
             })
