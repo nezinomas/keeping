@@ -102,15 +102,15 @@ class Stats():
         calendar_ = calendar.Calendar(0)
         df = self._make_calendar_dataframe(self._df)
 
-        month_day_arr = []
         items = []
+        month_day_arr = []
         for i in range(1, 13):
-            month_day_arr += it.product([i], calendar_.itermonthdays(self._year, i))
             items.append({
                 'name': self.months()[i - 1],
                 'keys': ['x', 'y', 'value', 'week', 'date', 'qty', 'gap'],
                 'data': []
             })
+            month_day_arr += it.product([i], calendar_.itermonthdays(self._year, i))
 
         for i, month_day in enumerate(month_day_arr):
             x, y, m, d = divmod(i, 7) + month_day
