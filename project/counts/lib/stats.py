@@ -239,10 +239,9 @@ class Stats():
         if not dt:
             return row
 
-        # set values for saturday and sunday
         row['date'] = str(dt)
         row['week'] = dt.isocalendar()[1]
-        row['color_value'] = self._cell_color(dt)
+        row['color_value'] = self._cell_color(dt)  # set values for saturday and sunday
 
         if dt in df.index:
             # .loc returns pd.serries -> stdav, qty, duration
