@@ -106,7 +106,6 @@ class Stats():
         items = []
         for i in range(1, 13):
             month_day_arr += it.product([i], calendar_.itermonthdays(self._year, i))
-
             items.append({
                 'name': self.months()[i - 1],
                 'keys': ['x', 'y', 'value', 'week', 'date', 'qty', 'gap'],
