@@ -99,9 +99,8 @@ class Stats():
         if not self._year:
             raise MethodInvalid('class Stats must be called with specified year.')
 
-        calendar_ = calendar.Calendar(0)
+        cld = calendar.Calendar(0)
         df = self._make_calendar_dataframe(self._df)
-
         items = []
         month_day_arr = []
         for i, name in enumerate(self.months(), 1):
@@ -110,7 +109,7 @@ class Stats():
                 'keys': ['x', 'y', 'value', 'week', 'date', 'qty', 'gap'],
                 'data': []
             })
-            month_day_arr += it.product([i], calendar_.itermonthdays(self._year, i))
+            month_day_arr += it.product([i], cld.itermonthdays(self._year, i))
 
         for i, month_day in enumerate(month_day_arr):
             x, y, m, d = divmod(i, 7) + month_day
