@@ -113,8 +113,7 @@ class Stats():
             })
 
         for i, month_day in enumerate(month_day_arr):
-            x, y = divmod(i, 7)
-            m, d = month_day
+            x, y, m, d = divmod(i, 7) + month_day
             x += m - 1  # adjust x value for empty column between months
             items[m - 1]['data'].append(
                 [x, y, *self._day_info(self._year, m, d, df).values()])
