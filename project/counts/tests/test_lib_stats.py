@@ -3,7 +3,6 @@ import json
 import tempfile
 from datetime import date
 
-import pandas as pd
 import pytest
 from django.test import override_settings
 from freezegun import freeze_time
@@ -379,10 +378,10 @@ def fixture_chart_calendar_expect_january_nodata():
         'name': 'Sausis',
         'keys': ['x', 'y', 'value', 'week', 'date', 'qty', 'gap'],
         'data': [
-            [0, 0, 0, 1, 'None'],
-            [0, 1, 0, 1, 'None'],
-            [0, 2, 0, 1, 'None'],
-            [0, 3, 0, 1, 'None'],
+            [0, 0, 0, 4, 'None'],
+            [0, 1, 0, 4, 'None'],
+            [0, 2, 0, 4, 'None'],
+            [0, 3, 0, 4, 'None'],
             [0, 4, 0.01, 53, '1999-01-01'],
             [0, 5, 0.02, 53, '1999-01-02'],
             [0, 6, 0.03, 53, '1999-01-03'],
