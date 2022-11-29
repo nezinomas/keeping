@@ -417,6 +417,44 @@ def fixture_chart_calendar_expect_january_nodata():
     }
 
 
+@pytest.fixture(name="chart_calendar_expect_february_nodata")
+def fixture_chart_calendar_expect_february_nodata():
+    return {
+        'name': 'Vasaris',
+        'keys': ['x', 'y', 'value', 'week', 'date', 'qty', 'gap'],
+        'data': [
+            [6, 0, 0.01, 5, '1999-02-01'],
+            [6, 1, 0.01, 5, '1999-02-02'],
+            [6, 2, 0.01, 5, '1999-02-03'],
+            [6, 3, 0.01, 5, '1999-02-04'],
+            [6, 4, 0.01, 5, '1999-02-05'],
+            [6, 5, 0.02, 5, '1999-02-06'],
+            [6, 6, 0.03, 5, '1999-02-07'],
+            [7, 0, 0.01, 6, '1999-02-08'],
+            [7, 1, 0.01, 6, '1999-02-09'],
+            [7, 2, 0.01, 6, '1999-02-10'],
+            [7, 3, 0.01, 6, '1999-02-11'],
+            [7, 4, 0.01, 6, '1999-02-12'],
+            [7, 5, 0.02, 6, '1999-02-13'],
+            [7, 6, 0.03, 6, '1999-02-14'],
+            [8, 0, 0.01, 7, '1999-02-15'],
+            [8, 1, 0.01, 7, '1999-02-16'],
+            [8, 2, 0.01, 7, '1999-02-17'],
+            [8, 3, 0.01, 7, '1999-02-18'],
+            [8, 4, 0.01, 7, '1999-02-19'],
+            [8, 5, 0.02, 7, '1999-02-20'],
+            [8, 6, 0.03, 7, '1999-02-21'],
+            [9, 0, 0.01, 8, '1999-02-22'],
+            [9, 1, 0.01, 8, '1999-02-23'],
+            [9, 2, 0.01, 8, '1999-02-24'],
+            [9, 3, 0.01, 8, '1999-02-25'],
+            [9, 4, 0.01, 8, '1999-02-26'],
+            [9, 5, 0.02, 8, '1999-02-27'],
+            [9, 6, 0.03, 8, '1999-02-28'],
+        ]
+    }
+
+
 @pytest.fixture(name="chart_calendar_expect_january_withdata")
 def fixture_chart_calendar_expect_january_withdata(chart_calendar_expect_january_nodata):
     chart_calendar_expect_january_nodata['data'][11].append(1.0) #1999-01-08 qty
@@ -455,6 +493,12 @@ def test_chart_calendar_nodata(chart_calendar_expect_january_nodata):
     actual = Stats(year=1999, data=[]).chart_calendar()
 
     assert actual[0] == chart_calendar_expect_january_nodata
+
+
+def test_chart_calendar_nodata_february(chart_calendar_expect_february_nodata):
+    actual = Stats(year=1999, data=[]).chart_calendar()
+
+    assert actual[1] == chart_calendar_expect_february_nodata
 
 
 @freeze_time('1999-01-02')
