@@ -1,5 +1,6 @@
 import calendar
 import contextlib
+import itertools as it
 from datetime import date, datetime
 from typing import Dict, List
 
@@ -101,26 +102,22 @@ class Stats():
         calendar_ = calendar.Calendar(0)
         df = self._make_calendar_dataframe(self._df)
 
-        x = 0  # heatmap chart x coordinate
-        y = -1  # heatmap chart y coordinate
+        month_day_arr = []
         items = []
-        for month in range(1, 13):
-            data = []
-            monthdays = calendar_.itermonthdays(year=self._year, month=month)
-            for day in monthdays:
-                if y == 6:
-                    y = 0
-                    x += 1
-                else:
-                    y += 1
-                data.append([x, y, *self._day_info(self._year, month, day, df).values()])
-            x += 1
+        for i in range(1, 13):
+            month_day_arr += it.product([i], calendar_.itermonthdays(self._year, i))
 
             items.append({
-                'name': self.months()[month-1],
+                'name': self.months()[i - 1],
                 'keys': ['x', 'y', 'value', 'week', 'date', 'qty', 'gap'],
-                'data': data,
+                'data': []
             })
+
+        for i, month_day in enumerate(month_day_arr):
+            x, y = divmod(i, 7)
+            m, d = month_day
+            items[m - 1]['data'].append(
+                [x, y, *self._day_info(self._year, m, d, df).values()])
 
         return items
 
