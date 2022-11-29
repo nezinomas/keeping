@@ -233,23 +233,22 @@ class Stats():
         # calculate week for last month date
         last_day = calendar.monthrange(year, month)[1]
         week = date(year, month, last_day).isocalendar()[1]
+        row = {'color_value': 0, 'week': week}
 
-        # create date
         dt = date(year, month, day) if day else None
+        if not dt:
+            return row
 
-        row = {'color_value': 0, 'week': week, 'date': str(dt)}
+        # set values for saturday and sunday
+        row['date'] = str(dt)
+        row['week'] = dt.isocalendar()[1]
+        row['color_value'] = self._cell_color(dt)
 
-        if dt:
-            # set values for saturday and sunday
-            row['week'] = dt.isocalendar()[1]
-            row['color_value'] = self._cell_color(dt)
-
-            # get gap and duration
-            with contextlib.suppress(KeyError):
-                # .loc returns pd.serries -> stdav, qty, duration
-                _f = df.loc[dt]
-                row['color_value'] = row['qty'] = _f.qty
-                row['gap'] = _f.duration
+        if dt in df.index:
+            # .loc returns pd.serries -> stdav, qty, duration
+            _f = df.loc[dt]
+            row['color_value'] = row['qty'] = _f.qty
+            row['gap'] = _f.duration
 
         return row
 
