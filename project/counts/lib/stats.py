@@ -99,12 +99,12 @@ class Stats():
         if not self._year:
             raise MethodInvalid('class Stats must be called with specified year.')
 
-        cld = calendar.Calendar(0)
-
         self._make_calendar_dataframe()
 
-        arr = [it.product([self._year], [m], cld.itermonthdays2(self._year, m))
-               for m in range(1, 13)]
+        arr = [
+            it.product(
+                [self._year], [m], calendar.Calendar(0).itermonthdays2(self._year, m)
+            ) for m in range(1, 13)]
         data = map(self._day_info, it.chain(*arr), it.count(0))
 
         months = self.months()
