@@ -232,26 +232,25 @@ class Stats():
         # if day == 0 then day = last month day
         day = day or calendar.monthrange(year, month)[1]
 
-        dict_ = {
-            'x': x + month - 1,  # adjust x value for empty col between months
-            'y': y,
-            'color': self._cell_color(dt, weekday),
-            'week': date(year, month, day).isocalendar()[1],
-            'date': str(dt) if dt else f'{year}-{str(month).rjust(2, "0")}'
-        }
+        arr = [
+            x + month - 1,  # adjust x value for empty col between months
+            y,
+            self._cell_color(dt, weekday),  # color code
+            date(year, month, day).isocalendar()[1],  # weeknumber
+            str(dt) if dt else f'{year}-{str(month).rjust(2, "0")}'  # str(date)
+        ]
 
         if not dt:
-            return list(dict_.values())
+            return arr
 
         # self._cdf dataframe is made in self._make_calandar_dataframe()
         if dt in self._cdf.index:
             # .loc returns pd.serries -> stdav, qty, duration
             flt = self._cdf.loc[dt]
-            dict_['color'] = flt.qty
-            dict_['qty'] = flt.qty
-            dict_['gap'] = flt.duration
+            arr[2] = flt.qty  # change color code
+            arr.extend([flt.qty, flt.duration])
 
-        return list(dict_.values())
+        return arr
 
     def _cell_color(self, dt: date, weekday: int) -> float:
         # colors for 5(saturday) -> #dfdfdf 6(sunday) -> #c3c4c2
