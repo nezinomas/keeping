@@ -100,24 +100,20 @@ class Stats():
             raise MethodInvalid('class Stats must be called with specified year.')
 
         cld = calendar.Calendar(0)
-        df = self._make_calendar_dataframe(self._df)
-        items = []
-        month_day_arr = []
-        for i, name in enumerate(self.months(), 1):
-            items.append({
-                'name': name,
-                'keys': ['x', 'y', 'value', 'week', 'date', 'qty', 'gap'],
-                'data': []
-            })
-            month_day_arr += it.product([i], cld.itermonthdays(self._year, i))
 
-        for i, month_day in enumerate(month_day_arr):
-            x, y, m, d = divmod(i, 7) + month_day
-            x += m - 1  # adjust x value for empty column between months
-            items[m - 1]['data'].append(
-                [x, y, *self._day_info(self._year, m, d, df).values()])
+        self._make_calendar_dataframe()
 
-        return items
+        arr = [it.product([self._year], [m], cld.itermonthdays2(self._year, m))
+               for m in range(1, 13)]
+        data = map(self._day_info, it.chain(*arr), it.count(0))
+
+        months = self.months()
+        key_func = lambda x: x[4][:7]  # groupby year-month e.g. 1999-01
+        return [{
+            'name': months[int(key[6:]) - 1],
+            'keys': ['x', 'y', 'value', 'week', 'date', 'qty', 'gap'],
+            'data': list(group),
+        } for key, group in it.groupby(data, key_func)]
 
     def year_totals(self):
         """
@@ -228,35 +224,43 @@ class Stats():
 
         return df
 
-    def _day_info(self, year: int, month: int, day: int, df: pd.DataFrame) -> dict:
-        # calculate week for last month date
-        last_day = calendar.monthrange(year, month)[1]
-        week = date(year, month, last_day).isocalendar()[1]
-        row = {'color_value': 0, 'week': week}
+    def _day_info(self, data: tuple[int, int, tuple[int, int]], i: int) -> list:
+        (year, month, (day, weekday)) = data
+        x, y = divmod(i, 7)
 
         dt = date(year, month, day) if day else None
+        # if day == 0 then day = last month day
+        day = day or calendar.monthrange(year, month)[1]
+
+        dict_ = {
+            'x': x + month - 1,  # adjust x value for empty col between months
+            'y': y,
+            'color': self._cell_color(dt, weekday),
+            'week': date(year, month, day).isocalendar()[1],
+            'date': str(dt) if dt else f'{year}-{str(month).rjust(2, "0")}'
+        }
+
         if not dt:
-            return row
+            return list(dict_.values())
 
-        row['date'] = str(dt)
-        row['week'] = dt.isocalendar()[1]
-        row['color_value'] = self._cell_color(dt)  # set values for saturday and sunday
-
-        if dt in df.index:
+        # self._cdf dataframe is made in self._make_calandar_dataframe()
+        if dt in self._cdf.index:
             # .loc returns pd.serries -> stdav, qty, duration
-            _f = df.loc[dt]
-            row['color_value'] = row['qty'] = _f.qty
-            row['gap'] = _f.duration
+            flt = self._cdf.loc[dt]
+            dict_['color'] = flt.qty
+            dict_['qty'] = flt.qty
+            dict_['gap'] = flt.duration
 
-        return row
+        return list(dict_.values())
 
-    def _cell_color(self, dt: date) -> float:
+    def _cell_color(self, dt: date, weekday: int) -> float:
         # colors for 5(saturday) -> #dfdfdf 6(sunday) -> #c3c4c2
         # other days 0-5 -> #f4f4f4
         # float convert to color code in chart_calendar.js
-        d = {5: 0.02, 6: 0.03}
-        weekday = dt.weekday()
-        val = d.get(weekday, 0.01)
+        if not dt:
+            return 0.0
+
+        val = {5: 0.02, 6: 0.03}.get(weekday, 0.01)
 
         # current day -> #c9edff
         if dt == datetime.now().date():
@@ -264,7 +268,7 @@ class Stats():
 
         return val
 
-    def _make_calendar_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _make_calendar_dataframe(self):
         df = self._df.copy()
 
         if not df.empty:
@@ -272,4 +276,4 @@ class Stats():
             df['date'] = pd.to_datetime(df.date).dt.date
             df.set_index('date', inplace=True)
 
-        return df
+        self._cdf = df
