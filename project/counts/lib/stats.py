@@ -264,7 +264,7 @@ class Stats():
 
         return val
 
-    def _make_calendar_dataframe(self) -> pd.DataFrame:
+    def _make_calendar_dataframe(self):
         df = self._df.copy()
 
         if not df.empty:
@@ -272,4 +272,4 @@ class Stats():
             df['date'] = pd.to_datetime(df.date).dt.date
             df.set_index('date', inplace=True)
 
-        return df
+        self._cdf = df
