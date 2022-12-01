@@ -230,7 +230,7 @@ class Stats():
 
         # calculate week for last month date
         dt = date(year, month, day) if day else None
-        day = day if dt else calendar.monthrange(year, month)[1]
+        day = day or calendar.monthrange(year, month)[1]
 
         dict_ = {
             'x': x + month - 1,  # adjust x value for empty col between months
