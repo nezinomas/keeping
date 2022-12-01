@@ -228,8 +228,8 @@ class Stats():
         (year, month, (day, weekday)) = data
         x, y = divmod(i, 7)
 
-        # calculate week for last month date
         dt = date(year, month, day) if day else None
+        # if day = 0 then day = last month day
         day = day or calendar.monthrange(year, month)[1]
 
         dict_ = {
@@ -243,6 +243,7 @@ class Stats():
         if not dt:
             return list(dict_.values())
 
+        # self._cdf dataframe is made in self._make_calandar_dataframe()
         if dt in self._cdf.index:
             # .loc returns pd.serries -> stdav, qty, duration
             flt = self._cdf.loc[dt]
