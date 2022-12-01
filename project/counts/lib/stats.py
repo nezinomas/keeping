@@ -22,6 +22,10 @@ class Stats():
         self.past_latest = past_latest
         self._df = self._prepare_df(data)
 
+        self._now = datetime.now()
+        self._now_date = self._now.date()
+        self._now_year = self._now.year
+
     @staticmethod
     def months() -> List[str]:
         return list(month_names().values())
@@ -162,10 +166,10 @@ class Stats():
         if self._df.empty:
             return
 
-        if datetime.now().year != self._year:
+        if self._now_year != self._year:
             return
 
-        return (datetime.now() - self._df['date'].iloc[-1]).days
+        return (self._now - self._df['date'].iloc[-1]).days
 
     def _prepare_df(self, data):
         """
@@ -260,7 +264,7 @@ class Stats():
             return 0.0
 
         # current day -> #c9edff
-        if dt == datetime.now().date():
+        if dt == self._now_date:
             return 0.05  # highlight current day
 
         return (0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.03)[weekday]
