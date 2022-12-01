@@ -229,7 +229,7 @@ class Stats():
         x, y = divmod(i, 7)
 
         dt = date(year, month, day) if day else None
-        # if day = 0 then day = last month day
+        # if day == 0 then day = last month day
         day = day or calendar.monthrange(year, month)[1]
 
         dict_ = {
