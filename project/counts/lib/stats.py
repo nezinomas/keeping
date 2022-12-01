@@ -259,13 +259,11 @@ class Stats():
         if not dt:
             return 0.0
 
-        val = {5: 0.02, 6: 0.03}.get(weekday, 0.01)
-
         # current day -> #c9edff
         if dt == datetime.now().date():
-            val = 0.05  # highlight current day
+            return 0.05  # highlight current day
 
-        return val
+        return (0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.03)[weekday]
 
     def _make_calendar_dataframe(self):
         df = self._df.copy()
