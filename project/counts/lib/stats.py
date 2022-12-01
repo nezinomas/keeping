@@ -113,8 +113,8 @@ class Stats():
 
         arr = [it.product(*func(self._year, m)) for m in range(1, 13)]
         data = map(self._day_info, it.chain(*arr), it.count(0))
-
         months = self.months()
+
         return [{
             'name': months[int(key[6:]) - 1],
             'keys': ['x', 'y', 'value', 'week', 'date', 'qty', 'gap'],
