@@ -100,7 +100,7 @@ class Stats():
             raise MethodInvalid('class Stats must be called with specified year.')
 
         cld = calendar.Calendar(0)
-        df = self._make_calendar_dataframe(self._df)
+        df = self._make_calendar_dataframe()
         items = []
         month_day_arr = []
         for i, name in enumerate(self.months(), 1):
@@ -264,7 +264,7 @@ class Stats():
 
         return val
 
-    def _make_calendar_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _make_calendar_dataframe(self) -> pd.DataFrame:
         df = self._df.copy()
 
         if not df.empty:
