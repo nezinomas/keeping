@@ -237,7 +237,7 @@ class Stats():
             y,
             self._cell_color(dt, weekday),  # color code
             date(year, month, day).isocalendar()[1],  # weeknumber
-            str(dt) if dt else f'{year}-{str(month).rjust(2, "0")}'  # str(date)
+            str(dt) if dt else f'{year}-{str(month).rjust(2, "0")}',  # str(date)
         ]
 
         if not dt:
