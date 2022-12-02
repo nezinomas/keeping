@@ -81,6 +81,7 @@ class Stats:
         if not self._year:
             raise MethodInvalid('class Stats must be called with specified year.')
 
+        # _cdf variable will be used in _day_info method
         self._cdf = self._make_calendar_dataframe()
 
         def func(m: int):
