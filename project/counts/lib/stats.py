@@ -19,7 +19,7 @@ class Stats():
                  past_latest: date = None):
 
         self._year = year
-        self.past_latest = past_latest
+        self._past_latest = past_latest
         self._df = self._prepare_df(data)
 
         self._now = datetime.now()
@@ -163,8 +163,8 @@ class Stats():
         df['duration'] = df['date'].diff().dt.days
         first_record_date = df['date'].iloc[0]
 
-        if self.past_latest:
-            first_date = pd.to_datetime(self.past_latest)
+        if self._past_latest:
+            first_date = pd.to_datetime(self._past_latest)
         else:
             first_date = pd.to_datetime(f'{first_record_date.year}-01-01')
 
