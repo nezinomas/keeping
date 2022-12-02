@@ -2,7 +2,6 @@ import calendar
 import contextlib
 import itertools as it
 from datetime import date, datetime
-from typing import Dict, List
 
 import pandas as pd
 from django.db import models
@@ -17,7 +16,7 @@ class Stats:
 
     def __init__(self,
                  year: int = None,
-                 data: List[Dict[date, float]] = None,
+                 data: list[dict[date, float]] = None,
                  past_latest: date = None):
 
         self._year = year
@@ -27,18 +26,18 @@ class Stats:
         self._now_date = datetime.now().date()
 
     @staticmethod
-    def months() -> List[str]:
+    def months() -> list[str]:
         return list(month_names().values())
 
     @staticmethod
-    def weekdays() -> List[str]:
+    def weekdays() -> list[str]:
         return list(weekday_names().values())
 
     @property
     def number_of_records(self):
         return self._df.shape[0]
 
-    def weekdays_stats(self) -> List[Dict[int, float]]:
+    def weekdays_stats(self) -> list[dict[int, float]]:
         """Returns [{'weekday': int, 'count': float}]"""
 
         df = self._df.copy()
@@ -52,7 +51,7 @@ class Stats:
 
         return [{'weekday': i, 'count': df.get(i) or 0} for i in range(7)]
 
-    def months_stats(self) -> List[float]:
+    def months_stats(self) -> list[float]:
         """Returns  [float] * 12"""
 
         return_data = [0.0] * 12
@@ -115,7 +114,7 @@ class Stats:
 
         return arr.get(self._year, 0) if self._year else arr
 
-    def gaps(self) -> Dict[int, int]:
+    def gaps(self) -> dict[int, int]:
         """
         returns dictionary(int: int) = {gap: count}
         """
@@ -132,7 +131,7 @@ class Stats:
         """
         some methods from QuerySet managers, e.g. sum_by_day returns <Queryset[dict(),]>
         other methods e.g. year, items returns <QuerySet[models.Model instance,]
-        QuerySet with model instances need to convert to List[Dict]
+        QuerySet with model instances need to convert to list[dict]
         """
 
         if isinstance(data, QuerySet):
