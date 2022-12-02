@@ -77,28 +77,6 @@ class Stats():
 
         return return_data
 
-    def year_stats(self):
-        if not self._year:
-            raise MethodInvalid('class Stats must be called with specified year.')
-
-        arr = self._empty_list()
-
-        df = self._df.copy()
-        if df.empty:
-            return arr
-
-        df = self._calc_gaps(df)
-
-        # copy values from DataFrame to arr
-        for _, row in df.iterrows():
-            month = row['date'].month
-            day = row['date'].day
-
-            arr[month - 1][day - 1]['y'] = row['qty']
-            arr[month - 1][day - 1]['gap'] = row['duration']
-
-        return arr
-
     def chart_calendar(self) -> list[dict]:
         if not self._year:
             raise MethodInvalid('class Stats must be called with specified year.')
@@ -193,14 +171,6 @@ class Stats():
                 df['qty'] = df['quantity']
 
         return df
-
-    def _empty_list(self):
-        arr = []
-        for i in range(1, 13):
-            month_len = calendar.monthrange(self._year, i)[1]
-            arr.append([{'y': 0, 'gap': 0} for _ in range(month_len)])
-
-        return arr
 
     def _calc_gaps(self, df: pd.DataFrame) -> pd.DataFrame:
         # time gap between days with records

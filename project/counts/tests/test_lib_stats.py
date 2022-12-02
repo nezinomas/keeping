@@ -210,46 +210,6 @@ def test_months_stats_nodata():
     assert actual == expect
 
 
-@pytest.mark.xfail(raises=MethodInvalid)
-def test_year_stats_no_year_provided(data):
-    Stats(data=data).year_stats()
-
-
-def test_year_stats(data, year_stats_expect):
-    actual = Stats(year=1999, data=data).year_stats()
-
-    assert actual == year_stats_expect
-
-
-@pytest.mark.django_db
-def test_year_stats_db(year_stats_expect, data_db):
-    year = 1999
-    qs = Count.objects.sum_by_day(year=year, count_type='count-type')
-    actual = Stats(year=year, data=qs).year_stats()
-
-    assert actual == year_stats_expect
-
-
-def test_year_stats_nodata(year_stats_expect_empty):
-    actual = Stats(year=1999, data=[]).year_stats()
-
-    assert actual == year_stats_expect_empty
-
-
-@pytest.mark.parametrize('month, days', month_days_1999)
-def test_year_stats_months_len(month, days):
-    actual = Stats(year=1999, data=[]).year_stats()
-
-    assert len(actual[month - 1]) == days
-
-
-@pytest.mark.parametrize('month, days', month_days_2000)
-def test_year_stats_months_len_leap_year(month, days):
-    actual = Stats(year=2000, data=[]).year_stats()
-
-    assert len(actual[month - 1]) == days
-
-
 def test_year_totals(data):
     actual = Stats(year=1999, data=data).year_totals()
 
