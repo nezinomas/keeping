@@ -13,6 +13,8 @@ from ...core.lib.translation import month_names, weekday_names
 
 
 class Stats():
+    _cdf: None
+
     def __init__(self,
                  year: int = None,
                  data: List[Dict[date, float]] = None,
@@ -81,7 +83,7 @@ class Stats():
         if not self._year:
             raise MethodInvalid('class Stats must be called with specified year.')
 
-        self._make_calendar_dataframe()
+        self._cdf = self._make_calendar_dataframe()
 
         def func(m: int):
             return it.product(
@@ -225,4 +227,4 @@ class Stats():
             df['date'] = pd.to_datetime(df.date).dt.date
             df.set_index('date', inplace=True)
 
-        self._cdf = df
+        return df
