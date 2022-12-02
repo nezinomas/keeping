@@ -104,14 +104,14 @@ class Stats():
             raise MethodInvalid('class Stats must be called with specified year.')
 
         def func(year: int, m: int):
-            return ([year], [m], calendar.Calendar(0).itermonthdays2(year, m))
+            return it.product([year], [m], calendar.Calendar(0).itermonthdays2(year, m))
 
         def key_func(x):
             return x[4][:7]  # groupby year-month e.g. 1999-01
 
         self._make_calendar_dataframe()
 
-        arr = [it.product(*func(self._year, m)) for m in range(1, 13)]
+        arr = map(func, [self._year]*12, range(1, 13))
         data = map(self._day_info, it.chain(*arr), it.count(0))
         months = self.months()
 
