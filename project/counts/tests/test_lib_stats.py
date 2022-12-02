@@ -5,7 +5,6 @@ from datetime import date
 
 import pytest
 from django.test import override_settings
-from freezegun import freeze_time
 
 from ...core.exceptions import MethodInvalid
 from ..factories import CountFactory
@@ -404,7 +403,7 @@ def test_chart_calendar_nodata_february(chart_calendar_expect_february_nodata):
     assert actual[1] == chart_calendar_expect_february_nodata
 
 
-@freeze_time('1999-01-02')
+@pytest.mark.freeze_time('1999-01-02')
 def test_chart_calendar_current_day_nodata(chart_calendar_expect_january_nodata):
     chart_calendar_expect_january_nodata['data'][5][2] = 0.05
 
@@ -413,7 +412,7 @@ def test_chart_calendar_current_day_nodata(chart_calendar_expect_january_nodata)
     assert actual[0] == chart_calendar_expect_january_nodata
 
 
-@freeze_time('1999-01-01')
+@pytest.mark.freeze_time('1999-01-01')
 def test_chart_calendar_first_day_of_year_with_record(chart_calendar_expect_january_nodata):
     data = [{'date': date(1999, 1, 1), 'qty': 1.0},]
 
