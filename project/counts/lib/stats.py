@@ -12,7 +12,7 @@ from ...core.exceptions import MethodInvalid
 from ...core.lib.translation import month_names, weekday_names
 
 
-class Stats():
+class Stats:
     _cdf: None
 
     def __init__(self,
