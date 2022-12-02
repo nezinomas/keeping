@@ -129,18 +129,6 @@ class Stats():
 
         return df['duration'].value_counts().sort_index().to_dict()
 
-    def current_gap(self):
-        if not self._year:
-            raise MethodInvalid('class Stats must be called with specified year.')
-
-        if self._df.empty:
-            return
-
-        if self._now_year != self._year:
-            return
-
-        return (self._now - self._df['date'].iloc[-1]).days
-
     def _prepare_df(self, data):
         """
         some methods from QuerySet managers, e.g. sum_by_day returns <Queryset[dict(),]>
