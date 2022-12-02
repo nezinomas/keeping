@@ -24,9 +24,7 @@ class Stats():
         self._past_latest = past_latest
         self._df = self._prepare_df(data)
 
-        self._now = datetime.now()
-        self._now_date = self._now.date()
-        self._now_year = self._now.year
+        self._now_date = datetime.now().date()
 
     @staticmethod
     def months() -> List[str]:
