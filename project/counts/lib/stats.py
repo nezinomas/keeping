@@ -103,15 +103,16 @@ class Stats():
         if not self._year:
             raise MethodInvalid('class Stats must be called with specified year.')
 
-        def func(year: int, m: int):
-            return it.product([year], [m], calendar.Calendar(0).itermonthdays2(year, m))
+        def func(m: int):
+            return it.product(
+                [self._year], [m], calendar.Calendar(0).itermonthdays2(self._year, m))
 
         def key_func(x):
             return x[4][:7]  # groupby year-month e.g. 1999-01
 
         self._make_calendar_dataframe()
 
-        arr = map(func, [self._year]*12, range(1, 13))
+        arr = map(func, range(1, 13))
         data = map(self._day_info, it.chain(*arr), it.count(0))
         months = self.months()
 
@@ -136,17 +137,6 @@ class Stats():
         arr = df.to_dict()
 
         return arr.get(self._year, 0) if self._year else arr
-
-    def month_days(self):
-        if not self._year:
-            raise MethodInvalid('class Stats must be called with specified year.')
-
-        arr = []
-        for i in range(1, 13):
-            month_len = calendar.monthrange(self._year, i)[1]
-            arr.append([day + 1 for day in range(month_len)])
-
-        return arr
 
     def gaps(self) -> Dict[int, int]:
         """

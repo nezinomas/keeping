@@ -285,27 +285,6 @@ def test_year_totals_year_nodata():
     assert actual == {}
 
 
-def test_month_days_len():
-    actual = Stats(year=1999, data=[]).month_days()
-
-    assert len(actual) == 12
-
-
-@pytest.mark.parametrize('month, days', month_days_1999)
-def test_month_days(month, days):
-    actual = Stats(year=1999, data=[]).month_days()
-
-    assert len(actual[month - 1]) == days
-
-    for day in range(days):
-        assert actual[month - 1][day] == day + 1
-
-
-@pytest.mark.xfail(raises=MethodInvalid)
-def test_year_month_days_no_year_provided():
-    Stats(data=[]).month_days()
-
-
 def test_gaps_for_current_year(data):
     data.append({'date': date(1999, 2, 2), 'qty': 1.0})
 
