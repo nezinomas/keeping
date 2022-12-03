@@ -39,9 +39,9 @@ def fixture_data():
     ]
 
 
-@pytest.fixture()
+@pytest.fixture(name="data_db")
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def data_db():
+def fixture_data_db():
     CountFactory(date=date(1998, 1, 1), quantity=1.0)
     CountFactory(date=date(1999, 12, 3), quantity=1.0)
     CountFactory(date=date(1999, 2, 1), quantity=1.0)
