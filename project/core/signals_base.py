@@ -331,7 +331,4 @@ class SignalBase():
 
         _skip = hook.get('skip')
 
-        if _debt_type and _debt_type == _skip:
-            return True
-
-        return False
+        return bool(_debt_type and _debt_type == _skip)
