@@ -1,3 +1,4 @@
+import contextlib
 from typing import Dict
 
 import pandas as pd
@@ -246,20 +247,16 @@ class SignalBase():
                 except ObjectDoesNotExist:
                     return
 
-            # update
-            if _old_account_id == _account_id:
+            try:
                 # account not changed
-                try:
+                if _old_account_id == _account_id:
                     self._tbl_balance_field_update('update', _field, _account_id)
-                except ObjectDoesNotExist:
-                    return
-            else:
                 # account changed
-                try:
+                else:
                     self._tbl_balance_field_update('new', _field, _account_id)
                     self._tbl_balance_field_update('delete', _field, _old_account_id)
-                except ObjectDoesNotExist:
-                    return
+            except ObjectDoesNotExist:
+                return
 
     def _calc_field(self, /, caller: str, field: str = 'price') -> float:
         val = float(self._conf.get_values(field))
@@ -305,7 +302,7 @@ class SignalBase():
             return
 
     def _update_values(self, obj: object, caller: str, balance_tbl_field_name: str) -> DF:
-        obj_values = {k: v for k, v in obj.__dict__.items() if not '_state' in k}
+        obj_values = {k: v for k, v in obj.__dict__.items() if '_state' not in k}
         _df = pd.DataFrame([obj_values])
 
         # update balance table fields
@@ -313,17 +310,10 @@ class SignalBase():
         for field in fields:
             _field_name = 'price' if field != 'fee' else 'fee'
 
-            try:
+            with contextlib.suppress(KeyError):
                 # [have,market_value] fields have no start value
-                if field in ['have', 'market_value']:
-                    _start = 0.0
-                else:
-                    _start = _df.at[0, field]
-
+                _start = 0.0 if field in ['have', 'market_value'] else _df.at[0, field]
                 _df.at[0, field] = _start + self._calc_field(caller, field=_field_name)
-            except KeyError:
-                pass
-
         return _df
 
     def _save_object(self, obj: object, df: DF) -> None:
@@ -336,8 +326,7 @@ class SignalBase():
         _debt_type = utils.getattr_(self._conf.instance, "debt_type")
 
         if not _debt_type:
-            _debt = utils.getattr_(self._conf.instance, 'debt')
-            if _debt:
+            if _debt := utils.getattr_(self._conf.instance, 'debt'):
                 _debt_type= utils.getattr_(_debt, "debt_type")
 
         _skip = hook.get('skip')
