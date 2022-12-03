@@ -37,7 +37,7 @@ def timer(func):
         return_value = func(*args, **kwargs)
         end = time.perf_counter()
         total = end-start
-        print('Finished function: {fname!r} in {total:.4f} sec'.format(fname=func.__name__, total=total))
+        print(f'Finished function: {func.__name__} in {total:.4f} sec')
         return return_value
     return wrap_func
 
@@ -46,13 +46,10 @@ class Timer:
     def __init__(self, original_func):
         self.original_func = original_func
 
-    def __test(self, num):
-        return num + 20
-
     def __call__(self, *args, **kwargs):
         start = time.perf_counter()
         r_val = self.original_func(*args, **kwargs)
         end = time.perf_counter()
-        total = self.__test(end-start)
-        print('Finished function form class: {fname!r} in {total:.5f} sec'.format(fname=self.original_func.__name__, total=total))
+        total = end - start
+        print(f'Finished function form class: {self.original_func.__name__} in {total:.5f} sec')
         return r_val
