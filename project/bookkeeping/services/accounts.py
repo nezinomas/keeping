@@ -60,9 +60,14 @@ class AccountsServiceNew:
 
         self._table = self._make_table(_year, _df, _have)
 
+
     @property
     def table(self):
         return self._table.copy().reset_index().to_dict('recods')
+
+    @property
+    def total(self):
+        return self._table.copy().sum().to_dict()
 
     def _make_df(self, incomes: list[dict], expenses: list[dict]) -> DF:
         columns=[

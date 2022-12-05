@@ -113,3 +113,12 @@ def test_table_only_have(have):
     ]
 
     assert actual == expect
+
+
+def test_total_row(incomes, expenses, have):
+    data = SimpleNamespace(year=2000, incomes=incomes, expenses=expenses, have=have)
+    actual = AccountsServiceNew(data).total
+
+    expect = {'past': 160.0, 'incomes': 420.0, 'expenses': 210.0, 'balance': 370.0, 'have': 30.0, 'delta': -340.0}
+
+    assert actual == expect
