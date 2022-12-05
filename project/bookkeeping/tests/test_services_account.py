@@ -36,7 +36,7 @@ def fixture_have():
 
 def test_table(incomes, expenses, have):
     data = SimpleNamespace(year=2000, incomes=incomes, expenses=expenses, have=have)
-    actual = AccountsServiceNew(data).table()
+    actual = AccountsServiceNew(data).table
 
     expect = [
         {'title': 'X', 'past': 50.0, 'incomes': 200.0, 'expenses': 100.0, 'balance': 150.0, 'have': 10.0, 'delta': -140.0},
@@ -48,7 +48,7 @@ def test_table(incomes, expenses, have):
 
 def test_table_have_empty(incomes, expenses):
     data = SimpleNamespace(year=2000, incomes=incomes, expenses=expenses, have=[])
-    actual = AccountsServiceNew(data).table()
+    actual = AccountsServiceNew(data).table
 
     expect = [
         {'title': 'X', 'past': 50.0, 'incomes': 200.0, 'expenses': 100.0, 'balance': 150.0, 'have': 0.0, 'delta': -150.0},
@@ -60,7 +60,7 @@ def test_table_have_empty(incomes, expenses):
 
 def test_table_have_partial(incomes, expenses, have):
     data = SimpleNamespace(year=2000, incomes=incomes, expenses=expenses, have=have[:1])
-    actual = AccountsServiceNew(data).table()
+    actual = AccountsServiceNew(data).table
 
     expect = [
         {'title': 'X', 'past': 50.0, 'incomes': 200.0, 'expenses': 100.0, 'balance': 150.0, 'have': 10.0, 'delta': -140.0},
@@ -72,7 +72,7 @@ def test_table_have_partial(incomes, expenses, have):
 
 def test_table_incomes_empty(expenses):
     data = SimpleNamespace(year=2000, incomes=[], expenses=expenses, have=[])
-    actual = AccountsServiceNew(data).table()
+    actual = AccountsServiceNew(data).table
 
     expect = [
         {'title': 'X', 'past': -50.0, 'incomes': 0.0, 'expenses': 100.0, 'balance': -150.0, 'have': 0.0, 'delta': 150.0},
@@ -84,7 +84,7 @@ def test_table_incomes_empty(expenses):
 
 def test_table_expenses_empty(incomes):
     data = SimpleNamespace(year=2000, incomes=incomes, expenses=[], have=[])
-    actual = AccountsServiceNew(data).table()
+    actual = AccountsServiceNew(data).table
 
     expect = [
         {'title': 'X', 'past': 100.0, 'incomes': 200.0, 'expenses': 0.0, 'balance': 300.0, 'have': 0.0, 'delta': -300.0},
@@ -96,7 +96,7 @@ def test_table_expenses_empty(incomes):
 
 def test_table_incomes_expenses_empty():
     data = SimpleNamespace(year=2000, incomes=[], expenses=[], have=[])
-    actual = AccountsServiceNew(data).table()
+    actual = AccountsServiceNew(data).table
 
     expect = []
 
@@ -105,7 +105,7 @@ def test_table_incomes_expenses_empty():
 
 def test_table_only_have(have):
     data = SimpleNamespace(year=2000, incomes=[], expenses=[], have=have)
-    actual = AccountsServiceNew(data).table()
+    actual = AccountsServiceNew(data).table
 
     expect = [
         {'title': 'X', 'past': 0.0, 'incomes': 0.0, 'expenses': 0.0, 'balance': 0.0, 'have': 10.0, 'delta': 10.0},

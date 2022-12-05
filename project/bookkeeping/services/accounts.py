@@ -54,17 +54,17 @@ class AccountsServiceNew:
     _have = pd.DataFrame()
 
     def __init__(self, data: AccountServiceDataNew):
-        self._year = data.year
+        _year = data.year
+        _df = self._make_df(data.incomes, data.expenses)
+        _have = self._make_df_have(data.have)
 
-        self._df = self._make_df(data.incomes, data.expenses)
-        self._have = self._make_df_have(data.have)
-        self._table = self._make_table()
+        self._table = self._make_table(_year, _df, _have)
 
     @property
     def table(self):
         return self._table.copy().reset_index().to_dict('recods')
 
-    def _make_df(self, incomes, expenses):
+    def _make_df(self, incomes: list[dict], expenses: list[dict]) -> DF:
         columns=[
             'year',
             'title',
@@ -94,7 +94,7 @@ class AccountsServiceNew:
 
         return df
 
-    def _make_df_have(self, have):
+    def _make_df_have(self, have: list[dict]) -> DF:
         cols = ['title', 'have']
 
         if not have:
@@ -106,14 +106,14 @@ class AccountsServiceNew:
 
         return df
 
-    def _make_table(self) -> DF:
-        df = self._df.copy().reset_index()
+    def _make_table(self, year: int, df: DF, have: DF) -> DF:
+        df = df.copy().reset_index()
         # sum past incomes and expenses
-        past = df.loc[df['year'] < self._year].groupby(['title']).sum()
+        past = df.loc[df['year'] < year].groupby(['title']).sum()
         # get current year DataFrame
-        now = df.loc[df['year'] == self._year].set_index('title')
+        now = df.loc[df['year'] == year].set_index('title')
         # add have columns form self._have DataFrame
-        now.have = self._have.have
+        now.have = have.have
 
         if past.empty and now.empty:
             return df
