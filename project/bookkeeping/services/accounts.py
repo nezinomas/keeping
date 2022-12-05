@@ -1,3 +1,4 @@
+import contextlib
 from dataclasses import dataclass, field
 
 import pandas as pd
@@ -60,19 +61,25 @@ class AccountsServiceNew:
 
         self._table = self._make_table(_year, _df, _have)
 
-
     @property
     def table(self):
-        return self._table.copy().reset_index().to_dict('recods')
+        return self._table.copy().reset_index().to_dict('records')
 
     @property
     def total(self):
-        return self._table.copy().sum().to_dict()
+        df = self._table.copy().reset_index(drop=True)
+
+        with contextlib.suppress(KeyError):
+            del df['title']
+            del df['year']
+
+        return df.sum().to_dict()
 
     def _make_df(self, incomes: list[dict], expenses: list[dict]) -> DF:
         columns=[
             'year',
             'title',
+            'past',
             'incomes',
             'expenses',
             'balance',
@@ -103,7 +110,7 @@ class AccountsServiceNew:
         cols = ['title', 'have']
 
         if not have:
-            return pd.DataFrame(columns=cols)
+            return pd.DataFrame(columns=cols).set_index('title')
 
         df = pd.DataFrame(have)
         df = df.loc[:,cols].set_index('title')
@@ -114,7 +121,7 @@ class AccountsServiceNew:
     def _make_table(self, year: int, df: DF, have: DF) -> DF:
         df = df.copy().reset_index()
         # sum past incomes and expenses
-        past = df.loc[df['year'] < year].groupby(['title']).sum()
+        past = df.loc[df['year'] < year].groupby(['title']).sum(numeric_only=True)
         # get current year DataFrame
         now = df.loc[df['year'] == year].set_index('title')
         # add have columns form self._have DataFrame
@@ -124,7 +131,7 @@ class AccountsServiceNew:
             return df
 
         # calculate past balance
-        now.loc[:, 'past'] = 0.0 if past.empty else past.incomes - past.expenses
+        now.past = 0.0 if past.empty else past.incomes - past.expenses
         # nan -> 0.0
         now.fillna(0.0, inplace=True)
         # calculate current year balance
