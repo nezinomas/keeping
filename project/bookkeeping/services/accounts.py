@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from functools import reduce
 
 import pandas as pd
 
@@ -39,24 +40,54 @@ class AccountService:
         return \
             utils.sum_all(self.data) if self.data else total_row
 
+
+@dataclass
+class AccountServiceDataNew:
+    year: int
+    incomes: list[dict] = field(init=False, default_factory=list)
+    expenses: list[dict] = field(init=False, default_factory=list)
+    have: list[dict] = field(init=False, default_factory=list)
+
+
 class AccountsServiceNew:
     _df = pd.DataFrame()
-    _df_have = pd.DataFrame()
+    _have = pd.DataFrame()
 
-    def __init__(self, year, incomes, expenses, have: list[dict] = None):
-        self._year = year
-        self._have = have
-        self._df = self._make_df(incomes, expenses)
-        self._df_have = self._make_df_have(have)
+    def __init__(self, data: AccountServiceDataNew):
+        self._year = data.year
+
+        self._df = self._make_df(data.incomes, data.expenses)
+        self._have = self._make_df_have(data.have)
 
     def _make_df(self, incomes, expenses):
-        exp = pd.DataFrame(expenses).set_index(['id', 'year']).sort_index(level=['id', 'year'])
-        exp['expenses'] = exp['expenses'].astype(float)
+        columns=[
+            'year',
+            'title',
+            'incomes',
+            'expenses',
+            'balance',
+            'have',
+            'delta',
+        ]
+        df = pd.DataFrame(columns=columns).set_index(['title', 'year'])
 
-        inc = pd.DataFrame(incomes).set_index(['id', 'year']).sort_index(level=['id', 'year'])
-        inc['incomes'] = inc['incomes'].astype(float)
+        def to_df(arr):
+            df = pd.DataFrame(arr)
+            df.set_index(['title', 'year'], inplace=True)
+            df.sort_index(level=['title', 'year'])
+            # convert column [incomes or expenses] decimal values to float
+            df[df.columns] = df[df.columns].astype(float)
+            return df
 
-        return inc.add(exp, fill_value=0.0).fillna(0.0)
+        if expenses:
+            df = df.add(to_df(expenses), fill_value=0.0)
+
+        if incomes:
+            df = df.add(to_df(incomes), fill_value=0.0)
+
+        df.fillna(0.0, inplace=True)
+
+        return df
 
     def _make_df_have(self, have):
         cols = ['title', 'have']
@@ -72,23 +103,25 @@ class AccountsServiceNew:
 
     def table(self):
         df = self._df.copy().reset_index()
-
         # sum past incomes and expenses
-        past = df.loc[df['year'] < self._year].groupby(['id']).sum()
-        # filter current year DataFrame
-        now = df.loc[
-            df['year'] == self._year,
-            ['id', 'incomes', 'expenses']].set_index('id')
+        past = df.loc[df['year'] < self._year].groupby(['title']).sum()
+        # get current year DataFrame
+        now = df.loc[df['year'] == self._year].set_index('title')
+        # add have columns form self._have DataFrame
+        now.have = self._have.have
 
-        # calculate past and current year balances
-        now['past'] = past['incomes'] - past['expenses']
-        now['balance'] = now['past'] + now['incomes'] - now['expenses']
+        if past.empty and now.empty:
+            return []
 
-        # add have
-        now['have'] = self._df_have['have']
-        now['have'] = now['have'].fillna(0.0)
-
+        # calculate past balance
+        now.loc[:, 'past'] = 0.0 if past.empty else past.incomes - past.expenses
+        # nan -> 0.0
+        now.fillna(0.0, inplace=True)
+        # calculate current year balance
+        now.balance = now.past + now.incomes - now.expenses
         # calculate delta between have and balance
-        now['delta'] = now['have'] - now['balance']
+        now.delta = now.have - now.balance
+        # delete year column
+        del now['year']
 
         return now.reset_index().to_dict('records')
