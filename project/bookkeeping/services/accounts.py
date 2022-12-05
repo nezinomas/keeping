@@ -63,15 +63,15 @@ class AccountsServiceNew:
 
     @property
     def table(self):
-        return self._table.copy().reset_index().to_dict('records')
+        df = self._table.copy().reset_index()
+        df.drop(['year'], axis=1, inplace=True, errors='ignore')
+
+        return df.to_dict('records')
 
     @property
     def total(self):
         df = self._table.copy().reset_index(drop=True)
-
-        with contextlib.suppress(KeyError):
-            del df['title']
-            del df['year']
+        df.drop(['year', 'title'], axis=1, inplace=True, errors='ignore')
 
         return df.sum().to_dict()
 
@@ -138,7 +138,5 @@ class AccountsServiceNew:
         now.balance = now.past + now.incomes - now.expenses
         # calculate delta between have and balance
         now.delta = now.have - now.balance
-        # delete year column
-        del now['year']
 
         return now
