@@ -46,6 +46,23 @@ def test_table(incomes, expenses, have):
     assert actual == expect
 
 
+def test_table_closed_accounts(incomes, expenses, have):
+    incomes.append({'year': 1999, 'incomes': Decimal('100'), 'title': 'Z'})
+    expenses.append({'year': 1999, 'expenses': Decimal('100'), 'title': 'Z'})
+    have.append({'title': 'Z', 'have': Decimal('20'), 'latest_check': datetime(1998, 1, 1)},)
+
+    data = SimpleNamespace(year=2000, incomes=incomes, expenses=expenses, have=have)
+
+    actual = AccountsServiceNew(data).table
+
+    expect = [
+        {'title': 'X', 'past': 50.0, 'incomes': 200.0, 'expenses': 100.0, 'balance': 150.0, 'have': 10.0, 'delta': -140.0},
+        {'title': 'Y', 'past': 110.0, 'incomes': 220.0, 'expenses': 110.0, 'balance': 220.0, 'have': 20.0, 'delta': -200.0},
+    ]
+
+    assert actual == expect
+
+
 def test_table_have_empty(incomes, expenses):
     data = SimpleNamespace(year=2000, incomes=incomes, expenses=expenses, have=[])
     actual = AccountsServiceNew(data).table
