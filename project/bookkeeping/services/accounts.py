@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
-from functools import reduce
 
 import pandas as pd
+from pandas import DataFrame as DF
 
 from ...accounts.models import AccountBalance
 from ...core.lib import utils
@@ -58,6 +58,11 @@ class AccountsServiceNew:
 
         self._df = self._make_df(data.incomes, data.expenses)
         self._have = self._make_df_have(data.have)
+        self._table = self._make_table()
+
+    @property
+    def table(self):
+        return self._table.copy().reset_index().to_dict('recods')
 
     def _make_df(self, incomes, expenses):
         columns=[
@@ -101,7 +106,7 @@ class AccountsServiceNew:
 
         return df
 
-    def table(self):
+    def _make_table(self) -> DF:
         df = self._df.copy().reset_index()
         # sum past incomes and expenses
         past = df.loc[df['year'] < self._year].groupby(['title']).sum()
@@ -111,7 +116,7 @@ class AccountsServiceNew:
         now.have = self._have.have
 
         if past.empty and now.empty:
-            return []
+            return df
 
         # calculate past balance
         now.loc[:, 'past'] = 0.0 if past.empty else past.incomes - past.expenses
@@ -124,4 +129,4 @@ class AccountsServiceNew:
         # delete year column
         del now['year']
 
-        return now.reset_index().to_dict('records')
+        return now
