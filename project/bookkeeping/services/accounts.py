@@ -72,14 +72,16 @@ class AccountsServiceNew:
     @property
     def total(self):
         df = self._table.copy().reset_index(drop=True)
-        df.drop(['year', 'title'], axis=1, inplace=True, errors='ignore')
+        df.drop(['year', 'id'], axis=1, inplace=True, errors='ignore')
 
         return df.sum().to_dict()
 
     def _make_df(self, incomes: list[dict], expenses: list[dict]) -> DF:
-        columns=[
+        index = [
+            'id',
             'year',
-            'title',
+        ]
+        columns=[
             'past',
             'incomes',
             'expenses',
@@ -92,7 +94,7 @@ class AccountsServiceNew:
         df = pd.DataFrame(it.chain(incomes, expenses))
 
         if df.empty:
-            return pd.DataFrame(columns=columns).set_index(['title', 'year'])
+            return pd.DataFrame(columns=index + columns).set_index(index)
 
         # create missing columns
         df[[*set(columns) - set(df.columns)]] = 0.0
@@ -100,31 +102,31 @@ class AccountsServiceNew:
         df.fillna(0.0, inplace=True)
         # convert decimal to float
         df[['incomes', 'expenses']] = df[['incomes', 'expenses']].astype(float)
-        # groupby title, year and sum
-        df = df.groupby(['title', 'year']).sum(numeric_only=True)
+        # groupby id, year and sum
+        df = df.groupby(['id', 'year'])[columns].sum(numeric_only=True)
 
         return df
 
     def _make_df_have(self, year: int, have: list[dict]) -> DF:
-        cols = ['title', 'have']
+        cols = ['id', 'have']
 
         if not have:
-            return pd.DataFrame(columns=cols).set_index('title')
+            return pd.DataFrame(columns=cols).set_index('id')
 
         df = pd.DataFrame(have)
         # create year column from latest_check
         df['year'] = pd.to_datetime(df['latest_check']).dt.year
         # filter rows with current year
         df = df.loc[df['year'] == year]
-        # leave title and have columns
-        df = df.loc[:,cols].set_index('title')
+        # leave id and have columns
+        df = df.loc[:,cols].set_index('id')
         # decimal -> float
         df['have'] = df['have'].astype(float)
 
         return df
 
     def _make_table(self, year: int, df: DF, have: DF) -> DF:
-        df = df.copy().reset_index().set_index('title')
+        df = df.copy().reset_index().set_index('id')
         # copy have column to main df
         df.have = have.have
         # nan -> 0.0
@@ -137,10 +139,10 @@ class AccountsServiceNew:
 
         # balance without past
         df.balance = df.incomes - df.expenses
-        # temp column for each title group with balance cumulative sum
-        df['temp'] = df.groupby("title")['balance'].cumsum()
+        # temp column for each id group with balance cumulative sum
+        df['temp'] = df.groupby("id")['balance'].cumsum()
         # calculate past -> shift down temp column
-        df['past'] = df.groupby("title")['temp'].shift(fill_value=0.0)
+        df['past'] = df.groupby("id")['temp'].shift(fill_value=0.0)
         # recalculate balance with past and drop temp
         df['balance'] = df['past'] + df['incomes'] - df['expenses']
         df.drop(columns=["temp"], inplace=True)

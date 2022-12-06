@@ -10,67 +10,67 @@ from ..services.accounts import AccountsServiceNew
 @pytest.fixture(name="incomes")
 def fixture_incomes():
     return [
-        {'year': 1999, 'incomes': Decimal('50'), 'title': 'X'},
-        {'year': 1999, 'incomes': Decimal('50'), 'title': 'X'},
-        {'year': 2000, 'incomes': Decimal('100'), 'title': 'X'},
-        {'year': 2000, 'incomes': Decimal('100'), 'title': 'X'},
-        {'year': 1999, 'incomes': Decimal('55'), 'title': 'Y'},
-        {'year': 1999, 'incomes': Decimal('55'), 'title': 'Y'},
-        {'year': 2000, 'incomes': Decimal('110'), 'title': 'Y'},
-        {'year': 2000, 'incomes': Decimal('110'), 'title': 'Y'},
+        {'year': 1999, 'incomes': Decimal('50'), 'id': 1},
+        {'year': 1999, 'incomes': Decimal('50'), 'id': 1},
+        {'year': 2000, 'incomes': Decimal('100'), 'id': 1},
+        {'year': 2000, 'incomes': Decimal('100'), 'id': 1},
+        {'year': 1999, 'incomes': Decimal('55'), 'id': 2},
+        {'year': 1999, 'incomes': Decimal('55'), 'id': 2},
+        {'year': 2000, 'incomes': Decimal('110'), 'id': 2},
+        {'year': 2000, 'incomes': Decimal('110'), 'id': 2},
     ]
 
 
 @pytest.fixture(name="expenses")
 def fixture_expenses():
     return [
-        {'year': 1999, 'expenses': Decimal('25'), 'title': 'X'},
-        {'year': 1999, 'expenses': Decimal('25'), 'title': 'X'},
-        {'year': 2000, 'expenses': Decimal('50'), 'title': 'X'},
-        {'year': 2000, 'expenses': Decimal('50'), 'title': 'X'},
-        {'year': 2000, 'expenses': Decimal('55'), 'title': 'Y'},
-        {'year': 2000, 'expenses': Decimal('55'), 'title': 'Y'},
+        {'year': 1999, 'expenses': Decimal('25'), 'id': 1},
+        {'year': 1999, 'expenses': Decimal('25'), 'id': 1},
+        {'year': 2000, 'expenses': Decimal('50'), 'id': 1},
+        {'year': 2000, 'expenses': Decimal('50'), 'id': 1},
+        {'year': 2000, 'expenses': Decimal('55'), 'id': 2},
+        {'year': 2000, 'expenses': Decimal('55'), 'id': 2},
     ]
 
 
 @pytest.fixture(name="have")
 def fixture_have():
     return [
-        {'title': 'X', 'have': Decimal('10'), 'latest_check': datetime(2000, 1, 1)},
-        {'title': 'X', 'have': Decimal('11'), 'latest_check': datetime(1999, 1, 1)},
-        {'title': 'Y', 'have': Decimal('20'), 'latest_check': datetime(2000, 1, 1)},
-        {'title': 'Y', 'have': Decimal('21'), 'latest_check': datetime(1999, 1, 1)},
+        {'id': 1, 'have': Decimal('10'), 'latest_check': datetime(2000, 1, 1)},
+        {'id': 1, 'have': Decimal('11'), 'latest_check': datetime(1999, 1, 1)},
+        {'id': 2, 'have': Decimal('20'), 'latest_check': datetime(2000, 1, 1)},
+        {'id': 2, 'have': Decimal('21'), 'latest_check': datetime(1999, 1, 1)},
     ]
 
 
 def test_table(incomes, expenses, have):
     incomes.extend([
-        {'year': 1997, 'incomes': Decimal('5'), 'title': 'X'},
-        {'year': 1998, 'incomes': Decimal('15'), 'title': 'X'},
+        {'year': 1997, 'incomes': Decimal('5'), 'id': 1},
+        {'year': 1998, 'incomes': Decimal('15'), 'id': 1},
     ])
     data = SimpleNamespace(year=2000, incomes=incomes, expenses=expenses, have=have)
     actual = AccountsServiceNew(data).table
 
     expect = [
-        {'title': 'X', 'past': 70.0, 'incomes': 200.0, 'expenses': 100.0, 'balance': 170.0, 'have': 10.0, 'delta': -160.0},
-        {'title': 'Y', 'past': 110.0, 'incomes': 220.0, 'expenses': 110.0, 'balance': 220.0, 'have': 20.0, 'delta': -200.0},
+        {'id': 1, 'past': 70.0, 'incomes': 200.0, 'expenses': 100.0, 'balance': 170.0, 'have': 10.0, 'delta': -160.0},
+        {'id': 2, 'past': 110.0, 'incomes': 220.0, 'expenses': 110.0, 'balance': 220.0, 'have': 20.0, 'delta': -200.0},
     ]
 
     assert actual == expect
 
 
 def test_table_closed_accounts(incomes, expenses, have):
-    incomes.append({'year': 1999, 'incomes': Decimal('100'), 'title': 'Z'})
-    expenses.append({'year': 1999, 'expenses': Decimal('100'), 'title': 'Z'})
-    have.append({'title': 'Z', 'have': Decimal('20'), 'latest_check': datetime(1998, 1, 1)},)
+    incomes.append({'year': 1999, 'incomes': Decimal('100'), 'id': 'Z'})
+    expenses.append({'year': 1999, 'expenses': Decimal('100'), 'id': 'Z'})
+    have.append({'id': 'Z', 'have': Decimal('20'), 'latest_check': datetime(1998, 1, 1)},)
 
     data = SimpleNamespace(year=2000, incomes=incomes, expenses=expenses, have=have)
 
     actual = AccountsServiceNew(data).table
 
     expect = [
-        {'title': 'X', 'past': 50.0, 'incomes': 200.0, 'expenses': 100.0, 'balance': 150.0, 'have': 10.0, 'delta': -140.0},
-        {'title': 'Y', 'past': 110.0, 'incomes': 220.0, 'expenses': 110.0, 'balance': 220.0, 'have': 20.0, 'delta': -200.0},
+        {'id': 1, 'past': 50.0, 'incomes': 200.0, 'expenses': 100.0, 'balance': 150.0, 'have': 10.0, 'delta': -140.0},
+        {'id': 2, 'past': 110.0, 'incomes': 220.0, 'expenses': 110.0, 'balance': 220.0, 'have': 20.0, 'delta': -200.0},
     ]
 
     assert actual == expect
@@ -81,8 +81,8 @@ def test_table_have_empty(incomes, expenses):
     actual = AccountsServiceNew(data).table
 
     expect = [
-        {'title': 'X', 'past': 50.0, 'incomes': 200.0, 'expenses': 100.0, 'balance': 150.0, 'have': 0.0, 'delta': -150.0},
-        {'title': 'Y', 'past': 110.0, 'incomes': 220.0, 'expenses': 110.0, 'balance': 220.0, 'have': 0.0, 'delta': -220.0},
+        {'id': 1, 'past': 50.0, 'incomes': 200.0, 'expenses': 100.0, 'balance': 150.0, 'have': 0.0, 'delta': -150.0},
+        {'id': 2, 'past': 110.0, 'incomes': 220.0, 'expenses': 110.0, 'balance': 220.0, 'have': 0.0, 'delta': -220.0},
     ]
 
     assert actual == expect
@@ -93,8 +93,8 @@ def test_table_have_partial(incomes, expenses, have):
     actual = AccountsServiceNew(data).table
 
     expect = [
-        {'title': 'X', 'past': 50.0, 'incomes': 200.0, 'expenses': 100.0, 'balance': 150.0, 'have': 10.0, 'delta': -140.0},
-        {'title': 'Y', 'past': 110.0, 'incomes': 220.0, 'expenses': 110.0, 'balance': 220.0, 'have': 0.0, 'delta': -220.0},
+        {'id': 1, 'past': 50.0, 'incomes': 200.0, 'expenses': 100.0, 'balance': 150.0, 'have': 10.0, 'delta': -140.0},
+        {'id': 2, 'past': 110.0, 'incomes': 220.0, 'expenses': 110.0, 'balance': 220.0, 'have': 0.0, 'delta': -220.0},
     ]
 
     assert actual == expect
@@ -105,8 +105,8 @@ def test_table_incomes_empty(expenses):
     actual = AccountsServiceNew(data).table
 
     expect = [
-        {'title': 'X', 'past': -50.0, 'incomes': 0.0, 'expenses': 100.0, 'balance': -150.0, 'have': 0.0, 'delta': 150.0},
-        {'title': 'Y', 'past': 0.0, 'incomes': 0.0, 'expenses': 110.0, 'balance': -110.0, 'have': 0.0, 'delta': 110.0},
+        {'id': 1, 'past': -50.0, 'incomes': 0.0, 'expenses': 100.0, 'balance': -150.0, 'have': 0.0, 'delta': 150.0},
+        {'id': 2, 'past': 0.0, 'incomes': 0.0, 'expenses': 110.0, 'balance': -110.0, 'have': 0.0, 'delta': 110.0},
     ]
 
     assert actual == expect
@@ -117,8 +117,8 @@ def test_table_expenses_empty(incomes):
     actual = AccountsServiceNew(data).table
 
     expect = [
-        {'title': 'X', 'past': 100.0, 'incomes': 200.0, 'expenses': 0.0, 'balance': 300.0, 'have': 0.0, 'delta': -300.0},
-        {'title': 'Y', 'past': 110.0, 'incomes': 220.0, 'expenses': 0.0, 'balance': 330.0, 'have': 0.0, 'delta': -330.0},
+        {'id': 1, 'past': 100.0, 'incomes': 200.0, 'expenses': 0.0, 'balance': 300.0, 'have': 0.0, 'delta': -300.0},
+        {'id': 2, 'past': 110.0, 'incomes': 220.0, 'expenses': 0.0, 'balance': 330.0, 'have': 0.0, 'delta': -330.0},
     ]
 
     assert actual == expect
@@ -138,8 +138,8 @@ def test_table_only_have(have):
     actual = AccountsServiceNew(data).table
 
     expect = [
-        {'title': 'X', 'past': 0.0, 'incomes': 0.0, 'expenses': 0.0, 'balance': 0.0, 'have': 10.0, 'delta': 10.0},
-        {'title': 'Y', 'past': 0.0, 'incomes': 0.0, 'expenses': 0.0, 'balance': 0.0, 'have': 20.0, 'delta': 20.0},
+        {'id': 1, 'past': 0.0, 'incomes': 0.0, 'expenses': 0.0, 'balance': 0.0, 'have': 10.0, 'delta': 10.0},
+        {'id': 2, 'past': 0.0, 'incomes': 0.0, 'expenses': 0.0, 'balance': 0.0, 'have': 20.0, 'delta': 20.0},
     ]
 
     assert actual == expect
