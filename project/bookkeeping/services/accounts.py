@@ -65,7 +65,6 @@ class AccountsServiceNew:
     @property
     def table(self):
         df = self._table.copy().reset_index()
-        df.drop(['year'], axis=1, inplace=True, errors='ignore')
 
         return df.to_dict('records')
 
