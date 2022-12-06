@@ -45,7 +45,6 @@ class AccountService:
 
 @dataclass
 class AccountServiceDataNew:
-    year: int
     incomes: list[dict] = field(init=False, default_factory=list)
     expenses: list[dict] = field(init=False, default_factory=list)
     have: list[dict] = field(init=False, default_factory=list)
@@ -56,10 +55,9 @@ class AccountsServiceNew:
     _have = pd.DataFrame()
 
     def __init__(self, data: AccountServiceDataNew):
-        _year = data.year
         _df = self._make_df(data.incomes, data.expenses, data.have)
 
-        self._table = self._make_table(_year, _df)
+        self._table = self._make_table(_df)
 
     @property
     def table(self):
@@ -98,7 +96,7 @@ class AccountsServiceNew:
 
         return df
 
-    def _make_table(self, year: int, df: DF) -> DF:
+    def _make_table(self, df: DF) -> DF:
         df = df.copy().reset_index().set_index('id')
         if df.empty: return df
         # balance without past

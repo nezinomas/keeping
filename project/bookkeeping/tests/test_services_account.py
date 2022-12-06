@@ -48,7 +48,7 @@ def test_table(incomes, expenses, have):
         {'year': 1997, 'incomes': Decimal('5'), 'id': 1},
         {'year': 1998, 'incomes': Decimal('15'), 'id': 1},
     ])
-    data = SimpleNamespace(year=2000, incomes=incomes, expenses=expenses, have=have)
+    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have)
     actual = AccountsServiceNew(data).table
 
     expect = [
@@ -70,7 +70,7 @@ def test_table(incomes, expenses, have):
 
 
 def test_table_have_empty(incomes, expenses):
-    data = SimpleNamespace(year=2000, incomes=incomes, expenses=expenses, have=[])
+    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=[])
     actual = AccountsServiceNew(data).table
 
     expect = [
@@ -88,7 +88,7 @@ def test_table_have_empty(incomes, expenses):
 
 
 def test_table_incomes_empty(expenses):
-    data = SimpleNamespace(year=2000, incomes=[], expenses=expenses, have=[])
+    data = SimpleNamespace(incomes=[], expenses=expenses, have=[])
     actual = AccountsServiceNew(data).table
 
     expect = [
@@ -104,7 +104,7 @@ def test_table_incomes_empty(expenses):
 
 
 def test_table_expenses_empty(incomes):
-    data = SimpleNamespace(year=2000, incomes=incomes, expenses=[], have=[])
+    data = SimpleNamespace(incomes=incomes, expenses=[], have=[])
     actual = AccountsServiceNew(data).table
 
     expect = [
@@ -122,7 +122,7 @@ def test_table_expenses_empty(incomes):
 
 
 def test_table_incomes_expenses_empty():
-    data = SimpleNamespace(year=2000, incomes=[], expenses=[], have=[])
+    data = SimpleNamespace(incomes=[], expenses=[], have=[])
     actual = AccountsServiceNew(data).table
 
     expect = []
@@ -131,7 +131,7 @@ def test_table_incomes_expenses_empty():
 
 
 def test_table_only_have(have):
-    data = SimpleNamespace(year=2000, incomes=[], expenses=[], have=have)
+    data = SimpleNamespace(incomes=[], expenses=[], have=have)
     actual = AccountsServiceNew(data).table
 
     expect = [
@@ -146,66 +146,3 @@ def test_table_only_have(have):
     ]
 
     assert actual == expect
-
-
-# def test_total_row(incomes, expenses, have):
-#     data = SimpleNamespace(year=2000, incomes=incomes, expenses=expenses, have=have)
-#     actual = AccountsServiceNew(data).total
-
-#     expect = {'past': 160.0, 'incomes': 420.0, 'expenses': 210.0, 'balance': 370.0, 'have': 30.0, 'delta': -340.0}
-
-#     assert actual == expect
-
-
-# def test_total_row_have_empty(incomes, expenses):
-#     data = SimpleNamespace(year=2000, incomes=incomes, expenses=expenses, have=[])
-#     actual = AccountsServiceNew(data).total
-
-#     expect = {'past': 160.0, 'incomes': 420.0, 'expenses': 210.0, 'balance': 370.0, 'have': 0.0, 'delta': -370.0}
-
-#     assert actual == expect
-
-
-# def test_total_row_have_partial(incomes, expenses, have):
-#     data = SimpleNamespace(year=2000, incomes=incomes, expenses=expenses, have=have[:1])
-#     actual = AccountsServiceNew(data).total
-
-#     expect = {'past': 160.0, 'incomes': 420.0, 'expenses': 210.0, 'balance': 370.0, 'have': 10.0, 'delta': -360.0}
-
-#     assert actual == expect
-
-
-# def test_total_row_incomes_empty(expenses):
-#     data = SimpleNamespace(year=2000, incomes=[], expenses=expenses, have=[])
-#     actual = AccountsServiceNew(data).total
-
-#     expect = {'past': -50.0, 'incomes': 0.0, 'expenses': 210.0, 'balance': -260.0, 'have': 0.0, 'delta': 260.0}
-
-#     assert actual == expect
-
-
-# def test_total_row_expenses_empty(incomes):
-#     data = SimpleNamespace(year=2000, incomes=incomes, expenses=[], have=[])
-#     actual = AccountsServiceNew(data).total
-
-#     expect = {'past': 210.0, 'incomes': 420.0, 'expenses': 0.0, 'balance': 630.0, 'have': 0.0, 'delta': -630.0}
-
-#     assert actual == expect
-
-
-# def test_total_row_incomes_expenses_empty():
-#     data = SimpleNamespace(year=2000, incomes=[], expenses=[], have=[])
-#     actual = AccountsServiceNew(data).total
-
-#     expect = {'past': 0.0, 'incomes': 0.0, 'expenses': 0.0, 'balance': 0.0, 'have': 0.0, 'delta': 0.0}
-
-#     assert actual == expect
-
-
-# def test_total_row_only_have(have):
-#     data = SimpleNamespace(year=2000, incomes=[], expenses=[], have=have)
-#     actual = AccountsServiceNew(data).total
-
-#     expect = {'past': 0.0, 'incomes': 0.0, 'expenses': 0.0, 'balance': 0.0, 'have': 30.0, 'delta': 30.0}
-
-#     assert actual == expect
