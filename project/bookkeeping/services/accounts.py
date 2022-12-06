@@ -1,4 +1,5 @@
 import contextlib
+import itertools as it
 from dataclasses import dataclass, field
 
 import pandas as pd
@@ -57,7 +58,7 @@ class AccountsServiceNew:
     def __init__(self, data: AccountServiceDataNew):
         _year = data.year
         _df = self._make_df(data.incomes, data.expenses)
-        _have = self._make_df_have(data.have)
+        _have = self._make_df_have(_year, data.have)
 
         self._table = self._make_table(_year, _df, _have)
 
@@ -86,57 +87,64 @@ class AccountsServiceNew:
             'have',
             'delta',
         ]
-        df = pd.DataFrame(columns=columns).set_index(['title', 'year'])
 
-        def to_df(arr):
-            df = pd.DataFrame(arr)
-            df.set_index(['title', 'year'], inplace=True)
-            df.sort_index(level=['title', 'year'])
-            # convert column [incomes or expenses] decimal values to float
-            df[df.columns] = df[df.columns].astype(float)
-            return df
+        # create df from incomes and expenses
+        df = pd.DataFrame(it.chain(incomes, expenses))
 
-        if expenses:
-            df = df.add(to_df(expenses), fill_value=0.0)
+        if df.empty:
+            return pd.DataFrame(columns=columns).set_index(['title', 'year'])
 
-        if incomes:
-            df = df.add(to_df(incomes), fill_value=0.0)
-
+        # create missing columns
+        df[[*set(columns) - set(df.columns)]] = 0.0
+        # nan -> 0.0
         df.fillna(0.0, inplace=True)
+        # convert decimal to float
+        df[['incomes', 'expenses']] = df[['incomes', 'expenses']].astype(float)
+        # groupby title, year and sum
+        df = df.groupby(['title', 'year']).sum(numeric_only=True)
 
         return df
 
-    def _make_df_have(self, have: list[dict]) -> DF:
+    def _make_df_have(self, year: int, have: list[dict]) -> DF:
         cols = ['title', 'have']
 
         if not have:
             return pd.DataFrame(columns=cols).set_index('title')
 
         df = pd.DataFrame(have)
+        # create year column from latest_check
+        df['year'] = pd.to_datetime(df['latest_check']).dt.year
+        # filter rows with current year
+        df = df.loc[df['year'] == year]
+        # leave title and have columns
         df = df.loc[:,cols].set_index('title')
+        # decimal -> float
         df['have'] = df['have'].astype(float)
 
         return df
 
     def _make_table(self, year: int, df: DF, have: DF) -> DF:
-        df = df.copy().reset_index()
-        # sum past incomes and expenses
-        past = df.loc[df['year'] < year].groupby(['title']).sum(numeric_only=True)
-        # get current year DataFrame
-        now = df.loc[df['year'] == year].set_index('title')
-        # add have columns form self._have DataFrame
-        now.have = have.have
+        df = df.copy().reset_index().set_index('title')
+        # copy have column to main df
+        df.have = have.have
+        # nan -> 0.0
+        df.fillna(0.0, inplace=True)
+        # if after copy have column, year is empty fill year values
+        df.year = df.year.apply(lambda x: x or year)
 
-        if past.empty and now.empty:
+        if df.empty:
             return df
 
-        # calculate past balance
-        now.past = 0.0 if past.empty else past.incomes - past.expenses
-        # nan -> 0.0
-        now.fillna(0.0, inplace=True)
-        # calculate current year balance
-        now.balance = now.past + now.incomes - now.expenses
+        # balance without past
+        df.balance = df.incomes - df.expenses
+        # temp column for each title group with balance cumulative sum
+        df['temp'] = df.groupby("title")['balance'].cumsum()
+        # calculate past -> shift down temp column
+        df['past'] = df.groupby("title")['temp'].shift(fill_value=0.0)
+        # recalculate balance with past and drop temp
+        df['balance'] = df['past'] + df['incomes'] - df['expenses']
+        df.drop(columns=["temp"], inplace=True)
         # calculate delta between have and balance
-        now.delta = now.have - now.balance
-
-        return now
+        df.delta = df.have - df.balance
+        # return current year df
+        return df.loc[df['year'] == year]
