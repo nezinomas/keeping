@@ -55,9 +55,10 @@ class AccountsServiceNew:
     _have = pd.DataFrame()
 
     def __init__(self, data: AccountServiceDataNew):
-        _df = self._make_df(data.incomes, data.expenses, data.have)
+        _df = self._make_df(data.incomes, data.expenses)
+        _hv = self._make_have(data.have)
 
-        self._table = self._make_table(_df)
+        self._table = self._make_table(_df, _hv)
 
     @property
     def table(self):
@@ -65,40 +66,49 @@ class AccountsServiceNew:
 
         return df.to_dict('records')
 
-    def _make_df(self, incomes: list[dict], expenses: list[dict], have: list[dict]) -> DF:
-        index = [
+    def _make_df(self, incomes: list[dict], expenses: list[dict]) -> DF:
+        col_idx = [
             'id',
             'year',
         ]
-        columns=[
+        col_num=[
             'past',
             'incomes',
             'expenses',
             'balance',
-            'have',
             'delta',
         ]
-
         # create df from incomes and expenses
-        df = pd.DataFrame(it.chain(incomes, expenses, have))
-
+        df = pd.DataFrame(it.chain(incomes, expenses))
+        # print(f'created df\n{df}\ncreated have\n{hv}\n')
         if df.empty:
-            return pd.DataFrame(columns=index + columns).set_index(index)
+            return pd.DataFrame(columns=col_idx + col_num).set_index(col_idx)
 
         # create missing columns
-        df[[*set(columns) - set(df.columns)]] = 0.0
-        # nan -> 0.0
-        df.fillna(0.0, inplace=True)
+        df[[*set(col_num) - set(df.columns)]] = 0.0
         # convert decimal to float
-        df[columns] = df[columns].astype(float)
+        df[col_num] = df[col_num].astype(float)
         # groupby id, year and sum
-        df = df.groupby(index)[columns].sum(numeric_only=True)
+        df = df.groupby(col_idx)[col_num].sum(numeric_only=True)
 
         return df
 
-    def _make_table(self, df: DF) -> DF:
-        df = df.copy().reset_index().set_index('id')
-        if df.empty: return df
+    def _make_have(self, have: list[dict]) -> DF:
+        hv = pd.DataFrame(have)
+
+        if hv.empty:
+            return pd.DataFrame(columns=['id', 'year', 'have', 'latest_check'])
+
+        hv['have'] = hv['have'].astype(float)
+        return hv
+
+    def _make_table(self, df: DF, hv: DF) -> DF:
+        df = df.copy().reset_index().set_index(['id', 'year'])
+        hv = hv.copy().reset_index(drop=True).set_index(['id', 'year'])
+        # concat df and have; fillna
+        df = pd.concat([df, hv], axis=1).fillna(0.0)
+        if df.empty:
+            return df
         # balance without past
         df.balance = df.incomes - df.expenses
         # temp column for each id group with balance cumulative sum
