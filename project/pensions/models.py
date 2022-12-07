@@ -80,6 +80,7 @@ class PensionBalance(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
+    latest_check = models.DateTimeField(null=True, blank=True)
     past_amount = models.FloatField(default=0.0)
     past_fee = models.FloatField(default=0.0)
     fee = models.FloatField(default=0.0)

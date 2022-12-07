@@ -44,6 +44,7 @@ class AccountBalance(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
+    latest_check = models.DateTimeField(null=True, blank=True)
     past = models.FloatField(default=0.0)
     incomes = models.FloatField(default=0.0)
     expenses = models.FloatField(default=0.0)
