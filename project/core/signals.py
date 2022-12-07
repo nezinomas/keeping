@@ -101,7 +101,7 @@ def pensions_post_delete(sender: object,
 
 
 @dataclass
-class AccountServiceDataNew:
+class Data:
     conf: dict[tuple] = field(default_factory=dict)
     incomes: list[dict] = field(init=False, default_factory=list)
     expenses: list[dict] = field(init=False, default_factory=list)
@@ -128,11 +128,11 @@ class AccountServiceDataNew:
         return items
 
 
-class AccountsServiceNew:
+class Accounts:
     _df = pd.DataFrame()
     _have = pd.DataFrame()
 
-    def __init__(self, data: AccountServiceDataNew):
+    def __init__(self, data: Data):
         _df = self._make_df(data.incomes, data.expenses)
         _hv = self._make_have(data.have)
 

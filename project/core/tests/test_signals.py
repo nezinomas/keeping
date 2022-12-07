@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ..signals import AccountsServiceNew
+from ..signals import Accounts
 
 
 @pytest.fixture(name="incomes")
@@ -49,7 +49,7 @@ def test_table(incomes, expenses, have):
         {'year': 1998, 'incomes': Decimal('15'), 'id': 1},
     ])
     data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have)
-    actual = AccountsServiceNew(data).table
+    actual = Accounts(data).table
 
     expect = [
         dict(
@@ -71,7 +71,7 @@ def test_table(incomes, expenses, have):
 
 def test_table_have_empty(incomes, expenses):
     data = SimpleNamespace(incomes=incomes, expenses=expenses, have=[])
-    actual = AccountsServiceNew(data).table
+    actual = Accounts(data).table
 
     expect = [
         dict(
@@ -89,7 +89,7 @@ def test_table_have_empty(incomes, expenses):
 
 def test_table_incomes_empty(expenses):
     data = SimpleNamespace(incomes=[], expenses=expenses, have=[])
-    actual = AccountsServiceNew(data).table
+    actual = Accounts(data).table
 
     expect = [
         dict(
@@ -105,7 +105,7 @@ def test_table_incomes_empty(expenses):
 
 def test_table_expenses_empty(incomes):
     data = SimpleNamespace(incomes=incomes, expenses=[], have=[])
-    actual = AccountsServiceNew(data).table
+    actual = Accounts(data).table
 
     expect = [
         dict(
@@ -123,7 +123,7 @@ def test_table_expenses_empty(incomes):
 
 def test_table_incomes_expenses_empty():
     data = SimpleNamespace(incomes=[], expenses=[], have=[])
-    actual = AccountsServiceNew(data).table
+    actual = Accounts(data).table
 
     expect = []
 
@@ -132,7 +132,7 @@ def test_table_incomes_expenses_empty():
 
 def test_table_only_have(have):
     data = SimpleNamespace(incomes=[], expenses=[], have=have)
-    actual = AccountsServiceNew(data).table
+    actual = Accounts(data).table
 
     expect = [
         dict(
