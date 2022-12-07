@@ -3,12 +3,11 @@ import itertools as it
 from dataclasses import dataclass, field
 
 import pandas as pd
-from django.apps import apps
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from pandas import DataFrame as DF
-
-from ..bookkeeping import models as worth
+from django.db.models import Model
+from ..bookkeeping import models as bookkeeping
 from ..debts import models as debt
 from ..expenses import models as expense
 from ..incomes import models as income
@@ -16,40 +15,59 @@ from ..pensions import models as pension
 from ..savings import models as saving
 from ..transactions import models as transaction
 from .signals_base import SignalBase
+from ..accounts import models as account
 
 
 # ----------------------------------------------------------------------------
 #                                                               AccountBalance
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=income.Income)
-@receiver(post_save, sender=expense.Expense)
-@receiver(post_save, sender=saving.Saving)
-@receiver(post_save, sender=transaction.Transaction)
-@receiver(post_save, sender=transaction.SavingClose)
-@receiver(post_save, sender=debt.Debt)
-@receiver(post_save, sender=debt.DebtReturn)
-@receiver(post_save, sender=worth.AccountWorth)
-def accounts_post_save(sender: object,
-                       instance: object,
-                       *args,
-                       **kwargs):
-    created = kwargs.get('created')
-    SignalBase.accounts(sender, instance, created, 'save')
-
-
 @receiver(post_delete, sender=income.Income)
+@receiver(post_save, sender=expense.Expense)
 @receiver(post_delete, sender=expense.Expense)
+@receiver(post_save, sender=saving.Saving)
 @receiver(post_delete, sender=saving.Saving)
+@receiver(post_save, sender=transaction.Transaction)
 @receiver(post_delete, sender=transaction.Transaction)
+@receiver(post_save, sender=transaction.SavingClose)
 @receiver(post_delete, sender=transaction.SavingClose)
+@receiver(post_save, sender=debt.Debt)
 @receiver(post_delete, sender=debt.Debt)
+@receiver(post_save, sender=debt.DebtReturn)
 @receiver(post_delete, sender=debt.DebtReturn)
-def accounts_post_delete(sender: object,
-                         instance: object,
-                         *args,
-                         **kwargs):
-    created = kwargs.get('created')
-    SignalBase.accounts(sender, instance, created, 'delete')
+@receiver(post_save, sender=bookkeeping.AccountWorth)
+def accounts_signal(sender: object, instance: object, *args, **kwargs):
+    accounts_a()
+
+def accounts_a():
+    data = accounts_data()
+    categories = get_categories(account.Account)
+    objects = create_objects(account.AccountBalance, categories, data)
+    # delete all records
+    account.AccountBalance.objects.related().delete()
+    # bulk create
+    account.AccountBalance.objects.bulk_create(objects)
+
+
+def accounts_data():
+    conf = {
+        'incomes': (
+            income.Income,
+            debt.Debt,
+            debt.DebtReturn,
+            transaction.Transaction,
+            transaction.SavingClose,
+        ),
+        'expenses': (
+            expense.Expense,
+            debt.Debt,
+            debt.DebtReturn,
+            transaction.Transaction,
+            saving.Saving,
+        ),
+        'have': (bookkeeping.AccountWorth,),
+    }
+    return Accounts(GetData(conf)).table
 
 
 # ----------------------------------------------------------------------------
@@ -58,7 +76,7 @@ def accounts_post_delete(sender: object,
 @receiver(post_save, sender=saving.Saving)
 @receiver(post_save, sender=transaction.SavingClose)
 @receiver(post_save, sender=transaction.SavingChange)
-@receiver(post_save, sender=worth.SavingWorth)
+@receiver(post_save, sender=bookkeeping.SavingWorth)
 def savings_post_save(sender: object,
                       instance: object,
                       *args,
@@ -82,7 +100,7 @@ def savings_post_delete(sender: object,
 #                                                               PensionBalance
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=pension.Pension)
-@receiver(post_save, sender=worth.PensionWorth)
+@receiver(post_save, sender=bookkeeping.PensionWorth)
 def pensions_post_save(sender: object,
                        instance: object,
                        *args,
@@ -100,6 +118,24 @@ def pensions_post_delete(sender: object,
     SignalBase.pensions(sender, instance, created, 'delete')
 
 
+def get_categories(model: Model) -> dict:
+    return {category.id: category for category in model.objects.related()}
+
+
+def create_objects(balance_model: Model, categories: dict, data: list[dict]):
+    objects = []
+    for x in data:
+        # extrack account/saving_type/pension_type id from dict
+        cid = x.pop('id')
+        # drop latest_check if empty
+        if not x['latest_check']:
+            x.pop('latest_check')
+        # create AccountBalance/SavingBalance/PensionBalance object
+        obj = balance_model(account=categories.get(cid), **x)
+        objects.append(obj)
+    return objects
+
+
 @dataclass
 class GetData:
     conf: dict[tuple] = field(default_factory=dict)
@@ -112,15 +148,9 @@ class GetData:
         self.expenses = self._get_data(self.conf['expenses'], 'expenses')
         self.have = self._get_data(self.conf['have'], 'have')
 
-    def _get_data(self, hooks: tuple, method: str):
-        # hooks tuple: (app.model)
+    def _get_data(self, models: tuple, method: str):
         items = []
-        for m in hooks:
-            try:
-                model = apps.get_model(m)
-            except LookupError:
-                continue
-
+        for model in models:
             with contextlib.suppress(AttributeError):
                 _method = getattr(model.objects, method)
                 if _qs := _method():
@@ -158,7 +188,7 @@ class Accounts:
         ]
         # create df from incomes and expenses
         df = pd.DataFrame(it.chain(incomes, expenses))
-        # print(f'created df\n{df}\ncreated have\n{hv}\n')
+
         if df.empty:
             return pd.DataFrame(columns=col_idx + col_num).set_index(col_idx)
 
