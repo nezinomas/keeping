@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ..services.accounts import AccountsServiceNew
+from ..signals import AccountsServiceNew
 
 
 @pytest.fixture(name="incomes")
