@@ -29,5 +29,8 @@ class AccountService:
             'delta': 0,
         }
 
-        return \
-            utils.sum_all(self.data) if self.data else total_row
+        for obj in self.data:
+            for k in total_row:
+                total_row[k] += getattr(obj, k)
+
+        return total_row
