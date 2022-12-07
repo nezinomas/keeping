@@ -7,8 +7,6 @@ from django.db.models.fields import FloatField
 from ...core.lib import utils
 from ...incomes.models import Income
 from ...savings.models import SavingBalance
-from ..models import SavingWorth
-from . import common
 from .index import IndexService
 
 
@@ -30,10 +28,7 @@ class SavingServiceData:
             ['price__sum']
 
         # data
-        balance_data = SavingBalance.objects.year(self.year)
-        worth_data = SavingWorth.objects.items(self.year)
-
-        self.data = common.add_latest_check_key(worth_data, balance_data)
+        self.data = SavingBalance.objects.year(self.year)
 
 
 class SavingsService:

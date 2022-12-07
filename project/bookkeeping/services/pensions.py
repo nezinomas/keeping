@@ -2,8 +2,6 @@ from dataclasses import dataclass, field
 
 from ...core.lib import utils
 from ...pensions.models import PensionBalance
-from ..models import PensionWorth
-from . import common
 
 
 @dataclass
@@ -13,11 +11,7 @@ class PensionServiceData:
     data: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        # data
-        balance_data = PensionBalance.objects.year(self.year)
-        worth_data = PensionWorth.objects.items(self.year)
-
-        self.data = common.add_latest_check_key(worth_data, balance_data)
+        self.data = PensionBalance.objects.year(self.year)
 
 
 class PensionsService:
