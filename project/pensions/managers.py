@@ -64,25 +64,10 @@ class PensionBalanceQuerySet(models.QuerySet):
         return self.related()
 
     def year(self, year: int):
-        qs = \
+        return \
             self \
             .related() \
             .filter(year=year)
-
-        return qs.values(
-            'year',
-            'past_amount',
-            'past_fee',
-            'fee',
-            'invested',
-            'incomes',
-            'market_value',
-            'profit_incomes_proc',
-            'profit_incomes_sum',
-            'profit_invested_proc',
-            'profit_invested_sum',
-            title=F('pension_type__title')
-        )
 
     def sum_by_year(self):
         return \
