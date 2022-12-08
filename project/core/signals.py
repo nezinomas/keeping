@@ -159,9 +159,6 @@ class GetData:
 
 
 class Accounts:
-    _df = pd.DataFrame()
-    _have = pd.DataFrame()
-
     def __init__(self, data: GetData):
         _df = self._make_df(data.incomes, data.expenses)
         _hv = self._make_have(data.have)
