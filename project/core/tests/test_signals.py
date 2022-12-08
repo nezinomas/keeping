@@ -4,8 +4,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from ...accounts.factories import AccountBalanceFactory, AccountFactory
-from ...accounts.models import Account, AccountBalance
+from ...accounts.factories import AccountFactory
+from ...accounts.models import AccountBalance
 from ..signals import Accounts, create_objects
 
 
