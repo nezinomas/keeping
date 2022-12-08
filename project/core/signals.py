@@ -3,10 +3,12 @@ import itertools as it
 from dataclasses import dataclass, field
 
 import pandas as pd
+from django.db.models import Model
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from pandas import DataFrame as DF
-from django.db.models import Model
+
+from ..accounts import models as account
 from ..bookkeeping import models as bookkeeping
 from ..debts import models as debt
 from ..expenses import models as expense
@@ -15,7 +17,6 @@ from ..pensions import models as pension
 from ..savings import models as saving
 from ..transactions import models as transaction
 from .signals_base import SignalBase
-from ..accounts import models as account
 
 
 # ----------------------------------------------------------------------------
@@ -37,16 +38,10 @@ from ..accounts import models as account
 @receiver(post_delete, sender=debt.DebtReturn)
 @receiver(post_save, sender=bookkeeping.AccountWorth)
 def accounts_signal(sender: object, instance: object, *args, **kwargs):
-    accounts_a()
-
-def accounts_a():
     data = accounts_data()
     categories = get_categories(account.Account)
     objects = create_objects(account.AccountBalance, categories, data)
-    # delete all records
-    account.AccountBalance.objects.related().delete()
-    # bulk create
-    account.AccountBalance.objects.bulk_create(objects)
+    save_objects(account.Account, account.AccountBalance, data, categories, objects)
 
 
 def accounts_data():
@@ -134,6 +129,13 @@ def create_objects(balance_model: Model, categories: dict, data: list[dict]):
         obj = balance_model(account=categories.get(cid), **x)
         objects.append(obj)
     return objects
+
+
+def save_objects(categories_model, balance_model, data, categories, objects):
+    # delete all records
+    account.AccountBalance.objects.related().delete()
+    # bulk create
+    account.AccountBalance.objects.bulk_create(objects)
 
 
 @dataclass
