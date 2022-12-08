@@ -16,7 +16,6 @@ from ..incomes import models as income
 from ..pensions import models as pension
 from ..savings import models as saving
 from ..transactions import models as transaction
-from .signals_base import SignalBase
 
 
 # ----------------------------------------------------------------------------
@@ -41,7 +40,7 @@ def accounts_signal(sender: object, instance: object, *args, **kwargs):
     data = accounts_data()
     categories = get_categories(account.Account)
     objects = create_objects(account.AccountBalance, categories, data)
-    save_objects(account.Account, account.AccountBalance, data, categories, objects)
+    save_objects(account.AccountBalance, objects)
 
 
 def accounts_data():
@@ -69,48 +68,56 @@ def accounts_data():
 #                                                               SavingBalance
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=saving.Saving)
-@receiver(post_save, sender=transaction.SavingClose)
-@receiver(post_save, sender=transaction.SavingChange)
-@receiver(post_save, sender=bookkeeping.SavingWorth)
-def savings_post_save(sender: object,
-                      instance: object,
-                      *args,
-                      **kwargs):
-    created = kwargs.get('created')
-    SignalBase.savings(sender, instance, created, 'save')
-
-
 @receiver(post_delete, sender=saving.Saving)
+@receiver(post_save, sender=transaction.SavingClose)
 @receiver(post_delete, sender=transaction.SavingClose)
+@receiver(post_save, sender=transaction.SavingChange)
 @receiver(post_delete, sender=transaction.SavingChange)
-def savings_post_delete(sender: object,
-                        instance: object,
-                        *args,
-                        **kwargs):
-    created = kwargs.get('created')
-    SignalBase.savings(sender, instance, created, 'delete')
+@receiver(post_save, sender=bookkeeping.SavingWorth)
+def savings_signal(sender: object, instance: object, *args, **kwargs):
+    data = savings_data()
+    categories = get_categories(saving.Saving)
+    objects = create_objects(saving.SavingBalance, categories, data)
+    save_objects(saving.SavingBalance, objects)
+
+
+def savings_data():
+    conf = {
+        'incomes': (
+            saving.Saving,
+            transaction.SavingChange,
+        ),
+        'expenses': (
+            transaction.SavingClose,
+            transaction.SavingChange,
+        ),
+        'have': (bookkeeping.SavingWorth,),
+    }
+    return Savings(GetData(conf))
 
 
 # ----------------------------------------------------------------------------
 #                                                               PensionBalance
 # ----------------------------------------------------------------------------
 @receiver(post_save, sender=pension.Pension)
-@receiver(post_save, sender=bookkeeping.PensionWorth)
-def pensions_post_save(sender: object,
-                       instance: object,
-                       *args,
-                       **kwargs):
-    created = kwargs.get('created')
-    SignalBase.pensions(sender, instance, created, 'save')
-
-
 @receiver(post_delete, sender=pension.Pension)
-def pensions_post_delete(sender: object,
-                         instance: object,
-                         *args,
-                         **kwargs):
-    created = kwargs.get('created')
-    SignalBase.pensions(sender, instance, created, 'delete')
+@receiver(post_save, sender=bookkeeping.PensionWorth)
+def pensions_signal(sender: object, instance: object, *args, **kwargs):
+    data = savings_data()
+    categories = get_categories(pension.Pension)
+    objects = create_objects(pension.PensionBalance, categories, data)
+    save_objects(pension.PensionBalance, objects)
+
+
+def pensions_data():
+    conf = {
+        'incomes': (
+            pension.Pension,
+        ),
+        'expenses': (),
+        'have': (bookkeeping.PensionWorth),
+    }
+    return Savings(GetData(conf))
 
 
 def get_categories(model: Model) -> dict:
@@ -131,11 +138,11 @@ def create_objects(balance_model: Model, categories: dict, data: list[dict]):
     return objects
 
 
-def save_objects(categories_model, balance_model, data, categories, objects):
+def save_objects(balance_model, objects):
     # delete all records
-    account.AccountBalance.objects.related().delete()
+    balance_model.objects.related().delete()
     # bulk create
-    account.AccountBalance.objects.bulk_create(objects)
+    balance_model.objects.bulk_create(objects)
 
 
 @dataclass

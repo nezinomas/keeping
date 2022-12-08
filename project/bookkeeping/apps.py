@@ -7,5 +7,5 @@ class bookkeepingConfig(AppConfig):
     name = f'project.{App_name}'
 
     def ready(self):
-        from ..core.signals import (accounts_signal, pensions_post_save,
-                                    savings_post_save)
+        from ..core.signals import (accounts_signal, pensions_signal,
+                                    savings_signal)
