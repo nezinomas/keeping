@@ -202,18 +202,20 @@ class Accounts:
 
     def _make_have(self, have: list[dict]) -> DF:
         hv = pd.DataFrame(have)
-
+        idx = ['id', 'year']
         if hv.empty:
-            idx = ['id', 'year']
             cols = ['id', 'year', 'have', 'latest_check']
             return pd.DataFrame(columns=cols).set_index(idx)
-
+        # set index
+        hv.set_index(keys=idx, inplace=True)
+        # convert Decimal -> float
         hv['have'] = hv['have'].astype(float)
+
         return hv
 
     def _make_table(self, df: DF, hv: DF) -> DF:
-        df = df.copy().reset_index().set_index(['id', 'year'])
-        hv = hv.copy().reset_index(drop=True).set_index(['id', 'year'])
+        df = df.copy()
+        hv = hv.copy()
         # concat df and have; fillna
         df = pd.concat([df, hv], axis=1).fillna(0.0)
         if df.empty:
@@ -229,7 +231,6 @@ class Accounts:
         df.drop(columns=["temp"], inplace=True)
         # calculate delta between have and balance
         df.delta = df.have - df.balance
-
         return df
 
 
