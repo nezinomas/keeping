@@ -204,7 +204,9 @@ class Accounts:
         hv = pd.DataFrame(have)
 
         if hv.empty:
-            return pd.DataFrame(columns=['id', 'year', 'have', 'latest_check'])
+            idx = ['id', 'year']
+            cols = ['id', 'year', 'have', 'latest_check']
+            return pd.DataFrame(columns=cols).set_index(idx)
 
         hv['have'] = hv['have'].astype(float)
         return hv
@@ -274,7 +276,9 @@ class Savings:
         hv = pd.DataFrame(have)
 
         if hv.empty:
-            return pd.DataFrame(columns=['id', 'year', 'have', 'latest_check'])
+            idx = ['id', 'year']
+            cols = ['id', 'year', 'have', 'latest_check']
+            return pd.DataFrame(columns=cols).set_index(idx)
 
         hv['have'] = hv['have'].astype(float)
         hv.set_index(['id', 'year'], inplace=True)
@@ -328,6 +332,7 @@ class Savings:
             df[['market_value', 'invested']].apply(Savings.calc_percent, axis=1)
         # drop tmp columns
         df.drop(columns=['expenses', 'tmp1', 'tmp2'], inplace=True)
+
         return df
 
     @staticmethod

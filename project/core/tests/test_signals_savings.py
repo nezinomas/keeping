@@ -139,3 +139,135 @@ def test_table(incomes, expenses, have):
     assert round(actual[5]['profit_invested_proc'], 2) == 22.55
     assert actual[5]['profit_invested_sum'] == 46.0
     assert actual[5]['latest_check'] == datetime(2000, 1, 1)
+
+
+def test_table_have_empty(incomes, expenses):
+    data = SimpleNamespace(incomes=incomes[:4], expenses=expenses[:4], have=[])
+    actual = Savings(data).table
+
+    assert actual[0]['id'] == 1
+    assert actual[0]['year'] == 1999
+    assert actual[0]['past_amount'] == 0.0
+    assert actual[0]['past_fee'] == 0.0
+    assert actual[0]['fee'] == 8.0
+    assert actual[0]['incomes'] == 50.0
+    assert actual[0]['invested'] == 42.0
+    assert actual[0]['market_value'] == 0.0
+    assert round(actual[0]['profit_incomes_proc'], 2) == -100.0
+    assert actual[0]['profit_incomes_sum'] == -50.0
+    assert round(actual[0]['profit_invested_proc'], 2) == -100.0
+    assert actual[0]['profit_invested_sum'] == -42.0
+    assert actual[0]['latest_check'] == 0.0
+
+    assert actual[1]['id'] == 1
+    assert actual[1]['year'] == 2000
+    assert actual[1]['past_amount'] == 50.0
+    assert actual[1]['past_fee'] == 8.0
+    assert actual[1]['fee'] == 16.0
+    assert actual[1]['incomes'] == 150.0
+    assert actual[1]['invested'] == 134.0
+    assert actual[1]['market_value'] == 0.0
+    assert round(actual[1]['profit_incomes_proc'], 2) == -100
+    assert actual[1]['profit_incomes_sum'] == -150.0
+    assert round(actual[1]['profit_invested_proc'], 2) == -100.0
+    assert actual[1]['profit_invested_sum'] == -134.0
+    assert actual[1]['latest_check'] == 0.0
+
+
+def test_table_incomes_empty(expenses):
+    data = SimpleNamespace(incomes=[], expenses=expenses[:4], have=[])
+    actual = Savings(data).table
+
+    assert actual[0]['id'] == 1
+    assert actual[0]['year'] == 1999
+    assert actual[0]['past_amount'] == 0.0
+    assert actual[0]['past_fee'] == 0.0
+    assert actual[0]['fee'] == 6.0
+    assert actual[0]['incomes'] == -50.0
+    assert actual[0]['invested'] == 0.0
+    assert actual[0]['market_value'] == 0.0
+    assert round(actual[0]['profit_incomes_proc'], 2) == -100.0
+    assert actual[0]['profit_incomes_sum'] == 50.0
+    assert round(actual[0]['profit_invested_proc'], 2) == 0.0
+    assert actual[0]['profit_invested_sum'] == 0.0
+    assert actual[0]['latest_check'] == 0.0
+
+    assert actual[1]['id'] == 1
+    assert actual[1]['year'] == 2000
+    assert actual[1]['past_amount'] == -50.0
+    assert actual[1]['past_fee'] == 6.0
+    assert actual[1]['fee'] == 10.0
+    assert actual[1]['incomes'] == -150.0
+    assert actual[1]['invested'] == 0.0
+    assert actual[1]['market_value'] == 0.0
+    assert round(actual[1]['profit_incomes_proc'], 2) == -100.0
+    assert actual[1]['profit_incomes_sum'] == 150.0
+    assert round(actual[1]['profit_invested_proc'], 2) == 0.0
+    assert actual[1]['profit_invested_sum'] == 0.0
+    assert actual[1]['latest_check'] == 0.0
+
+
+def test_table_expenses_empty(incomes):
+    data = SimpleNamespace(incomes=incomes[:4], expenses=[], have=[])
+    actual = Savings(data).table
+
+    assert actual[0]['id'] == 1
+    assert actual[0]['year'] == 1999
+    assert actual[0]['past_amount'] == 0.0
+    assert actual[0]['past_fee'] == 0.0
+    assert actual[0]['fee'] == 2.0
+    assert actual[0]['incomes'] == 100.0
+    assert actual[0]['invested'] == 98.0
+    assert actual[0]['market_value'] == 0.0
+    assert round(actual[0]['profit_incomes_proc'], 2) == -100.0
+    assert actual[0]['profit_incomes_sum'] == -100.0
+    assert round(actual[0]['profit_invested_proc'], 2) == -100.0
+    assert actual[0]['profit_invested_sum'] == -98.0
+    assert actual[0]['latest_check'] == 0.0
+
+    assert actual[1]['id'] == 1
+    assert actual[1]['year'] == 2000
+    assert actual[1]['past_amount'] == 100.0
+    assert actual[1]['past_fee'] == 2.0
+    assert actual[1]['fee'] == 6.0
+    assert actual[1]['incomes'] == 300.0
+    assert actual[1]['invested'] == 294.0
+    assert actual[1]['market_value'] == 0.0
+    assert round(actual[1]['profit_incomes_proc'], 2) == -100.0
+    assert actual[1]['profit_incomes_sum'] == -300.0
+    assert round(actual[1]['profit_invested_proc'], 2) == -100.0
+    assert actual[1]['profit_invested_sum'] == -294.0
+    assert actual[1]['latest_check'] == 0.0
+
+
+def test_table_only_have(have):
+    data = SimpleNamespace(incomes=[], expenses=[], have=have[:2])
+    actual = Savings(data).table
+
+    assert actual[0]['id'] == 1
+    assert actual[0]['year'] == 1999
+    assert actual[0]['past_amount'] == 0.0
+    assert actual[0]['past_fee'] == 0.0
+    assert actual[0]['fee'] == 0.0
+    assert actual[0]['incomes'] == 0.0
+    assert actual[0]['invested'] == 0.0
+    assert actual[0]['market_value'] == 75.0
+    assert round(actual[0]['profit_incomes_proc'], 2) == 0.0
+    assert actual[0]['profit_incomes_sum'] == 75.0
+    assert round(actual[0]['profit_invested_proc'], 2) == 0.0
+    assert actual[0]['profit_invested_sum'] == 75.0
+    assert actual[0]['latest_check'] == datetime(1999, 1, 1)
+
+    assert actual[1]['id'] == 1
+    assert actual[1]['year'] == 2000
+    assert actual[1]['past_amount'] == 0.0
+    assert actual[1]['past_fee'] == 0.0
+    assert actual[1]['fee'] == 0.0
+    assert actual[1]['incomes'] == 0.0
+    assert actual[1]['invested'] == 0.0
+    assert actual[1]['market_value'] == 300.0
+    assert round(actual[1]['profit_incomes_proc'], 2) == 0.0
+    assert actual[1]['profit_incomes_sum'] == 300.0
+    assert round(actual[1]['profit_invested_proc'], 2) == 0.0
+    assert actual[1]['profit_invested_sum'] == 300.0
+    assert actual[1]['latest_check'] == datetime(2000, 1, 1)
