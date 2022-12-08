@@ -227,3 +227,114 @@ class Accounts:
         df.delta = df.have - df.balance
 
         return df
+
+
+class Savings:
+    def __init__(self, data: GetData):
+        _in = self._make_df(data.incomes)
+        _ex = self._make_df(data.expenses)
+        _hv = self._make_have(data.have)
+
+        self._table = self._make_table(_in, _ex, _hv)
+
+    @property
+    def table(self):
+        df = self._table.copy().reset_index()
+
+        return df.to_dict('records')
+
+    def _make_df(self, arr: list[dict]) -> DF:
+        col_idx = [
+            'id',
+            'year',
+        ]
+        col_num = [
+            'incomes',
+            'expenses',
+            'fee',
+        ]
+        # create df from incomes and expenses
+        df = pd.DataFrame(arr)
+
+        if df.empty:
+            return pd.DataFrame(columns=col_idx + col_num).set_index(col_idx)
+
+        # create missing columns
+        df[[*set(col_num) - set(df.columns)]] = 0.0
+        # convert decimal to float
+        df[col_num] = df[col_num].astype(float)
+        # groupby id, year and sum
+        df = df.groupby(col_idx)[col_num].sum(numeric_only=True)
+
+        return df
+
+    def _make_have(self, have: list[dict]) -> DF:
+        hv = pd.DataFrame(have)
+
+        if hv.empty:
+            return pd.DataFrame(columns=['id', 'year', 'have', 'latest_check'])
+
+        hv['have'] = hv['have'].astype(float)
+        hv.set_index(['id', 'year'], inplace=True)
+        return hv
+
+    def _join_df(self, inc: DF, exp: DF, hv: DF) -> DF:
+        # drop expenses column, rename fee
+        inc.drop(columns=['expenses'], inplace=True)
+        inc.rename(columns={'fee': 'fee_inc'}, inplace=True)
+        # drop incomes column, rename fee
+        exp.drop(columns=['incomes'], inplace=True)
+        exp.rename(columns={'fee': 'fee_exp'}, inplace=True)
+        # concat dataframes, sum fees
+        df = pd.concat([inc, exp, hv], axis=1).fillna(0.0)
+        df['fee'] = df.fee_inc + df.fee_exp
+        # rename have -> market_value
+        df.rename(columns={'have': 'market_value'}, inplace=True)
+        # create columns
+        cols = [
+            'past_amount', 'past_fee',
+            'invested',
+            'profit_incomes_proc', 'profit_incomes_sum',
+            'profit_invested_proc', 'profit_invested_sum']
+        df[cols] = 0.0
+        # drop tmp columns
+        df.drop(columns=['fee_inc', 'fee_exp'], inplace=True)
+        return df
+
+    def _make_table(self, inc: DF, exp: DF, hv: DF) -> DF:
+        df = self._join_df(inc, exp, hv)
+        # calculate incomes
+        df.incomes = df.incomes - df.expenses
+        # calculate past_amount
+        df['tmp1'] = df.groupby("id")['incomes'].cumsum()
+        df.past_amount = df.groupby("id")['tmp1'].shift(fill_value=0.0)
+        # calculate past_fee
+        df['tmp2'] = df.groupby("id")['fee'].cumsum()
+        df.past_fee = df.groupby("id")['tmp2'].shift(fill_value=0.0)
+        # recalculate incomes and fees with past values
+        df.incomes = df.past_amount + df.incomes
+        df.fee = df.past_fee + df.fee
+        # calculate invested, invested cannot by negative
+        df.invested = df.incomes - df.fee
+        df.invested = df.invested.mask(df.invested < 0, 0.0)
+        # calculate profit/loss
+        df.profit_incomes_sum = df.market_value - df.incomes
+        df.profit_invested_sum = df.market_value - df.invested
+        df.profit_incomes_proc = \
+            df[['market_value', 'incomes']].apply(Savings.calc_percent, axis=1)
+        df.profit_invested_proc = \
+            df[['market_value', 'invested']].apply(Savings.calc_percent, axis=1)
+        # drop tmp columns
+        df.drop(columns=['expenses', 'tmp1', 'tmp2'], inplace=True)
+        return df
+
+    @staticmethod
+    def calc_percent(args):
+        market = args[0]
+        invested = args[1]
+
+        rtn = 0.0
+        if invested:
+            rtn = ((market * 100) / invested) - 100
+
+        return rtn
