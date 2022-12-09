@@ -76,7 +76,7 @@ def accounts_data():
 @receiver(post_save, sender=bookkeeping.SavingWorth)
 def savings_signal(sender: object, instance: object, *args, **kwargs):
     data = savings_data()
-    categories = get_categories(saving.Saving)
+    categories = get_categories(saving.SavingType)
     objects = create_objects(saving.SavingBalance, categories, data)
     save_objects(saving.SavingBalance, objects)
 
@@ -93,7 +93,7 @@ def savings_data():
         ),
         'have': (bookkeeping.SavingWorth,),
     }
-    return Savings(GetData(conf))
+    return Savings(GetData(conf)).table
 
 
 # ----------------------------------------------------------------------------
@@ -103,21 +103,18 @@ def savings_data():
 @receiver(post_delete, sender=pension.Pension)
 @receiver(post_save, sender=bookkeeping.PensionWorth)
 def pensions_signal(sender: object, instance: object, *args, **kwargs):
-    data = savings_data()
-    categories = get_categories(pension.Pension)
+    data = pensions_data()
+    categories = get_categories(pension.PensionType)
     objects = create_objects(pension.PensionBalance, categories, data)
     save_objects(pension.PensionBalance, objects)
 
 
 def pensions_data():
     conf = {
-        'incomes': (
-            pension.Pension,
-        ),
-        'expenses': (),
-        'have': (bookkeeping.PensionWorth),
+        'incomes': (pension.Pension,),
+        'have': (bookkeeping.PensionWorth,),
     }
-    return Savings(GetData(conf))
+    return Savings(GetData(conf)).table
 
 
 def get_categories(model: Model) -> dict:
@@ -156,12 +153,16 @@ class GetData:
     have: list[dict] = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = self._get_data(self.conf['incomes'], 'incomes')
-        self.expenses = self._get_data(self.conf['expenses'], 'expenses')
-        self.have = self._get_data(self.conf['have'], 'have')
+        self.incomes = self._get_data(self.conf.get('incomes'), 'incomes')
+        self.expenses = self._get_data(self.conf.get('expenses'), 'expenses')
+        self.have = self._get_data(self.conf.get('have'), 'have')
 
     def _get_data(self, models: tuple, method: str):
         items = []
+
+        if not models:
+            return items
+
         for model in models:
             with contextlib.suppress(AttributeError):
                 _method = getattr(model.objects, method)
@@ -285,12 +286,11 @@ class Savings:
 
     def _make_have(self, have: list[dict]) -> DF:
         hv = pd.DataFrame(have)
-
         if hv.empty:
             idx = ['id', 'year']
             cols = ['id', 'year', 'have', 'latest_check']
             return pd.DataFrame(columns=cols).set_index(idx)
-
+        # decimal -> float
         hv['have'] = hv['have'].astype(float)
         hv.set_index(['id', 'year'], inplace=True)
         return hv
@@ -320,6 +320,8 @@ class Savings:
 
     def _make_table(self, inc: DF, exp: DF, hv: DF) -> DF:
         df = self._join_df(inc, exp, hv)
+        if df.empty:
+            return df
         # calculate incomes
         df.incomes = df.incomes - df.expenses
         # calculate past_amount
