@@ -7,7 +7,7 @@
     <thead>
         <tr>
             <th rowspan="2" class="text-start">{% regenerate_balances type=type %} {{ title }}</th>
-            <th colspan="2" rowspan="2" class="text-center">{% translate 'Past' %}</th>
+            <th colspan="2" rowspan="2" class="text-center">{% translate 'Past years' %}</th>
             <th colspan="2" rowspan="2" class="text-center">{{ request.user.year }}</th>
             <th colspan="2" rowspan="2" class="text-center">{% translate 'Total' %}</th>
             <th colspan="2" rowspan="2" class="right-blue-border">{% if percentage_from_incomes %} {% translate 'From incomes' %}: {{ percentage_from_incomes|floatformat:'1g' }}%{% endif %}</th>

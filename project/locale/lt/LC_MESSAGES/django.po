@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-28 15:33+0200\n"
-"PO-Revision-Date: 2022-11-28 15:33+0200\n"
+"POT-Creation-Date: 2022-12-09 16:11+0200\n"
+"PO-Revision-Date: 2022-12-09 16:11+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -158,7 +158,7 @@ msgstr "Vidutinės išlaidos"
 
 #: .\project\bookkeeping\services\index.py:112
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:21
-#: .\project\debts\models.py:18 .\project\debts\templates\debts\index.html:15
+#: .\project\debts\models.py:17 .\project\debts\templates\debts\index.html:15
 msgid "Borrow"
 msgstr "Pasiskolinta"
 
@@ -170,7 +170,7 @@ msgstr "Grąžinau"
 
 #: .\project\bookkeeping\services\index.py:121
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:23
-#: .\project\debts\models.py:17 .\project\debts\templates\debts\index.html:30
+#: .\project\debts\models.py:16 .\project\debts\templates\debts\index.html:30
 msgid "Lend"
 msgstr "Paskolinta"
 
@@ -206,7 +206,8 @@ msgstr "Balansas"
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:34
 #: .\project\bookkeeping\templates\bookkeeping\includes\detailed_table.html:11
 #: .\project\bookkeeping\templates\bookkeeping\includes\detailed_table.html:26
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:49
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:12
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:58
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:12
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:16
 #: .\project\bookkeeping\templates\bookkeeping\includes\summary_expenses_table.html:12
@@ -220,7 +221,7 @@ msgid "Total"
 msgstr "Viso"
 
 #: .\project\bookkeeping\services\summary_savings.py:63
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:10
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:14
 msgid "Profit"
 msgstr "Pelnas"
 
@@ -268,25 +269,31 @@ msgstr "Nenurodyta"
 msgid "Reset"
 msgstr "Išvalyti"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:9
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:10
+msgid "Past years"
+msgstr "Praėję metai"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:13
 msgid "From incomes"
 msgstr "Nuo pajamų"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:10
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:14
 msgid "Loss"
 msgstr "Nuostolis"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:13
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:20
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:17
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:22
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:24
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:26
 msgid "Transferred"
 msgstr "Pervesta"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:14
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:22
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:18
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:28
 msgid "Purchased"
 msgstr "Pirkta"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:17
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:21
 #: .\project\pensions\forms.py:42
 #: .\project\pensions\templates\pensions\pension_list.html:10
 #: .\project\savings\forms.py:33 .\project\savings\forms.py:73
@@ -295,15 +302,9 @@ msgstr "Pirkta"
 msgid "Fund"
 msgstr "Fondas"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:18
-msgid "01.01 transferred"
-msgstr "01.01 pervesta"
-
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:19
-msgid "01.01 fee"
-msgstr "01.01 mokesčiai"
-
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:21
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:23
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:25
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:27
 #: .\project\pensions\templates\pensions\pension_list.html:13
 #: .\project\savings\forms.py:71
 #: .\project\savings\templates\savings\saving_list.html:15
@@ -312,12 +313,12 @@ msgstr "01.01 mokesčiai"
 msgid "Fees"
 msgstr "Mokesčiai"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:23
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:29
 msgid "Market value"
 msgstr "Rinkos vertė"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:24
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:26
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:30
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:32
 #: .\project\debts\forms.py:60 .\project\debts\forms.py:152
 #: .\project\debts\templates\debts\debt_list.html:17
 #: .\project\debts\templates\debts\debtreturn_list.html:17
@@ -459,7 +460,7 @@ msgid "Show other chart"
 msgstr "Rodyti kitą grafiką"
 
 #: .\project\bookkeeping\views.py:100 .\project\bookkeeping\views.py:269
-#: .\project\savings\models.py:18
+#: .\project\savings\models.py:17
 #: .\project\savings\templates\savings\index.html:21
 #: .\project\savings\templates\savings\savingtype_list.html:4
 msgid "Funds"
@@ -467,7 +468,7 @@ msgstr "Fondai"
 
 #: .\project\bookkeeping\views.py:125
 #: .\project\pensions\templates\pensions\pensiontype_list.html:4
-#: .\project\savings\models.py:19
+#: .\project\savings\models.py:18
 msgid "Pensions"
 msgstr "Pensijos"
 
@@ -475,7 +476,7 @@ msgstr "Pensijos"
 msgid "Wealth"
 msgstr "Turtas"
 
-#: .\project\bookkeeping\views.py:272 .\project\savings\models.py:17
+#: .\project\bookkeeping\views.py:272 .\project\savings\models.py:16
 msgid "Shares"
 msgstr "Akcijos"
 
@@ -1230,15 +1231,15 @@ msgstr "Pajamų rūšis"
 msgid "Type"
 msgstr "Tipas"
 
-#: .\project\incomes\models.py:18
+#: .\project\incomes\models.py:17
 msgid "Salary"
 msgstr "Atlyginimas"
 
-#: .\project\incomes\models.py:19
+#: .\project\incomes\models.py:18
 msgid "Dividents"
 msgstr "Dividendai"
 
-#: .\project\incomes\models.py:20
+#: .\project\incomes\models.py:19
 msgid "Other"
 msgstr "Kita"
 
@@ -1692,6 +1693,12 @@ msgstr ""
 "Patikrinkite el. pašto dėžutę, joje turi būti laiškas su slaptažodžio "
 "atstatymo nuoroda. Jei laiško negausite per kelias minutes, patikrinkite "
 "šlamšto aplanką."
+
+#~ msgid "01.01 transferred"
+#~ msgstr "01.01 pervesta"
+
+#~ msgid "01.01 fee"
+#~ msgstr "01.01 mokesčiai"
 
 #~ msgid "Found nothing"
 #~ msgstr "Nieko nerasta"
