@@ -20,17 +20,13 @@ class AccountService:
 
     @property
     def total_row(self) -> dict:
-        total_row = {
-            'past': 0,
-            'incomes': 0,
-            'expenses': 0,
-            'balance': 0,
-            'have': 0,
-            'delta': 0,
-        }
+        fields = [
+            'past',
+            'incomes',
+            'expenses',
+            'balance',
+            'have',
+            'delta',
+        ]
 
-        for obj in self.data:
-            for k in total_row:
-                total_row[k] += getattr(obj, k)
-
-        return total_row
+        return utils.sum_all(self.data, fields)

@@ -20,17 +20,17 @@ class PensionsService:
 
     @property
     def total_row(self) -> dict:
-        total_row = {
-            'past_amount': 0,
-            'past_fee': 0,
-            'incomes': 0,
-            'fee': 0,
-            'invested': 0,
-            'market_value': 0,
-            'profit_incomes_sum': 0,
-            'profit_incomes_proc': 0,
-            'profit_invested_sum': 0,
-            'profit_invested_proc': 0,
-        }
+        fields = [
+            'past_amount',
+            'past_fee',
+            'incomes',
+            'fee',
+            'invested',
+            'market_value',
+            'profit_incomes_sum',
+            'profit_incomes_proc',
+            'profit_invested_sum',
+            'profit_invested_proc',
+        ]
 
-        return utils.sum_all(self.data) if self.data else total_row
+        return utils.sum_all(self.data, fields)
