@@ -1,16 +1,10 @@
-import json
-from datetime import datetime
-
 import pytest
-import pytz
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
 from ...core.tests.utils import setup_view
-from ...incomes.factories import IncomeFactory
-from ...savings.factories import SavingFactory, SavingTypeFactory
+from ...savings.factories import SavingTypeFactory
 from .. import views
-from ..factories import SavingWorthFactory
 from ..models import SavingWorth
 
 pytestmark = pytest.mark.django_db

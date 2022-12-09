@@ -189,10 +189,10 @@ def test_lend_return_post_save_new():
     assert actual.count() == 1
 
     actual = actual[0]
-    assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 5.0
-    assert actual['expenses'] == 100.0
-    assert actual['balance'] == -95.0
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 5.0
+    assert actual.expenses == 100.0
+    assert actual.balance == -95.0
 
 
 def test_borrow_return_post_save_new():
@@ -203,10 +203,10 @@ def test_borrow_return_post_save_new():
     assert actual.count() == 1
 
     actual = actual[0]
-    assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 100.0
-    assert actual['expenses'] == 5.0
-    assert actual['balance'] == 95.0
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 100.0
+    assert actual.expenses == 5.0
+    assert actual.balance == 95.0
 
 
 def test_lend_return_post_save_update():

@@ -257,16 +257,16 @@ def test_saving_post_save():
     actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0]['title'] == 'Account1'
-    assert actual[0]['expenses'] == 150.0
-    assert actual[0]['balance'] == -150.0
+    assert actual[0].account.title == 'Account1'
+    assert actual[0].expenses == 150.0
+    assert actual[0].balance == -150.0
 
     actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0]['invested'] == 144.45
-    assert actual[0]['fee'] == 5.55
-    assert actual[0]['incomes'] == 150.0
+    assert actual[0].invested == 144.45
+    assert actual[0].fee == 5.55
+    assert actual[0].incomes == 150.0
 
 
 def test_saving_post_save_update():
@@ -549,18 +549,10 @@ def test_saving_post_delete():
     Saving.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.year(1999)
-
-    assert actual.count() == 1
-    assert actual[0]['title'] == 'Account1'
-    assert actual[0]['expenses'] == 0
-    assert actual[0]['balance'] == 0
+    assert actual.count() == 0
 
     actual = SavingBalance.objects.year(1999)
-
-    assert actual.count() == 1
-    assert actual[0]['invested'] == 0
-    assert actual[0]['fee'] == 0
-    assert actual[0]['incomes'] == 0
+    assert actual.count() == 0
 
     assert Saving.objects.all().count() == 0
 
@@ -574,16 +566,16 @@ def test_saving_post_delete_with_update():
     actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0]['title'] == 'Account1'
-    assert actual[0]['expenses'] == 10.0
-    assert actual[0]['balance'] == -10.0
+    assert actual[0].account.title == 'Account1'
+    assert actual[0].expenses == 10.0
+    assert actual[0].balance == -10.0
 
     actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0]['invested'] == 4.45
-    assert actual[0]['fee'] == 5.55
-    assert actual[0]['incomes'] == 10.0
+    assert actual[0].invested == 4.45
+    assert actual[0].fee == 5.55
+    assert actual[0].incomes == 10.0
 
     assert Saving.objects.all().count() == 1
 
@@ -713,11 +705,11 @@ def test_saving_balance_new_post_save_account_balace():
 
     actual = actual[0]
 
-    assert actual['title'] == 'Account1'
-    assert actual['past'] == 0.0
-    assert actual['incomes'] == 0.0
-    assert actual['expenses'] == 150.0
-    assert actual['balance'] == -150.0
+    assert actual.account.title == 'Account1'
+    assert actual.past == 0.0
+    assert actual.incomes == 0.0
+    assert actual.expenses == 150.0
+    assert actual.balance == -150.0
 
 
 def test_saving_balance_new_post_save_saving_balance():
@@ -729,11 +721,11 @@ def test_saving_balance_new_post_save_saving_balance():
 
     actual = actual[0]
 
-    assert actual['title'] == 'Savings'
+    assert actual.saving_type.title == 'Savings'
 
-    assert round(actual['incomes'], 2) == 150
-    assert round(actual['fee'], 2) == 5.55
-    assert round(actual['invested'], 2) == 144.45
+    assert round(actual.incomes, 2) == 150
+    assert round(actual.fee, 2) == 5.55
+    assert round(actual.invested, 2) == 144.45
 
 
 def test_saving_balance_filter_by_one_type():
@@ -746,11 +738,11 @@ def test_saving_balance_filter_by_one_type():
 
     actual = actual[0]
 
-    assert actual['title'] == '1'
+    assert actual.saving_type.title == '1'
 
-    assert round(actual['incomes'], 2) == 150
-    assert round(actual['fee'], 2) == 5.55
-    assert round(actual['invested'], 2) == 144.45
+    assert round(actual.incomes, 2) == 150
+    assert round(actual.fee, 2) == 5.55
+    assert round(actual.invested, 2) == 144.45
 
 
 def test_saving_balance_filter_by_few_types():
@@ -762,8 +754,8 @@ def test_saving_balance_filter_by_few_types():
 
     assert actual.count() == 2
 
-    assert actual[0]['title'] == '1'
-    assert actual[1]['title'] == '2'
+    assert actual[0].saving_type.title == '1'
+    assert actual[1].saving_type.title == '2'
 
 
 @freeze_time('1999-1-1')

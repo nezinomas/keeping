@@ -392,9 +392,9 @@ def test_expense_new_post_save():
 
     actual = actual[0]
 
-    assert actual['title'] == 'Account1'
-    assert actual['expenses'] == 1.0
-    assert actual['balance'] == -1.0
+    assert actual.account.title == 'Account1'
+    assert actual.expenses == 1.0
+    assert actual.balance == -1.0
 
 
 def test_expense_update_post_save():
@@ -422,9 +422,9 @@ def test_expense_update_post_save():
 
     actual = actual[0]
 
-    assert actual['title'] == 'Account1'
-    assert actual['expenses'] == 1.0
-    assert actual['balance'] == -1.0
+    assert actual.account.title == 'Account1'
+    assert actual.expenses == 1.0
+    assert actual.balance == -1.0
 
 
 def test_expense_post_save_update_with_nothing_changed():
@@ -440,10 +440,10 @@ def test_expense_post_save_update_with_nothing_changed():
 
     actual = actual[0]
 
-    assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 0.0
-    assert actual['expenses'] == 5.0
-    assert actual['balance'] == -5.0
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 5.0
+    assert actual.balance == -5.0
 
 
 def test_expense_post_save_change_account():
@@ -485,12 +485,7 @@ def test_expense_post_delete():
 
     actual = AccountBalance.objects.year(1999)
 
-    assert actual.count() == 1
-
-    assert actual[0]['title'] == 'Account1'
-    assert actual[0]['expenses'] == 0
-    assert actual[0]['balance'] == 0
-
+    assert actual.count() == 0
     assert Expense.objects.all().count() == 0
 
 
@@ -509,12 +504,12 @@ def test_expense_post_delete_with_update():
     # delete Expense object
     Expense.objects.get(pk=obj.pk).delete()
 
-    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-    assert actual.past == Decimal('-5')
-    assert actual.incomes == Decimal('0')
-    assert actual.expenses == Decimal('0')
-    assert actual.balance == Decimal('-5')
-    assert actual.delta == Decimal('5')
+    fail = False
+    try:
+        AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
+    except AccountBalance.DoesNotExist:
+        fail = True
+    assert fail
 
 
 def test_expense_post_save_first_year_record():
@@ -567,7 +562,6 @@ def test_expense_post_delete_empty_account_balance_table():
 
     assert actual.count() == 1
     assert actual[0].account_id == obj_stay.account.pk
-    assert actual[0].id == 3
     assert actual[0].year == 1974
     assert actual[0].past == Decimal('0')
     assert actual[0].incomes == Decimal('0')

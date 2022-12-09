@@ -1,15 +1,13 @@
 from datetime import datetime as dt
-from decimal import Decimal
 from zoneinfo import ZoneInfo
 
 import pytest
-import pytz
 
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import AccountBalance
 from ...pensions.factories import PensionBalanceFactory, PensionTypeFactory
 from ...pensions.models import PensionBalance
-from ...savings.factories import SavingBalanceFactory, SavingTypeFactory
+from ...savings.factories import SavingFactory, SavingTypeFactory
 from ...savings.models import SavingBalance
 from ..factories import (AccountWorthFactory, PensionWorthFactory,
                          SavingWorthFactory)
@@ -41,39 +39,17 @@ def test_account_worth_related(second_user):
     assert actual[0].account.journal.users.first().username == 'bob'
 
 
-def test_account_worth_latest_values(accounts_worth):
-    actual = AccountWorth.objects.items()
-
-    assert actual[0]['title'] == 'Account1'
-    assert actual[0]['have'] == Decimal('3.25')
-    assert actual[0]['latest_check'].year == 1999
-    assert actual[0]['latest_check'].month == 1
-    assert actual[0]['latest_check'].day == 2
-
-    assert actual[1]['title'] == 'Account2'
-    assert actual[1]['have'] == Decimal('8.0')
-    assert actual[1]['latest_check'].year == 1999
-    assert actual[1]['latest_check'].month == 1
-    assert actual[1]['latest_check'].day == 1
-
-
-def test_account_worth_queries(accounts_worth,
-                               django_assert_num_queries):
-    with django_assert_num_queries(2):
-        list(AccountWorth.objects.items())
-
-
 def test_account_worth_post_save():
     AccountWorthFactory(date=dt(1999, 1, 1, tzinfo=ZoneInfo('UTC')))
 
     actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0]['incomes'] == 0.0
-    assert actual[0]['expenses'] == 0.0
-    assert actual[0]['balance'] == 0.0
-    assert actual[0]['have'] == 0.5
-    assert actual[0]['delta'] == 0.5
+    assert actual[0].incomes == 0.0
+    assert actual[0].expenses == 0.0
+    assert actual[0].balance == 0.0
+    assert actual[0].have == 0.5
+    assert actual[0].delta == 0.5
 
 
 def test_account_worth_post_save_new():
@@ -128,24 +104,6 @@ def test_saving_worth_related(second_user):
     assert actual[0].saving_type.journal.users.first().username == 'bob'
 
 
-def test_saving_worth_latest_values(savings_worth):
-    actual = SavingWorth.objects.items()
-
-    assert actual[0]['title'] ==  'Saving1'
-    assert actual[0]['have'] == Decimal('0.15')
-    assert actual[0]['latest_check'] == dt(1999, 1, 2, tzinfo = pytz.utc)
-
-    assert actual[1]['title'] ==  'Saving2'
-    assert actual[1]['have'] == Decimal('6.15')
-    assert actual[1]['latest_check'] == dt(1999, 1, 1, tzinfo = pytz.utc)
-
-
-def test_saving_worth_queries(savings_worth,
-                              django_assert_num_queries):
-    with django_assert_num_queries(2):
-        list(SavingWorth.objects.items())
-
-
 def test_saving_worth_post_save():
     SavingWorthFactory()
 
@@ -162,14 +120,14 @@ def test_saving_worth_post_save():
 
 
 def test_saving_worth_post_save_new():
-    SavingBalanceFactory(incomes=2, fee=0)
+    SavingFactory(price=2, fee=0.5)
 
     actual = SavingBalance.objects.first()
     assert actual.saving_type.title == 'Savings'
-    assert actual.fee == 0.0
-    assert actual.invested == 2.3
+    assert actual.fee == 0.5
+    assert actual.invested == 1.5
     assert actual.incomes == 2.0
-    assert actual.market_value == 2.5
+    assert actual.market_value == 0.0
 
     SavingWorthFactory(price=3)
 
@@ -177,8 +135,8 @@ def test_saving_worth_post_save_new():
 
     actual = SavingBalance.objects.first()
     assert actual.saving_type.title == 'Savings'
-    assert actual.fee == 0.0
-    assert actual.invested == 2.0
+    assert actual.fee == 0.5
+    assert actual.invested == 1.5
     assert actual.incomes == 2.0
     assert actual.market_value == 3.0
 
@@ -221,22 +179,6 @@ def test_pension_worth_related(second_user):
     assert len(actual) == 1
     assert str(actual[0].pension_type) == 'P1'
     assert actual[0].pension_type.journal.users.first().username == 'bob'
-
-
-def test_pension_worth_latest_values(pensions_worth):
-    actual = list(PensionWorth.objects.items())
-
-    assert actual[0]['title'] == 'PensionType'
-    assert actual[0]['have'] == Decimal('2.15')
-    assert actual[0]['latest_check'].year == 1999
-    assert actual[0]['latest_check'].month == 1
-    assert actual[0]['latest_check'].day == 1
-
-
-def test_pension_worth_queries(pensions_worth,
-                               django_assert_num_queries,):
-    with django_assert_num_queries(2):
-        list(PensionWorth.objects.items())
 
 
 def test_pension_worth_post_save():

@@ -70,7 +70,7 @@ def test_savings_context_name(data):
 def test_expenses_context_name(expenses_data):
     d = SimpleNamespace(incomes=[], expenses=expenses_data, savings=[], expenses_types=['T'])
     actual = DetailedService(data=d).expenses_context()
-    print(f'{actual=}')
+
     assert actual[0]['name'] == 'Išlaidos / T'
 
 

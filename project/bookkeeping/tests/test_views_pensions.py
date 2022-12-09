@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 import pytz
 from django.urls import resolve, reverse
-
+from ...pensions.models import PensionBalance
 from ...pensions.factories import PensionFactory
 from .. import views
 from ..factories import PensionWorthFactory
@@ -37,8 +37,8 @@ def test_view_context(client_logged):
 
 def test_view_latest_check(client_logged):
     PensionFactory()
+    PensionWorthFactory()
     PensionWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
-    PensionWorthFactory(date=datetime(1998, 2, 2, tzinfo=pytz.utc))
 
     url = reverse('bookkeeping:index')
     response = client_logged.get(url)
@@ -46,4 +46,4 @@ def test_view_latest_check(client_logged):
     exp = [x['items']
            for x in response.context if x.get('title') == 'Pensijos'][0][0]
 
-    assert exp['latest_check'] == datetime(1998, 2, 2, tzinfo=pytz.utc)
+    assert exp.latest_check == datetime(1999, 1, 1, 1, 3, 4, tzinfo=pytz.utc)
