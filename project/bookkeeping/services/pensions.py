@@ -25,6 +25,8 @@ class PensionsService:
             'past_fee',
             'incomes',
             'fee',
+            'per_year_incomes',
+            'per_year_fee',
             'invested',
             'market_value',
             'profit_incomes_sum',

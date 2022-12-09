@@ -61,6 +61,8 @@ def test_table(incomes, expenses, have):
     assert actual[0]['past_amount'] == 0.0
     assert actual[0]['past_fee'] == 0.0
     assert actual[0]['fee'] == 1.0
+    assert actual[0]['per_year_incomes'] == 5.0
+    assert actual[0]['per_year_fee'] == 1.0
     assert actual[0]['incomes'] == 5.0
     assert actual[0]['invested'] == 4.0
     assert actual[0]['market_value'] == 0.0
@@ -75,6 +77,8 @@ def test_table(incomes, expenses, have):
     assert actual[1]['past_amount'] == 5.0
     assert actual[1]['past_fee'] == 1.0
     assert actual[1]['fee'] == 2.0
+    assert actual[1]['per_year_incomes'] == 15.0
+    assert actual[1]['per_year_fee'] == 1.0
     assert actual[1]['incomes'] == 20.0
     assert actual[1]['invested'] == 18.0
     assert actual[1]['market_value'] == 0.0
@@ -89,6 +93,8 @@ def test_table(incomes, expenses, have):
     assert actual[2]['past_amount'] == 20.0
     assert actual[2]['past_fee'] == 2.0
     assert actual[2]['fee'] == 10.0
+    assert actual[2]['per_year_incomes'] == 50.0
+    assert actual[2]['per_year_fee'] == 8.0
     assert actual[2]['incomes'] == 70.0
     assert actual[2]['invested'] == 60.0
     assert actual[2]['market_value'] == 75.0
@@ -103,6 +109,8 @@ def test_table(incomes, expenses, have):
     assert actual[3]['past_amount'] == 70.0
     assert actual[3]['past_fee'] == 10.0
     assert actual[3]['fee'] == 18.0
+    assert actual[3]['per_year_incomes'] == 100.0
+    assert actual[3]['per_year_fee'] == 8.0
     assert actual[3]['incomes'] == 170.0
     assert actual[3]['invested'] == 152.0
     assert actual[3]['market_value'] == 300.0
@@ -117,6 +125,8 @@ def test_table(incomes, expenses, have):
     assert actual[4]['past_amount'] == 0.0
     assert actual[4]['past_fee'] == 0.0
     assert actual[4]['fee'] == 6.0
+    assert actual[4]['per_year_incomes'] == 110.0
+    assert actual[4]['per_year_fee'] == 6.0
     assert actual[4]['incomes'] == 110.0
     assert actual[4]['invested'] == 104.0
     assert actual[4]['market_value'] == 100.0
@@ -131,6 +141,8 @@ def test_table(incomes, expenses, have):
     assert actual[5]['past_amount'] == 110.0
     assert actual[5]['past_fee'] == 6.0
     assert actual[5]['fee'] == 16.0
+    assert actual[5]['per_year_incomes'] == 110.0
+    assert actual[5]['per_year_fee'] == 10.0
     assert actual[5]['incomes'] == 220.0
     assert actual[5]['invested'] == 204.0
     assert actual[5]['market_value'] == 250.0
@@ -150,6 +162,8 @@ def test_table_have_empty(incomes, expenses):
     assert actual[0]['past_amount'] == 0.0
     assert actual[0]['past_fee'] == 0.0
     assert actual[0]['fee'] == 8.0
+    assert actual[0]['per_year_incomes'] == 50.0
+    assert actual[0]['per_year_fee'] == 8.0
     assert actual[0]['incomes'] == 50.0
     assert actual[0]['invested'] == 42.0
     assert actual[0]['market_value'] == 0.0
@@ -164,6 +178,8 @@ def test_table_have_empty(incomes, expenses):
     assert actual[1]['past_amount'] == 50.0
     assert actual[1]['past_fee'] == 8.0
     assert actual[1]['fee'] == 16.0
+    assert actual[1]['per_year_incomes'] == 100.0
+    assert actual[1]['per_year_fee'] == 8.0
     assert actual[1]['incomes'] == 150.0
     assert actual[1]['invested'] == 134.0
     assert actual[1]['market_value'] == 0.0
@@ -183,6 +199,8 @@ def test_table_incomes_empty(expenses):
     assert actual[0]['past_amount'] == 0.0
     assert actual[0]['past_fee'] == 0.0
     assert actual[0]['fee'] == 6.0
+    assert actual[0]['per_year_incomes'] == -50.0
+    assert actual[0]['per_year_fee'] == 6.0
     assert actual[0]['incomes'] == -50.0
     assert actual[0]['invested'] == 0.0
     assert actual[0]['market_value'] == 0.0
@@ -197,6 +215,8 @@ def test_table_incomes_empty(expenses):
     assert actual[1]['past_amount'] == -50.0
     assert actual[1]['past_fee'] == 6.0
     assert actual[1]['fee'] == 10.0
+    assert actual[1]['per_year_incomes'] == -100.0
+    assert actual[1]['per_year_fee'] == 4.0
     assert actual[1]['incomes'] == -150.0
     assert actual[1]['invested'] == 0.0
     assert actual[1]['market_value'] == 0.0
@@ -216,6 +236,8 @@ def test_table_expenses_empty(incomes):
     assert actual[0]['past_amount'] == 0.0
     assert actual[0]['past_fee'] == 0.0
     assert actual[0]['fee'] == 2.0
+    assert actual[0]['per_year_incomes'] == 100.0
+    assert actual[0]['per_year_fee'] == 2.0
     assert actual[0]['incomes'] == 100.0
     assert actual[0]['invested'] == 98.0
     assert actual[0]['market_value'] == 0.0
@@ -230,6 +252,8 @@ def test_table_expenses_empty(incomes):
     assert actual[1]['past_amount'] == 100.0
     assert actual[1]['past_fee'] == 2.0
     assert actual[1]['fee'] == 6.0
+    assert actual[1]['per_year_incomes'] == 200.0
+    assert actual[1]['per_year_fee'] == 4.0
     assert actual[1]['incomes'] == 300.0
     assert actual[1]['invested'] == 294.0
     assert actual[1]['market_value'] == 0.0
@@ -249,6 +273,8 @@ def test_table_only_have(have):
     assert actual[0]['past_amount'] == 0.0
     assert actual[0]['past_fee'] == 0.0
     assert actual[0]['fee'] == 0.0
+    assert actual[0]['per_year_incomes'] == 0.0
+    assert actual[0]['per_year_fee'] == 0.0
     assert actual[0]['incomes'] == 0.0
     assert actual[0]['invested'] == 0.0
     assert actual[0]['market_value'] == 75.0
@@ -263,6 +289,8 @@ def test_table_only_have(have):
     assert actual[1]['past_amount'] == 0.0
     assert actual[1]['past_fee'] == 0.0
     assert actual[1]['fee'] == 0.0
+    assert actual[1]['per_year_incomes'] == 0.0
+    assert actual[1]['per_year_fee'] == 0.0
     assert actual[1]['incomes'] == 0.0
     assert actual[1]['invested'] == 0.0
     assert actual[1]['market_value'] == 300.0
