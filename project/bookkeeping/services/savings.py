@@ -37,8 +37,10 @@ class SavingsService:
         self.incomes = data.incomes
 
     def context(self) -> Dict:
-        fields = ['past_amount', 'past_fee', 'fee', 'invested', 'incomes',
-                  'market_value', 'profit_incomes_sum', 'profit_invested_sum']
+        fields = ['past_amount', 'past_fee',
+                  'per_year_incomes', 'per_year_fee',
+                  'fee', 'invested', 'incomes', 'market_value',
+                  'profit_incomes_sum', 'profit_invested_sum']
         total_row = utils.sum_all(self.data, fields)
 
         total_past = total_row.get('past_amount', 0)
