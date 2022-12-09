@@ -7,16 +7,16 @@ from ...accounts.models import AccountBalance
 from ..lib import utils as T
 
 
-@pytest.fixture()
-def _arr():
+@pytest.fixture(name="arr")
+def fixturearr():
     return ([
         {'key1': 1, 'key2': 2.0, 'key3': 'a'},
         {'key1': 2, 'key2': 4.0, 'key3': 'b'},
     ])
 
 
-def test_sum_column(_arr):
-    actual = T.sum_col(_arr, 'key1')
+def test_sum_column(arr):
+    actual = T.sum_col(arr, 'key1')
 
     assert actual == 3
 
@@ -32,8 +32,8 @@ def test_sum_column_query_set():
     assert actual == 1
 
 
-def test_sum_all(_arr):
-    actual = T.sum_all(_arr)
+def test_sum_all(arr):
+    actual = T.sum_all(arr)
 
     assert actual['key1'] == 3
     assert actual['key2'] == 6.0
@@ -48,6 +48,24 @@ def test_sum_all_empty_list():
 def test_sum_all_with_datetime():
     arr = [{'a': datetime(2000, 1, 1)}, {'a': datetime(1999, 2, 1)}]
     T.sum_all(arr)
+
+
+def test_sum_all_filter(arr):
+    actual = T.sum_all(arr, ['key1'])
+
+    assert actual == {'key1': 3}
+
+
+def test_sum_all_filter_two_keys(arr):
+    actual = T.sum_all(arr, ['key1', 'key2'])
+
+    assert actual == {'key1': 3, 'key2': 6}
+
+
+def test_sum_all_filter_one_key_wrong(arr):
+    actual = T.sum_all(arr, ['key1', 'x'])
+
+    assert actual == {'key1': 3}
 
 
 @pytest.mark.django_db

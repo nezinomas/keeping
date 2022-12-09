@@ -52,8 +52,8 @@ def test_percentage_from_incomes(client_logged):
 
 def test_latest_check(client_logged):
     SavingFactory()
+    SavingWorthFactory()
     SavingWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
-    SavingWorthFactory(date=datetime(1998, 2, 2, tzinfo=pytz.utc))
 
     url = reverse('bookkeeping:savings')
     response = client_logged.get(url)
@@ -61,4 +61,4 @@ def test_latest_check(client_logged):
     exp = [x['items']
            for x in response.context if x.get('title') == 'Fondai'][0][0]
 
-    assert exp['latest_check'] == datetime(1998, 2, 2, tzinfo=pytz.utc)
+    assert exp.latest_check == datetime(1999, 1, 1, 1, 3, 4, tzinfo=pytz.utc)

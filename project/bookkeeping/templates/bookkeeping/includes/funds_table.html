@@ -1,12 +1,16 @@
 {% load i18n %}
 {% load slippers %}
+{% load get_item %}
 
 {% if items %}
 <table class="table table-sm table-striped table-hover">
     <thead>
         <tr>
-            <th colspan="3" rowspan="2" class="text-start">{% regenerate_balances type=type %} {{ title }}</th>
-            <th colspan="4" rowspan="2" class="right-blue-border">{% if percentage_from_incomes %} {% translate 'From incomes' %}: {{ percentage_from_incomes|floatformat:'1g' }}%{% endif %}</th>
+            <th rowspan="2" class="text-start">{% regenerate_balances type=type %} {{ title }}</th>
+            <th colspan="2" rowspan="2" class="text-center">{% translate 'Past years' %}</th>
+            <th colspan="2" rowspan="2" class="text-center">{{ request.user.year }}</th>
+            <th colspan="2" rowspan="2" class="text-center">{% translate 'Total' %}</th>
+            <th colspan="2" rowspan="2" class="right-blue-border">{% if percentage_from_incomes %} {% translate 'From incomes' %}: {{ percentage_from_incomes|floatformat:'1g' }}%{% endif %}</th>
             <th colspan="4" class="text-center">{% translate 'Profit' %}/{% translate 'Loss' %}</th>
         </tr>
         <tr>
@@ -15,8 +19,10 @@
         </tr>
         <tr>
             <th class="text-start">{% translate 'Fund' %}</th>
-            <th>{% translate '01.01 transferred' %}</th>
-            <th>{% translate '01.01 fee' %}</th>
+            <th>{% translate 'Transferred' %}</th>
+            <th>{% translate 'Fees' %}</th>
+            <th>{% translate 'Transferred' %}</th>
+            <th>{% translate 'Fees' %}</th>
             <th>{% translate 'Transferred' %}</th>
             <th>{% translate 'Fees' %}</th>
             <th>{% translate 'Purchased' %}</th>
@@ -30,9 +36,12 @@
     <tbody>
         {% for item in items %}
         <tr>
-            <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" title="{{ item.latest_check }}" class="text-start">{{ item.title }}</td>
+            {% if type == 'savings' %}{% var obj_type='saving_type'%}{% else %}{% var obj_type='pension_type' %}{% endif %}
+            <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" title="{{ item.latest_check }}" class="text-start">{{ item|get_obj_attr:obj_type }}</td>
             {% table_cell value=item.past_amount css_class='w8' %}
             {% table_cell value=item.past_fee css_class='w8' %}
+            {% table_cell value=item.per_year_incomes css_class='w8' %}
+            {% table_cell value=item.per_year_fee css_class='w8' %}
             {% table_cell value=item.incomes css_class='w8' %}
             {% table_cell value=item.fee css_class='w8' %}
             {% table_cell value=item.invested css_class='w8' %}
@@ -49,6 +58,8 @@
             <th class="text-start">{% translate 'Total' %}</th>
             {% table_cell value=total_row.past_amount tag='th' %}
             {% table_cell value=total_row.past_fee tag='th' %}
+            {% table_cell value=total_row.per_year_incomes tag='th' %}
+            {% table_cell value=total_row.per_year_fee tag='th' %}
             {% table_cell value=total_row.incomes tag='th' %}
             {% table_cell value=total_row.fee tag='th' %}
             {% table_cell value=total_row.invested tag='th' %}

@@ -14,12 +14,3 @@ def average(qs):
         arr.append(sum_val / cnt)
 
     return arr
-
-
-def add_latest_check_key(worth_data, balance_data):
-    if worth_data:
-        for row in balance_data:
-            latest = [x['latest_check'] for x in worth_data if x.get('title') == row['title']]
-            row['latest_check'] = latest[0] if latest else None
-
-    return balance_data

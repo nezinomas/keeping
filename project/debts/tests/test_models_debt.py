@@ -122,10 +122,10 @@ def test_lend_post_save_new():
 
     actual = actual[0]
 
-    assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 0.0
-    assert actual['expenses'] == 100.0
-    assert actual['balance'] == -100.0
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 100.0
+    assert actual.balance == -100.0
 
 
 def test_borrow_post_save_new():
@@ -137,10 +137,10 @@ def test_borrow_post_save_new():
 
     actual = actual[0]
 
-    assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 100.0
-    assert actual['expenses'] == 0.0
-    assert actual['balance'] == 100.0
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 100.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 100.0
 
 
 def test_lend_post_save_update():
@@ -208,11 +208,11 @@ def test_lend_post_save_first_record():
 
     actual = actual[0]
 
-    assert actual['title'] == 'Account1'
-    assert actual['past'] == 5.0
-    assert actual['incomes'] == 0.0
-    assert actual['expenses'] == 1.0
-    assert actual['balance'] == 4.0
+    assert actual.account.title == 'Account1'
+    assert actual.past == 5.0
+    assert actual.incomes == 0.0
+    assert actual.expenses == 1.0
+    assert actual.balance == 4.0
 
 
 def test_borrow_post_save_first_record():
@@ -238,11 +238,11 @@ def test_borrow_post_save_first_record():
 
     actual = actual[0]
 
-    assert actual['title'] == 'Account1'
-    assert actual['past'] == 5.0
-    assert actual['incomes'] == 1.0
-    assert actual['expenses'] == 0.0
-    assert actual['balance'] == 6.0
+    assert actual.account.title == 'Account1'
+    assert actual.past == 5.0
+    assert actual.incomes == 1.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 6.0
 
 
 def test_lend_post_save_update_with_nothing_changed():
@@ -258,10 +258,10 @@ def test_lend_post_save_update_with_nothing_changed():
 
     actual = actual[0]
 
-    assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 0.0
-    assert actual['expenses'] == 5.0
-    assert actual['balance'] == -5.0
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 0.0
+    assert actual.expenses == 5.0
+    assert actual.balance == -5.0
 
 
 def test_borrow_post_save_update_with_nothing_changed():
@@ -277,10 +277,10 @@ def test_borrow_post_save_update_with_nothing_changed():
 
     actual = actual[0]
 
-    assert actual['title'] == 'Account1'
-    assert actual['incomes'] == 5.0
-    assert actual['expenses'] == 0.0
-    assert actual['balance'] == 5.0
+    assert actual.account.title == 'Account1'
+    assert actual.incomes == 5.0
+    assert actual.expenses == 0.0
+    assert actual.balance == 5.0
 
 
 def test_lend_post_save_change_account():
@@ -359,10 +359,7 @@ def test_lend_post_delete():
     Debt.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.first()
-    assert actual.account.title == 'Account1'
-    assert actual.incomes == 0.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 0.0
+    assert not actual
 
 
 def test_borrow_post_delete():
@@ -377,10 +374,7 @@ def test_borrow_post_delete():
     Debt.objects.get(pk=obj.pk).delete()
 
     actual = AccountBalance.objects.first()
-    assert actual.account.title == 'Account1'
-    assert actual.incomes == 0.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 0.0
+    assert not actual
 
 
 def test_lend_post_delete_with_updt():

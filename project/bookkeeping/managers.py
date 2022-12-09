@@ -15,30 +15,6 @@ class QsMixin():
             .filter(**{'date__year__gte': (year - 1), 'date__year__lte': year}) \
             if year else self
 
-    def latest_check(self, field, year=None):
-        qs = [*(
-            self
-            .related()
-            .filter_by_year(year)
-            .values(f'{field}_id')
-            .annotate(latest_date=Max('date'))
-            .order_by('-latest_date')
-        )]
-
-        # items = [ <Q AND( ('date': datetime), ('field_id': int) )>, ... ]
-        fld = f'{field}_id'
-        items = [
-            Q(date=x['latest_date']) & Q(**{fld: x[fld]}) for x in qs]
-
-        return \
-            self \
-            .filter(reduce(or_, items)) \
-            .values(
-                title=F(f'{field}__title'),
-                have=F('price'),
-                latest_check=F('date')) \
-            if items else None
-
     def latest_have(self, field):
         qs = [*(
             self
@@ -62,6 +38,7 @@ class QsMixin():
             .annotate(year=ExtractYear(F('date'))) \
             .values(
                 'year',
+                latest_check=F('date'),
                 id=F(f'{field}__id'),
                 have=F('price')) \
             if items else None
@@ -83,16 +60,8 @@ class AccountWorthQuerySet(QsMixin, models.QuerySet):
             .select_related('account') \
             .filter(account__journal=journal)
 
-    def items(self, year=None):
-        return \
-            self \
-            .filter_created_and_closed(year) \
-            .latest_check(field='account', year=year)
-
     def have(self):
-        return \
-            self \
-            .latest_have(field='account')
+        return self.latest_have(field='account')
 
 
 class SavingWorthQuerySet(QsMixin, models.QuerySet):
@@ -111,16 +80,8 @@ class SavingWorthQuerySet(QsMixin, models.QuerySet):
             .select_related('saving_type') \
             .filter(saving_type__journal=journal)
 
-    def items(self, year=None):
-        return \
-            self \
-            .filter_created_and_closed(year) \
-            .latest_check(field='saving_type', year=year)
-
     def have(self):
-        return \
-            self \
-            .latest_have(field='saving_type')
+        return self.latest_have(field='saving_type')
 
 
 class PensionWorthQuerySet(QsMixin, models.QuerySet):
@@ -135,13 +96,5 @@ class PensionWorthQuerySet(QsMixin, models.QuerySet):
             .select_related('pension_type') \
             .filter(pension_type__journal=journal)
 
-    def items(self, year=None):
-        return \
-            self \
-            .filter_created(year) \
-            .latest_check(field='pension_type', year=year)
-
     def have(self):
-        return \
-            self \
-            .latest_have(field='pension_type')
+        return self.latest_have(field='pension_type')

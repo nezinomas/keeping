@@ -5,7 +5,6 @@ import django.core.validators
 from django.db import migrations, models
 import django.db.models.deletion
 import django.db.models.expressions
-import project.core.mixins.old_values
 import project.expenses.helpers.models_helper
 
 
@@ -61,7 +60,6 @@ class Migration(migrations.Migration):
                 ('expense_name', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='expenses.expensename')),
                 ('expense_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='expenses.expensetype')),
             ],
-            bases=(project.core.mixins.old_values.OldValuesMixin, models.Model),
         ),
         migrations.AddIndex(
             model_name='expense',

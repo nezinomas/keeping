@@ -150,22 +150,8 @@ class SavingBalanceQuerySet(models.QuerySet):
         if types:
             qs = qs.filter(saving_type__type__in=types)
 
-        qs = qs.order_by('saving_type__type', 'saving_type__title')
+        return qs.order_by('saving_type__type', 'saving_type__title')
 
-        return qs.values(
-            'year',
-            'past_amount',
-            'past_fee',
-            'fee',
-            'invested',
-            'incomes',
-            'market_value',
-            'profit_incomes_proc',
-            'profit_incomes_sum',
-            'profit_invested_proc',
-            'profit_invested_sum',
-            title=F('saving_type__title'),
-            type=F('saving_type__type'))
 
     def sum_by_type(self):
         return \

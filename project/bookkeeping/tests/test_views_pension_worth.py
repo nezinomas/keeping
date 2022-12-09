@@ -1,14 +1,9 @@
-import json
-from datetime import datetime
-
 import pytest
-import pytz
 from django.urls import resolve, reverse
 from freezegun import freeze_time
 
 from ...pensions.factories import PensionFactory, PensionTypeFactory
 from .. import views
-from ..factories import PensionWorthFactory
 from ..models import PensionWorth
 
 pytestmark = pytest.mark.django_db

@@ -50,15 +50,4 @@ class AccountBalanceQuerySet(models.QuerySet):
             .order_by('account__title')
         )
 
-        return qs.values(
-            'pk',
-            'year',
-            'past',
-            'balance',
-            'incomes',
-            'expenses',
-            'have',
-            'delta',
-            title=F('account__title'),
-            account_pk=F('account__pk')
-        )
+        return qs
