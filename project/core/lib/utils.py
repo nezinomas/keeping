@@ -28,15 +28,19 @@ def get_value_from_dict(arr: Dict, month: int) -> float:
     return float(arr.get(monthname(month), 0.0)) if arr else 0.0
 
 
-def sum_all(arr: List[Dict]) -> Dict:
+def sum_all(arr: List[Dict], sum_keys: list = None) -> Dict:
     if isinstance(arr, QuerySet):
         arr = [*arr.values()]
 
     rtn = Counter()
 
     for row in arr:
+        if sum_keys:
+            row = {k: v for k, v in row.items() if k in sum_keys}
+
         with contextlib.suppress(TypeError):
             rtn.update(row)
+
     return {**rtn}
 
 
