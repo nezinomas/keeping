@@ -7,7 +7,6 @@ from django.urls import reverse_lazy
 
 from ..accounts.models import Account
 from ..core.lib import utils
-from ..core.mixins.old_values import OldValuesMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from .helpers.models_helper import upload_attachment
@@ -61,7 +60,7 @@ class ExpenseName(TitleAbstract):
         return reverse_lazy("expenses:name_update", kwargs={"pk": self.pk})
 
 
-class Expense(OldValuesMixin, models.Model):
+class Expense(models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,

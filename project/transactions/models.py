@@ -5,12 +5,11 @@ from django.db import models
 from django.urls import reverse_lazy
 
 from ..accounts.models import Account
-from ..core.mixins.old_values import OldValuesMixin
 from ..savings.models import SavingType
 from . import managers
 
 
-class Transaction(OldValuesMixin, models.Model):
+class Transaction(models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         Account,
@@ -51,7 +50,7 @@ class Transaction(OldValuesMixin, models.Model):
 
 
 
-class SavingClose(OldValuesMixin, models.Model):
+class SavingClose(models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         SavingType,
@@ -97,7 +96,7 @@ class SavingClose(OldValuesMixin, models.Model):
         return reverse_lazy("transactions:savings_close_delete", kwargs={"pk": self.pk})
 
 
-class SavingChange(OldValuesMixin, models.Model):
+class SavingChange(models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
         SavingType,

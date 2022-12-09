@@ -851,18 +851,6 @@ def test_saving_close_post_delete_with_update():
     assert SavingClose.objects.all().count() == 1
 
 
-def test_saving_close_old_values():
-    _from = SavingTypeFactory(title='X')
-    _to = AccountFactory(title='Y')
-
-    SavingCloseFactory(from_account=_from, to_account=_to)
-
-    obj = SavingClose.objects.last()
-
-    assert obj.old_values['to_account'] == _to.pk
-    assert obj.old_values['from_account'] == _from.pk
-
-
 def test_saving_close_balance_incomes(savings_close):
     actual = SavingClose.objects.incomes()
 
@@ -1259,15 +1247,3 @@ def test_saving_change_post_delete_with_update():
     assert actual[1].incomes == 1.0
 
     assert SavingChange.objects.all().count() == 1
-
-
-def test_saving_change_old_values():
-    _from = SavingTypeFactory(title='X')
-    _to = SavingTypeFactory(title='Y')
-
-    SavingChangeFactory(from_account=_from, to_account=_to)
-
-    obj = SavingChange.objects.last()
-
-    assert obj.old_values['to_account'] == _to.pk
-    assert obj.old_values['from_account'] == _from.pk

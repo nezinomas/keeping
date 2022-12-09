@@ -4,7 +4,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse_lazy
 
-from ..core.mixins.old_values import OldValuesMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from . import managers
@@ -30,7 +29,7 @@ class PensionType(TitleAbstract):
     def get_absolute_url(self):
         return reverse_lazy("pensions:type_update", kwargs={"pk": self.pk})
 
-class Pension(OldValuesMixin, models.Model):
+class Pension(models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,

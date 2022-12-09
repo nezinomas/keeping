@@ -7,12 +7,11 @@ from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
 from ..core.lib import utils
-from ..core.mixins.old_values import OldValuesMixin
 from ..journals.models import Journal
 from . import managers
 
 
-class Debt(OldValuesMixin, models.Model):
+class Debt(models.Model):
     class DebtType(models.TextChoices):
         LEND = 'lend', _('Lend')
         BORROW = 'borrow', _('Borrow')
@@ -80,7 +79,7 @@ class Debt(OldValuesMixin, models.Model):
         )
 
 
-class DebtReturn(OldValuesMixin, models.Model):
+class DebtReturn(models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,

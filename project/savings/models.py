@@ -6,7 +6,6 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
-from ..core.mixins.old_values import OldValuesMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from . import managers
@@ -46,7 +45,7 @@ class SavingType(TitleAbstract):
     def get_absolute_url(self):
         return reverse_lazy("savings:type_update", kwargs={"pk": self.pk})
 
-class Saving(OldValuesMixin, models.Model):
+class Saving(models.Model):
     date = models.DateField()
     price = models.DecimalField(
         max_digits=8,
