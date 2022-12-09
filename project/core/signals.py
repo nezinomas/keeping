@@ -125,6 +125,8 @@ def get_categories(model: Model) -> dict:
 
 
 def create_objects(balance_model: Model, categories: dict, data: list[dict]):
+    fields = balance_model._meta.get_fields()
+    category = [f.name for f in fields if (f.many_to_one)][0]
     objects = []
     for x in data:
         # extrack account/saving_type/pension_type id from dict
@@ -132,9 +134,10 @@ def create_objects(balance_model: Model, categories: dict, data: list[dict]):
         # drop latest_check if empty
         if not x['latest_check']:
             x.pop('latest_check')
+        # create category account|saving_type|pension_type object
+        x[category] = categories.get(cid)
         # create AccountBalance/SavingBalance/PensionBalance object
-        obj = balance_model(account=categories.get(cid), **x)
-        objects.append(obj)
+        objects.append(balance_model(**x))
     return objects
 
 
