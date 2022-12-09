@@ -2,7 +2,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 
-from ..core.signals_base import SignalBase
 from . import signals
 from .lib.date import years
 from .mixins.views import TemplateViewMixin, httpHtmxResponse
