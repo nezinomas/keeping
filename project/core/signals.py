@@ -310,6 +310,7 @@ class Savings:
         # create columns
         cols = [
             'past_amount', 'past_fee',
+            'per_year_incomes', 'per_year_fee',
             'invested',
             'profit_incomes_proc', 'profit_incomes_sum',
             'profit_invested_proc', 'profit_invested_sum']
@@ -323,16 +324,17 @@ class Savings:
         if df.empty:
             return df
         # calculate incomes
-        df.incomes = df.incomes - df.expenses
+        df.per_year_incomes = df.incomes - df.expenses
+        df.per_year_fee = df.fee
         # calculate past_amount
-        df['tmp1'] = df.groupby("id")['incomes'].cumsum()
+        df['tmp1'] = df.groupby("id")['per_year_incomes'].cumsum()
         df.past_amount = df.groupby("id")['tmp1'].shift(fill_value=0.0)
         # calculate past_fee
-        df['tmp2'] = df.groupby("id")['fee'].cumsum()
+        df['tmp2'] = df.groupby("id")['per_year_fee'].cumsum()
         df.past_fee = df.groupby("id")['tmp2'].shift(fill_value=0.0)
         # recalculate incomes and fees with past values
-        df.incomes = df.past_amount + df.incomes
-        df.fee = df.past_fee + df.fee
+        df.incomes = df.past_amount + df.per_year_incomes
+        df.fee = df.past_fee + df.per_year_fee
         # calculate invested, invested cannot by negative
         df.invested = df.incomes - df.fee
         df.invested = df.invested.mask(df.invested < 0, 0.0)
