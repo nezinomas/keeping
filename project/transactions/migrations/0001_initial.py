@@ -4,7 +4,6 @@ from decimal import Decimal
 import django.core.validators
 from django.db import migrations, models
 import django.db.models.deletion
-import project.core.mixins.old_values
 
 
 class Migration(migrations.Migration):
@@ -29,7 +28,6 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['-date', 'price', 'from_account'],
             },
-            bases=(project.core.mixins.old_values.OldValuesMixin, models.Model),
         ),
         migrations.CreateModel(
             name='SavingClose',
@@ -44,7 +42,6 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['-date', 'price', 'from_account'],
             },
-            bases=(project.core.mixins.old_values.OldValuesMixin, models.Model),
         ),
         migrations.CreateModel(
             name='SavingChange',
@@ -59,7 +56,6 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['-date', 'price', 'from_account'],
             },
-            bases=(project.core.mixins.old_values.OldValuesMixin, models.Model),
         ),
         migrations.AddIndex(
             model_name='transaction',
