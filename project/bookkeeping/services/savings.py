@@ -37,10 +37,11 @@ class SavingsService:
         self.incomes = data.incomes
 
     def context(self) -> Dict:
-        fields = ['past_amount', 'past_fee',
-                  'per_year_incomes', 'per_year_fee',
-                  'fee', 'invested', 'incomes', 'market_value',
-                  'profit_incomes_sum', 'profit_invested_sum']
+        fields = [
+            'past_amount', 'past_fee',
+                'per_year_incomes', 'per_year_fee',
+                'fee', 'invested', 'incomes', 'market_value',
+        ]
         total_row = utils.sum_all(self.data, fields)
 
         total_past = total_row.get('past_amount', 0)
@@ -56,8 +57,4 @@ class SavingsService:
             'total_row': total_row,
             'percentage_from_incomes': \
                 calculate_percent(self.incomes, total_savings_current_year),
-            'profit_incomes_proc': \
-                calculate_percent(total_savings, total_market) - 100,
-            'profit_invested_proc': \
-                calculate_percent(total_invested, total_market) - 100,
         }
