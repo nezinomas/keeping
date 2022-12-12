@@ -381,8 +381,6 @@ class Savings:
         year = list(df.index.levels[0])[-1]
         # create new df as copy of last_group (year, id)
         df_last_group = df.loc[year].copy()
-        print(f'>>>>>>>>>>\n{df_last_group}\n{df_last_group.columns}\n')
-
         df_last_group[['incomes', 'expenses', 'fee']] = 0.0
         df_last_group.loc[:, 'year'] = year + 1
         # reset indexes
