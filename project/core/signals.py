@@ -347,6 +347,8 @@ class Savings:
         df = self._join_df(inc, exp, hv)
         if df.empty:
             return df
+
+        df = self._insert_future_data(df)
         # calculate incomes
         df.per_year_incomes = df.incomes - df.expenses
         df.per_year_fee = df.fee
@@ -371,6 +373,30 @@ class Savings:
             df[['market_value', 'invested']].apply(Savings.calc_percent, axis=1)
         # drop tmp columns
         df.drop(columns=['expenses', 'tmp1', 'tmp2'], inplace=True)
+
+        return df
+
+    def _insert_future_data(self, df: DF) -> DF:
+        idx, idx_reverse = ['id', 'year'], ['year', 'id']
+        df = df.copy().reset_index()
+        df.set_index(idx_reverse, inplace=True)
+        df.sort_index(level=idx_reverse, inplace=True)
+        # get last year in df
+        year = list(df.index.levels[0])[-1]
+        # create new df as copy of last_group (year, id)
+        df_last_group = df.loc[year].copy()
+        print(f'>>>>>>>>>>\n{df_last_group}\n{df_last_group.columns}\n')
+
+        df_last_group[['incomes', 'expenses', 'fee']] = 0.0
+        df_last_group.loc[:, 'year'] = year + 1
+        # reset indexes
+        df.reset_index(inplace=True)
+        df_last_group.reset_index(inplace=True)
+        # concat two dataframes
+        df = pd.concat([df, df_last_group])
+        # set index (id, year) and sort
+        df.set_index(idx, inplace=True)
+        df.sort_index(level=idx, inplace=True)
 
         return df
 
