@@ -45,6 +45,7 @@ def fixture_have():
     ]
 
 
+@pytest.mark.freeze_time('2000-12-31')
 def test_table(incomes, expenses, have):
     incomes.extend([
         {'year': 1997, 'incomes': Decimal('5'), 'id': 1},
@@ -53,74 +54,190 @@ def test_table(incomes, expenses, have):
     data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have)
     actual = Accounts(data).table
 
-    expect = [
-        dict(
-            id=1, year=1997, past=0.0, incomes=5.0, expenses=0.0, balance=5.0, have=0.0, delta=-5.0, latest_check=0.0),
-        dict(
-            id=1, year=1998, past=5.0, incomes=15.0, expenses=0.0, balance=20.0, have=0.0, delta=-20.0, latest_check=0.0),
-        dict(
-            id=1, year=1999, past=20.0, incomes=100.0, expenses=50.0, balance=70.0, have=10.0, delta=-60.0, latest_check=datetime(1999, 1, 1)),
-        dict(
-            id=1, year=2000, past=70.0, incomes=200.0, expenses=100.0, balance=170.0, have=15.0, delta=-155.0, latest_check=datetime(2000, 1, 1)),
-        dict(
-            id=2, year=1999, past=0.0, incomes=110.0, expenses=0.0, balance=110.0, have=20.0, delta=-90.0, latest_check=datetime(1999, 1, 1)),
-        dict(
-            id=2, year=2000, past=110.0, incomes=220.0, expenses=110.0, balance=220.0, have=25.0, delta=-195.0, latest_check=datetime(2000, 1, 1)),
-    ]
+    assert actual[0]['id'] == 1
+    assert actual[0]['year'] == 1997
+    assert actual[0]['past'] == 0.0
+    assert actual[0]['incomes'] == 5.0
+    assert actual[0]['expenses'] == 0.0
+    assert actual[0]['balance'] == 5.0
+    assert actual[0]['have'] == 0.0
+    assert actual[0]['delta'] == -5.0
+    assert actual[0]['latest_check'] == 0.0
 
-    assert actual == expect
+    assert actual[1]['id'] == 1
+    assert actual[1]['year'] == 1998
+    assert actual[1]['past'] == 5.0
+    assert actual[1]['incomes'] == 15.0
+    assert actual[1]['expenses'] == 0.0
+    assert actual[1]['balance'] == 20.0
+    assert actual[1]['have'] == 0.0
+    assert actual[1]['delta'] == -20.0
+    assert actual[1]['latest_check'] == 0.0
+
+    assert actual[2]['id'] == 1
+    assert actual[2]['year'] == 1999
+    assert actual[2]['past'] == 20.0
+    assert actual[2]['incomes'] == 100.0
+    assert actual[2]['expenses'] == 50.0
+    assert actual[2]['balance'] == 70.0
+    assert actual[2]['have'] == 10.0
+    assert actual[2]['delta'] == -60.0
+    assert actual[2]['latest_check'] == datetime(1999, 1, 1)
+
+    assert actual[3]['id'] == 1
+    assert actual[3]['year'] == 2000
+    assert actual[3]['past'] == 70.0
+    assert actual[3]['incomes'] == 200.0
+    assert actual[3]['expenses'] == 100.0
+    assert actual[3]['balance'] == 170.0
+    assert actual[3]['have'] == 15.0
+    assert actual[3]['delta'] == -155.0
+    assert actual[3]['latest_check'] == datetime(2000, 1, 1)
+
+    assert actual[4]['id'] == 2
+    assert actual[4]['year'] == 1999
+    assert actual[4]['past'] == 0.0
+    assert actual[4]['incomes'] == 110.0
+    assert actual[4]['expenses'] == 0.0
+    assert actual[4]['balance'] == 110.0
+    assert actual[4]['have'] == 20.0
+    assert actual[4]['delta'] == -90.0
+    assert actual[4]['latest_check'] == datetime(1999, 1, 1)
+
+    assert actual[5]['id'] == 2
+    assert actual[5]['year'] == 2000
+    assert actual[5]['past'] == 110.0
+    assert actual[5]['incomes'] == 220.0
+    assert actual[5]['expenses'] == 110.0
+    assert actual[5]['balance'] == 220.0
+    assert actual[5]['have'] == 25.0
+    assert actual[5]['delta'] == -195.0
+    assert actual[5]['latest_check'] == datetime(2000, 1, 1)
 
 
 def test_table_have_empty(incomes, expenses):
     data = SimpleNamespace(incomes=incomes, expenses=expenses, have=[])
     actual = Accounts(data).table
 
-    expect = [
-        dict(
-            id=1, year=1999, past=0.0, incomes=100.0, expenses=50.0, balance=50.0, have=0.0, delta=-50.0, latest_check=0.0),
-        dict(
-            id=1, year=2000, past=50.0, incomes=200.0, expenses=100.0, balance=150.0, have=0.0, delta=-150.0, latest_check=0.0),
-        dict(
-            id=2, year=1999, past=0.0, incomes=110.0, expenses=0.0, balance=110.0, have=0.0, delta=-110.0, latest_check=0.0),
-        dict(
-            id=2, year=2000, past=110.0, incomes=220.0, expenses=110.0, balance=220.0, have=0.0, delta=-220.0, latest_check=0.0),
-    ]
+    assert actual[0]['id'] == 1
+    assert actual[0]['year'] == 1999
+    assert actual[0]['past'] == 0.0
+    assert actual[0]['incomes'] == 100.0
+    assert actual[0]['expenses'] == 50.0
+    assert actual[0]['balance'] == 50.0
+    assert actual[0]['have'] == 0.0
+    assert actual[0]['delta'] == -50.0
+    assert actual[0]['latest_check'] == 0.0
 
-    assert actual == expect
+    assert actual[1]['id'] == 1
+    assert actual[1]['year'] == 2000
+    assert actual[1]['past'] == 50.0
+    assert actual[1]['incomes'] == 200.0
+    assert actual[1]['expenses'] == 100.0
+    assert actual[1]['balance'] == 150.0
+    assert actual[1]['have'] == 0.0
+    assert actual[1]['delta'] == -150.0
+    assert actual[1]['latest_check'] == 0.0
+
+    assert actual[2]['id'] == 2
+    assert actual[2]['year'] == 1999
+    assert actual[2]['past'] == 0.0
+    assert actual[2]['incomes'] == 110.0
+    assert actual[2]['expenses'] == 0.0
+    assert actual[2]['balance'] == 110.0
+    assert actual[2]['have'] == 0.0
+    assert actual[2]['delta'] == -110.0
+    assert actual[2]['latest_check'] == 0.0
+
+    assert actual[3]['id'] == 2
+    assert actual[3]['year'] == 2000
+    assert actual[3]['past'] == 110.0
+    assert actual[3]['incomes'] == 220.0
+    assert actual[3]['expenses'] == 110.0
+    assert actual[3]['balance'] == 220.0
+    assert actual[3]['have'] == 0.0
+    assert actual[3]['delta'] == -220.0
+    assert actual[3]['latest_check'] == 0.0
 
 
 def test_table_incomes_empty(expenses):
     data = SimpleNamespace(incomes=[], expenses=expenses, have=[])
     actual = Accounts(data).table
 
-    expect = [
-        dict(
-            id=1, year=1999, past=0.0, incomes=0.0, expenses=50.0, balance=-50.0, have=0.0, delta=50.0, latest_check=0.0),
-        dict(
-            id=1, year=2000, past=-50.0, incomes=0.0, expenses=100.0, balance=-150.0, have=0.0, delta=150.0, latest_check=0.0),
-        dict(
-            id=2, year=2000, past=0.0, incomes=0.0, expenses=110.0, balance=-110.0, have=0.0, delta=110.0, latest_check=0.0),
-    ]
+    assert actual[0]['id'] == 1
+    assert actual[0]['year'] == 1999
+    assert actual[0]['past'] == 0.0
+    assert actual[0]['incomes'] == 0.0
+    assert actual[0]['expenses'] == 50.0
+    assert actual[0]['balance'] == -50.0
+    assert actual[0]['have'] == 0.0
+    assert actual[0]['delta'] == 50.0
+    assert actual[0]['latest_check'] == 0.0
 
-    assert actual == expect
+    assert actual[1]['id'] == 1
+    assert actual[1]['year'] == 2000
+    assert actual[1]['past'] == -50.0
+    assert actual[1]['incomes'] == 0.0
+    assert actual[1]['expenses'] == 100.0
+    assert actual[1]['balance'] == -150.0
+    assert actual[1]['have'] == 0.0
+    assert actual[1]['delta'] == 150.0
+    assert actual[1]['latest_check'] == 0.0
+
+    assert actual[2]['id'] == 2
+    assert actual[2]['year'] == 2000
+    assert actual[2]['past'] == 0.0
+    assert actual[2]['incomes'] == 0.0
+    assert actual[2]['expenses'] == 110.0
+    assert actual[2]['balance'] == -110.0
+    assert actual[2]['have'] == 0.0
+    assert actual[2]['delta'] == 110.0
+    assert actual[2]['latest_check'] == 0.0
 
 
 def test_table_expenses_empty(incomes):
     data = SimpleNamespace(incomes=incomes, expenses=[], have=[])
     actual = Accounts(data).table
 
-    expect = [
-        dict(
-            id=1, year=1999, past=0.0, incomes=100.0, expenses=0.0, balance=100.0, have=0.0, delta=-100.0, latest_check=0.0),
-        dict(
-            id=1, year=2000, past=100.0, incomes=200.0, expenses=0.0, balance=300.0, have=0.0, delta=-300.0, latest_check=0.0),
-        dict(
-            id=2, year=1999, past=0.0, incomes=110.0, expenses=0.0, balance=110.0, have=0.0, delta=-110.0, latest_check=0.0),
-        dict(
-            id=2, year=2000, past=110.0, incomes=220.0, expenses=0.0, balance=330.0, have=0.0, delta=-330.0, latest_check=0.0),
-    ]
+    assert actual[0]['id'] == 1
+    assert actual[0]['year'] == 1999
+    assert actual[0]['past'] == 0.0
+    assert actual[0]['incomes'] == 100.0
+    assert actual[0]['expenses'] == 0.0
+    assert actual[0]['balance'] == 100.0
+    assert actual[0]['have'] == 0.0
+    assert actual[0]['delta'] == -100.0
+    assert actual[0]['latest_check'] == 0.0
 
-    assert actual == expect
+    assert actual[1]['id'] == 1
+    assert actual[1]['year'] == 2000
+    assert actual[1]['past'] == 100.0
+    assert actual[1]['incomes'] == 200.0
+    assert actual[1]['expenses'] == 0.0
+    assert actual[1]['balance'] == 300.0
+    assert actual[1]['have'] == 0.0
+    assert actual[1]['delta'] == -300.0
+    assert actual[1]['latest_check'] == 0.0
+
+    assert actual[2]['id'] == 2
+    assert actual[2]['year'] == 1999
+    assert actual[2]['past'] == 0.0
+    assert actual[2]['incomes'] == 110.0
+    assert actual[2]['expenses'] == 0.0
+    assert actual[2]['balance'] == 110.0
+    assert actual[2]['have'] == 0.0
+    assert actual[2]['delta'] == -110.0
+    assert actual[2]['latest_check'] == 0.0
+
+    assert actual[3]['id'] == 2
+    assert actual[3]['year'] == 2000
+    assert actual[3]['past'] == 110.0
+    assert actual[3]['incomes'] == 220.0
+    assert actual[3]['expenses'] == 0.0
+    assert actual[3]['balance'] == 330.0
+    assert actual[3]['have'] == 0.0
+    assert actual[3]['delta'] == -330.0
+    assert actual[3]['latest_check'] == 0.0
 
 
 def test_table_incomes_expenses_empty():
@@ -136,18 +253,45 @@ def test_table_only_have(have):
     data = SimpleNamespace(incomes=[], expenses=[], have=have)
     actual = Accounts(data).table
 
-    expect = [
-        dict(
-            id=1, year=1999, past=0.0, incomes=0.0, expenses=0.0, balance=0.0, have=10.0, delta=10.0, latest_check=datetime(1999, 1, 1)),
-        dict(
-            id=1, year=2000, past=0.0, incomes=0.0, expenses=0.0, balance=0.0, have=15.0, delta=15.0, latest_check=datetime(2000, 1, 1)),
-        dict(
-            id=2, year=1999, past=0.0, incomes=0.0, expenses=0.0, balance=0.0, have=20.0, delta=20.0, latest_check=datetime(1999, 1, 1)),
-        dict(
-            id=2, year=2000, past=0.0, incomes=0.0, expenses=0.0, balance=0.0, have=25.0, delta=25.0, latest_check=datetime(2000, 1, 1)),
-    ]
+    assert actual[0]['id'] == 1
+    assert actual[0]['year'] == 1999
+    assert actual[0]['past'] == 0.0
+    assert actual[0]['incomes'] == 0.0
+    assert actual[0]['expenses'] == 0.0
+    assert actual[0]['balance'] == 0.0
+    assert actual[0]['have'] == 10.0
+    assert actual[0]['delta'] == 10.0
+    assert actual[0]['latest_check'] == datetime(1999, 1, 1)
 
-    assert actual == expect
+    assert actual[1]['id'] == 1
+    assert actual[1]['year'] == 2000
+    assert actual[1]['past'] == 0.0
+    assert actual[1]['incomes'] == 0.0
+    assert actual[1]['expenses'] == 0.0
+    assert actual[1]['balance'] == 0.0
+    assert actual[1]['have'] == 15.0
+    assert actual[1]['delta'] == 15.0
+    assert actual[1]['latest_check'] == datetime(2000, 1, 1)
+
+    assert actual[2]['id'] == 2
+    assert actual[2]['year'] == 1999
+    assert actual[2]['past'] == 0.0
+    assert actual[2]['incomes'] == 0.0
+    assert actual[2]['expenses'] == 0.0
+    assert actual[2]['balance'] == 0.0
+    assert actual[2]['have'] == 20.0
+    assert actual[2]['delta'] == 20.0
+    assert actual[2]['latest_check'] == datetime(1999, 1, 1)
+
+    assert actual[3]['id'] == 2
+    assert actual[3]['year'] == 2000
+    assert actual[3]['past'] == 0.0
+    assert actual[3]['incomes'] == 0.0
+    assert actual[3]['expenses'] == 0.0
+    assert actual[3]['balance'] == 0.0
+    assert actual[3]['have'] == 25.0
+    assert actual[3]['delta'] == 25.0
+    assert actual[3]['latest_check'] == datetime(2000, 1, 1)
 
 
 def test_create_objects():
