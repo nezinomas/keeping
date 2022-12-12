@@ -231,6 +231,8 @@ class Accounts:
         df = pd.concat([df, hv], axis=1).fillna(0.0)
         if df.empty:
             return df
+        # insert extra group for future year
+        df = self._insert_future_data(df)
         # balance without past
         df.balance = df.incomes - df.expenses
         # temp column for each id group with balance cumulative sum
@@ -242,6 +244,27 @@ class Accounts:
         df.drop(columns=["temp"], inplace=True)
         # calculate delta between have and balance
         df.delta = df.have - df.balance
+        return df
+
+    def _insert_future_data(self, df: DF) -> DF:
+        df = df.copy().reset_index()
+        df.set_index(['year', 'id'], inplace=True)
+        df.sort_index(level=['year', 'id'], inplace=True)
+        # get last year in df
+        year = list(df.index.levels[0])[-1]
+        # create new df as copy of last_group (year, id)
+        df_last_group = df.loc[year].copy()
+        df_last_group[['incomes', 'expenses']] = 0.0
+        df_last_group.loc[:, 'year'] = year + 1
+        # reset indexes
+        df.reset_index(inplace=True)
+        df_last_group.reset_index(inplace=True)
+        # concat two dataframes
+        df = pd.concat([df, df_last_group])
+        # set index (id, year) and sort
+        df.set_index(['id', 'year'], inplace=True)
+        df.sort_index(level=['id', 'year'], inplace=True)
+
         return df
 
 

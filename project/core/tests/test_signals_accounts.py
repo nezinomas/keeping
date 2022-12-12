@@ -94,27 +94,51 @@ def test_table(incomes, expenses, have):
     assert actual[3]['delta'] == -155.0
     assert actual[3]['latest_check'] == datetime(2000, 1, 1)
 
-    assert actual[4]['id'] == 2
-    assert actual[4]['year'] == 1999
-    assert actual[4]['past'] == 0.0
-    assert actual[4]['incomes'] == 110.0
+    # future year=2001
+    assert actual[4]['id'] == 1
+    assert actual[4]['year'] == 2001
+    assert actual[4]['past'] == 170.0
+    assert actual[4]['incomes'] == 0.0
     assert actual[4]['expenses'] == 0.0
-    assert actual[4]['balance'] == 110.0
-    assert actual[4]['have'] == 20.0
-    assert actual[4]['delta'] == -90.0
-    assert actual[4]['latest_check'] == datetime(1999, 1, 1)
+    assert actual[4]['balance'] == 170.0
+    assert actual[4]['have'] == 15.0
+    assert actual[4]['delta'] == -155.0
+    assert actual[4]['latest_check'] == datetime(2000, 1, 1)
 
+    # second account
     assert actual[5]['id'] == 2
-    assert actual[5]['year'] == 2000
-    assert actual[5]['past'] == 110.0
-    assert actual[5]['incomes'] == 220.0
-    assert actual[5]['expenses'] == 110.0
-    assert actual[5]['balance'] == 220.0
-    assert actual[5]['have'] == 25.0
-    assert actual[5]['delta'] == -195.0
-    assert actual[5]['latest_check'] == datetime(2000, 1, 1)
+    assert actual[5]['year'] == 1999
+    assert actual[5]['past'] == 0.0
+    assert actual[5]['incomes'] == 110.0
+    assert actual[5]['expenses'] == 0.0
+    assert actual[5]['balance'] == 110.0
+    assert actual[5]['have'] == 20.0
+    assert actual[5]['delta'] == -90.0
+    assert actual[5]['latest_check'] == datetime(1999, 1, 1)
+
+    assert actual[6]['id'] == 2
+    assert actual[6]['year'] == 2000
+    assert actual[6]['past'] == 110.0
+    assert actual[6]['incomes'] == 220.0
+    assert actual[6]['expenses'] == 110.0
+    assert actual[6]['balance'] == 220.0
+    assert actual[6]['have'] == 25.0
+    assert actual[6]['delta'] == -195.0
+    assert actual[6]['latest_check'] == datetime(2000, 1, 1)
+
+    # future year=2001
+    assert actual[7]['id'] == 2
+    assert actual[7]['year'] == 2001
+    assert actual[7]['past'] == 220.0
+    assert actual[7]['incomes'] == 0.0
+    assert actual[7]['expenses'] == 0.0
+    assert actual[7]['balance'] == 220.0
+    assert actual[7]['have'] == 25.0
+    assert actual[7]['delta'] == -195.0
+    assert actual[7]['latest_check'] == datetime(2000, 1, 1)
 
 
+@pytest.mark.freeze_time('2000-12-31')
 def test_table_have_empty(incomes, expenses):
     data = SimpleNamespace(incomes=incomes, expenses=expenses, have=[])
     actual = Accounts(data).table
@@ -139,27 +163,28 @@ def test_table_have_empty(incomes, expenses):
     assert actual[1]['delta'] == -150.0
     assert actual[1]['latest_check'] == 0.0
 
-    assert actual[2]['id'] == 2
-    assert actual[2]['year'] == 1999
-    assert actual[2]['past'] == 0.0
-    assert actual[2]['incomes'] == 110.0
-    assert actual[2]['expenses'] == 0.0
-    assert actual[2]['balance'] == 110.0
-    assert actual[2]['have'] == 0.0
-    assert actual[2]['delta'] == -110.0
-    assert actual[2]['latest_check'] == 0.0
-
     assert actual[3]['id'] == 2
-    assert actual[3]['year'] == 2000
-    assert actual[3]['past'] == 110.0
-    assert actual[3]['incomes'] == 220.0
-    assert actual[3]['expenses'] == 110.0
-    assert actual[3]['balance'] == 220.0
+    assert actual[3]['year'] == 1999
+    assert actual[3]['past'] == 0.0
+    assert actual[3]['incomes'] == 110.0
+    assert actual[3]['expenses'] == 0.0
+    assert actual[3]['balance'] == 110.0
     assert actual[3]['have'] == 0.0
-    assert actual[3]['delta'] == -220.0
+    assert actual[3]['delta'] == -110.0
     assert actual[3]['latest_check'] == 0.0
 
+    assert actual[4]['id'] == 2
+    assert actual[4]['year'] == 2000
+    assert actual[4]['past'] == 110.0
+    assert actual[4]['incomes'] == 220.0
+    assert actual[4]['expenses'] == 110.0
+    assert actual[4]['balance'] == 220.0
+    assert actual[4]['have'] == 0.0
+    assert actual[4]['delta'] == -220.0
+    assert actual[4]['latest_check'] == 0.0
 
+
+@pytest.mark.freeze_time('2000-12-31')
 def test_table_incomes_empty(expenses):
     data = SimpleNamespace(incomes=[], expenses=expenses, have=[])
     actual = Accounts(data).table
@@ -184,17 +209,38 @@ def test_table_incomes_empty(expenses):
     assert actual[1]['delta'] == 150.0
     assert actual[1]['latest_check'] == 0.0
 
-    assert actual[2]['id'] == 2
-    assert actual[2]['year'] == 2000
-    assert actual[2]['past'] == 0.0
+    assert actual[2]['id'] == 1
+    assert actual[2]['year'] == 2001
+    assert actual[2]['past'] == -150.0
     assert actual[2]['incomes'] == 0.0
-    assert actual[2]['expenses'] == 110.0
-    assert actual[2]['balance'] == -110.0
+    assert actual[2]['expenses'] == 0.0
+    assert actual[2]['balance'] == -150.0
     assert actual[2]['have'] == 0.0
-    assert actual[2]['delta'] == 110.0
+    assert actual[2]['delta'] == 150.0
     assert actual[2]['latest_check'] == 0.0
 
+    assert actual[3]['id'] == 2
+    assert actual[3]['year'] == 2000
+    assert actual[3]['past'] == 0.0
+    assert actual[3]['incomes'] == 0.0
+    assert actual[3]['expenses'] == 110.0
+    assert actual[3]['balance'] == -110.0
+    assert actual[3]['have'] == 0.0
+    assert actual[3]['delta'] == 110.0
+    assert actual[3]['latest_check'] == 0.0
 
+    assert actual[4]['id'] == 2
+    assert actual[4]['year'] == 2001
+    assert actual[4]['past'] == -110.0
+    assert actual[4]['incomes'] == 0.0
+    assert actual[4]['expenses'] == 0.0
+    assert actual[4]['balance'] == -110.0
+    assert actual[4]['have'] == 0.0
+    assert actual[4]['delta'] == 110.0
+    assert actual[4]['latest_check'] == 0.0
+
+
+@pytest.mark.freeze_time('2000-12-31')
 def test_table_expenses_empty(incomes):
     data = SimpleNamespace(incomes=incomes, expenses=[], have=[])
     actual = Accounts(data).table
@@ -219,25 +265,45 @@ def test_table_expenses_empty(incomes):
     assert actual[1]['delta'] == -300.0
     assert actual[1]['latest_check'] == 0.0
 
-    assert actual[2]['id'] == 2
-    assert actual[2]['year'] == 1999
-    assert actual[2]['past'] == 0.0
-    assert actual[2]['incomes'] == 110.0
+    assert actual[2]['id'] == 1
+    assert actual[2]['year'] == 2001
+    assert actual[2]['past'] == 300.0
+    assert actual[2]['incomes'] == 0.0
     assert actual[2]['expenses'] == 0.0
-    assert actual[2]['balance'] == 110.0
+    assert actual[2]['balance'] == 300.0
     assert actual[2]['have'] == 0.0
-    assert actual[2]['delta'] == -110.0
+    assert actual[2]['delta'] == -300.0
     assert actual[2]['latest_check'] == 0.0
 
     assert actual[3]['id'] == 2
-    assert actual[3]['year'] == 2000
-    assert actual[3]['past'] == 110.0
-    assert actual[3]['incomes'] == 220.0
+    assert actual[3]['year'] == 1999
+    assert actual[3]['past'] == 0.0
+    assert actual[3]['incomes'] == 110.0
     assert actual[3]['expenses'] == 0.0
-    assert actual[3]['balance'] == 330.0
+    assert actual[3]['balance'] == 110.0
     assert actual[3]['have'] == 0.0
-    assert actual[3]['delta'] == -330.0
+    assert actual[3]['delta'] == -110.0
     assert actual[3]['latest_check'] == 0.0
+
+    assert actual[4]['id'] == 2
+    assert actual[4]['year'] == 2000
+    assert actual[4]['past'] == 110.0
+    assert actual[4]['incomes'] == 220.0
+    assert actual[4]['expenses'] == 0.0
+    assert actual[4]['balance'] == 330.0
+    assert actual[4]['have'] == 0.0
+    assert actual[4]['delta'] == -330.0
+    assert actual[4]['latest_check'] == 0.0
+
+    assert actual[5]['id'] == 2
+    assert actual[5]['year'] == 2001
+    assert actual[5]['past'] == 330.0
+    assert actual[5]['incomes'] == 0.0
+    assert actual[5]['expenses'] == 0.0
+    assert actual[5]['balance'] == 330.0
+    assert actual[5]['have'] == 0.0
+    assert actual[5]['delta'] == -330.0
+    assert actual[5]['latest_check'] == 0.0
 
 
 def test_table_incomes_expenses_empty():
@@ -249,6 +315,7 @@ def test_table_incomes_expenses_empty():
     assert actual == expect
 
 
+@pytest.mark.freeze_time('2000-12-31')
 def test_table_only_have(have):
     data = SimpleNamespace(incomes=[], expenses=[], have=have)
     actual = Accounts(data).table
@@ -273,25 +340,45 @@ def test_table_only_have(have):
     assert actual[1]['delta'] == 15.0
     assert actual[1]['latest_check'] == datetime(2000, 1, 1)
 
-    assert actual[2]['id'] == 2
-    assert actual[2]['year'] == 1999
+    assert actual[2]['id'] == 1
+    assert actual[2]['year'] == 2001
     assert actual[2]['past'] == 0.0
     assert actual[2]['incomes'] == 0.0
     assert actual[2]['expenses'] == 0.0
     assert actual[2]['balance'] == 0.0
-    assert actual[2]['have'] == 20.0
-    assert actual[2]['delta'] == 20.0
-    assert actual[2]['latest_check'] == datetime(1999, 1, 1)
+    assert actual[2]['have'] == 15.0
+    assert actual[2]['delta'] == 15.0
+    assert actual[2]['latest_check'] == datetime(2000, 1, 1)
 
     assert actual[3]['id'] == 2
-    assert actual[3]['year'] == 2000
+    assert actual[3]['year'] == 1999
     assert actual[3]['past'] == 0.0
     assert actual[3]['incomes'] == 0.0
     assert actual[3]['expenses'] == 0.0
     assert actual[3]['balance'] == 0.0
-    assert actual[3]['have'] == 25.0
-    assert actual[3]['delta'] == 25.0
-    assert actual[3]['latest_check'] == datetime(2000, 1, 1)
+    assert actual[3]['have'] == 20.0
+    assert actual[3]['delta'] == 20.0
+    assert actual[3]['latest_check'] == datetime(1999, 1, 1)
+
+    assert actual[4]['id'] == 2
+    assert actual[4]['year'] == 2000
+    assert actual[4]['past'] == 0.0
+    assert actual[4]['incomes'] == 0.0
+    assert actual[4]['expenses'] == 0.0
+    assert actual[4]['balance'] == 0.0
+    assert actual[4]['have'] == 25.0
+    assert actual[4]['delta'] == 25.0
+    assert actual[4]['latest_check'] == datetime(2000, 1, 1)
+
+    assert actual[5]['id'] == 2
+    assert actual[5]['year'] == 2001
+    assert actual[5]['past'] == 0.0
+    assert actual[5]['incomes'] == 0.0
+    assert actual[5]['expenses'] == 0.0
+    assert actual[5]['balance'] == 0.0
+    assert actual[5]['have'] == 25.0
+    assert actual[5]['delta'] == 25.0
+    assert actual[5]['latest_check'] == datetime(2000, 1, 1)
 
 
 def test_create_objects():
