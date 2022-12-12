@@ -247,9 +247,10 @@ class Accounts:
         return df
 
     def _insert_future_data(self, df: DF) -> DF:
+        idx, idx_reverse = ['id', 'year'], ['year', 'id']
         df = df.copy().reset_index()
-        df.set_index(['year', 'id'], inplace=True)
-        df.sort_index(level=['year', 'id'], inplace=True)
+        df.set_index(idx_reverse, inplace=True)
+        df.sort_index(level=idx_reverse, inplace=True)
         # get last year in df
         year = list(df.index.levels[0])[-1]
         # create new df as copy of last_group (year, id)
@@ -262,8 +263,8 @@ class Accounts:
         # concat two dataframes
         df = pd.concat([df, df_last_group])
         # set index (id, year) and sort
-        df.set_index(['id', 'year'], inplace=True)
-        df.sort_index(level=['id', 'year'], inplace=True)
+        df.set_index(idx, inplace=True)
+        df.sort_index(level=idx, inplace=True)
 
         return df
 
