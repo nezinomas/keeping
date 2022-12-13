@@ -1,3 +1,4 @@
+from collections import defaultdict
 import contextlib
 import itertools as it
 from dataclasses import dataclass, field
@@ -211,18 +212,18 @@ class Accounts:
 
         return df
 
+
     def _make_have(self, have: list[dict]) -> DF:
         hv = pd.DataFrame(have)
         idx = ['id', 'year']
         if hv.empty:
             cols = ['id', 'year', 'have', 'latest_check']
-            return pd.DataFrame(columns=cols).set_index(idx)
-        # set index
-        hv.set_index(keys=idx, inplace=True)
-        # convert Decimal -> float
-        hv['have'] = hv['have'].astype(float)
+            return pd.DataFrame(defaultdict(list), columns=cols).set_index(idx)
 
-        return hv
+        # convert Decimal -> float
+        hv['have'] = hv['have'].apply(pd.to_numeric, downcast='float')
+
+        return hv.set_index(idx)
 
     def _make_table(self, df: DF, hv: DF) -> DF:
         df = df.copy()
@@ -286,14 +287,15 @@ class Savings:
 
     def _make_have(self, have: list[dict]) -> DF:
         hv = pd.DataFrame(have)
+        idx = ['id', 'year']
         if hv.empty:
-            idx = ['id', 'year']
             cols = ['id', 'year', 'have', 'latest_check']
-            return pd.DataFrame(columns=cols).set_index(idx)
-        # decimal -> float
-        hv['have'] = hv['have'].astype(float)
-        hv.set_index(['id', 'year'], inplace=True)
-        return hv
+            return pd.DataFrame(defaultdict(list), columns=cols).set_index(idx)
+
+        # convert Decimal -> float
+        hv['have'] = hv['have'].apply(pd.to_numeric, downcast='float')
+
+        return hv.set_index(idx)
 
     def _join_df(self, inc: DF, exp: DF, hv: DF) -> DF:
         # drop expenses column, rename fee
