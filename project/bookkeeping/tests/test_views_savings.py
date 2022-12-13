@@ -35,8 +35,6 @@ def test_view_context(client_logged):
     assert 'items' in actual
     assert 'total_row' in actual
     assert 'percentage_from_incomes' in actual
-    assert 'profit_incomes_proc' in actual
-    assert 'profit_invested_proc' in actual
 
 
 def test_percentage_from_incomes(client_logged):

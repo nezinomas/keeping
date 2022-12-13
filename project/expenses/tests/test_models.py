@@ -452,7 +452,7 @@ def test_expense_post_save_change_account():
 
     obj = ExpenseFactory(price=5, account=account_old)
 
-    actual = AccountBalance.objects.get(account_id=account_old.pk)
+    actual = AccountBalance.objects.get(account_id=account_old.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 0.0
     assert actual.expenses == 5.0
@@ -465,13 +465,13 @@ def test_expense_post_save_change_account():
 
     doest_not_exists = False
     try:
-        AccountBalance.objects.get(account_id=account_old.pk)
+        AccountBalance.objects.get(account_id=account_old.pk, year=1999)
     except AccountBalance.DoesNotExist:
         doest_not_exists = True
 
     assert doest_not_exists
 
-    actual = AccountBalance.objects.get(account_id=account_new.pk)
+    actual = AccountBalance.objects.get(account_id=account_new.pk, year=1999)
     assert actual.account.title == 'XXX'
     assert actual.incomes == 0.0
     assert actual.expenses == 5.0
@@ -560,7 +560,7 @@ def test_expense_post_delete_empty_account_balance_table():
 
     actual = AccountBalance.objects.all()
 
-    assert actual.count() == 1
+    assert actual.count() == 2
     assert actual[0].account_id == obj_stay.account.pk
     assert actual[0].year == 1974
     assert actual[0].past == Decimal('0')
