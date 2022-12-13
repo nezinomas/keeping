@@ -1,5 +1,6 @@
 import contextlib
 from collections import Counter
+from decimal import Decimal
 from typing import Any, Dict, List
 
 from crequest.middleware import CrequestMiddleware
@@ -28,20 +29,16 @@ def get_value_from_dict(arr: Dict, month: int) -> float:
     return float(arr.get(monthname(month), 0.0)) if arr else 0.0
 
 
-def sum_all(arr: List[Dict], sum_keys: list = None) -> Dict:
+def sum_all(arr, keys=None):
     if isinstance(arr, QuerySet):
         arr = [*arr.values()]
 
-    rtn = Counter()
-
-    for row in arr:
-        if sum_keys:
-            row = {k: v for k, v in row.items() if k in sum_keys}
-
-        with contextlib.suppress(TypeError):
-            rtn.update(row)
-
-    return {**rtn}
+    result = Counter()
+    for item in arr:
+        for k, v in item.items():
+            if isinstance(v, (int, float, Decimal)) and (keys is None or k in keys):
+                result[k] += v
+    return dict(result)
 
 
 def sum_col(arr: List[Dict], key: Any) -> float:
