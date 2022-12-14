@@ -187,10 +187,8 @@ class SignalBase(ABC):
         col_idx = ['id', 'year']
         # create df from incomes and expenses
         df = pd.DataFrame(arr)
-
         if df.empty:
             return pd.DataFrame(columns=col_idx + cols).set_index(col_idx)
-
         # create missing columns
         df[[*set(cols) - set(df.columns)]] = 0.0
         # convert decimal to float
