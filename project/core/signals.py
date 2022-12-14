@@ -336,7 +336,6 @@ class Savings:
             'past_amount', 'past_fee',
             'per_year_incomes', 'per_year_fee',
             'invested',
-            'profit_incomes_proc', 'profit_incomes_sum',
             'profit_invested_proc', 'profit_invested_sum']
         df[cols] = 0.0
         # drop tmp columns
@@ -365,10 +364,7 @@ class Savings:
         df.invested = df.incomes - df.fee
         df.invested = df.invested.mask(df.invested < 0, 0.0)
         # calculate profit/loss
-        df.profit_incomes_sum = df.market_value - df.incomes
         df.profit_invested_sum = df.market_value - df.invested
-        df.profit_incomes_proc = \
-            df[['market_value', 'incomes']].apply(Savings.calc_percent, axis=1)
         df.profit_invested_proc = \
             df[['market_value', 'invested']].apply(Savings.calc_percent, axis=1)
         # drop tmp columns
@@ -385,8 +381,6 @@ class Savings:
         year = list(df.index.levels[0])[-1]
         # create new df as copy of last_group (year, id)
         df_last_group = df.loc[year].copy()
-        print(f'>>>>>>>>>>\n{df_last_group}\n{df_last_group.columns}\n')
-
         df_last_group[['incomes', 'expenses', 'fee']] = 0.0
         df_last_group.loc[:, 'year'] = year + 1
         # reset indexes

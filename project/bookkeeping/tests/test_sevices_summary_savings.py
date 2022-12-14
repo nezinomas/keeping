@@ -37,7 +37,7 @@ def test_chart_data_1(_a):
 @freeze_time('2000-1-1')
 def test_chart_data_2(_a):
     actual = SummarySavingsService.chart_data(_a)
-
+    print(actual)
     assert actual['categories'] == [2000]
     assert actual['invested'] == [1.0]
     assert actual['profit'] == [0.1]
@@ -95,11 +95,12 @@ def test_chart_data_max_value_empty():
 
 @pytest.mark.django_db
 def test_chart_data_db1():
-    SavingBalanceFactory(year=1999, incomes=0, profit_incomes_sum=0)
-    SavingBalanceFactory(year=2000, incomes=1, profit_incomes_sum=0.1)
-    SavingBalanceFactory(year=2001, incomes=2, profit_incomes_sum=0.2)
+    SavingBalanceFactory(year=1999, incomes=0, invested=0, profit_invested_sum=0)
+    SavingBalanceFactory(year=2000, incomes=1, invested=1, profit_invested_sum=0.1)
+    SavingBalanceFactory(year=2001, incomes=2, invested=2, profit_invested_sum=0.2)
 
     qs = SavingBalance.objects.sum_by_type()
+    print(f'funds\n{list(qs.filter(type="funds"))}\n')
     actual = SummarySavingsService.chart_data(list(qs.filter(type='funds')))
 
     assert actual['categories'] == [2000, 2001]

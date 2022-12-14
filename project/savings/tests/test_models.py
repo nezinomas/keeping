@@ -278,11 +278,11 @@ def test_saving_post_save_update():
     obj_update.fee = 1
     obj_update.save()
 
-    actual = AccountBalance.objects.get(account_id=obj.account.pk)
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert actual.expenses == 10.0
     assert actual.balance == -10.0
 
-    actual = SavingBalance.objects.get(saving_type_id=obj.saving_type.pk)
+    actual = SavingBalance.objects.get(saving_type_id=obj.saving_type.pk, year=1999)
     assert actual.invested == 9.0
     assert actual.fee == 1.0
     assert actual.incomes == 10.0
@@ -350,14 +350,14 @@ def test_saving_post_save_different_types():
     assert actual.count() == 2
 
     actual = AccountBalance.objects.all()
-    assert actual.count() == 1
+    assert actual.count() == 2
 
-    actual = AccountBalance.objects.last()
+    actual = AccountBalance.objects.first()
     assert actual.incomes == 0.0
     assert actual.expenses == 400.0
 
     actual = SavingBalance.objects.all()
-    assert actual.count() == 2
+    assert actual.count() == 4
 
     actual = SavingBalance.objects.get(year=1999, saving_type_id=s1.pk)
     assert actual.incomes == 150.0
@@ -646,8 +646,6 @@ def test_saving_balance_init():
     assert actual.invested == 2.3
     assert actual.incomes == 2.4
     assert actual.market_value == 2.5
-    assert actual.profit_incomes_proc == 2.6
-    assert actual.profit_incomes_sum == 2.7
     assert actual.profit_invested_proc == 2.8
     assert actual.profit_invested_sum == 2.9
 
@@ -668,7 +666,7 @@ def test_saving_balance_related_for_user(main_user, second_user):
 
     actual = SavingBalance.objects.related()
 
-    assert len(actual) == 1
+    assert len(actual) == 2
     assert str(actual[0].saving_type) == 'S1'
     assert actual[0].saving_type.journal.title == 'bob Journal'
     assert actual[0].saving_type.journal.users.first().username == 'bob'
@@ -762,37 +760,44 @@ def test_saving_balance_filter_by_few_types():
 def test_sum_by_type_funds():
     f = SavingTypeFactory(title='F', type='funds')
 
-    SavingFactory(saving_type=f, price=1)
-    SavingFactory(saving_type=f, price=10)
+    SavingFactory(saving_type=f, price=1, fee=1)
+    SavingFactory(saving_type=f, price=10, fee=1)
 
     actual = list(SavingBalance.objects.sum_by_type())
 
-    assert actual == [{'year': 1999, 'invested': 11.0, 'profit': -11.0, 'type': 'funds'}]
+    assert actual == [
+        {'year': 1999, 'invested': 9.0, 'profit': -9.0, 'type': 'funds'},
+        {'year': 2000, 'invested': 9.0, 'profit': -9.0, 'type': 'funds'},
+    ]
 
 
 @freeze_time('1999-1-1')
 def test_sum_by_type_shares():
     f = SavingTypeFactory(title='F', type='shares')
 
-    SavingFactory(saving_type=f, price=1)
-    SavingFactory(saving_type=f, price=10)
+    SavingFactory(saving_type=f, price=1, fee=1)
+    SavingFactory(saving_type=f, price=10, fee=1)
 
     actual = list(SavingBalance.objects.sum_by_type())
 
-    assert actual == [{'year': 1999, 'invested': 11.0, 'profit': -11.0, 'type': 'shares'}]
+    assert actual == [
+        {'year': 1999, 'invested': 9.0, 'profit': -9.0, 'type': 'shares'},
+        {'year': 2000, 'invested': 9.0, 'profit': -9.0, 'type': 'shares'},
+    ]
 
 
 @freeze_time('1999-1-1')
 def test_sum_by_type_pensions():
     f = SavingTypeFactory(title='F', type='pensions')
 
-    SavingFactory(saving_type=f, price=1)
-    SavingFactory(saving_type=f, price=10)
+    SavingFactory(saving_type=f, price=1, fee=1)
+    SavingFactory(saving_type=f, price=10, fee=1)
 
     actual = list(SavingBalance.objects.sum_by_type())
 
     assert actual == [
-        {'year': 1999, 'invested': 11.0, 'profit': -11.0, 'type': 'pensions'}
+        {'year': 1999, 'invested': 9.0, 'profit': -9.0, 'type': 'pensions'},
+        {'year': 2000, 'invested': 9.0, 'profit': -9.0, 'type': 'pensions'},
     ]
 
 
@@ -802,10 +807,13 @@ def test_sum_by_year():
     p = SavingTypeFactory(title='P', type='pensions')
     s = SavingTypeFactory(title='S', type='shares')
 
-    SavingFactory(saving_type=f, price=1)
-    SavingFactory(saving_type=p, price=2)
-    SavingFactory(saving_type=s, price=4)
+    SavingFactory(saving_type=f, price=1, fee=0)
+    SavingFactory(saving_type=p, price=2, fee=0)
+    SavingFactory(saving_type=s, price=4, fee=0)
 
     actual = list(SavingBalance.objects.sum_by_year())
 
-    assert actual == [{'year': 1999, 'invested': 7.0, 'profit': -7.0}]
+    assert actual == [
+        {'year': 1999, 'invested': 7.0, 'profit': -7.0},
+        {'year': 2000, 'invested': 7.0, 'profit': -7.0},
+    ]

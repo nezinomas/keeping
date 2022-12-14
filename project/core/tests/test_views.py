@@ -97,9 +97,9 @@ def test_view_regenerate_balances_all_year(client_logged, get_user):
 
     client_logged.get(url, {'ajax_trigger': 1}, follow=True)
 
-    assert AccountBalance.objects.all().count() == 2
-    assert SavingBalance.objects.all().count() == 1
-    assert PensionBalance.objects.all().count() == 1
+    assert AccountBalance.objects.all().count() == 3
+    assert SavingBalance.objects.all().count() == 2
+    assert PensionBalance.objects.all().count() == 2
 
 
 def test_view_regenerate_balances_func_called(mocker, fake_request):

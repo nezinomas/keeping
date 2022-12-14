@@ -5,17 +5,13 @@
 {% if items %}
 <table class="table table-sm table-striped table-hover">
     <thead>
-        <tr>
-            <th rowspan="2" class="text-start">{% regenerate_balances type=type %} {{ title }}</th>
-            <th colspan="2" rowspan="2" class="text-center">{% translate 'Past years' %}</th>
-            <th colspan="2" rowspan="2" class="text-center">{{ request.user.year }}</th>
-            <th colspan="2" rowspan="2" class="text-center">{% translate 'Total' %}</th>
-            <th colspan="2" rowspan="2" class="right-blue-border">{% if percentage_from_incomes %} {% translate 'From incomes' %}: {{ percentage_from_incomes|floatformat:'1g' }}%{% endif %}</th>
+        <tr  style="height: 2.5rem; overflow:auto;">
+            <th class="text-start">{% regenerate_balances type=type %} {{ title }}</th>
+            <th colspan="2" class="text-center">{% translate 'Past years' %}</th>
+            <th colspan="2" class="text-center">{{ request.user.year }}</th>
+            <th colspan="2" class="text-center">{% translate 'Total' %}</th>
+            <th colspan="2" class="right-blue-border">{% if percentage_from_incomes %} {% translate 'From incomes' %}: {{ percentage_from_incomes|floatformat:'1g' }}%{% endif %}</th>
             <th colspan="4" class="text-center">{% translate 'Profit' %}/{% translate 'Loss' %}</th>
-        </tr>
-        <tr>
-            <th colspan="2" class="text-center">{% translate 'Transferred' %}</th>
-            <th colspan="2" class="text-center">{% translate 'Purchased' %}</th>
         </tr>
         <tr>
             <th class="text-start">{% translate 'Fund' %}</th>
@@ -27,8 +23,6 @@
             <th>{% translate 'Fees' %}</th>
             <th>{% translate 'Purchased' %}</th>
             <th class="right-blue-border">{% translate 'Market value' %}</th>
-            <th>{% translate 'Sum' %}</th>
-            <th>%</th>
             <th>{% translate 'Sum' %}</th>
             <th>%</th>
         </tr>
@@ -46,8 +40,6 @@
             {% table_cell value=item.fee css_class='w8' %}
             {% table_cell value=item.invested css_class='w8' %}
             {% table_cell value=item.market_value css_class='right-blue-border w8' %}
-            {% table_cell value=item.profit_incomes_sum text_after='€' highlight_value=True css_class='w8' %}
-            {% table_cell value=item.profit_incomes_proc text_after='%' highlight_value=True css_class='w8' %}
             {% table_cell value=item.profit_invested_sum text_after='€' highlight_value=True css_class='w8' %}
             {% table_cell value=item.profit_invested_proc text_after='%' highlight_value=True css_class='w8' %}
         </tr>
@@ -64,8 +56,6 @@
             {% table_cell value=total_row.fee tag='th' %}
             {% table_cell value=total_row.invested tag='th' %}
             {% table_cell value=total_row.market_value tag='th' css_class='right-blue-border' %}
-            {% table_cell value=total_row.profit_incomes_sum text_after='€' highlight_value=True tag='th' %}
-            {% table_cell value=profit_incomes_proc text_after='%' highlight_value=True tag='th' %}
             {% table_cell value=total_row.profit_invested_sum text_after='€' highlight_value=True tag='th' %}
             {% table_cell value=profit_invested_proc text_after='%' highlight_value=True tag='th' %}
         </tr>

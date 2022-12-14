@@ -29,8 +29,6 @@ class PensionsService:
             'per_year_fee',
             'invested',
             'market_value',
-            'profit_incomes_sum',
-            'profit_incomes_proc',
             'profit_invested_sum',
             'profit_invested_proc',
         ]

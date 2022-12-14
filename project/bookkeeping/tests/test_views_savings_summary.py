@@ -33,9 +33,9 @@ def test_view_summery_savings_context(client_logged):
     assert 'pensions3' in response.context
     assert 'all' in response.context
 
-    assert response.context['funds']['categories'] == [1999]
-    assert response.context['funds']['invested'] == [111.0]
-    assert response.context['funds']['profit'] == [-111.0]
+    assert response.context['funds']['categories'] == [1999, 2000]
+    assert response.context['funds']['invested'] == [105.45, 105.45]
+    assert response.context['funds']['profit'] == [-105.45, -105.45]
 
 
 def test_view_summery_savings_context_no_records(client_logged):
