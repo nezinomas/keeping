@@ -5,7 +5,7 @@ import pytest
 from ...accounts.factories import AccountBalanceFactory
 from ...accounts.models import AccountBalance
 from ..lib import utils as T
-
+from decimal import Decimal
 
 @pytest.fixture(name="arr")
 def fixturearr():
@@ -45,9 +45,14 @@ def test_sum_all_empty_list():
     assert {} == actual
 
 
-def test_sum_all_with_datetime():
-    arr = [{'a': datetime(2000, 1, 1)}, {'a': datetime(1999, 2, 1)}]
-    T.sum_all(arr)
+def test_sum_all_no_numeric_keys():
+    arr = [
+        {'a': datetime(2000, 1, 1), 'b': 'str', 'c': Decimal('1'), 'd': 1},
+        {'a': datetime(1999, 2, 1), 'b': 'str', 'c': Decimal('1'), 'd': 1},
+    ]
+    actual = T.sum_all(arr)
+
+    assert actual == {'c': 2, 'd': 2}
 
 
 def test_sum_all_filter(arr):
