@@ -177,8 +177,24 @@ class SignalBase(ABC):
     @property
     def table(self):
         df = self._table.copy().reset_index()
-
         return df.to_dict('records')
+
+    def _make_df(self, arr: list[dict], cols: list) -> DF:
+        col_idx = ['id', 'year']
+        # create df from incomes and expenses
+        df = pd.DataFrame(arr)
+
+        if df.empty:
+            return pd.DataFrame(columns=col_idx + cols).set_index(col_idx)
+
+        # create missing columns
+        df[[*set(cols) - set(df.columns)]] = 0.0
+        # convert decimal to float
+        df[cols] = df[cols].astype(float)
+        # groupby id, year and sum
+        df = df.groupby(col_idx)[cols].sum(numeric_only=True)
+
+        return df
 
     def _make_have(self, have: list[dict]) -> DF:
         hv = pd.DataFrame(have)
@@ -210,43 +226,19 @@ class SignalBase(ABC):
 
 class Accounts(SignalBase):
     def __init__(self, data: GetData):
-        _df = self._make_df(data.incomes, data.expenses)
+        cols = ['incomes', 'expenses']
+        _df = self._make_df(it.chain(data.incomes, data.expenses), cols)
         _hv = self._make_have(data.have)
+        _df = self._join_df(_df, _hv)
 
-        self._table = self._make_table(_df, _hv)
+        self._table = self._make_table(_df)
 
-    def _make_df(self, incomes: list[dict], expenses: list[dict]) -> DF:
-        col_idx = [
-            'id',
-            'year',
-        ]
-        col_num = [
-            'past',
-            'incomes',
-            'expenses',
-            'balance',
-            'delta',
-        ]
-        # create df from incomes and expenses
-        df = pd.DataFrame(it.chain(incomes, expenses))
-
-        if df.empty:
-            return pd.DataFrame(columns=col_idx + col_num).set_index(col_idx)
-
-        # create missing columns
-        df[[*set(col_num) - set(df.columns)]] = 0.0
-        # convert decimal to float
-        df[col_num] = df[col_num].astype(float)
-        # groupby id, year and sum
-        df = df.groupby(col_idx)[col_num].sum(numeric_only=True)
-
+    def _join_df(self, df: DF, hv: DF) -> DF:
+        df = pd.concat([df, hv], axis=1).fillna(0.0)
+        df[['past', 'balance', 'delta']] = 0.0
         return df
 
-    def _make_table(self, df: DF, hv: DF) -> DF:
-        df = df.copy()
-        hv = hv.copy()
-        # concat df and have; fillna
-        df = pd.concat([df, hv], axis=1).fillna(0.0)
+    def _make_table(self, df: DF) -> DF:
         if df.empty:
             return df
         # insert extra group for future year
@@ -267,36 +259,13 @@ class Accounts(SignalBase):
 
 class Savings(SignalBase):
     def __init__(self, data: GetData):
-        _in = self._make_df(data.incomes)
-        _ex = self._make_df(data.expenses)
+        cols = ['incomes', 'expenses', 'fee']
+        _in = self._make_df(data.incomes, cols)
+        _ex = self._make_df(data.expenses, cols)
         _hv = self._make_have(data.have)
+        _df = self._join_df(_in, _ex, _hv)
 
-        self._table = self._make_table(_in, _ex, _hv)
-
-    def _make_df(self, arr: list[dict]) -> DF:
-        col_idx = [
-            'id',
-            'year',
-        ]
-        col_num = [
-            'incomes',
-            'expenses',
-            'fee',
-        ]
-        # create df from incomes and expenses
-        df = pd.DataFrame(arr)
-
-        if df.empty:
-            return pd.DataFrame(columns=col_idx + col_num).set_index(col_idx)
-
-        # create missing columns
-        df[[*set(col_num) - set(df.columns)]] = 0.0
-        # convert decimal to float
-        df[col_num] = df[col_num].astype(float)
-        # groupby id, year and sum
-        df = df.groupby(col_idx)[col_num].sum(numeric_only=True)
-
-        return df
+        self._table = self._make_table(_df)
 
     def _join_df(self, inc: DF, exp: DF, hv: DF) -> DF:
         # drop expenses column, rename fee
@@ -321,8 +290,7 @@ class Savings(SignalBase):
         df.drop(columns=['fee_inc', 'fee_exp'], inplace=True)
         return df
 
-    def _make_table(self, inc: DF, exp: DF, hv: DF) -> DF:
-        df = self._join_df(inc, exp, hv)
+    def _make_table(self, df: DF) -> DF:
         if df.empty:
             return df
 
