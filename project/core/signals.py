@@ -194,10 +194,11 @@ class SignalBase(ABC):
     def insert_future_data(self, df: DF) -> DF:
         idx, idx_reverse = ['id', 'year'], ['year', 'id']
         df = df.copy().reset_index()
+        # set and sort index
         df.set_index(idx_reverse, inplace=True)
         df.sort_index(level=idx_reverse, inplace=True)
         # get last year in df
-        year = list(df.index.levels[0])[-1]
+        year = df.index.levels[0][-1]
         # create new df as copy of last_group (year, id)
         df_last_group = df.loc[year].copy()
         df_last_group[['incomes', 'expenses']] = 0.0
