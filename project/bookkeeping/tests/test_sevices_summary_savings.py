@@ -95,9 +95,9 @@ def test_chart_data_max_value_empty():
 
 @pytest.mark.django_db
 def test_chart_data_db1():
-    SavingBalanceFactory(year=1999, incomes=0, invested=0, profit_invested_sum=0)
-    SavingBalanceFactory(year=2000, incomes=1, invested=1, profit_invested_sum=0.1)
-    SavingBalanceFactory(year=2001, incomes=2, invested=2, profit_invested_sum=0.2)
+    SavingBalanceFactory(year=1999, incomes=0, invested=0, profit_sum=0)
+    SavingBalanceFactory(year=2000, incomes=1, invested=1, profit_sum=0.1)
+    SavingBalanceFactory(year=2001, incomes=2, invested=2, profit_sum=0.2)
 
     qs = SavingBalance.objects.sum_by_type()
     print(f'funds\n{list(qs.filter(type="funds"))}\n')

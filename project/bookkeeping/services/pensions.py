@@ -29,8 +29,8 @@ class PensionsService:
             'per_year_fee',
             'invested',
             'market_value',
-            'profit_invested_sum',
-            'profit_invested_proc',
+            'profit_sum',
+            'profit_proc',
         ]
 
         return utils.sum_all(self.data, fields)

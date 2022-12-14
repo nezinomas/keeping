@@ -289,8 +289,8 @@ class Savings(SignalBase):
         df.invested = df.incomes - df.fee
         df.invested = df.invested.mask(df.invested < 0, 0.0)
         # calculate profit/loss
-        df.profit_invested_sum = df.market_value - df.invested
-        df.profit_invested_proc = \
+        df.profit_sum = df.market_value - df.invested
+        df.profit_proc = \
             df[['market_value', 'invested']].apply(Savings.calc_percent, axis=1)
         # drop tmp columns
         df.drop(columns=['expenses', 'tmp1', 'tmp2'], inplace=True)
@@ -314,7 +314,7 @@ class Savings(SignalBase):
             'past_amount', 'past_fee',
             'per_year_incomes', 'per_year_fee',
             'invested',
-            'profit_invested_proc', 'profit_invested_sum']
+            'profit_proc', 'profit_sum']
         df[cols] = 0.0
         # drop tmp columns
         df.drop(columns=['fee_inc', 'fee_exp'], inplace=True)

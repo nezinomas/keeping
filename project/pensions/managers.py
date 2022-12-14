@@ -77,7 +77,7 @@ class PensionBalanceQuerySet(models.QuerySet):
             .values('y') \
             .annotate(
                 invested=Sum('invested'),
-                profit=Sum('profit_invested_sum')) \
+                profit=Sum('profit_sum')) \
             .order_by('year') \
             .values(
                 'year',
