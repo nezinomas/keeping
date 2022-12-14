@@ -67,8 +67,8 @@ def test_table(incomes, expenses, have):
     assert actual[0]['incomes'] == 5.0
     assert actual[0]['invested'] == 4.0
     assert actual[0]['market_value'] == 0.0
-    assert round(actual[0]['profit_invested_proc'], 2) == -100.0
-    assert actual[0]['profit_invested_sum'] == -4.0
+    assert round(actual[0]['profit_proc'], 2) == -100.0
+    assert actual[0]['profit_sum'] == -4.0
     assert actual[0]['latest_check'] == 0.0
 
     assert actual[1]['id'] == 1
@@ -81,8 +81,8 @@ def test_table(incomes, expenses, have):
     assert actual[1]['incomes'] == 20.0
     assert actual[1]['invested'] == 18.0
     assert actual[1]['market_value'] == 0.0
-    assert round(actual[1]['profit_invested_proc'], 2) == -100.0
-    assert actual[1]['profit_invested_sum'] == -18.0
+    assert round(actual[1]['profit_proc'], 2) == -100.0
+    assert actual[1]['profit_sum'] == -18.0
     assert actual[1]['latest_check'] == 0.0
 
     assert actual[2]['id'] == 1
@@ -95,8 +95,8 @@ def test_table(incomes, expenses, have):
     assert actual[2]['incomes'] == 70.0
     assert actual[2]['invested'] == 60.0
     assert actual[2]['market_value'] == 75.0
-    assert round(actual[2]['profit_invested_proc'], 2) == 25.0
-    assert actual[2]['profit_invested_sum'] == 15.0
+    assert round(actual[2]['profit_proc'], 2) == 25.0
+    assert actual[2]['profit_sum'] == 15.0
     assert actual[2]['latest_check'] == datetime(1999, 1, 1)
 
     assert actual[3]['id'] == 1
@@ -109,8 +109,8 @@ def test_table(incomes, expenses, have):
     assert actual[3]['incomes'] == 170.0
     assert actual[3]['invested'] == 152.0
     assert actual[3]['market_value'] == 300.0
-    assert round(actual[3]['profit_invested_proc'], 2) == 97.37
-    assert actual[3]['profit_invested_sum'] == 148.0
+    assert round(actual[3]['profit_proc'], 2) == 97.37
+    assert actual[3]['profit_sum'] == 148.0
     assert actual[3]['latest_check'] == datetime(2000, 1, 1)
 
     assert actual[4]['id'] == 1
@@ -123,8 +123,8 @@ def test_table(incomes, expenses, have):
     assert actual[4]['incomes'] == 170.0
     assert actual[4]['invested'] == 152.0
     assert actual[4]['market_value'] == 300.0
-    assert round(actual[4]['profit_invested_proc'], 2) == 97.37
-    assert actual[4]['profit_invested_sum'] == 148.0
+    assert round(actual[4]['profit_proc'], 2) == 97.37
+    assert actual[4]['profit_sum'] == 148.0
     assert actual[4]['latest_check'] == datetime(2000, 1, 1)
 
     assert actual[5]['id'] == 2
@@ -137,8 +137,8 @@ def test_table(incomes, expenses, have):
     assert actual[5]['incomes'] == 110.0
     assert actual[5]['invested'] == 104.0
     assert actual[5]['market_value'] == 100.0
-    assert round(actual[5]['profit_invested_proc'], 2) == -3.85
-    assert actual[5]['profit_invested_sum'] == -4.0
+    assert round(actual[5]['profit_proc'], 2) == -3.85
+    assert actual[5]['profit_sum'] == -4.0
     assert actual[5]['latest_check'] == datetime(1999, 1, 1)
 
     assert actual[6]['id'] == 2
@@ -151,8 +151,8 @@ def test_table(incomes, expenses, have):
     assert actual[6]['incomes'] == 220.0
     assert actual[6]['invested'] == 204.0
     assert actual[6]['market_value'] == 250.0
-    assert round(actual[6]['profit_invested_proc'], 2) == 22.55
-    assert actual[6]['profit_invested_sum'] == 46.0
+    assert round(actual[6]['profit_proc'], 2) == 22.55
+    assert actual[6]['profit_sum'] == 46.0
     assert actual[6]['latest_check'] == datetime(2000, 1, 1)
 
     assert actual[7]['id'] == 2
@@ -165,8 +165,8 @@ def test_table(incomes, expenses, have):
     assert actual[7]['incomes'] == 220.0
     assert actual[7]['invested'] == 204.0
     assert actual[7]['market_value'] == 250.0
-    assert round(actual[7]['profit_invested_proc'], 2) == 22.55
-    assert actual[7]['profit_invested_sum'] == 46.0
+    assert round(actual[7]['profit_proc'], 2) == 22.55
+    assert actual[7]['profit_sum'] == 46.0
     assert actual[7]['latest_check'] == datetime(2000, 1, 1)
 
 
@@ -185,8 +185,8 @@ def test_table_have_empty(incomes, expenses):
     assert actual[0]['incomes'] == 50.0
     assert actual[0]['invested'] == 42.0
     assert actual[0]['market_value'] == 0.0
-    assert round(actual[0]['profit_invested_proc'], 2) == -100.0
-    assert actual[0]['profit_invested_sum'] == -42.0
+    assert round(actual[0]['profit_proc'], 2) == -100.0
+    assert actual[0]['profit_sum'] == -42.0
     assert actual[0]['latest_check'] == 0.0
 
     assert actual[1]['id'] == 1
@@ -199,8 +199,8 @@ def test_table_have_empty(incomes, expenses):
     assert actual[1]['incomes'] == 150.0
     assert actual[1]['invested'] == 134.0
     assert actual[1]['market_value'] == 0.0
-    assert round(actual[1]['profit_invested_proc'], 2) == -100.0
-    assert actual[1]['profit_invested_sum'] == -134.0
+    assert round(actual[1]['profit_proc'], 2) == -100.0
+    assert actual[1]['profit_sum'] == -134.0
     assert actual[1]['latest_check'] == 0.0
 
     assert actual[2]['id'] == 1
@@ -213,8 +213,8 @@ def test_table_have_empty(incomes, expenses):
     assert actual[2]['incomes'] == 150.0
     assert actual[2]['invested'] == 134.0
     assert actual[2]['market_value'] == 0.0
-    assert round(actual[2]['profit_invested_proc'], 2) == -100.0
-    assert actual[2]['profit_invested_sum'] == -134.0
+    assert round(actual[2]['profit_proc'], 2) == -100.0
+    assert actual[2]['profit_sum'] == -134.0
     assert actual[2]['latest_check'] == 0.0
 
 
@@ -233,8 +233,8 @@ def test_table_incomes_empty(expenses):
     assert actual[0]['incomes'] == -50.0
     assert actual[0]['invested'] == 0.0
     assert actual[0]['market_value'] == 0.0
-    assert round(actual[0]['profit_invested_proc'], 2) == 0.0
-    assert actual[0]['profit_invested_sum'] == 0.0
+    assert round(actual[0]['profit_proc'], 2) == 0.0
+    assert actual[0]['profit_sum'] == 0.0
     assert actual[0]['latest_check'] == 0.0
 
     assert actual[1]['id'] == 1
@@ -247,8 +247,8 @@ def test_table_incomes_empty(expenses):
     assert actual[1]['incomes'] == -150.0
     assert actual[1]['invested'] == 0.0
     assert actual[1]['market_value'] == 0.0
-    assert round(actual[1]['profit_invested_proc'], 2) == 0.0
-    assert actual[1]['profit_invested_sum'] == 0.0
+    assert round(actual[1]['profit_proc'], 2) == 0.0
+    assert actual[1]['profit_sum'] == 0.0
     assert actual[1]['latest_check'] == 0.0
 
     assert actual[2]['id'] == 1
@@ -261,8 +261,8 @@ def test_table_incomes_empty(expenses):
     assert actual[2]['incomes'] == -150.0
     assert actual[2]['invested'] == 0.0
     assert actual[2]['market_value'] == 0.0
-    assert round(actual[2]['profit_invested_proc'], 2) == 0.0
-    assert actual[2]['profit_invested_sum'] == 0.0
+    assert round(actual[2]['profit_proc'], 2) == 0.0
+    assert actual[2]['profit_sum'] == 0.0
     assert actual[2]['latest_check'] == 0.0
 
 
@@ -281,8 +281,8 @@ def test_table_expenses_empty(incomes):
     assert actual[0]['incomes'] == 100.0
     assert actual[0]['invested'] == 98.0
     assert actual[0]['market_value'] == 0.0
-    assert round(actual[0]['profit_invested_proc'], 2) == -100.0
-    assert actual[0]['profit_invested_sum'] == -98.0
+    assert round(actual[0]['profit_proc'], 2) == -100.0
+    assert actual[0]['profit_sum'] == -98.0
     assert actual[0]['latest_check'] == 0.0
 
     assert actual[1]['id'] == 1
@@ -295,8 +295,8 @@ def test_table_expenses_empty(incomes):
     assert actual[1]['incomes'] == 300.0
     assert actual[1]['invested'] == 294.0
     assert actual[1]['market_value'] == 0.0
-    assert round(actual[1]['profit_invested_proc'], 2) == -100.0
-    assert actual[1]['profit_invested_sum'] == -294.0
+    assert round(actual[1]['profit_proc'], 2) == -100.0
+    assert actual[1]['profit_sum'] == -294.0
     assert actual[1]['latest_check'] == 0.0
 
     assert actual[2]['id'] == 1
@@ -309,8 +309,8 @@ def test_table_expenses_empty(incomes):
     assert actual[2]['incomes'] == 300.0
     assert actual[2]['invested'] == 294.0
     assert actual[2]['market_value'] == 0.0
-    assert round(actual[2]['profit_invested_proc'], 2) == -100.0
-    assert actual[2]['profit_invested_sum'] == -294.0
+    assert round(actual[2]['profit_proc'], 2) == -100.0
+    assert actual[2]['profit_sum'] == -294.0
     assert actual[2]['latest_check'] == 0.0
 
 
@@ -329,8 +329,8 @@ def test_table_only_have(have):
     assert actual[0]['incomes'] == 0.0
     assert actual[0]['invested'] == 0.0
     assert actual[0]['market_value'] == 75.0
-    assert round(actual[0]['profit_invested_proc'], 2) == 0.0
-    assert actual[0]['profit_invested_sum'] == 75.0
+    assert round(actual[0]['profit_proc'], 2) == 0.0
+    assert actual[0]['profit_sum'] == 75.0
     assert actual[0]['latest_check'] == datetime(1999, 1, 1)
 
     assert actual[1]['id'] == 1
@@ -343,8 +343,8 @@ def test_table_only_have(have):
     assert actual[1]['incomes'] == 0.0
     assert actual[1]['invested'] == 0.0
     assert actual[1]['market_value'] == 300.0
-    assert round(actual[1]['profit_invested_proc'], 2) == 0.0
-    assert actual[1]['profit_invested_sum'] == 300.0
+    assert round(actual[1]['profit_proc'], 2) == 0.0
+    assert actual[1]['profit_sum'] == 300.0
     assert actual[1]['latest_check'] == datetime(2000, 1, 1)
 
     assert actual[2]['id'] == 1
@@ -357,6 +357,6 @@ def test_table_only_have(have):
     assert actual[2]['incomes'] == 0.0
     assert actual[2]['invested'] == 0.0
     assert actual[2]['market_value'] == 300.0
-    assert round(actual[2]['profit_invested_proc'], 2) == 0.0
-    assert actual[2]['profit_invested_sum'] == 300.0
+    assert round(actual[2]['profit_proc'], 2) == 0.0
+    assert actual[2]['profit_sum'] == 300.0
     assert actual[2]['latest_check'] == datetime(2000, 1, 1)

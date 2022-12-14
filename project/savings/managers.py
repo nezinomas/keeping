@@ -166,7 +166,7 @@ class SavingBalanceQuerySet(models.QuerySet):
                 Q(saving_type__closed__gt=F('y'))) \
             .annotate(
                 invested=Sum('invested'),
-                profit=Sum('profit_invested_sum')) \
+                profit=Sum('profit_sum')) \
             .order_by('year') \
             .values(
                 'year',
@@ -182,7 +182,7 @@ class SavingBalanceQuerySet(models.QuerySet):
             .values('y') \
             .annotate(
                 invested=Sum('invested'),
-                profit=Sum('profit_invested_sum')) \
+                profit=Sum('profit_sum')) \
             .order_by('year') \
             .values(
                 'year',

@@ -646,8 +646,8 @@ def test_saving_balance_init():
     assert actual.invested == 2.3
     assert actual.incomes == 2.4
     assert actual.market_value == 2.5
-    assert actual.profit_invested_proc == 2.8
-    assert actual.profit_invested_sum == 2.9
+    assert actual.profit_proc == 2.8
+    assert actual.profit_sum == 2.9
 
 
 def test_saving_balance_str():
