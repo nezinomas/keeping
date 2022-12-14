@@ -192,30 +192,20 @@ class SignalBase(ABC):
         return hv.set_index(idx)
 
     def insert_future_data(self, df: DF) -> DF:
-        idx, idx_reverse = ['id', 'year'], ['year', 'id']
-        df = df.copy().reset_index()
-        # set and sort index
-        df.set_index(idx_reverse, inplace=True)
-        df.sort_index(level=idx_reverse, inplace=True)
-        # get last year in df
-        year = df.index.levels[0][-1]
-        # create new df as copy of last_group (year, id)
-        df_last_group = df.loc[year].copy()
-        df_last_group[['incomes', 'expenses']] = 0.0
-        df_last_group.loc[:, 'year'] = year + 1
-        # if last_group_has fee column
-        if 'fee' in df_last_group.columns:
-            df_last_group[['fee']] = 0.0
-        # reset indexes
-        df.reset_index(inplace=True)
-        df_last_group.reset_index(inplace=True)
-        # concat two dataframes
-        df = pd.concat([df, df_last_group])
-        # set index (id, year) and sort
-        df.set_index(idx, inplace=True)
-        df.sort_index(level=idx, inplace=True)
-
-        return df
+        # last year in dataframe
+        year = df.index.levels[1].max()
+        # get last group of (year, id)
+        last_group = df.groupby(['year', 'id']).last().loc[year].reset_index()
+        # insert column year with value year+1
+        last_group['year'] = year + 1
+        last_group.set_index(['id', 'year'], inplace=True)
+        # set incomes, expenses | fee columns values to 0
+        last_group[['incomes', 'expenses']] = 0.0
+        if 'fee' in last_group.columns:
+            last_group[['fee']] = 0.0
+        # join dataframes
+        df = pd.concat([df, last_group])
+        return df.sort_index()
 
 
 class Accounts(SignalBase):
