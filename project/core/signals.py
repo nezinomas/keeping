@@ -179,6 +179,10 @@ class SignalBase(ABC):
         df = self._table.copy().reset_index()
         return df.to_dict('records')
 
+    @abstractmethod
+    def make_table(self, df: DF) -> DF:
+        ...
+
     def _make_df(self, arr: list[dict], cols: list) -> DF:
         col_idx = ['id', 'year']
         # create df from incomes and expenses
@@ -231,14 +235,14 @@ class Accounts(SignalBase):
         _hv = self._make_have(data.have)
         _df = self._join_df(_df, _hv)
 
-        self._table = self._make_table(_df)
+        self._table = self.make_table(_df)
 
     def _join_df(self, df: DF, hv: DF) -> DF:
         df = pd.concat([df, hv], axis=1).fillna(0.0)
         df[['past', 'balance', 'delta']] = 0.0
         return df
 
-    def _make_table(self, df: DF) -> DF:
+    def make_table(self, df: DF) -> DF:
         if df.empty:
             return df
         # insert extra group for future year
@@ -265,7 +269,7 @@ class Savings(SignalBase):
         _hv = self._make_have(data.have)
         _df = self._join_df(_in, _ex, _hv)
 
-        self._table = self._make_table(_df)
+        self._table = self.make_table(_df)
 
     def _join_df(self, inc: DF, exp: DF, hv: DF) -> DF:
         # drop expenses column, rename fee
@@ -290,7 +294,7 @@ class Savings(SignalBase):
         df.drop(columns=['fee_inc', 'fee_exp'], inplace=True)
         return df
 
-    def _make_table(self, df: DF) -> DF:
+    def make_table(self, df: DF) -> DF:
         if df.empty:
             return df
 
