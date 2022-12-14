@@ -237,11 +237,6 @@ class Accounts(SignalBase):
 
         self._table = self.make_table(_df)
 
-    def _join_df(self, df: DF, hv: DF) -> DF:
-        df = pd.concat([df, hv], axis=1).fillna(0.0)
-        df[['past', 'balance', 'delta']] = 0.0
-        return df
-
     def make_table(self, df: DF) -> DF:
         if df.empty:
             return df
@@ -260,6 +255,10 @@ class Accounts(SignalBase):
         df.delta = df.have - df.balance
         return df
 
+    def _join_df(self, df: DF, hv: DF) -> DF:
+        df = pd.concat([df, hv], axis=1).fillna(0.0)
+        df[['past', 'balance', 'delta']] = 0.0
+        return df
 
 class Savings(SignalBase):
     def __init__(self, data: GetData):
@@ -270,29 +269,6 @@ class Savings(SignalBase):
         _df = self._join_df(_in, _ex, _hv)
 
         self._table = self.make_table(_df)
-
-    def _join_df(self, inc: DF, exp: DF, hv: DF) -> DF:
-        # drop expenses column, rename fee
-        inc.drop(columns=['expenses'], inplace=True)
-        inc.rename(columns={'fee': 'fee_inc'}, inplace=True)
-        # drop incomes column, rename fee
-        exp.drop(columns=['incomes'], inplace=True)
-        exp.rename(columns={'fee': 'fee_exp'}, inplace=True)
-        # concat dataframes, sum fees
-        df = pd.concat([inc, exp, hv], axis=1).fillna(0.0)
-        df['fee'] = df.fee_inc + df.fee_exp
-        # rename have -> market_value
-        df.rename(columns={'have': 'market_value'}, inplace=True)
-        # create columns
-        cols = [
-            'past_amount', 'past_fee',
-            'per_year_incomes', 'per_year_fee',
-            'invested',
-            'profit_invested_proc', 'profit_invested_sum']
-        df[cols] = 0.0
-        # drop tmp columns
-        df.drop(columns=['fee_inc', 'fee_exp'], inplace=True)
-        return df
 
     def make_table(self, df: DF) -> DF:
         if df.empty:
@@ -321,6 +297,29 @@ class Savings(SignalBase):
         # drop tmp columns
         df.drop(columns=['expenses', 'tmp1', 'tmp2'], inplace=True)
 
+        return df
+
+    def _join_df(self, inc: DF, exp: DF, hv: DF) -> DF:
+        # drop expenses column, rename fee
+        inc.drop(columns=['expenses'], inplace=True)
+        inc.rename(columns={'fee': 'fee_inc'}, inplace=True)
+        # drop incomes column, rename fee
+        exp.drop(columns=['incomes'], inplace=True)
+        exp.rename(columns={'fee': 'fee_exp'}, inplace=True)
+        # concat dataframes, sum fees
+        df = pd.concat([inc, exp, hv], axis=1).fillna(0.0)
+        df['fee'] = df.fee_inc + df.fee_exp
+        # rename have -> market_value
+        df.rename(columns={'have': 'market_value'}, inplace=True)
+        # create columns
+        cols = [
+            'past_amount', 'past_fee',
+            'per_year_incomes', 'per_year_fee',
+            'invested',
+            'profit_invested_proc', 'profit_invested_sum']
+        df[cols] = 0.0
+        # drop tmp columns
+        df.drop(columns=['fee_inc', 'fee_exp'], inplace=True)
         return df
 
     @staticmethod
