@@ -1,6 +1,7 @@
-from collections import defaultdict
 import contextlib
 import itertools as it
+from abc import ABC, abstractmethod
+from collections import defaultdict
 from dataclasses import dataclass, field
 
 import pandas as pd
@@ -172,18 +173,56 @@ class GetData:
         return items
 
 
-class Accounts:
-    def __init__(self, data: GetData):
-        _df = self._make_df(data.incomes, data.expenses)
-        _hv = self._make_have(data.have)
-
-        self._table = self._make_table(_df, _hv)
-
+class SignalBase(ABC):
     @property
     def table(self):
         df = self._table.copy().reset_index()
 
         return df.to_dict('records')
+
+    def make_have(self, have: list[dict]) -> DF:
+        hv = pd.DataFrame(have)
+        idx = ['id', 'year']
+        if hv.empty:
+            cols = ['id', 'year', 'have', 'latest_check']
+            return pd.DataFrame(defaultdict(list), columns=cols).set_index(idx)
+        # convert Decimal -> float
+        hv['have'] = hv['have'].apply(pd.to_numeric, downcast='float')
+
+        return hv.set_index(idx)
+
+    def insert_future_data(self, df: DF) -> DF:
+        idx, idx_reverse = ['id', 'year'], ['year', 'id']
+        df = df.copy().reset_index()
+        df.set_index(idx_reverse, inplace=True)
+        df.sort_index(level=idx_reverse, inplace=True)
+        # get last year in df
+        year = list(df.index.levels[0])[-1]
+        # create new df as copy of last_group (year, id)
+        df_last_group = df.loc[year].copy()
+        df_last_group[['incomes', 'expenses']] = 0.0
+        df_last_group.loc[:, 'year'] = year + 1
+        # if last_group_has fee column
+        if 'fee' in df_last_group.columns:
+            df_last_group[['fee']] = 0.0
+        # reset indexes
+        df.reset_index(inplace=True)
+        df_last_group.reset_index(inplace=True)
+        # concat two dataframes
+        df = pd.concat([df, df_last_group])
+        # set index (id, year) and sort
+        df.set_index(idx, inplace=True)
+        df.sort_index(level=idx, inplace=True)
+
+        return df
+
+
+class Accounts(SignalBase):
+    def __init__(self, data: GetData):
+        _df = self._make_df(data.incomes, data.expenses)
+        _hv = self.make_have(data.have)
+
+        self._table = self._make_table(_df, _hv)
 
     def _make_df(self, incomes: list[dict], expenses: list[dict]) -> DF:
         col_idx = [
@@ -212,19 +251,6 @@ class Accounts:
 
         return df
 
-
-    def _make_have(self, have: list[dict]) -> DF:
-        hv = pd.DataFrame(have)
-        idx = ['id', 'year']
-        if hv.empty:
-            cols = ['id', 'year', 'have', 'latest_check']
-            return pd.DataFrame(defaultdict(list), columns=cols).set_index(idx)
-
-        # convert Decimal -> float
-        hv['have'] = hv['have'].apply(pd.to_numeric, downcast='float')
-
-        return hv.set_index(idx)
-
     def _make_table(self, df: DF, hv: DF) -> DF:
         df = df.copy()
         hv = hv.copy()
@@ -233,7 +259,7 @@ class Accounts:
         if df.empty:
             return df
         # insert extra group for future year
-        df = self._insert_future_data(df)
+        df = self.insert_future_data(df)
         # balance without past
         df.balance = df.incomes - df.expenses
         # temp column for each id group with balance cumulative sum
@@ -247,42 +273,14 @@ class Accounts:
         df.delta = df.have - df.balance
         return df
 
-    def _insert_future_data(self, df: DF) -> DF:
-        idx, idx_reverse = ['id', 'year'], ['year', 'id']
-        df = df.copy().reset_index()
-        df.set_index(idx_reverse, inplace=True)
-        df.sort_index(level=idx_reverse, inplace=True)
-        # get last year in df
-        year = list(df.index.levels[0])[-1]
-        # create new df as copy of last_group (year, id)
-        df_last_group = df.loc[year].copy()
-        df_last_group[['incomes', 'expenses']] = 0.0
-        df_last_group.loc[:, 'year'] = year + 1
-        # reset indexes
-        df.reset_index(inplace=True)
-        df_last_group.reset_index(inplace=True)
-        # concat two dataframes
-        df = pd.concat([df, df_last_group])
-        # set index (id, year) and sort
-        df.set_index(idx, inplace=True)
-        df.sort_index(level=idx, inplace=True)
 
-        return df
-
-
-class Savings:
+class Savings(SignalBase):
     def __init__(self, data: GetData):
         _in = self._make_df(data.incomes)
         _ex = self._make_df(data.expenses)
-        _hv = self._make_have(data.have)
+        _hv = self.make_have(data.have)
 
         self._table = self._make_table(_in, _ex, _hv)
-
-    @property
-    def table(self):
-        df = self._table.copy().reset_index()
-
-        return df.to_dict('records')
 
     def _make_df(self, arr: list[dict]) -> DF:
         col_idx = [
@@ -308,18 +306,6 @@ class Savings:
         df = df.groupby(col_idx)[col_num].sum(numeric_only=True)
 
         return df
-
-    def _make_have(self, have: list[dict]) -> DF:
-        hv = pd.DataFrame(have)
-        idx = ['id', 'year']
-        if hv.empty:
-            cols = ['id', 'year', 'have', 'latest_check']
-            return pd.DataFrame(defaultdict(list), columns=cols).set_index(idx)
-
-        # convert Decimal -> float
-        hv['have'] = hv['have'].apply(pd.to_numeric, downcast='float')
-
-        return hv.set_index(idx)
 
     def _join_df(self, inc: DF, exp: DF, hv: DF) -> DF:
         # drop expenses column, rename fee
@@ -349,7 +335,7 @@ class Savings:
         if df.empty:
             return df
 
-        df = self._insert_future_data(df)
+        df = self.insert_future_data(df)
         # calculate incomes
         df.per_year_incomes = df.incomes - df.expenses
         df.per_year_fee = df.fee
@@ -371,28 +357,6 @@ class Savings:
             df[['market_value', 'invested']].apply(Savings.calc_percent, axis=1)
         # drop tmp columns
         df.drop(columns=['expenses', 'tmp1', 'tmp2'], inplace=True)
-
-        return df
-
-    def _insert_future_data(self, df: DF) -> DF:
-        idx, idx_reverse = ['id', 'year'], ['year', 'id']
-        df = df.copy().reset_index()
-        df.set_index(idx_reverse, inplace=True)
-        df.sort_index(level=idx_reverse, inplace=True)
-        # get last year in df
-        year = list(df.index.levels[0])[-1]
-        # create new df as copy of last_group (year, id)
-        df_last_group = df.loc[year].copy()
-        df_last_group[['incomes', 'expenses', 'fee']] = 0.0
-        df_last_group.loc[:, 'year'] = year + 1
-        # reset indexes
-        df.reset_index(inplace=True)
-        df_last_group.reset_index(inplace=True)
-        # concat two dataframes
-        df = pd.concat([df, df_last_group])
-        # set index (id, year) and sort
-        df.set_index(idx, inplace=True)
-        df.sort_index(level=idx, inplace=True)
 
         return df
 
