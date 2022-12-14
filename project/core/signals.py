@@ -180,7 +180,7 @@ class SignalBase(ABC):
 
         return df.to_dict('records')
 
-    def make_have(self, have: list[dict]) -> DF:
+    def _make_have(self, have: list[dict]) -> DF:
         hv = pd.DataFrame(have)
         idx = ['id', 'year']
         if hv.empty:
@@ -191,7 +191,7 @@ class SignalBase(ABC):
 
         return hv.set_index(idx)
 
-    def insert_future_data(self, df: DF) -> DF:
+    def _insert_future_data(self, df: DF) -> DF:
         # last year in dataframe
         year = df.index.levels[1].max()
         # get last group of (year, id)
@@ -211,7 +211,7 @@ class SignalBase(ABC):
 class Accounts(SignalBase):
     def __init__(self, data: GetData):
         _df = self._make_df(data.incomes, data.expenses)
-        _hv = self.make_have(data.have)
+        _hv = self._make_have(data.have)
 
         self._table = self._make_table(_df, _hv)
 
@@ -250,7 +250,7 @@ class Accounts(SignalBase):
         if df.empty:
             return df
         # insert extra group for future year
-        df = self.insert_future_data(df)
+        df = self._insert_future_data(df)
         # balance without past
         df.balance = df.incomes - df.expenses
         # temp column for each id group with balance cumulative sum
@@ -269,7 +269,7 @@ class Savings(SignalBase):
     def __init__(self, data: GetData):
         _in = self._make_df(data.incomes)
         _ex = self._make_df(data.expenses)
-        _hv = self.make_have(data.have)
+        _hv = self._make_have(data.have)
 
         self._table = self._make_table(_in, _ex, _hv)
 
@@ -326,7 +326,7 @@ class Savings(SignalBase):
         if df.empty:
             return df
 
-        df = self.insert_future_data(df)
+        df = self._insert_future_data(df)
         # calculate incomes
         df.per_year_incomes = df.incomes - df.expenses
         df.per_year_fee = df.fee
