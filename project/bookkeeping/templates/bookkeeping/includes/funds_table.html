@@ -69,7 +69,7 @@
             {% table_cell value=total_row.invested tag='th' %}
             {% table_cell value=total_row.market_value tag='th' css_class='right-blue-border' %}
             {% table_cell value=total_row.profit_sum text_after='€' highlight_value=True tag='th' %}
-            {% table_cell value=profit_proc text_after='%' highlight_value=True tag='th' %}
+            {% table_cell value=total_row.profit_proc text_after='%' highlight_value=True tag='th' %}
         </tr>
     </tfoot>
 </table>

@@ -5,6 +5,7 @@ from django.db.models import Sum
 from django.db.models.fields import FloatField
 
 from ...core.lib import utils
+from ...core.signals import Savings as signal_savings
 from ...incomes.models import Income
 from ...savings.models import SavingBalance
 from .index import IndexService
@@ -46,6 +47,8 @@ class SavingsService:
             'profit_sum',
         ]
         total_row = utils.sum_all(self.data, fields)
+        args = (total_row['market_value'], total_row['invested'])
+        total_row['profit_proc'] = signal_savings.calc_percent(args)
 
         total_past = total_row.get('past_amount', 0)
         total_savings = total_row.get('incomes', 0)
