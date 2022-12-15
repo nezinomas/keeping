@@ -280,11 +280,13 @@ class Savings(SignalBase):
         df.per_year_incomes = df.incomes
         df.per_year_fee = df.fee
         # calculate past_amount
-        df['tmp1'] = df.groupby("id")['per_year_incomes'].cumsum()
-        df.past_amount = df.groupby("id")['tmp1'].shift(fill_value=0.0)
+        df['tmp'] = df.groupby("id")['per_year_incomes'].cumsum()
+        df.past_amount = df.groupby("id")['tmp'].shift(fill_value=0.0)
         # calculate past_fee
-        df['tmp2'] = df.groupby("id")['per_year_fee'].cumsum()
-        df.past_fee = df.groupby("id")['tmp2'].shift(fill_value=0.0)
+        df['tmp'] = df.groupby("id")['per_year_fee'].cumsum()
+        df.past_fee = df.groupby("id")['tmp'].shift(fill_value=0.0)
+        # drop tmp columns
+        df.drop(columns=['tmp'], inplace=True)
         # calculate sold
         df.sold = df.groupby("id")['sold'].cumsum()
         df.sold_fee = df.groupby("id")['sold_fee'].cumsum()
@@ -298,9 +300,6 @@ class Savings(SignalBase):
         df.profit_sum = df.market_value - df.invested
         df.profit_proc = \
             df[['market_value', 'invested']].apply(Savings.calc_percent, axis=1)
-        # drop tmp columns
-        df.drop(columns=['tmp1', 'tmp2'], inplace=True)
-
         return df
 
     def _join_df(self, inc: DF, exp: DF, hv: DF) -> DF:
