@@ -217,10 +217,12 @@ class SignalBase(ABC):
         # insert column year with value year+1
         last_group['year'] = year + 1
         last_group.set_index(['id', 'year'], inplace=True)
-        # set incomes, expenses | fee columns values to 0
-        last_group[['incomes', 'expenses']] = 0.0
+        # reset columns values to 0.0
+        # if fee in columns -> Savings dataframe, else -> Accounts dataframe
         if 'fee' in last_group.columns:
-            last_group[['fee']] = 0.0
+            last_group[['incomes', 'fee', 'sold', 'sold_fee']] = 0.0
+        else:
+            last_group[['incomes', 'expenses']] = 0.0
         # join dataframes
         df = pd.concat([df, last_group])
         return df.sort_index()
@@ -273,8 +275,9 @@ class Savings(SignalBase):
             return df
 
         df = self._insert_future_data(df)
+
         # calculate incomes
-        df.per_year_incomes = df.incomes - df.expenses
+        df.per_year_incomes = df.incomes
         df.per_year_fee = df.fee
         # calculate past_amount
         df['tmp1'] = df.groupby("id")['per_year_incomes'].cumsum()
@@ -282,31 +285,32 @@ class Savings(SignalBase):
         # calculate past_fee
         df['tmp2'] = df.groupby("id")['per_year_fee'].cumsum()
         df.past_fee = df.groupby("id")['tmp2'].shift(fill_value=0.0)
+        # calculate sold
+        df.sold = df.groupby("id")['sold'].cumsum()
+        df.sold_fee = df.groupby("id")['sold_fee'].cumsum()
         # recalculate incomes and fees with past values
         df.incomes = df.past_amount + df.per_year_incomes
         df.fee = df.past_fee + df.per_year_fee
         # calculate invested, invested cannot by negative
-        df.invested = df.incomes - df.fee
+        df.invested = df.incomes - df.fee - df.sold - df.sold_fee
         df.invested = df.invested.mask(df.invested < 0, 0.0)
         # calculate profit/loss
         df.profit_sum = df.market_value - df.invested
         df.profit_proc = \
             df[['market_value', 'invested']].apply(Savings.calc_percent, axis=1)
         # drop tmp columns
-        df.drop(columns=['expenses', 'tmp1', 'tmp2'], inplace=True)
+        df.drop(columns=['tmp1', 'tmp2'], inplace=True)
 
         return df
 
     def _join_df(self, inc: DF, exp: DF, hv: DF) -> DF:
-        # drop expenses column, rename fee
+        # drop expenses column
         inc.drop(columns=['expenses'], inplace=True)
-        inc.rename(columns={'fee': 'fee_inc'}, inplace=True)
         # drop incomes column, rename fee
         exp.drop(columns=['incomes'], inplace=True)
-        exp.rename(columns={'fee': 'fee_exp'}, inplace=True)
+        exp.rename(columns={'fee': 'sold_fee', 'expenses': 'sold'}, inplace=True)
         # concat dataframes, sum fees
         df = pd.concat([inc, exp, hv], axis=1).fillna(0.0)
-        df['fee'] = df.fee_inc + df.fee_exp
         # rename have -> market_value
         df.rename(columns={'have': 'market_value'}, inplace=True)
         # create columns
@@ -316,8 +320,7 @@ class Savings(SignalBase):
             'invested',
             'profit_proc', 'profit_sum']
         df[cols] = 0.0
-        # drop tmp columns
-        df.drop(columns=['fee_inc', 'fee_exp'], inplace=True)
+
         return df
 
     @staticmethod
