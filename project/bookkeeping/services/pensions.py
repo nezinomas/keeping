@@ -30,6 +30,6 @@ class PensionsService:
             'profit_sum',
         ]
         total_row = utils.sum_all(self.data, fields)
-        args = (total_row['market_value'], total_row['invested'])
+        args = (total_row.get('market_value', 0), total_row.get('invested', 0))
         total_row['profit_proc'] = signal_savings.calc_percent(args)
         return total_row
