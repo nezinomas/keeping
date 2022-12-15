@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
 from ...core.lib import utils
+from ...core.signals import Savings as signal_savings
 from ...pensions.models import PensionBalance
 
 
@@ -21,16 +22,14 @@ class PensionsService:
     @property
     def total_row(self) -> dict:
         fields = [
-            'past_amount',
-            'past_fee',
-            'incomes',
-            'fee',
-            'per_year_incomes',
-            'per_year_fee',
-            'invested',
-            'market_value',
+            'past_amount', 'past_fee',
+            'per_year_incomes', 'per_year_fee',
+            'fee', 'incomes',
+            'sold', 'sold_fee',
+            'invested', 'market_value',
             'profit_sum',
-            'profit_proc',
         ]
-
-        return utils.sum_all(self.data, fields)
+        total_row = utils.sum_all(self.data, fields)
+        args = (total_row['market_value'], total_row['invested'])
+        total_row['profit_proc'] = signal_savings.calc_percent(args)
+        return total_row
