@@ -150,6 +150,26 @@ def test_drink_target_valid_data(type, qty, expect):
     assert data.user.username == 'bob'
 
 
+@pytest.mark.parametrize(
+    'year',
+    [
+        ('2000-01-01'), ('2000'), (2000),
+    ]
+)
+def test_drink_target_valid_data_year_field(year):
+    form = DrinkTargetForm(data={
+        'year': year,
+        'quantity': 1,
+        'drink_type': 'beer'
+    })
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.year == 2000
+
+
 def test_drink_target_year_validation():
     DrinkTargetFactory()
 

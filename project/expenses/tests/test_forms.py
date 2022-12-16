@@ -374,13 +374,19 @@ def test_expense_name_current_user_expense_types(second_user):
     assert 'T2' not in form
 
 
-def test_expense_name_valid_data():
+@pytest.mark.parametrize(
+    'valid_for',
+    [
+        ('2000-01-01'), ('2000'), (2000),
+    ]
+)
+def test_expense_name_valid_data(valid_for):
     p = ExpenseTypeFactory()
 
     form = ExpenseNameForm(data={
         'title': 'Title',
         'parent': p.pk,
-        'valid_for': 1999
+        'valid_for': valid_for
     })
 
     assert form.is_valid()
@@ -388,7 +394,7 @@ def test_expense_name_valid_data():
     data = form.save()
 
     assert data.title == 'Title'
-    assert data.valid_for == 1999
+    assert data.valid_for == 2000
 
 
 def test_expense_name_blank_data():

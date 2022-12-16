@@ -199,9 +199,15 @@ def test_book_target_year_initial_value():
     assert '<input type="text" name="year" value="1999"' in form
 
 
-def test_book_target_valid_data():
+@pytest.mark.parametrize(
+    'year',
+    [
+        ('2000-01-01'), ('2000'), (2000),
+    ]
+)
+def test_book_target_valid_data(year):
     form = BookTargetForm(data={
-        'year': 1999,
+        'year': year,
         'quantity': 1.0
     })
 
@@ -209,7 +215,7 @@ def test_book_target_valid_data():
 
     data = form.save()
 
-    assert data.year == 1999
+    assert data.year == 2000
     assert data.quantity == 1.0
     assert data.user.username == 'bob'
 

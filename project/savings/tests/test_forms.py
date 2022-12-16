@@ -26,11 +26,16 @@ def test_saving_type_init_fields():
     assert '<input type="text" name="closed"' in form
     assert '<select name="user"' not in form
 
-
-def test_saving_type_valid_data():
+@pytest.mark.parametrize(
+    'closed',
+    [
+        ('2000-01-01'), ('2000'), (2000),
+    ]
+)
+def test_saving_type_valid_data(closed):
     form = SavingTypeForm(data={
         'title': 'Title',
-        'closed': '2000',
+        'closed': closed,
         'type': 'funds',
     })
 

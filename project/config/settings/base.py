@@ -191,5 +191,8 @@ BOOTSTRAP_DATEPICKER_PLUS = {
         "date": {
             "format": "YYYY-MM-DD",
         },
+        "year": {
+            "format": "YYYY",
+        },
     }
 }

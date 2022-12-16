@@ -24,11 +24,17 @@ def test_account_form_has_fields():
     assert '<select name="user"' not in form
 
 
-def test_account_valid_data():
+@pytest.mark.parametrize(
+    'closed',
+    [
+        ('2000-01-01'), ('2000'), (2000),
+    ]
+)
+def test_account_valid_data(closed):
     form = AccountForm(data={
         'title': 'Title',
         'order': '1',
-        'closed': '1999',
+        'closed': closed,
     })
 
     assert form.is_valid()
@@ -37,7 +43,7 @@ def test_account_valid_data():
 
     assert data.title == 'Title'
     assert data.order == 1
-    assert data.closed == 1999
+    assert data.closed == 2000
     assert data.journal.users.first().username == 'bob'
 
 

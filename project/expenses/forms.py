@@ -216,3 +216,9 @@ class ExpenseNameForm(forms.ModelForm):
         # crispy forms settings
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        utils.clean_year_picker_input('valid_for', self.data, cleaned_data, self.errors)
+
+        return cleaned_data

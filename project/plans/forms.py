@@ -33,10 +33,17 @@ def set_journal_field(fields):
     fields['journal'].widget = forms.HiddenInput()
 
 
+class YearCleanMixin:
+    def clean(self):
+        cleaned_data = super().clean()
+        utils.clean_year_picker_input('year', self.data, cleaned_data, self.errors)
+        return cleaned_data
+
+
 # ----------------------------------------------------------------------------
 #                                                             Income Plan Form
 # ----------------------------------------------------------------------------
-class IncomePlanForm(forms.ModelForm):
+class IncomePlanForm(YearCleanMixin, forms.ModelForm):
     class Meta:
         model = IncomePlan
         fields = ['journal', 'year', 'income_type'] + monthnames()
@@ -70,7 +77,7 @@ class IncomePlanForm(forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                            Expense Plan Form
 # ----------------------------------------------------------------------------
-class ExpensePlanForm(forms.ModelForm):
+class ExpensePlanForm(YearCleanMixin, forms.ModelForm):
     class Meta:
         model = ExpensePlan
         fields = ['journal', 'year', 'expense_type'] + monthnames()
@@ -104,7 +111,7 @@ class ExpensePlanForm(forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                              Saving Plan Form
 # ----------------------------------------------------------------------------
-class SavingPlanForm(forms.ModelForm):
+class SavingPlanForm(YearCleanMixin, forms.ModelForm):
     class Meta:
         model = SavingPlan
         fields = ['journal', 'year', 'saving_type'] + monthnames()
@@ -140,7 +147,7 @@ class SavingPlanForm(forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                                Day Plan Form
 # ----------------------------------------------------------------------------
-class DayPlanForm(forms.ModelForm):
+class DayPlanForm(YearCleanMixin, forms.ModelForm):
     class Meta:
         model = DayPlan
         fields = ['journal', 'year'] + monthnames()
@@ -170,7 +177,7 @@ class DayPlanForm(forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                          Necessary Plan Form
 # ----------------------------------------------------------------------------
-class NecessaryPlanForm(forms.ModelForm):
+class NecessaryPlanForm(YearCleanMixin, forms.ModelForm):
     class Meta:
         model = NecessaryPlan
         fields = ['journal', 'year', 'title'] + monthnames()
@@ -242,10 +249,16 @@ class CopyPlanForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-
         dict_ = self._get_cleaned_checkboxes(cleaned_data)
+
+        utils.clean_year_picker_input('year_from', self.data, cleaned_data, self.errors)
+        utils.clean_year_picker_input('year_to', self.data, cleaned_data, self.errors)
+
         year_from = cleaned_data.get('year_from')
         year_to = cleaned_data.get('year_to')
+
+        if not year_to or not year_from:
+            return cleaned_data
 
         # at least one checkbox must be selected
         chk = [v for k, v in dict_.items() if v]
@@ -257,7 +270,7 @@ class CopyPlanForm(forms.Form):
 
         # copy from table must contain data
         errors = {}
-        msg = 'Nėra ką kopijuoti.'
+        msg = _('There is nothing to copy.')
         for k, v in dict_.items():
             if v:
                 model = self._get_model(k)
@@ -293,6 +306,7 @@ class CopyPlanForm(forms.Form):
                     obj.pk = None
                     obj.year = year_to
                     obj.save()
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
