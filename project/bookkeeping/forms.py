@@ -59,7 +59,6 @@ class SavingWorthForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # form initial values
-        self.fields['price'].initial = '0'
         self.fields['date'].initial = datetime.now()
 
         # overwrite FK
@@ -81,7 +80,6 @@ class AccountWorthForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # form initial values
-        self.fields['price'].initial = '0'
         self.fields['date'].initial = datetime.now()
 
         # overwrite FK
@@ -102,7 +100,6 @@ class PensionWorthForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['price'].initial = '0'
         self.fields['date'].initial = datetime.now()
 
         # overwrite FK

@@ -100,7 +100,6 @@ def test_saving_blank_data():
 
     assert not form.is_valid()
 
-    assert 'price' in form.errors
     assert 'saving_type' in form.errors
 
 
@@ -185,7 +184,6 @@ def test_account_worth_blank_data():
 
     assert not form.is_valid()
 
-    assert 'price' in form.errors
     assert 'account' in form.errors
 
 
@@ -234,5 +232,4 @@ def test_pension_worth_blank_data():
 
     assert not form.is_valid()
 
-    assert 'price' in form.errors
     assert 'pension_type' in form.errors
