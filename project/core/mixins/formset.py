@@ -5,7 +5,7 @@ from django.forms.models import modelformset_factory
 from django.utils.translation import gettext as _
 
 from ...core.mixins.views import httpHtmxResponse
-
+from decimal import Decimal
 
 class BaseTypeFormSet(BaseFormSet):
     def clean(self):
@@ -45,7 +45,7 @@ class FormsetMixin():
 
         model = self.get_type_model()
         _objects = model.objects.items()
-        _list.extend({'price': 0, foreign_key[0]: _object} for _object in _objects)
+        _list.extend({'price': None, foreign_key[0]: _object} for _object in _objects)
 
         return _list
 
@@ -80,10 +80,12 @@ class FormsetMixin():
             for form in formset:
                 price = form.cleaned_data.get('price')
 
-                # if from has price and price > 0 save that form
-                if float(price) > 0:
-                    form.instance.date = date
-                    form.save()
+                if not isinstance(price, Decimal):
+                    continue
+
+                # if from has price (price can be 0) save that form
+                form.instance.date = date
+                form.save()
 
             return httpHtmxResponse(self.get_hx_trigger_django())
 
