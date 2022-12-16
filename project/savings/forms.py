@@ -21,7 +21,6 @@ class SavingTypeForm(forms.ModelForm):
 
         self.fields['closed'].widget = YearPickerInput(
             options={
-                "format": "YYYY",
                 "locale": utils.get_user().journal.lang,
             })
 
@@ -36,6 +35,12 @@ class SavingTypeForm(forms.ModelForm):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        utils.clean_year_picker_input('closed', self.data, cleaned_data, self.errors)
+
+        return cleaned_data
 
 
 class SavingForm(YearBetweenMixin, forms.ModelForm):

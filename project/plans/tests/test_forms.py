@@ -62,10 +62,16 @@ def test_income_current_user_types(second_user):
     assert 'T2' not in form
 
 
-def test_income_valid_data():
+@pytest.mark.parametrize(
+    'year',
+    [
+        ('1999-01-01'), ('1999'), (1999),
+    ]
+)
+def test_income_valid_data(year):
     type_ = IncomeTypeFactory()
     form = IncomePlanForm({
-        'year': 1999,
+        'year': year,
         'income_type': type_.pk,
         'january': 15.0,
     })
@@ -208,10 +214,16 @@ def test_expense_current_user_types(second_user):
     assert 'T2' not in form
 
 
-def test_expense_valid_data():
+@pytest.mark.parametrize(
+    'year',
+    [
+        ('1999-01-01'), ('1999'), (1999),
+    ]
+)
+def test_expense_valid_data(year):
     type_ = ExpenseTypeFactory()
     form = ExpensePlanForm({
-        'year': 1999,
+        'year': year,
         'expense_type': type_.pk,
         'january': 15.0,
     })
@@ -314,10 +326,16 @@ def test_saving_current_user_types(second_user):
     assert 'T2' not in form
 
 
-def test_saving_valid_data():
+@pytest.mark.parametrize(
+    'year',
+    [
+        ('1999-01-01'), ('1999'), (1999),
+    ]
+)
+def test_saving_valid_data(year):
     type_ = SavingTypeFactory()
     form = SavingPlanForm({
-        'year': 1999,
+        'year': year,
         'saving_type': type_.pk,
         'january': 15.0,
     })
@@ -447,9 +465,15 @@ def test_day_year_initial_value():
     assert '<input type="text" name="year" value="1999"' in form
 
 
-def test_day_valid_data():
+@pytest.mark.parametrize(
+    'year',
+    [
+        ('1999-01-01'), ('1999'), (1999),
+    ]
+)
+def test_day_valid_data(year):
     form = DayPlanForm({
-        'year': 1999,
+        'year': year,
         'january': 15.0,
     })
 
@@ -527,9 +551,15 @@ def test_income_year_initial_value1():
     assert '<input type="text" name="year" value="1999"' in form
 
 
-def test_necessary_valid_data():
+@pytest.mark.parametrize(
+    'year',
+    [
+        ('1999-01-01'), ('1999'), (1999),
+    ]
+)
+def test_necessary_valid_data(year):
     form = NecessaryPlanForm({
-        'year': 1999,
+        'year': year,
         'title': 'XXX',
         'january': 15.0,
     })
@@ -609,7 +639,6 @@ def test_copy_blank_data():
     assert not form.is_valid()
 
     assert form.errors == {
-        '__all__': ['Reikia pažymėti nors vieną planą.'],
         'year_from': ['Šis laukas yra privalomas.'],
         'year_to': ['Šis laukas yra privalomas.'],
     }

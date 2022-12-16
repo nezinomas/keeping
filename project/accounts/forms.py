@@ -35,3 +35,9 @@ class AccountForm(forms.ModelForm):
         self.fields['title'].label = _('Account title')
         self.fields['closed'].label = _('Closed')
         self.fields['order'].label = _('Sorting')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        utils.clean_year_picker_input('closed', self.data, cleaned_data, self.errors)
+
+        return cleaned_data

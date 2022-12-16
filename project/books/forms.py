@@ -122,6 +122,12 @@ class BookTargetForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+    def clean(self):
+        cleaned_data = super().clean()
+        utils.clean_year_picker_input('year', self.data, cleaned_data, self.errors)
+
+        return cleaned_data
+
     def clean_year(self):
         year = self.cleaned_data['year']
 

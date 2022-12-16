@@ -45,6 +45,7 @@ class SavingType(TitleAbstract):
     def get_absolute_url(self):
         return reverse_lazy("savings:type_update", kwargs={"pk": self.pk})
 
+
 class Saving(models.Model):
     date = models.DateField()
     price = models.DecimalField(
