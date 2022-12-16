@@ -14,6 +14,8 @@ class SavingWorth(models.Model):
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
+        null=True,
+        blank=True,
         validators=[MinValueValidator(Decimal('0.0'))]
     )
     saving_type = models.ForeignKey(
@@ -38,6 +40,8 @@ class AccountWorth(models.Model):
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
+        null=True,
+        blank=True,
         validators=[MinValueValidator(Decimal('0.0'))]
     )
     account = models.ForeignKey(
@@ -62,6 +66,8 @@ class PensionWorth(models.Model):
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
+        null=True,
+        blank=True,
         validators=[MinValueValidator(Decimal('0.0'))]
     )
     pension_type = models.ForeignKey(
