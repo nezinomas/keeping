@@ -5,7 +5,7 @@
     <thead>
         <tr>
             <th class="text-start" colspan="2">{% regenerate_balances type='accounts' %} {% translate 'Accounts' %}</th>
-            <th>01.01</th>
+            <th>{% translate 'Past years' %}</th>
             <th>{% translate 'Incomes' %}</th>
             <th>{% translate 'Expenses' %}</th>
             <th>{% translate 'Balance' %}</th>
@@ -19,7 +19,7 @@
             <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="{{ item.latest_check|default:_('Not specified') }}" class="text-start no-right-border">
                 {{ item.account.title }}
             </td>
-            <td class="no-left-border w5"><button type="button" hx-get="{% url 'bookkeeping:accounts_worth_reset' item.account.pk %}" class="btn btn-xs btn-outline-info rounded-1">{% translate 'Reset' %}{{" "}}{% translate 'Have' %}</button></td>
+            <td class="no-left-border w5"></td>
             {% table_cell value=item.past css_class='w7' %}
             {% table_cell value=item.incomes css_class='w7' %}
             {% table_cell value=item.expenses css_class='w7' %}

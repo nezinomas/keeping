@@ -12,7 +12,7 @@ from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
 from ..pensions.models import PensionType
 from ..plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ..savings.models import SavingType
-from . import forms, mixins, models, services
+from . import forms, models, services
 from .lib.day_spending import DaySpending
 from .lib.expense_balance import ExpenseBalance
 from .lib.no_incomes import NoIncomes as LibNoIncomes
@@ -83,10 +83,6 @@ class AccountsWorthNew(FormsetMixin, CreateViewMixin):
     template_name = 'bookkeeping/includes/account_worth_form.html'
     url = reverse_lazy('bookkeeping:accounts_worth_new')
     hx_trigger_django = 'afterAccountWorthNew'
-
-
-class AccountsWorthReset(mixins.AccountWorthResetMixin):
-    pass
 
 
 class Savings(TemplateViewMixin):
