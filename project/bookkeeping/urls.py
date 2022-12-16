@@ -26,11 +26,6 @@ urlpatterns = [
         name='accounts_worth_new'
     ),
     path(
-        'bookkeeping/accounts_worth/reset/<int:pk>/',
-        views.AccountsWorthReset.as_view(),
-        name='accounts_worth_reset'
-    ),
-    path(
         'bookkeeping/savings/',
         views.Savings.as_view(),
         name='savings'

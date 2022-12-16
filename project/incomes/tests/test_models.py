@@ -214,7 +214,7 @@ def test_income_post_save_different_accounts():
 
     actual = AccountBalance.objects.all()
 
-    assert actual.count() == 2
+    assert actual.count() == 4
 
 
 def test_income_post_save_update_with_nothing_changed():
@@ -241,7 +241,7 @@ def test_income_post_save_change_account():
 
     obj = IncomeFactory(price=5, account=account_old)
 
-    actual = AccountBalance.objects.get(account_id=account_old.pk)
+    actual = AccountBalance.objects.get(account_id=account_old.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 5.0
     assert actual.balance == 5.0
@@ -254,13 +254,13 @@ def test_income_post_save_change_account():
     doest_not_exists = False
 
     try:
-        AccountBalance.objects.get(account_id=account_old.pk)
+        AccountBalance.objects.get(account_id=account_old.pk, year=1999)
     except AccountBalance.DoesNotExist:
         doest_not_exists = True
 
     assert doest_not_exists
 
-    actual = AccountBalance.objects.get(account_id=account_new.pk)
+    actual = AccountBalance.objects.get(account_id=account_new.pk, year=1999)
     assert actual.account.title == 'XXX'
     assert actual.incomes == 5.0
     assert actual.balance == 5.0
@@ -280,14 +280,14 @@ def test_income_post_delete_with_update():
     IncomeFactory(price=1)
 
     obj = IncomeFactory(price=5)
-    actual = AccountBalance.objects.last()
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 6.0
     assert actual.balance == 6.0
 
     Income.objects.get(pk=obj.pk).delete()
 
-    actual = AccountBalance.objects.last()
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 1.0
     assert actual.balance == 1.0
@@ -328,16 +328,16 @@ def test_income_post_save_new_account_balance_count_qs(django_assert_max_num_que
 def test_income_update_post_save_count_qs(django_assert_max_num_queries):
     obj = IncomeFactory(date=date(1999, 1, 1), price=2)
 
-    assert AccountBalance.objects.all().count() == 1
+    assert AccountBalance.objects.all().count() == 2
 
     obj_update = Income.objects.get(pk=obj.pk)
     with django_assert_max_num_queries(17):
         obj_update.price = Decimal('6')
         obj_update.save()
 
-    assert AccountBalance.objects.all().count() == 1
+    assert AccountBalance.objects.all().count() == 2
 
-    actual = AccountBalance.objects.last()
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert actual.incomes == Decimal('6')
     assert actual.balance == Decimal('6')
     assert actual.delta == Decimal('-6')
@@ -413,7 +413,7 @@ def test_income_post_delete_empty_account_balance_table():
 
     actual = AccountBalance.objects.all()
 
-    assert actual.count() == 1
+    assert actual.count() == 2
     assert actual[0].account_id == obj_stay.account.pk
     assert actual[0].year == 1974
     assert actual[0].past == Decimal('0')

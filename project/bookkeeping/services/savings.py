@@ -5,6 +5,7 @@ from django.db.models import Sum
 from django.db.models.fields import FloatField
 
 from ...core.lib import utils
+from ...core.signals import Savings as signal_savings
 from ...incomes.models import Income
 from ...savings.models import SavingBalance
 from .index import IndexService
@@ -37,16 +38,20 @@ class SavingsService:
         self.incomes = data.incomes
 
     def context(self) -> Dict:
-        fields = ['past_amount', 'past_fee',
-                  'per_year_incomes', 'per_year_fee',
-                  'fee', 'invested', 'incomes', 'market_value',
-                  'profit_incomes_sum', 'profit_invested_sum']
+        fields = [
+            'past_amount', 'past_fee',
+            'per_year_incomes', 'per_year_fee',
+            'fee', 'incomes',
+            'sold', 'sold_fee',
+            'invested', 'market_value',
+            'profit_sum',
+        ]
         total_row = utils.sum_all(self.data, fields)
+        args = (total_row.get('market_value', 0), total_row.get('invested', 0))
+        total_row['profit_proc'] = signal_savings.calc_percent(args)
 
         total_past = total_row.get('past_amount', 0)
         total_savings = total_row.get('incomes', 0)
-        total_invested = total_row.get('invested', 0)
-        total_market = total_row.get('market_value', 0)
         total_savings_current_year = total_savings - total_past
 
         calculate_percent = IndexService.percentage_from_incomes
@@ -56,8 +61,4 @@ class SavingsService:
             'total_row': total_row,
             'percentage_from_incomes': \
                 calculate_percent(self.incomes, total_savings_current_year),
-            'profit_incomes_proc': \
-                calculate_percent(total_savings, total_market) - 100,
-            'profit_invested_proc': \
-                calculate_percent(total_invested, total_market) - 100,
         }

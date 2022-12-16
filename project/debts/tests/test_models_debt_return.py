@@ -308,7 +308,7 @@ def test_borrow_return_post_save_first_record():
 def test_lend_return_post_delete():
     obj = LendReturnFactory()
 
-    actual = AccountBalance.objects.last()
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 5.0
     assert actual.expenses == 100.0
@@ -316,7 +316,7 @@ def test_lend_return_post_delete():
 
     DebtReturn.objects.get(pk=obj.pk).delete()
 
-    actual = AccountBalance.objects.last()
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 0.0
     assert actual.expenses == 100.0
@@ -326,7 +326,7 @@ def test_lend_return_post_delete():
 def test_borrow_return_post_delete():
     obj = BorrowReturnFactory()
 
-    actual = AccountBalance.objects.last()
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 100.0
     assert actual.expenses == 5.0
@@ -334,7 +334,7 @@ def test_borrow_return_post_delete():
 
     DebtReturn.objects.get(pk=obj.pk).delete()
 
-    actual = AccountBalance.objects.last()
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 100.0
     assert actual.expenses == 0.0
@@ -347,7 +347,7 @@ def test_lend_return_post_delete_with_updt():
 
     obj = LendReturnFactory(debt=b, price=2)
 
-    actual = AccountBalance.objects.last()
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 3.0
     assert actual.expenses == 100.0
@@ -355,7 +355,7 @@ def test_lend_return_post_delete_with_updt():
 
     DebtReturn.objects.get(pk=obj.pk).delete()
 
-    actual = AccountBalance.objects.last()
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 1.0
     assert actual.expenses == 100.0
@@ -368,7 +368,7 @@ def test_borrow_return_post_delete_with_updt():
 
     obj = BorrowReturnFactory(debt=b, price=2)
 
-    actual = AccountBalance.objects.last()
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 100.0
     assert actual.expenses == 3.0
@@ -376,7 +376,7 @@ def test_borrow_return_post_delete_with_updt():
 
     DebtReturn.objects.get(pk=obj.pk).delete()
 
-    actual = AccountBalance.objects.last()
+    actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 100.0
     assert actual.expenses == 1.0

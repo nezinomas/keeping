@@ -62,7 +62,5 @@ class SavingBalanceFactory(factory.django.DjangoModelFactory):
     invested = 2.3
     incomes = 2.4
     market_value = 2.5
-    profit_incomes_proc = 2.6
-    profit_incomes_sum = 2.7
-    profit_invested_proc = 2.8
-    profit_invested_sum = 2.9
+    profit_proc = 2.8
+    profit_sum = 2.9

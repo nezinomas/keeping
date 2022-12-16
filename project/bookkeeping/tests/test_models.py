@@ -107,7 +107,7 @@ def test_saving_worth_related(second_user):
 def test_saving_worth_post_save():
     SavingWorthFactory()
 
-    assert SavingBalance.objects.count() == 1
+    assert SavingBalance.objects.count() == 2
 
     actual = SavingBalance.objects.first()
     assert actual.saving_type.title == 'Savings'
@@ -131,7 +131,7 @@ def test_saving_worth_post_save_new():
 
     SavingWorthFactory(price=3)
 
-    assert SavingBalance.objects.count() == 1
+    assert SavingBalance.objects.count() == 2
 
     actual = SavingBalance.objects.first()
     assert actual.saving_type.title == 'Savings'
@@ -184,7 +184,7 @@ def test_pension_worth_related(second_user):
 def test_pension_worth_post_save():
     PensionWorthFactory()
 
-    assert PensionBalance.objects.count() == 1
+    assert PensionBalance.objects.count() == 2
 
     actual = PensionBalance.objects.first()
     assert actual.pension_type.title == 'PensionType'
@@ -205,7 +205,7 @@ def test_pension_worth_post_save_new():
 
     PensionWorthFactory(price=3)
 
-    assert PensionBalance.objects.count() == 1
+    assert PensionBalance.objects.count() == 2
 
     actual = PensionBalance.objects.first()
     assert actual.pension_type.title == 'PensionType'

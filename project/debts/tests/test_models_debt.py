@@ -289,7 +289,7 @@ def test_lend_post_save_change_account():
 
     obj = LendFactory(price=5, account=account_old)
 
-    actual = AccountBalance.objects.get(account_id=account_old.pk)
+    actual = AccountBalance.objects.get(account_id=account_old.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 0.0
     assert actual.expenses == 5.0
@@ -302,13 +302,13 @@ def test_lend_post_save_change_account():
 
     fail = False
     try:
-        actual = AccountBalance.objects.get(account_id=account_old.pk)
+        actual = AccountBalance.objects.get(account_id=account_old.pk, year=1999)
     except AccountBalance.DoesNotExist:
         fail = True
 
     assert fail
 
-    actual = AccountBalance.objects.get(account_id=account_new.pk)
+    actual = AccountBalance.objects.get(account_id=account_new.pk, year=1999)
     assert actual.account.title == 'XXX'
     assert actual.incomes == 0.0
     assert actual.expenses == 5.0
@@ -321,7 +321,7 @@ def test_borrow_post_save_change_account():
 
     obj = BorrowFactory(price=5, account=account_old)
 
-    actual = AccountBalance.objects.get(account_id=account_old.pk)
+    actual = AccountBalance.objects.get(account_id=account_old.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 5.0
     assert actual.expenses == 0.0
@@ -334,13 +334,13 @@ def test_borrow_post_save_change_account():
 
     fail = False
     try:
-        actual = AccountBalance.objects.get(account_id=account_old.pk)
+        actual = AccountBalance.objects.get(account_id=account_old.pk, year=1999)
     except AccountBalance.DoesNotExist:
         fail = True
 
     assert fail
 
-    actual = AccountBalance.objects.get(account_id=account_new.pk)
+    actual = AccountBalance.objects.get(account_id=account_new.pk, year=1999)
     assert actual.account.title == 'XXX'
     assert actual.incomes == 5.0
     assert actual.expenses == 0.0
@@ -378,22 +378,22 @@ def test_borrow_post_delete():
 
 
 def test_lend_post_delete_with_updt():
-    LendFactory(price=1)
-    obj = LendFactory(price=10)
+    obj = LendFactory(price=1)
+    obj_delete = LendFactory(price=10)
 
-    assert AccountBalance.objects.count() == 1
+    assert AccountBalance.objects.count() == 2
     assert Debt.objects.count() == 2
 
-    actual = AccountBalance.objects.first()
+    actual = AccountBalance.objects.get(account_id=obj.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 0.0
     assert actual.expenses == 11.0
     assert actual.balance == -11.0
 
     # delete second debt
-    Debt.objects.get(pk=obj.pk).delete()
+    Debt.objects.get(pk=obj_delete.pk).delete()
 
-    actual = AccountBalance.objects.first()
+    actual = AccountBalance.objects.get(account_id=obj.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 0.0
     assert actual.expenses == 1.0
@@ -401,22 +401,22 @@ def test_lend_post_delete_with_updt():
 
 
 def test_borrow_post_delete_with_updt():
-    BorrowFactory(price=1)
-    obj = BorrowFactory(price=10)
+    obj = BorrowFactory(price=1)
+    obj_del = BorrowFactory(price=10)
 
-    assert AccountBalance.objects.count() == 1
+    assert AccountBalance.objects.count() == 2
     assert Debt.objects.count() == 2
 
-    actual = AccountBalance.objects.first()
+    actual = AccountBalance.objects.get(account_id=obj.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 11.0
     assert actual.expenses == 0.0
     assert actual.balance == 11.0
 
     # delete second debt
-    Debt.objects.get(pk=obj.pk).delete()
+    Debt.objects.get(pk=obj_del.pk).delete()
 
-    actual = AccountBalance.objects.first()
+    actual = AccountBalance.objects.get(account_id=obj.pk, year=1999)
     assert actual.account.title == 'Account1'
     assert actual.incomes == 1.0
     assert actual.expenses == 0.0

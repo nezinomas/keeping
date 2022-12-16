@@ -1,6 +1,7 @@
-from collections import defaultdict
 import contextlib
 import itertools as it
+from abc import ABC, abstractmethod
+from collections import defaultdict
 from dataclasses import dataclass, field
 
 import pandas as pd
@@ -172,46 +173,30 @@ class GetData:
         return items
 
 
-class Accounts:
-    def __init__(self, data: GetData):
-        _df = self._make_df(data.incomes, data.expenses)
-        _hv = self._make_have(data.have)
-
-        self._table = self._make_table(_df, _hv)
-
+class SignalBase(ABC):
     @property
     def table(self):
         df = self._table.copy().reset_index()
-
         return df.to_dict('records')
 
-    def _make_df(self, incomes: list[dict], expenses: list[dict]) -> DF:
-        col_idx = [
-            'id',
-            'year',
-        ]
-        col_num = [
-            'past',
-            'incomes',
-            'expenses',
-            'balance',
-            'delta',
-        ]
+    @abstractmethod
+    def make_table(self, df: DF) -> DF:
+        ...
+
+    def _make_df(self, arr: list[dict], cols: list) -> DF:
+        col_idx = ['id', 'year']
         # create df from incomes and expenses
-        df = pd.DataFrame(it.chain(incomes, expenses))
-
+        df = pd.DataFrame(arr)
         if df.empty:
-            return pd.DataFrame(columns=col_idx + col_num).set_index(col_idx)
-
+            return pd.DataFrame(columns=col_idx + cols).set_index(col_idx)
         # create missing columns
-        df[[*set(col_num) - set(df.columns)]] = 0.0
+        df[[*set(cols) - set(df.columns)]] = 0.0
         # convert decimal to float
-        df[col_num] = df[col_num].astype(float)
+        df[cols] = df[cols].astype(float)
         # groupby id, year and sum
-        df = df.groupby(col_idx)[col_num].sum(numeric_only=True)
+        df = df.groupby(col_idx)[cols].sum(numeric_only=True)
 
         return df
-
 
     def _make_have(self, have: list[dict]) -> DF:
         hv = pd.DataFrame(have)
@@ -219,19 +204,44 @@ class Accounts:
         if hv.empty:
             cols = ['id', 'year', 'have', 'latest_check']
             return pd.DataFrame(defaultdict(list), columns=cols).set_index(idx)
-
         # convert Decimal -> float
         hv['have'] = hv['have'].apply(pd.to_numeric, downcast='float')
 
         return hv.set_index(idx)
 
-    def _make_table(self, df: DF, hv: DF) -> DF:
-        df = df.copy()
-        hv = hv.copy()
-        # concat df and have; fillna
-        df = pd.concat([df, hv], axis=1).fillna(0.0)
+    def _insert_future_data(self, df: DF) -> DF:
+        # last year in dataframe
+        year = df.index.levels[1].max()
+        # get last group of (year, id)
+        last_group = df.groupby(['year', 'id']).last().loc[year].reset_index()
+        # insert column year with value year+1
+        last_group['year'] = year + 1
+        last_group.set_index(['id', 'year'], inplace=True)
+        # reset columns values to 0.0
+        # if fee in columns -> Savings dataframe, else -> Accounts dataframe
+        if 'fee' in last_group.columns:
+            last_group[['incomes', 'fee', 'sold', 'sold_fee']] = 0.0
+        else:
+            last_group[['incomes', 'expenses']] = 0.0
+        # join dataframes
+        df = pd.concat([df, last_group])
+        return df.sort_index()
+
+
+class Accounts(SignalBase):
+    def __init__(self, data: GetData):
+        cols = ['incomes', 'expenses']
+        _df = self._make_df(it.chain(data.incomes, data.expenses), cols)
+        _hv = self._make_have(data.have)
+        _df = self._join_df(_df, _hv)
+
+        self._table = self.make_table(_df)
+
+    def make_table(self, df: DF) -> DF:
         if df.empty:
             return df
+        # insert extra group for future year
+        df = self._insert_future_data(df)
         # balance without past
         df.balance = df.incomes - df.expenses
         # temp column for each id group with balance cumulative sum
@@ -245,68 +255,61 @@ class Accounts:
         df.delta = df.have - df.balance
         return df
 
-
-class Savings:
-    def __init__(self, data: GetData):
-        _in = self._make_df(data.incomes)
-        _ex = self._make_df(data.expenses)
-        _hv = self._make_have(data.have)
-
-        self._table = self._make_table(_in, _ex, _hv)
-
-    @property
-    def table(self):
-        df = self._table.copy().reset_index()
-
-        return df.to_dict('records')
-
-    def _make_df(self, arr: list[dict]) -> DF:
-        col_idx = [
-            'id',
-            'year',
-        ]
-        col_num = [
-            'incomes',
-            'expenses',
-            'fee',
-        ]
-        # create df from incomes and expenses
-        df = pd.DataFrame(arr)
-
-        if df.empty:
-            return pd.DataFrame(columns=col_idx + col_num).set_index(col_idx)
-
-        # create missing columns
-        df[[*set(col_num) - set(df.columns)]] = 0.0
-        # convert decimal to float
-        df[col_num] = df[col_num].astype(float)
-        # groupby id, year and sum
-        df = df.groupby(col_idx)[col_num].sum(numeric_only=True)
-
+    def _join_df(self, df: DF, hv: DF) -> DF:
+        df = pd.concat([df, hv], axis=1).fillna(0.0)
+        df[['past', 'balance', 'delta']] = 0.0
         return df
 
-    def _make_have(self, have: list[dict]) -> DF:
-        hv = pd.DataFrame(have)
-        idx = ['id', 'year']
-        if hv.empty:
-            cols = ['id', 'year', 'have', 'latest_check']
-            return pd.DataFrame(defaultdict(list), columns=cols).set_index(idx)
+class Savings(SignalBase):
+    def __init__(self, data: GetData):
+        cols = ['incomes', 'expenses', 'fee']
+        _in = self._make_df(data.incomes, cols)
+        _ex = self._make_df(data.expenses, cols)
+        _hv = self._make_have(data.have)
+        _df = self._join_df(_in, _ex, _hv)
 
-        # convert Decimal -> float
-        hv['have'] = hv['have'].apply(pd.to_numeric, downcast='float')
+        self._table = self.make_table(_df)
 
-        return hv.set_index(idx)
+    def make_table(self, df: DF) -> DF:
+        if df.empty:
+            return df
+
+        df = self._insert_future_data(df)
+
+        # calculate incomes
+        df.per_year_incomes = df.incomes
+        df.per_year_fee = df.fee
+        # calculate past_amount
+        df['tmp'] = df.groupby("id")['per_year_incomes'].cumsum()
+        df.past_amount = df.groupby("id")['tmp'].shift(fill_value=0.0)
+        # calculate past_fee
+        df['tmp'] = df.groupby("id")['per_year_fee'].cumsum()
+        df.past_fee = df.groupby("id")['tmp'].shift(fill_value=0.0)
+        # drop tmp columns
+        df.drop(columns=['tmp'], inplace=True)
+        # calculate sold
+        df.sold = df.groupby("id")['sold'].cumsum()
+        df.sold_fee = df.groupby("id")['sold_fee'].cumsum()
+        # recalculate incomes and fees with past values
+        df.incomes = df.past_amount + df.per_year_incomes
+        df.fee = df.past_fee + df.per_year_fee
+        # calculate invested, invested cannot by negative
+        df.invested = df.incomes - df.fee - df.sold - df.sold_fee
+        df.invested = df.invested.mask(df.invested < 0, 0.0)
+        # calculate profit/loss
+        df.profit_sum = df.market_value - df.invested
+        df.profit_proc = \
+            df[['market_value', 'invested']].apply(Savings.calc_percent, axis=1)
+        return df
 
     def _join_df(self, inc: DF, exp: DF, hv: DF) -> DF:
-        # drop expenses column, rename fee
+        # drop expenses column
         inc.drop(columns=['expenses'], inplace=True)
-        inc.rename(columns={'fee': 'fee_inc'}, inplace=True)
         # drop incomes column, rename fee
         exp.drop(columns=['incomes'], inplace=True)
-        exp.rename(columns={'fee': 'fee_exp'}, inplace=True)
+        exp.rename(columns={'fee': 'sold_fee', 'expenses': 'sold'}, inplace=True)
         # concat dataframes, sum fees
         df = pd.concat([inc, exp, hv], axis=1).fillna(0.0)
-        df['fee'] = df.fee_inc + df.fee_exp
         # rename have -> market_value
         df.rename(columns={'have': 'market_value'}, inplace=True)
         # create columns
@@ -314,41 +317,8 @@ class Savings:
             'past_amount', 'past_fee',
             'per_year_incomes', 'per_year_fee',
             'invested',
-            'profit_incomes_proc', 'profit_incomes_sum',
-            'profit_invested_proc', 'profit_invested_sum']
+            'profit_proc', 'profit_sum']
         df[cols] = 0.0
-        # drop tmp columns
-        df.drop(columns=['fee_inc', 'fee_exp'], inplace=True)
-        return df
-
-    def _make_table(self, inc: DF, exp: DF, hv: DF) -> DF:
-        df = self._join_df(inc, exp, hv)
-        if df.empty:
-            return df
-        # calculate incomes
-        df.per_year_incomes = df.incomes - df.expenses
-        df.per_year_fee = df.fee
-        # calculate past_amount
-        df['tmp1'] = df.groupby("id")['per_year_incomes'].cumsum()
-        df.past_amount = df.groupby("id")['tmp1'].shift(fill_value=0.0)
-        # calculate past_fee
-        df['tmp2'] = df.groupby("id")['per_year_fee'].cumsum()
-        df.past_fee = df.groupby("id")['tmp2'].shift(fill_value=0.0)
-        # recalculate incomes and fees with past values
-        df.incomes = df.past_amount + df.per_year_incomes
-        df.fee = df.past_fee + df.per_year_fee
-        # calculate invested, invested cannot by negative
-        df.invested = df.incomes - df.fee
-        df.invested = df.invested.mask(df.invested < 0, 0.0)
-        # calculate profit/loss
-        df.profit_incomes_sum = df.market_value - df.incomes
-        df.profit_invested_sum = df.market_value - df.invested
-        df.profit_incomes_proc = \
-            df[['market_value', 'incomes']].apply(Savings.calc_percent, axis=1)
-        df.profit_invested_proc = \
-            df[['market_value', 'invested']].apply(Savings.calc_percent, axis=1)
-        # drop tmp columns
-        df.drop(columns=['expenses', 'tmp1', 'tmp2'], inplace=True)
 
         return df
 

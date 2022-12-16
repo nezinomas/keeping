@@ -107,13 +107,13 @@ class SavingBalance(models.Model):
     fee = models.FloatField(default=0.0)
     per_year_incomes = models.FloatField(default=0.0)
     per_year_fee = models.FloatField(default=0.0)
+    sold = models.FloatField(default=0.0)
+    sold_fee = models.FloatField(default=0.0)
     invested = models.FloatField(default=0.0)
     incomes = models.FloatField(default=0.0)
     market_value = models.FloatField(default=0.0)
-    profit_incomes_proc = models.FloatField(default=0.0)
-    profit_incomes_sum = models.FloatField(default=0.0)
-    profit_invested_proc = models.FloatField(default=0.0)
-    profit_invested_sum = models.FloatField(default=0.0)
+    profit_proc = models.FloatField(default=0.0)
+    profit_sum = models.FloatField(default=0.0)
 
     # Managers
     objects = managers.SavingBalanceQuerySet.as_manager()

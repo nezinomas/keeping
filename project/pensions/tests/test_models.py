@@ -175,7 +175,7 @@ def test_pension_post_save_different_types():
     assert actual.count() == 2
 
     actual = PensionBalance.objects.all()
-    assert actual.count() == 2
+    assert actual.count() == 4
 
     actual = PensionBalance.objects.get(year=1999, pension_type_id=t1.pk)
     assert actual.incomes == 150.0
@@ -293,10 +293,8 @@ def test_pension_balance_init():
     assert actual.invested == 2.3
     assert actual.incomes == 2.4
     assert actual.market_value == 2.5
-    assert actual.profit_incomes_proc == 2.6
-    assert actual.profit_incomes_sum == 2.7
-    assert actual.profit_invested_proc == 2.8
-    assert actual.profit_invested_sum == 2.9
+    assert actual.profit_proc == 2.8
+    assert actual.profit_sum == 2.9
 
 
 def test_pension_balance_str():
@@ -314,7 +312,7 @@ def test_pension_balance_related_for_user(main_user, second_user):
 
     actual = PensionBalance.objects.related()
 
-    assert len(actual) == 1
+    assert len(actual) == 2
     assert str(actual[0].pension_type) == 'P1'
     assert actual[0].pension_type.journal.title == 'bob Journal'
     assert actual[0].pension_type.journal.users.first().username == 'bob'
@@ -344,9 +342,12 @@ def test_pension_balance_queries(django_assert_num_queries):
 
 @freeze_time('1999-1-1')
 def test_sum_by_year():
-    PensionFactory(price=1)
-    PensionFactory(price=2)
+    PensionFactory(price=1, fee=0)
+    PensionFactory(price=2, fee=0)
 
     actual = list(PensionBalance.objects.sum_by_year())
 
-    assert actual == [{'year': 1999, 'invested': 3.0, 'profit': -3.0}]
+    assert actual == [
+        {'year': 1999, 'invested': 3.0, 'profit': -3.0},
+        {'year': 2000, 'invested': 3.0, 'profit': -3.0},
+    ]
