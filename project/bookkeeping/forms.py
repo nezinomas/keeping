@@ -39,13 +39,13 @@ class DateForm(forms.Form):
 
     def clean(self):
         cleaned = super().clean()
-        date = cleaned.get('date')
+        dt = cleaned.get('date')
 
-        if not date:
-            date = datetime.now()
+        if not dt:
+            dt = datetime.now()
 
         cleaned['date'] = \
-            datetime.combine(date, datetime.now().time(), tzinfo=ZoneInfo(key='UTC'))
+            datetime.combine(dt, datetime.now().time(), tzinfo=ZoneInfo(key='UTC'))
 
         return cleaned
 
