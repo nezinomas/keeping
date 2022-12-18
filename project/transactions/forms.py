@@ -50,10 +50,9 @@ class TransactionForm(YearBetweenMixin, forms.ModelForm):
         from_account.queryset = Account.objects.items()
         to_account.queryset = Account.objects.items()
 
-        if not self.instance.pk:
-            from_account_pk = self.data.get('from_account')
-        else:
-            from_account_pk = self.instance.from_account.pk
+        from_account_pk = \
+            self.instance.from_account.pk \
+            if self.instance.pk else self.data.get('from_account')
 
         try:
             from_account_pk = int(from_account_pk)
@@ -61,10 +60,7 @@ class TransactionForm(YearBetweenMixin, forms.ModelForm):
             from_account_pk = None
 
         if from_account_pk:
-            to_account.queryset = \
-                Account.objects \
-                .items() \
-                .exclude(pk=from_account_pk)
+            to_account.queryset = Account.objects.items().exclude(pk=from_account_pk)
 
     def _set_htmx_attributes(self):
         url = reverse('accounts:load')
@@ -127,9 +123,7 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
         self.fields['close'].widget.attrs['class'] = " form-check-input"
 
     def save(self):
-        close = self.cleaned_data.get('close')
-
-        if close:
+        if close := self.cleaned_data.get('close'):
             obj = SavingType.objects.get(pk=self.instance.from_account.pk)
             obj.closed = datetime.now().year
             obj.save()
@@ -174,10 +168,9 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
         from_account.queryset = SavingType.objects.items()
         to_account.queryset = SavingType.objects.items()
 
-        if not self.instance.pk:
-            from_account_pk = self.data.get('from_account')
-        else:
-            from_account_pk = self.instance.from_account.pk
+        from_account_pk = \
+            self.instance.from_account.pk \
+            if self.instance.pk else self.data.get('from_account')
 
         try:
             from_account_pk = int(from_account_pk)
@@ -185,10 +178,7 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
             from_account_pk = None
 
         if from_account_pk:
-            to_account.queryset = \
-                SavingType.objects \
-                .items() \
-                .exclude(pk=from_account_pk)
+            to_account.queryset = SavingType.objects.items().exclude(pk=from_account_pk)
 
     def _set_htmx_attributes(self):
         url = reverse('transactions:load_saving_type')
