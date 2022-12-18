@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
-from ..core.lib import utils
+from ..core.lib import date, utils
 from ..expenses.models import ExpenseType
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
@@ -29,7 +29,7 @@ class DateForm(forms.Form):
         )
 
         # inital values
-        self.fields['date'].initial = datetime.now()
+        self.fields['date'].initial = date.set_year_for_form()
 
         # label
         self.fields['date'].label = _('Date')
@@ -39,13 +39,13 @@ class DateForm(forms.Form):
 
     def clean(self):
         cleaned = super().clean()
-        date = cleaned.get('date')
+        dt = cleaned.get('date')
 
-        if not date:
-            date = datetime.now()
+        if not dt:
+            dt = datetime.now()
 
         cleaned['date'] = \
-            datetime.combine(date, datetime.now().time(), tzinfo=ZoneInfo(key='UTC'))
+            datetime.combine(dt, datetime.now().time(), tzinfo=ZoneInfo(key='UTC'))
 
         return cleaned
 

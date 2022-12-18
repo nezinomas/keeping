@@ -5,8 +5,7 @@ from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
-from ..core.lib import utils
-from ..core.lib.date import set_year_for_form
+from ..core.lib import date, utils
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Saving, SavingType
 
@@ -64,7 +63,7 @@ class SavingForm(YearBetweenMixin, forms.ModelForm):
 
         # inital values
         self.fields['account'].initial = Account.objects.items().first()
-        self.fields['date'].initial = set_year_for_form()
+        self.fields['date'].initial = date.set_year_for_form()
 
         # overwrite ForeignKey saving_type and account queryset
         self.fields['saving_type'].queryset = SavingType.objects.items()

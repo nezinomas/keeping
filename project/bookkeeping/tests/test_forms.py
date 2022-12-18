@@ -5,6 +5,7 @@ from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...pensions.factories import PensionTypeFactory
+from ...users.factories import UserFactory
 from ..factories import SavingTypeFactory
 from ..forms import (AccountWorthForm, DateForm, PensionWorthForm,
                      SavingWorthForm)
@@ -27,9 +28,10 @@ def test_date_form_fields():
 
 @freeze_time('1000-01-01')
 def test_date_form_initial_value():
+    UserFactory()
     form = DateForm().as_p()
 
-    assert '<input type="text" name="date" value="1000-01-01"' in form
+    assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
 def test_date_form_valid_data():
