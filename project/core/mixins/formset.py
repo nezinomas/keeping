@@ -1,36 +1,40 @@
 
+from decimal import Decimal
+
 from django.forms import ValidationError
 from django.forms.formsets import BaseFormSet
 from django.forms.models import modelformset_factory
 from django.utils.translation import gettext as _
 
 from ...core.mixins.views import httpHtmxResponse
-from decimal import Decimal
+
 
 class BaseTypeFormSet(BaseFormSet):
     def clean(self):
         if any(self.errors):
             return
 
-        duplicates_list = []
         duplicates = False
-        types = ['account', 'saving_type', 'pension_type']
+        duplicates_list = []
+        foreign_key = [
+            f.name for f in self.model._meta.get_fields() if (f.many_to_one)
+        ][0]
 
         for form in self.forms:
             if not form.cleaned_data:
                 continue
-            for _type in types:
-                account = form.cleaned_data.get(_type)
-                if not account:
-                    continue
 
-                if account in duplicates_list:
-                    duplicates = True
+            account = form.cleaned_data.get(foreign_key)
+            if not account:
+                continue
 
-                if duplicates:
-                    raise ValidationError(_('The same accounts are selected.'))
+            if account in duplicates_list:
+                duplicates = True
 
-                duplicates_list.append(account)
+            if duplicates:
+                raise ValidationError(_('The same accounts are selected.'))
+
+            duplicates_list.append(account)
 
 
 class FormsetMixin():
