@@ -93,6 +93,10 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
         self._translate_fields()
         self._set_css_classes()
 
+        # if from_account is closed, update close checkbox value
+        if hasattr(self.instance, 'from_account') and self.instance.from_account.closed:
+            self.fields['close'].initial = True
+
     def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(
             options={"locale": utils.get_user().journal.lang,}
@@ -123,10 +127,14 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
         self.fields['close'].widget.attrs['class'] = " form-check-input"
 
     def save(self):
-        if close := self.cleaned_data.get('close'):
-            obj = SavingType.objects.get(pk=self.instance.from_account.pk)
-            obj.closed = datetime.now().year
-            obj.save()
+        close = self.cleaned_data.get('close')
+
+        obj = SavingType.objects.get(pk=self.instance.from_account.pk)
+        if obj.closed and close:
+            return super().save()
+
+        obj.closed = self.instance.date.year if close else None
+        obj.save()
 
         return super().save()
 
@@ -148,6 +156,10 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
         self._set_htmx_attributes()
         self._translate_fields()
         self._set_css_classes()
+
+        # if from_account is closed, update close checkbox value
+        if hasattr(self.instance, 'from_account') and self.instance.from_account.closed:
+            self.fields['close'].initial = True
 
     def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(
@@ -206,9 +218,11 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
     def save(self):
         close = self.cleaned_data.get('close')
 
-        if close:
-            obj = SavingType.objects.get(pk=self.instance.from_account.pk)
-            obj.closed = datetime.now().year
-            obj.save()
+        obj = SavingType.objects.get(pk=self.instance.from_account.pk)
+        if obj.closed and close:
+            return super().save()
+
+        obj.closed = self.instance.date.year if close else None
+        obj.save()
 
         return super().save()
