@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from django.urls import resolve, reverse
 from freezegun import freeze_time
@@ -324,6 +326,32 @@ def test_savings_close_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
+def test_saving_close_new_checkbox_initial_value(client_logged):
+    url = reverse('transactions:savings_close_new')
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    reqex = re.compile(r'<input type="checkbox" .*? checked>')
+    find = re.findall(reqex, actual)
+
+    assert not find
+
+
+@pytest.mark.freeze_time('1999-1-1')
+def test_saving_close_load_for_update_checkbox_initial_value(client_logged):
+    a = SavingTypeFactory(closed=1999)
+    obj = SavingCloseFactory(from_account=a)
+
+    url = reverse('transactions:savings_close_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    reqex = re.compile(r'<input type="checkbox" .*? checked>')
+    find = re.findall(reqex, actual)
+
+    assert len(find) == 1
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                      SavingClose Delete
 # ---------------------------------------------------------------------------------------
@@ -515,6 +543,32 @@ def test_savings_change_not_load_other_journal(client_logged, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
+
+
+def test_saving_change_new_checkbox_initial_value(client_logged):
+    url = reverse('transactions:savings_change_new')
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    reqex = re.compile(r'<input type="checkbox" .*? checked>')
+    find = re.findall(reqex, actual)
+
+    assert not find
+
+
+@pytest.mark.freeze_time('1999-1-1')
+def test_saving_change_load_for_update_checkbox_initial_value(client_logged):
+    a = SavingTypeFactory(closed=1999)
+    obj = SavingChangeFactory(from_account=a)
+
+    url = reverse('transactions:savings_change_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    reqex = re.compile(r'<input type="checkbox" .*? checked>')
+    find = re.findall(reqex, actual)
+
+    assert len(find) == 1
 
 
 # ----------------------------------------------------------------------------
