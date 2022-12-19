@@ -97,6 +97,10 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
         self._translate_fields()
         self._set_css_classes()
 
+        # if from_account is closed, update close checkbox value
+        if hasattr(self.instance, 'from_account') and self.instance.from_account.closed:
+            self.fields['close'].initial = True
+
     def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(
             options={"locale": utils.get_user().journal.lang,}
@@ -154,6 +158,10 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
         self._set_htmx_attributes()
         self._translate_fields()
         self._set_css_classes()
+
+        # if from_account is closed, update close checkbox value
+        if hasattr(self.instance, 'from_account') and self.instance.from_account.closed:
+            self.fields['close'].initial = True
 
     def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(

@@ -6,10 +6,9 @@ from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...savings.factories import SavingTypeFactory
-from ...savings.models import SavingBalance, SavingType
+from ...savings.models import SavingType
 from ...users.factories import UserFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
-
 pytestmark = pytest.mark.django_db
 
 
