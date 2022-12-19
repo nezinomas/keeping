@@ -16,15 +16,14 @@ class BaseTypeFormSet(BaseFormSet):
 
         duplicates = False
         duplicates_list = []
-        foreign_key = [
-            f.name for f in self.model._meta.get_fields() if (f.many_to_one)
-        ][0]
+        account_name = [
+            f.name for f in self.model._meta.get_fields() if (f.many_to_one)][0]
 
         for form in self.forms:
             if not form.cleaned_data:
                 continue
 
-            account = form.cleaned_data.get(foreign_key)
+            account = form.cleaned_data.get(account_name)
             if not account:
                 continue
 
