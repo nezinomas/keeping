@@ -12,23 +12,25 @@ class BaseTypeFormSet(BaseFormSet):
         if any(self.errors):
             return
 
-        arr = []
+        duplicates_list = []
         duplicates = False
+        types = ['account', 'saving_type', 'pension_type']
 
         for form in self.forms:
-            if form.cleaned_data:
-                _types = ['account', 'saving_type', 'pension_type']
-                for _type in _types:
-                    _account = form.cleaned_data.get(_type)
-                    if not _account:
-                        continue
+            if not form.cleaned_data:
+                continue
+            for _type in types:
+                account = form.cleaned_data.get(_type)
+                if not account:
+                    continue
 
-                    if _account in arr:
-                        duplicates = True
-                    arr.append(_account)
+                if account in duplicates_list:
+                    duplicates = True
 
-                    if duplicates:
-                        raise ValidationError(_('The same accounts are selected.'))
+                if duplicates:
+                    raise ValidationError(_('The same accounts are selected.'))
+
+                duplicates_list.append(account)
 
 
 class FormsetMixin():
