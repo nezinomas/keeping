@@ -14,12 +14,11 @@ class BaseTypeFormSet(BaseFormSet):
         if any(self.errors):
             return
 
-        duplicates = False
-        duplicates_list = []
+        dublicates = {}
         account_name = [
             f.name for f in self.model._meta.get_fields() if (f.many_to_one)][0]
 
-        for form in self.forms:
+        for i, form in enumerate(self.forms):
             if not form.cleaned_data:
                 continue
 
@@ -27,13 +26,13 @@ class BaseTypeFormSet(BaseFormSet):
             if not account:
                 continue
 
-            if account in duplicates_list:
-                duplicates = True
+            if account in dublicates:
+                msg = _('The same accounts are selected.')
+                if not self.forms[dublicates[account]].errors:
+                    self.forms[dublicates[account]].add_error(account_name, msg)
+                self.forms[i].add_error(account_name, msg)
 
-            if duplicates:
-                raise ValidationError(_('The same accounts are selected.'))
-
-            duplicates_list.append(account)
+            dublicates[account] = i
 
 
 class FormsetMixin():
