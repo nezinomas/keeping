@@ -143,7 +143,7 @@ def test_info_row_no_target(client_logged):
     url = reverse('books:info_row')
     response = client_logged.get(url)
 
-    assert not 'Tikslas' in response.context
+    assert 'Tikslas' not in response.context
 
 
 # ----------------------------------------------------------------------------
