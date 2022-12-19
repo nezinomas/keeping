@@ -6,6 +6,7 @@ from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...savings.factories import SavingTypeFactory
+from ...savings.models import SavingType
 from .. import models, views
 from ..factories import (SavingChange, SavingChangeFactory, SavingClose,
                          SavingCloseFactory, Transaction, TransactionFactory)
@@ -352,6 +353,71 @@ def test_saving_close_load_for_update_checkbox_initial_value(client_logged):
     assert len(find) == 1
 
 
+@pytest.mark.freeze_time('2000-1-1')
+def test_saving_close_update_in_future_checkbox_value(client_logged):
+    a = SavingTypeFactory(closed=1999)
+    obj = SavingCloseFactory(from_account=a)
+
+    data = {
+        'date': obj.date,
+        'price': obj.price,
+        'fee': obj.fee,
+        'from_account': obj.from_account.pk,
+        'to_account': obj.to_account.pk,
+        'close': True,
+    }
+
+    url = reverse('transactions:savings_close_update', kwargs={'pk': obj.pk})
+    client_logged.post(url, data)
+    actual = SavingType.objects.get(pk=a.pk)
+
+    # closed must not change to 2000
+    assert actual.closed == 1999
+
+
+@pytest.mark.freeze_time('2000-1-1')
+def test_saving_close_update_in_future_checkbox_value_1(client_logged):
+    a = SavingTypeFactory()
+    obj = SavingCloseFactory(from_account=a)
+
+    data = {
+        'date': obj.date,
+        'price': obj.price,
+        'fee': obj.fee,
+        'from_account': obj.from_account.pk,
+        'to_account': obj.to_account.pk,
+        'close': True,
+    }
+
+    url = reverse('transactions:savings_close_update', kwargs={'pk': obj.pk})
+    client_logged.post(url, data)
+    actual = SavingType.objects.get(pk=a.pk)
+
+    # closed must not change to 2000
+    assert actual.closed == 1999
+
+
+@pytest.mark.freeze_time('2000-1-1')
+def test_saving_close_update_in_future_checkbox_value_uncheck(client_logged):
+    a = SavingTypeFactory(closed=1999)
+    obj = SavingCloseFactory(from_account=a)
+
+    data = {
+        'date': obj.date,
+        'price': obj.price,
+        'fee': obj.fee,
+        'from_account': obj.from_account.pk,
+        'to_account': obj.to_account.pk,
+        'close': False,
+    }
+
+    url = reverse('transactions:savings_close_update', kwargs={'pk': obj.pk})
+    client_logged.post(url, data)
+    actual = SavingType.objects.get(pk=a.pk)
+
+    assert not actual.closed
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                      SavingClose Delete
 # ---------------------------------------------------------------------------------------
@@ -569,6 +635,71 @@ def test_saving_change_load_for_update_checkbox_initial_value(client_logged):
     find = re.findall(reqex, actual)
 
     assert len(find) == 1
+
+
+@pytest.mark.freeze_time('2000-1-1')
+def test_saving_change_update_in_future_checkbox_value(client_logged):
+    a = SavingTypeFactory(closed=1999)
+    obj = SavingChangeFactory(from_account=a)
+
+    data = {
+        'date': obj.date,
+        'price': obj.price,
+        'fee': obj.fee,
+        'from_account': obj.from_account.pk,
+        'to_account': obj.to_account.pk,
+        'close': True,
+    }
+
+    url = reverse('transactions:savings_change_update', kwargs={'pk': obj.pk})
+    client_logged.post(url, data)
+    actual = SavingType.objects.get(pk=a.pk)
+
+    # closed must not change to 2000
+    assert actual.closed == 1999
+
+
+@pytest.mark.freeze_time('2000-1-1')
+def test_saving_change_update_in_future_checkbox_value_1(client_logged):
+    a = SavingTypeFactory()
+    obj = SavingChangeFactory(from_account=a)
+
+    data = {
+        'date': obj.date,
+        'price': obj.price,
+        'fee': obj.fee,
+        'from_account': obj.from_account.pk,
+        'to_account': obj.to_account.pk,
+        'close': True,
+    }
+
+    url = reverse('transactions:savings_change_update', kwargs={'pk': obj.pk})
+    client_logged.post(url, data)
+    actual = SavingType.objects.get(pk=a.pk)
+
+    # closed must not change to 2000
+    assert actual.closed == 1999
+
+
+@pytest.mark.freeze_time('2000-1-1')
+def test_saving_change_update_in_future_checkbox_value_uncheck(client_logged):
+    a = SavingTypeFactory(closed=1999)
+    obj = SavingChangeFactory(from_account=a)
+
+    data = {
+        'date': obj.date,
+        'price': obj.price,
+        'fee': obj.fee,
+        'from_account': obj.from_account.pk,
+        'to_account': obj.to_account.pk,
+        'close': False,
+    }
+
+    url = reverse('transactions:savings_change_update', kwargs={'pk': obj.pk})
+    client_logged.post(url, data)
+    actual = SavingType.objects.get(pk=a.pk)
+
+    assert not actual.closed
 
 
 # ----------------------------------------------------------------------------

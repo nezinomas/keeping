@@ -133,10 +133,12 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
     def save(self):
         close = self.cleaned_data.get('close')
 
-        if close:
-            obj = SavingType.objects.get(pk=self.instance.from_account.pk)
-            obj.closed = datetime.now().year
-            obj.save()
+        obj = SavingType.objects.get(pk=self.instance.from_account.pk)
+        if obj.closed and close:
+            return super().save()
+
+        obj.closed = self.instance.date.year if close else None
+        obj.save()
 
         return super().save()
 
@@ -224,9 +226,11 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
     def save(self):
         close = self.cleaned_data.get('close')
 
-        if close:
-            obj = SavingType.objects.get(pk=self.instance.from_account.pk)
-            obj.closed = datetime.now().year
-            obj.save()
+        obj = SavingType.objects.get(pk=self.instance.from_account.pk)
+        if obj.closed and close:
+            return super().save()
+
+        obj.closed = self.instance.date.year if close else None
+        obj.save()
 
         return super().save()
