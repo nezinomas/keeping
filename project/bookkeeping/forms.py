@@ -1,6 +1,5 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
-
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
@@ -23,14 +22,13 @@ class SavingWorthForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # form initial values
-        self.fields['date'].initial = datetime.now()
+        self.fields['date'].widget = DatePickerInput(
+            options={"locale": utils.get_user().journal.lang, }
+        )
+        self.fields['date'].initial = date.set_year_for_form()
 
         # overwrite FK
         self.fields['saving_type'].queryset = SavingType.objects.items()
-
-        self.fields['date'].disabled = True
-        self.fields['date'].widget = forms.HiddenInput()
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -44,14 +42,13 @@ class AccountWorthForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # form initial values
-        self.fields['date'].initial = datetime.now()
+        self.fields['date'].widget = DatePickerInput(
+            options={"locale": utils.get_user().journal.lang, }
+        )
+        self.fields['date'].initial = date.set_year_for_form()
 
         # overwrite FK
         self.fields['account'].queryset = Account.objects.items()
-
-        self.fields['date'].disabled = True
-        self.fields['date'].widget = forms.HiddenInput()
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
@@ -65,13 +62,13 @@ class PensionWorthForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['date'].initial = datetime.now()
+        self.fields['date'].widget = DatePickerInput(
+            options={"locale": utils.get_user().journal.lang, }
+        )
+        self.fields['date'].initial = date.set_year_for_form()
 
         # overwrite FK
         self.fields['pension_type'].queryset = PensionType.objects.items()
-
-        self.fields['date'].disabled = True
-        self.fields['date'].widget = forms.HiddenInput()
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)

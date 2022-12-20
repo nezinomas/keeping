@@ -38,12 +38,12 @@ def test_formset(client_logged):
     assert '<option value="1" selected>Account1</option>' in actual
 
 
-@freeze_time('1999-9-9')
 def test_formset_new(client_logged):
     i = AccountFactory()
     data = {
         'form-TOTAL_FORMS': 1,
         'form-INITIAL_FORMS': 0,
+        'form-0-date': '1999-9-9',
         'form-0-price': '999',
         'form-0-account': i.pk
     }
@@ -58,12 +58,12 @@ def test_formset_new(client_logged):
     assert actual.price == 999
 
 
-@freeze_time('1999-9-9')
 def test_formset_dublicated(client_logged):
     i = AccountFactory()
     data = {
         'form-TOTAL_FORMS': 2,
         'form-INITIAL_FORMS': 0,
+        'form-0-date': '1999-9-9',
         'form-0-price': '999',
         'form-0-account': i.pk,
         'form-1-price': '666',
@@ -77,30 +77,11 @@ def test_formset_dublicated(client_logged):
     assert not actual.is_valid()
 
 
-def test_formset_with_date(client_logged):
-    i = AccountFactory()
-    data = {
-        'date': '1999-9-9',
-        'form-TOTAL_FORMS': 1,
-        'form-INITIAL_FORMS': 0,
-        'form-0-price': '999',
-        'form-0-account': i.pk
-    }
-
-    url = reverse('bookkeeping:accounts_worth_new')
-    client_logged.post(url, data)
-
-    actual = AccountWorth.objects.last()
-    assert actual.date.year == 1999
-    assert actual.date.month == 9
-    assert actual.date.day == 9
-    assert actual.price == 999
-
-
 def test_formset_invalid_data(client_logged):
     data = {
         'form-TOTAL_FORMS': 1,
         'form-INITIAL_FORMS': 0,
+        'form-0-date': 'x',
         'form-0-price': 'x',
         'form-0-account': 0
     }
@@ -111,6 +92,9 @@ def test_formset_invalid_data(client_logged):
     actual = response.context['formset']
 
     assert not actual.is_valid()
+    assert 'date' in actual.errors[0]
+    assert 'price' in actual.errors[0]
+    assert 'account' in actual.errors[0]
 
 
 def test_formset_closed_in_past(get_user, fake_request):

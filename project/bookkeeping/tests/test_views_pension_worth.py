@@ -36,12 +36,12 @@ def test_formset_load(client_logged):
     assert '<option value="1" selected>PensionType</option>' in actual
 
 
-@freeze_time('1999-2-3')
 def test_formset_new(client_logged):
     i = PensionTypeFactory()
     data = {
         'form-TOTAL_FORMS': 1,
         'form-INITIAL_FORMS': 0,
+        'form-0-date': '1999-2-3',
         'form-0-price': '999',
         'form-0-pension_type': i.pk
     }
@@ -58,9 +58,9 @@ def test_formset_new(client_logged):
 def test_formset_valid_data(client_logged):
     i = PensionTypeFactory()
     data = {
-        'date': '1999-9-8',
         'form-TOTAL_FORMS': 1,
         'form-INITIAL_FORMS': 0,
+        'form-0-date': '1999-9-8',
         'form-0-price': '999',
         'form-0-pension_type': i.pk
     }
@@ -78,6 +78,7 @@ def test_formset_invalid_data(client_logged):
     data = {
         'form-TOTAL_FORMS': 1,
         'form-INITIAL_FORMS': 0,
+        'form-0-date': 'x',
         'form-0-price': 'x',
         'form-0-pension_type': 0
     }
@@ -87,3 +88,6 @@ def test_formset_invalid_data(client_logged):
     form = response.context['formset']
 
     assert not form.is_valid()
+    assert 'date' in form.errors[0]
+    assert 'price' in form.errors[0]
+    assert 'pension_type' in form.errors[0]

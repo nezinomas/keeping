@@ -1,14 +1,13 @@
+import pytz
+from datetime import datetime
 from decimal import Decimal
 
 import pytest
-from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...pensions.factories import PensionTypeFactory
-from ...users.factories import UserFactory
 from ..factories import SavingTypeFactory
-from ..forms import (AccountWorthForm, DateForm, PensionWorthForm,
-                     SavingWorthForm)
+from ..forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
 
 pytestmark = pytest.mark.django_db
 
@@ -40,6 +39,7 @@ def test_saving_worth_valid_data():
     t = SavingTypeFactory()
 
     form = SavingWorthForm(data={
+        'date': '1999-1-2',
         'price': '1.0',
         'saving_type': t.pk,
     })
@@ -48,6 +48,7 @@ def test_saving_worth_valid_data():
 
     data = form.save()
 
+    assert data.date == datetime(1999, 1, 2, 0, 0, tzinfo=pytz.utc)
     assert data.price == Decimal(1.0)
     assert data.saving_type.title == t.title
 
@@ -124,6 +125,7 @@ def test_account_worth_valid_data():
     a = AccountFactory()
 
     form = AccountWorthForm(data={
+        'date': '1999-1-2',
         'price': '1.0',
         'account': a.pk,
     })
@@ -132,6 +134,7 @@ def test_account_worth_valid_data():
 
     data = form.save()
 
+    assert data.date == datetime(1999, 1, 2, 0, 0, tzinfo=pytz.utc)
     assert data.price == Decimal(1.0)
     assert data.account.title == a.title
 
@@ -172,6 +175,7 @@ def test_pension_worth_valid_data():
     p = PensionTypeFactory()
 
     form = PensionWorthForm(data={
+        'date': '1999-1-2',
         'price': '1.0',
         'pension_type': p.pk,
     })
@@ -180,6 +184,7 @@ def test_pension_worth_valid_data():
 
     data = form.save()
 
+    assert data.date == datetime(1999, 1, 2, 0, 0, tzinfo=pytz.utc)
     assert data.price == Decimal(1.0)
     assert data.pension_type.title == p.title
 
