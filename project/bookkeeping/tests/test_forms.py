@@ -1,61 +1,15 @@
+import pytz
+from datetime import datetime
 from decimal import Decimal
 
 import pytest
-from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...pensions.factories import PensionTypeFactory
-from ...users.factories import UserFactory
 from ..factories import SavingTypeFactory
-from ..forms import (AccountWorthForm, DateForm, PensionWorthForm,
-                     SavingWorthForm)
+from ..forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
 
 pytestmark = pytest.mark.django_db
-
-
-# ---------------------------------------------------------------------------------------
-#                                                                               Date Form
-# ---------------------------------------------------------------------------------------
-def test_date_form_init():
-    DateForm()
-
-
-def test_date_form_fields():
-    form =  DateForm().as_p()
-
-    assert '<input type="text" name="date"' in form
-
-
-@freeze_time('1000-01-01')
-def test_date_form_initial_value():
-    UserFactory()
-    form = DateForm().as_p()
-
-    assert '<input type="text" name="date" value="1999-01-01"' in form
-
-
-def test_date_form_valid_data():
-    form = DateForm(data={
-        'date': '1999-01-01',
-    })
-
-    assert form.is_valid()
-
-
-def test_date_form_invalid_data():
-    form = DateForm(data={
-        'date': 'xxx',
-    })
-
-    assert not form.is_valid()
-
-
-def test_date_form_valid_with_no_date():
-    form = DateForm(data={
-        'date': None,
-    })
-
-    assert form.is_valid()
 
 
 # ---------------------------------------------------------------------------------------
@@ -85,6 +39,7 @@ def test_saving_worth_valid_data():
     t = SavingTypeFactory()
 
     form = SavingWorthForm(data={
+        'date': '1999-1-2',
         'price': '1.0',
         'saving_type': t.pk,
     })
@@ -93,6 +48,7 @@ def test_saving_worth_valid_data():
 
     data = form.save()
 
+    assert data.date == datetime(1999, 1, 2, 0, 0, tzinfo=pytz.utc)
     assert data.price == Decimal(1.0)
     assert data.saving_type.title == t.title
 
@@ -141,6 +97,31 @@ def test_saving_form_type_closed_in_current_year(get_user):
     assert 'S2' in str(form['saving_type'])
 
 
+@pytest.mark.parametrize(
+    'closed, date, valid',
+    [
+        ('1999', '2000-1-1', False),
+        ('1999', '1999-12-31', True),
+        ('1999', '1998-12-31', True),
+    ]
+)
+def test_saving_worth_account_closed_date(closed, date, valid):
+    a = SavingTypeFactory(closed=closed)
+
+    form = SavingWorthForm(data={
+        'date': date,
+        'price': '1.0',
+        'saving_type': a.pk,
+    })
+
+    if valid:
+        assert form.is_valid()
+    else:
+        assert not form.is_valid()
+        assert 'date' in form.errors
+        assert form.errors['date'][0] == 'Sąskaita uždaryta 1999.'
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                           Account Worth
 # ---------------------------------------------------------------------------------------
@@ -169,6 +150,7 @@ def test_account_worth_valid_data():
     a = AccountFactory()
 
     form = AccountWorthForm(data={
+        'date': '1999-1-2',
         'price': '1.0',
         'account': a.pk,
     })
@@ -177,6 +159,7 @@ def test_account_worth_valid_data():
 
     data = form.save()
 
+    assert data.date == datetime(1999, 1, 2, 0, 0, tzinfo=pytz.utc)
     assert data.price == Decimal(1.0)
     assert data.account.title == a.title
 
@@ -187,6 +170,31 @@ def test_account_worth_blank_data():
     assert not form.is_valid()
 
     assert 'account' in form.errors
+
+
+@pytest.mark.parametrize(
+    'closed, date, valid',
+    [
+        ('1999', '2000-1-1', False),
+        ('1999', '1999-12-31', True),
+        ('1999', '1998-12-31', True),
+    ]
+)
+def test_account_worth_account_closed_date(closed, date, valid):
+    a = AccountFactory(closed=closed)
+
+    form = AccountWorthForm(data={
+        'date': date,
+        'price': '1.0',
+        'account': a.pk,
+    })
+
+    if valid:
+        assert form.is_valid()
+    else:
+        assert not form.is_valid()
+        assert 'date' in form.errors
+        assert form.errors['date'][0] == 'Sąskaita uždaryta 1999.'
 
 
 # ---------------------------------------------------------------------------------------
@@ -217,6 +225,7 @@ def test_pension_worth_valid_data():
     p = PensionTypeFactory()
 
     form = PensionWorthForm(data={
+        'date': '1999-1-2',
         'price': '1.0',
         'pension_type': p.pk,
     })
@@ -225,6 +234,7 @@ def test_pension_worth_valid_data():
 
     data = form.save()
 
+    assert data.date == datetime(1999, 1, 2, 0, 0, tzinfo=pytz.utc)
     assert data.price == Decimal(1.0)
     assert data.pension_type.title == p.title
 

@@ -1,5 +1,4 @@
-from datetime import datetime
-from zoneinfo import ZoneInfo
+from typing import Callable
 
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 from crispy_forms.helper import FormHelper
@@ -15,39 +14,21 @@ from ..savings.models import SavingType
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 
-class DateForm(forms.Form):
-    date = forms.DateTimeField(required=False)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        user = utils.get_user()
-        lang = user.journal.lang
-
-        self.fields['date'].widget = DatePickerInput(
-            options={"locale": lang,}
-        )
-
-        # inital values
-        self.fields['date'].initial = date.set_year_for_form()
-
-        # label
-        self.fields['date'].label = _('Date')
-
-        self.helper = FormHelper()
-        set_field_properties(self, self.helper)
-
-    def clean(self):
-        cleaned = super().clean()
-        dt = cleaned.get('date')
-
-        if not dt:
-            dt = datetime.now()
-
-        cleaned['date'] = \
-            datetime.combine(dt, datetime.now().time(), tzinfo=ZoneInfo(key='UTC'))
-
+def clean_date_and_closed(account: str, cleaned: dict, add_error: Callable) -> dict:
+    dt = cleaned.get('date')
+    if not dt:
         return cleaned
+
+    account = cleaned.get(account)
+    if not account or not account.closed:
+        return cleaned
+
+    if dt.year > account.closed:
+        add_error(
+            'date',
+            _('Account closed %(year)s.') % ({'year': account.closed})
+        )
+    return cleaned
 
 
 class SavingWorthForm(forms.ModelForm):
@@ -58,17 +39,20 @@ class SavingWorthForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # form initial values
-        self.fields['date'].initial = datetime.now()
+        self.fields['date'].widget = DatePickerInput(
+            options={"locale": utils.get_user().journal.lang, }
+        )
+        self.fields['date'].initial = date.set_year_for_form()
 
         # overwrite FK
         self.fields['saving_type'].queryset = SavingType.objects.items()
 
-        self.fields['date'].disabled = True
-        self.fields['date'].widget = forms.HiddenInput()
-
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+    def clean(self):
+        cleaned = super().clean()
+        return clean_date_and_closed('saving_type', cleaned, self.add_error)
 
 
 class AccountWorthForm(forms.ModelForm):
@@ -79,17 +63,20 @@ class AccountWorthForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # form initial values
-        self.fields['date'].initial = datetime.now()
+        self.fields['date'].widget = DatePickerInput(
+            options={"locale": utils.get_user().journal.lang, }
+        )
+        self.fields['date'].initial = date.set_year_for_form()
 
         # overwrite FK
         self.fields['account'].queryset = Account.objects.items()
 
-        self.fields['date'].disabled = True
-        self.fields['date'].widget = forms.HiddenInput()
-
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+    def clean(self):
+        cleaned = super().clean()
+        return clean_date_and_closed('account', cleaned, self.add_error)
 
 
 class PensionWorthForm(forms.ModelForm):
@@ -100,13 +87,13 @@ class PensionWorthForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['date'].initial = datetime.now()
+        self.fields['date'].widget = DatePickerInput(
+            options={"locale": utils.get_user().journal.lang, }
+        )
+        self.fields['date'].initial = date.set_year_for_form()
 
         # overwrite FK
         self.fields['pension_type'].queryset = PensionType.objects.items()
-
-        self.fields['date'].disabled = True
-        self.fields['date'].widget = forms.HiddenInput()
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
