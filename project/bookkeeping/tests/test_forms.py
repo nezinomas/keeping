@@ -14,51 +14,6 @@ pytestmark = pytest.mark.django_db
 
 
 # ---------------------------------------------------------------------------------------
-#                                                                               Date Form
-# ---------------------------------------------------------------------------------------
-def test_date_form_init():
-    DateForm()
-
-
-def test_date_form_fields():
-    form =  DateForm().as_p()
-
-    assert '<input type="text" name="date"' in form
-
-
-@freeze_time('1000-01-01')
-def test_date_form_initial_value():
-    UserFactory()
-    form = DateForm().as_p()
-
-    assert '<input type="text" name="date" value="1999-01-01"' in form
-
-
-def test_date_form_valid_data():
-    form = DateForm(data={
-        'date': '1999-01-01',
-    })
-
-    assert form.is_valid()
-
-
-def test_date_form_invalid_data():
-    form = DateForm(data={
-        'date': 'xxx',
-    })
-
-    assert not form.is_valid()
-
-
-def test_date_form_valid_with_no_date():
-    form = DateForm(data={
-        'date': None,
-    })
-
-    assert form.is_valid()
-
-
-# ---------------------------------------------------------------------------------------
 #                                                                            Saving Worth
 # ---------------------------------------------------------------------------------------
 def test_saving_worth_init():

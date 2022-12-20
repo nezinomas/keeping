@@ -15,41 +15,6 @@ from ..savings.models import SavingType
 from .models import AccountWorth, PensionWorth, SavingWorth
 
 
-class DateForm(forms.Form):
-    date = forms.DateTimeField(required=False)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        user = utils.get_user()
-        lang = user.journal.lang
-
-        self.fields['date'].widget = DatePickerInput(
-            options={"locale": lang,}
-        )
-
-        # inital values
-        self.fields['date'].initial = date.set_year_for_form()
-
-        # label
-        self.fields['date'].label = _('Date')
-
-        self.helper = FormHelper()
-        set_field_properties(self, self.helper)
-
-    def clean(self):
-        cleaned = super().clean()
-        dt = cleaned.get('date')
-
-        if not dt:
-            dt = datetime.now()
-
-        cleaned['date'] = \
-            datetime.combine(dt, datetime.now().time(), tzinfo=ZoneInfo(key='UTC'))
-
-        return cleaned
-
-
 class SavingWorthForm(forms.ModelForm):
     class Meta:
         model = SavingWorth
