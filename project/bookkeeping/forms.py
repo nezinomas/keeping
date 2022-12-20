@@ -1,5 +1,5 @@
-from datetime import datetime
-from zoneinfo import ZoneInfo
+from typing import Callable
+
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
@@ -12,6 +12,23 @@ from ..expenses.models import ExpenseType
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from .models import AccountWorth, PensionWorth, SavingWorth
+
+
+def clean_date_and_closed(account: str, cleaned: dict, add_error: Callable) -> dict:
+    dt = cleaned.get('date')
+    if not dt:
+        return cleaned
+
+    account = cleaned.get(account)
+    if not account or not account.closed:
+        return cleaned
+
+    if dt.year > account.closed:
+        add_error(
+            'date',
+            _('Account closed %(year)s.') % ({'year': account.closed})
+        )
+    return cleaned
 
 
 class SavingWorthForm(forms.ModelForm):
@@ -33,6 +50,10 @@ class SavingWorthForm(forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
+    def clean(self):
+        cleaned = super().clean()
+        return clean_date_and_closed('saving_type', cleaned, self.add_error)
+
 
 class AccountWorthForm(forms.ModelForm):
     class Meta:
@@ -52,6 +73,10 @@ class AccountWorthForm(forms.ModelForm):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
+
+    def clean(self):
+        cleaned = super().clean()
+        return clean_date_and_closed('account', cleaned, self.add_error)
 
 
 class PensionWorthForm(forms.ModelForm):

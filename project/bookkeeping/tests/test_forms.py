@@ -97,6 +97,31 @@ def test_saving_form_type_closed_in_current_year(get_user):
     assert 'S2' in str(form['saving_type'])
 
 
+@pytest.mark.parametrize(
+    'closed, date, valid',
+    [
+        ('1999', '2000-1-1', False),
+        ('1999', '1999-12-31', True),
+        ('1999', '1998-12-31', True),
+    ]
+)
+def test_saving_worth_account_closed_date(closed, date, valid):
+    a = SavingTypeFactory(closed=closed)
+
+    form = SavingWorthForm(data={
+        'date': date,
+        'price': '1.0',
+        'saving_type': a.pk,
+    })
+
+    if valid:
+        assert form.is_valid()
+    else:
+        assert not form.is_valid()
+        assert 'date' in form.errors
+        assert form.errors['date'][0] == 'Sąskaita uždaryta 1999.'
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                           Account Worth
 # ---------------------------------------------------------------------------------------
@@ -145,6 +170,31 @@ def test_account_worth_blank_data():
     assert not form.is_valid()
 
     assert 'account' in form.errors
+
+
+@pytest.mark.parametrize(
+    'closed, date, valid',
+    [
+        ('1999', '2000-1-1', False),
+        ('1999', '1999-12-31', True),
+        ('1999', '1998-12-31', True),
+    ]
+)
+def test_account_worth_account_closed_date(closed, date, valid):
+    a = AccountFactory(closed=closed)
+
+    form = AccountWorthForm(data={
+        'date': date,
+        'price': '1.0',
+        'account': a.pk,
+    })
+
+    if valid:
+        assert form.is_valid()
+    else:
+        assert not form.is_valid()
+        assert 'date' in form.errors
+        assert form.errors['date'][0] == 'Sąskaita uždaryta 1999.'
 
 
 # ---------------------------------------------------------------------------------------
