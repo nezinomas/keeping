@@ -1,4 +1,5 @@
 {% load crispy_forms_tags %}
+{% load slippers %}
 {% load i18n %}
 
 
@@ -12,9 +13,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body">
-
-        {% for field in shared_form %}{{ field|as_crispy_field }}{% endfor %}
-
         {% if formset.non_form_errors %}
         <div class="alert alert-danger">
         {% for error in formset.non_form_errors %}<strong>{{ error|escape }}</strong>{% endfor %}
@@ -26,7 +24,14 @@
 
         <div class="row gx-2">
             {% for field in form %}
-            <div class=" {% if field.name == 'price' %}col-3 formset-price-input{% else %}col-9{% endif %}">{{ field|as_crispy_field }}</div>
+            {% var col='col' %}
+            {% if field.name == 'price' %}
+                {% var col='col-2 formset-input'%}
+            {% endif %}
+            {% if field.name == 'date' %}
+                {% var col='col-4 formset-input'%}
+            {% endif %}
+            <div class="{{col}}">{{ field|as_crispy_field }}</div>
             {% endfor %}
         </div>
         {% endfor %}
