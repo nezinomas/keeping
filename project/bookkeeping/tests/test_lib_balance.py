@@ -59,4 +59,3 @@ def test_months_data(data, types):
     assert actual.loc['1999-12-01', 'T0'] == 0.0
     assert actual.loc['1999-12-01', 'T1'] == 4.0
     assert actual.loc['1999-12-01', 'T2'] == 5.0
-    assert 0

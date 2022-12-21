@@ -5,12 +5,12 @@ import pandas as pd
 from pandas import DataFrame as DF
 
 
-def create_data(data: list[dict], types: list, sum_column: str = 'sum', option: str = 'months') -> DF:
+def create_data(data: list[dict], types: list, sum_column: str = 'sum', option: str = 'month') -> DF:
     year = data[0]['date'].year
     df = DF(data).remove_columns(['exception_sum']).to_datetime('date')
     df[sum_column] = df[sum_column].apply(pd.to_numeric, downcast='float')
     # groupby month or day and sum
-    grp = df.date.dt.month if option == 'months' else df.date.dt.day
+    grp = df.date.dt.month if option == 'month' else df.date.dt.day
     df = df.groupby(['title', grp])['sum'].sum()
     # modifie df: unstack, transpose, row to col names
     df = df.unstack().reset_index().T.reset_index()
