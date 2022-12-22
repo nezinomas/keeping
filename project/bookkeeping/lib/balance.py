@@ -33,21 +33,18 @@ class MakeDataFrame:
     def insert_missing_dates(self, df: DF) -> DF:
                 # create missing rows
         if self.month:
-            def dt(x): return date(self.year, self.month, x)
+            def dt(day): return date(self.year, self.month, day)
             tm = pd.Timestamp(self.year, self.month, 1)
-            new_dates = {'date': pd.date_range(
-                start=tm, end=(tm + pd.offsets.MonthEnd(0)), freq='D')}
-
+            rng = pd.date_range(
+                start=tm, end=(tm + pd.offsets.MonthEnd(0)), freq='D')
         else:
-            def dt(x): return date(self.year, x, 1)
-            new_dates = {
-                'date': pd.date_range(f'{self.year}', periods=12, freq='MS')}
+            def dt(month): return date(self.year, month, 1)
+            rng = pd.date_range(f'{self.year}', periods=12, freq='MS')
 
         df['date'] = pd.to_datetime(df['date'].apply(dt))
-        return df.complete(new_dates, fill_value=0.0).set_index('date')
+        return df.complete({'date': rng}, fill_value=0.0).set_index('date')
 
     def group_and_sum(self, df: DF, sum_column: str) -> DF:
         # groupby month or day and sum
         grp = df.date.dt.day if self.month else df.date.dt.month
-
         return df.groupby(['title', grp])[sum_column].sum()
