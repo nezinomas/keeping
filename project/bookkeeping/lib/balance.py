@@ -11,27 +11,25 @@ class MakeDataFrame:
         self.month = month
 
     def create_data(self, data: list[dict], types: list, sum_column: str = 'sum') -> DF:
+        # make dataframe and convert dates, decimals
         df = DF(data).remove_columns(['exception_sum']).to_datetime('date')
         df[sum_column] = df[sum_column].apply(pd.to_numeric, downcast='float')
-
+        # group and sum
         df = self.group_and_sum(df, sum_column)
-        # modifie df: unstack, transpose, row to col names
+        # modifie df: unstack, transpose, raname columns
         df = df.unstack().reset_index().T.reset_index()
         df.columns = df.iloc[0] # first row values -> to columns names
         df = df.drop(0)  # remove first row
         df = df.rename(columns={'title': 'date'})  # rename column
-
         # create missing columns
         df[[*set(types) - set(df.columns)]] = 0.0
+        # sort columns
         df = df[sorted(df.columns)]
 
-        df = self.insert_missing_dates(df)
-
-        print(f'\nF >>>>>>\n{df}\n')
-        return df
+        return self.insert_missing_dates(df).set_index('date')
 
     def insert_missing_dates(self, df: DF) -> DF:
-                # create missing rows
+        ''' Insert missing months or days into DataFrame '''
         if self.month:
             def dt(day): return date(self.year, self.month, day)
             tm = pd.Timestamp(self.year, self.month, 1)
@@ -42,9 +40,9 @@ class MakeDataFrame:
             rng = pd.date_range(f'{self.year}', periods=12, freq='MS')
 
         df['date'] = pd.to_datetime(df['date'].apply(dt))
-        return df.complete({'date': rng}, fill_value=0.0).set_index('date')
+        return df.complete({'date': rng}, fill_value=0.0)
 
     def group_and_sum(self, df: DF, sum_column: str) -> DF:
-        # groupby month or day and sum
+        ''' Group by month or by day and sum selected column '''
         grp = df.date.dt.day if self.month else df.date.dt.month
         return df.groupby(['title', grp])[sum_column].sum()
