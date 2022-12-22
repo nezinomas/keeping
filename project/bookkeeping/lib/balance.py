@@ -5,37 +5,49 @@ import pandas as pd
 from pandas import DataFrame as DF
 
 
-def create_data(data: list[dict], types: list, sum_column: str = 'sum', option: str = 'month') -> DF:
-    year = data[0]['date'].year
-    month = data[0]['date'].month
-    df = DF(data).remove_columns(['exception_sum']).to_datetime('date')
-    df[sum_column] = df[sum_column].apply(pd.to_numeric, downcast='float')
-    # groupby month or day and sum
-    grp = df.date.dt.month if option == 'month' else df.date.dt.day
-    df = df.groupby(['title', grp])['sum'].sum()
-    # modifie df: unstack, transpose, row to col names
-    df = df.unstack().reset_index().T.reset_index()
-    df.columns = df.iloc[0] # first row values -> to columns names
-    df = df.drop(0)  # remove first row
-    df = df.rename(columns={'title': 'date'})  # rename column
+class MakeDataFrame:
+    def __init__(self, year: int, month: int = None):
+        self.year = year
+        self.month = month
 
-    # create missing columns
-    df[[*set(types) - set(df.columns)]] = 0.0
-    df = df[sorted(df.columns)]
+    def create_data(self, data: list[dict], types: list, sum_column: str = 'sum') -> DF:
+        df = DF(data).remove_columns(['exception_sum']).to_datetime('date')
+        df[sum_column] = df[sum_column].apply(pd.to_numeric, downcast='float')
 
-    # create missing rows
-    if option == 'month':
-        df['date'] = pd.to_datetime(df['date'].apply(lambda x: date(year, x, 1)))
-        new_dates = {'date': pd.date_range(f'{year}', periods=12, freq='MS')}
-    else:
-        df['date'] = pd.to_datetime(df['date'].apply(lambda x: date(year, month, x)))
-        new_dates = {'date': pd.date_range(
-            start=pd.Timestamp(year, month, 1),
-            end=pd.Timestamp(year, month, 1) + pd.offsets.MonthEnd(0),
-            freq='D'
-        )}
+        df = self.group_and_sum(df, sum_column)
+        # modifie df: unstack, transpose, row to col names
+        df = df.unstack().reset_index().T.reset_index()
+        df.columns = df.iloc[0] # first row values -> to columns names
+        df = df.drop(0)  # remove first row
+        df = df.rename(columns={'title': 'date'})  # rename column
 
-    df = df.complete(new_dates, fill_value=0.0).set_index('date')
+        # create missing columns
+        df[[*set(types) - set(df.columns)]] = 0.0
+        df = df[sorted(df.columns)]
 
-    print(f'\nF >>>>>>\n{df}\n')
-    return df
+        df = self.insert_missing_dates(df)
+
+        print(f'\nF >>>>>>\n{df}\n')
+        return df
+
+    def insert_missing_dates(self, df: DF) -> DF:
+                # create missing rows
+        if self.month:
+            def dt(x): return date(self.year, self.month, x)
+            tm = pd.Timestamp(self.year, self.month, 1)
+            new_dates = {'date': pd.date_range(
+                start=tm, end=(tm + pd.offsets.MonthEnd(0)), freq='D')}
+
+        else:
+            def dt(x): return date(self.year, x, 1)
+            new_dates = {
+                'date': pd.date_range(f'{self.year}', periods=12, freq='MS')}
+
+        df['date'] = pd.to_datetime(df['date'].apply(dt))
+        return df.complete(new_dates, fill_value=0.0).set_index('date')
+
+    def group_and_sum(self, df: DF, sum_column: str) -> DF:
+        # groupby month or day and sum
+        grp = df.date.dt.day if self.month else df.date.dt.month
+
+        return df.groupby(['title', grp])[sum_column].sum()
