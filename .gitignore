@@ -45,6 +45,7 @@ coverage_reports/
 .coverage
 .coverage.*
 .cache
+.hypothesis
 nosetests.xml
 coverage.xml
 *,cover
