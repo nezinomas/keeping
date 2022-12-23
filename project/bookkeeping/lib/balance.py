@@ -14,17 +14,10 @@ class MakeDataFrame:
     def create_expenses(self, data: list[dict], types: list) -> DF:
         df = self.create_df(data, 'sum')
         df = self.group_and_sum(df, 'sum')
-        # modifie df: unstack, transpose, raname columns
-        df = df.unstack().reset_index().T.reset_index()
-        df.columns = df.iloc[0] # first row values -> to columns names
-        df = df.drop(0)  # remove first row
-        df = df.rename(columns={'title': 'date'})  # rename column
-        # create missing columns
-        df[[*set(types) - set(df.columns)]] = 0.0
-        # sort columns
-        df = df[sorted(df.columns)]
-
-        return self.insert_missing_dates(df).set_index('date')
+        df = self.transform_df(df)
+        df = self.insert_missing_column(df, types)
+        df = self.insert_missing_dates(df)
+        return df.set_index('date')
 
     def insert_missing_dates(self, df: DF) -> DF:
         ''' Insert missing months or days into DataFrame '''
@@ -50,3 +43,15 @@ class MakeDataFrame:
         df = DF(data).select_columns(['date', 'title', sum_column]).to_datetime('date')
         df[sum_column] = df[sum_column].apply(pd.to_numeric, downcast='float')
         return df
+
+    def transform_df(self, df: DF) -> DF:
+        df = df.unstack().reset_index().T.reset_index()
+        df.columns = df.iloc[0] # first row values -> to columns names
+        df = df.drop(0)  # remove first row
+        return df.rename(columns={'title': 'date'})  # rename column
+
+    def insert_missing_column(self, df: DF, types: list) -> DF:
+        # create missing columns
+        df[[*set(types) - set(df.columns)]] = 0.0
+        # sort columns
+        return df[sorted(df.columns)]
