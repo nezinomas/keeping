@@ -6,16 +6,14 @@ from pandas import DataFrame as DF
 
 
 class MakeDataFrame:
-    def __init__(self, year: int, month: int = None):
+    def __init__(self, year: int, data: list[dict], types: list, month: int = None):
         self.year = year
         self.month = month
+        self.expenses = self.create_expenses(data, types)
 
-    def create_data(self, data: list[dict], types: list, sum_column: str = 'sum') -> DF:
-        # make dataframe and convert dates, decimals
-        df = DF(data).remove_columns(['exception_sum']).to_datetime('date')
-        df[sum_column] = df[sum_column].apply(pd.to_numeric, downcast='float')
-        # group and sum
-        df = self.group_and_sum(df, sum_column)
+    def create_expenses(self, data: list[dict], types: list) -> DF:
+        df = self.create_df(data, 'sum')
+        df = self.group_and_sum(df, 'sum')
         # modifie df: unstack, transpose, raname columns
         df = df.unstack().reset_index().T.reset_index()
         df.columns = df.iloc[0] # first row values -> to columns names
@@ -46,3 +44,9 @@ class MakeDataFrame:
         ''' Group by month or by day and sum selected column '''
         grp = df.date.dt.day if self.month else df.date.dt.month
         return df.groupby(['title', grp])[sum_column].sum()
+
+    def create_df(self, data: list[dict], sum_column) -> DF:
+        # make dataframe and convert dates, decimals
+        df = DF(data).select_columns(['date', 'title', sum_column]).to_datetime('date')
+        df[sum_column] = df[sum_column].apply(pd.to_numeric, downcast='float')
+        return df

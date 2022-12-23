@@ -44,7 +44,7 @@ def fixture_types():
 
 
 def test_month_data(data, types):
-    actual = balance.MakeDataFrame(year=1999).create_data(data, types)
+    actual = balance.MakeDataFrame(year=1999, data=data, types=types).expenses
 
     assert isinstance(actual, pd.DataFrame)
 
@@ -62,7 +62,7 @@ def test_month_data(data, types):
 
 
 def test_day_data(data, types):
-    actual = balance.MakeDataFrame(year=1999, month=1).create_data(data, types)
+    actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types).expenses
 
     assert isinstance(actual, pd.DataFrame)
 
