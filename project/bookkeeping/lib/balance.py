@@ -10,6 +10,7 @@ class MakeDataFrame:
         self.year = year
         self.month = month
         self.expenses = self.create_expenses(data, types)
+        self.exceptions = self.create_exceptions(data)
 
     def create_expenses(self, data: list[dict], types: list) -> DF:
         df = self.create(data, 'sum')
@@ -18,6 +19,15 @@ class MakeDataFrame:
         df = self.insert_missing_column(df, types)
         df = self.insert_missing_dates(df)
         return df.set_index('date')
+
+    def create_exceptions(self, data: list[dict]) -> DF:
+        df = self.create(data, 'exception_sum')
+        df = self.group_and_sum(df, 'exception_sum')
+        df = self.transform(df)
+        df = self.insert_missing_dates(df)
+        df = df.set_index('date')
+        df.loc[:, 'sum'] = df.sum(axis=1)
+        return df.select_columns(['sum'])
 
     def insert_missing_dates(self, df: DF) -> DF:
         ''' Insert missing months or days into DataFrame '''

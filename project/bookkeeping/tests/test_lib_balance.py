@@ -61,6 +61,16 @@ def test_month_data(data, types):
     assert actual.loc['1999-12-01', 'T2'] == 5.0
 
 
+def test_month_exceptions(data, types):
+    actual = balance.MakeDataFrame(year=1999, data=data, types=types).exceptions
+
+    assert isinstance(actual, pd.DataFrame)
+
+    assert actual.loc['1999-01-01', 'sum'] == 0.5
+    assert actual.loc['1999-02-01', 'sum'] == 0.0
+    assert actual.loc['1999-12-01', 'sum'] == 0.0
+
+
 def test_day_data(data, types):
     actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types).expenses
 
@@ -77,3 +87,13 @@ def test_day_data(data, types):
     assert actual.loc['1999-01-31', 'T0'] == 0.0
     assert actual.loc['1999-01-31', 'T1'] == 3.0
     assert actual.loc['1999-01-31', 'T2'] == 0.0
+
+
+def test_day_exceptions(data, types):
+    actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types).exceptions
+
+    assert isinstance(actual, pd.DataFrame)
+
+    assert actual.loc['1999-01-01', 'sum'] == 0.5
+    assert actual.loc['1999-01-02', 'sum'] == 0.0
+    assert actual.loc['1999-01-31', 'sum'] == 0.0
