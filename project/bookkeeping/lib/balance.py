@@ -12,9 +12,9 @@ class MakeDataFrame:
         self.expenses = self.create_expenses(data, types)
 
     def create_expenses(self, data: list[dict], types: list) -> DF:
-        df = self.create_df(data, 'sum')
+        df = self.create(data, 'sum')
         df = self.group_and_sum(df, 'sum')
-        df = self.transform_df(df)
+        df = self.transform(df)
         df = self.insert_missing_column(df, types)
         df = self.insert_missing_dates(df)
         return df.set_index('date')
@@ -38,13 +38,13 @@ class MakeDataFrame:
         grp = df.date.dt.day if self.month else df.date.dt.month
         return df.groupby(['title', grp])[sum_column].sum()
 
-    def create_df(self, data: list[dict], sum_column) -> DF:
+    def create(self, data: list[dict], sum_column) -> DF:
         # make dataframe and convert dates, decimals
         df = DF(data).select_columns(['date', 'title', sum_column]).to_datetime('date')
         df[sum_column] = df[sum_column].apply(pd.to_numeric, downcast='float')
         return df
 
-    def transform_df(self, df: DF) -> DF:
+    def transform(self, df: DF) -> DF:
         df = df.unstack().reset_index().T.reset_index()
         df.columns = df.iloc[0] # first row values -> to columns names
         df = df.drop(0)  # remove first row
