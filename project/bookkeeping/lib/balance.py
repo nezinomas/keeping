@@ -21,9 +21,8 @@ class MakeDataFrame:
     def create_exceptions(self, data: list[dict]) -> DF:
         df = self._df(data, 'exception_sum')
         df = self._insert_missing_dates(df)
-        df = df.set_index('date')
-        df.loc[:, 'sum'] = df.sum(axis=1)
-        return df.select_columns(['sum'])
+        df.loc[:, 'sum'] = df.sum(axis=1, numeric_only=True)
+        return df.set_index('date').select_columns(['sum'])
 
     def _df(self, data, sum_column: str) -> DF:
         df = self._create(data, sum_column)
