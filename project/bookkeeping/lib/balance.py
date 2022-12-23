@@ -14,24 +14,24 @@ class MakeDataFrame:
 
     def create_expenses(self, data: list[dict], types: list) -> DF:
         df = self._df(data, 'sum')
-        df = self.insert_missing_column(df, types)
-        df = self.insert_missing_dates(df)
+        df = self._insert_missing_column(df, types)
+        df = self._insert_missing_dates(df)
         return df.set_index('date')
 
     def create_exceptions(self, data: list[dict]) -> DF:
         df = self._df(data, 'exception_sum')
-        df = self.insert_missing_dates(df)
+        df = self._insert_missing_dates(df)
         df = df.set_index('date')
         df.loc[:, 'sum'] = df.sum(axis=1)
         return df.select_columns(['sum'])
 
     def _df(self, data, sum_column: str) -> DF:
-        df = self.create(data, sum_column)
-        df = self.group_and_sum(df, sum_column)
-        df = self.transform(df)
+        df = self._create(data, sum_column)
+        df = self._group_and_sum(df, sum_column)
+        df = self._transform(df)
         return df
 
-    def insert_missing_dates(self, df: DF) -> DF:
+    def _insert_missing_dates(self, df: DF) -> DF:
         ''' Insert missing months or days into DataFrame '''
         if self.month:
             def dt(day): return date(self.year, self.month, day)
@@ -45,24 +45,24 @@ class MakeDataFrame:
         df['date'] = pd.to_datetime(df['date'].apply(dt))
         return df.complete({'date': rng}, fill_value=0.0)
 
-    def group_and_sum(self, df: DF, sum_column: str) -> DF:
+    def _group_and_sum(self, df: DF, sum_column: str) -> DF:
         ''' Group by month or by day and sum selected column '''
         grp = df.date.dt.day if self.month else df.date.dt.month
         return df.groupby(['title', grp])[sum_column].sum()
 
-    def create(self, data: list[dict], sum_column) -> DF:
+    def _create(self, data: list[dict], sum_column) -> DF:
         # make dataframe and convert dates, decimals
         df = DF(data).select_columns(['date', 'title', sum_column]).to_datetime('date')
         df[sum_column] = df[sum_column].apply(pd.to_numeric, downcast='float')
         return df
 
-    def transform(self, df: DF) -> DF:
+    def _transform(self, df: DF) -> DF:
         df = df.unstack().reset_index().T.reset_index()
         df.columns = df.iloc[0] # first row values -> to columns names
         df = df.drop(0)  # remove first row
         return df.rename(columns={'title': 'date'})  # rename column
 
-    def insert_missing_column(self, df: DF, types: list) -> DF:
+    def _insert_missing_column(self, df: DF, types: list) -> DF:
         # create missing columns
         df[[*set(types) - set(df.columns)]] = 0.0
         # sort columns
