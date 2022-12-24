@@ -45,7 +45,14 @@ class MakeDataFrame:
         df = df.unstack().reset_index().T.reset_index()
         df.columns = df.iloc[0] # first row values -> to columns names
         df = df.drop(0)  # remove first row
-        return df.rename(columns={'title': 'date'})  # rename column
+        df = df.rename(columns={'title': 'date'})  # rename column
+        # convert date int value to datetime
+        if self.month:
+            def dt(day): return date(self.year, self.month, day)
+        else:
+            def dt(month): return date(self.year, month, 1)
+        df['date'] = pd.to_datetime(df['date'].apply(dt))
+        return df
 
     def _insert_missing_column(self, df: DF, types: list) -> DF:
         # create missing columns
@@ -56,13 +63,10 @@ class MakeDataFrame:
     def _insert_missing_dates(self, df: DF) -> DF:
         ''' Insert missing months or days into DataFrame '''
         if self.month:
-            def dt(day): return date(self.year, self.month, day)
             tm = pd.Timestamp(self.year, self.month, 1)
             rng = pd.date_range(
                 start=tm, end=(tm + pd.offsets.MonthEnd(0)), freq='D')
         else:
-            def dt(month): return date(self.year, month, 1)
             rng = pd.date_range(f'{self.year}', periods=12, freq='MS')
 
-        df['date'] = pd.to_datetime(df['date'].apply(dt))
         return df.complete({'date': rng}, fill_value=0.0)
