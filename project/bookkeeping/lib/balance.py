@@ -25,6 +25,9 @@ class MakeDataFrame:
         return df.set_index('date').select_columns(['sum'])
 
     def _df(self, data, sum_column: str) -> DF:
+        if not data:
+            return DF(columns=['date'])
+
         df = self._create(data, sum_column)
         df = self._group_and_sum(df, sum_column)
         df = self._transform(df)
@@ -34,6 +37,7 @@ class MakeDataFrame:
         # make dataframe and convert dates, decimals
         df = DF(data).select_columns(['date', 'title', sum_column]).to_datetime('date')
         df[sum_column] = df[sum_column].apply(pd.to_numeric, downcast='float')
+
         return df
 
     def _group_and_sum(self, df: DF, sum_column: str) -> DF:
@@ -57,7 +61,6 @@ class MakeDataFrame:
     def _insert_missing_column(self, df: DF, types: list) -> DF:
         # create missing columns
         df[[*set(types) - set(df.columns)]] = 0.0
-        # sort columns
         return df[sorted(df.columns)]
 
     def _insert_missing_dates(self, df: DF) -> DF:
@@ -69,4 +72,10 @@ class MakeDataFrame:
         else:
             rng = pd.date_range(f'{self.year}', periods=12, freq='MS')
 
-        return df.complete({'date': rng}, fill_value=0.0)
+        if df.empty:
+            df['date'] = pd.Series(list(rng))
+            df.fillna(0.0, inplace=True)
+        else:
+            df = df.complete({'date': rng}, fill_value=0.0)
+
+        return df
