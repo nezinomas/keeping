@@ -13,28 +13,28 @@ class MakeDataFrame:
         self.exceptions = self.create_exceptions(data)
 
     def create_expenses(self, data: list[dict], types: list) -> DF:
-        df = self._df(data, 'sum')
+        df = self._create(data, 'sum')
         df = self._insert_missing_column(df, types)
         df = self._insert_missing_dates(df)
         return df.set_index('date')
 
     def create_exceptions(self, data: list[dict]) -> DF:
-        df = self._df(data, 'exception_sum')
+        df = self._create(data, 'exception_sum')
         df = self._insert_missing_dates(df)
         df.loc[:, 'sum'] = df.sum(axis=1, numeric_only=True)
         return df.set_index('date').select_columns(['sum'])
 
-    def _df(self, data, sum_column: str) -> DF:
+    def _create(self, data, sum_column: str) -> DF:
         if not data:
             return DF(columns=['date'])
 
-        df = self._create(data, sum_column)
+        df = self._init(data, sum_column)
         df = self._group_and_sum(df, sum_column)
         df = self._transform(df)
         return df
 
-    def _create(self, data: list[dict], sum_column) -> DF:
-        ''' Make DataFRame and convert dates, decimals '''
+    def _init(self, data: list[dict], sum_column) -> DF:
+        ''' Create DataFrame and convert dates, decimals '''
         df = DF(data).select_columns(['date', 'title', sum_column]).to_datetime('date')
         df[sum_column] = df[sum_column].apply(pd.to_numeric, downcast='float')
         return df
