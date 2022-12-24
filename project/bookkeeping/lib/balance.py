@@ -34,10 +34,9 @@ class MakeDataFrame:
         return df
 
     def _create(self, data: list[dict], sum_column) -> DF:
-        # make dataframe and convert dates, decimals
+        ''' Make DataFRame and convert dates, decimals '''
         df = DF(data).select_columns(['date', 'title', sum_column]).to_datetime('date')
         df[sum_column] = df[sum_column].apply(pd.to_numeric, downcast='float')
-
         return df
 
     def _group_and_sum(self, df: DF, sum_column: str) -> DF:
@@ -46,6 +45,9 @@ class MakeDataFrame:
         return df.groupby(['title', grp])[sum_column].sum()
 
     def _transform(self, df: DF) -> DF:
+        ''' Transform DataFrame Columns to Rows.
+            Convert date column int to datetime
+        '''
         df = df.unstack().reset_index().T.reset_index()
         df.columns = df.iloc[0] # first row values -> to columns names
         df = df.drop(0)  # remove first row
@@ -59,12 +61,12 @@ class MakeDataFrame:
         return df
 
     def _insert_missing_column(self, df: DF, types: list) -> DF:
-        # create missing columns
+        ''' Insert missing columns '''
         df[[*set(types) - set(df.columns)]] = 0.0
         return df[sorted(df.columns)]
 
     def _insert_missing_dates(self, df: DF) -> DF:
-        ''' Insert missing months or days into DataFrame '''
+        ''' Insert missing months or days '''
         if self.month:
             tm = pd.Timestamp(self.year, self.month, 1)
             rng = pd.date_range(
