@@ -43,7 +43,7 @@ def fixture_types():
     return ['T1', 'T2', 'T0']
 
 
-def test_month_data(data, types):
+def test_month_expenses(data, types):
     actual = balance.MakeDataFrame(year=1999, data=data, types=types).expenses
 
     assert isinstance(actual, pd.DataFrame)
@@ -71,7 +71,7 @@ def test_month_exceptions(data, types):
     assert actual.loc['1999-12-01', 'sum'] == 0.0
 
 
-def test_day_data(data, types):
+def test_day_expenses(data, types):
     actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types).expenses
 
     assert isinstance(actual, pd.DataFrame)
@@ -97,3 +97,9 @@ def test_day_exceptions(data, types):
     assert actual.loc['1999-01-01', 'sum'] == 0.5
     assert actual.loc['1999-01-02', 'sum'] == 0.0
     assert actual.loc['1999-01-31', 'sum'] == 0.0
+
+
+def test_expenses_and_exceptions_same_size(data, types):
+    actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types)
+
+    assert actual.exceptions.shape[0] == actual.expenses.shape[0]
