@@ -59,7 +59,7 @@ def test_month_expenses(data, types):
     assert actual.loc['1999-12-01', 'T0'] == 0.0
     assert actual.loc['1999-12-01', 'T1'] == 4.0
     assert actual.loc['1999-12-01', 'T2'] == 5.0
-    assert 0
+
 
 @pytest.mark.parametrize('data', [([]), (None)])
 def test_month_no_data_expenses(data, types):
