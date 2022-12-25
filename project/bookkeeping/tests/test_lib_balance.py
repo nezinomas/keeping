@@ -90,7 +90,7 @@ def test_month_no_data_and_no_types_expenses(data, types):
     assert isinstance(actual, pd.DataFrame)
     assert len(actual.index) == 12
     for i in range(12):
-        assert actual.index[i] == date(1999, i + 1, 1)
+        assert actual.index[i] == pd.Timestamp(date(1999, i + 1, 1))
 
 
 def test_month_exceptions(data, types):
@@ -124,7 +124,7 @@ def test_month_no_data_and_no_types_exceptions(data, types):
     assert isinstance(actual, pd.DataFrame)
     assert len(actual.index) == 12
     for i in range(12):
-        assert actual.index[i] == date(1999, i + 1, 1)
+        assert actual.index[i] == pd.Timestamp(date(1999, i + 1, 1))
 
 
 def test_day_expenses(data, types):
@@ -174,7 +174,7 @@ def test_day_no_data_and_no_types_expenses(data, types):
     assert isinstance(actual, pd.DataFrame)
     assert len(actual.index) == 31
     for i in range(31):
-        assert actual.index[i] == date(1999, 1, i + 1)
+        assert actual.index[i] == pd.Timestamp(date(1999, 1, i + 1))
 
 
 def test_day_exceptions(data, types):
@@ -208,7 +208,7 @@ def test_day_no_data_and_no_types_exceptions(data, types):
     assert isinstance(actual, pd.DataFrame)
     assert len(actual.index) == 31
     for i in range(31):
-        assert actual.index[i] == date(1999, 1, i + 1)
+        assert actual.index[i] == pd.Timestamp(date(1999, 1, i + 1))
 
 
 def test_expenses_and_exceptions_same_size(data, types):
