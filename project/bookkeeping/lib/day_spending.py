@@ -19,7 +19,6 @@ class DaySpending(BalanceBase):
         self._year = df.year
         self._month = df.month
         self._necessary = necessary or []
-
         self._spending = self._calc_spending(df.expenses, df.exceptions, day_input, expenses_free)
 
     @property
@@ -62,6 +61,9 @@ class DaySpending(BalanceBase):
         return row.to_dict()
 
     def _calc_spending(self, df: DF, exceptions: DF, day_input: float, expenses_free: float) -> DF:
+        if df.empty:
+            return df
+
         # filter dateframe
         df = self._delete_columns_marked_as_necessary(df)
 

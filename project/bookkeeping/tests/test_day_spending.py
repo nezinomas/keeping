@@ -1,44 +1,38 @@
 from datetime import datetime
-from decimal import Decimal
 from types import SimpleNamespace
 
-import pandas as pd
+from pandas import DataFrame as DF
 import pytest
 
 from ..lib.day_spending import DaySpending
 
 
-@pytest.fixture()
-def _expenses():
-    return \
-    [
-        {'date': datetime(1999, 1, 1), 'title': 'N', 'sum': Decimal('9.99'), 'exception_sum': Decimal('0.0')},
-        {'date': datetime(1999, 1, 1), 'title': 'O1', 'sum': Decimal('1.0'), 'exception_sum': Decimal('0.0')},
-        {'date': datetime(1999, 1, 1), 'title': 'O2', 'sum': Decimal('1.25'), 'exception_sum': Decimal('1.0')},
+@pytest.fixture(name="df")
+def fixture_df():
+    exp = [
+        {'date': datetime(1999, 1, 1), 'N': 9.99, 'O1': 1.0, 'O2': 1.25},
+        {'date': datetime(1999, 1, 2), 'N': 9.99, 'O1': 0.0, 'O2': 1.05},
+        {'date': datetime(1999, 1, 3), 'N': 9.99, 'O1': 0.0, 'O2': 0.0},]
+    exp = DF(exp).set_index('date').fillna(0.0)
 
-        {'date': datetime(1999, 1, 2), 'title': 'N', 'sum': Decimal('9.99'), 'exception_sum': Decimal('0.0')},
-        {'date': datetime(1999, 1, 2), 'title': 'O1', 'sum': Decimal('0.0'), 'exception_sum': Decimal('0.0')},
-        {'date': datetime(1999, 1, 2), 'title': 'O2', 'sum': Decimal('1.05'), 'exception_sum': Decimal('0.0')},
-
-        {'date': datetime(1999, 1, 3), 'title': 'N', 'sum': Decimal('9.99'), 'exception_sum': Decimal('0.0')},
-        {'date': datetime(1999, 1, 3), 'title': 'O1', 'sum': Decimal('0.0'), 'exception_sum': Decimal('0.0')},
-        {'date': datetime(1999, 1, 3), 'title': 'O2', 'sum': Decimal('0.0'), 'exception_sum': Decimal('0.0')},
+    exc = [
+        {'date': datetime(1999, 1, 1), 'sum': 1.0},
+        {'date': datetime(1999, 1, 2), 'sum': 0.0},
+        {'date': datetime(1999, 1, 3), 'sum': 0.0},
     ]
+    exc = DF(exc).set_index('date').fillna(0.0)
+
+    return SimpleNamespace(year=1999, month=1, expenses=exp, exceptions=exc)
 
 
-@pytest.fixture()
-def _necessary():
+@pytest.fixture(name="necessary")
+def fixture_necessary():
     return ['N']
 
 
-@pytest.fixture()
-def _types():
-    return ['N', 'O1', 'O2']
-
-
-@pytest.fixture()
-def _df_for_average_calculation():
-    df = pd.DataFrame([
+@pytest.fixture(name="df_for_average_calculation")
+def fixture_df_for_average_calculation():
+    df = DF([
         {'total': 1.1, 'date': datetime(1999, 1, 1)},
         {'total': 2.1, 'date': datetime(1999, 1, 2)},
         {'total': 3.1, 'date': datetime(1999, 1, 3)},
@@ -50,13 +44,10 @@ def _df_for_average_calculation():
 
 
 @pytest.mark.freeze_time('1999-01-02')
-def test_avg_per_day(_expenses, _necessary, _types):
+def test_avg_per_day(df, necessary):
     obj = DaySpending(
-        year=1999,
-        month=1,
-        expenses=_expenses,
-        necessary=_necessary,
-        types=_types,
+        df=df,
+        necessary=necessary,
         day_input=0.25,
         expenses_free=20.0,
     )
@@ -66,13 +57,10 @@ def test_avg_per_day(_expenses, _necessary, _types):
     assert 1.15 == actual
 
 
-def test_spending_first_day(_expenses, _necessary, _types):
+def test_spending_first_day(df, necessary):
     obj = DaySpending(
-        year=1999,
-        month=1,
-        expenses=_expenses,
-        necessary=_necessary,
-        types=_types,
+        df=df,
+        necessary=necessary,
         day_input=0.25,
         expenses_free=20.0,
     )
@@ -84,13 +72,10 @@ def test_spending_first_day(_expenses, _necessary, _types):
     assert actual[0]['full'] == -1.0
 
 
-def test_spending_second_day(_expenses, _necessary, _types):
+def test_spending_second_day(df, necessary):
     obj = DaySpending(
-        year=1999,
-        month=1,
-        expenses=_expenses,
-        necessary=_necessary,
-        types=_types,
+        df=df,
+        necessary=necessary,
         day_input=0.25,
         expenses_free=20.0,
     )
@@ -102,13 +87,10 @@ def test_spending_second_day(_expenses, _necessary, _types):
     assert round(actual[1]['full'], 2) == -1.80
 
 
-def test_spending_first_day_necessary_empty(_expenses, _types):
+def test_spending_first_day_necessary_empty(df):
     obj = DaySpending(
-        year=1999,
-        month=1,
-        expenses=_expenses,
+        df=df,
         necessary=[],
-        types=_types,
         day_input=0.25,
         expenses_free=20.0,
     )
@@ -120,13 +102,10 @@ def test_spending_first_day_necessary_empty(_expenses, _types):
     assert actual[0]['full'] == -10.99
 
 
-def test_spending_first_day_necessary_none(_expenses, _types):
+def test_spending_first_day_necessary_none(df):
     obj = DaySpending(
-        year=1999,
-        month=1,
-        expenses=_expenses,
+        df=df,
         necessary=None,
-        types=_types,
         day_input=0.25,
         expenses_free=20.0,
     )
@@ -138,13 +117,10 @@ def test_spending_first_day_necessary_none(_expenses, _types):
     assert actual[0]['full'] == -10.99
 
 
-def test_spending_first_day_all_empty(_expenses, _types):
+def test_spending_first_day_all_empty(df):
     obj = DaySpending(
-        year=1999,
-        month=1,
-        expenses=_expenses,
+        df=df,
         necessary=None,
-        types=_types,
         day_input=0,
         expenses_free=0,
     )
@@ -156,13 +132,10 @@ def test_spending_first_day_all_empty(_expenses, _types):
     assert actual[0]['full'] == -11.24
 
 
-def test_spending_balance_expenses_empty(_types):
+def test_spending_balance_expenses_empty():
     obj = DaySpending(
-        year=1999,
-        month=1,
-        expenses=[],
+        df=SimpleNamespace(year=1999, month=1, expenses=DF(), exceptions=DF()),
         necessary=[],
-        types=_types,
         day_input=0,
         expenses_free=0,
     )
@@ -178,54 +151,45 @@ def test_spending_balance_expenses_empty(_types):
 
 
 @pytest.mark.freeze_time("1999-01-02")
-def test_average_month_two_days(_df_for_average_calculation):
+def test_average_month_two_days(df_for_average_calculation):
     o = DaySpending(
-        year=1999,
-        month=1,
-        expenses=[],
+        df=SimpleNamespace(year=1999, month=1, expenses=DF(), exceptions=DF()),
         necessary=[],
-        types=[],
         day_input=0,
         expenses_free=0
     )
 
-    o._spending = _df_for_average_calculation
+    o._spending = df_for_average_calculation
 
     actual = o.avg_per_day
     assert 1.6 == round(actual, 2)
 
 
 @pytest.mark.freeze_time("1999-01-31")
-def test_average_month_last_day(_df_for_average_calculation):
+def test_average_month_last_day(df_for_average_calculation):
     o = DaySpending(
-        year=1999,
-        month=1,
-        expenses=[],
+        df=SimpleNamespace(year=1999, month=1, expenses=DF(), exceptions=DF()),
         necessary=[],
-        types=[],
         day_input=0,
         expenses_free=0
     )
 
-    o._spending = _df_for_average_calculation
+    o._spending = df_for_average_calculation
     actual = o.avg_per_day
 
     assert round(actual, 2) == 0.34
 
 
 @pytest.mark.freeze_time("1970-01-01")
-def test_average_month_other_year(_df_for_average_calculation):
+def test_average_month_other_year(df_for_average_calculation):
     o = DaySpending(
-        year=1999,
-        month=1,
-        expenses=[],
+        df=SimpleNamespace(year=1999, month=1, expenses=DF(), exceptions=DF()),
         necessary=[],
-        types=[],
         day_input=0,
         expenses_free=0
     )
 
-    o._spending = _df_for_average_calculation
+    o._spending = df_for_average_calculation
     actual = o.avg_per_day
 
     assert round(actual, 2) == 0.34
@@ -233,16 +197,13 @@ def test_average_month_other_year(_df_for_average_calculation):
 
 def test_average_month_empty_dataframe():
     o = DaySpending(
-        year=1999,
-        month=1,
-        expenses=[],
+        df=SimpleNamespace(year=1999, month=1, expenses=DF(), exceptions=DF()),
         necessary=[],
-        types=[],
         day_input=0,
         expenses_free=0
     )
 
-    o._spending = pd.DataFrame()
+    o._spending = DF()
     actual = o.avg_per_day
 
     assert actual == 0.0
@@ -250,11 +211,8 @@ def test_average_month_empty_dataframe():
 
 def test_average_month_no_dataframe():
     o = DaySpending(
-        year=1999,
-        month=1,
-        expenses=[],
+        df=SimpleNamespace(year=1999, month=1, expenses=DF(), exceptions=DF()),
         necessary=[],
-        types=[],
         day_input=0,
         expenses_free=0,
     )
