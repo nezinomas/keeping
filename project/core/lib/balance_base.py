@@ -2,39 +2,7 @@ from datetime import datetime
 from typing import Dict, List
 
 import numpy as np
-import pandas as pd
 from pandas import DataFrame as DF
-
-
-def df_days_of_month(year: int, month: int) -> DF:
-    try:
-        _range = pd.date_range(
-            start=pd.Timestamp(year, month, 1),
-            end=pd.Timestamp(year, month, 1) + pd.offsets.MonthEnd(0),
-            freq='D'
-        )
-    except ValueError:
-        return DF()
-
-    df = DF(_range, columns=['date'])
-
-    df.set_index('date', inplace=True)
-
-    return df
-
-
-def df_months_of_year(year: int) -> DF:
-    try:
-        _range = pd.date_range(f'{year}', periods=12, freq='MS')
-    except ValueError:
-        return DF()
-
-    # create empty DataFrame object with index containing all months
-    df = DF(_range, columns=['date'])
-
-    df.set_index('date', inplace=True)
-
-    return df
 
 
 class BalanceBase():
