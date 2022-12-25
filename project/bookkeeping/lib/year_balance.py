@@ -1,9 +1,10 @@
 from datetime import datetime
 
+import pandas as pd
 from pandas import DataFrame as DF
 from pandas import to_datetime
 
-from ...core.lib.balance_base import BalanceBase, df_months_of_year
+from ...core.lib.balance_base import BalanceBase
 
 
 class YearBalance(BalanceBase):
@@ -120,8 +121,21 @@ class YearBalance(BalanceBase):
     def money_flow(self) -> list[float]:
         return self._balance.money_flow.tolist()
 
+    def _months_of_year(self, year: int) -> DF:
+        try:
+            _range = pd.date_range(f'{year}', periods=12, freq='MS')
+        except ValueError:
+            return DF()
+
+        # create empty DataFrame object with index containing all months
+        df = DF(_range, columns=['date'])
+
+        df.set_index('date', inplace=True)
+
+        return df
+
     def _make_df(self, year: int, data: dict[str, dict]) -> DF:
-        df = df_months_of_year(year)
+        df = self._months_of_year(year)
 
         # create columns with 0 values
         for col in self.columns:

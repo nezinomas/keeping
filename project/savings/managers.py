@@ -2,8 +2,9 @@ from datetime import date, timedelta
 
 from dateutil.relativedelta import relativedelta
 from django.db import models
-from django.db.models import Count, F, Q, Sum
+from django.db.models import Count, F, Q, Sum, Value
 from django.db.models.functions import ExtractYear, TruncMonth
+from django.utils.translation import gettext as _
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
@@ -85,7 +86,9 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         return \
             self \
             .related() \
-            .day_sum(year=year, month=month)
+            .day_sum(year=year, month=month) \
+            .annotate(title=Value(_('Taupymas')))
+            # .values()
 
     def last_months(self, months: int = 6) -> float:
         # previous month

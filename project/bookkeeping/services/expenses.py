@@ -3,8 +3,8 @@ from dataclasses import dataclass, field
 
 from django.utils.translation import gettext as _
 
+from ...core.lib.balance_base import BalanceBase
 from ...expenses.models import Expense, ExpenseType
-from ..lib.expense_balance import ExpenseBalance
 
 
 @dataclass
@@ -27,7 +27,7 @@ class ExpenseServiceData:
 
 
 class ExpenseService():
-    def __init__(self, data: ExpenseBalance):
+    def __init__(self, data: BalanceBase):
         self._types = data.types
         self._total = data.total
         self._total_row = data.total_row

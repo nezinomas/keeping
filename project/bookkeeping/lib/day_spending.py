@@ -1,29 +1,25 @@
 from typing import Dict, List
 
 from pandas import DataFrame as DF
-from project.bookkeeping.lib.expense_balance import (ExpenseBalance,
-                                                     df_days_of_month)
 
+from ...core.lib.balance_base import BalanceBase
 from ...core.lib.date import current_day
+from .balance import MakeDataFrame
 
 
-class DaySpending(ExpenseBalance):
+class DaySpending(BalanceBase):
     def __init__(self,
-                 year: int,
-                 month: int,
-                 expenses: List[Dict],
-                 types: List[str],
+                 df: MakeDataFrame,
                  necessary: List[str],
                  day_input: float,
                  expenses_free: float):
 
-        super().__init__(df_days_of_month(year, month), expenses, types)
+        super().__init__(df.expenses)
 
-        self._year = year
-        self._month = month
+        self._year = df.year
+        self._month = df.month
         self._necessary = necessary or []
-
-        self._spending = self._calc_spending(self.expenses, self.exceptions, day_input, expenses_free)
+        self._spending = self._calc_spending(df.expenses, df.exceptions, day_input, expenses_free)
 
     @property
     def spending(self) -> List[Dict]:
@@ -65,6 +61,9 @@ class DaySpending(ExpenseBalance):
         return row.to_dict()
 
     def _calc_spending(self, df: DF, exceptions: DF, day_input: float, expenses_free: float) -> DF:
+        if df.empty:
+            return df
+
         # filter dateframe
         df = self._delete_columns_marked_as_necessary(df)
 
