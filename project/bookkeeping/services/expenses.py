@@ -10,7 +10,6 @@ from ...expenses.models import Expense, ExpenseType
 @dataclass
 class ExpenseServiceData:
     year: int
-
     expense_types: list = field(init=False, default_factory=list)
     expenses: list = field(init=False, default_factory=list)
 
