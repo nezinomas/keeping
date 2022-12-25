@@ -53,10 +53,9 @@ class MakeDataFrame:
         df = df.drop(0)  # remove first row
         df = df.rename(columns={'title': 'date'})  # rename column
         # convert date int value to datetime
-        if self.month:
-            def dt(day): return date(self.year, self.month, day)
-        else:
-            def dt(month): return date(self.year, month, 1)
+        def dt(val: int) -> date:
+            month_day = (self.month, val) if self.month else (val, 1)
+            return date(self.year, *month_day)
         df['date'] = pd.to_datetime(df['date'].apply(dt))
         return df
 
