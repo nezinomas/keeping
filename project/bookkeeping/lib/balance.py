@@ -61,6 +61,9 @@ class MakeDataFrame:
 
     def _insert_missing_column(self, df: DF, types: list) -> DF:
         ''' Insert missing columns '''
+        if not types:
+            return df
+
         df[[*set(types) - set(df.columns)]] = 0.0
         return df[sorted(df.columns)]
 

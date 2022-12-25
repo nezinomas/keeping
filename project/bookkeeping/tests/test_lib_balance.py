@@ -80,6 +80,19 @@ def test_month_no_data_expenses(data, types):
     assert actual.loc['1999-12-01', 'T2'] == 0.0
 
 
+@pytest.mark.parametrize(
+    'data, types',
+    [([], []), (None, None)]
+)
+def test_month_no_data_and_no_types_expenses(data, types):
+    actual = balance.MakeDataFrame(year=1999, data=data, types=types).expenses
+
+    assert isinstance(actual, pd.DataFrame)
+    assert len(actual.index) == 12
+    for i in range(12):
+        assert actual.index[i] == date(1999, i + 1, 1)
+
+
 def test_month_exceptions(data, types):
     actual = balance.MakeDataFrame(year=1999, data=data, types=types).exceptions
 
@@ -99,6 +112,19 @@ def test_month_no_data_exceptions(data, types):
     assert actual.loc['1999-01-01', 'sum'] == 0.0
     assert actual.loc['1999-02-01', 'sum'] == 0.0
     assert actual.loc['1999-12-01', 'sum'] == 0.0
+
+
+@pytest.mark.parametrize(
+    'data, types',
+    [([], []), (None, None)]
+)
+def test_month_no_data_and_no_types_exceptions(data, types):
+    actual = balance.MakeDataFrame(year=1999, data=data, types=types).exceptions
+
+    assert isinstance(actual, pd.DataFrame)
+    assert len(actual.index) == 12
+    for i in range(12):
+        assert actual.index[i] == date(1999, i + 1, 1)
 
 
 def test_day_expenses(data, types):
@@ -138,6 +164,19 @@ def test_day_no_data_expenses(data, types):
     assert actual.loc['1999-01-31', 'T2'] == 0.0
 
 
+@pytest.mark.parametrize(
+    'data, types',
+    [([], []), (None, None)]
+)
+def test_day_no_data_and_no_types_expenses(data, types):
+    actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types).expenses
+
+    assert isinstance(actual, pd.DataFrame)
+    assert len(actual.index) == 31
+    for i in range(31):
+        assert actual.index[i] == date(1999, 1, i + 1)
+
+
 def test_day_exceptions(data, types):
     actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types).exceptions
 
@@ -157,6 +196,19 @@ def test_day_no_data_exceptions(data, types):
     assert actual.loc['1999-01-01', 'sum'] == 0.0
     assert actual.loc['1999-01-02', 'sum'] == 0.0
     assert actual.loc['1999-01-31', 'sum'] == 0.0
+
+
+@pytest.mark.parametrize(
+    'data, types',
+    [([], []), (None, None)]
+)
+def test_day_no_data_and_no_types_exceptions(data, types):
+    actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types).exceptions
+
+    assert isinstance(actual, pd.DataFrame)
+    assert len(actual.index) == 31
+    for i in range(31):
+        assert actual.index[i] == date(1999, 1, i + 1)
 
 
 def test_expenses_and_exceptions_same_size(data, types):
