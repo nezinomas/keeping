@@ -26,6 +26,10 @@ class BalanceBase():
         return arr.to_dict('records')
 
     @property
+    def types(self) -> List:
+        return sorted(self._balance.columns.tolist())
+
+    @property
     def total(self) -> float:
         '''
         Return total sum of all columns
