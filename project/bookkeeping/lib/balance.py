@@ -9,8 +9,16 @@ class MakeDataFrame:
     def __init__(self, year: int, data: list[dict], types: list, month: int = None):
         self.year = year
         self.month = month
-        self.expenses = self.create_expenses(data, types)
-        self.exceptions = self.create_exceptions(data)
+        self.data = data
+        self.types = types
+
+    @property
+    def expenses(self):
+        return self.create_expenses(self.data, self.types)
+
+    @property
+    def exceptions(self):
+        return self.create_exceptions(self.data)
 
     def create_expenses(self, data: list[dict], types: list) -> DF:
         df = self._create(data, 'sum')
