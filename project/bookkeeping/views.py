@@ -39,7 +39,7 @@ class Index(TemplateViewMixin):
         # expenses service
         data = services.ExpenseServiceData(year)
         df = MakeDataFrame(year, data.expenses, data.expense_types)
-        exp = services.ExpenseService(BalanceBase(df.expenses))
+        exp = services.ExpenseService(BalanceBase(df.data))
 
         context = {
             'year': year,
@@ -191,7 +191,7 @@ class Month(TemplateViewMixin):
         service = services.MonthService(
             data=data,
             plans=plans,
-            savings=BalanceBase(df_savings.expenses),
+            savings=BalanceBase(df_savings.data),
             spending=spending
         )
         context = {

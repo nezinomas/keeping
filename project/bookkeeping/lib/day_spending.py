@@ -14,12 +14,12 @@ class DaySpending(BalanceBase):
                  day_input: float,
                  expenses_free: float):
 
-        super().__init__(df.expenses)
+        super().__init__(df.data)
 
         self._year = df.year
         self._month = df.month
         self._necessary = necessary or []
-        self._spending = self._calc_spending(df.expenses, df.exceptions, day_input, expenses_free)
+        self._spending = self._calc_spending(df.data, df.exceptions, day_input, expenses_free)
 
     @property
     def spending(self) -> List[Dict]:

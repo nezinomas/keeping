@@ -13,16 +13,16 @@ class MakeDataFrame:
         self.types = types
 
     @property
-    def expenses(self):
-        return self.create_expenses(self.data, self.types)
+    def data(self):
+        return self.create_data(self.data, self.types)
 
     @property
     def exceptions(self):
         return self.create_exceptions(self.data)
 
-    def create_expenses(self, data: list[dict], types: list) -> DF:
+    def create_data(self, data: list[dict], types: list) -> DF:
         df = self._create(data, 'sum')
-        df = self._insert_missing_column(df, types)
+        df = self._insert_missing_columns(df, types)
         df = self._insert_missing_dates(df)
         return df.set_index('date')
 
@@ -68,7 +68,7 @@ class MakeDataFrame:
         df['date'] = pd.to_datetime(df['date'].apply(dt))
         return df
 
-    def _insert_missing_column(self, df: DF, types: list) -> DF:
+    def _insert_missing_columns(self, df: DF, types: list) -> DF:
         ''' Insert missing columns '''
         if not types:
             return df
