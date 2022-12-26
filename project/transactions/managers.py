@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import F, Sum
+from django.db.models import F, Sum, Value
 from django.db.models.functions import ExtractYear
 
 from ..core.lib import utils
@@ -80,7 +80,8 @@ class SavingCloseQuerySet(BaseMixin, SumMixin):
         return \
             self \
             .related() \
-            .month_sum(year=year, month=month)
+            .month_sum(year=year, month=month) \
+            .annotate(title=Value('savings_close'))
 
     def expenses(self):
         '''
