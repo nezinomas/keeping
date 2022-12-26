@@ -205,7 +205,7 @@ class SignalBase(ABC):
             cols = ['id', 'year', 'have', 'latest_check']
             return pd.DataFrame(defaultdict(list), columns=cols).set_index(idx)
         # convert Decimal -> float
-        hv['have'] = pd.to_numeric(hv['have'], downcast='float')
+        hv['have'] = hv['have'].apply(pd.to_numeric, downcast='float')
 
         return hv.set_index(idx)
 

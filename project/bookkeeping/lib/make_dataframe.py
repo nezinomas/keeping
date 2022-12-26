@@ -45,7 +45,7 @@ class MakeDataFrame:
         ''' Create DataFrame and convert dates, decimals '''
         df = DF(data).select_columns(['date', 'title', sum_column]).copy()
         df['date'] = pd.to_datetime(df['date'])
-        df[sum_column] = pd.to_numeric(df[sum_column], downcast='float')
+        df[sum_column] = df[sum_column].apply(pd.to_numeric, downcast='float')
         return df
 
     def _group_and_sum(self, df: DF, sum_column: str) -> DF:
