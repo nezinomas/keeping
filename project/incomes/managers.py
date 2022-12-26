@@ -1,7 +1,7 @@
 from typing import List
 
 from django.db import models
-from django.db.models import Count, F, Sum
+from django.db.models import Count, F, Sum, Value
 from django.db.models.functions import ExtractYear, TruncMonth
 
 from ..core.lib import utils
@@ -49,7 +49,8 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
         return \
             self \
             .related() \
-            .month_sum(year, month)
+            .month_sum(year, month) \
+            .annotate(title=Value('incomes'))
 
     def sum_by_month_and_type(self, year):
         return \
