@@ -23,6 +23,21 @@ class IndexServiceData:
         self.amount_start = self.get_amount_start()
         self.data = self.get_data()
 
+    @property
+    def columns(self) -> tuple[str]:
+        return (
+            'incomes',
+            'expenses',
+            'savings',
+            'savings_close',
+            'borrow',
+            'borrow_return',
+            'lend',
+            'lend_return',
+            'balance',
+            'money_flow',
+        )
+
     def get_amount_start(self):
         _sum = \
             AccountBalance.objects \
@@ -44,16 +59,16 @@ class IndexServiceData:
         borrow, borrow_return = self.get_debt_data(qs_borrow)
         lend, lend_return = self.get_debt_data(qs_lend)
 
-        return {
-            'incomes': Income.objects.sum_by_month(self.year),
-            'expenses': Expense.objects.sum_by_month(self.year),
-            'savings': Saving.objects.sum_by_month(self.year),
-            'savings_close': SavingClose.objects.sum_by_month(self.year),
-            'borrow': borrow,
-            'borrow_return': borrow_return,
-            'lend': lend,
-            'lend_return': lend_return,
-        }
+        arr = []
+        arr += list(Income.objects.sum_by_month(self.year))
+        arr += list(Expense.objects.sum_by_month(self.year))
+        arr += list(Saving.objects.sum_by_month(self.year))
+        arr += list(SavingClose.objects.sum_by_month(self.year))
+        arr += borrow
+        arr += borrow_return
+        arr += lend
+        arr += lend_return
+        return arr
 
     def get_debt_data(self, data):
         debt, debt_return = [], []
@@ -61,9 +76,9 @@ class IndexServiceData:
         for row in data:
             date = row['date']
             debt.append(
-                {'date': date, 'sum': row['sum_debt']})
+                {'date': date, 'sum': row['sum_debt'], 'title': row['title']})
             debt_return.append(
-                {'date': date, 'sum': row['sum_return']})
+                {'date': date, 'sum': row['sum_return'], 'title': f"{row['title']}_return"})
 
         return debt, debt_return
 

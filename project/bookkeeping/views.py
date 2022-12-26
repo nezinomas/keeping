@@ -5,7 +5,6 @@ from django.utils.translation import gettext as _
 from project.bookkeeping.services.month import MonthServiceData
 
 from ..accounts.models import Account
-from .lib.balance_base import BalanceBase
 from ..core.lib.translation import month_names
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
@@ -14,8 +13,9 @@ from ..pensions.models import PensionType
 from ..plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ..savings.models import SavingType
 from . import forms, models, services
-from .lib.make_dataframe import MakeDataFrame
+from .lib.balance_base import BalanceBase
 from .lib.day_spending import DaySpending
+from .lib.make_dataframe import MakeDataFrame
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .lib.no_incomes import NoIncomesData
 from .lib.year_balance import YearBalance
@@ -30,8 +30,7 @@ class Index(TemplateViewMixin):
         # index service
         data = services.IndexServiceData(year)
         year_balance = YearBalance(
-            year=year,
-            data=data.data,
+            data=MakeDataFrame(year, data.data, data.columns),
             amount_start=data.amount_start)
 
         ind = services.IndexService(year_balance)
