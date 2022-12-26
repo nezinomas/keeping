@@ -1,3 +1,4 @@
+import itertools as it
 from dataclasses import dataclass, field
 
 from django.db.models import Sum
@@ -55,18 +56,15 @@ class IndexServiceData:
             Debt.objects \
             .sum_by_month(self.year, debt_type='lend')
 
-        # generate debts and debts_return arrays
-        borrow = self.get_debt_data(qs_borrow)
-        lend = self.get_debt_data(qs_lend)
-
-        arr = []
-        arr += list(Income.objects.sum_by_month(self.year))
-        arr += list(Expense.objects.sum_by_month(self.year))
-        arr += list(Saving.objects.sum_by_month(self.year))
-        arr += list(SavingClose.objects.sum_by_month(self.year))
-        arr += borrow
-        arr += lend
-        return arr
+        return list(
+            it.chain(
+                Income.objects.sum_by_month(self.year),
+                Expense.objects.sum_by_month(self.year),
+                Saving.objects.sum_by_month(self.year),
+                SavingClose.objects.sum_by_month(self.year),
+                self.get_debt_data(qs_borrow),
+                self.get_debt_data(qs_lend)
+            ))
 
     def get_debt_data(self, data):
         debt = []
