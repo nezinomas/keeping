@@ -25,7 +25,6 @@ class YearBalance(BalanceBase):
             self._amount_start = 0.0
 
         self._year = data.year
-
         self._balance = self._calc_balance_and_money_flow(data.data)
 
         super().__init__(self._balance)
