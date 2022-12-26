@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pandas as pd
 import pytest
-from ..lib import balance
+from ..lib import make_dataframe
 
 
 @pytest.fixture(name='data')
@@ -44,7 +44,7 @@ def fixture_types():
 
 
 def test_month_expenses(data, types):
-    actual = balance.MakeDataFrame(year=1999, data=data, types=types).data
+    actual = make_dataframe.MakeDataFrame(year=1999, data=data, types=types).data
 
     assert isinstance(actual, pd.DataFrame)
 
@@ -63,7 +63,7 @@ def test_month_expenses(data, types):
 
 @pytest.mark.parametrize('data', [([]), (None)])
 def test_month_no_data_expenses(data, types):
-    actual = balance.MakeDataFrame(year=1999, data=data, types=types).data
+    actual = make_dataframe.MakeDataFrame(year=1999, data=data, types=types).data
 
     assert isinstance(actual, pd.DataFrame)
 
@@ -85,7 +85,7 @@ def test_month_no_data_expenses(data, types):
     [([], []), (None, None)]
 )
 def test_month_no_data_and_no_types_expenses(data, types):
-    actual = balance.MakeDataFrame(year=1999, data=data, types=types).data
+    actual = make_dataframe.MakeDataFrame(year=1999, data=data, types=types).data
 
     assert isinstance(actual, pd.DataFrame)
     assert len(actual.index) == 12
@@ -94,7 +94,7 @@ def test_month_no_data_and_no_types_expenses(data, types):
 
 
 def test_month_exceptions(data, types):
-    actual = balance.MakeDataFrame(year=1999, data=data, types=types).exceptions
+    actual = make_dataframe.MakeDataFrame(year=1999, data=data, types=types).exceptions
 
     assert isinstance(actual, pd.DataFrame)
 
@@ -105,7 +105,7 @@ def test_month_exceptions(data, types):
 
 @pytest.mark.parametrize('data', [([]), (None)])
 def test_month_no_data_exceptions(data, types):
-    actual = balance.MakeDataFrame(year=1999, data=data, types=types).exceptions
+    actual = make_dataframe.MakeDataFrame(year=1999, data=data, types=types).exceptions
 
     assert isinstance(actual, pd.DataFrame)
 
@@ -119,7 +119,7 @@ def test_month_no_data_exceptions(data, types):
     [([], []), (None, None)]
 )
 def test_month_no_data_and_no_types_exceptions(data, types):
-    actual = balance.MakeDataFrame(year=1999, data=data, types=types).exceptions
+    actual = make_dataframe.MakeDataFrame(year=1999, data=data, types=types).exceptions
 
     assert isinstance(actual, pd.DataFrame)
     assert len(actual.index) == 12
@@ -128,7 +128,7 @@ def test_month_no_data_and_no_types_exceptions(data, types):
 
 
 def test_day_expenses(data, types):
-    actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types).data
+    actual = make_dataframe.MakeDataFrame(year=1999, month=1, data=data, types=types).data
 
     assert isinstance(actual, pd.DataFrame)
 
@@ -147,7 +147,7 @@ def test_day_expenses(data, types):
 
 @pytest.mark.parametrize('data', [([]), (None)])
 def test_day_no_data_expenses(data, types):
-    actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types).data
+    actual = make_dataframe.MakeDataFrame(year=1999, month=1, data=data, types=types).data
 
     assert isinstance(actual, pd.DataFrame)
 
@@ -169,7 +169,7 @@ def test_day_no_data_expenses(data, types):
     [([], []), (None, None)]
 )
 def test_day_no_data_and_no_types_expenses(data, types):
-    actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types).data
+    actual = make_dataframe.MakeDataFrame(year=1999, month=1, data=data, types=types).data
 
     assert isinstance(actual, pd.DataFrame)
     assert len(actual.index) == 31
@@ -178,7 +178,7 @@ def test_day_no_data_and_no_types_expenses(data, types):
 
 
 def test_day_exceptions(data, types):
-    actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types).exceptions
+    actual = make_dataframe.MakeDataFrame(year=1999, month=1, data=data, types=types).exceptions
 
     assert isinstance(actual, pd.DataFrame)
 
@@ -189,7 +189,7 @@ def test_day_exceptions(data, types):
 
 @pytest.mark.parametrize('data', [([]), (None)])
 def test_day_no_data_exceptions(data, types):
-    actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types).exceptions
+    actual = make_dataframe.MakeDataFrame(year=1999, month=1, data=data, types=types).exceptions
 
     assert isinstance(actual, pd.DataFrame)
 
@@ -203,7 +203,7 @@ def test_day_no_data_exceptions(data, types):
     [([], []), (None, None)]
 )
 def test_day_no_data_and_no_types_exceptions(data, types):
-    actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types).exceptions
+    actual = make_dataframe.MakeDataFrame(year=1999, month=1, data=data, types=types).exceptions
 
     assert isinstance(actual, pd.DataFrame)
     assert len(actual.index) == 31
@@ -212,6 +212,6 @@ def test_day_no_data_and_no_types_exceptions(data, types):
 
 
 def test_expenses_and_exceptions_same_size(data, types):
-    actual = balance.MakeDataFrame(year=1999, month=1, data=data, types=types)
+    actual = make_dataframe.MakeDataFrame(year=1999, month=1, data=data, types=types)
 
     assert actual.exceptions.shape[0] == actual.data.shape[0]
