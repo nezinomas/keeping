@@ -9,16 +9,16 @@ class MakeDataFrame:
     def __init__(self, year: int, data: list[dict], types: list, month: int = None):
         self.year = year
         self.month = month
-        self.data = data
-        self.types = types
+        self._data = data
+        self._types = types
 
     @property
     def data(self):
-        return self.create_data(self.data, self.types)
+        return self.create_data(self._data, self._types)
 
     @property
     def exceptions(self):
-        return self.create_exceptions(self.data)
+        return self.create_exceptions(self._data)
 
     def create_data(self, data: list[dict], types: list) -> DF:
         df = self._create(data, 'sum')

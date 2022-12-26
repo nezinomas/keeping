@@ -22,7 +22,7 @@ def fixture_df():
     ]
     exc = DF(exc).set_index('date').fillna(0.0)
 
-    return SimpleNamespace(year=1999, month=1, expenses=exp, exceptions=exc)
+    return SimpleNamespace(year=1999, month=1, data=exp, exceptions=exc)
 
 
 @pytest.fixture(name="necessary")
@@ -134,7 +134,7 @@ def test_spending_first_day_all_empty(df):
 
 def test_spending_balance_expenses_empty():
     obj = DaySpending(
-        df=SimpleNamespace(year=1999, month=1, expenses=DF(), exceptions=DF()),
+        df=SimpleNamespace(year=1999, month=1, data=DF(), exceptions=DF()),
         necessary=[],
         day_input=0,
         expenses_free=0,
@@ -153,7 +153,7 @@ def test_spending_balance_expenses_empty():
 @pytest.mark.freeze_time("1999-01-02")
 def test_average_month_two_days(df_for_average_calculation):
     o = DaySpending(
-        df=SimpleNamespace(year=1999, month=1, expenses=DF(), exceptions=DF()),
+        df=SimpleNamespace(year=1999, month=1, data=DF(), exceptions=DF()),
         necessary=[],
         day_input=0,
         expenses_free=0
@@ -168,7 +168,7 @@ def test_average_month_two_days(df_for_average_calculation):
 @pytest.mark.freeze_time("1999-01-31")
 def test_average_month_last_day(df_for_average_calculation):
     o = DaySpending(
-        df=SimpleNamespace(year=1999, month=1, expenses=DF(), exceptions=DF()),
+        df=SimpleNamespace(year=1999, month=1, data=DF(), exceptions=DF()),
         necessary=[],
         day_input=0,
         expenses_free=0
@@ -183,7 +183,7 @@ def test_average_month_last_day(df_for_average_calculation):
 @pytest.mark.freeze_time("1970-01-01")
 def test_average_month_other_year(df_for_average_calculation):
     o = DaySpending(
-        df=SimpleNamespace(year=1999, month=1, expenses=DF(), exceptions=DF()),
+        df=SimpleNamespace(year=1999, month=1, data=DF(), exceptions=DF()),
         necessary=[],
         day_input=0,
         expenses_free=0
@@ -197,7 +197,7 @@ def test_average_month_other_year(df_for_average_calculation):
 
 def test_average_month_empty_dataframe():
     o = DaySpending(
-        df=SimpleNamespace(year=1999, month=1, expenses=DF(), exceptions=DF()),
+        df=SimpleNamespace(year=1999, month=1, data=DF(), exceptions=DF()),
         necessary=[],
         day_input=0,
         expenses_free=0
@@ -211,7 +211,7 @@ def test_average_month_empty_dataframe():
 
 def test_average_month_no_dataframe():
     o = DaySpending(
-        df=SimpleNamespace(year=1999, month=1, expenses=DF(), exceptions=DF()),
+        df=SimpleNamespace(year=1999, month=1, data=DF(), exceptions=DF()),
         necessary=[],
         day_input=0,
         expenses_free=0,
