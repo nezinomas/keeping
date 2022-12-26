@@ -87,8 +87,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             self \
             .related() \
             .day_sum(year=year, month=month) \
-            .annotate(title=Value(_('Taupymas')))
-            # .values()
+            .annotate(title=Value(_('Savings')))
 
     def last_months(self, months: int = 6) -> float:
         # previous month
