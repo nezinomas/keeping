@@ -4,7 +4,7 @@ import pandas as pd
 from pandas import DataFrame as DF
 from pandas import to_datetime
 
-from ...core.lib.balance_base import BalanceBase
+from .balance_base import BalanceBase
 
 
 class YearBalance(BalanceBase):

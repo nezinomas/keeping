@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 from project.bookkeeping.services.month import MonthServiceData
 
 from ..accounts.models import Account
-from ..core.lib.balance_base import BalanceBase
+from .lib.balance_base import BalanceBase
 from ..core.lib.translation import month_names
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (CreateViewMixin, FormViewMixin,

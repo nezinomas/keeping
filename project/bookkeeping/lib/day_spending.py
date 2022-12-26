@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from pandas import DataFrame as DF
 
-from ...core.lib.balance_base import BalanceBase
+from .balance_base import BalanceBase
 from ...core.lib.date import current_day
 from .balance import MakeDataFrame
 

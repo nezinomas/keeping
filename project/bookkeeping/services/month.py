@@ -4,7 +4,7 @@ from operator import itemgetter
 
 from django.utils.translation import gettext as _
 
-from ...core.lib.balance_base import BalanceBase
+from ..lib.balance_base import BalanceBase
 from ...core.lib.colors import CHART
 from ...core.lib.date import current_day
 from ...expenses.models import Expense, ExpenseType

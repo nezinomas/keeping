@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 
 from django.utils.translation import gettext as _
 
-from ...core.lib.balance_base import BalanceBase
+from ..lib.balance_base import BalanceBase
 from ...expenses.models import Expense, ExpenseType
 
 

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ...core.lib.balance_base import BalanceBase
+from ..lib.balance_base import BalanceBase
 
 
 def create_df():
