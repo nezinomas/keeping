@@ -1,6 +1,6 @@
 from datetime import date
 
-import janitor
+import janitor  # this package integrates into pandas api
 import pandas as pd
 from pandas import DataFrame as DF
 
