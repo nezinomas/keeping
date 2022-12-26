@@ -65,7 +65,8 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
         return \
             self \
             .related() \
-            .month_sum(year)
+            .month_sum(year) \
+            .annotate(title=Value('expenses'))
 
     def sum_by_month_and_type(self, year):
         """
