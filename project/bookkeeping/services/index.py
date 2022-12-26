@@ -56,8 +56,8 @@ class IndexServiceData:
             .sum_by_month(self.year, debt_type='lend')
 
         # generate debts and debts_return arrays
-        borrow, borrow_return = self.get_debt_data(qs_borrow)
-        lend, lend_return = self.get_debt_data(qs_lend)
+        borrow = self.get_debt_data(qs_borrow)
+        lend = self.get_debt_data(qs_lend)
 
         arr = []
         arr += list(Income.objects.sum_by_month(self.year))
@@ -65,22 +65,24 @@ class IndexServiceData:
         arr += list(Saving.objects.sum_by_month(self.year))
         arr += list(SavingClose.objects.sum_by_month(self.year))
         arr += borrow
-        arr += borrow_return
         arr += lend
-        arr += lend_return
         return arr
 
     def get_debt_data(self, data):
-        debt, debt_return = [], []
+        debt = []
 
         for row in data:
             date = row['date']
-            debt.append(
-                {'date': date, 'sum': row['sum_debt'], 'title': row['title']})
-            debt_return.append(
-                {'date': date, 'sum': row['sum_return'], 'title': f"{row['title']}_return"})
-
-        return debt, debt_return
+            debt.extend([{
+                'date': date,
+                'sum': row['sum_debt'],
+                'title': row['title']
+            }, {
+                'date': date,
+                'sum': row['sum_return'],
+                'title': f"{row['title']}_return",
+            }])
+        return debt
 
 
 class IndexService():
