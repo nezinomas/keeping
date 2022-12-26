@@ -14,7 +14,7 @@ from ..pensions.models import PensionType
 from ..plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ..savings.models import SavingType
 from . import forms, models, services
-from .lib.balance import MakeDataFrame
+from .lib.make_dataframe import MakeDataFrame
 from .lib.day_spending import DaySpending
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .lib.no_incomes import NoIncomesData

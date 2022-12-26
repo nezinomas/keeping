@@ -4,7 +4,7 @@ from pandas import DataFrame as DF
 
 from .balance_base import BalanceBase
 from ...core.lib.date import current_day
-from .balance import MakeDataFrame
+from .make_dataframe import MakeDataFrame
 
 
 class DaySpending(BalanceBase):
