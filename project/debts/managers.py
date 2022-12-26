@@ -90,12 +90,10 @@ class DebtReturnQuerySet(SumMixin, models.QuerySet):
         if not debt_type:
             debt_type = utils.get_request_kwargs('debt_type')
 
-        qs = (
-            self
-            .select_related('account', 'debt')
+        return \
+            self \
+            .select_related('account', 'debt') \
             .filter(debt__journal=_journal, debt__debt_type=debt_type)
-        )
-        return qs
 
     def items(self):
         return self.related().all()
