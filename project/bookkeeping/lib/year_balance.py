@@ -110,9 +110,10 @@ class YearBalance(BalanceBase):
             0 \
             + df.balance + df.savings_close + df.borrow + df.lend_return \
             - df.savings - df.borrow_return - df.lend
-
+        # to first money_flow cell add last year money
         cell = (date(self._year, 1, 1), "money_flow")
         df.at[cell] = df.at[cell] + self.amount_start
+        # cumulative sum for rest money_flow cells
         df['money_flow'] = df.money_flow.cumsum()
 
         return df
