@@ -19,7 +19,6 @@ numpy==1.23.3
 pandas==1.5.1
 pip-review==1.2.0
 Pillow==9.3.0
-pyjanitor==0.24.0
 pytz==2022.6
 requests==2.28.1
 slippers==0.5.0

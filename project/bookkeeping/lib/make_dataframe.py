@@ -1,6 +1,5 @@
 from datetime import date
 
-import janitor  # this package integrates into pandas api
 import pandas as pd
 from pandas import DataFrame as DF
 
@@ -30,7 +29,7 @@ class MakeDataFrame:
         df = self._create(data, 'exception_sum')
         df = self._insert_missing_dates(df)
         df.loc[:, 'sum'] = df.sum(axis=1, numeric_only=True)
-        return df.set_index('date').select_columns(['sum'])
+        return df.loc[:, ['date', 'sum']].set_index('date')
 
     def _create(self, data, sum_column: str) -> DF:
         if not data:
@@ -43,7 +42,7 @@ class MakeDataFrame:
 
     def _init(self, data: list[dict], sum_column) -> DF:
         ''' Create DataFrame and convert dates, decimals '''
-        df = DF(data).select_columns(['date', 'title', sum_column]).copy()
+        df = DF(data).loc[:, ['date', 'title', sum_column]].copy()
         df['date'] = pd.to_datetime(df['date'])
         df[sum_column] = df[sum_column].apply(pd.to_numeric, downcast='float')
         return df
@@ -91,6 +90,8 @@ class MakeDataFrame:
         if df.empty:
             df['date'] = pd.Series(list(rng))
         else:
-            df = df.complete({'date': rng})
+            df = df.set_index('date').reindex(rng)
+            df.index.name = 'date'
+            df.reset_index(inplace=True)
 
         return df.fillna(0)
