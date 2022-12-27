@@ -5,15 +5,30 @@ from pandas import DataFrame as DF
 
 
 class MakeDataFrame:
-    def __init__(self, year: int, data: list[dict], types: list, month: int = None):
+    def __init__(self, year: int, data: list[dict], columns: list = None, month: int = None):
+        ''' Create pandas DataFrame from list of dictionaries
+
+            Parameters
+            ---------
+            year: int
+
+            data: list[dict]
+                [{date, sum, exception_sum, title},]
+
+            types: list|tuple
+                Optional.
+                For insertation of additional columns
+
+            month: int
+                Optional.
+                If value: DataFrame rows will be days of that month
+                If no value: DataFrame rows will be 12 months
+        '''
+        self._data = data
+
         self.year = year
         self.month = month
-        self._data = data
-        self._types = types
-
-    @property
-    def data(self):
-        return self.create_data(self._data, self._types)
+        self.data = self.create_data(data, columns)
 
     @property
     def exceptions(self):
