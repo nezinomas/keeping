@@ -87,8 +87,7 @@ class MakeDataFrame:
 
         if df.empty:
             df['date'] = pd.Series(list(rng))
-            df.fillna(0.0, inplace=True)
         else:
-            df = df.complete({'date': rng}, fill_value=0.0)
+            df = df.complete({'date': rng})
 
-        return df
+        return df.fillna(0)
