@@ -86,8 +86,8 @@ class DaySpending(BalanceBase):
             day_input - df.total
 
         df.teoretical = \
-            expenses_free - \
-            (day_input * df.index.to_series().dt.day)
+            expenses_free \
+            - (day_input * df.index.to_series().dt.day)
 
         df.real = \
             expenses_free - df.total.cumsum()
