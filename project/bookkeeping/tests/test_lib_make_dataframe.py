@@ -63,14 +63,14 @@ def test_month_expenses(data, columns):
     assert actual.loc['1999-12-01', 'T2'] == 5.0
 
 
-def test_month_dcolumns(data, columns):
+def test_month_dtype(data, columns):
     for i in range(2, 12):
         data.extend([
             {'date': date(1999, i, 1), 'title': 'T1', 'sum': Decimal('1.1'), 'exception_sum': Decimal('0.5')},
         ])
     actual = make_dataframe.MakeDataFrame(year=1999, data=data, columns=columns).data
 
-    assert actual.columns['T1'] == np.float64
+    assert actual.dtypes['T1'] == np.float64
 
 
 @pytest.mark.parametrize('data', [([]), (None)])
