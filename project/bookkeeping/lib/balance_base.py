@@ -58,10 +58,7 @@ class BalanceBase():
 
         df['total'] = df.sum(axis=1)
 
-        df = df.reset_index()
-        df = df[['date', 'total']]
-
-        return df
+        return df.reset_index()[['date', 'total']]
 
     @property
     def total_column(self) -> Dict[str, float]:
@@ -91,14 +88,10 @@ class BalanceBase():
         # average will be calculated only for months with non zero values
         arr = self._balance.copy()
         arr.replace(0.0, np.nan, inplace=True)
-
         # calculate average
         arr = arr.mean(skipna=True, numeric_only=True)
-
         # replace nan -> 0.0
-        arr = arr.fillna(0.0)
-
-        return arr.to_dict()
+        return arr.fillna(0.0).to_dict()
 
     def _calc_avg(self, df: DF,
                   year: int, month: int, day: int) -> DF:
