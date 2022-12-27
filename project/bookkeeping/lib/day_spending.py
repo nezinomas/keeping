@@ -63,36 +63,26 @@ class DaySpending(BalanceBase):
     def _calc_spending(self, df: DF, exceptions: DF, day_input: float, expenses_free: float) -> DF:
         if df.empty:
             return df
-
         # filter dateframe
         df = self._delete_columns_marked_as_necessary(df)
-
         # calculate total_row for filtered dataframe
         df.loc[:, 'total'] = df.sum(axis=1)
-
         # select only total column
         df = df.loc[:, ['total']]
-
         # remove exceptions sums from total_row
         if not exceptions.empty:
             df['total'] = df['total'] - exceptions['sum']
-
-        df.loc[:, 'teoretical'] = 0.0
-        df.loc[:, 'real'] = 0.0
-        df.loc[:, 'day'] = 0.0
-        df.loc[:, 'full'] = 0.0
-
-        df.day = \
-            day_input - df.total
+        # create columns
+        df.loc[:, ['teoretical', 'real', 'day', 'full']] = 0.0
+        # calculations
+        df.day = day_input - df.total
 
         df.teoretical = \
             expenses_free \
             - (day_input * df.index.to_series().dt.day)
 
-        df.real = \
-            expenses_free - df.total.cumsum()
+        df.real = expenses_free - df.total.cumsum()
 
-        df.full = \
-            df.real - df.teoretical
+        df.full = df.real - df.teoretical
 
         return df
