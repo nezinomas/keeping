@@ -1,52 +1,33 @@
 from datetime import datetime
 
-import pandas as pd
 from pandas import DataFrame as DF
-from pandas import to_datetime
 
+from ..lib.make_dataframe import MakeDataFrame
 from .balance_base import BalanceBase
 
 
 class YearBalance(BalanceBase):
-    columns = (
-        'incomes',
-        'expenses',
-        'savings',
-        'savings_close',
-        'borrow',
-        'borrow_return',
-        'lend',
-        'lend_return',
-        'balance',
-        'money_flow',
-    )
-
     def __init__(self,
-                 year: int,
-                 data: dict[str, dict],
+                 data: MakeDataFrame,
                  amount_start: float = 0.0):
 
         '''
-        year: int
-
-        data: {'incomes': [{'date': datetime.date(), 'sum': Decimal()}, ... ]}
+        data: MakeDataFrame object
 
         amount_start: year start worth amount
 
         awailable keys in data: incomes, expenses, savings, savings_close, borrow, borrow_return, lend, lend_return
         '''
 
-        super().__init__()
-
         try:
             self._amount_start = float(amount_start)
         except TypeError:
             self._amount_start = 0.0
 
-        self._year = year
+        self._year = data.year
+        self._balance = self._calc_balance_and_money_flow(data.data)
 
-        self._balance = self._make_df(year=year, data=data)
-        self._balance = self._calc_balance_and_money_flow(self._balance)
+        super().__init__(self._balance)
 
     @property
     def amount_start(self) -> float:
@@ -120,42 +101,6 @@ class YearBalance(BalanceBase):
     @property
     def money_flow(self) -> list[float]:
         return self._balance.money_flow.tolist()
-
-    def _months_of_year(self, year: int) -> DF:
-        try:
-            _range = pd.date_range(f'{year}', periods=12, freq='MS')
-        except ValueError:
-            return DF()
-
-        # create empty DataFrame object with index containing all months
-        df = DF(_range, columns=['date'])
-
-        df.set_index('date', inplace=True)
-
-        return df
-
-    def _make_df(self, year: int, data: dict[str, dict]) -> DF:
-        df = self._months_of_year(year)
-
-        # create columns with 0 values
-        for col in self.columns:
-            df[col] = 0.0
-
-        if not data or not any(data.values()):
-            return df
-
-        for col_name, data_arr in data.items():
-            if not data_arr:
-                continue
-
-            if col_name not in self.columns:
-                continue
-
-            # copy values from input arrays to df
-            for row in data_arr:
-                df.at[to_datetime(row['date']), col_name] = float(row['sum'])
-
-        return df
 
     def _calc_balance_and_money_flow(self, df: DF) -> DF:
         # calculate balance

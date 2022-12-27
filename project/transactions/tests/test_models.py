@@ -497,7 +497,7 @@ def test_saving_close_related(main_user, second_user):
 
 
 def test_saving_close_month_sums(savings_close):
-    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(0.25)}]
+    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(0.25), 'title': 'savings_close'}]
 
     actual = list(SavingClose.objects.sum_by_month(1999))
 
@@ -505,7 +505,7 @@ def test_saving_close_month_sums(savings_close):
 
 
 def test_saving_close_month_sums_only_january(savings_close):
-    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(0.25)}]
+    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(0.25), 'title': 'savings_close'}]
 
     actual = list(SavingClose.objects.sum_by_month(1999, 1))
 

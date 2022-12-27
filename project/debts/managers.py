@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Count, F, Q, Sum
+from django.db.models import Count, F, Q, Sum, Value
 from django.db.models.functions import ExtractYear, TruncMonth
 
 from ..core.lib import utils
@@ -44,7 +44,8 @@ class DebtQuerySet(models.QuerySet):
             .values('date') \
             .annotate(sum_debt=Sum('price')) \
             .annotate(sum_return=Sum('returned')) \
-            .order_by('date') \
+            .annotate(title=Value(f'{debt_type}')) \
+            .order_by('date')
 
     def sum_all(self, debt_type=None):
         return \
@@ -89,12 +90,10 @@ class DebtReturnQuerySet(SumMixin, models.QuerySet):
         if not debt_type:
             debt_type = utils.get_request_kwargs('debt_type')
 
-        qs = (
-            self
-            .select_related('account', 'debt')
+        return \
+            self \
+            .select_related('account', 'debt') \
             .filter(debt__journal=_journal, debt__debt_type=debt_type)
-        )
-        return qs
 
     def items(self):
         return self.related().all()

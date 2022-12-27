@@ -438,11 +438,11 @@ def test_debt_sum_all_months(mck):
     LendFactory(date=dt(1974, 1, 1))
 
     expect = [
-        {'date': dt(1999, 1, 1), 'sum_debt': Decimal('3'), 'sum_return': Decimal('1')},
-        {'date': dt(1999, 2, 1), 'sum_debt': Decimal('5'), 'sum_return': Decimal('1.5')},
+        {'date': dt(1999, 1, 1), 'sum_debt': Decimal('3'), 'sum_return': Decimal('1'), 'title': 'lend'},
+        {'date': dt(1999, 2, 1), 'sum_debt': Decimal('5'), 'sum_return': Decimal('1.5'), 'title': 'lend'},
     ]
 
-    actual = list(Debt.objects.sum_by_month(1999))
+    actual = list(Debt.objects.sum_by_month(1999, 'lend'))
 
     assert expect == actual
 

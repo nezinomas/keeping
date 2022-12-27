@@ -367,8 +367,8 @@ def test_expense_sum_by_month():
     actual = Expense.objects.sum_by_month(1999)
 
     assert list(actual) == [
-        {'sum': Decimal('3'), 'date': date(1999, 1, 1)},
-        {'sum': Decimal('6'), 'date': date(1999, 2, 1)}
+        {'sum': Decimal('3'), 'date': date(1999, 1, 1), 'title': 'expenses'},
+        {'sum': Decimal('6'), 'date': date(1999, 2, 1), 'title': 'expenses'}
     ]
 
 

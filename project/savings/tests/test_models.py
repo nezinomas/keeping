@@ -195,7 +195,7 @@ def test_saving_day_sum(_savings_extra):
 
 
 def test_saving_months_sum(savings):
-    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(5.75)}]
+    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(5.75), 'title': 'savings'}]
 
     actual = list(Saving.objects.sum_by_month(1999))
 
