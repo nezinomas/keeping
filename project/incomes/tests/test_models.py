@@ -79,8 +79,8 @@ def test_income_related(main_user, second_user):
 
 def test_sum_all_months(incomes):
     expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(5.5)},
-        {'date': date(1999, 2, 1), 'sum': Decimal(1.25)},
+        {'date': date(1999, 1, 1), 'sum': Decimal(5.5), 'title': 'incomes'},
+        {'date': date(1999, 2, 1), 'sum': Decimal(1.25), 'title': 'incomes'},
     ]
 
     actual = list(Income.objects.sum_by_month(1999))
@@ -97,7 +97,7 @@ def test_sum_all_months_ordering(incomes):
 
 def test_sum_one_month(incomes):
     expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(5.5)}
+        {'date': date(1999, 1, 1), 'sum': Decimal(5.5), 'title': 'incomes'}
     ]
 
     actual = list(Income.objects.sum_by_month(1999, 1))

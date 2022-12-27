@@ -13,8 +13,9 @@ from ..pensions.models import PensionType
 from ..plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ..savings.models import SavingType
 from . import forms, models, services
+from .lib.balance_base import BalanceBase
 from .lib.day_spending import DaySpending
-from .lib.expense_balance import ExpenseBalance
+from .lib.make_dataframe import MakeDataFrame
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .lib.no_incomes import NoIncomesData
 from .lib.year_balance import YearBalance
@@ -29,17 +30,15 @@ class Index(TemplateViewMixin):
         # index service
         data = services.IndexServiceData(year)
         year_balance = YearBalance(
-            year=year,
-            data=data.data,
+            data=MakeDataFrame(year, data.data, data.columns),
             amount_start=data.amount_start)
 
         ind = services.IndexService(year_balance)
 
         # expenses service
         data = services.ExpenseServiceData(year)
-        balance = ExpenseBalance.months_of_year(
-            year=year, expenses=data.expenses, types=data.expense_types)
-        exp = services.ExpenseService(data=balance)
+        df = MakeDataFrame(year, data.expenses, data.expense_types)
+        exp = services.ExpenseService(BalanceBase(df.data))
 
         context = {
             'year': year,
@@ -179,26 +178,19 @@ class Month(TemplateViewMixin):
         year = self.request.user.year
         month = self.request.user.month
         data = MonthServiceData(year, month)
+        df_expenses = MakeDataFrame(year, data.expenses, data.expense_types, month)
+        df_savings = MakeDataFrame(year, data.savings, None, month)
         plans = PlanCalculateDaySum(PlanCollectData(year, month))
         spending = DaySpending(
-            year=data.year,
-            month=data.month,
-            expenses=data.expenses,
-            types=data.expense_types,
+            df=df_expenses,
             necessary=data.necessary_expense_types,
             day_input=plans.day_input,
             expenses_free=plans.expenses_free
         )
-        savings = ExpenseBalance.days_of_month(
-            year=data.year,
-            month=data.month,
-            expenses=data.savings,
-            types=[_('Savings')]
-        )
         service = services.MonthService(
             data=data,
             plans=plans,
-            savings=savings,
+            savings=BalanceBase(df_savings.data),
             spending=spending
         )
         context = {

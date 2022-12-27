@@ -2,8 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ...core.lib.balance_base import (BalanceBase, df_days_of_month,
-                                      df_months_of_year)
+from ..lib.balance_base import BalanceBase
 
 
 def create_df():
@@ -69,43 +68,3 @@ def test_total_row(df, expected):
     o._balance = df
 
     assert pytest.approx(o.total_row, rel=1e-2) == expected
-
-
-def test_df_days_of_month():
-    actual = df_days_of_month(2020, 2)
-
-    assert 29 == len(actual)
-
-    assert 'date' == actual.index.name
-
-
-data_days_of_month = [
-    (2020, 22),
-    (2020, 'x'),
-    ('y', 'x')
-]
-
-
-@pytest.mark.parametrize('year,month', data_days_of_month)
-def test_df_days_of_month_invalid(year, month):
-    actual = df_days_of_month(2020, 22)
-
-    assert actual.empty
-
-
-def test_df_months_of_year():
-    actual = df_months_of_year(2020)
-
-    assert 12 == len(actual)
-
-    assert 'date' == actual.index.name
-
-    assert pd.Timestamp(2020, 1, 1) == actual.index[0]
-    assert pd.Timestamp(2020, 12, 1) == actual.index[-1]
-
-
-@pytest.mark.parametrize('year', [('x'), (1)])
-def test_df_months_of_year_invalid(year):
-    actual = df_months_of_year(year)
-
-    assert actual.empty

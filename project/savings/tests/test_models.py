@@ -186,7 +186,7 @@ def test_saving_type_day_sum(savings):
 
 def test_saving_day_sum(_savings_extra):
     expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(2.0)},
+        {'date': date(1999, 1, 1), 'sum': Decimal(2.0), 'title': 'Taupymas'},
     ]
 
     actual = list(Saving.objects.sum_by_day(1999, 1))
@@ -195,7 +195,7 @@ def test_saving_day_sum(_savings_extra):
 
 
 def test_saving_months_sum(savings):
-    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(5.75)}]
+    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(5.75), 'title': 'savings'}]
 
     actual = list(Saving.objects.sum_by_month(1999))
 

@@ -1,3 +1,4 @@
+import itertools as it
 from dataclasses import dataclass, field
 
 from django.db.models import Sum
@@ -23,6 +24,21 @@ class IndexServiceData:
         self.amount_start = self.get_amount_start()
         self.data = self.get_data()
 
+    @property
+    def columns(self) -> tuple[str]:
+        return (
+            'incomes',
+            'expenses',
+            'savings',
+            'savings_close',
+            'borrow',
+            'borrow_return',
+            'lend',
+            'lend_return',
+            'balance',
+            'money_flow',
+        )
+
     def get_amount_start(self):
         _sum = \
             AccountBalance.objects \
@@ -40,32 +56,30 @@ class IndexServiceData:
             Debt.objects \
             .sum_by_month(self.year, debt_type='lend')
 
-        # generate debts and debts_return arrays
-        borrow, borrow_return = self.get_debt_data(qs_borrow)
-        lend, lend_return = self.get_debt_data(qs_lend)
-
-        return {
-            'incomes': Income.objects.sum_by_month(self.year),
-            'expenses': Expense.objects.sum_by_month(self.year),
-            'savings': Saving.objects.sum_by_month(self.year),
-            'savings_close': SavingClose.objects.sum_by_month(self.year),
-            'borrow': borrow,
-            'borrow_return': borrow_return,
-            'lend': lend,
-            'lend_return': lend_return,
-        }
+        return list(
+            it.chain(
+                Income.objects.sum_by_month(self.year),
+                Expense.objects.sum_by_month(self.year),
+                Saving.objects.sum_by_month(self.year),
+                SavingClose.objects.sum_by_month(self.year),
+                self.get_debt_data(qs_borrow),
+                self.get_debt_data(qs_lend)
+            ))
 
     def get_debt_data(self, data):
-        debt, debt_return = [], []
-
+        debt = []
         for row in data:
             date = row['date']
-            debt.append(
-                {'date': date, 'sum': row['sum_debt']})
-            debt_return.append(
-                {'date': date, 'sum': row['sum_return']})
-
-        return debt, debt_return
+            debt.extend([{
+                'date': date,
+                'sum': row['sum_debt'],
+                'title': row['title']
+            }, {
+                'date': date,
+                'sum': row['sum_return'],
+                'title': f"{row['title']}_return",
+            }])
+        return debt
 
 
 class IndexService():

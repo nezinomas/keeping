@@ -4,6 +4,7 @@ from operator import itemgetter
 
 from django.utils.translation import gettext as _
 
+from ..lib.balance_base import BalanceBase
 from ...core.lib.colors import CHART
 from ...core.lib.date import current_day
 from ...expenses.models import Expense, ExpenseType
@@ -11,7 +12,6 @@ from ...incomes.models import Income
 from ...plans.lib.calc_day_sum import PlanCalculateDaySum
 from ...savings.models import Saving
 from ..lib.day_spending import DaySpending
-from ..lib.expense_balance import ExpenseBalance
 
 
 @dataclass
@@ -65,7 +65,7 @@ class MonthService():
     def __init__(self,
                  data: MonthServiceData,
                  plans: PlanCalculateDaySum,
-                 savings: ExpenseBalance,
+                 savings: BalanceBase,
                  spending: DaySpending):
         self._data = data
         self._plans = plans
