@@ -105,35 +105,12 @@ class YearBalance(BalanceBase):
     def _calc_balance_and_money_flow(self, df: DF) -> DF:
         # calculate balance
         df['balance'] = df.incomes - df.expenses
-
-        #  calculate money_flow
-        for i in range(12):
-            idx = df.index[i]
-            val = (
-                0.0
-                + df.loc[idx, 'balance']
-                + df.loc[idx, 'savings_close']
-                - df.loc[idx, 'savings']
-                + df.loc[idx, 'borrow']
-                - df.loc[idx, 'borrow_return']
-                - df.loc[idx, 'lend']
-                + df.loc[idx, 'lend_return']
-            )
-
-            cell = (idx, 'money_flow')
-
-            # january
-            if i == 0:
-                df.loc[cell] = (
-                    val
-                    + self._amount_start
-                )
-            else:
-                idx_prev = df.index[i - 1]
-
-                df.loc[cell] = (
-                    val
-                    + df.loc[idx_prev, 'money_flow']
-                )
+        # calculate money_float
+        df['money_flow'] = \
+            0 \
+            + df.balance + df.savings_close + df.borrow + df.lend_return \
+            - df.savings - df.borrow_return - df.lend
+        df['money_flow'].iloc[0] = df['money_flow'].iloc[0] + self.amount_start
+        df['money_flow'] = df.money_flow.cumsum()
 
         return df
