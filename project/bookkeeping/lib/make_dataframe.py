@@ -24,9 +24,10 @@ class MakeDataFrame:
                 If value: DataFrame rows will be days of that month
                 If no value: DataFrame rows will be 12 months
         '''
+        self._data = data
+
         self.year = year
         self.month = month
-        self._data = data
         self.data = self.create_data(data, columns)
 
     @property
