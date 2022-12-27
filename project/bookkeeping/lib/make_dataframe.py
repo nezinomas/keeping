@@ -5,7 +5,7 @@ from pandas import DataFrame as DF
 
 
 class MakeDataFrame:
-    def __init__(self, year: int, data: list[dict], types: list = None, month: int = None):
+    def __init__(self, year: int, data: list[dict], columns: list = None, month: int = None):
         ''' Create pandas DataFrame from list of dictionaries
 
             Parameters
@@ -27,7 +27,7 @@ class MakeDataFrame:
         self.year = year
         self.month = month
         self._data = data
-        self._types = types
+        self._types = columns
 
     @property
     def data(self):
