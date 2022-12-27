@@ -27,11 +27,7 @@ class MakeDataFrame:
         self.year = year
         self.month = month
         self._data = data
-        self._types = columns
-
-    @property
-    def data(self):
-        return self.create_data(self._data, self._types)
+        self.data = self.create_data(data, columns)
 
     @property
     def exceptions(self):
