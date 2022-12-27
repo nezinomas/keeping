@@ -68,7 +68,6 @@ class IndexServiceData:
 
     def get_debt_data(self, data):
         debt = []
-
         for row in data:
             date = row['date']
             debt.extend([{
