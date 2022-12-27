@@ -1,8 +1,10 @@
 from datetime import date
 from decimal import Decimal
 
+import numpy as np
 import pandas as pd
 import pytest
+
 from ..lib import make_dataframe
 
 
@@ -59,6 +61,16 @@ def test_month_expenses(data, types):
     assert actual.loc['1999-12-01', 'T0'] == 0.0
     assert actual.loc['1999-12-01', 'T1'] == 4.0
     assert actual.loc['1999-12-01', 'T2'] == 5.0
+
+
+def test_month_dtypes(data, types):
+    for i in range(2, 12):
+        data.extend([
+            {'date': date(1999, i, 1), 'title': 'T1', 'sum': Decimal('1.1'), 'exception_sum': Decimal('0.5')},
+        ])
+    actual = make_dataframe.MakeDataFrame(year=1999, data=data, types=types).data
+
+    assert actual.dtypes['T1'] == np.float32
 
 
 @pytest.mark.parametrize('data', [([]), (None)])
