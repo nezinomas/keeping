@@ -57,7 +57,7 @@ class MakeDataFrame:
         ''' Transform DataFrame Columns to Rows.
             Convert date column int to datetime
         '''
-        df = df.unstack().reset_index().T.reset_index()
+        df = df.unstack().reset_index().T.reset_index().fillna(0.0)
         df.columns = df.iloc[0] # first row values -> to columns names
         df = df.drop(0)  # remove first row
         df = df.rename(columns={'title': 'date'})  # rename column
@@ -66,6 +66,9 @@ class MakeDataFrame:
             month_day = (self.month, val) if self.month else (val, 1)
             return date(self.year, *month_day)
         df['date'] = pd.to_datetime(df['date'].apply(dt))
+        # convert all columns, except date, to float
+        cols = df.columns.drop('date').to_list()
+        df[cols] =df[cols].apply(pd.to_numeric, downcast='float')
         return df
 
     def _insert_missing_columns(self, df: DF, types: list) -> DF:
