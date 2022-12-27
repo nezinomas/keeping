@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime, date
 from decimal import Decimal
 from types import SimpleNamespace
 
@@ -21,7 +21,10 @@ def fixture_data():
         arr.append(
             {'date': date(1999, i, 1), 'incomes': 0, 'expenses': 0, 'savings': 0, 'savings_close': 0, 'borrow': 0, 'borrow_return': 0, 'lend': 0, 'lend_return': 0}
         )
-    df = pd.DataFrame(arr).set_index('date')
+
+    df = pd.DataFrame(arr)
+    df['date'] = pd.to_datetime(df['date'])
+    df = df.set_index('date')
     return SimpleNamespace(year=1999, data=df)
 
 
@@ -245,9 +248,9 @@ def test_avg_expenses_none(data):
 
 @freeze_time('1999-2-1')
 def test_avg_expenses_current_year(data):
-    data.data.at[date(1999, 1, 1), 'expenses'] = 1
-    data.data.at[date(1999, 2, 1), 'expenses'] = 2
-    data.data.at[date(1999, 3, 1), 'expenses'] = 3
+    data.data.at[datetime(1999, 1, 1), 'expenses'] = 1
+    data.data.at[datetime(1999, 2, 1), 'expenses'] = 2
+    data.data.at[datetime(1999, 3, 1), 'expenses'] = 3
 
     actual = YearBalance(data=data, amount_start=None).avg_expenses
 
@@ -256,9 +259,9 @@ def test_avg_expenses_current_year(data):
 
 @freeze_time('2000-2-1')
 def test_avg_expenses_not_current_year(data):
-    data.data.at[date(1999, 1, 1), 'expenses'] = 1
-    data.data.at[date(1999, 2, 1), 'expenses'] = 2
-    data.data.at[date(1999, 3, 1), 'expenses'] = 3
+    data.data.at[datetime(1999, 1, 1), 'expenses'] = 1
+    data.data.at[datetime(1999, 2, 1), 'expenses'] = 2
+    data.data.at[datetime(1999, 3, 1), 'expenses'] = 3
 
     actual = YearBalance(data=data, amount_start=None).avg_expenses
 
