@@ -67,7 +67,7 @@ class MakeDataFrame:
         df['date'] = pd.to_datetime(df['date'].apply(dt))
         # convert all columns, except date, to float
         cols = df.columns.drop('date').to_list()
-        df[cols] =df[cols].apply(pd.to_numeric, downcast='float')
+        df[cols] =df[cols].apply(pd.to_numeric)
         return df
 
     def _insert_missing_columns(self, df: DF, types: list) -> DF:

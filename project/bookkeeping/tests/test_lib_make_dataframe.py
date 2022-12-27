@@ -70,7 +70,7 @@ def test_month_dtypes(data, types):
         ])
     actual = make_dataframe.MakeDataFrame(year=1999, data=data, types=types).data
 
-    assert actual.dtypes['T1'] == np.float32
+    assert actual.dtypes['T1'] == np.float64
 
 
 @pytest.mark.parametrize('data', [([]), (None)])
