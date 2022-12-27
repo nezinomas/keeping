@@ -15,7 +15,7 @@ class MakeDataFrame:
             data: list[dict]
                 [{date, sum, exception_sum, title},]
 
-            types: list|tuple
+            columns: list|tuple
                 Optional.
                 For insertation of additional columns
 
@@ -34,9 +34,9 @@ class MakeDataFrame:
     def exceptions(self):
         return self.create_exceptions(self._data)
 
-    def create_data(self, data: list[dict], types: list) -> DF:
+    def create_data(self, data: list[dict], columns: list) -> DF:
         df = self._create(data, 'sum')
-        df = self._insert_missing_columns(df, types)
+        df = self._insert_missing_columns(df, columns)
         df = self._insert_missing_dates(df)
         return df.set_index('date')
 
@@ -85,12 +85,12 @@ class MakeDataFrame:
         df[cols] =df[cols].apply(pd.to_numeric)
         return df
 
-    def _insert_missing_columns(self, df: DF, types: list) -> DF:
+    def _insert_missing_columns(self, df: DF, columns: list) -> DF:
         ''' Insert missing columns '''
-        if not types:
+        if not columns:
             return df
 
-        df[[*set(types) - set(df.columns)]] = 0.0
+        df[[*set(columns) - set(df.columns)]] = 0.0
         return df[sorted(df.columns)]
 
     def _insert_missing_dates(self, df: DF) -> DF:
