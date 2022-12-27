@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 
 from pandas import DataFrame as DF
 
@@ -110,7 +110,9 @@ class YearBalance(BalanceBase):
             0 \
             + df.balance + df.savings_close + df.borrow + df.lend_return \
             - df.savings - df.borrow_return - df.lend
-        df['money_flow'].iloc[0] = df['money_flow'].iloc[0] + self.amount_start
+
+        cell = (date(self._year, 1, 1), "money_flow")
+        df.at[cell] = df.at[cell] + self.amount_start
         df['money_flow'] = df.money_flow.cumsum()
 
         return df
