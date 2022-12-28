@@ -113,33 +113,22 @@ class Stats:
         return df['duration'].value_counts().sort_index().to_dict()
 
     def _make_df(self, data):
-        """
-        some methods from QuerySet managers, e.g. sum_by_day returns <Queryset[dict(),]>
-        other methods e.g. year, items returns <QuerySet[models.Model instance,]
-        QuerySet with model instances need to convert to list[dict]
-        """
-
-        if isinstance(data, QuerySet):
-            first = None
-
-            with contextlib.suppress(IndexError):
-                first = data[0]
-
-            if first and isinstance(first, models.Model):
-                data = data.values()
-
+        """ Make DataFrame """
         df = pd.DataFrame(data or [])
 
-        if not df.empty:
-            df['date'] = pd.to_datetime(df['date'])
-            df.sort_values(by=['date'], inplace=True)
+        if df.empty:
+            return df
 
-            if self._year:
-                df = df[df['date'].dt.year == self._year]
+        df['date'] = pd.to_datetime(df['date'])
+        df.sort_values(by=['date'], inplace=True)
 
-            # copy column quantity to qty
-            if 'quantity' in df:
-                df['qty'] = df['quantity']
+        # if class initialzed with year, filter dataframe
+        if self._year:
+            df = df[df['date'].dt.year == self._year]
+
+        # copy column quantity to qty
+        if 'quantity' in df:
+            df['qty'] = df['quantity']
 
         return df
 
@@ -203,11 +192,11 @@ class Stats:
         return (0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.03)[weekday]
 
     def _make_calendar_dataframe(self):
-        df = self._df.copy()
+        if self._df.empty:
+            return self._df
 
-        if not df.empty:
-            df = self._calc_gaps(df)
-            df['date'] = pd.to_datetime(df.date).dt.date
-            df.set_index('date', inplace=True)
+        df = self._calc_gaps(self._df)
+        df['date'] = pd.to_datetime(df.date).dt.date
+        df.set_index('date', inplace=True)
 
         return df

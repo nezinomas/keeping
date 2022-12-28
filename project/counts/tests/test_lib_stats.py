@@ -215,17 +215,6 @@ def test_year_totals(data):
     assert actual == 6
 
 
-@pytest.mark.django_db
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_year_totals_queryset():
-    CountFactory()
-    qs = Count.objects.year(1999, count_type='count-type')
-
-    actual = Stats(year=1999, data=qs).year_totals()
-
-    assert actual == 1
-
-
 def test_year_totals_all_years(data):
     actual = Stats(data=data).year_totals()
 
