@@ -51,11 +51,10 @@ class Stats:
 
     def months_stats(self) -> list[float]:
         """Returns  [float] * 12"""
-        df = self._df.copy()
-        if df.empty:
+        if self._df.empty:
             return [0.0] * 12
         # group by month and sum qty
-        df = df.groupby(df['date'].dt.month)['qty'].sum()
+        df = self._df.groupby(self._df['date'].dt.month)['qty'].sum()
         # insert missing rows if any
         df = df.reindex(range(1,13), fill_value=0)
         return df.to_list()
