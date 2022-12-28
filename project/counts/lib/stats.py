@@ -21,7 +21,7 @@ class Stats:
 
         self._year = year
         self._past_latest = past_latest
-        self._df = self._make_df(data)
+        self._df = self._make_dataframe(data)
 
         self._now_date = datetime.now().date()
 
@@ -108,7 +108,7 @@ class Stats:
 
         return df['duration'].value_counts().sort_index().to_dict()
 
-    def _make_df(self, data):
+    def _make_dataframe(self, data):
         """ Make DataFrame """
         df = pd.DataFrame(data or [])
         if df.empty:
