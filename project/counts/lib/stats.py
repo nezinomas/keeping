@@ -58,28 +58,14 @@ class Stats:
 
     def months_stats(self) -> list[float]:
         """Returns  [float] * 12"""
-
-        return_data = [0.0] * 12
-
         df = self._df.copy()
         if df.empty:
-            return return_data
-
-        # make YearMonth (e.g. 2000-01) column
-        df.loc[:, 'YearMonth'] = df['date'].dt.to_period('M').astype(str)
-
-        # group and sum by YearMonth
-        df = df.groupby('YearMonth')['qty'].sum().to_frame()
-
-        # make month digit column and make it as index
-        df.loc[:, 'month'] = df.index.str[5:7].astype(int)
-        df.set_index('month', inplace=True)
-
-        # fill return_data array with counted qty from df
-        for month, qty in df.qty.items():
-            return_data[month - 1] = qty or 0.0
-
-        return return_data
+            return [0.0] * 12
+        # group by month and sum qty
+        df = df.groupby(df['date'].dt.month)['qty'].sum()
+        # insert missing rows if any
+        df = df.reindex(range(1,13), fill_value=0)
+        return df.to_list()
 
     def chart_calendar(self) -> list[dict]:
         if not self._year:
