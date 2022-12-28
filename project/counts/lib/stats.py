@@ -160,9 +160,9 @@ class Stats:
 
         return df
 
-    def _day_info(self, data: tuple[int, int, tuple[int, int]], i: int, df: DF) -> list:
+    def _day_info(self, data: tuple, iteration: int, calendar_df: DF) -> list:
         (year, month, (day, weekday)) = data
-        x, y = divmod(i, 7)
+        x, y = divmod(iteration, 7)
 
         dt = date(year, month, day) if day else None
         # if day == 0 then day = last month day
@@ -179,10 +179,10 @@ class Stats:
         if not dt:
             return arr
 
-        # df dataframe is made in self._make_calandar_dataframe()
-        if dt in df.index:
+        # calendar_df dataframe is made in self._make_calandar_dataframe()
+        if dt in calendar_df.index:
             # .loc returns pd.serries -> stdav, qty, duration
-            flt = df.loc[dt]
+            flt = calendar_df.loc[dt]
             arr[2] = flt.qty  # change color code
             arr.extend([flt.qty, flt.duration])
 
