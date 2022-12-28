@@ -111,17 +111,14 @@ class Stats:
     def _make_df(self, data):
         """ Make DataFrame """
         df = pd.DataFrame(data or [])
-
         if df.empty:
             return df
 
         df['date'] = pd.to_datetime(df['date'])
         df.sort_values(by=['date'], inplace=True)
-
         # if class initialzed with year, filter dataframe
         if self._year:
             df = df[df['date'].dt.year == self._year]
-
         # copy column quantity to qty
         if 'quantity' in df:
             df['qty'] = df['quantity']
