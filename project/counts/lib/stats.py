@@ -39,21 +39,14 @@ class Stats:
 
     def weekdays_stats(self) -> list[dict[int, float]]:
         """Returns [{'weekday': int, 'count': float}]"""
-
-        data = {'weekday': range(7), 'qty': [0]*7}
-        empty_df = pd.DataFrame(data=data).set_index('weekday')
-
         if self._df.empty:
-            df = empty_df
-        else:
-            df = self._df.copy()
-            df['weekday'] = df['date'].dt.dayofweek
-            df = df.groupby('weekday')['qty'].sum().to_frame()
-            df = empty_df.add(df, fill_value=0)
-
-        df.reset_index(inplace=True)
-        df.rename(columns = {'qty':'count'}, inplace = True)
-
+            return [{'weekday': i, 'count': 0} for i in range(7)]
+        # groupby weekday and sum qty
+        df = self._df.groupby(self._df['date'].dt.dayofweek)['qty'].sum()
+        # insert missing rows if any
+        df = df.reindex(range(7), fill_value=0)
+        # rename columns
+        df = df.reset_index().rename(columns={'date': 'weekday', 'qty': 'count'})
         return df.to_dict('records')
 
     def months_stats(self) -> list[float]:
