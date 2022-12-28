@@ -67,9 +67,9 @@ class Stats:
             return it.product(
                 [self._year], [m], calendar.Calendar(0).itermonthdays2(self._year, m))
 
-        # make calendar df and pass it to _day_info method
+        # make calendar_df with calculated gaps and pass it to _day_info method
         calendar_df = self._make_calendar_dataframe()
-        day_info = functools.partial(self._day_info, df=calendar_df)
+        day_info = functools.partial(self._day_info, calendar_df=calendar_df)
 
         arr = map(func, range(1, 13))
         data = map(day_info, it.chain(*arr), it.count(0))
