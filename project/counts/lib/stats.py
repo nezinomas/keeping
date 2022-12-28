@@ -132,6 +132,16 @@ class Stats:
 
         return df
 
+    def _make_calendar_dataframe(self):
+        if self._df.empty:
+            return self._df
+
+        df = self._calc_gaps(self._df)
+        df['date'] = pd.to_datetime(df.date).dt.date
+        df.set_index('date', inplace=True)
+
+        return df
+
     def _calc_gaps(self, df: pd.DataFrame) -> pd.DataFrame:
         # time gap between days with records
         df['duration'] = df['date'].diff().dt.days
@@ -190,13 +200,3 @@ class Stats:
             return 0.05  # highlight current day
 
         return (0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.03)[weekday]
-
-    def _make_calendar_dataframe(self):
-        if self._df.empty:
-            return self._df
-
-        df = self._calc_gaps(self._df)
-        df['date'] = pd.to_datetime(df.date).dt.date
-        df.set_index('date', inplace=True)
-
-        return df
