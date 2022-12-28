@@ -1,19 +1,19 @@
 import calendar
 import contextlib
+import functools
 import itertools as it
 from datetime import date, datetime
 
 import pandas as pd
 from django.db import models
 from django.db.models import QuerySet
+from pandas import DataFrame as DF
 
 from ...core.exceptions import MethodInvalid
 from ...core.lib.translation import month_names, weekday_names
 
 
 class Stats:
-    _cdf: None
-
     def __init__(self,
                  year: int = None,
                  data: list[dict[date, float]] = None,
@@ -63,15 +63,16 @@ class Stats:
         if not self._year:
             raise MethodInvalid('class Stats must be called with specified year.')
 
-        # _cdf variable will be used in _day_info method
-        self._cdf = self._make_calendar_dataframe()
-
         def func(m: int):
             return it.product(
                 [self._year], [m], calendar.Calendar(0).itermonthdays2(self._year, m))
 
+        # make calendar df and pass it to _day_info method
+        calendar_df = self._make_calendar_dataframe()
+        day_info = functools.partial(self._day_info, df=calendar_df)
+
         arr = map(func, range(1, 13))
-        data = map(self._day_info, it.chain(*arr), it.count(0))
+        data = map(day_info, it.chain(*arr), it.count(0))
         months = self.months()
 
         # groupby year-month e.g. 1999-01
@@ -159,7 +160,7 @@ class Stats:
 
         return df
 
-    def _day_info(self, data: tuple[int, int, tuple[int, int]], i: int) -> list:
+    def _day_info(self, data: tuple[int, int, tuple[int, int]], i: int, df: DF) -> list:
         (year, month, (day, weekday)) = data
         x, y = divmod(i, 7)
 
@@ -178,10 +179,10 @@ class Stats:
         if not dt:
             return arr
 
-        # self._cdf dataframe is made in self._make_calandar_dataframe()
-        if dt in self._cdf.index:
+        # df dataframe is made in self._make_calandar_dataframe()
+        if dt in df.index:
             # .loc returns pd.serries -> stdav, qty, duration
-            flt = self._cdf.loc[dt]
+            flt = df.loc[dt]
             arr[2] = flt.qty  # change color code
             arr.extend([flt.qty, flt.duration])
 
