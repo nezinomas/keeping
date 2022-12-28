@@ -73,11 +73,12 @@ class Stats:
 
         arr = map(func, range(1, 13))
         data = map(day_info, it.chain(*arr), it.count(0))
-        months = self.months()
+        # month names list
+        month_names = self.months()
 
         # groupby year-month e.g. 1999-01
         return [{
-            'name': months[int(key[6:]) - 1],
+            'name': month_names[int(key[6:]) - 1],
             'keys': ['x', 'y', 'value', 'week', 'date', 'qty', 'gap'],
             'data': list(group),
         } for key, group in it.groupby(data, lambda x: x[4][:7])]
