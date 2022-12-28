@@ -104,7 +104,7 @@ class Stats:
         if self._df.empty:
             return {}
         # calculate gaps
-        df = self._calc_gaps(self._df)
+        df = self._calc_gaps(self._df.copy())
 
         return df['duration'].value_counts().sort_index().to_dict()
 
@@ -132,7 +132,7 @@ class Stats:
         if self._df.empty:
             return self._df
         # calculate gaps
-        df = self._calc_gaps(self._df)
+        df = self._calc_gaps(self._df.copy())
         # convert 'date' column dtype from datetime to date
         df['date'] = pd.to_datetime(df.date).dt.date
         return df.set_index('date')
