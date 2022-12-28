@@ -100,9 +100,7 @@ class Stats:
         return arr.get(self._year, 0) if self._year else arr
 
     def gaps(self) -> dict[int, int]:
-        """
-        returns dictionary(int: int) = {gap: count}
-        """
+        """ Returns dictionary(int: int) = {gap: count} """
         df = self._df.copy()
 
         if df.empty:
