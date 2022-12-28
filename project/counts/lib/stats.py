@@ -101,12 +101,10 @@ class Stats:
 
     def gaps(self) -> dict[int, int]:
         """ Returns dictionary(int: int) = {gap: count} """
-        df = self._df.copy()
-
-        if df.empty:
+        if self._df.empty:
             return {}
-
-        df = self._calc_gaps(df)
+        # calculate gaps
+        df = self._calc_gaps(self._df)
 
         return df['duration'].value_counts().sort_index().to_dict()
 
