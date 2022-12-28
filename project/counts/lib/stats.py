@@ -133,12 +133,11 @@ class Stats:
     def _make_calendar_dataframe(self):
         if self._df.empty:
             return self._df
-
+        # calculate gaps
         df = self._calc_gaps(self._df)
+        # convert 'date' column dtype from datetime to date
         df['date'] = pd.to_datetime(df.date).dt.date
-        df.set_index('date', inplace=True)
-
-        return df
+        return df.set_index('date')
 
     def _calc_gaps(self, df: pd.DataFrame) -> pd.DataFrame:
         # time gap between days with records
