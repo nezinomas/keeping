@@ -153,30 +153,29 @@ class Stats:
     def _day_info(self, data: tuple, iteration: int, calendar_df: DF) -> list:
         (year, month, (day, weekday)) = data
         x, y = divmod(iteration, 7)
-
         dt = date(year, month, day) if day else None
-        # if day == 0 then day = last month day
+        # if day is 0 then day = last month day
         day = day or calendar.monthrange(year, month)[1]
-
-        arr = [
-            x + month - 1,  # adjust x value for empty col between months
-            y,
-            self._cell_color(dt, weekday),  # color code
-            date(year, month, day).isocalendar()[1],  # weeknumber
-            str(dt) if dt else f'{year}-{str(month).rjust(2, "0")}',  # str(date)
-        ]
-
-        if not dt:
-            return arr
+        weeknumber = date(year, month, day).isocalendar()[1]
+        color = self._cell_color(dt, weekday)
+        str_date = str(dt) if dt else f'{year}-{str(month).rjust(2, "0")}'
 
         # calendar_df dataframe is made in self._make_calandar_dataframe()
+        qty_and_duration = []
         if dt in calendar_df.index:
             # .loc returns pd.serries -> stdav, qty, duration
             flt = calendar_df.loc[dt]
-            arr[2] = flt.qty  # change color code
-            arr.extend([flt.qty, flt.duration])
+            color = flt.qty  # color depends on qty
+            qty_and_duration = [flt.qty, flt.duration]
 
-        return arr
+        return [
+            x + month - 1,  # adjust x value for empty col between months
+            y,
+            color,
+            weeknumber,
+            str_date,
+            *qty_and_duration
+        ]
 
     def _cell_color(self, dt: date, weekday: int) -> float:
         # colors for 5(saturday) -> #dfdfdf 6(sunday) -> #c3c4c2
