@@ -138,12 +138,10 @@ class Stats:
         # time gap between days with records
         df['duration'] = df['date'].diff().dt.days
         first_record_date = df['date'].iloc[0]
-
+        # get date for first gap
+        first_date = pd.to_datetime(f'{first_record_date.year}-01-01')
         if self._past_latest:
             first_date = pd.to_datetime(self._past_latest)
-        else:
-            first_date = pd.to_datetime(f'{first_record_date.year}-01-01')
-
         # repair time gap for first year record
         first_duration = (first_record_date - first_date).days
         df.loc[df.index[0], 'duration'] = first_duration
