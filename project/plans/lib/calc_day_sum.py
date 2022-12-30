@@ -158,7 +158,7 @@ class PlanCalculateDaySum():
             map(lambda col_name: monthlen(self._year, col_name), df.columns))
         return df
 
-    def _sum_data(df: DF, self) -> DF:
+    def _sum_data(self, df: DF) -> DF:
         df.loc['incomes', :] = self._sum(self._data.incomes)
         df.loc['savings', :] = self._sum(self._data.savings)
         df.loc['day_input', :] = self._sum(self._data.days)
