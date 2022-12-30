@@ -155,16 +155,9 @@ class PlanCalculateDaySum():
 
     def _create_df(self) -> pd.DataFrame:
         df = pd.DataFrame(columns=monthnames(), dtype=float)
-        # create rows with all values 0
-        row_names = ['incomes', 'savings', 'necessary',
-                     'expenses_necessary', 'expenses_free',
-                     'day_calced', 'day_input', 'remains',]
-        for name in row_names:
-            df.loc[name, :] = 0.0
-        #
-        df.loc['month_lenght', :] = df.apply(
-            lambda x: monthlen(self._year, x.name), axis=0)
-
+        # create month_leng column
+        df.loc['month_lenght', :] = list(
+            map(lambda col_name: monthlen(self._year, col_name), df.columns))
         return df
 
     def _calc_df(self) -> None:
