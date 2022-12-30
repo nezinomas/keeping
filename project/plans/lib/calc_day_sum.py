@@ -144,12 +144,10 @@ class PlanCalculateDaySum():
 
     def _sum(self, arr: list):
         df = pd.DataFrame(arr)
-
         # convert to_numeric decimal values
         df = df.apply(pd.to_numeric, errors='ignore')
-
-        df.loc['sum', :] = df.sum(axis=0)
-        return df.loc['sum', :]
+        # return sum column as pd.Serries
+        return df.sum(axis=0)
 
     def _create_df(self) -> pd.DataFrame:
         df = pd.DataFrame(columns=monthnames(), dtype=float)
