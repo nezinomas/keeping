@@ -141,7 +141,7 @@ class PlanCalculateDaySum():
 
         return data.to_dict() if isinstance(data, pd.Series) else data
 
-    def _sum(self, arr: list, row_name: str, necessary: int = -1):
+    def _sum(self, arr: list, row_name: str):
         df = pd.DataFrame(arr)
 
         if df.empty:
@@ -149,10 +149,6 @@ class PlanCalculateDaySum():
 
         # convert to_numeric decimal values
         df = df.apply(pd.to_numeric, errors='ignore')
-
-        if necessary >= 0:
-            # filter expensy_type by necessary/ordinary
-            df = df.loc[df['necessary'] == necessary]
 
         df.loc['sum', :] = df.sum(axis=0)
 
@@ -179,8 +175,11 @@ class PlanCalculateDaySum():
         self._sum(self._data.savings, 'savings')
         self._sum(self._data.days, 'day_input')
         self._sum(self._data.necessary, 'necessary')
-        self._sum(self._data.expenses, 'expenses_necessary', 1)
-        self._sum(self._data.expenses, 'expenses_free', 0)
+
+        filtered = [d for d in self._data.expenses if d['necessary']]
+        self._sum(filtered, 'expenses_necessary')
+        filtered = [d for d in self._data.expenses if not d['necessary']]
+        self._sum(filtered, 'expenses_free')
 
         self._df.loc['expenses_necessary'] = \
             0 \
