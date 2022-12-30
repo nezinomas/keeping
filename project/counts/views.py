@@ -142,7 +142,7 @@ class TabHistory(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         slug = self.kwargs.get('slug')
-        qs = Count.objects.items(count_type=slug)
+        qs = Count.objects.items(count_type=slug).values('date', 'quantity')
         srv = IndexService(self.request.user.year, Stats(data=qs))
 
         context = {
