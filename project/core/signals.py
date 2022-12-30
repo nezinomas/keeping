@@ -128,7 +128,7 @@ def create_objects(balance_model: Model, categories: dict, data: list[dict]):
     fk_field = [f.name for f in fields if (f.many_to_one)][0]
     objects = []
     for x in data:
-        # extrack account/saving_type/pension_type id from dict
+        # extract account/saving_type/pension_type id from dict
         cid = x.pop('id')
         # drop latest_check if empty
         if not x['latest_check']:
