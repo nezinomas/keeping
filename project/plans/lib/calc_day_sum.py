@@ -151,7 +151,7 @@ class PlanCalculateDaySum():
 
     def _create_df(self) -> pd.DataFrame:
         df = pd.DataFrame(columns=monthnames(), dtype=float)
-        # create month_leng column
+        # create month_len column
         df.loc['month_len', :] = list(
             map(lambda col_name: monthlen(self._year, col_name), df.columns))
         return df
