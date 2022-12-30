@@ -185,21 +185,25 @@ class PlanCalculateDaySum():
         self._sum(self._data.expenses, 'expenses_necessary', 1)
         self._sum(self._data.expenses, 'expenses_free', 0)
 
-        self._df.loc['expenses_necessary'] = (
-            0
-            + self._df.loc['expenses_necessary']
-            + self._df.loc['savings']
-            + self._df.loc['necessary']
-        )
-        self._df.loc['expenses_free'] = (
-            self._df.loc['incomes'] - self._df.loc['expenses_necessary']
-        )
-        self._df.loc['day_calced'] = (
-            self._df.loc['expenses_free'] / self._df.loc['m']
-        )
-        self._df.loc['remains'] = (
-            self._df.loc['expenses_free'] - self._df.loc['day_input'] * self._df.loc['m']
-        )
+        self._df.loc['expenses_necessary'] = \
+            0 \
+            + self._df.loc['expenses_necessary'] \
+            + self._df.loc['savings'] \
+            + self._df.loc['necessary'] \
+
+        self._df.loc['expenses_free'] = \
+            0 \
+            + self._df.loc['incomes'] \
+            - self._df.loc['expenses_necessary'] \
+
+        self._df.loc['day_calced'] = \
+            0 \
+            + (self._df.loc['expenses_free'] / self._df.loc['m'])
+
+        self._df.loc['remains'] = \
+            0 \
+            + self._df.loc['expenses_free'] \
+            - (self._df.loc['day_input'] * self._df.loc['m'])
 
         # fill cell with NaN
         self._df.fillna(0.0, inplace=True)
