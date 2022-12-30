@@ -1,12 +1,9 @@
 import calendar
-import contextlib
 import functools
 import itertools as it
 from datetime import date, datetime
 
 import pandas as pd
-from django.db import models
-from django.db.models import QuerySet
 from pandas import DataFrame as DF
 
 from ...core.exceptions import MethodInvalid
