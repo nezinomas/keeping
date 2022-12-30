@@ -174,8 +174,7 @@ class Stats:
             color,
             weeknumber,
             str_date,
-            *qty_and_duration
-        ]
+            *qty_and_duration,]
 
     def _cell_color(self, dt: date, weekday: int) -> float:
         # colors for 5(saturday) -> #dfdfdf 6(sunday) -> #c3c4c2
