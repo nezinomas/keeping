@@ -62,7 +62,7 @@ class PlanCalculateDaySum():
         self._data = data
         self._year = data.year
 
-        self._calc_df()
+        self._df = self._calc_df()
 
         # filter data for current month
         if self._data.month:
@@ -141,7 +141,7 @@ class PlanCalculateDaySum():
 
         return data.to_dict() if isinstance(data, pd.Series) else data
 
-    def _sum(self, arr: list, row_name: str):
+    def _sum(self, arr: list):
         df = pd.DataFrame(arr)
 
         if df.empty:
@@ -151,8 +151,7 @@ class PlanCalculateDaySum():
         df = df.apply(pd.to_numeric, errors='ignore')
 
         df.loc['sum', :] = df.sum(axis=0)
-
-        self._df.loc[row_name, :] = df.loc['sum', :]
+        return df.loc['sum', :]
 
     def _create_df(self) -> pd.DataFrame:
         df = pd.DataFrame(columns=monthnames(), dtype=float)
@@ -169,37 +168,37 @@ class PlanCalculateDaySum():
         return df
 
     def _calc_df(self) -> None:
-        self._df = self._create_df()
+        df = self._create_df()
 
-        self._sum(self._data.incomes, 'incomes')
-        self._sum(self._data.savings, 'savings')
-        self._sum(self._data.days, 'day_input')
-        self._sum(self._data.necessary, 'necessary')
+        df.loc['incomes', :] = self._sum(self._data.incomes)
+        df.loc['savings', :] = self._sum(self._data.savings)
+        df.loc['day_input', :] = self._sum(self._data.days)
+        df.loc['necessary', :] = self._sum(self._data.necessary)
 
         filtered = [d for d in self._data.expenses if d['necessary']]
-        self._sum(filtered, 'expenses_necessary')
+        df.loc['expenses_necessary', :] = self._sum(filtered)
         filtered = [d for d in self._data.expenses if not d['necessary']]
-        self._sum(filtered, 'expenses_free')
+        df.loc['expenses_free', :] = self._sum(filtered)
 
-        self._df.loc['expenses_necessary'] = \
+        df.loc['expenses_necessary'] = \
             0 \
-            + self._df.loc['expenses_necessary'] \
-            + self._df.loc['savings'] \
-            + self._df.loc['necessary'] \
+            + df.loc['expenses_necessary'] \
+            + df.loc['savings'] \
+            + df.loc['necessary'] \
 
-        self._df.loc['expenses_free'] = \
+        df.loc['expenses_free'] = \
             0 \
-            + self._df.loc['incomes'] \
-            - self._df.loc['expenses_necessary'] \
+            + df.loc['incomes'] \
+            - df.loc['expenses_necessary'] \
 
-        self._df.loc['day_calced'] = \
+        df.loc['day_calced'] = \
             0 \
-            + (self._df.loc['expenses_free'] / self._df.loc['month_lenght'])
+            + (df.loc['expenses_free'] / df.loc['month_lenght'])
 
-        self._df.loc['remains'] = \
+        df.loc['remains'] = \
             0 \
-            + self._df.loc['expenses_free'] \
-            - (self._df.loc['day_input'] * self._df.loc['month_lenght'])
+            + df.loc['expenses_free'] \
+            - (df.loc['day_input'] * df.loc['month_lenght'])
 
         # fill cell with NaN
-        self._df.fillna(0.0, inplace=True)
+        return df.fillna(0.0)
