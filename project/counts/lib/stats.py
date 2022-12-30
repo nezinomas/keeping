@@ -41,7 +41,7 @@ class Stats:
         """Returns [{'weekday': int, 'count': float}]"""
         if self._df.empty:
             return [{'weekday': i, 'count': 0} for i in range(7)]
-        # groupby weekday and sum qty
+        # groupby by weekday and sum qty
         df = self._df.groupby(self._df['date'].dt.dayofweek)['qty'].sum()
         # insert missing rows if any
         df = df.reindex(range(7), fill_value=0)
