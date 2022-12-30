@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import Union
 
 import pandas as pd
+from pandas import DataFrame as DF
 from django.db.models import F
 from django.utils.translation import gettext as _
 
@@ -157,18 +158,23 @@ class PlanCalculateDaySum():
             map(lambda col_name: monthlen(self._year, col_name), df.columns))
         return df
 
-    def _calc_df(self) -> None:
-        df = self._create_df()
-
+    def _sum_data(df: DF, self) -> DF:
         df.loc['incomes', :] = self._sum(self._data.incomes)
         df.loc['savings', :] = self._sum(self._data.savings)
         df.loc['day_input', :] = self._sum(self._data.days)
         df.loc['necessary', :] = self._sum(self._data.necessary)
-        print(f'>>>>>>>>>>>>> \n{df}\n')
+
         filtered = [d for d in self._data.expenses if d['necessary']]
         df.loc['expenses_necessary', :] = self._sum(filtered)
+
         filtered = [d for d in self._data.expenses if not d['necessary']]
         df.loc['expenses_free', :] = self._sum(filtered)
+
+        return df
+
+    def _calc_df(self) -> None:
+        df = self._create_df()
+        df = self._sum_data(df)
 
         df.loc['expenses_necessary'] = \
             0 \
