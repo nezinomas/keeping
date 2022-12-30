@@ -157,16 +157,17 @@ class PlanCalculateDaySum():
         return df
 
     def _sum_data(self, df: DF) -> DF:
+        # split expenses into expenses_necessary and expenses_free
+        necessary, free = [], []
+        for item in self._data.expenses:
+            necessary.append(item) if item['necessary'] else free.append(item)
+        # sum all data
+        df.loc['expenses_necessary', :] = self._sum(necessary)
+        df.loc['expenses_free', :] = self._sum(free)
         df.loc['incomes', :] = self._sum(self._data.incomes)
         df.loc['savings', :] = self._sum(self._data.savings)
         df.loc['day_input', :] = self._sum(self._data.days)
         df.loc['necessary', :] = self._sum(self._data.necessary)
-
-        filtered = [d for d in self._data.expenses if d['necessary']]
-        df.loc['expenses_necessary', :] = self._sum(filtered)
-
-        filtered = [d for d in self._data.expenses if not d['necessary']]
-        df.loc['expenses_free', :] = self._sum(filtered)
 
         return df
 
