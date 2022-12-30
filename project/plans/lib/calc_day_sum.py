@@ -147,7 +147,7 @@ class PlanCalculateDaySum():
         if df.empty:
             return
 
-        # convert to_numeric january-december columns decimal values
+        # convert to_numeric decimal values
         df = df.apply(pd.to_numeric, errors='ignore')
 
         if necessary >= 0:
@@ -160,17 +160,14 @@ class PlanCalculateDaySum():
 
     def _create_df(self) -> pd.DataFrame:
         df = pd.DataFrame(columns=monthnames(), dtype=float)
-
-        df.loc['incomes', :] = 0.0
-        df.loc['savings', :] = 0.0
-        df.loc['necessary', :] = 0.0
-        df.loc['expenses_necessary', :] = 0.0
-        df.loc['expenses_free', :] = 0.0
-        df.loc['day_calced', :] = 0.0
-        df.loc['day_input', :] = 0.0
-        df.loc['remains', :] = 0.0
-
-        df.loc['m', :] = df.apply(
+        # create rows with all values 0
+        row_names = ['incomes', 'savings', 'necessary',
+                     'expenses_necessary', 'expenses_free',
+                     'day_calced', 'day_input', 'remains',]
+        for name in row_names:
+            df.loc[name, :] = 0.0
+        #
+        df.loc['month_lenght', :] = df.apply(
             lambda x: monthlen(self._year, x.name), axis=0)
 
         return df
@@ -198,12 +195,12 @@ class PlanCalculateDaySum():
 
         self._df.loc['day_calced'] = \
             0 \
-            + (self._df.loc['expenses_free'] / self._df.loc['m'])
+            + (self._df.loc['expenses_free'] / self._df.loc['month_lenght'])
 
         self._df.loc['remains'] = \
             0 \
             + self._df.loc['expenses_free'] \
-            - (self._df.loc['day_input'] * self._df.loc['m'])
+            - (self._df.loc['day_input'] * self._df.loc['month_lenght'])
 
         # fill cell with NaN
         self._df.fillna(0.0, inplace=True)
