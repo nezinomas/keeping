@@ -124,10 +124,11 @@ class PlanCalculateDaySum():
 
     @property
     def targets(self) -> dict[str, float]:
-        if not self._data.month:
-            return
-
         rtn = {}
+
+        if not self._data.month:
+            return rtn
+
         month = monthname(self._data.month)
         arr = self._data.expenses
 
