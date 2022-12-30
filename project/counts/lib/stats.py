@@ -63,9 +63,9 @@ class Stats:
         if not self._year:
             raise MethodInvalid('class Stats must be called with specified year.')
 
-        def func(m: int):
+        def func(month: int):
             return it.product(
-                [self._year], [m], calendar.Calendar(0).itermonthdays2(self._year, m))
+                [self._year], [month], calendar.Calendar(0).itermonthdays2(self._year, month))
 
         # make calendar_df with calculated gaps and pass it to _day_info method
         calendar_df = self._make_calendar_dataframe()
