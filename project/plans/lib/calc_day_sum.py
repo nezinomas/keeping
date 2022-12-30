@@ -139,7 +139,6 @@ class PlanCalculateDaySum():
 
     def _return_data(self, data: Union[pd.Series, float]) -> Union[dict, float]:
         ''' If data is pandas Serries convert data to dictionary '''
-
         return data.to_dict() if isinstance(data, pd.Series) else data
 
     def _sum(self, arr: list):
@@ -194,5 +193,4 @@ class PlanCalculateDaySum():
             + df.loc['expenses_free'] \
             - (df.loc['day_input'] * df.loc['month_len'])
 
-        # fill cell with NaN
         return df.fillna(0.0)
