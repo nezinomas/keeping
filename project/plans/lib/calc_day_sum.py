@@ -156,7 +156,7 @@ class PlanCalculateDaySum():
     def _create_df(self) -> pd.DataFrame:
         df = pd.DataFrame(columns=monthnames(), dtype=float)
         # create month_leng column
-        df.loc['month_lenght', :] = list(
+        df.loc['month_len', :] = list(
             map(lambda col_name: monthlen(self._year, col_name), df.columns))
         return df
 
@@ -186,12 +186,12 @@ class PlanCalculateDaySum():
 
         df.loc['day_calced'] = \
             0 \
-            + (df.loc['expenses_free'] / df.loc['month_lenght'])
+            + (df.loc['expenses_free'] / df.loc['month_len'])
 
         df.loc['remains'] = \
             0 \
             + df.loc['expenses_free'] \
-            - (df.loc['day_input'] * df.loc['month_lenght'])
+            - (df.loc['day_input'] * df.loc['month_len'])
 
         # fill cell with NaN
         return df.fillna(0.0)
