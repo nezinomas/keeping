@@ -55,7 +55,7 @@ class DaySpending(BalanceBase):
         df = self._spending.copy()
         df = self._calc_avg(df, self._year, self._month, day)
 
-        # select onvly last row for returning
+        # select only last row for returning
         row = df.loc['total', :]
 
         return row.to_dict()
