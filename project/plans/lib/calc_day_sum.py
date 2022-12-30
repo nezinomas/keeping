@@ -3,9 +3,9 @@ from dataclasses import dataclass, field
 from typing import Union
 
 import pandas as pd
-from pandas import DataFrame as DF
 from django.db.models import F
 from django.utils.translation import gettext as _
+from pandas import DataFrame as DF
 
 from ...core.lib.date import monthlen, monthname, monthnames
 from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
