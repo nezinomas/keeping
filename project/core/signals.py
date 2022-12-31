@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
 
+import numpy as np
 import pandas as pd
 from django.db.models import Model
 from django.db.models.signals import post_delete, post_save
@@ -192,7 +193,7 @@ class SignalBase(ABC):
         # create missing columns
         df[[*set(cols) - set(df.columns)]] = 0.0
         # convert decimal to float
-        df[cols] = df[cols].astype(float)
+        df[cols] = df[cols].astype(np.float64)
         # groupby id, year and sum
         df = df.groupby(col_idx)[cols].sum(numeric_only=True)
 
