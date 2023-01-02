@@ -1,8 +1,10 @@
 from datetime import datetime
 from decimal import Decimal
 from types import SimpleNamespace
-from ..signals import Savings
+
 import pytest
+
+from ..signals import Savings
 
 
 @pytest.fixture(name="incomes")
