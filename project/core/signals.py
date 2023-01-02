@@ -233,6 +233,33 @@ class SignalBase(ABC):
         df = pd.concat([df, last_group])
         return df.sort_index()
 
+    def _insert_missing_types(self, df: DF) -> DF:
+        years = list(df.index.levels[1])
+        ids = list(df.index.levels[0])
+        # years index should have at least two years
+        if years and len(years) < 2:
+            return df
+        last_year = years[-1]
+        prev_year = years[-2]
+        index = list(df.index)
+
+        for _type in self._types:
+            if (_type.pk) not in ids:
+                continue
+            # if type already dont have record in previous year
+            if (_type.pk, prev_year) not in index:
+                continue
+            # if type already have record in current year
+            if (_type.pk, last_year) in index:
+                continue
+            # copy previous year row to current year
+            prev_serries = df.loc[(_type.pk, prev_year)].copy()
+            prev_serries['past'] = prev_serries['balance']
+            prev_serries[['incomes', 'expenses']] = 0
+            df.loc[(_type.pk, last_year), :] = prev_serries
+        df.sort_index(inplace=True)
+        return df
+
 class Accounts(SignalBase):
     def __init__(self, data: GetData):
         cols = ['incomes', 'expenses']
@@ -262,33 +289,6 @@ class Accounts(SignalBase):
         df.drop(columns=["temp"], inplace=True)
         # calculate delta between have and balance
         df.delta = df.have - df.balance
-        return df
-
-    def _insert_missing_types(self, df: DF) -> DF:
-        years = list(df.index.levels[1])
-        ids = list(df.index.levels[0])
-        # years index should have at least two years
-        if years and len(years) < 2:
-            return df
-        last_year = years[-1]
-        prev_year = years[-2]
-        index = list(df.index)
-
-        for _type in self._types:
-            if (_type.pk) not in ids:
-                continue
-            # if type already dont have record in previous year
-            if (_type.pk, prev_year) not in index:
-                continue
-            # if type already have record in current year
-            if (_type.pk, last_year) in index:
-                continue
-            # copy previous year row to current year
-            prev_serries = df.loc[(_type.pk, prev_year)].copy()
-            prev_serries['past'] = prev_serries['balance']
-            prev_serries[['incomes', 'expenses']] = 0
-            df.loc[(_type.pk, last_year),:] = prev_serries
-        df.sort_index(inplace=True)
         return df
 
     def _join_df(self, df: DF, hv: DF) -> DF:
