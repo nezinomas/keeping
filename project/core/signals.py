@@ -248,7 +248,7 @@ class Accounts(SignalBase):
         if df.empty:
             return df
         # copy types (account) from previous to current year
-        df = self._copy_types(df)
+        df = self._insert_missing_types(df)
         # insert extra group for future year
         df = self._insert_future_data(df)
         # balance without past
@@ -264,7 +264,7 @@ class Accounts(SignalBase):
         df.delta = df.have - df.balance
         return df
 
-    def _copy_types(self, df: DF) -> DF:
+    def _insert_missing_types(self, df: DF) -> DF:
         years = list(df.index.levels[1])
         ids = list(df.index.levels[0])
         # years index should have at least two years
