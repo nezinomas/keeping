@@ -218,12 +218,16 @@ class SignalBase(ABC):
         # insert column year with value year+1
         last_group['year'] = year + 1
         last_group.set_index(['id', 'year'], inplace=True)
-        # reset columns values to 0.0
         # if fee in columns -> Savings dataframe, else -> Accounts dataframe
         if 'fee' in last_group.columns:
-            last_group[['incomes', 'fee', 'sold', 'sold_fee']] = 0.0
+            cols_to_reset = ['per_year_incomes', 'per_year_fee']
+            last_group['past_amount'] = last_group['incomes']
+            last_group['past_fee'] = last_group['fee']
         else:
-            last_group[['incomes', 'expenses']] = 0.0
+            cols_to_reset = ['incomes', 'expenses']
+            last_group['past'] = last_group['balance']
+        # reset columns values to 0
+        last_group[cols_to_reset] = 0
         # join dataframes
         df = pd.concat([df, last_group])
         return df.sort_index()
@@ -241,8 +245,6 @@ class Accounts(SignalBase):
     def make_table(self, df: DF) -> DF:
         if df.empty:
             return df
-        # insert extra group for future year
-        df = self._insert_future_data(df)
         # balance without past
         df.balance = df.incomes - df.expenses
         # temp column for each id group with balance cumulative sum
@@ -254,6 +256,8 @@ class Accounts(SignalBase):
         df.drop(columns=["temp"], inplace=True)
         # calculate delta between have and balance
         df.delta = df.have - df.balance
+        # insert extra group for future year
+        df = self._insert_future_data(df)
         return df
 
     def _join_df(self, df: DF, hv: DF) -> DF:
@@ -274,8 +278,6 @@ class Savings(SignalBase):
     def make_table(self, df: DF) -> DF:
         if df.empty:
             return df
-        # data for one year +
-        df = self._insert_future_data(df)
         # calculate incomes
         df.per_year_incomes = df.incomes
         df.per_year_fee = df.fee
@@ -294,6 +296,8 @@ class Savings(SignalBase):
         df.profit_sum = df.market_value - df.invested
         df.profit_proc = \
             df[['market_value', 'invested']].apply(Savings.calc_percent, axis=1)
+        # data for one year +
+        df = self._insert_future_data(df)
         return df
 
     def _calc_past(self, df: DF) -> DF:
