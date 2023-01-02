@@ -56,7 +56,6 @@ class Index(TemplateViewMixin):
             'chart_expenses': exp.chart_context(),
             'expenses': exp.table_context(),
         }
-
         return super().get_context_data(**kwargs) | context
 
 
