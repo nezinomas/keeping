@@ -96,6 +96,7 @@ def savings_data():
             transaction.SavingChange,
         ),
         'have': (bookkeeping.SavingWorth,),
+        'types': (saving.SavingType,),
     }
     return Savings(GetData(conf)).table
 
@@ -117,6 +118,7 @@ def pensions_data():
     conf = {
         'incomes': (pension.Pension,),
         'have': (bookkeeping.PensionWorth,),
+        'types': (pension.PensionType,),
     }
     return Savings(GetData(conf)).table
 
@@ -289,8 +291,7 @@ class Accounts(SignalBase):
             # copy previous year row to current year
             prev_serries = df.loc[(_type.pk, prev_year)].copy()
             prev_serries['past'] = prev_serries['balance']
-            prev_serries['incomes'] = 0
-            prev_serries['expenses'] = 0
+            prev_serries[['incomes', 'expenses']] = 0
             df.loc[(_type.pk, last_year),:] = prev_serries
         df.sort_index(inplace=True)
         return df
