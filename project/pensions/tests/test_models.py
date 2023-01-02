@@ -271,7 +271,7 @@ def test_pension_update_post_save_count_queries(django_assert_max_num_queries):
     PensionFactory()
 
     obj = Pension.objects.first()
-    with django_assert_max_num_queries(6):
+    with django_assert_max_num_queries(7):
         obj.price = Decimal('2')
         obj.save()
 

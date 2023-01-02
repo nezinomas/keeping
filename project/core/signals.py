@@ -63,6 +63,7 @@ def accounts_data():
             saving.Saving,
         ),
         'have': (bookkeeping.AccountWorth,),
+        'types': (account.Account,),
     }
     return Accounts(GetData(conf)).table
 
@@ -154,11 +155,13 @@ class GetData:
     incomes: list[dict] = field(init=False, default_factory=list)
     expenses: list[dict] = field(init=False, default_factory=list)
     have: list[dict] = field(init=False, default_factory=list)
+    types: list[dict] = field(init=False, default_factory=list)
 
     def __post_init__(self):
         self.incomes = self._get_data(self.conf.get('incomes'), 'incomes')
         self.expenses = self._get_data(self.conf.get('expenses'), 'expenses')
         self.have = self._get_data(self.conf.get('have'), 'have')
+        self.types = self._get_data(self.conf.get('types'), 'items')
 
     def _get_data(self, models: tuple, method: str):
         items = []
@@ -240,11 +243,15 @@ class Accounts(SignalBase):
         _hv = self._make_have(data.have)
         _df = self._join_df(_df, _hv)
 
+        self._types = data.types
+
         self._table = self.make_table(_df)
 
     def make_table(self, df: DF) -> DF:
         if df.empty:
             return df
+        # copy types (account) from previous to current year
+        df = self._copy_types(df)
         # balance without past
         df.balance = df.incomes - df.expenses
         # temp column for each id group with balance cumulative sum
@@ -258,6 +265,34 @@ class Accounts(SignalBase):
         df.delta = df.have - df.balance
         # insert extra group for future year
         df = self._insert_future_data(df)
+        return df
+
+    def _copy_types(self, df: DF) -> DF:
+        years = list(df.index.levels[1])
+        ids = list(df.index.levels[0])
+        # years index should have at least two years
+        if years and len(years) < 2:
+            return df
+        last_year = years[-1]
+        prev_year = years[-2]
+        index = list(df.index)
+
+        for _type in self._types:
+            if (_type.pk) not in ids:
+                continue
+            # if type already dont have record in previous year
+            if (_type.pk, prev_year) not in index:
+                continue
+            # if type already have record in current year
+            if (_type.pk, last_year) in index:
+                continue
+            # copy previous year row to current year
+            prev_serries = df.loc[(_type.pk, prev_year)].copy()
+            prev_serries['past'] = prev_serries['balance']
+            prev_serries['incomes'] = 0
+            prev_serries['expenses'] = 0
+            df.loc[(_type.pk, last_year),:] = prev_serries
+        df.sort_index(inplace=True)
         return df
 
     def _join_df(self, df: DF, hv: DF) -> DF:

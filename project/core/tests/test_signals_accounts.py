@@ -45,13 +45,21 @@ def fixture_have():
     ]
 
 
+@pytest.fixture(name='types')
+def fixture_types():
+    return [
+        SimpleNamespace(pk=1, closed=None),
+        SimpleNamespace(pk=2, closed=None),
+    ]
+
+
 @pytest.mark.freeze_time('2000-12-31')
-def test_table(incomes, expenses, have):
+def test_table(incomes, expenses, have, types):
     incomes.extend([
         {'year': 1997, 'incomes': Decimal('5'), 'id': 1},
         {'year': 1998, 'incomes': Decimal('15'), 'id': 1},
     ])
-    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have)
+    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=types)
     actual = Accounts(data).table
 
     assert actual[0]['id'] == 1
@@ -138,9 +146,75 @@ def test_table(incomes, expenses, have):
     assert actual[7]['latest_check'] == datetime(2000, 1, 1)
 
 
+@pytest.mark.freeze_time('1999-1-1')
+def test_table_with_types(incomes, types):
+    incomes= [
+        {'year': 1998, 'incomes': Decimal('1'), 'id': 1},
+        {'year': 1998, 'incomes': Decimal('2'), 'id': 2},
+        {'year': 1999, 'incomes': Decimal('3'), 'id': 1},
+    ]
+    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
+    actual = Accounts(data).table
+
+    assert actual[3]['id'] == 2
+    assert actual[3]['year'] == 1998
+    assert actual[3]['past'] == 0.0
+    assert actual[3]['incomes'] == 2.0
+
+    assert actual[4]['id'] == 2
+    assert actual[4]['year'] == 1999
+    assert actual[4]['past'] == 2.0
+    assert actual[4]['incomes'] == 0.0
+
+
+@pytest.mark.freeze_time('1999-1-1')
+def test_table_type_without_recods(incomes, types):
+    types.append(SimpleNamespace(pk=666))
+    incomes= [
+        {'year': 1998, 'incomes': Decimal('1'), 'id': 1},
+        {'year': 1998, 'incomes': Decimal('2'), 'id': 2},
+        {'year': 1999, 'incomes': Decimal('3'), 'id': 1},
+    ]
+    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
+    actual = Accounts(data).table
+
+    assert actual[3]['id'] == 2
+    assert actual[3]['year'] == 1998
+    assert actual[3]['past'] == 0.0
+    assert actual[3]['incomes'] == 2.0
+
+    assert actual[4]['id'] == 2
+    assert actual[4]['year'] == 1999
+    assert actual[4]['past'] == 2.0
+    assert actual[4]['incomes'] == 0.0
+
+
+@pytest.mark.freeze_time('1999-1-1')
+def test_table_old_type(incomes, types):
+    types.append(SimpleNamespace(pk=666))
+    incomes= [
+        {'year': 1974, 'incomes': Decimal('1'), 'id': 666},
+        {'year': 1998, 'incomes': Decimal('1'), 'id': 1},
+        {'year': 1998, 'incomes': Decimal('2'), 'id': 2},
+        {'year': 1999, 'incomes': Decimal('3'), 'id': 1},
+    ]
+    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
+    actual = Accounts(data).table
+
+    assert actual[3]['id'] == 2
+    assert actual[3]['year'] == 1998
+    assert actual[3]['past'] == 0.0
+    assert actual[3]['incomes'] == 2.0
+
+    assert actual[4]['id'] == 2
+    assert actual[4]['year'] == 1999
+    assert actual[4]['past'] == 2.0
+    assert actual[4]['incomes'] == 0.0
+
+
 @pytest.mark.freeze_time('2000-12-31')
-def test_table_have_empty(incomes, expenses):
-    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=[])
+def test_table_have_empty(incomes, expenses, types):
+    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=[], types=types)
     actual = Accounts(data).table
 
     assert actual[0]['id'] == 1
@@ -185,8 +259,8 @@ def test_table_have_empty(incomes, expenses):
 
 
 @pytest.mark.freeze_time('2000-12-31')
-def test_table_incomes_empty(expenses):
-    data = SimpleNamespace(incomes=[], expenses=expenses, have=[])
+def test_table_incomes_empty(expenses, types):
+    data = SimpleNamespace(incomes=[], expenses=expenses, have=[], types=types)
     actual = Accounts(data).table
 
     assert actual[0]['id'] == 1
@@ -241,8 +315,8 @@ def test_table_incomes_empty(expenses):
 
 
 @pytest.mark.freeze_time('2000-12-31')
-def test_table_expenses_empty(incomes):
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=[])
+def test_table_expenses_empty(incomes, types):
+    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
     actual = Accounts(data).table
 
     assert actual[0]['id'] == 1
@@ -306,8 +380,8 @@ def test_table_expenses_empty(incomes):
     assert actual[5]['latest_check'] == 0.0
 
 
-def test_table_incomes_expenses_empty():
-    data = SimpleNamespace(incomes=[], expenses=[], have=[])
+def test_table_incomes_expenses_empty(types):
+    data = SimpleNamespace(incomes=[], expenses=[], have=[], types=types)
     actual = Accounts(data).table
 
     expect = []
@@ -316,8 +390,8 @@ def test_table_incomes_expenses_empty():
 
 
 @pytest.mark.freeze_time('2000-12-31')
-def test_table_only_have(have):
-    data = SimpleNamespace(incomes=[], expenses=[], have=have)
+def test_table_only_have(have, types):
+    data = SimpleNamespace(incomes=[], expenses=[], have=have, types=types)
     actual = Accounts(data).table
 
     assert actual[0]['id'] == 1
