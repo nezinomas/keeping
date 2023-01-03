@@ -147,7 +147,7 @@ def test_table(incomes, expenses, have, types):
 
 
 @pytest.mark.freeze_time('1999-1-1')
-def test_table_with_types(incomes, types):
+def test_table_with_types(types):
     incomes= [
         {'year': 1998, 'incomes': Decimal('1'), 'id': 1},
         {'year': 1998, 'incomes': Decimal('2'), 'id': 2},
@@ -168,7 +168,7 @@ def test_table_with_types(incomes, types):
 
 
 @pytest.mark.freeze_time('1999-1-1')
-def test_table_type_without_recods(incomes, types):
+def test_table_type_without_recods(types):
     types.append(SimpleNamespace(pk=666))
     incomes= [
         {'year': 1998, 'incomes': Decimal('1'), 'id': 1},
@@ -190,7 +190,7 @@ def test_table_type_without_recods(incomes, types):
 
 
 @pytest.mark.freeze_time('1999-1-1')
-def test_table_old_type(incomes, types):
+def test_table_old_type(types):
     types.append(SimpleNamespace(pk=666))
     incomes= [
         {'year': 1974, 'incomes': Decimal('1'), 'id': 666},

@@ -219,7 +219,7 @@ class SignalBase(ABC):
         # last year in dataframe
         year = df.index.levels[1].max()
         # get last group of (year, id)
-        last_group = df.groupby(['year', 'id']).last().loc[year].reset_index()
+        last_group = df.groupby(['year', 'id']).last().loc[year]
         return self._reset_values(year + 1, df, last_group)
 
     def _insert_missing_types(self, df: DF) -> DF:
@@ -251,7 +251,7 @@ class SignalBase(ABC):
         return self._reset_values(last_year, df, df[mask])
 
     def _reset_values(self, year: int, df: DF, df_filtered: DF) -> DF:
-        df_filtered.reset_index(inplace=True)
+        df_filtered = df_filtered.reset_index().copy()
         df_filtered['year'] = year
         df_filtered.set_index(['id', 'year'], inplace=True)
         if 'fee' in df.columns:
@@ -270,7 +270,6 @@ class Accounts(SignalBase):
         _df = self._join_df(_df, _hv)
 
         self._types = data.types
-
         self._table = self.make_table(_df)
 
     def make_table(self, df: DF) -> DF:
@@ -306,11 +305,14 @@ class Savings(SignalBase):
         _hv = self._make_have(data.have)
         _df = self._join_df(_in, _ex, _hv)
 
+        self._types = data.types
         self._table = self.make_table(_df)
 
     def make_table(self, df: DF) -> DF:
         if df.empty:
             return df
+        # copy types (saving_type or pension_type) from previous to current year
+        df = self._insert_missing_types(df)
         # data for one year +
         df = self._insert_future_data(df)
         # calculate incomes
