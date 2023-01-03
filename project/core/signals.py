@@ -220,45 +220,47 @@ class SignalBase(ABC):
         year = df.index.levels[1].max()
         # get last group of (year, id)
         last_group = df.groupby(['year', 'id']).last().loc[year].reset_index()
-        # insert column year with value year+1
-        last_group['year'] = year + 1
-        last_group.set_index(['id', 'year'], inplace=True)
-        # reset columns values to 0.0
-        # if fee in columns -> Savings dataframe, else -> Accounts dataframe
-        if 'fee' in last_group.columns:
-            last_group[['incomes', 'fee', 'sold', 'sold_fee']] = 0.0
-        else:
-            last_group[['incomes', 'expenses']] = 0.0
-        # join dataframes
-        df = pd.concat([df, last_group])
-        return df.sort_index()
+        return self._reset_values(year + 1, df, last_group)
 
     def _insert_missing_types(self, df: DF) -> DF:
-        years = list(df.index.levels[1])
-        ids = list(df.index.levels[0])
-        # years index should have at least two years
-        if years and len(years) < 2:
-            return df
-        last_year = years[-1]
-        prev_year = years[-2]
         index = list(df.index)
-
+        index_id = list(df.index.levels[0])
+        index_year = list(df.index.levels[1])
+        # years index should have at least two years
+        if index_year and len(index_year) < 2:
+            return df
+        last_year = index_year[-1]
+        prev_year = index_year[-2]
+        arr = []
         for _type in self._types:
-            if (_type.pk) not in ids:
+            # if type id not id dataframe index
+            if (_type.pk) not in index_id:
                 continue
-            # if type already dont have record in previous year
+            # if type dont have record in previous year
             if (_type.pk, prev_year) not in index:
                 continue
-            # if type already have record in current year
+            # if type have record in current year
             if (_type.pk, last_year) in index:
                 continue
-            # copy previous year row to current year
-            prev_serries = df.loc[(_type.pk, prev_year)].copy()
-            prev_serries['past'] = prev_serries['balance']
-            prev_serries[['incomes', 'expenses']] = 0
-            df.loc[(_type.pk, last_year), :] = prev_serries
-        df.sort_index(inplace=True)
-        return df
+            arr.append(_type.pk)
+        # get rows to be copied from previous year
+        values_id = df.index.get_level_values(0)
+        values_year = df.index.get_level_values(1)
+        mask = (values_id.isin(arr)) & (values_year==prev_year)
+
+        return self._reset_values(last_year, df, df[mask])
+
+    def _reset_values(self, year: int, df: DF, df_filtered: DF) -> DF:
+        df_filtered.reset_index(inplace=True)
+        df_filtered['year'] = year
+        df_filtered.set_index(['id', 'year'], inplace=True)
+        if 'fee' in df.columns:
+            df_filtered[['incomes', 'fee', 'sold', 'sold_fee']] = 0.0
+        else:
+            df_filtered[['incomes', 'expenses']] = 0.0
+        df = pd.concat([df, df_filtered])
+        return df.sort_index()
+
 
 class Accounts(SignalBase):
     def __init__(self, data: GetData):
