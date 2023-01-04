@@ -35,39 +35,25 @@ class TabIndex(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-
-        # main query
-        IndexServiceData.main_query(year)
-
-        records = IndexServiceData.sum_by_month.count()
-        context = {
-            'records': records,
-        }
-
-        if not records:
-            return super().get_context_data(**kwargs) | context
-
-        # rest queries
-        IndexServiceData.rest_queries(year)
-
+        # Index data
+        data = IndexServiceData(year)
         # Index Tab service
         index_service = \
             IndexService(
-                drink_stats=DrinkStats(IndexServiceData.sum_by_month),
-                target=IndexServiceData.target,
-                latest_past_date=IndexServiceData.latest_past_date,
-                latest_current_date=IndexServiceData.latest_current_date
+                drink_stats=DrinkStats(data.sum_by_month),
+                target=data.target,
+                latest_past_date=data.latest_past_date,
+                latest_current_date=data.latest_current_date
             )
-
         # calendar chart service
         calendar_service = \
             CalendarChart(
                 year=year,
-                data=IndexServiceData.sum_by_day,
-                latest_past_date=IndexServiceData.latest_past_date
+                data=data.sum_by_day,
+                latest_past_date=data.latest_past_date
             )
 
-        context |= {
+        context = {
             'target_list':
                 rendered_content(self.request, TargetLists, **kwargs),
             'compare_form_and_chart':
@@ -82,7 +68,6 @@ class TabIndex(TemplateViewMixin):
             'tbl_alcohol': index_service.tbl_alcohol(),
             'tbl_std_av': index_service.tbl_std_av(),
         }
-
         return super().get_context_data(**kwargs) | context
 
 

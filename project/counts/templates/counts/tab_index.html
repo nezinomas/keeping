@@ -2,8 +2,6 @@
 {% load counts_components %}
 
 
-{% if records %}
-
 <div class="row my-2">
     <div class="col-lg-4" id="chart_weekdays"><div id="chart-weekdays-container"></div></div>
     <div class="col-lg-4" id="chart_months"><div id="chart-months-container"></div></div>
@@ -28,12 +26,6 @@
         chartCalender('chart-calendar-2H-data', 'chart-calendar-2H-container');
     </script>
 </div>
-
-{% else %}
-
-{% include 'core/no_records.html' %}
-
-{% endif %}
 
 
 {% if request.htmx %}

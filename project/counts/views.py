@@ -105,12 +105,10 @@ class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
 
         stats = Stats(year=year, data=qs, past_latest=past_last_record)
         srv = IndexService(year, stats)
-
         # cash calendar data
         calendar_data = srv.calendar_data
 
         context = {
-            'records': srv.records,
             'chart_calendar_1H': srv.chart_calendar(calendar_data[:6]),
             'chart_calendar_2H': srv.chart_calendar(calendar_data[6:]),
             'chart_weekdays': srv.chart_weekdays(),
