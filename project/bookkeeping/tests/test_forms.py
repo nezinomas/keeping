@@ -1,5 +1,5 @@
 import pytz
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
 import pytest
@@ -35,6 +35,7 @@ def test_saving_worth_current_user_types(second_user):
     assert 'T2' not in form
 
 
+@pytest.mark.freeze_time('1999-2-2 3:2:1')
 def test_saving_worth_valid_data():
     t = SavingTypeFactory()
 
@@ -48,7 +49,7 @@ def test_saving_worth_valid_data():
 
     data = form.save()
 
-    assert data.date == datetime(1999, 1, 2, 0, 0, tzinfo=pytz.utc)
+    assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
     assert data.price == Decimal(1.0)
     assert data.saving_type.title == t.title
 
@@ -146,6 +147,7 @@ def test_account_worth_current_user_types(second_user):
     assert 'T2' not in form
 
 
+@pytest.mark.freeze_time('1999-1-2 3:2:1')
 def test_account_worth_valid_data():
     a = AccountFactory()
 
@@ -159,7 +161,7 @@ def test_account_worth_valid_data():
 
     data = form.save()
 
-    assert data.date == datetime(1999, 1, 2, 0, 0, tzinfo=pytz.utc)
+    assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
     assert data.price == Decimal(1.0)
     assert data.account.title == a.title
 
@@ -221,6 +223,7 @@ def test_pension_worth_current_user_types(second_user):
     assert 'T2' not in form
 
 
+@pytest.mark.freeze_time('1999-12-12 3:2:1')
 def test_pension_worth_valid_data():
     p = PensionTypeFactory()
 
@@ -234,7 +237,8 @@ def test_pension_worth_valid_data():
 
     data = form.save()
 
-    assert data.date == datetime(1999, 1, 2, 0, 0, tzinfo=pytz.utc)
+
+    assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
     assert data.price == Decimal(1.0)
     assert data.pension_type.title == p.title
 

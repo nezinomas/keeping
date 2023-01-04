@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Callable
 
 from bootstrap_datepicker_plus.widgets import DatePickerInput
@@ -7,7 +8,8 @@ from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import set_field_properties
-from ..core.lib import date, utils
+from ..core.lib import date as core_date
+from ..core.lib import utils
 from ..expenses.models import ExpenseType
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
@@ -31,7 +33,15 @@ def clean_date_and_closed(account: str, cleaned: dict, add_error: Callable) -> d
     return cleaned
 
 
-class SavingWorthForm(forms.ModelForm):
+class DateFieldMixin:
+    def clean_date(self):
+        dt = self.cleaned_data['date']
+        now = datetime.now()
+        return datetime(dt.year, dt.month, dt.day, now.hour,
+                        now.minute, now.second, tzinfo=timezone.utc)
+
+
+class SavingWorthForm(forms.ModelForm, DateFieldMixin):
     class Meta:
         model = SavingWorth
         fields = ['date', 'saving_type', 'price']
@@ -42,7 +52,7 @@ class SavingWorthForm(forms.ModelForm):
         self.fields['date'].widget = DatePickerInput(
             options={"locale": utils.get_user().journal.lang, }
         )
-        self.fields['date'].initial = date.set_year_for_form()
+        self.fields['date'].initial = core_date.set_year_for_form()
 
         # overwrite FK
         self.fields['saving_type'].queryset = SavingType.objects.items()
@@ -55,7 +65,7 @@ class SavingWorthForm(forms.ModelForm):
         return clean_date_and_closed('saving_type', cleaned, self.add_error)
 
 
-class AccountWorthForm(forms.ModelForm):
+class AccountWorthForm(forms.ModelForm, DateFieldMixin):
     class Meta:
         model = AccountWorth
         fields = ['date', 'account', 'price']
@@ -66,7 +76,7 @@ class AccountWorthForm(forms.ModelForm):
         self.fields['date'].widget = DatePickerInput(
             options={"locale": utils.get_user().journal.lang, }
         )
-        self.fields['date'].initial = date.set_year_for_form()
+        self.fields['date'].initial = core_date.set_year_for_form()
 
         # overwrite FK
         self.fields['account'].queryset = Account.objects.items()
@@ -79,7 +89,7 @@ class AccountWorthForm(forms.ModelForm):
         return clean_date_and_closed('account', cleaned, self.add_error)
 
 
-class PensionWorthForm(forms.ModelForm):
+class PensionWorthForm(forms.ModelForm, DateFieldMixin):
     class Meta:
         model = PensionWorth
         fields = ['date', 'pension_type', 'price']
@@ -90,7 +100,7 @@ class PensionWorthForm(forms.ModelForm):
         self.fields['date'].widget = DatePickerInput(
             options={"locale": utils.get_user().journal.lang, }
         )
-        self.fields['date'].initial = date.set_year_for_form()
+        self.fields['date'].initial = core_date.set_year_for_form()
 
         # overwrite FK
         self.fields['pension_type'].queryset = PensionType.objects.items()
