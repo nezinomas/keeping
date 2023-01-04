@@ -197,6 +197,34 @@ def test_table(incomes, expenses, have, types):
 
 
 @pytest.mark.freeze_time('1999-1-1')
+def test_copy_market_value_and_latest_from_previous_year(types):
+    have = [{'id': 1, 'year': 1998, 'have': Decimal('10'), 'latest_check': datetime(1998, 1, 1)},]
+    incomes = [
+        {'year': 1998, 'incomes': Decimal('1'), 'fee': Decimal('0.1'), 'id': 1},
+        {'year': 1999, 'incomes': Decimal('2'), 'fee': Decimal('0.2'), 'id': 1},
+        {'year': 1998, 'incomes': Decimal('5'), 'fee': Decimal('0.5'), 'id': 2},
+    ]
+    data = SimpleNamespace(incomes=incomes, expenses=[], have=have, types=types)
+    actual = Savings(data).table
+
+    assert actual[1]['id'] == 1
+    assert actual[1]['year'] == 1999
+    assert actual[1]['past_amount'] == 1.0
+    assert actual[1]['past_fee'] == 0.1
+    assert round(actual[1]['fee'], 2) == 0.3
+    assert actual[1]['per_year_incomes'] == 2.0
+    assert actual[1]['per_year_fee'] == 0.2
+    assert actual[1]['sold'] == 0.0
+    assert actual[1]['sold_fee'] == 0.0
+    assert actual[1]['incomes'] == 3.0
+    assert actual[1]['invested'] == 2.7
+    assert actual[1]['market_value'] == 10.0
+    assert round(actual[1]['profit_proc'], 2) == 270.37
+    assert actual[1]['profit_sum'] == 7.3
+    assert actual[1]['latest_check'] == datetime(1998, 1, 1)
+
+
+@pytest.mark.freeze_time('1999-1-1')
 def test_table_with_types(types):
     incomes = [
         {'year': 1998, 'incomes': Decimal('1'), 'fee': Decimal('0.1'), 'id': 1},

@@ -250,6 +250,27 @@ class SignalBase(ABC):
 
         return self._reset_values(last_year, df, df[mask])
 
+    def _insert_missing_latest(self, df: DF, field: str) -> DF:
+        index = list(df.index)
+        index_id = list(df.index.levels[0])
+        index_year = list(df.index.levels[1])
+        # years index should have at least two years
+        if len(index_year) < 2:
+            return df
+        last_year = index_year[-1]
+        prev_year = index_year[-2]
+        for pk in index_id:
+            if (pk, prev_year) not in index:
+                continue
+            # get field value
+            have = df.at[(pk, last_year), field]
+            if have:
+                continue
+            # copy field and latest_check values from previous year
+            df.at[(pk, last_year), 'latest_check'] = df.at[(pk, prev_year), 'latest_check']
+            df.at[(pk, last_year), field] = df.at[(pk, prev_year), field]
+        return df
+
     def _reset_values(self, year: int, df: DF, df_filtered: DF) -> DF:
         df_filtered = df_filtered.reset_index().copy()
         df_filtered['year'] = year
@@ -277,6 +298,8 @@ class Accounts(SignalBase):
             return df
         # copy types (account) from previous to current year
         df = self._insert_missing_types(df)
+        # copy latest_check and have from previous year, if they are empty
+        df = self._insert_missing_latest(df, 'have')
         # insert extra group for future year
         df = self._insert_future_data(df)
         # balance without past
@@ -313,6 +336,8 @@ class Savings(SignalBase):
             return df
         # copy types (saving_type or pension_type) from previous to current year
         df = self._insert_missing_types(df)
+        # copy latest_check and have from previous year, if they are empty
+        df = self._insert_missing_latest(df, 'market_value')
         # data for one year +
         df = self._insert_future_data(df)
         # calculate incomes

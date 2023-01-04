@@ -147,6 +147,28 @@ def test_table(incomes, expenses, have, types):
 
 
 @pytest.mark.freeze_time('1999-1-1')
+def test_copy_have_and_latest_from_previous_year(types):
+    have = [{'id': 1, 'year': 1998, 'have': Decimal('10'), 'latest_check': datetime(1998, 1, 1)},]
+    incomes = [
+        {'year': 1998, 'incomes': Decimal('1'), 'id': 1},
+        {'year': 1999, 'incomes': Decimal('2'), 'id': 1},
+        {'year': 1998, 'incomes': Decimal('2'), 'id': 2},
+    ]
+    data = SimpleNamespace(incomes=incomes, expenses=[], have=have, types=types)
+    actual = Accounts(data).table
+
+    assert actual[1]['id'] == 1
+    assert actual[1]['year'] == 1999
+    assert actual[1]['past'] == 1.0
+    assert actual[1]['incomes'] == 2.0
+    assert actual[1]['expenses'] == 0.0
+    assert actual[1]['balance'] == 3.0
+    assert actual[1]['have'] == 10.0
+    assert actual[1]['delta'] == 7.0
+    assert actual[1]['latest_check'] == datetime(1998, 1, 1)
+
+
+@pytest.mark.freeze_time('1999-1-1')
 def test_table_with_types(types):
     incomes= [
         {'year': 1998, 'incomes': Decimal('1'), 'id': 1},
