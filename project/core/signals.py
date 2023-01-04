@@ -63,6 +63,7 @@ def accounts_data():
             saving.Saving,
         ),
         'have': (bookkeeping.AccountWorth,),
+        'types': (account.Account,),
     }
     return Accounts(GetData(conf)).table
 
@@ -95,6 +96,7 @@ def savings_data():
             transaction.SavingChange,
         ),
         'have': (bookkeeping.SavingWorth,),
+        'types': (saving.SavingType,),
     }
     return Savings(GetData(conf)).table
 
@@ -116,6 +118,7 @@ def pensions_data():
     conf = {
         'incomes': (pension.Pension,),
         'have': (bookkeeping.PensionWorth,),
+        'types': (pension.PensionType,),
     }
     return Savings(GetData(conf)).table
 
@@ -154,11 +157,13 @@ class GetData:
     incomes: list[dict] = field(init=False, default_factory=list)
     expenses: list[dict] = field(init=False, default_factory=list)
     have: list[dict] = field(init=False, default_factory=list)
+    types: list[dict] = field(init=False, default_factory=list)
 
     def __post_init__(self):
         self.incomes = self._get_data(self.conf.get('incomes'), 'incomes')
         self.expenses = self._get_data(self.conf.get('expenses'), 'expenses')
         self.have = self._get_data(self.conf.get('have'), 'have')
+        self.types = self._get_data(self.conf.get('types'), 'items')
 
     def _get_data(self, models: tuple, method: str):
         items = []
@@ -214,18 +219,67 @@ class SignalBase(ABC):
         # last year in dataframe
         year = df.index.levels[1].max()
         # get last group of (year, id)
-        last_group = df.groupby(['year', 'id']).last().loc[year].reset_index()
-        # insert column year with value year+1
-        last_group['year'] = year + 1
-        last_group.set_index(['id', 'year'], inplace=True)
-        # reset columns values to 0.0
-        # if fee in columns -> Savings dataframe, else -> Accounts dataframe
-        if 'fee' in last_group.columns:
-            last_group[['incomes', 'fee', 'sold', 'sold_fee']] = 0.0
+        last_group = df.groupby(['year', 'id']).last().loc[year]
+        return self._reset_values(year + 1, df, last_group)
+
+    def _insert_missing_types(self, df: DF) -> DF:
+        index = list(df.index)
+        index_id = list(df.index.levels[0])
+        index_year = list(df.index.levels[1])
+        # years index should have at least two years
+        if index_year and len(index_year) < 2:
+            return df
+        last_year = index_year[-1]
+        prev_year = index_year[-2]
+        arr = []
+        for _type in self._types:
+            # if type id not id dataframe index
+            if (_type.pk) not in index_id:
+                continue
+            # if type dont have record in previous year
+            if (_type.pk, prev_year) not in index:
+                continue
+            # if type have record in current year
+            if (_type.pk, last_year) in index:
+                continue
+            arr.append(_type.pk)
+        # get rows to be copied from previous year
+        values_id = df.index.get_level_values(0)
+        values_year = df.index.get_level_values(1)
+        mask = (values_id.isin(arr)) & (values_year==prev_year)
+
+        return self._reset_values(last_year, df, df[mask])
+
+    def _insert_missing_latest(self, df: DF, field: str) -> DF:
+        index = list(df.index)
+        index_id = list(df.index.levels[0])
+        index_year = list(df.index.levels[1])
+        # years index should have at least two years
+        if len(index_year) < 2:
+            return df
+        last_year = index_year[-1]
+        prev_year = index_year[-2]
+        for pk in index_id:
+            if (pk, prev_year) not in index:
+                continue
+            # get field value
+            have = df.at[(pk, last_year), field]
+            if have:
+                continue
+            # copy field and latest_check values from previous year
+            df.at[(pk, last_year), 'latest_check'] = df.at[(pk, prev_year), 'latest_check']
+            df.at[(pk, last_year), field] = df.at[(pk, prev_year), field]
+        return df
+
+    def _reset_values(self, year: int, df: DF, df_filtered: DF) -> DF:
+        df_filtered = df_filtered.reset_index().copy()
+        df_filtered['year'] = year
+        df_filtered.set_index(['id', 'year'], inplace=True)
+        if 'fee' in df.columns:
+            df_filtered[['incomes', 'fee', 'sold', 'sold_fee']] = 0.0
         else:
-            last_group[['incomes', 'expenses']] = 0.0
-        # join dataframes
-        df = pd.concat([df, last_group])
+            df_filtered[['incomes', 'expenses']] = 0.0
+        df = pd.concat([df, df_filtered])
         return df.sort_index()
 
 
@@ -236,11 +290,16 @@ class Accounts(SignalBase):
         _hv = self._make_have(data.have)
         _df = self._join_df(_df, _hv)
 
+        self._types = data.types
         self._table = self.make_table(_df)
 
     def make_table(self, df: DF) -> DF:
         if df.empty:
             return df
+        # copy types (account) from previous to current year
+        df = self._insert_missing_types(df)
+        # copy latest_check and have from previous year, if they are empty
+        df = self._insert_missing_latest(df, 'have')
         # insert extra group for future year
         df = self._insert_future_data(df)
         # balance without past
@@ -269,11 +328,16 @@ class Savings(SignalBase):
         _hv = self._make_have(data.have)
         _df = self._join_df(_in, _ex, _hv)
 
+        self._types = data.types
         self._table = self.make_table(_df)
 
     def make_table(self, df: DF) -> DF:
         if df.empty:
             return df
+        # copy types (saving_type or pension_type) from previous to current year
+        df = self._insert_missing_types(df)
+        # copy latest_check and have from previous year, if they are empty
+        df = self._insert_missing_latest(df, 'market_value')
         # data for one year +
         df = self._insert_future_data(df)
         # calculate incomes

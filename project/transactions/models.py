@@ -49,7 +49,6 @@ class Transaction(models.Model):
         return reverse_lazy("transactions:delete", kwargs={"pk": self.pk})
 
 
-
 class SavingClose(models.Model):
     date = models.DateField()
     from_account = models.ForeignKey(
