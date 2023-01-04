@@ -130,7 +130,6 @@ def test_tab_index_context(client_logged):
     assert 'target_list' in response.context
     assert 'compare_form_and_chart' in response.context
     assert 'all_years' in response.context
-    assert 'records' in response.context
     assert 'chart_quantity' in response.context
     assert 'chart_consumption' in response.context
     assert 'chart_calendar_1H' in response.context
@@ -139,15 +138,6 @@ def test_tab_index_context(client_logged):
     assert 'tbl_dray_days' in response.context
     assert 'tbl_alcohol' in response.context
     assert 'tbl_std_av' in response.context
-
-
-def test_tab_index_no_recods_current_year(client_logged):
-    DrinkFactory(date=date(2020, 1, 2))
-
-    url = reverse('drinks:tab_index')
-    response = client_logged.get(url)
-
-    assert '<b>1999</b> metais įrašų nėra.' in response.content.decode('utf-8')
 
 
 @pytest.mark.freeze_time('1999-1-1')

@@ -20,17 +20,12 @@ class IndexServiceData:
     latest_past_date: date = None
     latest_current_date: date = None
 
-    @classmethod
-    def main_query(cls, year):
-        cls.sum_by_month = Drink.objects.sum_by_month(year)
-        return cls
-
-    @classmethod
-    def rest_queries(cls, year):
-        cls.sum_by_day = Drink.objects.sum_by_day(year)
+    def __init__(self, year):
+        self.sum_by_month = Drink.objects.sum_by_month(year)
+        self.sum_by_day = Drink.objects.sum_by_day(year)
 
         with contextlib.suppress(Drink.DoesNotExist):
-            cls.latest_past_date = \
+            self.latest_past_date = \
                 Drink.objects \
                 .related() \
                 .filter(date__year__lt=year) \
@@ -38,20 +33,18 @@ class IndexServiceData:
                 .date
 
         with contextlib.suppress(Drink.DoesNotExist):
-            cls.latest_current_date = \
+            self.latest_current_date = \
                 Drink.objects \
                 .year(year) \
                 .latest() \
                 .date
 
         with contextlib.suppress(DrinkTarget.DoesNotExist):
-            cls.target = \
+            self.target = \
                 DrinkTarget.objects \
                 .year(year) \
                 .get(year=year) \
                 .qty
-
-        return cls
 
 
 class IndexService:

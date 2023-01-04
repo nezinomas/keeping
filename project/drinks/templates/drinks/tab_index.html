@@ -1,8 +1,6 @@
 {% load i18n %}
 {% load static %}
 
-{% if records %}
-
 <div class="row">
     <div class="col-lg-6"><div id="chart-consumption-container"></div></div>
     <div class="col-lg-6"><div id="chart-quantity-container"></div></div>
@@ -82,12 +80,6 @@
         {{compare_form_and_chart}}
     </div>
 </div>
-
-{% else %}
-
-{% include 'core/no_records.html' %}
-
-{% endif %}
 
 {% if request.htmx %}
 <span id="btn-new" hx-swap-oob="true">
