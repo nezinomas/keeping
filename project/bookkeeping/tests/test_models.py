@@ -67,8 +67,8 @@ def test_account_worth_post_save_new():
 def test_account_worth_have():
     AccountWorthFactory(date=dt(1970, 1, 1, tzinfo=ZoneInfo('UTC')), price=1)
     AccountWorthFactory(date=dt(1970, 12, 31, tzinfo=ZoneInfo('UTC')), price=2)
-    AccountWorthFactory(date=dt(2000, 1, 1, tzinfo=ZoneInfo('UTC')), price=3)
-    AccountWorthFactory(date=dt(2000, 12, 31, tzinfo=ZoneInfo('UTC')), price=4)
+    AccountWorthFactory(date=dt(2000, 12, 31, 1, 1, 1, tzinfo=ZoneInfo('UTC')), price=3)
+    AccountWorthFactory(date=dt(2000, 12, 31, 3, 2, 1, tzinfo=ZoneInfo('UTC')), price=4)
 
     actual = AccountWorth.objects.have()
 
