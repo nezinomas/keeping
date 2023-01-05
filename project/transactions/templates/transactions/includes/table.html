@@ -1,9 +1,11 @@
 {% load i18n %}
+{% load static %}
 {% load slippers %}
 
 {% if object_list %}
 
-<table class="table table-sm table-striped table-hover">
+<script src="{% static 'js/sticky-table-headers.js' %}"></script>
+<table class="table table-sm table-striped table-hover sticky-table">
     <thead>
         <tr>
             <th class="text-start">{% translate 'Date' %}</th>
@@ -30,7 +32,7 @@
         {% endfor %}
     </tbody>
 </table>
-
+<script>$('.sticky-table').stickyTableHeaders();</script>
 {% else %}
 
 <div class="mx-auto text-center alert alert-warning py-2 mb-4">
