@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-05 13:00+0200\n"
-"PO-Revision-Date: 2023-01-05 13:00+0200\n"
+"POT-Creation-Date: 2023-01-05 14:58+0200\n"
+"PO-Revision-Date: 2023-01-05 14:58+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -413,7 +413,7 @@ msgid "Expenses"
 msgstr "Išlaidas"
 
 #: .\project\bookkeeping\templates\bookkeeping\month.html:39
-#: .\project\incomes\templates\incomes\index.html:30
+#: .\project\incomes\templates\incomes\index.html:31
 #: .\project\templates\base.html:162
 msgctxt "incomes button"
 msgid "Incomes"
@@ -443,7 +443,7 @@ msgstr "Rodyti kitą grafiką"
 
 #: .\project\bookkeeping\views.py:93 .\project\bookkeeping\views.py:253
 #: .\project\savings\models.py:17
-#: .\project\savings\templates\savings\index.html:21
+#: .\project\savings\templates\savings\index.html:22
 #: .\project\savings\templates\savings\savingtype_list.html:4
 msgid "Funds"
 msgstr "Fondai"
@@ -894,11 +894,11 @@ msgstr "Paskutinį sykį prieš"
 #: .\project\plans\templates\plans\index.html:43
 #: .\project\plans\templates\plans\index.html:57
 #: .\project\plans\templates\plans\index.html:71
-#: .\project\savings\templates\savings\index.html:24
-#: .\project\savings\templates\savings\index.html:37
-#: .\project\transactions\templates\transactions\index.html:24
-#: .\project\transactions\templates\transactions\index.html:37
-#: .\project\transactions\templates\transactions\index.html:50
+#: .\project\savings\templates\savings\index.html:25
+#: .\project\savings\templates\savings\index.html:38
+#: .\project\transactions\templates\transactions\index.html:25
+#: .\project\transactions\templates\transactions\index.html:38
+#: .\project\transactions\templates\transactions\index.html:51
 msgctxt "record button"
 msgid "Record"
 msgstr "Įrašą"
@@ -990,9 +990,7 @@ msgid "If more than %(cnt)s is entered, it will be assumed to be mL"
 msgstr "Įvedus daugiau nei %(cnt)s, bus manoma kad tai yra mL"
 
 #: .\project\drinks\forms.py:88
-#, fuzzy
-#| msgid "if the type of drink is"
-msgid "if the _type of drink is"
+msgid "if the type of drink is"
 msgstr "jei gėrimo tipas yra"
 
 #: .\project\drinks\forms.py:154
@@ -1252,7 +1250,7 @@ msgstr "Kita"
 msgid "Delete incomes"
 msgstr "Trinti pajamas"
 
-#: .\project\incomes\templates\incomes\index.html:41
+#: .\project\incomes\templates\incomes\index.html:42
 #: .\project\templates\base.html:180
 msgctxt "income type button"
 msgid "Incomes type"
@@ -1284,7 +1282,7 @@ msgstr "Trinti pensijas"
 
 #: .\project\pensions\templates\pensions\pension_form.html:5
 #: .\project\pensions\templates\pensions\pensiontype_form.html:4
-#: .\project\savings\templates\savings\index.html:34
+#: .\project\savings\templates\savings\index.html:35
 msgid "Pension"
 msgstr "Pensija"
 
@@ -1412,17 +1410,17 @@ msgstr "Skaičiavimai"
 msgid "From account"
 msgstr "Iš sąskaitos"
 
-#: .\project\savings\templates\savings\index.html:34
+#: .\project\savings\templates\savings\index.html:35
 msgid "II stage"
 msgstr "II pakopa"
 
-#: .\project\savings\templates\savings\index.html:49
+#: .\project\savings\templates\savings\index.html:50
 #: .\project\templates\base.html:189
 msgctxt "fund button"
 msgid "Fund"
 msgstr "Fondą"
 
-#: .\project\savings\templates\savings\index.html:60
+#: .\project\savings\templates\savings\index.html:61
 msgctxt "pension button"
 msgid "Pension"
 msgstr "Pensiją"
@@ -1485,7 +1483,7 @@ msgid "Summary"
 msgstr "Suvestinės"
 
 #: .\project\templates\base.html:177
-#: .\project\transactions\templates\transactions\index.html:62
+#: .\project\transactions\templates\transactions\index.html:63
 msgctxt "account button"
 msgid "Account"
 msgstr "Sąskaitą"
@@ -1514,16 +1512,16 @@ msgstr "Į sąskaitą"
 msgid "Amount left after fee"
 msgstr "Suma kuri lieka atskaičius mokesčius"
 
-#: .\project\transactions\templates\transactions\index.html:21
+#: .\project\transactions\templates\transactions\index.html:22
 msgid "Account &hArr; Account"
 msgstr "Sąskaita &rArr; Sąskaita"
 
-#: .\project\transactions\templates\transactions\index.html:34
+#: .\project\transactions\templates\transactions\index.html:35
 #: .\project\transactions\templates\transactions\savingclose_form.html:4
 msgid "Fund &rArr; Account"
 msgstr "Fondas &rArr; Sąskaita"
 
-#: .\project\transactions\templates\transactions\index.html:47
+#: .\project\transactions\templates\transactions\index.html:48
 #: .\project\transactions\templates\transactions\savingchange_form.html:4
 msgid "Fund &hArr; Fund"
 msgstr "Fondas &hArr; Fondas"
