@@ -1,5 +1,5 @@
-{% load i18n %}
 {% load static %}
+{% load i18n %}
 {% load humanize %}
 {% load slippers %}
 {% load colorize %}
@@ -48,7 +48,6 @@
         {% endfor %}
     </tbody>
 </table>
-
 <script>$('.sticky-table').stickyTableHeaders();</script>
 
 {% paging url=url page_obj=object_list page_range=page_range search=search %}
