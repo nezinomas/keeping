@@ -59,12 +59,13 @@ class DrinkStats:
 
     def _calc_year(self):
         _date = datetime.now().date()
-        _month = _date.month
 
         if self.year == _date.year:
             _day_of_year = _date.timetuple().tm_yday
+            _month = _date.month
         else:
             _day_of_year = ydays(self.year)
+            _month = 12
 
         self.qty_of_year = sum(self.qty_of_month)
         self.per_day_of_year = sum(self.per_month[:_month]) / _day_of_year
