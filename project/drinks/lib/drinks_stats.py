@@ -58,14 +58,14 @@ class DrinkStats:
             self.qty_of_month[idx] = row.get('qty')
 
     def _calc_year(self):
-        _date = datetime.now().date()
+        dt = datetime.now().date()
 
-        if self.year == _date.year:
-            _day_of_year = _date.timetuple().tm_yday
-            _month = _date.month
+        if self.year == dt.year:
+            day_of_year = dt.timetuple().tm_yday
+            month = dt.month
         else:
-            _day_of_year = ydays(self.year)
-            _month = 12
+            day_of_year = ydays(self.year)
+            month = 12
 
         self.qty_of_year = sum(self.qty_of_month)
-        self.per_day_of_year = sum(self.per_month[:_month]) / _day_of_year
+        self.per_day_of_year = sum(self.per_month[:month]) / day_of_year
