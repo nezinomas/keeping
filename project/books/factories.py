@@ -11,9 +11,9 @@ class BookFactory(factory.django.DjangoModelFactory):
         model = Book
 
     started = date(1999, 1, 1)
-    author = 'Author'
-    title = 'Book Title'
-    remark = 'Remark'
+    author = "Author"
+    title = "Book Title"
+    remark = "Remark"
     user = factory.SubFactory(UserFactory)
 
 

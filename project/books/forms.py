@@ -14,9 +14,9 @@ from .models import Book, BookTarget
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ['user', 'started', 'ended', 'author', 'title', 'remark']
+        fields = ["user", "started", "ended", "author", "title", "remark"]
 
-    field_order = ['started', 'ended', 'author', 'title', 'remark']
+    field_order = ["started", "ended", "author", "title", "remark"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -24,34 +24,38 @@ class BookForm(forms.ModelForm):
         user = utils.get_user()
         lang = user.journal.lang
 
-        self.fields['started'].widget = DatePickerInput(
-            options={'locale': lang,}
+        self.fields["started"].widget = DatePickerInput(
+            options={
+                "locale": lang,
+            }
         )
 
-        self.fields['ended'].widget = DatePickerInput(
-            range_from='started',
-            options={'locale': lang,}
+        self.fields["ended"].widget = DatePickerInput(
+            range_from="started",
+            options={
+                "locale": lang,
+            },
         )
 
         # user input
-        self.fields['user'].initial = user
-        self.fields['user'].disabled = True
-        self.fields['user'].widget = forms.HiddenInput()
+        self.fields["user"].initial = user
+        self.fields["user"].disabled = True
+        self.fields["user"].widget = forms.HiddenInput()
 
         # inital values
-        self.fields['started'].initial = set_year_for_form()
+        self.fields["started"].initial = set_year_for_form()
 
-        self.fields['started'].label = _('Started reading')
-        self.fields['ended'].label = _('Ended reading')
-        self.fields['title'].label = _('Title')
-        self.fields['author'].label = _('Author')
-        self.fields['remark'].label = _('Remark')
+        self.fields["started"].label = _("Started reading")
+        self.fields["ended"].label = _("Ended reading")
+        self.fields["title"].label = _("Title")
+        self.fields["author"].label = _("Author")
+        self.fields["remark"].label = _("Remark")
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
     def clean_started(self):
-        dt = self.cleaned_data['started']
+        dt = self.cleaned_data["started"]
         if not dt:
             return dt
 
@@ -59,75 +63,69 @@ class BookForm(forms.ModelForm):
         years_ = years()[:-1]
         if year_instance not in years_:
             self.add_error(
-                'started',
-                _('Year must be between %(year1)s and %(year2)s')
-                % ({'year1': years_[0], 'year2': years_[-1]}),
+                "started",
+                _("Year must be between %(year1)s and %(year2)s")
+                % ({"year1": years_[0], "year2": years_[-1]}),
             )
 
         if dt > datetime.now().date():
-            self.add_error('started', _('Date cannot be in the future'))
+            self.add_error("started", _("Date cannot be in the future"))
 
         return dt
 
     def clean_ended(self):
-        dt = self.cleaned_data['ended']
+        dt = self.cleaned_data["ended"]
 
         if dt and dt > datetime.now().date():
-            self.add_error(
-                'ended',
-                _('Date cannot be in the future')
-            )
+            self.add_error("ended", _("Date cannot be in the future"))
 
         return dt
 
     def clean(self):
         cleaned = super().clean()
 
-        started = cleaned.get('started')
-        if ended := cleaned.get('ended'):
+        started = cleaned.get("started")
+        if ended := cleaned.get("ended"):
             if ended < started:
                 self.add_error(
-                    'ended',
-                    _('Ended reading cannot precede started reading')
+                    "ended", _("Ended reading cannot precede started reading")
                 )
 
 
 class BookTargetForm(forms.ModelForm):
     class Meta:
         model = BookTarget
-        fields = ['user', 'year', 'quantity']
+        fields = ["user", "year", "quantity"]
 
-        widgets = {
-            'year': YearPickerInput()
-        }
+        widgets = {"year": YearPickerInput()}
 
-    field_order = ['year', 'quantity']
+    field_order = ["year", "quantity"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # user input
-        self.fields['user'].initial = utils.get_user()
-        self.fields['user'].disabled = True
-        self.fields['user'].widget = forms.HiddenInput()
+        self.fields["user"].initial = utils.get_user()
+        self.fields["user"].disabled = True
+        self.fields["user"].widget = forms.HiddenInput()
 
         # inital values
-        self.fields['year'].initial = set_year_for_form().year
+        self.fields["year"].initial = set_year_for_form().year
 
-        self.fields['year'].label = _('Year')
-        self.fields['quantity'].label = _('How many')
+        self.fields["year"].label = _("Year")
+        self.fields["quantity"].label = _("How many")
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
     def clean(self):
         cleaned_data = super().clean()
-        utils.clean_year_picker_input('year', self.data, cleaned_data, self.errors)
+        utils.clean_year_picker_input("year", self.data, cleaned_data, self.errors)
 
         return cleaned_data
 
     def clean_year(self):
-        year = self.cleaned_data['year']
+        year = self.cleaned_data["year"]
 
         # if update
         if self.instance.pk:
@@ -137,6 +135,6 @@ class BookTargetForm(forms.ModelForm):
         qs = BookTarget.objects.year(year)
         if qs.exists():
             msg = _("already has a goal.")
-            raise forms.ValidationError(f'{year} {msg}')
+            raise forms.ValidationError(f"{year} {msg}")
 
         return year
