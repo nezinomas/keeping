@@ -52,22 +52,20 @@ class BookForm(forms.ModelForm):
 
     def clean_started(self):
         dt = self.cleaned_data['started']
+        if not dt:
+            return dt
 
-        if dt:
-            year_instance = dt.year
-            years_ = years()[:-1]
-            if year_instance not in years_:
-                self.add_error(
-                    'started',
-                    _('Year must be between %(year1)s and %(year2)s')
-                    % ({'year1':  years_[0], 'year2': years_[-1]})
-                )
+        year_instance = dt.year
+        years_ = years()[:-1]
+        if year_instance not in years_:
+            self.add_error(
+                'started',
+                _('Year must be between %(year1)s and %(year2)s')
+                % ({'year1': years_[0], 'year2': years_[-1]}),
+            )
 
-            if dt > datetime.now().date():
-                self.add_error(
-                    'started',
-                    _('Date cannot be in the future')
-                )
+        if dt > datetime.now().date():
+            self.add_error('started', _('Date cannot be in the future'))
 
         return dt
 
