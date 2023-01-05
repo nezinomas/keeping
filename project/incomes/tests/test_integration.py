@@ -5,8 +5,7 @@ from django.test import LiveServerTestCase
 from freezegun import freeze_time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.keys import Keys
 
 from ...users.factories import UserFactory
 from ..factories import IncomeFactory
@@ -44,21 +43,19 @@ class Incomes(LiveServerTestCase):
         IncomeFactory(remark='yyyy')
         IncomeFactory(remark='zzzz')
 
-        self.browser.get('%s%s' % (self.live_server_url, '/incomes/'))
+        self.browser.get(f'{self.live_server_url}/incomes/')
 
-        rows = self.browser.find_elements_by_xpath("//table/tbody/tr")
+        rows = self.browser.find_elements(by=By.XPATH, value="//table/tbody/tr")
         assert len(rows) == 3
 
-        WebDriverWait(self.browser, 5).until(
-            EC.presence_of_element_located((By.ID, 'id_search'))
-        ).send_keys('xxxx')
+        search = self.browser.find_element(by=By.ID, value='id_search')
+        search.send_keys('xxxx')
+        search.send_keys(Keys.RETURN)
 
-        self.browser.find_element_by_id('search-btn').click()
+        sleep(0.1)
 
-        sleep(0.5)
-
-        rows = self.browser.find_elements_by_xpath("//table/tbody/tr")
+        rows = self.browser.find_elements(by=By.XPATH, value="//table/tbody/tr")
         assert len(rows) == 1 # head row + find row
 
-        cells = self.browser.find_elements_by_xpath("//table/tbody/tr[1]/td")
+        cells = self.browser.find_elements(by=By.XPATH, value="//table/tbody/tr[1]/td")
         assert cells[3].text == 'xxxx'
