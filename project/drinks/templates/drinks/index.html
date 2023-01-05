@@ -1,14 +1,16 @@
 {% extends 'base.html' %}
 
+{% load static %}
 {% load i18n %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
 <script src="https://code.highcharts.com/modules/heatmap.js"></script>
-<script src="/static/js/chart_calendar.js"></script>
-<script src="/static/js/chart_drinks_quantity.js"></script>
-<script src="/static/js/chart_drinks_consumption.js"></script>
-<script src="/static/js/chart_drinks_compare.js"></script>
+<script src="{% static 'js/chart_calendar.js' %}"></script>
+<script src="{% static 'js/chart_drinks_quantity.js' %}"></script>
+<script src="{% static 'js/chart_drinks_consumption.js' %}"></script>
+<script src="{% static 'js/chart_drinks_compare.js' %}"></script>
+<script src="{% static 'js/sticky-table-headers.js' %}"></script>
 
 <style>
     tr.std-av-border {
