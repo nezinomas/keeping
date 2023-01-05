@@ -1,9 +1,11 @@
 {% load i18n %}
+{% load static %}
 {% load slippers %}
 
 {% if object_list %}
 
-<table class="table table-sm table-striped table-hover">
+<script src="{% static 'js/sticky-table-headers.js' %}"></script>
+<table class="table table-sm table-striped table-hover sticky-table">
     <thead>
         <tr>
             <th class="text-start">Nr</th>
@@ -33,7 +35,7 @@
         {% endfor %}
     </tbody>
 </table>
-
+<script>$('.sticky-table').stickyTableHeaders();</script>
 {% paging url=url page_obj=object_list page_range=page_range search=search tab=tab %}
 
 {% else %}
