@@ -3,7 +3,7 @@
 {% load counts_components %}
 
 {% if object_list %}
-<table class="table table-sm table-striped table-hover">
+<table class="table table-sm table-striped table-hover sticky-table">
     <thead>
         <tr>
             <th class="text-start">{% translate 'Date' %}</th>
@@ -25,6 +25,8 @@
         {% endfor %}
     </tbody>
 </table>
+<script>$('.sticky-table').stickyTableHeaders();</script>
+
 {% else %}
     {% if not records %}{% include 'core/no_records.html' %}{% endif %}
 {% endif %}
