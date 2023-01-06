@@ -78,15 +78,13 @@ class SignalBase(ABC):
         return hv.set_index(idx)
 
     def _insert_missing_values(self, df: DF, field: str) -> DF:
-        # copy types (account) from previous to current year
         df = self._insert_missing_types(df)
-        # copy latest_check and have from previous year, if they are empty
         df = self._insert_missing_latest(df, field)
-        # insert extra group for future year
         df = self._insert_future_data(df)
         return df
 
     def _insert_future_data(self, df: DF) -> DF:
+        ''' copy last year values into future (year + 1) '''
         # last year in dataframe
         year = df.index.levels[1].max()
         # get last group of (year, id)
@@ -94,6 +92,10 @@ class SignalBase(ABC):
         return self._reset_values(year + 1, df, last_group)
 
     def _insert_missing_types(self, df: DF) -> DF:
+        '''
+            copy types: (account | saving_type | pension_type)
+            from previous year to current year
+        '''
         index = list(df.index)
         index_id = list(df.index.levels[0])
         index_year = list(df.index.levels[1])
@@ -122,6 +124,10 @@ class SignalBase(ABC):
         return self._reset_values(last_year, df, df[mask])
 
     def _insert_missing_latest(self, df: DF, field: str) -> DF:
+        '''
+            copy latest_check and (have | market_value) if they are empty
+            from previous year to current year
+        '''
         index = list(df.index)
         index_id = list(df.index.levels[0])
         index_year = list(df.index.levels[1])
