@@ -77,6 +77,15 @@ class SignalBase(ABC):
 
         return hv.set_index(idx)
 
+    def _insert_missing_values(self, df: DF, field: str) -> DF:
+        # copy types (account) from previous to current year
+        df = self._insert_missing_types(df)
+        # copy latest_check and have from previous year, if they are empty
+        df = self._insert_missing_latest(df, field)
+        # insert extra group for future year
+        df = self._insert_future_data(df)
+        return df
+
     def _insert_future_data(self, df: DF) -> DF:
         # last year in dataframe
         year = df.index.levels[1].max()
@@ -158,12 +167,7 @@ class Accounts(SignalBase):
     def make_table(self, df: DF) -> DF:
         if df.empty:
             return df
-        # copy types (account) from previous to current year
-        df = self._insert_missing_types(df)
-        # copy latest_check and have from previous year, if they are empty
-        df = self._insert_missing_latest(df, 'have')
-        # insert extra group for future year
-        df = self._insert_future_data(df)
+        df = self._insert_missing_values(df, 'have')
         # balance without past
         df.balance = df.incomes - df.expenses
         # temp column for each id group with balance cumulative sum
@@ -197,12 +201,7 @@ class Savings(SignalBase):
     def make_table(self, df: DF) -> DF:
         if df.empty:
             return df
-        # copy types (saving_type or pension_type) from previous to current year
-        df = self._insert_missing_types(df)
-        # copy latest_check and have from previous year, if they are empty
-        df = self._insert_missing_latest(df, 'market_value')
-        # data for one year +
-        df = self._insert_future_data(df)
+        df = self._insert_missing_values(df, 'market_value')
         # calculate incomes
         df.per_year_incomes = df.incomes
         df.per_year_fee = df.fee
