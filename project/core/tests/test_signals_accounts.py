@@ -6,7 +6,7 @@ import pytest
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
-from ..signals import Accounts, create_objects
+from ..lib.signals import Accounts, create_objects
 
 
 @pytest.fixture(name="incomes")
