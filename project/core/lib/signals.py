@@ -39,6 +39,10 @@ class GetData:
 
 class SignalBase(ABC):
     @property
+    def types(self) -> dict:
+        return {category.id: category for category in self._types}
+
+    @property
     def table(self):
         df = self._table.copy().reset_index()
         return df.to_dict('records')
