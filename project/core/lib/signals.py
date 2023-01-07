@@ -77,9 +77,9 @@ class SignalBase(ABC):
 
         return hv.set_index(idx)
 
-    def _insert_missing_values(self, df: DF, field: str) -> DF:
+    def _insert_missing_values(self, df: DF, field_name: str) -> DF:
         df = self._insert_missing_types(df)
-        df = self._insert_missing_latest(df, field)
+        df = self._insert_missing_latest(df, field_name)
         df = self._insert_future_data(df)
         return df
 
@@ -123,7 +123,7 @@ class SignalBase(ABC):
 
         return self._reset_values(last_year, df, df[mask])
 
-    def _insert_missing_latest(self, df: DF, field: str) -> DF:
+    def _insert_missing_latest(self, df: DF, field_name: str) -> DF:
         '''
             copy latest_check and (have | market_value) if they are empty
             from previous year to current year
@@ -140,12 +140,12 @@ class SignalBase(ABC):
             if (pk, prev_year) not in index:
                 continue
             # get field value
-            have = df.at[(pk, last_year), field]
+            have = df.at[(pk, last_year), field_name]
             if have:
                 continue
             # copy field and latest_check values from previous year
             df.at[(pk, last_year), 'latest_check'] = df.at[(pk, prev_year), 'latest_check']
-            df.at[(pk, last_year), field] = df.at[(pk, prev_year), field]
+            df.at[(pk, last_year), field_name] = df.at[(pk, prev_year), field_name]
         return df
 
     def _reset_values(self, year: int, df: DF, df_filtered: DF) -> DF:
