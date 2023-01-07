@@ -21,7 +21,7 @@ class GetData:
         self.incomes = self._get_data(self.conf.get('incomes'), 'incomes')
         self.expenses = self._get_data(self.conf.get('expenses'), 'expenses')
         self.have = self._get_data(self.conf.get('have'), 'have')
-        self.types = self._get_data(self.conf.get('types'), 'items')
+        self.types = self._get_data(self.conf.get('types'), 'related')
 
     def _get_data(self, models: tuple, method: str):
         items = []
