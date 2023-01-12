@@ -104,23 +104,20 @@ class CreateUpdateMixin():
 
     def form_valid(self, form, **kwargs):
         response = super().form_valid(form)
-        if self.request.htmx:
-            self.hx_redirect = self.get_hx_redirect()
 
-            if self.hx_redirect:
-                # close form and redirect to url with hx_trigger_django
-                return HttpResponseClientRedirect(self.hx_redirect)
-
-            # close form and reload container
-            response.status_code = 204
-            if trigger := self.get_hx_trigger_django():
-                trigger_client_event(
-                    response,
-                    trigger,
-                    {},
-                )
+        if not self.request.htmx:
             return response
 
+        self.hx_redirect = self.get_hx_redirect()
+
+        if self.hx_redirect:
+            # close form and redirect to url with hx_trigger_django
+            return HttpResponseClientRedirect(self.hx_redirect)
+
+        # close form and reload container
+        response.status_code = 204
+        if trigger := self.get_hx_trigger_django():
+            trigger_client_event(response=response, name=trigger, params={})
         return response
 
 
