@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
 
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
-                                 ListViewMixin, SearchMixin, TemplateViewMixin,
+                                 ListViewMixin, SearchViewMixin, TemplateViewMixin,
                                  UpdateViewMixin, rendered_content)
 from . import forms, models
 
@@ -66,7 +66,7 @@ class TypeUpdate(UpdateViewMixin):
     success_url = reverse_lazy('incomes:type_list')
 
 
-class Search(SearchMixin):
+class Search(SearchViewMixin):
     template_name = 'incomes/income_list.html'
     search_method = 'search_incomes'
     per_page = 50

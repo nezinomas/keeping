@@ -53,7 +53,7 @@ class GetQuerysetMixin:
         return qs
 
 
-class SearchMixin(LoginRequiredMixin, TemplateView):
+class SearchViewMixin(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         return super().get_context_data(**kwargs) | self.search()
 
