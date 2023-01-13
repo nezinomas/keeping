@@ -39,7 +39,6 @@ def httpHtmxResponse(hx_trigger_name = None, status_code = 204):
 # ---------------------------------------------------------------------------------------
 #                                                                            Views Mixins
 # ---------------------------------------------------------------------------------------
-
 class GetQuerysetMixin:
     object = None
     def get_queryset(self):
@@ -53,7 +52,7 @@ class GetQuerysetMixin:
         return qs
 
 
-class SearchViewMixin(LoginRequiredMixin, TemplateView):
+class SearchMixin:
     def get_context_data(self, **kwargs):
         return super().get_context_data(**kwargs) | self.search()
 
@@ -156,7 +155,6 @@ class DeleteMixin:
 # ---------------------------------------------------------------------------------------
 #                                                                            Views Mixins
 # ---------------------------------------------------------------------------------------
-
 class CreateViewMixin(LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, CreateView):
     form_action = 'insert'
 
@@ -189,4 +187,8 @@ class ListViewMixin(LoginRequiredMixin, GetQuerysetMixin, ListView):
 
 
 class FormViewMixin(LoginRequiredMixin, FormView):
+    pass
+
+
+class SearchViewMixin(LoginRequiredMixin, SearchMixin, TemplateView):
     pass
