@@ -37,7 +37,7 @@ def httpHtmxResponse(hx_trigger_name = None, status_code = 204):
 
 
 # ---------------------------------------------------------------------------------------
-#                                                                            Views Mixins
+#                                                                                  Mixins
 # ---------------------------------------------------------------------------------------
 class GetQuerysetMixin:
     object = None
