@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
 from ...core.mixins.views import (CreateViewMixin, DeleteViewMixin,
-                                  ListViewMixin, SearchMixin,
+                                  ListViewMixin, SearchViewMixin,
                                   TemplateViewMixin, UpdateViewMixin, rendered_content)
 from .. import forms, models
 from . import expenses_type
@@ -83,7 +83,7 @@ class Delete(DeleteViewMixin):
     hx_trigger_django = 'reload'
 
 
-class Search(SearchMixin):
+class Search(SearchViewMixin):
     template_name = 'expenses/expense_list.html'
     per_page = 50
 

@@ -36,7 +36,10 @@ def httpHtmxResponse(hx_trigger_name = None, status_code = 204):
     )
 
 
-class GetQuerysetMixin():
+# ---------------------------------------------------------------------------------------
+#                                                                            Views Mixins
+# ---------------------------------------------------------------------------------------
+class GetQuerysetMixin:
     object = None
     def get_queryset(self):
         try:
@@ -49,34 +52,7 @@ class GetQuerysetMixin():
         return qs
 
 
-class SearchMixin(LoginRequiredMixin, TemplateView):
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | self.search()
-
-    def get_search_method(self):
-        return getattr(search, self.search_method)
-
-    def search(self):
-        search_str = self.request.GET.get('search')
-
-        sql = self.get_search_method()(search_str)
-
-        page = self.request.GET.get('page', 1)
-        paginator = Paginator(sql, self.per_page)
-        page_range = paginator.get_elided_page_range(number=page)
-
-        app = self.request.resolver_match.app_name
-
-        return {
-            'notice': _('No data found'),
-            'object_list': paginator.get_page(page),
-            'search': search_str,
-            'url': reverse(f"{app}:search"),
-            'page_range': page_range,
-        }
-
-
-class CreateUpdateMixin():
+class CreateUpdateMixin:
     hx_trigger_django = None
     hx_trigger_form = None
     hx_redirect = None
@@ -121,30 +97,7 @@ class CreateUpdateMixin():
         return response
 
 
-class CreateViewMixin(LoginRequiredMixin,
-                      GetQuerysetMixin,
-                      CreateUpdateMixin,
-                      CreateView):
-    form_action = 'insert'
-
-    def url(self):
-        app = self.request.resolver_match.app_name
-        return reverse_lazy(f'{app}:new')
-
-
-class UpdateViewMixin(LoginRequiredMixin,
-                      GetQuerysetMixin,
-                      CreateUpdateMixin,
-                      UpdateView):
-    form_action = 'update'
-
-    def url(self):
-        return self.object.get_absolute_url() if self.object else None
-
-
-class DeleteViewMixin(LoginRequiredMixin,
-                      GetQuerysetMixin,
-                      DeleteView):
+class DeleteMixin:
     hx_trigger_django = 'reload'
     hx_redirect = None
 
@@ -172,21 +125,70 @@ class DeleteViewMixin(LoginRequiredMixin,
         return HttpResponse()
 
 
+class SearchMixin:
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs) | self.search()
+
+    def get_search_method(self):
+        return getattr(search, self.search_method)
+
+    def search(self):
+        search_str = self.request.GET.get('search')
+
+        sql = self.get_search_method()(search_str)
+
+        page = self.request.GET.get('page', 1)
+        paginator = Paginator(sql, self.per_page)
+        page_range = paginator.get_elided_page_range(number=page)
+
+        app = self.request.resolver_match.app_name
+
+        return {
+            'notice': _('No data found'),
+            'object_list': paginator.get_page(page),
+            'search': search_str,
+            'url': reverse(f"{app}:search"),
+            'page_range': page_range,
+        }
+
+
+# ---------------------------------------------------------------------------------------
+#                                                                            Views Mixins
+# ---------------------------------------------------------------------------------------
+class CreateViewMixin(LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, CreateView):
+    form_action = 'insert'
+
+    def url(self):
+        app = self.request.resolver_match.app_name
+        return reverse_lazy(f'{app}:new')
+
+
+class UpdateViewMixin(LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView):
+    form_action = 'update'
+
+    def url(self):
+        return self.object.get_absolute_url() if self.object else None
+
+
+class DeleteViewMixin(LoginRequiredMixin, GetQuerysetMixin, DeleteMixin, DeleteView):
+    pass
+
+
 class RedirectViewMixin(LoginRequiredMixin, RedirectView):
     pass
 
 
-class TemplateViewMixin(LoginRequiredMixin,
-                        TemplateView):
+class TemplateViewMixin(LoginRequiredMixin, TemplateView):
     pass
 
 
-class ListViewMixin(LoginRequiredMixin,
-                    GetQuerysetMixin,
-                    ListView):
+class ListViewMixin(LoginRequiredMixin, GetQuerysetMixin, ListView):
     pass
 
 
-class FormViewMixin(LoginRequiredMixin,
-                    FormView):
+class FormViewMixin(LoginRequiredMixin, FormView):
+    pass
+
+
+class SearchViewMixin(LoginRequiredMixin, SearchMixin, TemplateView):
     pass
