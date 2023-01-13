@@ -192,4 +192,3 @@ class FormViewMixin(LoginRequiredMixin, FormView):
 
 class SearchViewMixin(LoginRequiredMixin, SearchMixin, TemplateView):
     pass
-pytes
