@@ -24,9 +24,9 @@ class ExpenseForm(forms.ModelForm):
 
     field_order = [
         'date',
+        'account',
         'expense_type',
         'expense_name',
-        'account',
         'total_sum',
         'quantity',
         'remark',
