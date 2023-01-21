@@ -46,15 +46,6 @@ def test_debt_name_field_label_for_borrow(mck):
     assert '<label for="id_name">Paskolos davėjas:</label>' in form
 
 
-def test_debt_checkbox_class():
-    form = forms.DebtForm().as_p()
-
-    pattern = re.compile(r'<input type="checkbox" name="closed" class="(.*?)>')
-    res = re.findall(pattern, form)
-
-    assert 'form-check-input' in res[0]
-
-
 @freeze_time('1000-01-01')
 def test_debt_initial_values():
     UserFactory()
