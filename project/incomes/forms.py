@@ -6,7 +6,7 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
-from ..core.helpers.helper_forms import set_field_properties
+from ..core.helpers.helper_forms import add_css_class
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
 from .models import Income, IncomeType
@@ -44,7 +44,7 @@ class IncomeForm(forms.ModelForm):
         self.fields['income_type'].label = _('Incomes type')
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
     def clean_date(self):
         dt = self.cleaned_data['date']
@@ -90,4 +90,4 @@ class IncomeTypeForm(forms.ModelForm):
         self.fields['type'].label = _('Type')
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)

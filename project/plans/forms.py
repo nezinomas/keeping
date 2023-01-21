@@ -8,7 +8,7 @@ from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import gettext as _
 
-from ..core.helpers.helper_forms import set_field_properties
+from ..core.helpers.helper_forms import add_css_class
 from ..core.lib import utils
 from ..core.lib.date import monthnames, set_year_for_form
 from ..core.lib.translation import month_names
@@ -71,7 +71,7 @@ class IncomePlanForm(YearCleanMixin, forms.ModelForm):
         common_field_transalion(self)
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
 
 # ----------------------------------------------------------------------------
@@ -105,7 +105,7 @@ class ExpensePlanForm(YearCleanMixin, forms.ModelForm):
         common_field_transalion(self)
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
 
 # ----------------------------------------------------------------------------
@@ -141,7 +141,7 @@ class SavingPlanForm(YearCleanMixin, forms.ModelForm):
 
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
 
 # ----------------------------------------------------------------------------
@@ -171,7 +171,7 @@ class DayPlanForm(YearCleanMixin, forms.ModelForm):
         common_field_transalion(self)
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
 
 # ----------------------------------------------------------------------------
@@ -201,7 +201,7 @@ class NecessaryPlanForm(YearCleanMixin, forms.ModelForm):
         common_field_transalion(self)
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
 
 # ----------------------------------------------------------------------------
@@ -331,4 +331,4 @@ class CopyPlanForm(forms.Form):
         self.fields['necessary'].label = _('Plans for additional necessary expenses')
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)

@@ -8,7 +8,7 @@ from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
-from ..core.helpers.helper_forms import set_field_properties
+from ..core.helpers.helper_forms import add_css_class
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.forms import YearBetweenMixin
@@ -62,7 +62,7 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
         self.fields['closed'].label = _('Returned')
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
 
     def save(self, *args, **kwargs):
@@ -152,7 +152,7 @@ class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
         self.fields['remark'].label = _('Remark')
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
     def clean_price(self):
         price = self.cleaned_data['price']

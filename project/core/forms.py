@@ -5,7 +5,7 @@ from django import forms
 from django.core.validators import (MaxLengthValidator, MinLengthValidator,
                                     RegexValidator)
 
-from .helpers.helper_forms import set_field_properties
+from .helpers.helper_forms import add_css_class
 
 
 class SearchForm(forms.Form):
@@ -23,4 +23,4 @@ class SearchForm(forms.Form):
         self.fields['search'].label = None
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)

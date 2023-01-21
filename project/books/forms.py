@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.helpers.helper_forms import set_field_properties
+from ..core.helpers.helper_forms import add_css_class
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form, years
 from .models import Book, BookTarget
@@ -52,7 +52,7 @@ class BookForm(forms.ModelForm):
         self.fields["remark"].label = _("Remark")
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
     def clean_started(self):
         dt = self.cleaned_data["started"]
@@ -116,7 +116,7 @@ class BookTargetForm(forms.ModelForm):
         self.fields["quantity"].label = _("How many")
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
     def clean(self):
         cleaned_data = super().clean()

@@ -7,7 +7,7 @@ from django.db.models import F
 from django.db.models.functions import ExtractYear
 from django.utils.translation import gettext as _
 
-from ..core.helpers.helper_forms import set_field_properties
+from ..core.helpers.helper_forms import add_css_class
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.forms import YearBetweenMixin
@@ -49,7 +49,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.fields['quantity'].help_text = _help_text
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
@@ -92,7 +92,7 @@ class DrinkTargetForm(forms.ModelForm):
         self.fields['quantity'].help_text = help_text
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -131,7 +131,7 @@ class DrinkCompareForm(forms.Form):
         self.fields['year2'].initial = datetime.now().year
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
     def clean_year1(self):
         return self._clean_year_field('year1')

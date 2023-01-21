@@ -3,7 +3,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.helpers.helper_forms import set_field_properties
+from ..core.helpers.helper_forms import add_css_class
 from ..core.lib import utils
 from .models import Account
 
@@ -30,7 +30,7 @@ class AccountForm(forms.ModelForm):
         self.fields['journal'].widget = forms.HiddenInput()
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
         self.fields['title'].label = _('Account title')
         self.fields['closed'].label = _('Closed')

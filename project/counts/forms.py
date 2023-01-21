@@ -3,7 +3,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.helpers.helper_forms import set_field_properties
+from ..core.helpers.helper_forms import add_css_class
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.forms import YearBetweenMixin
@@ -25,7 +25,7 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
         self._translate_fields()
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
     def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(
@@ -70,7 +70,7 @@ class CountTypeForm(forms.ModelForm):
         self.fields['title'].label = _('Title')
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
     def clean_title(self):
         reserved_titles = [

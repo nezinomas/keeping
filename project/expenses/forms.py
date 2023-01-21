@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
-from ..core.helpers.helper_forms import set_field_properties
+from ..core.helpers.helper_forms import add_css_class
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
 from .models import Expense, ExpenseName, ExpenseType
@@ -66,7 +66,7 @@ class ExpenseForm(forms.ModelForm):
         self.helper = FormHelper()
 
         # add css classes to fields
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
 
     def _overwrite_default_queries(self):
@@ -182,7 +182,7 @@ class ExpenseTypeForm(forms.ModelForm):
         self.fields['journal'].widget = forms.HiddenInput()
 
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
         self.fields['title'].label = _('Title')
         self.fields['necessary'].label = _('Necessary')
@@ -212,7 +212,7 @@ class ExpenseNameForm(forms.ModelForm):
 
         # crispy forms settings
         self.helper = FormHelper()
-        set_field_properties(self, self.helper)
+        add_css_class(self, self.helper)
 
     def clean(self):
         cleaned_data = super().clean()

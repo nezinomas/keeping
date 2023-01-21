@@ -1,7 +1,7 @@
 from django.forms import BooleanField
 
 
-def set_field_properties(self, helper):
+def add_css_class(self, helper):
     for field_name in self.fields:
         if isinstance(self.fields[field_name], BooleanField):
             continue

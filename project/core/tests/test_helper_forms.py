@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from ..helpers.helper_forms import set_field_properties
+from ..helpers.helper_forms import add_css_class
 
 
 # ----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ def test_set_field_properties():
 
     helper = SimpleNamespace(form_show_labels=True)
 
-    set_field_properties(obj, helper)
+    add_css_class(obj, helper)
 
     assert obj.fields['x'].widget.attrs['class'] == 'form-control-sm'
     assert not helper.form_show_labels
