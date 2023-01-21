@@ -124,7 +124,6 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
-        self.fields['close'].widget.attrs['class'] = " form-check-input"
 
     def save(self):
         close = self.cleaned_data.get('close')
@@ -213,7 +212,6 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
-        self.fields['close'].widget.attrs['class'] = " form-check-input"
 
     def save(self):
         close = self.cleaned_data.get('close')

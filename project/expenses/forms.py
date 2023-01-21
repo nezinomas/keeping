@@ -67,7 +67,6 @@ class ExpenseForm(forms.ModelForm):
 
         # add css classes to fields
         set_field_properties(self, self.helper)
-        self.fields['exception'].widget.attrs['class'] = " form-check-input"
 
 
     def _overwrite_default_queries(self):
@@ -187,8 +186,6 @@ class ExpenseTypeForm(forms.ModelForm):
 
         self.fields['title'].label = _('Title')
         self.fields['necessary'].label = _('Necessary')
-
-        self.fields['necessary'].widget.attrs['class'] = " form-check-input necessary_check "
 
 
 class ExpenseNameForm(forms.ModelForm):

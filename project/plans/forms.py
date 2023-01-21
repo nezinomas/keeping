@@ -332,9 +332,3 @@ class CopyPlanForm(forms.Form):
 
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
-
-        self.fields['income'].widget.attrs['class'] = " form-check-input"
-        self.fields['expense'].widget.attrs['class'] = " form-check-input"
-        self.fields['saving'].widget.attrs['class'] = " form-check-input"
-        self.fields['day'].widget.attrs['class'] = " form-check-input"
-        self.fields['necessary'].widget.attrs['class'] = " form-check-input"

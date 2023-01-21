@@ -39,7 +39,6 @@ class UnnecessaryForm(forms.Form):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
-        self.fields['savings'].widget.attrs['class'] = " form-check-input"
         self.fields['savings'].label = _('Savings')
 
         self.fields['choices'].label = False

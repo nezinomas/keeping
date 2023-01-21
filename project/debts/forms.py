@@ -64,7 +64,6 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
         self.helper = FormHelper()
         set_field_properties(self, self.helper)
 
-        self.fields['closed'].widget.attrs['class'] = " form-check-input"
 
     def save(self, *args, **kwargs):
         if not self.instance.pk:
