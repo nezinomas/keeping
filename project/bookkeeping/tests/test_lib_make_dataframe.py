@@ -3,6 +3,7 @@ from decimal import Decimal
 
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 
 from ..lib import make_dataframe
@@ -48,19 +49,22 @@ def fixture_columns():
 def test_month_expenses(data, columns):
     actual = make_dataframe.MakeDataFrame(year=1999, data=data, columns=columns).data
 
-    assert isinstance(actual, pd.DataFrame)
+    # assert isinstance(actual, pd.DataFrame)
 
-    assert actual.loc['1999-01-01', 'T0'] == 0.0
-    assert actual.loc['1999-01-01', 'T1'] == 4.0
-    assert actual.loc['1999-01-01', 'T2'] == 2.0
+    # 1999-01-01 first row
+    assert actual[0]['T0'] == 0.0 # assert actual['1999-01-01', 'T0'] == 0.0
+    assert actual[0]['T1'] == 4.0 # assert actual['1999-01-01', 'T1'] == 4.0
+    assert actual[0]['T2'] == 2.0 # assert actual['1999-01-01', 'T2'] == 2.0
 
-    assert actual.loc['1999-02-01', 'T0'] == 0.0
-    assert actual.loc['1999-02-01', 'T1'] == 0.0
-    assert actual.loc['1999-02-01', 'T2'] == 0.0
+    # 1999-02-01 second row
+    assert actual[1]['T0'] == 0.0 # assert actual['1999-02-01', 'T0'] == 0.0
+    assert actual[1]['T1'] == 0.0 # assert actual['1999-02-01', 'T1'] == 0.0
+    assert actual[1]['T2'] == 0.0 # assert actual['1999-02-01', 'T2'] == 0.0
 
-    assert actual.loc['1999-12-01', 'T0'] == 0.0
-    assert actual.loc['1999-12-01', 'T1'] == 4.0
-    assert actual.loc['1999-12-01', 'T2'] == 5.0
+    # 1999-12-01 third row
+    assert actual[2]['T0'] == 0.0 # assert actual['1999-12-01', 'T0'] == 0.0
+    assert actual[2]['T1'] == 4.0 # assert actual['1999-12-01', 'T1'] == 4.0
+    assert actual[2]['T2'] == 5.0 # assert actual['1999-12-01', 'T2'] == 5.0
 
 
 def test_month_dtype(data, columns):

@@ -1,6 +1,7 @@
 from datetime import date
 
 import pandas as pd
+import polars as pl
 from pandas import DataFrame as DF
 
 
@@ -35,10 +36,36 @@ class MakeDataFrame:
         return self.create_exceptions(self._data)
 
     def create_data(self, data: list[dict], columns: list) -> DF:
-        df = self._create(data, 'sum')
-        df = self._insert_missing_columns(df, columns)
-        df = self._insert_missing_dates(df)
-        return df.set_index('date')
+        df = pl.DataFrame(list(data))
+        print(f'------------------------------->\n{df}\n')
+
+        grp = pl.col('date').dt.day() if self.month else pl.col('date').dt.month()
+        df = (
+            df
+            .upsample(time_column='date', every="1mo", by="title", maintain_order=True)
+            .with_columns([
+                pl.col('title').forward_fill(),
+                pl.col('sum').fill_null(0)])
+            .groupby(['title', grp])
+            .agg(
+                pl.col('sum').sum()
+            )
+            .sort(['title', 'date'])
+            .pivot(values="sum", index='date', columns='title')
+        )
+
+        # missing columns
+        a = [pl.lit(0).alias(x) for x in set(columns) - set(df.columns)]
+        df = df.select([pl.all(), *a])
+
+        # sort columns
+        cols = df.columns[1:]
+        cols.sort()
+        b = [pl.col(x) for x in cols]
+        df = df.select([pl.col('date'), *b])
+
+        print(f'------------------------------->\n{df.to_dicts()}\n')
+        return df
 
     def create_exceptions(self, data: list[dict]) -> DF:
         df = self._create(data, 'exception_sum')
