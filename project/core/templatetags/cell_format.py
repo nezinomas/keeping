@@ -20,6 +20,9 @@ def _to_float(_str: Any) -> float:
 def cellformat(value, default: str = '-'):
     value = None if value == 'None' else value
 
+    if isinstance(value, str):
+        value = value.replace(',', '.')
+
     try:
         _value = float(value)
     except TypeError:
@@ -27,10 +30,7 @@ def cellformat(value, default: str = '-'):
     except ValueError:
         return value
 
-    # round value and convert to str
-    _value = floatformat(_value, '2g')
-
-    return default if _value == '0,00' else _value
+    return floatformat(_value, '2g') if round(_value, 2) else default
 
 
 @register.filter
