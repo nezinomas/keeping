@@ -8,8 +8,8 @@ register = template.Library()
 
 def _to_float(_str: Any) -> float:
     if isinstance(_str, str):
-        _str = _str.replace('.', str())
-        _str = _str.replace(',', '.')
+        _str = _str.replace(".", str())
+        _str = _str.replace(",", ".")
     try:
         return float(_str)
     except ValueError:
@@ -17,11 +17,11 @@ def _to_float(_str: Any) -> float:
 
 
 @register.filter
-def cellformat(value, default: str = '-'):
-    value = None if value == 'None' else value
+def cellformat(value, default: str = "-"):
+    value = None if value == "None" else value
 
     if isinstance(value, str):
-        value = value.replace(',', '.')
+        value = value.replace(",", ".")
 
     try:
         _value = float(value)
@@ -30,7 +30,7 @@ def cellformat(value, default: str = '-'):
     except ValueError:
         return value
 
-    return floatformat(_value, '2g') if round(_value, 2) else default
+    return floatformat(_value, "2g") if round(_value, 2) else default
 
 
 @register.filter
@@ -40,7 +40,7 @@ def negative(value):
     except ValueError:
         return str()
 
-    return 'table-danger' if value < 0 else str()
+    return "table-danger" if value < 0 else str()
 
 
 @register.filter
@@ -50,7 +50,7 @@ def positive(value):
     except ValueError:
         return str()
 
-    return 'table-success' if value >= 0 else str()
+    return "table-success" if value >= 0 else str()
 
 
 @register.filter
@@ -60,7 +60,7 @@ def positive_negative(value):
     except ValueError:
         return str()
 
-    return 'table-success' if value >= 0 else 'table-danger'
+    return "table-success" if value >= 0 else "table-danger"
 
 
 @register.filter
@@ -71,4 +71,4 @@ def compare(value: str, args: str) -> str:
     except (TypeError, ValueError):
         return str()
 
-    return 'table-success' if _value >= _compare else 'table-danger'
+    return "table-success" if _value >= _compare else "table-danger"
