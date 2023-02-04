@@ -61,10 +61,7 @@ class MakeDataFrame:
         )
 
     def _cast_dtypes(self, df: DF, sum_col_name: str) -> pl.Expr:
-        return (
-            df.with_columns([
-                pl.col('title').cast(pl.Categorical),
-                pl.col(sum_col_name).cast(pl.Float32)]))
+        return df.with_columns(pl.col(sum_col_name).cast(pl.Float32))
 
     def _insert_missing_columns(self, df: DF) -> pl.Expr:
         ''' Insert missing columns '''
