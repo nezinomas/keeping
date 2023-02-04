@@ -65,15 +65,8 @@ class MakeDataFrame:
             .pivot(values=sum_col, index='date', columns='title')
         )
 
-        # create missing columns
-        if self._columns:
-            cols_diff = set(self._columns) - set(df.columns)
-            cols = [pl.lit(0).alias(col_name) for col_name in cols_diff]
-            df = df.select([pl.all(), *cols])
-
-        # sort columns
-        cols = [pl.col(x) for x in sorted(df.columns[1:])]
-        df = df.select([pl.col('date'), *cols])
+        df = self._insert_missing_columns(df)
+        df = self._sort_columns(df)
 
         return df
 
@@ -122,13 +115,20 @@ class MakeDataFrame:
         df[cols] =df[cols].apply(pd.to_numeric)
         return df
 
-    def _insert_missing_columns(self, df: DF, columns: list) -> DF:
+    def _insert_missing_columns(self, df: DF) -> DF:
         ''' Insert missing columns '''
-        if not columns:
+        if not self._columns:
             return df
 
-        df[[*set(columns) - set(df.columns)]] = 0.0
-        return df[sorted(df.columns)]
+        cols_diff = set(self._columns) - set(df.columns)
+        cols = [pl.lit(0).alias(col_name) for col_name in cols_diff]
+        df = df.select([pl.all(), *cols])
+        return df
+
+    def _sort_columns(self, df: DF) -> DF:
+        cols = [pl.col(x) for x in sorted(df.columns[1:])]
+        df = df.select([pl.col('date'), *cols])
+        return df
 
     def _insert_missing_dates(self, df: DF) -> DF:
         ''' Insert missing months or days '''
