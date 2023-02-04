@@ -48,24 +48,17 @@ class MakeDataFrame:
 
         df = pl.DataFrame(self._data)
 
-        # grp = pl.col('date').dt.day() if self.month else pl.col('date').dt.month()
-
-        df = (
+        return (
             df
-            .sort(['title', 'date'])
             .select(['date', 'title', sum_col_name])
+            .sort(['title', 'date'])
             .pipe(self._cast_dtypes, sum_col_name=sum_col_name)
             .pipe(self._insert_missing_rows, sum_col_name=sum_col_name)
-            # .groupby(['title', grp])
-            # .agg(pl.col(sum_col_name).sum())
-            # .sort(['title', 'date'])
             .pivot(values=sum_col_name, index='date', columns='title')
+            .pipe(self._insert_missing_columns)
+            .pipe(self._sort_columns)
             .fill_null(0)
         )
-
-        df = self._insert_missing_columns(df)
-        df = self._sort_columns(df)
-        return df
 
     def _cast_dtypes(self, df: DF, sum_col_name: str) -> pl.Expr:
         return (
@@ -73,15 +66,14 @@ class MakeDataFrame:
                 pl.col('title').cast(pl.Categorical),
                 pl.col(sum_col_name).cast(pl.Float32)]))
 
-    def _insert_missing_columns(self, df: DF) -> DF:
+    def _insert_missing_columns(self, df: DF) -> pl.Expr:
         ''' Insert missing columns '''
         if not self._columns:
             return df
 
         cols_diff = set(self._columns) - set(df.columns)
         cols = [pl.lit(0).alias(col_name) for col_name in cols_diff]
-        df = df.select([pl.all(), *cols])
-        return df
+        return df.select([pl.all(), *cols])
 
     def _insert_missing_rows(self, df: DF, sum_col_name: str) -> pl.Expr:
         every = '1d' if self.month else '1mo'
@@ -93,7 +85,6 @@ class MakeDataFrame:
                 pl.col(sum_col_name).fill_null(0)])
         )
 
-    def _sort_columns(self, df: DF) -> DF:
+    def _sort_columns(self, df: DF) -> pl.Expr:
         cols = [pl.col(x) for x in sorted(df.columns[1:])]
-        df = df.select([pl.col('date'), *cols])
-        return df
+        return df.select([pl.col('date'), *cols])
