@@ -2,7 +2,7 @@ from datetime import date
 
 import pandas as pd
 import polars as pl
-from pandas import DataFrame as DF
+from polars import DataFrame as DF
 
 
 class MakeDataFrame:
@@ -25,23 +25,34 @@ class MakeDataFrame:
                 If value: DataFrame rows will be days of that month
                 If no value: DataFrame rows will be 12 months
         '''
-        self._data = data
-
         self.year = year
         self.month = month
-        self.data = self.create_data(data, columns)
+        self._data = data
+        self._columns = columns
 
     @property
     def exceptions(self):
         return self.create_exceptions(self._data)
 
-    def create_data(self, data: list[dict], columns: list) -> DF:
-        df = pl.DataFrame(list(data))
-        print(f'------------------------------->\n{df}\n')
+    @property
+    def data(self):
+        return self.create_data()
+
+    def create_data(self) -> DF:
+        if not self._data:
+            return pl.DataFrame()
+
+        df = pl.DataFrame(self._data)
 
         grp = pl.col('date').dt.day() if self.month else pl.col('date').dt.month()
         df = (
             df
+            .sort(['title', 'date'])
+            .with_columns([
+                pl.col('title').cast(pl.Categorical),
+                pl.col('sum').cast(pl.Float32),
+                pl.col('exception_sum').cast(pl.Float32)
+            ])
             .upsample(time_column='date', every="1mo", by="title", maintain_order=True)
             .with_columns([
                 pl.col('title').forward_fill(),
@@ -54,17 +65,16 @@ class MakeDataFrame:
             .pivot(values="sum", index='date', columns='title')
         )
 
-        # missing columns
-        a = [pl.lit(0).alias(x) for x in set(columns) - set(df.columns)]
-        df = df.select([pl.all(), *a])
+        # create missing columns
+        if self._columns:
+            cols_diff = set(self._columns) - set(df.columns)
+            cols = [pl.lit(0).alias(col_name) for col_name in cols_diff]
+            df = df.select([pl.all(), *cols])
 
         # sort columns
-        cols = df.columns[1:]
-        cols.sort()
-        b = [pl.col(x) for x in cols]
-        df = df.select([pl.col('date'), *b])
+        cols = [pl.col(x) for x in sorted(df.columns[1:])]
+        df = df.select([pl.col('date'), *cols])
 
-        print(f'------------------------------->\n{df.to_dicts()}\n')
         return df
 
     def create_exceptions(self, data: list[dict]) -> DF:
