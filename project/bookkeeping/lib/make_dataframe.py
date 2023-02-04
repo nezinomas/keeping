@@ -36,9 +36,9 @@ class MakeDataFrame:
 
     @property
     def data(self):
-        return self.create_data()
+        return self.create_data(sum_col='sum')
 
-    def create_data(self) -> DF:
+    def create_data(self, sum_col: str = 'sum') -> DF:
         if not self._data:
             return pl.DataFrame()
 
@@ -56,13 +56,13 @@ class MakeDataFrame:
             .upsample(time_column='date', every="1mo", by="title", maintain_order=True)
             .with_columns([
                 pl.col('title').forward_fill(),
-                pl.col('sum').fill_null(0)])
+                pl.col(sum_col).fill_null(0)])
             .groupby(['title', grp])
             .agg(
-                pl.col('sum').sum()
+                pl.col(sum_col).sum()
             )
             .sort(['title', 'date'])
-            .pivot(values="sum", index='date', columns='title')
+            .pivot(values=sum_col, index='date', columns='title')
         )
 
         # create missing columns
