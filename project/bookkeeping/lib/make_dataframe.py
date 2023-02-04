@@ -49,22 +49,16 @@ class MakeDataFrame:
         df = pl.DataFrame(self._data)
 
         # grp = pl.col('date').dt.day() if self.month else pl.col('date').dt.month()
-        every = '1d' if self.month else '1mo'
 
         df = (
             df
             .sort(['title', 'date'])
             .select(['date', 'title', sum_col_name])
-            .with_columns([
-                pl.col('title').cast(pl.Categorical),
-                pl.col(sum_col_name).cast(pl.Float32)])
-            .upsample(time_column='date', every=every, by="title", maintain_order=True)
-            .with_columns([
-                pl.col('title').forward_fill(),
-                pl.col(sum_col_name).fill_null(0)])
+            .pipe(self._cast_dtypes, sum_col_name=sum_col_name)
+            .pipe(self._insert_missing_rows, sum_col_name=sum_col_name)
             # .groupby(['title', grp])
             # .agg(pl.col(sum_col_name).sum())
-            .sort(['title', 'date'])
+            # .sort(['title', 'date'])
             .pivot(values=sum_col_name, index='date', columns='title')
             .fill_null(0)
         )
@@ -72,6 +66,12 @@ class MakeDataFrame:
         df = self._insert_missing_columns(df)
         df = self._sort_columns(df)
         return df
+
+    def _cast_dtypes(self, df: DF, sum_col_name: str) -> pl.Expr:
+        return (
+            df.with_columns([
+                pl.col('title').cast(pl.Categorical),
+                pl.col(sum_col_name).cast(pl.Float32)]))
 
     def _insert_missing_columns(self, df: DF) -> DF:
         ''' Insert missing columns '''
@@ -82,6 +82,16 @@ class MakeDataFrame:
         cols = [pl.lit(0).alias(col_name) for col_name in cols_diff]
         df = df.select([pl.all(), *cols])
         return df
+
+    def _insert_missing_rows(self, df: DF, sum_col_name: str) -> pl.Expr:
+        every = '1d' if self.month else '1mo'
+        return (
+            df
+            .upsample(time_column='date', every=every, by="title", maintain_order=True)
+            .with_columns([
+                pl.col('title').forward_fill(),
+                pl.col(sum_col_name).fill_null(0)])
+        )
 
     def _sort_columns(self, df: DF) -> DF:
         cols = [pl.col(x) for x in sorted(df.columns[1:])]
