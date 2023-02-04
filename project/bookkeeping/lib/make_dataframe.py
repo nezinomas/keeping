@@ -3,25 +3,27 @@ from polars import DataFrame as DF
 
 
 class MakeDataFrame:
-    def __init__(self, year: int, data: list[dict], columns: list = None, month: int = None):
-        ''' Create pandas DataFrame from list of dictionaries
+    def __init__(
+        self, year: int, data: list[dict], columns: list = None, month: int = None
+    ):
+        """Create pandas DataFrame from list of dictionaries
 
-            Parameters
-            ---------
-            year: int
+        Parameters
+        ---------
+        year: int
 
-            data: list[dict]
-                [{date, sum, exception_sum, title},]
+        data: list[dict]
+            [{date, sum, exception_sum, title},]
 
-            columns: list|tuple
-                Optional.
-                For insertation of additional columns
+        columns: list|tuple
+            Optional.
+            For insertation of additional columns
 
-            month: int
-                Optional.
-                If value: DataFrame rows will be days of that month
-                If no value: DataFrame rows will be 12 months
-        '''
+        month: int
+            Optional.
+            If value: DataFrame rows will be days of that month
+            If no value: DataFrame rows will be 12 months
+        """
         self.year = year
         self.month = month
         self._data = data
@@ -29,32 +31,28 @@ class MakeDataFrame:
 
     @property
     def exceptions(self):
-        df = self.create_data(sum_col_name='exception_sum')
+        df = self.create_data(sum_col_name="exception_sum")
         if df.is_empty():
             return df
 
-        return df.select([
-            pl.col('date'),
-            pl.sum(pl.exclude('date')).alias('sum')
-        ])
+        return df.select([pl.col("date"), pl.sum(pl.exclude("date")).alias("sum")])
 
     @property
     def data(self):
-        return self.create_data(sum_col_name='sum')
+        return self.create_data(sum_col_name="sum")
 
-    def create_data(self, sum_col_name: str = 'sum') -> DF:
+    def create_data(self, sum_col_name: str = "sum") -> DF:
         if not self._data:
             return pl.DataFrame()
 
         df = pl.DataFrame(self._data)
 
         return (
-            df
-            .select(['date', 'title', sum_col_name])
-            .sort(['title', 'date'])
+            df.select(["date", "title", sum_col_name])
+            .sort(["title", "date"])
             .pipe(self._cast_dtypes, sum_col_name=sum_col_name)
             .pipe(self._insert_missing_rows)
-            .pivot(values=sum_col_name, index='date', columns='title')
+            .pivot(values=sum_col_name, index="date", columns="title")
             .pipe(self._insert_missing_columns)
             .pipe(self._sort_columns)
             .fill_null(0)
@@ -64,7 +62,7 @@ class MakeDataFrame:
         return df.with_columns(pl.col(sum_col_name).cast(pl.Float32))
 
     def _insert_missing_columns(self, df: DF) -> pl.Expr:
-        ''' Insert missing columns '''
+        """Insert missing columns"""
         if not self._columns:
             return df
 
@@ -73,13 +71,13 @@ class MakeDataFrame:
         return df.select([pl.all(), *cols])
 
     def _insert_missing_rows(self, df: DF) -> pl.Expr:
-        every = '1d' if self.month else '1mo'
+        every = "1d" if self.month else "1mo"
         return (
             df
-            .upsample(time_column='date', every=every, by="title", maintain_order=True)
-            .with_columns(pl.col('title').forward_fill())
-        )
+            .upsample(
+                time_column="date", every=every, by="title", maintain_order=True)
+            .with_columns(pl.col("title").forward_fill()))
 
     def _sort_columns(self, df: DF) -> pl.Expr:
         cols = [pl.col(x) for x in sorted(df.columns[1:])]
-        return df.select([pl.col('date'), *cols])
+        return df.select([pl.col("date"), *cols])
