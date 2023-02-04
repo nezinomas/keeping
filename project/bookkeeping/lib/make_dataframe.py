@@ -53,7 +53,7 @@ class MakeDataFrame:
             .select(['date', 'title', sum_col_name])
             .sort(['title', 'date'])
             .pipe(self._cast_dtypes, sum_col_name=sum_col_name)
-            .pipe(self._insert_missing_rows, sum_col_name=sum_col_name)
+            .pipe(self._insert_missing_rows)
             .pivot(values=sum_col_name, index='date', columns='title')
             .pipe(self._insert_missing_columns)
             .pipe(self._sort_columns)
@@ -75,14 +75,12 @@ class MakeDataFrame:
         cols = [pl.lit(0).alias(col_name) for col_name in cols_diff]
         return df.select([pl.all(), *cols])
 
-    def _insert_missing_rows(self, df: DF, sum_col_name: str) -> pl.Expr:
+    def _insert_missing_rows(self, df: DF) -> pl.Expr:
         every = '1d' if self.month else '1mo'
         return (
             df
             .upsample(time_column='date', every=every, by="title", maintain_order=True)
-            .with_columns([
-                pl.col('title').forward_fill(),
-                pl.col(sum_col_name).fill_null(0)])
+            .with_columns(pl.col('title').forward_fill())
         )
 
     def _sort_columns(self, df: DF) -> pl.Expr:
