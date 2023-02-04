@@ -32,7 +32,14 @@ class MakeDataFrame:
 
     @property
     def exceptions(self):
-        return self.create_exceptions(self._data)
+        df = self.create_data(sum_col='exception_sum')
+        if df.is_empty():
+            return df
+
+        return df.select([
+            pl.col('date'),
+            pl.sum(pl.exclude('date')).alias('sum')
+        ])
 
     @property
     def data(self):
@@ -51,23 +58,20 @@ class MakeDataFrame:
             .with_columns([
                 pl.col('title').cast(pl.Categorical),
                 pl.col('sum').cast(pl.Float32),
-                pl.col('exception_sum').cast(pl.Float32)
-            ])
+                pl.col('exception_sum').cast(pl.Float32)])
             .upsample(time_column='date', every="1mo", by="title", maintain_order=True)
             .with_columns([
                 pl.col('title').forward_fill(),
                 pl.col(sum_col).fill_null(0)])
             .groupby(['title', grp])
-            .agg(
-                pl.col(sum_col).sum()
-            )
+            .agg(pl.col(sum_col).sum())
             .sort(['title', 'date'])
             .pivot(values=sum_col, index='date', columns='title')
         )
 
         df = self._insert_missing_columns(df)
         df = self._sort_columns(df)
-
+        print(f'------------------------------->final\n{df}\n')
         return df
 
     def create_exceptions(self, data: list[dict]) -> DF:

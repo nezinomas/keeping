@@ -124,36 +124,37 @@ def test_month_no_data_and_no_columns_expenses(data, columns):
     #     assert actual.index[i] == pd.Timestamp(date(1999, i + 1, 1))
 
 
-# def test_month_exceptions(month_data, columns):
-#     actual = make_dataframe.MakeDataFrame(year=1999, data=month_data, columns=columns).exceptions
+def test_month_exceptions(month_data, columns):
+    actual = make_dataframe.MakeDataFrame(year=1999, data=month_data, columns=columns).exceptions
 
-#     assert isinstance(actual, pl.DataFrame)
-#     assert actual.shape == (12, 2)
-#     assert actual[0, 'sum'] == 0.5
-
-
-# @pytest.mark.parametrize('data', [([]), (None)])
-# def test_month_no_data_exceptions(data, columns):
-#     actual = make_dataframe.MakeDataFrame(year=1999, data=data, columns=columns).exceptions
-
-#     assert isinstance(actual, pd.DataFrame)
-
-#     assert actual.loc['1999-01-01', 'sum'] == 0.0
-#     assert actual.loc['1999-02-01', 'sum'] == 0.0
-#     assert actual.loc['1999-12-01', 'sum'] == 0.0
+    assert isinstance(actual, pl.DataFrame)
+    assert actual.shape == (12, 2)
+    assert actual[0, 'sum'] == 0.5
 
 
-# @pytest.mark.parametrize(
-#     'data, columns',
-#     [([], []), (None, None)]
-# )
-# def test_month_no_data_and_no_columns_exceptions(data, columns):
-#     actual = make_dataframe.MakeDataFrame(year=1999, data=data, columns=columns).exceptions
+@pytest.mark.parametrize('data', [([]), (None)])
+def test_month_no_data_exceptions(data, columns):
+    actual = make_dataframe.MakeDataFrame(year=1999, data=data, columns=columns).exceptions
 
-#     assert isinstance(actual, pd.DataFrame)
-#     assert len(actual.index) == 12
-#     for i in range(12):
-#         assert actual.index[i] == pd.Timestamp(date(1999, i + 1, 1))
+    assert isinstance(actual, pl.DataFrame)
+    assert actual.is_empty()
+    # assert actual.loc['1999-01-01', 'sum'] == 0.0
+    # assert actual.loc['1999-02-01', 'sum'] == 0.0
+    # assert actual.loc['1999-12-01', 'sum'] == 0.0
+
+
+@pytest.mark.parametrize(
+    'data, columns',
+    [([], []), (None, None)]
+)
+def test_month_no_data_and_no_columns_exceptions(data, columns):
+    actual = make_dataframe.MakeDataFrame(year=1999, data=data, columns=columns).exceptions
+
+    assert isinstance(actual, pl.DataFrame)
+    assert actual.is_empty()
+    # assert len(actual.index) == 12
+    # for i in range(12):
+    #     assert actual.index[i] == pd.Timestamp(date(1999, i + 1, 1))
 
 
 # def test_day_expenses(data, columns):
