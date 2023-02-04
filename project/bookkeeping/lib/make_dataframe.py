@@ -50,16 +50,13 @@ class MakeDataFrame:
         return (
             df.select(["date", "title", sum_col_name])
             .sort(["title", "date"])
-            .pipe(self._cast_dtypes, sum_col_name=sum_col_name)
+            .with_columns(pl.col(sum_col_name).cast(pl.Float32))
             .pipe(self._insert_missing_rows)
             .pivot(values=sum_col_name, index="date", columns="title")
             .pipe(self._insert_missing_columns)
             .pipe(self._sort_columns)
             .fill_null(0)
         )
-
-    def _cast_dtypes(self, df: DF, sum_col_name: str) -> pl.Expr:
-        return df.with_columns(pl.col(sum_col_name).cast(pl.Float32))
 
     def _insert_missing_columns(self, df: DF) -> pl.Expr:
         """Insert missing columns"""
