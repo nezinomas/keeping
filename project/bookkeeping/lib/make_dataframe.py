@@ -45,10 +45,9 @@ class MakeDataFrame:
         if not self._data:
             return pl.DataFrame()
 
-        df = pl.DataFrame(self._data)
-
         return (
-            df.select(["date", "title", sum_col_name])
+            pl.DataFrame(self._data)
+            .select(["date", "title", sum_col_name])
             .sort(["title", "date"])
             .with_columns(pl.col(sum_col_name).cast(pl.Float32))
             .pipe(self._insert_missing_rows)
