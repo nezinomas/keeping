@@ -6,7 +6,7 @@ class MakeDataFrame:
     def __init__(
         self, year: int, data: list[dict], columns: list = None, month: int = None
     ):
-        """Create pandas DataFrame from list of dictionaries
+        """Create polars DataFrame from list of dictionaries
 
         Parameters
         ---------
