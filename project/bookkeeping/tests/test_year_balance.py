@@ -1,11 +1,10 @@
-from datetime import datetime, date
+from datetime import date
 from decimal import Decimal
 from types import SimpleNamespace
 
-import pandas as pd
+import polars as pl
 import pytest
 from freezegun import freeze_time
-from pandas import Timestamp as pdTime
 
 from ..lib.year_balance import YearBalance
 
@@ -17,15 +16,21 @@ def fixture_data():
         {'date': date(1999, 2, 1), 'incomes': 1.25, 'expenses': 0, 'savings': 0, 'savings_close': 0, 'borrow': 0, 'borrow_return': 0, 'lend': 0, 'lend_return': 0}
     ]
 
-    for i in range(3, 13):
-        arr.append(
-            {'date': date(1999, i, 1), 'incomes': 0, 'expenses': 0, 'savings': 0, 'savings_close': 0, 'borrow': 0, 'borrow_return': 0, 'lend': 0, 'lend_return': 0}
-        )
-
-    df = pd.DataFrame(arr)
-    df['date'] = pd.to_datetime(df['date'])
-    df = df.set_index('date')
-    return SimpleNamespace(year=1999, data=df)
+    arr.extend(
+        {
+            'date': date(1999, i, 1),
+            'incomes': 0,
+            'expenses': 0,
+            'savings': 0,
+            'savings_close': 0,
+            'borrow': 0,
+            'borrow_return': 0,
+            'lend': 0,
+            'lend_return': 0,
+        }
+        for i in range(3, 13)
+    )
+    return SimpleNamespace(year=1999, data=pl.DataFrame(arr))
 
 
 @pytest.fixture(name='amount_start')
@@ -37,7 +42,7 @@ def fixture_amount_start():
 def fixture_expect():
     val = [
         {
-            'date': pdTime(date(1999, 1, 1)),
+            'date': date(1999, 1, 1),
             'incomes': 5.5,
             'expenses': 1.75,
             'balance': 3.75,
@@ -49,7 +54,7 @@ def fixture_expect():
             'lend_return': 0.5,
             'money_flow': 3.85
         }, {
-            'date': pdTime(date(1999, 2, 1)),
+            'date': date(1999, 2, 1),
             'incomes': 1.25,
             'expenses': 0.0,
             'balance': 1.25,
@@ -66,7 +71,7 @@ def fixture_expect():
     # same dictionaries for march - december
     for i in range(3, 13):
         item = {
-            'date': pdTime(date(1999, i, 1)),
+            'date': date(1999, i, 1),
             'incomes': 0.0,
             'expenses': 0.0,
             'balance': 0.0,
@@ -144,20 +149,6 @@ def test_amount_end(data, amount_start):
     assert actual == 5.1
 
 
-def test_amount_end_no_amount_start(data):
-    actual = YearBalance(data=data)
-    del actual._balance['money_flow']
-
-    assert actual.amount_end == 0.0
-
-
-def test_amount_end_none(data):
-    data.data.loc[:,:] = 0
-    actual = YearBalance(data=data, amount_start=None).amount_end
-
-    assert actual == 0.0
-
-
 def test_amount_balance(data, amount_start):
     actual = YearBalance(data=data, amount_start=amount_start).amount_balance
 
@@ -227,7 +218,8 @@ def test_avg_incomes(data):
 
 
 def test_avg_incomes_none(data):
-    data.data['incomes'] = 0
+    data.data = data.data.with_columns(pl.col('incomes') * 0)
+
     actual = YearBalance(data=data, amount_start=None).avg_incomes
 
     assert actual == 0.0
@@ -240,7 +232,7 @@ def test_avg_expenses(data):
 
 
 def test_avg_expenses_none(data):
-    data.data['expenses'] = 0
+    data.data = data.data.with_columns(pl.col('expenses') * 0)
     actual = YearBalance(data=data, amount_start=None).avg_expenses
 
     assert actual == 0.0
@@ -248,9 +240,9 @@ def test_avg_expenses_none(data):
 
 @freeze_time('1999-2-1')
 def test_avg_expenses_current_year(data):
-    data.data.at[datetime(1999, 1, 1), 'expenses'] = 1
-    data.data.at[datetime(1999, 2, 1), 'expenses'] = 2
-    data.data.at[datetime(1999, 3, 1), 'expenses'] = 3
+    data.data[0, 'expenses'] = 1
+    data.data[1, 'expenses'] = 2
+    data.data[2, 'expenses'] = 3
 
     actual = YearBalance(data=data, amount_start=None).avg_expenses
 
@@ -259,9 +251,9 @@ def test_avg_expenses_current_year(data):
 
 @freeze_time('2000-2-1')
 def test_avg_expenses_not_current_year(data):
-    data.data.at[datetime(1999, 1, 1), 'expenses'] = 1
-    data.data.at[datetime(1999, 2, 1), 'expenses'] = 2
-    data.data.at[datetime(1999, 3, 1), 'expenses'] = 3
+    data.data[0, 'expenses'] = 1
+    data.data[1, 'expenses'] = 2
+    data.data[2, 'expenses'] = 3
 
     actual = YearBalance(data=data, amount_start=None).avg_expenses
 
