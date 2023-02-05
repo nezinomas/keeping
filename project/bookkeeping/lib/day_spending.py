@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 import polars as pl
 from polars import DataFrame as DF
 
@@ -12,7 +10,7 @@ class DaySpending(BalanceBase):
     def __init__(
         self,
         df: MakeDataFrame,
-        necessary: List[str],
+        necessary: list[str],
         day_input: float,
         expenses_free: float,
     ):
@@ -26,14 +24,14 @@ class DaySpending(BalanceBase):
         self._spending = self._make_df(df.data, df.exceptions)
 
     @property
-    def spending(self) -> List[Dict]:
+    def spending(self) -> list[dict]:
         if self._spending.is_empty():
             return self._spending
 
         return self._spending.to_dicts()
 
     @property
-    def avg_per_day(self):
+    def avg_per_day(self) -> float:
         if self._spending.is_empty():
             return 0.0
         day = current_day(self._year, self._month)
@@ -61,10 +59,10 @@ class DaySpending(BalanceBase):
         )
         return df
 
-    def _remove_necessary_if_any(self, df):
+    def _remove_necessary_if_any(self, df: DF) -> pl.Expr:
         return df.select(pl.exclude(self._necessary)) if self._necessary else df
 
-    def _calc_spending(self, df: pl.DataFrame) -> pl.Expr:
+    def _calc_spending(self, df: DF) -> pl.Expr:
         return (
             df.with_columns((self._day_input - pl.col("total")).alias("day"))
             .with_columns(
