@@ -50,11 +50,8 @@ class DaySpending(BalanceBase):
         if df.is_empty():
             return df
 
-        def remove_necessary_if_any(df):
-            return df.select(pl.exclude(self._necessary)) if self._necessary else df
-
         df = (
-            df.pipe(remove_necessary_if_any)
+            df.pipe(self._remove_necessary_if_any)
             .with_columns(pl.sum(pl.exclude("date")).alias("total"))
             .select(["date", "total"])
             .with_columns(pl.Series(name="exceptions", values=exceptions["sum"]))
@@ -63,6 +60,9 @@ class DaySpending(BalanceBase):
             .pipe(self._calc_spending)
         )
         return df
+
+    def _remove_necessary_if_any(self, df):
+        return df.select(pl.exclude(self._necessary)) if self._necessary else df
 
     def _calc_spending(self, df: pl.DataFrame) -> pl.Expr:
         return (
