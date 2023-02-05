@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 import polars as pl
 from polars import DataFrame as DF
 
@@ -9,7 +7,7 @@ class BalanceBase():
         self._data = data
 
     @property
-    def balance(self) -> List[Dict]:
+    def balance(self) -> list[dict]:
         '''
         Return [{'date': datetime.datetime, 'title': float}]
         '''
@@ -19,7 +17,7 @@ class BalanceBase():
         return [] if self._data.is_empty() else self._data.to_dicts()
 
     @property
-    def types(self) -> List:
+    def types(self) -> list:
         return sorted(self._data.select(pl.exclude('date')).columns)
 
     @property
@@ -48,11 +46,11 @@ class BalanceBase():
         return self._data.select([pl.col('date'), pl.sum(pl.exclude('date')).alias('total')])
 
     @property
-    def total_column(self) -> Dict[str, float]:
+    def total_column(self) -> dict[str, float]:
         return self.make_total_column().to_dicts()
 
     @property
-    def total_row(self) -> Dict[str, float]:
+    def total_row(self) -> dict[str, float]:
         if not isinstance(self._data, DF):
             return {}
 
@@ -64,11 +62,11 @@ class BalanceBase():
         return df.to_dicts()[0]
 
     @property
-    def average(self) -> Dict[str, float]:
+    def average(self) -> dict[str, float]:
         """ Calculate mean of every column, null values ignored
 
         Returns:
-            Dict[str, float]
+            dict[str, float]
         """
         if not isinstance(self._data, DF):
             return {}
