@@ -20,10 +20,10 @@ class DaySpending(BalanceBase):
 
         self._year = df.year
         self._month = df.month
+        self._day_input = day_input
+        self._expenses_free = expenses_free
         self._necessary = necessary or []
-        self._spending = self._calc_spending(
-            df.data, df.exceptions, day_input, expenses_free
-        )
+        self._spending = self._make_df(df.data, df.exceptions)
 
     @property
     def spending(self) -> List[Dict]:
@@ -46,9 +46,7 @@ class DaySpending(BalanceBase):
         )
         return df[0, 0]
 
-    def _calc_spending(
-        self, df: DF, exceptions: DF, day_input: float, expenses_free: float
-    ) -> DF:
+    def _make_df(self, df: DF, exceptions: DF) -> DF:
         if df.is_empty():
             return df
 
@@ -62,13 +60,20 @@ class DaySpending(BalanceBase):
             .with_columns(pl.Series(name="exceptions", values=exceptions["sum"]))
             .with_columns(pl.col("total") - pl.col("exceptions"))
             .drop("exceptions")
-            .with_columns((day_input - pl.col("total")).alias("day"))
-            .with_columns(
-                (expenses_free - (day_input * pl.col("date").dt.day())).alias(
-                    "teoretical"
-                )
-            )
-            .with_columns((expenses_free - pl.col("total").cumsum()).alias("real"))
-            .with_columns((pl.col("real") - pl.col("teoretical")).alias("full"))
+            .pipe(self._calc_spending)
         )
         return df
+
+    def _calc_spending(self, df: pl.DataFrame) -> pl.Expr:
+        return (
+            df.with_columns((self._day_input - pl.col("total")).alias("day"))
+            .with_columns(
+                (
+                    self._expenses_free - (self._day_input * pl.col("date").dt.day())
+                ).alias("teoretical")
+            )
+            .with_columns(
+                (self._expenses_free - pl.col("total").cumsum()).alias("real")
+            )
+            .with_columns((pl.col("real") - pl.col("teoretical")).alias("full"))
+        )
