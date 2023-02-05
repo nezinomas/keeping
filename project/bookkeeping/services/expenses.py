@@ -15,14 +15,13 @@ class ExpenseServiceData:
 
     def __post_init__(self):
         self.expense_types = list(
-            ExpenseType.objects \
-            .items() \
-            .values_list('title', flat=True)
-        )
+            ExpenseType.objects
+            .items()
+            .values_list('title', flat=True))
 
-        self.expenses = \
-            Expense.objects \
-            .sum_by_month_and_type(self.year)
+        self.expenses = list(
+            Expense.objects
+            .sum_by_month_and_type(self.year))
 
 
 class ExpenseService():
