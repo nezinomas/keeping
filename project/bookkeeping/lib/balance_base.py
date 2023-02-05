@@ -6,38 +6,38 @@ from pandas import DataFrame as DF
 
 
 class BalanceBase():
-    def __init__(self, balance: DF = DF()):
-        self._balance = balance
+    def __init__(self, data: DF = DF()):
+        self._data = data
 
     @property
     def balance(self) -> List[Dict]:
         '''
         Return [{'date': datetime.datetime, 'title': float}]
         '''
-        if not isinstance(self._balance, DF):
+        if not isinstance(self._data, DF):
             return []
 
-        if self._balance.empty:
+        if self._data.empty:
             return []
 
-        arr = self._balance.copy()
+        arr = self._data.copy()
         arr.reset_index(inplace=True)
 
         return arr.to_dict('records')
 
     @property
     def types(self) -> List:
-        return sorted(self._balance.columns.tolist())
+        return sorted(self._data.columns.tolist())
 
     @property
     def total(self) -> float:
         '''
         Return total sum of all columns
         '''
-        if not isinstance(self._balance, DF) or self._balance.empty:
+        if not isinstance(self._data, DF) or self._data.empty:
             return 0.0
 
-        return self._balance.sum().sum()
+        return self._data.sum().sum()
 
     def make_total_column(self, df = DF()) -> DF:
         '''
@@ -46,7 +46,7 @@ class BalanceBase():
         return filtered DataFrame with date and total column
         '''
 
-        df = self._balance if df.empty else df
+        df = self._data if df.empty else df
 
         if not isinstance(df, DF):
             return DF()
@@ -66,27 +66,27 @@ class BalanceBase():
 
     @property
     def total_row(self) -> Dict[str, float]:
-        if not isinstance(self._balance, DF):
+        if not isinstance(self._data, DF):
             return {}
 
-        if self._balance.empty:
+        if self._data.empty:
             return {}
 
-        arr = self._balance.copy()
+        arr = self._data.copy()
 
         return arr.sum().to_dict()
 
     @property
     def average(self) -> Dict[str, float]:
-        if not isinstance(self._balance, DF):
+        if not isinstance(self._data, DF):
             return {}
 
-        if self._balance.empty:
+        if self._data.empty:
             return {}
 
         # replace 0.0 to None
         # average will be calculated only for months with non zero values
-        arr = self._balance.copy()
+        arr = self._data.copy()
         arr.replace(0.0, np.nan, inplace=True)
         # calculate average
         arr = arr.mean(skipna=True, numeric_only=True)

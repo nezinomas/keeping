@@ -22,7 +22,7 @@ data_balance = [
 @pytest.mark.parametrize("df,expected", data_balance)
 def test_balance(df, expected):
     o = BalanceBase()
-    o._balance = df
+    o._data = df
 
     assert o.balance == expected
 
@@ -30,7 +30,7 @@ def test_balance(df, expected):
 @pytest.mark.parametrize("df,expected", data_balance)
 def test_balance_then_before_was_called_total_row(df, expected):
     o = BalanceBase()
-    o._balance = df
+    o._data = df
 
     o.total_row
 
@@ -50,7 +50,7 @@ data_average = [
 @pytest.mark.parametrize('df,expected', data_average)
 def test_average(df, expected):
     o = BalanceBase()
-    o._balance = df
+    o._data = df
 
     assert pytest.approx(o.average, rel=1e-2) == expected
 
@@ -65,6 +65,6 @@ data_total_row = [
 @pytest.mark.parametrize('df,expected', data_total_row)
 def test_total_row(df, expected):
     o = BalanceBase()
-    o._balance = df
+    o._data = df
 
     assert pytest.approx(o.total_row, rel=1e-2) == expected
