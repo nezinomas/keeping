@@ -5,6 +5,7 @@ from datetime import date
 
 import pytest
 from django.test import override_settings
+from freezegun import freeze_time
 
 from ...core.exceptions import MethodInvalid
 from ..factories import CountFactory
@@ -221,7 +222,7 @@ def test_year_totals_all_years(data):
     assert actual == {1999: 6.0, 2000: 1.0}
 
 
-def test_year_totals_year_not_exists_indata(data):
+def test_year_totals_year_not_exists_in_data(data):
     actual = Stats(year=2010, data=data).year_totals()
 
     assert actual == 0
@@ -230,7 +231,7 @@ def test_year_totals_year_not_exists_indata(data):
 def test_year_totals_year_nodata():
     actual = Stats(data=[]).year_totals()
 
-    assert actual == {}
+    assert actual == 0
 
 
 def test_gaps_for_current_year(data):
@@ -259,6 +260,7 @@ def test_gaps_nodata():
     actual = Stats(year=1999, data=[]).gaps()
 
     assert actual == {}
+
 
 # ---------------------------------------------------------------------------------------
 # chart_calendar
@@ -392,7 +394,7 @@ def test_chart_calendar_nodata_february(chart_calendar_expect_february_nodata):
     assert actual[1] == chart_calendar_expect_february_nodata
 
 
-@pytest.mark.freeze_time('1999-01-02')
+@freeze_time('1999-01-02')
 def test_chart_calendar_current_day_nodata(chart_calendar_expect_january_nodata):
     chart_calendar_expect_january_nodata['data'][5][2] = 0.05
 
@@ -401,7 +403,6 @@ def test_chart_calendar_current_day_nodata(chart_calendar_expect_january_nodata)
     assert actual[0] == chart_calendar_expect_january_nodata
 
 
-@pytest.mark.freeze_time('1999-01-01')
 def test_chart_calendar_first_day_of_year_with_record(chart_calendar_expect_january_nodata):
     data = [{'date': date(1999, 1, 1), 'qty': 1.0},]
 

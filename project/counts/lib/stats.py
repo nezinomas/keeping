@@ -3,8 +3,8 @@ import functools
 import itertools as it
 from datetime import date, datetime
 
-import pandas as pd
-from pandas import DataFrame as DF
+import polars as pl
+from polars import DataFrame as DF
 
 from ...core.exceptions import MethodInvalid
 from ...core.lib.translation import month_names, weekday_names
@@ -36,25 +36,34 @@ class Stats:
 
     def weekdays_stats(self) -> list[dict[int, float]]:
         """Returns [{'weekday': int, 'count': float}]"""
-        if self._df.empty:
+        if self._df.is_empty():
             return [{'weekday': i, 'count': 0} for i in range(7)]
-        # groupby by weekday and sum qty
-        df = self._df.groupby(self._df['date'].dt.dayofweek)['qty'].sum()
-        # insert missing rows if any
-        df = df.reindex(range(7), fill_value=0)
-        # rename columns
-        df = df.reset_index().rename(columns={'date': 'weekday', 'qty': 'count'})
-        return df.to_dict('records')
+
+        df = (
+            self._insert_empty_rows(self._df)
+            .fill_null(0)
+            .groupby(pl.col('date').dt.weekday() - 1)
+            .agg(pl.col('qty').sum())
+            .sort('date')
+            .rename({'date': 'weekday', 'qty': 'count'})
+        )
+        return df.to_dicts()
 
     def months_stats(self) -> list[float]:
         """Returns  [float] * 12"""
-        if self._df.empty:
+        if self._df.is_empty():
             return [0.0] * 12
-        # group by month and sum qty
-        df = self._df.groupby(self._df['date'].dt.month)['qty'].sum()
-        # insert missing rows if any
-        df = df.reindex(range(1,13), fill_value=0)
-        return df.to_list()
+
+        df = (
+            self._insert_empty_rows(self._df)
+            # self._df
+            # .upsample(time_column="date", every="1d", by="qty", maintain_order=True)
+            .fill_null(0)
+            .groupby(pl.col('date').dt.month())
+            .agg(pl.col('qty').sum())
+            .sort('date')
+        )
+        return df['qty'].to_list()
 
     def chart_calendar(self) -> list[dict]:
         if not self._year:
@@ -65,7 +74,7 @@ class Stats:
                 [self._year], [month], calendar.Calendar(0).itermonthdays2(self._year, month))
 
         # make calendar_df with calculated gaps and pass it to _day_info method
-        calendar_df = self._make_calendar_dataframe()
+        calendar_df = self._calc_gaps()
         day_info = functools.partial(self._day_info, calendar_df=calendar_df)
 
         arr = map(func, range(1, 13))
@@ -86,66 +95,86 @@ class Stats:
 
         else method returns {1999: 12, 2000: 15}
         """
+        if self._df.is_empty():
+            return 0
 
-        df = self._df.copy()
+        df = (
+            self._df
+            .groupby(pl.col('date').dt.year())
+            .agg(pl.col('qty').sum())
+        )
 
-        if 'qty' in df:
-            df = df.groupby(df['date'].dt.year)['qty'].sum()
+        if not self._year:
+            return {row['date']: row['qty'] for row in df.to_dicts()}
 
-        arr = df.to_dict()
-
-        return arr.get(self._year, 0) if self._year else arr
+        try:
+            return df.to_dicts()[0].get('qty', 0)
+        except IndexError:
+            return 0
 
     def gaps(self) -> dict[int, int]:
         """ Returns dictionary(int: int) = {gap: count} """
-        if self._df.empty:
-            return {}
         # calculate gaps
-        df = self._calc_gaps(self._df.copy())
+        df = self._calc_gaps()
 
-        return df['duration'].value_counts().sort_index().to_dict()
+        if df.is_empty():
+            return {}
+
+        df = (
+            df
+            .groupby('duration')
+            .agg(pl.col('qty').count())
+            .sort('duration')
+        )
+        return {x['duration']: x['qty'] for x in df.to_dicts()}
 
     def _make_dataframe(self, data):
         """ Make DataFrame """
-        df = pd.DataFrame(data or [])
-        if df.empty:
+        data = data if isinstance(data, list) else list(data)
+        df = pl.DataFrame(data or [])
+
+        if df.is_empty():
             return df
 
-        df['date'] = pd.to_datetime(df['date'])
-        df.sort_values(by=['date'], inplace=True)
-        # if class initialzed with year, filter dataframe
-        if self._year:
-            df = df[df['date'].dt.year == self._year]
-        # copy column quantity to qty
-        if 'quantity' in df:
-            df['qty'] = df['quantity']
+        def filter_by_year(df: DF) -> pl.Expr:
+            return df.filter(pl.col('date').dt.year() == self._year) if self._year else df
 
-        return df
+        def copy_quantity(df: DF) -> pl.Expr:
+            if 'quantity' in df.columns:
+                return df.with_columns(pl.col('quantity').alias('qty'))
+            return df
 
-    def _make_calendar_dataframe(self):
-        if self._df.empty:
+        return (
+            df
+            .sort('date')
+            .pipe(filter_by_year)
+            .pipe(copy_quantity)
+        )
+
+    def _insert_empty_rows(self, df: DF) -> DF:
+        first_date = date(df.head(1)[0, 'date'].year, 1, 1)
+        last_date = date(df.tail(1)[0, 'date'].year, 12, 31)
+        date_range = pl.date_range(first_date, last_date, "1d")
+        df_empty = pl.DataFrame({'date': date_range, 'qty': [0.0] * len(date_range)})
+        return pl.concat([df, df_empty], how='vertical')
+
+    def _calc_gaps(self) -> pl.DataFrame:
+        if self._df.is_empty():
             return self._df
-        # calculate gaps
-        df = self._calc_gaps(self._df.copy())
-        # convert 'date' column dtype from datetime to date
-        df['date'] = pd.to_datetime(df.date).dt.date
-        return df.set_index('date')
 
-    def _calc_gaps(self, df: pd.DataFrame) -> pd.DataFrame:
-        # time gap between days with records
-        df['duration'] = df['date'].diff().dt.days
-        first_record_date = df['date'].iloc[0]
-        # get date for first gap
-        first_date = pd.to_datetime(f'{first_record_date.year}-01-01')
-        if self._past_latest:
-            first_date = pd.to_datetime(self._past_latest)
-        # repair time gap for first year record
-        first_duration = (first_record_date - first_date).days
-        df.loc[df.index[0], 'duration'] = first_duration
+        def first_gap(df: DF) -> pl.Expr:
+            first_record_date = df[0, 'date']
+            past_record_date = self._past_latest or date(first_record_date.year, 1, 1)
+            df[0, 'duration'] = (first_record_date - past_record_date).days
+            return df
 
-        df['duration'] = df['duration'].astype(int)
-
-        return df
+        return (
+            self._df
+            .with_columns((pl.col('date').diff().dt.days()).alias('duration'))
+            .fill_null(0)
+            .sort('date')
+            .pipe(first_gap)
+        )
 
     def _day_info(self, data: tuple, iteration: int, calendar_df: DF) -> list:
         (year, month, (day, weekday)) = data
@@ -159,11 +188,10 @@ class Stats:
 
         # calendar_df dataframe is made in self._make_calandar_dataframe()
         qty_and_duration = []
-        if dt in calendar_df.index:
-            # .loc returns pd.serries -> stdav, qty, duration
-            flt = calendar_df.loc[dt]
-            color = flt.qty  # color depends on qty
-            qty_and_duration = [flt.qty, flt.duration]
+        if not calendar_df.is_empty() and dt in calendar_df['date']:
+            flt = calendar_df.filter(pl.col('date') == dt).row(0, named=True)
+            color = flt['qty']  # color depends on qty
+            qty_and_duration = [flt['qty'], flt['duration']]
 
         return [
             x + month - 1,  # adjust x value for empty col between months
