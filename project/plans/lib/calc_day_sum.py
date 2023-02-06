@@ -125,7 +125,7 @@ class PlanCalculateDaySum:
         return rtn
 
     def _return_data(self, data: Union[pl.Series, float]) -> Union[dict, float]:
-        """If data is pandas Serries convert data to dictionary"""
+        """If data is polars Serries convert data to dictionary"""
         select = monthname(self._data.month) if self._data.month else self.std_columns
         data = data.select(select)
         return data[0, 0] if self._data.month else data.to_dicts()[0]
