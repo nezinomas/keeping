@@ -77,22 +77,9 @@ class MakeDataFrame:
             first_date = date(self.year, 1, 1)
             last_date = date(self.year, 12, 31)
 
-        data.extend(
-            (
-                {
-                    "date": first_date,
-                    "title": "__drop__",
-                    "sum": 0.0,
-                    "exception_sum": 0.0,
-                },
-                {
-                    "date": last_date,
-                    "title": "__drop__",
-                    "sum": 0.0,
-                    "exception_sum": 0.0,
-                },
-            )
-        )
+        common = {"title": "__drop__", "sum": 0.0, "exception_sum": 0.0}
+        data.extend((
+            {"date": first_date, **common}, {"date": last_date, ** common}))
         return data
 
     def _insert_missing_columns(self, df: DF) -> pl.Expr:
