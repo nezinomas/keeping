@@ -37,7 +37,7 @@ def test_chart_data_1(_a):
 @freeze_time('2000-1-1')
 def test_chart_data_2(_a):
     actual = SummarySavingsService.chart_data(_a)
-    print(actual)
+
     assert actual['categories'] == [2000]
     assert actual['invested'] == [1.0]
     assert actual['profit'] == [0.1]
@@ -100,7 +100,7 @@ def test_chart_data_db1():
     SavingBalanceFactory(year=2001, incomes=2, invested=2, profit_sum=0.2)
 
     qs = SavingBalance.objects.sum_by_type()
-    print(f'funds\n{list(qs.filter(type="funds"))}\n')
+
     actual = SummarySavingsService.chart_data(list(qs.filter(type='funds')))
 
     assert actual['categories'] == [2000, 2001]

@@ -68,14 +68,12 @@ class MakeDataFrame:
             return data if isinstance(data, list) else list(data)
 
         if self.month:
-            print('1')
             first_date = date(self.year, self.month, 1)
             last_date = date(self.year, self.month, calendar.monthrange(self.year, self.month)[1])
         else:
-            print('2')
             first_date = date(self.year, 1, 1)
             last_date = date(self.year, 12, 31)
-        print(f'------------------------------->\n{first_date=} {last_date=}\n')
+
         return [
             {'date': first_date, 'title': '__drop__', 'sum': 0.0, 'exception_sum': 0.0},
             {'date': last_date, 'title': '__drop__', 'sum': 0.0, 'exception_sum': 0.0},
