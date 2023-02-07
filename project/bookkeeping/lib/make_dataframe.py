@@ -59,25 +59,40 @@ class MakeDataFrame:
         )
 
     def _drop_columns(self, df: DF) -> pl.Expr:
-        col_to_drop = ['__drop__',]
+        col_to_drop = ["__drop__",]
         return df.drop([name for name in col_to_drop if name in df.columns])
 
     def _transform_data(self, data: list[dict]) -> list[dict]:
-        """ Add first and last dates if data is empty """
-        if data:
-            return data if isinstance(data, list) else list(data)
+        """Add first and last dates if data is empty"""
+        data = data or []
+        data = data if isinstance(data, list) else list(data)
 
         if self.month:
             first_date = date(self.year, self.month, 1)
-            last_date = date(self.year, self.month, calendar.monthrange(self.year, self.month)[1])
+            last_date = date(
+                self.year, self.month, calendar.monthrange(self.year, self.month)[1]
+            )
         else:
             first_date = date(self.year, 1, 1)
             last_date = date(self.year, 12, 31)
 
-        return [
-            {'date': first_date, 'title': '__drop__', 'sum': 0.0, 'exception_sum': 0.0},
-            {'date': last_date, 'title': '__drop__', 'sum': 0.0, 'exception_sum': 0.0},
-        ]
+        data.extend(
+            (
+                {
+                    "date": first_date,
+                    "title": "__drop__",
+                    "sum": 0.0,
+                    "exception_sum": 0.0,
+                },
+                {
+                    "date": last_date,
+                    "title": "__drop__",
+                    "sum": 0.0,
+                    "exception_sum": 0.0,
+                },
+            )
+        )
+        return data
 
     def _insert_missing_columns(self, df: DF) -> pl.Expr:
         """Insert missing columns"""

@@ -49,11 +49,11 @@ class MonthServiceData:
                 .values_list('title', flat=True)
             )
 
-        self.necessary_expense_types =  \
-            ExpenseType.objects \
-            .items() \
-            .filter(necessary=True) \
-            .values_list('title', flat=True)
+        self.necessary_expense_types = list(
+            ExpenseType.objects
+            .items()
+            .filter(necessary=True)
+            .values_list('title', flat=True))
 
         self.savings = list(
             Saving.objects
