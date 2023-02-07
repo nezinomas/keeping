@@ -1,3 +1,6 @@
+import calendar
+from datetime import date
+
 import polars as pl
 from polars import DataFrame as DF
 
@@ -26,8 +29,8 @@ class MakeDataFrame:
         """
         self.year = year
         self.month = month
-        self._data = data
         self._columns = columns
+        self._data = self._transform_data(data)
 
     @property
     def exceptions(self):
@@ -42,9 +45,6 @@ class MakeDataFrame:
         return self.create_data(sum_col_name="sum")
 
     def create_data(self, sum_col_name: str = "sum") -> DF:
-        if not self._data:
-            return pl.DataFrame()
-
         return (
             pl.DataFrame(self._data)
             .select(["date", "title", sum_col_name])
@@ -53,9 +53,31 @@ class MakeDataFrame:
             .pipe(self._insert_missing_rows)
             .pivot(values=sum_col_name, index="date", columns="title")
             .pipe(self._insert_missing_columns)
+            .pipe(self._drop_columns)
             .pipe(self._sort_columns)
             .fill_null(0)
         )
+
+    def _drop_columns(self, df: DF) -> pl.Expr:
+        col_to_drop = ['__drop__',]
+        return df.drop([name for name in col_to_drop if name in df.columns])
+
+    def _transform_data(self, data: list[dict]) -> list[dict]:
+        """ Add first and last dates if data is empty """
+        if data:
+            return data if isinstance(data, list) else list(data)
+
+        if self.month:
+            first_date = date(self.year, self.month, 1)
+            last_date = date(self.year, self.month, calendar.monthrange(self.year, self.month)[1])
+        else:
+            first_date = date(self.year, 1, 1)
+            last_date = date(self.year, 12, 31)
+
+        return [
+            {'date': first_date, 'title': '__drop__', 'sum': 0.0, 'exception_sum': 0.0},
+            {'date': last_date, 'title': '__drop__', 'sum': 0.0, 'exception_sum': 0.0},
+        ]
 
     def _insert_missing_columns(self, df: DF) -> pl.Expr:
         """Insert missing columns"""
