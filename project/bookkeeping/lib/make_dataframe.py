@@ -56,6 +56,7 @@ class MakeDataFrame:
             .pipe(self._drop_columns)
             .pipe(self._sort_columns)
             .fill_null(0)
+            .sort("date")
         )
 
     def _drop_columns(self, df: DF) -> pl.Expr:
