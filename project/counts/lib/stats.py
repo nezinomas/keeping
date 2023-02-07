@@ -44,8 +44,8 @@ class Stats:
             .fill_null(0)
             .groupby(pl.col('date').dt.weekday() - 1)
             .agg(pl.col('qty').sum())
-            .sort('date')
             .rename({'date': 'weekday', 'qty': 'count'})
+            .sort('weekday')
         )
         return df.to_dicts()
 
@@ -100,6 +100,7 @@ class Stats:
             self._df
             .groupby(pl.col('date').dt.year())
             .agg(pl.col('qty').sum())
+            .sort('date')
         )
 
         if not self._year:
