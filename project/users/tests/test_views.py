@@ -1,6 +1,5 @@
-import json
 import re
-from datetime import timedelta
+from datetime import datetime, timedelta, date
 
 import pytest
 from django.conf import settings
@@ -52,9 +51,12 @@ def test_user_journal(client):
     assert response.context['user'].journal.title == 'bob Journal'
 
 
-@freeze_time('2000-12-01')
+# @freeze_time('2000-12-01')
 @pytest.mark.disable_get_user_patch
-def test_user_year_month_values_fill_on_login_if_empty(client):
+@patch('project.users.views.datetime')
+def test_user_year_month_values_fill_on_login_if_empty(dt_mock, client):
+    dt_mock.now.return_value = date(2000, 12, 1)
+
     UserFactory(year=None, month=None)
 
     url = reverse('users:login')

@@ -1,8 +1,9 @@
 import re
-from datetime import date
+from datetime import date, datetime
 
 import pytest
 from django.urls import resolve, reverse, reverse_lazy
+from mock import patch
 
 from ...core.tests.utils import change_profile_year, setup_view
 from ...users.factories import User
@@ -140,8 +141,9 @@ def test_tab_index_context(client_logged):
     assert 'tbl_std_av' in response.context
 
 
-@pytest.mark.freeze_time('1999-1-1')
-def test_tab_index_chart_consumption(client_logged):
+@patch('project.counts.lib.stats.datetime')
+def test_tab_index_chart_consumption(dt_mock, client_logged):
+    dt_mock.now.return_value = datetime(1999, 1, 1)
     DrinkFactory()
 
     url = reverse('drinks:tab_index')
@@ -153,8 +155,9 @@ def test_tab_index_chart_consumption(client_logged):
     assert '<div id="chart-consumption-container"></div>' in content
 
 
-@pytest.mark.freeze_time('1999-1-1')
-def test_tab_index_chart_quantity(client_logged):
+@patch('project.counts.lib.stats.datetime')
+def test_tab_index_chart_quantity(dt_mock, client_logged):
+    dt_mock.now.return_value = datetime(1999, 1, 1)
     DrinkFactory()
 
     url = reverse('drinks:tab_index')
@@ -185,8 +188,9 @@ def test_tab_index_drinked_date(client_logged):
         ('beer', 'vodka', 219),
     ]
 )
-@pytest.mark.freeze_time('1999-12-31')
-def test_tab_index_chart_consumption_avg(user_drink_type, drink_type, expect, get_user, client_logged):
+@patch('project.counts.lib.stats.datetime')
+def test_tab_index_chart_consumption_avg(dt_mock, user_drink_type, drink_type, expect, get_user, client_logged):
+    dt_mock.now.return_value = datetime(1999, 12, 31)
     get_user.drink_type = user_drink_type
 
     DrinkFactory(quantity=10, option=drink_type)
@@ -219,8 +223,9 @@ def test_tab_index_chart_consumption_limit(user_drink_type, drink_type, expect, 
     assert expect == round(actual, 0)
 
 
-@pytest.mark.freeze_time('1999-1-1')
-def test_tab_index_first_record_with_gap_from_previous_year(client_logged):
+@patch('project.counts.lib.stats.datetime')
+def test_tab_index_first_record_with_gap_from_previous_year(dt_mock, client_logged):
+    dt_mock.now.return_value = datetime(1999, 1, 1)
     DrinkFactory(date=date(1999, 1, 2))
     DrinkFactory(date=date(1998, 1, 1))
 

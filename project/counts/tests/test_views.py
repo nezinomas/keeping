@@ -1,11 +1,12 @@
 import re
 import tempfile
-from datetime import date
+from datetime import date, datetime
 
 import pytest
 from django.test import override_settings
 from django.urls import resolve, reverse
 from freezegun import freeze_time
+from mock import patch
 
 from ...users.views import Login
 from .. import forms, views
@@ -440,8 +441,10 @@ def test_tab_index_chart_histogram(client_logged):
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@freeze_time('1999-07-18')
-def test_index_info_row(client_logged):
+@patch('project.counts.lib.stats.datetime')
+def test_index_info_row(dt_mock, client_logged):
+    dt_mock.now.return_value = datetime(1999, 7, 18)
+
     obj = CountFactory(quantity=3)
 
     url = reverse('counts:index', kwargs={'slug': obj.count_type.slug})
@@ -457,9 +460,11 @@ def test_index_info_row(client_logged):
         assert m.group(3) == '0,1'
 
 
-@freeze_time('1999-1-1')
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_index_chart_calendar_gap_from_previous_year(client_logged):
+@patch('project.counts.lib.stats.datetime')
+def test_index_chart_calendar_gap_from_previous_year(dt_mock, client_logged):
+    dt_mock.now.return_value = datetime(1999, 1, 1)
+
     CountFactory(date=date(1998, 1, 1))
     CountFactory(date=date(1999, 1, 2))
 
@@ -781,8 +786,12 @@ def test_info_row_func():
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@freeze_time('1999-07-12')
-def test_info_row(client_logged):
+@patch('project.counts.lib.views_helper.datetime')
+@patch('project.core.lib.date.datetime')
+def test_info_row(dt_mock, dt_helper_mock, client_logged):
+    dt_mock.now.return_value = dt_helper_mock.now.return_value = datetime(1999, 7, 12)
+
+
     CountFactory(date=date(1999, 7, 8), quantity=1)
     CountFactory(date=date(1999, 1, 1), quantity=1)
     CountFactory(date=date(1999, 1, 1), quantity=1)
@@ -799,8 +808,10 @@ def test_info_row(client_logged):
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@freeze_time('2000-07-12')
-def test_info_row_gap_in_past_view(client_logged, get_user):
+@patch('project.counts.lib.stats.datetime')
+def test_info_row_gap_in_past_view(dt_mock, client_logged, get_user):
+    dt_mock.now.return_value = datetime(2000, 7, 12)
+
     get_user.year = 1999
 
     CountFactory(date=date(1999, 1, 1), quantity=1)

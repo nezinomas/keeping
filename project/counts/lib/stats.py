@@ -56,8 +56,6 @@ class Stats:
 
         df = (
             self._insert_empty_rows(self._df)
-            # self._df
-            # .upsample(time_column="date", every="1d", by="qty", maintain_order=True)
             .fill_null(0)
             .groupby(pl.col('date').dt.month())
             .agg(pl.col('qty').sum())
@@ -96,7 +94,7 @@ class Stats:
         else method returns {1999: 12, 2000: 15}
         """
         if self._df.is_empty():
-            return 0
+            return 0 if self._year else {}
 
         df = (
             self._df
@@ -140,9 +138,7 @@ class Stats:
             return df.filter(pl.col('date').dt.year() == self._year) if self._year else df
 
         def copy_quantity(df: DF) -> pl.Expr:
-            if 'quantity' in df.columns:
-                return df.with_columns(pl.col('quantity').alias('qty'))
-            return df
+            return df.rename({'quantity': 'qty'}) if 'quantity' in df.columns else df
 
         return (
             df

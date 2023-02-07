@@ -231,7 +231,7 @@ def test_year_totals_year_not_exists_in_data(data):
 def test_year_totals_year_nodata():
     actual = Stats(data=[]).year_totals()
 
-    assert actual == 0
+    assert actual == {}
 
 
 def test_gaps_for_current_year(data):
