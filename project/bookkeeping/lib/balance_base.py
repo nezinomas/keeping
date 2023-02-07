@@ -61,7 +61,7 @@ class BalanceBase:
 
         df = self._data.select(pl.exclude("date")).sum().head(1)
 
-        return df.to_dicts()[0]
+        return {} if df.is_empty() else df.to_dicts()[0]
 
     @property
     def average(self) -> dict[str, float]:
@@ -96,4 +96,4 @@ class BalanceBase:
                 ]
             )
         )
-        return df.to_dicts()[0]
+        return {} if df.is_empty() else df.to_dicts()[0]
