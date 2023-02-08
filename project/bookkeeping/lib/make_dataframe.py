@@ -60,7 +60,9 @@ class MakeDataFrame:
         )
 
     def _drop_columns(self, df: DF) -> pl.Expr:
-        col_to_drop = ["__tmp_to_drop__",]
+        col_to_drop = [
+            "__tmp_to_drop__",
+        ]
         return df.drop([name for name in col_to_drop if name in df.columns])
 
     def _transform_data(self, data: list[dict]) -> list[dict]:
@@ -78,8 +80,7 @@ class MakeDataFrame:
             last_date = date(self.year, 12, 31)
 
         common = {"title": "__tmp_to_drop__", "sum": 0.0, "exception_sum": 0.0}
-        data.extend((
-            {"date": first_date, **common}, {"date": last_date, ** common}))
+        data.extend(({"date": first_date, **common}, {"date": last_date, **common}))
         return data
 
     def _insert_missing_columns(self, df: DF) -> pl.Expr:
@@ -93,11 +94,9 @@ class MakeDataFrame:
 
     def _insert_missing_rows(self, df: DF) -> pl.Expr:
         every = "1d" if self.month else "1mo"
-        return (
-            df
-            .upsample(
-                time_column="date", every=every, by="title", maintain_order=True)
-            .with_columns(pl.col("title").forward_fill()))
+        return df.upsample(
+            time_column="date", every=every, by="title", maintain_order=True
+        ).with_columns(pl.col("title").forward_fill())
 
     def _sort_columns(self, df: DF) -> pl.Expr:
         cols = [pl.col(x) for x in sorted(df.columns[1:])]
