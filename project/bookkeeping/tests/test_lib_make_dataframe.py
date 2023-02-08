@@ -21,7 +21,7 @@ def fixture_month_data():
             'sum': Decimal('2'),
             'exception_sum': Decimal('0')
         }, {
-            'date': date(1999, 1, 31),
+            'date': date(1999, 1, 30),
             'title': 'T1',
             'sum': Decimal('3'),
             'exception_sum': Decimal('0')
@@ -53,7 +53,7 @@ def fixture_day_data():
             'sum': Decimal('2'),
             'exception_sum': Decimal('0')
         }, {
-            'date': date(1999, 1, 31),
+            'date': date(1999, 1, 30),
             'title': 'T1',
             'sum': Decimal('3'),
             'exception_sum': Decimal('0')
@@ -157,10 +157,10 @@ def test_day_expenses(day_data, columns):
     assert actual[0, 'T1'] == 5.0
     assert actual[0, 'T2'] == 2.0
 
-    # last row 1999-01-31
-    assert actual[30, 'T0'] == 0.0
-    assert actual[30, 'T1'] == 3.0
-    assert actual[30, 'T2'] == 0.0
+    # last row 1999-01-30
+    assert actual[29, 'T0'] == 0.0
+    assert actual[29, 'T1'] == 3.0
+    assert actual[29, 'T2'] == 0.0
 
 
 @pytest.mark.parametrize('data', [([]), (None)])
