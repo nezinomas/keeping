@@ -6,7 +6,8 @@ from dataclasses import dataclass, field
 
 import numpy as np
 import pandas as pd
-from pandas import DataFrame as DF
+import polars as pl
+from polars import DataFrame as DF
 
 
 @dataclass
@@ -33,7 +34,7 @@ class GetData:
             with contextlib.suppress(AttributeError):
                 _method = getattr(model.objects, method)
                 if _qs := _method():
-                    items.extend(_qs)
+                    items.extend(list(_qs))
         return items
 
 
@@ -44,120 +45,126 @@ class SignalBase(ABC):
 
     @property
     def table(self):
-        df = self._table.copy().reset_index()
-        return df.to_dict('records')
+        return self._table.to_dicts()
 
     @abstractmethod
     def make_table(self, df: DF) -> DF:
         ...
 
     def _make_df(self, arr: list[dict], cols: list) -> DF:
-        col_idx = ['id', 'year']
         # create df from incomes and expenses
-        df = pd.DataFrame(arr)
-        if df.empty:
-            return pd.DataFrame(columns=col_idx + cols).set_index(col_idx)
-        # create missing columns
-        df[[*set(cols) - set(df.columns)]] = 0.0
-        # convert decimal to float
-        df[cols] = df[cols].astype(np.float64)
-        # groupby id, year and sum
-        df = df.groupby(col_idx)[cols].sum(numeric_only=True)
+        df = pl.DataFrame(arr)
+        if df.is_empty():
+            return df
 
+        df = (
+            df
+            .fill_null(0.0)
+            .with_columns([
+                pl.col('year').cast(pl.UInt16),
+                pl.col('id').cast(pl.UInt16)])
+            .groupby(['id', 'year'])
+            .agg(pl.all().sum())
+            .sort(['year', 'id'])
+        )
         return df
 
     def _make_have(self, have: list[dict]) -> DF:
-        hv = pd.DataFrame(have)
-        idx = ['id', 'year']
-        if hv.empty:
-            cols = ['id', 'year', 'have', 'latest_check']
-            return pd.DataFrame(defaultdict(list), columns=cols).set_index(idx)
-        # convert Decimal -> float
-        hv['have'] = hv['have'].apply(pd.to_numeric, downcast='float')
-
-        return hv.set_index(idx)
+        df = pl.DataFrame(have)
+        df = (
+            df
+            .with_columns([
+                pl.col('year').cast(pl.UInt16),
+                pl.col('id').cast(pl.UInt16)
+            ])
+            .sort(['year', 'id'])
+        )
+        print(f'------------------------------->have out\n{df}\n')
+        return df
 
     def _insert_missing_values(self, df: DF, field_name: str) -> DF:
-        df = self._insert_missing_types(df)
-        df = self._insert_missing_latest(df, field_name)
-        df = self._insert_future_data(df)
+        # df = self._insert_missing_types(df)
+        # print(f'------------------------------->insert missing values in\n{df}\n')
+        years = df.select(pl.col("year").unique().sort())["year"].to_list()
+        prev_year = years[-2]
+        last_year = years[-1]
+        types = [x.pk for x in self._types]
+        # print(f'------------------------------->\n{years} {prev_year=} {last_year=} {types=}\n')
+
+        row_diff = (
+            df
+            .filter(pl.col('year').is_in([prev_year, last_year]))
+            .select([ pl.all()])
+            .groupby(['year'])
+            .agg([pl.col('id').alias('tmp')])
+            .with_columns(pl.col('tmp'))
+        )
+        row_diff = list(set(row_diff[0, 1]) - set(row_diff[1, 1]))
+
+        # print(f'------------------------------->Master df in\n{df}\n')
+        def prev_rows(df):
+            # print(f'------------------------------->IN \n{df}\n')
+            df = (
+                df
+                .filter(
+                    (pl.col('year') == prev_year) & (pl.col('id').is_in(types)) & (pl.col('id').is_in(row_diff)))
+                .with_columns(pl.lit(last_year).cast(pl.UInt16).alias('year'))
+                # .pipe(self._reset_values, year=last_year)
+            ).pipe(self._reset_values, year=last_year)
+            # print(f'------------------------------->OUT \n{df}\n')
+            return df
+
+        df = (
+            df
+            .vstack(df.pipe(prev_rows))
+            .sort(['id', 'year'])
+            .with_columns([
+                pl.col('latest_check').forward_fill(),
+                pl.col('have').forward_fill(),
+            ])
+            .with_columns(pl.col('have').fill_null(0.0))
+            .sort(['year', 'id'])
+        )
+
+        df = (
+            pl
+            .concat([
+                df,
+                (df
+                 .filter(pl.col('year') == df['year'][-1])
+                 .with_columns(pl.lit(last_year + 1).cast(pl.UInt16).alias('year'))
+                 .pipe(self._reset_values, year=(last_year + 1))
+                 )
+            ], how='vertical')
+        )
+        # print(f'------------------------------->insert missing values final\n{df}\n')
         return df
 
     def _insert_future_data(self, df: DF) -> DF:
         ''' copy last year values into future (year + 1) '''
-        # last year in dataframe
-        year = df.index.levels[1].max()
-        # get last group of (year, id)
-        last_group = df.groupby(['year', 'id']).last().loc[year]
-        return self._reset_values(year + 1, df, last_group)
+        return df
 
     def _insert_missing_types(self, df: DF) -> DF:
         '''
             copy types: (account | saving_type | pension_type)
             from previous year to current year
         '''
-        index = list(df.index)
-        index_id = list(df.index.levels[0])
-        index_year = list(df.index.levels[1])
-        # years index should have at least two years
-        if index_year and len(index_year) < 2:
-            return df
-        last_year = index_year[-1]
-        prev_year = index_year[-2]
-        arr = []
-        for _type in self._types:
-            # if type id not id dataframe index
-            if (_type.pk) not in index_id:
-                continue
-            # if type dont have record in previous year
-            if (_type.pk, prev_year) not in index:
-                continue
-            # if type have record in current year
-            if (_type.pk, last_year) in index:
-                continue
-            arr.append(_type.pk)
-        # get rows to be copied from previous year
-        values_id = df.index.get_level_values(0)
-        values_year = df.index.get_level_values(1)
-        mask = (values_id.isin(arr)) & (values_year==prev_year)
-
-        return self._reset_values(last_year, df, df[mask])
-
-    def _insert_missing_latest(self, df: DF, field_name: str) -> DF:
-        '''
-            copy latest_check and (have | market_value) if they are empty
-            from previous year to current year
-        '''
-        index = list(df.index)
-        index_id = list(df.index.levels[0])
-        index_year = list(df.index.levels[1])
-        # years index should have at least two years
-        if len(index_year) < 2:
-            return df
-        last_year = index_year[-1]
-        prev_year = index_year[-2]
-        for pk in index_id:
-            if (pk, prev_year) not in index:
-                continue
-            # get field value
-            have = df.at[(pk, last_year), field_name]
-            if have:
-                continue
-            # copy field and latest_check values from previous year
-            df.at[(pk, last_year), 'latest_check'] = df.at[(pk, prev_year), 'latest_check']
-            df.at[(pk, last_year), field_name] = df.at[(pk, prev_year), field_name]
         return df
 
-    def _reset_values(self, year: int, df: DF, df_filtered: DF) -> DF:
-        df_filtered = df_filtered.reset_index().copy()
-        df_filtered['year'] = year
-        df_filtered.set_index(['id', 'year'], inplace=True)
+    def _reset_values(self, df: DF, year: int) -> pl.Expr:
         if 'fee' in df.columns:
-            df_filtered[['incomes', 'fee', 'sold', 'sold_fee']] = 0.0
+            df = df.filter(pl.col('year') == year).with_columns([
+                pl.lit(0.0).alias('incomes'),
+                pl.lit(0.0).alias('fee'),
+                pl.lit(0.0).alias('sold'),
+                pl.lit(0.0).alias('sold_fee'),
+            ])
         else:
-            df_filtered[['incomes', 'expenses']] = 0.0
-        df = pd.concat([df, df_filtered])
-        return df.sort_index()
+            df = df.filter(pl.col('year') == year).with_columns([
+                pl.lit(0.0).alias('incomes'),
+                pl.lit(0.0).alias('expenses'),
+            ])
+        return df
 
 
 class Accounts(SignalBase):
@@ -171,25 +178,53 @@ class Accounts(SignalBase):
         self._table = self.make_table(_df)
 
     def make_table(self, df: DF) -> DF:
-        if df.empty:
+        if df.is_empty():
             return df
-        df = self._insert_missing_values(df, 'have')
-        # balance without past
-        df.balance = df.incomes - df.expenses
-        # temp column for each id group with balance cumulative sum
-        df['temp'] = df.groupby("id")['balance'].cumsum()
-        # calculate past -> shift down temp column
-        df['past'] = df.groupby("id")['temp'].shift(fill_value=0.0)
-        # recalculate balance with past and drop temp
-        df['balance'] = df['past'] + df['incomes'] - df['expenses']
-        df.drop(columns=["temp"], inplace=True)
-        # calculate delta between have and balance
-        df.delta = df.have - df.balance
+
+        def _missing_cols(df) -> pl.Expr:
+            cols = ['incomes', 'expenses']
+            diff = [col_name for col_name in cols if col_name not in df.columns]
+            return df.with_columns([pl.lit(0.0).alias(col_name) for col_name in diff])
+
+        print(f'------------------------------->make_table IN\n{df}\n')
+        df = (
+            df
+            .pipe(_missing_cols)
+            .pipe(self._insert_missing_values, field_name='have')
+            .with_columns([
+                pl.lit(0.0).alias('balance'),
+                pl.lit(0.0).alias('past'),
+                pl.lit(0.0).alias('delta'),
+            ])
+            .sort(['id', 'year'])
+            .with_columns((pl.col('incomes') - pl.col('expenses')).alias('balance'))
+            .with_columns(pl.col('balance').cumsum().over(['id']).alias('tmp_balance'))
+            .with_columns(pl.col('tmp_balance').shift_and_fill(periods=1, fill_value=0.0).over('id').alias('past'))
+            .with_columns((pl.col('past') + pl.col('incomes') - pl.col('expenses')).alias('balance'))
+            .with_columns((pl.col('have') - pl.col('balance')).alias('delta'))
+            .drop('tmp_balance')
+        )
+        # df.balance = df.incomes - df.expenses
+        # # temp column for each id group with balance cumulative sum
+        # df['temp'] = df.groupby("id")['balance'].cumsum()
+        # # calculate past -> shift down temp column
+        # df['past'] = df.groupby("id")['temp'].shift(fill_value=0.0)
+        # # recalculate balance with past and drop temp
+        # df['balance'] = df['past'] + df['incomes'] - df['expenses']
+        # df.drop(columns=["temp"], inplace=True)
+        # # calculate delta between have and balance
+        # df.delta = df.have - df.balance
+        # print(f'------------------------------->make_table OUT\n{df.select(pl.exclude(["latest_check"]))}\n')
+        print(f'------------------------------->make_table OUT\n{df.select(pl.exclude(["expenses",]))}\n')
         return df
 
     def _join_df(self, df: DF, hv: DF) -> DF:
-        df = pd.concat([df, hv], axis=1).fillna(0.0)
-        df[['past', 'balance', 'delta']] = 0.0
+        df = (
+            df
+            .join(hv, on=["id", "year"], how="outer")
+            .with_columns(pl.col("have"))
+            .sort(['year', 'id'])
+        )
         return df
 
 
