@@ -1,10 +1,9 @@
 import re
-from datetime import date, datetime
+from datetime import date
 
 import pytest
 import time_machine
 from django.urls import resolve, reverse, reverse_lazy
-from mock import patch
 
 from ...core.tests.utils import change_profile_year, setup_view
 from ...users.factories import User
@@ -142,7 +141,7 @@ def test_tab_index_context(client_logged):
     assert 'tbl_std_av' in response.context
 
 
-@time_machine.travel(datetime(1999, 1, 1))
+@time_machine.travel("1999-1-1")
 def test_tab_index_chart_consumption(client_logged):
     DrinkFactory()
 
@@ -155,7 +154,7 @@ def test_tab_index_chart_consumption(client_logged):
     assert '<div id="chart-consumption-container"></div>' in content
 
 
-@time_machine.travel(datetime(1999, 1, 1))
+@time_machine.travel("1999-1-1")
 def test_tab_index_chart_quantity(client_logged):
     DrinkFactory()
 
@@ -187,7 +186,7 @@ def test_tab_index_drinked_date(client_logged):
         ('beer', 'vodka', 219),
     ]
 )
-@time_machine.travel(datetime(1999, 12, 31))
+@time_machine.travel("1999-12-31")
 def test_tab_index_chart_consumption_avg(user_drink_type, drink_type, expect, get_user, client_logged):
     get_user.drink_type = user_drink_type
 
@@ -221,7 +220,7 @@ def test_tab_index_chart_consumption_limit(user_drink_type, drink_type, expect, 
     assert expect == round(actual, 0)
 
 
-@time_machine.travel(datetime(1999, 1, 1))
+@time_machine.travel("1999-1-1")
 def test_tab_index_first_record_with_gap_from_previous_year(client_logged):
     DrinkFactory(date=date(1999, 1, 2))
     DrinkFactory(date=date(1998, 1, 1))
@@ -313,7 +312,7 @@ def test_tab_history_context(client_logged):
     assert 'data_alcohol' in response.context['chart']
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_tab_history_chart_consumption(client_logged):
     DrinkFactory()
     DrinkFactory(date=date(1988, 1, 1))
@@ -325,7 +324,7 @@ def test_tab_history_chart_consumption(client_logged):
     assert '<div id="chart-summary-container"></div>' in content
 
 
-@pytest.mark.freeze_time('1999-12-31')
+@time_machine.travel('1999-12-31')
 def test_tab_history_drinks_years(client_logged):
     DrinkFactory()
     DrinkFactory(date=date(1998, 1, 1))
@@ -344,7 +343,7 @@ def test_tab_history_drinks_years(client_logged):
         ('beer', 'vodka', [43.84, 21.92]),
     ]
 )
-@pytest.mark.freeze_time('1999-12-31')
+@time_machine.travel('1999-12-31')
 def test_tab_history_drinks_data_ml(user_drink_type, drink_type, ml, get_user, client_logged):
     get_user.drink_type = user_drink_type
 
@@ -357,7 +356,7 @@ def test_tab_history_drinks_data_ml(user_drink_type, drink_type, ml, get_user, c
     assert response.context['chart']['data_ml'] == pytest.approx(ml, rel=1e-2)
 
 
-@pytest.mark.freeze_time('1999-12-31')
+@time_machine.travel('1999-12-31')
 @pytest.mark.parametrize(
     'user_drink_type, drink_type, expect',
     [
@@ -378,7 +377,7 @@ def test_tab_history_drinks_data_alcohol(user_drink_type, drink_type, expect, ge
     assert response.context['chart']['data_alcohol'] == pytest.approx(expect, 0.01)
 
 
-@pytest.mark.freeze_time('1999-12-31')
+@time_machine.travel('1999-12-31')
 def test_tab_history_categories_with_empty_year_in_between(fake_request):
     DrinkFactory(date=date(1997, 1, 1), quantity=15)
     DrinkFactory(date=date(1999, 1, 1), quantity=15)
@@ -395,7 +394,7 @@ def test_tab_history_categories_with_empty_year_in_between(fake_request):
     assert pytest.approx(actual['chart']['data_alcohol'], rel=1e-1) == [0.38, 0.0, 0.75]
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 @pytest.mark.parametrize(
     'user_drink_type, drink_type, ml, alcohol',
     [
@@ -542,7 +541,7 @@ def test_trigger_name(tab, trigger, rf):
         ('xxx', reverse_lazy('drinks:new', kwargs={'tab': 'index'})),
     ]
 )
-@pytest.mark.freeze_time('2000-1-1')
+@time_machine.travel('2000-1-1')
 def test_new_load_form(client_logged, tab, expect_url):
     url = reverse('drinks:new', kwargs={'tab': tab})
     response = client_logged.get(url)

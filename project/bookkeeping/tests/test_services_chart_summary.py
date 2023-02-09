@@ -1,7 +1,7 @@
 from decimal import Decimal
 from types import SimpleNamespace
 
-import pytest
+import time_machine
 
 from ..services.chart_summary import ChartSummaryService
 
@@ -25,7 +25,7 @@ def test_chart_incomes_context():
     assert 'salary_title' in actual
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_chart_incomes_salary_years():
     data = SimpleNamespace(
         incomes=[],
@@ -40,7 +40,7 @@ def test_chart_incomes_salary_years():
     assert actual['categories'] == [1998, 1999]
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_chart_incomes_salary():
     data = SimpleNamespace(
         incomes=[],
@@ -56,7 +56,7 @@ def test_chart_incomes_salary():
     assert actual['salary'] == [1.0, 10.0]
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_chart_incomes_incomes():
     data = SimpleNamespace(
         incomes=[
@@ -75,7 +75,7 @@ def test_chart_incomes_incomes():
     assert actual['incomes'] == [2.0, 12.0]
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_chart_incomes_records():
     data = SimpleNamespace(
         incomes=[
@@ -91,7 +91,7 @@ def test_chart_incomes_records():
     assert actual['records'] == 1
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_chart_incomes_records_no_data():
     data = SimpleNamespace(
         incomes=[],

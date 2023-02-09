@@ -2,8 +2,8 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+import time_machine
 from django.urls import reverse
-from freezegun import freeze_time
 
 from ..factories import (PensionBalanceFactory, PensionFactory,
                          PensionTypeFactory)
@@ -340,7 +340,7 @@ def test_pension_balance_queries(django_assert_num_queries):
         list(PensionBalance.objects.items().values())
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_sum_by_year():
     PensionFactory(price=1, fee=0)
     PensionFactory(price=2, fee=0)

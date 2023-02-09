@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import polars as pl
 import pytest
-from freezegun import freeze_time
+import time_machine
 
 from ..lib.day_spending import DaySpending
 
@@ -41,7 +41,7 @@ def fixture_df_for_average_calculation():
     ])
 
 
-@freeze_time('1999-01-02')
+@time_machine.travel("1999-1-2")
 def test_avg_per_day(df, necessary):
     obj = DaySpending(
         df=df,
@@ -148,7 +148,7 @@ def test_spending_balance_expenses_empty():
         assert x['full'] == 0.0
 
 
-@freeze_time('1999-1-2')
+@time_machine.travel("1999-1-2")
 def test_average_month_two_days(df_for_average_calculation):
     o = DaySpending(
         df=SimpleNamespace(year=1999, month=1, data=pl.DataFrame(), exceptions=pl.DataFrame()),
@@ -163,7 +163,7 @@ def test_average_month_two_days(df_for_average_calculation):
     assert 1.6 == round(actual, 2)
 
 
-@freeze_time("1999-01-31")
+@time_machine.travel("1999-1-31")
 def test_average_month_last_day(df_for_average_calculation):
     o = DaySpending(
         df=SimpleNamespace(year=1999, month=1, data=pl.DataFrame(), exceptions=pl.DataFrame()),
@@ -178,7 +178,7 @@ def test_average_month_last_day(df_for_average_calculation):
     assert round(actual, 2) == 0.34
 
 
-@freeze_time("1970-01-01")
+@time_machine.travel("1974-1-1")
 def test_average_month_other_year(df_for_average_calculation):
     o = DaySpending(
         df=SimpleNamespace(year=1999, month=1, data=pl.DataFrame(), exceptions=pl.DataFrame()),

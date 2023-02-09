@@ -1,11 +1,12 @@
 import pytest
+import time_machine
 
 from ..services import history as T
 
 pytestmark = pytest.mark.django_db
 
 
-@pytest.mark.freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_years():
     qs = [{'year': 1998, 'qty': 1, 'stdav': 2.5}]
     actual = T.HistoryService(qs).years
@@ -22,7 +23,7 @@ def test_years():
         ('stdav', 1, 10, [0.1, 0.0]),
     ]
 )
-@pytest.mark.freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_pure_alcohol(drink_type, qty, stdav, expect, get_user):
     get_user.drink_type = drink_type
 
@@ -42,7 +43,7 @@ def test_pure_alcohol(drink_type, qty, stdav, expect, get_user):
         ('stdav', 365, 365, [10.0, 0.0]),
     ]
 )
-@pytest.mark.freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_per_day(drink_type, qty, stdav, expect, get_user):
     get_user.drink_type = drink_type
 
@@ -62,7 +63,7 @@ def test_per_day(drink_type, qty, stdav, expect, get_user):
         ('stdav', 365, 365, [10.0, 3_650]),
     ]
 )
-@pytest.mark.freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_per_day_adjusted_for_current_year(drink_type, qty, stdav, expect, get_user):
     get_user.drink_type = drink_type
 
@@ -85,7 +86,7 @@ def test_per_day_adjusted_for_current_year(drink_type, qty, stdav, expect, get_u
         ('stdav', 365, 365, [365.0, 0.0]),
     ]
 )
-@pytest.mark.freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_quantity(drink_type, qty, stdav, expect, get_user):
     get_user.drink_type = drink_type
 

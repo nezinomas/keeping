@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import polars as pl
 import pytest
-from freezegun import freeze_time
+import time_machine
 
 from ..lib.year_balance import YearBalance
 
@@ -259,7 +259,7 @@ def test_avg_expenses_none(data):
     assert actual == 0.0
 
 
-@freeze_time("1999-2-1")
+@time_machine.travel("1999-2-1")
 def test_avg_expenses_current_year(data):
     data.data[0, "expenses"] = 1
     data.data[1, "expenses"] = 2
@@ -270,7 +270,7 @@ def test_avg_expenses_current_year(data):
     assert actual == 1.5
 
 
-@freeze_time("2000-2-1")
+@time_machine.travel("2000-2-1")
 def test_avg_expenses_not_current_year(data):
     data.data[0, "expenses"] = 1
     data.data[1, "expenses"] = 2

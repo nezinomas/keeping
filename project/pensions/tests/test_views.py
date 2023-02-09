@@ -1,8 +1,8 @@
 import json
 
 import pytest
+import time_machine
 from django.urls import resolve, reverse
-from freezegun import freeze_time
 
 from .. import models, views
 from ..factories import Pension, PensionFactory, PensionTypeFactory
@@ -49,7 +49,7 @@ def test_types_update_func():
     assert views.TypeUpdate == view.func.view_class
 
 
-@freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_pensions_load_form(admin_client):
     url = reverse('pensions:new')
 
@@ -216,7 +216,7 @@ def test_pensions_delete_other_journal_post_form(client_logged, second_user):
 #                                                                             PensionType
 # ---------------------------------------------------------------------------------------
 
-@freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_type_load_form(admin_client):
     url = reverse('pensions:type_new')
 
@@ -225,7 +225,7 @@ def test_type_load_form(admin_client):
     assert response.status_code == 200
 
 
-@freeze_time('1999-01-01')
+@time_machine.travel('1999-01-01')
 def test_type_save(client_logged):
     data = {'title': 'TTT'}
     url = reverse('pensions:type_new')

@@ -3,6 +3,7 @@ from decimal import Decimal
 from types import SimpleNamespace
 
 import pytest
+import time_machine
 
 from ..lib.signals import Savings
 
@@ -58,7 +59,7 @@ def fixture_types():
     ]
 
 
-@pytest.mark.freeze_time('2000-12-31')
+@time_machine.travel('2000-12-31')
 def test_table(incomes, expenses, have, types):
     incomes.extend([
         {'year': 1998, 'incomes': Decimal('15'), 'fee': Decimal('1'), 'id': 1},
@@ -196,7 +197,7 @@ def test_table(incomes, expenses, have, types):
     assert actual[7]['latest_check'] == datetime(2000, 1, 1)
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_copy_market_value_and_latest_from_previous_year(types):
     have = [{'id': 1, 'year': 1998, 'have': Decimal('10'), 'latest_check': datetime(1998, 1, 1)},]
     incomes = [
@@ -224,7 +225,7 @@ def test_copy_market_value_and_latest_from_previous_year(types):
     assert actual[1]['latest_check'] == datetime(1998, 1, 1)
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_table_with_types(types):
     incomes = [
         {'year': 1998, 'incomes': Decimal('1'), 'fee': Decimal('0.1'), 'id': 1},
@@ -253,7 +254,7 @@ def test_table_with_types(types):
     assert actual[4]['per_year_fee'] == 0.0
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_table_type_without_record(types):
     types.append(SimpleNamespace(pk=666))
     incomes = [
@@ -283,7 +284,7 @@ def test_table_type_without_record(types):
     assert actual[4]['per_year_fee'] == 0.0
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_table_old_type(types):
     types.append(SimpleNamespace(pk=666))
     incomes = [
@@ -314,7 +315,7 @@ def test_table_old_type(types):
     assert actual[4]['per_year_fee'] == 0.0
 
 
-@pytest.mark.freeze_time('2000-12-31')
+@time_machine.travel('2000-12-31')
 def test_table_have_empty(incomes, expenses, types):
     data = SimpleNamespace(incomes=incomes[:4], expenses=expenses[:4], have=[], types=types)
     actual = Savings(data).table
@@ -368,7 +369,7 @@ def test_table_have_empty(incomes, expenses, types):
     assert actual[2]['latest_check'] == 0.0
 
 
-@pytest.mark.freeze_time('2000-12-31')
+@time_machine.travel('2000-12-31')
 def test_table_incomes_empty(expenses, types):
     data = SimpleNamespace(incomes=[], expenses=expenses[:4], have=[], types=types)
     actual = Savings(data).table
@@ -422,7 +423,7 @@ def test_table_incomes_empty(expenses, types):
     assert actual[2]['latest_check'] == 0.0
 
 
-@pytest.mark.freeze_time('2000-12-31')
+@time_machine.travel('2000-12-31')
 def test_table_expenses_empty(incomes, types):
     data = SimpleNamespace(incomes=incomes[:4], expenses=[], have=[], types=types)
     actual = Savings(data).table
@@ -476,7 +477,7 @@ def test_table_expenses_empty(incomes, types):
     assert actual[2]['latest_check'] == 0.0
 
 
-@pytest.mark.freeze_time('2000-12-31')
+@time_machine.travel('2000-12-31')
 def test_table_only_have(have, types):
     data = SimpleNamespace(incomes=[], expenses=[], have=have[:2], types=types)
     actual = Savings(data).table

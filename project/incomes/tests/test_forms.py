@@ -2,7 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from freezegun import freeze_time
+import time_machine
 
 from ...accounts.factories import AccountFactory
 from ...users.factories import UserFactory
@@ -106,7 +106,7 @@ def test_income_init():
     IncomeForm()
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_income_year_initial_value():
     UserFactory()
 
@@ -168,7 +168,7 @@ def test_income_valid_data():
     assert data.income_type.title == t.title
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_income_insert_only_three_years_to_past():
     a = AccountFactory()
     t = IncomeTypeFactory()
@@ -186,7 +186,7 @@ def test_income_insert_only_three_years_to_past():
     assert 'Metai negali būti mažesni nei 1996' in form.errors['date']
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_income_insert_only_one_year_to_future():
     a = AccountFactory()
     t = IncomeTypeFactory()

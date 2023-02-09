@@ -1,6 +1,5 @@
 import pytest
 from django.urls import resolve, reverse
-from freezegun import freeze_time
 
 from ...pensions.factories import PensionFactory, PensionTypeFactory
 from .. import views

@@ -1,7 +1,7 @@
 import pytz
 from datetime import datetime, timezone
 from decimal import Decimal
-
+import time_machine
 import pytest
 
 from ...accounts.factories import AccountFactory
@@ -35,7 +35,7 @@ def test_saving_worth_current_user_types(second_user):
     assert 'T2' not in form
 
 
-@pytest.mark.freeze_time('1999-2-2 3:2:1')
+@time_machine.travel("1999-2-2 03:02:01")
 def test_saving_worth_valid_data():
     t = SavingTypeFactory()
 
@@ -147,7 +147,7 @@ def test_account_worth_current_user_types(second_user):
     assert 'T2' not in form
 
 
-@pytest.mark.freeze_time('1999-1-2 3:2:1')
+@time_machine.travel("1999-01-02 03:02:01")
 def test_account_worth_valid_data():
     a = AccountFactory()
 
@@ -223,7 +223,7 @@ def test_pension_worth_current_user_types(second_user):
     assert 'T2' not in form
 
 
-@pytest.mark.freeze_time('1999-12-12 3:2:1')
+@time_machine.travel("1999-12-12 3:2:1")
 def test_pension_worth_valid_data():
     p = PensionTypeFactory()
 

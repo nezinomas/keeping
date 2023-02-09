@@ -1,6 +1,6 @@
 import pytest
+import time_machine
 from django.urls import resolve, reverse
-from freezegun import freeze_time
 
 from ...core.tests.utils import setup_view
 from ...savings.factories import SavingTypeFactory
@@ -34,7 +34,7 @@ def test_formset_load(client_logged):
     assert '<option value="1" selected>Savings</option>' in actual
 
 
-@pytest.mark.freeze_time('1999-2-3')
+@time_machine.travel('1999-2-3')
 def test_formset_new(client_logged):
     i = SavingTypeFactory()
     data = {

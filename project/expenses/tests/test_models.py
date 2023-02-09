@@ -3,10 +3,10 @@ from decimal import Decimal
 
 import mock
 import pytest
+import time_machine
 from django.core.files import File
 from django.db import models
 from django.urls import reverse
-from freezegun import freeze_time
 from override_storage import override_storage
 
 from ...accounts.factories import AccountFactory
@@ -220,7 +220,7 @@ def test_expense_fields_types():
 
 
 @override_storage()
-@freeze_time("1000-1-1")
+@time_machine.travel("1974-1-1")
 def test_expense_attachment_field(get_user):
     file_mock = mock.MagicMock(spec=File, name='FileMock')
     file_mock.name = 'test1.jpg'
@@ -228,7 +228,7 @@ def test_expense_attachment_field(get_user):
     e = ExpenseFactory(attachment=file_mock)
     pk = str(get_user.journal.pk)
 
-    assert str(e.attachment) == f'{pk}/expense-type/1000.01_test1.jpg'
+    assert str(e.attachment) == f'{pk}/expense-type/1974.01_test1.jpg'
 
 
 def test_expense_related(second_user):
@@ -322,7 +322,7 @@ def test_month_name_sum():
     assert [*actual] == expect
 
 
-@freeze_time('1999-06-01')
+@time_machine.travel('1999-06-01')
 def test_expense_avg_last_months():
     ExpenseFactory(date=date(1998, 11, 30), price=3)
     ExpenseFactory(date=date(1998, 12, 31), price=4)
@@ -335,7 +335,7 @@ def test_expense_avg_last_months():
     assert actual[0]['title'] == 'Expense Type'
 
 
-@freeze_time('1999-06-01')
+@time_machine.travel('1999-06-01')
 def test_expense_avg_last_months_qs_count(django_assert_max_num_queries):
     ExpenseFactory(date=date(1999, 1, 1), price=2)
 

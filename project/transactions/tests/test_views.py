@@ -1,8 +1,8 @@
 import re
 
 import pytest
+import time_machine
 from django.urls import resolve, reverse
-from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...savings.factories import SavingTypeFactory
@@ -58,7 +58,7 @@ def test_transaction_index_context(client_logged):
     assert 'account' in context
 
 
-@freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_transactions_load_form(client_logged):
     url = reverse('transactions:new')
     response = client_logged.get(url)
@@ -235,7 +235,7 @@ def test_saving_close_update_func():
     assert views.SavingsCloseUpdate == view.func.view_class
 
 
-@freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_savings_close_load_form(client_logged):
     url = reverse('transactions:savings_close_new')
     response = client_logged.get(url)
@@ -338,7 +338,7 @@ def test_saving_close_new_checkbox_initial_value(client_logged):
     assert not find
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_saving_close_load_for_update_checkbox_initial_value(client_logged):
     a = SavingTypeFactory(closed=1999)
     obj = SavingCloseFactory(from_account=a)
@@ -353,7 +353,7 @@ def test_saving_close_load_for_update_checkbox_initial_value(client_logged):
     assert len(find) == 1
 
 
-@pytest.mark.freeze_time('2000-1-1')
+@time_machine.travel('2000-1-1')
 def test_saving_close_update_in_future_checkbox_value(client_logged):
     a = SavingTypeFactory(closed=1999)
     obj = SavingCloseFactory(from_account=a)
@@ -375,7 +375,7 @@ def test_saving_close_update_in_future_checkbox_value(client_logged):
     assert actual.closed == 1999
 
 
-@pytest.mark.freeze_time('2000-1-1')
+@time_machine.travel('2000-1-1')
 def test_saving_close_update_in_future_checkbox_value_1(client_logged):
     a = SavingTypeFactory()
     obj = SavingCloseFactory(from_account=a)
@@ -397,7 +397,7 @@ def test_saving_close_update_in_future_checkbox_value_1(client_logged):
     assert actual.closed == 1999
 
 
-@pytest.mark.freeze_time('2000-1-1')
+@time_machine.travel('2000-1-1')
 def test_saving_close_update_in_future_checkbox_value_uncheck(client_logged):
     a = SavingTypeFactory(closed=1999)
     obj = SavingCloseFactory(from_account=a)
@@ -503,7 +503,7 @@ def test_saving_change_update_func():
     assert views.SavingsChangeUpdate == view.func.view_class
 
 
-@freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_savings_change_load_form(client_logged):
     url = reverse('transactions:savings_change_new')
     response = client_logged.get(url)
@@ -622,7 +622,7 @@ def test_saving_change_new_checkbox_initial_value(client_logged):
     assert not find
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_saving_change_load_for_update_checkbox_initial_value(client_logged):
     a = SavingTypeFactory(closed=1999)
     obj = SavingChangeFactory(from_account=a)
@@ -637,7 +637,7 @@ def test_saving_change_load_for_update_checkbox_initial_value(client_logged):
     assert len(find) == 1
 
 
-@pytest.mark.freeze_time('2000-1-1')
+@time_machine.travel('2000-1-1')
 def test_saving_change_update_in_future_checkbox_value(client_logged):
     a = SavingTypeFactory(closed=1999)
     obj = SavingChangeFactory(from_account=a)
@@ -659,7 +659,7 @@ def test_saving_change_update_in_future_checkbox_value(client_logged):
     assert actual.closed == 1999
 
 
-@pytest.mark.freeze_time('2000-1-1')
+@time_machine.travel('2000-1-1')
 def test_saving_change_update_in_future_checkbox_value_1(client_logged):
     a = SavingTypeFactory()
     obj = SavingChangeFactory(from_account=a)
@@ -681,7 +681,7 @@ def test_saving_change_update_in_future_checkbox_value_1(client_logged):
     assert actual.closed == 1999
 
 
-@pytest.mark.freeze_time('2000-1-1')
+@time_machine.travel('2000-1-1')
 def test_saving_change_update_in_future_checkbox_value_uncheck(client_logged):
     a = SavingTypeFactory(closed=1999)
     obj = SavingChangeFactory(from_account=a)

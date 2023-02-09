@@ -1,8 +1,8 @@
 from datetime import date
 
 import pytest
+import time_machine
 from django.urls import resolve, reverse
-from freezegun import freeze_time
 from mock import patch
 
 from ...accounts.factories import AccountBalance
@@ -75,7 +75,7 @@ def test_view_regenerate_balances_status_200(client_logged):
     assert response.status_code == 204
 
 
-@freeze_time('1999-01-01')
+@time_machine.travel('1999-01-01')
 def test_view_regenerate_balances_all_year(client_logged, get_user):
     ExpenseFactory()
     ExpenseFactory(date=date(1998, 1, 1))

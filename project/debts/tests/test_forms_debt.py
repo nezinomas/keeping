@@ -2,8 +2,8 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+import time_machine
 from django.forms.models import model_to_dict
-from freezegun import freeze_time
 from mock import patch
 
 from ...accounts.factories import AccountFactory
@@ -45,7 +45,7 @@ def test_debt_name_field_label_for_borrow(mck):
     assert '<label for="id_name">Paskolos davėjas:</label>' in form
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_debt_initial_values():
     UserFactory()
 
@@ -155,7 +155,7 @@ def test_debt_valid_data_type_from_request(mck):
     assert actual.debt_type == 'xxx'
 
 
-@freeze_time('1999-2-2')
+@time_machine.travel('1999-2-2')
 @pytest.mark.parametrize(
     'year',
     [1998, 2001]

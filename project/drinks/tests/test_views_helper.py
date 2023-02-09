@@ -2,6 +2,8 @@ from datetime import date
 from types import SimpleNamespace
 
 import pytest
+import time_machine
+
 from project.drinks.lib.drinks_stats import DrinkStats
 
 from ..factories import DrinkFactory
@@ -31,7 +33,7 @@ pytestmark = pytest.mark.django_db
         (None, None, {}),
     ]
 )
-@pytest.mark.freeze_time('1999-01-03')
+@time_machine.travel('1999-01-03')
 def test_dry_days(past, current, expect):
     DrinkFactory()
 
@@ -108,7 +110,7 @@ def test_avg_label_position_lower():
     assert actual == -5
 
 
-@pytest.mark.freeze_time('2019-10-10')
+@time_machine.travel('2019-10-10')
 def test_std_av():
     actual = \
         T.IndexService(
@@ -153,7 +155,7 @@ def test_std_av():
                 assert expect[i][k] == round(v, 2)
 
 
-@pytest.mark.freeze_time('2019-10-10')
+@time_machine.travel('2019-10-10')
 def test_std_av_past_recods():
     actual = \
         T.IndexService(

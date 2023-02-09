@@ -1,5 +1,5 @@
 import pytest
-from freezegun import freeze_time
+import time_machine
 
 from ...savings.factories import SavingBalance, SavingBalanceFactory
 from ..services.summary_savings import SummarySavingsService
@@ -34,7 +34,7 @@ def test_chart_data_1(_a):
     assert actual['total'] == [1.1, 2.2]
 
 
-@freeze_time('2000-1-1')
+@time_machine.travel('2000-1-1')
 def test_chart_data_2(_a):
     actual = SummarySavingsService.chart_data(_a)
 
@@ -71,7 +71,7 @@ def test_chart_data_6():
     assert not actual['total']
 
 
-@freeze_time('2000-1-1')
+@time_machine.travel('2000-1-1')
 def test_chart_data_4(_a, _b):
     actual = SummarySavingsService.chart_data(_a, _b)
 

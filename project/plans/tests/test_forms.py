@@ -1,5 +1,5 @@
 import pytest
-from freezegun import freeze_time
+import time_machine
 
 from ...core.lib.translation import month_names
 from ...expenses.factories import ExpenseTypeFactory
@@ -43,7 +43,7 @@ def test_income_init_fields():
     assert '<select name="user"' not in form
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_income_year_initial_value():
     UserFactory()
 
@@ -87,7 +87,7 @@ def test_income_valid_data(year):
     assert not data.february
 
 
-@freeze_time('1999-01-01')
+@time_machine.travel('1999-01-01')
 def test_income_blank_data():
     form = IncomePlanForm(data={})
 
@@ -195,7 +195,7 @@ def test_expense_init_fields():
 
     assert '<select name="user"' not in form
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_expense_year_initial_value():
     UserFactory()
 
@@ -239,7 +239,7 @@ def test_expense_valid_data(year):
     assert not data.february
 
 
-@freeze_time('1999-01-01')
+@time_machine.travel('1999-01-01')
 def test_expense_blank_data():
     form = ExpensePlanForm(data={})
 
@@ -307,7 +307,7 @@ def test_saving_init_fields():
     assert '<select name="user"' not in form
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_saving_year_initial_value():
     UserFactory()
 
@@ -351,7 +351,7 @@ def test_saving_valid_data(year):
     assert not data.february
 
 
-@freeze_time('1999-01-01')
+@time_machine.travel('1999-01-01')
 def test_saving_blank_data():
     form = SavingPlanForm(data={})
 
@@ -456,7 +456,7 @@ def test_day_init_fields():
     assert '<select name="user"' not in form
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_day_year_initial_value():
     UserFactory()
 
@@ -487,7 +487,7 @@ def test_day_valid_data(year):
     assert not data.february
 
 
-@freeze_time('1999-01-01')
+@time_machine.travel('1999-01-01')
 def test_day_blank_data():
     form = DayPlanForm({})
 
@@ -542,7 +542,7 @@ def test_necessary_init_fields():
     assert '<select name="user"' not in form
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_income_year_initial_value1():
     UserFactory()
 
@@ -575,7 +575,7 @@ def test_necessary_valid_data(year):
     assert not data.february
 
 
-@freeze_time('1999-01-01')
+@time_machine.travel('1999-01-01')
 def test_necessary_blank_data():
     form = NecessaryPlanForm({})
 

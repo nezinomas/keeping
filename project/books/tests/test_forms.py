@@ -1,7 +1,7 @@
 from datetime import date
 
 import pytest
-from freezegun import freeze_time
+import time_machine
 
 from ...users.factories import UserFactory
 from ..factories import BookTargetFactory
@@ -25,7 +25,7 @@ def test_book_init_fields():
     assert '<select name="user"' not in form
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_book_year_initial_value():
     UserFactory()
 
@@ -53,7 +53,7 @@ def test_book_valid_data():
     assert data.user.username == 'bob'
 
 
-@freeze_time('2000-2-2')
+@time_machine.travel('2000-2-2')
 @pytest.mark.parametrize(
     'year',
     [1998, 2001]
@@ -70,7 +70,7 @@ def test_book_invalid_start_year(year):
     assert 'Metai turi būti tarp 1999 ir 2000' in form.errors['started']
 
 
-@freeze_time('2000-2-2')
+@time_machine.travel('2000-2-2')
 def test_book_invalid_start_date():
     form = BookForm(data={
         'started': '2000-2-3',
@@ -83,7 +83,7 @@ def test_book_invalid_start_date():
     assert 'Data negali būti ateityje' in form.errors['started']
 
 
-@freeze_time('2000-2-2')
+@time_machine.travel('2000-2-2')
 def test_book_invalid_end_date():
     form = BookForm(data={
         'started': '1999-1-1',
@@ -97,7 +97,7 @@ def test_book_invalid_end_date():
     assert 'Data negali būti ateityje' in form.errors['ended']
 
 
-@freeze_time('2000-2-2')
+@time_machine.travel('2000-2-2')
 def test_book_end_date_earlier_than_start_date():
     form = BookForm(data={
         'started': '1999-1-2',
@@ -190,7 +190,7 @@ def test_book_target_init_fields():
     assert '<select name="user"' not in form
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_book_target_year_initial_value():
     UserFactory()
 

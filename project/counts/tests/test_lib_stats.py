@@ -4,14 +4,13 @@ import tempfile
 from datetime import date
 
 import pytest
+import time_machine
 from django.test import override_settings
-from freezegun import freeze_time
 
 from ...core.exceptions import MethodInvalid
 from ..factories import CountFactory
 from ..lib.stats import Stats
 from ..models import Count
-
 
 month_days_1999 = [
     (1, 31), (2, 28), (3, 31),
@@ -394,7 +393,7 @@ def test_chart_calendar_nodata_february(chart_calendar_expect_february_nodata):
     assert actual[1] == chart_calendar_expect_february_nodata
 
 
-@freeze_time('1999-01-02')
+@time_machine.travel('1999-01-02')
 def test_chart_calendar_current_day_nodata(chart_calendar_expect_january_nodata):
     chart_calendar_expect_january_nodata['data'][5][2] = 0.05
 

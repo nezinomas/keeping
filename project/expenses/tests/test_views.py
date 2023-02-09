@@ -3,13 +3,11 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from django.http.response import JsonResponse
+import time_machine
 from django.urls import resolve, reverse
-from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...core.tests.utils import change_profile_year
-from ...users.factories import UserFactory
 from .. import models
 from ..factories import (Expense, ExpenseFactory, ExpenseNameFactory,
                          ExpenseTypeFactory)
@@ -75,7 +73,7 @@ def test_expenses_context(client_logged):
     assert 'expenses' in context
 
 
-@freeze_time('1974-08-08')
+@time_machine.travel('1974-08-08')
 def test_expenses_load_new_form(get_user, client_logged):
     get_user.year = 3000
     url = reverse('expenses:new')
@@ -214,7 +212,7 @@ def test_expenses_not_load_other_journal(client_logged, main_user, second_user):
     assert str(e2.price) not in form
 
 
-@freeze_time('2000-03-03')
+@time_machine.travel('2000-03-03')
 def test_expenses_update_past_record(get_user, client_logged):
     get_user.year = 2000
     e = ExpenseFactory(date=date(1974, 12, 12))
@@ -256,7 +254,7 @@ def test_expenses_index_search_form(client_logged):
     assert reverse('expenses:search') in response
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_expenses_list_month_not_set(client_logged):
     ExpenseFactory(date=date(1998, 1, 1))
     ExpenseFactory(date=date(1999, 1, 1))
@@ -269,7 +267,7 @@ def test_expenses_list_month_not_set(client_logged):
     assert actual[0].date == date(1999, 1, 1)
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_expenses_list_month_stringt(client_logged):
     ExpenseFactory(date=date(1998, 1, 1))
     ExpenseFactory(date=date(1999, 1, 1))
@@ -282,7 +280,7 @@ def test_expenses_list_month_stringt(client_logged):
     assert actual[0].date == date(1999, 1, 1)
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_expenses_list_january(client_logged):
     ExpenseFactory(date=date(1998, 1, 1))
     ExpenseFactory(date=date(1999, 1, 1))
@@ -296,7 +294,7 @@ def test_expenses_list_january(client_logged):
     assert actual[0].date == date(1999, 1, 1)
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_expenses_list_all(client_logged):
     ExpenseFactory(date=date(1998, 1, 1))
     ExpenseFactory(date=date(1999, 1, 1))
@@ -308,7 +306,7 @@ def test_expenses_list_all(client_logged):
     assert len(actual) == 2
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_expenses_list_all_any_num(client_logged):
     ExpenseFactory(date=date(1998, 1, 1))
     ExpenseFactory(date=date(1999, 1, 1))

@@ -1,8 +1,7 @@
 from datetime import date
 
 import pytest
-
-from project.drinks.lib.drinks_options import DrinksOptions
+import time_machine
 
 from ..lib.drinks_stats import DrinkStats
 
@@ -18,7 +17,7 @@ pytestmark = pytest.mark.django_db
         ('stdav', 1, 1, [1.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
     ]
 )
-@pytest.mark.freeze_time('1999-12-01')
+@time_machine.travel('1999-12-01')
 def test_qty_of_month(drink_type, stdav, qty, expect, get_user):
     get_user.drink_type = drink_type
 
@@ -41,7 +40,7 @@ def test_qty_of_month(drink_type, stdav, qty, expect, get_user):
         ('stdav', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
     ]
 )
-@pytest.mark.freeze_time('1999-12-01')
+@time_machine.travel('1999-12-01')
 def test_qty_of_month_no_data(drink_type, expect, get_user):
     get_user.drink_type = drink_type
 
@@ -61,7 +60,7 @@ def test_qty_of_month_no_data(drink_type, expect, get_user):
         ('stdav', 1, 1, [0.32, 0.71, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
     ]
 )
-@pytest.mark.freeze_time('1999-12-01')
+@time_machine.travel('1999-12-01')
 def test_per_day_of_month(drink_type, qty, stdav, expect, get_user):
     get_user.drink_type = drink_type
 
@@ -84,7 +83,7 @@ def test_per_day_of_month(drink_type, qty, stdav, expect, get_user):
         ('stdav', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
     ]
 )
-@pytest.mark.freeze_time('1999-12-01')
+@time_machine.travel('1999-12-01')
 def test_per_day_of_month_no_data(drink_type, expect, get_user):
     get_user.drink_type = drink_type
 
@@ -95,7 +94,7 @@ def test_per_day_of_month_no_data(drink_type, expect, get_user):
     assert actual == expect
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_qty_of_year():
 
     data = [
@@ -108,7 +107,7 @@ def test_qty_of_year():
     assert actual == 2.0
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_per_month():
 
     data = [
@@ -131,15 +130,13 @@ def test_per_month():
         ('2000-1-1', 2.74),
     ]
 )
-@pytest.mark.freeze_time
-def test_per_day_of_year(dt, expect, freezer):
-    freezer.move_to(dt)
+def test_per_day_of_year(dt, expect):
+    with time_machine.travel(dt):
+        data = [
+            {'date': date(1999, 1, 1), 'qty': 1, 'stdav': 2.5},
+            {'date': date(1999, 2, 1), 'qty': 1, 'stdav': 2.5},
+        ]
 
-    data = [
-        {'date': date(1999, 1, 1), 'qty': 1, 'stdav': 2.5},
-        {'date': date(1999, 2, 1), 'qty': 1, 'stdav': 2.5},
-    ]
+        actual = DrinkStats(data).per_day_of_year
 
-    actual = DrinkStats(data).per_day_of_year
-
-    assert round(actual, 2) == expect
+        assert round(actual, 2) == expect

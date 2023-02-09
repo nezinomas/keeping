@@ -2,7 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from freezegun import freeze_time
+import time_machine
 
 from ..factories import PensionTypeFactory
 from ..forms import PensionForm, PensionTypeForm
@@ -132,7 +132,7 @@ def test_pension_valid_data():
     assert data.pension_type.title == t.title
 
 
-@freeze_time('1999-2-2')
+@time_machine.travel('1999-2-2')
 @pytest.mark.parametrize(
     'year',
     [1998, 2001]
