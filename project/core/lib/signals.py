@@ -79,44 +79,37 @@ class SignalBase(ABC):
             ])
             .sort(['year', 'id'])
         )
-        print(f'------------------------------->have out\n{df}\n')
         return df
 
-    def _insert_missing_values(self, df: DF, field_name: str) -> DF:
-        # df = self._insert_missing_types(df)
-        # print(f'------------------------------->insert missing values in\n{df}\n')
-        years = df.select(pl.col("year").unique().sort())["year"].to_list()
-        prev_year = years[-2]
-        last_year = years[-1]
+    def _get_past_records(self, df: DF, prev_year: int, last_year: int) -> pl.Expr:
         types = [x.pk for x in self._types]
-        # print(f'------------------------------->\n{years} {prev_year=} {last_year=} {types=}\n')
-
         row_diff = (
             df
             .filter(pl.col('year').is_in([prev_year, last_year]))
-            .select([ pl.all()])
+            .select([pl.all()])
             .groupby(['year'])
             .agg([pl.col('id').alias('tmp')])
             .with_columns(pl.col('tmp'))
         )
         row_diff = list(set(row_diff[0, 1]) - set(row_diff[1, 1]))
 
-        # print(f'------------------------------->Master df in\n{df}\n')
-        def prev_rows(df):
-            # print(f'------------------------------->IN \n{df}\n')
-            df = (
-                df
-                .filter(
-                    (pl.col('year') == prev_year) & (pl.col('id').is_in(types)) & (pl.col('id').is_in(row_diff)))
-                .with_columns(pl.lit(last_year).cast(pl.UInt16).alias('year'))
-                # .pipe(self._reset_values, year=last_year)
-            ).pipe(self._reset_values, year=last_year)
-            # print(f'------------------------------->OUT \n{df}\n')
-            return df
+        df = (
+            df
+            .filter(
+                (pl.col('year') == prev_year) & (pl.col('id').is_in(types)) & (pl.col('id').is_in(row_diff)))
+            .with_columns(pl.lit(last_year).cast(pl.UInt16).alias('year'))
+            .pipe(self._reset_values, year=last_year)
+        )
+        return df
+
+    def _insert_missing_values(self, df: DF, field_name: str) -> DF:
+        years = df.select(pl.col("year").unique().sort())["year"].to_list()
+        prev_year = years[-2]
+        last_year = years[-1]
 
         df = (
             df
-            .vstack(df.pipe(prev_rows))
+            .vstack(df.pipe(self._get_past_records, prev_year=prev_year, last_year=last_year))
             .sort(['id', 'year'])
             .with_columns([
                 pl.col('latest_check').forward_fill(),
