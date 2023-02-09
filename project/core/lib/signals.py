@@ -1,10 +1,8 @@
 import contextlib
 import itertools as it
 from abc import ABC, abstractmethod
-from collections import defaultdict
 from dataclasses import dataclass, field
 
-import numpy as np
 import pandas as pd
 import polars as pl
 from polars import DataFrame as DF
@@ -134,13 +132,6 @@ class SignalBase(ABC):
             ],
             how="vertical",
         )
-        return df
-
-    def _insert_missing_types(self, df: DF) -> DF:
-        """
-        copy types: (account | saving_type | pension_type)
-        from previous year to current year
-        """
         return df
 
     def _reset_values(self, df: DF, year: int) -> pl.Expr:
