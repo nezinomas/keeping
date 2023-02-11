@@ -3,7 +3,7 @@ import itertools as it
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
-import pandas as pd
+import numpy as np
 import polars as pl
 from polars import DataFrame as DF
 
@@ -58,6 +58,9 @@ class SignalBase(ABC):
             "incomes": pl.Float64,
             "expenses": pl.Float64,
         }
+        if self.signal_type == "savings":
+            schema |= {"fee": pl.Float64}
+
         df = pl.DataFrame(arr, schema=schema)
 
         if df.is_empty():
@@ -94,7 +97,11 @@ class SignalBase(ABC):
             .agg([pl.col("id").alias("tmp")])
             .with_columns(pl.col("tmp"))
         )
-        row_diff = list(set(row_diff[0, 1]) - set(row_diff[1, 1]))
+        prev_year_type_list = row_diff[0, 1]
+        last_year_type_list = row_diff[1, 1]
+        dif1 = np.setdiff1d(prev_year_type_list, last_year_type_list)
+        dif2 = np.setdiff1d(last_year_type_list, prev_year_type_list)
+        row_diff = list(np.concatenate((dif1, dif2)))
 
         df = (
             df.filter(
@@ -146,7 +153,7 @@ class SignalBase(ABC):
         return df
 
     def _reset_values(self, df: DF, year: int) -> pl.Expr:
-        if self.signal_type == 'savings':
+        if self.signal_type == "savings":
             df = df.filter(pl.col("year") == year).with_columns(
                 [
                     pl.lit(0.0).alias("incomes"),
@@ -156,7 +163,7 @@ class SignalBase(ABC):
                 ]
             )
 
-        if self.signal_type == 'accounts':
+        if self.signal_type == "accounts":
             df = df.filter(pl.col("year") == year).with_columns(
                 [
                     pl.lit(0.0).alias("incomes"),
@@ -167,7 +174,7 @@ class SignalBase(ABC):
 
 
 class Accounts(SignalBase):
-    signal_type = 'accounts'
+    signal_type = "accounts"
 
     def __init__(self, data: GetData):
         cols = ["incomes", "expenses"]
@@ -222,7 +229,7 @@ class Accounts(SignalBase):
 
 
 class Savings(SignalBase):
-    signal_type = 'savings'
+    signal_type = "savings"
 
     def __init__(self, data: GetData):
         cols = ["incomes", "expenses", "fee"]
@@ -235,51 +242,73 @@ class Savings(SignalBase):
         self._table = self.make_table(_df)
 
     def make_table(self, df: DF) -> DF:
-        if df.empty:
+        if df.is_empty():
             return df
-        df = self._insert_missing_values(df, "market_value")
-        # calculate incomes
-        df.per_year_incomes = df.incomes
-        df.per_year_fee = df.fee
-        # past_amount and past_fee
-        df = self._calc_past(df)
-        # calculate sold
-        df.sold = df.groupby("id")["sold"].cumsum()
-        df.sold_fee = df.groupby("id")["sold_fee"].cumsum()
-        # recalculate incomes and fees with past values
-        df.incomes = df.past_amount + df.per_year_incomes
-        df.fee = df.past_fee + df.per_year_fee
-        # calculate invested, invested cannot by negative
-        df.invested = df.incomes - df.fee - df.sold - df.sold_fee
-        df.invested = df.invested.mask(df.invested < 0, 0.0)
-        # calculate profit/loss
-        df.profit_sum = df.market_value - df.invested
-        df.profit_proc = df[["market_value", "invested"]].apply(
-            Savings.calc_percent, axis=1
+
+        df = (
+            df
+            .pipe(self._insert_missing_values, field_name="market_value")
+            .sort(["id", "year"])
+            .with_columns(
+                per_year_incomes=pl.col("incomes"), per_year_fee=pl.col("fee")
+            )
+            .pipe(self._calc_past)
+            .with_columns(
+                sold=pl.col("sold").cumsum().over("id"),
+                sold_fee=pl.col("sold_fee").cumsum().over("id"),
+            )
+            .with_columns(
+                incomes=(pl.col("past_amount") + pl.col("per_year_incomes")),
+                fee=(pl.col("past_fee") + pl.col("per_year_fee")),
+            )
+            .with_columns(
+                invested=(
+                    pl.lit(0.0)
+                    + pl.col("incomes")
+                    - pl.col("fee")
+                    - pl.col("sold")
+                    - pl.col("sold_fee")
+                )
+            )
+            .with_columns(
+                invested=(
+                    pl.when(pl.col("invested") < 0)
+                    .then(0.0)
+                    .otherwise(pl.col("invested"))
+                )
+            )
+            .with_columns(profit_sum=(pl.col("market_value") - pl.col("invested")))
+            .pipe(self.calc_percent_new)
         )
         return df
 
-    def _calc_past(self, df: DF) -> DF:
-        df["tmp"] = df.groupby("id")["per_year_incomes"].cumsum()
-        df.past_amount = df.groupby("id")["tmp"].shift(fill_value=0.0)
-        # calculate past_fee
-        df["tmp"] = df.groupby("id")["per_year_fee"].cumsum()
-        df.past_fee = df.groupby("id")["tmp"].shift(fill_value=0.0)
-        # drop tmp columns
-        df.drop(columns=["tmp"], inplace=True)
+    def _calc_past(self, df: DF) -> pl.Expr:
+        df = (
+            df.with_columns(pl.col("per_year_incomes").cumsum().over("id").alias("tmp"))
+            .with_columns(
+                pl.col("tmp")
+                .shift_and_fill(periods=1, fill_value=0.0)
+                .over("id")
+                .alias("past_amount")
+            )
+            .with_columns(pl.col("per_year_fee").cumsum().over("id").alias("tmp"))
+            .with_columns(
+                pl.col("tmp")
+                .shift_and_fill(periods=1, fill_value=0.0)
+                .over("id")
+                .alias("past_fee")
+            )
+            .drop("fee")
+        )
         return df
 
     def _join_df(self, inc: DF, exp: DF, hv: DF) -> DF:
         # drop expenses column
-        inc.drop(columns=["expenses"], inplace=True)
+        inc = inc.drop("expenses")
         # drop incomes column, rename fee
-        exp.drop(columns=["incomes"], inplace=True)
-        exp.rename(columns={"fee": "sold_fee", "expenses": "sold"}, inplace=True)
-        # concat dataframes, sum fees
-        df = pd.concat([inc, exp, hv], axis=1).fillna(0.0)
-        # rename have -> market_value
-        df.rename(columns={"have": "market_value"}, inplace=True)
-        # create columns
+        exp = exp.drop("incomes")
+        exp = exp.rename({"fee": "sold_fee", "expenses": "sold"})
+        # additional columns
         cols = [
             "past_amount",
             "past_fee",
@@ -289,9 +318,20 @@ class Savings(SignalBase):
             "profit_proc",
             "profit_sum",
         ]
-        df[cols] = 0.0
 
-        return df
+        return (
+            inc.join(exp, on=["id", "year"], how="outer")
+            .join(hv, on=["id", "year"], how="outer")
+            .rename({"have": "market_value"})
+            .with_columns(
+                [
+                    pl.exclude(
+                        ["id", "year", "latest_check", "market_value"]
+                    ).fill_null(0.0)
+                ]
+            )
+            .with_columns([pl.lit(0.0).alias(col) for col in cols])
+        )
 
     @staticmethod
     def calc_percent(args):
@@ -303,3 +343,13 @@ class Savings(SignalBase):
             rtn = ((market * 100) / invested) - 100
 
         return rtn
+
+    def calc_percent_new(self, df):
+        df = df.with_columns(
+            (
+                pl.when(pl.col("invested") <= 0)
+                .then(0.0)
+                .otherwise(((pl.col("market_value") * 100) / pl.col("invested")) - 100)
+            ).alias("profit_proc")
+        )
+        return df
