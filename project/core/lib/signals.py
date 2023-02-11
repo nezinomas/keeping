@@ -85,6 +85,17 @@ class SignalBase(ABC):
         df = df.sort(["year", "id"])
         return df
 
+    def _join_df(self, df: DF, hv: DF) -> DF:
+        df = (
+            df.join(hv, on=["id", "year"], how="outer")
+            .with_columns(
+                [pl.col("incomes").fill_null(0.0),
+                 pl.col("expenses").fill_null(0.0)]
+            )
+            .sort(["year", "id"])
+        )
+        return df
+
     def _get_past_records(self, df: DF, prev_year: int, last_year: int) -> pl.Expr:
         types = [x.pk for x in self._types]
         row_diff = (
@@ -207,16 +218,6 @@ class Accounts(SignalBase):
             )
             .with_columns((pl.col("have") - pl.col("balance")).alias("delta"))
             .drop("tmp_balance")
-        )
-        return df
-
-    def _join_df(self, df: DF, hv: DF) -> DF:
-        df = (
-            df.join(hv, on=["id", "year"], how="outer")
-            .with_columns(
-                [pl.col("incomes").fill_null(0.0), pl.col("expenses").fill_null(0.0)]
-            )
-            .sort(["year", "id"])
         )
         return df
 
