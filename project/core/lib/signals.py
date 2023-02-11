@@ -98,10 +98,7 @@ class SignalBase(ABC):
         )
         prev_year_type_list = row_diff[0, 1]
         last_year_type_list = row_diff[1, 1]
-        row_diff = set(prev_year_type_list).symmetric_difference(
-            set(last_year_type_list)
-        )
-        row_diff = list(row_diff)
+        row_diff = list(set(prev_year_type_list) ^ set(last_year_type_list))
 
         df = (
             df.filter(
