@@ -45,9 +45,9 @@ def fixture_expenses():
 def fixture_have():
     return [
         {'id': 1, 'year': 1999, 'have': Decimal('75'), 'latest_check': datetime(1999, 1, 1)},
-        {'id': 1, 'year': 2000, 'have': Decimal('300'), 'latest_check': datetime(2000, 1, 1)},
-        {'id': 2, 'year': 1999, 'have': Decimal('100'), 'latest_check': datetime(1999, 1, 1)},
-        {'id': 2, 'year': 2000, 'have': Decimal('250'), 'latest_check': datetime(2000, 1, 1)},
+        {'id': 1, 'year': 2000, 'have': Decimal('300'), 'latest_check': datetime(2000, 1, 2)},
+        {'id': 2, 'year': 1999, 'have': Decimal('100'), 'latest_check': datetime(1999, 1, 3)},
+        {'id': 2, 'year': 2000, 'have': Decimal('250'), 'latest_check': datetime(2000, 1, 4)},
     ]
 
 
