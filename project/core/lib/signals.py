@@ -125,17 +125,19 @@ class SignalBase(ABC):
                 )
             )
             .sort(["id", "year"])
-            .with_columns(
-                [
-                    pl.col("latest_check").forward_fill(),
-                    pl.col(field_name).forward_fill(),
-                ]
-            )
-            .with_columns(pl.col(field_name).fill_null(0.0))
+            .pipe(self._copy_cell_from_previous_year, field_name=field_name)
             .sort(["year", "id"])
             .pipe(self._insert_future_data, last_year=last_year)
         )
         return df
+
+    def _copy_cell_from_previous_year(self, df: DF, field_name: str) -> pl.Expr:
+        return df.with_columns(
+            [
+                pl.col("latest_check").forward_fill(),
+                pl.col(field_name).forward_fill(),
+            ]
+        ).with_columns(pl.col(field_name).fill_null(0.0))
 
     def _insert_future_data(self, df: DF, last_year) -> DF:
         """copy last year values into future (year + 1)"""
