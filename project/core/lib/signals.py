@@ -121,10 +121,10 @@ class SignalBase(ABC):
             .with_columns(
                 [
                     pl.col("latest_check").forward_fill(),
-                    pl.col("have").forward_fill(),
+                    pl.col(field_name).forward_fill(),
                 ]
             )
-            .with_columns(pl.col("have").fill_null(0.0))
+            .with_columns(pl.col(field_name).fill_null(0.0))
             .sort(["year", "id"])
             .pipe(self._insert_future_data, last_year=last_year)
         )
