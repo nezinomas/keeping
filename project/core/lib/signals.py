@@ -3,7 +3,6 @@ import itertools as it
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
-import numpy as np
 import polars as pl
 from polars import DataFrame as DF
 
@@ -99,9 +98,10 @@ class SignalBase(ABC):
         )
         prev_year_type_list = row_diff[0, 1]
         last_year_type_list = row_diff[1, 1]
-        dif1 = np.setdiff1d(prev_year_type_list, last_year_type_list)
-        dif2 = np.setdiff1d(last_year_type_list, prev_year_type_list)
-        row_diff = list(np.concatenate((dif1, dif2)))
+        row_diff = set(prev_year_type_list).symmetric_difference(
+            set(last_year_type_list)
+        )
+        row_diff = list(row_diff)
 
         df = (
             df.filter(
@@ -246,8 +246,7 @@ class Savings(SignalBase):
             return df
 
         df = (
-            df
-            .pipe(self._insert_missing_values, field_name="market_value")
+            df.pipe(self._insert_missing_values, field_name="market_value")
             .sort(["id", "year"])
             .with_columns(
                 per_year_incomes=pl.col("incomes"), per_year_fee=pl.col("fee")
