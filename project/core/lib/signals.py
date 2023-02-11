@@ -37,6 +37,8 @@ class GetData:
 
 
 class SignalBase(ABC):
+    signal_type = None
+
     @property
     def types(self) -> dict:
         return {category.id: category for category in self._types}
@@ -144,7 +146,7 @@ class SignalBase(ABC):
         return df
 
     def _reset_values(self, df: DF, year: int) -> pl.Expr:
-        if "fee" in df.columns:
+        if self.signal_type == 'savings':
             df = df.filter(pl.col("year") == year).with_columns(
                 [
                     pl.lit(0.0).alias("incomes"),
@@ -153,7 +155,8 @@ class SignalBase(ABC):
                     pl.lit(0.0).alias("sold_fee"),
                 ]
             )
-        else:
+
+        if self.signal_type == 'accounts':
             df = df.filter(pl.col("year") == year).with_columns(
                 [
                     pl.lit(0.0).alias("incomes"),
@@ -164,6 +167,8 @@ class SignalBase(ABC):
 
 
 class Accounts(SignalBase):
+    signal_type = 'accounts'
+
     def __init__(self, data: GetData):
         cols = ["incomes", "expenses"]
         _df = self._make_df(it.chain(data.incomes, data.expenses), cols)
@@ -217,6 +222,8 @@ class Accounts(SignalBase):
 
 
 class Savings(SignalBase):
+    signal_type = 'savings'
+
     def __init__(self, data: GetData):
         cols = ["incomes", "expenses", "fee"]
         _in = self._make_df(data.incomes, cols)
