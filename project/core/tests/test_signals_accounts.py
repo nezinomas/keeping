@@ -60,7 +60,6 @@ def test_table(incomes, expenses, have, types):
     ])
     data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=types)
     actual = Accounts(data).table
-    # print(f'------------------------------->actual\n{actual}\n')
 
     assert actual[0]['id'] == 1
     assert actual[0]['year'] == 1997
