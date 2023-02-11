@@ -37,10 +37,10 @@ def fixture_expenses():
 @pytest.fixture(name="have")
 def fixture_have():
     return [
-        {'id': 1, 'year': 1999, 'have': Decimal('10'), 'latest_check': datetime(1999, 1, 1, 3, 2, 1, tzinfo=timezone.utc)},
-        {'id': 1, 'year': 2000, 'have': Decimal('15'), 'latest_check': datetime(2000, 1, 4, 3, 2, 1, tzinfo=timezone.utc)},
-        {'id': 2, 'year': 1999, 'have': Decimal('20'), 'latest_check': datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)},
-        {'id': 2, 'year': 2000, 'have': Decimal('25'), 'latest_check': datetime(2000, 1, 6, 3, 2, 1, tzinfo=timezone.utc)},
+        {'id': 1, 'year': 1999, 'have': Decimal('10'), 'latest_check': datetime(1999, 1, 1, 3, 2, 1)},
+        {'id': 1, 'year': 2000, 'have': Decimal('15'), 'latest_check': datetime(2000, 1, 4, 3, 2, 1)},
+        {'id': 2, 'year': 1999, 'have': Decimal('20'), 'latest_check': datetime(1999, 1, 2, 3, 2, 1)},
+        {'id': 2, 'year': 2000, 'have': Decimal('25'), 'latest_check': datetime(2000, 1, 6, 3, 2, 1)},
     ]
 
 
@@ -147,7 +147,7 @@ def test_table(incomes, expenses, have, types):
 
 @time_machine.travel('1999-1-1')
 def test_copy_have_and_latest_from_previous_year(types):
-    have = [{'id': 1, 'year': 1998, 'have': Decimal('10'), 'latest_check': datetime(1998, 1, 1, 3, 2, 1, tzinfo=timezone.utc)},]
+    have = [{'id': 1, 'year': 1998, 'have': Decimal('10'), 'latest_check': datetime(1998, 1, 1, 3, 2, 1)},]
     incomes = [
         {'year': 1998, 'incomes': Decimal('1'), 'id': 1},
         {'year': 1999, 'incomes': Decimal('2'), 'id': 1},
@@ -266,7 +266,7 @@ def test_table_have_empty(incomes, expenses, types):
     assert actual[0]['balance'] == 50.0
     assert actual[0]['have'] == 0.0
     assert actual[0]['delta'] == -50.0
-    assert actual[0]['latest_check'] == 0.0
+    assert not actual[0]['latest_check']
 
     assert actual[1]['id'] == 1
     assert actual[1]['year'] == 2000
@@ -276,7 +276,7 @@ def test_table_have_empty(incomes, expenses, types):
     assert actual[1]['balance'] == 150.0
     assert actual[1]['have'] == 0.0
     assert actual[1]['delta'] == -150.0
-    assert actual[1]['latest_check'] == 0.0
+    assert not actual[1]['latest_check']
 
     assert actual[3]['id'] == 2
     assert actual[3]['year'] == 1999
@@ -286,7 +286,7 @@ def test_table_have_empty(incomes, expenses, types):
     assert actual[3]['balance'] == 110.0
     assert actual[3]['have'] == 0.0
     assert actual[3]['delta'] == -110.0
-    assert actual[3]['latest_check'] == 0.0
+    assert not actual[3]['latest_check']
 
     assert actual[4]['id'] == 2
     assert actual[4]['year'] == 2000
@@ -296,7 +296,7 @@ def test_table_have_empty(incomes, expenses, types):
     assert actual[4]['balance'] == 220.0
     assert actual[4]['have'] == 0.0
     assert actual[4]['delta'] == -220.0
-    assert actual[4]['latest_check'] == 0.0
+    assert not actual[4]['latest_check']
 
 
 @time_machine.travel('2000-12-31')
@@ -312,7 +312,7 @@ def test_table_incomes_empty(expenses, types):
     assert actual[0]['balance'] == -50.0
     assert actual[0]['have'] == 0.0
     assert actual[0]['delta'] == 50.0
-    assert actual[0]['latest_check'] == 0.0
+    assert not actual[0]['latest_check']
 
     assert actual[1]['id'] == 1
     assert actual[1]['year'] == 2000
@@ -322,7 +322,7 @@ def test_table_incomes_empty(expenses, types):
     assert actual[1]['balance'] == -150.0
     assert actual[1]['have'] == 0.0
     assert actual[1]['delta'] == 150.0
-    assert actual[1]['latest_check'] == 0.0
+    assert not actual[1]['latest_check']
 
     assert actual[2]['id'] == 1
     assert actual[2]['year'] == 2001
@@ -332,7 +332,7 @@ def test_table_incomes_empty(expenses, types):
     assert actual[2]['balance'] == -150.0
     assert actual[2]['have'] == 0.0
     assert actual[2]['delta'] == 150.0
-    assert actual[2]['latest_check'] == 0.0
+    assert not actual[2]['latest_check']
 
     assert actual[3]['id'] == 2
     assert actual[3]['year'] == 2000
@@ -342,7 +342,7 @@ def test_table_incomes_empty(expenses, types):
     assert actual[3]['balance'] == -110.0
     assert actual[3]['have'] == 0.0
     assert actual[3]['delta'] == 110.0
-    assert actual[3]['latest_check'] == 0.0
+    assert not actual[3]['latest_check']
 
     assert actual[4]['id'] == 2
     assert actual[4]['year'] == 2001
@@ -352,7 +352,7 @@ def test_table_incomes_empty(expenses, types):
     assert actual[4]['balance'] == -110.0
     assert actual[4]['have'] == 0.0
     assert actual[4]['delta'] == 110.0
-    assert actual[4]['latest_check'] == 0.0
+    assert not actual[4]['latest_check']
 
 
 @time_machine.travel('2000-12-31')
@@ -368,7 +368,7 @@ def test_table_expenses_empty(incomes, types):
     assert actual[0]['balance'] == 100.0
     assert actual[0]['have'] == 0.0
     assert actual[0]['delta'] == -100.0
-    assert actual[0]['latest_check'] == 0.0
+    assert not actual[0]['latest_check']
 
     assert actual[1]['id'] == 1
     assert actual[1]['year'] == 2000
@@ -378,7 +378,7 @@ def test_table_expenses_empty(incomes, types):
     assert actual[1]['balance'] == 300.0
     assert actual[1]['have'] == 0.0
     assert actual[1]['delta'] == -300.0
-    assert actual[1]['latest_check'] == 0.0
+    assert not actual[1]['latest_check']
 
     assert actual[2]['id'] == 1
     assert actual[2]['year'] == 2001
@@ -388,7 +388,7 @@ def test_table_expenses_empty(incomes, types):
     assert actual[2]['balance'] == 300.0
     assert actual[2]['have'] == 0.0
     assert actual[2]['delta'] == -300.0
-    assert actual[2]['latest_check'] == 0.0
+    assert not actual[2]['latest_check']
 
     assert actual[3]['id'] == 2
     assert actual[3]['year'] == 1999
@@ -398,7 +398,7 @@ def test_table_expenses_empty(incomes, types):
     assert actual[3]['balance'] == 110.0
     assert actual[3]['have'] == 0.0
     assert actual[3]['delta'] == -110.0
-    assert actual[3]['latest_check'] == 0.0
+    assert not actual[3]['latest_check']
 
     assert actual[4]['id'] == 2
     assert actual[4]['year'] == 2000
@@ -408,7 +408,7 @@ def test_table_expenses_empty(incomes, types):
     assert actual[4]['balance'] == 330.0
     assert actual[4]['have'] == 0.0
     assert actual[4]['delta'] == -330.0
-    assert actual[4]['latest_check'] == 0.0
+    assert not actual[4]['latest_check']
 
     assert actual[5]['id'] == 2
     assert actual[5]['year'] == 2001
@@ -418,7 +418,7 @@ def test_table_expenses_empty(incomes, types):
     assert actual[5]['balance'] == 330.0
     assert actual[5]['have'] == 0.0
     assert actual[5]['delta'] == -330.0
-    assert actual[5]['latest_check'] == 0.0
+    assert not actual[5]['latest_check']
 
 
 def test_table_incomes_expenses_empty(types):
@@ -443,7 +443,7 @@ def test_table_only_have(have, types):
     assert actual[0]['balance'] == 0.0
     assert actual[0]['have'] == 10.0
     assert actual[0]['delta'] == 10.0
-    assert actual[0]['latest_check'] == datetime(1999, 1, 1, 3, 2, 1, tzinfo=timezone.utc)
+    assert actual[0]['latest_check'] == datetime(1999, 1, 1, 3, 2, 1)
 
     assert actual[1]['id'] == 1
     assert actual[1]['year'] == 2000
@@ -453,7 +453,7 @@ def test_table_only_have(have, types):
     assert actual[1]['balance'] == 0.0
     assert actual[1]['have'] == 15.0
     assert actual[1]['delta'] == 15.0
-    assert actual[1]['latest_check'] == datetime(2000, 1, 1, 3, 2, 1, tzinfo=timezone.utc)
+    assert actual[1]['latest_check'] == datetime(2000, 1, 4, 3, 2, 1)
 
     assert actual[2]['id'] == 1
     assert actual[2]['year'] == 2001
@@ -463,7 +463,7 @@ def test_table_only_have(have, types):
     assert actual[2]['balance'] == 0.0
     assert actual[2]['have'] == 15.0
     assert actual[2]['delta'] == 15.0
-    assert actual[2]['latest_check'] == datetime(2000, 1, 1, 3, 2, 1, tzinfo=timezone.utc)
+    assert actual[2]['latest_check'] == datetime(2000, 1, 4, 3, 2, 1)
 
     assert actual[3]['id'] == 2
     assert actual[3]['year'] == 1999
@@ -473,7 +473,7 @@ def test_table_only_have(have, types):
     assert actual[3]['balance'] == 0.0
     assert actual[3]['have'] == 20.0
     assert actual[3]['delta'] == 20.0
-    assert actual[3]['latest_check'] == datetime(1999, 1, 1, 3, 2, 1, tzinfo=timezone.utc)
+    assert actual[3]['latest_check'] == datetime(1999, 1, 2, 3, 2, 1)
 
     assert actual[4]['id'] == 2
     assert actual[4]['year'] == 2000
@@ -483,7 +483,7 @@ def test_table_only_have(have, types):
     assert actual[4]['balance'] == 0.0
     assert actual[4]['have'] == 25.0
     assert actual[4]['delta'] == 25.0
-    assert actual[4]['latest_check'] == datetime(2000, 1, 1, 3, 2, 1, tzinfo=timezone.utc)
+    assert actual[4]['latest_check'] == datetime(2000, 1, 6, 3, 2, 1)
 
     assert actual[5]['id'] == 2
     assert actual[5]['year'] == 2001
@@ -493,4 +493,4 @@ def test_table_only_have(have, types):
     assert actual[5]['balance'] == 0.0
     assert actual[5]['have'] == 25.0
     assert actual[5]['delta'] == 25.0
-    assert actual[5]['latest_check'] == datetime(2000, 1, 1, 3, 2, 1, tzinfo=timezone.utc)
+    assert actual[5]['latest_check'] == datetime(2000, 1, 6, 3, 2, 1)

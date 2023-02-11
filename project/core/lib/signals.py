@@ -50,15 +50,20 @@ class SignalBase(ABC):
         ...
 
     def _make_df(self, arr: list[dict], cols: list) -> DF:
-        # create df from incomes and expenses
-        df = pl.DataFrame(arr)
+        schema = {
+            "id": pl.UInt16,
+            "year": pl.UInt16,
+            "incomes": pl.Float64,
+            "expenses": pl.Float64,
+        }
+        df = pl.DataFrame(arr, schema=schema)
+
         if df.is_empty():
             return df
 
         df = (
-            df.fill_null(0.0)
-            .with_columns(
-                [pl.col("year").cast(pl.UInt16), pl.col("id").cast(pl.UInt16)]
+            df.with_columns(
+                [pl.col("incomes").fill_null(0.0), pl.col("expenses").fill_null(0.0)]
             )
             .groupby(["id", "year"])
             .agg(pl.all().sum())
@@ -67,10 +72,15 @@ class SignalBase(ABC):
         return df
 
     def _make_have(self, have: list[dict]) -> DF:
-        df = pl.DataFrame(have)
-        df = df.with_columns(
-            [pl.col("year").cast(pl.UInt16), pl.col("id").cast(pl.UInt16)]
-        ).sort(["year", "id"])
+        schema = {
+            "id": pl.UInt16,
+            "year": pl.UInt16,
+            "have": None,
+            "latest_check": pl.Datetime,
+        }
+        df = pl.DataFrame(have, schema=schema)
+
+        df = df.sort(["year", "id"])
         return df
 
     def _get_past_records(self, df: DF, prev_year: int, last_year: int) -> pl.Expr:
@@ -99,7 +109,6 @@ class SignalBase(ABC):
         years = df.select(pl.col("year").unique().sort())["year"].to_list()
         prev_year = years[-2]
         last_year = years[-1]
-
         df = (
             df.vstack(
                 df.pipe(
@@ -168,15 +177,8 @@ class Accounts(SignalBase):
         if df.is_empty():
             return df
 
-        def _missing_cols(df) -> pl.Expr:
-            cols = ["incomes", "expenses"]
-            diff = [col_name for col_name in cols if col_name not in df.columns]
-            return df.with_columns([pl.lit(0.0).alias(col_name) for col_name in diff])
-
-        print(f"------------------------------->make_table IN\n{df}\n")
         df = (
-            df.pipe(_missing_cols)
-            .pipe(self._insert_missing_values, field_name="have")
+            df.pipe(self._insert_missing_values, field_name="have")
             .with_columns(
                 [
                     pl.lit(0.0).alias("balance"),
@@ -201,26 +203,14 @@ class Accounts(SignalBase):
             .with_columns((pl.col("have") - pl.col("balance")).alias("delta"))
             .drop("tmp_balance")
         )
-        # df.balance = df.incomes - df.expenses
-        # # temp column for each id group with balance cumulative sum
-        # df['temp'] = df.groupby("id")['balance'].cumsum()
-        # # calculate past -> shift down temp column
-        # df['past'] = df.groupby("id")['temp'].shift(fill_value=0.0)
-        # # recalculate balance with past and drop temp
-        # df['balance'] = df['past'] + df['incomes'] - df['expenses']
-        # df.drop(columns=["temp"], inplace=True)
-        # # calculate delta between have and balance
-        # df.delta = df.have - df.balance
-        # print(f'------------------------------->make_table OUT\n{df.select(pl.exclude(["latest_check"]))}\n')
-        print(
-            f'------------------------------->make_table OUT\n{df.select(pl.exclude(["expenses",]))}\n'
-        )
         return df
 
     def _join_df(self, df: DF, hv: DF) -> DF:
         df = (
             df.join(hv, on=["id", "year"], how="outer")
-            .with_columns(pl.col("have"))
+            .with_columns(
+                [pl.col("incomes").fill_null(0.0), pl.col("expenses").fill_null(0.0)]
+            )
             .sort(["year", "id"])
         )
         return df
