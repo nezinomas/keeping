@@ -91,7 +91,7 @@ class BalanceBase:
                 [
                     pl.when(col_sum(col_name) != 0)
                     .then(col_sum(col_name) / count_not_nulls(col_name))
-                    .otherwise(pl.lit(0))
+                    .otherwise(pl.lit(0.0))
                     for col_name in cols
                 ]
             )
