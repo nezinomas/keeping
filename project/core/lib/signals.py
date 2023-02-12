@@ -77,7 +77,7 @@ class SignalBase(ABC):
         schema = {
             "id": pl.UInt16,
             "year": pl.UInt16,
-            "have": None,
+            "have": pl.Float64,
             "latest_check": pl.Datetime,
         }
         df = pl.DataFrame(have, schema=schema)
