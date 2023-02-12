@@ -121,7 +121,7 @@ class SignalBase(ABC):
             .sort(["id", "year"])
             .pipe(self._copy_cell_from_previous_year, field_name=field_name)
             .sort(["year", "id"])
-            .pipe(self._insert_future_data, last_year=last_year)
+            .pipe(self._insert_future_data)
         )
         return df
 
@@ -133,13 +133,14 @@ class SignalBase(ABC):
             ]
         ).with_columns(pl.col(field_name).fill_null(0.0))
 
-    def _insert_future_data(self, df: DF, last_year) -> DF:
+    def _insert_future_data(self, df: DF) -> DF:
         """copy last year values into future (year + 1)"""
+        last_year = df["year"][-1]
         df = pl.concat(
             [
                 df,
                 (
-                    df.filter(pl.col("year") == df["year"][-1])
+                    df.filter(pl.col("year") == last_year)
                     .with_columns(pl.lit(last_year + 1).cast(pl.UInt16).alias("year"))
                     .pipe(self._reset_values, year=(last_year + 1))
                 ),
