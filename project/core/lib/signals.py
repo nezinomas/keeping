@@ -61,11 +61,10 @@ class SignalBase(ABC):
             schema |= {"fee": pl.Float64}
 
         df = pl.DataFrame(arr, schema=schema)
-
         if df.is_empty():
             return df
 
-        df = (
+        return (
             df.with_columns(
                 [pl.col("incomes").fill_null(0.0), pl.col("expenses").fill_null(0.0)]
             )
@@ -73,7 +72,6 @@ class SignalBase(ABC):
             .agg(pl.all().sum())
             .sort(["year", "id"])
         )
-        return df
 
     def _make_have(self, have: list[dict]) -> DF:
         schema = {
@@ -121,8 +119,7 @@ class SignalBase(ABC):
 
     def _insert_missing_values(self, df: DF, field_name: str) -> DF:
         df = (
-            df
-            .pipe(self._get_past_records)
+            df.pipe(self._get_past_records)
             .sort(["id", "year"])
             .pipe(self._copy_cell_from_previous_year, field_name=field_name)
             .sort(["year", "id"])
@@ -132,21 +129,20 @@ class SignalBase(ABC):
 
     def _copy_cell_from_previous_year(self, df: DF, field_name: str) -> pl.Expr:
         return df.with_columns(
-            [
                 pl.col("latest_check").forward_fill(),
                 pl.col(field_name).forward_fill(),
-            ]
         ).with_columns(pl.col(field_name).fill_null(0.0))
 
     def _insert_future_data(self, df: DF) -> DF:
         """copy last year values into future (year + 1)"""
         last_year = df["year"][-1]
+
         df = pl.concat(
             [
                 df,
                 (
                     df.filter(pl.col("year") == last_year)
-                    .with_columns(pl.lit(last_year + 1).cast(pl.UInt16).alias("year"))
+                    .with_columns(year=pl.lit(last_year + 1).cast(pl.UInt16))
                     .pipe(self._reset_values, year=(last_year + 1))
                 ),
             ],
@@ -157,20 +153,15 @@ class SignalBase(ABC):
     def _reset_values(self, df: DF, year: int) -> pl.Expr:
         if self.signal_type == "savings":
             df = df.filter(pl.col("year") == year).with_columns(
-                [
-                    pl.lit(0.0).alias("incomes"),
-                    pl.lit(0.0).alias("fee"),
-                    pl.lit(0.0).alias("sold"),
-                    pl.lit(0.0).alias("sold_fee"),
-                ]
+                incomes=pl.lit(0.0),
+                fee=pl.lit(0.0),
+                sold=pl.lit(0.0),
+                sold_fee=pl.lit(0.0),
             )
 
         if self.signal_type == "accounts":
             df = df.filter(pl.col("year") == year).with_columns(
-                [
-                    pl.lit(0.0).alias("incomes"),
-                    pl.lit(0.0).alias("expenses"),
-                ]
+                incomes=pl.lit(0.0), expenses=pl.lit(0.0)
             )
         return df
 
@@ -221,7 +212,8 @@ class Accounts(SignalBase):
 
     def _join_df(self, df: DF, hv: DF) -> DF:
         df = (
-            df.join(hv, on=["id", "year"], how="outer")
+            df
+            .join(hv, on=["id", "year"], how="outer")
             .with_columns(
                 [pl.col("incomes").fill_null(0.0), pl.col("expenses").fill_null(0.0)]
             )
@@ -248,7 +240,8 @@ class Savings(SignalBase):
             return df
 
         df = (
-            df.pipe(self._insert_missing_values, field_name="market_value")
+            df
+            .pipe(self._insert_missing_values, field_name="market_value")
             .sort(["id", "year"])
             .with_columns(
                 per_year_incomes=pl.col("incomes"), per_year_fee=pl.col("fee")
@@ -285,7 +278,8 @@ class Savings(SignalBase):
 
     def _calc_past(self, df: DF) -> pl.Expr:
         df = (
-            df.with_columns(pl.col("per_year_incomes").cumsum().over("id").alias("tmp"))
+            df
+            .with_columns(pl.col("per_year_incomes").cumsum().over("id").alias("tmp"))
             .with_columns(
                 pl.col("tmp")
                 .shift_and_fill(periods=1, fill_value=0.0)
@@ -321,7 +315,8 @@ class Savings(SignalBase):
         ]
 
         return (
-            inc.join(exp, on=["id", "year"], how="outer")
+            inc
+            .join(exp, on=["id", "year"], how="outer")
             .join(hv, on=["id", "year"], how="outer")
             .rename({"have": "market_value"})
             .with_columns(
