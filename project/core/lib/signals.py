@@ -299,7 +299,7 @@ class Savings(SignalBase):
                 .over("id")
                 .alias("past_fee")
             )
-            .drop("fee")
+            .drop("tmp")
         )
         return df
 
