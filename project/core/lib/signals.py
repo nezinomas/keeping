@@ -89,7 +89,7 @@ class SignalBase(ABC):
 
     def _get_past_records(self, df: DF) -> pl.Expr:
         years = df.select(pl.col("year").unique().sort())["year"].to_list()
-        if len(years) <= 2:
+        if len(years) < 2:
             return df
 
         prev_year = years[-2]
