@@ -50,7 +50,7 @@ class SignalBase(ABC):
     def make_table(self, df: DF) -> DF:
         ...
 
-    def _make_df(self, arr: list[dict], cols: list) -> DF:
+    def _make_df(self, arr: list[dict]) -> DF:
         schema = {
             "id": pl.UInt16,
             "year": pl.UInt16,
@@ -169,8 +169,7 @@ class Accounts(SignalBase):
     signal_type = "accounts"
 
     def __init__(self, data: GetData):
-        cols = ["incomes", "expenses"]
-        _df = self._make_df(it.chain(data.incomes, data.expenses), cols)
+        _df = self._make_df(it.chain(data.incomes, data.expenses))
         _hv = self._make_have(data.have)
         _df = self._join_df(_df, _hv)
 
@@ -215,9 +214,8 @@ class Savings(SignalBase):
     signal_type = "savings"
 
     def __init__(self, data: GetData):
-        cols = ["incomes", "expenses", "fee"]
-        _in = self._make_df(data.incomes, cols)
-        _ex = self._make_df(data.expenses, cols)
+        _in = self._make_df(data.incomes)
+        _ex = self._make_df(data.expenses)
         _hv = self._make_have(data.have)
         _df = self._join_df(_in, _ex, _hv)
 
