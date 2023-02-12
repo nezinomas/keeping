@@ -145,6 +145,34 @@ def test_table(incomes, expenses, have, types):
     assert actual[7]['latest_check'] == datetime(2000, 1, 6, 3, 2, 1)
 
 
+@time_machine.travel('1997-12-31')
+def test_table_one_record(types):
+    incomes = [{'year': 1997, 'incomes': Decimal('5'), 'id': 1}]
+    data = SimpleNamespace(
+        incomes=incomes, expenses=[], have=[], types=types)
+    actual = Accounts(data).table
+
+    assert actual[0]['id'] == 1
+    assert actual[0]['year'] == 1997
+    assert actual[0]['past'] == 0.0
+    assert actual[0]['incomes'] == 5.0
+    assert actual[0]['expenses'] == 0.0
+    assert actual[0]['balance'] == 5.0
+    assert actual[0]['have'] == 0.0
+    assert actual[0]['delta'] == -5.0
+    assert not actual[0]['latest_check']
+
+    assert actual[1]['id'] == 1
+    assert actual[1]['year'] == 1998
+    assert actual[1]['past'] == 5.0
+    assert actual[1]['incomes'] == 0.0
+    assert actual[1]['expenses'] == 0.0
+    assert actual[1]['balance'] == 5.0
+    assert actual[1]['have'] == 0.0
+    assert actual[1]['delta'] == -5.0
+    assert not actual[1]['latest_check']
+
+
 @time_machine.travel('1999-1-1')
 def test_copy_have_and_latest_from_previous_year(types):
     have = [{'id': 1, 'year': 1998, 'have': Decimal('10'), 'latest_check': datetime(1998, 1, 1, 3, 2, 1)},]

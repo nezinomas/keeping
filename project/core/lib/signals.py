@@ -88,11 +88,14 @@ class SignalBase(ABC):
         return df
 
     def _get_past_records(self, df: DF) -> pl.Expr:
-        types = [x.pk for x in self._types]
-
         years = df.select(pl.col("year").unique().sort())["year"].to_list()
+        if len(years) <= 2:
+            return df
+
         prev_year = years[-2]
         last_year = years[-1]
+
+        types = [x.pk for x in self._types]
 
         row_diff = (
             df.filter(pl.col("year").is_in([prev_year, last_year]))
