@@ -86,7 +86,7 @@ class SignalBase(ABC):
         return df
 
     def _get_past_records(self, df: DF) -> pl.Expr:
-        years = df.select(pl.col("year").unique().sort())["year"].to_list()
+        years = df.select(pl.col("year").unique().sort())["year"]
         if len(years) < 2:
             return df
 
@@ -100,7 +100,6 @@ class SignalBase(ABC):
             .select([pl.all()])
             .groupby(["year"])
             .agg([pl.col("id").alias("tmp")])
-            .with_columns(pl.col("tmp"))
         )
         prev_year_type_list = row_diff[0, 1]
         last_year_type_list = row_diff[1, 1]
@@ -185,27 +184,22 @@ class Accounts(SignalBase):
         df = (
             df.pipe(self._insert_missing_values, field_name="have")
             .with_columns(
-                [
-                    pl.lit(0.0).alias("balance"),
-                    pl.lit(0.0).alias("past"),
-                    pl.lit(0.0).alias("delta"),
-                ]
+                    balance=pl.lit(0.0),
+                    past=pl.lit(0.0),
+                    delta=pl.lit(0.0)
             )
             .sort(["id", "year"])
-            .with_columns((pl.col("incomes") - pl.col("expenses")).alias("balance"))
-            .with_columns(pl.col("balance").cumsum().over(["id"]).alias("tmp_balance"))
+            .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
+            .with_columns(tmp_balance=pl.col("balance").cumsum().over(["id"]))
             .with_columns(
-                pl.col("tmp_balance")
+                past=pl.col("tmp_balance")
                 .shift_and_fill(periods=1, fill_value=0.0)
                 .over("id")
-                .alias("past")
             )
             .with_columns(
-                (pl.col("past") + pl.col("incomes") - pl.col("expenses")).alias(
-                    "balance"
-                )
+                balance=(pl.col("past") + pl.col("incomes") - pl.col("expenses"))
             )
-            .with_columns((pl.col("have") - pl.col("balance")).alias("delta"))
+            .with_columns(delta=(pl.col("have") - pl.col("balance")))
             .drop("tmp_balance")
         )
         return df
@@ -279,19 +273,17 @@ class Savings(SignalBase):
     def _calc_past(self, df: DF) -> pl.Expr:
         df = (
             df
-            .with_columns(pl.col("per_year_incomes").cumsum().over("id").alias("tmp"))
+            .with_columns(tmp=pl.col("per_year_incomes").cumsum().over("id"))
             .with_columns(
-                pl.col("tmp")
+                past_amount=pl.col("tmp")
                 .shift_and_fill(periods=1, fill_value=0.0)
                 .over("id")
-                .alias("past_amount")
             )
-            .with_columns(pl.col("per_year_fee").cumsum().over("id").alias("tmp"))
+            .with_columns(tmp=pl.col("per_year_fee").cumsum().over("id"))
             .with_columns(
-                pl.col("tmp")
+                past_fee=pl.col("tmp")
                 .shift_and_fill(periods=1, fill_value=0.0)
                 .over("id")
-                .alias("past_fee")
             )
             .drop("tmp")
         )
