@@ -107,7 +107,7 @@ class YearBalance(BalanceBase):
             .with_columns((pl.col("incomes") - pl.col("expenses")).alias("balance"))
             .with_columns(
                 (
-                    pl.lit(0)
+                    pl.lit(0.0)
                     + pl.col("balance")
                     + pl.col("savings_close")
                     + pl.col("borrow")
