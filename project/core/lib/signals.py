@@ -87,8 +87,13 @@ class SignalBase(ABC):
         df = df.sort(["year", "id"])
         return df
 
-    def _get_past_records(self, df: DF, prev_year: int, last_year: int) -> pl.Expr:
+    def _get_past_records(self, df: DF) -> pl.Expr:
         types = [x.pk for x in self._types]
+
+        years = df.select(pl.col("year").unique().sort())["year"].to_list()
+        prev_year = years[-2]
+        last_year = years[-1]
+
         row_diff = (
             df.filter(pl.col("year").is_in([prev_year, last_year]))
             .select([pl.all()])
@@ -112,12 +117,9 @@ class SignalBase(ABC):
         return df
 
     def _insert_missing_values(self, df: DF, field_name: str) -> DF:
-        years = df.select(pl.col("year").unique().sort())["year"].to_list()
-        prev_year = years[-2]
-        last_year = years[-1]
         df = (
             df
-            .pipe(self._get_past_records, prev_year=prev_year, last_year=last_year)
+            .pipe(self._get_past_records)
             .sort(["id", "year"])
             .pipe(self._copy_cell_from_previous_year, field_name=field_name)
             .sort(["year", "id"])
