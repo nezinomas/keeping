@@ -89,7 +89,7 @@ class MakeDataFrame:
             return df
 
         cols_diff = set(self._columns) - set(df.columns)
-        cols = [pl.lit(0).alias(col_name) for col_name in cols_diff]
+        cols = [pl.lit(0.0).alias(col_name) for col_name in cols_diff]
         return df.select([pl.all(), *cols])
 
     def _insert_missing_rows(self, df: DF) -> pl.Expr:
