@@ -55,7 +55,7 @@ class MakeDataFrame:
             .pipe(self._insert_missing_columns)
             .pipe(self._drop_columns)
             .pipe(self._sort_columns)
-            .fill_null(0)
+            .fill_null(0.0)
             .sort("date")
         )
 
