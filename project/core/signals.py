@@ -1,6 +1,7 @@
 from django.db.models import Model
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
+from django.utils.timezone import make_aware
 
 from ..accounts import models as account
 from ..bookkeeping import models as bookkeeping
@@ -122,6 +123,8 @@ def create_objects(balance_model: Model, categories: dict, data: list[dict]):
         # drop latest_check if empty
         if not x['latest_check']:
             x.pop('latest_check')
+        else:
+            x['latest_check'] = make_aware(x['latest_check'])
         # create fk_field account|saving_type|pension_type object
         x[fk_field] = categories.get(cid)
         # create AccountBalance/SavingBalance/PensionBalance object
