@@ -272,7 +272,7 @@ class Savings(SignalBase):
                 )
             )
             .with_columns(profit_sum=(pl.col("market_value") - pl.col("invested")))
-            .pipe(self.calc_percent_new)
+            .pipe(self._calc_percent)
         )
         return df
 
@@ -334,10 +334,14 @@ class Savings(SignalBase):
         except ZeroDivisionError:
             return 0.0
 
-    def calc_percent_new(self, df):
+    def _calc_percent(self, df):
         df = df.with_columns(
-                profit_proc=pl.when(pl.col("invested") <= 0)
-                .then(0.0)
-                .otherwise(((pl.col("market_value") * 100) / pl.col("invested")) - 100)
+            profit_proc=Savings.calc_percent(
+                pl.col("market_value"), pl.col("invested")
+            ).fill_nan(0.0)
+        ).with_columns(
+            profit_proc=pl.when(pl.col("profit_proc").is_infinite())
+            .then(0.0)
+            .otherwise(pl.col("profit_proc"))
         )
         return df
