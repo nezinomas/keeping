@@ -128,8 +128,8 @@ class SignalBase(ABC):
 
     def _copy_cell_from_previous_year(self, df: DF, field_name: str) -> pl.Expr:
         return df.with_columns(
-                pl.col("latest_check").forward_fill(),
-                pl.col(field_name).forward_fill(),
+            pl.col("latest_check").forward_fill(),
+            pl.col(field_name).forward_fill(),
         ).with_columns(pl.col(field_name).fill_null(0.0))
 
     def _insert_future_data(self, df: DF) -> DF:
@@ -183,11 +183,7 @@ class Accounts(SignalBase):
 
         df = (
             df.pipe(self._insert_missing_values, field_name="have")
-            .with_columns(
-                    balance=pl.lit(0.0),
-                    past=pl.lit(0.0),
-                    delta=pl.lit(0.0)
-            )
+            .with_columns(balance=pl.lit(0.0), past=pl.lit(0.0), delta=pl.lit(0.0))
             .sort(["id", "year"])
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
             .with_columns(tmp_balance=pl.col("balance").cumsum().over(["id"]))
@@ -206,8 +202,7 @@ class Accounts(SignalBase):
 
     def _join_df(self, df: DF, hv: DF) -> DF:
         df = (
-            df
-            .join(hv, on=["id", "year"], how="outer")
+            df.join(hv, on=["id", "year"], how="outer")
             .with_columns(
                 [pl.col("incomes").fill_null(0.0), pl.col("expenses").fill_null(0.0)]
             )
@@ -234,8 +229,7 @@ class Savings(SignalBase):
             return df
 
         df = (
-            df
-            .pipe(self._insert_missing_values, field_name="market_value")
+            df.pipe(self._insert_missing_values, field_name="market_value")
             .sort(["id", "year"])
             .with_columns(
                 per_year_incomes=pl.col("incomes"), per_year_fee=pl.col("fee")
@@ -272,8 +266,7 @@ class Savings(SignalBase):
 
     def _calc_past(self, df: DF) -> pl.Expr:
         df = (
-            df
-            .with_columns(tmp=pl.col("per_year_incomes").cumsum().over("id"))
+            df.with_columns(tmp=pl.col("per_year_incomes").cumsum().over("id"))
             .with_columns(
                 past_amount=pl.col("tmp")
                 .shift_and_fill(periods=1, fill_value=0.0)
@@ -307,14 +300,13 @@ class Savings(SignalBase):
         ]
 
         return (
-            inc
-            .join(exp, on=["id", "year"], how="outer")
+            inc.join(exp, on=["id", "year"], how="outer")
             .join(hv, on=["id", "year"], how="outer")
             .rename({"have": "market_value"})
             .with_columns(
-                    pl
-                    .exclude(["id", "year", "latest_check", "market_value"])
-                    .fill_null(0.0)
+                pl
+                .exclude(["id", "year", "latest_check", "market_value"])
+                .fill_null(0.0)
             )
             .with_columns([pl.lit(0.0).alias(col) for col in cols])
         )
