@@ -320,11 +320,9 @@ class Savings(SignalBase):
             .join(hv, on=["id", "year"], how="outer")
             .rename({"have": "market_value"})
             .with_columns(
-                [
-                    pl.exclude(
-                        ["id", "year", "latest_check", "market_value"]
-                    ).fill_null(0.0)
-                ]
+                    pl
+                    .exclude(["id", "year", "latest_check", "market_value"])
+                    .fill_null(0.0)
             )
             .with_columns([pl.lit(0.0).alias(col) for col in cols])
         )
@@ -342,10 +340,8 @@ class Savings(SignalBase):
 
     def calc_percent_new(self, df):
         df = df.with_columns(
-            (
-                pl.when(pl.col("invested") <= 0)
+                profit_proc=pl.when(pl.col("invested") <= 0)
                 .then(0.0)
                 .otherwise(((pl.col("market_value") * 100) / pl.col("invested")) - 100)
-            ).alias("profit_proc")
         )
         return df
