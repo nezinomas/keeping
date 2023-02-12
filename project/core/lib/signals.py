@@ -328,15 +328,11 @@ class Savings(SignalBase):
         )
 
     @staticmethod
-    def calc_percent(args):
-        market = args[0]
-        invested = args[1]
-
-        rtn = 0.0
-        if invested:
-            rtn = ((market * 100) / invested) - 100
-
-        return rtn
+    def calc_percent(market, invested):
+        try:
+            return ((market * 100) / invested) - 100
+        except ZeroDivisionError:
+            return 0.0
 
     def calc_percent_new(self, df):
         df = df.with_columns(
